@@ -1,0 +1,72 @@
+.navigation.type-rail
+  flex: none
+  color: rgba(255, 255, 255, .87)
+  display: flex
+  overflow: hidden
+  flex-direction: column
+  width: 12px
+  padding-top: 56px
+  background-color: #2D2F31
+  margin: 0
+  transition: .1s linear width
+  &.show
+    width: 92px
+    .body
+      opacity: 1
+      transition: .1s opacity linear
+  .body
+    opacity: 0
+    flex: 1
+    flex-direction: column
+    width: 92px
+    padding: 0 0
+    margin: 0
+    transition: .1s opacity linear
+    .item
+      flex: none
+      display: flex
+      flex-direction: column
+      height: 64px
+      margin: 0
+      border-radius: 0
+      text-align: center
+      padding: 10px 0 6px
+      font-size: 0.8rem
+      text-transform: none
+      text-align: center
+      align-items: center
+      justify-content: center
+      &.selected, &.selected:hover
+        background-color: transparent          
+        .icon
+          background-color: #004A77
+          svg
+            fill: #C2E8FF
+      .icon
+        width: 60px
+        pointer-events: none
+        padding: 0
+        border-radius: 21px
+        margin: 0
+        height: 32px
+        padding: 4px 0
+        align-items: center
+        justify-content: center
+        svg
+          fill: rgba(255,255,255,.7)
+      .label
+        pointer-events: none
+        align-items: center
+        justify-content: center
+        text-align: center
+        flex: 1
+        color: rgba(255, 255, 255, 1)
+        text-transform: capitalize
+        font-size: .9em
+        text-align: center
+        padding: 0
+        margin: 0
+      &:hover
+        background-color: transaprent
+        .icon
+          background-color: rgba(255,255,255,.05)

@@ -1,0 +1,87 @@
+.list
+  flex: 1
+  display: flex
+  flex-direction: column
+  
+  &.hide
+    display: none
+
+
+  >.head
+    position: relative
+    display: flex
+    flex-direction: row
+    flex: none
+    >.divider
+      flex: 1
+    >.button.search
+      flex: none
+      &.selected
+        // background-color: $primary-color
+        .button-icon svg 
+          fill: rgba(255, 255, 255, 1)
+
+  >.body.search
+    display: none
+    overflow: scroll
+    flex: 1
+    &.show
+      display: block
+   
+  >.body
+    overflow: scroll
+    flex: 1
+    // overscroll-behavior: none
+    // height: 100%
+    .item
+      width: 100%
+      display: flex
+      flex-direction: row
+      padding: 8px 16px 8px 24px
+      border: none
+      background-color: transparent
+      border-radius: 0
+      box-shadow: none
+      border-bottom: 1px solid rgba(0,0,0,.1)
+     
+      .image
+        flex: none
+        position: relative
+        width: 64px
+        height: 64px
+        background-color: rgba(0,0,0,.05)
+        //border: 1px solid rgba(0,0,0,.2)
+        background-size: contain
+        background-repeat: no-repeat
+        background-position: center
+        margin-right: 16px
+
+    &.hide
+      display: none
+    .item
+      .info
+        display: flex
+        flex-direction: row
+      &.selected
+        background-color: rgba(0,0,0,.05)
+
+  >.foot
+    display: flex
+    flex-direction: row
+    flex: none
+    border-top: 1px solid rgba(0, 0, 0, 0.1)
+    padding: 8px 16px 8px 24px
+
+.virtual
+  overflow: auto
+  position: relative
+  padding: 0
+  margin: 0
+  width: 100%
+  height: 100%
+  .scroller
+    opacity: 1
+    position: absolute
+    top: 0
+    left: 0
+    width: 1px

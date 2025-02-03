@@ -1,0 +1,183 @@
+.button
+  display: flex
+  -webkit-font-smoothing: antialiased
+  white-space: nowrap
+  position: relative
+  vertical-align: middle
+  cursor: default
+  height: 36px
+  padding: 6px 8px 6px 8px
+  margin: 0 8px
+  border: none
+  border-radius: 2px
+  overflow: hidden
+  background-color: transparent
+  > *
+    pointer-events: none
+
+  .button-icon
+    flex: none
+    pointer-events: none
+    z-index: 2
+    display: inline-block
+    width: 24px
+    height: 24px
+    padding: 0 8px
+    vertical-align: bottom
+    padding: 0
+    background-repeat: no-repeat
+    background-position: center center
+    svg
+      fill: $default-color-text
+
+  .button-label
+    flex: 1
+    order: 2
+    pointer-events: none
+    font-size: 0.875rem
+    font-weight: 600
+    line-height: 1.1rem
+    display: inline-block
+    z-index: 2
+    text-transform: uppercase
+    padding: 3px 8px 3px 8px
+    margin: 0
+
+  .material-ripple
+    opacity: 1
+    pointer-events: none
+    z-index: 1
+    position: absolute
+    background-color: rgba(0, 0, 0, 0.1)
+    height: 5px
+    width: 5px
+    border-radius: 50%
+
+  &.iconend
+    .button-icon
+      order: 2
+    .button-label
+      order: 1
+
+// states
+.button
+  &.is-disabled
+    pointer-events: none
+    opacity: .3
+
+  &:focus
+    //transition-delay: .2s
+    transition-duration: .3s
+    background-color: rgba($default-color-text, 0.05)
+    &:hover
+      background-color: rgba($default-color-text, 0.05)
+
+  &:active
+    transition-duration: .2s
+    &:focus
+      //transition-delay: .2s
+
+  &:hover
+    transition-duration: .2s
+    background-color: rgba($default-color-text, 0.03)
+
+  &:disabled
+    pointer-events: none
+    opacity: .3
+
+// styles
+.button
+  &.style-compact
+    > .button-label
+      padding-left: 0
+      padding-right: 0
+
+  &.style-dense
+    height: 32px
+    > .button-label
+      font-size: 0.8125rem
+      padding-top: 2px
+      padding-bottom: 2px
+
+// color
+.button
+  &.primary-color
+    color: $primary-color
+    &:focus
+      background-color: rgba($primary-color, .1)
+      &:hover
+        background-color: rgba($primary-color, .1)
+    &:hover
+      background-color: rgba($primary-color, .05)
+
+    .button-icon
+      svg
+        fill: $primary-color
+
+    .material-ripple
+      background-color: rgba($primary-color, .1)
+    
+    
+
+  &.secondary-color
+    color: $secondary-color
+    .button-icon
+      svg
+        fill: $secondary-color
+    .material-ripple
+      background-color: rgba($secondary-color, .1)
+    &:focus
+      background-color: rgba($secondary-color, .10)
+      &:hover
+        background-color: rgba($secondary-color, .10)
+    &:hover
+      background-color: rgba($secondary-color, .05)
+
+// theme
+.dark-mode .button,
+.button.dark-mode
+  color: $default-color-text-dark
+  .button-icon
+    svg
+      fill: $default-color-text-dark
+  .material-ripple
+    background-color: rgba($default-color-text-dark, .1)
+  &:focus
+    //background-color: rgba($default-color-text-dark, .1)
+    &:hover
+      //background-color: rgba($default-color-text-dark, .1)
+  &:hover
+    background-color: rgba($default-color-text-dark, .05)
+
+  // primary color
+  &.primary-color
+    //background-color: $primary-color;
+    color: $primary-color-dark
+    .button-icon
+      svg
+        fill: $primary-color-dark
+    .material-ripple
+      background-color: rgba($primary-color-dark, .3)
+    &:focus
+      background-color: rgba($primary-color-dark, .2)
+      &:hover
+        background-color: rgba($primary-color-dark, .2)
+    &:hover
+      background-color: rgba($primary-color-dark, .1)
+
+  // secondary color
+  &.secondary-color
+    color: $secondary-color-dark
+    .button-icon
+      svg
+        fill: $secondary-color-dark
+    .material-ripple
+      background-color: rgba($secondary-color-dark, .3)
+
+    &:focus
+      background-color: rgba($secondary-color-dark, .2)
+      &:hover
+        background-color: rgba($secondary-color-dark, .2)
+
+    &:hover
+      background-color: rgba($secondary-color-dark, .1)

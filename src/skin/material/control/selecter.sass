@@ -1,0 +1,131 @@
+.selecter
+  display: flex
+  position: initial
+  margin-right: 20px
+  // margin-bottom: 8px
+  vertical-align: top
+  flex: none
+  display: flex
+  flex-direction: row
+  flex-wrap: nowrap
+
+  label
+    flex: 1
+    order: 0
+    cursor: default
+    font-size: 1rem
+    line-height: 1.2rem
+    padding: 14px 0
+    margin: 0px 2px 0px 0
+    overflow: hidden
+  .value
+    flex: 1
+    order: 1
+    text-align: right
+    cursor: pointer
+    font-size: 1rem
+    line-height: 1.2rem
+    padding: 14px 0
+    margin: 0px 2px 0px 0
+    overflow: hidden
+  input
+    flex: 1
+    display: none
+    user-select: auto
+    color: rgba(0,0,0,.87)
+    float: none
+    width: 100%
+    border: none
+    margin: 0
+    padding: 16px 12px 15px
+    // background-color: rgba(255,255,255,.47)
+    border-radius: 3px
+    background-color: rgba(255,255,255,.67)
+    // border: 1px solid rgba(0,0,0,.1)
+    // transition: .195s background-color
+    &:focus
+      background-color: rgba(255,255,255,1)
+      transition: .225s background-color
+      // border: 1px solid rgba(0,0,0,.5)
+    &:disabled
+      color: rgba(0,0,0,.57)
+      background-color: rgba(255,255,255,.27)
+
+  .list
+    display: none
+    flex-direction: column
+    font-size: .9em
+    color: rgba(0,0,0,.87)
+    color: rgba(255,255,255,.87)
+    z-index: 151
+    position: absolute
+    top: 0
+    left: 0
+    bottom: 0
+    right: 0
+    width: 100%
+    background-color: #7b7c7f
+    overflow: hidden
+    // transform: translateX(-100%)
+    // transition: .195s transform cubic-bezier(.4,0,.2,1)
+    &.show
+      display: flex
+    .head
+      flex: none
+      display: flex
+      .title
+        font-size: 1.1em
+        flex: 1
+        padding: 16px 20px
+      .close
+        top: 8px
+        right: 8px
+        height: 40px
+        width: 40px
+        background-image: url(/theme/common/icon/close.svg)
+
+    .body
+      flex: 1
+      overflow: auto
+      .item
+        padding: 16px 20px
+        &:hover
+          background-color: rgba(0,0,0,.05)
+
+        &.selected
+          label
+            font-weight: 700px
+
+  input
+    display: none
+    cursor: pointer
+    -webkit-appearance: none
+    appearance: none
+    color: rgba(0,0,0,.87)
+    float: none
+    width: 100%
+    border: none
+    margin: 0
+    padding: 17px 12px 14px
+    // background-color: rgba(255,255,255,.47)
+    border-radius: 3px
+    // border: 1px solid rgba(0,0,0,.1)
+    background-color: rgba(255,255,255,.67)
+    // transition: .195s background-color       
+    &:focus
+      background-color: rgba(255,255,255,1)
+      // border: 1px solid rgba(0,0,0,.5)
+      // transition: .225s background-color
+    &:disabled
+      color: rgba(0,0,0,.57)
+      background-color: rgba(255,255,255,.27)
+
+  .error
+    color: rgba(0,0,0,.87)
+    float: none
+    width: 100%
+    border: none
+    margin: 0
+    background-color: rgba(255,255,255,.87)
+    border-radius: 0
+

@@ -1,0 +1,75 @@
+.material-tabs
+  position: relative
+  text-align: center
+  overflow: hidden
+  white-space: nowrap
+  >.material-list
+    display: inline-block
+    white-space: nowrap
+    padding: 0
+    margin: 0
+    text-align: center
+    white-space: nowrap
+    .material-button
+      font-size: 0.875rem
+      font-weight: 500
+      letter-spacing: 0.04em
+      line-height: 1.5rem
+      text-decoration: inherit
+      text-transform: uppercase
+      display: table-cell
+      position: relative
+      display: inline-block
+      width: initial
+      min-width: 160px
+      min-height: 48px
+      padding: 0 24px
+      text-align: center
+      text-decoration: none
+      white-space: nowrap
+      cursor: pointer
+      overflow: hidden
+      vertical-align: middle
+      transition: .4s
+      margin: 0
+      background-color: transparent
+  .material-indicator
+    position: absolute
+    height: 2px
+    bottom: 0
+    background-color: $primary-color
+    transition: .2s
+
+  &.primary-color
+    background-color: $primary-color
+    .material-list
+      .material-button
+        color: $primary-color-text
+      .material-ripple
+        background-color: $primary-color-text
+    .material-indicator
+      background-color: $primary-color-text
+  &.secondary-color
+    background-color: $secondary-color
+    .material-list
+      .material-button
+        color: $secondary-color-text
+      .material-ripple
+        background-color: $secondary-color-text
+    .material-indicator
+      background-color: $secondary-color-text
+
+.material-tabs.small
+  .material-list
+    .material-button
+      font-size: 0.475rem
+      font-weight: 500
+      letter-spacing: 0.04em
+      line-height: 1rem
+      min-width: 80px
+      min-height: 18px
+      padding: 0 14px
+      margin: 0
+      background-color: transparent
+      label
+        padding: 8px

@@ -1,0 +1,55 @@
+.tabview
+  position: relative
+  display: flex
+  flex-direction: column
+  height: 100%
+  width: 100%
+  white-space: no-wrap
+  overflow: hidden
+  -webkit-touch-callout: none
+  -webkit-user-select: none
+  >.indicator
+    position: absolute
+    height: 2px
+    // transition: 0.2s
+  >.tabs
+    flex: none
+    display: flex
+    flex-direction: row
+    overflow: hidden 
+    //height: 48px
+    >.divider
+      margin: 0
+      padding: 0
+      flex: 1 
+      display: inline-block
+    >button
+      flex: 1
+      display: inline-block
+      padding: 0
+      height: 48px
+      border-radius: 0
+      margin: 0
+      text-align: center
+      background-repeat: no-repeat
+      background-size: 25%
+      background-position: center
+      // transition: 50ms transform
+      &:hover, &.selected
+        background-color: transparent
+        // transform: scale(1.1)
+        // transition: 50ms transform
+      
+      &.type-action
+        max-width: 60px
+
+
+  >.views
+    position: relative
+    flex: 1
+    >div
+      position: absolute
+      left: 0
+      top: 0
+      right: 0
+      bottom: 0

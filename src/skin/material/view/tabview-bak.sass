@@ -1,0 +1,40 @@
+.tabview
+  position: relative
+  display: flex
+  flex-direction: column
+  height: 100%
+  width: 100%
+  white-space: no-wrap
+  overflow: hidden
+  >.indicator
+    position: absolute
+    height: 2px
+    transition: 0.2s
+    background-color: $secondary-color
+  >.tabs
+    flex: none
+    display: flex
+    flex-direction: row
+    overflow: hidden 
+    //height: 48px
+    >.material-divider
+      margin: 0
+      padding: 0
+      flex: 1 
+      display: inline-block
+    >button
+      flex: 1
+      display: inline-block
+      padding: 0 10px
+      height: 48px
+      border-radius: 0
+      margin: 0
+      text-align: center
+      background-repeat: no-repeat
+      background-size: 30%
+      background-position: center
+      >label
+        color: $default-color-text
+  >.views
+    >div
+      display: none

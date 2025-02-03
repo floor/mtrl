@@ -1,0 +1,38 @@
+.selector
+  display: block
+  pointer-events: none
+  position: fixed
+  z-index: 1000
+  &.hide
+    display: none
+  &.rounded
+    border-radius: 50%
+    .border
+      border-radius: 50%
+  // transition: .2s top linear, .2s left linear, 
+  >.label
+    color: white
+    position: absolute
+    top: -12px
+    left: 0
+    width: 30px
+    height: 12px
+    background: #247BB6
+  >.border
+    position: absolute
+    top : 0
+    left: 0
+    right: 0
+    bottom: 0
+    border: 1px solid #326FB6
+    border-radius: 3px
+  >.resizer
+    pointer-events: auto
+    display: block
+    width: 3px
+    height: 3px
+    position: absolute
+    bottom: -5
+    right: -5
+    // background-color: #326FB6
+

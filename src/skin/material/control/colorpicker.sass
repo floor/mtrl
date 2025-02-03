@@ -1,0 +1,188 @@
+.colorpicker
+  display: none
+  position: absolute
+  width: 280px
+  background-color: var(--md-sys-color-surface)
+  border-radius: 4px
+  box-shadow: var(--md-sys-elevation-3)
+  z-index: 1000
+  
+  // Panel container
+  .panel
+    padding: 16px
+  
+   // Color gradient area
+  .gradient
+    position: relative
+    width: 100%
+    height: 150px
+    margin-bottom: 16px
+    border-radius: 4px
+    background-image: linear-gradient(rgba(0,0,0,0), #000), linear-gradient(90deg, #fff, currentColor)
+    cursor: pointer
+
+    .marker
+      position: absolute
+      width: 12px
+      height: 12px
+      margin: -6px
+      border: 2px solid #fff
+      border-radius: 50%
+      background-color: currentColor
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2)
+      cursor: pointer
+      transition: transform 0.1s ease
+      
+      &:focus
+        outline: none
+        transform: scale(1.1)
+  
+  // Hue and Alpha sliders
+  .hue,
+  .alpha
+    position: relative
+    width: 100%
+    height: 20px
+    margin: 8px 0
+    border-radius: 10px
+
+    input[type="range"]
+      position: absolute
+      width: 100%
+      height: 100%
+      margin: 0
+      opacity: 0
+      cursor: pointer
+      appearance: none
+
+    .marker
+      position: absolute
+      width: 20px
+      height: 20px
+      transform: translateX(-50%)
+      border: 2px solid #fff
+      border-radius: 50%
+      background-color: currentColor
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2)
+      pointer-events: none
+
+  .hue
+    background-image: linear-gradient(to right, #f00 0%, #ff0 16.66%, #0f0 33.33%, #0ff 50%, #00f 66.66%, #f0f 83.33%, #f00 100%)
+
+  .alpha
+    background-image: linear-gradient(45deg, #aaa 25%, transparent 25%, transparent 75%, #aaa 75%, #aaa), linear-gradient(45deg, #aaa 25%, #fff 25%, #fff 75%, #aaa 75%, #aaa)
+    background-size: 8px 8px
+    background-position: 0 0, 4px 4px
+
+    &:after
+      content: ''
+      position: absolute
+      width: 100%
+      height: 100%
+      border-radius: inherit
+      background-image: linear-gradient(90deg, rgba(0,0,0,0), currentColor)
+
+  // Input and Preview
+  .input
+    width: 100%
+    height: 40px
+    margin: 8px 0
+    padding: 0 12px
+    border: 1px solid var(--md-sys-color-outline)
+    border-radius: 4px
+    background: var(--md-sys-color-surface)
+    color: var(--md-sys-color-on-surface)
+    font-family: var(--md-sys-typescale-body-medium-font-family)
+    font-size: var(--md-sys-typescale-body-medium-size)
+    transition: border-color 0.2s ease
+
+    &:focus
+      outline: none
+      border-color: var(--md-sys-color-primary)
+
+  .preview
+    position: relative
+    width: 40px
+    height: 40px
+    border-radius: 4px
+    background-image: linear-gradient(45deg, #aaa 25%, transparent 25%, transparent 75%, #aaa 75%, #aaa), linear-gradient(45deg, #aaa 25%, #fff 25%, #fff 75%, #aaa 75%, #aaa)
+    background-size: 8px 8px
+    background-position: 0 0, 4px 4px
+    overflow: hidden
+    
+    &:after
+      content: ''
+      position: absolute
+      inset: 0
+      background-color: currentColor
+
+  // Swatches
+  .swatches
+    display: flex
+    flex-wrap: wrap
+    gap: 8px
+    margin-top: 16px
+
+    button
+      width: 24px
+      height: 24px
+      padding: 0
+      border: none
+      border-radius: 4px
+      background-color: currentColor
+      cursor: pointer
+      transition: transform 0.1s ease
+
+      &:hover
+        transform: scale(1.1)
+
+      &:focus
+        outline: 2px solid var(--md-sys-color-primary)
+        outline-offset: 2px
+
+  // States
+  &.is-open
+    display: block
+
+  &[data-inline="true"]
+    position: relative
+    display: block
+
+  &[data-alpha="false"]
+    .alpha
+      display: none
+
+// Field wrapper styles
+.colorpicker-field
+  position: relative
+  display: inline-flex
+  align-items: center
+
+  input
+    padding-right: 40px
+
+  .preview
+    position: absolute
+    right: 8px
+    width: 24px
+    height: 24px
+    border-radius: 4px
+    background-image: linear-gradient(45deg, #aaa 25%, transparent 25%, transparent 75%, #aaa 75%, #aaa), linear-gradient(45deg, #aaa 25%, #fff 25%, #fff 75%, #aaa 75%, #aaa)
+    background-size: 8px 8px
+    background-position: 0 0, 4px 4px
+    pointer-events: none
+
+    &:after
+      content: ''
+      position: absolute
+      inset: 0
+      background-color: currentColor
+
+// Dark theme support
+@media (prefers-color-scheme: dark)
+  .colorpicker
+    background-color: var(--md-sys-color-surface-container-high)
+
+    .input
+      background: var(--md-sys-color-surface-container)
+      color: var(--md-sys-color-on-surface)

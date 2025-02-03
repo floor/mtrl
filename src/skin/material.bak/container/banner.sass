@@ -1,0 +1,38 @@
+.material-banner
+	
+	padding: 20px 16px 16px
+	border-bottom: 1px solid rgba(0, 0, 0, 0.1)
+	background-color: white
+	position: absolute
+	overflow: hidden
+	bottom: 0
+	left: 0
+	right: 0
+	//transform: translateY(0)
+	// &.is-fixed
+	// 	position: absolute
+	// 	top: 0
+	// 	left: 0
+	// 	right: 0
+	//transition: top .3s
+	.material-toolbar
+		padding-top: 16px
+
+.banner-wrapper
+	position: relative
+	overflow: hidden
+	z-index: 4
+	height: 0
+	transition: height .2s
+	&.is-fixed
+		z-index: 4
+		position: absolute
+		top: 0
+		left: 0
+		right: 0
+	&.is-shown
+		transition: height .2s
+		//padding: 0
+		//border: none
+		//transform: translateY(-150px)
+		//

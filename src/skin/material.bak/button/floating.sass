@@ -1,0 +1,113 @@
+
+// type floating
+.material-button.type-floating
+  min-width: 56px
+  min-height: 56px
+  transition: box-shadow .2s
+  border-radius: 28px
+  padding: 6px
+  box-shadow: 0px 3px 5px -1px rgba(0, 0, 0, 0.2), 0px 6px 10px 0px rgba(0, 0, 0, 0.14), 0px 1px 18px 0px rgba(0, 0, 0, 0.12)
+  .button-label
+    display: none
+  .button-icon
+    padding: 0
+    height: 24px
+    width: 24px
+    margin-left: 0
+    svg
+      fill: $default-color-text
+  .material-ripple
+    opacity: .1
+    background-color: rgba(0, 0, 0, 1)
+
+// states
+.material-button.type-floating
+  background-color: rgba(0, 0, 0, 0.05)
+  &:focus
+    background-color: rgba(0, 0, 0, 0.15)
+    &:hover
+      background-color: rgba(0, 0, 0, 0.15)
+  &:hover
+    background-color: rgba(0, 0, 0, 0.1)
+  &:active
+    box-shadow: 0px 7px 8px -4px rgba(0, 0, 0, 0.2), 0px 12px 17px 2px rgba(0, 0, 0, 0.14), 0px 5px 22px 4px rgba(0, 0, 0, 0.12)
+
+// color
+.material-button.type-floating
+  &.primary-color
+    background-color: $primary-color
+    color: $primary-color-text
+    .button-icon
+      svg
+        fill: $primary-color-text
+    .material-ripple
+      opacity: .3
+      background-color: $default-color-dark
+
+    &:focus
+      background-color: lighten($primary-color, 15%)
+      &:hover
+        background-color: lighten($primary-color, 15%)
+    &:hover
+      background-color: lighten($primary-color, 7%)
+
+  &.secondary-color
+    background-color: $secondary-color
+    color: $secondary-color-text
+    .button-icon
+      svg
+        fill: $secondary-color-text
+    .material-ripple
+      opacity: .3
+      background-color: $default-color-dark
+    &:focus
+      background-color: lighten($secondary-color, 10%)
+      &:hover
+        background-color: lighten($secondary-color, 10%)
+    &:hover
+      background-color: lighten($secondary-color, 5%)
+
+// theme
+.dark-mode .material-button.type-floating,
+.material-button.type-floating.dark-mode
+  .material-ripple
+    opacity: .1
+    background-color: rgba(255, 255, 255, 1)
+  background-color: rgba(255, 255, 255, 0.1)
+  &:focus
+    background-color: rgba(255, 255, 255, 0.2)
+    &:hover
+      background-color: rgba(255, 255, 255, 0.2)
+  &:hover
+    background-color: rgba(255, 255, 255, 0.15)
+  //background-color: rgba(255, 255, 255, 0.95)
+  color: $primary-color-text-dark
+  .button-icon
+    svg
+      fill: $primary-color-text-dark
+  &.primary-color
+    background-color: $primary-color-dark
+    color: $primary-color-text-dark
+    .button-icon
+      svg
+        fill: $primary-color-text-dark
+    &:focus
+      background-color: lighten($primary-color, 15%)
+      &:hover
+        background-color: lighten($primary-color, 15%)
+    &:hover
+      background-color: lighten($primary-color, 7%)
+
+
+  &.secondary-color
+    background-color: $secondary-color-dark
+    color: $secondary-color-text-dark
+    .button-icon
+      svg
+        fill: $secondary-color-text-dark
+    &:focus
+      background-color: lighten($secondary-color, 10%)
+      &:hover
+        background-color: lighten($secondary-color, 10%)
+    &:hover
+      background-color: lighten($secondary-color, 5%)

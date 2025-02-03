@@ -1,0 +1,36 @@
+.tooltip
+  z-index: 100
+  // pointer-events: none
+  display: none
+  position: absolute
+  background-color: rgba(0,0,0,.7)
+  max-width: 200px
+  text-align: center
+  padding: 4px 8px 8px
+  transform: translateY(24px)
+  border-radius: 3px
+  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2)
+  &.show
+    display: block
+    >.label
+      font-size: .8em
+      line-height: 1em
+      color: rgba(255,255,255,.87)
+    >.pointer
+      display: block
+      width: 100%
+      height: 8px
+      position: absolute
+      left: 0
+      right: 0
+      top: -8px
+      background-image: url('/theme/minimal/icon/tooltip.svg')
+      background-position: center
+      background-size: contain
+      background-repeat: no-repeat
+
+
+@media only screen and (max-width: 640px)
+  .tooltip
+    display: none
+   

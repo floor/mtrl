@@ -1,0 +1,65 @@
+$width: 500px
+
+.snackbars
+  position: absolute
+  z-index: 300
+  display: flex
+  width: $width
+  flex-direction: column
+  background-color: rgba(0,0,0,.1)
+  bottom: 160px
+  width: 100%
+  .snackbar
+    overflow: hidden
+    display: flex
+    opacity: 0
+    height: 2px
+    flex-direction: row
+    padding: 0
+    margin: 2px
+    background-color: #322F35
+    border-radius: 4px
+    box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12), 0 3px 1px -2px rgba(0, 0, 0, 0.2)
+    transition: 225ms opacity cubic-bezier(.4,0,.2,1), 225ms height cubic-bezier(.4,0,.2,1), 225ms padding cubic-bezier(.4,0,.2,1)
+    &.show
+      opacity: 1
+      padding: 8px
+      height: initial
+      transition: 225ms opacity cubic-bezier(.4,0,.2,1), 225ms height cubic-bezier(.4,0,.2,1), 225ms padding cubic-bezier(.4,0,.2,1)
+    .text
+      line-height: 2em
+      padding-left: 8px
+      flex: 1
+      color: rgba(255,255,255,.87)
+    button.action
+      flex:none
+      display: none
+      color: green
+      .show
+        display: inline-block
+    .close
+      flex: none
+      display: none
+      width: 24px
+      height: 24px
+      min-width: 24px
+      background-image: url('../../theme/common/icon/dark/close.svg')
+      background-color: transparent
+      &:hover, &:active
+        background-color: transparent
+      &.show
+        display: inline-block
+
+
+@media only screen and (min-width: $desktop_switch)
+  .snackbars
+    left: 50%
+    bottom: 200px
+    margin-left: calc(-$width / 2)
+    width: $width
+    transition: 195ms bottom cubic-bezier(0.4, 0, 0.2, 1)
+    &.up
+      bottom: 500px
+      transition: 225ms bottom cubic-bezier(0.4, 0, 0.2, 1)
+
+      

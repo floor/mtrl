@@ -1,0 +1,195 @@
+.material-list
+  padding: 0
+  overflow: scroll
+
+  .material-item
+    display: flex
+    flex-direction: horizontal
+    flex-wrap: nowrap
+    text-align: left
+    width: 100%
+    display: block
+    font-size: 1rem
+    line-height: 1.2rem
+    appearance: span
+    padding: 14px 16px
+
+    //border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    transition: .1s
+
+    &.is-selected
+      background-color: rgba(0, 0, 0, 0.05)
+      transition: .1s
+
+    .ui-icon
+      flex: none
+      padding: 24px
+
+    .ui-text
+      flex: 1
+      padding: 16px 12px 16px 0
+
+  .material-button
+    display: flex
+    flex-direction: horizontal
+    flex-wrap: nowrap
+    text-align: left
+    width: 100%
+    display: block
+    -ms-appearance: span
+    -moz-appearance: span
+    -webkit-appearance: span
+    appearance: span
+
+    .ui-icon
+      flex: none
+      padding: 24px
+
+    .button-label
+      flex: 1
+      padding: 16px 12px 16px 0
+
+  .ui-separator
+    display: block
+    height: 1px
+    margin: 12px
+    background-color: #DDD
+
+
+
+
+
+
+
+  &.type-image
+    max-width: 1000px
+    display: flex
+    flex-wrap: wrap
+    margin: 0 auto
+    padding: 0
+    
+    .material-image
+      //float: left
+      //background-color: red
+      position: relative
+      display: list-item
+      //height: 125px
+      width: 125px
+      overflow: hidden
+      margin: 2px 2px
+      padding: 0
+      //background-color: red
+      -webkit-column-break-inside: avoid
+      break-inside: avoid-column
+      display: list-item
+      text-align: -webkit-match-parent
+      position: relative
+      box-sizing: border-box
+      //margin-bottom: 16px
+
+      .image-image
+        //height: 125px
+        width: 125px
+        display: block
+
+      .image-info
+        // padding: 16px
+        background-color: rgba(0,0,0,.6)
+        display: block
+        position: absolute
+        bottom: 0
+        left: 0
+        right: 0
+        display: flex
+        flex-direction: row
+        flex-wrap: nowrap
+        padding: 8px 16px
+  
+
+        .image-label
+          line-height: 24px
+          flex: 1 
+          color: rgba(255,255,255,.8)
+          overflow: hidden
+          text-overflow: ellipsis
+          height: 24px
+          // background-color: rgba(0,0,0,.6)
+          // display: block
+          // position: absolute
+          // bottom: 0
+          // left: 0
+          // right: 0
+        .image-icon
+          flex: none
+          svg
+            fill: white
+
+    &.hide-info
+      .image-info
+        display: none !important 
+
+    &.info-below
+      .image-info
+        //display: none !important 
+        color: initial !important 
+        padding: 16px
+        background-color: transparent  !important 
+        //display: block
+        position: initial !important 
+        padding:  8px 0 !important 
+        line-height: 16px
+        // bottom: 0
+        // left: 0
+        // right: 0
+        .image-label
+          line-height: 24px
+          flex: 1 
+          color: rgba(0,0,0,.8)
+        .image-icon
+          flex: none
+          svg
+            fill: rgba(0,0,0,.8)
+
+    &.layout-masonry
+      -webkit-column-count: 3
+      column-count: 3
+      -webkit-column-gap: 16px
+      column-gap: 16px
+      max-width: 1000px
+      display: block
+      flex-wrap: wrap
+      margin: 0 auto
+      padding: 0
+      .material-image
+        //float: left
+        //background-color: red
+        position: relative
+        display: list-item
+        // height: 118px
+        // width: 177px
+        overflow: hidden
+        margin: 0 2px
+        padding: 0
+        background-color: red
+        -webkit-column-break-inside: avoid
+        break-inside: avoid-column
+        display: list-item
+        text-align: -webkit-match-parent
+        position: relative
+        box-sizing: border-box
+        margin-bottom: 16px
+
+        // .image-image
+        //   // height: 118px
+        //   // width: 177px
+        //   display: block
+
+        // .image-label
+        //   color: rgba(255,255,255,.8)
+        //   padding: 16px
+        //   background-color: rgba(0,0,0,.6)
+        //   display: block
+        //   position: absolute
+        //   bottom: 0
+        //   left: 0
+        //   right: 0
