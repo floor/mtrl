@@ -1,0 +1,16 @@
+{
+  "name": "mtrl",
+  "version": "0.0.0",
+  "description": "a minimalist functional ui library for modern apps",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/floor/mtrl.git"
+  },
+  "keywords": ["ui", "functional", "minimalist"],
+  "author": "floor",
+  "license": "GPL-3.0"
+}
