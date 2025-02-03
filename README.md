@@ -1,2 +1,2 @@
 # mtrl
-a minimalist functional ui library for modern web apps
+another minimalist functional ui library for modern web apps
