@@ -1,0 +1,183 @@
+// src/components/checkbox/styles.scss
+@use 'sass:map';
+@use '../../styles/abstract/config' as c;
+
+.#{c.$prefix}-checkbox {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  min-height: 40px;
+  padding: 4px 0;
+  user-select: none;
+
+  &-input {
+    position: absolute;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    cursor: pointer;
+    z-index: 1;
+
+    &:disabled {
+      cursor: not-allowed;
+    }
+
+    &:focus-visible ~ .#{c.$prefix}-checkbox-icon {
+      outline: 2px solid var(--mtrl-sys-color-primary);
+      outline-offset: 2px;
+    }
+  }
+
+  &-icon {
+    position: relative;
+    width: 18px;
+    height: 18px;
+    border-radius: 2px;
+    background-color: var(--mtrl-sys-color-surface-container-highest);
+    border: 2px solid var(--mtrl-sys-color-outline);
+    transition: background-color map.get(c.$motion, 'duration-short4') map.get(c.$motion, 'easing-standard'),
+                border-color map.get(c.$motion, 'duration-short4') map.get(c.$motion, 'easing-standard');
+
+    svg {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 18px;
+      height: 18px;
+      transform: translate(-50%, -50%) scale(0);
+      fill: currentColor;
+      color: var(--mtrl-sys-color-on-primary);
+      transition: transform map.get(c.$motion, 'duration-short4') map.get(c.$motion, 'easing-emphasized');
+    }
+  }
+
+  &-label {
+    @include c.typography('body-large');
+    margin-left: 12px;
+    color: var(--mtrl-sys-color-on-surface);
+  }
+
+  // Label position variants
+  &--label-start {
+    flex-direction: row-reverse;
+
+    .#{c.$prefix}-checkbox-label {
+      margin-left: 0;
+      margin-right: 12px;
+    }
+  }
+
+  &--label-end {
+    flex-direction: row;
+
+    .#{c.$prefix}-checkbox-label {
+      margin-left: 12px;
+      margin-right: 0;
+    }
+  }
+
+  @include c.rtl {
+    &--label-start {
+      .#{c.$prefix}-checkbox-label {
+        margin-left: 12px;
+        margin-right: 0;
+      }
+    }
+
+    &--label-end {
+      .#{c.$prefix}-checkbox-label {
+        margin-left: 0;
+        margin-right: 12px;
+      }
+    }
+  }
+
+  // States
+  .#{c.$prefix}-checkbox-input:checked ~ .#{c.$prefix}-checkbox-icon {
+    background-color: var(--mtrl-sys-color-primary);
+    border-color: var(--mtrl-sys-color-primary);
+
+    svg {
+      transform: translate(-50%, -50%) scale(1);
+    }
+  }
+
+  &--indeterminate {
+    .#{c.$prefix}-checkbox-icon {
+      background-color: var(--mtrl-sys-color-primary);
+      border-color: var(--mtrl-sys-color-primary);
+
+      &::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 10px;
+        height: 2px;
+        background-color: var(--mtrl-sys-color-on-primary);
+      }
+
+      svg {
+        display: none;
+      }
+    }
+  }
+
+  &--disabled {
+    opacity: .5;
+  }
+
+  // Variants
+  &--outlined {
+    .#{c.$prefix}-checkbox-icon {
+      background-color: transparent;
+    }
+
+    .#{c.$prefix}-checkbox-input:checked ~ .#{c.$prefix}-checkbox-icon {
+      background-color: transparent;
+      border-color: var(--mtrl-sys-color-primary);
+
+      svg {
+        color: var(--mtrl-sys-color-primary);
+      }
+    }
+
+    &.#{c.$prefix}-checkbox--indeterminate {
+      .#{c.$prefix}-checkbox-icon::after {
+        background-color: var(--mtrl-sys-color-primary);
+      }
+    }
+  }
+
+  // Hover effects
+  &:not(&--disabled) {
+    .#{c.$prefix}-checkbox-input:hover ~ .#{c.$prefix}-checkbox-icon {
+      &::before {
+        content: '';
+        position: absolute;
+        top: -8px;
+        left: -8px;
+        right: -8px;
+        bottom: -8px;
+        background-color: var(--mtrl-sys-color-on-surface);
+        opacity: 0.08;
+        border-radius: 4px;
+      }
+    }
+  }
+
+  @include c.reduced-motion {
+    .#{c.$prefix}-checkbox-icon,
+    .#{c.$prefix}-checkbox-icon svg {
+      transition: none;
+    }
+  }
+
+  @include c.high-contrast {
+    .#{c.$prefix}-checkbox-icon {
+      border-width: 2px;
+    }
+  }
+}

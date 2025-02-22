@@ -1,0 +1,65 @@
+// src/components/navigation/styles/_rail.scss
+@use 'sass:map';
+@use '../../../styles/abstract/config' as c;
+@use 'base';
+
+.#{c.$prefix}-nav {
+  &--rail {
+    flex-direction: column;
+    width: 80px;
+    height: 100%;
+    padding: 12px 0;
+
+    .#{c.$prefix}-nav-item {
+      flex-direction: column;
+      width: 100%;
+      min-height: 56px;
+      padding: 2px;
+      margin: -2px auto 14px;
+      gap: 0;
+
+      &:hover {
+        .#{c.$prefix}-nav-item-icon {
+          @include c.state-layer(var(--mtrl-sys-color-on-surface), 'hover');
+        }
+      }
+
+      &--active {
+        .#{c.$prefix}-nav-item-icon {
+          background-color: var(--mtrl-sys-color-secondary-container);
+        }
+      }
+
+      &-icon {
+        margin-bottom: 4px;
+        padding: 8px;
+        width: 56px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 16px;
+        @include c.motion-transition(background-color);
+
+        svg {
+          width: 24px;
+          height: 24px;
+          fill: currentColor;
+        }
+      }
+
+      &-label {
+        @include c.typography('label-small');
+        text-align: center;
+        color: inherit;
+        font-size: 12px;
+        line-height: 16px;
+      }
+
+      &-badge {
+        top: 4px;
+        right: 16px;
+      }
+    }
+  }
+}

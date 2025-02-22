@@ -1,0 +1,78 @@
+// src/styles/main.scss
+
+// Abstract
+@import 'abstract/variables';
+@import 'abstract/functions';
+@import 'abstract/mixins';
+@import 'abstract/theme';
+
+// Components
+@import '../components/button/styles';
+
+// Initialize theme
+:root {
+  @each $key, $value in $mtrl-sys-state {
+    --mtrl-sys-state-#{$key}: #{$value};
+  }
+  
+  @each $key, $value in $mtrl-sys-motion {
+    --mtrl-sys-motion-#{$key}: #{$value};
+  }
+
+  @each $key, $value in $mtrl-sys-shape {
+    --mtrl-sys-shape-#{$key}: #{$value};
+  }
+  
+//   // Default light theme colors
+//   --mtrl-sys-color-primary: #6750A4;
+//   --mtrl-sys-color-primary-rgb: 103, 80, 164;
+//   --mtrl-sys-color-on-primary: #FFFFFF;
+//   --mtrl-sys-color-primary-container: #EADDFF;
+//   --mtrl-sys-color-on-primary-container: #21005D;
+  
+//   --mtrl-sys-color-secondary: #625B71;
+//   --mtrl-sys-color-on-secondary: #FFFFFF;
+//   --mtrl-sys-color-secondary-container: #E8DEF8;
+//   --mtrl-sys-color-on-secondary-container: #1D192B;
+  
+//   --mtrl-sys-color-surface: #FFFBFE;
+//   --mtrl-sys-color-on-surface: #1C1B1F;
+//   --mtrl-sys-color-surface-container: #F3EDF7;
+//   --mtrl-sys-color-on-surface-rgb: 28, 27, 31;
+  
+//   --mtrl-sys-color-outline: #79747E;
+// }
+
+// // Dark theme
+// [data-theme="dark"] {
+//   --mtrl-sys-color-primary: #D0BCFF;
+//   --mtrl-sys-color-primary-rgb: 208, 188, 255;
+//   --mtrl-sys-color-on-primary: #381E72;
+//   --mtrl-sys-color-primary-container: #4F378B;
+//   --mtrl-sys-color-on-primary-container: #EADDFF;
+  
+//   --mtrl-sys-color-secondary: #CCC2DC;
+//   --mtrl-sys-color-on-secondary: #332D41;
+//   --mtrl-sys-color-secondary-container: #4A4458;
+//   --mtrl-sys-color-on-secondary-container: #E8DEF8;
+  
+//   --mtrl-sys-color-surface: #1C1B1F;
+//   --mtrl-sys-color-on-surface: #E6E1E5;
+//   --mtrl-sys-color-surface-container: #211F26;
+//   --mtrl-sys-color-on-surface-rgb: 230, 225, 229;
+  
+//   --mtrl-sys-color-outline: #938F99;
+// }
+
+// Base styles
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--mtrl-sys-color-surface);
+  color: var(--mtrl-sys-color-on-surface);
+  font-family: var(--mtrl-sys-typescale-body-medium-font-family-name, 'Roboto'), sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  
+  @include motion-transition(background-color, color);
+}

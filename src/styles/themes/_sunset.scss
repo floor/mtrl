@@ -1,0 +1,55 @@
+// src/styles/themes/_sunset.scss
+@use '../abstract/base' as *;
+@use 'base-theme' as *;
+
+@include create-theme('sunset') {
+  // Key colors generated from seed color #D35400
+  --#{$prefix}-sys-color-primary: #B34700;
+  --#{$prefix}-sys-color-on-primary: #FFFFFF;
+  --#{$prefix}-sys-color-primary-container: #FFDBC8;
+  --#{$prefix}-sys-color-on-primary-container: #3A1500;
+  
+  --#{$prefix}-sys-color-secondary: #775648;
+  --#{$prefix}-sys-color-on-secondary: #FFFFFF;
+  --#{$prefix}-sys-color-secondary-container: #FFDBD0;
+  --#{$prefix}-sys-color-on-secondary-container: #2C160C;
+  
+  --#{$prefix}-sys-color-tertiary: #705C2E;
+  --#{$prefix}-sys-color-on-tertiary: #FFFFFF;
+  --#{$prefix}-sys-color-tertiary-container: #FCDFAA;
+  --#{$prefix}-sys-color-on-tertiary-container: #261A00;
+
+  // Neutral colors
+  --#{$prefix}-sys-color-surface: #FFFBFF;
+  --#{$prefix}-sys-color-surface-dim: #E5E1E6;
+  --#{$prefix}-sys-color-surface-bright: #FFFBFF;
+  --#{$prefix}-sys-color-surface-container-lowest: #FFFFFF;
+  --#{$prefix}-sys-color-surface-container-low: #FBF1F2;
+  --#{$prefix}-sys-color-surface-container: #F3EBE7;
+  --#{$prefix}-sys-color-surface-container-high: #EDE5E1;
+  --#{$prefix}-sys-color-surface-container-highest: #E7DFDB;
+  
+  --#{$prefix}-sys-color-on-surface: #201A18;
+  --#{$prefix}-sys-color-on-surface-variant: #53433E;
+  
+  --#{$prefix}-sys-color-outline: #85736D;
+  --#{$prefix}-sys-color-outline-variant: #D8C2BB;
+
+   &[data-theme-mode="dark"] {
+    --#{$prefix}-sys-color-primary: #FFB686;
+    --#{$prefix}-sys-color-on-primary: #5C2800;
+    --#{$prefix}-sys-color-primary-container: #833B00;
+    --#{$prefix}-sys-color-on-primary-container: #FFE0CC;
+    
+    --#{$prefix}-sys-color-secondary: #FFB98C;
+    --#{$prefix}-sys-color-on-secondary: #492900;
+    --#{$prefix}-sys-color-secondary-container: #663D00;
+    --#{$prefix}-sys-color-on-secondary-container: #FFE5D0;
+    
+    --#{$prefix}-sys-color-surface: #201210;
+    --#{$prefix}-sys-color-on-surface: #FFD9C7;
+    --#{$prefix}-sys-color-surface-container: #2B1714;
+    
+    --#{$prefix}-sys-color-outline: #B89784;
+  }
+}

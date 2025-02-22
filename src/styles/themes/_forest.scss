@@ -1,0 +1,71 @@
+// src/styles/themes/_forest.scss
+@use '../abstract/base' as *;
+@use 'base-theme' as *;
+
+@include create-theme('forest') {
+  // Key colors generated from seed color #2E7D32
+  --#{$prefix}-sys-color-primary: #146C2E;
+  --#{$prefix}-sys-color-on-primary: #FFFFFF;
+  --#{$prefix}-sys-color-primary-container: #9FF6A5;
+  --#{$prefix}-sys-color-on-primary-container: #002107;
+  
+  --#{$prefix}-sys-color-secondary: #516351;
+  --#{$prefix}-sys-color-on-secondary: #FFFFFF;
+  --#{$prefix}-sys-color-secondary-container: #D4E8D2;
+  --#{$prefix}-sys-color-on-secondary-container: #0F1F0F;
+  
+  --#{$prefix}-sys-color-tertiary: #38656A;
+  --#{$prefix}-sys-color-on-tertiary: #FFFFFF;
+  --#{$prefix}-sys-color-tertiary-container: #BCEBF0;
+  --#{$prefix}-sys-color-on-tertiary-container: #002023;
+
+  // Neutral colors
+  --#{$prefix}-sys-color-surface: #FBFDF7;
+  --#{$prefix}-sys-color-surface-dim: #DBE5D8;
+  --#{$prefix}-sys-color-surface-bright: #FBFDF7;
+  --#{$prefix}-sys-color-surface-container-lowest: #FFFFFF;
+  --#{$prefix}-sys-color-surface-container-low: #F5F9F2;
+  --#{$prefix}-sys-color-surface-container: #EFF4EC;
+  --#{$prefix}-sys-color-surface-container-high: #E9EEE6;
+  --#{$prefix}-sys-color-surface-container-highest: #E3E8E0;
+  
+  --#{$prefix}-sys-color-on-surface: #191C19;
+  --#{$prefix}-sys-color-on-surface-variant: #414942;
+  
+  --#{$prefix}-sys-color-outline: #717971;
+  --#{$prefix}-sys-color-outline-variant: #C1C9C1;
+
+  &[data-theme-mode="dark"] {
+    // Key colors
+    --#{$prefix}-sys-color-primary: #83D989;
+    --#{$prefix}-sys-color-on-primary: #003911;
+    --#{$prefix}-sys-color-primary-container: #00531B;
+    --#{$prefix}-sys-color-on-primary-container: #9FF6A5;
+    
+    --#{$prefix}-sys-color-secondary: #B8CCB7;
+    --#{$prefix}-sys-color-on-secondary: #243424;
+    --#{$prefix}-sys-color-secondary-container: #3A4B3A;
+    --#{$prefix}-sys-color-on-secondary-container: #D4E8D2;
+    
+    --#{$prefix}-sys-color-tertiary: #A0CFD4;
+    --#{$prefix}-sys-color-on-tertiary: #003739;
+    --#{$prefix}-sys-color-tertiary-container: #1E4D51;
+    --#{$prefix}-sys-color-on-tertiary-container: #BCEBF0;
+
+    // Neutral colors
+    --#{$prefix}-sys-color-surface: #191C19;
+    --#{$prefix}-sys-color-surface-dim: #101410;
+    --#{$prefix}-sys-color-surface-bright: #373B37;
+    --#{$prefix}-sys-color-surface-container-lowest: #0C100C;
+    --#{$prefix}-sys-color-surface-container-low: #191C19;
+    --#{$prefix}-sys-color-surface-container: #1D201D;
+    --#{$prefix}-sys-color-surface-container-high: #272B27;
+    --#{$prefix}-sys-color-surface-container-highest: #323532;
+    
+    --#{$prefix}-sys-color-on-surface: #E1E3E1;
+    --#{$prefix}-sys-color-on-surface-variant: #C1C9C1;
+    
+    --#{$prefix}-sys-color-outline: #8B938B;
+    --#{$prefix}-sys-color-outline-variant: #414942;
+  }
+}

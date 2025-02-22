@@ -1,0 +1,124 @@
+// src/styles/abstract/_functions.scss
+@use 'sass:map';
+@use 'sass:math';
+@use 'sass:color';
+@use 'variables' as v;
+
+// Get nested map value
+@function map-deep-get($map, $keys...) {
+  @each $key in $keys {
+    $map: map.get($map, $key);
+  }
+  @return $map;
+}
+
+// Get value from design tokens
+@function get-token($category, $token) {
+  $token-map: null;
+  
+  @if $category == 'state' {
+    $token-map: v.$state;
+  } @else if $category == 'motion' {
+    $token-map: v.$motion;
+  } @else if $category == 'elevation' {
+    $token-map: v.$elevation;
+  } @else if $category == 'typescale' {
+    $token-map: v.$typescale;
+  } @else if $category == 'shape' {
+    $token-map: v.$shape;
+  } @else if $category == 'z-index' {
+    $token-map: v.$z-index;
+  }
+  
+  @if not $token-map {
+    @error 'Unknown token category: #{$category}';
+  }
+  
+  $value: map.get($token-map, $token);
+  
+  @if not $value {
+    @error 'Unknown token: #{$token} in category #{$category}';
+  }
+  
+  @return $value;
+}
+
+// State Layer
+@function get-state-opacity($state) {
+  @return get-token('state', '#{$state}-state-layer-opacity');
+}
+
+// Motion
+@function get-motion-duration($duration) {
+  @return get-token('motion', 'duration-#{$duration}');
+}
+
+@function get-motion-easing($easing) {
+  @return get-token('motion', 'easing-#{$easing}');
+}
+
+// Elevation
+@function get-elevation($level) {
+  @return get-token('elevation', 'level-#{$level}');
+}
+
+// Typography
+@function get-typography($scale) {
+  @return get-token('typescale', $scale);
+}
+
+// Shape
+@function get-shape($size) {
+  @return get-token('shape', $size);
+}
+
+// Z-index
+@function get-z-index($layer) {
+  @return get-token('z-index', $layer);
+}
+
+// Breakpoints
+@function get-breakpoint($size) {
+  @return map.get(v.$breakpoints, $size);
+}
+
+// Color utilities
+@function get-luminance($color) {
+  $red: color.red($color);
+  $green: color.green($color);
+  $blue: color.blue($color);
+  
+  $luminance: ($red * 0.299 + $green * 0.587 + $blue * 0.114) / 255;
+  @return $luminance;
+}
+
+@function is-light-color($color) {
+  @return get-luminance($color) > 0.6;
+}
+
+@function get-contrast-color($color, $light: #fff, $dark: #000) {
+  @return if(is-light-color($color), $dark, $light);
+}
+
+// Unit conversion utilities
+@function strip-unit($number) {
+  @if type-of($number) == 'number' and not unitless($number) {
+    @return math.div($number, ($number * 0 + 1));
+  }
+  @return $number;
+}
+
+@function to-rem($size, $base-size: 16px) {
+  $rem-size: math.div(strip-unit($size), strip-unit($base-size));
+  @return #{$rem-size}rem;
+}
+
+@function to-em($size, $base-size: 16px) {
+  $em-size: math.div(strip-unit($size), strip-unit($base-size));
+  @return #{$em-size}em;
+}
+
+// Value constraint utility
+@function constrain($min, $value, $max) {
+  @return max($min, min($value, $max));
+}

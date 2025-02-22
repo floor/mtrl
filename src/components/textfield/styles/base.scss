@@ -1,0 +1,107 @@
+// src/components/textfield/styles/_base.scss
+@use 'sass:map';
+@use '../../../styles/abstract/config' as c;
+
+.#{c.$prefix}-textfield {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  min-width: 210px;
+  
+  &--small {
+    .#{c.$prefix}-textfield-input {
+      height: 48px;
+    }
+  }
+
+  &--large {
+    .#{c.$prefix}-textfield-input {
+      height: 64px;
+    }
+  }
+  
+  &-label {
+    @include c.typography('body-large');
+    user-select: none;
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    transform-origin: left top;
+    pointer-events: none;
+    border-radius: 2px;
+    color: var(--mtrl-sys-color-on-surface-variant);
+    transition: transform map.get(c.$motion, 'duration-short4') map.get(c.$motion, 'easing-emphasized'),
+                color map.get(c.$motion, 'duration-short2') map.get(c.$motion, 'easing-standard');
+  }
+  
+  &-input {
+    @include c.typography('body-large');
+    @include c.shape('extra-small');
+    padding: 13px 16px;
+    width: 100%;
+    color: var(--mtrl-sys-color-on-surface);
+    border: 0;
+    appearance: none;
+    outline: none;
+    &::placeholder {
+      color: transparent;
+    }
+
+    // Autofill styles
+    &:-webkit-autofill {
+      // font: inherit;
+      -webkit-text-fill-color: var(--mtrl-sys-color-on-surface);
+      transition: background-color 5000s ease-in-out 0s; // Long transition to keep the background
+      
+      & ~ .#{c.$prefix}-textfield-label {
+        transform: translateY(-95%) scale(0.75);
+        background-color: var(--mtrl-sys-color-surface);
+      }
+    }
+
+    // Firefox autofill
+    &:autofill {
+      color: var(--mtrl-sys-color-on-surface);
+      
+      & ~ .#{c.$prefix}-textfield-label {
+        transform: translateY(-95%) scale(0.75);
+        background-color: var(--mtrl-sys-color-surface);
+      }
+    }
+  }
+
+  &--error {
+    border-color: var(--mtrl-sys-color-error);
+    .#{c.$prefix}-textfield-label {
+      color: var(--mtrl-sys-color-error);
+    }
+  }
+  
+  &-input:disabled {
+    opacity: 0.38;
+    border-color: var(--mtrl-sys-color-on-surface);
+    background-color: rgba(var(--mtrl-sys-color-on-surface-rgb), 0.04);
+    pointer-events: none;
+    
+    & ~ .#{c.$prefix}-textfield-label {
+      color: var(--mtrl-sys-color-on-surface);
+      opacity: 0.38;
+    }
+  }
+  
+  &-helper {
+    @include c.typography('body-small');
+    margin-top: 4px;
+    color: var(--mtrl-sys-color-on-surface-variant);
+    
+    &--error {
+      color: var(--mtrl-sys-color-error);
+    }
+  }
+  
+  &-required {
+    color: var(--mtrl-sys-color-error);
+    margin-left: 4px;
+  }
+}

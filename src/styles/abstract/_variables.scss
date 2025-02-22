@@ -1,0 +1,158 @@
+// src/styles/abstract/_variables.scss
+@use 'sass:map';
+
+// Core configuration
+$prefix: 'mtrl' !default;
+
+// Design tokens
+$state: (
+  'hover-state-layer-opacity': 0.08,
+  'pressed-state-layer-opacity': 0.12,
+  'focus-state-layer-opacity': 0.12,
+  'dragged-state-layer-opacity': 0.16
+) !default;
+
+$motion: (
+  'duration-short1': 100ms,
+  'duration-short2': 200ms,
+  'duration-short3': 250ms,
+  'duration-short4': 300ms,
+  'duration-medium1': 400ms,
+  'duration-medium2': 500ms,
+  'duration-long1': 600ms,
+  'duration-long2': 700ms,
+  'easing-standard': cubic-bezier(0.2, 0.0, 0.0, 1.0),
+  'easing-standard-accelerate': cubic-bezier(0.3, 0.0, 1.0, 1.0),
+  'easing-standard-decelerate': cubic-bezier(0.0, 0.0, 0.2, 1.0),
+  'easing-emphasized': cubic-bezier(0.2, 0.0, 0.0, 1.0),
+  'easing-emphasized-accelerate': cubic-bezier(0.3, 0.0, 0.8, 0.15),
+  'easing-emphasized-decelerate': cubic-bezier(0.05, 0.7, 0.1, 1.0)
+) !default;
+
+$elevation: (
+  'level-0': none,
+  'level-1': (0px 1px 2px rgba(0, 0, 0, 0.3), 0px 1px 3px 1px rgba(0, 0, 0, 0.15)),
+  'level-2': (0px 1px 2px rgba(0, 0, 0, 0.3), 0px 2px 6px 2px rgba(0, 0, 0, 0.15)),
+  'level-3': (0px 1px 3px rgba(0, 0, 0, 0.3), 0px 4px 8px 3px rgba(0, 0, 0, 0.15)),
+  'level-4': (0px 2px 3px rgba(0, 0, 0, 0.3), 0px 6px 10px 4px rgba(0, 0, 0, 0.15)),
+  'level-5': (0px 4px 4px rgba(0, 0, 0, 0.3), 0px 8px 12px 6px rgba(0, 0, 0, 0.15))
+) !default;
+
+$typescale: (
+  'display-large': (
+    'font-family': ('Roboto', sans-serif),
+    'font-size': 57px,
+    'line-height': 64px,
+    'letter-spacing': -0.25px,
+    'font-weight': 400
+  ),
+  'display-medium': (
+    'font-family': ('Roboto', sans-serif),
+    'font-size': 45px,
+    'line-height': 52px,
+    'letter-spacing': 0,
+    'font-weight': 400
+  ),
+  'display-small': (
+    'font-family': ('Roboto', sans-serif),
+    'font-size': 36px,
+    'line-height': 44px,
+    'letter-spacing': 0,
+    'font-weight': 400
+  ),
+  'headline-large': (
+    'font-family': ('Roboto', sans-serif),
+    'font-size': 32px,
+    'line-height': 40px,
+    'letter-spacing': 0,
+    'font-weight': 400
+  ),
+  'headline-medium': (
+    'font-family': ('Roboto', sans-serif),
+    'font-size': 28px,
+    'line-height': 36px,
+    'letter-spacing': 0,
+    'font-weight': 400
+  ),
+  'headline-small': (
+    'font-family': ('Roboto', sans-serif),
+    'font-size': 24px,
+    'line-height': 32px,
+    'letter-spacing': 0,
+    'font-weight': 400
+  ),
+  'body-large': (
+    'font-family': ('Roboto', sans-serif),
+    'font-size': 16px,
+    'line-height': 24px,
+    'letter-spacing': 0.5px,
+    'font-weight': 400
+  ),
+  'body-medium': (
+    'font-family': ('Roboto', sans-serif),
+    'font-size': 14px,
+    'line-height': 20px,
+    'letter-spacing': 0.25px,
+    'font-weight': 400
+  ),
+  'body-small': (
+    'font-family': ('Roboto', sans-serif),
+    'font-size': 12px,
+    'line-height': 16px,
+    'letter-spacing': 0.4px,
+    'font-weight': 400
+  ),
+  'label-large': (
+    'font-family': ('Roboto', sans-serif),
+    'font-size': 14px,
+    'line-height': 20px,
+    'letter-spacing': 0.1px,
+    'font-weight': 500
+  ),
+  'label-medium': (
+    'font-family': ('Roboto', sans-serif),
+    'font-size': 12px,
+    'line-height': 16px,
+    'letter-spacing': 0.5px,
+    'font-weight': 500
+  ),
+  'label-small': (
+    'font-family': ('Roboto', sans-serif),
+    'font-size': 11px,
+    'line-height': 16px,
+    'letter-spacing': 0.5px,
+    'font-weight': 500
+  )
+) !default;
+
+$shape: (
+  'none': 0,
+  'extra-small': 4px,
+  'small': 8px,
+  'medium': 12px,
+  'large': 16px,
+  'extra-large': 28px,
+  'full': 9999px,
+  'pill': 100px
+) !default;
+
+$breakpoints: (
+  'xs': 0,
+  'sm': 600px,
+  'md': 960px,
+  'lg': 1280px,
+  'xl': 1920px
+) !default;
+
+$z-index: (
+  'modal': 1000,
+  'popover': 900,
+  'drawer': 800,
+  'dialog': 700,
+  'dropdown': 600,
+  'tooltip': 500,
+  'sticky': 100,
+  'fixed': 50,
+  'default': 1,
+  'below': -1
+) !default;
