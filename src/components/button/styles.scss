@@ -1,0 +1,231 @@
+// src/components/button/styles.scss
+@use 'sass:map';
+@use '../../styles/abstract/config' as c;
+
+.#{c.$prefix}-button {
+  // Base styles
+  @include c.typography('label-large');
+  @include c.flex-center;
+  @include c.shape('full');
+  @include c.motion-transition(
+    background-color,
+    box-shadow,
+    color,
+    border-color
+  );
+  
+  min-width: 40px;
+  height: 40px;
+  padding: 0 24px;
+  border: none;
+  cursor: pointer;
+  user-select: none;
+  
+  // Label styles
+  &-label {
+    @include c.truncate;
+  }
+  
+  // Icon styles
+  &-icon {
+    @include c.flex-center;
+    margin-right: 8px;
+    font-size: 18px;
+    background-color: transparent;
+    @include c.rtl {
+      margin-right: 0;
+      margin-left: 8px;
+    }
+  }
+
+  // Variants
+  &--filled {
+    background-color: var(--mtrl-sys-color-primary);
+    color: var(--mtrl-sys-color-on-primary);
+    @include c.elevation(0);
+    
+    &:hover {
+      @include c.elevation(1);
+      @include c.state-layer(var(--mtrl-sys-color-on-primary), 'hover');
+    }
+    
+    &:focus {
+      @include c.state-layer(var(--mtrl-sys-color-on-primary), 'focus');
+    }
+    
+    &:active {
+      @include c.state-layer(var(--mtrl-sys-color-on-primary), 'pressed');
+    }
+  }
+  
+  &--tonal {
+    background-color: var(--mtrl-sys-color-secondary-container);
+    color: var(--mtrl-sys-color-on-secondary-container);
+    
+    &:hover {
+      @include c.state-layer(var(--mtrl-sys-color-on-secondary-container), 'hover');
+    }
+    
+    &:focus {
+      @include c.state-layer(var(--mtrl-sys-color-on-secondary-container), 'focus');
+    }
+    
+    &:active {
+      @include c.state-layer(var(--mtrl-sys-color-on-secondary-container), 'pressed');
+    }
+  }
+  
+  &--outlined {
+    border: 1px solid var(--mtrl-sys-color-outline);
+    color: var(--mtrl-sys-color-primary);
+    
+    &:hover {
+      @include c.state-layer(var(--mtrl-sys-color-primary), 'hover');
+    }
+    
+    &:focus {
+      @include c.state-layer(var(--mtrl-sys-color-primary), 'focus');
+      border-color: var(--mtrl-sys-color-primary);
+    }
+    
+    &:active {
+      @include c.state-layer(var(--mtrl-sys-color-primary), 'pressed');
+    }
+  }
+  
+  // Variants (adding elevated and text)
+  &--elevated {
+    background-color: var(--mtrl-sys-color-surface-container-low);
+    color: var(--mtrl-sys-color-primary);
+    // Reduced from elevation(1) to a more subtle custom shadow
+    box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.2),
+                0px 1px 3px 1px rgba(0, 0, 0, 0.10);
+    
+    &:hover {
+      // Slightly increased elevation on hover, but still subtle
+      box-shadow: 0px 1px 2px 1px rgba(0, 0, 0, 0.2),
+                  0px 2px 6px 2px rgba(0, 0, 0, 0.10);
+      @include c.state-layer(var(--mtrl-sys-color-primary), 'hover');
+    }
+    
+    &:focus {
+      @include c.state-layer(var(--mtrl-sys-color-primary), 'focus');
+    }
+    
+    &:active {
+      // Return to default elevation on press
+      box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.2),
+                  0px 1px 3px 1px rgba(0, 0, 0, 0.10);
+      @include c.state-layer(var(--mtrl-sys-color-primary), 'pressed');
+    }
+    
+    &.#{c.$prefix}-button--disabled {
+      box-shadow: none;
+      background-color: rgba(var(--mtrl-sys-color-on-surface-rgb), 0.12);
+      color: rgba(var(--mtrl-sys-color-on-surface-rgb), 0.38);
+    }
+  }
+
+  &--text {
+    background-color: transparent;
+    color: var(--mtrl-sys-color-primary);
+    padding: 0 12px;
+    min-width: 48px;
+    
+    &:hover {
+      @include c.state-layer(var(--mtrl-sys-color-primary), 'hover');
+    }
+    
+    &:focus {
+      @include c.state-layer(var(--mtrl-sys-color-primary), 'focus');
+    }
+    
+    &:active {
+      @include c.state-layer(var(--mtrl-sys-color-primary), 'pressed');
+    }
+    
+    // Adjust spacing when icon is present
+    .#{c.$prefix}-button-icon {
+      margin-right: 8px;
+      
+      @include c.rtl {
+        margin-right: 0;
+        margin-left: 8px;
+      }
+    }
+    
+    &.#{c.$prefix}-button--disabled {
+      color: rgba(var(--mtrl-sys-color-on-surface-rgb), 0.38);
+    }
+  }
+
+  &--icon {
+    background-color: transparent;
+  }
+
+  &--circular {
+    border-radius: 50%;
+    padding: 8px;
+    min-width: unset;
+    width: 40px;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    .#{c.$prefix}-button-icon {
+     margin: 0;
+    }
+
+    &.#{c.$prefix}-button--small {
+     width: 32px;
+     height: 32px;
+    }
+
+    &.#{c.$prefix}-button--large {
+     width: 48px;
+     height: 48px;
+    }
+  }
+
+  // States
+  &--disabled {
+    opacity: 0.38;
+    pointer-events: none;
+    cursor: default;
+    
+    &.#{c.$prefix}-button--outlined {
+      border-color: rgba(var(--mtrl-sys-color-on-surface-rgb), 0.12);
+    }
+  }
+  
+  // Sizes
+  &--small {
+    height: 32px;
+    padding: 0 16px;
+    
+    .#{c.$prefix}-button-icon {
+      font-size: 16px;
+    }
+  }
+  
+  &--large {
+    height: 48px;
+    padding: 0 32px;
+    
+    .#{c.$prefix}-button-icon {
+      font-size: 20px;
+    }
+  }
+  
+  // Accessibility
+  @include c.focus-ring();
+  
+  @include c.reduced-motion {
+    transition: none;
+  }
+  
+  @include c.high-contrast {
+    border: 1px solid currentColor;
+  }
+}

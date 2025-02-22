@@ -1,0 +1,17 @@
+{
+  "name": "mtrl",
+  "version": "0.0.0",
+  "description": "A functional JavaScript component library with composable architecture based on Material Design 3",
+  "keywords": ["component", "library", "ui", "user interface", "functional", "composable"],
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/floor/mtrl.git"
+  },
+  
+  "author": "floor",
+  "license": "GPL-3.0"
+}

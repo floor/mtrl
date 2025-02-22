@@ -1,0 +1,28 @@
+// src/styles/abstract/_config.scss
+@use 'variables' as *;
+@forward 'variables';
+@forward 'functions';
+@forward 'mixins' show 
+  typography,
+  state-layer,
+  elevation,
+  motion-transition,
+  motion-exit,
+  motion-enter,
+  focus-ring,
+  interactive-states,
+  flex-center,
+  center-content,
+  container,
+  truncate,
+  shape,
+  breakpoint-up,
+  breakpoint-down,
+  breakpoint-between,
+  visually-hidden,
+  reduced-motion,
+  high-contrast,
+  rtl,
+  touch-target,
+  custom-scrollbar,
+  print;

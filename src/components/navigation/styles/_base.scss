@@ -1,0 +1,129 @@
+// src/components/navigation/styles/_base.scss
+@use 'sass:map';
+@use '../../../styles/abstract/config' as c;
+
+.#{c.$prefix}-nav {
+  display: flex;
+  position: relative;
+  background-color: var(--mtrl-sys-color-surface-container);
+
+  // Base nav item styles
+  &-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    border: none;
+    background: none;
+    cursor: pointer;
+    padding: 12px;
+    gap: 12px;
+    color: var(--mtrl-sys-color-on-surface-variant);
+    @include c.motion-transition(all);
+
+    &-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      color: inherit;
+      border-radius: 50%;
+      padding: 8px;
+
+      svg {
+        width: 24px;
+        height: 24px;
+        fill: currentColor;
+      }
+    }
+
+    &--active {
+      color: var(--mtrl-sys-color-primary);
+    }
+
+    &-label {
+      @include c.typography('label-large');
+      @include c.motion-transition(opacity);
+    }
+
+    &-badge {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      min-width: 16px;
+      height: 16px;
+      padding: 0 4px;
+      border-radius: 8px;
+      background-color: var(--mtrl-sys-color-error);
+      color: var(--mtrl-sys-color-on-error);
+      @include c.typography('label-small');
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  }
+
+  // Navigation positions
+  &--left {
+    left: 0;
+  }
+
+  &--right {
+    right: 0;
+  }
+
+  &--top {
+    top: 0;
+  }
+
+  &--bottom {
+    bottom: 0;
+  }
+
+  // States
+  &--disabled {
+    opacity: 0.38;
+    pointer-events: none;
+  }
+
+  // RTL Support
+  @include c.rtl {
+    &--left {
+      right: 0;
+      left: auto;
+    }
+
+    &--right {
+      left: 0;
+      right: auto;
+    }
+
+    .#{c.$prefix}-nav-item {
+      &-badge {
+        right: auto;
+        left: 8px;
+      }
+    }
+  }
+
+  // Motion
+  @include c.reduced-motion {
+    &-item,
+    &-item-label {
+      transition: none;
+    }
+  }
+
+  // High contrast
+  @include c.high-contrast {
+    border: 1px solid currentColor;
+
+    &-item {
+      &--active {
+        outline: 2px solid currentColor;
+        outline-offset: -2px;
+      }
+    }
+  }
+}

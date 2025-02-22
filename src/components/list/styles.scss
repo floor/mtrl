@@ -1,0 +1,19 @@
+// src/components/list/styles.scss
+
+// Import core configuration and utilities
+@use '../../styles/abstract/config' as c;
+@use '../../styles/abstract/mixins' as m;
+@use './styles/variables' as v;
+@use './styles/list';
+@use './styles/list-item';
+
+// Component-specific mixins
+@mixin list-item-hover {
+  @include c.state-layer(v.$list-hover-state-layer-color, 'hover');
+}
+
+@mixin list-section-title {
+  @include c.typography('label-large');
+  color: v.$list-section-title-color;
+  padding: v.$list-section-padding v.$list-item-padding 8px;
+}

@@ -1,0 +1,261 @@
+// src/styles/abstract/_mixins.scss
+@use 'sass:map';
+@use 'sass:list';
+@use 'variables' as v;
+@use 'functions' as f;
+
+// Typography
+@mixin typography($scale) {
+  $styles: f.get-typography($scale);
+  font-family: map.get($styles, 'font-family');
+  font-size: map.get($styles, 'font-size');
+  line-height: map.get($styles, 'line-height');
+  letter-spacing: map.get($styles, 'letter-spacing');
+  font-weight: map.get($styles, 'font-weight');
+}
+
+// State Layers
+@mixin state-layer($color, $state: 'hover', $selector: '&::before') {
+  position: relative;
+  
+  #{$selector} {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-color: $color;
+    opacity: f.get-state-opacity($state);
+    pointer-events: none;
+    border-radius: inherit;
+  }
+}
+
+// Elevation
+@mixin elevation($level) {
+  box-shadow: f.get-elevation($level);
+}
+
+// Motion
+@mixin motion-transition($properties...) {
+  $transitions: ();
+  @each $prop in $properties {
+    $transitions: list.append(
+      $transitions,
+      $prop f.get-motion-duration('short2') f.get-motion-easing('standard'),
+      comma
+    );
+  }
+  transition: $transitions;
+}
+
+@mixin motion-exit($properties...) {
+  $transitions: ();
+  @each $prop in $properties {
+    $transitions: list.append(
+      $transitions,
+      $prop f.get-motion-duration('short4') f.get-motion-easing('standard-accelerate'),
+      comma
+    );
+  }
+  transition: $transitions;
+}
+
+@mixin motion-enter($properties...) {
+  $transitions: ();
+  @each $prop in $properties {
+    $transitions: list.append(
+      $transitions,
+      $prop f.get-motion-duration('short4') f.get-motion-easing('standard-decelerate'),
+      comma
+    );
+  }
+  transition: $transitions;
+}
+
+// Focus Ring
+@mixin focus-ring($color: var(--#{v.$prefix}-sys-color-primary), $width: 2px, $offset: 2px) {
+  &:focus-visible {
+    outline: $width solid $color;
+    outline-offset: $offset;
+    @include elevation(1);
+  }
+}
+
+// Interactive States
+@mixin interactive-states($config: ()) {
+  $default-config: (
+    base-color: var(--#{v.$prefix}-sys-color-primary),
+    hover-state: true,
+    focus-state: true,
+    active-state: true,
+    disabled-state: true,
+    disabled-opacity: 0.38
+  );
+  
+  $config: map.merge($default-config, $config);
+  
+  @if map.get($config, hover-state) {
+    &:hover {
+      @include state-layer(map.get($config, base-color), 'hover');
+    }
+  }
+  
+  @if map.get($config, focus-state) {
+    &:focus {
+      @include state-layer(map.get($config, base-color), 'focus');
+    }
+  }
+  
+  @if map.get($config, active-state) {
+    &:active {
+      @include state-layer(map.get($config, base-color), 'pressed');
+    }
+  }
+  
+  @if map.get($config, disabled-state) {
+    &:disabled {
+      opacity: map.get($config, disabled-opacity);
+      pointer-events: none;
+    }
+  }
+}
+
+// Layout
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin center-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+@mixin container($max-width: 1200px, $padding: 24px) {
+  width: 100%;
+  max-width: $max-width;
+  margin-inline: auto;
+  padding-inline: $padding;
+}
+
+// Text
+@mixin truncate($lines: 1) {
+  @if $lines == 1 {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  } @else {
+    display: -webkit-box;
+    -webkit-line-clamp: $lines;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+
+// Shape
+@mixin shape($size) {
+  border-radius: f.get-shape($size);
+}
+
+// Media Queries
+@mixin breakpoint-up($size) {
+  @media (min-width: f.get-breakpoint($size)) {
+    @content;
+  }
+}
+
+@mixin breakpoint-down($size) {
+  @media (max-width: f.get-breakpoint($size) - 1) {
+    @content;
+  }
+}
+
+@mixin breakpoint-between($min, $max) {
+  @media (min-width: f.get-breakpoint($min)) and (max-width: f.get-breakpoint($max) - 1) {
+    @content;
+  }
+}
+
+// A11y
+@mixin visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@mixin reduced-motion {
+  @media (prefers-reduced-motion: reduce) {
+    @content;
+  }
+}
+
+@mixin high-contrast {
+  @media (forced-colors: active) {
+    @content;
+  }
+}
+
+// RTL Support
+@mixin rtl {
+  [dir='rtl'] & {
+    @content;
+  }
+}
+
+// Touch Target
+@mixin touch-target($size: 48px) {
+  position: relative;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 50%;
+    width: $size;
+    height: $size;
+    transform: translate(-50%, -50%);
+  }
+}
+
+// Scrollbars
+@mixin custom-scrollbar($config: ()) {
+  $default-config: (
+    width: 8px,
+    track-color: transparent,
+    thumb-color: rgba(0, 0, 0, 0.2),
+    thumb-hover-color: rgba(0, 0, 0, 0.3)
+  );
+  
+  $config: map.merge($default-config, $config);
+  
+  &::-webkit-scrollbar {
+    width: map.get($config, width);
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: map.get($config, track-color);
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: map.get($config, thumb-color);
+    border-radius: f.get-shape('full');
+    
+    &:hover {
+      background: map.get($config, thumb-hover-color);
+    }
+  }
+}
+
+// Print
+@mixin print {
+  @media print {
+    @content;
+  }
+}

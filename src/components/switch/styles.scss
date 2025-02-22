@@ -1,0 +1,172 @@
+// src/components/switch/styles.scss
+@use 'sass:map';
+@use '../../styles/abstract/config' as c;
+
+.#{c.$prefix}-switch {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  min-height: 32px;
+  padding: 4px 0;
+  user-select: none;
+
+  &-input {
+    position: absolute;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    cursor: pointer;
+    z-index: 1;
+
+    &:disabled {
+      cursor: not-allowed;
+    }
+
+    // New focus style that's more visible
+    &:focus-visible ~ .#{c.$prefix}-switch-track {
+      outline: 2px solid var(--mtrl-sys-color-primary);
+      outline-offset: 2px;
+    }
+  }
+
+  &-track {
+    position: relative;
+    min-width: 52px;
+    height: 32px;
+    border-radius: 16px;
+    background-color: var(--mtrl-sys-color-surface-container-highest);
+    border: 2px solid var(--mtrl-sys-color-outline);
+    transition: background-color map.get(c.$motion, 'duration-short4') map.get(c.$motion, 'easing-standard'),
+                border-color map.get(c.$motion, 'duration-short4') map.get(c.$motion, 'easing-standard'),
+                outline map.get(c.$motion, 'duration-short4') map.get(c.$motion, 'easing-standard');
+  }
+
+  &-thumb {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background-color: var(--mtrl-sys-color-outline);
+    transform: translateX(0);
+    transition: all map.get(c.$motion, 'duration-short4') map.get(c.$motion, 'easing-emphasized');
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transform: scale(0);
+      transition: all map.get(c.$motion, 'duration-short4') map.get(c.$motion, 'easing-emphasized');
+      color: var(--mtrl-sys-color-primary);
+      
+      svg {
+        width: 14px;
+        height: 14px;
+      }
+    }
+  }
+
+  &-label {
+    @include c.typography('body-large');
+    margin-left: 12px;
+    color: var(--mtrl-sys-color-on-surface);
+  }
+
+  // Label position variants
+  &--label-start {
+    flex-direction: row-reverse;
+
+    .#{c.$prefix}-switch-label {
+      margin-left: 0;
+      margin-right: 12px;
+    }
+  }
+
+  &--label-end {
+    flex-direction: row;
+
+    .#{c.$prefix}-switch-label {
+      margin-left: 12px;
+      margin-right: 0;
+    }
+  }
+
+  @include c.rtl {
+    &--label-start {
+      .#{c.$prefix}-switch-label {
+        margin-left: 12px;
+        margin-right: 0;
+      }
+    }
+
+    &--label-end {
+      .#{c.$prefix}-switch-label {
+        margin-left: 0;
+        margin-right: 12px;
+      }
+    }
+  }
+
+  // States
+  &--checked {
+    .#{c.$prefix}-switch-track {
+      background-color: var(--mtrl-sys-color-primary);
+      border-color: var(--mtrl-sys-color-primary);
+    }
+
+    .#{c.$prefix}-switch-thumb {
+      background-color: var(--mtrl-sys-color-on-primary);
+      transform: translateX(20px);
+      width: 24px;
+      height: 24px;
+      top: 2px;
+      left: 2px;
+
+      &-icon {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+  }
+
+  &--disabled {
+    opacity: .5;
+  }
+
+  // Hover effects
+  &:not(&--disabled) {
+    .#{c.$prefix}-switch-input:hover + .#{c.$prefix}-switch-track {
+      &::before {
+        content: '';
+        position: absolute;
+        top: -8px;
+        left: -8px;
+        right: -8px;
+        bottom: -8px;
+        background-color: var(--mtrl-sys-color-on-surface);
+        opacity: 0.08;
+        border-radius: 20px;
+      }
+    }
+  }
+
+  @include c.reduced-motion {
+    .#{c.$prefix}-switch-track,
+    .#{c.$prefix}-switch-thumb,
+    .#{c.$prefix}-switch-thumb-icon {
+      transition: none;
+    }
+  }
+
+  @include c.high-contrast {
+    .#{c.$prefix}-switch-track {
+      border-width: 2px;
+    }
+  }
+}

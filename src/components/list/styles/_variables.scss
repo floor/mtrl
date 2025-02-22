@@ -1,0 +1,13 @@
+// src/components/list/styles/_variables.scss
+
+// Component variables
+$list-item-height: 48px !default;
+$list-item-dense-height: 40px !default;
+$list-padding: 8px !default;
+$list-item-padding: 16px !default;
+$list-section-padding: 16px !default;
+
+// Color variables - can be overridden
+$list-divider-color: var(--mtrl-sys-color-outline-variant) !default;
+$list-section-title-color: var(--mtrl-sys-color-primary) !default;
+$list-hover-state-layer-color: var(--mtrl-sys-color-on-surface) !default;
