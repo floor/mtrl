@@ -1,0 +1,158 @@
+// src/components/menu/styles.scss
+@use 'sass:map';
+@use '../../styles/abstract/config' as c;
+
+.#{c.$prefix}-menu {
+  // Base styles
+  @include c.typography('body-medium');
+  @include c.shape('small');
+  @include c.motion-transition(
+    opacity,
+    transform,
+    background-color
+  );
+  
+  position: fixed;
+  z-index: var(--mtrl-z-index-menu);
+  min-width: 112px;
+  max-width: 280px;
+  padding: 8px 0;
+  background-color: var(--mtrl-sys-color-surface-container);
+  color: var(--mtrl-sys-color-on-surface);
+  @include c.elevation(2);
+  
+  display: none;
+  opacity: 0;
+  transform: scale(0.8);
+  transform-origin: top left;
+  pointer-events: none;
+  
+  &--visible {
+    display: block;
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: auto;
+  }
+  
+  // Ensure transitions work properly
+  &[style*="display: block"] {
+    display: block;
+    transition: opacity 150ms cubic-bezier(0.4, 0, 0.2, 1),
+                transform 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  &--submenu {
+    position: absolute;
+  }
+
+  // List container
+  &-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    overflow-y: auto;
+    max-height: calc(100vh - 96px);
+    @include c.scrollbar;
+  }
+
+  // Menu items
+  &-item {
+    @include c.typography('body-large');
+    @include c.flex-row;
+    @include c.motion-transition(background-color);
+    
+    position: relative;
+    min-height: 48px;
+    padding: 12px 16px;
+    cursor: pointer;
+    user-select: none;
+    color: var(--mtrl-sys-color-on-surface);
+    
+    &:hover {
+      @include c.state-layer(var(--mtrl-sys-color-on-surface), 'hover');
+    }
+    
+    &:focus {
+      @include c.state-layer(var(--mtrl-sys-color-on-surface), 'focus');
+      outline: none;
+    }
+    
+    &:active {
+      @include c.state-layer(var(--mtrl-sys-color-on-surface), 'pressed');
+    }
+
+    // Submenu indicator
+    &--submenu {
+      padding-right: 48px;
+      
+      &::after {
+        @include c.icon('chevron_right');
+        position: absolute;
+        right: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        opacity: 0.87;
+      }
+      
+      &[aria-expanded="true"] {
+        @include c.state-layer(var(--mtrl-sys-color-on-surface), 'hover');
+        
+        &::after {
+          @include c.icon('chevron_right');
+          opacity: 1;
+        }
+      }
+    }
+
+    // Disabled state
+    &--disabled {
+      pointer-events: none;
+      color: rgba(var(--mtrl-sys-color-on-surface-rgb), 0.38);
+    }
+  }
+
+  // Divider
+  &-divider {
+    height: 1px;
+    margin: 8px 0;
+    background-color: var(--mtrl-sys-color-outline-variant);
+  }
+
+  // Accessibility
+  @include c.focus-ring('.#{c.$prefix}-menu-item:focus-visible');
+  
+  @include c.reduced-motion {
+    transition: none;
+  }
+  
+  @include c.high-contrast {
+    border: 1px solid CurrentColor;
+    
+    .#{c.$prefix}-menu-divider {
+      background-color: CurrentColor;
+    }
+    
+    .#{c.$prefix}-menu-item--disabled {
+      opacity: 1;
+      color: GrayText;
+    }
+  }
+
+  // RTL Support
+  @include c.rtl {
+    transform-origin: top right;
+    
+    .#{c.$prefix}-menu-item {
+      &--submenu {
+        padding-right: 16px;
+        padding-left: 48px;
+        
+        &::after {
+          right: auto;
+          left: 16px;
+          transform: translateY(-50%) rotate(180deg);
+        }
+      }
+    }
+  }
+}
