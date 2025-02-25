@@ -2,6 +2,7 @@
 
 /**
  * Menu alignment options
+ * @enum {string}
  */
 export const MENU_ALIGN = {
   LEFT: 'left',
@@ -11,6 +12,7 @@ export const MENU_ALIGN = {
 
 /**
  * Menu vertical alignment options
+ * @enum {string}
  */
 export const MENU_VERTICAL_ALIGN = {
   TOP: 'top',
@@ -20,6 +22,7 @@ export const MENU_VERTICAL_ALIGN = {
 
 /**
  * Menu item types
+ * @enum {string}
  */
 export const MENU_ITEM_TYPES = {
   ITEM: 'item',
@@ -27,30 +30,13 @@ export const MENU_ITEM_TYPES = {
 }
 
 /**
- * Validation schema for menu configuration
+ * Menu events
+ * @enum {string}
  */
-export const MENU_SCHEMA = {
-  type: 'object',
-  properties: {
-    items: {
-      type: 'array',
-      items: {
-        type: 'object',
-        properties: {
-          name: { type: 'string', optional: true },
-          text: { type: 'string', optional: true },
-          type: {
-            type: 'string',
-            enum: Object.values(MENU_ITEM_TYPES),
-            optional: true
-          },
-          disabled: { type: 'boolean', optional: true },
-          items: { type: 'array', optional: true }
-        }
-      },
-      optional: true
-    },
-    class: { type: 'string', optional: true },
-    target: { type: 'object', optional: true }
-  }
+export const MENU_EVENTS = {
+  SELECT: 'select',
+  OPEN: 'open',
+  CLOSE: 'close',
+  SUBMENU_OPEN: 'submenuOpen',
+  SUBMENU_CLOSE: 'submenuClose'
 }
