@@ -1,4 +1,6 @@
-import PREFIX from '../../core/config'
+// src/components/button/config.js
+
+import { PREFIX } from '../../core/config'
 
 const defaultConfig = {
   componentName: 'button',

@@ -5,7 +5,10 @@
   "keywords": ["component", "library", "ui", "user interface", "functional", "composable"],
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "bun test",
+    "test:watch": "bun test --watch",
+    "test:coverage": "bun test --coverage",
+    "test:ui": "bun test --watch --ui"
   },
   "repository": {
     "type": "git",

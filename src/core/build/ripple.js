@@ -13,7 +13,13 @@ const DEFAULT_CONFIG = RIPPLE_CONFIG
  * @returns {Object} Ripple controller instance
  */
 export const createRipple = (config = {}) => {
-  const options = { ...DEFAULT_CONFIG, ...config }
+  // Make sure we fully merge the config options
+  const options = {
+    ...DEFAULT_CONFIG,
+    ...config,
+    // Handle nested objects like opacity array
+    opacity: config.opacity || DEFAULT_CONFIG.opacity
+  }
 
   const getEndCoordinates = (bounds) => {
     const size = Math.max(bounds.width, bounds.height)
@@ -36,7 +42,29 @@ export const createRipple = (config = {}) => {
     return ripple
   }
 
+  // Store document event listeners for cleanup
+  let documentListeners = []
+
+  // Safe document event handling
+  const addDocumentListener = (event, handler) => {
+    if (typeof document.addEventListener === 'function') {
+      document.addEventListener(event, handler)
+      documentListeners.push({ event, handler })
+    }
+  }
+
+  const removeDocumentListener = (event, handler) => {
+    if (typeof document.removeEventListener === 'function') {
+      document.removeEventListener(event, handler)
+      documentListeners = documentListeners.filter(
+        listener => !(listener.event === event && listener.handler === handler)
+      )
+    }
+  }
+
   const animate = (event, container) => {
+    if (!container) return
+
     const bounds = container.getBoundingClientRect()
     const ripple = createRippleElement()
 
@@ -49,7 +77,10 @@ export const createRipple = (config = {}) => {
     })
 
     container.appendChild(ripple)
-    ripple.offsetHeight // Force reflow
+
+    // Force reflow
+    // eslint-disable-next-line no-unused-expressions
+    ripple.offsetHeight
 
     // Animate to end position
     const end = getEndCoordinates(bounds)
@@ -61,13 +92,20 @@ export const createRipple = (config = {}) => {
 
     const cleanup = () => {
       ripple.style.opacity = '0'
-      setTimeout(() => ripple.remove(), options.duration)
-      document.removeEventListener('mouseup', cleanup)
-      document.removeEventListener('mouseleave', cleanup)
+
+      // Use setTimeout to remove element after animation
+      setTimeout(() => {
+        if (ripple.parentNode) {
+          ripple.parentNode.removeChild(ripple)
+        }
+      }, options.duration)
+
+      removeDocumentListener('mouseup', cleanup)
+      removeDocumentListener('mouseleave', cleanup)
     }
 
-    document.addEventListener('mouseup', cleanup)
-    document.addEventListener('mouseleave', cleanup)
+    addDocumentListener('mouseup', cleanup)
+    addDocumentListener('mouseleave', cleanup)
   }
 
   return {
@@ -81,12 +119,41 @@ export const createRipple = (config = {}) => {
       }
       element.style.overflow = 'hidden'
 
-      element.addEventListener('mousedown', (e) => animate(e, element))
+      // Store the mousedown handler to be able to remove it later
+      const mousedownHandler = (e) => animate(e, element)
+
+      // Store handler reference on the element
+      if (!element.__rippleHandlers) {
+        element.__rippleHandlers = []
+      }
+      element.__rippleHandlers.push(mousedownHandler)
+
+      element.addEventListener('mousedown', mousedownHandler)
     },
 
     unmount: (element) => {
       if (!element) return
-      element.querySelectorAll('.ripple').forEach(ripple => ripple.remove())
+
+      // Clear document event listeners
+      documentListeners.forEach(({ event, handler }) => {
+        removeDocumentListener(event, handler)
+      })
+      documentListeners = []
+
+      // Remove event listeners
+      if (element.__rippleHandlers) {
+        element.__rippleHandlers.forEach(handler => {
+          element.removeEventListener('mousedown', handler)
+        })
+        element.__rippleHandlers = []
+      }
+
+      // Remove all ripple elements
+      const ripples = element.querySelectorAll('.ripple')
+      ripples.forEach(ripple => {
+        // Call remove directly to match the test expectation
+        ripple.remove()
+      })
     }
   }
 }
