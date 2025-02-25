@@ -331,6 +331,10 @@ export const withItemsManager = (config) => (component) => {
     removeItem (name) {
       if (!name) return this
 
+      // First, ensure we remove the item from our internal map
+      itemsMap.delete(name)
+
+      // Now try to remove the item from the DOM
       const item = list.querySelector(`[data-name="${name}"]`)
       if (item) {
         // Remove event listeners
@@ -344,8 +348,8 @@ export const withItemsManager = (config) => (component) => {
           submenus.delete(name)
         }
 
+        // Remove the item from the DOM
         item.remove()
-        itemsMap.delete(name)
       }
 
       return this
