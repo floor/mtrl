@@ -122,65 +122,6 @@ export const NAV_SCHEMA = {
 }
 
 /**
- * Navigation item schema
- */
-export const NAV_ITEM_SCHEMA = {
-  type: 'object',
-  properties: {
-    id: {
-      type: 'string',
-      required: true
-    },
-    icon: {
-      type: 'string',
-      required: true
-    },
-    label: {
-      type: 'string',
-      required: true
-    },
-    badge: {
-      type: 'string',
-      optional: true
-    },
-    disabled: {
-      type: 'boolean',
-      optional: true
-    },
-    subtitle: {
-      type: 'string',
-      optional: true
-    },
-    groupId: {
-      type: 'string',
-      optional: true
-    }
-  }
-}
-
-/**
- * Navigation group schema
- */
-export const NAV_GROUP_SCHEMA = {
-  type: 'object',
-  properties: {
-    id: {
-      type: 'string',
-      required: true
-    },
-    title: {
-      type: 'string',
-      required: true
-    },
-    expanded: {
-      type: 'boolean',
-      optional: true,
-      default: true
-    }
-  }
-}
-
-/**
  * Navigation item states
  */
 export const NAV_ITEM_STATES = {
@@ -188,8 +129,10 @@ export const NAV_ITEM_STATES = {
   COLLAPSED: 'collapsed'
 }
 
-
-// Update NAV_ITEM_SCHEMA to support nested items
+/**
+ * Navigation item schema
+ * Enhanced with support for nested items
+ */
 export const NAV_ITEM_SCHEMA = {
   type: 'object',
   properties: {
@@ -230,6 +173,28 @@ export const NAV_ITEM_SCHEMA = {
       type: 'boolean',
       optional: true,
       default: false
+    }
+  }
+}
+
+/**
+ * Navigation group schema
+ */
+export const NAV_GROUP_SCHEMA = {
+  type: 'object',
+  properties: {
+    id: {
+      type: 'string',
+      required: true
+    },
+    title: {
+      type: 'string',
+      required: true
+    },
+    expanded: {
+      type: 'boolean',
+      optional: true,
+      default: true
     }
   }
 }

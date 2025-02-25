@@ -35,30 +35,28 @@ export const withTextInput = (config = {}) => (component) => {
     return isEmpty
   }
 
-  // Detect autocomplete
-  const handleAutocomplete = (event) => {
-    // Chrome/Safari trigger animationstart
-    if (event.animationName === 'onAutoFillStart') {
+  // Detect autofill using input events instead of animation
+  // This is more compatible with our testing environment
+  const handleAutofill = () => {
+    // Check for webkit autofill background
+    const isAutofilled =
+      input.matches(':-webkit-autofill') ||
+      // For Firefox and other browsers
+      (window.getComputedStyle(input).backgroundColor === 'rgb(250, 255, 189)' ||
+       window.getComputedStyle(input).backgroundColor === 'rgb(232, 240, 254)')
+
+    if (isAutofilled) {
       component.element.classList.remove(`${component.getClass('textfield')}--empty`)
       component.emit('input', { value: input.value, isEmpty: false, isAutofilled: true })
     }
   }
 
-  // Add required animation for autocomplete detection
-  const style = document.createElement('style')
-  style.textContent = `
-    @keyframes onAutoFillStart { from {} to {} }
-    .${component.getClass('textfield')}-input:-webkit-autofill {
-      animation-name: onAutoFillStart;
-      animation-duration: 1ms;
-    }
-  `
-  document.head.appendChild(style)
-
   // Event listeners
   input.addEventListener('focus', () => {
     component.element.classList.add(`${component.getClass('textfield')}--focused`)
     component.emit('focus', { isEmpty: updateInputState() })
+    // Also check for autofill on focus
+    setTimeout(handleAutofill, 100)
   })
 
   input.addEventListener('blur', () => {
@@ -74,8 +72,6 @@ export const withTextInput = (config = {}) => (component) => {
     })
   })
 
-  input.addEventListener('animationstart', handleAutocomplete)
-
   // Initial state
   updateInputState()
 
@@ -85,10 +81,10 @@ export const withTextInput = (config = {}) => (component) => {
   if (component.lifecycle) {
     const originalDestroy = component.lifecycle.destroy
     component.lifecycle.destroy = () => {
-      input.removeEventListener('animationstart', handleAutocomplete)
-      style.remove()
       input.remove()
-      originalDestroy.call(component.lifecycle)
+      if (originalDestroy) {
+        originalDestroy.call(component.lifecycle)
+      }
     }
   }
 
