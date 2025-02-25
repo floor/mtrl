@@ -1,5 +1,7 @@
 # MTRL Library
 
+> **Project Status:** MTRL is in active early development. The core architecture and initial components are being established, with more features on the roadmap. While we're making rapid progress, the API may evolve as we refine the library. We welcome early adopters and contributors who want to help shape MTRL's future!
+
 MTRL is a lightweight, composable JavaScript component library inspired by Material Design principles. Built with vanilla JavaScript and zero dependencies, MTRL provides a robust foundation for creating modern web interfaces with an emphasis on performance and accessibility.
 
 ## Understanding MTRL
