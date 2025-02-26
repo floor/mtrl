@@ -153,18 +153,33 @@
 
   // Hover effects
   &:not(&--disabled) {
-    .#{c.$prefix}-checkbox-input:hover ~ .#{c.$prefix}-checkbox-icon {
-      &::before {
-        content: '';
-        position: absolute;
-        top: -12px;
-        left: -12px;
-        right: -12px;
-        bottom: -12px;
-        background-color: var(--mtrl-sys-color-on-surface);
-        opacity: 0.08;
-        border-radius: 50%;
-      }
+    // Common hover effect structure
+    .#{c.$prefix}-checkbox-input:hover ~ .#{c.$prefix}-checkbox-icon::before {
+      content: '';
+      position: absolute;
+      top: -12px;
+      left: -12px;
+      right: -12px;
+      bottom: -12px;
+      border-radius: 50%;
+    }
+    
+    // Unchecked hover state
+    .#{c.$prefix}-checkbox-input:not(:checked):hover ~ .#{c.$prefix}-checkbox-icon::before {
+      background-color: var(--mtrl-sys-color-primary);
+      opacity: 0.08;
+    }
+
+    // Checked hover state
+    .#{c.$prefix}-checkbox-input:checked:hover ~ .#{c.$prefix}-checkbox-icon::before {
+      background-color: var(--mtrl-sys-color-primary);
+      opacity: 0.16; // Stronger opacity for checked state
+    }
+
+    // Indeterminate hover state
+    &.#{c.$prefix}-checkbox--indeterminate .#{c.$prefix}-checkbox-input:hover ~ .#{c.$prefix}-checkbox-icon::before {
+      background-color: var(--mtrl-sys-color-on-primary);
+      opacity: 0.16; // Same stronger opacity for indeterminate state
     }
   }
 
