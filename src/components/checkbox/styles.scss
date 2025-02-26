@@ -157,13 +157,13 @@
       &::before {
         content: '';
         position: absolute;
-        top: -8px;
-        left: -8px;
-        right: -8px;
-        bottom: -8px;
+        top: -12px;
+        left: -12px;
+        right: -12px;
+        bottom: -12px;
         background-color: var(--mtrl-sys-color-on-surface);
         opacity: 0.08;
-        border-radius: 4px;
+        border-radius: 50%;
       }
     }
   }

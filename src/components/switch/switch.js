@@ -58,7 +58,7 @@ const createSwitch = (config = {}) => {
     withTextLabel(baseConfig),
     withLabelPosition(baseConfig),
     withCheckable(baseConfig),
-    withDisabled(),
+    withDisabled(baseConfig), // Pass the config to ensure disabled state is properly initialized
     withLifecycle(),
     comp => withAPI({
       disabled: comp.disabled,
