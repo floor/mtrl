@@ -82,7 +82,7 @@ const createCheckbox = (config = {}) => {
     withCheckIcon(baseConfig),
     withTextLabel(baseConfig),
     enhancedWithCheckable,
-    withDisabled(),
+    withDisabled(baseConfig), // Pass the baseConfig to withDisabled
     withLifecycle(),
     comp => withAPI({
       disabled: comp.disabled,

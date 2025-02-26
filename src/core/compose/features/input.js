@@ -42,7 +42,15 @@ export const withInput = (config = {}) => (component) => {
 
   Object.entries(attributes).forEach(([key, value]) => {
     if (value !== null && value !== undefined) {
-      input.setAttribute(key, value)
+      if (key === 'disabled' && value === true) {
+        input.disabled = true
+        input.setAttribute('disabled', 'true')
+        // Note: We don't add the class here because that's handled by withDisabled
+      } else if (value === true) {
+        input.setAttribute(key, key)
+      } else {
+        input.setAttribute(key, value)
+      }
     }
   })
 

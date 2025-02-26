@@ -136,7 +136,24 @@
   }
 
   &--disabled {
-    opacity: .5;
+    opacity: 0.38;
+    
+    // Specific styles for disabled + checked
+    &.#{c.$prefix}-switch--checked {
+      .#{c.$prefix}-switch-track {
+        background-color: var(--mtrl-sys-color-outline);
+        border-color: var(--mtrl-sys-color-outline);
+        opacity: 0.38;
+      }
+      
+      .#{c.$prefix}-switch-thumb {
+        background-color: var(--mtrl-sys-color-on-primary);
+        opacity: 1;
+        &-icon {
+          color: var(--mtrl-sys-color-outline)
+        }
+      }
+    }
   }
 
   // Hover effects
