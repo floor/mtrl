@@ -86,7 +86,6 @@ export const createElement = (options = {}) => {
   }
 
   if (typeof onCreate === 'function') {
-    log.info('onCreate', element, context)
     onCreate(element, context)
   }
 

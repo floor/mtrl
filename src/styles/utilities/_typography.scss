@@ -1,0 +1,178 @@
+// src/styles/utilities/_typography.scss
+@use '../abstract/base' as base;
+@use '../abstract/mixins' as m;
+
+$prefix: base.$prefix;
+
+// Font style utilities
+.#{$prefix}-italic {
+  font-style: italic;
+}
+
+.#{$prefix}-not-italic {
+  font-style: normal;
+}
+
+// Letter spacing
+.#{$prefix}-tracking-tighter {
+  letter-spacing: -0.05em;
+}
+
+.#{$prefix}-tracking-tight {
+  letter-spacing: -0.025em;
+}
+
+.#{$prefix}-tracking-normal {
+  letter-spacing: 0;
+}
+
+.#{$prefix}-tracking-wide {
+  letter-spacing: 0.025em;
+}
+
+.#{$prefix}-tracking-wider {
+  letter-spacing: 0.05em;
+}
+
+.#{$prefix}-tracking-widest {
+  letter-spacing: 0.1em;
+}
+
+// Line height
+.#{$prefix}-leading-none {
+  line-height: 1;
+}
+
+.#{$prefix}-leading-tight {
+  line-height: 1.25;
+}
+
+.#{$prefix}-leading-snug {
+  line-height: 1.375;
+}
+
+.#{$prefix}-leading-normal {
+  line-height: 1.5;
+}
+
+.#{$prefix}-leading-relaxed {
+  line-height: 1.625;
+}
+
+.#{$prefix}-leading-loose {
+  line-height: 2;
+}
+
+// Text transform
+.#{$prefix}-uppercase {
+  text-transform: uppercase;
+}
+
+.#{$prefix}-lowercase {
+  text-transform: lowercase;
+}
+
+.#{$prefix}-capitalize {
+  text-transform: capitalize;
+}
+
+.#{$prefix}-normal-case {
+  text-transform: none;
+}
+
+// Text decoration
+.#{$prefix}-underline {
+  text-decoration: underline;
+}
+
+.#{$prefix}-line-through {
+  text-decoration: line-through;
+}
+
+.#{$prefix}-no-underline {
+  text-decoration: none;
+}
+
+// Font smoothing
+.#{$prefix}-antialiased {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.#{$prefix}-subpixel-antialiased {
+  -webkit-font-smoothing: auto;
+  -moz-osx-font-smoothing: auto;
+}
+
+// Text overflow
+.#{$prefix}-truncate {
+  @include m.truncate;
+}
+
+.#{$prefix}-overflow-ellipsis {
+  text-overflow: ellipsis;
+}
+
+.#{$prefix}-overflow-clip {
+  text-overflow: clip;
+}
+
+// Word break
+.#{$prefix}-break-normal {
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
+.#{$prefix}-break-words {
+  overflow-wrap: break-word;
+}
+
+.#{$prefix}-break-all {
+  word-break: break-all;
+}
+
+// Text columns for easier reading
+.#{$prefix}-columns-1 {
+  column-count: 1;
+}
+
+.#{$prefix}-columns-2 {
+  column-count: 2;
+}
+
+.#{$prefix}-columns-3 {
+  column-count: 3;
+}
+
+.#{$prefix}-columns-gap-4 {
+  column-gap: 1rem;
+}
+
+.#{$prefix}-columns-gap-8 {
+  column-gap: 2rem;
+}
+
+// Text vertical alignment
+.#{$prefix}-align-baseline {
+  vertical-align: baseline;
+}
+
+.#{$prefix}-align-top {
+  vertical-align: top;
+}
+
+.#{$prefix}-align-middle {
+  vertical-align: middle;
+}
+
+.#{$prefix}-align-bottom {
+  vertical-align: bottom;
+}
+
+.#{$prefix}-align-text-top {
+  vertical-align: text-top;
+}
+
+.#{$prefix}-align-text-bottom {
+  vertical-align: text-bottom;
+}

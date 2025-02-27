@@ -1,0 +1,142 @@
+// src/styles/utilities/_visibility.scss
+@use '../abstract/base' as base;
+@use '../abstract/mixins' as m;
+@use 'sass:map';
+
+$prefix: base.$prefix;
+
+// Hide element but keep it accessible to screen readers
+.#{$prefix}-sr-only {
+  @include m.visually-hidden;
+}
+
+// Standard display utilities
+.#{$prefix}-block {
+  display: block;
+}
+
+.#{$prefix}-inline-block {
+  display: inline-block;
+}
+
+.#{$prefix}-inline {
+  display: inline;
+}
+
+.#{$prefix}-flex {
+  display: flex;
+}
+
+.#{$prefix}-inline-flex {
+  display: inline-flex;
+}
+
+.#{$prefix}-grid {
+  display: grid;
+}
+
+.#{$prefix}-inline-grid {
+  display: inline-grid;
+}
+
+.#{$prefix}-hidden {
+  display: none;
+}
+
+// Visibility
+.#{$prefix}-visible {
+  visibility: visible;
+}
+
+.#{$prefix}-invisible {
+  visibility: hidden;
+}
+
+// Responsive visibility utilities
+$breakpoints: (
+  'sm': 600px,
+  'md': 960px,
+  'lg': 1280px,
+  'xl': 1920px
+);
+
+@each $breakpoint, $value in $breakpoints {
+  // Hide on and above a breakpoint
+  .#{$prefix}-hide-#{$breakpoint}-up {
+    @media (min-width: $value) {
+      display: none !important;
+    }
+  }
+  
+  // Hide below a breakpoint
+  .#{$prefix}-hide-#{$breakpoint}-down {
+    @media (max-width: $value - 1) {
+      display: none !important;
+    }
+  }
+  
+  // Show only at and above a breakpoint
+  .#{$prefix}-show-#{$breakpoint}-up {
+    display: none !important;
+    
+    @media (min-width: $value) {
+      display: block !important;
+    }
+  }
+  
+  // Show only below a breakpoint
+  .#{$prefix}-show-#{$breakpoint}-down {
+    display: none !important;
+    
+    @media (max-width: $value - 1) {
+      display: block !important;
+    }
+  }
+}
+
+// Print visibility
+.#{$prefix}-print-only {
+  display: none !important;
+  
+  @media print {
+    display: block !important;
+  }
+}
+
+.#{$prefix}-print-hidden {
+  @media print {
+    display: none !important;
+  }
+}
+
+// Positioning utilities
+.#{$prefix}-relative {
+  position: relative;
+}
+
+.#{$prefix}-absolute {
+  position: absolute;
+}
+
+.#{$prefix}-fixed {
+  position: fixed;
+}
+
+.#{$prefix}-sticky {
+  position: sticky;
+}
+
+// Accessibility utilities
+.#{$prefix}-focusable {
+  &:focus-visible {
+    outline: 2px solid var(--#{$prefix}-sys-color-primary);
+    outline-offset: 2px;
+  }
+}
+
+// Elevation utilities
+@for $i from 0 through 5 {
+  .#{$prefix}-elevation-#{$i} {
+    @include m.elevation($i);
+  }
+}

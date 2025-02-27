@@ -232,8 +232,8 @@ $icons: (
   }
 }
 
-// Touch Target
 @mixin touch-target($size: 48px) {
+  // Position first to avoid the deprecation warning
   position: relative;
   
   &::after {
@@ -243,6 +243,14 @@ $icons: (
     width: $size;
     height: $size;
     transform: translate(-50%, -50%);
+  }
+  
+  @media (prefers-reduced-motion: reduce) {
+    @content;
+  }
+  
+  @media (forced-colors: active) {
+    @content;
   }
 }
 
@@ -320,12 +328,6 @@ $icons: (
   @if $gap > 0 {
     gap: $gap;
   }
-}
-
-@mixin flex-center {
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 // Print

@@ -1,9 +1,13 @@
-// src/components/snackbar/styles.scss
-@use 'sass:map';
-@use '../../styles/abstract/mixins' as m;
+// src/components/snackbar/_snackbar.scss
+@use '../../styles/abstract/base' as base;
 @use '../../styles/abstract/variables' as v;
+@use '../../styles/abstract/functions' as f;
+@use '../../styles/abstract/mixins' as m;
+@use '../../styles/abstract/theme' as t;
 
-.#{v.$prefix}-snackbar {
+$component: '#{base.$prefix}-snackbar';
+
+.#{$component} {
   // Base styles following modern minimal design
   @include m.typography('body-medium');
   position: fixed;
@@ -12,26 +16,29 @@
   justify-content: space-between;
   min-width: 280px;
   max-width: 480px;
-  padding: 12px 16px;
+  padding: 14px 16px;
   gap: 12px;
   
   // Updated colors and appearance
   background-color: rgba(32, 33, 36, 0.9);
   color: rgb(255, 255, 255);
-  border-radius: 4px;
+  border-radius: f.get-shape('extra-small');
   backdrop-filter: blur(8px);
   
   // Animation setup - separated properties for better transitions
   opacity: 0;
   transform: translateY(20px);
   transition: 
-    opacity 200ms cubic-bezier(0.4, 0, 0.2, 1),
-    transform 200ms cubic-bezier(0.4, 0, 0.2, 1);
+    opacity v.motion('duration-short2') v.motion('easing-standard'),
+    transform v.motion('duration-short2') v.motion('easing-standard');
   
-  z-index: var(--mtrl-sys-z-index-snackbar);
+  // Using a fixed z-index since 'snackbar' isn't defined in z-index tokens
+  z-index: f.get-z-index('popover');
   pointer-events: none;
   will-change: transform, opacity;
   
+  @include m.elevation(2);
+
   // Message text styles
   &-text {
     @include m.truncate(1);
@@ -44,17 +51,18 @@
   &-action {
     @include m.typography('label-large');
     padding: 8px 12px;
-    margin: -8px -12px;
+    margin: -8px -10px -8px -4px;
+    // margin-left: 4px;
     color: rgb(138, 180, 248);
     background: none;
     border: none;
-    border-radius: 4px;
+    border-radius: f.get-shape('extra-small');
     cursor: pointer;
     font-weight: 500;
     font-size: 14px;
     text-transform: capitalize;
     white-space: nowrap;
-    transition: background-color 150ms ease;
+    @include m.motion-transition(background-color);
     
     &:hover {
       background-color: rgba(138, 180, 248, 0.08);
@@ -129,12 +137,12 @@
     opacity: 1;
     pointer-events: auto;
     
-    &.#{v.$prefix}-snackbar--start,
-    &.#{v.$prefix}-snackbar--end {
+    &.#{$component}--start,
+    &.#{$component}--end {
       transform: translateY(0);
     }
     
-    &.#{v.$prefix}-snackbar--center {
+    &.#{$component}--center {
       transform: translate(-50%, 0);
     }
   }
@@ -144,8 +152,29 @@
     padding-top: 14px;
     padding-bottom: 14px;
     
-    .#{v.$prefix}-snackbar-text {
+    .#{$component}-text {
       @include m.truncate(2);
+    }
+  }
+  
+  // Color variants
+  &--primary {
+    background-color: t.alpha('primary', 0.9);
+    
+    .#{$component}-action {
+      color: t.color('on-primary');
+      
+      &:hover {
+        background-color: t.alpha('on-primary', 0.08);
+      }
+      
+      &:active {
+        background-color: t.alpha('on-primary', 0.12);
+      }
+      
+      &:focus-visible {
+        outline-color: t.color('on-primary');
+      }
     }
   }
   
@@ -157,7 +186,7 @@
     &--visible {
       transform: none;
       
-      &.#{v.$prefix}-snackbar--center {
+      &.#{$component}--center {
         transform: translateX(-50%);
       }
     }

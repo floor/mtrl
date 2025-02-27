@@ -1,8 +1,14 @@
-// src/components/switch/styles.scss
-@use 'sass:map';
-@use '../../styles/abstract/config' as c;
+// src/components/switch/_switch.scss
+@use '../../styles/abstract/base' as base;
+@use '../../styles/abstract/variables' as v;
+@use '../../styles/abstract/functions' as f;
+@use '../../styles/abstract/mixins' as m;
+@use '../../styles/abstract/theme' as t;
 
-.#{c.$prefix}-switch {
+$component: '#{base.$prefix}-switch';
+
+.#{$component} {
+  // Base styles
   display: inline-flex;
   align-items: center;
   position: relative;
@@ -10,6 +16,7 @@
   padding: 4px 0;
   user-select: none;
 
+  // Input (visually hidden but accessible)
   &-input {
     position: absolute;
     opacity: 0;
@@ -23,25 +30,25 @@
       cursor: not-allowed;
     }
 
-    // New focus style that's more visible
-    &:focus-visible ~ .#{c.$prefix}-switch-track {
-      outline: 2px solid var(--mtrl-sys-color-primary);
+    // Focus indicator
+    &:focus-visible ~ .#{$component}-track {
+      outline: 2px solid t.color('primary');
       outline-offset: 2px;
     }
   }
 
+  // Switch track (background bar)
   &-track {
     position: relative;
     min-width: 52px;
     height: 32px;
     border-radius: 16px;
-    background-color: var(--mtrl-sys-color-surface-container-highest);
-    border: 2px solid var(--mtrl-sys-color-outline);
-    transition: background-color map.get(c.$motion, 'duration-short4') map.get(c.$motion, 'easing-standard'),
-                border-color map.get(c.$motion, 'duration-short4') map.get(c.$motion, 'easing-standard'),
-                outline map.get(c.$motion, 'duration-short4') map.get(c.$motion, 'easing-standard');
+    background-color: t.color('surface-container-highest');
+    border: 2px solid t.color('outline');
+    @include m.motion-transition(background-color, border-color, outline);
   }
 
+  // Switch thumb (slider)
   &-thumb {
     position: absolute;
     top: 6px;
@@ -49,21 +56,22 @@
     width: 16px;
     height: 16px;
     border-radius: 50%;
-    background-color: var(--mtrl-sys-color-outline);
+    background-color: t.color('outline');
     transform: translateX(0);
-    transition: all map.get(c.$motion, 'duration-short4') map.get(c.$motion, 'easing-emphasized');
+    transition: all v.motion('duration-short4') v.motion('easing-emphasized');
     display: flex;
     align-items: center;
     justify-content: center;
 
+    // Icon inside thumb
     &-icon {
       display: flex;
       align-items: center;
       justify-content: center;
       opacity: 0;
       transform: scale(0);
-      transition: all map.get(c.$motion, 'duration-short4') map.get(c.$motion, 'easing-emphasized');
-      color: var(--mtrl-sys-color-primary);
+      transition: all v.motion('duration-short4') v.motion('easing-emphasized');
+      color: t.color('primary');
       
       svg {
         width: 14px;
@@ -72,17 +80,18 @@
     }
   }
 
+  // Label
   &-label {
-    @include c.typography('body-large');
+    @include m.typography('body-large');
     margin-left: 12px;
-    color: var(--mtrl-sys-color-on-surface);
+    color: t.color('on-surface');
   }
 
   // Label position variants
   &--label-start {
     flex-direction: row-reverse;
 
-    .#{c.$prefix}-switch-label {
+    .#{$component}-label {
       margin-left: 0;
       margin-right: 12px;
     }
@@ -91,37 +100,43 @@
   &--label-end {
     flex-direction: row;
 
-    .#{c.$prefix}-switch-label {
+    .#{$component}-label {
       margin-left: 12px;
       margin-right: 0;
     }
   }
 
-  @include c.rtl {
+  // RTL support
+  @include m.rtl {
     &--label-start {
-      .#{c.$prefix}-switch-label {
+      .#{$component}-label {
         margin-left: 12px;
         margin-right: 0;
       }
     }
 
     &--label-end {
-      .#{c.$prefix}-switch-label {
+      .#{$component}-label {
         margin-left: 0;
         margin-right: 12px;
       }
     }
+    
+    // Adjust thumb movement for RTL layout
+    &--checked .#{$component}-thumb {
+      transform: translateX(-20px);
+    }
   }
 
-  // States
+  // Checked state
   &--checked {
-    .#{c.$prefix}-switch-track {
-      background-color: var(--mtrl-sys-color-primary);
-      border-color: var(--mtrl-sys-color-primary);
+    .#{$component}-track {
+      background-color: t.color('primary');
+      border-color: t.color('primary');
     }
 
-    .#{c.$prefix}-switch-thumb {
-      background-color: var(--mtrl-sys-color-on-primary);
+    .#{$component}-thumb {
+      background-color: t.color('on-primary');
       transform: translateX(20px);
       width: 24px;
       height: 24px;
@@ -135,30 +150,31 @@
     }
   }
 
+  // Disabled state
   &--disabled {
     opacity: 0.38;
     
     // Specific styles for disabled + checked
-    &.#{c.$prefix}-switch--checked {
-      .#{c.$prefix}-switch-track {
-        background-color: var(--mtrl-sys-color-outline);
-        border-color: var(--mtrl-sys-color-outline);
+    &.#{$component}--checked {
+      .#{$component}-track {
+        background-color: t.color('outline');
+        border-color: t.color('outline');
         opacity: 0.38;
       }
       
-      .#{c.$prefix}-switch-thumb {
-        background-color: var(--mtrl-sys-color-on-primary);
+      .#{$component}-thumb {
+        background-color: t.color('on-primary');
         opacity: 1;
         &-icon {
-          color: var(--mtrl-sys-color-outline)
+          color: t.color('outline')
         }
       }
     }
   }
 
-  // Hover effects
+  // Hover effects (state layer)
   &:not(&--disabled) {
-    .#{c.$prefix}-switch-input:hover + .#{c.$prefix}-switch-track {
+    .#{$component}-input:hover + .#{$component}-track {
       &::before {
         content: '';
         position: absolute;
@@ -166,24 +182,55 @@
         left: -8px;
         right: -8px;
         bottom: -8px;
-        background-color: var(--mtrl-sys-color-on-surface);
-        opacity: 0.08;
+        background-color: t.color('on-surface');
+        opacity: v.state('hover-state-layer-opacity');
         border-radius: 20px;
+      }
+    }
+    
+    // Active/pressed state
+    .#{$component}-input:active + .#{$component}-track {
+      &::before {
+        content: '';
+        position: absolute;
+        top: -8px;
+        left: -8px;
+        right: -8px;
+        bottom: -8px;
+        background-color: t.color('on-surface');
+        opacity: v.state('pressed-state-layer-opacity');
+        border-radius: 20px;
+      }
+    }
+    
+    // Hover/active states when checked
+    &.#{$component}--checked {
+      .#{$component}-input:hover + .#{$component}-track::before,
+      .#{$component}-input:active + .#{$component}-track::before {
+        background-color: t.color('primary');
       }
     }
   }
 
-  @include c.reduced-motion {
-    .#{c.$prefix}-switch-track,
-    .#{c.$prefix}-switch-thumb,
-    .#{c.$prefix}-switch-thumb-icon {
+  // Accessibility
+  @include m.reduced-motion {
+    .#{$component}-track,
+    .#{$component}-thumb,
+    .#{$component}-thumb-icon {
       transition: none;
     }
   }
 
-  @include c.high-contrast {
-    .#{c.$prefix}-switch-track {
+  @include m.high-contrast {
+    .#{$component}-track {
       border-width: 2px;
     }
+    
+    &--checked .#{$component}-track {
+      border-color: currentColor;
+    }
   }
+  
+  // Touch target for better mobile experience
+  // @include m.touch-target;
 }

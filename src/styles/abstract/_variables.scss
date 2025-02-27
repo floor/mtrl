@@ -1,14 +1,12 @@
 // src/styles/abstract/_variables.scss
 @use 'sass:map';
+@use 'base' as *;
 
-// Core configuration
-$prefix: 'mtrl' !default;
-
-// Design tokens
+// Core design tokens
 $state: (
   'hover-state-layer-opacity': 0.08,
-  'pressed-state-layer-opacity': 0.12,
   'focus-state-layer-opacity': 0.12,
+  'pressed-state-layer-opacity': 0.12,
   'dragged-state-layer-opacity': 0.16
 ) !default;
 
@@ -81,6 +79,27 @@ $typescale: (
     'letter-spacing': 0,
     'font-weight': 400
   ),
+  'title-large': (
+    'font-family': ('Roboto', sans-serif),
+    'font-size': 22px,
+    'line-height': 28px,
+    'letter-spacing': 0,
+    'font-weight': 500
+  ),
+  'title-medium': (
+    'font-family': ('Roboto', sans-serif),
+    'font-size': 16px,
+    'line-height': 24px,
+    'letter-spacing': 0.15px,
+    'font-weight': 500
+  ),
+  'title-small': (
+    'font-family': ('Roboto', sans-serif),
+    'font-size': 14px,
+    'line-height': 20px,
+    'letter-spacing': 0.1px,
+    'font-weight': 500
+  ),
   'body-large': (
     'font-family': ('Roboto', sans-serif),
     'font-size': 16px,
@@ -127,6 +146,8 @@ $typescale: (
 
 $shape: (
   'none': 0,
+  'extra-tiny': 1px,
+  'tiny': 2px,
   'extra-small': 4px,
   'small': 8px,
   'medium': 12px,
@@ -157,3 +178,48 @@ $z-index: (
   'default': 1,
   'below': -1
 ) !default;
+
+// Component-specific tokens
+$button: (
+  'height': 40px,
+  'min-width': 64px,
+  'padding-horizontal': 24px,
+  'padding-horizontal-small': 16px,
+  'padding-icon': 16px,
+  'border-radius': map.get($shape, 'full'),
+  'transition-duration': map.get($motion, 'duration-short2'),
+  'transition-easing': map.get($motion, 'easing-standard')
+) !default;
+
+// Helper functions for easier token access
+@function state($key) {
+  @return map.get($state, $key);
+}
+
+@function motion($key) {
+  @return map.get($motion, $key);
+}
+
+@function elevation($level) {
+  @return map.get($elevation, $level);
+}
+
+@function typography($scale) {
+  @return map.get($typescale, $scale);
+}
+
+@function shape($size) {
+  @return map.get($shape, $size);
+}
+
+@function z-index($layer) {
+  @return map.get($z-index, $layer);
+}
+
+@function breakpoint($size) {
+  @return map.get($breakpoints, $size);
+}
+
+@function button($prop) {
+  @return map.get($button, $prop);
+}

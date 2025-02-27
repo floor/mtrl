@@ -1,0 +1,155 @@
+// src/styles/base/_typography.scss
+@use '../abstract/base' as base;
+@use '../abstract/variables' as v;
+@use '../abstract/mixins' as m;
+
+// Typography scale classes
+$prefix: base.$prefix;
+
+// Display typography
+.#{$prefix}-display-large {
+  @include m.typography('display-large');
+}
+
+.#{$prefix}-display-medium {
+  @include m.typography('display-medium');
+}
+
+.#{$prefix}-display-small {
+  @include m.typography('display-small');
+}
+
+// Headline typography
+.#{$prefix}-headline-large {
+  @include m.typography('headline-large');
+}
+
+.#{$prefix}-headline-medium {
+  @include m.typography('headline-medium');
+}
+
+.#{$prefix}-headline-small {
+  @include m.typography('headline-small');
+}
+
+// Title typography
+.#{$prefix}-title-large {
+  @include m.typography('title-large');
+}
+
+.#{$prefix}-title-medium {
+  @include m.typography('title-medium');
+}
+
+.#{$prefix}-title-small {
+  @include m.typography('title-small');
+}
+
+// Body typography
+.#{$prefix}-body-large {
+  @include m.typography('body-large');
+}
+
+.#{$prefix}-body-medium {
+  @include m.typography('body-medium');
+}
+
+.#{$prefix}-body-small {
+  @include m.typography('body-small');
+}
+
+// Label typography
+.#{$prefix}-label-large {
+  @include m.typography('label-large');
+}
+
+.#{$prefix}-label-medium {
+  @include m.typography('label-medium');
+}
+
+.#{$prefix}-label-small {
+  @include m.typography('label-small');
+}
+
+// Convenience modifiers
+.#{$prefix}-text-center {
+  text-align: center;
+}
+
+.#{$prefix}-text-left {
+  text-align: left;
+}
+
+.#{$prefix}-text-right {
+  text-align: right;
+}
+
+// Font weight modifiers
+.#{$prefix}-font-thin {
+  font-weight: 100;
+}
+
+.#{$prefix}-font-light {
+  font-weight: 300;
+}
+
+.#{$prefix}-font-regular {
+  font-weight: 400;
+}
+
+.#{$prefix}-font-medium {
+  font-weight: 500;
+}
+
+.#{$prefix}-font-bold {
+  font-weight: 700;
+}
+
+// Text truncation with ellipsis
+.#{$prefix}-truncate {
+  @include m.truncate;
+}
+
+.#{$prefix}-truncate-2 {
+  @include m.truncate(2);
+}
+
+.#{$prefix}-truncate-3 {
+  @include m.truncate(3);
+}
+
+// Set base styles for heading elements
+h1 {
+  @include m.typography('headline-large');
+  margin-bottom: 0.5em;
+}
+
+h2 {
+  @include m.typography('headline-medium');
+  margin-bottom: 0.5em;
+}
+
+h3 {
+  @include m.typography('headline-small');
+  margin-bottom: 0.5em;
+}
+
+h4 {
+  @include m.typography('title-large');
+  margin-bottom: 0.5em;
+}
+
+h5 {
+  @include m.typography('title-medium');
+  margin-bottom: 0.5em;
+}
+
+h6 {
+  @include m.typography('title-small');
+  margin-bottom: 0.5em;
+}
+
+p {
+  @include m.typography('body-medium');
+  margin-bottom: 1em;
+}

@@ -1,8 +1,14 @@
-// src/components/checkbox/styles.scss
-@use 'sass:map';
-@use '../../styles/abstract/config' as c;
+// src/components/checkbox/_checkbox.scss
+@use '../../styles/abstract/base' as base;
+@use '../../styles/abstract/variables' as v;
+@use '../../styles/abstract/functions' as f;
+@use '../../styles/abstract/mixins' as m;
+@use '../../styles/abstract/theme' as t;
 
-.#{c.$prefix}-checkbox {
+$component: '#{base.$prefix}-checkbox';
+
+.#{$component} {
+  // Base styles
   display: inline-flex;
   align-items: center;
   position: relative;
@@ -10,6 +16,7 @@
   padding: 4px 0;
   user-select: none;
 
+  // Input (visually hidden but accessible)
   &-input {
     position: absolute;
     opacity: 0;
@@ -23,22 +30,24 @@
       cursor: not-allowed;
     }
 
-    &:focus-visible ~ .#{c.$prefix}-checkbox-icon {
-      outline: 2px solid var(--mtrl-sys-color-primary);
+    // Focus indicator
+    &:focus-visible ~ .#{$component}-icon {
+      outline: 2px solid t.color('primary');
       outline-offset: 2px;
     }
   }
 
+  // Checkbox visual element
   &-icon {
     position: relative;
     width: 18px;
     height: 18px;
-    border-radius: 2px;
-    background-color: var(--mtrl-sys-color-surface-container-highest);
-    border: 2px solid var(--mtrl-sys-color-outline);
-    transition: background-color map.get(c.$motion, 'duration-short4') map.get(c.$motion, 'easing-standard'),
-                border-color map.get(c.$motion, 'duration-short4') map.get(c.$motion, 'easing-standard');
+    border-radius: f.get-shape('tiny');
+    background-color: t.color('surface-container-highest');
+    border: 2px solid t.color('outline');
+    @include m.motion-transition(background-color, border-color);
 
+    // Check mark icon
     svg {
       position: absolute;
       top: 50%;
@@ -47,22 +56,23 @@
       height: 18px;
       transform: translate(-50%, -50%) scale(0);
       fill: currentColor;
-      color: var(--mtrl-sys-color-on-primary);
-      transition: transform map.get(c.$motion, 'duration-short4') map.get(c.$motion, 'easing-emphasized');
+      color: t.color('on-primary');
+      transition: transform v.motion('duration-short4') v.motion('easing-emphasized');
     }
   }
 
+  // Label styling
   &-label {
-    @include c.typography('body-large');
+    @include m.typography('body-large');
     margin-left: 12px;
-    color: var(--mtrl-sys-color-on-surface);
+    color: t.color('on-surface');
   }
 
   // Label position variants
   &--label-start {
     flex-direction: row-reverse;
 
-    .#{c.$prefix}-checkbox-label {
+    .#{$component}-label {
       margin-left: 0;
       margin-right: 12px;
     }
@@ -71,42 +81,44 @@
   &--label-end {
     flex-direction: row;
 
-    .#{c.$prefix}-checkbox-label {
+    .#{$component}-label {
       margin-left: 12px;
       margin-right: 0;
     }
   }
 
-  @include c.rtl {
+  // RTL support
+  @include m.rtl {
     &--label-start {
-      .#{c.$prefix}-checkbox-label {
+      .#{$component}-label {
         margin-left: 12px;
         margin-right: 0;
       }
     }
 
     &--label-end {
-      .#{c.$prefix}-checkbox-label {
+      .#{$component}-label {
         margin-left: 0;
         margin-right: 12px;
       }
     }
   }
 
-  // States
-  .#{c.$prefix}-checkbox-input:checked ~ .#{c.$prefix}-checkbox-icon {
-    background-color: var(--mtrl-sys-color-primary);
-    border-color: var(--mtrl-sys-color-primary);
+  // Checked state
+  .#{$component}-input:checked ~ .#{$component}-icon {
+    background-color: t.color('primary');
+    border-color: t.color('primary');
 
     svg {
       transform: translate(-50%, -50%) scale(1);
     }
   }
 
+  // Indeterminate state
   &--indeterminate {
-    .#{c.$prefix}-checkbox-icon {
-      background-color: var(--mtrl-sys-color-primary);
-      border-color: var(--mtrl-sys-color-primary);
+    .#{$component}-icon {
+      background-color: t.color('primary');
+      border-color: t.color('primary');
 
       &::after {
         content: '';
@@ -116,7 +128,7 @@
         transform: translate(-50%, -50%);
         width: 10px;
         height: 2px;
-        background-color: var(--mtrl-sys-color-on-primary);
+        background-color: t.color('on-primary');
       }
 
       svg {
@@ -125,36 +137,42 @@
     }
   }
 
+  // Disabled state
   &--disabled {
-    opacity: .5;
+    opacity: 0.38;
+    
+    .#{$component}-input {
+      cursor: not-allowed;
+    }
   }
 
-  // Variants
+  // Outlined variant
   &--outlined {
-    .#{c.$prefix}-checkbox-icon {
+    .#{$component}-icon {
       background-color: transparent;
     }
 
-    .#{c.$prefix}-checkbox-input:checked ~ .#{c.$prefix}-checkbox-icon {
+    .#{$component}-input:checked ~ .#{$component}-icon {
       background-color: transparent;
-      border-color: var(--mtrl-sys-color-primary);
+      border-color: t.color('primary');
 
       svg {
-        color: var(--mtrl-sys-color-primary);
+        color: t.color('primary');
       }
     }
 
-    &.#{c.$prefix}-checkbox--indeterminate {
-      .#{c.$prefix}-checkbox-icon::after {
-        background-color: var(--mtrl-sys-color-primary);
+    &.#{$component}--indeterminate {
+      .#{$component}-icon::after {
+        background-color: t.color('primary');
       }
     }
   }
 
-  // Hover effects
+  // State layer effects
   &:not(&--disabled) {
-    // Common hover effect structure
-    .#{c.$prefix}-checkbox-input:hover ~ .#{c.$prefix}-checkbox-icon::before {
+    // Common state layer structure
+    .#{$component}-input:hover ~ .#{$component}-icon::before,
+    .#{$component}-input:active ~ .#{$component}-icon::before {
       content: '';
       position: absolute;
       top: -12px;
@@ -162,37 +180,54 @@
       right: -12px;
       bottom: -12px;
       border-radius: 50%;
+      background-color: t.color('on-surface');
     }
     
-    // Unchecked hover state
-    .#{c.$prefix}-checkbox-input:not(:checked):hover ~ .#{c.$prefix}-checkbox-icon::before {
-      background-color: var(--mtrl-sys-color-primary);
-      opacity: 0.08;
+    // Hover state
+    .#{$component}-input:hover ~ .#{$component}-icon::before {
+      opacity: v.state('hover-state-layer-opacity');
+
     }
 
-    // Checked hover state
-    .#{c.$prefix}-checkbox-input:checked:hover ~ .#{c.$prefix}-checkbox-icon::before {
-      background-color: var(--mtrl-sys-color-primary);
-      opacity: 0.16; // Stronger opacity for checked state
+    // Hover checked state
+    .#{$component}-input:checked:hover ~ .#{$component}-icon::before {
+      opacity: v.state('pressed-state-layer-opacity');
+      background-color: t.color('primary');
     }
-
-    // Indeterminate hover state
-    &.#{c.$prefix}-checkbox--indeterminate .#{c.$prefix}-checkbox-input:hover ~ .#{c.$prefix}-checkbox-icon::before {
-      background-color: var(--mtrl-sys-color-on-primary);
-      opacity: 0.16; // Same stronger opacity for indeterminate state
+    // Active/pressed state
+    .#{$component}-input:active ~ .#{$component}-icon::before {
+      opacity: v.state('pressed-state-layer-opacity');
+      background-color: t.color('on-surface');
     }
   }
 
-  @include c.reduced-motion {
-    .#{c.$prefix}-checkbox-icon,
-    .#{c.$prefix}-checkbox-icon svg {
+  // Accessibility
+  @include m.reduced-motion {
+    .#{$component}-icon,
+    .#{$component}-icon svg {
       transition: none;
     }
   }
 
-  @include c.high-contrast {
-    .#{c.$prefix}-checkbox-icon {
+  @include m.high-contrast {
+    .#{$component}-icon {
       border-width: 2px;
     }
+  }
+  
+  // Touch target
+  // @include m.touch-target;
+}
+
+// Checkbox group layout
+.#{$component}-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  
+  &--horizontal {
+    flex-direction: row;
+    gap: 16px;
+    flex-wrap: wrap;
   }
 }

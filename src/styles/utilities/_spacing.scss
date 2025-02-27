@@ -1,0 +1,139 @@
+// src/styles/utilities/_spacing.scss
+@use '../abstract/base' as base;
+@use 'sass:map';
+
+$prefix: base.$prefix;
+
+// Spacing scale
+$spacing-scale: (
+  '0': 0,
+  '1': 4px,
+  '2': 8px,
+  '3': 12px,
+  '4': 16px,
+  '5': 20px,
+  '6': 24px,
+  '8': 32px,
+  '10': 40px,
+  '12': 48px,
+  '14': 56px,
+  '16': 64px,
+  '20': 80px,
+  '24': 96px,
+  '32': 128px,
+  'auto': auto
+);
+
+// Generate spacing utilities
+@each $key, $value in $spacing-scale {
+  // Margin utilities
+  .#{$prefix}-m-#{$key} {
+    margin: $value;
+  }
+  
+  .#{$prefix}-mx-#{$key} {
+    margin-left: $value;
+    margin-right: $value;
+  }
+  
+  .#{$prefix}-my-#{$key} {
+    margin-top: $value;
+    margin-bottom: $value;
+  }
+  
+  .#{$prefix}-mt-#{$key} {
+    margin-top: $value;
+  }
+  
+  .#{$prefix}-mb-#{$key} {
+    margin-bottom: $value;
+  }
+  
+  .#{$prefix}-ml-#{$key} {
+    margin-left: $value;
+  }
+  
+  .#{$prefix}-mr-#{$key} {
+    margin-right: $value;
+  }
+  
+  // Padding utilities
+  .#{$prefix}-p-#{$key} {
+    padding: $value;
+  }
+  
+  .#{$prefix}-px-#{$key} {
+    padding-left: $value;
+    padding-right: $value;
+  }
+  
+  .#{$prefix}-py-#{$key} {
+    padding-top: $value;
+    padding-bottom: $value;
+  }
+  
+  .#{$prefix}-pt-#{$key} {
+    padding-top: $value;
+  }
+  
+  .#{$prefix}-pb-#{$key} {
+    padding-bottom: $value;
+  }
+  
+  .#{$prefix}-pl-#{$key} {
+    padding-left: $value;
+  }
+  
+  .#{$prefix}-pr-#{$key} {
+    padding-right: $value;
+  }
+}
+
+// Gap utilities
+@each $key, $value in $spacing-scale {
+  .#{$prefix}-gap-#{$key} {
+    gap: $value;
+  }
+  
+  .#{$prefix}-gap-x-#{$key} {
+    column-gap: $value;
+  }
+  
+  .#{$prefix}-gap-y-#{$key} {
+    row-gap: $value;
+  }
+}
+
+// Responsive margin utilities for common breakpoints
+@each $breakpoint in (sm, md, lg, xl) {
+  @media (min-width: map.get((
+    sm: 600px,
+    md: 960px,
+    lg: 1280px,
+    xl: 1920px
+  ), $breakpoint)) {
+    @each $key, $value in (
+      '0': 0,
+      '4': 16px,
+      '6': 24px,
+      '8': 32px,
+      '10': 40px,
+      '12': 48px,
+      'auto': auto
+    ) {
+      .#{$prefix}-#{$breakpoint}:m-#{$key} {
+        margin: $value;
+      }
+      
+      .#{$prefix}-#{$breakpoint}:mx-#{$key} {
+        margin-left: $value;
+        margin-right: $value;
+      }
+      
+      .#{$prefix}-#{$breakpoint}:my-#{$key} {
+        margin-top: $value;
+        margin-bottom: $value;
+      }
+    }
+  }
+}
