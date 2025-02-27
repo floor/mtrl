@@ -41,7 +41,9 @@ const createLayout = (schema, container, structure = {}, level = 0, components =
         options = schema[i + 2]
       }
 
-      if (typeof schema[i + 1] === 'string') {
+      if (options.id) {
+        name = options.id
+      } else if (typeof schema[i + 1] === 'string') {
         name = schema[i + 1]
         if (!schema[i].isElement && !schema[i].isComponent) {
           options.name = name

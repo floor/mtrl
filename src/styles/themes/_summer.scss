@@ -1,0 +1,82 @@
+// src/styles/themes/_summer.scss
+@use '../abstract/base' as *;
+@use 'base-theme' as *;
+
+@include create-theme('summer') {
+  // Key colors inspired by Chuck Jones' Road Runner desert palette
+  --#{$prefix}-sys-color-primary: #4196CB; // Bright desert sky blue
+  --#{$prefix}-sys-color-on-primary: #FFFFFF;
+  --#{$prefix}-sys-color-primary-container: #D1E4FF;
+  --#{$prefix}-sys-color-on-primary-container: #001D36;
+  
+  --#{$prefix}-sys-color-secondary: #F3C649; // Desert sand/yellow
+  --#{$prefix}-sys-color-on-secondary: #3E2E00;
+  --#{$prefix}-sys-color-secondary-container: #FFF4D5;
+  --#{$prefix}-sys-color-on-secondary-container: #291F00;
+  
+  --#{$prefix}-sys-color-tertiary: #A75B39; // Mesa rock orange-brown
+  --#{$prefix}-sys-color-on-tertiary: #FFFFFF;
+  --#{$prefix}-sys-color-tertiary-container: #FFDBC8;
+  --#{$prefix}-sys-color-on-tertiary-container: #3A1600;
+
+  // Accent colors for more variety
+  --#{$prefix}-sys-color-accent: #6B4596; // Road Runner purple
+  --#{$prefix}-sys-color-on-accent: #FFFFFF;
+  --#{$prefix}-sys-color-accent-container: #EBDCFF;
+  --#{$prefix}-sys-color-on-accent-container: #25005C;
+  
+  // Neutral colors with desert warmth
+  --#{$prefix}-sys-color-surface: #FFFBF8;
+  --#{$prefix}-sys-color-surface-dim: #EAE2D9;
+  --#{$prefix}-sys-color-surface-bright: #FFFBF8;
+  --#{$prefix}-sys-color-surface-container-lowest: #FFFFFF;
+  --#{$prefix}-sys-color-surface-container-low: #FEF5ED;
+  --#{$prefix}-sys-color-surface-container: #F7EFE7;
+  --#{$prefix}-sys-color-surface-container-high: #F1E9E1;
+  --#{$prefix}-sys-color-surface-container-highest: #EBE3DB;
+  
+  --#{$prefix}-sys-color-on-surface: #1F1B16;
+  --#{$prefix}-sys-color-on-surface-variant: #50453B;
+  
+  --#{$prefix}-sys-color-outline: #827568;
+  --#{$prefix}-sys-color-outline-variant: #D5C8B9;
+
+  &[data-theme-mode="dark"] {
+    // Key colors - darker but still vibrant
+    --#{$prefix}-sys-color-primary: #9ECAFF;
+    --#{$prefix}-sys-color-on-primary: #003258;
+    --#{$prefix}-sys-color-primary-container: #00497D;
+    --#{$prefix}-sys-color-on-primary-container: #D1E4FF;
+    
+    --#{$prefix}-sys-color-secondary: #DBC054;
+    --#{$prefix}-sys-color-on-secondary: #3E2E00;
+    --#{$prefix}-sys-color-secondary-container: #584400;
+    --#{$prefix}-sys-color-on-secondary-container: #FFF4D5;
+    
+    --#{$prefix}-sys-color-tertiary: #FFB694;
+    --#{$prefix}-sys-color-on-tertiary: #5C2900;
+    --#{$prefix}-sys-color-tertiary-container: #803D15;
+    --#{$prefix}-sys-color-on-tertiary-container: #FFDBC8;
+    
+    --#{$prefix}-sys-color-accent: #D0BCFF;
+    --#{$prefix}-sys-color-on-accent: #381E72;
+    --#{$prefix}-sys-color-accent-container: #503396;
+    --#{$prefix}-sys-color-on-accent-container: #EBDCFF;
+
+    // Neutral colors
+    --#{$prefix}-sys-color-surface: #1F1B16;
+    --#{$prefix}-sys-color-surface-dim: #16130F;
+    --#{$prefix}-sys-color-surface-bright: #3B362F;
+    --#{$prefix}-sys-color-surface-container-lowest: #130F0B;
+    --#{$prefix}-sys-color-surface-container-low: #1F1B16;
+    --#{$prefix}-sys-color-surface-container: #231F19;
+    --#{$prefix}-sys-color-surface-container-high: #2D2921;
+    --#{$prefix}-sys-color-surface-container-highest: #38332B;
+    
+    --#{$prefix}-sys-color-on-surface: #EAE1D9;
+    --#{$prefix}-sys-color-on-surface-variant: #D5C8B9;
+    
+    --#{$prefix}-sys-color-outline: #9E8F80;
+    --#{$prefix}-sys-color-outline-variant: #50453B;
+  }
+}
