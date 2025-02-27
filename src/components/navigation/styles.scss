@@ -1,6 +1,406 @@
-// src/components/navigation/styles.scss
-@use '../../styles/abstract/config' as c;
-@use 'styles/base';
-@use 'styles/rail';
-@use 'styles/drawer';
-@use 'styles/bar';
+// src/components/navigation/_navigation.scss
+@use '../../styles/abstract/base' as base;
+@use '../../styles/abstract/variables' as v;
+@use '../../styles/abstract/functions' as f;
+@use '../../styles/abstract/mixins' as m;
+@use '../../styles/abstract/theme' as t;
+
+$component: '#{base.$prefix}-nav';
+
+// BASE STYLES
+.#{$component} {
+  display: flex;
+  position: relative;
+  background-color: t.color('surface-container');
+
+  // Base nav item styles
+  &-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    border: none;
+    background: none;
+    cursor: pointer;
+    padding: 12px;
+    gap: 12px;
+    color: t.color('on-surface-variant');
+    @include m.motion-transition(all);
+
+    &-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      color: inherit;
+      border-radius: 50%;
+      padding: 8px;
+
+      svg {
+        width: 24px;
+        height: 24px;
+        fill: currentColor;
+      }
+    }
+
+    &--active {
+      color: t.color('primary');
+    }
+
+    &-label {
+      @include m.typography('label-large');
+      @include m.motion-transition(opacity);
+    }
+
+    &-badge {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      min-width: 16px;
+      height: 16px;
+      padding: 0 4px;
+      border-radius: 8px;
+      background-color: t.color('error');
+      color: t.color('on-error');
+      @include m.typography('label-small');
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  }
+
+  // Navigation positions
+  &--left {
+    left: 0;
+  }
+
+  &--right {
+    right: 0;
+  }
+
+  &--top {
+    top: 0;
+  }
+
+  &--bottom {
+    bottom: 0;
+  }
+
+  // States
+  &--disabled {
+    opacity: 0.38;
+    pointer-events: none;
+  }
+
+  // RTL Support
+  @include m.rtl {
+    &--left {
+      right: 0;
+      left: auto;
+    }
+
+    &--right {
+      left: 0;
+      right: auto;
+    }
+
+    .#{$component}-item {
+      &-badge {
+        right: auto;
+        left: 8px;
+      }
+    }
+  }
+
+  // Motion
+  @include m.reduced-motion {
+    &-item,
+    &-item-label {
+      transition: none;
+    }
+  }
+
+  // High contrast
+  @include m.high-contrast {
+    border: 1px solid currentColor;
+
+    &-item {
+      &--active {
+        outline: 2px solid currentColor;
+        outline-offset: -2px;
+      }
+    }
+  }
+
+  // BAR NAVIGATION
+  &--bar {
+    flex-direction: row;
+    width: 100%;
+    height: 80px;
+    padding: 0 12px;
+    justify-content: space-around;
+
+    .#{$component}-item {
+      flex: 1;
+      flex-direction: column;
+      height: 100%;
+      max-width: 168px;
+      gap: 4px;
+
+      &:hover {
+        .#{$component}-item-icon {
+          @include m.state-layer(t.color('on-surface'), 'hover');
+        }
+      }
+
+      &--active {
+        .#{$component}-item-icon {
+          background-color: t.color('secondary-container');
+        }
+      }
+
+      &-icon {
+        margin-bottom: 4px;
+        padding: 16px;
+        @include m.motion-transition(background-color);
+      }
+
+      &-label {
+        @include m.typography('label-medium');
+        text-align: center;
+      }
+
+      &-badge {
+        top: 4px;
+        right: 50%;
+        transform: translateX(12px);
+      }
+    }
+  }
+
+  // RAIL NAVIGATION
+  &--rail {
+    flex-direction: column;
+    width: 80px;
+    height: 100%;
+    padding: 12px 0;
+
+    .#{$component}-item {
+      flex-direction: column;
+      width: 100%;
+      min-height: 56px;
+      padding: 2px;
+      margin: -2px auto 14px;
+      gap: 0;
+
+      &:hover {
+        .#{$component}-item-icon {
+          @include m.state-layer(t.color('on-surface'), 'hover');
+        }
+      }
+
+      &--active {
+        .#{$component}-item-icon {
+          background-color: t.color('secondary-container');
+        }
+      }
+
+      &-icon {
+        margin-bottom: 4px;
+        padding: 8px;
+        width: 56px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 16px;
+        @include m.motion-transition(background-color);
+
+        svg {
+          width: 24px;
+          height: 24px;
+          fill: currentColor;
+        }
+      }
+
+      &-label {
+        @include m.typography('label-small');
+        text-align: center;
+        color: inherit;
+        font-size: 12px;
+        line-height: 16px;
+      }
+
+      &-badge {
+        top: 4px;
+        right: 16px;
+      }
+    }
+  }
+
+  // DRAWER NAVIGATION STYLES (BOTH MODAL AND STANDARD)
+  &--drawer,
+  &--drawer-modal,
+  &--drawer-standard {
+    flex-direction: column;
+    width: 256px;
+    height: 100%;
+    padding: 12px 0;
+    transition: transform v.motion('duration-short2') v.motion('easing-standard');
+    transform: translateX(0);
+
+    // Hidden state
+    &.#{$component}--hidden {
+      transform: translateX(-100%);
+      
+      @include m.rtl {
+        transform: translateX(100%);
+      }
+    }
+
+    // Item container for nesting
+    .#{$component}-item-container {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    // Base nav item styles
+    .#{$component}-item {
+      padding: 12px 16px;
+      align-items: center;
+      justify-content: flex-start;
+      border-radius: 28px;
+      margin: 0 12px;
+      width: calc(100% - 24px);
+
+      &:hover {
+        @include m.state-layer(t.color('on-surface'), 'hover');
+      }
+
+      &--active {
+        background-color: t.color('secondary-container');
+        color: t.color('on-secondary-container');
+
+        &:hover {
+          background-color: t.color('secondary-container');
+        }
+      }
+
+      &-icon {
+        margin-right: 12px;
+        flex-shrink: 0;
+      }
+
+      &-label {
+        @include m.typography('label-large');
+        flex-grow: 1;
+        text-align: left;
+      }
+
+      &-badge {
+        position: static;
+        margin-left: auto;
+        margin-right: 8px;
+      }
+    }
+
+    // Nested navigation styles
+    .#{$component}-nested-container {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      margin-left: 28px;
+      padding-right: 12px;
+      
+      &[hidden] {
+        display: none;
+      }
+
+      // Adjust nested items styles
+      .#{$component}-item {
+        margin: 0;
+        padding: 8px 16px;
+        font-size: 14px;
+        
+        &-icon {
+          width: 20px;
+          height: 20px;
+          padding: 6px;
+          
+          svg {
+            width: 20px;
+            height: 20px;
+          }
+        }
+      }
+    }
+
+    // Expand icon styles
+    .#{$component}-expand-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      margin-left: auto;
+      color: inherit;
+      @include m.motion-transition(transform);
+
+      svg {
+        width: 20px;
+        height: 20px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2px;
+      }
+    }
+
+    // RTL support
+    @include m.rtl {
+      .#{$component}-item {
+        &-icon {
+          margin-right: 0;
+          margin-left: 12px;
+        }
+
+        &-label {
+          text-align: right;
+        }
+
+        &-badge {
+          margin-left: 8px;
+          margin-right: auto;
+        }
+      }
+
+      .#{$component}-nested-container {
+        margin-left: 0;
+        margin-right: 28px;
+        padding-right: 0;
+        padding-left: 12px;
+      }
+
+      .#{$component}-expand-icon {
+        margin-left: 0;
+        margin-right: auto;
+        transform: scaleX(-1);
+      }
+    }
+  }
+
+  // Specific drawer variants
+  &--drawer-modal {
+    @include m.elevation(2);
+  }
+
+  &--drawer-standard {
+    border-right: 1px solid t.color('outline-variant');
+
+    @include m.rtl {
+      border-right: none;
+      border-left: 1px solid t.color('outline-variant');
+    }
+  }
+}

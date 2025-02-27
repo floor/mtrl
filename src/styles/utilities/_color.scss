@@ -1,0 +1,154 @@
+// src/styles/utilities/_colors.scss
+@use '../abstract/base' as base;
+@use '../abstract/theme' as t;
+
+$prefix: base.$prefix;
+
+// Text colors
+.#{$prefix}-text-primary {
+  color: t.color('primary');
+}
+
+.#{$prefix}-text-on-primary {
+  color: t.color('on-primary');
+}
+
+.#{$prefix}-text-secondary {
+  color: t.color('secondary');
+}
+
+.#{$prefix}-text-on-secondary {
+  color: t.color('on-secondary');
+}
+
+.#{$prefix}-text-tertiary {
+  color: t.color('tertiary');
+}
+
+.#{$prefix}-text-on-tertiary {
+  color: t.color('on-tertiary');
+}
+
+.#{$prefix}-text-surface {
+  color: t.color('on-surface');
+}
+
+.#{$prefix}-text-surface-variant {
+  color: t.color('on-surface-variant');
+}
+
+.#{$prefix}-text-error {
+  color: t.color('error');
+}
+
+.#{$prefix}-text-outline {
+  color: t.color('outline');
+}
+
+// Background colors
+.#{$prefix}-bg-primary {
+  background-color: t.color('primary');
+}
+
+.#{$prefix}-bg-primary-container {
+  background-color: t.color('primary-container');
+}
+
+.#{$prefix}-bg-secondary {
+  background-color: t.color('secondary');
+}
+
+.#{$prefix}-bg-secondary-container {
+  background-color: t.color('secondary-container');
+}
+
+.#{$prefix}-bg-tertiary {
+  background-color: t.color('tertiary');
+}
+
+.#{$prefix}-bg-tertiary-container {
+  background-color: t.color('tertiary-container');
+}
+
+.#{$prefix}-bg-surface {
+  background-color: t.color('surface');
+}
+
+.#{$prefix}-bg-surface-dim {
+  background-color: t.color('surface-dim');
+}
+
+.#{$prefix}-bg-surface-bright {
+  background-color: t.color('surface-bright');
+}
+
+.#{$prefix}-bg-surface-container {
+  background-color: t.color('surface-container');
+}
+
+.#{$prefix}-bg-surface-container-low {
+  background-color: t.color('surface-container-low');
+}
+
+.#{$prefix}-bg-surface-container-high {
+  background-color: t.color('surface-container-high');
+}
+
+.#{$prefix}-bg-surface-container-highest {
+  background-color: t.color('surface-container-highest');
+}
+
+.#{$prefix}-bg-error {
+  background-color: t.color('error');
+}
+
+.#{$prefix}-bg-error-container {
+  background-color: t.color('error-container');
+}
+
+// Opacity variants for surface colors
+@for $i from 1 through 9 {
+  $opacity: $i * 0.1;
+  
+  .#{$prefix}-bg-primary-opacity-#{$i} {
+    background-color: t.alpha('primary', $opacity);
+  }
+  
+  .#{$prefix}-bg-on-surface-opacity-#{$i} {
+    background-color: t.alpha('on-surface', $opacity);
+  }
+}
+
+// Border colors
+.#{$prefix}-border-primary {
+  border-color: t.color('primary');
+}
+
+.#{$prefix}-border-outline {
+  border-color: t.color('outline');
+}
+
+.#{$prefix}-border-outline-variant {
+  border-color: t.color('outline-variant');
+}
+
+// Common border utilities
+.#{$prefix}-border {
+  border: 1px solid t.color('outline-variant');
+}
+
+.#{$prefix}-border-t {
+  border-top: 1px solid t.color('outline-variant');
+}
+
+.#{$prefix}-border-r {
+  border-right: 1px solid t.color('outline-variant');
+}
+
+.#{$prefix}-border-b {
+  border-bottom: 1px solid t.color('outline-variant');
+}
+
+.#{$prefix}-border-l {
+  border-left: 1px solid t.color('outline-variant');
+}

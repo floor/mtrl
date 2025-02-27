@@ -1,0 +1,79 @@
+// src/components/ripple/_ripple.scss
+@use '../../styles/abstract/base' as base;
+@use '../../styles/abstract/variables' as v;
+@use '../../styles/abstract/functions' as f;
+@use '../../styles/abstract/mixins' as m;
+@use '../../styles/abstract/theme' as t;
+
+$component: '#{base.$prefix}-ripple';
+
+.#{$component} {
+  // Ripple container
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  
+  // Ripple element
+  &-wave {
+    position: absolute;
+    border-radius: 50%;
+    background-color: currentColor;
+    transform: scale(0);
+    opacity: 0;
+    pointer-events: none;
+    will-change: transform, opacity;
+    
+    // Animation
+    transition-property: transform, opacity;
+    transition-duration: v.motion('duration-short4');
+    transition-timing-function: v.motion('easing-standard');
+    
+    // Active ripple
+    &.active {
+      transform: scale(1);
+      opacity: v.state('hover-state-layer-opacity');
+    }
+    
+    &.fade-out {
+      opacity: 0;
+    }
+  }
+}
+
+// Standalone utility for adding ripple to any element
+[data-ripple] {
+  position: relative;
+  overflow: hidden;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 0;
+    pointer-events: none;
+  }
+  
+  // Handle ripple color based on data attribute
+  &[data-ripple="light"]::after {
+    background-color: rgba(255, 255, 255, 0.3);
+  }
+  
+  &[data-ripple="dark"]::after {
+    background-color: rgba(0, 0, 0, 0.1);
+  }
+  
+  // Make content appear above ripple
+  > * {
+    position: relative;
+    z-index: 1;
+  }
+}

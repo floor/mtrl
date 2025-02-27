@@ -2,8 +2,8 @@
 @use '../abstract/base' as *;
 @use 'base-theme' as *;
 
-// Material Design 3 Baseline Theme
-@include create-theme('baseline') {
+// Variables for light theme (default)
+@mixin baseline-light-variables {
   // Key colors
   --#{$prefix}-sys-color-primary: #6750A4;
   --#{$prefix}-sys-color-on-primary: #FFFFFF;
@@ -47,44 +47,69 @@
   --#{$prefix}-sys-state-focus-state-layer-opacity: 0.12;
   --#{$prefix}-sys-state-pressed-state-layer-opacity: 0.12;
   --#{$prefix}-sys-state-dragged-state-layer-opacity: 0.16;
+}
+
+// Variables for dark theme
+@mixin baseline-dark-variables {
+  // Key colors
+  --#{$prefix}-sys-color-primary: #D0BCFF;
+  --#{$prefix}-sys-color-on-primary: #381E72;
+  --#{$prefix}-sys-color-primary-container: #4F378B;
+  --#{$prefix}-sys-color-on-primary-container: #EADDFF;
+  
+  --#{$prefix}-sys-color-secondary: #CCC2DC;
+  --#{$prefix}-sys-color-on-secondary: #332D41;
+  --#{$prefix}-sys-color-secondary-container: #4A4458;
+  --#{$prefix}-sys-color-on-secondary-container: #E8DEF8;
+  
+  --#{$prefix}-sys-color-tertiary: #EFB8C8;
+  --#{$prefix}-sys-color-on-tertiary: #492532;
+  --#{$prefix}-sys-color-tertiary-container: #633B48;
+  --#{$prefix}-sys-color-on-tertiary-container: #FFD8E4;
+
+  // Neutral colors
+  --#{$prefix}-sys-color-surface: #1C1B1F;
+  --#{$prefix}-sys-color-surface-dim: #141218;
+  --#{$prefix}-sys-color-surface-bright: #3B383D;
+  --#{$prefix}-sys-color-surface-container-lowest: #0F0D13;
+  --#{$prefix}-sys-color-surface-container-low: #1D1B20;
+  --#{$prefix}-sys-color-surface-container: #211F26;
+  --#{$prefix}-sys-color-surface-container-high: #2B2930;
+  --#{$prefix}-sys-color-surface-container-highest: #36343B;
+  
+  --#{$prefix}-sys-color-on-surface: #E6E1E5;
+  --#{$prefix}-sys-color-on-surface-variant: #CAC4D0;
+  
+  // Additional colors
+  --#{$prefix}-sys-color-outline: #938F99;
+  --#{$prefix}-sys-color-outline-variant: #444746;
+  --#{$prefix}-sys-color-shadow: #000000;
+  --#{$prefix}-sys-color-scrim: #000000;
+  --#{$prefix}-sys-color-inverse-surface: #E6E1E5;
+  --#{$prefix}-sys-color-inverse-on-surface: #313033;
+  --#{$prefix}-sys-color-inverse-primary: #6750A4;
+}
+
+// Apply baseline light theme to :root by default
+:root {
+  @include baseline-light-variables;
+  
+  // Apply dark theme based on system preference
+  @media (prefers-color-scheme: dark) {
+    @include baseline-dark-variables;
+  }
+}
+
+// Dark theme class for manual switching
+.dark-theme {
+  @include baseline-dark-variables;
+}
+
+// Make it available as a selectable theme
+@include create-theme('baseline') {
+  @include baseline-light-variables;
 
   &[data-theme-mode="dark"] {
-    // Key colors
-    --#{$prefix}-sys-color-primary: #D0BCFF;
-    --#{$prefix}-sys-color-on-primary: #381E72;
-    --#{$prefix}-sys-color-primary-container: #4F378B;
-    --#{$prefix}-sys-color-on-primary-container: #EADDFF;
-    
-    --#{$prefix}-sys-color-secondary: #CCC2DC;
-    --#{$prefix}-sys-color-on-secondary: #332D41;
-    --#{$prefix}-sys-color-secondary-container: #4A4458;
-    --#{$prefix}-sys-color-on-secondary-container: #E8DEF8;
-    
-    --#{$prefix}-sys-color-tertiary: #EFB8C8;
-    --#{$prefix}-sys-color-on-tertiary: #492532;
-    --#{$prefix}-sys-color-tertiary-container: #633B48;
-    --#{$prefix}-sys-color-on-tertiary-container: #FFD8E4;
-
-    // Neutral colors
-    --#{$prefix}-sys-color-surface: #1C1B1F;
-    --#{$prefix}-sys-color-surface-dim: #141218;
-    --#{$prefix}-sys-color-surface-bright: #3B383D;
-    --#{$prefix}-sys-color-surface-container-lowest: #0F0D13;
-    --#{$prefix}-sys-color-surface-container-low: #1D1B20;
-    --#{$prefix}-sys-color-surface-container: #211F26;
-    --#{$prefix}-sys-color-surface-container-high: #2B2930;
-    --#{$prefix}-sys-color-surface-container-highest: #36343B;
-    
-    --#{$prefix}-sys-color-on-surface: #E6E1E5;
-    --#{$prefix}-sys-color-on-surface-variant: #CAC4D0;
-    
-    // Additional colors
-    --#{$prefix}-sys-color-outline: #938F99;
-    --#{$prefix}-sys-color-outline-variant: #444746;
-    --#{$prefix}-sys-color-shadow: #000000;
-    --#{$prefix}-sys-color-scrim: #000000;
-    --#{$prefix}-sys-color-inverse-surface: #E6E1E5;
-    --#{$prefix}-sys-color-inverse-on-surface: #313033;
-    --#{$prefix}-sys-color-inverse-primary: #6750A4;
+    @include baseline-dark-variables;
   }
 }

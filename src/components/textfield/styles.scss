@@ -1,6 +1,352 @@
 // src/components/textfield/styles.scss
-@use 'sass:map';
-@use '../../styles/abstract/config' as c;
-@use 'styles/base';
-@use 'styles/filled';
-@use 'styles/outlined';
+@use '../../styles/abstract/base' as base;
+@use '../../styles/abstract/variables' as v;
+@use '../../styles/abstract/functions' as f;
+@use '../../styles/abstract/mixins' as m;
+@use '../../styles/abstract/theme' as t;
+
+// Define the component once
+$component: '#{base.$prefix}-textfield';
+
+// ===== BASE STYLES =====
+.#{$component} {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  min-width: 210px;
+  
+  // Size variants
+  &--small {
+    .#{$component}-input {
+      height: 48px;
+    }
+  }
+
+  &--large {
+    .#{$component}-input {
+      height: 64px;
+    }
+  }
+  
+  // Label
+  &-label {
+    @include m.typography('body-large');
+    user-select: none;
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    transform-origin: left top;
+    pointer-events: none;
+    border-radius: 2px;
+    color: t.color('on-surface-variant');
+    transition: transform v.motion('duration-short4') v.motion('easing-emphasized'),
+                color v.motion('duration-short2') v.motion('easing-standard');
+  }
+  
+  // Input element
+  &-input {
+    @include m.typography('body-large');
+    @include m.shape('extra-small');
+    padding: 13px 16px;
+    width: 100%;
+    color: t.color('on-surface');
+    border: 0;
+    appearance: none;
+    outline: none;
+    
+    &::placeholder {
+      color: transparent;
+    }
+
+    // Autofill styles
+    &:-webkit-autofill {
+      -webkit-text-fill-color: t.color('on-surface');
+      transition: background-color 5000s ease-in-out 0s; // Long transition to keep the background
+      
+      & ~ .#{$component}-label {
+        transform: translateY(-95%) scale(0.75);
+        background-color: t.color('surface');
+      }
+    }
+
+    // Firefox autofill
+    &:autofill {
+      color: t.color('on-surface');
+      
+      & ~ .#{$component}-label {
+        transform: translateY(-95%) scale(0.75);
+        background-color: t.color('surface');
+      }
+    }
+  }
+
+  // Error state
+  &--error {
+    border-color: t.color('error');
+    
+    .#{$component}-label {
+      color: t.color('error');
+    }
+  }
+  
+  // Disabled state
+  &-input:disabled {
+    opacity: 0.38;
+    border-color: t.color('on-surface');
+    background-color: t.alpha('on-surface', 0.04);
+    pointer-events: none;
+    
+    & ~ .#{$component}-label {
+      color: t.color('on-surface');
+      opacity: 0.38;
+    }
+  }
+  
+  // Helper text
+  &-helper {
+    @include m.typography('body-small');
+    margin-top: 4px;
+    color: t.color('on-surface-variant');
+    
+    &--error {
+      color: t.color('error');
+    }
+  }
+  
+  // Required indicator
+  &-required {
+    color: t.color('error');
+    margin-left: 4px;
+  }
+  
+  // Accessibility
+  @include m.reduced-motion {
+    &-label {
+      transition: none;
+    }
+  }
+  
+  // RTL support
+  @include m.rtl {
+    &-label {
+      left: auto;
+      right: 16px;
+      transform-origin: right top;
+    }
+    
+    &-required {
+      margin-left: 0;
+      margin-right: 4px;
+    }
+  }
+  
+  // ===== FILLED VARIANT =====
+  &--filled {
+    border-bottom: 1px solid t.color('outline');
+    
+    .#{$component}-input {
+      background-color: t.color('surface-container-highest');
+      padding: 20px 16px 7px;
+      border-radius: f.get-shape('extra-small') f.get-shape('extra-small') 0 0;
+      @include m.motion-transition(background-color, border-color);
+      
+      &:focus {
+        padding-bottom: 6px;
+      }
+
+      // Autofill styles for filled variant
+      &:-webkit-autofill {
+        border-radius: f.get-shape('extra-small') f.get-shape('extra-small') 0 0;
+        
+        & ~ .#{$component}-label {
+          transform: translateY(-95%) scale(0.75);
+          color: t.color('on-surface-variant');
+        }
+      }
+
+      &:autofill {
+        & ~ .#{$component}-label {
+          transform: translateY(-95%) scale(0.75);
+          color: t.color('on-surface-variant');
+        }
+      }
+    }
+
+    // Populated field (not empty) or focused field label position
+    &:not(.#{$component}--empty) .#{$component}-label,
+    &.#{$component}--focused .#{$component}-label {
+      transform: translateY(-95%) scale(0.75);
+    }
+
+    // Focus state
+    &.#{$component}--focused {
+      border-bottom: 2px solid t.color('primary');
+      
+      .#{$component}-label {
+        color: t.color('primary');
+      }
+      
+      &:hover {
+        border-bottom: 2px solid t.color('primary');
+      }
+    }
+    
+    // Hover state
+    &:hover {
+      border-bottom: 1px solid t.color('primary');
+      
+      .#{$component}-label {
+        color: t.color('primary');
+      }
+    }
+    
+    // Error state
+    &.#{$component}--error {
+      border-bottom: 2px solid t.color('error');
+      
+      .#{$component}-label {
+        color: t.color('error');
+      }
+      
+      &:hover {
+        border-bottom: 2px solid t.color('error');
+      }
+      
+      &.#{$component}--focused {
+        border-bottom: 2px solid t.color('error');
+      }
+    }
+    
+    // Disabled state
+    &.#{$component}--disabled {
+      border-bottom-color: t.alpha('on-surface', 0.38);
+      pointer-events: none;
+      
+      .#{$component}-input {
+        background-color: t.alpha('on-surface', 0.04);
+      }
+    }
+    
+    // RTL support
+    @include m.rtl {
+      .#{$component}-label {
+        left: auto;
+        right: 16px;
+      }
+    }
+  }
+  
+  // ===== OUTLINED VARIANT =====
+  &--outlined {
+    border: 1px solid t.color('outline');
+    border-radius: f.get-shape('extra-small');
+    @include m.motion-transition(border-color);
+    
+    .#{$component}-input {
+      background-color: transparent;
+      padding: 13px 16px 14px;
+      @include m.motion-transition(padding);
+
+      // Autofill styles for outlined variant
+      &:-webkit-autofill {
+        border-radius: f.get-shape('extra-small');
+        
+        & ~ .#{$component}-label {
+          background-color: t.color('surface');
+          transform: translateY(-145%) scale(0.75);
+          left: 13px;
+          padding: 0 4px;
+        }
+      }
+
+      &:autofill {
+        & ~ .#{$component}-label {
+          background-color: t.color('surface');
+          transform: translateY(-145%) scale(0.75);
+          left: 13px;
+          padding: 0 4px;
+        }
+      }
+    }
+
+    // Populated field (not empty) or focused field label position
+    &:not(.#{$component}--empty) .#{$component}-label,
+    &.#{$component}--focused .#{$component}-label {
+      background-color: t.color('surface');
+      transform: translateY(-145%) scale(0.75);
+      left: 13px;
+      padding: 0 4px;
+    }
+
+    // Focus state
+    &.#{$component}--focused {
+      border: 2px solid t.color('primary');
+      
+      .#{$component}-label {
+        color: t.color('primary');
+        border-radius: 2px;
+        left: 12px;
+      }
+      
+      .#{$component}-input {
+        padding: 12px 15px 13px;
+      }
+      
+      &:hover {
+        border: 2px solid t.color('primary');
+      }
+    }
+    
+    // Hover state
+    &:hover {
+      border: 1px solid t.color('primary');
+      
+      .#{$component}-label {
+        color: t.color('primary');
+      }
+    }
+    
+    // Error state
+    &.#{$component}--error {
+      border: 2px solid t.color('error');
+      
+      .#{$component}-label {
+        color: t.color('error');
+        left: 12px;
+      }
+      
+      .#{$component}-input {
+        padding: 12px 15px 13px;
+      }
+      
+      &:hover,
+      &.#{$component}--focused {
+        border: 2px solid t.color('error');
+      }
+    }
+    
+    // Disabled state
+    &.#{$component}--disabled {
+      border-color: t.alpha('on-surface', 0.38);
+      pointer-events: none;
+    }
+    
+    // RTL support
+    @include m.rtl {
+      &:not(.#{$component}--empty) .#{$component}-label,
+      &.#{$component}--focused .#{$component}-label {
+        left: auto;
+        right: 13px;
+      }
+      
+      &.#{$component}--focused .#{$component}-label {
+        right: 12px;
+      }
+      
+      &.#{$component}--error .#{$component}-label {
+        right: 12px;
+      }
+    }
+  }
+}

@@ -1,30 +1,33 @@
-// src/components/menu/styles.scss
-@use 'sass:map';
-@use '../../styles/abstract/config' as c;
-@use '../../styles/abstract/mixins' as m;
+// src/components/menu/_menu.scss
+@use '../../styles/abstract/base' as base;
 @use '../../styles/abstract/variables' as v;
+@use '../../styles/abstract/functions' as f;
+@use '../../styles/abstract/mixins' as m;
+@use '../../styles/abstract/theme' as t;
 
-.#{c.$prefix}-menu {
+$component: '#{base.$prefix}-menu';
+
+.#{$component} {
   // Base styles
-  @include c.typography('body-medium');
-  @include c.shape('small');
+  @include m.typography('body-medium');
+  @include m.shape('extra-small');
   
   position: fixed;
-  z-index: map.get(v.$z-index, 'menu');
+  z-index: f.get-z-index('menu');
   min-width: 112px;
   max-width: 280px;
   padding: 8px 0;
-  background-color: var(--mtrl-sys-color-surface-container);
-  color: var(--mtrl-sys-color-on-surface);
-  @include c.elevation(2);
+  background-color: t.color('surface-container');
+  color: t.color('on-surface');
+  @include m.elevation(2);
   
   display: none;
   opacity: 0;
   transform: scale(0.8);
   transform-origin: top left;
   pointer-events: none;
-  transition: opacity 150ms cubic-bezier(0.4, 0, 0.2, 1),
-              transform 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  transition: opacity v.motion('duration-short2') v.motion('easing-standard'),
+              transform v.motion('duration-short2') v.motion('easing-standard');
   
   &--visible {
     display: block;
@@ -35,7 +38,7 @@
   
   &--submenu {
     position: absolute;
-    z-index: map.get(v.$z-index, 'menu') + 1;
+    z-index: f.get-z-index('menu') + 1;
   }
 
   // List container
@@ -50,7 +53,7 @@
 
   // Menu items
   &-item {
-    @include c.typography('body-large');
+    @include m.typography('body-large');
     @include m.flex-row;
     
     position: relative;
@@ -58,20 +61,20 @@
     padding: 12px 16px;
     cursor: pointer;
     user-select: none;
-    color: var(--mtrl-sys-color-on-surface);
-    transition: background-color 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    color: t.color('on-surface');
+    @include m.motion-transition(background-color);
     
     &:hover {
-      @include c.state-layer(var(--mtrl-sys-color-on-surface), 'hover');
+      @include m.state-layer(t.color('on-surface'), 'hover');
     }
     
     &:focus {
-      @include c.state-layer(var(--mtrl-sys-color-on-surface), 'focus');
+      @include m.state-layer(t.color('on-surface'), 'focus');
       outline: none;
     }
     
     &:active {
-      @include c.state-layer(var(--mtrl-sys-color-on-surface), 'pressed');
+      @include m.state-layer(t.color('on-surface'), 'pressed');
     }
 
     // Submenu indicator
@@ -88,7 +91,7 @@
       }
       
       &[aria-expanded="true"] {
-        @include c.state-layer(var(--mtrl-sys-color-on-surface), 'hover');
+        @include m.state-layer(t.color('on-surface'), 'hover');
         
         &::after {
           opacity: 1;
@@ -99,7 +102,7 @@
     // Disabled state
     &--disabled {
       pointer-events: none;
-      color: rgba(var(--mtrl-sys-color-on-surface-rgb), 0.38);
+      color: t.alpha('on-surface', 0.38);
     }
   }
 
@@ -107,34 +110,38 @@
   &-divider {
     height: 1px;
     margin: 8px 0;
-    background-color: var(--mtrl-sys-color-outline-variant);
+    background-color: t.color('outline-variant');
   }
 
   // Accessibility
-  @include c.focus-ring('.#{c.$prefix}-menu-item:focus-visible');
+  @include m.focus-ring('.#{$component}-item:focus-visible');
   
-  @include c.reduced-motion {
+  @include m.reduced-motion {
     transition: none;
+    
+    .#{$component}-item {
+      transition: none;
+    }
   }
   
-  @include c.high-contrast {
+  @include m.high-contrast {
     border: 1px solid CurrentColor;
     
-    .#{c.$prefix}-menu-divider {
+    .#{$component}-divider {
       background-color: CurrentColor;
     }
     
-    .#{c.$prefix}-menu-item--disabled {
+    .#{$component}-item--disabled {
       opacity: 1;
       color: GrayText;
     }
   }
 
   // RTL Support
-  @include c.rtl {
+  @include m.rtl {
     transform-origin: top right;
     
-    .#{c.$prefix}-menu-item {
+    .#{$component}-item {
       &--submenu {
         padding-right: 16px;
         padding-left: 48px;

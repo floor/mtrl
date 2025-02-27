@@ -1,59 +1,66 @@
-// src/components/container/styles.scss
-@use 'sass:map';
-@use '../../styles/abstract/config' as c;
+// src/components/container/_container.scss
+@use '../../styles/abstract/base' as base;
+@use '../../styles/abstract/variables' as v;
+@use '../../styles/abstract/functions' as f;
+@use '../../styles/abstract/mixins' as m;
+@use '../../styles/abstract/theme' as t;
 
-.#{c.$prefix}-container {
- @include c.shape('medium');
- @include c.motion-transition(
-   background-color,
-   box-shadow
- );
- 
- padding: 16px;
- background-color: var(--mtrl-sys-color-surface-container);
+$component: '#{base.$prefix}-container';
 
- &--low {
-   background-color: var(--mtrl-sys-color-surface-container-low);
- }
- 
- &--lowest {
-   background-color: var(--mtrl-sys-color-surface-container-lowest); 
- }
+.#{$component} {
+  @include m.shape('medium');
+  @include m.motion-transition(
+    background-color,
+    box-shadow
+  );
+  
+  padding: 16px;
+  background-color: t.color('surface-container');
 
- &--high {
-   background-color: var(--mtrl-sys-color-surface-container-high);
- }
+  // Surface container variants
+  &--low {
+    background-color: t.color('surface-container-low');
+  }
+  
+  &--lowest {
+    background-color: t.color('surface-container-lowest'); 
+  }
 
- &--highest {
-   background-color: var(--mtrl-sys-color-surface-container-highest);
- }
+  &--high {
+    background-color: t.color('surface-container-high');
+  }
 
- // Elevation variants
- &--elevation-0 {
-   @include c.elevation(0);
- }
+  &--highest {
+    background-color: t.color('surface-container-highest');
+  }
 
- &--elevation-1 {
-   @include c.elevation(1);
- }
+  // Elevation variants
+  &--elevation-0 {
+    @include m.elevation(0);
+  }
 
- &--elevation-2 {
-   @include c.elevation(2);
- }
+  &--elevation-1 {
+    @include m.elevation(1);
+  }
 
- &--elevation-3 {
-   @include c.elevation(3);
- }
+  &--elevation-2 {
+    @include m.elevation(2);
+  }
 
- &--elevation-4 {
-   @include c.elevation(4);
- }
+  &--elevation-3 {
+    @include m.elevation(3);
+  }
 
- @include c.reduced-motion {
-   transition: none;
- }
+  &--elevation-4 {
+    @include m.elevation(4);
+  }
+  
+  // Accessibility
+  @include m.reduced-motion {
+    transition: none;
+  }
 
- @include c.high-contrast {
-   border: 1px solid currentColor;
- }
+  @include m.high-contrast {
+    border: 1px solid currentColor;
+  }
 }

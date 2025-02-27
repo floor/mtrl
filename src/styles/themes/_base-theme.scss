@@ -1,6 +1,5 @@
-// src/styles/themes/_default.scss
+// src/styles/themes/_base-theme.scss
 @use '../abstract/base' as *;
-
 
 // Base theme definition with common properties and structure
 @mixin create-theme($name) {
@@ -23,27 +22,3 @@
   --#{$prefix}-sys-shape-corner-large: 16px;
   --#{$prefix}-sys-shape-corner-extra-large: 28px;
 }
-
-:root {
-  // Color scheme
-  --#{$prefix}-sys-color-primary: #6750A4;
-  --#{$prefix}-sys-color-primary-rgb: 103, 80, 164;
-  --#{$prefix}-sys-color-on-primary: #FFFFFF;
-  --#{$prefix}-sys-color-primary-container: #EADDFF;
-  --#{$prefix}-sys-color-on-primary-container: #21005D;
-  
-  --#{$prefix}-sys-color-secondary: #625B71;
-  --#{$prefix}-sys-color-on-secondary: #FFFFFF;
-  --#{$prefix}-sys-color-secondary-container: #E8DEF8;
-  --#{$prefix}-sys-color-on-secondary-container: #1D192B;
-  
-  --#{$prefix}-sys-color-surface: #FFFBFE;
-  --#{$prefix}-sys-color-on-surface: #1C1B1F;
-  --#{$prefix}-sys-color-on-surface-rgb: 28, 27, 31;
-  
-  --#{$prefix}-sys-color-outline: #79747E;
-}
-
-// [data-theme="dark"] {
-//   @include dark-theme;
-// }

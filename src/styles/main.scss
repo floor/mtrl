@@ -1,78 +1,125 @@
 // src/styles/main.scss
 
-// Abstract
-@import 'abstract/variables';
-@import 'abstract/functions';
-@import 'abstract/mixins';
-@import 'abstract/theme';
+// Abstract layer
+@use 'abstract/base';
+@use 'abstract/variables';
+@use 'abstract/functions';
+@use 'abstract/mixins';
+@use 'abstract/theme';
+
+// Themes
+@use 'themes/index';
+
+// Reset
+@use 'base/reset';
+@use 'base/typography';
 
 // Components
-@import '../components/button/styles';
+@use '../components/button/styles';
+@use '../components/checkbox/styles';
+@use '../components/container/styles';
+@use '../components/list/styles';
+@use '../components/menu/styles';
+@use '../components/navigation/styles';
+@use '../components/snackbar/styles';
+@use '../components/switch/styles';
+@use '../components/textfield/styles';
 
-// Initialize theme
+
+@use '../core/build/ripple/ripple';
+
+// Utilities
+@use 'utilities/spacing';
+@use 'utilities/visibility';
+@use 'utilities/colors';
+@use 'utilities/flexbox';
+@use 'utilities/typography';
+
+// Initialize theme system
 :root {
-  @each $key, $value in $mtrl-sys-state {
-    --mtrl-sys-state-#{$key}: #{$value};
+  // Apply the base theme CSS variables
+  @include theme.light-theme;
+
+  // State layer variables
+  @each $key, $value in theme.$mtrl-sys-state {
+    --#{base.$prefix}-sys-state-#{$key}: #{$value};
   }
   
-  @each $key, $value in $mtrl-sys-motion {
-    --mtrl-sys-motion-#{$key}: #{$value};
+  // Motion variables
+  @each $key, $value in theme.$mtrl-sys-motion {
+    --#{base.$prefix}-sys-motion-#{$key}: #{$value};
   }
 
-  @each $key, $value in $mtrl-sys-shape {
-    --mtrl-sys-shape-#{$key}: #{$value};
+  // Shape variables
+  @each $key, $value in theme.$mtrl-sys-shape {
+    --#{base.$prefix}-sys-shape-#{$key}: #{$value};
   }
   
-//   // Default light theme colors
-//   --mtrl-sys-color-primary: #6750A4;
-//   --mtrl-sys-color-primary-rgb: 103, 80, 164;
-//   --mtrl-sys-color-on-primary: #FFFFFF;
-//   --mtrl-sys-color-primary-container: #EADDFF;
-//   --mtrl-sys-color-on-primary-container: #21005D;
-  
-//   --mtrl-sys-color-secondary: #625B71;
-//   --mtrl-sys-color-on-secondary: #FFFFFF;
-//   --mtrl-sys-color-secondary-container: #E8DEF8;
-//   --mtrl-sys-color-on-secondary-container: #1D192B;
-  
-//   --mtrl-sys-color-surface: #FFFBFE;
-//   --mtrl-sys-color-on-surface: #1C1B1F;
-//   --mtrl-sys-color-surface-container: #F3EDF7;
-//   --mtrl-sys-color-on-surface-rgb: 28, 27, 31;
-  
-//   --mtrl-sys-color-outline: #79747E;
-// }
+  // Typography
+  @each $scale, $properties in variables.$typescale {
+    --#{base.$prefix}-sys-typescale-#{$scale}-font-family-name: #{nth(map-get($properties, font-family), 1)};
+    --#{base.$prefix}-sys-typescale-#{$scale}-font-family-fallback: #{if(length(map-get($properties, font-family)) > 1, nth(map-get($properties, font-family), 2), 'sans-serif')};
+    --#{base.$prefix}-sys-typescale-#{$scale}-font-size: #{map-get($properties, font-size)};
+    --#{base.$prefix}-sys-typescale-#{$scale}-line-height: #{map-get($properties, line-height)};
+    --#{base.$prefix}-sys-typescale-#{$scale}-letter-spacing: #{map-get($properties, letter-spacing)};
+    --#{base.$prefix}-sys-typescale-#{$scale}-font-weight: #{map-get($properties, font-weight)};
+  }
+}
 
-// // Dark theme
-// [data-theme="dark"] {
-//   --mtrl-sys-color-primary: #D0BCFF;
-//   --mtrl-sys-color-primary-rgb: 208, 188, 255;
-//   --mtrl-sys-color-on-primary: #381E72;
-//   --mtrl-sys-color-primary-container: #4F378B;
-//   --mtrl-sys-color-on-primary-container: #EADDFF;
-  
-//   --mtrl-sys-color-secondary: #CCC2DC;
-//   --mtrl-sys-color-on-secondary: #332D41;
-//   --mtrl-sys-color-secondary-container: #4A4458;
-//   --mtrl-sys-color-on-secondary-container: #E8DEF8;
-  
-//   --mtrl-sys-color-surface: #1C1B1F;
-//   --mtrl-sys-color-on-surface: #E6E1E5;
-//   --mtrl-sys-color-surface-container: #211F26;
-//   --mtrl-sys-color-on-surface-rgb: 230, 225, 229;
-  
-//   --mtrl-sys-color-outline: #938F99;
-// }
+// Dark mode support
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    @include theme.dark-theme;
+  }
+}
 
 // Base styles
 body {
   margin: 0;
   padding: 0;
-  background-color: var(--mtrl-sys-color-surface);
-  color: var(--mtrl-sys-color-on-surface);
-  font-family: var(--mtrl-sys-typescale-body-medium-font-family-name, 'Roboto'), sans-serif;
+  background-color: var(--#{base.$prefix}-sys-color-surface);
+  color: var(--#{base.$prefix}-sys-color-on-surface);
+  font-family: var(--#{base.$prefix}-sys-typescale-body-medium-font-family-name, 'Roboto'), 
+               var(--#{base.$prefix}-sys-typescale-body-medium-font-family-fallback, sans-serif);
+  font-size: var(--#{base.$prefix}-sys-typescale-body-medium-font-size);
+  line-height: var(--#{base.$prefix}-sys-typescale-body-medium-line-height);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   
-  @include motion-transition(background-color, color);
+  @include mixins.motion-transition(background-color, color);
+}
+
+// Ensure links have the correct contrast
+a {
+  color: var(--#{base.$prefix}-sys-color-primary);
+  text-decoration: none;
+  
+  &:hover {
+    text-decoration: underline;
+  }
+  
+  &:focus-visible {
+    outline: 2px solid var(--#{base.$prefix}-sys-color-primary);
+    outline-offset: 2px;
+  }
+}
+
+// Focus styles for keyboard navigation
+:focus-visible {
+  outline: 2px solid var(--#{base.$prefix}-sys-color-primary);
+  outline-offset: 2px;
+}
+
+// Use smooth scrolling for the page
+html {
+  scroll-behavior: smooth;
+  
+  @include mixins.reduced-motion {
+    scroll-behavior: auto;
+  }
+}
+
+// Set box-sizing for all elements
+*, *::before, *::after {
+  box-sizing: border-box;
 }
