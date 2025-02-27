@@ -1,0 +1,81 @@
+// src/styles/themes/_autumn.scss
+@use '../abstract/base' as *;
+@use 'base-theme' as *;
+
+@include create-theme('autumn') {
+  // Key colors with brown as primary and red as secondary
+  --#{$prefix}-sys-color-primary: #795548; // Rich brown as primary color
+  --#{$prefix}-sys-color-on-primary: #FFFFFF;
+  --#{$prefix}-sys-color-primary-container: #FFDCC7;
+  --#{$prefix}-sys-color-on-primary-container: #2C1500;
+  
+  --#{$prefix}-sys-color-secondary: #A02A2A; // Autumn red as secondary
+  --#{$prefix}-sys-color-on-secondary: #FFFFFF;
+  --#{$prefix}-sys-color-secondary-container: #FFDAD4;
+  --#{$prefix}-sys-color-on-secondary-container: #410001;
+  
+  --#{$prefix}-sys-color-tertiary: #4D6642; // Dark green like evergreen trees
+  --#{$prefix}-sys-color-on-tertiary: #FFFFFF;
+  --#{$prefix}-sys-color-tertiary-container: #CFE9BE;
+  --#{$prefix}-sys-color-on-tertiary-container: #0A2008;
+  
+  --#{$prefix}-sys-color-quaternary: #8B6500; // Golden yellow like autumn leaves
+  --#{$prefix}-sys-color-on-quaternary: #FFFFFF;
+  --#{$prefix}-sys-color-quaternary-container: #FFDF8A;
+  --#{$prefix}-sys-color-on-quaternary-container: #2C1F00;
+
+  // Neutral colors with warm, earthy undertones
+  --#{$prefix}-sys-color-surface: #FFFBF7;
+  --#{$prefix}-sys-color-surface-dim: #EAD7CE;
+  --#{$prefix}-sys-color-surface-bright: #FFFBF7;
+  --#{$prefix}-sys-color-surface-container-lowest: #FFFFFF;
+  --#{$prefix}-sys-color-surface-container-low: #FFF0EA;
+  --#{$prefix}-sys-color-surface-container: #F5E1D7;
+  --#{$prefix}-sys-color-surface-container-high: #EFDBD1;
+  --#{$prefix}-sys-color-surface-container-highest: #E9D5CB;
+  
+  --#{$prefix}-sys-color-on-surface: #201A17;
+  --#{$prefix}-sys-color-on-surface-variant: #53433C;
+  
+  --#{$prefix}-sys-color-outline: #85736C;
+  --#{$prefix}-sys-color-outline-variant: #D7C1BA;
+
+  &[data-theme-mode="dark"] {
+    // Key colors
+    --#{$prefix}-sys-color-primary: #DDB995; // Softer brown
+    --#{$prefix}-sys-color-on-primary: #422B09;
+    --#{$prefix}-sys-color-primary-container: #5D3F1C;
+    --#{$prefix}-sys-color-on-primary-container: #FFDCC7;
+    
+    --#{$prefix}-sys-color-secondary: #FFB4AB; // Vibrant red
+    --#{$prefix}-sys-color-on-secondary: #690004;
+    --#{$prefix}-sys-color-secondary-container: #93000A;
+    --#{$prefix}-sys-color-on-secondary-container: #FFDAD4;
+    
+    --#{$prefix}-sys-color-tertiary: #B4CCA4; // Muted green
+    --#{$prefix}-sys-color-on-tertiary: #213515;
+    --#{$prefix}-sys-color-tertiary-container: #384F2B;
+    --#{$prefix}-sys-color-on-tertiary-container: #CFE9BE;
+    
+    --#{$prefix}-sys-color-quaternary: #FFC147;
+    --#{$prefix}-sys-color-on-quaternary: #463300;
+    --#{$prefix}-sys-color-quaternary-container: #644900;
+    --#{$prefix}-sys-color-on-quaternary-container: #FFDF8A;
+
+    // Neutral colors
+    --#{$prefix}-sys-color-surface: #201A17;
+    --#{$prefix}-sys-color-surface-dim: #17120F;
+    --#{$prefix}-sys-color-surface-bright: #3D3631;
+    --#{$prefix}-sys-color-surface-container-lowest: #130E0B;
+    --#{$prefix}-sys-color-surface-container-low: #201A17;
+    --#{$prefix}-sys-color-surface-container: #241E1A;
+    --#{$prefix}-sys-color-surface-container-high: #2E2723;
+    --#{$prefix}-sys-color-surface-container-highest: #39322D;
+    
+    --#{$prefix}-sys-color-on-surface: #EDE0D9;
+    --#{$prefix}-sys-color-on-surface-variant: #D7C1BA;
+    
+    --#{$prefix}-sys-color-outline: #A08C85;
+    --#{$prefix}-sys-color-outline-variant: #53433C;
+  }
+}

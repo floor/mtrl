@@ -1,0 +1,71 @@
+// src/styles/themes/_winter.scss
+@use '../abstract/base' as *;
+@use 'base-theme' as *;
+
+@include create-theme('winter') {
+  // Key colors generated from seed color #546E7A (winter blue-gray)
+  --#{$prefix}-sys-color-primary: #406374;
+  --#{$prefix}-sys-color-on-primary: #FFFFFF;
+  --#{$prefix}-sys-color-primary-container: #C1E8FC;
+  --#{$prefix}-sys-color-on-primary-container: #001F29;
+  
+  --#{$prefix}-sys-color-secondary: #4A626E;
+  --#{$prefix}-sys-color-on-secondary: #FFFFFF;
+  --#{$prefix}-sys-color-secondary-container: #CDE6F5;
+  --#{$prefix}-sys-color-on-secondary-container: #061E28;
+  
+  --#{$prefix}-sys-color-tertiary: #5D5B7D;
+  --#{$prefix}-sys-color-on-tertiary: #FFFFFF;
+  --#{$prefix}-sys-color-tertiary-container: #E2DFFF;
+  --#{$prefix}-sys-color-on-tertiary-container: #191836;
+
+  // Neutral colors
+  --#{$prefix}-sys-color-surface: #FAFCFF;
+  --#{$prefix}-sys-color-surface-dim: #DAE4E9;
+  --#{$prefix}-sys-color-surface-bright: #FAFCFF;
+  --#{$prefix}-sys-color-surface-container-lowest: #FFFFFF;
+  --#{$prefix}-sys-color-surface-container-low: #F5F8FB;
+  --#{$prefix}-sys-color-surface-container: #EFF3F6;
+  --#{$prefix}-sys-color-surface-container-high: #E9EDF0;
+  --#{$prefix}-sys-color-surface-container-highest: #E3E7EA;
+  
+  --#{$prefix}-sys-color-on-surface: #191C1E;
+  --#{$prefix}-sys-color-on-surface-variant: #40484C;
+  
+  --#{$prefix}-sys-color-outline: #70787D;
+  --#{$prefix}-sys-color-outline-variant: #C0C8CC;
+
+  &[data-theme-mode="dark"] {
+    // Key colors
+    --#{$prefix}-sys-color-primary: #73D0EE;
+    --#{$prefix}-sys-color-on-primary: #003545;
+    --#{$prefix}-sys-color-primary-container: #224C5B;
+    --#{$prefix}-sys-color-on-primary-container: #C1E8FC;
+    
+    --#{$prefix}-sys-color-secondary: #B1CAD9;
+    --#{$prefix}-sys-color-on-secondary: #1D343F;
+    --#{$prefix}-sys-color-secondary-container: #334B56;
+    --#{$prefix}-sys-color-on-secondary-container: #CDE6F5;
+    
+    --#{$prefix}-sys-color-tertiary: #C6C3EB;
+    --#{$prefix}-sys-color-on-tertiary: #2E2D4D;
+    --#{$prefix}-sys-color-tertiary-container: #454364;
+    --#{$prefix}-sys-color-on-tertiary-container: #E2DFFF;
+
+    // Neutral colors
+    --#{$prefix}-sys-color-surface: #191C1E;
+    --#{$prefix}-sys-color-surface-dim: #101416;
+    --#{$prefix}-sys-color-surface-bright: #35393C;
+    --#{$prefix}-sys-color-surface-container-lowest: #0D0E10;
+    --#{$prefix}-sys-color-surface-container-low: #191C1E;
+    --#{$prefix}-sys-color-surface-container: #1D2022;
+    --#{$prefix}-sys-color-surface-container-high: #272A2D;
+    --#{$prefix}-sys-color-surface-container-highest: #323539;
+    
+    --#{$prefix}-sys-color-on-surface: #E1E3E5;
+    --#{$prefix}-sys-color-on-surface-variant: #C0C8CC;
+    
+    --#{$prefix}-sys-color-outline: #8A9297;
+    --#{$prefix}-sys-color-outline-variant: #40484C;
+  }
+}

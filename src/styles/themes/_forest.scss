@@ -3,69 +3,69 @@
 @use 'base-theme' as *;
 
 @include create-theme('forest') {
-  // Key colors generated from seed color #2E7D32
-  --#{$prefix}-sys-color-primary: #146C2E;
+  // Key colors generated from seed color #4B5D3A (earthy forest green-brown)
+  --#{$prefix}-sys-color-primary: #3F4F2F;
   --#{$prefix}-sys-color-on-primary: #FFFFFF;
-  --#{$prefix}-sys-color-primary-container: #9FF6A5;
-  --#{$prefix}-sys-color-on-primary-container: #002107;
+  --#{$prefix}-sys-color-primary-container: #C1D1A8;
+  --#{$prefix}-sys-color-on-primary-container: #121D04;
   
-  --#{$prefix}-sys-color-secondary: #516351;
+  --#{$prefix}-sys-color-secondary: #5D5242;
   --#{$prefix}-sys-color-on-secondary: #FFFFFF;
-  --#{$prefix}-sys-color-secondary-container: #D4E8D2;
-  --#{$prefix}-sys-color-on-secondary-container: #0F1F0F;
+  --#{$prefix}-sys-color-secondary-container: #E1D6C4;
+  --#{$prefix}-sys-color-on-secondary-container: #201A10;
   
-  --#{$prefix}-sys-color-tertiary: #38656A;
+  --#{$prefix}-sys-color-tertiary: #486446;
   --#{$prefix}-sys-color-on-tertiary: #FFFFFF;
-  --#{$prefix}-sys-color-tertiary-container: #BCEBF0;
-  --#{$prefix}-sys-color-on-tertiary-container: #002023;
+  --#{$prefix}-sys-color-tertiary-container: #CAE7C3;
+  --#{$prefix}-sys-color-on-tertiary-container: #0A2010;
 
-  // Neutral colors
-  --#{$prefix}-sys-color-surface: #FBFDF7;
-  --#{$prefix}-sys-color-surface-dim: #DBE5D8;
-  --#{$prefix}-sys-color-surface-bright: #FBFDF7;
+  // Neutral colors with earthy undertones
+  --#{$prefix}-sys-color-surface: #FAF9F2;
+  --#{$prefix}-sys-color-surface-dim: #E0DFD5;
+  --#{$prefix}-sys-color-surface-bright: #FAF9F2;
   --#{$prefix}-sys-color-surface-container-lowest: #FFFFFF;
-  --#{$prefix}-sys-color-surface-container-low: #F5F9F2;
-  --#{$prefix}-sys-color-surface-container: #EFF4EC;
-  --#{$prefix}-sys-color-surface-container-high: #E9EEE6;
-  --#{$prefix}-sys-color-surface-container-highest: #E3E8E0;
+  --#{$prefix}-sys-color-surface-container-low: #F4F3EC;
+  --#{$prefix}-sys-color-surface-container: #EEEDDE;
+  --#{$prefix}-sys-color-surface-container-high: #E8E7D8;
+  --#{$prefix}-sys-color-surface-container-highest: #E2E1D2;
   
-  --#{$prefix}-sys-color-on-surface: #191C19;
-  --#{$prefix}-sys-color-on-surface-variant: #414942;
+  --#{$prefix}-sys-color-on-surface: #1B1C17;
+  --#{$prefix}-sys-color-on-surface-variant: #464840;
   
-  --#{$prefix}-sys-color-outline: #717971;
-  --#{$prefix}-sys-color-outline-variant: #C1C9C1;
+  --#{$prefix}-sys-color-outline: #767B6F;
+  --#{$prefix}-sys-color-outline-variant: #C9CCB7;
 
   &[data-theme-mode="dark"] {
     // Key colors
-    --#{$prefix}-sys-color-primary: #83D989;
-    --#{$prefix}-sys-color-on-primary: #003911;
-    --#{$prefix}-sys-color-primary-container: #00531B;
-    --#{$prefix}-sys-color-on-primary-container: #9FF6A5;
+    --#{$prefix}-sys-color-primary: #A5B58D;
+    --#{$prefix}-sys-color-on-primary: #213516;
+    --#{$prefix}-sys-color-primary-container: #324B23;
+    --#{$prefix}-sys-color-on-primary-container: #C1D1A8;
     
-    --#{$prefix}-sys-color-secondary: #B8CCB7;
-    --#{$prefix}-sys-color-on-secondary: #243424;
-    --#{$prefix}-sys-color-secondary-container: #3A4B3A;
-    --#{$prefix}-sys-color-on-secondary-container: #D4E8D2;
+    --#{$prefix}-sys-color-secondary: #C5BAAB;
+    --#{$prefix}-sys-color-on-secondary: #362F21;
+    --#{$prefix}-sys-color-secondary-container: #4A4231;
+    --#{$prefix}-sys-color-on-secondary-container: #E1D6C4;
     
-    --#{$prefix}-sys-color-tertiary: #A0CFD4;
-    --#{$prefix}-sys-color-on-tertiary: #003739;
-    --#{$prefix}-sys-color-tertiary-container: #1E4D51;
-    --#{$prefix}-sys-color-on-tertiary-container: #BCEBF0;
+    --#{$prefix}-sys-color-tertiary: #AECBA8;
+    --#{$prefix}-sys-color-on-tertiary: #123623;
+    --#{$prefix}-sys-color-tertiary-container: #2C4D34;
+    --#{$prefix}-sys-color-on-tertiary-container: #CAE7C3;
 
     // Neutral colors
-    --#{$prefix}-sys-color-surface: #191C19;
-    --#{$prefix}-sys-color-surface-dim: #101410;
-    --#{$prefix}-sys-color-surface-bright: #373B37;
-    --#{$prefix}-sys-color-surface-container-lowest: #0C100C;
-    --#{$prefix}-sys-color-surface-container-low: #191C19;
-    --#{$prefix}-sys-color-surface-container: #1D201D;
-    --#{$prefix}-sys-color-surface-container-high: #272B27;
-    --#{$prefix}-sys-color-surface-container-highest: #323532;
+    --#{$prefix}-sys-color-surface: #1B1C17;
+    --#{$prefix}-sys-color-surface-dim: #13140F;
+    --#{$prefix}-sys-color-surface-bright: #383932;
+    --#{$prefix}-sys-color-surface-container-lowest: #0F100B;
+    --#{$prefix}-sys-color-surface-container-low: #1B1C17;
+    --#{$prefix}-sys-color-surface-container: #1F201B;
+    --#{$prefix}-sys-color-surface-container-high: #292A25;
+    --#{$prefix}-sys-color-surface-container-highest: #34352F;
     
-    --#{$prefix}-sys-color-on-surface: #E1E3E1;
-    --#{$prefix}-sys-color-on-surface-variant: #C1C9C1;
+    --#{$prefix}-sys-color-on-surface: #E3E3DC;
+    --#{$prefix}-sys-color-on-surface-variant: #C9CCB7;
     
-    --#{$prefix}-sys-color-outline: #8B938B;
-    --#{$prefix}-sys-color-outline-variant: #414942;
+    --#{$prefix}-sys-color-outline: #929688;
+    --#{$prefix}-sys-color-outline-variant: #464840;
   }
 }
