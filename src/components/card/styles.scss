@@ -1,0 +1,287 @@
+// src/components/card/styles.scss
+@use '../../styles/abstract/base' as base;
+@use '../../styles/abstract/variables' as v;
+@use '../../styles/abstract/functions' as f;
+@use '../../styles/abstract/mixins' as m;
+@use '../../styles/abstract/theme' as t;
+
+$component: '#{base.$prefix}-card';
+
+.#{$component} {
+  // Base styles
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  border-radius: v.shape('medium');
+  background-color: t.color('surface');
+  color: t.color('on-surface');
+  overflow: hidden;
+  // width: v.card('width');
+  width: 340px;
+  --card-elevation: m.elevation(2);
+  
+  // Typography
+  @include m.typography('body-medium');
+  
+  // Transition for elevation and hover states
+  @include m.motion-transition(
+    box-shadow,
+    background-color,
+    border-color
+  );
+
+  // Ripple styles for clickable cards
+  .ripple {
+    position: absolute;
+    border-radius: 50%;
+    transform: scale(0);
+    pointer-events: none;
+    background-color: currentColor;
+    opacity: 0.08;
+  }
+  
+  // Ensure proper stacking for inner components
+  > :not(:last-child) {
+    margin-bottom: 0;
+  }
+  
+  // === Variants ===
+  
+  // Elevated variant
+  &--elevated {
+    // @include m.elevation(m.elevation(2));
+    
+    &:hover {
+      --card-elevation: 2;
+    }
+  }
+  
+  // Filled variant
+  &--filled {
+    background-color: t.color('surface-container-highest');
+    
+    &:hover.#{$component}--interactive {
+      @include m.state-layer(t.color('on-surface'), 'hover');
+    }
+  }
+  
+  // Outlined variant
+  &--outlined {
+    border: 1px solid t.color('outline');
+    background-color: t.color('surface');
+    
+    &:hover.#{$component}--interactive {
+      @include m.state-layer(t.color('on-surface'), 'hover');
+      border-color: t.color('outline-variant');
+    }
+  }
+  
+  // === Modifiers ===
+  
+  // Interactive cards
+  &--interactive {
+    cursor: pointer;
+    user-select: none;
+  }
+  
+  // Full-width cards
+  &--full-width {
+    width: 100%;
+  }
+  
+  // === Sub-components ===
+  
+  // Card Header
+  &-header {
+    display: flex;
+    align-items: center;
+    padding: 16px;
+    
+    &-avatar {
+      margin-right: 16px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      
+      img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+    }
+    
+    &-text {
+      flex: 1;
+      overflow: hidden;
+    }
+    
+    &-title {
+      margin: 0;
+      @include m.typography('title-medium');
+      @include m.truncate;
+      color: t.color('on-surface');
+    }
+    
+    &-subtitle {
+      margin: 0;
+      @include m.typography('body-medium');
+      @include m.truncate;
+      color: t.color('on-surface-variant');
+    }
+    
+    &-action {
+      margin-left: 8px;
+      flex-shrink: 0;
+    }
+  }
+  
+  // Card Media
+  &-media {
+    position: relative;
+    overflow: hidden;
+    
+    &-img {
+      display: block;
+      width: 100%;
+      object-fit: cover;
+    }
+    
+    // Aspect ratios
+    &--16-9 {
+      aspect-ratio: 16 / 9;
+      
+      img {
+        height: 100%;
+      }
+    }
+    
+    &--4-3 {
+      aspect-ratio: 4 / 3;
+      
+      img {
+        height: 100%;
+      }
+    }
+    
+    &--1-1 {
+      aspect-ratio: 1 / 1;
+      
+      img {
+        height: 100%;
+      }
+    }
+    
+    &--contain {
+      img {
+        object-fit: contain;
+      }
+    }
+  }
+  
+  // Card Content
+  &-content {
+    padding: 16px;
+    flex: 1 1 auto;
+    
+    > *:first-child {
+      margin-top: 0;
+    }
+    
+    > *:last-child {
+      margin-bottom: 0;
+    }
+    
+    // When content follows media without padding
+    .#{$component}-media + &:not(.#{$component}-content--no-padding) {
+      padding-top: 16px;
+    }
+    
+    // No padding modifier
+    &--no-padding {
+      padding: 0;
+    }
+  }
+  
+  // Card Actions
+  &-actions {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 8px;
+    align-items: center;
+    
+    > * {
+      margin: 0 4px;
+      
+      &:first-child {
+        margin-left: 8px;
+      }
+      
+      &:last-child {
+        margin-right: 8px;
+      }
+    }
+    
+    // Full-bleed actions
+    &--full-bleed {
+      padding: 0;
+      
+      > * {
+        margin: 0;
+        border-radius: 0;
+        flex: 1 1 auto;
+        
+        &:first-child {
+          margin-left: 0;
+        }
+        
+        &:last-child {
+          margin-right: 0;
+        }
+      }
+    }
+    
+    // Vertical actions
+    &--vertical {
+      flex-direction: column;
+      
+      > * {
+        width: 100%;
+        margin: 4px 0;
+        
+        &:first-child {
+          margin-top: 8px;
+        }
+        
+        &:last-child {
+          margin-bottom: 8px;
+        }
+      }
+    }
+    
+    // Alignment variations
+    &--center {
+      justify-content: center;
+    }
+    
+    &--end {
+      justify-content: flex-end;
+    }
+    
+    &--space-between {
+      justify-content: space-between;
+    }
+  }
+  
+  // State classes
+  &--state-disabled {
+    opacity: 0.38;
+    pointer-events: none;
+  }
+  
+  &--state-loading {
+    pointer-events: none;
+  }
+}

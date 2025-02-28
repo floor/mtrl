@@ -2,10 +2,10 @@
 import {
   createLayout,
   createElement,
-  createButton, createCheckbox, createTextfield, createSwitch, createContainer, createList, createSnackbar, createNavigation, createMenu
+  createButton, createCard, createCheckbox, createTextfield, createSwitch, createContainer, createList, createSnackbar, createNavigation, createMenu
 } from './src/index.js'
 
 export {
   createLayout,
-  createElement, createButton, createCheckbox, createTextfield, createSwitch, createContainer, createList, createSnackbar, createNavigation, createMenu
+  createElement, createCard, createButton, createCheckbox, createTextfield, createSwitch, createContainer, createList, createSnackbar, createNavigation, createMenu
 }

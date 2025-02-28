@@ -2,6 +2,7 @@
 export { createElement } from './core/dom/create'
 export { default as createLayout } from './core/layout'
 export { default as createButton } from './components/button'
+export { default as createCard } from './components/card'
 export { default as createCheckbox } from './components/checkbox'
 export { default as createContainer } from './components/container'
 export { default as createMenu } from './components/menu'
