@@ -1,4 +1,4 @@
-// src/index.js
+// src/index.ts
 export { createElement } from './core/dom/create'
 export { default as createLayout } from './core/layout'
 export { default as createButton } from './components/button'
