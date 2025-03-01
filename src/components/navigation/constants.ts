@@ -1,4 +1,4 @@
-// src/components/navigation/constants.js
+// src/components/navigation/constants.ts
 
 /**
  * Navigation variants following Material Design 3
@@ -9,7 +9,7 @@ export const NAV_VARIANTS = {
   BAR: 'bar', // Bottom or top navigation bar
   DRAWER_MODAL: 'modal', // Modal drawer overlay
   DRAWER_STANDARD: 'standard' // Standard permanent drawer
-}
+} as const;
 
 /**
  * Navigation positions
@@ -19,7 +19,7 @@ export const NAV_POSITIONS = {
   RIGHT: 'right',
   TOP: 'top',
   BOTTOM: 'bottom'
-}
+} as const;
 
 /**
  * Navigation behaviors
@@ -28,7 +28,7 @@ export const NAV_BEHAVIORS = {
   FIXED: 'fixed', // Always visible
   DISMISSIBLE: 'dismissible', // Can be dismissed/hidden
   MODAL: 'modal' // Overlays content with scrim
-}
+} as const;
 
 /**
  * Navigation state classes
@@ -41,7 +41,7 @@ export const NAV_STATES = {
   HOVERED: 'hovered', // Hover state
   FOCUSED: 'focused', // Keyboard focus state
   PRESSED: 'pressed' // Press/click state
-}
+} as const;
 
 /**
  * Navigation element classes
@@ -61,7 +61,7 @@ export const NAV_CLASSES = {
   NESTED_CONTAINER: 'nav-nested-container',
   NESTED_ITEM: 'nav-nested-item',
   EXPAND_ICON: 'nav-expand-icon'
-}
+} as const;
 
 /**
  * Validation schema for navigation configuration
@@ -119,7 +119,7 @@ export const NAV_SCHEMA = {
       optional: true
     }
   }
-}
+} as const;
 
 /**
  * Navigation item states
@@ -127,7 +127,7 @@ export const NAV_SCHEMA = {
 export const NAV_ITEM_STATES = {
   EXPANDED: 'expanded',
   COLLAPSED: 'collapsed'
-}
+} as const;
 
 /**
  * Navigation item schema
@@ -175,7 +175,7 @@ export const NAV_ITEM_SCHEMA = {
       default: false
     }
   }
-}
+} as const;
 
 /**
  * Navigation group schema
@@ -197,4 +197,4 @@ export const NAV_GROUP_SCHEMA = {
       default: true
     }
   }
-}
+} as const;
