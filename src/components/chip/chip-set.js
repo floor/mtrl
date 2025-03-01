@@ -20,7 +20,7 @@ const createChipSet = (config = {}) => {
     scrollable = false,
     vertical = false,
     class: customClass,
-    selector = null, 
+    selector = null,
     multiSelect = false,
     onChange = null
   } = config
@@ -28,22 +28,22 @@ const createChipSet = (config = {}) => {
   // Create container element
   const element = document.createElement('div')
   element.className = `${PREFIX}-chip-set`
-  
+
   if (customClass) {
     element.classList.add(customClass)
   }
-  
+
   if (scrollable) {
     element.classList.add(`${PREFIX}-chip-set--scrollable`)
   }
-  
+
   if (vertical) {
     element.classList.add(`${PREFIX}-chip-set--vertical`)
   }
-  
+
   // Store chip instances
   const chipInstances = []
-  
+
   /**
    * Updates chip selection states based on multiSelect configuration
    * @param {Object} selectedChip - The chip that was clicked/selected
@@ -57,14 +57,14 @@ const createChipSet = (config = {}) => {
         }
       })
     }
-    
+
     // Call onChange callback if provided
     if (typeof onChange === 'function') {
       const selectedChips = chipInstances.filter(chip => chip.isSelected())
       onChange(selectedChips, selectedChip)
     }
   }
-  
+
   /**
    * Adds a chip to the chip set
    * @param {Object} chipConfig - Configuration for the chip
@@ -80,10 +80,10 @@ const createChipSet = (config = {}) => {
         }
       }
     })
-    
+
     element.appendChild(chipInstance.element)
     chipInstances.push(chipInstance)
-    
+
     // Add click handler to toggle selection
     chipInstance.element.addEventListener('click', () => {
       if (!chipInstance.element.getAttribute('aria-disabled') === 'true') {
@@ -91,103 +91,135 @@ const createChipSet = (config = {}) => {
         handleSelection(chipInstance)
       }
     })
-    
+
     return chipInstance
   }
-  
+
   // Initialize with provided chips
   chips.forEach(chipConfig => addChip(chipConfig))
-  
+
   return {
     element,
-    
+
     /**
      * Adds a new chip to the chip set
      * @param {Object} chipConfig - Configuration for the chip
      * @returns {Object} The chip set instance for chaining
      */
-    addChip(chipConfig) {
+    addChip (chipConfig) {
       addChip(chipConfig)
       return this
     },
-    
+
     /**
      * Removes a chip from the chip set
      * @param {Object|number} chipOrIndex - Chip instance or index to remove
      * @returns {Object} The chip set instance for chaining
      */
-    removeChip(chipOrIndex) {
-      let index = typeof chipOrIndex === 'number' 
-        ? chipOrIndex 
+    removeChip (chipOrIndex) {
+      const index = typeof chipOrIndex === 'number'
+        ? chipOrIndex
         : chipInstances.indexOf(chipOrIndex)
-        
+
       if (index >= 0 && index < chipInstances.length) {
         const chip = chipInstances[index]
         chip.destroy()
         chipInstances.splice(index, 1)
       }
-      
+
       return this
     },
-    
+
     /**
      * Gets all chip instances in the set
      * @returns {Array} Array of chip instances
      */
-    getChips() {
+    getChips () {
       return [...chipInstances]
     },
-    
+
     /**
      * Gets currently selected chips
      * @returns {Array} Array of selected chip instances
      */
-    getSelectedChips() {
+    getSelectedChips () {
       return chipInstances.filter(chip => chip.isSelected())
     },
-    
+
     /**
      * Gets the values of selected chips
      * @returns {Array} Array of selected chip values
      */
-    getSelectedValues() {
+    getSelectedValues () {
       return this.getSelectedChips().map(chip => chip.getValue())
     },
-    
+
     /**
      * Selects chips by their values
      * @param {Array|string} values - Value or array of values to select
      * @returns {Object} The chip set instance for chaining
      */
-    selectByValue(values) {
+    selectByValue (values) {
       const valueArray = Array.isArray(values) ? values : [values]
-      
+
       chipInstances.forEach(chip => {
         const shouldSelect = valueArray.includes(chip.getValue())
         if (shouldSelect !== chip.isSelected()) {
           chip.setSelected(shouldSelect)
         }
       })
-      
+
       return this
     },
-    
+
     /**
      * Clears all selections
      * @returns {Object} The chip set instance for chaining
      */
-    clearSelection() {
+    clearSelection () {
       chipInstances.forEach(chip => {
         chip.setSelected(false)
       })
       return this
     },
-    
+
     /**
      * Sets the scrollable state of the chip set
      * @param {boolean} isScrollable - Whether the chip set should be scrollable
      * @returns {Object} The chip set instance for chaining
      */
-    setScrollable(isScrollable) {
+    setScrollable (isScrollable) {
       if (isScrollable) {
-        element.classList.add(`${PREFIX}-chip-set--scrollable
+        element.classList.add(`${PREFIX}-chip-set--scrollable`)
+      } else {
+        element.classList.remove(`${PREFIX}-chip-set--scrollable`)
+      }
+      return this
+    },
+
+    /**
+     * Sets the vertical layout state
+     * @param {boolean} isVertical - Whether the chip set should be vertically stacked
+     * @returns {Object} The chip set instance for chaining
+     */
+    setVertical (isVertical) {
+      if (isVertical) {
+        element.classList.add(`${PREFIX}-chip-set--vertical`)
+      } else {
+        element.classList.remove(`${PREFIX}-chip-set--vertical`)
+      }
+      return this
+    },
+
+    /**
+     * Destroys the chip set and all contained chips
+     */
+    destroy () {
+      chipInstances.forEach(chip => chip.destroy())
+      chipInstances.length = 0
+      element.remove()
+    }
+  }
+}
+
+export default createChipSet
