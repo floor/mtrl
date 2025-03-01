@@ -1,16 +1,25 @@
-// src/components/textfield/constants.js
+// src/components/textfield/constants.ts
 
+/**
+ * Textfield visual variants
+ */
 export const TEXTFIELD_VARIANTS = {
   FILLED: 'filled',
   OUTLINED: 'outlined'
-}
+} as const;
 
+/**
+ * Textfield size variants
+ */
 export const TEXTFIELD_SIZES = {
   SMALL: 'small',
   MEDIUM: 'medium',
   LARGE: 'large'
-}
+} as const;
 
+/**
+ * Textfield input types
+ */
 export const TEXTFIELD_TYPES = {
   TEXT: 'text',
   PASSWORD: 'password',
@@ -20,8 +29,11 @@ export const TEXTFIELD_TYPES = {
   URL: 'url',
   SEARCH: 'search',
   MULTILINE: 'multiline'
-}
+} as const;
 
+/**
+ * Validation schema for textfield configuration
+ */
 export const TEXTFIELD_SCHEMA = {
   type: {
     type: 'string',
@@ -78,4 +90,25 @@ export const TEXTFIELD_SCHEMA = {
     type: 'string',
     required: false
   }
-}
+} as const;
+
+/**
+ * Textfield state classes
+ */
+export const TEXTFIELD_STATES = {
+  FOCUSED: 'focused',
+  FILLED: 'filled',
+  DISABLED: 'disabled',
+  INVALID: 'invalid'
+} as const;
+
+/**
+ * Textfield element classes
+ */
+export const TEXTFIELD_CLASSES = {
+  ROOT: 'textfield',
+  INPUT: 'textfield-input',
+  LABEL: 'textfield-label',
+  HELPER: 'textfield-helper',
+  COUNTER: 'textfield-counter'
+} as const;
