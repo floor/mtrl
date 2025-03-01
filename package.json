@@ -2,7 +2,14 @@
   "name": "mtrl",
   "version": "0.1.3",
   "description": "A functional JavaScript component library with composable architecture based on Material Design 3",
-  "keywords": ["component", "library", "ui", "user interface", "functional", "composable"],
+  "keywords": [
+    "component",
+    "library",
+    "ui",
+    "user interface",
+    "functional",
+    "composable"
+  ],
   "main": "index.js",
   "scripts": {
     "test": "bun test",
@@ -14,7 +21,9 @@
     "type": "git",
     "url": "https://github.com/floor/mtrl.git"
   },
-  
   "author": "floor",
-  "license": "MIT License"
+  "license": "MIT License",
+  "dependencies": {
+    "typedoc": "^0.27.9"
+  }
 }
