@@ -180,6 +180,18 @@ $z-index: (
 ) !default;
 
 // Component-specific tokens
+@function card($key) {
+  $card: (
+    'width': 344px,
+    'width-small': 344px,
+    'width-medium': 480px,
+    'width-large': 624px,
+    'border-radius': 12px,
+    'padding': 16px
+  );
+  
+  @return map-get($card, $key);
+}
 $button: (
   'height': 40px,
   'min-width': 64px,

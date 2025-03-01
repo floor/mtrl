@@ -21,6 +21,20 @@ export const CARD_ELEVATIONS = {
   DRAGGED: CardElevation.DRAGGED
 };
 
+// Default width values following MD3 principles
+export const CARD_WIDTHS = {
+  // Mobile-optimized default (MD3 recommends 344dp for small screens)
+  DEFAULT: '344px',
+  // Percentage-based responsive options
+  FULL: '100%',
+  HALF: '50%',
+  // Fixed widths for different breakpoints
+  SMALL: '344px',
+  MEDIUM: '480px',
+  LARGE: '624px'
+}
+
+
 /**
  * Validation schema for card configuration
  */

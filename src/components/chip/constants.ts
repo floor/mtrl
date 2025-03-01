@@ -1,4 +1,4 @@
-// src/components/chip/constants.ts
+// src/components/chip/constants.js
 
 /**
  * Available variants for the Chip component
@@ -25,7 +25,7 @@ export const CHIP_VARIANTS = {
 
   /** Suggestion chip for presenting options */
   SUGGESTION: 'suggestion'
-} as const;
+};
 
 /**
  * Available sizes for the Chip component
@@ -35,4 +35,4 @@ export const CHIP_SIZES = {
   SMALL: 'small',
   MEDIUM: 'medium',
   LARGE: 'large'
-} as const;
+};
