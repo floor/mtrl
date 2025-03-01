@@ -1,4 +1,4 @@
-// src/components/switch/constants.js
+// src/components/switch/constants.ts
 
 /**
  * Label position options
@@ -6,7 +6,7 @@
 export const SWITCH_LABEL_POSITION = {
   START: 'start',
   END: 'end'
-}
+} as const;
 
 /**
  * Validation schema for switch configuration
@@ -56,7 +56,7 @@ export const SWITCH_SCHEMA = {
       optional: true
     }
   }
-}
+} as const;
 
 /**
  * Switch state classes
@@ -65,7 +65,7 @@ export const SWITCH_STATES = {
   CHECKED: 'checked',
   DISABLED: 'disabled',
   FOCUSED: 'focused'
-}
+} as const;
 
 /**
  * Switch element classes
@@ -77,4 +77,4 @@ export const SWITCH_CLASSES = {
   THUMB: 'thumb',
   THUMB_ICON: 'thumb-icon',
   LABEL: 'switch-label'
-}
+} as const;
