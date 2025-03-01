@@ -1,24 +1,25 @@
-// src/components/card/constants.js
+// src/components/card/constants.ts
+import { CardVariant, CardElevation } from './types';
 
 /**
  * Card variant types following Material Design 3
  * @enum {string}
  */
 export const CARD_VARIANTS = {
-  ELEVATED: 'elevated',
-  FILLED: 'filled',
-  OUTLINED: 'outlined'
-}
+  ELEVATED: CardVariant.ELEVATED,
+  FILLED: CardVariant.FILLED,
+  OUTLINED: CardVariant.OUTLINED
+};
 
 /**
  * Card elevation levels
  * @enum {number}
  */
 export const CARD_ELEVATIONS = {
-  RESTING: 1,
-  HOVERED: 2,
-  DRAGGED: 4
-}
+  RESTING: CardElevation.RESTING,
+  HOVERED: CardElevation.HOVERED,
+  DRAGGED: CardElevation.DRAGGED
+};
 
 /**
  * Validation schema for card configuration
@@ -65,4 +66,4 @@ export const CARD_SCHEMA = {
     type: 'object',
     required: false
   }
-}
+};

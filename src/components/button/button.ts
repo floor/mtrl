@@ -13,7 +13,9 @@ import {
   withLifecycle
 } from '../../core/compose/features';
 import { withAPI } from './api';
-import { BUTTON_VARIANTS, ButtonConfig } from './types';
+import { ButtonConfig } from './types';
+import { BUTTON_VARIANTS } from './constants';
+import { createBaseConfig, getElementConfig, getApiConfig } from './config';
 
 /**
  * Creates a new Button component
@@ -21,32 +23,13 @@ import { BUTTON_VARIANTS, ButtonConfig } from './types';
  * @returns {ButtonComponent} Button component instance
  */
 const createButton = (config: ButtonConfig = {}) => {
-  const baseConfig = {
-    ...config,
-    variant: config.variant || BUTTON_VARIANTS.FILLED,
-    componentName: 'button',
-    prefix: PREFIX
-  };
+  const baseConfig = createBaseConfig(config);
 
   try {
     const button = pipe(
       createBase,
       withEvents(),
-      withElement({
-        tag: 'button',
-        componentName: 'button',
-        attrs: {
-          type: config.type || 'button',
-          disabled: config.disabled,
-          value: config.value
-        },
-        className: config.class,
-        forwardEvents: {
-          click: (component) => !component.element.disabled,
-          focus: true,
-          blur: true
-        }
-      }),
+      withElement(getElementConfig(baseConfig)),
       withVariant(baseConfig),
       withSize(baseConfig),
       withText(baseConfig),
@@ -54,15 +37,7 @@ const createButton = (config: ButtonConfig = {}) => {
       withDisabled(baseConfig),
       withRipple(baseConfig),
       withLifecycle(),
-      comp => withAPI({
-        disabled: {
-          enable: () => comp.disabled.enable(),
-          disable: () => comp.disabled.disable()
-        },
-        lifecycle: {
-          destroy: () => comp.lifecycle.destroy()
-        }
-      })(comp)
+      comp => withAPI(getApiConfig(comp))(comp)
     )(baseConfig);
 
     return button;

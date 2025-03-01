@@ -1,26 +1,3 @@
-// src/components/button/types.ts
-import { RIPPLE_SCHEMA } from '../../core/build/constants';
-
-/**
- * Available variants for the Button component
- */
-export enum BUTTON_VARIANTS {
-  FILLED = 'filled',
-  TONAL = 'tonal',
-  OUTLINED = 'outlined',
-  ELEVATED = 'elevated',
-  TEXT = 'text'
-}
-
-/**
- * Available sizes for the Button component
- */
-export enum BUTTON_SIZES {
-  SMALL = 'small',
-  MEDIUM = 'medium',
-  LARGE = 'large'
-}
-
 /**
  * Configuration interface for the Button component
  */

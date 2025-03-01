@@ -1,25 +1,21 @@
-// src/components/card/header.js
-import { PREFIX } from '../../core/config'
-import { pipe } from '../../core/compose'
-import { createBase, withElement } from '../../core/compose/component'
-import { withText } from '../../core/compose/features'
-import { createElement } from '../../core/dom/create'
+// src/components/card/header.ts
+import { PREFIX } from '../../core/config';
+import { pipe } from '../../core/compose';
+import { createBase, withElement } from '../../core/compose/component';
+import { createElement } from '../../core/dom/create';
+import { CardHeaderConfig } from './types';
 
 /**
  * Creates a card header component
- * @param {Object} config - Header configuration
- * @param {string} [config.title] - Title text
- * @param {string} [config.subtitle] - Subtitle text
- * @param {HTMLElement|string} [config.avatar] - Avatar element or HTML string
- * @param {HTMLElement|string} [config.action] - Action element or HTML string
+ * @param {CardHeaderConfig} config - Header configuration
  * @returns {HTMLElement} Card header element
  */
-export const createCardHeader = (config = {}) => {
+export const createCardHeader = (config: CardHeaderConfig = {}): HTMLElement => {
   const baseConfig = {
     ...config,
     componentName: 'card-header',
     prefix: PREFIX
-  }
+  };
 
   try {
     const header = pipe(
@@ -29,14 +25,14 @@ export const createCardHeader = (config = {}) => {
         componentName: 'card-header',
         className: config.class
       })
-    )(baseConfig)
+    )(baseConfig);
 
     // Create text container
     const textContainer = createElement({
       tag: 'div',
       className: `${PREFIX}-card-header-text`,
       container: header.element
-    })
+    });
 
     // Add title if provided
     if (config.title) {
@@ -45,7 +41,7 @@ export const createCardHeader = (config = {}) => {
         className: `${PREFIX}-card-header-title`,
         text: config.title,
         container: textContainer
-      })
+      });
     }
 
     // Add subtitle if provided
@@ -55,7 +51,7 @@ export const createCardHeader = (config = {}) => {
         className: `${PREFIX}-card-header-subtitle`,
         text: config.subtitle,
         container: textContainer
-      })
+      });
     }
 
     // Add avatar if provided
@@ -66,9 +62,9 @@ export const createCardHeader = (config = {}) => {
           className: `${PREFIX}-card-header-avatar`,
           html: config.avatar
         })
-        : config.avatar
+        : config.avatar;
 
-      header.element.insertBefore(avatarElement, header.element.firstChild)
+      header.element.insertBefore(avatarElement, header.element.firstChild);
     }
 
     // Add action if provided
@@ -79,14 +75,14 @@ export const createCardHeader = (config = {}) => {
           className: `${PREFIX}-card-header-action`,
           html: config.action
         })
-        : config.action
+        : config.action;
 
-      header.element.appendChild(actionElement)
+      header.element.appendChild(actionElement);
     }
 
-    return header.element
+    return header.element;
   } catch (error) {
-    console.error('Card header creation error:', error)
-    throw new Error(`Failed to create card header: ${error.message}`)
+    console.error('Card header creation error:', error instanceof Error ? error.message : String(error));
+    throw new Error(`Failed to create card header: ${error instanceof Error ? error.message : String(error)}`);
   }
-}
+};

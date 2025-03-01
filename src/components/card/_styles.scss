@@ -1,4 +1,4 @@
-// src/components/card/styles.scss
+// src/components/card/_card.scss
 @use '../../styles/abstract/base' as base;
 @use '../../styles/abstract/variables' as v;
 @use '../../styles/abstract/functions' as f;
@@ -17,9 +17,8 @@ $component: '#{base.$prefix}-card';
   background-color: t.color('surface');
   color: t.color('on-surface');
   overflow: hidden;
-  // width: v.card('width');
-  width: 340px;
-  --card-elevation: m.elevation(2);
+  width: 320px; // Fixed width since v.card() isn't available
+  --card-elevation: 1;
   
   // Typography
   @include m.typography('body-medium');
@@ -50,10 +49,10 @@ $component: '#{base.$prefix}-card';
   
   // Elevated variant
   &--elevated {
-    // @include m.elevation(m.elevation(2));
+    @include m.elevation(1);
     
-    &:hover {
-      --card-elevation: 2;
+    &:hover.#{$component}--interactive {
+      @include m.elevation(2);
     }
   }
   
@@ -283,5 +282,78 @@ $component: '#{base.$prefix}-card';
   
   &--state-loading {
     pointer-events: none;
+  }
+  
+  &--dragging {
+    @include m.elevation(4);
+    opacity: 0.9;
+  }
+  
+  // Loading overlay
+  &-loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(t.color('surface'), 0.7);
+    z-index: 1;
+  }
+  
+  &-loading-spinner {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 3px solid rgba(t.color('primary'), 0.2);
+    border-top-color: t.color('primary');
+    animation: card-spinner 1s infinite linear;
+  }
+  
+  // Expandable content
+  &-expandable-content {
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+  }
+  
+  &-expand-button {
+    background: none;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    color: t.color('primary');
+    
+    &::before {
+      content: '';
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-right: 2px solid currentColor;
+      border-bottom: 2px solid currentColor;
+      transform: rotate(45deg);
+      transition: transform 0.3s ease;
+    }
+    
+    &[aria-expanded="true"]::before {
+      transform: rotate(-135deg);
+    }
+  }
+  
+  // Swipeable card
+  &--swipeable {
+    touch-action: pan-y;
+    transition: transform 0.3s ease;
+  }
+}
+
+// Spinner animation
+@keyframes card-spinner {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
   }
 }
