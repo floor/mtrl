@@ -1,8 +1,8 @@
 # MTRL Library
 
-> **Project Status:** MTRL is in active early development. The core architecture and initial components are being established, with more features on the roadmap. While we're making rapid progress, the API may evolve as we refine the library. We welcome early adopters and contributors who want to help shape MTRL's future!
+> **Project Status:** MTRL is in active development with TypeScript support! The core architecture and components are established, with more features on the roadmap. We welcome early adopters and contributors who want to help shape MTRL's future!
 
-MTRL is a lightweight, composable JavaScript component library inspired by Material Design principles. Built with vanilla JavaScript and zero dependencies, MTRL provides a robust foundation for creating modern web interfaces with an emphasis on performance and accessibility.
+MTRL is a lightweight, composable TypeScript/JavaScript component library inspired by Material Design principles. Built with zero dependencies, MTRL provides a robust foundation for creating modern web interfaces with an emphasis on performance, type safety, and accessibility.
 
 ## Understanding MTRL
 
@@ -12,16 +12,17 @@ MTRL (pronounced "material") takes its inspiration from Material Design while pr
 
 MTRL is built on several core principles:
 
-1. **Composition Over Inheritance**: Components are constructed through functional composition, making them flexible and maintainable.
-2. **Zero Dependencies**: The entire library is built with vanilla JavaScript, ensuring minimal bundle size and maximum compatibility.
+1. **Composition Over Inheritance**: Components are constructed through functional composition with full type safety.
+2. **Zero Dependencies**: The entire library is built with vanilla TypeScript, ensuring minimal bundle size and maximum compatibility.
 3. **Material Design Inspiration**: While inspired by Material Design, MTRL provides flexibility in styling and behavior.
 4. **Accessibility First**: Built-in accessibility features ensure your applications are usable by everyone.
+5. **TypeScript First**: Comprehensive type definitions for better developer experience and code reliability.
 
 ## Core Components
 
 MTRL provides a comprehensive set of components, each following Material Design principles:
 
-```javascript
+```typescript
 import { createButton, createTextField } from 'mtrl'
 
 // Create a material button with ripple effect
@@ -64,7 +65,7 @@ bun add mtrl
 
 Let's look at how MTRL components are constructed:
 
-```javascript
+```typescript
 // Example of a button component creation
 const button = createButton({
   prefix: 'mtrl',           // The library's prefix
@@ -77,11 +78,11 @@ const button = createButton({
 
 ### The Composition System
 
-MTRL uses a pipe-based composition system for building components:
+MTRL uses a pipe-based composition system with full type safety for building components:
 
-```javascript
+```typescript
 // Internal component creation
-const createButton = (config) => {
+const createButton = (config: ButtonConfig): ButtonComponent => {
   return pipe(
     createBase,                // Base component structure
     withEvents(),             // Event handling capability
@@ -95,6 +96,34 @@ const createButton = (config) => {
     withIcon(config),         // Icon support
     withRipple(config)        // Ripple animation
   )(config)
+}
+```
+
+### TypeScript Integration
+
+MTRL provides comprehensive TypeScript definitions:
+
+```typescript
+// Component interfaces for better developer experience
+export interface ButtonComponent extends 
+  BaseComponent, 
+  ElementComponent,
+  TextComponent,
+  IconComponent,
+  DisabledComponent,
+  LifecycleComponent {
+  
+  // Button-specific properties and methods
+  getValue: () => string;
+  setValue: (value: string) => ButtonComponent;
+  enable: () => ButtonComponent;
+  disable: () => ButtonComponent;
+  setText: (content: string) => ButtonComponent;
+  getText: () => string;
+  setIcon: (icon: string) => ButtonComponent;
+  getIcon: () => string;
+  destroy: () => void;
+  updateCircularStyle: () => void;
 }
 ```
 
@@ -115,7 +144,7 @@ MTRL provides several approaches to state management:
 
 ### Local Component State
 
-```javascript
+```typescript
 const textField = createTextField({
   label: 'Username'
 })
@@ -131,8 +160,8 @@ textField.setValue('New value')
 
 For managing lists and datasets:
 
-```javascript
-const collection = new Collection({
+```typescript
+const collection = new Collection<User>({
   transform: (item) => ({
     ...item,
     displayName: `${item.firstName} ${item.lastName}`
@@ -148,7 +177,7 @@ collection.subscribe(({ event, data }) => {
 
 MTRL provides adapters for different data sources:
 
-```javascript
+```typescript
 // MongoDB adapter
 const mongoAdapter = createMongoAdapter({
   uri: 'mongodb://localhost:27017',
@@ -170,10 +199,19 @@ const routeAdapter = createRouteAdapter({
 
 ### Creating Custom Components
 
-Extend MTRL by creating custom components:
+Extend MTRL by creating custom components with full type safety:
 
-```javascript
-const createCustomCard = (config) => {
+```typescript
+interface CustomCardConfig {
+  title?: string;
+  class?: string;
+}
+
+interface CustomCardComponent extends ElementComponent {
+  setContent: (content: string) => CustomCardComponent;
+}
+
+const createCustomCard = (config: CustomCardConfig): CustomCardComponent => {
   return pipe(
     createBase,
     withEvents(),
@@ -185,12 +223,12 @@ const createCustomCard = (config) => {
     // Add custom features
     (component) => ({
       ...component,
-      setContent(content) {
-        component.element.innerHTML = content
-        return this
+      setContent(content: string) {
+        component.element.innerHTML = content;
+        return this;
       }
     })
-  )(config)
+  )(config);
 }
 ```
 
@@ -218,6 +256,16 @@ MTRL is designed with performance in mind:
 - Automatic cleanup of resources
 - Lazy initialization of features
 
+### Type Safety
+
+MTRL leverages TypeScript for better developer experience:
+
+- Clear component interfaces
+- Type-safe method chaining
+- Intelligent code completion
+- Compile-time error checking
+- Self-documenting code
+
 ### Accessibility
 
 Built-in accessibility features include:
@@ -238,7 +286,7 @@ MTRL supports modern browsers:
 
 ## Contributing
 
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details and our [Migration Guide](MIGRATION-GUIDE.md) for TypeScript information.
 
 ## License
 
@@ -250,4 +298,4 @@ For detailed API documentation, examples, and guides, visit our [documentation s
 
 ---
 
-This library is designed to provide a solid foundation for building modern web interfaces while maintaining flexibility for custom implementations. For questions, issues, or contributions, please visit our GitHub repository.
+This library is designed to provide a solid foundation for building modern web interfaces with TypeScript while maintaining flexibility for custom implementations. For questions, issues, or contributions, please visit our GitHub repository.
