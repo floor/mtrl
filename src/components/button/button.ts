@@ -1,7 +1,7 @@
-// src/components/button/button.js
-import { PREFIX } from '../../core/config'
-import { pipe } from '../../core/compose'
-import { createBase, withElement } from '../../core/compose/component'
+// src/components/button/button.ts
+import { PREFIX } from '../../core/config';
+import { pipe } from '../../core/compose';
+import { createBase, withElement } from '../../core/compose/component';
 import {
   withEvents,
   withText,
@@ -11,28 +11,22 @@ import {
   withRipple,
   withDisabled,
   withLifecycle
-} from '../../core/compose/features'
-import { withAPI } from './api'
-import { BUTTON_VARIANTS } from './constants'
+} from '../../core/compose/features';
+import { withAPI } from './api';
+import { BUTTON_VARIANTS, ButtonConfig } from './types';
 
 /**
  * Creates a new Button component
- * @param {Object} config - Button configuration object
- * @param {string} [config.variant='filled'] - Button variant (filled, tonal, outlined, elevated, text)
- * @param {string} [config.size] - Button size (small, medium, large)
- * @param {boolean} [config.disabled] - Whether the button is initially disabled
- * @param {string} [config.text] - Initial button text content
- * @param {string} [config.icon] - Initial button icon HTML content
- * @param {string} [config.class] - Additional CSS classes
- * @param {string} [config.value] - Button value attribute
+ * @param {ButtonConfig} config - Button configuration object
+ * @returns {ButtonComponent} Button component instance
  */
-const createButton = (config = {}) => {
+const createButton = (config: ButtonConfig = {}) => {
   const baseConfig = {
     ...config,
     variant: config.variant || BUTTON_VARIANTS.FILLED,
     componentName: 'button',
     prefix: PREFIX
-  }
+  };
 
   try {
     const button = pipe(
@@ -69,13 +63,13 @@ const createButton = (config = {}) => {
           destroy: () => comp.lifecycle.destroy()
         }
       })(comp)
-    )(baseConfig)
+    )(baseConfig);
 
-    return button
+    return button;
   } catch (error) {
-    console.error('Button creation error:', error)
-    throw new Error(`Failed to create button: ${error.message}`)
+    console.error('Button creation error:', error);
+    throw new Error(`Failed to create button: ${(error as Error).message}`);
   }
-}
+};
 
-export default createButton
+export default createButton;

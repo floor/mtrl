@@ -1,4 +1,4 @@
-// src/components/button/_button.scss
+// src/components/button/_styles.scss
 @use '../../styles/abstract/base' as base;
 @use '../../styles/abstract/variables' as v;
 @use '../../styles/abstract/functions' as f;
@@ -52,7 +52,7 @@ $component: '#{base.$prefix}-button';
   // Interactive states
   &:disabled {
     pointer-events: none;
-    opacity: 0.85;
+    opacity: 0.38;
   }
   
   // Ensure proper layout with icons

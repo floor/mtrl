@@ -1,7 +1,10 @@
-// src/components/button/config.js
+// src/components/button/config.ts
 
 import { PREFIX } from '../../core/config'
 
+/**
+ * Default configuration for the Button component
+ */
 const defaultConfig = {
   componentName: 'button',
   prefix: PREFIX
