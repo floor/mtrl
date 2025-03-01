@@ -1,6 +1,6 @@
 {
   "name": "mtrl",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "A functional JavaScript component library with composable architecture based on Material Design 3",
   "keywords": [
     "component",
@@ -23,7 +23,7 @@
   },
   "author": "floor",
   "license": "MIT License",
-  "dependencies": {
+  "devDependencies": {
     "typedoc": "^0.27.9"
   }
 }
