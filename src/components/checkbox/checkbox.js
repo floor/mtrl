@@ -12,7 +12,7 @@ import {
   withCheckable
 } from '../../core/compose/features'
 import { withAPI } from './api'
-import { CHECKBOX_VARIANTS } from './constants'
+import { CHECKBOX_VARIANTS, CHECKBOX_LABEL_POSITION } from './constants'
 
 /**
  * Adds check icon to checkbox
@@ -28,6 +28,19 @@ const withCheckIcon = (config) => (component) => {
   `
 
   component.element.appendChild(icon)
+  return component
+}
+
+/**
+ * Applies label position class to the component
+ * @param {Object} config - Component configuration
+ */
+const withLabelPosition = (config) => (component) => {
+  const position = config.labelPosition || CHECKBOX_LABEL_POSITION.END
+  const positionClass = `${config.prefix}-checkbox--label-${position}`
+
+  component.element.classList.add(positionClass)
+
   return component
 }
 
@@ -50,7 +63,8 @@ const createCheckbox = (config = {}) => {
     ...config,
     componentName: 'checkbox',
     prefix: PREFIX,
-    variant: config.variant || CHECKBOX_VARIANTS.FILLED
+    variant: config.variant || CHECKBOX_VARIANTS.FILLED,
+    labelPosition: config.labelPosition || CHECKBOX_LABEL_POSITION.END
   }
 
   const enhancedWithCheckable = (component) => {
@@ -82,8 +96,9 @@ const createCheckbox = (config = {}) => {
     withInput(baseConfig),
     withCheckIcon(baseConfig),
     withTextLabel(baseConfig),
+    withLabelPosition(baseConfig), // Add this new enhancer to apply position class
     enhancedWithCheckable,
-    withDisabled(baseConfig), // Pass the baseConfig to withDisabled
+    withDisabled(baseConfig),
     withLifecycle(),
     comp => withAPI({
       disabled: comp.disabled,
