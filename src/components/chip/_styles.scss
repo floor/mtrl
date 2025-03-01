@@ -13,24 +13,20 @@ $component: '#{base.$prefix}-chip';
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 32px;
-  padding: 0 12px;
-  border: none;
-  border-radius: 8px;
+  height: v.chip('height');
+  padding: 0 v.chip('padding-horizontal');
+  border-radius: v.chip('border-radius');
   background-color: transparent;
-  color: inherit;
-  font: inherit;
-  text-decoration: none;
-  cursor: pointer;
-  user-select: none;
-  vertical-align: middle;
-  appearance: none;
+  max-width: 100%;
   overflow: hidden;
-  transition: background-color 0.15s ease, box-shadow 0.15s ease, color 0.15s ease, 
-              border-color 0.15s ease, opacity 0.15s ease;
+  user-select: none;
+  cursor: pointer;
   
   // Typography
   @include m.typography('label-large');
+  
+  // Interaction styles
+  @include m.motion-transition(background-color, color, border-color, box-shadow);
   
   // Focus styles
   &:focus {
@@ -43,50 +39,57 @@ $component: '#{base.$prefix}-chip';
   }
   
   // Disabled state
-  &[aria-disabled="true"] {
-    pointer-events: none;
+  &--disabled {
     opacity: 0.38;
+    pointer-events: none;
   }
   
-  // Leading icon styles
-  &-icon {
-    display: inline-flex;
+  // Content container
+  &-content {
+    display: flex;
     align-items: center;
     justify-content: center;
-    width: 18px;
-    height: 18px;
-    margin-right: 8px;
-    
-    svg {
-      width: 18px;
-      height: 18px;
-    }
+    width: 100%;
+    height: 100%;
   }
   
-  // Trailing icon styles
+  // Ensure proper layout with icons
+  &-leading-icon,
   &-trailing-icon {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     width: 18px;
     height: 18px;
-    margin-left: 8px;
     
     svg {
       width: 18px;
       height: 18px;
     }
+  }
+  
+  &-leading-icon {
+    margin-right: 8px;
+  }
+  
+  &-trailing-icon {
+    margin-left: 8px;
     
     &:hover {
-      opacity: 0.8;
+      opacity: 0.7;
     }
   }
   
-  // Text content
   &-text {
     // Text truncation for long chip labels
     @include m.truncate;
-    max-width: 150px;
+  }
+  
+  // Selected state
+  &--selected {
+    // Default selected state styling (can be overridden by variants)
+    background-color: t.alpha('on-surface', 0.12);
+    font-weight: 500;
   }
   
   // Ripple container
@@ -99,9 +102,7 @@ $component: '#{base.$prefix}-chip';
     opacity: 0.12;
   }
   
-  // === VARIANTS ===
-  
-  // Filled chip (default)
+  // Variants
   &--filled {
     background-color: t.color('surface-container-highest');
     color: t.color('on-surface');
@@ -128,7 +129,6 @@ $component: '#{base.$prefix}-chip';
     }
   }
   
-  // Outlined chip
   &--outlined {
     border: 1px solid t.color('outline');
     color: t.color('on-surface');
@@ -142,21 +142,16 @@ $component: '#{base.$prefix}-chip';
     }
     
     &.#{$component}--selected {
-      border-color: t.color('secondary');
+      border-color: t.color('outline');
       background-color: t.color('secondary-container');
       color: t.color('on-secondary-container');
       
       &:hover {
         @include m.state-layer(t.color('on-secondary-container'), 'hover');
       }
-      
-      &:active {
-        @include m.state-layer(t.color('on-secondary-container'), 'pressed');
-      }
     }
   }
   
-  // Elevated chip
   &--elevated {
     background-color: t.color('surface-container-low');
     color: t.color('on-surface');
@@ -179,37 +174,10 @@ $component: '#{base.$prefix}-chip';
       &:hover {
         @include m.state-layer(t.color('on-secondary-container'), 'hover');
       }
-      
-      &:active {
-        @include m.state-layer(t.color('on-secondary-container'), 'pressed');
-      }
-    }
-    
-    &[aria-disabled="true"] {
-      @include m.elevation(0);
-      box-shadow: none;
     }
   }
   
-  // Assist chip
-  &--assist {
-    background-color: t.color('surface-container');
-    color: t.color('on-surface');
-    
-    &:hover {
-      @include m.state-layer(t.color('on-surface'), 'hover');
-    }
-    
-    &:active {
-      @include m.state-layer(t.color('on-surface'), 'pressed');
-    }
-    
-    .#{$component}-icon {
-      color: t.color('primary');
-    }
-  }
-  
-  // Filter chip
+  // Filter chip specific styling
   &--filter {
     background-color: t.color('surface-container-highest');
     color: t.color('on-surface');
@@ -218,70 +186,67 @@ $component: '#{base.$prefix}-chip';
       @include m.state-layer(t.color('on-surface'), 'hover');
     }
     
-    &:active {
-      @include m.state-layer(t.color('on-surface'), 'pressed');
+    &.#{$component}--selected {
+      background-color: t.color('secondary-container');
+      color: t.color('on-secondary-container');
+      
+      .#{$component}-leading-icon {
+        color: t.color('on-secondary-container');
+      }
+    }
+  }
+  
+  // Assist chip specific styling
+  &--assist {
+    background-color: t.color('surface-container-low');
+    color: t.color('on-surface');
+    
+    .#{$component}-leading-icon {
+      color: t.color('primary');
     }
     
     &.#{$component}--selected {
       background-color: t.color('secondary-container');
       color: t.color('on-secondary-container');
       
-      &:hover {
-        @include m.state-layer(t.color('on-secondary-container'), 'hover');
-      }
-      
-      &:active {
-        @include m.state-layer(t.color('on-secondary-container'), 'pressed');
-      }
-      
-      // Checkmark icon for selected filter chips
-      .#{$component}-icon {
+      .#{$component}-leading-icon {
         color: t.color('on-secondary-container');
       }
     }
   }
   
-  // Input chip
+  // Input chip specific styling
   &--input {
     background-color: t.color('surface-container-highest');
     color: t.color('on-surface');
-    padding-right: 8px; // Less padding on the right to accommodate the trailing icon
-    
-    &:hover {
-      @include m.state-layer(t.color('on-surface'), 'hover');
-    }
     
     .#{$component}-trailing-icon {
-      color: t.color('on-surface-variant');
+      cursor: pointer;
       
       &:hover {
-        color: t.color('on-surface');
+        color: t.color('error');
       }
     }
   }
   
-  // Suggestion chip
+  // Suggestion chip styling
   &--suggestion {
     background-color: t.color('surface-container');
     color: t.color('on-surface');
     
-    &:hover {
-      @include m.state-layer(t.color('on-surface'), 'hover');
-    }
-    
-    &:active {
-      @include m.state-layer(t.color('on-surface'), 'pressed');
+    &.#{$component}--selected {
+      background-color: t.color('secondary-container');
+      color: t.color('on-secondary-container');
     }
   }
   
-  // === SIZES ===
-  
+  // Size variants
   &--small {
     height: 24px;
     padding: 0 8px;
     font-size: 12px;
     
-    .#{$component}-icon,
+    .#{$component}-leading-icon,
     .#{$component}-trailing-icon {
       width: 16px;
       height: 16px;
@@ -291,23 +256,18 @@ $component: '#{base.$prefix}-chip';
         height: 16px;
       }
     }
-    
-    .#{$component}-icon {
-      margin-right: 4px;
-    }
-    
-    .#{$component}-trailing-icon {
-      margin-left: 4px;
-    }
+  }
+  
+  &--medium {
+    // Default size, styles already defined
   }
   
   &--large {
     height: 40px;
     padding: 0 16px;
-    font-size: 15px;
-    border-radius: 12px;
+    font-size: 16px;
     
-    .#{$component}-icon,
+    .#{$component}-leading-icon,
     .#{$component}-trailing-icon {
       width: 20px;
       height: 20px;
@@ -317,40 +277,11 @@ $component: '#{base.$prefix}-chip';
         height: 20px;
       }
     }
-    
-    .#{$component}-icon {
-      margin-right: 10px;
-    }
-    
-    .#{$component}-trailing-icon {
-      margin-left: 10px;
-    }
-  }
-  
-  // === SPECIAL CASES ===
-  
-  // For chips with only icons (no text)
-  &--icon-only {
-    padding: 0;
-    width: 32px;
-    
-    &.#{$component}--small {
-      width: 24px;
-    }
-    
-    &.#{$component}--large {
-      width: 40px;
-    }
-    
-    .#{$component}-icon {
-      margin-right: 0;
-    }
   }
 }
 
-// === CHIP SET STYLES ===
-
-.#{$component}-set {
+// Chip set container
+.#{base.$prefix}-chip-set {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
@@ -358,11 +289,23 @@ $component: '#{base.$prefix}-chip';
   &--scrollable {
     flex-wrap: nowrap;
     overflow-x: auto;
-    scrollbar-width: none; // Firefox
+    padding-bottom: 8px;
+    margin-bottom: -8px; // Compensate for padding to maintain vertical alignment
+    -webkit-overflow-scrolling: touch; // Smooth scrolling on iOS
     
+    // Hide scrollbar in various browsers while maintaining functionality
     &::-webkit-scrollbar {
-      display: none; // Chrome, Safari, Edge
+      height: 4px;
     }
+    
+    &::-webkit-scrollbar-thumb {
+      background-color: t.alpha('on-surface', 0.2);
+      border-radius: 4px;
+    }
+    
+    // Style for Firefox
+    scrollbar-width: thin;
+    scrollbar-color: t.alpha('on-surface', 0.2) transparent;
   }
   
   &--vertical {
