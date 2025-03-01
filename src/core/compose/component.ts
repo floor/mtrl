@@ -4,7 +4,7 @@
  * @description Core utilities for component composition and creation with built-in mobile support
  */
 
-import { createElement, CreateElementOptions } from '../dom/create';
+import { createElement, CreateElementOptions, removeEventHandlers } from '../dom/create';
 import {
   normalizeEvent,
   hasTouchSupport,
@@ -138,7 +138,7 @@ export const createBase = (config: Record<string, any> = {}): BaseComponent => (
  * @returns {Function} Component enhancer
  */
 export const withElement = (options: WithElementOptions = {}) => 
-  (base: BaseComponent): ElementComponent => {
+  <T extends BaseComponent>(component: T): T & ElementComponent => {
     /**
      * Handles the start of a touch interaction.
      */
@@ -146,8 +146,8 @@ export const withElement = (options: WithElementOptions = {}) =>
       base.updateTouchState(event, 'start');
       element.classList.add(`${base.getClass('touch-active')}`);
 
-      if (options.forwardEvents?.touchstart && base.config?.emit) {
-        base.config.emit('touchstart', normalizeEvent(event));
+      if (options.forwardEvents?.touchstart && 'emit' in component) {
+        (component as any).emit('touchstart', normalizeEvent(event));
       }
     };
 
@@ -162,12 +162,12 @@ export const withElement = (options: WithElementOptions = {}) =>
       base.updateTouchState(event, 'end');
 
       // Emit tap event for short touches
-      if (touchDuration < TOUCH_CONFIG.TAP_THRESHOLD && base.config?.emit) {
-        base.config.emit('tap', normalizeEvent(event));
+      if (touchDuration < TOUCH_CONFIG.TAP_THRESHOLD && 'emit' in component) {
+        (component as any).emit('tap', normalizeEvent(event));
       }
 
-      if (options.forwardEvents?.touchend && base.config?.emit) {
-        base.config.emit('touchend', normalizeEvent(event));
+      if (options.forwardEvents?.touchend && 'emit' in component) {
+        (component as any).emit('touchend', normalizeEvent(event));
       }
     };
 
@@ -182,18 +182,21 @@ export const withElement = (options: WithElementOptions = {}) =>
       const deltaY = normalized.clientY - base.touchState.startPosition.y;
 
       // Detect and emit swipe gestures
-      if (Math.abs(deltaX) > TOUCH_CONFIG.SWIPE_THRESHOLD && base.config?.emit) {
-        base.config.emit('swipe', {
+      if (Math.abs(deltaX) > TOUCH_CONFIG.SWIPE_THRESHOLD && 'emit' in component) {
+        (component as any).emit('swipe', {
           direction: deltaX > 0 ? 'right' : 'left',
           deltaX,
           deltaY
         });
       }
 
-      if (options.forwardEvents?.touchmove && base.config?.emit) {
-        base.config.emit('touchmove', { ...normalized, deltaX, deltaY });
+      if (options.forwardEvents?.touchmove && 'emit' in component) {
+        (component as any).emit('touchmove', { ...normalized, deltaX, deltaY });
       }
     };
+
+    // Get the base component for reference
+    const base = component;
 
     // Create element options from component options
     const elementOptions: CreateElementOptions = {
@@ -204,7 +207,8 @@ export const withElement = (options: WithElementOptions = {}) =>
         options.className
       ].filter(Boolean),
       attrs: options.attrs || {},
-      context: base
+      forwardEvents: options.forwardEvents || {},
+      context: component // Pass component as context for events
     };
 
     // Create the element with appropriate classes
@@ -218,7 +222,7 @@ export const withElement = (options: WithElementOptions = {}) =>
     }
 
     return {
-      ...base,
+      ...component,
       element,
 
       /**
@@ -241,6 +245,10 @@ export const withElement = (options: WithElementOptions = {}) =>
           element.removeEventListener('touchend', handleTouchEnd);
           element.removeEventListener('touchmove', handleTouchMove);
         }
+        
+        // Clean up any registered event handlers using our new utility
+        removeEventHandlers(element);
+        
         element.remove();
       }
     };

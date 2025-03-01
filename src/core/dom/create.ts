@@ -73,6 +73,13 @@ export interface CreateElementOptions {
 }
 
 /**
+ * Event handler storage to facilitate cleanup
+ */
+export interface EventHandlerStorage {
+  [eventName: string]: EventListener;
+}
+
+/**
  * Creates a DOM element with the specified options
  *
  * @param {CreateElementOptions} options - Element creation options
@@ -117,21 +124,57 @@ export const createElement = (options: CreateElementOptions = {}): HTMLElement =
   // Handle all other attributes
   const allAttrs = { ...attrs, ...rest };
   Object.entries(allAttrs).forEach(([key, value]) => {
-    if (value != null) element.setAttribute(key, value);
+    if (value != null) element.setAttribute(key, String(value));
   });
 
-  // Handle event forwarding if context has emit method
-  if (context?.emit && forwardEvents) {
-    Object.entries(forwardEvents).forEach(([nativeEvent, eventConfig]) => {
-      const shouldForward = typeof eventConfig === 'function'
-        ? eventConfig
-        : () => true;
+  // Initialize event handler storage if not present
+  if (!element.__eventHandlers) {
+    element.__eventHandlers = {};
+  }
 
-      element.addEventListener(nativeEvent, (event) => {
-        if (shouldForward({ ...context, element }, event)) {
-          context.emit(nativeEvent, { event });
+  // Handle event forwarding if context has emit method or is a component with on method
+  if (forwardEvents && (context?.emit || context?.on)) {
+    Object.entries(forwardEvents).forEach(([nativeEvent, eventConfig]) => {
+      // Create a wrapper handler function to evaluate condition and forward event
+      const handler = (event: Event) => {
+        // Determine if the event should be forwarded
+        let shouldForward = true;
+        
+        if (typeof eventConfig === 'function') {
+          try {
+            // If it's a function, call with component context and event
+            shouldForward = eventConfig({ ...context, element }, event);
+          } catch (error) {
+            console.warn(`Error in event condition for ${nativeEvent}:`, error);
+            shouldForward = false;
+          }
+        } else {
+          // If it's a boolean, use directly
+          shouldForward = Boolean(eventConfig);
         }
-      });
+        
+        // Forward the event if condition passes
+        if (shouldForward) {
+          if (context.emit) {
+            context.emit(nativeEvent, { event, element, originalEvent: event });
+          } else if (context.on) {
+            // This is a component with on method but no emit method
+            // Dispatch a custom event that can be listened to
+            const customEvent = new CustomEvent(nativeEvent, {
+              detail: { event, element, originalEvent: event },
+              bubbles: true,
+              cancelable: true
+            });
+            element.dispatchEvent(customEvent);
+          }
+        }
+      };
+      
+      // Store the handler for future removal
+      element.__eventHandlers[nativeEvent] = handler;
+      
+      // Add the actual event listener
+      element.addEventListener(nativeEvent, handler);
     });
   }
 
@@ -145,6 +188,19 @@ export const createElement = (options: CreateElementOptions = {}): HTMLElement =
   }
 
   return element;
+};
+
+/**
+ * Removes event handlers from an element
+ * @param element - Element to cleanup
+ */
+export const removeEventHandlers = (element: HTMLElement): void => {
+  if (element.__eventHandlers) {
+    Object.entries(element.__eventHandlers).forEach(([eventName, handler]) => {
+      element.removeEventListener(eventName, handler);
+    });
+    delete element.__eventHandlers;
+  }
 };
 
 /**
@@ -186,3 +242,10 @@ export const withContent = (content: Node | string) =>
     }
     return element;
   };
+
+// Extend HTMLElement interface to add eventHandlers property
+declare global {
+  interface HTMLElement {
+    __eventHandlers?: EventHandlerStorage;
+  }
+}
