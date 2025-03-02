@@ -1,0 +1,28 @@
+// typedoc.json
+{
+  "entryPoints": ["./src/index.ts"],
+  "out": "docs",
+  "name": "MTRL Documentation",
+  "exclude": ["**/node_modules/**", "**/*.test.ts", "**/*.spec.ts"],
+  "excludePrivate": true,
+  "excludeExternals": true,
+  "theme": "default",
+  "categoryOrder": ["Core", "Components", "Utilities", "*"],
+  "categorizeByGroup": true,
+  "readme": "README.md",
+  "includeVersion": true,
+  "hideGenerator": true,
+  "searchInComments": true,
+  "sort": ["static-first", "alphabetical"],
+  "navigationLinks": {
+    "GitHub": "https://github.com/floor/mtrl"
+  },
+  "skipErrorChecking": true,
+  "skipLibCheck": true,
+  "skipDiagnostics": true,
+  "disableSources": false,
+  "validation": {
+    "invalidLink": false,
+    "notDocumented": false
+  }
+}

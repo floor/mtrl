@@ -15,7 +15,12 @@
     "test": "bun test",
     "test:watch": "bun test --watch",
     "test:coverage": "bun test --coverage",
-    "test:ui": "bun test --watch --ui"
+    "test:ui": "bun test --watch --ui",
+    "docs": "typedoc --skipErrorChecking",
+    "docs:js": "typedoc --options typedoc.simple.json",
+    "docs:alt": "bun generate-docs.js",
+    "docs:serve": "bun run --bun serve docs",
+    "docs:fix-errors": "tsc --noEmit --allowJs --skipLibCheck"
   },
   "repository": {
     "type": "git",
