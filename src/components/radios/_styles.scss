@@ -1,0 +1,232 @@
+// src/components/radios/_styles.scss
+@use '../../styles/abstract/base' as base;
+@use '../../styles/abstract/variables' as v;
+@use '../../styles/abstract/functions' as f;
+@use '../../styles/abstract/mixins' as m;
+@use '../../styles/abstract/theme' as t;
+
+$component: '#{base.$prefix}-radios';
+
+.#{$component} {
+  display: flex;
+  margin: 0;
+  padding: 0;
+  
+  // Vertical layout (default)
+  &--vertical {
+    flex-direction: column;
+    
+    .#{$component}-item {
+      margin-bottom: 12px;
+      
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+  
+  // Horizontal layout
+  &--horizontal {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    
+    .#{$component}-item {
+      margin-right: 16px;
+      
+      &:last-child {
+        margin-right: 0;
+      }
+    }
+  }
+  
+  // Disabled state
+  &--disabled {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+  
+  // Radio item
+  &-item {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    
+    &--disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+      
+      .#{$component}-label {
+        cursor: not-allowed;
+      }
+    }
+  }
+  
+  // Radio input
+  &-input {
+    position: absolute;
+    opacity: 0;
+    height: 0;
+    width: 0;
+    margin: 0;
+    padding: 0;
+    
+    // Focus styles
+    &:focus ~ .#{$component}-label .#{$component}-ripple {
+      background-color: t.alpha('primary', 0.12);
+    }
+    
+    // Checked styles
+    &:checked ~ .#{$component}-label {
+      .#{$component}-circle {
+        border-color: t.color('primary');
+        border-width: 2px;
+        
+        &:after {
+          transform: translate(-50%, -50%) scale(1);
+          opacity: 1;
+        }
+      }
+    }
+    
+    // Disabled styles
+    &:disabled ~ .#{$component}-label {
+      .#{$component}-circle {
+        border-color: t.alpha('on-surface', 0.38);
+        
+        &:after {
+          background-color: t.alpha('on-surface', 0.38);
+        }
+      }
+      
+      .#{$component}-text {
+        color: t.alpha('on-surface', 0.38);
+      }
+    }
+  }
+  
+  // Radio label
+  &-label {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+    padding: 8px 0;
+    height: 48px;
+    
+    // Typography for label
+    @include m.typography('body-medium');
+    
+    &--before {
+      flex-direction: row-reverse;
+      
+      .#{$component}-text {
+        margin-right: 12px;
+        margin-left: 0;
+      }
+    }
+  }
+  
+  // Radio control
+  &-control {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+  }
+  
+  // Radio circle
+  &-circle {
+    position: relative;
+    width: 20px;
+    height: 20px;
+    border: 2px solid t.color('outline');
+    border-radius: 50%;
+    box-sizing: border-box;
+    transition: border-color 0.2s ease;
+    
+    &:after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background-color: t.color('primary');
+      opacity: 0;
+      transition: transform 0.15s ease, opacity 0.15s ease;
+    }
+  }
+  
+  // Ripple effect
+  &-ripple {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 50%;
+    transition: background-color 0.15s ease;
+    
+    // Apply ripple effect on hover
+    .#{$component}-input:not(:disabled) ~ .#{$component}-label:hover & {
+      background-color: t.alpha('primary', 0.08);
+    }
+  }
+  
+  // Radio text
+  &-text {
+    margin-left: 8px;
+    line-height: 1.2;
+  }
+  
+  // Size variants
+  &--small {
+    .#{$component}-control {
+      width: 36px;
+      height: 36px;
+    }
+    
+    .#{$component}-circle {
+      width: 18px;
+      height: 18px;
+      
+      &:after {
+        width: 10px;
+        height: 10px;
+      }
+    }
+    
+    .#{$component}-label {
+      font-size: 13px;
+      height: 36px;
+    }
+  }
+  
+  &--large {
+    .#{$component}-control {
+      width: 48px;
+      height: 48px;
+    }
+    
+    .#{$component}-circle {
+      width: 24px;
+      height: 24px;
+      
+      &:after {
+        width: 14px;
+        height: 14px;
+      }
+    }
+    
+    .#{$component}-label {
+      font-size: 16px;
+      height: 48px;
+    }
+  }
+}
