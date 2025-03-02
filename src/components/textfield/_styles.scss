@@ -14,7 +14,7 @@ $component: '#{base.$prefix}-textfield';
   display: inline-flex;
   flex-direction: column;
   min-width: 210px;
-  
+
   // Size variants
   &--small {
     .#{$component}-input {
@@ -57,6 +57,7 @@ $component: '#{base.$prefix}-textfield';
       }
       
       &.#{$component}--focused .#{$component}-input {
+        height: 38px;
         padding: 9px 11px 10px;
       }
     }
@@ -272,6 +273,12 @@ $component: '#{base.$prefix}-textfield';
         color: t.color('primary');
       }
       
+      .#{$component}-input {
+        height: 55px;
+        padding: 20px 16px 6px;
+      }
+
+
       &:hover {
         border-bottom: 2px solid t.color('primary');
       }
@@ -375,6 +382,7 @@ $component: '#{base.$prefix}-textfield';
       }
       
       .#{$component}-input {
+        height: 54px;
         padding: 12px 15px 13px;
       }
       
