@@ -1,0 +1,174 @@
+// src/components/badge/_styles.scss
+@use '../../styles/abstract/base' as base;
+@use '../../styles/abstract/variables' as v;
+@use '../../styles/abstract/functions' as f;
+@use '../../styles/abstract/mixins' as m;
+@use '../../styles/abstract/theme' as t;
+
+$component: '#{base.$prefix}-badge';
+
+.#{$component} {
+  // Base styles
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 10px;
+  background-color: t.color('error');
+  color: t.color('on-error');
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  text-align: center;
+  
+  // Badge parent wrapper
+  &-wrapper {
+    position: relative;
+    display: inline-flex;
+  }
+  
+  // Default positioning (top-right)
+  &--positioned {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    transform: translate(50%, -50%);
+  }
+  
+  // Dot variant 
+  &--dot {
+    min-width: 8px;
+    height: 8px;
+    padding: 0;
+    border-radius: 50%;
+  }
+  
+  // Small size
+  &--small {
+    min-width: 16px;
+    height: 16px;
+    font-size: 10px;
+    padding: 0 4px;
+  }
+  
+  // Large size
+  &--large {
+    min-width: 24px;
+    height: 24px;
+    font-size: 12px;
+    padding: 0 8px;
+  }
+  
+  // Position variants
+  &--top-left {
+    top: 0;
+    left: 0;
+    transform: translate(-50%, -50%);
+  }
+  
+  &--top-right {
+    top: 0;
+    right: 0;
+    transform: translate(50%, -50%);
+  }
+  
+  &--bottom-left {
+    bottom: 0;
+    left: 0;
+    transform: translate(-50%, 50%);
+  }
+  
+  &--bottom-right {
+    bottom: 0;
+    right: 0;
+    transform: translate(50%, 50%);
+  }
+  
+  // Color variants
+  &--primary {
+    background-color: t.color('primary');
+    color: t.color('on-primary');
+  }
+  
+  &--secondary {
+    background-color: t.color('secondary');
+    color: t.color('on-secondary');
+  }
+  
+  &--tertiary {
+    background-color: t.color('tertiary');
+    color: t.color('on-tertiary');
+  }
+  
+  &--error {
+    background-color: t.color('error');
+    color: t.color('on-error');
+  }
+  
+  &--success {
+    background-color: t.color('success', t.color('primary'));
+    color: t.color('on-success', t.color('on-primary'));
+  }
+  
+  &--warning {
+    background-color: t.color('warning', t.color('tertiary'));
+    color: t.color('on-warning', t.color('on-tertiary'));
+  }
+  
+  &--info {
+    background-color: t.color('info', t.color('secondary'));
+    color: t.color('on-info', t.color('on-secondary'));
+  }
+  
+  // Outline variant
+  &--outlined {
+    background-color: transparent;
+    border: 1px solid currentColor;
+    
+    &.#{$component}--primary {
+      color: t.color('primary');
+    }
+    
+    &.#{$component}--secondary {
+      color: t.color('secondary');
+    }
+    
+    &.#{$component}--tertiary {
+      color: t.color('tertiary');
+    }
+    
+    &.#{$component}--error {
+      color: t.color('error');
+    }
+    
+    &.#{$component}--success {
+      color: t.color('success', t.color('primary'));
+    }
+    
+    &.#{$component}--warning {
+      color: t.color('warning', t.color('tertiary'));
+    }
+    
+    &.#{$component}--info {
+      color: t.color('info', t.color('secondary'));
+    }
+  }
+  
+  // Max value handling
+  &--max {
+    &::after {
+      content: '+';
+    }
+  }
+  
+  // Invisible
+  &--invisible {
+    display: none;
+  }
+}
