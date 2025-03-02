@@ -1,0 +1,14 @@
+// typedoc.simple.json
+{
+  "entryPoints": ["./src/index.js"],
+  "out": "docs",
+  "name": "MTRL Documentation",
+  "exclude": ["**/node_modules/**", "**/*.test.js", "**/*.spec.js"],
+  "excludePrivate": true,
+  "theme": "default",
+  "readme": "README.md",
+  "includeVersion": true,
+  "entryPointStrategy": "expand",
+  "treatWarningsAsErrors": false,
+  "tsconfig": false
+}

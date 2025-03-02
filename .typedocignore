@@ -1,0 +1,11 @@
+# Ignore files with TypeScript errors
+src/components/snackbar/api.ts
+src/components/snackbar/config.ts
+src/components/snackbar/features.ts
+src/components/snackbar/index.ts
+src/components/snackbar/position.ts
+src/components/snackbar/queue.ts
+src/components/snackbar/snackbar.ts
+src/components/chip/chip-set.ts
+src/components/chip/chip.ts
+src/components/menu/features/items-manager.ts
