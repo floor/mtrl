@@ -1,0 +1,241 @@
+// src/components/tooltip/_styles.scss
+@use '../../styles/abstract/base' as base;
+@use '../../styles/abstract/variables' as v;
+@use '../../styles/abstract/functions' as f;
+@use '../../styles/abstract/mixins' as m;
+@use '../../styles/abstract/theme' as t;
+
+$component: '#{base.$prefix}-tooltip';
+$arrow-size: 8px;
+
+.#{$component} {
+  // Base styles
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  max-width: 200px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background-color: t.color('inverse-surface');
+  color: t.color('inverse-on-surface');
+  font-size: 12px;
+  line-height: 16px;
+  text-align: center;
+  pointer-events: none;
+  opacity: 0;
+  transform: scale(0.9);
+  transform-origin: center;
+  box-sizing: border-box;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  
+  // Typography
+  @include m.typography('body-small');
+  font-weight: 500;
+  
+  // Transition
+  transition:
+    opacity 150ms cubic-bezier(0, 0, 0.2, 1),
+    transform 150ms cubic-bezier(0, 0, 0.2, 1);
+  
+  // States
+  &--visible {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  
+  // Variants
+  
+  // Default variant
+  &--default {
+    // Default styles already applied in base
+  }
+  
+  // Rich variant (for rich content)
+  &--rich {
+    text-align: left;
+    padding: 8px 12px;
+  }
+  
+  // Plain variant (flat, no shadow)
+  &--plain {
+    background-color: t.color('surface-container-high');
+    color: t.color('on-surface');
+    box-shadow: none;
+    border: 1px solid t.color('outline');
+  }
+  
+  // Arrow styles
+  &__arrow {
+    position: absolute;
+    width: 0;
+    height: 0;
+    border: $arrow-size solid transparent;
+    pointer-events: none;
+    
+    // Top position (arrow points up)
+    &--top {
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border-bottom-color: t.color('inverse-surface');
+      border-top-width: 0;
+      
+      .#{$component}--plain & {
+        border-bottom-color: t.color('surface-container-high');
+      }
+    }
+    
+    // Top-start position
+    &--top-start {
+      bottom: 100%;
+      left: $arrow-size;
+      border-bottom-color: t.color('inverse-surface');
+      border-top-width: 0;
+      
+      .#{$component}--plain & {
+        border-bottom-color: t.color('surface-container-high');
+      }
+    }
+    
+    // Top-end position
+    &--top-end {
+      bottom: 100%;
+      right: $arrow-size;
+      border-bottom-color: t.color('inverse-surface');
+      border-top-width: 0;
+      
+      .#{$component}--plain & {
+        border-bottom-color: t.color('surface-container-high');
+      }
+    }
+    
+    // Bottom position (arrow points down)
+    &--bottom {
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border-top-color: t.color('inverse-surface');
+      border-bottom-width: 0;
+      
+      .#{$component}--plain & {
+        border-top-color: t.color('surface-container-high');
+      }
+    }
+    
+    // Bottom-start position
+    &--bottom-start {
+      top: 100%;
+      left: $arrow-size;
+      border-top-color: t.color('inverse-surface');
+      border-bottom-width: 0;
+      
+      .#{$component}--plain & {
+        border-top-color: t.color('surface-container-high');
+      }
+    }
+    
+    // Bottom-end position
+    &--bottom-end {
+      top: 100%;
+      right: $arrow-size;
+      border-top-color: t.color('inverse-surface');
+      border-bottom-width: 0;
+      
+      .#{$component}--plain & {
+        border-top-color: t.color('surface-container-high');
+      }
+    }
+    
+    // Left position (arrow points left)
+    &--left {
+      right: 100%;
+      top: 50%;
+      transform: translateY(-50%);
+      border-right-color: t.color('inverse-surface');
+      border-left-width: 0;
+      
+      .#{$component}--plain & {
+        border-right-color: t.color('surface-container-high');
+      }
+    }
+    
+    // Left-start position
+    &--left-start {
+      right: 100%;
+      top: $arrow-size;
+      border-right-color: t.color('inverse-surface');
+      border-left-width: 0;
+      
+      .#{$component}--plain & {
+        border-right-color: t.color('surface-container-high');
+      }
+    }
+    
+    // Left-end position
+    &--left-end {
+      right: 100%;
+      bottom: $arrow-size;
+      border-right-color: t.color('inverse-surface');
+      border-left-width: 0;
+      
+      .#{$component}--plain & {
+        border-right-color: t.color('surface-container-high');
+      }
+    }
+    
+    // Right position (arrow points right)
+    &--right {
+      left: 100%;
+      top: 50%;
+      transform: translateY(-50%);
+      border-left-color: t.color('inverse-surface');
+      border-right-width: 0;
+      
+      .#{$component}--plain & {
+        border-left-color: t.color('surface-container-high');
+      }
+    }
+    
+    // Right-start position
+    &--right-start {
+      left: 100%;
+      top: $arrow-size;
+      border-left-color: t.color('inverse-surface');
+      border-right-width: 0;
+      
+      .#{$component}--plain & {
+        border-left-color: t.color('surface-container-high');
+      }
+    }
+    
+    // Right-end position
+    &--right-end {
+      left: 100%;
+      bottom: $arrow-size;
+      border-left-color: t.color('inverse-surface');
+      border-right-width: 0;
+      
+      .#{$component}--plain & {
+        border-left-color: t.color('surface-container-high');
+      }
+    }
+  }
+  
+  // Positioning classes
+  &--top {
+    margin-bottom: $arrow-size;
+  }
+  
+  &--bottom {
+    margin-top: $arrow-size;
+  }
+  
+  &--left {
+    margin-right: $arrow-size;
+  }
+  
+  &--right {
+    margin-left: $arrow-size;
+  }
+}

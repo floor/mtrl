@@ -14,7 +14,9 @@ import {
   createProgress,
   createSlider,
   createSnackbar,
+  createTabs,
   createTextfield,
+  createTooltip,
   createSwitch
 } from './src/index.js'
 
@@ -33,6 +35,8 @@ export {
   createProgress,
   createSlider,
   createSnackbar,
+  createTabs,
   createTextfield,
+  createTooltip,
   createSwitch
 }
