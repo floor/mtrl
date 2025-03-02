@@ -37,7 +37,7 @@ const createCircularProgressDOM = (baseClass: string) => {
   track.setAttribute('r', '45');
   track.setAttribute('fill', 'none');
   track.setAttribute('stroke-width', '6');
-  track.className = `${baseClass}-track`;
+  track.setAttribute('class', `${baseClass}-track`); // FIXED: use setAttribute instead of className
   
   const indicator = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
   indicator.setAttribute('cx', '48');
@@ -45,7 +45,7 @@ const createCircularProgressDOM = (baseClass: string) => {
   indicator.setAttribute('r', '45');
   indicator.setAttribute('fill', 'none');
   indicator.setAttribute('stroke-width', '6');
-  indicator.className = `${baseClass}-indicator`;
+  indicator.setAttribute('class', `${baseClass}-indicator`); // FIXED: use setAttribute instead of className
   
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svg.setAttribute('viewBox', `0 0 ${size} ${size}`);
