@@ -59,7 +59,7 @@ export const withAPI = (options: ApiOptions) =>
       if (!options.state.isIndeterminate()) {
         const percent = (value / options.value.getMax()) * 100;
         
-        if (component.getClass('progress').includes('linear')) {
+        if (component.element.classList.contains(`${component.getClass('progress')}--linear`)) {
           component.indicatorElement.style.width = `${percent}%`;
         } else {
           // Circular progress calculation
@@ -91,7 +91,7 @@ export const withAPI = (options: ApiOptions) =>
     setBuffer(value: number) {
       options.buffer.setBuffer(value);
       
-      if (component.getClass('progress').includes('linear')) {
+      if (component.element.classList.contains(`${component.getClass('progress')}--linear`)) {
         const bufferElement = component.element.querySelector(`.${component.getClass('progress')}-buffer`);
         if (bufferElement) {
           const percent = (value / options.value.getMax()) * 100;

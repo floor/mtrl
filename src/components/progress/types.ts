@@ -49,6 +49,9 @@ export interface ProgressComponent {
   /** The indicator element */
   indicatorElement: HTMLElement;
   
+  /** The buffer element (for linear variant) */
+  bufferElement?: HTMLElement;
+  
   /** The label element (if enabled) */
   labelElement?: HTMLElement;
   
