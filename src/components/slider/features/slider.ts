@@ -1,4 +1,4 @@
-// src/components/slider/features/slider.ts
+// src/components/slider/features/slider.ts - fix initialization issue
 import { SLIDER_EVENTS } from '../constants';
 import { SliderConfig } from '../types';
 import { createUiHelpers } from './ui';
@@ -86,9 +86,10 @@ export const withSlider = (config: SliderConfig) => component => {
       secondThumb.setAttribute('aria-valuenow', String(state.secondValue));
     }
     
-    // Setup initial positions
+    // Setup initial positions - ensure this happens synchronously during initialization
     uiHelpers.updateThumbPositions();
     uiHelpers.updateActiveTrack();
+    uiHelpers.updateRemainingTrack(); // Explicitly call during initialization
     uiHelpers.updateValueBubbles();
     
     // Generate ticks if needed

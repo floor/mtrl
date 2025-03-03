@@ -3,7 +3,7 @@ import { SLIDER_ORIENTATIONS } from '../constants';
 import { SliderConfig } from '../types';
 
 /**
- * Create UI update helpers for slider component
+ * Create UI update helpers for slider component with MD3 enhancements
  * 
  * @param config Slider configuration
  * @param state Slider state object
@@ -20,6 +20,7 @@ export const createUiHelpers = (config: SliderConfig, state) => {
       clamp: (value, min, max) => Math.min(Math.max(value, min), max),
       setThumbPosition: () => {},
       updateActiveTrack: () => {},
+      updateRemainingTrack: () => {}, // New method for remaining track
       updateThumbPositions: () => {},
       updateValueBubbles: () => {},
       showValueBubble: () => {},
@@ -32,6 +33,7 @@ export const createUiHelpers = (config: SliderConfig, state) => {
   const {
     track,
     activeTrack,
+    remainingTrack,
     thumb,
     valueBubble,
     secondThumb,
@@ -49,7 +51,6 @@ export const createUiHelpers = (config: SliderConfig, state) => {
     return ((value - state.min) / range) * 100;
   };
     
-
   /**
    * Gets slider value from a position on the track
    * @param position Screen coordinate (clientX/clientY)
@@ -66,7 +67,6 @@ export const createUiHelpers = (config: SliderConfig, state) => {
       if (vertical) {
         const trackHeight = trackRect.height;
         // For vertical sliders, 0% is at the bottom, 100% at the top
-        // Corrected calculation to fix inverted drag
         const percentageFromBottom = 1 - ((position - trackRect.top) / trackHeight);
         // Clamp percentage between 0 and 1
         const clampedPercentage = Math.max(0, Math.min(1, percentageFromBottom));
@@ -173,6 +173,49 @@ export const createUiHelpers = (config: SliderConfig, state) => {
       } else {
         activeTrack.style.width = `${percent}%`;
         activeTrack.style.left = '0';
+      }
+    }
+  };
+  
+  /**
+   * Updates remaining track styles (new for MD3)
+   */
+  const updateRemainingTrack = () => {
+    if (!remainingTrack) return;
+    
+    if (config.range && state.secondValue !== null) {
+      // Range slider (two thumbs)
+      const lowerValue = Math.min(state.value, state.secondValue);
+      const higherValue = Math.max(state.value, state.secondValue);
+      const lowerPercent = getPercentage(lowerValue);
+      const higherPercent = getPercentage(higherValue);
+      
+      if (config.orientation === SLIDER_ORIENTATIONS.VERTICAL) {
+        // Bottom part
+        remainingTrack.style.height = `${lowerPercent}%`;
+        remainingTrack.style.bottom = '0';
+        remainingTrack.style.top = 'auto';
+      } else {
+        // Right part
+        remainingTrack.style.width = `${100 - higherPercent}%`;
+        remainingTrack.style.left = `${higherPercent}%`;
+      }
+    } else {
+      // Single thumb slider
+      const percent = getPercentage(state.value);
+      
+      if (config.orientation === SLIDER_ORIENTATIONS.VERTICAL) {
+        // Top part
+        remainingTrack.style.height = `${100 - percent}%`;
+        remainingTrack.style.bottom = `${percent}%`;
+        remainingTrack.style.top = 'auto';
+        remainingTrack.style.width = '100%'; // Ensure width is set
+      } else {
+        // Right part
+        remainingTrack.style.width = `${100 - percent}%`;
+        remainingTrack.style.left = `${percent}%`;
+        remainingTrack.style.height = '100%'; // Ensure height is set
+        remainingTrack.style.display = 'block'; // Force display
       }
     }
   };
@@ -287,8 +330,15 @@ export const createUiHelpers = (config: SliderConfig, state) => {
           tick.style.left = `${percent}%`;
         }
         
-        // Set active class if value is less than or equal to current value
-        if (value <= state.value) {
+        // Set active class if value is in active range
+        if (config.range && state.secondValue !== null) {
+          const lowerValue = Math.min(state.value, state.secondValue);
+          const higherValue = Math.max(state.value, state.secondValue);
+          
+          if (value >= lowerValue && value <= higherValue) {
+            tick.classList.add(`${state.component.getClass('slider-tick')}--active`);
+          }
+        } else if (value <= state.value) {
           tick.classList.add(`${state.component.getClass('slider-tick')}--active`);
         }
         
@@ -357,6 +407,7 @@ export const createUiHelpers = (config: SliderConfig, state) => {
   const updateUi = () => {
     updateThumbPositions();
     updateActiveTrack();
+    updateRemainingTrack(); // Add remaining track update
     updateValueBubbles();
     updateTicks();
   };
@@ -369,6 +420,7 @@ export const createUiHelpers = (config: SliderConfig, state) => {
     clamp,
     setThumbPosition,
     updateActiveTrack,
+    updateRemainingTrack, // Add new method to public API
     updateThumbPositions,
     updateValueBubbles,
     showValueBubble,
