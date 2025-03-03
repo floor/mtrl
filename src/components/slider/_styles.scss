@@ -105,6 +105,7 @@ $component: '#{base.$prefix}-slider';
   
   // Dot elements for track ends (separate from thumbs)
   &-dot {
+    pointer-events: none;
     position: absolute;
     width: 4px;
     height: 4px;
@@ -172,21 +173,21 @@ $component: '#{base.$prefix}-slider';
     // Hover state - MD3 subtle hover effect
     &:hover {    
       .#{$component}--secondary & {
-        background-color: t.alpha('secondary', 0.92);
+        background-color: t.color('secondary');
       }
       
       .#{$component}--tertiary & {
-        background-color: t.alpha('tertiary', 0.92);
+        background-color: t.color('tertiary');
       }
       
       .#{$component}--error & {
-        background-color: t.alpha('error', 0.92);
+        background-color: t.color('error');
       }
       
       // Disabled state
       .#{$component}--disabled & {
         transform: translate(-50%, -50%);
-        background-color: t.alpha('on-surface', 0.38);
+        background-color: t.color('on-surface');
       }
     }
     
@@ -195,15 +196,15 @@ $component: '#{base.$prefix}-slider';
       outline: none;
       
       .#{$component}--secondary & {
-        background-color: t.alpha('secondary', 0.88);
+        background-color: t.color('secondary');
       }
       
       .#{$component}--tertiary & {
-        background-color: t.alpha('tertiary', 0.88);
+        background-color: t.color('tertiary');
       }
       
       .#{$component}--error & {
-        background-color: t.alpha('error', 0.88);
+        background-color: t.color('error');
       }
     }
     
@@ -211,15 +212,15 @@ $component: '#{base.$prefix}-slider';
     &:active {
     
       .#{$component}--secondary & {
-        background-color: t.alpha('secondary', 0.84);
+        background-color: t.color('secondary');
       }
       
       .#{$component}--tertiary & {
-        background-color: t.alpha('tertiary', 0.84);
+        background-color: t.color('tertiary');
       }
       
       .#{$component}--error & {
-        background-color: t.alpha('error', 0.84);
+        background-color: t.color('error');
       }
     }
     
