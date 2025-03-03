@@ -48,7 +48,8 @@ export const createUiHelpers = (config: SliderConfig, state) => {
     if (range === 0) return 0;
     return ((value - state.min) / range) * 100;
   };
-  
+    
+
   /**
    * Gets slider value from a position on the track
    * @param position Screen coordinate (clientX/clientY)
@@ -65,7 +66,8 @@ export const createUiHelpers = (config: SliderConfig, state) => {
       if (vertical) {
         const trackHeight = trackRect.height;
         // For vertical sliders, 0% is at the bottom, 100% at the top
-        const percentageFromBottom = (trackRect.bottom - position) / trackHeight;
+        // Corrected calculation to fix inverted drag
+        const percentageFromBottom = 1 - ((position - trackRect.top) / trackHeight);
         // Clamp percentage between 0 and 1
         const clampedPercentage = Math.max(0, Math.min(1, percentageFromBottom));
         return state.min + clampedPercentage * range;
@@ -121,9 +123,14 @@ export const createUiHelpers = (config: SliderConfig, state) => {
     if (!thumbElement) return;
     
     if (config.orientation === SLIDER_ORIENTATIONS.VERTICAL) {
+      // Fix for vertical slider - position from bottom using absolute positioning
       thumbElement.style.bottom = `${valuePercent}%`;
+      thumbElement.style.left = '50%'; // Keep it centered horizontally
+      thumbElement.style.top = 'auto'; // Clear top property to prevent conflicts
+      
       if (valueBubbleElement) {
         valueBubbleElement.style.bottom = `${valuePercent}%`;
+        valueBubbleElement.style.top = 'auto';
       }
     } else {
       thumbElement.style.left = `${valuePercent}%`;
@@ -150,6 +157,7 @@ export const createUiHelpers = (config: SliderConfig, state) => {
       if (config.orientation === SLIDER_ORIENTATIONS.VERTICAL) {
         activeTrack.style.height = `${trackLength}%`;
         activeTrack.style.bottom = `${lowerPercent}%`;
+        activeTrack.style.top = 'auto'; // Clear top property
       } else {
         activeTrack.style.width = `${trackLength}%`;
         activeTrack.style.left = `${lowerPercent}%`;
@@ -161,6 +169,7 @@ export const createUiHelpers = (config: SliderConfig, state) => {
       if (config.orientation === SLIDER_ORIENTATIONS.VERTICAL) {
         activeTrack.style.height = `${percent}%`;
         activeTrack.style.bottom = '0';
+        activeTrack.style.top = 'auto'; // Clear top property
       } else {
         activeTrack.style.width = `${percent}%`;
         activeTrack.style.left = '0';
