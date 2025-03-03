@@ -86,31 +86,58 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
     // Determine which thumb to move based on click position
     let isSecondThumb = false;
     
-    if (config.range && state.secondValue !== null) {
-      // For range slider, move the closest thumb
-      try {
-        const trackRect = track.getBoundingClientRect();
-        const clickPosition = config.orientation === SLIDER_ORIENTATIONS.VERTICAL
-          ? e.clientY
-          : e.clientX;
-        
-        const clickValue = getValueFromPosition(clickPosition, config.orientation === SLIDER_ORIENTATIONS.VERTICAL);
-        
-        // Determine which thumb is closer to the click position
-        const distToFirst = Math.abs(clickValue - state.value);
-        const distToSecond = Math.abs(clickValue - state.secondValue);
+    try {
+      // Get track rect for calculating position
+      const trackRect = track.getBoundingClientRect();
+      const isVertical = config.orientation === SLIDER_ORIENTATIONS.VERTICAL;
+      
+      // Get position from mouse or touch event
+      const position = e.type.includes('touch')
+        ? isVertical ? e.touches[0].clientY : e.touches[0].clientX
+        : isVertical ? e.clientY : e.clientX;
+      
+      // Calculate value at click position
+      let newValue = getValueFromPosition(position, isVertical);
+      
+      // Round to step if needed
+      if (config.snapToSteps && state.step > 0) {
+        newValue = roundToStep(newValue);
+      }
+      
+      // Clamp value to min/max
+      newValue = clamp(newValue, state.min, state.max);
+      
+      if (config.range && state.secondValue !== null) {
+        // For range slider, determine which thumb to move (closest to click position)
+        const distToFirst = Math.abs(newValue - state.value);
+        const distToSecond = Math.abs(newValue - state.secondValue);
         
         isSecondThumb = distToSecond < distToFirst;
-      } catch (error) {
-        console.warn('Error calculating track position:', error);
+        
+        // Update the appropriate value
+        if (isSecondThumb) {
+          state.secondValue = newValue;
+        } else {
+          state.value = newValue;
+        }
+      } else {
+        // Single thumb slider - just update the value
+        state.value = newValue;
       }
+      
+      // Update UI immediately
+      updateUi();
+      
+      // Trigger events
+      triggerEvent(SLIDER_EVENTS.INPUT, e);
+      triggerEvent(SLIDER_EVENTS.CHANGE, e);
+    } catch (error) {
+      console.warn('Error handling track click:', error);
     }
     
+    // Set active elements
     state.activeThumb = isSecondThumb ? secondThumb : thumb;
     state.activeBubble = isSecondThumb ? secondValueBubble : valueBubble;
-    
-    // Update value based on click position
-    handleMouseMove(e);
     
     // Call thumb mouse down to start dragging
     handleThumbMouseDown(e, isSecondThumb);
