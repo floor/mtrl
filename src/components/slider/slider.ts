@@ -21,7 +21,8 @@ const createSlider = (config: SliderConfig = {}): SliderComponent => {
   const baseConfig = createBaseConfig(config);
 
   try {
-    const slider = pipe(
+    // First create the component with all required features
+    const component = pipe(
       createBase,
       withEvents(),
       withElement(getElementConfig(baseConfig)),
@@ -29,12 +30,17 @@ const createSlider = (config: SliderConfig = {}): SliderComponent => {
       withDisabled(baseConfig),
       withAppearance(baseConfig),
       withSlider(baseConfig),
-      withLifecycle(),
-      comp => withAPI(getApiConfig(comp))(comp)
+      withLifecycle()
     )(baseConfig);
+    
+    // Then generate the API configuration using the component
+    const apiOptions = getApiConfig(component);
+    
+    // Finally, apply the API layer with the generated options
+    const slider = withAPI(apiOptions)(component);
 
     // Register event handlers from config
-    if (baseConfig.on) {
+    if (baseConfig.on && typeof slider.on === 'function') {
       Object.entries(baseConfig.on).forEach(([event, handler]) => {
         if (typeof handler === 'function') {
           slider.on(event, handler);

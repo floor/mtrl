@@ -12,6 +12,32 @@ import { createEventHelpers } from './events';
  * @returns Component enhancer with slider functionality
  */
 export const withSlider = (config: SliderConfig) => component => {
+  // Ensure component has events
+  if (!component.events) {
+    component.events = {
+      listeners: {},
+      on: function(event, handler) {
+        if (!this.listeners[event]) {
+          this.listeners[event] = [];
+        }
+        this.listeners[event].push(handler);
+        return this;
+      },
+      off: function(event, handler) {
+        if (this.listeners[event]) {
+          this.listeners[event] = this.listeners[event].filter(h => h !== handler);
+        }
+        return this;
+      },
+      trigger: function(event, data) {
+        if (this.listeners[event]) {
+          this.listeners[event].forEach(handler => handler(data));
+        }
+        return this;
+      }
+    };
+  }
+  
   // Initialize state
   const state = {
     value: config.value !== undefined ? config.value : 0,
