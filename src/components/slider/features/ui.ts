@@ -10,6 +10,25 @@ import { SliderConfig } from '../types';
  * @returns UI update helper methods
  */
 export const createUiHelpers = (config: SliderConfig, state) => {
+  // Make sure state.component.structure exists
+  if (!state.component || !state.component.structure) {
+    console.error('Cannot create UI helpers: component structure is missing');
+    return {
+      getPercentage: () => 0,
+      getValueFromPosition: () => 0,
+      roundToStep: (value) => value,
+      clamp: (value, min, max) => Math.min(Math.max(value, min), max),
+      setThumbPosition: () => {},
+      updateActiveTrack: () => {},
+      updateThumbPositions: () => {},
+      updateValueBubbles: () => {},
+      showValueBubble: () => {},
+      generateTicks: () => {},
+      updateTicks: () => {},
+      updateUi: () => {}
+    };
+  }
+  
   const {
     track,
     activeTrack,
@@ -37,17 +56,30 @@ export const createUiHelpers = (config: SliderConfig, state) => {
    * @returns Calculated value
    */
   const getValueFromPosition = (position, vertical = false) => {
-    const trackRect = track.getBoundingClientRect();
-    const range = state.max - state.min;
+    if (!track) return state.min;
     
-    if (vertical) {
-      const trackHeight = trackRect.height;
-      const percentageFromBottom = (trackRect.bottom - position) / trackHeight;
-      return state.min + percentageFromBottom * range;
-    } else {
-      const trackWidth = trackRect.width;
-      const percentageFromLeft = (position - trackRect.left) / trackWidth;
-      return state.min + percentageFromLeft * range;
+    try {
+      const trackRect = track.getBoundingClientRect();
+      const range = state.max - state.min;
+      
+      if (vertical) {
+        const trackHeight = trackRect.height;
+        // For vertical sliders, 0% is at the bottom, 100% at the top
+        const percentageFromBottom = (trackRect.bottom - position) / trackHeight;
+        // Clamp percentage between 0 and 1
+        const clampedPercentage = Math.max(0, Math.min(1, percentageFromBottom));
+        return state.min + clampedPercentage * range;
+      } else {
+        const trackWidth = trackRect.width;
+        // For horizontal sliders, 0% is at the left, 100% at the right
+        const percentageFromLeft = (position - trackRect.left) / trackWidth;
+        // Clamp percentage between 0 and 1
+        const clampedPercentage = Math.max(0, Math.min(1, percentageFromLeft));
+        return state.min + clampedPercentage * range;
+      }
+    } catch (error) {
+      console.warn('Error calculating value from position:', error);
+      return state.min;
     }
   };
   
@@ -105,6 +137,8 @@ export const createUiHelpers = (config: SliderConfig, state) => {
    * Updates active track styles
    */
   const updateActiveTrack = () => {
+    if (!activeTrack) return;
+    
     if (config.range && state.secondValue !== null) {
       // Range slider (two thumbs)
       const lowerValue = Math.min(state.value, state.secondValue);
@@ -138,6 +172,8 @@ export const createUiHelpers = (config: SliderConfig, state) => {
    * Updates thumb positions
    */
   const updateThumbPositions = () => {
+    if (!thumb) return;
+    
     // Update main thumb
     const percent = getPercentage(state.value);
     setThumbPosition(thumb, valueBubble, percent);
@@ -159,6 +195,8 @@ export const createUiHelpers = (config: SliderConfig, state) => {
    * Updates value bubble content
    */
   const updateValueBubbles = () => {
+    if (!valueBubble) return;
+    
     // Format the values
     const formatter = config.valueFormatter || (value => value.toString());
     const formattedValue = formatter(state.value);
