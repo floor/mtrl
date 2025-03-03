@@ -21,9 +21,9 @@ $component: '#{base.$prefix}-slider';
   &-track {
     position: relative;
     width: 100%;
-    height: 4px;
+    height: 10px; // Further increased track height
     background-color: t.color('surface-container-highest');
-    border-radius: 2px;
+    border-radius: 5px; // Adjusted for thicker track
     overflow: hidden;
     cursor: pointer;
     
@@ -43,7 +43,7 @@ $component: '#{base.$prefix}-slider';
     background-color: t.color('primary');
     transform-origin: left center;
     transition: transform 0.1s ease;
-    border-radius: 2px;
+    border-radius: 5px; // Adjusted for thicker track
 
     .#{$component}--secondary & {
       background-color: t.color('secondary');
@@ -58,12 +58,52 @@ $component: '#{base.$prefix}-slider';
     }
   }
   
-  // Thumb
+  // Dot elements for track ends (separate from thumbs)
+  &-dot {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: t.color('primary');
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1;
+    
+    // Start dot
+    &--start {
+      left: 0;
+    }
+    
+    // End dot
+    &--end {
+      right: 0;
+    }
+    
+    // Color variants
+    .#{$component}--secondary & {
+      background-color: t.color('secondary');
+    }
+    
+    .#{$component}--tertiary & {
+      background-color: t.color('tertiary');
+    }
+    
+    .#{$component}--error & {
+      background-color: t.color('error');
+    }
+    
+    // Disabled state
+    .#{$component}--disabled & {
+      opacity: 0.38;
+    }
+  }
+  
+  // Thumb - changed from circle to bar
   &-thumb {
     position: absolute;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
+    width: 4px; // Narrow bar width
+    height: 24px; // Taller than the track, adjusted for thicker track
+    border-radius: 2px; // Slight rounding on the bar
     background-color: t.color('primary');
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
     top: 50%;
@@ -165,6 +205,11 @@ $component: '#{base.$prefix}-slider';
         z-index: 2;
       }
     }
+    
+    // In range mode, hide the default end dot and only show the active dots
+    .#{$component}-dot--end {
+      display: none;
+    }
   }
   
   // Value bubble (shows current value when dragging)
@@ -213,7 +258,7 @@ $component: '#{base.$prefix}-slider';
     flex-direction: column;
     
     .#{$component}-track {
-      width: 4px;
+      width: 10px; // Match the horizontal track thickness
       height: 100%;
     }
     
@@ -224,6 +269,8 @@ $component: '#{base.$prefix}-slider';
     }
     
     .#{$component}-thumb {
+      width: 24px; // Taller in vertical orientation
+      height: 4px; // Match the horizontal thumb width
       left: 50%;
       transform: translate(-50%, 50%);
       
@@ -238,6 +285,21 @@ $component: '#{base.$prefix}-slider';
       
       .#{$component}--disabled & {
         transform: translate(-50%, 50%);
+      }
+    }
+    
+    // Dots for vertical orientation
+    .#{$component}-dot {
+      left: 50%;
+      top: auto;
+      transform: translateX(-50%);
+      
+      &--start {
+        bottom: 0;
+      }
+      
+      &--end {
+        top: 0;
       }
     }
     
@@ -272,12 +334,17 @@ $component: '#{base.$prefix}-slider';
     height: 32px;
     
     .#{$component}-thumb {
-      width: 16px;
+      width: 3px; // Slightly smaller
       height: 16px;
     }
     
     &.#{$component}--vertical {
       width: 32px;
+      
+      .#{$component}-thumb {
+        width: 16px;
+        height: 3px;
+      }
     }
   }
   
@@ -285,12 +352,17 @@ $component: '#{base.$prefix}-slider';
     height: 48px;
     
     .#{$component}-thumb {
-      width: 24px;
+      width: 5px; // Slightly larger
       height: 24px;
     }
     
     &.#{$component}--vertical {
       width: 48px;
+      
+      .#{$component}-thumb {
+        width: 24px;
+        height: 5px;
+      }
     }
   }
 }
