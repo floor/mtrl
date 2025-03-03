@@ -1,18 +1,26 @@
-// src/components/slider/features/structure.ts
+// src/components/slider/features/structure.ts - additional fixes
 import { SLIDER_COLORS, SLIDER_SIZES, SLIDER_ORIENTATIONS } from '../constants';
 import { SliderConfig } from '../types';
 
 /**
- * Creates the slider DOM structure
+ * Creates the slider DOM structure following MD3 principles
  * @param config Slider configuration
  * @returns Component enhancer with DOM structure
  */
 export const withStructure = (config: SliderConfig) => component => {
-  // Create track element
+  // Create track element (now transparent as per MD3)
   const track = document.createElement('div');
   track.classList.add(component.getClass('slider-track'));
   
-  // Create active track element
+  // Create remaining track element (new addition for MD3)
+  // Place it first in track to ensure it's at the bottom z-layer
+  const remainingTrack = document.createElement('div');
+  remainingTrack.classList.add(component.getClass('slider-remaining-track'));
+  remainingTrack.style.width = '100%'; // Ensure initial full width
+  remainingTrack.style.height = '100%'; // Ensure initial full height
+  track.appendChild(remainingTrack);
+  
+  // Create active track element (filled part)
   const activeTrack = document.createElement('div');
   activeTrack.classList.add(component.getClass('slider-active-track'));
   track.appendChild(activeTrack);
@@ -98,6 +106,7 @@ export const withStructure = (config: SliderConfig) => component => {
     structure: {
       track,
       activeTrack,
+      remainingTrack,
       thumb,
       valueBubble,
       secondThumb,

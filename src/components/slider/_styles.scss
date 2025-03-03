@@ -17,14 +17,13 @@ $component: '#{base.$prefix}-slider';
   user-select: none;
   touch-action: none;
   
-  // Track
   &-track {
     position: relative;
     width: 100%;
     padding: 0 4px;
-    height: 16px; // Further increased track height
-    background-color: t.color('surface-container-highest');
-    border-radius: 8px; // Adjusted for thicker track
+    height: 16px;
+    background-color: transparent;
+    border-radius: 8px;
     overflow: hidden;
     cursor: pointer;
     
@@ -44,7 +43,7 @@ $component: '#{base.$prefix}-slider';
     background-color: t.color('primary');
     transform-origin: left center;
     transition: transform 0.1s ease;
-    border-radius: 5px; // Adjusted for thicker track
+    border-radius: 5px;
 
     .#{$component}--secondary & {
       background-color: t.color('secondary');
@@ -56,6 +55,51 @@ $component: '#{base.$prefix}-slider';
     
     .#{$component}--error & {
       background-color: t.color('error');
+    }
+  }
+  
+  // Remaining track (unfilled part) - new for MD3
+  &-remaining-track {
+    opacity: .24;
+    position: absolute;
+    top: 0;
+    height: 100%;
+    background-color: t.color('primary');
+    transform-origin: left center;
+    transition: transform 0.1s ease;
+    border-radius: 5px;
+    width: 100%; // Set initial width to ensure visibility
+
+    .#{$component}--secondary & {
+      background-color: t.color('secondary');
+    }
+    
+    .#{$component}--tertiary & {
+      background-color: t.color('tertiary');
+    }
+    
+    .#{$component}--error & {
+      background-color: t.color('error');
+    }
+    
+    .#{$component}--disabled & {
+      opacity: 0.12;
+    }
+
+    .#{$component}--secondary & {
+      background-color: t.color('secondary');
+    }
+    
+    .#{$component}--tertiary & {
+      background-color: t.color('tertiary');
+    }
+    
+    .#{$component}--error & {
+      background-color: t.color('error');
+    }
+    
+    .#{$component}--disabled & {
+      opacity: 0.12;
     }
   }
   
@@ -99,17 +143,17 @@ $component: '#{base.$prefix}-slider';
     }
   }
   
-  // Thumb - changed from circle to bar
+  // Thumb - updated to MD3 style
   &-thumb {
     position: absolute;
-    width: 4px; // Narrow bar width
-    height: 40px; // Taller than the track, adjusted for thicker track
-    border-radius: 2px; // Slight rounding on the bar
+    width: 4px;
+    height: 40px;
+    border-radius: 2px;
     background-color: t.color('primary');
     top: 50%;
     transform: translate(-50%, -50%);
     cursor: pointer;
-    z-index: 1;
+    z-index: 2; // Increased to ensure above both track parts
     transition: transform 0.1s ease, background-color 0.15s ease;
     
     // Color variants
@@ -125,38 +169,69 @@ $component: '#{base.$prefix}-slider';
       background-color: t.color('error');
     }
     
-    // Hover state
-    &:hover {
-      transform: translate(-50%, -50%);
-      // box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+    // Hover state - MD3 subtle hover effect
+    &:hover {    
+      .#{$component}--secondary & {
+        background-color: t.alpha('secondary', 0.92);
+      }
+      
+      .#{$component}--tertiary & {
+        background-color: t.alpha('tertiary', 0.92);
+      }
+      
+      .#{$component}--error & {
+        background-color: t.alpha('error', 0.92);
+      }
       
       // Disabled state
       .#{$component}--disabled & {
         transform: translate(-50%, -50%);
-        // box-shadow: none;
+        background-color: t.alpha('on-surface', 0.38);
       }
     }
     
-    // Focused state
+    // Focused state - MD3 focus state
     &:focus {
       outline: none;
-      transform: translate(-50%, -50%);
+      
+      .#{$component}--secondary & {
+        background-color: t.alpha('secondary', 0.88);
+      }
+      
+      .#{$component}--tertiary & {
+        background-color: t.alpha('tertiary', 0.88);
+      }
+      
+      .#{$component}--error & {
+        background-color: t.alpha('error', 0.88);
+      }
     }
     
-    // Active state
+    // Active state - MD3 pressed state
     &:active {
-      transform: translate(-50%, -50%);
+    
+      .#{$component}--secondary & {
+        background-color: t.alpha('secondary', 0.84);
+      }
+      
+      .#{$component}--tertiary & {
+        background-color: t.alpha('tertiary', 0.84);
+      }
+      
+      .#{$component}--error & {
+        background-color: t.alpha('error', 0.84);
+      }
     }
     
     // Disabled state
     .#{$component}--disabled & {
       opacity: 0.38;
       cursor: not-allowed;
-      box-shadow: none;
+      background-color: t.color('on-surface');
     }
   }
   
-  // Tick marks
+  // Tick marks - updated for MD3
   &-tick {
     position: absolute;
     width: 2px;
@@ -166,6 +241,7 @@ $component: '#{base.$prefix}-slider';
     top: 50%;
     transform: translate(-50%, -50%);
     pointer-events: none;
+    opacity: 0.6; // MD3 subtle tick marks
     
     // Active tick (filled)
     &--active {
@@ -185,7 +261,7 @@ $component: '#{base.$prefix}-slider';
     }
   }
   
-  // Labels for tick marks
+  // Labels for tick marks - updated for MD3 typography
   &-label {
     position: absolute;
     font-size: 12px;
@@ -194,51 +270,54 @@ $component: '#{base.$prefix}-slider';
     transform: translateX(-50%);
     white-space: nowrap;
     pointer-events: none;
+    font-weight: 500; // MD3 medium weight for labels
   }
   
   // Range slider styles (for two thumbs)
   &--range {
     .#{$component}-thumb {
       &:nth-of-type(1) {
-        z-index: 2;
+        z-index: 3; // Ensure first thumb is above everything
       }
     }
     
     // In range mode, both dots should be visible
     .#{$component}-dot {
-      z-index: 2; // Ensure dots are above track but below thumbs
+      z-index: 2;
     }
   }
   
-  // Value bubble (shows current value when dragging)
+  // Value bubble (shows current value when dragging) - updated for MD3
   &-value {
     position: absolute;
     top: -30px;
     left: 0;
-    background-color: t.color('primary');
-    color: t.color('on-primary');
-    padding: 2px 6px;
-    border-radius: 4px;
+    background-color: t.color('primary-container');
+    color: t.color('on-primary-container');
+    padding: 4px 8px;
+    border-radius: 8px; // MD3 more rounded corners
     font-size: 12px;
+    font-weight: 500; // MD3 medium weight
     transform: translateX(-50%);
     visibility: hidden;
     opacity: 0;
     transition: opacity 0.2s ease, visibility 0s linear 0.2s;
     pointer-events: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); // Subtle elevation for MD3
     
     .#{$component}--secondary & {
-      background-color: t.color('secondary');
-      color: t.color('on-secondary');
+      background-color: t.color('secondary-container');
+      color: t.color('on-secondary-container');
     }
     
     .#{$component}--tertiary & {
-      background-color: t.color('tertiary');
-      color: t.color('on-tertiary');
+      background-color: t.color('tertiary-container');
+      color: t.color('on-tertiary-container');
     }
     
     .#{$component}--error & {
-      background-color: t.color('error');
-      color: t.color('on-error');
+      background-color: t.color('error-container');
+      color: t.color('on-error-container');
     }
     
     // Show value when dragging
@@ -256,7 +335,7 @@ $component: '#{base.$prefix}-slider';
     flex-direction: column;
     
     .#{$component}-track {
-      width: 16px; // Match the horizontal track thickness
+      width: 16px;
       height: 100%;
       padding: 0;
     }
@@ -267,19 +346,29 @@ $component: '#{base.$prefix}-slider';
       transform-origin: bottom center;
     }
     
+    .#{$component}-remaining-track {
+      width: 100%;
+      bottom: auto;
+      top: 0;
+      transform-origin: bottom center;
+    }
+    
     .#{$component}-thumb {
-      width: 34px; // Taller in vertical orientation
-      height: 4px; // Match the horizontal thumb width
+      width: 34px;
+      height: 4px;
       left: 50%;
       transform: translate(-50%, 50%);
       
-      &:hover,
+      &:hover {
+        transform: translate(-50%, 50%) scale(1.05);
+      }
+      
       &:focus {
-        transform: translate(-50%, 50%);
+        transform: translate(-50%, 50%) scale(1.1);
       }
       
       &:active {
-        transform: translate(-50%, 50%);
+        transform: translate(-50%, 50%) scale(1.15);
       }
       
       .#{$component}--disabled & {
@@ -333,7 +422,7 @@ $component: '#{base.$prefix}-slider';
     height: 32px;
     
     .#{$component}-thumb {
-      width: 3px; // Slightly smaller
+      width: 3px;
       height: 34px;
     }
     
@@ -351,7 +440,7 @@ $component: '#{base.$prefix}-slider';
     height: 48px;
     
     .#{$component}-thumb {
-      width: 5px; // Slightly larger
+      width: 5px;
       height: 24px;
     }
     
