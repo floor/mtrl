@@ -23,6 +23,15 @@ export const withStructure = (config: SliderConfig) => component => {
   thumb.setAttribute('tabindex', '0');
   thumb.setAttribute('role', 'slider');
   
+  // Create dots for the track ends
+  const startDot = document.createElement('div');
+  startDot.classList.add(component.getClass('slider-dot'));
+  startDot.classList.add(component.getClass('slider-dot--start'));
+  
+  const endDot = document.createElement('div');
+  endDot.classList.add(component.getClass('slider-dot'));
+  endDot.classList.add(component.getClass('slider-dot--end'));
+  
   // Create value bubble element
   const valueBubble = document.createElement('div');
   valueBubble.classList.add(component.getClass('slider-value'));
@@ -44,6 +53,8 @@ export const withStructure = (config: SliderConfig) => component => {
   // Add elements to the slider
   component.element.classList.add(component.getClass('slider'));
   component.element.appendChild(track);
+  component.element.appendChild(startDot);
+  component.element.appendChild(endDot);
   component.element.appendChild(thumb);
   component.element.appendChild(valueBubble);
   
@@ -90,7 +101,9 @@ export const withStructure = (config: SliderConfig) => component => {
       thumb,
       valueBubble,
       secondThumb,
-      secondValueBubble
+      secondValueBubble,
+      startDot,
+      endDot
     }
   };
 };
