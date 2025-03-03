@@ -15,6 +15,7 @@ export const createEventHelpers = (state) => {
    * @returns Event data object
    */
   const triggerEvent = (eventName, originalEvent = null) => {
+    // Create event data object
     const eventData: SliderEvent = {
       slider: state.component,
       value: state.value,
@@ -24,7 +25,18 @@ export const createEventHelpers = (state) => {
       defaultPrevented: false
     };
     
+    // Add a component events facade if it doesn't exist
+    if (!state.component.events) {
+      state.component.events = {
+        trigger: () => {},
+        on: () => {},
+        off: () => {}
+      };
+    }
+    
+    // Now we can safely trigger the event
     state.component.events.trigger(eventName, eventData);
+    
     return eventData;
   };
   
@@ -34,11 +46,22 @@ export const createEventHelpers = (state) => {
    * @param keyboardHandlers Keyboard interaction handlers
    */
   const setupEventListeners = (interactionHandlers, keyboardHandlers) => {
+    // Ensure needed component parts exist
+    if (!state.component || !state.component.structure) {
+      console.warn('Cannot set up event listeners: component structure is missing');
+      return;
+    }
+    
     const { 
-      track, 
-      thumb, 
-      secondThumb 
+      track = null, 
+      thumb = null, 
+      secondThumb = null 
     } = state.component.structure;
+    
+    if (!track || !thumb) {
+      console.warn('Cannot set up event listeners: track or thumb is missing');
+      return;
+    }
     
     const {
       handleThumbMouseDown,
@@ -63,7 +86,7 @@ export const createEventHelpers = (state) => {
     thumb.addEventListener('blur', (e) => handleBlur(e, false));
     
     // Second thumb events for range slider
-    if (state.component.config.range && secondThumb) {
+    if (state.component.config && state.component.config.range && secondThumb) {
       secondThumb.addEventListener('mousedown', (e) => handleThumbMouseDown(e, true));
       secondThumb.addEventListener('touchstart', (e) => handleThumbMouseDown(e, true), { passive: false });
       secondThumb.addEventListener('keydown', (e) => handleKeyDown(e, true));
@@ -78,11 +101,20 @@ export const createEventHelpers = (state) => {
    * @param keyboardHandlers Keyboard interaction handlers
    */
   const cleanupEventListeners = (interactionHandlers, keyboardHandlers) => {
+    // Ensure needed component parts exist
+    if (!state.component || !state.component.structure) {
+      return;
+    }
+    
     const { 
-      track, 
-      thumb, 
-      secondThumb 
+      track = null, 
+      thumb = null, 
+      secondThumb = null 
     } = state.component.structure;
+    
+    if (!track || !thumb) {
+      return;
+    }
     
     const {
       handleThumbMouseDown,
@@ -109,7 +141,7 @@ export const createEventHelpers = (state) => {
     thumb.removeEventListener('blur', (e) => handleBlur(e, false));
     
     // Second thumb events
-    if (state.component.config.range && secondThumb) {
+    if (state.component.config && state.component.config.range && secondThumb) {
       secondThumb.removeEventListener('mousedown', (e) => handleThumbMouseDown(e, true));
       secondThumb.removeEventListener('touchstart', (e) => handleThumbMouseDown(e, true));
       secondThumb.removeEventListener('keydown', (e) => handleKeyDown(e, true));

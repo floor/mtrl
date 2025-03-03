@@ -12,26 +12,42 @@ import { SliderConfig, SliderEvent } from '../types';
  * @returns Event handlers for slider interactions
  */
 export const createInteractionHandlers = (config: SliderConfig, state, handlers) => {
-  const {
-    track, 
-    thumb, 
-    valueBubble, 
-    secondThumb, 
-    secondValueBubble
-  } = state.component.structure;
+  // Ensure state and handlers exist
+  if (!state || !handlers) {
+    console.error('Cannot create interaction handlers: state or handlers missing');
+    return {
+      handleThumbMouseDown: () => {},
+      handleTrackMouseDown: () => {},
+      handleMouseMove: () => {},
+      handleMouseUp: () => {}
+    };
+  }
   
+  // Get required elements from structure (with fallbacks)
   const {
-    getValueFromPosition,
-    roundToStep,
-    clamp,
-    showValueBubble,
-    updateUi,
-    triggerEvent
+    track = null, 
+    thumb = null, 
+    valueBubble = null, 
+    secondThumb = null, 
+    secondValueBubble = null
+  } = state.component?.structure || {};
+  
+  // Get required handler methods (with fallbacks)
+  const {
+    getValueFromPosition = () => 0,
+    roundToStep = value => value,
+    clamp = (value, min, max) => value,
+    showValueBubble = () => {},
+    updateUi = () => {},
+    triggerEvent = () => ({ defaultPrevented: false })
   } = handlers;
   
   // Event handlers
   const handleThumbMouseDown = (e, isSecondThumb = false) => {
-    if (state.component.disabled && state.component.disabled.isDisabled()) return;
+    // Verify component exists and check if disabled
+    if (!state.component || (state.component.disabled && state.component.disabled.isDisabled())) {
+      return;
+    }
     
     e.preventDefault();
     e.stopPropagation();
@@ -40,8 +56,10 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
     state.activeThumb = isSecondThumb ? secondThumb : thumb;
     state.activeBubble = isSecondThumb ? secondValueBubble : valueBubble;
     
-    // Show value bubble
-    showValueBubble(state.activeBubble, true);
+    // Show value bubble if it exists
+    if (state.activeBubble) {
+      showValueBubble(state.activeBubble, true);
+    }
     
     // Add global event listeners
     document.addEventListener('mousemove', handleMouseMove);
@@ -49,12 +67,19 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
     document.addEventListener('touchmove', handleMouseMove, { passive: false });
     document.addEventListener('touchend', handleMouseUp);
     
-    // Trigger start event
-    triggerEvent(SLIDER_EVENTS.START, e);
+    // Try to trigger start event (with error handling)
+    try {
+      triggerEvent(SLIDER_EVENTS.START, e);
+    } catch (error) {
+      console.warn('Error triggering START event:', error);
+    }
   };
   
   const handleTrackMouseDown = (e) => {
-    if (state.component.disabled && state.component.disabled.isDisabled()) return;
+    // Verify component exists and check if disabled
+    if (!state.component || (state.component.disabled && state.component.disabled.isDisabled()) || !track) {
+      return;
+    }
     
     e.preventDefault();
     
@@ -63,18 +88,22 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
     
     if (config.range && state.secondValue !== null) {
       // For range slider, move the closest thumb
-      const trackRect = track.getBoundingClientRect();
-      const clickPosition = config.orientation === SLIDER_ORIENTATIONS.VERTICAL
-        ? e.clientY
-        : e.clientX;
-      
-      const clickValue = getValueFromPosition(clickPosition, config.orientation === SLIDER_ORIENTATIONS.VERTICAL);
-      
-      // Determine which thumb is closer to the click position
-      const distToFirst = Math.abs(clickValue - state.value);
-      const distToSecond = Math.abs(clickValue - state.secondValue);
-      
-      isSecondThumb = distToSecond < distToFirst;
+      try {
+        const trackRect = track.getBoundingClientRect();
+        const clickPosition = config.orientation === SLIDER_ORIENTATIONS.VERTICAL
+          ? e.clientY
+          : e.clientX;
+        
+        const clickValue = getValueFromPosition(clickPosition, config.orientation === SLIDER_ORIENTATIONS.VERTICAL);
+        
+        // Determine which thumb is closer to the click position
+        const distToFirst = Math.abs(clickValue - state.value);
+        const distToSecond = Math.abs(clickValue - state.secondValue);
+        
+        isSecondThumb = distToSecond < distToFirst;
+      } catch (error) {
+        console.warn('Error calculating track position:', error);
+      }
     }
     
     state.activeThumb = isSecondThumb ? secondThumb : thumb;
@@ -92,65 +121,69 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
     
     e.preventDefault();
     
-    // Get position
-    const isVertical = config.orientation === SLIDER_ORIENTATIONS.VERTICAL;
-    const position = e.type.includes('touch')
-      ? isVertical ? e.touches[0].clientY : e.touches[0].clientX
-      : isVertical ? e.clientY : e.clientX;
-    
-    // Calculate new value
-    let newValue = getValueFromPosition(position, isVertical);
-    
-    // Round to step if needed
-    if (config.snapToSteps && state.step > 0) {
-      newValue = roundToStep(newValue);
-    }
-    
-    // Clamp value to min/max
-    newValue = clamp(newValue, state.min, state.max);
-    
-    // Check if this is the second thumb
-    const isSecondThumb = state.activeThumb === secondThumb;
-    
-    // For range slider, ensure thumbs don't cross
-    if (config.range && state.secondValue !== null) {
-      if (isSecondThumb) {
-        // Don't allow second thumb to go below first thumb
-        if (newValue < state.value) {
-          state.secondValue = newValue;
+    try {
+      // Get position
+      const isVertical = config.orientation === SLIDER_ORIENTATIONS.VERTICAL;
+      const position = e.type.includes('touch')
+        ? isVertical ? e.touches[0].clientY : e.touches[0].clientX
+        : isVertical ? e.clientY : e.clientX;
+      
+      // Calculate new value
+      let newValue = getValueFromPosition(position, isVertical);
+      
+      // Round to step if needed
+      if (config.snapToSteps && state.step > 0) {
+        newValue = roundToStep(newValue);
+      }
+      
+      // Clamp value to min/max
+      newValue = clamp(newValue, state.min, state.max);
+      
+      // Check if this is the second thumb
+      const isSecondThumb = state.activeThumb === secondThumb;
+      
+      // For range slider, ensure thumbs don't cross
+      if (config.range && state.secondValue !== null) {
+        if (isSecondThumb) {
+          // Don't allow second thumb to go below first thumb
+          if (newValue < state.value) {
+            state.secondValue = newValue;
+          } else {
+            // Thumbs are crossed, swap them
+            state.secondValue = state.value;
+            state.value = newValue;
+            
+            // Swap active thumb and bubble
+            state.activeThumb = thumb;
+            state.activeBubble = valueBubble;
+          }
         } else {
-          // Thumbs are crossed, swap them
-          state.secondValue = state.value;
-          state.value = newValue;
-          
-          // Swap active thumb and bubble
-          state.activeThumb = thumb;
-          state.activeBubble = valueBubble;
+          // Don't allow first thumb to go above second thumb
+          if (newValue > state.secondValue) {
+            state.value = newValue;
+          } else {
+            // Thumbs are crossed, swap them
+            state.value = state.secondValue;
+            state.secondValue = newValue;
+            
+            // Swap active thumb and bubble
+            state.activeThumb = secondThumb;
+            state.activeBubble = secondValueBubble;
+          }
         }
       } else {
-        // Don't allow first thumb to go above second thumb
-        if (newValue > state.secondValue) {
-          state.value = newValue;
-        } else {
-          // Thumbs are crossed, swap them
-          state.value = state.secondValue;
-          state.secondValue = newValue;
-          
-          // Swap active thumb and bubble
-          state.activeThumb = secondThumb;
-          state.activeBubble = secondValueBubble;
-        }
+        // Regular slider
+        state.value = newValue;
       }
-    } else {
-      // Regular slider
-      state.value = newValue;
+      
+      // Update UI
+      updateUi();
+      
+      // Trigger input event (continuously while dragging)
+      triggerEvent(SLIDER_EVENTS.INPUT, e);
+    } catch (error) {
+      console.warn('Error during slider drag:', error);
     }
-    
-    // Update UI
-    updateUi();
-    
-    // Trigger input event (continuously while dragging)
-    triggerEvent(SLIDER_EVENTS.INPUT, e);
   };
   
   const handleMouseUp = (e) => {
@@ -161,7 +194,9 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
     state.dragging = false;
     
     // Hide value bubble
-    showValueBubble(state.activeBubble, false);
+    if (state.activeBubble) {
+      showValueBubble(state.activeBubble, false);
+    }
     
     // Remove global event listeners
     document.removeEventListener('mousemove', handleMouseMove);
@@ -173,11 +208,15 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
     state.activeThumb = null;
     state.activeBubble = null;
     
-    // Trigger change event (only when done dragging)
-    triggerEvent(SLIDER_EVENTS.CHANGE, e);
-    
-    // Trigger end event
-    triggerEvent(SLIDER_EVENTS.END, e);
+    try {
+      // Trigger change event (only when done dragging)
+      triggerEvent(SLIDER_EVENTS.CHANGE, e);
+      
+      // Trigger end event
+      triggerEvent(SLIDER_EVENTS.END, e);
+    } catch (error) {
+      console.warn('Error triggering events on mouse up:', error);
+    }
   };
   
   // Return handlers

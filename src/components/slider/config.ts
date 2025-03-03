@@ -60,42 +60,86 @@ export const getElementConfig = (config: SliderConfig) => {
  * @param {Object} comp - Component with slider features
  * @returns {Object} API configuration object
  */
-export const getApiConfig = (comp) => ({
-  slider: {
-    setValue: (value: number, triggerEvent?: boolean) => comp.slider.setValue(value, triggerEvent),
-    getValue: () => comp.slider.getValue(),
-    setSecondValue: (value: number, triggerEvent?: boolean) => comp.slider.setSecondValue(value, triggerEvent),
-    getSecondValue: () => comp.slider.getSecondValue(),
-    setMin: (min: number) => comp.slider.setMin(min),
-    getMin: () => comp.slider.getMin(),
-    setMax: (max: number) => comp.slider.setMax(max),
-    getMax: () => comp.slider.getMax(),
-    setStep: (step: number) => comp.slider.setStep(step),
-    getStep: () => comp.slider.getStep()
-  },
-  disabled: {
-    enable: () => comp.disabled.enable(),
-    disable: () => comp.disabled.disable(),
-    isDisabled: () => comp.disabled.isDisabled()
-  },
-  appearance: {
-    setColor: (color: string) => comp.appearance.setColor(color),
-    getColor: () => comp.appearance.getColor(),
-    setSize: (size: string) => comp.appearance.setSize(size),
-    getSize: () => comp.appearance.getSize(),
-    setOrientation: (orientation: string) => comp.appearance.setOrientation(orientation),
-    getOrientation: () => comp.appearance.getOrientation(),
-    showTicks: (show: boolean) => comp.appearance.showTicks(show),
-    showTickLabels: (show: boolean | string[]) => comp.appearance.showTickLabels(show),
-    showCurrentValue: (show: boolean) => comp.appearance.showCurrentValue(show)
-  },
-  events: {
-    on: (event: string, handler: Function) => comp.events.on(event, handler),
-    off: (event: string, handler: Function) => comp.events.off(event, handler)
-  },
-  lifecycle: {
-    destroy: () => comp.lifecycle.destroy()
-  }
-});
+export const getApiConfig = (comp) => {
+  // Create safe accessor functions to avoid undefined errors
+  const safeCall = (obj, path, fallback = () => {}) => {
+    try {
+      const parts = path.split('.');
+      let current = obj;
+      
+      for (const part of parts) {
+        if (current === undefined || current === null) return fallback;
+        current = current[part];
+      }
+      
+      return typeof current === 'function' ? current : fallback;
+    } catch {
+      return fallback;
+    }
+  };
 
-export default defaultConfig;
+  const safeGetter = (obj, path, defaultValue = null) => {
+    try {
+      const parts = path.split('.');
+      let current = obj;
+      
+      for (const part of parts) {
+        if (current === undefined || current === null) return defaultValue;
+        current = current[part];
+      }
+      
+      return current === undefined ? defaultValue : current;
+    } catch {
+      return defaultValue;
+    }
+  };
+
+  // Create API configuration using safe accessors
+  return {
+    slider: {
+      setValue: (value, triggerEvent) => safeCall(comp, 'slider.setValue')(value, triggerEvent),
+      getValue: () => safeGetter(comp, 'slider.getValue', 0)(),
+      setSecondValue: (value, triggerEvent) => safeCall(comp, 'slider.setSecondValue')(value, triggerEvent),
+      getSecondValue: () => safeGetter(comp, 'slider.getSecondValue', null)(),
+      setMin: (min) => safeCall(comp, 'slider.setMin')(min),
+      getMin: () => safeGetter(comp, 'slider.getMin', 0)(),
+      setMax: (max) => safeCall(comp, 'slider.setMax')(max),
+      getMax: () => safeGetter(comp, 'slider.getMax', 100)(),
+      setStep: (step) => safeCall(comp, 'slider.setStep')(step),
+      getStep: () => safeGetter(comp, 'slider.getStep', 1)()
+    },
+    disabled: {
+      enable: () => safeCall(comp, 'disabled.enable')(),
+      disable: () => safeCall(comp, 'disabled.disable')(),
+      isDisabled: () => safeGetter(comp, 'disabled.isDisabled', false)()
+    },
+    appearance: {
+      setColor: (color) => safeCall(comp, 'appearance.setColor')(color),
+      getColor: () => safeGetter(comp, 'appearance.getColor', 'primary')(),
+      setSize: (size) => safeCall(comp, 'appearance.setSize')(size),
+      getSize: () => safeGetter(comp, 'appearance.getSize', 'medium')(),
+      setOrientation: (orientation) => safeCall(comp, 'appearance.setOrientation')(orientation),
+      getOrientation: () => safeGetter(comp, 'appearance.getOrientation', 'horizontal')(),
+      showTicks: (show) => safeCall(comp, 'appearance.showTicks')(show),
+      showTickLabels: (show) => safeCall(comp, 'appearance.showTickLabels')(show),
+      showCurrentValue: (show) => safeCall(comp, 'appearance.showCurrentValue')(show)
+    },
+    events: {
+      on: (event, handler) => {
+        if (comp && comp.events && typeof comp.events.on === 'function') {
+          return comp.events.on(event, handler);
+        }
+        return undefined;
+      },
+      off: (event, handler) => {
+        if (comp && comp.events && typeof comp.events.off === 'function') {
+          return comp.events.off(event, handler);
+        }
+        return undefined;
+      }
+    },
+    lifecycle: {
+      destroy: () => safeCall(comp, 'lifecycle.destroy')()
+    }
+  };
+};
