@@ -1,4 +1,4 @@
-// src/components/slider/features/structure.ts - additional fixes
+// src/components/slider/features/structure.ts
 import { SLIDER_COLORS, SLIDER_SIZES, SLIDER_ORIENTATIONS } from '../constants';
 import { SliderConfig } from '../types';
 
@@ -25,7 +25,7 @@ export const withStructure = (config: SliderConfig) => component => {
   activeTrack.classList.add(component.getClass('slider-active-track'));
   track.appendChild(activeTrack);
   
-  // Create thumb element
+  // Create thumb element (now with T-shape structure applied via CSS)
   const thumb = document.createElement('div');
   thumb.classList.add(component.getClass('slider-thumb'));
   thumb.setAttribute('tabindex', '0');
