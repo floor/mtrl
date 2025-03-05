@@ -34,17 +34,46 @@ $component: '#{base.$prefix}-slider';
     }
   }
   
-  // Active track (filled part)
-  &-active-track {
+  // Start track (new element for range slider - beginning to first thumb)
+  &-start-track {
     position: absolute;
     top: 0;
     left: 0;
     height: 100%;
     background-color: t.color('primary');
     transform-origin: left center;
-    transition: transform 0.1s ease;
+    transition: transform 0.1s ease, width 0.1s ease, height 0.1s ease;
     border-radius: 5px;
-    margin-left: -8px;
+    opacity: 0.24;
+    z-index: 1;
+    
+    .#{$component}--secondary & {
+      background-color: t.color('secondary');
+    }
+    
+    .#{$component}--tertiary & {
+      background-color: t.color('tertiary');
+    }
+    
+    .#{$component}--error & {
+      background-color: t.color('error');
+    }
+    
+    .#{$component}--disabled & {
+      opacity: 0.12;
+    }
+  }
+  
+  // Active track (filled part)
+  &-active-track {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    background-color: t.color('primary');
+    transform-origin: left center;
+    transition: transform 0.1s ease, width 0.1s ease, height 0.1s ease, left 0.1s ease, bottom 0.1s ease;
+    border-radius: 5px;
+    z-index: 1;
 
     .#{$component}--secondary & {
       background-color: t.color('secondary');
@@ -67,11 +96,11 @@ $component: '#{base.$prefix}-slider';
     height: 100%;
     background-color: t.color('primary');
     transform-origin: left center;
-    transition: transform 0.1s ease;
+    transition: transform 0.1s ease, width 0.1s ease, height 0.1s ease, left 0.1s ease, bottom 0.1s ease;
     border-radius: 5px;
     width: 100%;
-    margin-left: 8px;
-
+    z-index: 0;
+    
     .#{$component}--secondary & {
       background-color: t.color('secondary');
     }
@@ -137,7 +166,7 @@ $component: '#{base.$prefix}-slider';
     transform: translate(-50%, -50%);
     cursor: pointer;
     z-index: 2;
-    transition: transform 0.1s ease, background-color 0.15s ease;
+    transition: left 0.1s ease, bottom 0.1s ease;
     width: 16px;
     height: 100%;
 
@@ -153,6 +182,7 @@ $component: '#{base.$prefix}-slider';
       left: 50%;
       top: 50%;
       transform: translate(-50%, -50%);
+      transition: background-color 0.15s ease;
       
       .#{$component}--secondary & {
         background-color: t.color('secondary');
@@ -172,7 +202,7 @@ $component: '#{base.$prefix}-slider';
       }
     }
     
-    // But enable them on the pseudo-elements
+    // Enable pointer events on the pseudo-elements
     &::before, &::after {
       pointer-events: auto;
     }
@@ -301,15 +331,7 @@ $component: '#{base.$prefix}-slider';
         z-index: 3;
       }
     }
-
-    .#{$component}-active-track {
-      margin-left: -8px;
-      margin-right: 8px;
-    }
-
-    .#{$component}-remaining-track {
-      margin-right: 8px;
-    }
+    
     // In range mode, both dots should be visible
     .#{$component}-dot {
       z-index: 2;
@@ -332,21 +354,6 @@ $component: '#{base.$prefix}-slider';
     opacity: 0;
     transition: opacity 0.2s ease, visibility 0s linear 0.2s;
     pointer-events: none;
-    
-    .#{$component}--secondary & {
-      // background-color: t.color('secondary-container');
-      // color: t.color('on-secondary-container');
-    }
-    
-    .#{$component}--tertiary & {
-      // background-color: t.color('tertiary-container');
-      // color: t.color('on-tertiary-container');
-    }
-    
-    .#{$component}--error & {
-      // background-color: t.color('error-container');
-      // color: t.color('on-error-container');
-    }
     
     // Show value when dragging
     &--visible {
@@ -372,8 +379,12 @@ $component: '#{base.$prefix}-slider';
       width: 100%;
       height: auto;
       transform-origin: bottom center;
-      margin-left: 0;
-      margin-top: -8px;
+    }
+    
+    .#{$component}-start-track {
+      width: 100%;
+      height: auto;
+      transform-origin: bottom center;
     }
     
     .#{$component}-remaining-track {
@@ -381,7 +392,6 @@ $component: '#{base.$prefix}-slider';
       bottom: auto;
       top: 0;
       transform-origin: bottom center;
-      margin-left: 0;
     }
     
     // Reorient thumb for vertical slider

@@ -1,4 +1,4 @@
-// src/components/slider/features/ui.ts
+// src/components/slider/features/ui.ts - Updated track update methods
 import { SLIDER_ORIENTATIONS } from '../constants';
 import { SliderConfig } from '../types';
 
@@ -20,7 +20,8 @@ export const createUiHelpers = (config: SliderConfig, state) => {
       clamp: (value, min, max) => Math.min(Math.max(value, min), max),
       setThumbPosition: () => {},
       updateActiveTrack: () => {},
-      updateRemainingTrack: () => {}, // New method for remaining track
+      updateStartTrack: () => {},
+      updateRemainingTrack: () => {},
       updateThumbPositions: () => {},
       updateValueBubbles: () => {},
       showValueBubble: () => {},
@@ -33,6 +34,7 @@ export const createUiHelpers = (config: SliderConfig, state) => {
   const {
     track,
     activeTrack,
+    startTrack,
     remainingTrack,
     thumb,
     valueBubble,
@@ -50,7 +52,7 @@ export const createUiHelpers = (config: SliderConfig, state) => {
     if (range === 0) return 0;
     return ((value - state.min) / range) * 100;
   };
-    
+  
   /**
    * Gets slider value from a position on the track
    * @param position Screen coordinate (clientX/clientY)
@@ -94,14 +96,8 @@ export const createUiHelpers = (config: SliderConfig, state) => {
     const step = state.step;
     if (step <= 0) return value;
     
-    const remainder = (value - state.min) % step;
-    if (remainder === 0) return value;
-    
-    const roundedValue = remainder >= step / 2
-      ? value + step - remainder
-      : value - remainder;
-    
-    return clamp(roundedValue, state.min, state.max);
+    const steps = Math.round((value - state.min) / step);
+    return state.min + (steps * step);
   };
   
   /**
@@ -140,85 +136,174 @@ export const createUiHelpers = (config: SliderConfig, state) => {
     }
   };
   
-  /**
-   * Updates active track styles
-   */
-  const updateActiveTrack = () => {
-    if (!activeTrack) return;
-    
-    if (config.range && state.secondValue !== null) {
-      // Range slider (two thumbs)
-      const lowerValue = Math.min(state.value, state.secondValue);
-      const higherValue = Math.max(state.value, state.secondValue);
-      const lowerPercent = getPercentage(lowerValue);
-      const higherPercent = getPercentage(higherValue);
-      const trackLength = higherPercent - lowerPercent;
-      
-      if (config.orientation === SLIDER_ORIENTATIONS.VERTICAL) {
-        activeTrack.style.height = `${trackLength}%`;
-        activeTrack.style.bottom = `${lowerPercent}%`;
-        activeTrack.style.top = 'auto'; // Clear top property
-      } else {
-        activeTrack.style.width = `${trackLength}%`;
-        activeTrack.style.left = `${lowerPercent}%`;
-      }
-    } else {
-      // Single thumb slider
-      const percent = getPercentage(state.value);
-      
-      if (config.orientation === SLIDER_ORIENTATIONS.VERTICAL) {
-        activeTrack.style.height = `${percent}%`;
-        activeTrack.style.bottom = '0';
-        activeTrack.style.top = 'auto'; // Clear top property
-      } else {
-        activeTrack.style.width = `${percent}%`;
-        activeTrack.style.left = '0';
-      }
-    }
-  };
+
+
+/**
+ * Updates start track styles (before the first thumb for range slider)
+ * This method now includes padding adjustments in the calculation
+ */
+const updateStartTrack = () => {
+  if (!startTrack) return;
   
-  /**
-   * Updates remaining track styles (new for MD3)
-   */
-  const updateRemainingTrack = () => {
-    if (!remainingTrack) return;
+  if (config.range && state.secondValue !== null) {
+    // For range slider, calculate the track from start to first thumb
+    const lowerValue = Math.min(state.value, state.secondValue);
+    const lowerPercent = getPercentage(lowerValue);
     
-    if (config.range && state.secondValue !== null) {
-      // Range slider (two thumbs)
-      const lowerValue = Math.min(state.value, state.secondValue);
-      const higherValue = Math.max(state.value, state.secondValue);
-      const lowerPercent = getPercentage(lowerValue);
-      const higherPercent = getPercentage(higherValue);
-      
-      if (config.orientation === SLIDER_ORIENTATIONS.VERTICAL) {
-        // Bottom part
-        remainingTrack.style.height = `${lowerPercent}%`;
-        remainingTrack.style.bottom = '0';
-        remainingTrack.style.top = 'auto';
-      } else {
-        // Right part
-        remainingTrack.style.width = `${100 - higherPercent}%`;
-        remainingTrack.style.left = `${higherPercent}%`;
-      }
+    // Get track width for pixel calculations 
+    const trackRect = track.getBoundingClientRect();
+    const isVertical = config.orientation === SLIDER_ORIENTATIONS.VERTICAL;
+    const trackSize = isVertical ? trackRect.height : trackRect.width;
+    
+    // Calculate width with adjustment for thumb spacing - subtract 8px equivalent
+    const paddingAdjustment = 8; // 8px padding
+    const paddingPercent = (paddingAdjustment / trackSize) * 100;
+    
+    if (isVertical) {
+      startTrack.style.display = 'block';
+      startTrack.style.height = `${Math.max(0, lowerPercent - paddingPercent)}%`;
+      startTrack.style.bottom = '0';
+      startTrack.style.top = 'auto';
+      startTrack.style.width = '100%';
+      startTrack.style.left = '0';
     } else {
-      // Single thumb slider
-      const percent = getPercentage(state.value);
-      
-      if (config.orientation === SLIDER_ORIENTATIONS.VERTICAL) {
-        // Top part
-        remainingTrack.style.height = `${100 - percent}%`;
-        remainingTrack.style.bottom = `${percent}%`;
-        remainingTrack.style.top = 'auto';
-        remainingTrack.style.width = '100%'; // Ensure width is set
-      } else {
-        // Right part
-        remainingTrack.style.width = `${100 - percent}%`;
-        remainingTrack.style.left = `${percent}%`;
-        remainingTrack.style.height = '100%'; // Ensure height is set
-        remainingTrack.style.display = 'block'; // Force display
-      }
+      startTrack.style.display = 'block';
+      startTrack.style.width = `${Math.max(0, lowerPercent - paddingPercent)}%`;
+      startTrack.style.left = '0';
+      startTrack.style.height = '100%';
     }
-  };
+  } else {
+    // For single thumb slider, no start track needed
+    startTrack.style.display = 'none';
+  }
+};
+
+/**
+ * Updates active track styles - with padding adjustments
+ */
+const updateActiveTrack = () => {
+  if (!activeTrack) return;
+  
+  // Get track width for pixel calculations
+  const trackRect = track.getBoundingClientRect();
+  const isVertical = config.orientation === SLIDER_ORIENTATIONS.VERTICAL;
+  const trackSize = isVertical ? trackRect.height : trackRect.width;
+  
+  // Calculate padding adjustment
+  const paddingAdjustment = 8; // 8px padding
+  const paddingPercent = (paddingAdjustment / trackSize) * 100;
+  
+  if (config.range && state.secondValue !== null) {
+    // Range slider (two thumbs)
+    const lowerValue = Math.min(state.value, state.secondValue);
+    const higherValue = Math.max(state.value, state.secondValue);
+    const lowerPercent = getPercentage(lowerValue);
+    const higherPercent = getPercentage(higherValue);
+    
+    // Adjust positions and width to account for spacing
+    let adjustedLowerPercent = lowerPercent;
+    let adjustedHigherPercent = higherPercent;
+    
+    if (higherPercent - lowerPercent > paddingPercent * 2) {
+      // If there's enough space, add padding to both sides
+      adjustedLowerPercent = lowerPercent + paddingPercent;
+      adjustedHigherPercent = higherPercent - paddingPercent;
+    }
+    
+    const trackLength = Math.max(0, adjustedHigherPercent - adjustedLowerPercent);
+    
+    if (isVertical) {
+      activeTrack.style.display = 'block';
+      activeTrack.style.height = `${trackLength}%`;
+      activeTrack.style.bottom = `${adjustedLowerPercent}%`;
+      activeTrack.style.top = 'auto';
+      activeTrack.style.width = '100%';
+    } else {
+      activeTrack.style.display = 'block';
+      activeTrack.style.width = `${trackLength}%`;
+      activeTrack.style.left = `${adjustedLowerPercent}%`;
+      activeTrack.style.height = '100%';
+    }
+  } else {
+    // Single thumb slider
+    const percent = getPercentage(state.value);
+    
+    // For single slider, adjust for left padding
+    const adjustedWidth = Math.max(0, percent - paddingPercent);
+    
+    if (isVertical) {
+      activeTrack.style.display = 'block';
+      activeTrack.style.height = `${adjustedWidth}%`;
+      activeTrack.style.bottom = '0';
+      activeTrack.style.top = 'auto';
+      activeTrack.style.width = '100%';
+    } else {
+      activeTrack.style.display = 'block';
+      activeTrack.style.width = `${adjustedWidth}%`;
+      activeTrack.style.left = '0';
+      activeTrack.style.height = '100%';
+    }
+  }
+};
+
+/**
+ * Updates remaining track styles - with padding adjustments
+ */
+const updateRemainingTrack = () => {
+  if (!remainingTrack) return;
+  
+  // Get track width for pixel calculations
+  const trackRect = track.getBoundingClientRect();
+  const isVertical = config.orientation === SLIDER_ORIENTATIONS.VERTICAL;
+  const trackSize = isVertical ? trackRect.height : trackRect.width;
+  
+  // Calculate padding adjustment
+  const paddingAdjustment = 8; // 8px padding
+  const paddingPercent = (paddingAdjustment / trackSize) * 100;
+  
+  if (config.range && state.secondValue !== null) {
+    // Range slider (two thumbs)
+    const higherValue = Math.max(state.value, state.secondValue);
+    const higherPercent = getPercentage(higherValue);
+    
+    // Adjust for right padding
+    const adjustedPercent = higherPercent + paddingPercent;
+    const adjustedWidth = Math.max(0, 100 - adjustedPercent);
+    
+    if (isVertical) {
+      remainingTrack.style.display = 'block';
+      remainingTrack.style.height = `${adjustedWidth}%`;
+      remainingTrack.style.bottom = `${adjustedPercent}%`;
+      remainingTrack.style.top = 'auto';
+      remainingTrack.style.width = '100%';
+    } else {
+      remainingTrack.style.display = 'block';
+      remainingTrack.style.width = `${adjustedWidth}%`;
+      remainingTrack.style.left = `${adjustedPercent}%`;
+      remainingTrack.style.height = '100%';
+    }
+  } else {
+    // Single thumb slider
+    const percent = getPercentage(state.value);
+    
+    // Adjust for right padding
+    const adjustedPercent = percent + paddingPercent;
+    const adjustedWidth = Math.max(0, 100 - adjustedPercent);
+    
+    if (isVertical) {
+      remainingTrack.style.display = 'block';
+      remainingTrack.style.height = `${adjustedWidth}%`;
+      remainingTrack.style.bottom = `${adjustedPercent}%`;
+      remainingTrack.style.top = 'auto';
+      remainingTrack.style.width = '100%';
+    } else {
+      remainingTrack.style.display = 'block';
+      remainingTrack.style.width = `${adjustedWidth}%`;
+      remainingTrack.style.left = `${adjustedPercent}%`;
+      remainingTrack.style.height = '100%';
+    }
+  }
+};
   
   /**
    * Updates thumb positions
@@ -406,8 +491,9 @@ export const createUiHelpers = (config: SliderConfig, state) => {
    */
   const updateUi = () => {
     updateThumbPositions();
+    updateStartTrack(); // Call BEFORE updateActiveTrack
     updateActiveTrack();
-    updateRemainingTrack(); // Add remaining track update
+    updateRemainingTrack();
     updateValueBubbles();
     updateTicks();
   };
@@ -420,7 +506,8 @@ export const createUiHelpers = (config: SliderConfig, state) => {
     clamp,
     setThumbPosition,
     updateActiveTrack,
-    updateRemainingTrack, // Add new method to public API
+    updateStartTrack,
+    updateRemainingTrack,
     updateThumbPositions,
     updateValueBubbles,
     showValueBubble,

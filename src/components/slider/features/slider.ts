@@ -1,4 +1,4 @@
-// src/components/slider/features/slider.ts - fix initialization issue
+// src/components/slider/features/slider.ts - Added initialization code
 import { SLIDER_EVENTS } from '../constants';
 import { SliderConfig } from '../types';
 import { createUiHelpers } from './ui';
@@ -74,7 +74,17 @@ export const withSlider = (config: SliderConfig) => component => {
     component.element.setAttribute('aria-valuemax', String(state.max));
     component.element.setAttribute('aria-valuenow', String(state.value));
     
+    if (!component.structure) {
+      console.warn('Cannot initialize slider: missing structure');
+      return;
+    }
+    
     const { thumb, secondThumb } = component.structure;
+    
+    if (!thumb) {
+      console.warn('Cannot initialize slider: missing thumb');
+      return;
+    }
     
     thumb.setAttribute('aria-valuemin', String(state.min));
     thumb.setAttribute('aria-valuemax', String(state.max));
@@ -86,11 +96,8 @@ export const withSlider = (config: SliderConfig) => component => {
       secondThumb.setAttribute('aria-valuenow', String(state.secondValue));
     }
     
-    // Setup initial positions - ensure this happens synchronously during initialization
-    uiHelpers.updateThumbPositions();
-    uiHelpers.updateActiveTrack();
-    uiHelpers.updateRemainingTrack(); // Explicitly call during initialization
-    uiHelpers.updateValueBubbles();
+    // Setup initial positions
+    uiHelpers.updateUi();
     
     // Generate ticks if needed
     if (config.ticks || config.tickLabels) {
@@ -100,6 +107,12 @@ export const withSlider = (config: SliderConfig) => component => {
     
     // Setup event listeners
     eventHelpers.setupEventListeners(interactionHandlers, keyboardHandlers);
+    
+    // Force one more UI update after a delay to ensure everything is properly positioned
+    // This is especially important for range sliders
+    setTimeout(() => {
+      uiHelpers.updateUi();
+    }, 50);
   };
   
   // Cleanup event listeners
@@ -119,8 +132,8 @@ export const withSlider = (config: SliderConfig) => component => {
   // Initialize slider
   initSlider();
   
-  // Return enhanced component
-  return {
+  // Return enhanced component with the slider functionality
+  const enhancedComponent = {
     ...component,
     slider: {
       /**
@@ -307,7 +320,17 @@ export const withSlider = (config: SliderConfig) => component => {
         uiHelpers.generateTicks();
         uiHelpers.updateTicks();
         return this;
+      },
+      
+      /**
+       * Update all UI elements
+       */
+      updateUi() {
+        uiHelpers.updateUi();
+        return this;
       }
     }
   };
+  
+  return enhancedComponent;
 };
