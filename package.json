@@ -1,6 +1,6 @@
 {
   "name": "mtrl",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "A functional JavaScript component library with composable architecture based on Material Design 3",
   "keywords": [
     "component",
