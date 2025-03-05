@@ -1,6 +1,30 @@
 // src/components/carousel/types.ts
 
 /**
+ * Material Design 3 Carousel Layout Types
+ * @category Components
+ */
+export type CarouselLayout = 
+  /** Best for browsing many visual items at once (photos, event feeds) */
+  | 'multi-browse'
+  /** For highly customized or text-heavy carousels (traditional behavior) */
+  | 'uncontained'
+  /** For spotlighting very large visual items (featured content) */
+  | 'hero'
+  /** For immersive vertical-scrolling experiences */
+  | 'full-screen';
+
+/**
+ * Carousel Scrolling Behaviors
+ * @category Components
+ */
+export type CarouselScrollBehavior =
+  /** Standard scrolling without snapping, recommended for uncontained layouts */ 
+  | 'default'
+  /** Items snap to carousel layout, recommended for multi-browse, hero, and full-screen layouts */
+  | 'snap';
+
+/**
  * Slide data interface
  * @category Components
  */
@@ -22,6 +46,9 @@ export interface CarouselSlide {
   
   /** Optional action button URL */
   buttonUrl?: string;
+  
+  /** Optional size designation for the item, will be auto-calculated if not provided */
+  size?: 'large' | 'medium' | 'small';
 }
 
 /**
@@ -96,8 +123,40 @@ export interface CarouselConfig {
   
   /**
    * Whether to show a "Show all" link at the end
+   * MD3 recommends adding this for accessibility on vertical scrolling pages
+   * @default true
    */
   showAllLink?: boolean;
+  
+  /**
+   * MD3 carousel layout type
+   * @default 'multi-browse'
+   */
+  layout?: CarouselLayout;
+  
+  /**
+   * Scrolling behavior for the carousel
+   * @default depends on layout (snap for multi-browse, hero, full-screen; default for uncontained)
+   */
+  scrollBehavior?: CarouselScrollBehavior;
+  
+  /**
+   * Whether to center the carousel items (applies to hero layout)
+   * @default false
+   */
+  centered?: boolean;
+  
+  /**
+   * Maximum width of large items (affects how many items fit on screen)
+   * Large items should remain big enough to be easily recognizable
+   */
+  largeItemMaxWidth?: number;
+  
+  /**
+   * Width for small items in pixels
+   * @default 40-56dp range as per MD3 guidelines
+   */
+  smallItemWidth?: number;
 }
 
 /**

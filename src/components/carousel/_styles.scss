@@ -7,6 +7,14 @@
 
 $component: '#{base.$prefix}-carousel';
 
+// Layout size adjustments
+$large-item-width-multi-browse: 240px;
+$medium-item-width-multi-browse: 180px;
+$small-item-width-multi-browse: 48px;
+
+$large-item-width-hero: 300px;
+$small-item-width-hero: 48px;
+
 .#{$component} {
   // Base styles
   position: relative;
@@ -14,6 +22,7 @@ $component: '#{base.$prefix}-carousel';
   overflow: hidden;
   user-select: none;
   padding: 8px 0;
+  outline: none;
   
   // Focus styles
   &:focus {
@@ -25,7 +34,162 @@ $component: '#{base.$prefix}-carousel';
     outline-offset: 2px;
   }
   
-  // Slides container - completely direct scrolling with no resistance
+  // Layout specific styles
+  &-layout {
+    &--multi-browse {
+      // Multi-browse layout with different sized items
+      .#{$component}-slides {
+        scroll-snap-type: x mandatory;
+        padding: 0 16px;
+      }
+      
+      .#{$component}-slide {
+        height: 320px;
+        
+        &--large {
+          width: $large-item-width-multi-browse;
+          flex: 0 0 auto;
+        }
+        
+        &--medium {
+          width: $medium-item-width-multi-browse;
+          flex: 0 0 auto;
+        }
+        
+        &--small {
+          width: $small-item-width-multi-browse;
+          flex: 0 0 auto;
+        }
+      }
+    }
+    
+    &--uncontained {
+      // Uncontained layout with uniform sized items
+      overflow: visible;
+      
+      .#{$component}-slides {
+        scroll-snap-type: none;
+        padding: 0 16px;
+      }
+      
+      .#{$component}-slide {
+        width: 240px;
+        height: 320px;
+        flex: 0 0 auto;
+      }
+    }
+    
+    &--hero {
+      // Hero layout with one large item and smaller previews
+      .#{$component}-slides {
+        scroll-snap-type: x mandatory;
+        padding: 0 16px;
+      }
+      
+      .#{$component}-slide {
+        height: 360px;
+        
+        &--large {
+          width: $large-item-width-hero;
+          flex: 0 0 auto;
+        }
+        
+        &--small {
+          width: $small-item-width-hero;
+          flex: 0 0 auto;
+        }
+      }
+      
+      // Center-aligned hero
+      &[data-centered="true"] {
+        .#{$component}-slides {
+          padding: 0;
+          justify-content: center;
+        }
+        
+        .#{$component}-slide--large {
+          margin: 0 16px;
+        }
+      }
+    }
+    
+    &--full-screen {
+      // Full-screen layout for immersive experiences
+      height: 100%;
+      max-height: 100vh;
+      padding: 0;
+      
+      .#{$component}-wrapper {
+        height: 100%;
+      }
+      
+      .#{$component}-slides {
+        height: 100%;
+        flex-direction: column;
+        scroll-snap-type: y mandatory;
+        padding: 0;
+      }
+      
+      .#{$component}-slide {
+        width: 100%;
+        height: 100vh;
+        flex: 0 0 auto;
+        border-radius: 0 !important;
+        scroll-snap-align: start;
+        
+        &-image {
+          height: 100%;
+        }
+        
+        &-content {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          padding: 24px;
+          background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0) 100%);
+          color: #FFFFFF;
+        }
+        
+        &-title {
+          font-size: 24px;
+          font-weight: 500;
+          margin-bottom: 8px;
+        }
+        
+        &-description {
+          font-size: 16px;
+          margin-bottom: 16px;
+        }
+      }
+      
+      // Hide show all link in full-screen mode
+      .#{$component}-show-all {
+        display: none;
+      }
+    }
+  }
+  
+  // Scroll behavior
+  &[data-scroll-behavior="snap"] {
+    .#{$component}-slides {
+      scroll-snap-type: x mandatory;
+      
+      &[data-vertical-scroll="true"] {
+        scroll-snap-type: y mandatory;
+      }
+    }
+    
+    .#{$component}-slide {
+      scroll-snap-align: start;
+      
+      &--active {
+        z-index: 1;
+      }
+    }
+  }
+  
+  // Slides container
   &-slides {
     display: flex;
     overflow-x: auto;
@@ -35,7 +199,7 @@ $component: '#{base.$prefix}-carousel';
     margin: 0 -16px;
     -ms-overflow-style: none; // Hide scrollbar on IE/Edge
     scrollbar-width: none; // Hide scrollbar on Firefox
-    scroll-behavior: auto !important; // Force direct scrolling always
+    scroll-behavior: smooth;
     
     // Set gap dynamically from data attribute
     &[data-gap] {
@@ -66,7 +230,6 @@ $component: '#{base.$prefix}-carousel';
     width: 240px;
     height: 320px;
     overflow: hidden;
-    scroll-snap-align: none; // Disable snap alignment for smoother dragging
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     background-color: #FFFFFF;
@@ -79,8 +242,10 @@ $component: '#{base.$prefix}-carousel';
     // Default border radius
     border-radius: 16px;
     
-    
+    // Active state
     &--active {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      transform: translateY(-4px);
       z-index: 1;
     }
     
@@ -96,6 +261,7 @@ $component: '#{base.$prefix}-carousel';
         width: 100%;
         height: 100%;
         object-fit: cover;
+        transition: transform 0.2s ease;
       }
     }
     
@@ -118,17 +284,43 @@ $component: '#{base.$prefix}-carousel';
       font-weight: 500;
       text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
       z-index: 2;
+      pointer-events: none;
+      
+      &.visually-hidden {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
     }
     
-    // Slide description (if needed)
+    // Slide description
     &-description {
       position: absolute;
       bottom: 48px;
       left: 16px;
-      color: t.color('on-surface-variant');
+      color: #FFFFFF;
       font-size: 14px;
       max-width: 80%;
       z-index: 2;
+      pointer-events: none;
+      
+      &.visually-hidden {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
     }
     
     // Overlay for accent color
@@ -144,8 +336,9 @@ $component: '#{base.$prefix}-carousel';
       z-index: 1;
     }
     
-    // Button for actions (if needed)
+    // Button for actions
     &-button {
+      display: inline-block;
       position: absolute;
       bottom: 16px;
       right: 16px;
@@ -156,14 +349,56 @@ $component: '#{base.$prefix}-carousel';
       font-size: 14px;
       font-weight: 500;
       z-index: 2;
+      background-color: rgba(0, 0, 0, 0.6);
       
       &:hover {
         opacity: 0.9;
       }
     }
+    
+    // Different sizes for multi-browse layout
+    &--large {
+      // Styles already set based on layout
+    }
+    
+    &--medium {
+      // Medium items may show less detail
+      .#{$component}-slide-content {
+        padding: 6px 10px;
+      }
+      
+      .#{$component}-slide-title {
+        font-size: 16px;
+      }
+      
+      .#{$component}-slide-description {
+        font-size: 12px;
+      }
+    }
+    
+    &--small {
+      // Small items are primarily visual with minimal text
+      .#{$component}-slide-content {
+        padding: 4px 8px;
+      }
+      
+      // Handle text abbreviation for small items
+      .#{$component}-slide-title,
+      .#{$component}-slide-description {
+        font-size: 12px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      
+      .#{$component}-slide-button {
+        padding: 4px 8px;
+        font-size: 12px;
+      }
+    }
   }
   
-  // Show all link positioned outside the slides
+  // Show all link
   &-show-all {
     display: flex;
     align-items: center;
@@ -204,11 +439,17 @@ $component: '#{base.$prefix}-carousel';
     cursor: grabbing;
   }
   
-  // Navigation elements (hidden by default in card carousel)
+  // Add parallax effect for multi-browse layout
+  &[data-enable-parallax="true"] {
+    .#{$component}-slide-image img {
+      transition: transform 0.1s ease-out;
+    }
+  }
+  
+  // Navigation elements (can be shown with a CSS class if needed)
   &-navigation {
     display: none;
     
-    // Can be shown with a CSS class if needed
     &.visible {
       display: flex;
       position: absolute;
@@ -222,62 +463,35 @@ $component: '#{base.$prefix}-carousel';
     }
   }
   
-  // Active indicator (hidden by default)
-  &-indicator {
-    display: none;
-    
-    &.visible {
-      display: block;
-      position: absolute;
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      background-color: t.alpha('tertiary', 0.5);
-      pointer-events: none;
-      transition: transform 0.3s ease;
-      z-index: 1;
-    }
-  }
-  
-  // Ripple effect for touch interactions
-  &-ripple {
-    position: absolute;
-    border-radius: 50%;
-    background-color: t.alpha('on-surface', 0.2);
-    transform: translate(-50%, -50%);
-    pointer-events: none;
-    animation: ripple-animation 0.6s ease-out;
-    z-index: 2;
-  }
-  
-  // Transition types (for compatibility)
-  &-transition {
-    &--slide {
-      .#{$component}-slides {
-        transition-property: transform;
-      }
-    }
-    
-    &--fade {
-      .#{$component}-slide {
-        transition: opacity 0.3s ease;
-      }
-    }
-    
-    &--none {
-      .#{$component}-slide,
-      .#{$component}-slides {
-        transition: none;
-      }
-    }
-  }
-  
   // Responsive adjustments for different screen sizes
   @media (max-width: 600px) {
+    // In compact windows, adjust multi-browse layout
+    &-layout--multi-browse {
+      .#{$component}-slide {
+        &--large {
+          width: 200px;
+          height: 280px;
+        }
+        
+        &--medium {
+          width: 150px;
+          height: 280px;
+        }
+      }
+    }
+    
+    // For hero layout, ensure good visibility on mobile
+    &-layout--hero {
+      .#{$component}-slide {
+        &--large {
+          width: 280px;
+          height: 320px;
+        }
+      }
+    }
+    
+    // General mobile adjustments
     &-slide {
-      width: 200px;
-      height: 280px;
-      
       &-title {
         font-size: 16px;
       }
@@ -299,10 +513,32 @@ $component: '#{base.$prefix}-carousel';
   
   // Even smaller screens
   @media (max-width: 360px) {
+    // Further compact layout for small screens
+    &-layout--multi-browse {
+      .#{$component}-slide {
+        &--large {
+          width: 160px;
+          height: 240px;
+        }
+        
+        &--medium,
+        &--small {
+          width: 120px;
+          height: 240px;
+        }
+      }
+    }
+    
+    &-layout--hero {
+      .#{$component}-slide {
+        &--large {
+          width: 240px;
+          height: 280px;
+        }
+      }
+    }
+    
     &-slide {
-      width: 160px;
-      height: 240px;
-      
       &-title {
         font-size: 14px;
         bottom: 12px;
@@ -376,19 +612,34 @@ $component: '#{base.$prefix}-carousel';
         left: 16px;
       }
     }
+    
+    .#{$component}-show-all {
+      justify-content: flex-start;
+    }
   }
-}
-
-// Animation for ripple effect
-@keyframes ripple-animation {
-  0% {
-    width: 0;
-    height: 0;
-    opacity: 0.5;
+  
+  // Animation for parallax effect
+  @keyframes slide-in {
+    0% {
+      opacity: 0;
+      transform: translateX(30px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateX(0);
+    }
   }
-  100% {
-    width: 200px;
-    height: 200px;
-    opacity: 0;
+  
+  // Accessibility classes for text that should be visually hidden
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
   }
 }
