@@ -1,0 +1,394 @@
+// src/components/carousel/_styles.scss
+@use '../../styles/abstract/base' as base;
+@use '../../styles/abstract/variables' as v;
+@use '../../styles/abstract/functions' as f;
+@use '../../styles/abstract/mixins' as m;
+@use '../../styles/abstract/theme' as t;
+
+$component: '#{base.$prefix}-carousel';
+
+.#{$component} {
+  // Base styles
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  user-select: none;
+  padding: 8px 0;
+  
+  // Focus styles
+  &:focus {
+    outline: none;
+  }
+  
+  &:focus-visible {
+    outline: 2px solid t.color('outline');
+    outline-offset: 2px;
+  }
+  
+  // Slides container - completely direct scrolling with no resistance
+  &-slides {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: none;
+    gap: 12px;
+    padding: 0 16px;
+    margin: 0 -16px;
+    -ms-overflow-style: none; // Hide scrollbar on IE/Edge
+    scrollbar-width: none; // Hide scrollbar on Firefox
+    scroll-behavior: auto !important; // Force direct scrolling always
+    
+    // Set gap dynamically from data attribute
+    &[data-gap] {
+      gap: attr(data-gap px);
+    }
+    
+    // Hide scrollbar on Chrome/Safari
+    &::-webkit-scrollbar {
+      display: none;
+    }
+    
+    // Force overscroll behavior to be auto (no bounce/elastic effect)
+    overscroll-behavior: auto;
+    -webkit-overflow-scrolling: auto; // Disable momentum scrolling on iOS
+    
+    // Completely disable all scrolling effects and resistance
+    &[data-dragging="true"] {
+      * {
+        pointer-events: none;
+      }
+    }
+  }
+  
+  // Individual slide
+  &-slide {
+    position: relative;
+    flex-shrink: 0;
+    width: 240px;
+    height: 320px;
+    overflow: hidden;
+    scroll-snap-align: none; // Disable snap alignment for smoother dragging
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    background-color: #FFFFFF;
+    
+    // Set border radius dynamically from data attribute
+    &[data-border-radius] {
+      border-radius: attr(data-border-radius px);
+    }
+    
+    // Default border radius
+    border-radius: 16px;
+    
+    
+    &--active {
+      z-index: 1;
+    }
+    
+    // Image container
+    &-image {
+      position: relative;
+      width: 100%;
+      height: 70%;
+      overflow: hidden;
+      
+      // Ensure images cover the slide properly
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+    
+    // Content container
+    &-content {
+      padding: 8px 12px;
+      height: 30%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    
+    // Slide title
+    &-title {
+      position: absolute;
+      bottom: 16px;
+      left: 16px;
+      color: #FFFFFF;
+      font-size: 18px;
+      font-weight: 500;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+      z-index: 2;
+    }
+    
+    // Slide description (if needed)
+    &-description {
+      position: absolute;
+      bottom: 48px;
+      left: 16px;
+      color: t.color('on-surface-variant');
+      font-size: 14px;
+      max-width: 80%;
+      z-index: 2;
+    }
+    
+    // Overlay for accent color
+    &-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(to bottom, rgba(0,0,0,0) 50%, rgba(0,0,0,0.6) 100%);
+      opacity: 0.7;
+      pointer-events: none;
+      z-index: 1;
+    }
+    
+    // Button for actions (if needed)
+    &-button {
+      position: absolute;
+      bottom: 16px;
+      right: 16px;
+      color: #FFFFFF;
+      padding: 8px 16px;
+      border-radius: 20px;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      z-index: 2;
+      
+      &:hover {
+        opacity: 0.9;
+      }
+    }
+  }
+  
+  // Show all link positioned outside the slides
+  &-show-all {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 8px 16px;
+    cursor: pointer;
+    text-align: right;
+    
+    span {
+      color: #1967D2; // Google blue
+      font-size: 16px;
+      font-weight: 500;
+      transition: color 0.2s ease;
+    }
+    
+    &:hover {
+      span {
+        text-decoration: underline;
+      }
+    }
+    
+    &:focus {
+      outline: none;
+    }
+    
+    &:focus-visible {
+      outline: 2px solid t.color('outline');
+      outline-offset: 2px;
+    }
+  }
+  
+  // Drag-related styles
+  &[data-swipe="true"] {
+    cursor: grab;
+  }
+  
+  &[data-dragging="true"] {
+    cursor: grabbing;
+  }
+  
+  // Navigation elements (hidden by default in card carousel)
+  &-navigation {
+    display: none;
+    
+    // Can be shown with a CSS class if needed
+    &.visible {
+      display: flex;
+      position: absolute;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      z-index: 2;
+    }
+  }
+  
+  // Active indicator (hidden by default)
+  &-indicator {
+    display: none;
+    
+    &.visible {
+      display: block;
+      position: absolute;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background-color: t.alpha('tertiary', 0.5);
+      pointer-events: none;
+      transition: transform 0.3s ease;
+      z-index: 1;
+    }
+  }
+  
+  // Ripple effect for touch interactions
+  &-ripple {
+    position: absolute;
+    border-radius: 50%;
+    background-color: t.alpha('on-surface', 0.2);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    animation: ripple-animation 0.6s ease-out;
+    z-index: 2;
+  }
+  
+  // Transition types (for compatibility)
+  &-transition {
+    &--slide {
+      .#{$component}-slides {
+        transition-property: transform;
+      }
+    }
+    
+    &--fade {
+      .#{$component}-slide {
+        transition: opacity 0.3s ease;
+      }
+    }
+    
+    &--none {
+      .#{$component}-slide,
+      .#{$component}-slides {
+        transition: none;
+      }
+    }
+  }
+  
+  // Responsive adjustments for different screen sizes
+  @media (max-width: 600px) {
+    &-slide {
+      width: 200px;
+      height: 280px;
+      
+      &-title {
+        font-size: 16px;
+      }
+      
+      &-description {
+        font-size: 12px;
+        bottom: 42px;
+      }
+    }
+    
+    &-show-all {
+      padding: 6px 12px;
+      
+      span {
+        font-size: 14px;
+      }
+    }
+  }
+  
+  // Even smaller screens
+  @media (max-width: 360px) {
+    &-slide {
+      width: 160px;
+      height: 240px;
+      
+      &-title {
+        font-size: 14px;
+        bottom: 12px;
+        left: 12px;
+      }
+      
+      &-description {
+        font-size: 11px;
+        bottom: 36px;
+        left: 12px;
+      }
+      
+      &-button {
+        bottom: 12px;
+        right: 12px;
+        padding: 6px 12px;
+        font-size: 12px;
+      }
+    }
+    
+    &-show-all {
+      padding: 4px 10px;
+      
+      span {
+        font-size: 13px;
+      }
+    }
+  }
+  
+  // Print styles
+  @media print {
+    overflow: visible;
+    
+    &-slides {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+      overflow: visible;
+    }
+    
+    &-slide {
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+    
+    &-show-all,
+    &-navigation {
+      display: none; /* Hide navigation and show all for print */
+    }
+  }
+  
+  // RTL support
+  [dir="rtl"] & {
+    .#{$component}-slides {
+      direction: rtl;
+    }
+    
+    .#{$component}-slide {
+      &-title {
+        left: auto;
+        right: 16px;
+      }
+      
+      &-description {
+        left: auto;
+        right: 16px;
+      }
+      
+      &-button {
+        right: auto;
+        left: 16px;
+      }
+    }
+  }
+}
+
+// Animation for ripple effect
+@keyframes ripple-animation {
+  0% {
+    width: 0;
+    height: 0;
+    opacity: 0.5;
+  }
+  100% {
+    width: 200px;
+    height: 200px;
+    opacity: 0;
+  }
+}
