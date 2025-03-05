@@ -103,7 +103,7 @@ $component: '#{base.$prefix}-progress';
       stroke-dasharray: 283; // 2*PI*45
       stroke-dashoffset: 283;
       transition: stroke-dashoffset 0.3s ease;
-      linecap: round
+      stroke-linecap: round;
     }
     
     // Indeterminate animation for circular progress
