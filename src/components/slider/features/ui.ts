@@ -1,9 +1,14 @@
-// src/components/slider/features/ui.ts - Updated track update methods
+// src/components/slider/features/ui.ts
+/**
+ * Enhanced UI helper functionality for the Slider component
+ * Fixes the thumb positioning issue at the start and end of the slider
+ */
+
 import { SLIDER_ORIENTATIONS } from '../constants';
 import { SliderConfig } from '../types';
 
 /**
- * Create UI update helpers for slider component with MD3 enhancements
+ * Create UI update helpers for slider component with improved thumb positioning
  * 
  * @param config Slider configuration
  * @param state Slider state object
@@ -39,7 +44,9 @@ export const createUiHelpers = (config: SliderConfig, state) => {
     thumb,
     valueBubble,
     secondThumb,
-    secondValueBubble
+    secondValueBubble,
+    startDot,
+    endDot
   } = state.component.structure;
   
   /**
@@ -110,7 +117,7 @@ export const createUiHelpers = (config: SliderConfig, state) => {
   const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
   
   /**
-   * Sets thumb position based on a value percentage
+   * Sets thumb position based on a value percentage with improved edge positioning
    * @param thumbElement Thumb element to position
    * @param valueBubbleElement Value bubble element to position
    * @param valuePercent Percentage position (0-100)
@@ -118,195 +125,269 @@ export const createUiHelpers = (config: SliderConfig, state) => {
   const setThumbPosition = (thumbElement, valueBubbleElement, valuePercent) => {
     if (!thumbElement) return;
     
-    if (config.orientation === SLIDER_ORIENTATIONS.VERTICAL) {
-      // Fix for vertical slider - position from bottom using absolute positioning
-      thumbElement.style.bottom = `${valuePercent}%`;
-      thumbElement.style.left = '50%'; // Keep it centered horizontally
-      thumbElement.style.top = 'auto'; // Clear top property to prevent conflicts
-      
-      if (valueBubbleElement) {
-        valueBubbleElement.style.bottom = `${valuePercent}%`;
-        valueBubbleElement.style.top = 'auto';
+    // Get track dimensions to calculate absolute positioning
+    const trackRect = track.getBoundingClientRect();
+    const isVertical = config.orientation === SLIDER_ORIENTATIONS.VERTICAL;
+    
+    // Calculate track length in pixels to handle thumb alignment at edges
+    const trackLength = isVertical ? trackRect.height : trackRect.width;
+    
+    // Get thumb dimensions for edge positioning adjustment
+    const thumbRect = thumbElement.getBoundingClientRect();
+    const thumbSize = isVertical ? thumbRect.height : thumbRect.width;
+    
+    // Calculate the thumb offset needed at edges
+    const thumbOffset = thumbSize / 2;
+    
+    // Adjust percentage for edge cases (min/max) to align with dots
+    // This is the key change to fix alignment at the edges
+    if (valuePercent === 0) {
+      // At minimum value (left edge), position thumb directly over start dot
+      if (isVertical) {
+        thumbElement.style.bottom = '0';
+        thumbElement.style.left = '50%';
+        thumbElement.style.top = 'auto';
+        thumbElement.style.transform = 'translate(-50%, 50%)';
+      } else {
+        thumbElement.style.left = '0';
+        thumbElement.style.top = '50%';
+        thumbElement.style.transform = 'translateY(-50%)';
+      }
+    } else if (valuePercent === 100) {
+      // At maximum value (right edge), position thumb directly over end dot
+      if (isVertical) {
+        thumbElement.style.bottom = 'auto';
+        thumbElement.style.top = '0';
+        thumbElement.style.left = '50%';
+        thumbElement.style.transform = 'translate(-50%, -50%)';
+      } else {
+        thumbElement.style.left = '100%';
+        thumbElement.style.top = '50%';
+        thumbElement.style.transform = 'translate(-100%, -50%)';
       }
     } else {
-      thumbElement.style.left = `${valuePercent}%`;
-      if (valueBubbleElement) {
+      // For normal positions, use the standard percentage positioning
+      if (isVertical) {
+        thumbElement.style.bottom = `${valuePercent}%`;
+        thumbElement.style.left = '50%';
+        thumbElement.style.top = 'auto';
+        thumbElement.style.transform = 'translate(-50%, 50%)';
+      } else {
+        thumbElement.style.left = `${valuePercent}%`;
+        thumbElement.style.top = '50%';
+        thumbElement.style.transform = 'translate(-50%, -50%)';
+      }
+    }
+    
+    // Position the value bubble accordingly
+    if (valueBubbleElement) {
+      if (isVertical) {
+        valueBubbleElement.style.bottom = `${valuePercent}%`;
+        valueBubbleElement.style.top = 'auto';
+      } else {
         valueBubbleElement.style.left = `${valuePercent}%`;
       }
     }
   };
-  
 
-
-/**
- * Updates start track styles (before the first thumb for range slider)
- * This method now includes padding adjustments in the calculation
- */
-const updateStartTrack = () => {
-  if (!startTrack) return;
-  
-  if (config.range && state.secondValue !== null) {
-    // For range slider, calculate the track from start to first thumb
-    const lowerValue = Math.min(state.value, state.secondValue);
-    const lowerPercent = getPercentage(lowerValue);
+  /**
+   * Updates start track styles (before the first thumb for range slider)
+   */
+  const updateStartTrack = () => {
+    if (!startTrack) return;
     
-    // Get track width for pixel calculations 
+    if (config.range && state.secondValue !== null) {
+      // For range slider, calculate the track from start to first thumb
+      const lowerValue = Math.min(state.value, state.secondValue);
+      const lowerPercent = getPercentage(lowerValue);
+      
+      // Get track width for pixel calculations 
+      const trackRect = track.getBoundingClientRect();
+      const isVertical = config.orientation === SLIDER_ORIENTATIONS.VERTICAL;
+      const trackSize = isVertical ? trackRect.height : trackRect.width;
+      
+      // Calculate width with adjustment for thumb spacing - subtract 8px equivalent
+      const paddingAdjustment = 8; // 8px padding
+      const paddingPercent = (paddingAdjustment / trackSize) * 100;
+      
+      if (isVertical) {
+        startTrack.style.display = 'block';
+        startTrack.style.height = `${Math.max(0, lowerPercent - paddingPercent)}%`;
+        startTrack.style.bottom = '0';
+        startTrack.style.top = 'auto';
+        startTrack.style.width = '100%';
+        startTrack.style.left = '0';
+      } else {
+        startTrack.style.display = 'block';
+        startTrack.style.width = `${Math.max(0, lowerPercent - paddingPercent)}%`;
+        startTrack.style.left = '0';
+        startTrack.style.height = '100%';
+      }
+    } else {
+      // For single thumb slider, no start track needed
+      startTrack.style.display = 'none';
+    }
+  };
+
+  /**
+   * Updates active track styles - with padding adjustments
+   */
+  const updateActiveTrack = () => {
+    if (!activeTrack) return;
+    
+    // Get track width for pixel calculations
     const trackRect = track.getBoundingClientRect();
     const isVertical = config.orientation === SLIDER_ORIENTATIONS.VERTICAL;
     const trackSize = isVertical ? trackRect.height : trackRect.width;
     
-    // Calculate width with adjustment for thumb spacing - subtract 8px equivalent
+    // Calculate padding adjustment
     const paddingAdjustment = 8; // 8px padding
     const paddingPercent = (paddingAdjustment / trackSize) * 100;
     
-    if (isVertical) {
-      startTrack.style.display = 'block';
-      startTrack.style.height = `${Math.max(0, lowerPercent - paddingPercent)}%`;
-      startTrack.style.bottom = '0';
-      startTrack.style.top = 'auto';
-      startTrack.style.width = '100%';
-      startTrack.style.left = '0';
+    if (config.range && state.secondValue !== null) {
+      // Range slider (two thumbs)
+      const lowerValue = Math.min(state.value, state.secondValue);
+      const higherValue = Math.max(state.value, state.secondValue);
+      const lowerPercent = getPercentage(lowerValue);
+      const higherPercent = getPercentage(higherValue);
+      
+      // Adjust positions and width to account for spacing
+      let adjustedLowerPercent = lowerPercent;
+      let adjustedHigherPercent = higherPercent;
+      
+      if (higherPercent - lowerPercent > paddingPercent * 2) {
+        // If there's enough space, add padding to both sides
+        adjustedLowerPercent = lowerPercent + paddingPercent;
+        adjustedHigherPercent = higherPercent - paddingPercent;
+      }
+      
+      const trackLength = Math.max(0, adjustedHigherPercent - adjustedLowerPercent);
+      
+      if (isVertical) {
+        activeTrack.style.display = 'block';
+        activeTrack.style.height = `${trackLength}%`;
+        activeTrack.style.bottom = `${adjustedLowerPercent}%`;
+        activeTrack.style.top = 'auto';
+        activeTrack.style.width = '100%';
+      } else {
+        activeTrack.style.display = 'block';
+        activeTrack.style.width = `${trackLength}%`;
+        activeTrack.style.left = `${adjustedLowerPercent}%`;
+        activeTrack.style.height = '100%';
+      }
     } else {
-      startTrack.style.display = 'block';
-      startTrack.style.width = `${Math.max(0, lowerPercent - paddingPercent)}%`;
-      startTrack.style.left = '0';
-      startTrack.style.height = '100%';
+      // Single thumb slider
+      const percent = getPercentage(state.value);
+      
+      // Special handling for min/max to ensure track aligns with dots
+      if (state.value === state.min) {
+        // At minimum, no active track
+        activeTrack.style.display = 'none';
+      } else if (state.value === state.max) {
+        // At maximum, full width active track
+        if (isVertical) {
+          activeTrack.style.display = 'block';
+          activeTrack.style.height = '100%';
+          activeTrack.style.bottom = '0';
+          activeTrack.style.top = 'auto';
+          activeTrack.style.width = '100%';
+        } else {
+          activeTrack.style.display = 'block';
+          activeTrack.style.width = '100%';
+          activeTrack.style.left = '0';
+          activeTrack.style.height = '100%';
+        }
+      } else {
+        // For normal positions, adjust with padding
+        const adjustedWidth = Math.max(0, percent - paddingPercent);
+        
+        if (isVertical) {
+          activeTrack.style.display = 'block';
+          activeTrack.style.height = `${adjustedWidth}%`;
+          activeTrack.style.bottom = '0';
+          activeTrack.style.top = 'auto';
+          activeTrack.style.width = '100%';
+        } else {
+          activeTrack.style.display = 'block';
+          activeTrack.style.width = `${adjustedWidth}%`;
+          activeTrack.style.left = '0';
+          activeTrack.style.height = '100%';
+        }
+      }
     }
-  } else {
-    // For single thumb slider, no start track needed
-    startTrack.style.display = 'none';
-  }
-};
+  };
 
-/**
- * Updates active track styles - with padding adjustments
- */
-const updateActiveTrack = () => {
-  if (!activeTrack) return;
-  
-  // Get track width for pixel calculations
-  const trackRect = track.getBoundingClientRect();
-  const isVertical = config.orientation === SLIDER_ORIENTATIONS.VERTICAL;
-  const trackSize = isVertical ? trackRect.height : trackRect.width;
-  
-  // Calculate padding adjustment
-  const paddingAdjustment = 8; // 8px padding
-  const paddingPercent = (paddingAdjustment / trackSize) * 100;
-  
-  if (config.range && state.secondValue !== null) {
-    // Range slider (two thumbs)
-    const lowerValue = Math.min(state.value, state.secondValue);
-    const higherValue = Math.max(state.value, state.secondValue);
-    const lowerPercent = getPercentage(lowerValue);
-    const higherPercent = getPercentage(higherValue);
+  /**
+   * Updates remaining track styles - with padding adjustments
+   */
+  const updateRemainingTrack = () => {
+    if (!remainingTrack) return;
     
-    // Adjust positions and width to account for spacing
-    let adjustedLowerPercent = lowerPercent;
-    let adjustedHigherPercent = higherPercent;
+    // Get track width for pixel calculations
+    const trackRect = track.getBoundingClientRect();
+    const isVertical = config.orientation === SLIDER_ORIENTATIONS.VERTICAL;
+    const trackSize = isVertical ? trackRect.height : trackRect.width;
     
-    if (higherPercent - lowerPercent > paddingPercent * 2) {
-      // If there's enough space, add padding to both sides
-      adjustedLowerPercent = lowerPercent + paddingPercent;
-      adjustedHigherPercent = higherPercent - paddingPercent;
-    }
+    // Calculate padding adjustment
+    const paddingAdjustment = 8; // 8px padding
+    const paddingPercent = (paddingAdjustment / trackSize) * 100;
     
-    const trackLength = Math.max(0, adjustedHigherPercent - adjustedLowerPercent);
-    
-    if (isVertical) {
-      activeTrack.style.display = 'block';
-      activeTrack.style.height = `${trackLength}%`;
-      activeTrack.style.bottom = `${adjustedLowerPercent}%`;
-      activeTrack.style.top = 'auto';
-      activeTrack.style.width = '100%';
+    if (config.range && state.secondValue !== null) {
+      // Range slider (two thumbs)
+      const higherValue = Math.max(state.value, state.secondValue);
+      const higherPercent = getPercentage(higherValue);
+      
+      // Special handling for max value to ensure track aligns with end dot
+      if (higherValue === state.max) {
+        remainingTrack.style.display = 'none';
+      } else {
+        // Adjust for right padding
+        const adjustedPercent = higherPercent + paddingPercent;
+        const adjustedWidth = Math.max(0, 100 - adjustedPercent);
+        
+        if (isVertical) {
+          remainingTrack.style.display = 'block';
+          remainingTrack.style.height = `${adjustedWidth}%`;
+          remainingTrack.style.bottom = `${adjustedPercent}%`;
+          remainingTrack.style.top = 'auto';
+          remainingTrack.style.width = '100%';
+        } else {
+          remainingTrack.style.display = 'block';
+          remainingTrack.style.width = `${adjustedWidth}%`;
+          remainingTrack.style.left = `${adjustedPercent}%`;
+          remainingTrack.style.height = '100%';
+        }
+      }
     } else {
-      activeTrack.style.display = 'block';
-      activeTrack.style.width = `${trackLength}%`;
-      activeTrack.style.left = `${adjustedLowerPercent}%`;
-      activeTrack.style.height = '100%';
+      // Single thumb slider
+      const percent = getPercentage(state.value);
+      
+      // Special handling for max value to ensure track aligns with end dot
+      if (state.value === state.max) {
+        remainingTrack.style.display = 'none';
+      } else {
+        // Adjust for right padding
+        const adjustedPercent = percent + paddingPercent;
+        const adjustedWidth = Math.max(0, 100 - adjustedPercent);
+        
+        if (isVertical) {
+          remainingTrack.style.display = 'block';
+          remainingTrack.style.height = `${adjustedWidth}%`;
+          remainingTrack.style.bottom = `${adjustedPercent}%`;
+          remainingTrack.style.top = 'auto';
+          remainingTrack.style.width = '100%';
+        } else {
+          remainingTrack.style.display = 'block';
+          remainingTrack.style.width = `${adjustedWidth}%`;
+          remainingTrack.style.left = `${adjustedPercent}%`;
+          remainingTrack.style.height = '100%';
+        }
+      }
     }
-  } else {
-    // Single thumb slider
-    const percent = getPercentage(state.value);
-    
-    // For single slider, adjust for left padding
-    const adjustedWidth = Math.max(0, percent - paddingPercent);
-    
-    if (isVertical) {
-      activeTrack.style.display = 'block';
-      activeTrack.style.height = `${adjustedWidth}%`;
-      activeTrack.style.bottom = '0';
-      activeTrack.style.top = 'auto';
-      activeTrack.style.width = '100%';
-    } else {
-      activeTrack.style.display = 'block';
-      activeTrack.style.width = `${adjustedWidth}%`;
-      activeTrack.style.left = '0';
-      activeTrack.style.height = '100%';
-    }
-  }
-};
-
-/**
- * Updates remaining track styles - with padding adjustments
- */
-const updateRemainingTrack = () => {
-  if (!remainingTrack) return;
-  
-  // Get track width for pixel calculations
-  const trackRect = track.getBoundingClientRect();
-  const isVertical = config.orientation === SLIDER_ORIENTATIONS.VERTICAL;
-  const trackSize = isVertical ? trackRect.height : trackRect.width;
-  
-  // Calculate padding adjustment
-  const paddingAdjustment = 8; // 8px padding
-  const paddingPercent = (paddingAdjustment / trackSize) * 100;
-  
-  if (config.range && state.secondValue !== null) {
-    // Range slider (two thumbs)
-    const higherValue = Math.max(state.value, state.secondValue);
-    const higherPercent = getPercentage(higherValue);
-    
-    // Adjust for right padding
-    const adjustedPercent = higherPercent + paddingPercent;
-    const adjustedWidth = Math.max(0, 100 - adjustedPercent);
-    
-    if (isVertical) {
-      remainingTrack.style.display = 'block';
-      remainingTrack.style.height = `${adjustedWidth}%`;
-      remainingTrack.style.bottom = `${adjustedPercent}%`;
-      remainingTrack.style.top = 'auto';
-      remainingTrack.style.width = '100%';
-    } else {
-      remainingTrack.style.display = 'block';
-      remainingTrack.style.width = `${adjustedWidth}%`;
-      remainingTrack.style.left = `${adjustedPercent}%`;
-      remainingTrack.style.height = '100%';
-    }
-  } else {
-    // Single thumb slider
-    const percent = getPercentage(state.value);
-    
-    // Adjust for right padding
-    const adjustedPercent = percent + paddingPercent;
-    const adjustedWidth = Math.max(0, 100 - adjustedPercent);
-    
-    if (isVertical) {
-      remainingTrack.style.display = 'block';
-      remainingTrack.style.height = `${adjustedWidth}%`;
-      remainingTrack.style.bottom = `${adjustedPercent}%`;
-      remainingTrack.style.top = 'auto';
-      remainingTrack.style.width = '100%';
-    } else {
-      remainingTrack.style.display = 'block';
-      remainingTrack.style.width = `${adjustedWidth}%`;
-      remainingTrack.style.left = `${adjustedPercent}%`;
-      remainingTrack.style.height = '100%';
-    }
-  }
-};
+  };
   
   /**
-   * Updates thumb positions
+   * Updates thumb positions with edge case correction
    */
   const updateThumbPositions = () => {
     if (!thumb) return;
@@ -491,7 +572,7 @@ const updateRemainingTrack = () => {
    */
   const updateUi = () => {
     updateThumbPositions();
-    updateStartTrack(); // Call BEFORE updateActiveTrack
+    updateStartTrack();
     updateActiveTrack();
     updateRemainingTrack();
     updateValueBubbles();
