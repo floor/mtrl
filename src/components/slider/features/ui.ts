@@ -129,7 +129,7 @@ export const createUiHelpers = (config: SliderConfig, state) => {
     const trackRect = track.getBoundingClientRect();
     const isVertical = config.orientation === SLIDER_ORIENTATIONS.VERTICAL;
     
-    // The dots are positioned exactly at 4px from each edge
+    // The dots are positioned exactly at 6px from each edge
     const EDGE_PADDING = 6;
     
     // Adjust percentage for edge cases (min/max) to align exactly with dots
@@ -141,7 +141,7 @@ export const createUiHelpers = (config: SliderConfig, state) => {
         thumbElement.style.top = 'auto';
         thumbElement.style.transform = 'translate(-50%, 50%)';
       } else {
-        // Position exactly at 4px from the left edge
+        // Position exactly at 6px from the left edge
         thumbElement.style.left = `${EDGE_PADDING}px`;
         thumbElement.style.top = '50%';
         thumbElement.style.transform = 'translate(-50%, -50%)';
@@ -154,7 +154,7 @@ export const createUiHelpers = (config: SliderConfig, state) => {
         thumbElement.style.left = '50%';
         thumbElement.style.transform = 'translate(-50%, -50%)';
       } else {
-        // Position exactly at 4px from the right edge
+        // Position exactly at 6px from the right edge
         thumbElement.style.right = `${EDGE_PADDING}px`;
         thumbElement.style.left = 'auto';
         thumbElement.style.top = '50%';
@@ -277,20 +277,29 @@ export const createUiHelpers = (config: SliderConfig, state) => {
       const percent = getPercentage(state.value);
       
       // Special handling for min/max to ensure track aligns exactly with dots
+      // The dots are positioned exactly at 6px from each edge
+      const EDGE_PADDING = 6;
+      
+      // Get track width for pixel calculations
+      const trackRect = track.getBoundingClientRect();
+      const trackWidth = trackRect.width;
+      
+      // For maximum value, calculate where to end the active track
+      // We want to end it exactly at the position of the thumb (minus a bit for spacing)
       if (state.value === state.min) {
         // At minimum, display no active track
         activeTrack.style.display = 'none';
       } else if (state.value === state.max) {
-        // At maximum, full width active track 
+        // At maximum, active track should stop at the max dot position
         if (isVertical) {
           activeTrack.style.display = 'block';
-          activeTrack.style.height = '100%';
+          activeTrack.style.height = `calc(100% - (2*${EDGE_PADDING})px)`;
           activeTrack.style.bottom = '0';
           activeTrack.style.top = 'auto';
           activeTrack.style.width = '100%';
         } else {
           activeTrack.style.display = 'block';
-          activeTrack.style.width = '100%';
+          activeTrack.style.width = `calc(100% - (2*${EDGE_PADDING})px)`;
           activeTrack.style.left = '0';
           activeTrack.style.height = '100%';
         }
