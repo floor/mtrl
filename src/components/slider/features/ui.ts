@@ -368,8 +368,25 @@ export const createUiHelpers = (config: SliderConfig, state) => {
       // Single thumb slider
       const percent = getPercentage(state.value);
       
-      // Special handling for max value to ensure track aligns with end dot
-      if (state.value === state.max) {
+      // Special handling for min/max to ensure remaining track aligns correctly
+      // The dots are positioned exactly at 6px from each edge
+      const EDGE_PADDING = 6;
+      
+      if (state.value === state.min) {
+        // At minimum, the remaining track should start after the first dot
+        if (isVertical) {
+          remainingTrack.style.display = 'block';
+          remainingTrack.style.height = `calc(100% - (2*${EDGE_PADDING})px)`;
+          remainingTrack.style.bottom = `${EDGE_PADDING}px`;
+          remainingTrack.style.top = 'auto';
+          remainingTrack.style.width = '100%';
+        } else {
+          remainingTrack.style.display = 'block';
+          remainingTrack.style.width = `calc(100% - (2*${EDGE_PADDING})px)`;
+          // remainingTrack.style.left = `${EDGE_PADDING}px`;
+          remainingTrack.style.height = '100%';
+        }
+      } else if (state.value === state.max) {
         // At maximum, hide the remaining track
         remainingTrack.style.display = 'none';
       } else {
