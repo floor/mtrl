@@ -129,41 +129,36 @@ export const createUiHelpers = (config: SliderConfig, state) => {
     const trackRect = track.getBoundingClientRect();
     const isVertical = config.orientation === SLIDER_ORIENTATIONS.VERTICAL;
     
-    // Calculate track length in pixels to handle thumb alignment at edges
-    const trackLength = isVertical ? trackRect.height : trackRect.width;
+    // The dots are positioned exactly at 4px from each edge
+    const EDGE_PADDING = 6;
     
-    // Get thumb dimensions for edge positioning adjustment
-    const thumbRect = thumbElement.getBoundingClientRect();
-    const thumbSize = isVertical ? thumbRect.height : thumbRect.width;
-    
-    // Calculate the thumb offset needed at edges
-    const thumbOffset = thumbSize / 2;
-    
-    // Adjust percentage for edge cases (min/max) to align with dots
-    // This is the key change to fix alignment at the edges
+    // Adjust percentage for edge cases (min/max) to align exactly with dots
     if (valuePercent === 0) {
-      // At minimum value (left edge), position thumb directly over start dot
+      // At minimum value, position thumb directly over the left dot
       if (isVertical) {
         thumbElement.style.bottom = '0';
         thumbElement.style.left = '50%';
         thumbElement.style.top = 'auto';
         thumbElement.style.transform = 'translate(-50%, 50%)';
       } else {
-        thumbElement.style.left = '0';
+        // Position exactly at 4px from the left edge
+        thumbElement.style.left = `${EDGE_PADDING}px`;
         thumbElement.style.top = '50%';
-        thumbElement.style.transform = 'translateY(-50%)';
+        thumbElement.style.transform = 'translate(-50%, -50%)';
       }
     } else if (valuePercent === 100) {
-      // At maximum value (right edge), position thumb directly over end dot
+      // At maximum value, position thumb directly over the right dot
       if (isVertical) {
         thumbElement.style.bottom = 'auto';
         thumbElement.style.top = '0';
         thumbElement.style.left = '50%';
         thumbElement.style.transform = 'translate(-50%, -50%)';
       } else {
-        thumbElement.style.left = '100%';
+        // Position exactly at 4px from the right edge
+        thumbElement.style.right = `${EDGE_PADDING}px`;
+        thumbElement.style.left = 'auto';
         thumbElement.style.top = '50%';
-        thumbElement.style.transform = 'translate(-100%, -50%)';
+        thumbElement.style.transform = 'translate(50%, -50%)';
       }
     } else {
       // For normal positions, use the standard percentage positioning
@@ -171,9 +166,11 @@ export const createUiHelpers = (config: SliderConfig, state) => {
         thumbElement.style.bottom = `${valuePercent}%`;
         thumbElement.style.left = '50%';
         thumbElement.style.top = 'auto';
+        thumbElement.style.right = 'auto';
         thumbElement.style.transform = 'translate(-50%, 50%)';
       } else {
         thumbElement.style.left = `${valuePercent}%`;
+        thumbElement.style.right = 'auto';
         thumbElement.style.top = '50%';
         thumbElement.style.transform = 'translate(-50%, -50%)';
       }
@@ -279,12 +276,12 @@ export const createUiHelpers = (config: SliderConfig, state) => {
       // Single thumb slider
       const percent = getPercentage(state.value);
       
-      // Special handling for min/max to ensure track aligns with dots
+      // Special handling for min/max to ensure track aligns exactly with dots
       if (state.value === state.min) {
-        // At minimum, no active track
+        // At minimum, display no active track
         activeTrack.style.display = 'none';
       } else if (state.value === state.max) {
-        // At maximum, full width active track
+        // At maximum, full width active track 
         if (isVertical) {
           activeTrack.style.display = 'block';
           activeTrack.style.height = '100%';
@@ -364,6 +361,7 @@ export const createUiHelpers = (config: SliderConfig, state) => {
       
       // Special handling for max value to ensure track aligns with end dot
       if (state.value === state.max) {
+        // At maximum, hide the remaining track
         remainingTrack.style.display = 'none';
       } else {
         // Adjust for right padding
