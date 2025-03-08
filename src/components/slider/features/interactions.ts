@@ -42,7 +42,9 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
     triggerEvent = () => ({ defaultPrevented: false })
   } = handlers;
   
-  // Event handlers
+  /**
+   * Handling thumb mouse down events with improved feedback
+   */
   const handleThumbMouseDown = (e, isSecondThumb = false) => {
     // Verify component exists and check if disabled
     if (!state.component || (state.component.disabled && state.component.disabled.isDisabled())) {
@@ -59,8 +61,8 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
     // Add dragging class to component element to style the thumb differently
     state.component.element.classList.add(`${state.component.getClass('slider')}--dragging`);
     
-    // Show value bubble if it exists
-    if (state.activeBubble) {
+    // Show value bubble immediately during interaction
+    if (state.activeBubble && config.showValue) {
       showValueBubble(state.activeBubble, true);
     }
     
@@ -77,6 +79,7 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
       console.warn('Error triggering START event:', error);
     }
   };
+
   
   const handleTrackMouseDown = (e) => {
     // Verify component exists and check if disabled
@@ -244,6 +247,9 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
     }
   };
   
+  /**
+   * Handling mouse up events with value fade-out
+   */
   const handleMouseUp = (e) => {
     if (!state.dragging) return;
     
@@ -254,9 +260,17 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
     // Remove dragging class from component element
     state.component.element.classList.remove(`${state.component.getClass('slider')}--dragging`);
     
-    // Hide value bubble
+    // Don't hide the value bubble immediately - keep it visible briefly
+    if (state.valueHideTimer) {
+      clearTimeout(state.valueHideTimer);
+    }
+    
+    // Set a timer to hide the value bubble after a delay (1.5 seconds)
     if (state.activeBubble) {
-      showValueBubble(state.activeBubble, false);
+      state.valueHideTimer = setTimeout(() => {
+        showValueBubble(state.activeBubble, false);
+        state.activeBubble = null;
+      }, 1500);
     }
     
     // Remove global event listeners
@@ -265,9 +279,8 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
     document.removeEventListener('touchmove', handleMouseMove);
     document.removeEventListener('touchend', handleMouseUp);
     
-    // Reset active elements
+    // Reset active thumb
     state.activeThumb = null;
-    state.activeBubble = null;
     
     try {
       // Trigger change event (only when done dragging)

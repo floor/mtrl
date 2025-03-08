@@ -19,7 +19,7 @@ $component: '#{base.$prefix}-slider';
   user-select: none;
   touch-action: none;
   
-  // Container should not have a focus outline since we're focusing the thumb directly
+  // Container should not have a focus outline
   &:focus {
     outline: none;
   }
@@ -40,8 +40,127 @@ $component: '#{base.$prefix}-slider';
       cursor: not-allowed;
     }
   }
-  
-  // Start track (new element for range slider - beginning to first thumb)
+ 
+  // Thumb - updated with T-shape and proper focus styles
+  &-thumb {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    cursor: pointer;
+    z-index: 4;
+    padding: 4px 0;
+    transition: $transform;
+    width: 16px;
+    height: 50px;
+    border-radius: 16px;
+    background-color: rgba(red, .0);
+
+    // Focus styles for keyboard navigation
+    &:focus {
+      outline: 2px solid t.color('outline');
+    }
+    
+    // Class added when focused via keyboard
+    &--focused {
+      // Additional styling when focused
+    }
+
+    // Create a T-shaped thumb using pseudo-elements
+    &::before {
+      pointer-events: none;
+      content: '';
+      position: absolute;
+      width: 4px;
+      height: 40px;
+      background-color: t.color('primary');
+      border-radius: 2px;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      transition: background-color 0.15s ease, width 0.15s ease;
+      
+      .#{$component}--secondary & {
+        background-color: t.color('secondary');
+      }
+      
+      .#{$component}--tertiary & {
+        background-color: t.color('tertiary');
+      }
+      
+      .#{$component}--error & {
+        background-color: t.color('error');
+      }
+      
+      .#{$component}--disabled & {
+        background-color: t.color('on-surface');
+        opacity: 0.38;
+      }
+    }
+    
+    // Enable pointer events on the pseudo-element
+    &::before {
+      pointer-events: auto;
+    }
+    
+    // Make thumb line slimmer during dragging (feedback)
+    .#{$component}--dragging & {
+      &::before {
+        width: 3px;
+      }
+    }
+    
+    // Hover state
+    &:hover::before {
+      background-color: t.color('primary');
+      
+      .#{$component}--secondary & {
+        background-color: t.color('secondary');
+      }
+      
+      .#{$component}--tertiary & {
+        background-color: t.color('tertiary');
+      }
+      
+      .#{$component}--error & {
+        background-color: t.color('error');
+      }
+      
+      .#{$component}--disabled & {
+        background-color: t.color('on-surface');
+        opacity: 0.38;
+      }
+    }
+    
+    // Active state
+    &:active::before {
+      background-color: t.color('primary');
+      width: 3px; // Shrink width when active for visual feedback
+      
+      .#{$component}--secondary & {
+        background-color: t.color('secondary');
+      }
+      
+      .#{$component}--tertiary & {
+        background-color: t.color('tertiary');
+      }
+      
+      .#{$component}--error & {
+        background-color: t.color('error');
+      }
+    }
+    
+    // Disabled state
+    .#{$component}--disabled & {
+      cursor: not-allowed;
+      
+      &::before {
+        opacity: 0.38;
+        background-color: t.color('on-surface');
+      }
+    }
+  }
+
+  // Start track (for range slider)
   &-start-track {
     position: absolute;
     top: 0;
@@ -95,7 +214,7 @@ $component: '#{base.$prefix}-slider';
     }
   }
   
-  // Remaining track (unfilled part) - new for MD3
+  // Remaining track (unfilled part)
   &-remaining-track {
     opacity: .24;
     position: absolute;
@@ -125,7 +244,7 @@ $component: '#{base.$prefix}-slider';
     }
   }
   
-  // Dot elements for track ends (separate from thumbs)
+  // Dot elements for track ends (visual anchors for accessibility)
   &-dot {
     pointer-events: none;
     position: absolute;
@@ -139,7 +258,6 @@ $component: '#{base.$prefix}-slider';
     // Start dot
     &--start {
       left: 6px;
-      // Color variants
       background-color: t.color('on-primary');
       
       .#{$component}--secondary & {
@@ -154,7 +272,6 @@ $component: '#{base.$prefix}-slider';
     // End dot
     &--end {
       right: 6px;
-      // Color variants
       background-color: t.color('primary');
       
       .#{$component}--secondary & {
@@ -169,129 +286,10 @@ $component: '#{base.$prefix}-slider';
     .#{$component}--disabled & {
       opacity: 0.38;
     }
- 
   }
   
-  // Thumb - updated with standard focus-visible styling
-  &-thumb {
-    position: absolute;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    cursor: pointer;
-    z-index: 4;
-    padding: 4px 0;
-    transition: $transform;
-    width: 16px;
-    height: 50px;
-    border-radius: 16px;
-    
-    // Use standard focus style that works reliably with keyboard navigation
-    &:focus {
-      outline: 2px solid t.color('outline');
-      // outline-offset: 2px;
-      
-      // Optional: For browsers that support :focus-visible, we can hide the outline when clicking
-      // This ensures outline shows for keyboard but not mouse (where supported)
-      &:not(:focus-visible) {
-        outline: none;
-      }
-    }
-
-    // Create a T-shaped thumb using pseudo-elements
-    &::before {
-      pointer-events: none;
-      content: '';
-      position: absolute;
-      width: 4px;
-      height: 40px;
-      background-color: t.color('primary');
-      border-radius: 2px;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%);
-      transition: background-color 0.15s ease, width 0.15s ease;
-      
-      .#{$component}--secondary & {
-        background-color: t.color('secondary');
-      }
-      
-      .#{$component}--tertiary & {
-        background-color: t.color('tertiary');
-      }
-      
-      .#{$component}--error & {
-        background-color: t.color('error');
-      }
-      
-      .#{$component}--disabled & {
-        background-color: t.color('on-surface');
-        opacity: 0.38;
-      }
-    }
-    
-    // Enable pointer events on the pseudo-elements
-    &::before {
-      pointer-events: auto;
-    }
-    
-    // Make thumb line slimmer during dragging
-    .#{$component}--dragging & {
-      &::before {
-        width: 3px;
-      }
-    }
-    
-    // Hover state
-    &:hover::before {
-      background-color: t.color('primary');
-      
-      .#{$component}--secondary & {
-        background-color: t.color('secondary');
-      }
-      
-      .#{$component}--tertiary & {
-        background-color: t.color('tertiary');
-      }
-      
-      .#{$component}--error & {
-        background-color: t.color('error');
-      }
-      
-      .#{$component}--disabled & {
-        background-color: t.color('on-surface');
-        opacity: 0.38;
-      }
-    }
-    
-    // Active state
-    &:active::before {
-      background-color: t.color('primary');
-      
-      .#{$component}--secondary & {
-        background-color: t.color('secondary');
-      }
-      
-      .#{$component}--tertiary & {
-        background-color: t.color('tertiary');
-      }
-      
-      .#{$component}--error & {
-        background-color: t.color('error');
-      }
-    }
-    
-    // Disabled state
-    .#{$component}--disabled & {
-      cursor: not-allowed;
-      
-      &::before {
-        opacity: 0.38;
-        background-color: t.color('on-surface');
-      }
-    }
-  }
   
-  // Container for ticks in MD3 style
+  // Container for ticks
   &-ticks-container {
     position: absolute;
     width: 100%;
@@ -320,7 +318,6 @@ $component: '#{base.$prefix}-slider';
 
     // Active tick (filled)
     &--active {
-      // background-color: white;
       background-color: t.color('on-primary');
       
       .#{$component}--secondary & {
@@ -351,7 +348,7 @@ $component: '#{base.$prefix}-slider';
     }
   }
   
-  // Range slider styles (for two thumbs)
+  // Range slider styles
   &--range {
     .#{$component}-thumb {
       &:nth-of-type(1) {
@@ -365,7 +362,7 @@ $component: '#{base.$prefix}-slider';
     }
   }
   
-  // Value bubble (shows current value when dragging)
+  // Value bubble - shows current value during interaction
   &-value {
     position: absolute;
     top: -40px;
@@ -382,7 +379,7 @@ $component: '#{base.$prefix}-slider';
     transition: opacity 0.2s ease, visibility 0s linear 0.2s;
     pointer-events: none;
     
-    // Show value when dragging
+    // Show value when interacting
     &--visible {
       visibility: visible;
       opacity: 1;
@@ -406,11 +403,6 @@ $component: '#{base.$prefix}-slider';
       &::before {
         height: 34px;
       }
-      
-      &::after {
-        width: 14px;
-        height: 14px;
-      }
     }
   }
   
@@ -421,17 +413,12 @@ $component: '#{base.$prefix}-slider';
       &::before {
         height: 48px;
       }
-      
-      &::after {
-        width: 18px;
-        height: 18px;
-      }
     }
   }
   
-  // For dragging state
+  // For dragging state - visual feedback
   &--dragging {
-    // Additional styles when dragging will be applied to thumb::before
+    // No transitions during dragging for responsive feel
     .#{$component}-start-track, 
     .#{$component}-active-track, 
     .#{$component}-remaining-track, 
