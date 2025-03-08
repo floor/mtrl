@@ -37,13 +37,11 @@ export const createKeyboardHandlers = (state, handlers) => {
     
     switch (e.key) {
       case 'ArrowRight':
-      case 'ArrowUp':
         e.preventDefault();
         newValue = Math.min(newValue + step, state.max);
         break;
         
       case 'ArrowLeft':
-      case 'ArrowDown':
         e.preventDefault();
         newValue = Math.max(newValue - step, state.min);
         break;

@@ -20,14 +20,6 @@ export const SLIDER_SIZES = {
 } as const;
 
 /**
- * Available slider orientations
- */
-export const SLIDER_ORIENTATIONS = {
-  HORIZONTAL: 'horizontal',
-  VERTICAL: 'vertical'
-} as const;
-
-/**
  * Available slider events
  */
 export const SLIDER_EVENTS = {

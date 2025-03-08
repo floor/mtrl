@@ -1,5 +1,5 @@
 // src/components/slider/features/interactions.ts
-import { SLIDER_EVENTS, SLIDER_ORIENTATIONS } from '../constants';
+import { SLIDER_EVENTS } from '../constants';
 import { SliderConfig, SliderEvent } from '../types';
 
 /**
@@ -93,15 +93,14 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
     try {
       // Get track rect for calculating position
       const trackRect = track.getBoundingClientRect();
-      const isVertical = config.orientation === SLIDER_ORIENTATIONS.VERTICAL;
       
       // Get position from mouse or touch event
       const position = e.type.includes('touch')
-        ? isVertical ? e.touches[0].clientY : e.touches[0].clientX
-        : isVertical ? e.clientY : e.clientX;
+        ? e.touches[0].clientX
+        : e.clientX;
       
       // Calculate value at click position
-      let newValue = getValueFromPosition(position, isVertical);
+      let newValue = getValueFromPosition(position);
       
       // Round to step if needed
       if (config.snapToSteps && state.step > 0) {
@@ -154,13 +153,12 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
     
     try {
       // Get position
-      const isVertical = config.orientation === SLIDER_ORIENTATIONS.VERTICAL;
       const position = e.type.includes('touch')
-        ? isVertical ? e.touches[0].clientY : e.touches[0].clientX
-        : isVertical ? e.clientY : e.clientX;
+        ? e.touches[0].clientX
+        : e.clientX;
       
       // Calculate new value
-      let newValue = getValueFromPosition(position, isVertical);
+      let newValue = getValueFromPosition(position);
       
       // Round to step if needed
       if (config.snapToSteps && state.step > 0) {

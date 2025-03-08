@@ -1,5 +1,5 @@
 // src/components/slider/features/appearance.ts
-import { SLIDER_COLORS, SLIDER_SIZES, SLIDER_ORIENTATIONS } from '../constants';
+import { SLIDER_COLORS, SLIDER_SIZES } from '../constants';
 import { SliderConfig } from '../types';
 
 /**
@@ -67,39 +67,6 @@ export const withAppearance = (config: SliderConfig) => component => {
         );
         
         return sizeClass || SLIDER_SIZES.MEDIUM;
-      },
-      
-      /**
-       * Sets slider orientation
-       * @param orientation Orientation variant
-       */
-      setOrientation(orientation: keyof typeof SLIDER_ORIENTATIONS | SLIDER_ORIENTATIONS) {
-        // Clear existing orientation class
-        component.element.classList.remove(`${component.getClass('slider')}--${SLIDER_ORIENTATIONS.VERTICAL}`);
-        
-        // Add orientation class if vertical
-        if (orientation === SLIDER_ORIENTATIONS.VERTICAL) {
-          component.element.classList.add(`${component.getClass('slider')}--${SLIDER_ORIENTATIONS.VERTICAL}`);
-        }
-        
-        // Update ARIA attribute
-        component.element.setAttribute('aria-orientation', orientation);
-        
-        // Update visual elements
-        if (component.slider) {
-          const eventData = { slider: component, value: component.slider.getValue() };
-          component.events.trigger('change', eventData);
-        }
-      },
-      
-      /**
-       * Gets slider orientation
-       * @returns Current orientation name
-       */
-      getOrientation() {
-        return component.element.classList.contains(`${component.getClass('slider')}--${SLIDER_ORIENTATIONS.VERTICAL}`)
-          ? SLIDER_ORIENTATIONS.VERTICAL
-          : SLIDER_ORIENTATIONS.HORIZONTAL;
       },
       
       /**

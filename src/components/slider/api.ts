@@ -1,6 +1,6 @@
 // src/components/slider/api.ts
 import { SliderComponent, SliderEvent } from './types';
-import { SLIDER_COLORS, SLIDER_SIZES, SLIDER_ORIENTATIONS, SLIDER_EVENTS } from './constants';
+import { SLIDER_COLORS, SLIDER_SIZES, SLIDER_EVENTS } from './constants';
 
 /**
  * API options interface - structured by feature area
@@ -29,10 +29,7 @@ interface ApiOptions {
     getColor: () => string;
     setSize: (size: string) => void;
     getSize: () => string;
-    setOrientation: (orientation: string) => void;
-    getOrientation: () => string;
     showTicks: (show: boolean) => void;
-    showTickLabels: (show: boolean | string[]) => void;
     showCurrentValue: (show: boolean) => void;
   };
   events: {
@@ -217,40 +214,12 @@ export const withAPI = (options: ApiOptions) =>
       },
       
       /**
-       * Sets slider orientation
-       * @param {string} orientation - Orientation variant
-       * @returns {SliderComponent} Slider component instance for chaining
-       */
-      setOrientation(orientation: keyof typeof SLIDER_ORIENTATIONS | typeof SLIDER_ORIENTATIONS[keyof typeof SLIDER_ORIENTATIONS]) {
-        options.appearance.setOrientation(orientation);
-        return this;
-      },
-      
-      /**
-       * Gets slider orientation
-       * @returns {string} Current orientation name
-       */
-      getOrientation() {
-        return options.appearance.getOrientation();
-      },
-      
-      /**
        * Shows or hides tick marks
        * @param {boolean} show - Whether to show ticks
        * @returns {SliderComponent} Slider component instance for chaining
        */
       showTicks(show: boolean) {
         options.appearance.showTicks(show);
-        return this;
-      },
-      
-      /**
-       * Shows or hides tick labels
-       * @param {boolean|string[]} show - Whether to show labels or array of label texts
-       * @returns {SliderComponent} Slider component instance for chaining
-       */
-      showTickLabels(show: boolean | string[]) {
-        options.appearance.showTickLabels(show);
         return this;
       },
       

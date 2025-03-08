@@ -1,5 +1,5 @@
 // src/components/slider/features/structure.ts
-import { SLIDER_COLORS, SLIDER_SIZES, SLIDER_ORIENTATIONS } from '../constants';
+import { SLIDER_COLORS, SLIDER_SIZES } from '../constants';
 import { SliderConfig } from '../types';
 
 /**
@@ -8,8 +8,6 @@ import { SliderConfig } from '../types';
  * @returns Component enhancer with DOM structure
  */
 export const withStructure = (config: SliderConfig) => component => {
-  const isVertical = config.orientation === SLIDER_ORIENTATIONS.VERTICAL;
-  
   // Set default values
   const min = config.min || 0;
   const max = config.max || 100;
@@ -49,13 +47,7 @@ export const withStructure = (config: SliderConfig) => component => {
   thumb.setAttribute('role', 'slider');
   
   // Set initial thumb position
-  if (isVertical) {
-    thumb.style.bottom = `${valuePercent}%`;
-    thumb.style.left = '50%';
-    thumb.style.top = 'auto';
-  } else {
-    thumb.style.left = `${valuePercent}%`;
-  }
+  thumb.style.left = `${valuePercent}%`;
   
   // Calculate padding adjustment (8px equivalent as percentage)
   const paddingAdjustment = 8; // 8px padding
@@ -72,13 +64,7 @@ export const withStructure = (config: SliderConfig) => component => {
     secondThumb.setAttribute('role', 'slider');
     
     const secondPercent = getPercentage(secondValue);
-    if (isVertical) {
-      secondThumb.style.bottom = `${secondPercent}%`;
-      secondThumb.style.left = '50%';
-      secondThumb.style.top = 'auto';
-    } else {
-      secondThumb.style.left = `${secondPercent}%`;
-    }
+    secondThumb.style.left = `${secondPercent}%`;
     
     secondValueBubble = createElement('slider-value');
     secondValueBubble.textContent = formatter(secondValue);
@@ -170,22 +156,15 @@ export const withStructure = (config: SliderConfig) => component => {
       const activeWidth = Math.max(0, adjustedHigherPercent - adjustedLowerPercent);
       const remainingWidth = Math.max(0, 100 - higherPercent - paddingPercent);
       
-      // Set styles based on orientation
+      // Set styles
       startTrack.style.display = 'block';
       activeTrack.style.display = 'block';
       remainingTrack.style.display = 'block';
       
-      if (isVertical) {
-        // Vertical orientation
-        setVerticalTrackStyles(startTrack, startWidth, 0);
-        setVerticalTrackStyles(activeTrack, activeWidth, adjustedLowerPercent);
-        setVerticalTrackStyles(remainingTrack, remainingWidth, higherPercent + paddingPercent);
-      } else {
-        // Horizontal orientation
-        setHorizontalTrackStyles(startTrack, startWidth, 0);
-        setHorizontalTrackStyles(activeTrack, activeWidth, adjustedLowerPercent);
-        setHorizontalTrackStyles(remainingTrack, remainingWidth, higherPercent + paddingPercent);
-      }
+      // Horizontal orientation
+      setTrackStyles(startTrack, startWidth, 0);
+      setTrackStyles(activeTrack, activeWidth, adjustedLowerPercent);
+      setTrackStyles(remainingTrack, remainingWidth, higherPercent + paddingPercent);
     } else {
       // Single thumb slider
       const adjustedWidth = Math.max(0, valuePercent - paddingPercent);
@@ -196,38 +175,19 @@ export const withStructure = (config: SliderConfig) => component => {
       activeTrack.style.display = 'block';
       remainingTrack.style.display = 'block';
       
-      if (isVertical) {
-        // Vertical orientation
-        setVerticalTrackStyles(activeTrack, adjustedWidth, 0);
-        setVerticalTrackStyles(remainingTrack, remainingWidth, valuePercent + paddingPercent);
-      } else {
-        // Horizontal orientation
-        setHorizontalTrackStyles(activeTrack, adjustedWidth, 0);
-        setHorizontalTrackStyles(remainingTrack, remainingWidth, valuePercent + paddingPercent);
-      }
+      // Horizontal orientation
+      setTrackStyles(activeTrack, adjustedWidth, 0);
+      setTrackStyles(remainingTrack, remainingWidth, valuePercent + paddingPercent);
     }
   }
   
   /**
-   * Sets styles for vertical track segments
-   * @param element Track segment element
-   * @param height Height as percentage
-   * @param bottom Bottom position as percentage
-   */
-  function setVerticalTrackStyles(element, height, bottom) {
-    element.style.height = `${height}%`;
-    element.style.bottom = `${bottom}%`;
-    element.style.width = '100%';
-    element.style.top = 'auto';
-  }
-  
-  /**
-   * Sets styles for horizontal track segments
+   * Sets styles for track segments
    * @param element Track segment element
    * @param width Width as percentage
    * @param left Left position as percentage
    */
-  function setHorizontalTrackStyles(element, width, left) {
+  function setTrackStyles(element, width, left) {
     element.style.width = `${width}%`;
     element.style.left = `${left}%`;
     element.style.height = '100%';
@@ -251,11 +211,6 @@ export const withStructure = (config: SliderConfig) => component => {
       component.element.classList.add(`${baseClass}--${color}`);
     }
     
-    // Apply orientation class
-    if (isVertical) {
-      component.element.classList.add(`${baseClass}--vertical`);
-    }
-    
     // Apply discrete class if step is specified
     if (config.step !== undefined && config.step > 0) {
       component.element.classList.add(`${baseClass}--discrete`);
@@ -266,3 +221,4 @@ export const withStructure = (config: SliderConfig) => component => {
       component.element.classList.add(`${baseClass}--disabled`);
     }
   }
+};

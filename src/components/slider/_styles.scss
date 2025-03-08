@@ -220,14 +220,6 @@ $component: '#{base.$prefix}-slider';
       }
     }
     
-    // Vertical orientation adjustment for dragging
-    .#{$component}--vertical.#{$component}--dragging & {
-      &::before {
-        width: 40px;
-        height: 2px;
-      }
-    }
-    
     // Hover state
     &:hover::before, &:hover::after {
       background-color: t.color('primary');
@@ -308,12 +300,6 @@ $component: '#{base.$prefix}-slider';
     top: 0;
     pointer-events: none;
     z-index: 3;
-    
-    // Ensure ticks container spans the full track
-    .#{$component}--vertical & {
-      height: 100%;
-      width: 100%;
-    }
   }
   
   // Tick marks
@@ -363,13 +349,6 @@ $component: '#{base.$prefix}-slider';
     &--hidden {
       opacity: 0
     }
-    
-    // Vertical orientation
-    .#{$component}--vertical .#{$component}-ticks-container & {
-      left: 50%;
-      top: auto;
-      transform: translate(-50%, 50%);
-    }
   }
   
   // Range slider styles (for two thumbs)
@@ -411,78 +390,6 @@ $component: '#{base.$prefix}-slider';
     }
   }
   
-  // Vertical orientation
-  &--vertical {
-    width: 40px;
-    height: 200px;
-    flex-direction: column;
-    
-    .#{$component}-track {
-      width: 16px;
-      height: 100%;
-      padding: 0;
-    }
-    
-    .#{$component}-active-track {
-      width: 100%;
-      height: auto;
-      transform-origin: bottom center;
-    }
-    
-    .#{$component}-start-track {
-      width: 100%;
-      height: auto;
-      transform-origin: bottom center;
-    }
-    
-    .#{$component}-remaining-track {
-      width: 100%;
-      bottom: auto;
-      top: 0;
-      transform-origin: bottom center;
-    }
-    
-    // Reorient thumb for vertical slider
-    .#{$component}-thumb {
-      top: auto;
-      left: 50%;
-      width: 100%;
-      height: 16px;
-      
-      &::before {
-        width: 40px;
-        height: 4px;
-      }
-    }
-    
-    // Dots for vertical orientation
-    .#{$component}-dot {
-      left: 50%;
-      top: auto;
-      transform: translateX(-50%);
-      
-      &--start {
-        bottom: 6px;
-      }
-      
-      &--end {
-        top: 6px;
-      }
-    }
-    
-    // Vertical tick adjustments
-    .#{$component}-tick {
-      left: 50%;
-      top: auto;
-      transform: translate(-50%, 50%);
-    }
-    
-    .#{$component}-value {
-      top: auto;
-      left: -55px;
-    }
-  }
-  
   // Discrete slider with steps
   &--discrete {
     .#{$component}-tick {
@@ -505,22 +412,6 @@ $component: '#{base.$prefix}-slider';
         height: 14px;
       }
     }
-    
-    &.#{$component}--vertical {
-      width: 32px;
-      
-      .#{$component}-thumb {
-        &::before {
-          width: 34px;
-          height: 3px;
-        }
-        
-        &::after {
-          width: 14px;
-          height: 14px;
-        }
-      }
-    }
   }
   
   &--large {
@@ -534,22 +425,6 @@ $component: '#{base.$prefix}-slider';
       &::after {
         width: 18px;
         height: 18px;
-      }
-    }
-    
-    &.#{$component}--vertical {
-      width: 48px;
-      
-      .#{$component}-thumb {
-        &::before {
-          width: 48px;
-          height: 4px;
-        }
-        
-        &::after {
-          width: 18px;
-          height: 18px;
-        }
       }
     }
   }
