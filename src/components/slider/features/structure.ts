@@ -2,8 +2,10 @@
 import { SLIDER_COLORS, SLIDER_SIZES } from '../constants';
 import { SliderConfig } from '../types';
 
+// Accessibility Enhancement: Focus directly on thumb
+
 /**
- * Creates the slider DOM structure following MD3 principles
+ * Creates the slider DOM structure following MD3 principles with improved accessibility
  * @param config Slider configuration
  * @returns Component enhancer with DOM structure
  */
@@ -41,10 +43,14 @@ export const withStructure = (config: SliderConfig) => component => {
   const valueBubble = createElement('slider-value');
   valueBubble.textContent = formatter(value);
   
-  // Create thumb element
+  // Create thumb element with improved accessibility attributes
   const thumb = createElement('slider-thumb');
   thumb.setAttribute('tabindex', '0');
   thumb.setAttribute('role', 'slider');
+  thumb.setAttribute('aria-valuemin', String(min));
+  thumb.setAttribute('aria-valuemax', String(max));
+  thumb.setAttribute('aria-valuenow', String(value));
+  thumb.setAttribute('aria-orientation', 'horizontal');
   
   // Set initial thumb position
   thumb.style.left = `${valuePercent}%`;
@@ -62,6 +68,10 @@ export const withStructure = (config: SliderConfig) => component => {
     secondThumb = createElement('slider-thumb');
     secondThumb.setAttribute('tabindex', '0');
     secondThumb.setAttribute('role', 'slider');
+    secondThumb.setAttribute('aria-valuemin', String(min));
+    secondThumb.setAttribute('aria-valuemax', String(max));
+    secondThumb.setAttribute('aria-valuenow', String(secondValue));
+    secondThumb.setAttribute('aria-orientation', 'horizontal');
     
     const secondPercent = getPercentage(secondValue);
     secondThumb.style.left = `${secondPercent}%`;
@@ -80,6 +90,10 @@ export const withStructure = (config: SliderConfig) => component => {
   
   // Add elements to the slider
   component.element.classList.add(component.getClass('slider'));
+  
+  // Accessibility enhancement: Set the slider container to not be focusable
+  component.element.setAttribute('tabindex', '-1');
+  
   component.element.appendChild(track);
   component.element.appendChild(ticksContainer); // Add ticks container
   component.element.appendChild(startDot);
