@@ -2,8 +2,6 @@
 import { SLIDER_COLORS, SLIDER_SIZES } from '../constants';
 import { SliderConfig } from '../types';
 
-// Accessibility Enhancement: Focus directly on thumb
-
 /**
  * Creates the slider DOM structure following MD3 principles with improved accessibility
  * @param config Slider configuration
@@ -17,6 +15,7 @@ export const withStructure = (config: SliderConfig) => component => {
   const value = config.value !== undefined ? config.value : min;
   const secondValue = config.secondValue !== undefined ? config.secondValue : null;
   const isRangeSlider = config.range && secondValue !== null;
+  const isDisabled = config.disabled === true;
   
   // Helper function to calculate percentage
   const getPercentage = (val) => ((val - min) / range) * 100;
@@ -45,12 +44,17 @@ export const withStructure = (config: SliderConfig) => component => {
   
   // Create thumb element with improved accessibility attributes
   const thumb = createElement('slider-thumb');
-  thumb.setAttribute('tabindex', '0');
   thumb.setAttribute('role', 'slider');
   thumb.setAttribute('aria-valuemin', String(min));
   thumb.setAttribute('aria-valuemax', String(max));
   thumb.setAttribute('aria-valuenow', String(value));
   thumb.setAttribute('aria-orientation', 'horizontal');
+  
+  // Set tabindex based on disabled state
+  thumb.setAttribute('tabindex', isDisabled ? '-1' : '0');
+  if (isDisabled) {
+    thumb.setAttribute('aria-disabled', 'true');
+  }
   
   // Set initial thumb position
   thumb.style.left = `${valuePercent}%`;
@@ -66,12 +70,17 @@ export const withStructure = (config: SliderConfig) => component => {
   
   if (isRangeSlider) {
     secondThumb = createElement('slider-thumb');
-    secondThumb.setAttribute('tabindex', '0');
     secondThumb.setAttribute('role', 'slider');
     secondThumb.setAttribute('aria-valuemin', String(min));
     secondThumb.setAttribute('aria-valuemax', String(max));
     secondThumb.setAttribute('aria-valuenow', String(secondValue));
     secondThumb.setAttribute('aria-orientation', 'horizontal');
+    
+    // Set tabindex based on disabled state
+    secondThumb.setAttribute('tabindex', isDisabled ? '-1' : '0');
+    if (isDisabled) {
+      secondThumb.setAttribute('aria-disabled', 'true');
+    }
     
     const secondPercent = getPercentage(secondValue);
     secondThumb.style.left = `${secondPercent}%`;
@@ -91,8 +100,12 @@ export const withStructure = (config: SliderConfig) => component => {
   // Add elements to the slider
   component.element.classList.add(component.getClass('slider'));
   
-  // Accessibility enhancement: Set the slider container to not be focusable
+  // Accessibility enhancement: Container is not focusable
   component.element.setAttribute('tabindex', '-1');
+  
+  // Set container aria attributes
+  component.element.setAttribute('role', 'none');
+  component.element.setAttribute('aria-disabled', isDisabled ? 'true' : 'false');
   
   component.element.appendChild(track);
   component.element.appendChild(ticksContainer); // Add ticks container
@@ -231,7 +244,7 @@ export const withStructure = (config: SliderConfig) => component => {
     }
     
     // Apply disabled class if needed
-    if (config.disabled) {
+    if (isDisabled) {
       component.element.classList.add(`${baseClass}--disabled`);
     }
   }

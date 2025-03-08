@@ -5,7 +5,8 @@
 @use '../../styles/abstract/mixins' as m;
 @use '../../styles/abstract/theme' as t;
 
-$transform: transform 0.2s ease, width 0.2s ease, height 0.2s ease;
+// $transform: transform 0.2s ease, width 0.2s ease, height 0.2s ease;
+$transform: none;
 
 $component: '#{base.$prefix}-slider';
 
