@@ -1,89 +1,78 @@
 // src/components/tabs/types.ts
-import { TABS_VARIANTS } from './constants';
+import { TABS_VARIANTS, TAB_STATES, TAB_LAYOUT } from './constants';
+// Import the BadgeComponent for proper integration
+import { BadgeComponent } from '../badge/types';
 
 /**
- * Tab item configuration
+ * Configuration interface for a single Tab
  * @category Components
  */
-export interface TabItem {
-  /**
-   * Unique identifier for the tab
+export interface TabConfig {
+  /** 
+   * Tab state that determines if it's the active destination
+   * @default 'inactive'
    */
-  id: string;
+  state?: keyof typeof TAB_STATES | string;
   
-  /**
-   * Display label for the tab
+  /** 
+   * Whether the tab is initially disabled
+   * @default false
    */
-  label: string;
+  disabled?: boolean;
   
-  /**
-   * Optional icon HTML content
+  /** 
+   * Initial tab text content (label)
+   * @example 'Home'
+   */
+  text?: string;
+  
+  /** 
+   * Initial tab icon HTML content
+   * @example '<svg>...</svg>'
    */
   icon?: string;
   
-  /**
-   * Whether the tab is disabled
-   * @default false
+  /** 
+   * Badge text or value to display (if applicable)
+   * @example '5'
    */
-  disabled?: boolean;
+  badge?: string | number;
   
   /**
-   * Additional data to associate with this tab
+   * Badge configuration object
+   * Pass additional options for the badge component
    */
-  data?: any;
-}
-
-/**
- * Configuration interface for the Tabs component
- * @category Components
- */
-export interface TabsConfig {
-  /**
-   * Tabs variant that determines visual styling
-   * @default 'primary'
-   */
-  variant?: keyof typeof TABS_VARIANTS | string;
+  badgeConfig?: {
+    variant?: string;
+    color?: string;
+    size?: string;
+    position?: string;
+    max?: number;
+  };
   
-  /**
-   * Initial tab items
+  /** 
+   * Icon size in pixels or other CSS units
+   * @default '24px'
    */
-  items?: TabItem[];
+  iconSize?: string;
   
-  /**
-   * Index of the initially active tab
-   * @default 0
-   */
-  activeIndex?: number;
-  
-  /**
-   * Whether the tabs component is initially disabled
-   * @default false
-   */
-  disabled?: boolean;
-  
-  /**
-   * Whether to show tab indicator
-   * @default true 
-   */
-  showIndicator?: boolean;
-  
-  /**
-   * Whether to enable animated transitions
-   * @default true
-   */
-  animated?: boolean;
-  
-  /**
-   * Whether tabs should be scrollable when they overflow
-   * @default true
-   */
-  scrollable?: boolean;
-  
-  /**
-   * Additional CSS classes to add to the tabs component
+  /** 
+   * Additional CSS classes to add to the tab
+   * @example 'home-tab main-navigation'
    */
   class?: string;
   
+  /** 
+   * Tab value attribute for identifying the selected tab
+   */
+  value?: string;
+  
+  /** 
+   * Whether to enable ripple effect
+   * @default true
+   */
+  ripple?: boolean;
+
   /**
    * Component prefix for class names
    * @default 'mtrl'
@@ -94,29 +83,134 @@ export interface TabsConfig {
    * Component name used in class generation
    */
   componentName?: string;
+  
+  /** 
+   * Ripple effect configuration
+   */
+  rippleConfig?: {
+    /** Duration of the ripple animation in milliseconds */
+    duration?: number;
+    /** Timing function for the ripple animation */
+    timing?: string;
+    /** Opacity values for ripple start and end [start, end] */
+    opacity?: [string, string];
+  };
 }
 
 /**
- * Tabs component interface
+ * Configuration interface for the Tabs component
  * @category Components
  */
-export interface TabsComponent {
-  /** The tabs container DOM element */
+export interface TabsConfig {
+  /**
+   * Tabs variant (primary or secondary)
+   * @default 'primary'
+   */
+  variant?: keyof typeof TABS_VARIANTS | string;
+  
+  /**
+   * Initial tabs to create
+   */
+  tabs?: TabConfig[];
+  
+  /**
+   * Whether to show the divider
+   * @default true
+   */
+  showDivider?: boolean;
+  
+  /**
+   * Whether to enable horizontal scrolling
+   * @default true
+   */
+  scrollable?: boolean;
+  
+  /**
+   * Additional CSS classes for the container
+   */
+  class?: string;
+  
+  /**
+   * Component prefix for class names
+   * @default 'mtrl'
+   */
+  prefix?: string;
+}
+
+/**
+ * Icon API interface for managing tab icons
+ * @category Components
+ */
+export interface IconAPI {
+  /**
+   * Sets the icon HTML content
+   * @param html - HTML string for the icon
+   * @returns The icon API for chaining
+   */
+  setIcon: (html: string) => IconAPI;
+  
+  /**
+   * Gets the current icon HTML content
+   * @returns HTML string for the icon
+   */
+  getIcon: () => string;
+  
+  /**
+   * Gets the icon DOM element
+   * @returns The icon element or null if not present
+   */
+  getElement: () => HTMLElement | null;
+}
+
+/**
+ * Text API interface for managing tab text
+ * @category Components
+ */
+export interface TextAPI {
+  /**
+   * Sets the text content
+   * @param content - Text content
+   * @returns The text API for chaining
+   */
+  setText: (content: string) => TextAPI;
+  
+  /**
+   * Gets the current text content
+   * @returns Tab text content
+   */
+  getText: () => string;
+  
+  /**
+   * Gets the text DOM element
+   * @returns The text element or null if not present
+   */
+  getElement: () => HTMLElement | null;
+}
+
+/**
+ * Tab component interface
+ * @category Components
+ */
+export interface TabComponent {
+  /** The tab's DOM element */
   element: HTMLElement;
   
-  /** The tabs list DOM element */
-  tabsListElement: HTMLElement;
+  /** API for managing tab text */
+  text: TextAPI;
   
-  /** The tab indicator DOM element */
-  indicatorElement: HTMLElement;
+  /** API for managing tab icons */
+  icon: IconAPI;
+  
+  /** The tab's badge component */
+  badge?: BadgeComponent;
   
   /** API for managing disabled state */
   disabled: {
-    /** Enables the tabs component */
+    /** Enables the tab */
     enable: () => void;
-    /** Disables the tabs component */
+    /** Disables the tab */
     disable: () => void;
-    /** Checks if the tabs component is disabled */
+    /** Checks if the tab is disabled */
     isDisabled: () => boolean;
   };
   
@@ -134,114 +228,209 @@ export interface TabsComponent {
   getClass: (name: string) => string;
   
   /**
-   * Enables the tabs component
-   * @returns The tabs component for chaining
+   * Gets the tab's value attribute
+   * @returns Tab value
    */
-  enable: () => TabsComponent;
+  getValue: () => string;
   
   /**
-   * Disables the tabs component
-   * @returns The tabs component for chaining
+   * Sets the tab's value attribute
+   * @param value - New value
+   * @returns The tab component for chaining
    */
-  disable: () => TabsComponent;
+  setValue: (value: string) => TabComponent;
   
   /**
-   * Gets all tab items
-   * @returns Array of tab items
+   * Activates the tab (sets active state)
+   * @returns The tab component for chaining
    */
-  getItems: () => TabItem[];
+  activate: () => TabComponent;
   
   /**
-   * Sets tab items, replacing any existing tabs
-   * @param items - Array of tab items
-   * @returns The tabs component for chaining
+   * Deactivates the tab (sets inactive state)
+   * @returns The tab component for chaining
    */
-  setItems: (items: TabItem[]) => TabsComponent;
+  deactivate: () => TabComponent;
   
   /**
-   * Adds a new tab
-   * @param item - Tab item configuration
-   * @param index - Optional index to insert at (appends if omitted)
-   * @returns The tabs component for chaining
+   * Checks if the tab is active
+   * @returns Whether the tab is active
    */
-  addTab: (item: TabItem, index?: number) => TabsComponent;
+  isActive: () => boolean;
   
   /**
-   * Removes a tab by ID or index
-   * @param idOrIndex - Tab ID or index
-   * @returns The tabs component for chaining
+   * Enables the tab (removes disabled attribute)
+   * @returns The tab component for chaining
    */
-  removeTab: (idOrIndex: string | number) => TabsComponent;
+  enable: () => TabComponent;
   
   /**
-   * Gets the currently active tab
-   * @returns The active tab item or null if none active
+   * Disables the tab (adds disabled attribute)
+   * @returns The tab component for chaining
    */
-  getActiveTab: () => TabItem | null;
+  disable: () => TabComponent;
   
   /**
-   * Gets the index of the currently active tab
-   * @returns The active tab index or -1 if none active
+   * Sets the tab's text content
+   * @param content - Text content
+   * @returns The tab component for chaining
    */
-  getActiveIndex: () => number;
+  setText: (content: string) => TabComponent;
   
   /**
-   * Sets the active tab by index
-   * @param index - Index of the tab to activate
-   * @returns The tabs component for chaining
+   * Gets the tab's text content
+   * @returns Tab text content
    */
-  setActiveTab: (index: number) => TabsComponent;
+  getText: () => string;
   
   /**
-   * Sets the active tab by ID
-   * @param id - ID of the tab to activate
-   * @returns The tabs component for chaining
+   * Sets the tab's icon
+   * @param icon - Icon HTML content
+   * @returns The tab component for chaining
    */
-  setActiveTabById: (id: string) => TabsComponent;
+  setIcon: (icon: string) => TabComponent;
   
   /**
-   * Destroys the tabs component and cleans up resources
+   * Gets the tab's icon HTML content
+   * @returns Icon HTML
+   */
+  getIcon: () => string;
+  
+  /**
+   * Sets the tab's badge
+   * @param content - Badge content
+   * @returns The tab component for chaining
+   */
+  setBadge: (content: string | number) => TabComponent;
+  
+  /**
+   * Gets the tab's badge content
+   * @returns Badge content
+   */
+  getBadge: () => string;
+  
+  /**
+   * Shows the tab's badge
+   * @returns The tab component for chaining
+   */
+  showBadge: () => TabComponent;
+  
+  /**
+   * Hides the tab's badge
+   * @returns The tab component for chaining
+   */
+  hideBadge: () => TabComponent;
+  
+  /**
+   * Gets the badge component instance
+   * @returns The badge component or undefined if not created
+   */
+  getBadgeComponent: () => BadgeComponent | undefined;
+  
+  /**
+   * Destroys the tab component and cleans up resources
    */
   destroy: () => void;
   
   /**
-   * Adds an event listener to the tabs component
-   * @param event - Event name ('change', 'click', etc.)
+   * Updates the tab's layout style based on content
+   * Internal method used when changing content
+   */
+  updateLayoutStyle: () => void;
+  
+  /**
+   * Adds an event listener to the tab
+   * @param event - Event name ('click', 'focus', etc.)
    * @param handler - Event handler function
-   * @returns The tabs component for chaining
+   * @returns The tab component for chaining
+   */
+  on: (event: string, handler: Function) => TabComponent;
+  
+  /**
+   * Removes an event listener from the tab
+   * @param event - Event name
+   * @param handler - Event handler function
+   * @returns The tab component for chaining
+   */
+  off: (event: string, handler: Function) => TabComponent;
+}
+
+/**
+ * Tabs component interface
+ * @category Components
+ */
+export interface TabsComponent {
+  /**
+   * Container element
+   */
+  element: HTMLElement;
+  
+  /**
+   * Creates and adds a new tab to the tabs component
+   * @param config - Tab configuration
+   * @returns The created tab component
+   */
+  addTab: (config: TabConfig) => TabComponent;
+  
+  /**
+   * Adds a pre-created tab to the tabs component
+   * @param tab - Tab component to add
+   * @returns Tabs component for chaining
+   */
+  add: (tab: TabComponent) => TabsComponent;
+  
+  /**
+   * Gets all tabs in the container
+   * @returns Array of tab components
+   */
+  getTabs: () => TabComponent[];
+  
+  /**
+   * Gets the active tab
+   * @returns Active tab or null if none
+   */
+  getActiveTab: () => TabComponent | null;
+  
+  /**
+   * Sets a tab as active
+   * @param tabOrValue - Tab component or tab value
+   * @returns Tabs component for chaining
+   */
+  setActiveTab: (tabOrValue: TabComponent | string) => TabsComponent;
+  
+  /**
+   * Removes a tab from the container
+   * @param tabOrValue - Tab component or tab value
+   * @returns Tabs component for chaining
+   */
+  removeTab: (tabOrValue: TabComponent | string) => TabsComponent;
+  
+  /**
+   * Adds an event listener
+   * @param event - Event name
+   * @param handler - Event handler
+   * @returns Tabs component for chaining
    */
   on: (event: string, handler: Function) => TabsComponent;
   
   /**
-   * Removes an event listener from the tabs component
+   * Removes an event listener
    * @param event - Event name
-   * @param handler - Event handler function
-   * @returns The tabs component for chaining
+   * @param handler - Event handler
+   * @returns Tabs component for chaining
    */
   off: (event: string, handler: Function) => TabsComponent;
-}
-
-/**
- * Event data for tab change events
- */
-export interface TabChangeEventData {
-  /**
-   * Index of the newly activated tab
-   */
-  index: number;
   
   /**
-   * The newly activated tab item
+   * Emit an event
+   * @param event - Event name
+   * @param data - Event data
+   * @returns Tabs component for chaining
    */
-  tab: TabItem;
+  emit?: (event: string, data: any) => TabsComponent;
   
   /**
-   * Index of the previously active tab or -1
+   * Destroys the tabs component and all tabs
    */
-  previousIndex: number;
-  
-  /**
-   * The previously active tab item or null
-   */
-  previousTab: TabItem | null;
+  destroy: () => void;
 }

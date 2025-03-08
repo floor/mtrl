@@ -2,11 +2,16 @@
 
 export const TABS_VARIANTS = {
   PRIMARY: 'primary',
-  SECONDARY: 'secondary',
-  SEGMENTED: 'segmented',
-  NEUTRAL: 'neutral'
+  SECONDARY: 'secondary'
 }
 
-export const ANIMATION_DURATION = 250
-export const DEFAULT_TAB_MIN_WIDTH = 90
-export const DEFAULT_TAB_MAX_WIDTH = 360
+export const TAB_STATES = {
+  ACTIVE: 'active',
+  INACTIVE: 'inactive'
+}
+
+export const TAB_LAYOUT = {
+  ICON_ONLY: 'icon-only',
+  TEXT_ONLY: 'text-only',
+  ICON_AND_TEXT: 'icon-and-text'
+}
