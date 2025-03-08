@@ -1,4 +1,4 @@
-// src/components/slider/features/structure.ts - Fixed track initialization
+// src/components/slider/features/structure.ts
 import { SLIDER_COLORS, SLIDER_SIZES, SLIDER_ORIENTATIONS } from '../constants';
 import { SliderConfig } from '../types';
 
@@ -8,143 +8,45 @@ import { SliderConfig } from '../types';
  * @returns Component enhancer with DOM structure
  */
 export const withStructure = (config: SliderConfig) => component => {
-  // Create track element
-  const track = document.createElement('div');
-  track.classList.add(component.getClass('slider-track'));
+  const isVertical = config.orientation === SLIDER_ORIENTATIONS.VERTICAL;
   
-  // Calculate initial percentages based on values
+  // Set default values
   const min = config.min || 0;
   const max = config.max || 100;
   const range = max - min;
-  
-  // Set default values
   const value = config.value !== undefined ? config.value : min;
   const secondValue = config.secondValue !== undefined ? config.secondValue : null;
+  const isRangeSlider = config.range && secondValue !== null;
   
-  // Calculate percentages
+  // Helper function to calculate percentage
   const getPercentage = (val) => ((val - min) / range) * 100;
   const valuePercent = getPercentage(value);
   
-  // Create remaining track element (fills entire width initially)
-  const remainingTrack = document.createElement('div');
-  remainingTrack.classList.add(component.getClass('slider-remaining-track'));
+  // Create track element and segments
+  const track = createElement('slider-track');
+  const remainingTrack = createElement('slider-remaining-track');
+  const startTrack = createElement('slider-start-track');
+  const activeTrack = createElement('slider-active-track');
   
-  // Create start track element (for range slider)
-  const startTrack = document.createElement('div');
-  startTrack.classList.add(component.getClass('slider-start-track'));
+  // Create dots for track ends
+  const startDot = createElement('slider-dot');
+  startDot.classList.add(component.getClass('slider-dot--start'));
   
-  // Create active track element (filled part)
-  const activeTrack = document.createElement('div');
-  activeTrack.classList.add(component.getClass('slider-active-track'));
+  const endDot = createElement('slider-dot');
+  endDot.classList.add(component.getClass('slider-dot--end'));
   
-  // Calculate padding adjustment (8px equivalent as percentage)
-  // We'll do a rough estimate initially, then recalculate once rendered
-  const paddingAdjustment = 8; // 8px padding
-  const estimatedTrackSize = 300; // A reasonable guess at track width
-  const paddingPercent = (paddingAdjustment / estimatedTrackSize) * 100;
-  
-  // Set initial dimensions for all track segments
-  if (config.range && secondValue !== null) {
-    // Range slider
-    const lowerValue = Math.min(value, secondValue);
-    const higherValue = Math.max(value, secondValue);
-    const lowerPercent = getPercentage(lowerValue);
-    const higherPercent = getPercentage(higherValue);
-    
-    // Adjust positions and width to account for spacing
-    let adjustedLowerPercent = lowerPercent + paddingPercent;
-    let adjustedHigherPercent = higherPercent - paddingPercent;
-    
-    if (adjustedHigherPercent <= adjustedLowerPercent) {
-      adjustedLowerPercent = (lowerPercent + higherPercent) / 2 - 1;
-      adjustedHigherPercent = (lowerPercent + higherPercent) / 2 + 1;
-    }
-    
-    // Calculate track segment sizes
-    const startWidth = Math.max(0, lowerPercent - paddingPercent);
-    const activeWidth = Math.max(0, adjustedHigherPercent - adjustedLowerPercent);
-    const remainingWidth = Math.max(0, 100 - higherPercent - paddingPercent);
-    
-    if (config.orientation === SLIDER_ORIENTATIONS.VERTICAL) {
-      // Vertical orientation
-      startTrack.style.display = 'block';
-      startTrack.style.height = `${startWidth}%`;
-      startTrack.style.bottom = '0';
-      startTrack.style.width = '100%';
-      
-      activeTrack.style.display = 'block';
-      activeTrack.style.height = `${activeWidth}%`;
-      activeTrack.style.bottom = `${adjustedLowerPercent}%`;
-      activeTrack.style.width = '100%';
-      
-      remainingTrack.style.display = 'block';
-      remainingTrack.style.height = `${remainingWidth}%`;
-      remainingTrack.style.bottom = `${higherPercent + paddingPercent}%`;
-      remainingTrack.style.width = '100%';
-    } else {
-      // Horizontal orientation
-      startTrack.style.display = 'block';
-      startTrack.style.width = `${startWidth}%`;
-      startTrack.style.left = '0';
-      startTrack.style.height = '100%';
-      
-      activeTrack.style.display = 'block';
-      activeTrack.style.width = `${activeWidth}%`;
-      activeTrack.style.left = `${adjustedLowerPercent}%`;
-      activeTrack.style.height = '100%';
-      
-      remainingTrack.style.display = 'block';
-      remainingTrack.style.width = `${remainingWidth}%`;
-      remainingTrack.style.left = `${higherPercent + paddingPercent}%`;
-      remainingTrack.style.height = '100%';
-    }
-  } else {
-    // Single thumb slider
-    const adjustedWidth = Math.max(0, valuePercent - paddingPercent);
-    const remainingWidth = Math.max(0, 100 - valuePercent - paddingPercent);
-    
-    if (config.orientation === SLIDER_ORIENTATIONS.VERTICAL) {
-      // Vertical orientation
-      startTrack.style.display = 'none';
-      
-      activeTrack.style.display = 'block';
-      activeTrack.style.height = `${adjustedWidth}%`;
-      activeTrack.style.bottom = '0';
-      activeTrack.style.width = '100%';
-      
-      remainingTrack.style.display = 'block';
-      remainingTrack.style.height = `${remainingWidth}%`;
-      remainingTrack.style.bottom = `${valuePercent + paddingPercent}%`;
-      remainingTrack.style.width = '100%';
-    } else {
-      // Horizontal orientation
-      startTrack.style.display = 'none';
-      
-      activeTrack.style.display = 'block';
-      activeTrack.style.width = `${adjustedWidth}%`;
-      activeTrack.style.left = '0';
-      activeTrack.style.height = '100%';
-      
-      remainingTrack.style.display = 'block';
-      remainingTrack.style.width = `${remainingWidth}%`;
-      remainingTrack.style.left = `${valuePercent + paddingPercent}%`;
-      remainingTrack.style.height = '100%';
-    }
-  }
-  
-  // Add tracks to container
-  track.appendChild(remainingTrack);
-  track.appendChild(startTrack);
-  track.appendChild(activeTrack);
+  // Create value bubble and format the value
+  const formatter = config.valueFormatter || (val => val.toString());
+  const valueBubble = createElement('slider-value');
+  valueBubble.textContent = formatter(value);
   
   // Create thumb element
-  const thumb = document.createElement('div');
-  thumb.classList.add(component.getClass('slider-thumb'));
+  const thumb = createElement('slider-thumb');
   thumb.setAttribute('tabindex', '0');
   thumb.setAttribute('role', 'slider');
   
   // Set initial thumb position
-  if (config.orientation === SLIDER_ORIENTATIONS.VERTICAL) {
+  if (isVertical) {
     thumb.style.bottom = `${valuePercent}%`;
     thumb.style.left = '50%';
     thumb.style.top = 'auto';
@@ -152,37 +54,22 @@ export const withStructure = (config: SliderConfig) => component => {
     thumb.style.left = `${valuePercent}%`;
   }
   
-  // Create dots for the track ends
-  const startDot = document.createElement('div');
-  startDot.classList.add(component.getClass('slider-dot'));
-  startDot.classList.add(component.getClass('slider-dot--start'));
+  // Calculate padding adjustment (8px equivalent as percentage)
+  const paddingAdjustment = 8; // 8px padding
+  const estimatedTrackSize = 300; // A reasonable guess at track width
+  const paddingPercent = (paddingAdjustment / estimatedTrackSize) * 100;
   
-  const endDot = document.createElement('div');
-  endDot.classList.add(component.getClass('slider-dot'));
-  endDot.classList.add(component.getClass('slider-dot--end'));
-  
-  // Create value bubble element
-  const valueBubble = document.createElement('div');
-  valueBubble.classList.add(component.getClass('slider-value'));
-  
-  // Format value and set initial bubble text
-  const formatter = config.valueFormatter || (val => val.toString());
-  valueBubble.textContent = formatter(value);
-  
-  // For range slider: Create second thumb and value bubble
+  // Create second thumb and value bubble for range slider
   let secondThumb = null;
   let secondValueBubble = null;
   
-  if (config.range && secondValue !== null) {
-    // Create second thumb
-    secondThumb = document.createElement('div');
-    secondThumb.classList.add(component.getClass('slider-thumb'));
+  if (isRangeSlider) {
+    secondThumb = createElement('slider-thumb');
     secondThumb.setAttribute('tabindex', '0');
     secondThumb.setAttribute('role', 'slider');
     
-    // Set initial second thumb position
     const secondPercent = getPercentage(secondValue);
-    if (config.orientation === SLIDER_ORIENTATIONS.VERTICAL) {
+    if (isVertical) {
       secondThumb.style.bottom = `${secondPercent}%`;
       secondThumb.style.left = '50%';
       secondThumb.style.top = 'auto';
@@ -190,11 +77,17 @@ export const withStructure = (config: SliderConfig) => component => {
       secondThumb.style.left = `${secondPercent}%`;
     }
     
-    // Create second value bubble
-    secondValueBubble = document.createElement('div');
-    secondValueBubble.classList.add(component.getClass('slider-value'));
+    secondValueBubble = createElement('slider-value');
     secondValueBubble.textContent = formatter(secondValue);
   }
+  
+  // Set initial track segment dimensions
+  setupInitialTrackSegments();
+  
+  // Add tracks to container
+  track.appendChild(remainingTrack);
+  track.appendChild(startTrack);
+  track.appendChild(activeTrack);
   
   // Add elements to the slider
   component.element.classList.add(component.getClass('slider'));
@@ -204,48 +97,21 @@ export const withStructure = (config: SliderConfig) => component => {
   component.element.appendChild(thumb);
   component.element.appendChild(valueBubble);
   
-  if (config.range && secondThumb && secondValueBubble) {
+  if (isRangeSlider && secondThumb && secondValueBubble) {
     component.element.classList.add(`${component.getClass('slider')}--range`);
     component.element.appendChild(secondThumb);
     component.element.appendChild(secondValueBubble);
   }
   
-  // Apply size class
-  const size = config.size || SLIDER_SIZES.MEDIUM;
-  if (size !== SLIDER_SIZES.MEDIUM) {
-    component.element.classList.add(`${component.getClass('slider')}--${size}`);
-  }
+  // Apply styling classes
+  applyStyleClasses();
   
-  // Apply color class
-  const color = config.color || SLIDER_COLORS.PRIMARY;
-  if (color !== SLIDER_COLORS.PRIMARY) {
-    component.element.classList.add(`${component.getClass('slider')}--${color}`);
-  }
-  
-  // Apply orientation class
-  const orientation = config.orientation || SLIDER_ORIENTATIONS.HORIZONTAL;
-  if (orientation === SLIDER_ORIENTATIONS.VERTICAL) {
-    component.element.classList.add(`${component.getClass('slider')}--vertical`);
-  }
-  
-  // Apply discrete class if step is specified
-  if (config.step !== undefined && config.step > 0) {
-    component.element.classList.add(`${component.getClass('slider')}--discrete`);
-  }
-  
-  // Apply disabled class if needed
-  if (config.disabled) {
-    component.element.classList.add(`${component.getClass('slider')}--disabled`);
-  }
-  
-  // Ensure proper initialization after DOM is attached by scheduling a UI update
+  // Schedule UI update after DOM is attached
   setTimeout(() => {
-    if (component.slider && typeof component.slider.updateUi === 'function') {
-      component.slider.updateUi();
-    }
+    component.slider?.updateUi?.();
   }, 0);
   
-  // Store elements in component
+  // Return enhanced component with structure
   return {
     ...component,
     structure: {
@@ -261,4 +127,138 @@ export const withStructure = (config: SliderConfig) => component => {
       endDot
     }
   };
+  
+  /**
+   * Creates DOM element with slider class
+   * @param className Base class name
+   * @returns DOM element
+   */
+  function createElement(className) {
+    const element = document.createElement('div');
+    element.classList.add(component.getClass(className));
+    return element;
+  }
+  
+  /**
+   * Sets up initial track segment positions and dimensions
+   */
+  function setupInitialTrackSegments() {
+    if (isRangeSlider) {
+      // Range slider with two thumbs
+      const lowerValue = Math.min(value, secondValue);
+      const higherValue = Math.max(value, secondValue);
+      const lowerPercent = getPercentage(lowerValue);
+      const higherPercent = getPercentage(higherValue);
+      
+      // Adjust positions to account for spacing
+      let adjustedLowerPercent = lowerPercent + paddingPercent;
+      let adjustedHigherPercent = higherPercent - paddingPercent;
+      
+      // Handle case when thumbs are very close
+      if (adjustedHigherPercent <= adjustedLowerPercent) {
+        adjustedLowerPercent = (lowerPercent + higherPercent) / 2 - 1;
+        adjustedHigherPercent = (lowerPercent + higherPercent) / 2 + 1;
+      }
+      
+      // Calculate segment sizes
+      const startWidth = Math.max(0, lowerPercent - paddingPercent);
+      const activeWidth = Math.max(0, adjustedHigherPercent - adjustedLowerPercent);
+      const remainingWidth = Math.max(0, 100 - higherPercent - paddingPercent);
+      
+      // Set styles based on orientation
+      startTrack.style.display = 'block';
+      activeTrack.style.display = 'block';
+      remainingTrack.style.display = 'block';
+      
+      if (isVertical) {
+        // Vertical orientation
+        setVerticalTrackStyles(startTrack, startWidth, 0);
+        setVerticalTrackStyles(activeTrack, activeWidth, adjustedLowerPercent);
+        setVerticalTrackStyles(remainingTrack, remainingWidth, higherPercent + paddingPercent);
+      } else {
+        // Horizontal orientation
+        setHorizontalTrackStyles(startTrack, startWidth, 0);
+        setHorizontalTrackStyles(activeTrack, activeWidth, adjustedLowerPercent);
+        setHorizontalTrackStyles(remainingTrack, remainingWidth, higherPercent + paddingPercent);
+      }
+    } else {
+      // Single thumb slider
+      const adjustedWidth = Math.max(0, valuePercent - paddingPercent);
+      const remainingWidth = Math.max(0, 100 - valuePercent - paddingPercent);
+      
+      // Hide start track for single thumb
+      startTrack.style.display = 'none';
+      activeTrack.style.display = 'block';
+      remainingTrack.style.display = 'block';
+      
+      if (isVertical) {
+        // Vertical orientation
+        setVerticalTrackStyles(activeTrack, adjustedWidth, 0);
+        setVerticalTrackStyles(remainingTrack, remainingWidth, valuePercent + paddingPercent);
+      } else {
+        // Horizontal orientation
+        setHorizontalTrackStyles(activeTrack, adjustedWidth, 0);
+        setHorizontalTrackStyles(remainingTrack, remainingWidth, valuePercent + paddingPercent);
+      }
+    }
+  }
+  
+  /**
+   * Sets styles for vertical track segments
+   * @param element Track segment element
+   * @param height Height as percentage
+   * @param bottom Bottom position as percentage
+   */
+  function setVerticalTrackStyles(element, height, bottom) {
+    element.style.height = `${height}%`;
+    element.style.bottom = `${bottom}%`;
+    element.style.width = '100%';
+    element.style.top = 'auto';
+  }
+  
+  /**
+   * Sets styles for horizontal track segments
+   * @param element Track segment element
+   * @param width Width as percentage
+   * @param left Left position as percentage
+   */
+  function setHorizontalTrackStyles(element, width, left) {
+    element.style.width = `${width}%`;
+    element.style.left = `${left}%`;
+    element.style.height = '100%';
+  }
+  
+  /**
+   * Applies style classes based on configuration
+   */
+  function applyStyleClasses() {
+    const baseClass = component.getClass('slider');
+    
+    // Apply size class
+    const size = config.size || SLIDER_SIZES.MEDIUM;
+    if (size !== SLIDER_SIZES.MEDIUM) {
+      component.element.classList.add(`${baseClass}--${size}`);
+    }
+    
+    // Apply color class
+    const color = config.color || SLIDER_COLORS.PRIMARY;
+    if (color !== SLIDER_COLORS.PRIMARY) {
+      component.element.classList.add(`${baseClass}--${color}`);
+    }
+    
+    // Apply orientation class
+    if (isVertical) {
+      component.element.classList.add(`${baseClass}--vertical`);
+    }
+    
+    // Apply discrete class if step is specified
+    if (config.step !== undefined && config.step > 0) {
+      component.element.classList.add(`${baseClass}--discrete`);
+    }
+    
+    // Apply disabled class if needed
+    if (config.disabled) {
+      component.element.classList.add(`${baseClass}--disabled`);
+    }
+  }
 };

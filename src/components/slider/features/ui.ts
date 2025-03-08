@@ -11,7 +11,7 @@ import { SliderConfig } from '../types';
  */
 export const createUiHelpers = (config: SliderConfig, state) => {
   // Make sure state.component.structure exists
-  if (!state.component || !state.component.structure) {
+  if (!state.component?.structure) {
     console.error('Cannot create UI helpers: component structure is missing');
     return {
       getPercentage: () => 0,
@@ -42,6 +42,8 @@ export const createUiHelpers = (config: SliderConfig, state) => {
     secondValueBubble
   } = state.component.structure;
   
+  const isVertical = config.orientation === SLIDER_ORIENTATIONS.VERTICAL;
+  
   /**
    * Calculates percentage position for a value
    * @param value Value to convert to percentage
@@ -49,8 +51,7 @@ export const createUiHelpers = (config: SliderConfig, state) => {
    */
   const getPercentage = (value) => {
     const range = state.max - state.min;
-    if (range === 0) return 0;
-    return ((value - state.min) / range) * 100;
+    return range === 0 ? 0 : ((value - state.min) / range) * 100;
   };
   
   /**
@@ -69,41 +70,31 @@ export const createUiHelpers = (config: SliderConfig, state) => {
       // Get thumb dimensions
       const thumbRect = thumb.getBoundingClientRect();
       const thumbWidth = thumbRect.width || 20;
-      const thumbHeight = vertical ? thumbRect.width || 20 : thumbRect.height || 20; // For vertical slider, the T-shape width is key
+      const thumbHeight = vertical ? thumbRect.width || 20 : thumbRect.height || 20;
       
       if (vertical) {
-        const trackHeight = trackRect.height;
-        
-        // Calculate edge boundaries - account for the T-shaped thumb in vertical orientation
-        // In vertical mode we need to use thumb's width as the constraint size
+        // Calculate edge boundaries for vertical slider
         const topEdge = trackRect.top + (thumbWidth / 2);
         const bottomEdge = trackRect.bottom - (thumbWidth / 2);
         const effectiveHeight = bottomEdge - topEdge;
         
-        // Adjust the position to be within the effective track area
+        // Adjust position within track area
         const adjustedPosition = Math.max(topEdge, Math.min(bottomEdge, position));
-        
-        // For vertical sliders, the percentage increases from top to bottom but the value increases from bottom to top
         const percentageFromTop = (adjustedPosition - topEdge) / effectiveHeight;
-        const percentageFromBottom = 1 - percentageFromTop;
         
-        // Map the constrained percentage to the full value range
-        return state.min + percentageFromBottom * range;
+        // Map percentage to value (reversed for vertical)
+        return state.min + (1 - percentageFromTop) * range;
       } else {
-        const trackWidth = trackRect.width;
-        
-        // Calculate edge boundaries
+        // Calculate edge boundaries for horizontal slider
         const leftEdge = trackRect.left + (thumbWidth / 2);
         const rightEdge = trackRect.right - (thumbWidth / 2);
         const effectiveWidth = rightEdge - leftEdge;
         
-        // Adjust the position to be within the effective track area
+        // Adjust position within track area
         const adjustedPosition = Math.max(leftEdge, Math.min(rightEdge, position));
-        
-        // Calculate percentage based on effective track area
         const percentageFromLeft = (adjustedPosition - leftEdge) / effectiveWidth;
         
-        // Map the constrained percentage to the full value range
+        // Map percentage to value
         return state.min + percentageFromLeft * range;
       }
     } catch (error) {
@@ -135,53 +126,55 @@ export const createUiHelpers = (config: SliderConfig, state) => {
   const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
   
   /**
+   * Maps value percentage to visual percentage considering edge constraints
+   * @param valuePercent Value percentage (0-100)
+   * @param isVertical Whether orientation is vertical
+   * @param thumbSize Thumb size for constraints
+   * @param trackSize Track size for constraints
+   * @returns Adjusted visual percentage
+   */
+  const mapValueToVisualPercent = (valuePercent, isVertical, thumbSize, trackSize) => {
+    // Calculate edge constraint as percentage
+    const edgeConstraint = (thumbSize / 2) / trackSize * 100;
+    
+    // Set edge boundaries based on orientation
+    const minEdge = edgeConstraint;
+    const maxEdge = 100 - edgeConstraint;
+    const visualRange = maxEdge - minEdge;
+    
+    // Map value to visual range
+    if (valuePercent <= 0) {
+      return minEdge;
+    } else if (valuePercent >= 100) {
+      return maxEdge;
+    } else {
+      return minEdge + (valuePercent / 100) * visualRange;
+    }
+  };
+  
+  /**
    * Sets thumb position based on a value percentage with proper edge mapping
    * @param thumbElement Thumb element to position
    * @param valueBubbleElement Value bubble element to position
    * @param valuePercent Percentage position (0-100)
    */
   const setThumbPosition = (thumbElement, valueBubbleElement, valuePercent) => {
-    if (!thumbElement) return;
+    if (!thumbElement || !track) return;
     
-    // Determine the thumb width (needed for containment calculations)
+    // Get dimensions
     const thumbRect = thumbElement.getBoundingClientRect();
-    const thumbWidth = thumbRect.width || 20; // Default to 20px if not available
-    
-    // Get track dimensions
     const trackRect = track.getBoundingClientRect();
-    const trackWidth = trackRect.width;
-    const trackHeight = trackRect.height;
+    const thumbSize = thumbRect.width || 20;
+    const trackSize = isVertical ? trackRect.height : trackRect.width;
     
-    if (config.orientation === SLIDER_ORIENTATIONS.VERTICAL) {
-      // For vertical T-shaped thumb, we need to use the width as the constraint dimension
-      // since in vertical orientation, the thumb's horizontal bar becomes the vertical one
-      const thumbConstraintSize = thumbRect.width || 20;
-      
-      // Calculate edge boundaries (accounting for the T-shaped thumb)
-      const topEdge = 100 - ((thumbConstraintSize / 2) / trackHeight) * 100;
-      const bottomEdge = ((thumbConstraintSize / 2) / trackHeight) * 100;
-      
-      // Calculate the visual range (the range where the thumb can visibly move)
-      const visualRange = topEdge - bottomEdge;
-      
-      // Map the full value range (0-100) to the visual range
-      // This ensures the thumb stays visually within bounds while the value covers the full range
-      let adjustedPercent;
-      if (valuePercent <= 0) {
-        // At minimum value (bottom of slider)
-        adjustedPercent = bottomEdge;
-      } else if (valuePercent >= 100) {
-        // At maximum value (top of slider)
-        adjustedPercent = topEdge;
-      } else {
-        // Map value to visual range
-        adjustedPercent = bottomEdge + (valuePercent / 100) * visualRange;
-      }
-      
-      // Position from bottom
+    // Map value percentage to visual percentage
+    const adjustedPercent = mapValueToVisualPercent(valuePercent, isVertical, thumbSize, trackSize);
+    
+    if (isVertical) {
+      // Position from bottom for vertical
       thumbElement.style.bottom = `${adjustedPercent}%`;
-      thumbElement.style.left = '50%'; // Keep it centered horizontally
-      thumbElement.style.top = 'auto'; // Clear top property
+      thumbElement.style.left = '50%';
+      thumbElement.style.top = 'auto';
       
       // Position value bubble if it exists
       if (valueBubbleElement) {
@@ -189,28 +182,7 @@ export const createUiHelpers = (config: SliderConfig, state) => {
         valueBubbleElement.style.top = 'auto';
       }
     } else {
-      // Calculate edge boundaries for horizontal slider
-      const leftEdge = ((thumbWidth / 2) / trackWidth) * 100;
-      const rightEdge = 100 - ((thumbWidth / 2) / trackWidth) * 100;
-      
-      // Calculate the visual range (the range where the thumb can visibly move)
-      const visualRange = rightEdge - leftEdge;
-      
-      // Map the full value range (0-100) to the visual range
-      // This ensures the thumb stays visually within bounds while the value covers the full range
-      let adjustedPercent;
-      if (valuePercent <= 0) {
-        // At minimum value
-        adjustedPercent = leftEdge;
-      } else if (valuePercent >= 100) {
-        // At maximum value
-        adjustedPercent = rightEdge;
-      } else {
-        // Map value to visual range
-        adjustedPercent = leftEdge + (valuePercent / 100) * visualRange;
-      }
-      
-      // Position from left
+      // Position from left for horizontal
       thumbElement.style.left = `${adjustedPercent}%`;
       
       // Position value bubble if it exists
@@ -221,29 +193,36 @@ export const createUiHelpers = (config: SliderConfig, state) => {
   };
 
   /**
+   * Gets track dimensions and constraints for positioning calculations
+   * @returns Object with track dimensions and constraints
+   */
+  const getTrackDimensions = () => {
+    if (!track || !thumb) return null;
+    
+    // Get dimensions
+    const thumbRect = thumb.getBoundingClientRect();
+    const trackRect = track.getBoundingClientRect();
+    const thumbSize = isVertical ? thumbRect.width || 20 : thumbRect.width || 20;
+    const trackSize = isVertical ? trackRect.height : trackRect.width;
+    
+    // Calculate constraints
+    const edgeConstraint = (thumbSize / 2) / trackSize * 100;
+    const paddingAdjustment = 8; // 8px padding
+    const paddingPercent = (paddingAdjustment / trackSize) * 100;
+    
+    return { thumbSize, trackSize, edgeConstraint, paddingPercent };
+  };
+
+  /**
    * Updates start track styles - with proper thumb padding
    */
   const updateStartTrack = () => {
-    if (!startTrack) return;
+    if (!startTrack || !track || !thumb) return;
     
-    // Get thumb dimensions
-    const thumbRect = thumb.getBoundingClientRect();
-    const thumbSize = config.orientation === SLIDER_ORIENTATIONS.VERTICAL 
-      ? thumbRect.width || 20 
-      : thumbRect.width || 20;
+    const dims = getTrackDimensions();
+    if (!dims) return;
     
-    // Get track dimensions
-    const trackRect = track.getBoundingClientRect();
-    const trackSize = config.orientation === SLIDER_ORIENTATIONS.VERTICAL 
-      ? trackRect.height 
-      : trackRect.width;
-    
-    // Calculate edge constraints
-    const edgeConstraint = (thumbSize / 2) / trackSize * 100;
-    
-    // Add track-thumb padding (8px equivalent in percentage)
-    const paddingAdjustment = 8; // 8px padding
-    const paddingPercent = (paddingAdjustment / trackSize) * 100;
+    const { paddingPercent } = dims;
     
     if (config.range && state.secondValue !== null) {
       // For range slider, calculate the track from start to first thumb
@@ -251,45 +230,21 @@ export const createUiHelpers = (config: SliderConfig, state) => {
       let lowerPercent = getPercentage(lowerValue);
       
       // Map value percentage to visual percentage
-      if (config.orientation === SLIDER_ORIENTATIONS.VERTICAL) {
-        const bottomEdge = edgeConstraint;
-        const topEdge = 100 - edgeConstraint;
-        const visualRange = topEdge - bottomEdge;
-        
-        if (lowerPercent <= 0) {
-          lowerPercent = bottomEdge;
-        } else if (lowerPercent >= 100) {
-          lowerPercent = topEdge;
-        } else {
-          lowerPercent = bottomEdge + (lowerPercent / 100) * visualRange;
-        }
-        
-        // Add padding between track and thumb
-        const adjustedPercent = Math.max(0, lowerPercent - paddingPercent);
-        
-        startTrack.style.display = 'block';
+      const { thumbSize, trackSize } = dims;
+      lowerPercent = mapValueToVisualPercent(lowerPercent, isVertical, thumbSize, trackSize);
+      
+      // Add padding between track and thumb
+      const adjustedPercent = Math.max(0, lowerPercent - paddingPercent);
+      
+      startTrack.style.display = 'block';
+      
+      if (isVertical) {
         startTrack.style.height = `${adjustedPercent}%`;
         startTrack.style.bottom = '0';
         startTrack.style.top = 'auto';
         startTrack.style.width = '100%';
         startTrack.style.left = '0';
       } else {
-        const leftEdge = edgeConstraint;
-        const rightEdge = 100 - edgeConstraint;
-        const visualRange = rightEdge - leftEdge;
-        
-        if (lowerPercent <= 0) {
-          lowerPercent = leftEdge;
-        } else if (lowerPercent >= 100) {
-          lowerPercent = rightEdge;
-        } else {
-          lowerPercent = leftEdge + (lowerPercent / 100) * visualRange;
-        }
-        
-        // Add padding between track and thumb
-        const adjustedPercent = Math.max(0, lowerPercent - paddingPercent);
-        
-        startTrack.style.display = 'block';
         startTrack.style.width = `${adjustedPercent}%`;
         startTrack.style.left = '0';
         startTrack.style.height = '100%';
@@ -304,28 +259,12 @@ export const createUiHelpers = (config: SliderConfig, state) => {
    * Updates active track styles - aligned with the new thumb positioning and with padding
    */
   const updateActiveTrack = () => {
-    if (!activeTrack) return;
+    if (!activeTrack || !track || !thumb) return;
     
-    // Get thumb dimensions
-    const thumbRect = thumb.getBoundingClientRect();
-    const thumbSize = config.orientation === SLIDER_ORIENTATIONS.VERTICAL 
-      ? thumbRect.width || 20 
-      : thumbRect.width || 20;
+    const dims = getTrackDimensions();
+    if (!dims) return;
     
-    // Get track dimensions
-    const trackRect = track.getBoundingClientRect();
-    const trackSize = config.orientation === SLIDER_ORIENTATIONS.VERTICAL 
-      ? trackRect.height 
-      : trackRect.width;
-    
-    // Calculate edge constraints
-    const edgeConstraint = (thumbSize / 2) / trackSize * 100;
-    
-    // Add track-thumb padding (8px equivalent in percentage)
-    const paddingAdjustment = 8; // 8px padding
-    const paddingPercent = (paddingAdjustment / trackSize) * 100;
-    
-    const isVertical = config.orientation === SLIDER_ORIENTATIONS.VERTICAL;
+    const { thumbSize, trackSize, paddingPercent } = dims;
     
     if (config.range && state.secondValue !== null) {
       // Range slider (two thumbs)
@@ -335,80 +274,28 @@ export const createUiHelpers = (config: SliderConfig, state) => {
       let higherPercent = getPercentage(higherValue);
       
       // Map value percentages to visual percentages
+      lowerPercent = mapValueToVisualPercent(lowerPercent, isVertical, thumbSize, trackSize);
+      higherPercent = mapValueToVisualPercent(higherPercent, isVertical, thumbSize, trackSize);
+      
+      // Add padding between track and thumbs
+      const adjustedLowerPercent = lowerPercent + paddingPercent;
+      const adjustedHigherPercent = higherPercent - paddingPercent;
+      
+      // Ensure there's at least a minimal gap even when thumbs are close
+      let trackLength = Math.max(0, adjustedHigherPercent - adjustedLowerPercent);
+      if (higherPercent - lowerPercent < paddingPercent * 2) {
+        // Thumbs are very close, show minimal track
+        trackLength = Math.max(0, higherPercent - lowerPercent);
+      }
+      
+      activeTrack.style.display = 'block';
+      
       if (isVertical) {
-        const bottomEdge = edgeConstraint;
-        const topEdge = 100 - edgeConstraint;
-        const visualRange = topEdge - bottomEdge;
-        
-        // Map lower value
-        if (lowerPercent <= 0) {
-          lowerPercent = bottomEdge;
-        } else if (lowerPercent >= 100) {
-          lowerPercent = topEdge;
-        } else {
-          lowerPercent = bottomEdge + (lowerPercent / 100) * visualRange;
-        }
-        
-        // Map higher value
-        if (higherPercent <= 0) {
-          higherPercent = bottomEdge;
-        } else if (higherPercent >= 100) {
-          higherPercent = topEdge;
-        } else {
-          higherPercent = bottomEdge + (higherPercent / 100) * visualRange;
-        }
-        
-        // Add padding between track and thumbs
-        const adjustedLowerPercent = lowerPercent + paddingPercent;
-        const adjustedHigherPercent = higherPercent - paddingPercent;
-        
-        // Ensure there's at least a minimal gap even when thumbs are close
-        let trackLength = Math.max(0, adjustedHigherPercent - adjustedLowerPercent);
-        if (higherPercent - lowerPercent < paddingPercent * 2) {
-          // Thumbs are very close, show minimal track
-          trackLength = Math.max(0, higherPercent - lowerPercent);
-        }
-        
-        activeTrack.style.display = 'block';
         activeTrack.style.height = `${trackLength}%`;
         activeTrack.style.bottom = `${adjustedLowerPercent}%`;
         activeTrack.style.top = 'auto';
         activeTrack.style.width = '100%';
       } else {
-        const leftEdge = edgeConstraint;
-        const rightEdge = 100 - edgeConstraint;
-        const visualRange = rightEdge - leftEdge;
-        
-        // Map lower value
-        if (lowerPercent <= 0) {
-          lowerPercent = leftEdge;
-        } else if (lowerPercent >= 100) {
-          lowerPercent = rightEdge;
-        } else {
-          lowerPercent = leftEdge + (lowerPercent / 100) * visualRange;
-        }
-        
-        // Map higher value
-        if (higherPercent <= 0) {
-          higherPercent = leftEdge;
-        } else if (higherPercent >= 100) {
-          higherPercent = rightEdge;
-        } else {
-          higherPercent = leftEdge + (higherPercent / 100) * visualRange;
-        }
-        
-        // Add padding between track and thumbs
-        const adjustedLowerPercent = lowerPercent + paddingPercent;
-        const adjustedHigherPercent = higherPercent - paddingPercent;
-        
-        // Ensure there's at least a minimal gap even when thumbs are close
-        let trackLength = Math.max(0, adjustedHigherPercent - adjustedLowerPercent);
-        if (higherPercent - lowerPercent < paddingPercent * 2) {
-          // Thumbs are very close, show minimal track
-          trackLength = Math.max(0, higherPercent - lowerPercent);
-        }
-        
-        activeTrack.style.display = 'block';
         activeTrack.style.width = `${trackLength}%`;
         activeTrack.style.left = `${adjustedLowerPercent}%`;
         activeTrack.style.height = '100%';
@@ -417,48 +304,20 @@ export const createUiHelpers = (config: SliderConfig, state) => {
       // Single thumb slider
       let valuePercent = getPercentage(state.value);
       
+      // Map to visual percentage
+      valuePercent = mapValueToVisualPercent(valuePercent, isVertical, thumbSize, trackSize);
+      
+      // Add padding between track and thumb
+      const adjustedWidth = Math.max(0, valuePercent - paddingPercent);
+      
+      activeTrack.style.display = 'block';
+      
       if (isVertical) {
-        const bottomEdge = edgeConstraint;
-        const topEdge = 100 - edgeConstraint;
-        const visualRange = topEdge - bottomEdge;
-        
-        // Map to visual percentage
-        let visualPercent;
-        if (valuePercent <= 0) {
-          visualPercent = bottomEdge;
-        } else if (valuePercent >= 100) {
-          visualPercent = topEdge;
-        } else {
-          visualPercent = bottomEdge + (valuePercent / 100) * visualRange;
-        }
-        
-        // Add padding between track and thumb
-        const adjustedWidth = Math.max(0, visualPercent - paddingPercent);
-        
-        activeTrack.style.display = 'block';
         activeTrack.style.height = `${adjustedWidth}%`;
         activeTrack.style.bottom = '0';
         activeTrack.style.top = 'auto';
         activeTrack.style.width = '100%';
       } else {
-        const leftEdge = edgeConstraint;
-        const rightEdge = 100 - edgeConstraint;
-        const visualRange = rightEdge - leftEdge;
-        
-        // Map to visual percentage
-        let visualPercent;
-        if (valuePercent <= 0) {
-          visualPercent = leftEdge;
-        } else if (valuePercent >= 100) {
-          visualPercent = rightEdge;
-        } else {
-          visualPercent = leftEdge + (valuePercent / 100) * visualRange;
-        }
-        
-        // Add padding between track and thumb
-        const adjustedWidth = Math.max(0, visualPercent - paddingPercent);
-        
-        activeTrack.style.display = 'block';
         activeTrack.style.width = `${adjustedWidth}%`;
         activeTrack.style.left = '0';
         activeTrack.style.height = '100%';
@@ -470,28 +329,12 @@ export const createUiHelpers = (config: SliderConfig, state) => {
    * Updates remaining track styles - with proper thumb padding
    */
   const updateRemainingTrack = () => {
-    if (!remainingTrack) return;
+    if (!remainingTrack || !track || !thumb) return;
     
-    // Get thumb dimensions
-    const thumbRect = thumb.getBoundingClientRect();
-    const thumbSize = config.orientation === SLIDER_ORIENTATIONS.VERTICAL 
-      ? thumbRect.width || 20 
-      : thumbRect.width || 20;
+    const dims = getTrackDimensions();
+    if (!dims) return;
     
-    // Get track dimensions
-    const trackRect = track.getBoundingClientRect();
-    const trackSize = config.orientation === SLIDER_ORIENTATIONS.VERTICAL 
-      ? trackRect.height 
-      : trackRect.width;
-    
-    // Calculate edge constraints
-    const edgeConstraint = (thumbSize / 2) / trackSize * 100;
-    
-    // Add track-thumb padding (8px equivalent in percentage)
-    const paddingAdjustment = 8; // 8px padding
-    const paddingPercent = (paddingAdjustment / trackSize) * 100;
-    
-    const isVertical = config.orientation === SLIDER_ORIENTATIONS.VERTICAL;
+    const { thumbSize, trackSize, paddingPercent } = dims;
     
     if (config.range && state.secondValue !== null) {
       // Range slider (two thumbs)
@@ -499,51 +342,21 @@ export const createUiHelpers = (config: SliderConfig, state) => {
       let higherPercent = getPercentage(higherValue);
       
       // Map value percentage to visual percentage
+      higherPercent = mapValueToVisualPercent(higherPercent, isVertical, thumbSize, trackSize);
+      
+      // Add padding between track and thumb
+      const adjustedPercent = higherPercent + paddingPercent;
+      const remainingSize = Math.max(0, 100 - adjustedPercent);
+      
+      remainingTrack.style.display = 'block';
+      
       if (isVertical) {
-        const bottomEdge = edgeConstraint;
-        const topEdge = 100 - edgeConstraint;
-        const visualRange = topEdge - bottomEdge;
-        
-        // Map higher value
-        let visualPercent;
-        if (higherPercent <= 0) {
-          visualPercent = bottomEdge;
-        } else if (higherPercent >= 100) {
-          visualPercent = topEdge;
-        } else {
-          visualPercent = bottomEdge + (higherPercent / 100) * visualRange;
-        }
-        
-        // Add padding between track and thumb
-        const adjustedPercent = visualPercent + paddingPercent;
-        const remainingHeight = Math.max(0, 100 - adjustedPercent);
-        
-        remainingTrack.style.display = 'block';
-        remainingTrack.style.height = `${remainingHeight}%`;
+        remainingTrack.style.height = `${remainingSize}%`;
         remainingTrack.style.bottom = `${adjustedPercent}%`;
         remainingTrack.style.top = 'auto';
         remainingTrack.style.width = '100%';
       } else {
-        const leftEdge = edgeConstraint;
-        const rightEdge = 100 - edgeConstraint;
-        const visualRange = rightEdge - leftEdge;
-        
-        // Map higher value
-        let visualPercent;
-        if (higherPercent <= 0) {
-          visualPercent = leftEdge;
-        } else if (higherPercent >= 100) {
-          visualPercent = rightEdge;
-        } else {
-          visualPercent = leftEdge + (higherPercent / 100) * visualRange;
-        }
-        
-        // Add padding between track and thumb
-        const adjustedPercent = visualPercent + paddingPercent;
-        const remainingWidth = Math.max(0, 100 - adjustedPercent);
-        
-        remainingTrack.style.display = 'block';
-        remainingTrack.style.width = `${remainingWidth}%`;
+        remainingTrack.style.width = `${remainingSize}%`;
         remainingTrack.style.left = `${adjustedPercent}%`;
         remainingTrack.style.height = '100%';
       }
@@ -552,51 +365,21 @@ export const createUiHelpers = (config: SliderConfig, state) => {
       let valuePercent = getPercentage(state.value);
       
       // Map value percentage to visual percentage
+      valuePercent = mapValueToVisualPercent(valuePercent, isVertical, thumbSize, trackSize);
+      
+      // Add padding between track and thumb
+      const adjustedPercent = valuePercent + paddingPercent;
+      const remainingSize = Math.max(0, 100 - adjustedPercent);
+      
+      remainingTrack.style.display = 'block';
+      
       if (isVertical) {
-        const bottomEdge = edgeConstraint;
-        const topEdge = 100 - edgeConstraint;
-        const visualRange = topEdge - bottomEdge;
-        
-        // Map value
-        let visualPercent;
-        if (valuePercent <= 0) {
-          visualPercent = bottomEdge;
-        } else if (valuePercent >= 100) {
-          visualPercent = topEdge;
-        } else {
-          visualPercent = bottomEdge + (valuePercent / 100) * visualRange;
-        }
-        
-        // Add padding between track and thumb
-        const adjustedPercent = visualPercent + paddingPercent;
-        const remainingHeight = Math.max(0, 100 - adjustedPercent);
-        
-        remainingTrack.style.display = 'block';
-        remainingTrack.style.height = `${remainingHeight}%`;
+        remainingTrack.style.height = `${remainingSize}%`;
         remainingTrack.style.bottom = `${adjustedPercent}%`;
         remainingTrack.style.top = 'auto';
         remainingTrack.style.width = '100%';
       } else {
-        const leftEdge = edgeConstraint;
-        const rightEdge = 100 - edgeConstraint;
-        const visualRange = rightEdge - leftEdge;
-        
-        // Map value
-        let visualPercent;
-        if (valuePercent <= 0) {
-          visualPercent = leftEdge;
-        } else if (valuePercent >= 100) {
-          visualPercent = rightEdge;
-        } else {
-          visualPercent = leftEdge + (valuePercent / 100) * visualRange;
-        }
-        
-        // Add padding between track and thumb
-        const adjustedPercent = visualPercent + paddingPercent;
-        const remainingWidth = Math.max(0, 100 - adjustedPercent);
-        
-        remainingTrack.style.display = 'block';
-        remainingTrack.style.width = `${remainingWidth}%`;
+        remainingTrack.style.width = `${remainingSize}%`;
         remainingTrack.style.left = `${adjustedPercent}%`;
         remainingTrack.style.height = '100%';
       }
@@ -654,11 +437,8 @@ export const createUiHelpers = (config: SliderConfig, state) => {
   const showValueBubble = (bubbleElement, show) => {
     if (!bubbleElement || !config.showValue) return;
     
-    if (show) {
-      bubbleElement.classList.add(`${state.component.getClass('slider-value')}--visible`);
-    } else {
-      bubbleElement.classList.remove(`${state.component.getClass('slider-value')}--visible`);
-    }
+    const visibleClass = `${state.component.getClass('slider-value')}--visible`;
+    bubbleElement.classList[show ? 'add' : 'remove'](visibleClass);
   };
   
   /**
@@ -666,24 +446,15 @@ export const createUiHelpers = (config: SliderConfig, state) => {
    */
   const generateTicks = () => {
     // Remove existing ticks
-    state.ticks.forEach(tick => {
-      if (tick.parentNode) {
-        tick.parentNode.removeChild(tick);
-      }
-    });
-    
-    state.tickLabels.forEach(label => {
-      if (label.parentNode) {
-        label.parentNode.removeChild(label);
-      }
-    });
+    state.ticks.forEach(tick => tick.parentNode?.removeChild(tick));
+    state.tickLabels.forEach(label => label.parentNode?.removeChild(label));
     
     state.ticks = [];
     state.tickLabels = [];
     
     if (!config.ticks && !config.tickLabels) return;
     
-    // Generate new ticks
+    // Generate tick values
     const numSteps = Math.floor((state.max - state.min) / state.step);
     const tickValues = [];
     
@@ -699,43 +470,47 @@ export const createUiHelpers = (config: SliderConfig, state) => {
       tickValues.push(state.max);
     }
     
-    // Create ticks
+    // Create ticks and labels
     tickValues.forEach(value => {
+      // Get tick position
+      const percent = getPercentage(value);
+      
+      // Create tick mark if enabled
       if (config.ticks) {
         const tick = document.createElement('div');
         tick.classList.add(state.component.getClass('slider-tick'));
         
         // Position tick
-        const percent = getPercentage(value);
-        if (config.orientation === SLIDER_ORIENTATIONS.VERTICAL) {
+        if (isVertical) {
           tick.style.bottom = `${percent}%`;
         } else {
           tick.style.left = `${percent}%`;
         }
         
-        // Set active class if value is in active range
+        // Set active class
+        const activeClass = `${state.component.getClass('slider-tick')}--active`;
         if (config.range && state.secondValue !== null) {
           const lowerValue = Math.min(state.value, state.secondValue);
           const higherValue = Math.max(state.value, state.secondValue);
           
           if (value >= lowerValue && value <= higherValue) {
-            tick.classList.add(`${state.component.getClass('slider-tick')}--active`);
+            tick.classList.add(activeClass);
           }
         } else if (value <= state.value) {
-          tick.classList.add(`${state.component.getClass('slider-tick')}--active`);
+          tick.classList.add(activeClass);
         }
         
         state.component.element.appendChild(tick);
         state.ticks.push(tick);
       }
       
+      // Create label if enabled
       if (config.tickLabels) {
         const label = document.createElement('div');
         label.classList.add(state.component.getClass('slider-label'));
         
         // Position label
-        const percent = getPercentage(value);
-        if (config.orientation === SLIDER_ORIENTATIONS.VERTICAL) {
+        if (isVertical) {
           label.style.bottom = `${percent}%`;
         } else {
           label.style.left = `${percent}%`;
@@ -762,23 +537,24 @@ export const createUiHelpers = (config: SliderConfig, state) => {
     // Update active ticks based on current value
     state.ticks.forEach((tick, index) => {
       const tickValue = state.min + (index * state.step);
+      const activeClass = `${state.component.getClass('slider-tick')}--active`;
       
       if (config.range && state.secondValue !== null) {
-        // Range slider - ticks between the two values should be active
+        // Range slider - ticks between values should be active
         const lowerValue = Math.min(state.value, state.secondValue);
         const higherValue = Math.max(state.value, state.secondValue);
         
         if (tickValue >= lowerValue && tickValue <= higherValue) {
-          tick.classList.add(`${state.component.getClass('slider-tick')}--active`);
+          tick.classList.add(activeClass);
         } else {
-          tick.classList.remove(`${state.component.getClass('slider-tick')}--active`);
+          tick.classList.remove(activeClass);
         }
       } else {
-        // Single slider - ticks below or equal to value should be active
+        // Single slider - ticks below value should be active
         if (tickValue <= state.value) {
-          tick.classList.add(`${state.component.getClass('slider-tick')}--active`);
+          tick.classList.add(activeClass);
         } else {
-          tick.classList.remove(`${state.component.getClass('slider-tick')}--active`);
+          tick.classList.remove(activeClass);
         }
       }
     });
