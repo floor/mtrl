@@ -27,6 +27,7 @@ export const createKeyboardHandlers = (state, handlers) => {
     
     const step = state.step || 1;
     let newValue;
+    let stepSize = step;
     
     // Determine which value to modify
     if (isSecondThumb) {
@@ -35,15 +36,22 @@ export const createKeyboardHandlers = (state, handlers) => {
       newValue = state.value;
     }
     
+    // Determine step size based on modifier keys
+    if (e.shiftKey) {
+      stepSize = step * 10; // Large step when Shift is pressed
+    }
+    
     switch (e.key) {
       case 'ArrowRight':
+      case 'ArrowUp':
         e.preventDefault();
-        newValue = Math.min(newValue + step, state.max);
+        newValue = Math.min(newValue + stepSize, state.max);
         break;
         
       case 'ArrowLeft':
+      case 'ArrowDown':
         e.preventDefault();
-        newValue = Math.max(newValue - step, state.min);
+        newValue = Math.max(newValue - stepSize, state.min);
         break;
         
       case 'Home':
@@ -70,6 +78,19 @@ export const createKeyboardHandlers = (state, handlers) => {
         return; // Exit if not a handled key
     }
     
+    // Show value bubble during keyboard interaction
+    showValueBubble(isSecondThumb ? secondValueBubble : valueBubble, true);
+    
+    // Clear any existing hide timer
+    if (state.valueHideTimer) {
+      clearTimeout(state.valueHideTimer);
+    }
+    
+    // Set timer to hide the value bubble after interaction
+    state.valueHideTimer = setTimeout(() => {
+      showValueBubble(isSecondThumb ? secondValueBubble : valueBubble, false);
+    }, 1500);
+    
     // Update the value
     if (isSecondThumb) {
       state.secondValue = newValue;
@@ -88,6 +109,10 @@ export const createKeyboardHandlers = (state, handlers) => {
   const handleFocus = (e, isSecondThumb = false) => {
     if (state.component.disabled && state.component.disabled.isDisabled()) return;
     
+    // Add a class to indicate keyboard focus
+    const thumb = isSecondThumb ? secondThumb : state.component.structure.thumb;
+    thumb.classList.add(`${state.component.getClass('slider-thumb')}--focused`);
+    
     // Show value bubble
     showValueBubble(isSecondThumb ? secondValueBubble : valueBubble, true);
     
@@ -96,6 +121,10 @@ export const createKeyboardHandlers = (state, handlers) => {
   };
   
   const handleBlur = (e, isSecondThumb = false) => {
+    // Remove keyboard focus class
+    const thumb = isSecondThumb ? secondThumb : state.component.structure.thumb;
+    thumb.classList.remove(`${state.component.getClass('slider-thumb')}--focused`);
+    
     // Hide value bubble
     showValueBubble(isSecondThumb ? secondValueBubble : valueBubble, false);
     
