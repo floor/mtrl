@@ -1,60 +1,57 @@
-// src/components/tabs/tab.ts
+// src/components/tabs/tabs.ts
 import { pipe } from '../../core/compose';
 import { createBase } from '../../core/compose/component';
-import {
-  withEvents,
-  withText,
-  withIcon,
-  withVariant,
-  withRipple,
-  withDisabled,
-  withLifecycle,
-  withBadge
-} from '../../core/compose/features';
-import { withTabAPI } from './tab-api';
-import { TabConfig, TabComponent } from './types';
-import { TAB_STATES } from './constants';
-import { createTabConfig, getTabElementConfig, getTabApiConfig } from './config';
+import { withEvents, withLifecycle } from '../../core/compose/features';
+import { withAPI, getApiConfig } from './api';
+import { withTabsManagement, withScrollable, withDivider } from './features';
+import { createTabsConfig, getTabsElementConfig } from './config';
+import { TabsConfig, TabsComponent } from './types';
 
 /**
- * Creates a new Tab component
- * @param {TabConfig} config - Tab configuration object
- * @returns {TabComponent} Tab component instance
- * @internal This is an internal helper used by the Tabs component
+ * Creates a new Tabs component
+ * @param {TabsConfig} config - Tabs configuration object
+ * @returns {TabsComponent} Tabs component instance
+ * @example
+ * ```typescript
+ * // Create basic tabs with three items
+ * const tabs = createTabs({
+ *   tabs: [
+ *     { text: 'Home', value: 'home', state: 'active' },
+ *     { text: 'Products', value: 'products' },
+ *     { text: 'About', value: 'about' }
+ *   ]
+ * });
+ * 
+ * // Add tabs to DOM
+ * document.body.appendChild(tabs.element);
+ * 
+ * // Listen for tab changes
+ * tabs.on('change', (e) => {
+ *   console.log(`Active tab: ${e.value}`);
+ * });
+ * ```
  */
-export const createTab = (config: TabConfig = {}): TabComponent => {
-  const baseConfig = createTabConfig(config);
+const createTabs = (config: TabsConfig = {}): TabsComponent => {
+  const baseConfig = createTabsConfig(config);
 
   try {
-    // Add active state if specified in config
-    const withActiveState = (component) => {
-      if (baseConfig.state === TAB_STATES.ACTIVE) {
-        component.element.classList.add(`${component.getClass('tab')}--${TAB_STATES.ACTIVE}`);
-      }
-      return component;
-    };
-
-    const tab = pipe(
+    // Build the tabs component with all features
+    const component = pipe(
       createBase,
       withEvents(),
-      getTabElementConfig(baseConfig), // Here we use the function directly instead of withElement()
-      withVariant(baseConfig),
-      withText(baseConfig),
-      withIcon(baseConfig),
-      withBadge(baseConfig),
-      withActiveState,
-      withDisabled(baseConfig),
-      withRipple(baseConfig),
+      getTabsElementConfig(baseConfig),
+      withScrollable(baseConfig),
+      withTabsManagement(baseConfig),
+      withDivider(baseConfig),
       withLifecycle(),
-      comp => withTabAPI(getTabApiConfig(comp))(comp)
+      comp => withAPI(getApiConfig(comp))(comp)
     )(baseConfig);
 
-    // Initialize layout style based on content
-    tab.updateLayoutStyle();
-
-    return tab;
+    return component;
   } catch (error) {
-    console.error('Tab creation error:', error);
-    throw new Error(`Failed to create tab: ${(error as Error).message}`);
+    console.error('Tabs creation error:', error);
+    throw new Error(`Failed to create tabs: ${(error as Error).message}`);
   }
 };
+
+export default createTabs;
