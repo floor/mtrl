@@ -19,16 +19,16 @@ $container: '#{base.$prefix}-tabs';
   
   // Basic container sizing
   &--primary {
-    height: 48px;
+    min-height: 48px;
     
-    // Increase height when tabs have icons and text
-    .#{$component}--icon-and-text + & {
-      height: 64px;
+    // Tab container with icons and text needs more space
+    &:has(.#{$component}--icon-and-text) {
+      min-height: 64px;
     }
   }
   
   &--secondary {
-    height: 48px;
+    min-height: 48px;
   }
   
   // Scrollable container
@@ -62,17 +62,17 @@ $container: '#{base.$prefix}-tabs';
 .#{$component} {
   position: relative;
   display: inline-flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
   min-width: 90px;
-  flex: 1;
+  max-width: 360px;
   padding: 0 16px;
   border: none;
   background-color: transparent;
   color: t.color('on-surface-variant');
   cursor: pointer;
   user-select: none;
+  flex-shrink: 0;
   
   // Typography for label text
   @include m.typography('label-large');
@@ -83,7 +83,7 @@ $container: '#{base.$prefix}-tabs';
     color
   );
   
-  // Container heights based on layout
+  // Container heights and layout
   &--text-only {
     height: 48px;
   }
@@ -94,6 +94,7 @@ $container: '#{base.$prefix}-tabs';
   
   &--icon-and-text {
     height: 64px;
+    flex-direction: column;
   }
   
   // Focus styles
@@ -106,8 +107,8 @@ $container: '#{base.$prefix}-tabs';
     outline-offset: 2px;
   }
   
-  // Disable state
-  &:disabled, &--disabled {
+  // Disabled state
+  &:disabled, &[disabled], &--disabled {
     pointer-events: none;
     opacity: 0.38;
   }
@@ -121,47 +122,50 @@ $container: '#{base.$prefix}-tabs';
     height: 24px;
     
     svg {
-      width: 24px;
-      height: 24px;
+      width: 100%;
+      height: 100%;
+      fill: currentColor;
+      stroke: currentColor;
     }
   }
   
   // Ensure proper vertical spacing for icon and text
   &--icon-and-text {
     .#{$component}-icon {
-      margin-bottom: 8px;
+      margin-bottom: 4px;
     }
   }
   
   // Tab Text
   &-text {
     @include m.truncate;
+    max-width: 100%;
     text-align: center;
+    line-height: 1.2;
     
     .#{$component}--icon-only & {
       @include m.visually-hidden;
     }
   }
   
-  // Badge styling handled by the Badge component
-  // We only need to adjust badge positioning for different tab layouts
+  // Badge positioning
   .#{base.$prefix}-badge-wrapper {
     .#{base.$prefix}-badge {
-      // Position for icon-only tabs
+      // Position for different tab layouts
       &--top-right {
         .#{$component}--icon-only & {
-          top: 8px;
-          right: 8px;
+          top: 4px;
+          right: 4px;
         }
         
         .#{$component}--text-only & {
           top: 8px;
-          right: 16px;
+          right: 8px;
         }
         
         .#{$component}--icon-and-text & {
-          top: 8px;
-          right: calc(50% - 18px);
+          top: 4px;
+          right: calc(50% - 20px);
         }
       }
     }
@@ -171,19 +175,17 @@ $container: '#{base.$prefix}-tabs';
   &::after {
     content: '';
     position: absolute;
-    left: 2px;
-    right: 2px;
+    left: 0;
+    right: 0;
     bottom: 0;
-    min-width: 24px;
     height: 0;
-    border-radius: 3px 3px 0 0;
-    opacity: 0;
-    transition: height 0.2s ease, opacity 0.2s ease;
+    background-color: transparent;
+    transition: height 0.2s ease, opacity 0.2s ease, background-color 0.2s ease;
   }
   
   // Primary Tab Variants
   .#{$container}--primary & {
-    &.#{$component}--active {
+    &--active {
       color: t.color('primary');
       
       .#{$component}-icon {
@@ -194,18 +196,17 @@ $container: '#{base.$prefix}-tabs';
       &::after {
         background-color: t.color('primary');
         height: 3px;
-        opacity: 1;
       }
     }
     
     // Hover state
-    &:hover:not(:disabled):not(.#{$component}--active) {
-      @include m.state-layer(t.color('on-surface-variant'), 'hover');
+    &:hover:not(:disabled):not(&--active):not([disabled]) {
+      background-color: f.alpha(t.color('on-surface-variant'), 0.08);
     }
     
     // Pressed state
-    &:active:not(:disabled) {
-      @include m.state-layer(t.color('on-surface-variant'), 'pressed');
+    &:active:not(:disabled):not([disabled]) {
+      background-color: f.alpha(t.color('on-surface-variant'), 0.12);
     }
   }
   
@@ -213,7 +214,7 @@ $container: '#{base.$prefix}-tabs';
   .#{$container}--secondary & {
     color: t.color('on-surface-variant');
     
-    &.#{$component}--active {
+    &--active {
       color: t.color('on-surface');
       
       .#{$component}-icon {
@@ -224,28 +225,49 @@ $container: '#{base.$prefix}-tabs';
       &::after {
         background-color: t.color('primary');
         height: 2px;
-        opacity: 1;
       }
     }
     
     // Hover state
-    &:hover:not(:disabled):not(.#{$component}--active) {
-      @include m.state-layer(t.color('on-surface-variant'), 'hover');
+    &:hover:not(:disabled):not(&--active):not([disabled]) {
+      background-color: f.alpha(t.color('on-surface-variant'), 0.08);
     }
     
     // Pressed state
-    &:active:not(:disabled) {
-      @include m.state-layer(t.color('on-surface-variant'), 'pressed');
+    &:active:not(:disabled):not([disabled]) {
+      background-color: f.alpha(t.color('on-surface-variant'), 0.12);
     }
   }
   
-  // Ripple container (used by ripple feature)
-  .ripple {
+  // Ripple effect styling
+  .#{$component}-ripple {
     position: absolute;
-    border-radius: 50%;
-    transform: scale(0);
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow: hidden;
+    border-radius: inherit;
     pointer-events: none;
-    background-color: currentColor;
-    opacity: 0.12;
+    
+    .ripple {
+      position: absolute;
+      border-radius: 50%;
+      transform: scale(0);
+      pointer-events: none;
+      background-color: currentColor;
+      opacity: 0.1;
+    }
+  }
+}
+
+// Tab panel styles
+.#{base.$prefix}-content {
+  &__tab-panel {
+    padding: 16px;
+    
+    &.hidden {
+      display: none;
+    }
   }
 }

@@ -1,4 +1,7 @@
 // src/components/tabs/index.ts
-export { default } from './tabs';
-export { TABS_VARIANTS } from './constants';
-export { TabsConfig, TabsComponent, TabItem, TabChangeEventData } from './types';
+import createTabs from './tabs';
+export { TABS_VARIANTS, TAB_STATES, TAB_LAYOUT } from './constants';
+export { TabsConfig, TabsComponent, TabComponent, TabConfig, TabChangeEventData } from './types';
+
+export default createTabs;
+export { createTabs };

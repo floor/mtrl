@@ -4,6 +4,22 @@ import { TABS_VARIANTS, TAB_STATES, TAB_LAYOUT } from './constants';
 import { BadgeComponent } from '../badge/types';
 
 /**
+ * Tab change event data interface
+ * @category Events
+ */
+export interface TabChangeEventData {
+  /**
+   * The tab component that was activated
+   */
+  tab: TabComponent;
+  
+  /**
+   * The value of the activated tab
+   */
+  value: string;
+}
+
+/**
  * Configuration interface for a single Tab
  * @category Components
  */
@@ -95,6 +111,11 @@ export interface TabConfig {
     /** Opacity values for ripple start and end [start, end] */
     opacity?: [string, string];
   };
+  
+  /**
+   * Variant of the tab
+   */
+  variant?: string;
 }
 
 /**
@@ -135,6 +156,21 @@ export interface TabsConfig {
    * @default 'mtrl'
    */
   prefix?: string;
+  
+  /**
+   * Event handlers configuration
+   */
+  on?: {
+    /**
+     * Tab change event handler
+     */
+    change?: (event: TabChangeEventData) => void;
+    
+    /**
+     * Event handlers for other events
+     */
+    [key: string]: Function | undefined;
+  };
 }
 
 /**
