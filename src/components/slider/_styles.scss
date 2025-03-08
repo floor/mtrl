@@ -5,6 +5,8 @@
 @use '../../styles/abstract/mixins' as m;
 @use '../../styles/abstract/theme' as t;
 
+$transform: transform 0.2s ease, width 0.2s ease, height 0.2s ease;
+
 $component: '#{base.$prefix}-slider';
 
 .#{$component} {
@@ -16,6 +18,11 @@ $component: '#{base.$prefix}-slider';
   align-items: center;
   user-select: none;
   touch-action: none;
+  
+  // Container should not have a focus outline since we're focusing the thumb directly
+  &:focus {
+    outline: none;
+  }
   
   &-track {
     position: relative;
@@ -42,7 +49,7 @@ $component: '#{base.$prefix}-slider';
     height: 100%;
     background-color: t.color('primary');
     transform-origin: left center;
-    // transition: transform 0.1s ease, width 0.1s ease, height 0.1s ease;
+    transition: $transform;
     border-radius: 2px;
     opacity: 0.24;
     z-index: 1;
@@ -71,7 +78,7 @@ $component: '#{base.$prefix}-slider';
     height: 100%;
     background-color: t.color('primary');
     transform-origin: left center;
-    // transition: transform 0.1s ease, width 0.1s ease, height 0.1s ease, left 0.1s ease, bottom 0.1s ease;
+    transition: $transform;
     border-radius: 2px;
     z-index: 1;
 
@@ -96,7 +103,7 @@ $component: '#{base.$prefix}-slider';
     height: 100%;
     background-color: t.color('primary');
     transform-origin: left center;
-    // transition: transform 0.1s ease, width 0.1s ease, height 0.1s ease, left 0.1s ease, bottom 0.1s ease;
+    transition: $transform;
     border-radius: 2px;
     width: 100%;
     z-index: 0;
@@ -165,16 +172,30 @@ $component: '#{base.$prefix}-slider';
  
   }
   
-  // Thumb - updated to MD3 style with T-shape
+  // Thumb - updated with standard focus-visible styling
   &-thumb {
     position: absolute;
     top: 50%;
     transform: translate(-50%, -50%);
     cursor: pointer;
     z-index: 4;
-    // transition: left 0.1s ease, bottom 0.1s ease;
+    padding: 4px 0;
+    transition: $transform;
     width: 16px;
-    height: 100%;
+    height: 50px;
+    border-radius: 16px;
+    
+    // Use standard focus style that works reliably with keyboard navigation
+    &:focus {
+      outline: 2px solid t.color('outline');
+      // outline-offset: 2px;
+      
+      // Optional: For browsers that support :focus-visible, we can hide the outline when clicking
+      // This ensures outline shows for keyboard but not mouse (where supported)
+      &:not(:focus-visible) {
+        outline: none;
+      }
+    }
 
     // Create a T-shaped thumb using pseudo-elements
     &::before {
@@ -209,7 +230,7 @@ $component: '#{base.$prefix}-slider';
     }
     
     // Enable pointer events on the pseudo-elements
-    &::before, &::after {
+    &::before {
       pointer-events: auto;
     }
     
@@ -221,7 +242,7 @@ $component: '#{base.$prefix}-slider';
     }
     
     // Hover state
-    &:hover::before, &:hover::after {
+    &:hover::before {
       background-color: t.color('primary');
       
       .#{$component}--secondary & {
@@ -242,29 +263,8 @@ $component: '#{base.$prefix}-slider';
       }
     }
     
-    // Focus state
-    &:focus {
-      outline: none;
-    }
-    
-    &:focus::before, &:focus::after {
-      background-color: t.color('primary');
-      
-      .#{$component}--secondary & {
-        background-color: t.color('secondary');
-      }
-      
-      .#{$component}--tertiary & {
-        background-color: t.color('tertiary');
-      }
-      
-      .#{$component}--error & {
-        background-color: t.color('error');
-      }
-    }
-    
     // Active state
-    &:active::before, &:active::after {
+    &:active::before {
       background-color: t.color('primary');
       
       .#{$component}--secondary & {
@@ -284,7 +284,7 @@ $component: '#{base.$prefix}-slider';
     .#{$component}--disabled & {
       cursor: not-allowed;
       
-      &::before, &::after {
+      &::before {
         opacity: 0.38;
         background-color: t.color('on-surface');
       }
@@ -432,5 +432,11 @@ $component: '#{base.$prefix}-slider';
   // For dragging state
   &--dragging {
     // Additional styles when dragging will be applied to thumb::before
+    .#{$component}-start-track, 
+    .#{$component}-active-track, 
+    .#{$component}-remaining-track, 
+    .#{$component}-thumb {
+      transition: none;
+    }
   }
 }

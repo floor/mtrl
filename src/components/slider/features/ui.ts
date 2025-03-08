@@ -180,15 +180,25 @@ export const createUiHelpers = (config: SliderConfig, state) => {
       const adjustedLower = mapValueToVisualPercent(lowerPercent, edgeConstraint) + paddingPercent;
       const adjustedHigher = mapValueToVisualPercent(higherPercent, edgeConstraint) - paddingPercent;
       
-      let trackLength = Math.max(0, adjustedHigher - adjustedLower);
-      if (higherPercent - lowerPercent < paddingPercent * 2) {
-        trackLength = Math.max(0, higherPercent - lowerPercent);
-      }
+      // Calculate the actual percentage difference between thumbs
+      const valueDiffPercent = Math.abs(higherPercent - lowerPercent);
       
-      activeTrack.style.display = 'block';
-      activeTrack.style.width = `${trackLength}%`;
-      activeTrack.style.left = `${adjustedLower}%`;
-      activeTrack.style.height = '100%';
+      // Define a threshold below which we'll hide the active track
+      // This threshold is based on the thumb width plus some margin
+      const hideThreshold = (thumbSize / trackSize) * 100;
+      
+      if (valueDiffPercent <= hideThreshold) {
+        // Thumbs are too close together, hide the active track
+        activeTrack.style.display = 'none';
+      } else {
+        // Normal display of active track
+        let trackLength = Math.max(0, adjustedHigher - adjustedLower);
+        
+        activeTrack.style.display = 'block';
+        activeTrack.style.width = `${trackLength}%`;
+        activeTrack.style.left = `${adjustedLower}%`;
+        activeTrack.style.height = '100%';
+      }
     } else {
       // Single thumb slider
       const valuePercent = getPercentage(state.value);

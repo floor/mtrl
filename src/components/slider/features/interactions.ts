@@ -44,7 +44,6 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
   
   // Event handlers
   const handleThumbMouseDown = (e, isSecondThumb = false) => {
-    console.log('handleThumbMouseDown', e)
     // Verify component exists and check if disabled
     if (!state.component || (state.component.disabled && state.component.disabled.isDisabled())) {
       return;
@@ -174,30 +173,60 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
       // For range slider, ensure thumbs don't cross
       if (config.range && state.secondValue !== null) {
         if (isSecondThumb) {
+          // Second thumb is active
+          
           // Don't allow second thumb to go below first thumb
-          if (newValue < state.value) {
+          if (newValue >= state.value) {
             state.secondValue = newValue;
           } else {
             // Thumbs are crossed, swap them
+            const oldValueBubble = state.activeBubble;
+            
+            // Hide current bubble before switching
+            if (oldValueBubble) {
+              showValueBubble(oldValueBubble, false);
+            }
+            
+            // Swap values
             state.secondValue = state.value;
             state.value = newValue;
             
             // Swap active thumb and bubble
             state.activeThumb = thumb;
             state.activeBubble = valueBubble;
+            
+            // Show the newly active bubble
+            if (state.activeBubble) {
+              showValueBubble(state.activeBubble, true);
+            }
           }
         } else {
+          // First thumb is active
+          
           // Don't allow first thumb to go above second thumb
-          if (newValue > state.secondValue) {
+          if (newValue <= state.secondValue) {
             state.value = newValue;
           } else {
             // Thumbs are crossed, swap them
+            const oldValueBubble = state.activeBubble;
+            
+            // Hide current bubble before switching
+            if (oldValueBubble) {
+              showValueBubble(oldValueBubble, false);
+            }
+            
+            // Swap values
             state.value = state.secondValue;
             state.secondValue = newValue;
             
             // Swap active thumb and bubble
             state.activeThumb = secondThumb;
             state.activeBubble = secondValueBubble;
+            
+            // Show the newly active bubble
+            if (state.activeBubble) {
+              showValueBubble(state.activeBubble, true);
+            }
           }
         }
       } else {

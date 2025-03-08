@@ -41,13 +41,11 @@ export const getElementConfig = (config: SliderConfig) => {
   return createElementConfig(config, {
     tag: 'div',
     attrs: {
-      'role': 'slider',
-      'tabindex': config.disabled ? -1 : 0,
+      // Accessibility improvement: Container is not focusable; only thumbs are
+      'tabindex': '-1',
       'aria-disabled': config.disabled === true ? true : false,
-      'aria-valuemin': config.min,
-      'aria-valuemax': config.max,
-      'aria-valuenow': config.value,
-      'aria-orientation': 'horizontal'
+      // ARIA attributes will be set directly on thumbs instead
+      'role': 'none',
     },
     className: config.class
   });

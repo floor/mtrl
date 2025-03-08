@@ -16,22 +16,32 @@ export const withDisabled = (config: SliderConfig) => component => {
       enable() {
         component.element.classList.remove(`${component.getClass('slider')}--disabled`);
         component.element.setAttribute('aria-disabled', 'false');
-        component.element.tabIndex = 0;
-        component.structure.thumb.tabIndex = 0;
+        
+        // Focus only on thumbs (accessibility improvement)
+        if (component.structure.thumb) {
+          component.structure.thumb.tabIndex = 0;
+          component.structure.thumb.setAttribute('aria-disabled', 'false');
+        }
         
         if (config.range && component.structure.secondThumb) {
           component.structure.secondThumb.tabIndex = 0;
+          component.structure.secondThumb.setAttribute('aria-disabled', 'false');
         }
       },
       
       disable() {
         component.element.classList.add(`${component.getClass('slider')}--disabled`);
         component.element.setAttribute('aria-disabled', 'true');
-        component.element.tabIndex = -1;
-        component.structure.thumb.tabIndex = -1;
+        
+        // Disable thumb focusing
+        if (component.structure.thumb) {
+          component.structure.thumb.tabIndex = -1;
+          component.structure.thumb.setAttribute('aria-disabled', 'true');
+        }
         
         if (config.range && component.structure.secondThumb) {
           component.structure.secondThumb.tabIndex = -1;
+          component.structure.secondThumb.setAttribute('aria-disabled', 'true');
         }
       },
       
