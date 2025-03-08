@@ -266,4 +266,3 @@ export const withStructure = (config: SliderConfig) => component => {
       component.element.classList.add(`${baseClass}--disabled`);
     }
   }
-};

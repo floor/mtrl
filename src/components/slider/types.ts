@@ -35,14 +35,11 @@ export interface SliderConfig {
   /** Whether to show tick marks */
   ticks?: boolean;
   
-  /** Whether to show tick labels */
-  tickLabels?: boolean | string[];
+  /** Format function for displayed values */
+  valueFormatter?: (value: number) => string;
   
   /** Whether to show the current value while dragging */
   showValue?: boolean;
-  
-  /** Format function for displayed values */
-  valueFormatter?: (value: number) => string;
   
   /** Whether to snap to steps while dragging (discrete slider) */
   snapToSteps?: boolean;
@@ -148,9 +145,6 @@ export interface SliderComponent {
   
   /** Shows or hides tick marks */
   showTicks: (show: boolean) => SliderComponent;
-  
-  /** Shows or hides tick labels */
-  showTickLabels: (show: boolean | string[]) => SliderComponent;
   
   /** Shows or hides current value while dragging */
   showCurrentValue: (show: boolean) => SliderComponent;

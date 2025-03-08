@@ -19,7 +19,6 @@ export const defaultConfig: SliderConfig = {
   size: SLIDER_SIZES.MEDIUM,
   orientation: SLIDER_ORIENTATIONS.HORIZONTAL,
   ticks: false,
-  tickLabels: false,
   showValue: true,
   snapToSteps: true,
   range: false,
@@ -89,7 +88,6 @@ export const getApiConfig = (comp) => {
       setOrientation: (orientation) => comp.appearance?.setOrientation?.(orientation),
       getOrientation: () => comp.appearance?.getOrientation?.() ?? 'horizontal',
       showTicks: (show) => comp.appearance?.showTicks?.(show),
-      showTickLabels: (show) => comp.appearance?.showTickLabels?.(show),
       showCurrentValue: (show) => comp.appearance?.showCurrentValue?.(show)
     },
     events: {

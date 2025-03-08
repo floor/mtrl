@@ -116,19 +116,6 @@ export const withAppearance = (config: SliderConfig) => component => {
       },
       
       /**
-       * Shows or hides tick labels
-       * @param show Whether to show labels or array of label texts
-       */
-      showTickLabels(show: boolean | string[]) {
-        config.tickLabels = show;
-        
-        // Regenerate ticks if slider is initialized
-        if (component.slider) {
-          component.slider.regenerateTicks();
-        }
-      },
-      
-      /**
        * Shows or hides current value bubble while dragging
        * @param show Whether to show value bubble
        */
