@@ -44,6 +44,7 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
   
   // Event handlers
   const handleThumbMouseDown = (e, isSecondThumb = false) => {
+    console.log('handleThumbMouseDown', e)
     // Verify component exists and check if disabled
     if (!state.component || (state.component.disabled && state.component.disabled.isDisabled())) {
       return;
@@ -55,6 +56,9 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
     state.dragging = true;
     state.activeThumb = isSecondThumb ? secondThumb : thumb;
     state.activeBubble = isSecondThumb ? secondValueBubble : valueBubble;
+    
+    // Add dragging class to component element to style the thumb differently
+    state.component.element.classList.add(`${state.component.getClass('slider')}--dragging`);
     
     // Show value bubble if it exists
     if (state.activeBubble) {
@@ -219,6 +223,9 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
     e.preventDefault();
     
     state.dragging = false;
+    
+    // Remove dragging class from component element
+    state.component.element.classList.remove(`${state.component.getClass('slider')}--dragging`);
     
     // Hide value bubble
     if (state.activeBubble) {

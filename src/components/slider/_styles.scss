@@ -188,7 +188,7 @@ $component: '#{base.$prefix}-slider';
       left: 50%;
       top: 50%;
       transform: translate(-50%, -50%);
-      transition: background-color 0.15s ease;
+      transition: background-color 0.15s ease, width 0.15s ease;
       
       .#{$component}--secondary & {
         background-color: t.color('secondary');
@@ -211,6 +211,21 @@ $component: '#{base.$prefix}-slider';
     // Enable pointer events on the pseudo-elements
     &::before, &::after {
       pointer-events: auto;
+    }
+    
+    // Make thumb line slimmer during dragging
+    .#{$component}--dragging & {
+      &::before {
+        width: 3px;
+      }
+    }
+    
+    // Vertical orientation adjustment for dragging
+    .#{$component}--vertical.#{$component}--dragging & {
+      &::before {
+        width: 40px;
+        height: 2px;
+      }
     }
     
     // Hover state
@@ -344,7 +359,7 @@ $component: '#{base.$prefix}-slider';
       }
     }
 
-     // Inactive tick (unfilled)
+     // Hidden tick
     &--hidden {
       opacity: 0
     }
@@ -355,19 +370,6 @@ $component: '#{base.$prefix}-slider';
       top: auto;
       transform: translate(-50%, 50%);
     }
-  }
-
-  
-  // Labels for tick marks
-  &-label {
-    position: absolute;
-    font-size: 12px;
-    color: t.color('on-surface-variant');
-    top: 45px;
-    transform: translateX(-50%);
-    white-space: nowrap;
-    pointer-events: none;
-    font-weight: 500;
   }
   
   // Range slider styles (for two thumbs)
@@ -475,12 +477,6 @@ $component: '#{base.$prefix}-slider';
       transform: translate(-50%, 50%);
     }
     
-    .#{$component}-label {
-      top: auto;
-      left: 35px;
-      transform: translateY(50%);
-    }
-    
     .#{$component}-value {
       top: auto;
       left: -55px;
@@ -556,5 +552,10 @@ $component: '#{base.$prefix}-slider';
         }
       }
     }
+  }
+  
+  // For dragging state
+  &--dragging {
+    // Additional styles when dragging will be applied to thumb::before
   }
 }

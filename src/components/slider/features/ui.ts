@@ -341,7 +341,7 @@ export const createUiHelpers = (config: SliderConfig, state) => {
   };
   
   /**
-   * Generates tick marks and labels
+   * Generates tick marks
    */
   const generateTicks = () => {
     if (!ticksContainer) {
@@ -349,7 +349,7 @@ export const createUiHelpers = (config: SliderConfig, state) => {
       return;
     }
     
-    // Clear existing ticks and labels
+    // Clear existing ticks
     const sliderElement = state.component.element;
     sliderElement.querySelectorAll(`.${state.component.getClass('slider-tick')}`)
       .forEach(tick => tick.parentNode.removeChild(tick));
@@ -358,14 +358,10 @@ export const createUiHelpers = (config: SliderConfig, state) => {
       ticksContainer.removeChild(ticksContainer.firstChild);
     }
     
-    // Clear existing labels
-    state.tickLabels?.forEach(label => label.parentNode?.removeChild(label));
-    
-    // Reset ticks and labels arrays
+    // Reset ticks array
     state.ticks = [];
-    state.tickLabels = [];
     
-    if (!config.ticks && !config.tickLabels) return;
+    if (!config.ticks) return;
     
     // Generate tick values
     const numSteps = Math.floor((state.max - state.min) / state.step);
@@ -387,10 +383,9 @@ export const createUiHelpers = (config: SliderConfig, state) => {
     const activeClass = `${state.component.getClass('slider-tick')}--active`;
     const inactiveClass = `${state.component.getClass('slider-tick')}--inactive`;
     const hiddenClass = `${state.component.getClass('slider-tick')}--hidden`;
-    const labelClass = state.component.getClass('slider-label');
     const tickClass = state.component.getClass('slider-tick');
     
-    // Create ticks and labels
+    // Create ticks
     tickValues.forEach(value => {
       const percent = getPercentage(value);
       
@@ -423,30 +418,6 @@ export const createUiHelpers = (config: SliderConfig, state) => {
         
         ticksContainer.appendChild(tick);
         state.ticks.push(tick);
-      }
-      
-      // Create label if enabled
-      if (config.tickLabels) {
-        const label = document.createElement('div');
-        label.classList.add(labelClass);
-        
-        // Position label
-        if (isVertical) {
-          label.style.bottom = `${percent}%`;
-        } else {
-          label.style.left = `${percent}%`;
-        }
-        
-        // Set label text
-        if (Array.isArray(config.tickLabels) && config.tickLabels[tickValues.indexOf(value)]) {
-          label.textContent = config.tickLabels[tickValues.indexOf(value)];
-        } else {
-          const formatter = config.valueFormatter || (value => value.toString());
-          label.textContent = formatter(value);
-        }
-        
-        state.component.element.appendChild(label);
-        state.tickLabels.push(label);
       }
     });
   };
