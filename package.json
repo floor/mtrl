@@ -1,14 +1,17 @@
 {
   "name": "mtrl",
-  "version": "0.2.4",
-  "description": "A functional JavaScript component library with composable architecture based on Material Design 3",
+  "version": "0.2.5",
+  "description": "A functional TypeScript/JavaScript component library with composable architecture based on Material Design 3",
   "keywords": [
     "component",
     "library",
     "ui",
     "user interface",
+    "typescript",
     "functional",
-    "composable"
+    "composable",
+    "material design 3",
+    "md3"
   ],
   "main": "index.js",
   "scripts": {
