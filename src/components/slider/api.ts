@@ -2,6 +2,9 @@
 import { SliderComponent, SliderEvent } from './types';
 import { SLIDER_COLORS, SLIDER_SIZES, SLIDER_ORIENTATIONS, SLIDER_EVENTS } from './constants';
 
+/**
+ * API options interface - structured by feature area
+ */
 interface ApiOptions {
   slider: {
     setValue: (value: number, triggerEvent?: boolean) => any;
@@ -41,6 +44,9 @@ interface ApiOptions {
   };
 }
 
+/**
+ * Component with elements
+ */
 interface ComponentWithElements {
   element: HTMLElement;
 }
@@ -53,46 +59,6 @@ interface ComponentWithElements {
  */
 export const withAPI = (options: ApiOptions) => 
   (component: ComponentWithElements): SliderComponent => {
-    // Make sure options is defined with fallbacks
-    const safeOptions: ApiOptions = options || {
-      slider: {
-        setValue: () => {},
-        getValue: () => 0,
-        setSecondValue: () => {},
-        getSecondValue: () => null,
-        setMin: () => {},
-        getMin: () => 0,
-        setMax: () => {},
-        getMax: () => 100,
-        setStep: () => {},
-        getStep: () => 1,
-        regenerateTicks: () => {}
-      },
-      disabled: {
-        enable: () => {},
-        disable: () => {},
-        isDisabled: () => false
-      },
-      appearance: {
-        setColor: () => {},
-        getColor: () => 'primary',
-        setSize: () => {},
-        getSize: () => 'medium',
-        setOrientation: () => {},
-        getOrientation: () => 'horizontal',
-        showTicks: () => {},
-        showTickLabels: () => {},
-        showCurrentValue: () => {}
-      },
-      events: {
-        on: () => {},
-        off: () => {}
-      },
-      lifecycle: {
-        destroy: () => {}
-      }
-    };
-    
     return {
       ...component as any,
       
@@ -103,7 +69,7 @@ export const withAPI = (options: ApiOptions) =>
        * @returns {SliderComponent} Slider component instance for chaining
        */
       setValue(value: number, triggerEvent: boolean = true) {
-        safeOptions.slider.setValue(value, triggerEvent);
+        options.slider.setValue(value, triggerEvent);
         return this;
       },
       
@@ -112,7 +78,7 @@ export const withAPI = (options: ApiOptions) =>
        * @returns {number} Current slider value
        */
       getValue() {
-        return safeOptions.slider.getValue();
+        return options.slider.getValue();
       },
       
       /**
@@ -122,7 +88,7 @@ export const withAPI = (options: ApiOptions) =>
        * @returns {SliderComponent} Slider component instance for chaining
        */
       setSecondValue(value: number, triggerEvent: boolean = true) {
-        safeOptions.slider.setSecondValue(value, triggerEvent);
+        options.slider.setSecondValue(value, triggerEvent);
         return this;
       },
       
@@ -131,7 +97,7 @@ export const withAPI = (options: ApiOptions) =>
        * @returns {number|null} Current secondary value or null
        */
       getSecondValue() {
-        return safeOptions.slider.getSecondValue();
+        return options.slider.getSecondValue();
       },
       
       /**
@@ -140,7 +106,7 @@ export const withAPI = (options: ApiOptions) =>
        * @returns {SliderComponent} Slider component instance for chaining
        */
       setMin(min: number) {
-        safeOptions.slider.setMin(min);
+        options.slider.setMin(min);
         return this;
       },
       
@@ -149,7 +115,7 @@ export const withAPI = (options: ApiOptions) =>
        * @returns {number} Current minimum value
        */
       getMin() {
-        return safeOptions.slider.getMin();
+        return options.slider.getMin();
       },
       
       /**
@@ -158,7 +124,7 @@ export const withAPI = (options: ApiOptions) =>
        * @returns {SliderComponent} Slider component instance for chaining
        */
       setMax(max: number) {
-        safeOptions.slider.setMax(max);
+        options.slider.setMax(max);
         return this;
       },
       
@@ -167,7 +133,7 @@ export const withAPI = (options: ApiOptions) =>
        * @returns {number} Current maximum value
        */
       getMax() {
-        return safeOptions.slider.getMax();
+        return options.slider.getMax();
       },
       
       /**
@@ -176,7 +142,7 @@ export const withAPI = (options: ApiOptions) =>
        * @returns {SliderComponent} Slider component instance for chaining
        */
       setStep(step: number) {
-        safeOptions.slider.setStep(step);
+        options.slider.setStep(step);
         return this;
       },
       
@@ -185,7 +151,7 @@ export const withAPI = (options: ApiOptions) =>
        * @returns {number} Current step size
        */
       getStep() {
-        return safeOptions.slider.getStep();
+        return options.slider.getStep();
       },
       
       /**
@@ -193,7 +159,7 @@ export const withAPI = (options: ApiOptions) =>
        * @returns {SliderComponent} Slider component instance for chaining
        */
       enable() {
-        safeOptions.disabled.enable();
+        options.disabled.enable();
         return this;
       },
       
@@ -202,7 +168,7 @@ export const withAPI = (options: ApiOptions) =>
        * @returns {SliderComponent} Slider component instance for chaining
        */
       disable() {
-        safeOptions.disabled.disable();
+        options.disabled.disable();
         return this;
       },
       
@@ -211,7 +177,7 @@ export const withAPI = (options: ApiOptions) =>
        * @returns {boolean} True if slider is disabled
        */
       isDisabled() {
-        return safeOptions.disabled.isDisabled();
+        return options.disabled.isDisabled();
       },
       
       /**
@@ -219,8 +185,8 @@ export const withAPI = (options: ApiOptions) =>
        * @param {string} color - Color variant
        * @returns {SliderComponent} Slider component instance for chaining
        */
-      setColor(color: keyof typeof SLIDER_COLORS | SLIDER_COLORS) {
-        safeOptions.appearance.setColor(color);
+      setColor(color: keyof typeof SLIDER_COLORS | typeof SLIDER_COLORS[keyof typeof SLIDER_COLORS]) {
+        options.appearance.setColor(color);
         return this;
       },
       
@@ -229,7 +195,7 @@ export const withAPI = (options: ApiOptions) =>
        * @returns {string} Current color name
        */
       getColor() {
-        return safeOptions.appearance.getColor();
+        return options.appearance.getColor();
       },
       
       /**
@@ -237,8 +203,8 @@ export const withAPI = (options: ApiOptions) =>
        * @param {string} size - Size variant
        * @returns {SliderComponent} Slider component instance for chaining
        */
-      setSize(size: keyof typeof SLIDER_SIZES | SLIDER_SIZES) {
-        safeOptions.appearance.setSize(size);
+      setSize(size: keyof typeof SLIDER_SIZES | typeof SLIDER_SIZES[keyof typeof SLIDER_SIZES]) {
+        options.appearance.setSize(size);
         return this;
       },
       
@@ -247,7 +213,7 @@ export const withAPI = (options: ApiOptions) =>
        * @returns {string} Current size name
        */
       getSize() {
-        return safeOptions.appearance.getSize();
+        return options.appearance.getSize();
       },
       
       /**
@@ -255,8 +221,8 @@ export const withAPI = (options: ApiOptions) =>
        * @param {string} orientation - Orientation variant
        * @returns {SliderComponent} Slider component instance for chaining
        */
-      setOrientation(orientation: keyof typeof SLIDER_ORIENTATIONS | SLIDER_ORIENTATIONS) {
-        safeOptions.appearance.setOrientation(orientation);
+      setOrientation(orientation: keyof typeof SLIDER_ORIENTATIONS | typeof SLIDER_ORIENTATIONS[keyof typeof SLIDER_ORIENTATIONS]) {
+        options.appearance.setOrientation(orientation);
         return this;
       },
       
@@ -265,7 +231,7 @@ export const withAPI = (options: ApiOptions) =>
        * @returns {string} Current orientation name
        */
       getOrientation() {
-        return safeOptions.appearance.getOrientation();
+        return options.appearance.getOrientation();
       },
       
       /**
@@ -274,7 +240,7 @@ export const withAPI = (options: ApiOptions) =>
        * @returns {SliderComponent} Slider component instance for chaining
        */
       showTicks(show: boolean) {
-        safeOptions.appearance.showTicks(show);
+        options.appearance.showTicks(show);
         return this;
       },
       
@@ -284,7 +250,7 @@ export const withAPI = (options: ApiOptions) =>
        * @returns {SliderComponent} Slider component instance for chaining
        */
       showTickLabels(show: boolean | string[]) {
-        safeOptions.appearance.showTickLabels(show);
+        options.appearance.showTickLabels(show);
         return this;
       },
       
@@ -294,7 +260,7 @@ export const withAPI = (options: ApiOptions) =>
        * @returns {SliderComponent} Slider component instance for chaining
        */
       showCurrentValue(show: boolean) {
-        safeOptions.appearance.showCurrentValue(show);
+        options.appearance.showCurrentValue(show);
         return this;
       },
       
@@ -304,9 +270,9 @@ export const withAPI = (options: ApiOptions) =>
        * @param {Function} handler - Event handler
        * @returns {SliderComponent} Slider component instance for chaining
        */
-      on(event: keyof typeof SLIDER_EVENTS | SLIDER_EVENTS, handler: (event: SliderEvent) => void) {
-        if (safeOptions.events && typeof safeOptions.events.on === 'function') {
-          safeOptions.events.on(event, handler);
+      on(event: keyof typeof SLIDER_EVENTS | typeof SLIDER_EVENTS[keyof typeof SLIDER_EVENTS], handler: (event: SliderEvent) => void) {
+        if (options.events && typeof options.events.on === 'function') {
+          options.events.on(event, handler);
         }
         return this;
       },
@@ -317,9 +283,9 @@ export const withAPI = (options: ApiOptions) =>
        * @param {Function} handler - Event handler
        * @returns {SliderComponent} Slider component instance for chaining
        */
-      off(event: keyof typeof SLIDER_EVENTS | SLIDER_EVENTS, handler: (event: SliderEvent) => void) {
-        if (safeOptions.events && typeof safeOptions.events.off === 'function') {
-          safeOptions.events.off(event, handler);
+      off(event: keyof typeof SLIDER_EVENTS | typeof SLIDER_EVENTS[keyof typeof SLIDER_EVENTS], handler: (event: SliderEvent) => void) {
+        if (options.events && typeof options.events.off === 'function') {
+          options.events.off(event, handler);
         }
         return this;
       },
@@ -328,8 +294,8 @@ export const withAPI = (options: ApiOptions) =>
        * Destroys the slider component and cleans up resources
        */
       destroy() {
-        if (safeOptions.lifecycle && typeof safeOptions.lifecycle.destroy === 'function') {
-          safeOptions.lifecycle.destroy();
+        if (options.lifecycle && typeof options.lifecycle.destroy === 'function') {
+          options.lifecycle.destroy();
         }
       }
     };

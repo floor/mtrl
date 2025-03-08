@@ -1,5 +1,5 @@
 // src/components/slider/slider.ts
-import { pipe } from '../../core/compose';
+import { pipe } from '../../core/compose/pipe';
 import { createBase, withElement } from '../../core/compose/component';
 import { withEvents, withLifecycle } from '../../core/compose/features';
 import { 
