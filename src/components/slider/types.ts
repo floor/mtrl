@@ -24,13 +24,13 @@ export interface SliderConfig {
   disabled?: boolean;
   
   /** Color variant of the slider */
-  color?: keyof typeof SLIDER_COLORS | SLIDER_COLORS;
+  color?: keyof typeof SLIDER_COLORS | typeof SLIDER_COLORS[keyof typeof SLIDER_COLORS];
   
   /** Size variant of the slider */
-  size?: keyof typeof SLIDER_SIZES | SLIDER_SIZES;
+  size?: keyof typeof SLIDER_SIZES | typeof SLIDER_SIZES[keyof typeof SLIDER_SIZES];
   
   /** Orientation of the slider */
-  orientation?: keyof typeof SLIDER_ORIENTATIONS | SLIDER_ORIENTATIONS;
+  orientation?: keyof typeof SLIDER_ORIENTATIONS | typeof SLIDER_ORIENTATIONS[keyof typeof SLIDER_ORIENTATIONS];
   
   /** Whether to show tick marks */
   ticks?: boolean;
@@ -55,7 +55,7 @@ export interface SliderConfig {
   
   /** Event handlers for slider events */
   on?: {
-    [key in keyof typeof SLIDER_EVENTS]?: (event: SliderEvent) => void;
+    [key in keyof typeof SLIDER_EVENTS | typeof SLIDER_EVENTS[keyof typeof SLIDER_EVENTS]]?: (event: SliderEvent) => void;
   };
 }
 
@@ -129,19 +129,19 @@ export interface SliderComponent {
   isDisabled: () => boolean;
   
   /** Sets slider color */
-  setColor: (color: keyof typeof SLIDER_COLORS | SLIDER_COLORS) => SliderComponent;
+  setColor: (color: keyof typeof SLIDER_COLORS | typeof SLIDER_COLORS[keyof typeof SLIDER_COLORS]) => SliderComponent;
   
   /** Gets slider color */
   getColor: () => string;
   
   /** Sets slider size */
-  setSize: (size: keyof typeof SLIDER_SIZES | SLIDER_SIZES) => SliderComponent;
+  setSize: (size: keyof typeof SLIDER_SIZES | typeof SLIDER_SIZES[keyof typeof SLIDER_SIZES]) => SliderComponent;
   
   /** Gets slider size */
   getSize: () => string;
   
   /** Sets slider orientation */
-  setOrientation: (orientation: keyof typeof SLIDER_ORIENTATIONS | SLIDER_ORIENTATIONS) => SliderComponent;
+  setOrientation: (orientation: keyof typeof SLIDER_ORIENTATIONS | typeof SLIDER_ORIENTATIONS[keyof typeof SLIDER_ORIENTATIONS]) => SliderComponent;
   
   /** Gets slider orientation */
   getOrientation: () => string;
@@ -156,10 +156,10 @@ export interface SliderComponent {
   showCurrentValue: (show: boolean) => SliderComponent;
   
   /** Adds event listener */
-  on: (event: keyof typeof SLIDER_EVENTS | SLIDER_EVENTS, handler: (event: SliderEvent) => void) => SliderComponent;
+  on: (event: keyof typeof SLIDER_EVENTS | typeof SLIDER_EVENTS[keyof typeof SLIDER_EVENTS], handler: (event: SliderEvent) => void) => SliderComponent;
   
   /** Removes event listener */
-  off: (event: keyof typeof SLIDER_EVENTS | SLIDER_EVENTS, handler: (event: SliderEvent) => void) => SliderComponent;
+  off: (event: keyof typeof SLIDER_EVENTS | typeof SLIDER_EVENTS[keyof typeof SLIDER_EVENTS], handler: (event: SliderEvent) => void) => SliderComponent;
   
   /** Destroys the slider component and cleans up resources */
   destroy: () => void;
