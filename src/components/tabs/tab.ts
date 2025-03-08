@@ -1,6 +1,6 @@
 // src/components/tabs/tab.ts
 import { pipe } from '../../core/compose';
-import { createBase } from '../../core/compose/component';
+import { createBase, withElement } from '../../core/compose/component';
 import {
   withEvents,
   withText,
@@ -37,7 +37,7 @@ export const createTab = (config: TabConfig = {}): TabComponent => {
     const tab = pipe(
       createBase,
       withEvents(),
-      getTabElementConfig(baseConfig), // Here we use the function directly instead of withElement()
+      withElement(getTabElementConfig(baseConfig)),
       withVariant(baseConfig),
       withText(baseConfig),
       withIcon(baseConfig),

@@ -15,6 +15,7 @@ export { withTextInput } from './textinput';
 export { withTextLabel } from './textlabel';
 export { withTrack } from './track';
 export { withEvents as withEnhancedEvents } from './withEvents';
+export { withBadge } from './badge';
 
 // State management features
 export { withDisabled } from './disabled';
@@ -33,3 +34,4 @@ export type { TextInputComponent } from './textinput';
 export type { LabelComponent, LabelManager } from './textlabel';
 export type { TrackComponent } from './track';
 export type { EnhancedEventComponent } from './withEvents';
+export type { BadgeComponent, BadgeConfig } from './badge';
