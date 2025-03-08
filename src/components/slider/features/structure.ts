@@ -28,6 +28,9 @@ export const withStructure = (config: SliderConfig) => component => {
   const startTrack = createElement('slider-start-track');
   const activeTrack = createElement('slider-active-track');
   
+  // Create ticks container
+  const ticksContainer = createElement('slider-ticks-container');
+  
   // Create dots for track ends
   const startDot = createElement('slider-dot');
   startDot.classList.add(component.getClass('slider-dot--start'));
@@ -92,6 +95,7 @@ export const withStructure = (config: SliderConfig) => component => {
   // Add elements to the slider
   component.element.classList.add(component.getClass('slider'));
   component.element.appendChild(track);
+  component.element.appendChild(ticksContainer); // Add ticks container
   component.element.appendChild(startDot);
   component.element.appendChild(endDot);
   component.element.appendChild(thumb);
@@ -119,6 +123,7 @@ export const withStructure = (config: SliderConfig) => component => {
       activeTrack,
       startTrack,
       remainingTrack,
+      ticksContainer,
       thumb,
       valueBubble,
       secondThumb,

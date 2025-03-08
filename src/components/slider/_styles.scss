@@ -165,7 +165,7 @@ $component: '#{base.$prefix}-slider';
     top: 50%;
     transform: translate(-50%, -50%);
     cursor: pointer;
-    z-index: 2;
+    z-index: 4;
     // transition: left 0.1s ease, bottom 0.1s ease;
     width: 16px;
     height: 100%;
@@ -278,6 +278,23 @@ $component: '#{base.$prefix}-slider';
     }
   }
   
+  // Container for ticks in MD3 style
+  &-ticks-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    pointer-events: none;
+    z-index: 3;
+    
+    // Ensure ticks container spans the full track
+    .#{$component}--vertical & {
+      height: 100%;
+      width: 100%;
+    }
+  }
+  
   // Tick marks
   &-tick {
     position: absolute;
@@ -288,7 +305,7 @@ $component: '#{base.$prefix}-slider';
     top: 50%;
     transform: translate(-50%, -50%);
     pointer-events: none;
-    opacity: 0.6;
+    opacity: 1;
     
     &:last-child, &:first-child {
       display: none
@@ -296,21 +313,44 @@ $component: '#{base.$prefix}-slider';
 
     // Active tick (filled)
     &--active {
-      background-color: t.alpha('on-primary', 0.38);
+      // background-color: white;
+      background-color: t.color('on-primary');
       
       .#{$component}--secondary & {
-        background-color: t.alpha('on-secondary', 0.38);
+        background-color: t.color('on-secondary');
       }
       
       .#{$component}--tertiary & {
-        background-color: t.alpha('on-tertiary', 0.38);
-      }
-      
-      .#{$component}--error & {
-        background-color: t.alpha('on-error', 0.38);
+        background-color: t.color('on-tertiary');
       }
     }
+    
+    // Inactive tick (unfilled)
+    &--inactive {
+      background-color: t.color('primary');
+
+      .#{$component}--secondary & {
+        background-color: t.color('secondary');
+      }
+      
+      .#{$component}--tertiary & {
+        background-color: t.color('tertiary');
+      }
+    }
+
+     // Inactive tick (unfilled)
+    &--hidden {
+      opacity: 0
+    }
+    
+    // Vertical orientation
+    .#{$component}--vertical .#{$component}-ticks-container & {
+      left: 50%;
+      top: auto;
+      transform: translate(-50%, 50%);
+    }
   }
+
   
   // Labels for tick marks
   &-label {
@@ -422,6 +462,7 @@ $component: '#{base.$prefix}-slider';
       }
     }
     
+    // Vertical tick adjustments
     .#{$component}-tick {
       left: 50%;
       top: auto;
