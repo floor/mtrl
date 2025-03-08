@@ -125,7 +125,6 @@ $component: '#{base.$prefix}-slider';
     width: 4px;
     height: 4px;
     border-radius: 50%;
-    background-color: t.color('primary');
     top: 50%;
     transform: translateY(-50%);
     z-index: 1;
@@ -133,30 +132,37 @@ $component: '#{base.$prefix}-slider';
     // Start dot
     &--start {
       left: 6px;
+      // Color variants
+      background-color: t.color('on-primary');
+      
+      .#{$component}--secondary & {
+        background-color: t.color('on-secondary');
+      }
+      
+      .#{$component}--tertiary & {
+        background-color: t.color('on-tertiary');
+      }
     }
     
     // End dot
     &--end {
       right: 6px;
+      // Color variants
+      background-color: t.color('primary');
+      
+      .#{$component}--secondary & {
+        background-color: t.color('secondary');
+      }
+      
+      .#{$component}--tertiary & {
+        background-color: t.color('tertiary');
+      }
     }
     
-    // Color variants
-    .#{$component}--secondary & {
-      background-color: t.color('secondary');
-    }
-    
-    .#{$component}--tertiary & {
-      background-color: t.color('tertiary');
-    }
-    
-    .#{$component}--error & {
-      background-color: t.color('error');
-    }
-    
-    // Disabled state
     .#{$component}--disabled & {
       opacity: 0.38;
     }
+ 
   }
   
   // Thumb - updated to MD3 style with T-shape
