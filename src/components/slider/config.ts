@@ -4,7 +4,7 @@ import {
   createElementConfig
 } from '../../core/config/component-config';
 import { SliderConfig } from './types';
-import { SLIDER_COLORS, SLIDER_SIZES, SLIDER_ORIENTATIONS } from './constants';
+import { SLIDER_COLORS, SLIDER_SIZES } from './constants';
 
 /**
  * Default configuration for the Slider component
@@ -17,7 +17,6 @@ export const defaultConfig: SliderConfig = {
   disabled: false,
   color: SLIDER_COLORS.PRIMARY,
   size: SLIDER_SIZES.MEDIUM,
-  orientation: SLIDER_ORIENTATIONS.HORIZONTAL,
   ticks: false,
   showValue: true,
   snapToSteps: true,
@@ -48,7 +47,7 @@ export const getElementConfig = (config: SliderConfig) => {
       'aria-valuemin': config.min,
       'aria-valuemax': config.max,
       'aria-valuenow': config.value,
-      'aria-orientation': config.orientation
+      'aria-orientation': 'horizontal'
     },
     className: config.class
   });
@@ -85,8 +84,6 @@ export const getApiConfig = (comp) => {
       getColor: () => comp.appearance?.getColor?.() ?? 'primary',
       setSize: (size) => comp.appearance?.setSize?.(size),
       getSize: () => comp.appearance?.getSize?.() ?? 'medium',
-      setOrientation: (orientation) => comp.appearance?.setOrientation?.(orientation),
-      getOrientation: () => comp.appearance?.getOrientation?.() ?? 'horizontal',
       showTicks: (show) => comp.appearance?.showTicks?.(show),
       showCurrentValue: (show) => comp.appearance?.showCurrentValue?.(show)
     },

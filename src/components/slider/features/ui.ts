@@ -1,5 +1,4 @@
 // src/components/slider/features/ui.ts
-import { SLIDER_ORIENTATIONS } from '../constants';
 import { SliderConfig } from '../types';
 
 /**
@@ -28,8 +27,6 @@ export const createUiHelpers = (config: SliderConfig, state) => {
     valueBubble, secondThumb, secondValueBubble, ticksContainer
   } = state.component.structure;
   
-  const isVertical = config.orientation === SLIDER_ORIENTATIONS.VERTICAL;
-  
   /**
    * Calculates percentage position for a value
    */
@@ -46,8 +43,8 @@ export const createUiHelpers = (config: SliderConfig, state) => {
     
     const thumbRect = thumb.getBoundingClientRect();
     const trackRect = track.getBoundingClientRect();
-    const thumbSize = isVertical ? thumbRect.height || 20 : thumbRect.width || 20;
-    const trackSize = isVertical ? trackRect.height : trackRect.width;
+    const thumbSize = thumbRect.width || 20;
+    const trackSize = trackRect.width;
     
     const edgeConstraint = (thumbSize / 2) / trackSize * 100;
     const paddingPercent = (8 / trackSize) * 100; // 8px padding
@@ -71,7 +68,7 @@ export const createUiHelpers = (config: SliderConfig, state) => {
   /**
    * Gets slider value from a position on the track
    */
-  const getValueFromPosition = (position, vertical = false) => {
+  const getValueFromPosition = (position) => {
     if (!track) return state.min;
     
     try {
@@ -80,27 +77,15 @@ export const createUiHelpers = (config: SliderConfig, state) => {
       
       const thumbRect = thumb.getBoundingClientRect();
       const thumbWidth = thumbRect.width || 20;
-      const thumbHeight = vertical ? thumbRect.width || 20 : thumbRect.height || 20;
       
-      if (vertical) {
-        const topEdge = trackRect.top + (thumbWidth / 2);
-        const bottomEdge = trackRect.bottom - (thumbWidth / 2);
-        const effectiveHeight = bottomEdge - topEdge;
-        
-        const adjustedPosition = Math.max(topEdge, Math.min(bottomEdge, position));
-        const percentageFromTop = (adjustedPosition - topEdge) / effectiveHeight;
-        
-        return state.min + (1 - percentageFromTop) * range;
-      } else {
-        const leftEdge = trackRect.left + (thumbWidth / 2);
-        const rightEdge = trackRect.right - (thumbWidth / 2);
-        const effectiveWidth = rightEdge - leftEdge;
-        
-        const adjustedPosition = Math.max(leftEdge, Math.min(rightEdge, position));
-        const percentageFromLeft = (adjustedPosition - leftEdge) / effectiveWidth;
-        
-        return state.min + percentageFromLeft * range;
-      }
+      const leftEdge = trackRect.left + (thumbWidth / 2);
+      const rightEdge = trackRect.right - (thumbWidth / 2);
+      const effectiveWidth = rightEdge - leftEdge;
+      
+      const adjustedPosition = Math.max(leftEdge, Math.min(rightEdge, position));
+      const percentageFromLeft = (adjustedPosition - leftEdge) / effectiveWidth;
+      
+      return state.min + percentageFromLeft * range;
     } catch (error) {
       console.warn('Error calculating value from position:', error);
       return state.min;
@@ -136,25 +121,12 @@ export const createUiHelpers = (config: SliderConfig, state) => {
     const edgeConstraint = (thumbSize / 2) / trackSize * 100;
     const adjustedPercent = mapValueToVisualPercent(valuePercent, edgeConstraint);
     
-    if (isVertical) {
-      thumbElement.style.bottom = `${adjustedPercent}%`;
-      thumbElement.style.left = '50%';
-      thumbElement.style.top = 'auto';
-      thumbElement.style.transform = 'translate(-50%, 50%)';
-      
-      if (bubbleElement) {
-        bubbleElement.style.bottom = `${adjustedPercent}%`;
-        bubbleElement.style.top = 'auto';
-        bubbleElement.style.transform = 'translateY(50%)';
-      }
-    } else {
-      thumbElement.style.left = `${adjustedPercent}%`;
-      thumbElement.style.transform = 'translate(-50%, -50%)';
-      
-      if (bubbleElement) {
-        bubbleElement.style.left = `${adjustedPercent}%`;
-        bubbleElement.style.transform = 'translateX(-50%)';
-      }
+    thumbElement.style.left = `${adjustedPercent}%`;
+    thumbElement.style.transform = 'translate(-50%, -50%)';
+    
+    if (bubbleElement) {
+      bubbleElement.style.left = `${adjustedPercent}%`;
+      bubbleElement.style.transform = 'translateX(-50%)';
     }
   };
 
@@ -178,18 +150,9 @@ export const createUiHelpers = (config: SliderConfig, state) => {
       const finalPercent = Math.max(0, adjustedPercent - paddingPercent);
       
       startTrack.style.display = 'block';
-      
-      if (isVertical) {
-        startTrack.style.height = `${finalPercent}%`;
-        startTrack.style.bottom = '0';
-        startTrack.style.top = 'auto';
-        startTrack.style.width = '100%';
-        startTrack.style.left = '0';
-      } else {
-        startTrack.style.width = `${finalPercent}%`;
-        startTrack.style.left = '0';
-        startTrack.style.height = '100%';
-      }
+      startTrack.style.width = `${finalPercent}%`;
+      startTrack.style.left = '0';
+      startTrack.style.height = '100%';
     } else {
       startTrack.style.display = 'none';
     }
@@ -223,17 +186,9 @@ export const createUiHelpers = (config: SliderConfig, state) => {
       }
       
       activeTrack.style.display = 'block';
-      
-      if (isVertical) {
-        activeTrack.style.height = `${trackLength}%`;
-        activeTrack.style.bottom = `${adjustedLower}%`;
-        activeTrack.style.top = 'auto';
-        activeTrack.style.width = '100%';
-      } else {
-        activeTrack.style.width = `${trackLength}%`;
-        activeTrack.style.left = `${adjustedLower}%`;
-        activeTrack.style.height = '100%';
-      }
+      activeTrack.style.width = `${trackLength}%`;
+      activeTrack.style.left = `${adjustedLower}%`;
+      activeTrack.style.height = '100%';
     } else {
       // Single thumb slider
       const valuePercent = getPercentage(state.value);
@@ -241,17 +196,9 @@ export const createUiHelpers = (config: SliderConfig, state) => {
       const adjustedWidth = Math.max(0, adjustedPercent - paddingPercent);
       
       activeTrack.style.display = 'block';
-      
-      if (isVertical) {
-        activeTrack.style.height = `${adjustedWidth}%`;
-        activeTrack.style.bottom = '0';
-        activeTrack.style.top = 'auto';
-        activeTrack.style.width = '100%';
-      } else {
-        activeTrack.style.width = `${adjustedWidth}%`;
-        activeTrack.style.left = '0';
-        activeTrack.style.height = '100%';
-      }
+      activeTrack.style.width = `${adjustedWidth}%`;
+      activeTrack.style.left = '0';
+      activeTrack.style.height = '100%';
     }
   };
 
@@ -278,17 +225,9 @@ export const createUiHelpers = (config: SliderConfig, state) => {
     const remainingSize = Math.max(0, 100 - adjustedPercent);
     
     remainingTrack.style.display = 'block';
-    
-    if (isVertical) {
-      remainingTrack.style.height = `${remainingSize}%`;
-      remainingTrack.style.bottom = `${adjustedPercent}%`;
-      remainingTrack.style.top = 'auto';
-      remainingTrack.style.width = '100%';
-    } else {
-      remainingTrack.style.width = `${remainingSize}%`;
-      remainingTrack.style.left = `${adjustedPercent}%`;
-      remainingTrack.style.height = '100%';
-    }
+    remainingTrack.style.width = `${remainingSize}%`;
+    remainingTrack.style.left = `${adjustedPercent}%`;
+    remainingTrack.style.height = '100%';
   };
   
   /**
@@ -394,12 +333,8 @@ export const createUiHelpers = (config: SliderConfig, state) => {
         const tick = document.createElement('div');
         tick.classList.add(tickClass);
         
-        // Position tick based on orientation
-        if (isVertical) {
-          tick.style.bottom = `${percent}%`;
-        } else {
-          tick.style.left = `${percent}%`;
-        }
+        // Position tick
+        tick.style.left = `${percent}%`;
         
         // Check if this tick should be hidden (matches exactly a selected value)
         const isExactlySelected = value === state.value || 

@@ -1,5 +1,5 @@
 // src/components/slider/types.ts
-import { SLIDER_COLORS, SLIDER_SIZES, SLIDER_ORIENTATIONS, SLIDER_EVENTS } from './constants';
+import { SLIDER_COLORS, SLIDER_SIZES, SLIDER_EVENTS } from './constants';
 
 /**
  * Configuration interface for the Slider component
@@ -28,9 +28,6 @@ export interface SliderConfig {
   
   /** Size variant of the slider */
   size?: keyof typeof SLIDER_SIZES | typeof SLIDER_SIZES[keyof typeof SLIDER_SIZES];
-  
-  /** Orientation of the slider */
-  orientation?: keyof typeof SLIDER_ORIENTATIONS | typeof SLIDER_ORIENTATIONS[keyof typeof SLIDER_ORIENTATIONS];
   
   /** Whether to show tick marks */
   ticks?: boolean;
@@ -136,12 +133,6 @@ export interface SliderComponent {
   
   /** Gets slider size */
   getSize: () => string;
-  
-  /** Sets slider orientation */
-  setOrientation: (orientation: keyof typeof SLIDER_ORIENTATIONS | typeof SLIDER_ORIENTATIONS[keyof typeof SLIDER_ORIENTATIONS]) => SliderComponent;
-  
-  /** Gets slider orientation */
-  getOrientation: () => string;
   
   /** Shows or hides tick marks */
   showTicks: (show: boolean) => SliderComponent;
