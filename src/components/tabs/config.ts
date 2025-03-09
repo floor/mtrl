@@ -18,48 +18,6 @@ export const defaultTabConfig: TabConfig = {
 };
 
 /**
- * Creates the base configuration for a Tab
- * @param {TabConfig} config - User provided configuration
- * @returns {TabConfig} Complete configuration with defaults applied
- */
-export const createTabConfig = (config: TabConfig = {}): TabConfig => 
-  createComponentConfig(defaultTabConfig, config, 'tab') as TabConfig;
-
-/**
- * Generates element configuration for a Tab
- * @param {TabConfig} config - Tab configuration
- * @returns {Function} Component enhancer function that creates a button element
- */
-export const getTabElementConfig = (config: TabConfig) => {
-  // Create the attributes object
-  const attrs: Record<string, any> = {
-    role: 'tab',
-    'aria-selected': config.state === TAB_STATES.ACTIVE ? 'true' : 'false',
-    'data-value': config.value !== undefined ? config.value : ''
-  };
-  
-  // Only add disabled attribute if it's explicitly true
-  if (config.disabled === true) {
-    attrs.disabled = true;
-    attrs['aria-disabled'] = 'true';
-  }
-  
-  const elementConfig = createElementConfig(config, {
-    tag: 'button',
-    attrs,
-    className: config.class,
-    interactive: true,
-    forwardEvents: {
-      click: (component) => !component.element.hasAttribute('disabled'),
-      focus: true,
-      blur: true
-    }
-  });
-  
-  return (component) => withElement(elementConfig)(component);
-};
-
-/**
  * Default configuration for the Tabs component
  */
 export const defaultTabsConfig = {
@@ -69,19 +27,18 @@ export const defaultTabsConfig = {
   componentName: 'tabs'
 };
 
-/**
- * Creates the base configuration for Tabs component
- * @param {Object} config - User provided configuration
- * @returns {Object} Complete configuration with defaults applied
- */
 export const createTabsConfig = (config = {}) => 
   createComponentConfig(defaultTabsConfig, config, 'tabs');
 
 /**
- * Generates element configuration for the Tabs component
- * @param {Object} config - Tabs configuration
- * @returns {Function} Component enhancer function that creates a tabs container
+ * Creates the base configuration for a Tab
+ * @param {TabConfig} config - User provided configuration
+ * @returns {TabConfig} Complete configuration with defaults applied
  */
+export const createTabConfig = (config: TabConfig = {}): TabConfig => 
+  createComponentConfig(defaultTabConfig, config, 'tab') as TabConfig;
+
+
 export const getTabsElementConfig = (config) => {
   const elementConfig = {
     tag: 'div',

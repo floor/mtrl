@@ -9,7 +9,7 @@ import createButton from '../button';
 import createBadge from '../badge';
 
 /**
- * Creates a new Tab component
+ * Creates a new Tab component following MD3 guidelines
  * @param {TabConfig} config - Tab configuration object
  * @returns {TabComponent} Tab component instance
  */
@@ -30,11 +30,16 @@ export const createTab = (config: TabConfig = {}): TabComponent => {
       icon: baseConfig.icon,
       iconSize: baseConfig.iconSize,
       disabled: baseConfig.disabled,
-      ripple: baseConfig.ripple,
-      rippleConfig: baseConfig.rippleConfig,
+      ripple: baseConfig.ripple !== false, // Enable ripple by default
+      rippleConfig: {
+        duration: 400,
+        timing: 'cubic-bezier(0.4, 0, 0.2, 1)',
+        opacity: ['0.2', '0'],
+        ...(baseConfig.rippleConfig || {})
+      },
       value: baseConfig.value,
       prefix: baseConfig.prefix,
-      variant: 'text',
+      variant: 'text', // MD3 tabs use text button style
       class: `${baseConfig.prefix}-tab`
     });
     
@@ -45,6 +50,12 @@ export const createTab = (config: TabConfig = {}): TabComponent => {
     baseComponent.element.setAttribute('role', 'tab');
     baseComponent.element.setAttribute('aria-selected', 
       baseConfig.state === TAB_STATES.ACTIVE ? 'true' : 'false');
+    
+    // For better accessibility
+    if (baseConfig.value) {
+      baseComponent.element.setAttribute('id', `tab-${baseConfig.value}`);
+      baseComponent.element.setAttribute('aria-controls', `tabpanel-${baseConfig.value}`);
+    }
     
     // Add active state if specified in config
     if (baseConfig.state === TAB_STATES.ACTIVE) {
@@ -59,12 +70,12 @@ export const createTab = (config: TabConfig = {}): TabComponent => {
     });
     
     // Create the tab component with enhanced API
-    const tab = {
+    const tab: TabComponent = {
       ...baseComponent,
       button,
       element: button.element,
       
-      // Basic badge support
+      // Badge support
       badge: null,
       
       // Tab state methods
@@ -73,13 +84,27 @@ export const createTab = (config: TabConfig = {}): TabComponent => {
       },
       
       setValue(value) {
-        button.setValue(value);
+        const safeValue = value || '';
+        button.setValue(safeValue);
+        
+        // Update accessibility attributes
+        this.element.setAttribute('id', `tab-${safeValue}`);
+        this.element.setAttribute('aria-controls', `tabpanel-${safeValue}`);
+        
         return this;
       },
       
       activate() {
         this.element.classList.add(`${this.getClass('tab')}--${TAB_STATES.ACTIVE}`);
         this.element.setAttribute('aria-selected', 'true');
+        
+        // Dispatch event for screen readers
+        const event = new CustomEvent('tab:activated', { 
+          bubbles: true,
+          detail: { value: this.getValue() }
+        });
+        this.element.dispatchEvent(event);
+        
         return this;
       },
       
@@ -95,11 +120,13 @@ export const createTab = (config: TabConfig = {}): TabComponent => {
       
       enable() {
         button.enable();
+        this.element.removeAttribute('aria-disabled');
         return this;
       },
       
       disable() {
         button.disable();
+        this.element.setAttribute('aria-disabled', 'true');
         return this;
       },
       
@@ -123,14 +150,15 @@ export const createTab = (config: TabConfig = {}): TabComponent => {
         return button.getIcon();
       },
       
-      // Badge methods - directly defined here to ensure they exist
+      // Badge methods
       setBadge(content) {
         if (!this.badge) {
           const badgeConfig = {
             content,
             standalone: false,
             target: this.element,
-            prefix: baseConfig.prefix
+            prefix: baseConfig.prefix,
+            ...(baseConfig.badgeConfig || {})
           };
           
           this.badge = createBadge(badgeConfig);
@@ -138,6 +166,9 @@ export const createTab = (config: TabConfig = {}): TabComponent => {
           this.badge.setContent(content);
           this.badge.show();
         }
+        
+        // Add badge presence attribute for potential styling
+        this.element.setAttribute('data-has-badge', 'true');
         
         return this;
       },
@@ -149,6 +180,7 @@ export const createTab = (config: TabConfig = {}): TabComponent => {
       showBadge() {
         if (this.badge) {
           this.badge.show();
+          this.element.setAttribute('data-has-badge', 'true');
         }
         return this;
       },
@@ -156,6 +188,7 @@ export const createTab = (config: TabConfig = {}): TabComponent => {
       hideBadge() {
         if (this.badge) {
           this.badge.hide();
+          this.element.setAttribute('data-has-badge', 'false');
         }
         return this;
       },
@@ -196,6 +229,13 @@ export const createTab = (config: TabConfig = {}): TabComponent => {
         
         // Add the appropriate layout class
         this.element.classList.add(`${this.getClass('tab')}--${layoutClass}`);
+        
+        // Set appropriate aria-label when icon-only
+        if (layoutClass === TAB_LAYOUT.ICON_ONLY && hasText) {
+          this.element.setAttribute('aria-label', this.getText());
+        } else {
+          this.element.removeAttribute('aria-label');
+        }
       }
     };
     

@@ -8,13 +8,13 @@
 $component: '#{base.$prefix}-tab';
 $container: '#{base.$prefix}-tabs';
 
-// Tabs Container Styles
+// Tabs Container Styles (1. Container)
 .#{$container} {
   position: relative;
   display: flex;
   flex-direction: column;
   width: 100%;
-  background-color: t.color('surface');
+  background-color: t.color('surface'); // MD3: Surface color
   box-sizing: border-box;
   
   // Basic container sizing
@@ -47,14 +47,14 @@ $container: '#{base.$prefix}-tabs';
     }
   }
   
-  // Container divider
+  // Container divider (5. Divider)
   &-divider {
     position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
     height: 1px;
-    background-color: t.color('outline-variant');
+    background-color: t.color('outline-variant'); // MD3: Outline variant color
   }
 }
 
@@ -69,21 +69,20 @@ $container: '#{base.$prefix}-tabs';
   padding: 0 16px;
   border: none;
   background-color: transparent;
-  color: t.color('on-surface-variant');
+  color: t.color('on-surface-variant'); // MD3: On surface variant color (inactive)
   cursor: pointer;
   user-select: none;
   flex-shrink: 0;
   
-  // Typography for label text
+  // Typography for label text (4. Label)
   @include m.typography('label-large');
   
   // Transition for state changes
-  @include m.motion-transition(
-    background-color, 
-    color
-  );
+  transition:
+    background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   
-  // Container heights and layout
+  // Container heights based on layout
   &--text-only {
     height: 48px;
   }
@@ -97,14 +96,15 @@ $container: '#{base.$prefix}-tabs';
     flex-direction: column;
   }
   
-  // Focus styles
+  // Focus styles (3/7. Focused state)
   &:focus {
     outline: none;
   }
   
   &:focus-visible {
-    outline: 2px solid t.color('outline');
+    outline: 2px solid t.color('primary');
     outline-offset: 2px;
+    z-index: 1;
   }
   
   // Disabled state
@@ -113,7 +113,7 @@ $container: '#{base.$prefix}-tabs';
     opacity: 0.38;
   }
   
-  // Tab Icon
+  // Tab Icon (3. Icon - optional)
   &-icon {
     display: flex;
     align-items: center;
@@ -125,7 +125,6 @@ $container: '#{base.$prefix}-tabs';
       width: 100%;
       height: 100%;
       fill: currentColor;
-      stroke: currentColor;
     }
   }
   
@@ -136,7 +135,16 @@ $container: '#{base.$prefix}-tabs';
     }
   }
   
-  // Tab Text
+  // Ensure proper indicator positioning for icon-only tabs
+  &--icon-only {
+    &.#{$component}--active {
+      &::after {
+        width: 40px; // Narrower indicator for icon-only tabs
+      }
+    }
+  }
+  
+  // Tab Text (4. Label)
   &-text {
     @include m.truncate;
     max-width: 100%;
@@ -148,7 +156,7 @@ $container: '#{base.$prefix}-tabs';
     }
   }
   
-  // Badge positioning
+  // Badge positioning (2. Badge - optional)
   .#{base.$prefix}-badge-wrapper {
     .#{base.$prefix}-badge {
       // Position for different tab layouts
@@ -171,49 +179,70 @@ $container: '#{base.$prefix}-tabs';
     }
   }
   
-  // Active Indicator
+  // Active Indicator (6. Active indicator) - Base setup for all tabs
   &::after {
     content: '';
     position: absolute;
-    left: 0;
-    right: 0;
     bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 30px;
     height: 0;
+    border-radius: 3px 3px 0 0;
     background-color: transparent;
-    transition: height 0.2s ease, opacity 0.2s ease, background-color 0.2s ease;
+    transition: height 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+                background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+                width 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   }
   
-  // Primary Tab Variants
-  .#{$container}--primary & {
-    &--active {
-      color: t.color('primary');
-      
-      .#{$component}-icon {
-        color: t.color('primary');
-      }
-      
-      // Active indicator for primary tabs
-      &::after {
-        background-color: t.color('primary');
-        height: 3px;
-      }
+  // Active Tab - Apply to both primary and secondary
+  &--active {
+    color: t.color('primary'); // MD3: Primary color
+    
+    .#{$component}-icon {
+      color: t.color('primary'); // MD3: Primary color
     }
     
-    // Hover state
-    &:hover:not(:disabled):not(&--active):not([disabled]) {
-      background-color: t.alpha('on-surface-variant', 0.08);
+    // Active indicator for primary tabs by default
+    &::after {
+      background-color: t.color('primary'); // MD3: Primary color
+      height: 3px; // Default indicator height
+      border-radius: 1.5px;
     }
     
-    // Pressed state
+    // Specific width adjustment for different tab types
+    &.#{$component}--icon-only::after {
+      width: 30px; // Narrower indicator for icon-only tabs
+    }
+    
+    &.#{$component}--text-only::after,
+    &.#{$component}--icon-and-text::after {
+      width: 40px; // Wider indicator for text tabs
+    }
+    
+    // Hover state for active tabs
+    &:hover:not(:disabled):not([disabled]) {
+      background-color: t.alpha('primary', 0.08);
+    }
+    
+    // Pressed state for active tabs
     &:active:not(:disabled):not([disabled]) {
-      background-color: t.alpha('on-surface-variant', 0.12);
+      background-color: t.alpha('primary', 0.12);
     }
   }
   
-  // Secondary Tab Variants
+  // Hover state for inactive tabs
+  &:hover:not(:disabled):not(&--active):not([disabled]) {
+    background-color: t.alpha('on-surface-variant', 0.08);
+  }
+  
+  // Pressed state for inactive tabs
+  &:active:not(:disabled):not([disabled]):not(&--active) {
+    background-color: t.alpha('on-surface-variant', 0.12);
+  }
+  
+  // Secondary variant overrides (these apply when inside a secondary container)
   .#{$container}--secondary & {
-    color: t.color('on-surface-variant');
-    
     &--active {
       color: t.color('on-surface');
       
@@ -221,21 +250,10 @@ $container: '#{base.$prefix}-tabs';
         color: t.color('on-surface');
       }
       
-      // Active indicator for secondary tabs
+      // Secondary tab has thinner indicator
       &::after {
-        background-color: t.color('primary');
         height: 2px;
       }
-    }
-    
-    // Hover state
-    &:hover:not(:disabled):not(&--active):not([disabled]) {
-      background-color: t.alpha('on-surface-variant', 0.08);
-    }
-    
-    // Pressed state
-    &:active:not(:disabled):not([disabled]) {
-      background-color: t.alpha('on-surface-variant', 0.12);
     }
   }
   
@@ -257,17 +275,130 @@ $container: '#{base.$prefix}-tabs';
       pointer-events: none;
       background-color: currentColor;
       opacity: 0.1;
+      transform-origin: center;
     }
   }
 }
 
 // Tab panel styles
-.#{base.$prefix}-content {
-  &__tab-panel {
-    padding: 16px;
+.#{base.$prefix}-tab-panel {
+  padding: 16px;
+  
+  &[hidden] {
+    display: none;
+  }
+}
+
+// Scroll indicators
+.#{$container} {
+  &-scroll-indicator {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 24px;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0;
+    transition: opacity 0.2s ease;
     
-    &.hidden {
-      display: none;
+    &.visible {
+      opacity: 1;
+    }
+    
+    &--left {
+      left: 0;
+      background: linear-gradient(to right, t.color('surface'), transparent);
+    }
+    
+    &--right {
+      right: 0;
+      background: linear-gradient(to left, t.color('surface'), transparent);
+    }
+    
+    &--shadow {
+      &.#{$container}-scroll-indicator--left {
+        box-shadow: 2px 0 4px -2px rgba(0, 0, 0, 0.2);
+        background: none;
+      }
+      
+      &.#{$container}-scroll-indicator--right {
+        box-shadow: -2px 0 4px -2px rgba(0, 0, 0, 0.2);
+        background: none;
+      }
     }
   }
+  
+  &-scroll-button {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: t.color('surface-container-high');
+    border: none;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 2;
+    
+    &:disabled {
+      opacity: 0.38;
+      cursor: default;
+    }
+    
+    svg {
+      width: 24px;
+      height: 24px;
+      fill: t.color('on-surface');
+    }
+    
+    &--left {
+      left: 4px;
+    }
+    
+    &--right {
+      right: 4px;
+    }
+    
+    &:focus {
+      outline: none;
+    }
+    
+    &:focus-visible {
+      outline: 2px solid t.color('primary');
+    }
+  }
+}
+
+// Responsive styles for small screens
+.#{$container}--responsive-small {
+  .#{$component} {
+    padding: 0 12px;
+    min-width: 72px;
+  }
+}
+
+// State-based animation durations
+$state-transition-duration: 0.2s;
+$state-transition-timing: cubic-bezier(0.4, 0, 0.2, 1);
+
+// Animation for active tab indicator
+@keyframes tab-indicator-enter {
+  from { 
+    transform: translateX(-50%) scaleX(0.5); 
+    opacity: 0;
+  }
+  to { 
+    transform: translateX(-50%) scaleX(1);
+    opacity: 1;
+  }
+}
+
+// Apply animation to active indicator
+.#{$component}--active::after {
+  animation: tab-indicator-enter $state-transition-duration $state-transition-timing;
+  transform-origin: center;
 }
