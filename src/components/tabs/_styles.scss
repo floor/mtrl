@@ -201,12 +201,12 @@ $container: '#{base.$prefix}-tabs';
     
     // Hover state
     &:hover:not(:disabled):not(&--active):not([disabled]) {
-      background-color: f.alpha(t.color('on-surface-variant'), 0.08);
+      background-color: t.alpha('on-surface-variant', 0.08);
     }
     
     // Pressed state
     &:active:not(:disabled):not([disabled]) {
-      background-color: f.alpha(t.color('on-surface-variant'), 0.12);
+      background-color: t.alpha('on-surface-variant', 0.12);
     }
   }
   
@@ -230,12 +230,12 @@ $container: '#{base.$prefix}-tabs';
     
     // Hover state
     &:hover:not(:disabled):not(&--active):not([disabled]) {
-      background-color: f.alpha(t.color('on-surface-variant'), 0.08);
+      background-color: t.alpha('on-surface-variant', 0.08);
     }
     
     // Pressed state
     &:active:not(:disabled):not([disabled]) {
-      background-color: f.alpha(t.color('on-surface-variant'), 0.12);
+      background-color: t.alpha('on-surface-variant', 0.12);
     }
   }
   

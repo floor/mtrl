@@ -2,22 +2,39 @@
 import { TabsComponent, TabComponent, TabConfig } from './types';
 import { createTab } from './tab';
 
+/**
+ * API options for a Tabs component
+ */
 interface ApiOptions {
+  /** The component's lifecycle API */
   lifecycle: {
     destroy: () => void;
   };
 }
 
+/**
+ * Component with required elements and methods
+ */
 interface ComponentWithElements {
+  /** The DOM element */
   element: HTMLElement;
+  /** Array of tab components */
   tabs: TabComponent[];
+  /** Container for tabs */
   tabsContainer: HTMLElement;
+  /** Tab click handler */
   handleTabClick: (event: Event, tab: TabComponent) => void;
+  /** Scroll container (optional) */
   scrollContainer?: HTMLElement;
+  /** Class name helper */
   getClass: (name: string) => string;
+  /** Event subscription (optional) */
   on?: (event: string, handler: Function) => any;
+  /** Event unsubscription (optional) */
   off?: (event: string, handler: Function) => any;
+  /** Event emission (optional) */
   emit?: (event: string, data: any) => any;
+  /** Component configuration */
   config: Record<string, any>;
 }
 
@@ -25,7 +42,6 @@ interface ComponentWithElements {
  * Enhances a tabs component with API methods
  * @param {ApiOptions} options - API configuration options
  * @returns {Function} Higher-order function that adds API methods to component
- * @internal This is an internal utility for the Tabs component
  */
 export const withAPI = ({ lifecycle }: ApiOptions) => 
   (component: ComponentWithElements): TabsComponent => ({
@@ -43,6 +59,11 @@ export const withAPI = ({ lifecycle }: ApiOptions) =>
         variant: config.variant || component.config.variant
       };
       
+      // Ensure value is set if not provided
+      if (mergedConfig.value === undefined) {
+        mergedConfig.value = ''; // Default empty value
+      }
+      
       // Create the tab
       const tab = createTab(mergedConfig);
       
@@ -53,8 +74,15 @@ export const withAPI = ({ lifecycle }: ApiOptions) =>
       const targetContainer = component.tabsContainer;
       targetContainer.appendChild(tab.element);
       
-      // Add click handler
-      tab.on('click', (event) => component.handleTabClick(event, tab));
+      // Add click handler with robust event handling
+      if (tab.on && typeof tab.on === 'function') {
+        tab.on('click', (event) => component.handleTabClick(event, tab));
+      }
+      
+      // Add direct DOM event handler as a fallback
+      tab.element.addEventListener('click', (event) => {
+        component.handleTabClick(event, tab);
+      });
       
       return tab;
     },
@@ -69,8 +97,14 @@ export const withAPI = ({ lifecycle }: ApiOptions) =>
       const targetContainer = component.tabsContainer;
       targetContainer.appendChild(tab.element);
       
-      // Add click handler
-      tab.on('click', (event) => component.handleTabClick(event, tab));
+      // Add click handler via API and direct DOM event
+      if (tab.on && typeof tab.on === 'function') {
+        tab.on('click', (event) => component.handleTabClick(event, tab));
+      }
+      
+      tab.element.addEventListener('click', (event) => {
+        component.handleTabClick(event, tab);
+      });
       
       return this;
     },
@@ -132,7 +166,11 @@ export const withAPI = ({ lifecycle }: ApiOptions) =>
         component.tabs.splice(index, 1);
       }
       
-      // Clean up tab
+      // Clean up tab and remove from DOM
+      if (targetTab.element.parentNode) {
+        targetTab.element.parentNode.removeChild(targetTab.element);
+      }
+      
       targetTab.destroy();
       
       return this;
