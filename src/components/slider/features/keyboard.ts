@@ -21,6 +21,66 @@ export const createKeyboardHandlers = (state, handlers) => {
     triggerEvent
   } = handlers;
   
+  // Last focused thumb tracker to handle tab sequences properly
+  let lastFocusedThumb = null;
+  
+  /**
+   * Clear any existing bubble hide timers
+   */
+  const clearBubbleHideTimer = () => {
+    if (state.valueHideTimer) {
+      clearTimeout(state.valueHideTimer);
+      state.valueHideTimer = null;
+    }
+  };
+  
+  /**
+   * Hide all bubbles immediately
+   */
+  const hideAllBubbles = () => {
+    // Clear any pending hide timers
+    clearBubbleHideTimer();
+    
+    // Hide both bubbles immediately
+    if (valueBubble) {
+      showValueBubble(valueBubble, false);
+    }
+    if (secondValueBubble) {
+      showValueBubble(secondValueBubble, false);
+    }
+  };
+  
+  /**
+   * Shows a bubble element with consistent behavior
+   */
+  const showBubble = (bubble) => {
+    // First hide all bubbles
+    hideAllBubbles();
+    
+    // Then show the active bubble
+    if (bubble) {
+      showValueBubble(bubble, true);
+    }
+  };
+  
+  /**
+   * Hides a bubble element with optional delay
+   */
+  const hideBubble = (bubble, delay = 0) => {
+    // Clear any existing timers
+    clearBubbleHideTimer();
+    
+    if (!bubble) return;
+    
+    if (delay > 0) {
+      state.valueHideTimer = setTimeout(() => {
+        showValueBubble(bubble, false);
+      }, delay);
+    } else {
+      showValueBubble(bubble, false);
+    }
+  };
+  
   // Event handlers
   const handleKeyDown = (e, isSecondThumb = false) => {
     if (state.component.disabled && state.component.disabled.isDisabled()) return;
@@ -36,60 +96,70 @@ export const createKeyboardHandlers = (state, handlers) => {
       newValue = state.value;
     }
     
+    // Handle tab key specifically for range sliders
+    if (e.key === 'Tab') {
+      // Let the browser handle the tab navigation
+      // We'll deal with showing/hiding bubbles in the focus/blur handlers
+      return;
+    }
+    
     // Determine step size based on modifier keys
     if (e.shiftKey) {
       stepSize = step * 10; // Large step when Shift is pressed
     }
+    
+    let valueChanged = false;
     
     switch (e.key) {
       case 'ArrowRight':
       case 'ArrowUp':
         e.preventDefault();
         newValue = Math.min(newValue + stepSize, state.max);
+        valueChanged = true;
         break;
         
       case 'ArrowLeft':
       case 'ArrowDown':
         e.preventDefault();
         newValue = Math.max(newValue - stepSize, state.min);
+        valueChanged = true;
         break;
         
       case 'Home':
         e.preventDefault();
         newValue = state.min;
+        valueChanged = true;
         break;
         
       case 'End':
         e.preventDefault();
         newValue = state.max;
+        valueChanged = true;
         break;
         
       case 'PageUp':
         e.preventDefault();
         newValue = Math.min(newValue + (step * 10), state.max);
+        valueChanged = true;
         break;
         
       case 'PageDown':
         e.preventDefault();
         newValue = Math.max(newValue - (step * 10), state.min);
+        valueChanged = true;
         break;
         
       default:
         return; // Exit if not a handled key
     }
     
+    if (!valueChanged) return;
+    
+    // Update active bubble reference
+    state.activeBubble = isSecondThumb ? secondValueBubble : valueBubble;
+    
     // Show value bubble during keyboard interaction
-    showValueBubble(isSecondThumb ? secondValueBubble : valueBubble, true);
-    
-    // Clear any existing hide timer
-    if (state.valueHideTimer) {
-      clearTimeout(state.valueHideTimer);
-    }
-    
-    // Set timer to hide the value bubble after interaction
-    state.valueHideTimer = setTimeout(() => {
-      showValueBubble(isSecondThumb ? secondValueBubble : valueBubble, false);
-    }, 1500);
+    showBubble(state.activeBubble);
     
     // Update the value
     if (isSecondThumb) {
@@ -109,12 +179,26 @@ export const createKeyboardHandlers = (state, handlers) => {
   const handleFocus = (e, isSecondThumb = false) => {
     if (state.component.disabled && state.component.disabled.isDisabled()) return;
     
-    // Add a class to indicate keyboard focus
-    const thumb = isSecondThumb ? secondThumb : state.component.structure.thumb;
-    thumb.classList.add(`${state.component.getClass('slider-thumb')}--focused`);
+    // Track the currently focused thumb for tab sequence handling
+    const currentThumb = isSecondThumb ? secondThumb : state.component.structure.thumb;
     
-    // Show value bubble
-    showValueBubble(isSecondThumb ? secondValueBubble : valueBubble, true);
+    // If we're tabbing between thumbs, hide the previous bubble immediately
+    if (lastFocusedThumb && lastFocusedThumb !== currentThumb) {
+      hideAllBubbles();
+    }
+    
+    // Update the last focused thumb
+    lastFocusedThumb = currentThumb;
+    
+    // Add a class to indicate keyboard focus
+    currentThumb.classList.add(`${state.component.getClass('slider-thumb')}--focused`);
+    
+    // Show value bubble on focus
+    const bubble = isSecondThumb ? secondValueBubble : valueBubble;
+    showBubble(bubble);
+    
+    // Update active bubble reference
+    state.activeBubble = bubble;
     
     // Trigger focus event
     triggerEvent(SLIDER_EVENTS.FOCUS, e);
@@ -125,8 +209,16 @@ export const createKeyboardHandlers = (state, handlers) => {
     const thumb = isSecondThumb ? secondThumb : state.component.structure.thumb;
     thumb.classList.remove(`${state.component.getClass('slider-thumb')}--focused`);
     
-    // Hide value bubble
-    showValueBubble(isSecondThumb ? secondValueBubble : valueBubble, false);
+    // Only hide the bubble if we're not tabbing to another thumb
+    // This check prevents the bubble from flickering when tabbing between thumbs
+    const relatedTarget = e.relatedTarget;
+    const otherThumb = isSecondThumb ? state.component.structure.thumb : secondThumb;
+    
+    if (!relatedTarget || relatedTarget !== otherThumb) {
+      // We're not tabbing to the other thumb, so we can hide the bubble
+      const bubble = isSecondThumb ? secondValueBubble : valueBubble;
+      hideBubble(bubble, 200);
+    }
     
     // Trigger blur event
     triggerEvent(SLIDER_EVENTS.BLUR, e);
