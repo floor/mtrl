@@ -204,7 +204,7 @@ export const withElement = (options: WithElementOptions = {}) =>
       className: [
         base.getClass(options.componentName || base.componentName || 'component'),
         hasTouchSupport() && options.interactive ? base.getClass('interactive') : null,
-        options.className
+        ...(Array.isArray(options.className) ? options.className : [options.className])
       ].filter(Boolean),
       attrs: options.attrs || {},
       forwardEvents: options.forwardEvents || {},
