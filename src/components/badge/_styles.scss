@@ -112,18 +112,18 @@ $component: '#{base.$prefix}-badge';
   }
   
   &--success {
-    background-color: t.color('success', t.color('primary'));
-    color: t.color('on-success', t.color('on-primary'));
+    background-color: t.color('success');
+    color: t.color('on-success');
   }
   
   &--warning {
-    background-color: t.color('warning', t.color('tertiary'));
-    color: t.color('on-warning', t.color('on-tertiary'));
+    background-color: t.color('warning');
+    color: t.color('on-warning');
   }
   
   &--info {
-    background-color: t.color('info', t.color('secondary'));
-    color: t.color('on-info', t.color('on-secondary'));
+    background-color: t.color('info');
+    color: t.color('on-info');
   }
   
   // Outline variant
@@ -148,15 +148,15 @@ $component: '#{base.$prefix}-badge';
     }
     
     &.#{$component}--success {
-      color: t.color('success', t.color('primary'));
+      color: t.color('success');
     }
     
     &.#{$component}--warning {
-      color: t.color('warning', t.color('tertiary'));
+      color: t.color('warning');
     }
     
     &.#{$component}--info {
-      color: t.color('info', t.color('secondary'));
+      color: t.color('info');
     }
   }
   
