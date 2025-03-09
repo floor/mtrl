@@ -43,7 +43,104 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
   } = handlers;
   
   /**
-   * Handling thumb mouse down events with improved feedback
+   * Clear any existing bubble hide timers
+   */
+  const clearBubbleHideTimer = () => {
+    if (state.valueHideTimer) {
+      clearTimeout(state.valueHideTimer);
+      state.valueHideTimer = null;
+    }
+  };
+  
+  /**
+   * Hide all bubbles immediately
+   */
+  const hideAllBubbles = () => {
+    // Clear any pending hide timers
+    clearBubbleHideTimer();
+    
+    // Hide both bubbles immediately
+    if (valueBubble) {
+      showValueBubble(valueBubble, false);
+    }
+    if (secondValueBubble) {
+      showValueBubble(secondValueBubble, false);
+    }
+  };
+  
+  /**
+   * Clear keyboard focus indicators across all sliders in the document
+   * Not just for this instance, but for any slider thumb
+   */
+  const clearGlobalKeyboardFocus = () => {
+    // First clear local focus indicators
+    if (thumb) {
+      thumb.classList.remove(`${state.component.getClass('slider-thumb')}--focused`);
+    }
+    
+    if (secondThumb) {
+      secondThumb.classList.remove(`${state.component.getClass('slider-thumb')}--focused`);
+    }
+    
+    // Now look for all slider thumbs in the document with the focused class
+    // This covers cases where we switch between sliders
+    try {
+      const focusClass = state.component.getClass('slider-thumb--focused');
+      const allFocusedThumbs = document.querySelectorAll(`.${focusClass}`);
+      
+      // Remove focus class from all thumbs
+      allFocusedThumbs.forEach(element => {
+        element.classList.remove(focusClass);
+      });
+      
+      // Also blur the active element if it's a thumb
+      if (document.activeElement && 
+          document.activeElement.classList.contains(state.component.getClass('slider-thumb'))) {
+        (document.activeElement as HTMLElement).blur();
+      }
+    } catch (error) {
+      console.warn('Error clearing global keyboard focus:', error);
+    }
+  };
+  
+  /**
+   * Show the active bubble with consistent behavior
+   * @param bubble Bubble element to show
+   */
+  const showActiveBubble = (bubble) => {
+    // First hide all bubbles
+    hideAllBubbles();
+    
+    // Then show the active bubble if allowed by config
+    if (bubble && config.showValue) {
+      showValueBubble(bubble, true);
+    }
+  };
+  
+  /**
+   * Hide the active bubble with optional delay
+   * @param bubble Bubble element to hide
+   * @param delay Delay in milliseconds before hiding
+   */
+  const hideActiveBubble = (bubble, delay = 0) => {
+    // Clear any existing timers first
+    clearBubbleHideTimer();
+    
+    if (!bubble || !config.showValue) return;
+    
+    if (delay > 0) {
+      // Set delayed hide
+      state.valueHideTimer = setTimeout(() => {
+        showValueBubble(bubble, false);
+      }, delay);
+    } else {
+      // Hide immediately
+      showValueBubble(bubble, false);
+    }
+  };
+  
+  /**
+   * Handle thumb mouse down with improved bubble handling
    */
   const handleThumbMouseDown = (e, isSecondThumb = false) => {
     // Verify component exists and check if disabled
@@ -54,6 +151,12 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
     e.preventDefault();
     e.stopPropagation();
     
+    // First hide any existing visible bubbles
+    hideAllBubbles();
+    
+    // Clear any keyboard focus indicators globally
+    clearGlobalKeyboardFocus();
+    
     state.dragging = true;
     state.activeThumb = isSecondThumb ? secondThumb : thumb;
     state.activeBubble = isSecondThumb ? secondValueBubble : valueBubble;
@@ -61,10 +164,8 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
     // Add dragging class to component element to style the thumb differently
     state.component.element.classList.add(`${state.component.getClass('slider')}--dragging`);
     
-    // Show value bubble immediately during interaction
-    if (state.activeBubble && config.showValue) {
-      showValueBubble(state.activeBubble, true);
-    }
+    // Show active bubble
+    showActiveBubble(state.activeBubble);
     
     // Add global event listeners
     document.addEventListener('mousemove', handleMouseMove);
@@ -79,8 +180,10 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
       console.warn('Error triggering START event:', error);
     }
   };
-
   
+  /**
+   * Handle track mouse down with improved bubble handling
+   */
   const handleTrackMouseDown = (e) => {
     // Verify component exists and check if disabled
     if (!state.component || (state.component.disabled && state.component.disabled.isDisabled()) || !track) {
@@ -88,6 +191,12 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
     }
     
     e.preventDefault();
+    
+    // Hide any existing visible bubbles
+    hideAllBubbles();
+    
+    // Clear any keyboard focus indicators globally
+    clearGlobalKeyboardFocus();
     
     // Determine which thumb to move based on click position
     let isSecondThumb = false;
@@ -148,6 +257,9 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
     handleThumbMouseDown(e, isSecondThumb);
   };
   
+  /**
+   * Handle mouse move with improved thumb and bubble switching
+   */
   const handleMouseMove = (e) => {
     if (!state.dragging || !state.activeThumb) return;
     
@@ -182,26 +294,21 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
           if (newValue >= state.value) {
             state.secondValue = newValue;
           } else {
-            // Thumbs are crossed, swap them
-            const oldValueBubble = state.activeBubble;
+            // Thumbs are crossed, need to swap them
             
-            // Hide current bubble before switching
-            if (oldValueBubble) {
-              showValueBubble(oldValueBubble, false);
-            }
+            // First hide current bubble
+            hideActiveBubble(state.activeBubble, 0);
             
             // Swap values
             state.secondValue = state.value;
             state.value = newValue;
             
-            // Swap active thumb and bubble
+            // Swap active elements
             state.activeThumb = thumb;
             state.activeBubble = valueBubble;
             
-            // Show the newly active bubble
-            if (state.activeBubble) {
-              showValueBubble(state.activeBubble, true);
-            }
+            // Show new active bubble
+            showActiveBubble(state.activeBubble);
           }
         } else {
           // First thumb is active
@@ -210,26 +317,21 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
           if (newValue <= state.secondValue) {
             state.value = newValue;
           } else {
-            // Thumbs are crossed, swap them
-            const oldValueBubble = state.activeBubble;
+            // Thumbs are crossed, need to swap them
             
-            // Hide current bubble before switching
-            if (oldValueBubble) {
-              showValueBubble(oldValueBubble, false);
-            }
+            // First hide current bubble
+            hideActiveBubble(state.activeBubble, 0);
             
             // Swap values
             state.value = state.secondValue;
             state.secondValue = newValue;
             
-            // Swap active thumb and bubble
+            // Swap active elements
             state.activeThumb = secondThumb;
             state.activeBubble = secondValueBubble;
             
-            // Show the newly active bubble
-            if (state.activeBubble) {
-              showValueBubble(state.activeBubble, true);
-            }
+            // Show new active bubble
+            showActiveBubble(state.activeBubble);
           }
         }
       } else {
@@ -248,7 +350,7 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
   };
   
   /**
-   * Handling mouse up events with value fade-out
+   * Handle mouse up with consistent bubble hiding
    */
   const handleMouseUp = (e) => {
     if (!state.dragging) return;
@@ -260,18 +362,9 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
     // Remove dragging class from component element
     state.component.element.classList.remove(`${state.component.getClass('slider')}--dragging`);
     
-    // Don't hide the value bubble immediately - keep it visible briefly
-    if (state.valueHideTimer) {
-      clearTimeout(state.valueHideTimer);
-    }
-    
-    // Set a timer to hide the value bubble after a delay (1.5 seconds)
-    if (state.activeBubble) {
-      state.valueHideTimer = setTimeout(() => {
-        showValueBubble(state.activeBubble, false);
-        state.activeBubble = null;
-      }, 1500);
-    }
+    // Hide bubble with delay
+    const currentBubble = state.activeBubble;
+    hideActiveBubble(currentBubble, 1000); // Hide after 1 second
     
     // Remove global event listeners
     document.removeEventListener('mousemove', handleMouseMove);
