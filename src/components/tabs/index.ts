@@ -4,6 +4,7 @@ import { createTab } from './tab';
 import { addScrollIndicators } from './scroll-indicators';
 import { setupResponsiveBehavior } from './responsive';
 import { createTabsState } from './state';
+import { createTabIndicator } from './indicator';
 
 export { 
   // Main component creators
@@ -26,14 +27,16 @@ export {
   TabsComponent, 
   TabComponent, 
   TabConfig, 
-  TabChangeEventData 
+  TabChangeEventData,
+  IndicatorConfig
 } from './types';
 
-// Export enhancers
+// Export enhancers and utilities
 export { 
   addScrollIndicators,
   setupResponsiveBehavior,
-  createTabsState
+  createTabsState,
+  createTabIndicator
 };
 
 // Default export

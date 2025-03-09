@@ -1,7 +1,26 @@
 // src/components/tabs/types.ts
 import { TABS_VARIANTS, TAB_STATES, TAB_LAYOUT } from './constants';
-// Import the BadgeComponent for proper integration
 import { BadgeComponent } from '../badge/types';
+import { TabIndicator } from './indicator';
+
+/**
+ * Configuration for the tab indicator
+ * @category Components
+ */
+export interface IndicatorConfig {
+  /** Height of the indicator in pixels */
+  height?: number;
+  /** Width strategy for the indicator */
+  widthStrategy?: 'fixed' | 'dynamic' | 'content';
+  /** Fixed width in pixels (when using fixed strategy) */
+  fixedWidth?: number;
+  /** Animation duration in milliseconds */
+  animationDuration?: number;
+  /** Animation timing function */
+  animationTiming?: string;
+  /** Custom color for the indicator */
+  color?: string;
+}
 
 /**
  * Tab change event data interface
@@ -171,6 +190,23 @@ export interface TabsConfig {
      */
     [key: string]: Function | undefined;
   };
+  
+  /**
+   * Tab indicator configuration
+   */
+  indicator?: IndicatorConfig;
+  
+  /**
+   * Tab indicator height in pixels
+   * @deprecated Use indicator.height instead
+   */
+  indicatorHeight?: number;
+  
+  /**
+   * Tab indicator width strategy
+   * @deprecated Use indicator.widthStrategy instead
+   */
+  indicatorWidthStrategy?: 'fixed' | 'dynamic' | 'content';
 }
 
 /**
@@ -231,164 +267,83 @@ export interface TabComponent {
   /** The tab's DOM element */
   element: HTMLElement;
   
-  /** API for managing tab text */
-  text: TextAPI;
-  
-  /** API for managing tab icons */
-  icon: IconAPI;
-  
-  /** The tab's badge component */
+  /** The tab's badge component (if any) */
   badge?: BadgeComponent;
   
+  /** Gets a class name with the component's prefix */
+  getClass: (name: string) => string;
+  
+  /** Gets the tab's value attribute */
+  getValue: () => string;
+  
+  /** Sets the tab's value attribute */
+  setValue: (value: string) => TabComponent;
+  
+  /** Activates the tab (sets active state) */
+  activate: () => TabComponent;
+  
+  /** Deactivates the tab (sets inactive state) */
+  deactivate: () => TabComponent;
+  
+  /** Checks if the tab is active */
+  isActive: () => boolean;
+  
+  /** Enables the tab (removes disabled attribute) */
+  enable: () => TabComponent;
+  
+  /** Disables the tab (adds disabled attribute) */
+  disable: () => TabComponent;
+  
+  /** Sets the tab's text content */
+  setText: (content: string) => TabComponent;
+  
+  /** Gets the tab's text content */
+  getText: () => string;
+  
+  /** Sets the tab's icon */
+  setIcon: (icon: string) => TabComponent;
+  
+  /** Gets the tab's icon HTML content */
+  getIcon: () => string;
+  
+  /** Sets the tab's badge */
+  setBadge: (content: string | number) => TabComponent;
+  
+  /** Gets the tab's badge content */
+  getBadge: () => string;
+  
+  /** Shows the tab's badge */
+  showBadge: () => TabComponent;
+  
+  /** Hides the tab's badge */
+  hideBadge: () => TabComponent;
+  
+  /** Gets the badge component instance */
+  getBadgeComponent: () => BadgeComponent | undefined;
+  
+  /** Updates the tab's layout style based on content */
+  updateLayoutStyle: () => void;
+  
+  /** Adds an event listener to the tab */
+  on: (event: string, handler: Function) => TabComponent;
+  
+  /** Removes an event listener from the tab */
+  off: (event: string, handler: Function) => TabComponent;
+  
+  /** Destroys the tab component and cleans up resources */
+  destroy: () => void;
+  
   /** API for managing disabled state */
-  disabled: {
-    /** Enables the tab */
+  disabled?: {
     enable: () => void;
-    /** Disables the tab */
     disable: () => void;
-    /** Checks if the tab is disabled */
     isDisabled: () => boolean;
   };
   
   /** API for managing component lifecycle */
-  lifecycle: {
-    /** Destroys the component and cleans up resources */
+  lifecycle?: {
     destroy: () => void;
   };
-  
-  /**
-   * Gets a class name with the component's prefix
-   * @param name - Base class name
-   * @returns Prefixed class name
-   */
-  getClass: (name: string) => string;
-  
-  /**
-   * Gets the tab's value attribute
-   * @returns Tab value
-   */
-  getValue: () => string;
-  
-  /**
-   * Sets the tab's value attribute
-   * @param value - New value
-   * @returns The tab component for chaining
-   */
-  setValue: (value: string) => TabComponent;
-  
-  /**
-   * Activates the tab (sets active state)
-   * @returns The tab component for chaining
-   */
-  activate: () => TabComponent;
-  
-  /**
-   * Deactivates the tab (sets inactive state)
-   * @returns The tab component for chaining
-   */
-  deactivate: () => TabComponent;
-  
-  /**
-   * Checks if the tab is active
-   * @returns Whether the tab is active
-   */
-  isActive: () => boolean;
-  
-  /**
-   * Enables the tab (removes disabled attribute)
-   * @returns The tab component for chaining
-   */
-  enable: () => TabComponent;
-  
-  /**
-   * Disables the tab (adds disabled attribute)
-   * @returns The tab component for chaining
-   */
-  disable: () => TabComponent;
-  
-  /**
-   * Sets the tab's text content
-   * @param content - Text content
-   * @returns The tab component for chaining
-   */
-  setText: (content: string) => TabComponent;
-  
-  /**
-   * Gets the tab's text content
-   * @returns Tab text content
-   */
-  getText: () => string;
-  
-  /**
-   * Sets the tab's icon
-   * @param icon - Icon HTML content
-   * @returns The tab component for chaining
-   */
-  setIcon: (icon: string) => TabComponent;
-  
-  /**
-   * Gets the tab's icon HTML content
-   * @returns Icon HTML
-   */
-  getIcon: () => string;
-  
-  /**
-   * Sets the tab's badge
-   * @param content - Badge content
-   * @returns The tab component for chaining
-   */
-  setBadge: (content: string | number) => TabComponent;
-  
-  /**
-   * Gets the tab's badge content
-   * @returns Badge content
-   */
-  getBadge: () => string;
-  
-  /**
-   * Shows the tab's badge
-   * @returns The tab component for chaining
-   */
-  showBadge: () => TabComponent;
-  
-  /**
-   * Hides the tab's badge
-   * @returns The tab component for chaining
-   */
-  hideBadge: () => TabComponent;
-  
-  /**
-   * Gets the badge component instance
-   * @returns The badge component or undefined if not created
-   */
-  getBadgeComponent: () => BadgeComponent | undefined;
-  
-  /**
-   * Destroys the tab component and cleans up resources
-   */
-  destroy: () => void;
-  
-  /**
-   * Updates the tab's layout style based on content
-   * Internal method used when changing content
-   */
-  updateLayoutStyle: () => void;
-  
-  /**
-   * Adds an event listener to the tab
-   * @param event - Event name ('click', 'focus', etc.)
-   * @param handler - Event handler function
-   * @returns The tab component for chaining
-   */
-  on: (event: string, handler: Function) => TabComponent;
-  
-  /**
-   * Removes an event listener from the tab
-   * @param event - Event name
-   * @param handler - Event handler function
-   * @returns The tab component for chaining
-   */
-  off: (event: string, handler: Function) => TabComponent;
 }
 
 /**
@@ -426,6 +381,12 @@ export interface TabsComponent {
    * @returns Active tab or null if none
    */
   getActiveTab: () => TabComponent | null;
+  
+  /**
+   * Gets the indicator component
+   * @returns Tab indicator component
+   */
+  getIndicator?: () => TabIndicator;
   
   /**
    * Sets a tab as active
@@ -469,4 +430,14 @@ export interface TabsComponent {
    * Destroys the tabs component and all tabs
    */
   destroy: () => void;
+  
+  /**
+   * Tab click event handler
+   */
+  handleTabClick: (event: any, tab: TabComponent) => void;
+  
+  /**
+   * Scroll container for scrollable tabs
+   */
+  scrollContainer?: HTMLElement;
 }

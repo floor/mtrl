@@ -56,6 +56,24 @@ $container: '#{base.$prefix}-tabs';
     height: 1px;
     background-color: t.color('outline-variant'); // MD3: Outline variant color
   }
+  
+  // Tab indicator styling
+  &-indicator {
+    position: absolute;
+    bottom: 0;
+    height: 3px;
+    background-color: t.color('primary');
+    border-radius: 1.5px 1.5px 0 0;
+    transition: transform 250ms cubic-bezier(0.4, 0, 0.2, 1),
+                width 250ms cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1; // Ensure indicator appears above divider
+    
+    // Secondary variant has thinner indicator
+    .#{$container}--secondary & {
+      height: 2px;
+      border-radius: 1px 1px 0 0;
+    }
+  }
 }
 
 // Individual Tab Styles
@@ -135,15 +153,6 @@ $container: '#{base.$prefix}-tabs';
     }
   }
   
-  // Ensure proper indicator positioning for icon-only tabs
-  &--icon-only {
-    &.#{$component}--active {
-      &::after {
-        width: 40px; // Narrower indicator for icon-only tabs
-      }
-    }
-  }
-  
   // Tab Text (4. Label)
   &-text {
     @include m.truncate;
@@ -179,45 +188,12 @@ $container: '#{base.$prefix}-tabs';
     }
   }
   
-  // Active Indicator (6. Active indicator) - Base setup for all tabs
-  &::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 30px;
-    height: 0;
-    border-radius: 3px 3px 0 0;
-    background-color: transparent;
-    transition: height 0.2s cubic-bezier(0.4, 0, 0.2, 1),
-                background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
-                width 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  
   // Active Tab - Apply to both primary and secondary
   &--active {
     color: t.color('primary'); // MD3: Primary color
     
     .#{$component}-icon {
       color: t.color('primary'); // MD3: Primary color
-    }
-    
-    // Active indicator for primary tabs by default
-    &::after {
-      background-color: t.color('primary'); // MD3: Primary color
-      height: 3px; // Default indicator height
-      border-radius: 1.5px;
-    }
-    
-    // Specific width adjustment for different tab types
-    &.#{$component}--icon-only::after {
-      width: 30px; // Narrower indicator for icon-only tabs
-    }
-    
-    &.#{$component}--text-only::after,
-    &.#{$component}--icon-and-text::after {
-      width: 40px; // Wider indicator for text tabs
     }
     
     // Hover state for active tabs
@@ -231,6 +207,17 @@ $container: '#{base.$prefix}-tabs';
     }
   }
   
+  // Secondary variant overrides
+  .#{$container}--secondary & {
+    &--active {
+      color: t.color('on-surface');
+      
+      .#{$component}-icon {
+        color: t.color('on-surface');
+      }
+    }
+  }
+  
   // Hover state for inactive tabs
   &:hover:not(:disabled):not(&--active):not([disabled]) {
     background-color: t.alpha('on-surface-variant', 0.08);
@@ -239,22 +226,6 @@ $container: '#{base.$prefix}-tabs';
   // Pressed state for inactive tabs
   &:active:not(:disabled):not([disabled]):not(&--active) {
     background-color: t.alpha('on-surface-variant', 0.12);
-  }
-  
-  // Secondary variant overrides (these apply when inside a secondary container)
-  .#{$container}--secondary & {
-    &--active {
-      color: t.color('on-surface');
-      
-      .#{$component}-icon {
-        color: t.color('on-surface');
-      }
-      
-      // Secondary tab has thinner indicator
-      &::after {
-        height: 2px;
-      }
-    }
   }
   
   // Ripple effect styling
@@ -379,26 +350,4 @@ $container: '#{base.$prefix}-tabs';
     padding: 0 12px;
     min-width: 72px;
   }
-}
-
-// State-based animation durations
-$state-transition-duration: 0.2s;
-$state-transition-timing: cubic-bezier(0.4, 0, 0.2, 1);
-
-// Animation for active tab indicator
-@keyframes tab-indicator-enter {
-  from { 
-    transform: translateX(-50%) scaleX(0.5); 
-    opacity: 0;
-  }
-  to { 
-    transform: translateX(-50%) scaleX(1);
-    opacity: 1;
-  }
-}
-
-// Apply animation to active indicator
-.#{$component}--active::after {
-  animation: tab-indicator-enter $state-transition-duration $state-transition-timing;
-  transform-origin: center;
 }
