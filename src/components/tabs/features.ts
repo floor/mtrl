@@ -8,9 +8,13 @@ import { TAB_STATES } from './constants';
  * Configuration for tabs management feature
  */
 export interface TabsManagementConfig {
+  /** Initial tabs to create */
   tabs?: TabConfig[];
+  /** Tab variant */
   variant?: string;
+  /** Component prefix */
   prefix?: string;
+  /** Other configuration properties */
   [key: string]: any;
 }
 
@@ -18,19 +22,13 @@ export interface TabsManagementConfig {
  * Component with tabs management capabilities
  */
 export interface TabsManagementComponent {
-  /**
-   * Array of tab components
-   */
+  /** Array of tab components */
   tabs: TabComponent[];
   
-  /**
-   * Target container for tabs
-   */
+  /** Target container for tabs */
   tabsContainer: HTMLElement;
   
-  /**
-   * Tab click handler
-   */
+  /** Tab click handler */
   handleTabClick: (event: Event, tab: TabComponent) => void;
 }
 
@@ -70,25 +68,43 @@ export const withTabsManagement = <T extends TabsManagementConfig>(config: T) =>
     /**
      * Handles tab click events
      */
-    const handleTabClick = (event: Event, tab: TabComponent) => {
+    const handleTabClick = (event: any, tab: TabComponent) => {
+      // Check if event is a DOM event with preventDefault
+      if (event && typeof event.preventDefault === 'function') {
+        event.preventDefault();
+      }
+      
+      // Skip if tab is disabled
+      if (tab.disabled && tab.disabled.isDisabled && tab.disabled.isDisabled()) {
+        return;
+      }
+      
       // Deactivate all tabs first
       tabs.forEach(t => t.deactivate());
       
       // Activate the clicked tab
       tab.activate();
       
+      // Get the tab value
+      const value = tab.getValue();
+      
       // Emit change event if component has emit method
-      if ('emit' in component) {
-        (component as any).emit('change', {
+      if (typeof component['emit'] === 'function') {
+        component['emit']('change', {
           tab,
-          value: tab.getValue()
+          value
         });
       }
     };
     
     // Add click handlers to existing tabs
     tabs.forEach(tab => {
-      tab.on('click', (event) => handleTabClick(event, tab));
+      // Add event listener directly and via API if available
+      if (tab.on && typeof tab.on === 'function') {
+        tab.on('click', (event) => handleTabClick(event, tab));
+      }
+      // Also add direct DOM event listener as a fallback
+      tab.element.addEventListener('click', (event) => handleTabClick(event, tab));
     });
     
     return {
@@ -103,7 +119,9 @@ export const withTabsManagement = <T extends TabsManagementConfig>(config: T) =>
  * Configuration for scrollable feature
  */
 export interface ScrollableConfig {
+  /** Whether tabs are scrollable horizontally */
   scrollable?: boolean;
+  /** Other configuration properties */
   [key: string]: any;
 }
 
@@ -111,9 +129,7 @@ export interface ScrollableConfig {
  * Component with scrollable capabilities
  */
 export interface ScrollableComponent {
-  /**
-   * Scroll container element
-   */
+  /** Scroll container element */
   scrollContainer?: HTMLElement;
 }
 
@@ -154,7 +170,9 @@ export const withScrollable = <T extends ScrollableConfig>(config: T) =>
  * Configuration for divider feature
  */
 export interface DividerConfig {
+  /** Whether to show a divider below the tabs */
   showDivider?: boolean;
+  /** Other configuration properties */
   [key: string]: any;
 }
 

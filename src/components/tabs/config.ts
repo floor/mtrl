@@ -15,7 +15,6 @@ export const defaultTabConfig: TabConfig = {
   state: TAB_STATES.INACTIVE,
   componentName: 'tab',
   ripple: true
-  // Don't set disabled: false as default - it should be undefined by default
 };
 
 /**
@@ -35,7 +34,8 @@ export const getTabElementConfig = (config: TabConfig) => {
   // Create the attributes object
   const attrs: Record<string, any> = {
     role: 'tab',
-    'aria-selected': config.state === TAB_STATES.ACTIVE ? 'true' : 'false'
+    'aria-selected': config.state === TAB_STATES.ACTIVE ? 'true' : 'false',
+    'data-value': config.value !== undefined ? config.value : ''
   };
   
   // Only add disabled attribute if it's explicitly true
@@ -44,13 +44,8 @@ export const getTabElementConfig = (config: TabConfig) => {
     attrs['aria-disabled'] = 'true';
   }
   
-  // Add value attribute only if it exists
-  if (config.value !== undefined) {
-    attrs['data-value'] = config.value;
-  }
-  
   const elementConfig = createElementConfig(config, {
-    tag: 'button', // Tab is a button element
+    tag: 'button',
     attrs,
     className: config.class,
     interactive: true,
@@ -61,7 +56,6 @@ export const getTabElementConfig = (config: TabConfig) => {
     }
   });
   
-  // Return a function that uses withElement with our config
   return (component) => withElement(elementConfig)(component);
 };
 
@@ -102,7 +96,6 @@ export const getTabsElementConfig = (config) => {
     ]
   };
   
-  // Return a function that uses withElement with our config
   return (component) => withElement(elementConfig)(component);
 };
 
@@ -114,9 +107,11 @@ export const getTabsElementConfig = (config) => {
 export const getTabApiConfig = (comp) => ({
   disabled: {
     enable: () => comp.disabled.enable(),
-    disable: () => comp.disabled.disable()
+    disable: () => comp.disabled.disable(),
+    isDisabled: () => comp.disabled.isDisabled && comp.disabled.isDisabled()
   },
   lifecycle: {
     destroy: () => comp.lifecycle.destroy()
-  }
+  },
+  button: comp.button
 });
