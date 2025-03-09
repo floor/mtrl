@@ -2,7 +2,8 @@
 import { createTab } from './tab';
 import { TabConfig, TabComponent } from './types';
 import { BaseComponent } from '../../core/compose/component';
-import { TAB_STATES } from './constants';
+import { updateTabPanels, getActiveTab } from './utils';
+import { createTabIndicator, TabIndicator } from './indicator';
 
 /**
  * Configuration for tabs management feature
@@ -30,6 +31,12 @@ export interface TabsManagementComponent {
   
   /** Tab click handler */
   handleTabClick: (event: Event, tab: TabComponent) => void;
+  
+  /** Get all tabs */
+  getTabs?: () => TabComponent[];
+  
+  /** Get the active tab */
+  getActiveTab?: () => TabComponent | null;
 }
 
 /**
@@ -66,6 +73,20 @@ export const withTabsManagement = <T extends TabsManagementConfig>(config: T) =>
     }
     
     /**
+     * Gets all tabs
+     */
+    const getTabs = () => {
+      return [...tabs];
+    };
+    
+    /**
+     * Gets the active tab
+     */
+    const getActiveTab = () => {
+      return tabs.find(tab => tab.isActive()) || null;
+    };
+    
+    /**
      * Handles tab click events
      */
     const handleTabClick = (event: any, tab: TabComponent) => {
@@ -87,6 +108,12 @@ export const withTabsManagement = <T extends TabsManagementConfig>(config: T) =>
       
       // Get the tab value
       const value = tab.getValue();
+      
+      // Update tab panels
+      updateTabPanels({
+        tabs,
+        getActiveTab: () => tabs.find(t => t.isActive()) || null
+      });
       
       // Emit change event if component has emit method
       if (typeof component['emit'] === 'function') {
@@ -111,7 +138,9 @@ export const withTabsManagement = <T extends TabsManagementConfig>(config: T) =>
       ...component,
       tabs,
       tabsContainer,
-      handleTabClick
+      handleTabClick,
+      getTabs,
+      getActiveTab
     };
   };
 
@@ -196,4 +225,177 @@ export const withDivider = <T extends DividerConfig>(config: T) =>
     component.element.appendChild(divider);
     
     return component;
+  };
+
+/**
+ * Configuration for indicator feature
+ */
+export interface IndicatorFeatureConfig {
+  /** Component prefix */
+  prefix?: string;
+  /** Width strategy for the indicator */
+  widthStrategy?: 'fixed' | 'dynamic' | 'content';
+  /** Height of the indicator in pixels */
+  height?: number;
+  /** Fixed width in pixels (when using fixed strategy) */
+  fixedWidth?: number;
+  /** Animation duration in milliseconds */
+  animationDuration?: number;
+  /** Animation timing function */
+  animationTiming?: string;
+  /** Custom color for the indicator */
+  color?: string;
+  /** Legacy height property */
+  indicatorHeight?: number;
+  /** Legacy width strategy property */
+  indicatorWidthStrategy?: 'fixed' | 'dynamic' | 'content';
+  /** Indicator configuration object */
+  indicator?: {
+    widthStrategy?: 'fixed' | 'dynamic' | 'content';
+    height?: number;
+    fixedWidth?: number;
+    animationDuration?: number;
+    animationTiming?: string;
+    color?: string;
+  };
+}
+
+/**
+ * Component with indicator capability
+ */
+export interface IndicatorComponent {
+  /** The indicator instance */
+  indicator: TabIndicator;
+  /** Get the indicator instance */
+  getIndicator: () => TabIndicator;
+}
+
+/**
+ * Enhances a component with tab indicator functionality
+ * @param config - Indicator configuration
+ * @returns Component enhancer with indicator functionality
+ */
+export const withIndicator = <T extends IndicatorFeatureConfig>(config: T) => 
+  <C extends any>(component: C): C & IndicatorComponent => {
+    // Create indicator with proper config
+    const indicatorConfig = config.indicator || {};
+    const indicator: TabIndicator = createTabIndicator({
+      prefix: config.prefix,
+      // Support both new and legacy config
+      widthStrategy: indicatorConfig.widthStrategy || config.indicatorWidthStrategy || 'fixed',
+      height: indicatorConfig.height || config.indicatorHeight || 3,
+      fixedWidth: indicatorConfig.fixedWidth || 40,
+      animationDuration: indicatorConfig.animationDuration || 250,
+      animationTiming: indicatorConfig.animationTiming || 'cubic-bezier(0.4, 0, 0.2, 1)',
+      color: indicatorConfig.color
+    });
+    
+    // Find the scroll container and add the indicator to it
+    const scrollContainer = component.scrollContainer || component.element;
+    if (!scrollContainer) {
+      console.error('No scroll container found - cannot add indicator');
+      throw new Error('Failed to create tabs: No scroll container found');
+    }
+    
+    // Add the indicator to the scroll container
+    scrollContainer.appendChild(indicator.element);
+    
+    // Store the original handlers to enhance
+    const originalHandleTabClick = component.handleTabClick;
+    
+    // Replace tab click handler to ensure indicator updates
+    component.handleTabClick = function(event, tab) {
+      // Skip if tab is disabled
+      if (tab.disabled && tab.disabled.isDisabled && tab.disabled.isDisabled()) {
+        return;
+      }
+      
+      // Call original handler
+      originalHandleTabClick.call(this, event, tab);
+      
+      // Move indicator with a slight delay to ensure DOM updates
+      setTimeout(() => {
+        indicator.moveToTab(tab);
+      }, 10);
+    };
+    
+    // Position indicator on initial active tab
+    setTimeout(() => {
+      const activeTab = component.tabs.find(tab => tab.isActive());
+      if (activeTab) {
+        indicator.moveToTab(activeTab, true);
+      }
+    }, 50);
+    
+    // Add scroll event handling
+    const scrollHandler = () => {
+      const activeTab = component.tabs.find(tab => tab.isActive());
+      if (activeTab) {
+        indicator.moveToTab(activeTab, true);
+      }
+    };
+    
+    if (scrollContainer) {
+      scrollContainer.addEventListener('scroll', scrollHandler);
+    }
+    
+    // Watch for window resize to update indicator
+    const resizeObserver = new ResizeObserver(() => {
+      const activeTab = component.tabs.find(tab => tab.isActive());
+      if (activeTab) {
+        indicator.moveToTab(activeTab, true);
+      }
+    });
+    
+    resizeObserver.observe(scrollContainer);
+    
+    // Add MutationObserver to detect tab state changes
+    const mutationObserver = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        if (mutation.type === 'attributes' && 
+            mutation.attributeName === 'class' && 
+            (mutation.target as HTMLElement).classList.contains(`${config.prefix}-tab--active`)) {
+          // Find the corresponding tab component
+          const tabElement = mutation.target as HTMLElement;
+          const activeTab = component.tabs.find(tab => tab.element === tabElement);
+          if (activeTab) {
+            indicator.moveToTab(activeTab);
+          }
+        }
+      }
+    });
+    
+    // Observe all tabs for class changes
+    if (Array.isArray(component.tabs)) {
+      component.tabs.forEach(tab => {
+        if (tab.element) {
+          mutationObserver.observe(tab.element, { attributes: true });
+        }
+      });
+    }
+    
+    // Enhance component's destroy method
+    const originalDestroy = component.destroy || (() => {});
+    
+    // Override destroy to clean up resources
+    (component as any).destroy = function() {
+      indicator.destroy();
+      resizeObserver.disconnect();
+      mutationObserver.disconnect();
+      
+      if (scrollContainer) {
+        scrollContainer.removeEventListener('scroll', scrollHandler);
+      }
+      
+      // Call original destroy if it exists
+      if (typeof originalDestroy === 'function') {
+        originalDestroy.call(this);
+      }
+    };
+    
+    return {
+      ...component,
+      indicator,
+      getIndicator: () => indicator
+    };
   };

@@ -5,6 +5,7 @@ import { addScrollIndicators } from './scroll-indicators';
 import { setupResponsiveBehavior } from './responsive';
 import { createTabsState } from './state';
 import { createTabIndicator } from './indicator';
+import { updateTabPanels, setupKeyboardNavigation } from './utils';
 
 export { 
   // Main component creators
@@ -36,8 +37,25 @@ export {
   addScrollIndicators,
   setupResponsiveBehavior,
   createTabsState,
-  createTabIndicator
+  createTabIndicator,
+  updateTabPanels,
+  setupKeyboardNavigation
 };
+
+// Export features
+export {
+  withTabsManagement,
+  withScrollable,
+  withDivider,
+  withIndicator,
+  TabsManagementConfig,
+  TabsManagementComponent,
+  ScrollableConfig,
+  ScrollableComponent,
+  DividerConfig,
+  IndicatorFeatureConfig,
+  IndicatorComponent
+} from './features';
 
 // Default export
 export default createTabs;
