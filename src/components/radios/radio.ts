@@ -16,11 +16,6 @@ export const withRadio = (config: RadiosConfig) => (component) => {
     `${radiosClass}--${config.direction || 'vertical'}`
   );
   
-  // Add size class
-  component.element.classList.add(
-    `${radiosClass}--${config.size || 'medium'}`
-  );
-  
   // Setup disabled state if needed
   if (config.disabled) {
     component.element.classList.add(`${radiosClass}--disabled`);
@@ -112,12 +107,24 @@ export const withRadio = (config: RadiosConfig) => (component) => {
           }
         });
         
-        // Emit change event
-        component.events.emit('change', {
-          value: option.value,
-          originalEvent: e,
-          option
-        });
+        // Safely emit change event if events exist
+        if (component.events && typeof component.events.emit === 'function') {
+          component.events.emit('change', {
+            value: option.value,
+            originalEvent: e,
+            option
+          });
+        } else if (typeof component.on === 'function') {
+          // Fallback to trigger handlers directly if they were registered with on()
+          const changeEvent = new CustomEvent('change', {
+            detail: {
+              value: option.value,
+              originalEvent: e,
+              option
+            }
+          });
+          component.element.dispatchEvent(changeEvent);
+        }
       }
     };
     
@@ -186,6 +193,22 @@ export const withRadio = (config: RadiosConfig) => (component) => {
   // Initialize radios from config
   if (config.options && Array.isArray(config.options)) {
     config.options.forEach(option => addOption(option));
+  }
+  
+  // Create events object if it doesn't exist
+  if (!component.events) {
+    component.events = {
+      on: (event, handler) => {
+        component.element.addEventListener(event, (e) => handler(e.detail));
+      },
+      off: (event, handler) => {
+        component.element.removeEventListener(event, handler);
+      },
+      emit: (event, data) => {
+        const customEvent = new CustomEvent(event, { detail: data });
+        component.element.dispatchEvent(customEvent);
+      }
+    };
   }
   
   // Return enhanced component

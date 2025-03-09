@@ -5,14 +5,13 @@ import {
   BaseComponentConfig 
 } from '../../core/config/component-config';
 import { ProgressConfig } from './types';
-import { PROGRESS_VARIANTS, PROGRESS_SIZES } from './constants';
+import { PROGRESS_VARIANTS } from './constants';
 
 /**
  * Default configuration for the Progress component
  */
 export const defaultConfig: ProgressConfig = {
   variant: PROGRESS_VARIANTS.LINEAR,
-  size: PROGRESS_SIZES.MEDIUM,
   value: 0,
   max: 100,
   buffer: 0,

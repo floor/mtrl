@@ -9,15 +9,6 @@ export const TEXTFIELD_VARIANTS = {
 } as const;
 
 /**
- * Textfield size variants
- */
-export const TEXTFIELD_SIZES = {
-  SMALL: 'small',
-  MEDIUM: 'medium',
-  LARGE: 'large'
-} as const;
-
-/**
  * Textfield input types
  */
 export const TEXTFIELD_TYPES = {
@@ -43,11 +34,6 @@ export const TEXTFIELD_SCHEMA = {
   variant: {
     type: 'string',
     enum: Object.values(TEXTFIELD_VARIANTS),
-    required: false
-  },
-  size: {
-    type: 'string',
-    enum: Object.values(TEXTFIELD_SIZES),
     required: false
   },
   name: {

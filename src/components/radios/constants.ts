@@ -11,15 +11,6 @@ export const RADIO_STATES = {
 };
 
 /**
- * Radio sizes
- */
-export const RADIO_SIZES = {
-  SMALL: 'small',
-  MEDIUM: 'medium',
-  LARGE: 'large'
-};
-
-/**
  * Radio layout directions
  */
 export const RADIO_DIRECTIONS = {

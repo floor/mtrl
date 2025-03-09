@@ -7,7 +7,6 @@ import {
   withText,
   withIcon,
   withVariant,
-  withSize,
   withRipple,
   withDisabled,
   withLifecycle
@@ -31,7 +30,6 @@ const createButton = (config: ButtonConfig = {}) => {
       withEvents(),
       withElement(getElementConfig(baseConfig)),
       withVariant(baseConfig),
-      withSize(baseConfig),
       withText(baseConfig),
       withIcon(baseConfig),
       withDisabled(baseConfig),

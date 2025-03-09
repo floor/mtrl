@@ -1,5 +1,5 @@
 // src/components/progress/types.ts
-import { PROGRESS_VARIANTS, PROGRESS_SIZES } from './constants';
+import { PROGRESS_VARIANTS } from './constants';
 
 /**
  * Configuration interface for the Progress component
@@ -7,9 +7,6 @@ import { PROGRESS_VARIANTS, PROGRESS_SIZES } from './constants';
 export interface ProgressConfig {
   /** Progress variant (linear, circular) */
   variant?: keyof typeof PROGRESS_VARIANTS | string;
-  
-  /** Progress size (small, medium, large) */
-  size?: keyof typeof PROGRESS_SIZES | string;
   
   /** Initial progress value (0-100) */
   value?: number;

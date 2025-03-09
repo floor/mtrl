@@ -6,7 +6,6 @@ import {
   withDisabled,
   withLifecycle,
   withVariant,
-  withSize,
   withTextInput,
   withTextLabel
 } from '../../core/compose/features';
@@ -32,7 +31,6 @@ const createTextfield = (config: TextfieldConfig = {}): TextfieldComponent => {
       withEvents(),
       withElement(getElementConfig(baseConfig)),
       withVariant(baseConfig),
-      withSize(baseConfig),
       withTextInput(baseConfig),
       withTextLabel(baseConfig),
       withDisabled(baseConfig),

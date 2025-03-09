@@ -1,5 +1,5 @@
 // src/components/button/types.ts
-import { BUTTON_VARIANTS, BUTTON_SIZES } from './constants';
+import { BUTTON_VARIANTS } from './constants';
 
 /**
  * Configuration interface for the Button component
@@ -11,12 +11,6 @@ export interface ButtonConfig {
    * @default 'filled'
    */
   variant?: keyof typeof BUTTON_VARIANTS | string;
-  
-  /** 
-   * Button size 
-   * @default 'medium'
-   */
-  size?: keyof typeof BUTTON_SIZES | string;
   
   /** 
    * Whether the button is initially disabled

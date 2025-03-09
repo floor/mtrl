@@ -22,9 +22,10 @@ const createRadios = (config: RadiosConfig): RadiosComponent => {
   const baseConfig = createBaseConfig(config);
 
   try {
+    // First add events support before radio functionality
     const radios = pipe(
       createBase,
-      withEvents(),
+      withEvents(), // Make sure this runs first to provide events
       withElement(getElementConfig(baseConfig)),
       withRadio(baseConfig),
       withDisabled(baseConfig),
