@@ -5,7 +5,7 @@ import {
   BaseComponentConfig 
 } from '../../core/config/component-config';
 import { RadiosConfig } from './types';
-import { RADIO_DIRECTIONS, RADIO_SIZES } from './constants';
+import { RADIO_DIRECTIONS } from './constants';
 
 /**
  * Default configuration for the Radios component
@@ -13,7 +13,6 @@ import { RADIO_DIRECTIONS, RADIO_SIZES } from './constants';
 export const defaultConfig: RadiosConfig = {
   name: '',
   direction: RADIO_DIRECTIONS.VERTICAL,
-  size: RADIO_SIZES.MEDIUM,
   disabled: false,
   ripple: true,
   options: []

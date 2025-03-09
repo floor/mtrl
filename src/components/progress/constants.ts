@@ -18,20 +18,6 @@ export const PROGRESS_VARIANTS = {
 } as const;
 
 /**
- * Progress component sizes
- */
-export const PROGRESS_SIZES = {
-  /** Small progress indicator (2px height for linear, 16px diameter for circular) */
-  SMALL: 'small',
-  
-  /** Medium progress indicator (4px height for linear, 24px diameter for circular) */
-  MEDIUM: 'medium',
-  
-  /** Large progress indicator (8px height for linear, 48px diameter for circular) */
-  LARGE: 'large'
-} as const;
-
-/**
  * Progress component events
  */
 export const PROGRESS_EVENTS = {

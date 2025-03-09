@@ -1,5 +1,5 @@
 // src/components/radios/types.ts
-import { RADIO_SIZES, RADIO_DIRECTIONS } from './constants';
+import { RADIO_DIRECTIONS } from './constants';
 
 /**
  * Configuration for a radio option in the Radios component
@@ -63,12 +63,6 @@ export interface RadiosConfig {
    * @default 'vertical'
    */
   direction?: keyof typeof RADIO_DIRECTIONS | string;
-  
-  /**
-   * Radio size
-   * @default 'medium'
-   */
-  size?: keyof typeof RADIO_SIZES | string;
   
   /** 
    * Whether to enable ripple effect

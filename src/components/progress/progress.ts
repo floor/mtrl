@@ -6,13 +6,12 @@ import { createBase, withElement } from '../../core/compose/component';
 import {
   withEvents,
   withVariant,
-  withSize,
   withDisabled,
   withLifecycle
 } from '../../core/compose/features';
 import { withAPI } from './api';
 import { ProgressConfig, ProgressComponent } from './types';
-import { PROGRESS_VARIANTS, PROGRESS_SIZES, PROGRESS_EVENTS } from './constants';
+import { PROGRESS_VARIANTS, PROGRESS_EVENTS } from './constants';
 import { createBaseConfig, getElementConfig, getApiConfig } from './config';
 
 // Helper functions
@@ -72,7 +71,6 @@ const createCircularProgressDOM = (baseClass: string) => {
  * // Create an indeterminate circular progress
  * const loader = createProgress({
  *   variant: 'circular',
- *   size: 'large',
  *   indeterminate: true
  * });
  * ```
@@ -101,7 +99,6 @@ const createProgress = (config: ProgressConfig = {}): ProgressComponent => {
       withEvents(),
       withElement(getElementConfig(baseConfig)),
       withVariant(baseConfig),
-      withSize(baseConfig),
       withDisabled(baseConfig),
       withLifecycle(),
       // Add DOM structure based on variant

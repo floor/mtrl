@@ -184,49 +184,4 @@ $component: '#{base.$prefix}-radios';
     margin-left: 8px;
     line-height: 1.2;
   }
-  
-  // Size variants
-  &--small {
-    .#{$component}-control {
-      width: 36px;
-      height: 36px;
-    }
-    
-    .#{$component}-circle {
-      width: 18px;
-      height: 18px;
-      
-      &:after {
-        width: 10px;
-        height: 10px;
-      }
-    }
-    
-    .#{$component}-label {
-      font-size: 13px;
-      height: 36px;
-    }
-  }
-  
-  &--large {
-    .#{$component}-control {
-      width: 48px;
-      height: 48px;
-    }
-    
-    .#{$component}-circle {
-      width: 24px;
-      height: 24px;
-      
-      &:after {
-        width: 14px;
-        height: 14px;
-      }
-    }
-    
-    .#{$component}-label {
-      font-size: 16px;
-      height: 48px;
-    }
-  }
 }

@@ -1,5 +1,5 @@
 // src/components/textfield/types.ts
-import { TEXTFIELD_VARIANTS, TEXTFIELD_SIZES, TEXTFIELD_TYPES } from './constants';
+import { TEXTFIELD_VARIANTS, TEXTFIELD_TYPES } from './constants';
 
 /**
  * Configuration interface for the Textfield component
@@ -10,9 +10,6 @@ export interface TextfieldConfig {
   
   /** Visual variant (filled, outlined) */
   variant?: keyof typeof TEXTFIELD_VARIANTS | string;
-  
-  /** Size variant (small, medium, large) */
-  size?: keyof typeof TEXTFIELD_SIZES | string;
   
   /** Input name attribute */
   name?: string;
