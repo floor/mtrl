@@ -47,7 +47,6 @@ export interface TabIndicator {
  * Default configuration for tab indicator
  */
 const DEFAULT_CONFIG: TabIndicatorConfig = {
-  height: 3,
   widthStrategy: 'fixed',
   fixedWidth: 40,
   animationDuration: 250,
@@ -69,13 +68,8 @@ export const createTabIndicator = (config: TabIndicatorConfig = {}): TabIndicato
   // Create indicator element
   const element = document.createElement('div');
   element.className = `${prefix}-tabs-indicator`;
-  element.style.position = 'absolute';
-  element.style.bottom = '0';
-  element.style.height = `${mergedConfig.height}px`;
-  element.style.backgroundColor = mergedConfig.color || 'currentColor';
   element.style.transition = `transform ${mergedConfig.animationDuration}ms ${mergedConfig.animationTiming}, 
                              width ${mergedConfig.animationDuration}ms ${mergedConfig.animationTiming}`;
-  element.style.borderRadius = `${mergedConfig.height / 2}px ${mergedConfig.height / 2}px 0 0`;
   element.style.width = `${mergedConfig.fixedWidth}px`; // Set initial width
   
   // Set initial visibility
