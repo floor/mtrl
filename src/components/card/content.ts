@@ -31,6 +31,8 @@ export const createCardContent = (config: CardContentConfig = {}): HTMLElement =
   };
 
   try {
+    // Create element with innerHTML instead of html/text properties
+    // for more reliable content rendering
     const content = pipe(
       createBase,
       withElement({
@@ -40,13 +42,21 @@ export const createCardContent = (config: CardContentConfig = {}): HTMLElement =
           config.class,
           config.padding === false ? `${PREFIX}-card-content--no-padding` : null
         ],
-        html: config.html,
-        text: config.text,
         attrs: {
-          'role': 'region'
+          'role': 'region',
+          // Add explicit style attributes to ensure visibility
+          'style': 'display: block; color: inherit;'
         }
       })
     )(baseConfig);
+
+    // Explicitly set the innerHTML for more reliable rendering
+    if (config.html) {
+      content.element.innerHTML = config.html;
+    } else if (config.text) {
+      // Wrap text in paragraph for proper formatting
+      content.element.innerHTML = `<p>${config.text}</p>`;
+    }
 
     // Add children if provided
     if (Array.isArray(config.children)) {
@@ -56,6 +66,10 @@ export const createCardContent = (config: CardContentConfig = {}): HTMLElement =
         }
       });
     }
+
+    // Add debug class to make troubleshooting easier
+    // Remove this in production
+    content.element.classList.add('debug-content');
 
     return content.element;
   } catch (error) {
