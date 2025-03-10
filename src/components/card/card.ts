@@ -13,8 +13,32 @@ import { createBaseConfig, getElementConfig, getApiConfig, withInteractiveBehavi
 
 /**
  * Creates a new Card component following Material Design 3 principles
+ * 
+ * Material Design 3 Cards are surfaces that display content and actions about a single topic.
+ * Cards can contain text, media, and UI controls.
+ * 
  * @param {CardSchema} config - Card configuration object
  * @returns {CardComponent} Card component instance
+ * 
+ * @example
+ * ```typescript
+ * // Create a basic elevated card
+ * const card = createCard();
+ * 
+ * // Create a filled card with content
+ * const filledCard = createCard({
+ *   variant: CardVariant.FILLED,
+ *   contentConfig: { text: 'Card content' }
+ * });
+ * 
+ * // Create an interactive outlined card
+ * const interactiveCard = createCard({
+ *   variant: CardVariant.OUTLINED,
+ *   interactive: true,
+ *   clickable: true,
+ *   aria: { label: 'Click to view details' }
+ * });
+ * ```
  */
 const createCard = (config: CardSchema = {}): CardComponent => {
   const baseConfig = createBaseConfig(config);
@@ -31,6 +55,14 @@ const createCard = (config: CardSchema = {}): CardComponent => {
       comp => withAPI(getApiConfig(comp))(comp)
     )(baseConfig);
 
+    // Set initial elevation based on variant
+    const element = (card as CardComponent).element;
+    if (baseConfig.variant === 'elevated') {
+      element.style.setProperty('--card-elevation', '1');
+    } else {
+      element.style.setProperty('--card-elevation', '0');
+    }
+    
     return card as CardComponent;
   } catch (error) {
     console.error('Card creation error:', error instanceof Error ? error.message : String(error));

@@ -20,8 +20,21 @@ interface SwipeableConfig {
 
 /**
  * Higher-order function to add loading state to a card
+ * 
  * @param {LoadingConfig} config - Loading state configuration
  * @returns {Function} Card component enhancer
+ * 
+ * @example
+ * ```typescript
+ * // Create a card with loading state
+ * const card = pipe(
+ *   createCard,
+ *   withLoading({ initialState: true })
+ * )();
+ * 
+ * // Toggle loading state
+ * setTimeout(() => card.loading.setLoading(false), 2000);
+ * ```
  */
 export const withLoading = (config: LoadingConfig = {}) => (component: BaseComponent): BaseComponent & { loading: LoadingFeature } => {
   const initialState = config.initialState || false;
@@ -36,7 +49,12 @@ export const withLoading = (config: LoadingConfig = {}) => (component: BaseCompo
       loadingElement = createElement({
         tag: 'div',
         className: `${PREFIX}-card-loading-overlay`,
-        container: component.element
+        container: component.element,
+        attrs: {
+          'role': 'progressbar',
+          'aria-busy': 'true',
+          'aria-label': 'Loading'
+        }
       });
 
       // Add spinner
@@ -47,11 +65,13 @@ export const withLoading = (config: LoadingConfig = {}) => (component: BaseCompo
       });
 
       component.element.classList.add(`${PREFIX}-card--state-loading`);
+      component.element.setAttribute('aria-busy', 'true');
     } else if (!loading && loadingElement) {
       // Remove loading overlay
       loadingElement.remove();
       loadingElement = null;
       component.element.classList.remove(`${PREFIX}-card--state-loading`);
+      component.element.setAttribute('aria-busy', 'false');
     }
   }
 
@@ -70,8 +90,27 @@ export const withLoading = (config: LoadingConfig = {}) => (component: BaseCompo
 
 /**
  * Higher-order function to add expandable behavior to a card
+ * 
  * @param {ExpandableConfig} config - Expandable configuration
  * @returns {Function} Card component enhancer
+ * 
+ * @example
+ * ```typescript
+ * // Create a card with expandable content
+ * const expandableContent = document.createElement('div');
+ * expandableContent.textContent = 'Additional content that can be expanded';
+ * 
+ * const card = pipe(
+ *   createCard,
+ *   withExpandable({ 
+ *     initialExpanded: false,
+ *     expandableContent
+ *   })
+ * )();
+ * 
+ * // Later toggle the expanded state
+ * card.expandable.toggleExpanded();
+ * ```
  */
 export const withExpandable = (config: ExpandableConfig = {}) => (component: BaseComponent): BaseComponent & { expandable: ExpandableFeature } => {
   const initialExpanded = config.initialExpanded || false;
@@ -85,7 +124,8 @@ export const withExpandable = (config: ExpandableConfig = {}) => (component: Bas
     className: `${PREFIX}-card-expand-button`,
     attrs: {
       'aria-expanded': isExpanded ? 'true' : 'false',
-      'aria-label': isExpanded ? 'Collapse' : 'Expand'
+      'aria-label': isExpanded ? 'Collapse content' : 'Expand content',
+      'aria-controls': expandableContent?.id || `${component.element.id || 'card'}-expandable-content`
     }
   }) as HTMLButtonElement;
 
@@ -98,7 +138,10 @@ export const withExpandable = (config: ExpandableConfig = {}) => (component: Bas
     const newActionsContainer = createElement({
       tag: 'div',
       className: `${PREFIX}-card-actions`,
-      container: component.element
+      container: component.element,
+      attrs: {
+        'role': 'group'
+      }
     });
     newActionsContainer.appendChild(expandButton);
   }
@@ -106,9 +149,19 @@ export const withExpandable = (config: ExpandableConfig = {}) => (component: Bas
   // Set initial state
   if (expandableContent) {
     expandableContent.classList.add(`${PREFIX}-card-expandable-content`);
+    
+    // Ensure the expandable content has an ID for ARIA controls
+    if (!expandableContent.id) {
+      expandableContent.id = `${component.element.id || 'card'}-expandable-content`;
+    }
+    
     if (!initialExpanded) {
       expandableContent.style.display = 'none';
+      expandableContent.setAttribute('aria-hidden', 'true');
+    } else {
+      expandableContent.setAttribute('aria-hidden', 'false');
     }
+    
     component.element.appendChild(expandableContent);
   }
 
@@ -118,10 +171,11 @@ export const withExpandable = (config: ExpandableConfig = {}) => (component: Bas
 
     if (expandableContent) {
       expandableContent.style.display = expanded ? 'block' : 'none';
+      expandableContent.setAttribute('aria-hidden', expanded ? 'false' : 'true');
     }
 
     expandButton.setAttribute('aria-expanded', expanded ? 'true' : 'false');
-    expandButton.setAttribute('aria-label', expanded ? 'Collapse' : 'Expand');
+    expandButton.setAttribute('aria-label', expanded ? 'Collapse content' : 'Expand content');
 
     if (expanded) {
       component.element.classList.add(`${PREFIX}-card--expanded`);
@@ -143,6 +197,14 @@ export const withExpandable = (config: ExpandableConfig = {}) => (component: Bas
     toggleExpanded();
   });
 
+  // Add keyboard handler for accessibility
+  expandButton.addEventListener('keydown', (e: KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      toggleExpanded();
+    }
+  });
+
   return {
     ...component,
     expandable: {
@@ -155,13 +217,70 @@ export const withExpandable = (config: ExpandableConfig = {}) => (component: Bas
 
 /**
  * Higher-order function to add swipeable behavior to a card
+ * 
  * @param {SwipeableConfig} config - Swipeable configuration
  * @returns {Function} Card component enhancer
+ * 
+ * @example
+ * ```typescript
+ * // Create a swipeable card
+ * const card = pipe(
+ *   createCard,
+ *   withSwipeable({
+ *     threshold: 100,
+ *     onSwipeLeft: (card) => console.log('Swiped left'),
+ *     onSwipeRight: (card) => console.log('Swiped right')
+ *   })
+ * )({ variant: CardVariant.ELEVATED });
+ * ```
  */
 export const withSwipeable = (config: SwipeableConfig = {}) => (component: BaseComponent): BaseComponent & { swipeable: SwipeableFeature } => {
   const threshold = config.threshold || 100;
   let startX = 0;
   let currentX = 0;
+  
+  // Add accessibility information for swipeable cards
+  component.element.setAttribute('aria-description', 'Swipeable card. Swipe left or right to perform actions.');
+
+  // Create hidden buttons for keyboard accessibility
+  const leftActionButton = createElement({
+    tag: 'button',
+    className: `${PREFIX}-card-swipe-left-action`,
+    text: 'Swipe Left Action',
+    container: component.element,
+    attrs: {
+      'aria-label': 'Perform swipe left action',
+      'style': 'position: absolute; left: -9999px; top: -9999px; visibility: hidden;' // Visually hidden but accessible
+    }
+  }) as HTMLButtonElement;
+  
+  const rightActionButton = createElement({
+    tag: 'button',
+    className: `${PREFIX}-card-swipe-right-action`,
+    text: 'Swipe Right Action',
+    container: component.element,
+    attrs: {
+      'aria-label': 'Perform swipe right action',
+      'style': 'position: absolute; left: -9999px; top: -9999px; visibility: hidden;' // Visually hidden but accessible
+    }
+  }) as HTMLButtonElement;
+  
+  // Add keyboard handlers to the hidden buttons
+  leftActionButton.addEventListener('click', () => {
+    if (config.onSwipeLeft) {
+      component.element.style.transform = 'translateX(-100%)';
+      component.element.style.transition = 'transform 0.3s ease';
+      config.onSwipeLeft(component as CardComponent);
+    }
+  });
+  
+  rightActionButton.addEventListener('click', () => {
+    if (config.onSwipeRight) {
+      component.element.style.transform = 'translateX(100%)';
+      component.element.style.transition = 'transform 0.3s ease';
+      config.onSwipeRight(component as CardComponent);
+    }
+  });
 
   function handleTouchStart(e: TouchEvent): void {
     startX = e.touches[0].clientX;
