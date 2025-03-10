@@ -7,19 +7,17 @@ import {
   withText,
   withIcon,
   withVariant,
-  withSize,
   withRipple,
   withDisabled,
   withLifecycle
 } from '../../core/compose/features'
 import { withAPI } from './api'
-import { CHIP_VARIANTS, CHIP_SIZES } from './constants'
+import { CHIP_VARIANTS } from './constants'
 
 /**
  * Creates a new Chip component
  * @param {Object} config - Chip configuration
  * @param {string} [config.variant='filled'] - Chip variant
- * @param {string} [config.size='medium'] - Chip size
  * @param {boolean} [config.selected=false] - Whether the chip is initially selected
  * @param {boolean} [config.disabled=false] - Whether the chip is initially disabled
  * @param {string} [config.text] - Chip text content
@@ -37,7 +35,6 @@ const createChip = (config = {}) => {
   const baseConfig = {
     ...config,
     variant: config.variant || CHIP_VARIANTS.FILLED,
-    size: config.size || CHIP_SIZES.MEDIUM,
     componentName: 'chip',
     prefix: PREFIX,
     ripple: config.ripple !== false
@@ -74,11 +71,6 @@ const createChip = (config = {}) => {
     // Manually add the variant class
     if (config.variant) {
       chip.element.classList.add(`${chip.getClass('chip')}--${config.variant}`)
-    }
-    
-    // Manually add the size class
-    if (config.size) {
-      chip.element.classList.add(`${chip.getClass('chip')}--${config.size}`)
     }
     
     // Add ripple if enabled

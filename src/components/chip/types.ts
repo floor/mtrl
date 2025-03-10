@@ -1,5 +1,5 @@
 // src/components/chip/types.ts
-import { CHIP_VARIANTS, CHIP_SIZES } from './constants';
+import { CHIP_VARIANTS } from './constants';
 
 /**
  * Configuration interface for the Chip component
@@ -7,9 +7,6 @@ import { CHIP_VARIANTS, CHIP_SIZES } from './constants';
 export interface ChipConfig {
   /** Chip variant (filled, outlined, elevated, assist, filter, input, suggestion) */
   variant?: keyof typeof CHIP_VARIANTS | string;
-  
-  /** Chip size (small, medium, large) */
-  size?: keyof typeof CHIP_SIZES | string;
   
   /** Whether the chip is initially disabled */
   disabled?: boolean;
