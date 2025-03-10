@@ -26,13 +26,3 @@ export const CHIP_VARIANTS = {
   /** Suggestion chip for presenting options */
   SUGGESTION: 'suggestion'
 };
-
-/**
- * Available sizes for the Chip component
- * @enum {string}
- */
-export const CHIP_SIZES = {
-  SMALL: 'small',
-  MEDIUM: 'medium',
-  LARGE: 'large'
-};
