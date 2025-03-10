@@ -20,7 +20,13 @@ export {
 } from './content';
 
 // Other exports
-export { withLoading, withExpandable, withSwipeable } from './features';
+export { 
+  withLoading, 
+  withExpandable, 
+  withSwipeable, 
+  withElevation 
+} from './features';
+
 export {
   CardVariant,
   CardElevation,

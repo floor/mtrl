@@ -9,7 +9,13 @@ import {
 } from '../../core/compose/features';
 import { withAPI } from './api';
 import { CardComponent, BaseComponent, CardSchema } from './types';
-import { createBaseConfig, getElementConfig, getApiConfig, withInteractiveBehavior } from './config';
+import { 
+  createBaseConfig, 
+  getElementConfig, 
+  getApiConfig, 
+  withInteractiveBehavior
+} from './config';
+import { withElevation } from './features';
 
 /**
  * Creates a new Card component following Material Design 3 principles
@@ -52,16 +58,9 @@ const createCard = (config: CardSchema = {}): CardComponent => {
       config.clickable ? withRipple(baseConfig) : (c: BaseComponent) => c,
       withLifecycle(),
       withInteractiveBehavior,
+      withElevation,
       comp => withAPI(getApiConfig(comp))(comp)
     )(baseConfig);
-
-    // Set initial elevation based on variant
-    const element = (card as CardComponent).element;
-    if (baseConfig.variant === 'elevated') {
-      element.style.setProperty('--card-elevation', '1');
-    } else {
-      element.style.setProperty('--card-elevation', '0');
-    }
     
     return card as CardComponent;
   } catch (error) {
