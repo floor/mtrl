@@ -1,4 +1,5 @@
 // src/components/card/constants.ts
+
 import { CardVariant, CardElevation } from './types';
 
 /**
@@ -6,37 +7,33 @@ import { CardVariant, CardElevation } from './types';
  * @enum {string}
  */
 export const CARD_VARIANTS = {
+  /** Elevated card with shadow */
   ELEVATED: CardVariant.ELEVATED,
+  /** Filled card with higher surface container color */
   FILLED: CardVariant.FILLED,
+  /** Outlined card with border */
   OUTLINED: CardVariant.OUTLINED
 };
 
 /**
- * Card elevation levels
+ * Card elevation levels based on MD3 guidelines
+ * Uses the MTRL elevation system values
  * @enum {number}
  */
 export const CARD_ELEVATIONS = {
-  RESTING: CardElevation.RESTING,
-  HOVERED: CardElevation.HOVERED,
-  DRAGGED: CardElevation.DRAGGED
+  /** No elevation (for filled and outlined variants) */
+  LEVEL0: CardElevation.LEVEL0,
+  /** Default elevation for elevated cards */
+  LEVEL1: CardElevation.LEVEL1,
+  /** Elevation for hovered state */
+  LEVEL2: CardElevation.LEVEL2,
+  /** Elevation for dragged state */
+  LEVEL4: CardElevation.LEVEL4
 };
 
-// Default width values following MD3 principles
-export const CARD_WIDTHS = {
-  // Mobile-optimized default (MD3 recommends 344dp for small screens)
-  DEFAULT: '344px',
-  // Percentage-based responsive options
-  FULL: '100%',
-  HALF: '50%',
-  // Fixed widths for different breakpoints
-  SMALL: '344px',
-  MEDIUM: '480px',
-  LARGE: '624px'
-}
-
-
 /**
- * Validation schema for card configuration
+ * Card validation schema
+ * @const {Object}
  */
 export const CARD_SCHEMA = {
   variant: {
@@ -77,6 +74,10 @@ export const CARD_SCHEMA = {
     required: false
   },
   mediaConfig: {
+    type: 'object',
+    required: false
+  },
+  aria: {
     type: 'object',
     required: false
   }

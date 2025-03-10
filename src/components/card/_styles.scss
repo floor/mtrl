@@ -13,22 +13,32 @@ $component: '#{base.$prefix}-card';
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  border-radius: v.shape('medium');
+  border-radius: f.get-shape('medium'); // Use function for MD3 standard shape
   background-color: t.color('surface');
   color: t.color('on-surface');
   overflow: hidden;
-  width: 320px; // Fixed width since v.card() isn't available
-  --card-elevation: 1;
+  width: v.card('width'); // Use card width variable
+  --card-elevation: 0;
   
-  // Typography
+  // Typography - use mixin
   @include m.typography('body-medium');
   
-  // Transition for elevation and hover states
+  // Transition for elevation and hover states - use motion-transition mixin
   @include m.motion-transition(
     box-shadow,
     background-color,
     border-color
   );
+
+  // Focus outline for accessibility - use focus-ring mixin
+  &:focus-visible {
+    @include m.focus-ring(t.color('secondary'));
+  }
+
+  // Focus state class
+  &--focused {
+    @include m.focus-ring(t.color('secondary'));
+  }
 
   // Ripple styles for clickable cards
   .ripple {
@@ -37,7 +47,7 @@ $component: '#{base.$prefix}-card';
     transform: scale(0);
     pointer-events: none;
     background-color: currentColor;
-    opacity: 0.08;
+    opacity: f.get-state-opacity('hover'); // Use function for standard opacity
   }
   
   // Ensure proper stacking for inner components
@@ -45,23 +55,33 @@ $component: '#{base.$prefix}-card';
     margin-bottom: 0;
   }
   
-  // === Variants ===
+  // === Variants - use proper theme colors ===
   
   // Elevated variant
   &--elevated {
-    @include m.elevation(1);
+    background-color: t.color('surface-container-low');
+    @include m.elevation(1); // Use elevation mixin
     
     &:hover.#{$component}--interactive {
-      @include m.elevation(2);
+      @include m.elevation(2); // Use elevation mixin for hover state
+    }
+
+    &:active.#{$component}--interactive {
+      @include m.state-layer(t.color('on-surface'), 'pressed'); // Use state-layer mixin
     }
   }
   
   // Filled variant
   &--filled {
     background-color: t.color('surface-container-highest');
+    @include m.elevation(0); // No elevation
     
     &:hover.#{$component}--interactive {
       @include m.state-layer(t.color('on-surface'), 'hover');
+    }
+
+    &:active.#{$component}--interactive {
+      @include m.state-layer(t.color('on-surface'), 'pressed');
     }
   }
   
@@ -69,10 +89,15 @@ $component: '#{base.$prefix}-card';
   &--outlined {
     border: 1px solid t.color('outline');
     background-color: t.color('surface');
+    @include m.elevation(0); // No elevation
     
     &:hover.#{$component}--interactive {
       @include m.state-layer(t.color('on-surface'), 'hover');
       border-color: t.color('outline-variant');
+    }
+
+    &:active.#{$component}--interactive {
+      @include m.state-layer(t.color('on-surface'), 'pressed');
     }
   }
   
@@ -95,10 +120,10 @@ $component: '#{base.$prefix}-card';
   &-header {
     display: flex;
     align-items: center;
-    padding: 16px;
+    padding: v.card('padding');
     
     &-avatar {
-      margin-right: 16px;
+      margin-right: v.card('padding');
       flex-shrink: 0;
       display: flex;
       align-items: center;
@@ -182,7 +207,7 @@ $component: '#{base.$prefix}-card';
   
   // Card Content
   &-content {
-    padding: 16px;
+    padding: v.card('padding');
     flex: 1 1 auto;
     
     > *:first-child {
@@ -195,7 +220,7 @@ $component: '#{base.$prefix}-card';
     
     // When content follows media without padding
     .#{$component}-media + &:not(.#{$component}-content--no-padding) {
-      padding-top: 16px;
+      padding-top: v.card('padding');
     }
     
     // No padding modifier
@@ -276,7 +301,7 @@ $component: '#{base.$prefix}-card';
   
   // State classes
   &--state-disabled {
-    opacity: 0.38;
+    opacity: 0.38; // Use MTRL standard opacity
     pointer-events: none;
   }
   
@@ -285,7 +310,7 @@ $component: '#{base.$prefix}-card';
   }
   
   &--dragging {
-    @include m.elevation(4);
+    @include m.elevation(4); // Use elevation mixin
     opacity: 0.9;
   }
   
@@ -299,15 +324,15 @@ $component: '#{base.$prefix}-card';
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: rgba(t.color('surface'), 0.7);
-    z-index: 1;
+    background-color: t.alpha('surface', 0.7);
+    z-index: f.get-z-index('default');
   }
   
   &-loading-spinner {
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    border: 3px solid rgba(t.color('primary'), 0.2);
+    border: 3px solid t.alpha('primary', 0.2);
     border-top-color: t.color('primary');
     animation: card-spinner 1s infinite linear;
   }
@@ -315,7 +340,7 @@ $component: '#{base.$prefix}-card';
   // Expandable content
   &-expandable-content {
     overflow: hidden;
-    transition: max-height 0.3s ease;
+    transition: max-height f.get-motion-duration('medium1') f.get-motion-easing('standard');
   }
   
   &-expand-button {
@@ -324,6 +349,9 @@ $component: '#{base.$prefix}-card';
     padding: 8px;
     cursor: pointer;
     color: t.color('primary');
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     
     &::before {
       content: '';
@@ -333,7 +361,7 @@ $component: '#{base.$prefix}-card';
       border-right: 2px solid currentColor;
       border-bottom: 2px solid currentColor;
       transform: rotate(45deg);
-      transition: transform 0.3s ease;
+      transition: transform f.get-motion-duration('short2') f.get-motion-easing('standard');
     }
     
     &[aria-expanded="true"]::before {
@@ -344,7 +372,13 @@ $component: '#{base.$prefix}-card';
   // Swipeable card
   &--swipeable {
     touch-action: pan-y;
-    transition: transform 0.3s ease;
+    transition: transform f.get-motion-duration('medium1') f.get-motion-easing('standard');
+  }
+  
+  // Hidden buttons for accessibility
+  &-swipe-left-action,
+  &-swipe-right-action {
+    @include m.visually-hidden; // Use visually-hidden mixin
   }
 }
 
@@ -355,5 +389,12 @@ $component: '#{base.$prefix}-card';
   }
   100% {
     transform: rotate(360deg);
+  }
+}
+
+// Media query for responsive adjustments
+@include m.breakpoint-down('sm') {
+  .#{$component} {
+    width: 100%; // Full width on small screens
   }
 }
