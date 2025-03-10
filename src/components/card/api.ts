@@ -28,8 +28,17 @@ export const withAPI = ({ lifecycle }: ApiOptions) => (component: BaseComponent)
   /**
    * Sets the card header
    * 
+   * Places the header element in the card. When media elements exist,
+   * the header is placed after the last media element to ensure proper 
+   * visual hierarchy following Material Design guidelines.
+   * 
    * @param {HTMLElement} headerElement - The header element to add
    * @returns {CardComponent} The card instance for chaining
+   * @example
+   * ```typescript
+   * // Add a header after media
+   * card.setHeader(headerElement);
+   * ```
    */
   setHeader(headerElement: HTMLElement): CardComponent {
     if (headerElement && headerElement.classList.contains(`${component.getClass('card')}-header`)) {
@@ -39,8 +48,25 @@ export const withAPI = ({ lifecycle }: ApiOptions) => (component: BaseComponent)
         existingHeader.remove();
       }
 
-      // Insert at the beginning of the card
-      component.element.insertBefore(headerElement, component.element.firstChild);
+      // Look for media element
+      const mediaElement = component.element.querySelector(`.${component.getClass('card')}-media`);
+      
+      if (mediaElement) {
+        // If media exists, insert after the LAST media element
+        // Find all media elements
+        const mediaElements = component.element.querySelectorAll(`.${component.getClass('card')}-media`);
+        const lastMedia = mediaElements[mediaElements.length - 1];
+        
+        // Insert after the last media element
+        if (lastMedia.nextSibling) {
+          component.element.insertBefore(headerElement, lastMedia.nextSibling);
+        } else {
+          component.element.appendChild(headerElement);
+        }
+      } else {
+        // No media, insert at the beginning
+        component.element.insertBefore(headerElement, component.element.firstChild);
+      }
     }
     return this;
   },

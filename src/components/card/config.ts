@@ -19,6 +19,60 @@ export const defaultConfig: CardSchema = {
 };
 
 /**
+ * Initializes a card component with its configured elements in the correct order
+ * 
+ * Creates and adds all configured elements to the card in the following order:
+ * 1. Top media elements (position='top')
+ * 2. Header element
+ * 3. Content elements
+ * 4. Bottom media elements (position='bottom')
+ * 5. Actions elements
+ * 
+ * This ordering ensures that media appears before header when both are configured,
+ * maintaining proper visual hierarchy according to Material Design guidelines.
+ * 
+ * @param {CardComponent} card - Card component to initialize
+ * @param {CardSchema} config - Card configuration
+ * @returns {CardComponent} Initialized card component
+ * @internal This is an internal utility for the Card component
+ */
+export const initializeCardElements = (card: CardComponent, config: CardSchema): CardComponent => {
+  // 1. Add top media first 
+  if (config.mediaConfig && (!config.mediaConfig.position || config.mediaConfig.position === 'top')) {
+    const { position, ...mediaConfigWithoutPosition } = config.mediaConfig;
+    const mediaElement = createCardMedia(mediaConfigWithoutPosition);
+    card.addMedia(mediaElement, 'top');
+  }
+  
+  // 2. Add header AFTER top media
+  if (config.headerConfig) {
+    const headerElement = createCardHeader(config.headerConfig);
+    card.setHeader(headerElement);
+  }
+  
+  // 3. Add content AFTER header
+  if (config.contentConfig) {
+    const contentElement = createCardContent(config.contentConfig);
+    card.addContent(contentElement);
+  }
+  
+  // 4. Add bottom media AFTER content
+  if (config.mediaConfig && config.mediaConfig.position === 'bottom') {
+    const { position, ...mediaConfigWithoutPosition } = config.mediaConfig;
+    const mediaElement = createCardMedia(mediaConfigWithoutPosition);
+    card.addMedia(mediaElement, 'bottom');
+  }
+  
+  // 5. Add actions LAST
+  if (config.actionsConfig) {
+    const actionsElement = createCardActions(config.actionsConfig);
+    card.setActions(actionsElement);
+  }
+  
+  return card;
+};
+
+/**
  * Creates the base configuration for Card component
  * 
  * @param {CardSchema} config - User provided configuration

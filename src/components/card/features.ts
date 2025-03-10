@@ -89,6 +89,38 @@ export const withLoading = (config: LoadingConfig = {}) => (component: BaseCompo
 };
 
 /**
+ * Higher-order function to add elevation to a card based on its variant
+ * 
+ * Sets the initial elevation CSS variable according to Material Design 3 guidelines:
+ * - Elevated variant: 1dp elevation
+ * - Filled and outlined variants: 0dp elevation
+ * 
+ * @param {BaseComponent} component - Card component
+ * @returns {BaseComponent} Card component with elevation applied
+ * @example
+ * ```typescript
+ * // Apply elevation in the composition chain
+ * const card = pipe(
+ *   createBase,
+ *   withElement(config),
+ *   withElevation
+ * )(baseConfig);
+ * ```
+ */
+export const withElevation = (component: BaseComponent): BaseComponent => {
+  const config = component.config;
+  
+  // Set initial elevation based on variant
+  if (config.variant === 'elevated') {
+    component.element.style.setProperty('--card-elevation', '1');
+  } else {
+    component.element.style.setProperty('--card-elevation', '0');
+  }
+  
+  return component;
+};
+
+/**
  * Higher-order function to add expandable behavior to a card
  * 
  * @param {ExpandableConfig} config - Expandable configuration

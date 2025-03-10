@@ -1,4 +1,4 @@
-// src/components/card/_card.scss
+// src/components/card/_styles.scss
 @use '../../styles/abstract/base' as base;
 @use '../../styles/abstract/variables' as v;
 @use '../../styles/abstract/functions' as f;
@@ -121,7 +121,8 @@ $component: '#{base.$prefix}-card';
     display: flex;
     align-items: center;
     padding: v.card('padding');
-    
+    padding-bottom: 0;
+
     &-avatar {
       margin-right: v.card('padding');
       flex-shrink: 0;
@@ -144,7 +145,7 @@ $component: '#{base.$prefix}-card';
     
     &-title {
       margin: 0;
-      @include m.typography('title-medium');
+      @include m.typography('title-large');
       @include m.truncate;
       color: t.color('on-surface');
     }
@@ -166,7 +167,7 @@ $component: '#{base.$prefix}-card';
   &-media {
     position: relative;
     overflow: hidden;
-    
+    border-radius: f.get-shape('medium');
     &-img {
       display: block;
       width: 100%;

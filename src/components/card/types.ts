@@ -54,6 +54,12 @@ export interface CardSchema {
   mediaConfig?: CardMediaConfig;
   /** ARIA attributes for accessibility */
   aria?: CardAriaAttributes;
+  /** Internal component name */
+  componentName?: string;
+  /** CSS class prefix */
+  prefix?: string;
+  /** Callback executed after component creation */
+  afterCreation?: (component: BaseComponent) => void;
 }
 
 /**
@@ -141,6 +147,12 @@ export interface CardMediaConfig {
   contain?: boolean;
   /** Additional CSS class(es) */
   class?: string;
+  /** 
+   * Position of the media in the card
+   * - 'top': Media appears at the top of the card (default)
+   * - 'bottom': Media appears after the content
+   */
+  position?: 'top' | 'bottom';
 }
 
 /**
