@@ -10,8 +10,14 @@ import { TabIndicator } from './indicator';
 export interface IndicatorConfig {
   /** Height of the indicator in pixels */
   height?: number;
-  /** Width strategy for the indicator */
-  widthStrategy?: 'fixed' | 'dynamic' | 'content';
+  /** 
+   * Width strategy for the indicator
+   * - 'fixed': Uses a fixed width defined by fixedWidth
+   * - 'dynamic': Uses half the tab width
+   * - 'content': Uses the text content width
+   * - 'auto': Adapts based on variant (primary: text width, secondary: full tab width)
+   */
+  widthStrategy?: 'fixed' | 'dynamic' | 'content' | 'auto';
   /** Fixed width in pixels (when using fixed strategy) */
   fixedWidth?: number;
   /** Animation duration in milliseconds */
@@ -20,6 +26,8 @@ export interface IndicatorConfig {
   animationTiming?: string;
   /** Custom color for the indicator */
   color?: string;
+  /** Tab variant (primary or secondary) */
+  variant?: string;
 }
 
 /**
