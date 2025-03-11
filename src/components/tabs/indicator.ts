@@ -8,7 +8,7 @@ export interface TabIndicatorConfig {
   /** Height of the indicator in pixels */
   height?: number;
   /** Width strategy - fixed size or dynamic based on tab width */
-  widthStrategy?: 'fixed' | 'dynamic' | 'content';
+  widthStrategy?: 'fixed' | 'dynamic' | 'content' | 'auto';
   /** Fixed width in pixels when using fixed strategy */
   fixedWidth?: number;
   /** Animation duration in milliseconds */
@@ -21,6 +21,8 @@ export interface TabIndicatorConfig {
   prefix?: string;
   /** Custom color for the indicator */
   color?: string;
+  /** Tabs variant (primary or secondary) */
+  variant?: string;
 }
 
 /**
@@ -47,12 +49,13 @@ export interface TabIndicator {
  * Default configuration for tab indicator
  */
 const DEFAULT_CONFIG: TabIndicatorConfig = {
-  widthStrategy: 'fixed',
+  widthStrategy: 'auto', // Changed to 'auto' to match variant behavior
   fixedWidth: 40,
   animationDuration: 250,
   animationTiming: 'cubic-bezier(0.4, 0, 0.2, 1)',
   visible: true,
-  prefix: 'mtrl'
+  prefix: 'mtrl',
+  variant: 'primary'
 };
 
 /**
@@ -81,17 +84,38 @@ export const createTabIndicator = (config: TabIndicatorConfig = {}): TabIndicato
   let currentTab: TabComponent | null = null;
   
   /**
-   * Calculates indicator width based on strategy
+   * Calculates indicator width based on strategy and variant
    * @param tab - Target tab
    * @returns Width in pixels
    */
   const calculateWidth = (tab: TabComponent): number => {
+    // Use auto strategy to determine based on variant
+    if (mergedConfig.widthStrategy === 'auto') {
+      // For secondary tabs, use full tab width
+      if (mergedConfig.variant === 'secondary') {
+        return tab.element.offsetWidth;
+      }
+      
+      // For primary tabs (default), use text label width
+      const textElement = tab.element.querySelector(`.${prefix}-tab-text`) || 
+                        tab.element.querySelector(`.${prefix}-button-text`);
+      
+      if (textElement) {
+        return textElement.clientWidth;
+      }
+      
+      // Fallback to dynamic if text element not found
+      return Math.max(tab.element.offsetWidth / 2, 30);
+    }
+    
+    // Handle other strategies when explicitly set
     switch (mergedConfig.widthStrategy) {
       case 'dynamic':
         return Math.max(tab.element.offsetWidth / 2, 30);
       case 'content':
         // Try to match content width
-        const text = tab.element.querySelector(`.${prefix}-button-text`);
+        const text = tab.element.querySelector(`.${prefix}-button-text`) || 
+                   tab.element.querySelector(`.${prefix}-tab-text`);
         if (text) {
           return Math.max(text.clientWidth, 30);
         }
@@ -127,6 +151,46 @@ export const createTabIndicator = (config: TabIndicatorConfig = {}): TabIndicato
   };
   
   /**
+   * Calculates indicator position based on variant and width
+   * @param tab - Target tab
+   * @param indicatorWidth - Width of the indicator
+   * @returns {Object} Position information
+   */
+  const calculatePosition = (tab: TabComponent, indicatorWidth: number): { left: number } => {
+    const { left, width: tabWidth } = getTabPosition(tab.element);
+    
+    // For primary tabs with text label width, center under the text
+    if (mergedConfig.variant !== 'secondary' && 
+        (mergedConfig.widthStrategy === 'auto' || mergedConfig.widthStrategy === 'content')) {
+      const textElement = tab.element.querySelector(`.${prefix}-tab-text`) || 
+                        tab.element.querySelector(`.${prefix}-button-text`);
+      
+      if (textElement) {
+        // Get text element position relative to tab
+        const textRect = textElement.getBoundingClientRect();
+        const tabRect = tab.element.getBoundingClientRect();
+        const textLeft = textRect.left - tabRect.left;
+        
+        // Center indicator under text
+        return {
+          left: left + textLeft
+        };
+      }
+    }
+    
+    // For secondary tabs or when no text element found
+    // For centered indicators, center in the tab
+    if (indicatorWidth < tabWidth) {
+      return {
+        left: left + ((tabWidth - indicatorWidth) / 2)
+      };
+    }
+    
+    // For full-width indicators
+    return { left };
+  };
+  
+  /**
    * Moves indicator to specified tab
    * @param tab - Target tab
    * @param immediate - Whether to skip animation
@@ -140,15 +204,11 @@ export const createTabIndicator = (config: TabIndicatorConfig = {}): TabIndicato
     // Store current tab for later updates
     currentTab = tab;
     
-    // Calculate indicator width
+    // Calculate indicator width based on strategy and variant
     const width = calculateWidth(tab);
     
-    // Get tab position directly from DOM
-    const { left, width: tabWidth } = getTabPosition(tab.element);
-    
-    // Calculate position to center indicator on tab
-    const tabCenter = left + (tabWidth / 2);
-    const indicatorLeft = tabCenter - (width / 2);
+    // Calculate position based on width and variant
+    const { left } = calculatePosition(tab, width);
     
     // Apply position immediately if requested
     if (immediate) {
@@ -160,7 +220,7 @@ export const createTabIndicator = (config: TabIndicatorConfig = {}): TabIndicato
     
     // Update position and width
     element.style.width = `${width}px`;
-    element.style.transform = `translateX(${indicatorLeft}px)`;
+    element.style.transform = `translateX(${left}px)`;
     
     // Restore transition after immediate update
     if (immediate) {

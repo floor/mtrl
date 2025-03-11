@@ -25,11 +25,18 @@ $container: '#{base.$prefix}-tabs';
     &:has(.#{$component}--icon-and-text) {
       min-height: 64px;
     }
+    
+    // Primary indicator specific styling
+    .#{$container}-indicator {
+      height: 4px;
+      border-radius: 3px 3px 0 0;
+      background-color: t.color('primary');
+    }
   }
   
   &--secondary {
     min-height: 48px;
-    // Tab indicator styling
+    // Tab indicator styling for secondary variant
     .#{$container}-indicator {
       height: 2px;
       border-radius: 0;
@@ -63,13 +70,10 @@ $container: '#{base.$prefix}-tabs';
     background-color: t.color('outline-variant'); // MD3: Outline variant color
   }
   
-  // Tab indicator styling
+  // Tab indicator styling - base styles
   &-indicator {
     position: absolute;
     bottom: 1px;
-    height: 4px;
-    background-color: t.color('primary');
-    border-radius: 3px 3px 0 0;
     transition: transform 250ms cubic-bezier(0.4, 0, 0.2, 1),
                 width 250ms cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 1; // Ensure indicator appears above divider
@@ -122,12 +126,12 @@ $container: '#{base.$prefix}-tabs';
   
   &:focus-visible {
     outline: 2px solid t.color('primary');
-    outline-offset: 0;
+    outline-offset: -2px;
     z-index: 1;
   }
   
   // Disabled state
-  &:disabled, &[disabled], &--disabled {
+  &--disabled, &:disabled {
     pointer-events: none;
     opacity: 0.38;
   }
@@ -189,44 +193,102 @@ $container: '#{base.$prefix}-tabs';
     }
   }
   
-  // Active Tab - Apply to both primary and secondary
-  &--active {
-    color: t.color('primary'); // MD3: Primary color
-    
-    .#{$component}-icon {
-      color: t.color('primary'); // MD3: Primary color
+  // ACTIVE TAB STATES - PRIMARY VARIANT
+  .#{$container}--primary & {
+    // Active Tab Base State - Apply to primary variant
+    &--active {
+      color: t.color('primary');
+      
+      .#{$component}-icon {
+        color: t.color('primary');
+      }
+      
+      // Hover state for active tabs
+      &:hover, &.#{$component}--hover {
+        background-color: t.alpha('primary', 0.08);
+      }
+      
+      // Focused state for active tabs
+      &:focus-visible, &.#{$component}--focus {
+        background-color: t.alpha('primary', 0.1);
+        outline-color: t.color('primary');
+      }
+      
+      // Pressed state for active tabs
+      &:active, &.#{$component}--pressed {
+        background-color: t.alpha('primary', 0.12);
+      }
     }
     
-    // Hover state for active tabs
-    &:hover:not(:disabled):not([disabled]) {
-      background-color: t.alpha('primary', 0.08);
-    }
-    
-    // Pressed state for active tabs
-    &:active:not(:disabled):not([disabled]) {
-      background-color: t.alpha('primary', 0.12);
+    // Inactive Tabs - Primary variant
+    &:not(.#{$component}--active):not(.#{$component}--disabled):not(:disabled) {
+      color: t.color('on-surface-variant');
+      
+      // Hover state for inactive tabs
+      &:hover, &.#{$component}--hover {
+        background-color: t.alpha('on-surface-variant', 0.08);
+      }
+      
+      // Focused state for inactive tabs
+      &:focus-visible, &.#{$component}--focus {
+        background-color: t.alpha('on-surface-variant', 0.1);
+        outline-color: t.color('on-surface-variant');
+      }
+      
+      // Pressed state for inactive tabs
+      &:active, &.#{$component}--pressed {
+        background-color: t.alpha('on-surface-variant', 0.12);
+      }
     }
   }
   
-  // Secondary variant overrides
+  // ACTIVE TAB STATES - SECONDARY VARIANT
   .#{$container}--secondary & {
+    // Active Tab - Secondary variant
     &--active {
       color: t.color('on-surface');
       
       .#{$component}-icon {
         color: t.color('on-surface');
       }
+      
+      // Hover state for active tabs - secondary
+      &:hover, &.#{$component}--hover {
+        background-color: t.alpha('on-surface', 0.08);
+      }
+      
+      // Focused state for active tabs - secondary
+      &:focus-visible, &.#{$component}--focus {
+        background-color: t.alpha('on-surface', 0.1);
+        outline-color: t.color('on-surface');
+      }
+      
+      // Pressed state for active tabs - secondary
+      &:active, &.#{$component}--pressed {
+        background-color: t.alpha('on-surface', 0.12);
+      }
     }
-  }
-  
-  // Hover state for inactive tabs
-  &:hover:not(:disabled):not(&--active):not([disabled]) {
-    background-color: t.alpha('on-surface-variant', 0.08);
-  }
-  
-  // Pressed state for inactive tabs
-  &:active:not(:disabled):not([disabled]):not(&--active) {
-    background-color: t.alpha('on-surface-variant', 0.12);
+    
+    // Inactive Tabs - Secondary variant
+    &:not(.#{$component}--active):not(.#{$component}--disabled):not(:disabled) {
+      color: t.color('on-surface-variant');
+      
+      // Hover state for inactive tabs - secondary
+      &:hover, &.#{$component}--hover {
+        background-color: t.alpha('on-surface-variant', 0.08);
+      }
+      
+      // Focused state for inactive tabs - secondary
+      &:focus-visible, &.#{$component}--focus {
+        background-color: t.alpha('on-surface-variant', 0.1);
+        outline-color: t.color('on-surface-variant');
+      }
+      
+      // Pressed state for inactive tabs - secondary
+      &:active, &.#{$component}--pressed {
+        background-color: t.alpha('on-surface-variant', 0.12);
+      }
+    }
   }
   
   // Ripple effect styling

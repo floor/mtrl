@@ -282,12 +282,14 @@ export const withIndicator = <T extends IndicatorFeatureConfig>(config: T) =>
     const indicator: TabIndicator = createTabIndicator({
       prefix: config.prefix,
       // Support both new and legacy config
-      widthStrategy: indicatorConfig.widthStrategy || config.indicatorWidthStrategy || 'fixed',
+      widthStrategy: indicatorConfig.widthStrategy || config.indicatorWidthStrategy || 'auto', // Changed default to 'auto'
       height: indicatorConfig.height || config.indicatorHeight || 3,
       fixedWidth: indicatorConfig.fixedWidth || 40,
       animationDuration: indicatorConfig.animationDuration || 250,
       animationTiming: indicatorConfig.animationTiming || 'cubic-bezier(0.4, 0, 0.2, 1)',
-      color: indicatorConfig.color
+      color: indicatorConfig.color,
+      // Pass the tabs variant to the indicator
+      variant: config.variant || 'primary'
     });
     
     // Find the scroll container and add the indicator to it

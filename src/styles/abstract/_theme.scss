@@ -1,4 +1,4 @@
-// src/styles/abstract/_theme.scss
+// src/styles/abstract/_theme.scss (updated)
 @use 'sass:map';
 @use 'base' as *;
 @use 'variables' as v;
@@ -48,8 +48,16 @@ $mtrl-sys-shape: (
   @return var(--#{$prefix}-sys-color-#{$key}-rgb);
 }
 
+/**
+ * Creates a color with alpha transparency using RGB values
+ * This version uses string.unquote to preserve the rgba function correctly
+ * @param {String} $key - Color token name
+ * @param {Number} $opacity - Opacity value (0-1)
+ * @return {String} rgba CSS function with variable
+ */
 @function alpha($key, $opacity) {
-  @return rgba(var(--#{$prefix}-sys-color-#{$key}-rgb), $opacity);
+  // #{'...'} prevents SASS from interpreting rgba as a SASS function
+  @return #{'rgba(var(--#{$prefix}-sys-color-#{$key}-rgb), #{$opacity})'};
 }
 
 @function state($key) {
