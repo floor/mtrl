@@ -22,10 +22,19 @@ export const createUiHelpers = (config: SliderConfig, state) => {
                               () => {}]));
   }
   
+  // Get required elements from structure (with fallbacks)
   const {
-    track, activeTrack, startTrack, remainingTrack, thumb, 
-    valueBubble, secondThumb, secondValueBubble, ticksContainer
-  } = state.component.structure;
+    container = null,
+    track = null, 
+    activeTrack = null, 
+    startTrack = null, 
+    remainingTrack = null, 
+    thumb = null, 
+    valueBubble = null, 
+    secondThumb = null, 
+    secondValueBubble = null, 
+    ticksContainer = null
+  } = state.component?.structure || {};
   
   /**
    * Calculates percentage position for a value
@@ -39,10 +48,10 @@ export const createUiHelpers = (config: SliderConfig, state) => {
    * Gets track dimensions and constraints for positioning calculations
    */
   const getTrackDimensions = () => {
-    if (!track || !thumb) return null;
+    if (!track || !thumb || !container) return null;
     
     const thumbRect = thumb.getBoundingClientRect();
-    const trackRect = track.getBoundingClientRect();
+    const trackRect = container.getBoundingClientRect();
     const thumbSize = thumbRect.width || 20;
     const trackSize = trackRect.width;
     
@@ -69,17 +78,17 @@ export const createUiHelpers = (config: SliderConfig, state) => {
    * Gets slider value from a position on the track
    */
   const getValueFromPosition = (position) => {
-    if (!track) return state.min;
+    if (!track || !container) return state.min;
     
     try {
-      const trackRect = track.getBoundingClientRect();
+      const containerRect = container.getBoundingClientRect();
       const range = state.max - state.min;
       
       const thumbRect = thumb.getBoundingClientRect();
       const thumbWidth = thumbRect.width || 20;
       
-      const leftEdge = trackRect.left + (thumbWidth / 2);
-      const rightEdge = trackRect.right - (thumbWidth / 2);
+      const leftEdge = containerRect.left + (thumbWidth / 2);
+      const rightEdge = containerRect.right - (thumbWidth / 2);
       const effectiveWidth = rightEdge - leftEdge;
       
       const adjustedPosition = Math.max(leftEdge, Math.min(rightEdge, position));
@@ -112,7 +121,7 @@ export const createUiHelpers = (config: SliderConfig, state) => {
    * Sets thumb position based on a value percentage with proper edge mapping
    */
   const setThumbPosition = (thumbElement, bubbleElement, valuePercent) => {
-    if (!thumbElement || !track) return;
+    if (!thumbElement || !container) return;
     
     const dims = getTrackDimensions();
     if (!dims) return;
@@ -134,7 +143,7 @@ export const createUiHelpers = (config: SliderConfig, state) => {
    * Updates start track styles
    */
   const updateStartTrack = () => {
-    if (!startTrack || !track || !thumb) return;
+    if (!startTrack || !container || !thumb) return;
     
     const dims = getTrackDimensions();
     if (!dims) return;
@@ -162,7 +171,7 @@ export const createUiHelpers = (config: SliderConfig, state) => {
    * Updates active track styles
    */
   const updateActiveTrack = () => {
-    if (!activeTrack || !track || !thumb) return;
+    if (!activeTrack || !container || !thumb) return;
     
     const dims = getTrackDimensions();
     if (!dims) return;
@@ -200,7 +209,7 @@ export const createUiHelpers = (config: SliderConfig, state) => {
         activeTrack.style.height = '100%';
       }
     } else {
-      // Single thumb slider
+      // Single thumb slider - just update the value
       const valuePercent = getPercentage(state.value);
       const adjustedPercent = mapValueToVisualPercent(valuePercent, edgeConstraint);
       const adjustedWidth = Math.max(0, adjustedPercent - paddingPercent);
@@ -216,7 +225,7 @@ export const createUiHelpers = (config: SliderConfig, state) => {
    * Updates remaining track styles
    */
   const updateRemainingTrack = () => {
-    if (!remainingTrack || !track || !thumb) return;
+    if (!remainingTrack || !container || !thumb) return;
     
     const dims = getTrackDimensions();
     if (!dims) return;
@@ -244,7 +253,7 @@ export const createUiHelpers = (config: SliderConfig, state) => {
    * Updates thumb positions
    */
   const updateThumbPositions = () => {
-    if (!thumb) return;
+    if (!thumb || !container) return;
     
     // Update main thumb
     const percent = getPercentage(state.value);
@@ -293,16 +302,12 @@ export const createUiHelpers = (config: SliderConfig, state) => {
    * Generates tick marks
    */
   const generateTicks = () => {
-    if (!ticksContainer) {
+    if (!ticksContainer || !container) {
       console.warn('Ticks container not found in component structure');
       return;
     }
     
     // Clear existing ticks
-    const sliderElement = state.component.element;
-    sliderElement.querySelectorAll(`.${state.component.getClass('slider-tick')}`)
-      .forEach(tick => tick.parentNode.removeChild(tick));
-    
     while (ticksContainer.firstChild) {
       ticksContainer.removeChild(ticksContainer.firstChild);
     }
