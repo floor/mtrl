@@ -35,6 +35,9 @@
   --#{$prefix}-sys-color-outline: #727970;
   --#{$prefix}-sys-color-outline-variant: #C1C9BE;
 
+  // Include status colors for light theme
+  @include status-colors-light();
+
   &[data-theme-mode="dark"] {
     // Key colors
     --#{$prefix}-sys-color-primary: #79DC80;
@@ -67,5 +70,8 @@
     
     --#{$prefix}-sys-color-outline: #8B9388;
     --#{$prefix}-sys-color-outline-variant: #424940;
+
+    // Include status colors for dark theme
+    @include status-colors-dark();
   }
 }

@@ -8,6 +8,67 @@
   }
 }
 
+// Common status colors that should be available in all themes
+@mixin status-colors-light() {
+  // Error colors
+  --#{$prefix}-sys-color-error: #B3261E;
+  --#{$prefix}-sys-color-error-rgb: 179, 38, 30;
+  --#{$prefix}-sys-color-on-error: #FFFFFF;
+  --#{$prefix}-sys-color-on-error-rgb: 255, 255, 255;
+  --#{$prefix}-sys-color-error-container: #F9DEDC;
+  --#{$prefix}-sys-color-error-container-rgb: 249, 222, 220;
+  --#{$prefix}-sys-color-on-error-container: #410E0B;
+  --#{$prefix}-sys-color-on-error-container-rgb: 65, 14, 11;
+  
+  // Success colors
+  --#{$prefix}-sys-color-success: #007B5A;
+  --#{$prefix}-sys-color-success-rgb: 0, 123, 90;
+  --#{$prefix}-sys-color-on-success: #FFFFFF;
+  --#{$prefix}-sys-color-on-success-rgb: 255, 255, 255;
+  
+  // Warning colors
+  --#{$prefix}-sys-color-warning: #DD6D06;
+  --#{$prefix}-sys-color-warning-rgb: 221, 109, 6;
+  --#{$prefix}-sys-color-on-warning: #FFFFFF;
+  --#{$prefix}-sys-color-on-warning-rgb: 255, 255, 255;
+  
+  // Info colors
+  --#{$prefix}-sys-color-info: #0061A4;
+  --#{$prefix}-sys-color-info-rgb: 0, 97, 164;
+  --#{$prefix}-sys-color-on-info: #FFFFFF;
+  --#{$prefix}-sys-color-on-info-rgb: 255, 255, 255;
+}
+
+@mixin status-colors-dark() {
+  // Error colors
+  --#{$prefix}-sys-color-error: #F2B8B5;
+  --#{$prefix}-sys-color-error-rgb: 242, 184, 181;
+  --#{$prefix}-sys-color-on-error: #601410;
+  --#{$prefix}-sys-color-on-error-rgb: 96, 20, 16;
+  --#{$prefix}-sys-color-error-container: #8C1D18;
+  --#{$prefix}-sys-color-error-container-rgb: 140, 29, 24;
+  --#{$prefix}-sys-color-on-error-container: #F9DEDC;
+  --#{$prefix}-sys-color-on-error-container-rgb: 249, 222, 220;
+  
+  // Success colors
+  --#{$prefix}-sys-color-success: #85CFA9;
+  --#{$prefix}-sys-color-success-rgb: 133, 207, 169;
+  --#{$prefix}-sys-color-on-success: #00392D;
+  --#{$prefix}-sys-color-on-success-rgb: 0, 57, 45;
+  
+  // Warning colors
+  --#{$prefix}-sys-color-warning: #FFB95C;
+  --#{$prefix}-sys-color-warning-rgb: 255, 185, 92;
+  --#{$prefix}-sys-color-on-warning: #3F2200;
+  --#{$prefix}-sys-color-on-warning-rgb: 63, 34, 0;
+  
+  // Info colors
+  --#{$prefix}-sys-color-info: #99CBFF;
+  --#{$prefix}-sys-color-info-rgb: 153, 203, 255;
+  --#{$prefix}-sys-color-on-info: #003060;
+  --#{$prefix}-sys-color-on-info-rgb: 0, 48, 96;
+}
+
 %theme-base {
   // Common properties for all themes
   --#{$prefix}-sys-typescale-label-large-font-family-name: "Roboto";

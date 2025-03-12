@@ -40,6 +40,24 @@
   --#{$prefix}-sys-color-outline: #85736C;
   --#{$prefix}-sys-color-outline-variant: #D7C1BA;
 
+  // Success colors
+  --#{$prefix}-sys-color-success: #85CFA9;
+  --#{$prefix}-sys-color-success-rgb: 133, 207, 169;
+  --#{$prefix}-sys-color-on-success: #00392D;
+  --#{$prefix}-sys-color-on-success-rgb: 0, 57, 45;
+  
+  // Warning colors
+  --#{$prefix}-sys-color-warning: #FFB95C;
+  --#{$prefix}-sys-color-warning-rgb: 255, 185, 92;
+  --#{$prefix}-sys-color-on-warning: #3F2200;
+  --#{$prefix}-sys-color-on-warning-rgb: 63, 34, 0;
+  
+  // Info colors
+  --#{$prefix}-sys-color-info: #99CBFF;
+  --#{$prefix}-sys-color-info-rgb: 153, 203, 255;
+  --#{$prefix}-sys-color-on-info: #003060;
+  --#{$prefix}-sys-color-on-info-rgb: 0, 48, 96;
+
   &[data-theme-mode="dark"] {
     // Key colors
     --#{$prefix}-sys-color-primary: #DDB995; // Softer brown
@@ -61,6 +79,9 @@
     --#{$prefix}-sys-color-on-quaternary: #463300;
     --#{$prefix}-sys-color-quaternary-container: #644900;
     --#{$prefix}-sys-color-on-quaternary-container: #FFDF8A;
+
+    // Include status colors for dark theme
+    @include status-colors-dark();
 
     // Neutral colors
     --#{$prefix}-sys-color-surface: #201A17;
