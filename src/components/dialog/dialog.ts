@@ -23,12 +23,13 @@ const createDialog = (config: DialogConfig = {}): DialogComponent => {
   const baseConfig = createBaseConfig(config);
 
   try {
+    // Maintain original order but setup event-based communication
     const dialog = pipe(
       createBase,
       withEvents(),
       withElement(getElementConfig(baseConfig)),
-      withStructure(baseConfig),
-      withVisibility(),
+      withStructure(baseConfig),  // Keep structure first to create overlay
+      withVisibility(),           // Then add visibility features
       withContent(),
       withButtons(),
       withSize(),

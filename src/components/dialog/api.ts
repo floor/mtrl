@@ -1,6 +1,7 @@
 // src/components/dialog/api.ts
 import { DialogComponent, DialogEvent, DialogButton, DialogConfirmOptions } from './types';
 import { DIALOG_SIZES, DIALOG_ANIMATIONS, DIALOG_FOOTER_ALIGNMENTS, DIALOG_EVENTS } from './constants';
+import { removeClass } from '../../core/dom/classes';
 
 interface ApiOptions {
   visibility: {
@@ -46,6 +47,7 @@ interface ApiOptions {
 interface ComponentWithElements {
   element: HTMLElement;
   overlay: HTMLElement;
+  getClass: (name: string) => string;
   confirm?: (options: DialogConfirmOptions) => Promise<boolean>;
 }
 
@@ -261,20 +263,31 @@ export const withAPI = (options: ApiOptions) =>
      * Destroys the dialog and removes it from DOM
      */
     destroy() {
-      // Close the dialog first
+      // Close the dialog first if it's open
+      console.log('destroy', this.isOpen());
       if (this.isOpen()) {
-        this.close();
+        // We'll handle removal directly rather than calling this.close()
+        // to avoid animation delay in critical cleanup
+        const dialogVisibleClass = `${component.getClass('dialog')}--visible`;
+        const overlayVisibleClass = `${component.getClass('dialog-overlay')}--visible`;
+        
+        // Remove visibility classes using core utilities
+        removeClass(component.element, dialogVisibleClass);
+        removeClass(component.overlay, overlayVisibleClass);
+        
+        // Call any cleanup needed
+        if (options.focus && options.focus.releaseFocus) {
+          options.focus.releaseFocus();
+        }
       }
       
-      // Small delay to allow animations to complete
-      setTimeout(() => {
-        options.lifecycle.destroy();
-        
-        // Remove the overlay from DOM
-        if (component.overlay && component.overlay.parentNode) {
-          component.overlay.parentNode.removeChild(component.overlay);
-        }
-      }, 150);
+      // Call lifecycle destroy
+      options.lifecycle.destroy();
+      
+      // Immediately remove from DOM
+      if (component.overlay && component.overlay.parentNode) {
+        component.overlay.parentNode.removeChild(component.overlay);
+      }
     },
     
     // Pass through element references

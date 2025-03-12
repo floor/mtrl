@@ -4,6 +4,7 @@ import { DIALOG_SIZES, DIALOG_ANIMATIONS, DIALOG_FOOTER_ALIGNMENTS, DIALOG_EVENT
 import { DialogConfig, DialogButton, DialogEvent } from './types';
 import createButton from '../button';
 import { BUTTON_VARIANTS } from '../button/constants';
+import { addClass, removeClass, hasClass } from '../../core/dom/classes';
 
 /**
  * Creates the dialog DOM structure
@@ -13,17 +14,19 @@ import { BUTTON_VARIANTS } from '../button/constants';
 export const withStructure = (config: DialogConfig) => component => {
   // Create the overlay element
   const overlayConfig = getOverlayConfig(config);
-  const overlay = document.createElement(overlayConfig.tag);
+  const overlay = document.createElement(overlayConfig.tag || 'div');
   
   // Add overlay classes
   overlay.classList.add(component.getClass('dialog-overlay'));
   
-  // Set overlay attributes
-  Object.entries(overlayConfig.attrs || {}).forEach(([key, value]) => {
-    if (value !== undefined) {
-      overlay.setAttribute(key, String(value));
-    }
-  });
+  // Set overlay attributes safely
+  if (overlayConfig.attrs && typeof overlayConfig.attrs === 'object') {
+    Object.entries(overlayConfig.attrs).forEach(([key, value]) => {
+      if (key && typeof key === 'string' && value !== undefined) {
+        overlay.setAttribute(key, String(value));
+      }
+    });
+  }
   
   // Set custom z-index if provided
   if (config.zIndex) {
@@ -63,9 +66,19 @@ export const withStructure = (config: DialogConfig) => component => {
           <line x1="6" y1="6" x2="18" y2="18"></line>
         </svg>
       `;
-      closeButton.addEventListener('click', () => {
-        component.events.trigger(DIALOG_EVENTS.CLOSE, { dialog: component });
+      
+      // Close button click handler with event-based communication
+      closeButton.addEventListener('click', (e) => {
+        console.log('closeButton click');
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Use the dialog:close custom event which will be listened for in withVisibility
+        if (component && component.emit) {
+          component.emit('dialog:close', { source: 'closeButton' });
+        }
       });
+      
       header.appendChild(closeButton);
     }
     
@@ -90,7 +103,7 @@ export const withStructure = (config: DialogConfig) => component => {
     // Apply footer alignment
     const alignment = config.footerAlignment || DIALOG_FOOTER_ALIGNMENTS.RIGHT;
     if (alignment !== DIALOG_FOOTER_ALIGNMENTS.RIGHT) {
-      footer.classList.add(`${component.getClass('dialog-footer')}--${alignment}`);
+      addClass(footer, `${component.getClass('dialog-footer')}--${alignment}`);
     }
     
     // Add buttons if provided
@@ -117,18 +130,18 @@ export const withStructure = (config: DialogConfig) => component => {
   overlay.appendChild(component.element);
   
   // Add dialog classes
-  component.element.classList.add(component.getClass('dialog'));
+  addClass(component.element, component.getClass('dialog'));
   
   // Apply size class
   const size = config.size || DIALOG_SIZES.MEDIUM;
   if (size !== DIALOG_SIZES.MEDIUM) {
-    component.element.classList.add(`${component.getClass('dialog')}--${size}`);
+    addClass(component.element, `${component.getClass('dialog')}--${size}`);
   }
   
   // Apply animation class
   const animation = config.animation || DIALOG_ANIMATIONS.SCALE;
   if (animation !== DIALOG_ANIMATIONS.SCALE) {
-    component.element.classList.add(`${component.getClass('dialog')}--${animation}`);
+    addClass(component.element, `${component.getClass('dialog')}--${animation}`);
   }
   
   // Add overlay to container or document.body
@@ -170,26 +183,32 @@ const addButton = (footer: HTMLElement, buttonConfig: DialogButton, component: a
     ...attrs
   });
   
-  // Add click handler
+  // Button click handler with event-based communication
   button.on('click', event => {
+    console.log('button click');
     let shouldClose = closeDialog;
     
     // Call onClick handler if provided
     if (typeof onClick === 'function') {
-      const result = onClick(event, component);
-      // If onClick returns false, don't close the dialog
-      if (result === false) {
-        shouldClose = false;
+      try {
+        const result = onClick(event, component);
+        if (result === false) {
+          shouldClose = false;
+        }
+      } catch (err) {
+        console.error('Error in onClick handler:', err);
       }
     }
     
-    // Close dialog if needed
+    // Close dialog if needed - using event-based communication
     if (shouldClose) {
-      component.events.trigger(DIALOG_EVENTS.CLOSE, { dialog: component });
+      if (component && component.emit) {
+        component.emit('dialog:close', { source: 'button', text });
+      }
     }
   });
   
-  // Set autofocus attribute if needed
+  // Set autofocus if needed
   if (autofocus) {
     button.element.setAttribute('autofocus', 'true');
   }
@@ -300,124 +319,153 @@ export const withVisibility = () => component => {
   function handleOverlayClick(e: MouseEvent) {
     // Only close if the click was directly on the overlay
     if (e.target === component.overlay) {
-      component.events.trigger(DIALOG_EVENTS.CLOSE, { 
-        dialog: component,
-        originalEvent: e
-      });
+      visibility.close();
     }
   }
   
   function handleEscKey(e: KeyboardEvent) {
-    if (e.key === 'Escape' && component.visibility.isOpen()) {
-      component.events.trigger(DIALOG_EVENTS.CLOSE, { 
-        dialog: component,
-        originalEvent: e
-      });
+    if (e.key === 'Escape' && visibility.isOpen()) {
+      visibility.close();
     }
   }
   
   // Setup initial state
   if (isOpen) {
-    component.overlay.classList.add(`${component.getClass('dialog-overlay')}--visible`);
-    component.element.classList.add(`${component.getClass('dialog')}--visible`);
+    addClass(component.overlay, `${component.getClass('dialog-overlay')}--visible`);
+    addClass(component.element, `${component.getClass('dialog')}--visible`);
     
     // Setup focus trap and events
     trapFocus();
     setupEvents();
   }
   
-  return {
-    ...component,
-    visibility: {
-      open() {
-        // Don't do anything if already open
-        if (this.isOpen()) return;
+  // Create visibility object with clean methods
+  const visibility = {
+    open() {
+      // Don't do anything if already open
+      if (this.isOpen()) return;
+      
+      // Store the currently focused element
+      previouslyFocusedElement = document.activeElement as HTMLElement;
+      
+      // Trigger before open event
+      const beforeOpenEvent = { 
+        dialog: component, 
+        defaultPrevented: false, 
+        preventDefault: () => { beforeOpenEvent.defaultPrevented = true; } 
+      };
+      
+      if (typeof component.emit === 'function') {
+        component.emit(DIALOG_EVENTS.BEFORE_OPEN, beforeOpenEvent);
+      }
+      
+      // If event was prevented, don't open
+      if (beforeOpenEvent.defaultPrevented) return;
+      
+      // Add to DOM if needed
+      if (component.overlay && !component.overlay.parentNode) {
+        const container = component.structure.container || document.body;
+        container.appendChild(component.overlay);
+      }
+      
+      // Show the overlay
+      addClass(component.overlay, `${component.getClass('dialog-overlay')}--visible`);
+      
+      // Show the dialog
+      setTimeout(() => {
+        addClass(component.element, `${component.getClass('dialog')}--visible`);
         
-        // Store the currently focused element
-        previouslyFocusedElement = document.activeElement as HTMLElement;
+        // Setup focus trap and events
+        trapFocus();
+        setupEvents();
         
-        // Trigger before open event
-        const beforeOpenEvent = { dialog: component, defaultPrevented: false, preventDefault: () => { beforeOpenEvent.defaultPrevented = true; } };
-        component.events.trigger(DIALOG_EVENTS.BEFORE_OPEN, beforeOpenEvent);
-        
-        // If event was prevented, don't open
-        if (beforeOpenEvent.defaultPrevented) return;
-        
-        // Show the overlay
-        component.overlay.classList.add(`${component.getClass('dialog-overlay')}--visible`);
-        
-        // Show the dialog after a small delay to allow the overlay animation to start
-        setTimeout(() => {
-          component.element.classList.add(`${component.getClass('dialog')}--visible`);
+        // Trigger open event
+        if (typeof component.emit === 'function') {
+          component.emit(DIALOG_EVENTS.OPEN, { dialog: component });
           
-          // Setup focus trap and events
-          trapFocus();
-          setupEvents();
-          
-          // Trigger after open event after animation completes
           setTimeout(() => {
-            component.events.trigger(DIALOG_EVENTS.AFTER_OPEN, { dialog: component });
+            component.emit(DIALOG_EVENTS.AFTER_OPEN, { dialog: component });
           }, animationDuration);
-          
-          // Trigger open event
-          component.events.trigger(DIALOG_EVENTS.OPEN, { dialog: component });
-        }, 10);
-      },
-      
-      close() {
-        // Don't do anything if already closed
-        if (!this.isOpen()) return;
-        
-        // Trigger before close event
-        const beforeCloseEvent = { dialog: component, defaultPrevented: false, preventDefault: () => { beforeCloseEvent.defaultPrevented = true; } };
-        component.events.trigger(DIALOG_EVENTS.BEFORE_CLOSE, beforeCloseEvent);
-        
-        // If event was prevented, don't close
-        if (beforeCloseEvent.defaultPrevented) return;
-        
-        // Hide the dialog
-        component.element.classList.remove(`${component.getClass('dialog')}--visible`);
-        
-        // Release focus trap and cleanup events
-        releaseFocus();
-        cleanupEvents();
-        
-        // Trigger close event
-        component.events.trigger(DIALOG_EVENTS.CLOSE, { dialog: component });
-        
-        // Hide the overlay after animation completes
-        setTimeout(() => {
-          component.overlay.classList.remove(`${component.getClass('dialog-overlay')}--visible`);
-          
-          // Trigger after close event
-          component.events.trigger(DIALOG_EVENTS.AFTER_CLOSE, { dialog: component });
-        }, animationDuration);
-      },
-      
-      toggle(open?: boolean) {
-        if (open === undefined) {
-          // Toggle based on current state
-          if (this.isOpen()) {
-            this.close();
-          } else {
-            this.open();
-          }
-        } else if (open) {
-          this.open();
-        } else {
-          this.close();
         }
-      },
+      }, 10);
+    },
+    
+    close() {
+      console.log('Dialog close method called');
       
-      isOpen() {
-        return component.element.classList.contains(`${component.getClass('dialog')}--visible`);
+      // Trigger before close event
+      const beforeCloseEvent = { 
+        dialog: component, 
+        defaultPrevented: false, 
+        preventDefault: () => { beforeCloseEvent.defaultPrevented = true; } 
+      };
+      
+      if (typeof component.emit === 'function') {
+        component.emit(DIALOG_EVENTS.BEFORE_CLOSE, beforeCloseEvent);
+      }
+      
+      // If event was prevented, don't close
+      if (beforeCloseEvent.defaultPrevented) {
+        console.log('Dialog close prevented by event handler');
+        return;
+      }
+      
+      // Get class names
+      const dialogVisibleClass = `${component.getClass('dialog')}--visible`;
+      const overlayVisibleClass = `${component.getClass('dialog-overlay')}--visible`;
+      
+      // Remove dialog visible class
+      removeClass(component.element, dialogVisibleClass);
+      
+      // Remove overlay visible class
+      removeClass(component.overlay, overlayVisibleClass);
+      
+      // Release focus and cleanup events
+      releaseFocus();
+      cleanupEvents();
+      
+      // Trigger close events
+      if (typeof component.emit === 'function') {
+        component.emit(DIALOG_EVENTS.CLOSE, { dialog: component });
+      }
+      
+      // Remove from DOM after animation completes
+      setTimeout(() => {
+        if (component.overlay && component.overlay.parentNode) {
+          component.overlay.parentNode.removeChild(component.overlay);
+        }
+        
+        if (typeof component.emit === 'function') {
+          component.emit(DIALOG_EVENTS.AFTER_CLOSE, { dialog: component });
+        }
+      }, animationDuration);
+    },
+    
+    toggle(open?: boolean) {
+      if (open === undefined) {
+        this.isOpen() ? this.close() : this.open();
+      } else if (open) {
+        this.open();
+      } else {
+        this.close();
       }
     },
     
-    focus: {
-      trapFocus,
-      releaseFocus
+    isOpen() {
+      return component.element.classList.contains(`${component.getClass('dialog')}--visible`);
     }
+  };
+  
+  // Set up event listener for the dialog:close event
+  if (component && component.on) {
+    component.on('dialog:close', () => {
+      visibility.close();
+    });
+  }
+  
+  return {
+    ...component,
+    visibility
   };
 };
 
@@ -560,7 +608,7 @@ export const withButtons = () => component => {
           // Apply footer alignment
           const alignment = component.config.footerAlignment || DIALOG_FOOTER_ALIGNMENTS.RIGHT;
           if (alignment !== DIALOG_FOOTER_ALIGNMENTS.RIGHT) {
-            footer.classList.add(`${component.getClass('dialog-footer')}--${alignment}`);
+            addClass(footer, `${component.getClass('dialog-footer')}--${alignment}`);
           }
           
           component.element.appendChild(footer);
@@ -620,13 +668,13 @@ export const withButtons = () => component => {
         // Remove existing alignment classes
         Object.values(DIALOG_FOOTER_ALIGNMENTS).forEach(align => {
           if (align !== DIALOG_FOOTER_ALIGNMENTS.RIGHT) {
-            component.structure.footer.classList.remove(`${component.getClass('dialog-footer')}--${align}`);
+            removeClass(component.structure.footer, `${component.getClass('dialog-footer')}--${align}`);
           }
         });
         
         // Add new alignment class if not right (default)
         if (alignment !== DIALOG_FOOTER_ALIGNMENTS.RIGHT) {
-          component.structure.footer.classList.add(`${component.getClass('dialog-footer')}--${alignment}`);
+          addClass(component.structure.footer, `${component.getClass('dialog-footer')}--${alignment}`);
         }
       }
     }
@@ -648,12 +696,12 @@ export const withSize = () => component => {
       setSize(size: keyof typeof DIALOG_SIZES | DIALOG_SIZES) {
         // Remove existing size classes
         Object.values(DIALOG_SIZES).forEach(sizeValue => {
-          component.element.classList.remove(`${component.getClass('dialog')}--${sizeValue}`);
+          removeClass(component.element, `${component.getClass('dialog')}--${sizeValue}`);
         });
         
         // Add new size class if not medium (default)
         if (size !== DIALOG_SIZES.MEDIUM) {
-          component.element.classList.add(`${component.getClass('dialog')}--${size}`);
+          addClass(component.element, `${component.getClass('dialog')}--${size}`);
         }
       }
     }
