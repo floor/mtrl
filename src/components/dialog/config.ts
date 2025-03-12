@@ -101,9 +101,10 @@ export const getApiConfig = (comp) => ({
     setSize: (size) => comp.size.setSize(size)
   },
   events: {
-    on: (event, handler) => comp.events.on(event, handler),
-    off: (event, handler) => comp.events.off(event, handler),
-    trigger: (event, data) => comp.events.trigger(event, data)
+    // Use the direct component methods from withEvents()
+    on: (event, handler) => comp.on(event, handler),
+    off: (event, handler) => comp.off(event, handler),
+    trigger: (event, data) => comp.emit(event, data)
   },
   lifecycle: {
     destroy: () => comp.lifecycle.destroy()
