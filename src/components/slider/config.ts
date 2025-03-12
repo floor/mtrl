@@ -21,6 +21,7 @@ export const defaultConfig: SliderConfig = {
   showValue: true,
   snapToSteps: true,
   range: false,
+  iconPosition: 'start',
   valueFormatter: (value: number) => value.toString()
 };
 
@@ -84,6 +85,14 @@ export const getApiConfig = (comp) => {
       getSize: () => comp.appearance?.getSize?.() ?? 'medium',
       showTicks: (show) => comp.appearance?.showTicks?.(show),
       showCurrentValue: (show) => comp.appearance?.showCurrentValue?.(show)
+    },
+    text: {
+      setText: (text) => comp.text?.setText?.(text),
+      getText: () => comp.text?.getText?.() ?? ''
+    },
+    icon: {
+      setIcon: (html) => comp.icon?.setIcon?.(html),
+      getIcon: () => comp.icon?.getIcon?.() ?? ''
     },
     events: {
       on: (event, handler) => comp.on?.(event, handler),

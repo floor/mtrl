@@ -21,6 +21,9 @@ export const withStructure = (config: SliderConfig) => component => {
   const getPercentage = (val) => ((val - min) / range) * 100;
   const valuePercent = getPercentage(value);
   
+  // Create container for all slider elements
+  const container = createElement('slider-container');
+  
   // Create track element and segments
   const track = createElement('slider-track');
   const remainingTrack = createElement('slider-remaining-track');
@@ -97,7 +100,20 @@ export const withStructure = (config: SliderConfig) => component => {
   track.appendChild(startTrack);
   track.appendChild(activeTrack);
   
-  // Add elements to the slider
+  // Add elements to the slider container
+  container.appendChild(track);
+  container.appendChild(ticksContainer); // Add ticks container
+  container.appendChild(startDot);
+  container.appendChild(endDot);
+  container.appendChild(thumb);
+  container.appendChild(valueBubble);
+  
+  if (isRangeSlider && secondThumb && secondValueBubble) {
+    container.appendChild(secondThumb);
+    container.appendChild(secondValueBubble);
+  }
+  
+  // Add container to the main slider
   component.element.classList.add(component.getClass('slider'));
   
   // Accessibility enhancement: Container is not focusable
@@ -107,18 +123,7 @@ export const withStructure = (config: SliderConfig) => component => {
   component.element.setAttribute('role', 'none');
   component.element.setAttribute('aria-disabled', isDisabled ? 'true' : 'false');
   
-  component.element.appendChild(track);
-  component.element.appendChild(ticksContainer); // Add ticks container
-  component.element.appendChild(startDot);
-  component.element.appendChild(endDot);
-  component.element.appendChild(thumb);
-  component.element.appendChild(valueBubble);
-  
-  if (isRangeSlider && secondThumb && secondValueBubble) {
-    component.element.classList.add(`${component.getClass('slider')}--range`);
-    component.element.appendChild(secondThumb);
-    component.element.appendChild(secondValueBubble);
-  }
+  component.element.appendChild(container);
   
   // Apply styling classes
   applyStyleClasses();
@@ -132,6 +137,7 @@ export const withStructure = (config: SliderConfig) => component => {
   return {
     ...component,
     structure: {
+      container,
       track,
       activeTrack,
       startTrack,
@@ -246,6 +252,11 @@ export const withStructure = (config: SliderConfig) => component => {
     // Apply disabled class if needed
     if (isDisabled) {
       component.element.classList.add(`${baseClass}--disabled`);
+    }
+    
+    // Apply range class if needed
+    if (isRangeSlider) {
+      component.element.classList.add(`${baseClass}--range`);
     }
   }
 };

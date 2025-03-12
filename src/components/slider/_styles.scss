@@ -14,9 +14,8 @@ $component: '#{base.$prefix}-slider';
   // Base styles
   position: relative;
   width: 100%;
-  height: 40px;
   display: flex;
-  align-items: center;
+  flex-direction: column;
   user-select: none;
   touch-action: none;
   
@@ -25,6 +24,34 @@ $component: '#{base.$prefix}-slider';
     outline: none;
   }
   
+  // Add styles for label and icon
+  &-label {
+    display: block;
+    font-size: 14px;
+    color: t.color('on-surface');
+    margin-bottom: 8px;
+  }
+  
+  &-icon {
+    display: block;
+    margin-bottom: 8px;
+    color: t.color('on-surface');
+    
+    svg {
+      width: 24px;
+      height: 24px;
+    }
+  }
+
+  // Slider container - holds all the slider elements
+  &-container {
+    position: relative;
+    width: 100%;
+    height: 40px;
+    display: flex;
+    align-items: center;
+  }
+
   &-track {
     position: relative;
     width: 100%;
@@ -398,7 +425,9 @@ $component: '#{base.$prefix}-slider';
   
   // Sizes
   &--small {
-    height: 32px;
+    .#{$component}-container {
+      height: 32px;
+    }
     
     .#{$component}-thumb {
       &::before {
@@ -407,8 +436,16 @@ $component: '#{base.$prefix}-slider';
     }
   }
   
+  &--medium {
+    .#{$component}-container {
+      height: 40px;
+    }
+  }
+  
   &--large {
-    height: 48px;
+    .#{$component}-container {
+      height: 48px;
+    }
     
     .#{$component}-thumb {
       &::before {

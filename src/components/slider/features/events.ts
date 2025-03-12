@@ -53,13 +53,14 @@ export const createEventHelpers = (state) => {
     }
     
     const { 
+      container = null,
       track = null, 
       thumb = null, 
       secondThumb = null 
     } = state.component.structure;
     
-    if (!track || !thumb) {
-      console.warn('Cannot set up event listeners: track or thumb is missing');
+    if (!container || !track || !thumb) {
+      console.warn('Cannot set up event listeners: container, track, or thumb is missing');
       return;
     }
     
@@ -74,9 +75,9 @@ export const createEventHelpers = (state) => {
       handleBlur
     } = keyboardHandlers;
     
-    // Track events
-    track.addEventListener('mousedown', handleTrackMouseDown);
-    track.addEventListener('touchstart', handleTrackMouseDown, { passive: false });
+    // Track events - using the container instead of track for better UX
+    container.addEventListener('mousedown', handleTrackMouseDown);
+    container.addEventListener('touchstart', handleTrackMouseDown, { passive: false });
     
     // Thumb events
     thumb.addEventListener('mousedown', (e) => handleThumbMouseDown(e, false));
@@ -107,12 +108,13 @@ export const createEventHelpers = (state) => {
     }
     
     const { 
+      container = null,
       track = null, 
       thumb = null, 
       secondThumb = null 
     } = state.component.structure;
     
-    if (!track || !thumb) {
+    if (!container || !track || !thumb) {
       return;
     }
     
@@ -129,9 +131,9 @@ export const createEventHelpers = (state) => {
       handleBlur
     } = keyboardHandlers;
     
-    // Track events
-    track.removeEventListener('mousedown', handleTrackMouseDown);
-    track.removeEventListener('touchstart', handleTrackMouseDown);
+    // Track events - using container instead of track
+    container.removeEventListener('mousedown', handleTrackMouseDown);
+    container.removeEventListener('touchstart', handleTrackMouseDown);
     
     // Thumb events
     thumb.removeEventListener('mousedown', (e) => handleThumbMouseDown(e, false));

@@ -32,6 +32,14 @@ interface ApiOptions {
     showTicks: (show: boolean) => void;
     showCurrentValue: (show: boolean) => void;
   };
+  text: {
+    setText: (text: string) => void;
+    getText: () => string;
+  };
+  icon: {
+    setIcon: (html: string) => void;
+    getIcon: () => string;
+  };
   events: {
     on: (event: string, handler: Function) => void;
     off: (event: string, handler: Function) => void;
@@ -231,6 +239,53 @@ export const withAPI = (options: ApiOptions) =>
       showCurrentValue(show: boolean) {
         options.appearance.showCurrentValue(show);
         return this;
+      },
+      
+      /**
+       * Sets label text
+       * @param {string} text - Label text
+       * @returns {SliderComponent} Slider component instance for chaining
+       */
+      setLabel(text: string) {
+        if (options.text && typeof options.text.setText === 'function') {
+          options.text.setText(text);
+        }
+        return this;
+      },
+      
+      /**
+       * Gets label text
+       * @returns {string} Current label text
+       */
+      getLabel() {
+        return options.text && typeof options.text.getText === 'function' ? 
+          options.text.getText() : '';
+      },
+      
+      /**
+       * Sets icon HTML
+       * @param {string} iconHtml - Icon HTML content
+       * @returns {SliderComponent} Slider component instance for chaining
+       */
+      setIcon(iconHtml: string) {
+        if (typeof iconHtml !== 'string') {
+          console.warn('setIcon expects a string, received:', typeof iconHtml);
+          return this;
+        }
+        
+        if (options.icon && typeof options.icon.setIcon === 'function') {
+          options.icon.setIcon(iconHtml);
+        }
+        return this;
+      },
+      
+      /**
+       * Gets icon HTML
+       * @returns {string} Current icon HTML
+       */
+      getIcon() {
+        return options.icon && typeof options.icon.getIcon === 'function' ? 
+          options.icon.getIcon() : '';
       },
       
       /**

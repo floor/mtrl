@@ -25,6 +25,7 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
   
   // Get required elements from structure (with fallbacks)
   const {
+    container = null,
     track = null, 
     thumb = null, 
     valueBubble = null, 
@@ -186,7 +187,7 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
    */
   const handleTrackMouseDown = (e) => {
     // Verify component exists and check if disabled
-    if (!state.component || (state.component.disabled && state.component.disabled.isDisabled()) || !track) {
+    if (!state.component || (state.component.disabled && state.component.disabled.isDisabled()) || !track || !container) {
       return;
     }
     
@@ -202,8 +203,8 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
     let isSecondThumb = false;
     
     try {
-      // Get track rect for calculating position
-      const trackRect = track.getBoundingClientRect();
+      // Get container rect for calculating position
+      const containerRect = container.getBoundingClientRect();
       
       // Get position from mouse or touch event
       const position = e.type.includes('touch')
@@ -261,7 +262,7 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
    * Handle mouse move with improved thumb and bubble switching
    */
   const handleMouseMove = (e) => {
-    if (!state.dragging || !state.activeThumb) return;
+    if (!state.dragging || !state.activeThumb || !container) return;
     
     e.preventDefault();
     
@@ -393,4 +394,3 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
     handleMouseMove,
     handleMouseUp
   };
-};
