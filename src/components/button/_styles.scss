@@ -96,16 +96,6 @@ $component: '#{base.$prefix}-button';
     }
   }
   
-  // Ripple container
-  .ripple {
-    position: absolute;
-    border-radius: 50%;
-    transform: scale(0);
-    pointer-events: none;
-    background-color: currentColor;
-    opacity: 0.12;
-  }
-  
   &--disabled {
     opacity: 0.38
   }

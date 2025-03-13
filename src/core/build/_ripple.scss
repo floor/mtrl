@@ -19,25 +19,25 @@ $component: '#{base.$prefix}-ripple';
   pointer-events: none;
   z-index: 0;
   
-  // Ripple element
   &-wave {
     position: absolute;
     border-radius: 50%;
+    
+    // Make the ripple more visible with these changes:
     background-color: currentColor;
-    transform: scale(0);
-    opacity: 0;
+    opacity: 0;  // Start with 0 opacity
+    transform: scale(0.5);  // Start slightly larger for better visibility
     pointer-events: none;
     will-change: transform, opacity;
     
     // Animation
-    transition-property: transform, opacity;
-    transition-duration: v.motion('duration-short4');
-    transition-timing-function: v.motion('easing-standard');
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
+                opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     
     // Active ripple
     &.active {
       transform: scale(1);
-      opacity: v.state('hover-state-layer-opacity');
+      opacity: 0.15;  // Increase opacity for better visibility
     }
     
     &.fade-out {
