@@ -45,34 +45,34 @@ export const withStructure = (config: SliderConfig) => component => {
   const valueBubble = createElement('slider-value');
   valueBubble.textContent = formatter(value);
   
-  // Create thumb element with improved accessibility attributes
-  const thumb = createElement('slider-thumb');
-  thumb.setAttribute('role', 'slider');
-  thumb.setAttribute('aria-valuemin', String(min));
-  thumb.setAttribute('aria-valuemax', String(max));
-  thumb.setAttribute('aria-valuenow', String(value));
-  thumb.setAttribute('aria-orientation', 'horizontal');
+  // Create handle element with improved accessibility attributes
+  const handle = createElement('slider-handle');
+  handle.setAttribute('role', 'slider');
+  handle.setAttribute('aria-valuemin', String(min));
+  handle.setAttribute('aria-valuemax', String(max));
+  handle.setAttribute('aria-valuenow', String(value));
+  handle.setAttribute('aria-orientation', 'horizontal');
   
   // Set tabindex based on disabled state
-  thumb.setAttribute('tabindex', isDisabled ? '-1' : '0');
+  handle.setAttribute('tabindex', isDisabled ? '-1' : '0');
   if (isDisabled) {
-    thumb.setAttribute('aria-disabled', 'true');
+    handle.setAttribute('aria-disabled', 'true');
   }
   
-  // Set initial thumb position
-  thumb.style.left = `${valuePercent}%`;
+  // Set initial handle position
+  handle.style.left = `${valuePercent}%`;
   
   // Calculate padding adjustment (8px equivalent as percentage)
   const paddingAdjustment = 8; // 8px padding
   const estimatedTrackSize = 300; // A reasonable guess at track width
   const paddingPercent = (paddingAdjustment / estimatedTrackSize) * 100;
   
-  // Create second thumb and value bubble for range slider
+  // Create second handle and value bubble for range slider
   let secondThumb = null;
   let secondValueBubble = null;
   
   if (isRangeSlider) {
-    secondThumb = createElement('slider-thumb');
+    secondThumb = createElement('slider-handle');
     secondThumb.setAttribute('role', 'slider');
     secondThumb.setAttribute('aria-valuemin', String(min));
     secondThumb.setAttribute('aria-valuemax', String(max));
@@ -105,7 +105,7 @@ export const withStructure = (config: SliderConfig) => component => {
   container.appendChild(ticksContainer); // Add ticks container
   container.appendChild(startDot);
   container.appendChild(endDot);
-  container.appendChild(thumb);
+  container.appendChild(handle);
   container.appendChild(valueBubble);
   
   if (isRangeSlider && secondThumb && secondValueBubble) {
@@ -160,7 +160,7 @@ export const withStructure = (config: SliderConfig) => component => {
       startTrack,
       remainingTrack,
       ticksContainer,
-      thumb,
+      handle,
       valueBubble,
       secondThumb,
       secondValueBubble,
@@ -185,7 +185,7 @@ export const withStructure = (config: SliderConfig) => component => {
    */
   function setupInitialTrackSegments() {
     if (isRangeSlider) {
-      // Range slider with two thumbs
+      // Range slider with two handles
       const lowerValue = Math.min(value, secondValue);
       const higherValue = Math.max(value, secondValue);
       const lowerPercent = getPercentage(lowerValue);
@@ -195,7 +195,7 @@ export const withStructure = (config: SliderConfig) => component => {
       let adjustedLowerPercent = lowerPercent + paddingPercent;
       let adjustedHigherPercent = higherPercent - paddingPercent;
       
-      // Handle case when thumbs are very close
+      // Handle case when handles are very close
       if (adjustedHigherPercent <= adjustedLowerPercent) {
         adjustedLowerPercent = (lowerPercent + higherPercent) / 2 - 1;
         adjustedHigherPercent = (lowerPercent + higherPercent) / 2 + 1;
@@ -216,11 +216,11 @@ export const withStructure = (config: SliderConfig) => component => {
       setTrackStyles(activeTrack, activeWidth, adjustedLowerPercent);
       setTrackStyles(remainingTrack, remainingWidth, higherPercent + paddingPercent);
     } else {
-      // Single thumb slider
+      // Single handle slider
       const adjustedWidth = Math.max(0, valuePercent - paddingPercent);
       const remainingWidth = Math.max(0, 100 - valuePercent - paddingPercent);
       
-      // Hide start track for single thumb
+      // Hide start track for single handle
       startTrack.style.display = 'none';
       activeTrack.style.display = 'block';
       remainingTrack.style.display = 'block';

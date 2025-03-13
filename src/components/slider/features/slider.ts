@@ -79,16 +79,16 @@ export const withSlider = (config: SliderConfig) => component => {
       return;
     }
     
-    const { thumb, secondThumb } = component.structure;
+    const { handle, secondThumb } = component.structure;
     
-    if (!thumb) {
-      console.warn('Cannot initialize slider: missing thumb');
+    if (!handle) {
+      console.warn('Cannot initialize slider: missing handle');
       return;
     }
     
-    thumb.setAttribute('aria-valuemin', String(state.min));
-    thumb.setAttribute('aria-valuemax', String(state.max));
-    thumb.setAttribute('aria-valuenow', String(state.value));
+    handle.setAttribute('aria-valuemin', String(state.min));
+    handle.setAttribute('aria-valuemax', String(state.max));
+    handle.setAttribute('aria-valuenow', String(state.value));
     
     if (config.range && secondThumb && state.secondValue !== null) {
       secondThumb.setAttribute('aria-valuemin', String(state.min));
@@ -205,7 +205,7 @@ export const withSlider = (config: SliderConfig) => component => {
         
         // Update ARIA attributes
         component.element.setAttribute('aria-valuemin', String(min));
-        component.structure.thumb.setAttribute('aria-valuemin', String(min));
+        component.structure.handle.setAttribute('aria-valuemin', String(min));
         
         if (config.range && component.structure.secondThumb) {
           component.structure.secondThumb.setAttribute('aria-valuemin', String(min));
@@ -248,7 +248,7 @@ export const withSlider = (config: SliderConfig) => component => {
         
         // Update ARIA attributes
         component.element.setAttribute('aria-valuemax', String(max));
-        component.structure.thumb.setAttribute('aria-valuemax', String(max));
+        component.structure.handle.setAttribute('aria-valuemax', String(max));
         
         if (config.range && component.structure.secondThumb) {
           component.structure.secondThumb.setAttribute('aria-valuemax', String(max));

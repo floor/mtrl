@@ -55,12 +55,12 @@ export const createEventHelpers = (state) => {
     const { 
       container = null,
       track = null, 
-      thumb = null, 
+      handle = null, 
       secondThumb = null 
     } = state.component.structure;
     
-    if (!container || !track || !thumb) {
-      console.warn('Cannot set up event listeners: container, track, or thumb is missing');
+    if (!container || !track || !handle) {
+      console.warn('Cannot set up event listeners: container, track, or handle is missing');
       return;
     }
     
@@ -80,13 +80,13 @@ export const createEventHelpers = (state) => {
     container.addEventListener('touchstart', handleTrackMouseDown, { passive: false });
     
     // Thumb events
-    thumb.addEventListener('mousedown', (e) => handleThumbMouseDown(e, false));
-    thumb.addEventListener('touchstart', (e) => handleThumbMouseDown(e, false), { passive: false });
-    thumb.addEventListener('keydown', (e) => handleKeyDown(e, false));
-    thumb.addEventListener('focus', (e) => handleFocus(e, false));
-    thumb.addEventListener('blur', (e) => handleBlur(e, false));
+    handle.addEventListener('mousedown', (e) => handleThumbMouseDown(e, false));
+    handle.addEventListener('touchstart', (e) => handleThumbMouseDown(e, false), { passive: false });
+    handle.addEventListener('keydown', (e) => handleKeyDown(e, false));
+    handle.addEventListener('focus', (e) => handleFocus(e, false));
+    handle.addEventListener('blur', (e) => handleBlur(e, false));
     
-    // Second thumb events for range slider
+    // Second handle events for range slider
     if (state.component.config && state.component.config.range && secondThumb) {
       secondThumb.addEventListener('mousedown', (e) => handleThumbMouseDown(e, true));
       secondThumb.addEventListener('touchstart', (e) => handleThumbMouseDown(e, true), { passive: false });
@@ -110,11 +110,11 @@ export const createEventHelpers = (state) => {
     const { 
       container = null,
       track = null, 
-      thumb = null, 
+      handle = null, 
       secondThumb = null 
     } = state.component.structure;
     
-    if (!container || !track || !thumb) {
+    if (!container || !track || !handle) {
       return;
     }
     
@@ -136,13 +136,13 @@ export const createEventHelpers = (state) => {
     container.removeEventListener('touchstart', handleTrackMouseDown);
     
     // Thumb events
-    thumb.removeEventListener('mousedown', (e) => handleThumbMouseDown(e, false));
-    thumb.removeEventListener('touchstart', (e) => handleThumbMouseDown(e, false));
-    thumb.removeEventListener('keydown', (e) => handleKeyDown(e, false));
-    thumb.removeEventListener('focus', (e) => handleFocus(e, false));
-    thumb.removeEventListener('blur', (e) => handleBlur(e, false));
+    handle.removeEventListener('mousedown', (e) => handleThumbMouseDown(e, false));
+    handle.removeEventListener('touchstart', (e) => handleThumbMouseDown(e, false));
+    handle.removeEventListener('keydown', (e) => handleKeyDown(e, false));
+    handle.removeEventListener('focus', (e) => handleFocus(e, false));
+    handle.removeEventListener('blur', (e) => handleBlur(e, false));
     
-    // Second thumb events
+    // Second handle events
     if (state.component.config && state.component.config.range && secondThumb) {
       secondThumb.removeEventListener('mousedown', (e) => handleThumbMouseDown(e, true));
       secondThumb.removeEventListener('touchstart', (e) => handleThumbMouseDown(e, true));

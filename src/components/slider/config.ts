@@ -43,10 +43,10 @@ export const getElementConfig = (config: SliderConfig) => {
   return createElementConfig(config, {
     tag: 'div',
     attrs: {
-      // Accessibility improvement: Container is not focusable; only thumbs are
+      // Accessibility improvement: Container is not focusable; only handles are
       'tabindex': '-1',
       'aria-disabled': config.disabled === true ? true : false,
-      // ARIA attributes will be set directly on thumbs instead
+      // ARIA attributes will be set directly on handles instead
       'role': 'none',
     },
     className: config.class

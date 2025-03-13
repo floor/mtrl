@@ -27,7 +27,7 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
   const {
     container = null,
     track = null, 
-    thumb = null, 
+    handle = null, 
     valueBubble = null, 
     secondThumb = null, 
     secondValueBubble = null
@@ -71,32 +71,32 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
   
   /**
    * Clear keyboard focus indicators across all sliders in the document
-   * Not just for this instance, but for any slider thumb
+   * Not just for this instance, but for any slider handle
    */
   const clearGlobalKeyboardFocus = () => {
     // First clear local focus indicators
-    if (thumb) {
-      thumb.classList.remove(`${state.component.getClass('slider-thumb')}--focused`);
+    if (handle) {
+      handle.classList.remove(`${state.component.getClass('slider-handle')}--focused`);
     }
     
     if (secondThumb) {
-      secondThumb.classList.remove(`${state.component.getClass('slider-thumb')}--focused`);
+      secondThumb.classList.remove(`${state.component.getClass('slider-handle')}--focused`);
     }
     
-    // Now look for all slider thumbs in the document with the focused class
+    // Now look for all slider handles in the document with the focused class
     // This covers cases where we switch between sliders
     try {
-      const focusClass = state.component.getClass('slider-thumb--focused');
+      const focusClass = state.component.getClass('slider-handle--focused');
       const allFocusedThumbs = document.querySelectorAll(`.${focusClass}`);
       
-      // Remove focus class from all thumbs
+      // Remove focus class from all handles
       allFocusedThumbs.forEach(element => {
         element.classList.remove(focusClass);
       });
       
-      // Also blur the active element if it's a thumb
+      // Also blur the active element if it's a handle
       if (document.activeElement && 
-          document.activeElement.classList.contains(state.component.getClass('slider-thumb'))) {
+          document.activeElement.classList.contains(state.component.getClass('slider-handle'))) {
         (document.activeElement as HTMLElement).blur();
       }
     } catch (error) {
@@ -141,7 +141,7 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
   };
   
   /**
-   * Handle thumb mouse down with improved bubble handling
+   * Handle handle mouse down with improved bubble handling
    */
   const handleThumbMouseDown = (e, isSecondThumb = false) => {
     // Verify component exists and check if disabled
@@ -159,10 +159,10 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
     clearGlobalKeyboardFocus();
     
     state.dragging = true;
-    state.activeThumb = isSecondThumb ? secondThumb : thumb;
+    state.activeThumb = isSecondThumb ? secondThumb : handle;
     state.activeBubble = isSecondThumb ? secondValueBubble : valueBubble;
     
-    // Add dragging class to component element to style the thumb differently
+    // Add dragging class to component element to style the handle differently
     state.component.element.classList.add(`${state.component.getClass('slider')}--dragging`);
     
     // Show active bubble
@@ -199,7 +199,7 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
     // Clear any keyboard focus indicators globally
     clearGlobalKeyboardFocus();
     
-    // Determine which thumb to move based on click position
+    // Determine which handle to move based on click position
     let isSecondThumb = false;
     
     try {
@@ -223,7 +223,7 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
       newValue = clamp(newValue, state.min, state.max);
       
       if (config.range && state.secondValue !== null) {
-        // For range slider, determine which thumb to move (closest to click position)
+        // For range slider, determine which handle to move (closest to click position)
         const distToFirst = Math.abs(newValue - state.value);
         const distToSecond = Math.abs(newValue - state.secondValue);
         
@@ -236,7 +236,7 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
           state.value = newValue;
         }
       } else {
-        // Single thumb slider - just update the value
+        // Single handle slider - just update the value
         state.value = newValue;
       }
       
@@ -251,15 +251,15 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
     }
     
     // Set active elements
-    state.activeThumb = isSecondThumb ? secondThumb : thumb;
+    state.activeThumb = isSecondThumb ? secondThumb : handle;
     state.activeBubble = isSecondThumb ? secondValueBubble : valueBubble;
     
-    // Call thumb mouse down to start dragging
+    // Call handle mouse down to start dragging
     handleThumbMouseDown(e, isSecondThumb);
   };
   
   /**
-   * Handle mouse move with improved thumb and bubble switching
+   * Handle mouse move with improved handle and bubble switching
    */
   const handleMouseMove = (e) => {
     if (!state.dragging || !state.activeThumb || !container) return;
@@ -283,15 +283,15 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
       // Clamp value to min/max
       newValue = clamp(newValue, state.min, state.max);
       
-      // Check if this is the second thumb
+      // Check if this is the second handle
       const isSecondThumb = state.activeThumb === secondThumb;
       
-      // For range slider, ensure thumbs don't cross
+      // For range slider, ensure handles don't cross
       if (config.range && state.secondValue !== null) {
         if (isSecondThumb) {
-          // Second thumb is active
+          // Second handle is active
           
-          // Don't allow second thumb to go below first thumb
+          // Don't allow second handle to go below first handle
           if (newValue >= state.value) {
             state.secondValue = newValue;
           } else {
@@ -305,16 +305,16 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
             state.value = newValue;
             
             // Swap active elements
-            state.activeThumb = thumb;
+            state.activeThumb = handle;
             state.activeBubble = valueBubble;
             
             // Show new active bubble
             showActiveBubble(state.activeBubble);
           }
         } else {
-          // First thumb is active
+          // First handle is active
           
-          // Don't allow first thumb to go above second thumb
+          // Don't allow first handle to go above second handle
           if (newValue <= state.secondValue) {
             state.value = newValue;
           } else {
@@ -373,7 +373,7 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
     document.removeEventListener('touchmove', handleMouseMove);
     document.removeEventListener('touchend', handleMouseUp);
     
-    // Reset active thumb
+    // Reset active handle
     state.activeThumb = null;
     
     try {

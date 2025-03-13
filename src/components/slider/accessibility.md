@@ -8,7 +8,7 @@ Based on the provided accessibility requirements, the slider component has been 
 
 ### Focus and Keyboard Navigation
 
-- **Direct Thumb Focus**: The initial focus now lands directly on the thumb (not the container)
+- **Direct Thumb Focus**: The initial focus now lands directly on the handle (not the container)
 - **Visual Feedback**: Added a clear outline on focus to provide visual cues for keyboard users
 - **Arrow Key Navigation**:
   - Left/Right arrows change the value by one step
@@ -19,11 +19,11 @@ Based on the provided accessibility requirements, the slider component has been 
 
 ### Visual Feedback During Interaction
 
-- **Thumb Shrinking**: The thumb width shrinks slightly during interaction to provide feedback
+- **Thumb Shrinking**: The handle width shrinks slightly during interaction to provide feedback
 - **Value Display**:
   - Value appears during interaction (touch, drag, mouse click, keyboard navigation)
   - Value remains visible briefly after interaction ends (1.5 seconds)
-  - Value position updates to follow the thumb
+  - Value position updates to follow the handle
 
 ### Visual Anchors for Contrast
 
@@ -39,13 +39,13 @@ Based on the provided accessibility requirements, the slider component has been 
    - Set appropriate ARIA attributes for screen readers
 
 2. **Interaction Feedback**:
-   - Modified CSS to shrink thumb width during active states
+   - Modified CSS to shrink handle width during active states
    - Enhanced value bubble display timing
    - Improved touch and mouse event handling
 
 3. **Focus Management**:
    - Set clear focus styles that work cross-browser
-   - Applied focus directly to interactive thumb elements
+   - Applied focus directly to interactive handle elements
    - Ensured focus outline is visible against various backgrounds
 
 ## Keyboard Navigation Map

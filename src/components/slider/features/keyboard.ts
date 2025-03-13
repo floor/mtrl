@@ -21,7 +21,7 @@ export const createKeyboardHandlers = (state, handlers) => {
     triggerEvent
   } = handlers;
   
-  // Last focused thumb tracker to handle tab sequences properly
+  // Last focused handle tracker to handle tab sequences properly
   let lastFocusedThumb = null;
   
   /**
@@ -179,19 +179,19 @@ export const createKeyboardHandlers = (state, handlers) => {
   const handleFocus = (e, isSecondThumb = false) => {
     if (state.component.disabled && state.component.disabled.isDisabled()) return;
     
-    // Track the currently focused thumb for tab sequence handling
-    const currentThumb = isSecondThumb ? secondThumb : state.component.structure.thumb;
+    // Track the currently focused handle for tab sequence handling
+    const currentThumb = isSecondThumb ? secondThumb : state.component.structure.handle;
     
-    // If we're tabbing between thumbs, hide the previous bubble immediately
+    // If we're tabbing between handles, hide the previous bubble immediately
     if (lastFocusedThumb && lastFocusedThumb !== currentThumb) {
       hideAllBubbles();
     }
     
-    // Update the last focused thumb
+    // Update the last focused handle
     lastFocusedThumb = currentThumb;
     
     // Add a class to indicate keyboard focus
-    currentThumb.classList.add(`${state.component.getClass('slider-thumb')}--focused`);
+    currentThumb.classList.add(`${state.component.getClass('slider-handle')}--focused`);
     
     // Show value bubble on focus
     const bubble = isSecondThumb ? secondValueBubble : valueBubble;
@@ -206,16 +206,16 @@ export const createKeyboardHandlers = (state, handlers) => {
   
   const handleBlur = (e, isSecondThumb = false) => {
     // Remove keyboard focus class
-    const thumb = isSecondThumb ? secondThumb : state.component.structure.thumb;
-    thumb.classList.remove(`${state.component.getClass('slider-thumb')}--focused`);
+    const handle = isSecondThumb ? secondThumb : state.component.structure.handle;
+    handle.classList.remove(`${state.component.getClass('slider-handle')}--focused`);
     
-    // Only hide the bubble if we're not tabbing to another thumb
-    // This check prevents the bubble from flickering when tabbing between thumbs
+    // Only hide the bubble if we're not tabbing to another handle
+    // This check prevents the bubble from flickering when tabbing between handles
     const relatedTarget = e.relatedTarget;
-    const otherThumb = isSecondThumb ? state.component.structure.thumb : secondThumb;
+    const otherThumb = isSecondThumb ? state.component.structure.handle : secondThumb;
     
     if (!relatedTarget || relatedTarget !== otherThumb) {
-      // We're not tabbing to the other thumb, so we can hide the bubble
+      // We're not tabbing to the other handle, so we can hide the bubble
       const bubble = isSecondThumb ? secondValueBubble : valueBubble;
       hideBubble(bubble, 200);
     }
