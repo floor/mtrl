@@ -29,7 +29,7 @@ export const createUiHelpers = (config: SliderConfig, state) => {
     activeTrack = null, 
     startTrack = null, 
     remainingTrack = null, 
-    thumb = null, 
+    handle = null, 
     valueBubble = null, 
     secondThumb = null, 
     secondValueBubble = null, 
@@ -48,17 +48,17 @@ export const createUiHelpers = (config: SliderConfig, state) => {
    * Gets track dimensions and constraints for positioning calculations
    */
   const getTrackDimensions = () => {
-    if (!track || !thumb || !container) return null;
+    if (!track || !handle || !container) return null;
     
-    const thumbRect = thumb.getBoundingClientRect();
+    const handleRect = handle.getBoundingClientRect();
     const trackRect = container.getBoundingClientRect();
-    const thumbSize = thumbRect.width || 20;
+    const handleSize = handleRect.width || 20;
     const trackSize = trackRect.width;
     
-    const edgeConstraint = (thumbSize / 2) / trackSize * 100;
+    const edgeConstraint = (handleSize / 2) / trackSize * 100;
     const paddingPercent = (8 / trackSize) * 100; // 8px padding
     
-    return { thumbSize, trackSize, edgeConstraint, paddingPercent };
+    return { handleSize, trackSize, edgeConstraint, paddingPercent };
   };
   
   /**
@@ -84,11 +84,11 @@ export const createUiHelpers = (config: SliderConfig, state) => {
       const containerRect = container.getBoundingClientRect();
       const range = state.max - state.min;
       
-      const thumbRect = thumb.getBoundingClientRect();
-      const thumbWidth = thumbRect.width || 20;
+      const handleRect = handle.getBoundingClientRect();
+      const handleWidth = handleRect.width || 20;
       
-      const leftEdge = containerRect.left + (thumbWidth / 2);
-      const rightEdge = containerRect.right - (thumbWidth / 2);
+      const leftEdge = containerRect.left + (handleWidth / 2);
+      const rightEdge = containerRect.right - (handleWidth / 2);
       const effectiveWidth = rightEdge - leftEdge;
       
       const adjustedPosition = Math.max(leftEdge, Math.min(rightEdge, position));
@@ -118,20 +118,20 @@ export const createUiHelpers = (config: SliderConfig, state) => {
   const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
   
   /**
-   * Sets thumb position based on a value percentage with proper edge mapping
+   * Sets handle position based on a value percentage with proper edge mapping
    */
-  const setThumbPosition = (thumbElement, bubbleElement, valuePercent) => {
-    if (!thumbElement || !container) return;
+  const setThumbPosition = (handleElement, bubbleElement, valuePercent) => {
+    if (!handleElement || !container) return;
     
     const dims = getTrackDimensions();
     if (!dims) return;
     
-    const { thumbSize, trackSize } = dims;
-    const edgeConstraint = (thumbSize / 2) / trackSize * 100;
+    const { handleSize, trackSize } = dims;
+    const edgeConstraint = (handleSize / 2) / trackSize * 100;
     const adjustedPercent = mapValueToVisualPercent(valuePercent, edgeConstraint);
     
-    thumbElement.style.left = `${adjustedPercent}%`;
-    thumbElement.style.transform = 'translate(-50%, -50%)';
+    handleElement.style.left = `${adjustedPercent}%`;
+    handleElement.style.transform = 'translate(-50%, -50%)';
     
     if (bubbleElement) {
       bubbleElement.style.left = `${adjustedPercent}%`;
@@ -143,18 +143,18 @@ export const createUiHelpers = (config: SliderConfig, state) => {
    * Updates start track styles
    */
   const updateStartTrack = () => {
-    if (!startTrack || !container || !thumb) return;
+    if (!startTrack || !container || !handle) return;
     
     const dims = getTrackDimensions();
     if (!dims) return;
     
-    const { thumbSize, trackSize, paddingPercent } = dims;
+    const { handleSize, trackSize, paddingPercent } = dims;
     
     if (config.range && state.secondValue !== null) {
       const lowerValue = Math.min(state.value, state.secondValue);
       const lowerPercent = getPercentage(lowerValue);
       
-      const edgeConstraint = (thumbSize / 2) / trackSize * 100;
+      const edgeConstraint = (handleSize / 2) / trackSize * 100;
       const adjustedPercent = mapValueToVisualPercent(lowerPercent, edgeConstraint);
       const finalPercent = Math.max(0, adjustedPercent - paddingPercent);
       
@@ -171,16 +171,16 @@ export const createUiHelpers = (config: SliderConfig, state) => {
    * Updates active track styles
    */
   const updateActiveTrack = () => {
-    if (!activeTrack || !container || !thumb) return;
+    if (!activeTrack || !container || !handle) return;
     
     const dims = getTrackDimensions();
     if (!dims) return;
     
-    const { thumbSize, trackSize, paddingPercent } = dims;
-    const edgeConstraint = (thumbSize / 2) / trackSize * 100;
+    const { handleSize, trackSize, paddingPercent } = dims;
+    const edgeConstraint = (handleSize / 2) / trackSize * 100;
     
     if (config.range && state.secondValue !== null) {
-      // Range slider (two thumbs)
+      // Range slider (two handles)
       const lowerValue = Math.min(state.value, state.secondValue);
       const higherValue = Math.max(state.value, state.secondValue);
       const lowerPercent = getPercentage(lowerValue);
@@ -189,12 +189,12 @@ export const createUiHelpers = (config: SliderConfig, state) => {
       const adjustedLower = mapValueToVisualPercent(lowerPercent, edgeConstraint) + paddingPercent;
       const adjustedHigher = mapValueToVisualPercent(higherPercent, edgeConstraint) - paddingPercent;
       
-      // Calculate the actual percentage difference between thumbs
+      // Calculate the actual percentage difference between handles
       const valueDiffPercent = Math.abs(higherPercent - lowerPercent);
       
       // Define a threshold below which we'll hide the active track
-      // This threshold is based on the thumb width plus some margin
-      const hideThreshold = (thumbSize / trackSize) * 100;
+      // This threshold is based on the handle width plus some margin
+      const hideThreshold = (handleSize / trackSize) * 100;
       
       if (valueDiffPercent <= hideThreshold) {
         // Thumbs are too close together, hide the active track
@@ -209,7 +209,7 @@ export const createUiHelpers = (config: SliderConfig, state) => {
         activeTrack.style.height = '100%';
       }
     } else {
-      // Single thumb slider - just update the value
+      // Single handle slider - just update the value
       const valuePercent = getPercentage(state.value);
       const adjustedPercent = mapValueToVisualPercent(valuePercent, edgeConstraint);
       const adjustedWidth = Math.max(0, adjustedPercent - paddingPercent);
@@ -225,15 +225,15 @@ export const createUiHelpers = (config: SliderConfig, state) => {
    * Updates remaining track styles
    */
   const updateRemainingTrack = () => {
-    if (!remainingTrack || !container || !thumb) return;
+    if (!remainingTrack || !container || !handle) return;
     
     const dims = getTrackDimensions();
     if (!dims) return;
     
-    const { thumbSize, trackSize, paddingPercent } = dims;
-    const edgeConstraint = (thumbSize / 2) / trackSize * 100;
+    const { handleSize, trackSize, paddingPercent } = dims;
+    const edgeConstraint = (handleSize / 2) / trackSize * 100;
     
-    // Find the highest thumb value
+    // Find the highest handle value
     const highValue = config.range && state.secondValue !== null ? 
       Math.max(state.value, state.secondValue) : state.value;
     
@@ -250,23 +250,23 @@ export const createUiHelpers = (config: SliderConfig, state) => {
   };
   
   /**
-   * Updates thumb positions
+   * Updates handle positions
    */
   const updateThumbPositions = () => {
-    if (!thumb || !container) return;
+    if (!handle || !container) return;
     
-    // Update main thumb
+    // Update main handle
     const percent = getPercentage(state.value);
-    setThumbPosition(thumb, valueBubble, percent);
+    setThumbPosition(handle, valueBubble, percent);
     
-    // Update second thumb if range slider
+    // Update second handle if range slider
     if (config.range && secondThumb && secondValueBubble && state.secondValue !== null) {
       const secondPercent = getPercentage(state.secondValue);
       setThumbPosition(secondThumb, secondValueBubble, secondPercent);
     }
     
     // Update ARIA attributes
-    thumb.setAttribute('aria-valuenow', String(state.value));
+    handle.setAttribute('aria-valuenow', String(state.value));
     if (config.range && secondThumb && state.secondValue !== null) {
       secondThumb.setAttribute('aria-valuenow', String(state.secondValue));
     }

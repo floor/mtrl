@@ -11,7 +11,7 @@ export interface SliderConfig {
   /** Current value of the slider */
   value?: number;
   
-  /** Secondary value for range slider (when using two thumbs) */
+  /** Secondary value for range slider (when using two handles) */
   secondValue?: number;
   
   /** Step size for discrete slider */
@@ -38,7 +38,7 @@ export interface SliderConfig {
   /** Whether to snap to steps while dragging (discrete slider) */
   snapToSteps?: boolean;
   
-  /** Whether the slider is a range slider (two thumbs) */
+  /** Whether the slider is a range slider (two handles) */
   range?: boolean;
   
   /** Label text for the slider */

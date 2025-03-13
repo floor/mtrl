@@ -88,7 +88,7 @@ $component: '#{base.$prefix}-slider';
   }
  
   // Thumb - updated with T-shape and proper focus styles
-  &-thumb {
+  &-handle {
     position: absolute;
     top: 50%;
     transform: translate(-50%, -50%);
@@ -111,7 +111,7 @@ $component: '#{base.$prefix}-slider';
       // Additional styling when focused
     }
 
-    // Create a T-shaped thumb using pseudo-elements
+    // Create a T-shaped handle using pseudo-elements
     &::before {
       pointer-events: none;
       content: '';
@@ -148,7 +148,7 @@ $component: '#{base.$prefix}-slider';
       pointer-events: auto;
     }
     
-    // Make thumb line slimmer during dragging (feedback)
+    // Make handle line slimmer during dragging (feedback)
     .#{$component}--dragging & {
       &::before {
         width: 3px;
@@ -397,7 +397,7 @@ $component: '#{base.$prefix}-slider';
   
   // Range slider styles
   &--range {
-    .#{$component}-thumb {
+    .#{$component}-handle {
       &:nth-of-type(1) {
         z-index: 3;
       }
@@ -448,7 +448,7 @@ $component: '#{base.$prefix}-slider';
       height: 32px;
     }
     
-    .#{$component}-thumb {
+    .#{$component}-handle {
       &::before {
         height: 34px;
       }
@@ -466,7 +466,7 @@ $component: '#{base.$prefix}-slider';
       height: 48px;
     }
     
-    .#{$component}-thumb {
+    .#{$component}-handle {
       &::before {
         height: 48px;
       }
@@ -479,7 +479,7 @@ $component: '#{base.$prefix}-slider';
     .#{$component}-start-track, 
     .#{$component}-active-track, 
     .#{$component}-remaining-track, 
-    .#{$component}-thumb {
+    .#{$component}-handle {
       transition: none;
     }
   }
