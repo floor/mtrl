@@ -31,6 +31,9 @@ export const withRipple = <T extends RippleFeatureConfig>(config: T) =>
     if (!config.ripple) return component as C & RippleComponent;
 
     const rippleInstance = createRipple(config.rippleConfig);
+    
+    // Immediately mount ripple to ensure it's available right away
+    rippleInstance.mount(component.element);
 
     // If component has lifecycle methods, integrate ripple with them
     if (component.lifecycle) {
@@ -39,7 +42,7 @@ export const withRipple = <T extends RippleFeatureConfig>(config: T) =>
 
       component.lifecycle.mount = () => {
         originalMount.call(component.lifecycle);
-        rippleInstance.mount(component.element);
+        // We don't need to mount again here since we already did it above
       };
 
       component.lifecycle.destroy = () => {

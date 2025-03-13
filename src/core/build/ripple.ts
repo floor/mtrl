@@ -1,73 +1,13 @@
 // src/core/build/ripple.ts
-
 import { RIPPLE_CONFIG, RIPPLE_TIMING } from './constants';
+import { PREFIX } from '../config';
 
-/**
- * Ripple animation configuration
- */
-export interface RippleConfig {
-  /**
-   * Animation duration in milliseconds
-   */
-  duration?: number;
-  
-  /**
-   * Animation timing function
-   */
-  timing?: string;
-  
-  /**
-   * Opacity start and end values
-   */
-  opacity?: [string, string];
-}
+// ... existing interfaces ...
 
-/**
- * End coordinates for ripple animation
- */
-interface EndCoordinates {
-  size: string;
-  top: string;
-  left: string;
-}
-
-/**
- * Document event listener
- */
-interface DocumentListener {
-  event: string;
-  handler: EventListener;
-}
-
-/**
- * Ripple controller interface
- */
-export interface RippleController {
-  /**
-   * Attaches ripple effect to an element
-   * @param element - Target element
-   */
-  mount: (element: HTMLElement) => void;
-  
-  /**
-   * Removes ripple effect from an element
-   * @param element - Target element
-   */
-  unmount: (element: HTMLElement) => void;
-}
-
-/**
- * Creates a ripple effect instance
- * 
- * @param config - Ripple configuration
- * @returns Ripple controller instance
- */
 export const createRipple = (config: RippleConfig = {}): RippleController => {
-  // Make sure we fully merge the config options
   const options = {
     ...RIPPLE_CONFIG,
     ...config,
-    // Handle nested objects like opacity array
     opacity: config.opacity || RIPPLE_CONFIG.opacity
   };
 
@@ -84,18 +24,18 @@ export const createRipple = (config: RippleConfig = {}): RippleController => {
     };
   };
 
+  // Track active ripples for proper cleanup
+  const activeRipples = new WeakMap<HTMLElement, Set<HTMLElement>>();
+
   const createRippleElement = (): HTMLDivElement => {
     const ripple = document.createElement('div');
-    ripple.className = 'ripple';
-    // Initial styles already set in CSS
-    ripple.style.transition = `all ${options.duration}ms ${options.timing}`;
+    ripple.className = `${PREFIX}-ripple-wave`;
+    // No inline transition style - let CSS handle it
     return ripple;
   };
 
-  // Store document event listeners for cleanup
   let documentListeners: DocumentListener[] = [];
 
-  // Safe document event handling
   const addDocumentListener = (event: string, handler: EventListener): void => {
     if (typeof document.addEventListener === 'function') {
       document.addEventListener(event, handler);
@@ -113,45 +53,56 @@ export const createRipple = (config: RippleConfig = {}): RippleController => {
   };
 
   const animate = (event: MouseEvent, container: HTMLElement): void => {
-    if (!container) return;
+    if (!container || !container.__rippleContainer) return;
 
+    const rippleContainer = container.__rippleContainer;
     const bounds = container.getBoundingClientRect();
     const ripple = createRippleElement();
 
-    // Set initial position and state
+    // Calculate ripple size - should be larger than the container
+    // Use the maximum dimension of the container multiplied by 2
+    const size = Math.max(bounds.width, bounds.height) * 2;
+    
+    // Calculate position to center the ripple on the click point
+    const x = event.clientX - bounds.left - (size / 2);
+    const y = event.clientY - bounds.top - (size / 2);
+
+    // Set explicit size and position
     Object.assign(ripple.style, {
-      left: `${event.offsetX || bounds.width / 2}px`,
-      top: `${event.offsetY || bounds.height / 2}px`,
-      transform: 'scale(0)',
-      opacity: options.opacity[0]
+      width: `${size}px`,
+      height: `${size}px`,
+      left: `${x}px`,
+      top: `${y}px`
     });
 
-    container.appendChild(ripple);
+    // Append to container
+    rippleContainer.appendChild(ripple);
 
     // Force reflow
-    // eslint-disable-next-line no-unused-expressions
     ripple.offsetHeight;
 
-    // Animate to end position
-    const end = getEndCoordinates(bounds);
-    Object.assign(ripple.style, {
-      ...end,
-      transform: 'scale(1)',
-      opacity: options.opacity[1]
+    // Add active class to trigger animation
+    requestAnimationFrame(() => {
+      ripple.classList.add('active');
     });
 
     const cleanup = () => {
-      ripple.style.opacity = '0';
+      // Remove document listeners
+      removeDocumentListener('mouseup', cleanup);
+      removeDocumentListener('mouseleave', cleanup);
 
-      // Use setTimeout to remove element after animation
+      // Remove active class and add fade-out class
+      ripple.classList.remove('active');
+      ripple.classList.add('fade-out');
+      
+      // Remove after animation
       setTimeout(() => {
         if (ripple.parentNode) {
           ripple.parentNode.removeChild(ripple);
         }
+        // Remove from tracking
+        activeRipples.get(container)?.delete(ripple);
       }, options.duration);
-
-      removeDocumentListener('mouseup', cleanup);
-      removeDocumentListener('mouseleave', cleanup);
     };
 
     addDocumentListener('mouseup', cleanup);
@@ -167,8 +118,21 @@ export const createRipple = (config: RippleConfig = {}): RippleController => {
       if (currentPosition === 'static') {
         element.style.position = 'relative';
       }
-      element.style.overflow = 'hidden';
+      
+      // Create ripple container if it doesn't exist
+      let rippleContainer = element.querySelector(`.${PREFIX}-ripple`);
+      if (!rippleContainer) {
+        rippleContainer = document.createElement('div');
+        rippleContainer.className = `${PREFIX}-ripple`;
+        element.appendChild(rippleContainer);
+      }
 
+      // Store reference to container
+      element.__rippleContainer = rippleContainer as HTMLElement;
+      
+      // Initialize ripple tracking
+      activeRipples.set(element, new Set());
+      
       // Store the mousedown handler to be able to remove it later
       const mousedownHandler = (e: MouseEvent) => animate(e, element);
 
@@ -198,19 +162,32 @@ export const createRipple = (config: RippleConfig = {}): RippleController => {
         element.__rippleHandlers = [];
       }
 
-      // Remove all ripple elements
-      const ripples = element.querySelectorAll('.ripple');
-      ripples.forEach(ripple => {
-        // Call remove directly to match the test expectation
-        ripple.remove();
-      });
+      // Remove all active ripples immediately
+      if (activeRipples.has(element)) {
+        const ripples = activeRipples.get(element);
+        if (ripples) {
+          ripples.forEach(ripple => {
+            if (ripple.parentNode) {
+              ripple.parentNode.removeChild(ripple);
+            }
+          });
+        }
+        activeRipples.delete(element);
+      }
+
+      // Remove ripple container
+      if (element.__rippleContainer && element.__rippleContainer.parentNode) {
+        element.__rippleContainer.parentNode.removeChild(element.__rippleContainer);
+        delete element.__rippleContainer;
+      }
     }
   };
 };
 
-// Extend the HTMLElement interface to add rippleHandlers property
+// Extend the HTMLElement interface
 declare global {
   interface HTMLElement {
     __rippleHandlers?: Array<(e: MouseEvent) => void>;
+    __rippleContainer?: HTMLElement;
   }
 }
