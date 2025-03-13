@@ -394,3 +394,4 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
     handleMouseMove,
     handleMouseUp
   };
+};

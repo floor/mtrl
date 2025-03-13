@@ -247,6 +247,7 @@ export const withAPI = (options: ApiOptions) =>
        * @returns {SliderComponent} Slider component instance for chaining
        */
       setLabel(text: string) {
+        console.log('setLabel', text, options.text.setText)
         if (options.text && typeof options.text.setText === 'function') {
           options.text.setText(text);
         }
