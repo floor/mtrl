@@ -27,9 +27,9 @@ export const withDisabled = (config: SliderConfig) => component => {
       component.structure.handle.setAttribute('aria-disabled', 'true');
     }
     
-    if (config.range && component.structure.secondThumb) {
-      component.structure.secondThumb.tabIndex = -1;
-      component.structure.secondThumb.setAttribute('aria-disabled', 'true');
+    if (config.range && component.structure.secondHandle) {
+      component.structure.secondHandle.tabIndex = -1;
+      component.structure.secondHandle.setAttribute('aria-disabled', 'true');
     }
   }
   
@@ -43,9 +43,9 @@ export const withDisabled = (config: SliderConfig) => component => {
       component.structure.handle.setAttribute('aria-disabled', 'false');
     }
     
-    if (config.range && component.structure.secondThumb) {
-      component.structure.secondThumb.tabIndex = 0;
-      component.structure.secondThumb.setAttribute('aria-disabled', 'false');
+    if (config.range && component.structure.secondHandle) {
+      component.structure.secondHandle.tabIndex = 0;
+      component.structure.secondHandle.setAttribute('aria-disabled', 'false');
     }
   }
   

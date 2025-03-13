@@ -16,7 +16,7 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
   if (!state || !handlers) {
     console.error('Cannot create interaction handlers: state or handlers missing');
     return {
-      handleThumbMouseDown: () => {},
+      handleHandleMouseDown: () => {},
       handleTrackMouseDown: () => {},
       handleMouseMove: () => {},
       handleMouseUp: () => {}
@@ -29,7 +29,7 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
     track = null, 
     handle = null, 
     valueBubble = null, 
-    secondThumb = null, 
+    secondHandle = null, 
     secondValueBubble = null
   } = state.component?.structure || {};
   
@@ -79,18 +79,18 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
       handle.classList.remove(`${state.component.getClass('slider-handle')}--focused`);
     }
     
-    if (secondThumb) {
-      secondThumb.classList.remove(`${state.component.getClass('slider-handle')}--focused`);
+    if (secondHandle) {
+      secondHandle.classList.remove(`${state.component.getClass('slider-handle')}--focused`);
     }
     
     // Now look for all slider handles in the document with the focused class
     // This covers cases where we switch between sliders
     try {
       const focusClass = state.component.getClass('slider-handle--focused');
-      const allFocusedThumbs = document.querySelectorAll(`.${focusClass}`);
+      const allFocusedHandles = document.querySelectorAll(`.${focusClass}`);
       
       // Remove focus class from all handles
-      allFocusedThumbs.forEach(element => {
+      allFocusedHandles.forEach(element => {
         element.classList.remove(focusClass);
       });
       
@@ -143,7 +143,7 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
   /**
    * Handle handle mouse down with improved bubble handling
    */
-  const handleThumbMouseDown = (e, isSecondThumb = false) => {
+  const handleHandleMouseDown = (e, isSecondHandle = false) => {
     // Verify component exists and check if disabled
     if (!state.component || (state.component.disabled && state.component.disabled.isDisabled())) {
       return;
@@ -159,8 +159,8 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
     clearGlobalKeyboardFocus();
     
     state.dragging = true;
-    state.activeThumb = isSecondThumb ? secondThumb : handle;
-    state.activeBubble = isSecondThumb ? secondValueBubble : valueBubble;
+    state.activeHandle = isSecondHandle ? secondHandle : handle;
+    state.activeBubble = isSecondHandle ? secondValueBubble : valueBubble;
     
     // Add dragging class to component element to style the handle differently
     state.component.element.classList.add(`${state.component.getClass('slider')}--dragging`);
@@ -200,7 +200,7 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
     clearGlobalKeyboardFocus();
     
     // Determine which handle to move based on click position
-    let isSecondThumb = false;
+    let isSecondHandle = false;
     
     try {
       // Get container rect for calculating position
@@ -227,10 +227,10 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
         const distToFirst = Math.abs(newValue - state.value);
         const distToSecond = Math.abs(newValue - state.secondValue);
         
-        isSecondThumb = distToSecond < distToFirst;
+        isSecondHandle = distToSecond < distToFirst;
         
         // Update the appropriate value
-        if (isSecondThumb) {
+        if (isSecondHandle) {
           state.secondValue = newValue;
         } else {
           state.value = newValue;
@@ -251,18 +251,18 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
     }
     
     // Set active elements
-    state.activeThumb = isSecondThumb ? secondThumb : handle;
-    state.activeBubble = isSecondThumb ? secondValueBubble : valueBubble;
+    state.activeHandle = isSecondHandle ? secondHandle : handle;
+    state.activeBubble = isSecondHandle ? secondValueBubble : valueBubble;
     
     // Call handle mouse down to start dragging
-    handleThumbMouseDown(e, isSecondThumb);
+    handleHandleMouseDown(e, isSecondHandle);
   };
   
   /**
    * Handle mouse move with improved handle and bubble switching
    */
   const handleMouseMove = (e) => {
-    if (!state.dragging || !state.activeThumb || !container) return;
+    if (!state.dragging || !state.activeHandle || !container) return;
     
     e.preventDefault();
     
@@ -284,18 +284,18 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
       newValue = clamp(newValue, state.min, state.max);
       
       // Check if this is the second handle
-      const isSecondThumb = state.activeThumb === secondThumb;
+      const isSecondHandle = state.activeHandle === secondHandle;
       
       // For range slider, ensure handles don't cross
       if (config.range && state.secondValue !== null) {
-        if (isSecondThumb) {
+        if (isSecondHandle) {
           // Second handle is active
           
           // Don't allow second handle to go below first handle
           if (newValue >= state.value) {
             state.secondValue = newValue;
           } else {
-            // Thumbs are crossed, need to swap them
+            // Handles are crossed, need to swap them
             
             // First hide current bubble
             hideActiveBubble(state.activeBubble, 0);
@@ -305,7 +305,7 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
             state.value = newValue;
             
             // Swap active elements
-            state.activeThumb = handle;
+            state.activeHandle = handle;
             state.activeBubble = valueBubble;
             
             // Show new active bubble
@@ -318,7 +318,7 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
           if (newValue <= state.secondValue) {
             state.value = newValue;
           } else {
-            // Thumbs are crossed, need to swap them
+            // Handles are crossed, need to swap them
             
             // First hide current bubble
             hideActiveBubble(state.activeBubble, 0);
@@ -328,7 +328,7 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
             state.secondValue = newValue;
             
             // Swap active elements
-            state.activeThumb = secondThumb;
+            state.activeHandle = secondHandle;
             state.activeBubble = secondValueBubble;
             
             // Show new active bubble
@@ -374,7 +374,7 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
     document.removeEventListener('touchend', handleMouseUp);
     
     // Reset active handle
-    state.activeThumb = null;
+    state.activeHandle = null;
     
     try {
       // Trigger change event (only when done dragging)
@@ -389,7 +389,7 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
   
   // Return handlers
   return {
-    handleThumbMouseDown,
+    handleHandleMouseDown,
     handleTrackMouseDown,
     handleMouseMove,
     handleMouseUp

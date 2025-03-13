@@ -68,25 +68,25 @@ export const withStructure = (config: SliderConfig) => component => {
   const paddingPercent = (paddingAdjustment / estimatedTrackSize) * 100;
   
   // Create second handle and value bubble for range slider
-  let secondThumb = null;
+  let secondHandle = null;
   let secondValueBubble = null;
   
   if (isRangeSlider) {
-    secondThumb = createElement('slider-handle');
-    secondThumb.setAttribute('role', 'slider');
-    secondThumb.setAttribute('aria-valuemin', String(min));
-    secondThumb.setAttribute('aria-valuemax', String(max));
-    secondThumb.setAttribute('aria-valuenow', String(secondValue));
-    secondThumb.setAttribute('aria-orientation', 'horizontal');
+    secondHandle = createElement('slider-handle');
+    secondHandle.setAttribute('role', 'slider');
+    secondHandle.setAttribute('aria-valuemin', String(min));
+    secondHandle.setAttribute('aria-valuemax', String(max));
+    secondHandle.setAttribute('aria-valuenow', String(secondValue));
+    secondHandle.setAttribute('aria-orientation', 'horizontal');
     
     // Set tabindex based on disabled state
-    secondThumb.setAttribute('tabindex', isDisabled ? '-1' : '0');
+    secondHandle.setAttribute('tabindex', isDisabled ? '-1' : '0');
     if (isDisabled) {
-      secondThumb.setAttribute('aria-disabled', 'true');
+      secondHandle.setAttribute('aria-disabled', 'true');
     }
     
     const secondPercent = getPercentage(secondValue);
-    secondThumb.style.left = `${secondPercent}%`;
+    secondHandle.style.left = `${secondPercent}%`;
     
     secondValueBubble = createElement('slider-value');
     secondValueBubble.textContent = formatter(secondValue);
@@ -108,8 +108,8 @@ export const withStructure = (config: SliderConfig) => component => {
   container.appendChild(handle);
   container.appendChild(valueBubble);
   
-  if (isRangeSlider && secondThumb && secondValueBubble) {
-    container.appendChild(secondThumb);
+  if (isRangeSlider && secondHandle && secondValueBubble) {
+    container.appendChild(secondHandle);
     container.appendChild(secondValueBubble);
   }
   
@@ -162,7 +162,7 @@ export const withStructure = (config: SliderConfig) => component => {
       ticksContainer,
       handle,
       valueBubble,
-      secondThumb,
+      secondHandle,
       secondValueBubble,
       startDot,
       endDot
