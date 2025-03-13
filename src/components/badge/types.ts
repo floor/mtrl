@@ -1,43 +1,58 @@
 // src/components/badge/types.ts
-import { BADGE_VARIANTS, BADGE_SIZES, BADGE_COLORS, BADGE_POSITIONS } from './constants';
+import { BADGE_VARIANTS, BADGE_COLORS, BADGE_POSITIONS } from './constants';
 
 /**
  * Configuration interface for the Badge component
+ * Following Material Design 3 specifications
  */
 export interface BadgeConfig {
-  /** Badge variant (standard, dot, outlined) */
-  variant?: keyof typeof BADGE_VARIANTS | BADGE_VARIANTS;
+  /** 
+   * Badge variant (small dot or large numbered)
+   * Small badge (6dp) or Large badge (16dp height)
+   */
+  variant?: keyof typeof BADGE_VARIANTS | (typeof BADGE_VARIANTS)[keyof typeof BADGE_VARIANTS];
   
-  /** Badge size (small, medium, large) */
-  size?: keyof typeof BADGE_SIZES | BADGE_SIZES;
+  /** 
+   * Badge color (error is default)
+   */
+  color?: keyof typeof BADGE_COLORS | (typeof BADGE_COLORS)[keyof typeof BADGE_COLORS];
   
-  /** Badge color (primary, secondary, tertiary, error, success, warning, info) */
-  color?: keyof typeof BADGE_COLORS | BADGE_COLORS;
+  /** 
+   * Badge position relative to its container 
+   */
+  position?: keyof typeof BADGE_POSITIONS | (typeof BADGE_POSITIONS)[keyof typeof BADGE_POSITIONS];
   
-  /** Badge position relative to its container (top-right, top-left, bottom-right, bottom-left) */
-  position?: keyof typeof BADGE_POSITIONS | BADGE_POSITIONS;
+  /** 
+   * Text label inside the badge (for large badges)
+   * Up to 4 characters, with "+" for overflow 
+   */
+  label?: string | number;
   
-  /** Text content inside the badge */
-  content?: string | number;
-  
-  /** Maximum value to display (shows "{max}+" if content exceeds max) */
+  /** 
+   * Maximum value to display (shows "{max}+" if label exceeds max)
+   * Usually 999+ for large numbers
+   */
   max?: number;
   
   /** Whether the badge should be visible */
   visible?: boolean;
-  
-  /** Whether the badge should be standalone (not attached to another element) */
-  standalone?: boolean;
   
   /** Target element to which badge will be attached */
   target?: HTMLElement;
   
   /** Additional CSS classes */
   class?: string;
+  
+  /** CSS class prefix */
+  prefix?: string;
+  
+  /** Component name */
+  componentName?: string;
 }
 
 /**
  * Badge component interface
+ * Following Material Design 3 specifications
  */
 export interface BadgeComponent {
   /** Badge element */
@@ -46,11 +61,11 @@ export interface BadgeComponent {
   /** Badge wrapper element (if badge is attached to target) */
   wrapper?: HTMLElement;
   
-  /** Sets badge text content */
-  setContent: (content: string | number) => BadgeComponent;
+  /** Sets badge text label */
+  setLabel: (label: string | number) => BadgeComponent;
   
-  /** Gets badge text content */
-  getContent: () => string;
+  /** Gets badge text label */
+  getLabel: () => string;
   
   /** Shows the badge */
   show: () => BadgeComponent;
@@ -68,16 +83,13 @@ export interface BadgeComponent {
   setMax: (max: number) => BadgeComponent;
   
   /** Sets badge color */
-  setColor: (color: keyof typeof BADGE_COLORS | BADGE_COLORS) => BadgeComponent;
+  setColor: (color: keyof typeof BADGE_COLORS | (typeof BADGE_COLORS)[keyof typeof BADGE_COLORS]) => BadgeComponent;
   
   /** Sets badge variant */
-  setVariant: (variant: keyof typeof BADGE_VARIANTS | BADGE_VARIANTS) => BadgeComponent;
-  
-  /** Sets badge size */
-  setSize: (size: keyof typeof BADGE_SIZES | BADGE_SIZES) => BadgeComponent;
+  setVariant: (variant: keyof typeof BADGE_VARIANTS | (typeof BADGE_VARIANTS)[keyof typeof BADGE_VARIANTS]) => BadgeComponent;
   
   /** Sets badge position */
-  setPosition: (position: keyof typeof BADGE_POSITIONS | BADGE_POSITIONS) => BadgeComponent;
+  setPosition: (position: keyof typeof BADGE_POSITIONS | (typeof BADGE_POSITIONS)[keyof typeof BADGE_POSITIONS]) => BadgeComponent;
   
   /** Attaches badge to a target element */
   attachTo: (target: HTMLElement) => BadgeComponent;

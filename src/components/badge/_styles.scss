@@ -1,96 +1,130 @@
-// src/components/badge/_styles.scss
+// src/components/badge/_badge.scss
 @use '../../styles/abstract/base' as base;
 @use '../../styles/abstract/variables' as v;
 @use '../../styles/abstract/functions' as f;
 @use '../../styles/abstract/mixins' as m;
 @use '../../styles/abstract/theme' as t;
 
+/**
+ * Badge component styles
+ * 
+ * Badge specifications:
+ * - Small badge size: 6dp
+ * - Large badge height: 16dp
+ * - Small badge corner radius: 3dp
+ * - Large badge corner radius: 8dp
+ * - Small badge: positioned 6dp from container edge
+ * - Large badge: positioned 14dp (height) x 12dp (width) from container edge
+ */
 $component: '#{base.$prefix}-badge';
+$wrapper: '#{base.$prefix}-badge-wrapper';
 
-.#{$component} {
-  // Base styles
+// Wrapper styles to establish positioning context
+.#{$wrapper} {
   position: relative;
   display: inline-flex;
+  flex-shrink: 0;
+}
+
+.#{$component} {
+  // Base badge styles
+  position: absolute;
+  display: flex;
   align-items: center;
   justify-content: center;
-  box-sizing: border-box;
-  min-width: 20px;
-  height: 20px;
-  padding: 0 6px;
-  border-radius: 10px;
-  background-color: t.color('error');
-  color: t.color('on-error');
-  font-size: 11px;
   font-weight: 500;
-  line-height: 1;
-  letter-spacing: 0.5px;
-  white-space: nowrap;
-  text-align: center;
+  box-sizing: border-box;
+  overflow: hidden;
+  transition: all 200ms ease;
+  text-overflow: ellipsis;
   
-  // Badge parent wrapper
-  &-wrapper {
-    position: relative;
-    display: inline-flex;
+  // Hide for visibility: false
+  &--invisible {
+    display: none;
   }
   
-  // Default positioning (top-right)
-  &--positioned {
-    position: absolute;
-    top: -8px;
-    right: -8px;
-    transform: translate(50%, -50%);
-  }
-  
-  // Dot variant 
-  &--dot {
-    min-width: 8px;
-    height: 8px;
-    padding: 0;
-    border-radius: 50%;
-  }
-  
-  // Small size
+  // Small badge (dot)
   &--small {
-    min-width: 16px;
-    height: 16px;
-    font-size: 10px;
-    padding: 0 4px;
+    width: 6px;
+    height: 6px;
+    min-width: 6px;
+    border-radius: 3px; // 3dp corner radius
+    font-size: 0;
+    padding: 0;
   }
   
-  // Large size
+  // Large badge
   &--large {
-    min-width: 24px;
-    height: 24px;
-    font-size: 12px;
-    padding: 0 8px;
+    height: 16px;
+    min-width: 16px;
+    border-radius: 8px; // 8dp corner radius
+    padding: 0 4px;
+    font-size: 11px;
+    line-height: 16px;
+    
+    // Handle max character count container (16dp x 34dp)
+    &.#{$component}--overflow {
+      min-width: auto;
+      max-width: 34px; // max width is 34dp for overflow badges
+      padding: 0 4px;
+    }
   }
   
-  // Position variants
-  &--top-left {
-    top: 0;
-    left: 0;
-    transform: translate(-50%, -50%);
+  // Position specs
+  &--positioned {
+    // Small badge placement (6dp from container edge)
+    &.#{$component}--small {
+      &.#{$component}--top-right {
+        top: -3px;
+        right: -3px;
+      }
+      
+      &.#{$component}--top-left {
+        top: -3px;
+        left: -3px;
+      }
+      
+      &.#{$component}--bottom-right {
+        bottom: -3px;
+        right: -3px;
+      }
+      
+      &.#{$component}--bottom-left {
+        bottom: -3px;
+        left: -3px;
+      }
+    }
+    
+    // Large badge placement (14dp x 12dp from container edge)
+    &.#{$component}--large {
+      &.#{$component}--top-right {
+        top: -8px;
+        right: -8px;
+      }
+      
+      &.#{$component}--top-left {
+        top: -8px;
+        left: -8px;
+      }
+      
+      &.#{$component}--bottom-right {
+        bottom: -8px;
+        right: -8px;
+      }
+      
+      &.#{$component}--bottom-left {
+        bottom: -8px;
+        left: -8px;
+      }
+    }
   }
   
-  &--top-right {
-    top: 0;
-    right: 0;
-    transform: translate(50%, -50%);
+  // badge color system
+  &--error {
+    background-color: t.color('error');
+    color: t.color('on-error');
   }
   
-  &--bottom-left {
-    bottom: 0;
-    left: 0;
-    transform: translate(-50%, 50%);
-  }
-  
-  &--bottom-right {
-    bottom: 0;
-    right: 0;
-    transform: translate(50%, 50%);
-  }
-  
-  // Color variants
   &--primary {
     background-color: t.color('primary');
     color: t.color('on-primary');
@@ -104,11 +138,6 @@ $component: '#{base.$prefix}-badge';
   &--tertiary {
     background-color: t.color('tertiary');
     color: t.color('on-tertiary');
-  }
-  
-  &--error {
-    background-color: t.color('error');
-    color: t.color('on-error');
   }
   
   &--success {
@@ -125,50 +154,29 @@ $component: '#{base.$prefix}-badge';
     background-color: t.color('info');
     color: t.color('on-info');
   }
-  
-  // Outline variant
-  &--outlined {
-    background-color: transparent;
-    border: 1px solid currentColor;
-    
-    &.#{$component}--primary {
-      color: t.color('primary');
+}
+
+// RTL support
+[dir="rtl"] {
+  .#{$component}--positioned {
+    &.#{$component}--top-right {
+      right: auto;
+      left: -8px;
     }
     
-    &.#{$component}--secondary {
-      color: t.color('secondary');
+    &.#{$component}--top-left {
+      left: auto;
+      right: -8px;
     }
     
-    &.#{$component}--tertiary {
-      color: t.color('tertiary');
+    &.#{$component}--bottom-right {
+      right: auto;
+      left: -8px;
     }
     
-    &.#{$component}--error {
-      color: t.color('error');
+    &.#{$component}--bottom-left {
+      left: auto;
+      right: -8px;
     }
-    
-    &.#{$component}--success {
-      color: t.color('success');
-    }
-    
-    &.#{$component}--warning {
-      color: t.color('warning');
-    }
-    
-    &.#{$component}--info {
-      color: t.color('info');
-    }
-  }
-  
-  // Max value handling
-  &--max {
-    &::after {
-      content: '+';
-    }
-  }
-  
-  // Invisible
-  &--invisible {
-    display: none;
   }
 }
