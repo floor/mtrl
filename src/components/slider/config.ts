@@ -22,6 +22,7 @@ export const defaultConfig: SliderConfig = {
   snapToSteps: true,
   range: false,
   iconPosition: 'start',
+  labelPosition: 'start',  // Default to start position for labels
   valueFormatter: (value: number) => value.toString()
 };
 
@@ -87,8 +88,8 @@ export const getApiConfig = (comp) => {
       showCurrentValue: (show) => comp.appearance?.showCurrentValue?.(show)
     },
     text: {
-      setText: (text) => comp.text?.setText?.(text),
-      getText: () => comp.text?.getText?.() ?? ''
+      setText: (text) => comp.label?.setText?.(text),
+      getText: () => comp.label?.getText?.() ?? ''
     },
     icon: {
       setIcon: (html) => comp.icon?.setIcon?.(html),

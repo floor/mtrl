@@ -113,7 +113,7 @@ export const withStructure = (config: SliderConfig) => component => {
     container.appendChild(secondValueBubble);
   }
   
-  // Add container to the main slider
+  // Add component base class
   component.element.classList.add(component.getClass('slider'));
   
   // Accessibility enhancement: Container is not focusable
@@ -123,6 +123,23 @@ export const withStructure = (config: SliderConfig) => component => {
   component.element.setAttribute('role', 'none');
   component.element.setAttribute('aria-disabled', isDisabled ? 'true' : 'false');
   
+  // Check if there's an icon and ensure it's positioned properly
+  const iconElement = component.element.querySelector(`.${component.getClass('icon')}`);
+  if (iconElement && config.label) {
+    // Add class to help position the icon correctly
+    iconElement.classList.add(component.getClass('slider-icon'));
+    
+    // If icon should be positioned at start, ensure it's the first element
+    if (iconElement) {
+      // Set left spacing class
+      component.element.classList.add(component.getClass('slider--icon'));
+    } else {
+      // Set right spacing class
+      component.element.classList.add(component.getClass('slider--with-end-icon'));
+    }
+  }
+  
+  // Add the slider container
   component.element.appendChild(container);
   
   // Apply styling classes

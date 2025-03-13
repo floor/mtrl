@@ -18,35 +18,53 @@ $component: '#{base.$prefix}-slider';
   flex-direction: column;
   user-select: none;
   touch-action: none;
+  padding: 8px 0;
   
   // Container should not have a focus outline
   &:focus {
     outline: none;
   }
   
-  // Add styles for label and icon
+  // Label styles
   &-label {
     display: block;
-    font-size: 14px;
+    font-size: 18px;
+    font-weight: 400;
     color: t.color('on-surface');
-    margin-bottom: 8px;
+    margin-bottom: 4px;
   }
   
+  // Icon positioning
   &-icon {
-    display: block;
-    margin-bottom: 8px;
-    color: t.color('on-surface');
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: t.color('on-surface-variant');
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    top: 16px;
     
     svg {
       width: 24px;
       height: 24px;
     }
   }
+  
+  // When slider has icon at end position
+  &--icon {
+    .#{$component}-label {
+      margin-left: 48px;
+    }
+
+    .#{$component}-container {
+      margin-left: 48px;
+    }
+  }
 
   // Slider container - holds all the slider elements
   &-container {
     position: relative;
-    width: 100%;
     height: 40px;
     display: flex;
     align-items: center;
@@ -331,14 +349,14 @@ $component: '#{base.$prefix}-slider';
   // Tick marks
   &-tick {
     position: absolute;
-    width: 2px;
-    height: 2px;
+    width: 4px;
+    height: 4px;
     background-color: t.color('outline');
     border-radius: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
     pointer-events: none;
-    opacity: 1;
+    opacity: 0.8;
     
     &:last-child, &:first-child {
       display: none
@@ -360,6 +378,7 @@ $component: '#{base.$prefix}-slider';
     // Inactive tick (unfilled)
     &--inactive {
       background-color: t.color('primary');
+      opacity: 0.5;
 
       .#{$component}--secondary & {
         background-color: t.color('secondary');

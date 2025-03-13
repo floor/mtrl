@@ -31,9 +31,9 @@ const createSlider = (config: SliderConfig = {}): SliderComponent => {
       createBase,
       withEvents(),
       withElement(getElementConfig(baseConfig)),
+      withIcon(baseConfig),
+      withTextLabel(baseConfig),
       withStructure(baseConfig),
-      withTextLabel(baseConfig),  // Add label support
-      withIcon(baseConfig),       // Add icon support
       withDisabled(baseConfig),
       withAppearance(baseConfig),
       withSlider(baseConfig),
