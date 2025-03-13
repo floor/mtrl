@@ -58,7 +58,9 @@ export const withIcon = <T extends IconConfig>(config: T) =>
       icon.setIcon(config.icon);
     }
 
-    updateCircularStyle(component, config);
+    if (component.componentName === 'button') {
+      updateCircularStyle(component, config);
+    }
 
     return {
       ...component,
