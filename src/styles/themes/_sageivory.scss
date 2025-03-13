@@ -1,0 +1,125 @@
+// src/styles/themes/_sageivory.scss
+@use '../abstract/base' as *;
+@use 'base-theme' as *;
+
+@include create-theme('sageivory') {
+  // Key colors based on sage green and ivory combination
+  --#{$prefix}-sys-color-primary: #7D8C73; // Sage green as primary
+  --#{$prefix}-sys-color-primary-rgb: 125, 140, 115;
+  --#{$prefix}-sys-color-on-primary: #FFFFFF;
+  --#{$prefix}-sys-color-on-primary-rgb: 255, 255, 255;
+  --#{$prefix}-sys-color-primary-container: #DFE8D6;
+  --#{$prefix}-sys-color-primary-container-rgb: 223, 232, 214;
+  --#{$prefix}-sys-color-on-primary-container: #2C3526;
+  --#{$prefix}-sys-color-on-primary-container-rgb: 44, 53, 38;
+  
+  --#{$prefix}-sys-color-secondary: #F0ECD5; // Ivory as secondary
+  --#{$prefix}-sys-color-secondary-rgb: 240, 236, 213;
+  --#{$prefix}-sys-color-on-secondary: #4C4935;
+  --#{$prefix}-sys-color-on-secondary-rgb: 76, 73, 53;
+  --#{$prefix}-sys-color-secondary-container: #F8F7EB;
+  --#{$prefix}-sys-color-secondary-container-rgb: 248, 247, 235;
+  --#{$prefix}-sys-color-on-secondary-container: #504D3B;
+  --#{$prefix}-sys-color-on-secondary-container-rgb: 80, 77, 59;
+  
+  --#{$prefix}-sys-color-tertiary: #A4AE98; // Light sage as tertiary
+  --#{$prefix}-sys-color-tertiary-rgb: 164, 174, 152;
+  --#{$prefix}-sys-color-on-tertiary: #FFFFFF;
+  --#{$prefix}-sys-color-on-tertiary-rgb: 255, 255, 255;
+  --#{$prefix}-sys-color-tertiary-container: #E7EEE0;
+  --#{$prefix}-sys-color-tertiary-container-rgb: 231, 238, 224;
+  --#{$prefix}-sys-color-on-tertiary-container: #3C4633;
+  --#{$prefix}-sys-color-on-tertiary-container-rgb: 60, 70, 51;
+
+  // Neutral colors with warm undertones
+  --#{$prefix}-sys-color-surface: #FBFCF8;
+  --#{$prefix}-sys-color-surface-rgb: 251, 252, 248;
+  --#{$prefix}-sys-color-surface-dim: #EDEFEA;
+  --#{$prefix}-sys-color-surface-dim-rgb: 237, 239, 234;
+  --#{$prefix}-sys-color-surface-bright: #FBFCF8;
+  --#{$prefix}-sys-color-surface-bright-rgb: 251, 252, 248;
+  --#{$prefix}-sys-color-surface-container-lowest: #FFFFFF;
+  --#{$prefix}-sys-color-surface-container-lowest-rgb: 255, 255, 255;
+  --#{$prefix}-sys-color-surface-container-low: #F5F6F2;
+  --#{$prefix}-sys-color-surface-container-low-rgb: 245, 246, 242;
+  --#{$prefix}-sys-color-surface-container: #EFF0EC;
+  --#{$prefix}-sys-color-surface-container-rgb: 239, 240, 236;
+  --#{$prefix}-sys-color-surface-container-high: #E9EAE6;
+  --#{$prefix}-sys-color-surface-container-high-rgb: 233, 234, 230;
+  --#{$prefix}-sys-color-surface-container-highest: #E3E4E0;
+  --#{$prefix}-sys-color-surface-container-highest-rgb: 227, 228, 224;
+  
+  --#{$prefix}-sys-color-on-surface: #1A1C17;
+  --#{$prefix}-sys-color-on-surface-rgb: 26, 28, 23;
+  --#{$prefix}-sys-color-on-surface-variant: #454741;
+  --#{$prefix}-sys-color-on-surface-variant-rgb: 69, 71, 65;
+  
+  --#{$prefix}-sys-color-outline: #75776E;
+  --#{$prefix}-sys-color-outline-rgb: 117, 119, 110;
+  --#{$prefix}-sys-color-outline-variant: #C5C7BE;
+  --#{$prefix}-sys-color-outline-variant-rgb: 197, 199, 190;
+
+  // Include status colors for light theme
+  @include status-colors-light();
+
+  &[data-theme-mode="dark"] {
+    // Key colors for dark mode
+    --#{$prefix}-sys-color-primary: #C3CCBA; // Lighter sage
+    --#{$prefix}-sys-color-primary-rgb: 195, 204, 186;
+    --#{$prefix}-sys-color-on-primary: #3C4933;
+    --#{$prefix}-sys-color-on-primary-rgb: 60, 73, 51;
+    --#{$prefix}-sys-color-primary-container: #576148;
+    --#{$prefix}-sys-color-primary-container-rgb: 87, 97, 72;
+    --#{$prefix}-sys-color-on-primary-container: #DFE8D6;
+    --#{$prefix}-sys-color-on-primary-container-rgb: 223, 232, 214;
+    
+    --#{$prefix}-sys-color-secondary: #EEEBDC; // Lighter ivory
+    --#{$prefix}-sys-color-secondary-rgb: 238, 235, 220;
+    --#{$prefix}-sys-color-on-secondary: #4C4935;
+    --#{$prefix}-sys-color-on-secondary-rgb: 76, 73, 53;
+    --#{$prefix}-sys-color-secondary-container: #65624C;
+    --#{$prefix}-sys-color-secondary-container-rgb: 101, 98, 76;
+    --#{$prefix}-sys-color-on-secondary-container: #F8F7EB;
+    --#{$prefix}-sys-color-on-secondary-container-rgb: 248, 247, 235;
+    
+    --#{$prefix}-sys-color-tertiary: #CBD4C0; // Lighter light sage
+    --#{$prefix}-sys-color-tertiary-rgb: 203, 212, 192;
+    --#{$prefix}-sys-color-on-tertiary: #3E4934;
+    --#{$prefix}-sys-color-on-tertiary-rgb: 62, 73, 52;
+    --#{$prefix}-sys-color-tertiary-container: #57624A;
+    --#{$prefix}-sys-color-tertiary-container-rgb: 87, 98, 74;
+    --#{$prefix}-sys-color-on-tertiary-container: #E7EEE0;
+    --#{$prefix}-sys-color-on-tertiary-container-rgb: 231, 238, 224;
+
+    // Neutral colors for dark mode
+    --#{$prefix}-sys-color-surface: #1A1C17;
+    --#{$prefix}-sys-color-surface-rgb: 26, 28, 23;
+    --#{$prefix}-sys-color-surface-dim: #12140F;
+    --#{$prefix}-sys-color-surface-dim-rgb: 18, 20, 15;
+    --#{$prefix}-sys-color-surface-bright: #363831;
+    --#{$prefix}-sys-color-surface-bright-rgb: 54, 56, 49;
+    --#{$prefix}-sys-color-surface-container-lowest: #0F110C;
+    --#{$prefix}-sys-color-surface-container-lowest-rgb: 15, 17, 12;
+    --#{$prefix}-sys-color-surface-container-low: #1A1C17;
+    --#{$prefix}-sys-color-surface-container-low-rgb: 26, 28, 23;
+    --#{$prefix}-sys-color-surface-container: #1E201B;
+    --#{$prefix}-sys-color-surface-container-rgb: 30, 32, 27;
+    --#{$prefix}-sys-color-surface-container-high: #292B25;
+    --#{$prefix}-sys-color-surface-container-high-rgb: 41, 43, 37;
+    --#{$prefix}-sys-color-surface-container-highest: #34362F;
+    --#{$prefix}-sys-color-surface-container-highest-rgb: 52, 54, 47;
+    
+    --#{$prefix}-sys-color-on-surface: #E2E3DD;
+    --#{$prefix}-sys-color-on-surface-rgb: 226, 227, 221;
+    --#{$prefix}-sys-color-on-surface-variant: #C5C7BE;
+    --#{$prefix}-sys-color-on-surface-variant-rgb: 197, 199, 190;
+    
+    --#{$prefix}-sys-color-outline: #8F9187;
+    --#{$prefix}-sys-color-outline-rgb: 143, 145, 135;
+    --#{$prefix}-sys-color-outline-variant: #454741;
+    --#{$prefix}-sys-color-outline-variant-rgb: 69, 71, 65;
+
+    // Include status colors for dark theme
+    @include status-colors-dark();
+  }
+}
