@@ -12,6 +12,11 @@ export interface TextLabelConfig {
   label?: string;
   
   /**
+   * Label position ('start' or 'end')
+   */
+  labelPosition?: 'start' | 'end';
+  
+  /**
    * CSS class prefix
    */
   prefix?: string;
@@ -69,8 +74,27 @@ export const withTextLabel = <T extends TextLabelConfig>(config: T = {} as T) =>
     labelElement.className = `${config.prefix}-${config.componentName}-label`;
     labelElement.textContent = config.label;
 
-    // Insert label after input for proper z-index stacking
-    component.element.appendChild(labelElement);
+    // Position the label based on labelPosition (default to 'start')
+    const position = config.labelPosition || 'start';
+    
+    if (position === 'start') {
+      // Insert label as the first child
+      if (component.element.firstChild) {
+        component.element.insertBefore(labelElement, component.element.firstChild);
+      } else {
+        component.element.appendChild(labelElement);
+      }
+    } else {
+      // Insert label at the end (default behavior)
+      component.element.appendChild(labelElement);
+    }
+
+    console.log('componentName', component.componentName)
+    console.log('position', position)
+
+    if (position && component.componentName !== 'slider') {
+      component.element.classList.add(`${config.prefix}-${config.componentName}--label-${position}`);
+    }
 
     const label: LabelManager = {
       setText(text: string) {
