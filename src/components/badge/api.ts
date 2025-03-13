@@ -1,6 +1,11 @@
 // src/components/badge/api.ts
 import { BadgeComponent } from './types';
-import { BADGE_VARIANTS, BADGE_SIZES, BADGE_COLORS, BADGE_POSITIONS } from './constants';
+import { 
+  BADGE_VARIANTS,
+  BADGE_COLORS, 
+  BADGE_POSITIONS 
+} from './constants';
+import { formatBadgeLabel } from './config';
 
 interface ApiOptions {
   visibility: {
@@ -19,7 +24,8 @@ interface ComponentWithElements {
   wrapper?: HTMLElement;
   config: {
     max?: number;
-    content?: string | number;
+    label?: string | number;
+    variant?: string;
   };
   getClass: (name: string) => string;
   addClass: (...classes: string[]) => any;
@@ -39,27 +45,33 @@ export const withAPI = ({ visibility, lifecycle }: ApiOptions) =>
     ...component as any,
     
     /**
-     * Sets the badge content
-     * @param {string|number} content - Content to display in the badge
+     * Sets the badge label
+     * @param {string|number} label - Label to display in the badge
      * @returns {BadgeComponent} Badge component instance for chaining
      */
-    setContent(content: string | number) {
-      const stringContent = String(content);
-      component.config.content = content;
+    setLabel(label: string | number) {
+      component.config.label = label;
       
-      // If max is defined and content is a number greater than max, show max+
-      if (component.config.max !== undefined && 
-          typeof content === 'number' && 
-          content > component.config.max) {
-        component.element.textContent = String(component.config.max);
-        component.element.classList.add(`${component.getClass('badge')}--max`);
-      } else {
-        component.element.textContent = stringContent;
-        component.element.classList.remove(`${component.getClass('badge')}--max`);
+      // Small badges (dot variant) don't have text
+      if (component.config.variant === BADGE_VARIANTS.SMALL) {
+        component.element.textContent = '';
+        return this;
       }
       
-      // Toggle the dot variant based on whether content is empty
-      if (stringContent === '' || stringContent === '0') {
+      // Format the label
+      const formattedLabel = formatBadgeLabel(label, component.config.max);
+      component.element.textContent = formattedLabel;
+      
+      // Add overflow class if label was truncated
+      component.element.classList.remove(`${component.getClass('badge')}--overflow`);
+      if (typeof label === 'number' && 
+          component.config.max !== undefined && 
+          label > component.config.max) {
+        component.element.classList.add(`${component.getClass('badge')}--overflow`);
+      }
+      
+      // Toggle visibility based on whether label is empty
+      if (formattedLabel === '' || formattedLabel === '0') {
         this.hide();
       } else {
         this.show();
@@ -69,10 +81,10 @@ export const withAPI = ({ visibility, lifecycle }: ApiOptions) =>
     },
     
     /**
-     * Gets the badge content
-     * @returns {string} Current badge content
+     * Gets the badge label
+     * @returns {string} Current badge label
      */
-    getContent() {
+    getLabel() {
       return component.element.textContent || '';
     },
     
@@ -114,19 +126,16 @@ export const withAPI = ({ visibility, lifecycle }: ApiOptions) =>
     
     /**
      * Sets maximum value (after which badge shows max+)
+     * 
      * @param {number} max - Maximum value to display
      * @returns {BadgeComponent} Badge component instance for chaining
      */
     setMax(max: number) {
       component.config.max = max;
       
-      // Apply max formatting if current content exceeds max
-      if (typeof component.config.content === 'number' && 
-          component.config.content > max) {
-        component.element.textContent = String(max);
-        component.element.classList.add(`${component.getClass('badge')}--max`);
-      } else {
-        component.element.classList.remove(`${component.getClass('badge')}--max`);
+      // Apply max formatting if current label exceeds max
+      if (component.config.label !== undefined) {
+        this.setLabel(component.config.label);
       }
       
       return this;
@@ -137,7 +146,7 @@ export const withAPI = ({ visibility, lifecycle }: ApiOptions) =>
      * @param {string} color - Color variant to apply
      * @returns {BadgeComponent} Badge component instance for chaining
      */
-    setColor(color: keyof typeof BADGE_COLORS | BADGE_COLORS) {
+    setColor(color: keyof typeof BADGE_COLORS | (typeof BADGE_COLORS)[keyof typeof BADGE_COLORS]) {
       // Remove existing color classes
       Object.values(BADGE_COLORS).forEach(colorName => {
         component.element.classList.remove(`${component.getClass('badge')}--${colorName}`);
@@ -150,44 +159,32 @@ export const withAPI = ({ visibility, lifecycle }: ApiOptions) =>
     
     /**
      * Sets badge variant
-     * @param {string} variant - Variant to apply
+     * @param {string} variant - Variant to apply (small or large)
      * @returns {BadgeComponent} Badge component instance for chaining
      */
-    setVariant(variant: keyof typeof BADGE_VARIANTS | BADGE_VARIANTS) {
+    setVariant(variant: keyof typeof BADGE_VARIANTS | (typeof BADGE_VARIANTS)[keyof typeof BADGE_VARIANTS]) {
       // Remove existing variant classes
       Object.values(BADGE_VARIANTS).forEach(variantName => {
         component.element.classList.remove(`${component.getClass('badge')}--${variantName}`);
       });
       
-      // Add new variant class if not standard
-      if (variant !== BADGE_VARIANTS.STANDARD) {
-        component.element.classList.add(`${component.getClass('badge')}--${variant}`);
-      }
+      // Add new variant class
+      component.element.classList.add(`${component.getClass('badge')}--${variant}`);
       
-      // Clear content if dot variant
-      if (variant === BADGE_VARIANTS.DOT) {
+      // Update component config
+      component.config.variant = variant;
+      
+      // Update accessibility attributes
+      if (variant === BADGE_VARIANTS.SMALL) {
         component.element.textContent = '';
-      } else if (component.config.content !== undefined) {
-        this.setContent(component.config.content);
-      }
-      
-      return this;
-    },
-    
-    /**
-     * Sets badge size
-     * @param {string} size - Size variant to apply
-     * @returns {BadgeComponent} Badge component instance for chaining
-     */
-    setSize(size: keyof typeof BADGE_SIZES | BADGE_SIZES) {
-      // Remove existing size classes
-      Object.values(BADGE_SIZES).forEach(sizeName => {
-        component.element.classList.remove(`${component.getClass('badge')}--${sizeName}`);
-      });
-      
-      // Add new size class if not medium (default)
-      if (size !== BADGE_SIZES.MEDIUM) {
-        component.element.classList.add(`${component.getClass('badge')}--${size}`);
+        component.element.setAttribute('aria-hidden', 'true');
+      } else {
+        component.element.setAttribute('role', 'status');
+        
+        // Restore label for large badges
+        if (component.config.label !== undefined) {
+          this.setLabel(component.config.label);
+        }
       }
       
       return this;
@@ -198,7 +195,7 @@ export const withAPI = ({ visibility, lifecycle }: ApiOptions) =>
      * @param {string} position - Position variant to apply
      * @returns {BadgeComponent} Badge component instance for chaining
      */
-    setPosition(position: keyof typeof BADGE_POSITIONS | BADGE_POSITIONS) {
+    setPosition(position: keyof typeof BADGE_POSITIONS | (typeof BADGE_POSITIONS)[keyof typeof BADGE_POSITIONS]) {
       // Remove existing position classes
       Object.values(BADGE_POSITIONS).forEach(posName => {
         component.element.classList.remove(`${component.getClass('badge')}--${posName}`);
@@ -224,6 +221,7 @@ export const withAPI = ({ visibility, lifecycle }: ApiOptions) =>
       // Create a new wrapper to hold the target and badge
       const wrapper = document.createElement('div');
       wrapper.classList.add(component.getClass('badge-wrapper'));
+      wrapper.style.position = 'relative';
       
       // Replace the target with the wrapper
       const parent = target.parentNode;

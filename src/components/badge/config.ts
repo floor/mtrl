@@ -1,23 +1,25 @@
 // src/components/badge/config.ts
 import { 
   createComponentConfig, 
-  createElementConfig,
-  BaseComponentConfig 
+  createElementConfig
 } from '../../core/config/component-config';
 import { BadgeConfig } from './types';
-import { BADGE_VARIANTS, BADGE_SIZES, BADGE_COLORS, BADGE_POSITIONS } from './constants';
+import { 
+  BADGE_VARIANTS, 
+  BADGE_COLORS, 
+  BADGE_POSITIONS, 
+  BADGE_MAX_CHARACTERS 
+} from './constants';
 
 /**
  * Default configuration for the Badge component
  */
 export const defaultConfig: BadgeConfig = {
-  variant: BADGE_VARIANTS.STANDARD,
-  size: BADGE_SIZES.MEDIUM,
+  variant: BADGE_VARIANTS.LARGE,
   color: BADGE_COLORS.ERROR,
   position: BADGE_POSITIONS.TOP_RIGHT,
-  content: '',
-  visible: true,
-  standalone: false
+  label: '',
+  visible: true
 };
 
 /**
@@ -37,14 +39,17 @@ export const getElementConfig = (config: BadgeConfig) => {
   // Create the attributes object
   const attrs: Record<string, any> = {};
   
-  // Convert numeric content to string if needed
-  const content = config.content !== undefined ? String(config.content) : '';
+  // Convert numeric label to string if needed
+  const label = config.label !== undefined ? String(config.label) : '';
+  
+  // Small badges (dot variant) don't have text
+  const text = config.variant === BADGE_VARIANTS.SMALL ? '' : label;
   
   return createElementConfig(config, {
     tag: 'span',
     attrs,
     className: config.class,
-    content: config.variant === BADGE_VARIANTS.DOT ? '' : content
+    text
   });
 };
 
@@ -64,5 +69,48 @@ export const getApiConfig = (comp) => ({
     destroy: () => comp.lifecycle.destroy()
   }
 });
+
+/**
+ * Format a label
+ * - Max 4 characters including "+" for overflow
+ * - Add "+" for numeric values exceeding max
+ * 
+ * @param {string|number} label - Original label
+ * @param {number} max - Maximum value before using "+"
+ * @returns {string} Formatted label
+ */
+export const formatBadgeLabel = (label: string | number, max?: number): string => {
+  // Handle empty or undefined labels
+  if (label === undefined || label === null || label === '') {
+    return '';
+  }
+  
+  let formattedLabel = String(label);
+  
+  // Apply max value formatting
+  if (max !== undefined && typeof label === 'number' && label > max) {
+    formattedLabel = `${max}+`;
+  }
+  
+  // Ensure label doesn't exceed max characters
+  if (formattedLabel.length > BADGE_MAX_CHARACTERS) {
+    // Try to preserve as much information as possible
+    // For large numbers, use abbreviated format with "+"
+    const numericValue = Number(label);
+    if (!isNaN(numericValue)) {
+      if (numericValue >= 1000) {
+        formattedLabel = '999+';
+      } else {
+        // For numbers under 1000 but still too long, truncate
+        formattedLabel = formattedLabel.substring(0, BADGE_MAX_CHARACTERS - 1) + '+';
+      }
+    } else {
+      // For non-numeric values, simply truncate
+      formattedLabel = formattedLabel.substring(0, BADGE_MAX_CHARACTERS);
+    }
+  }
+  
+  return formattedLabel;
+};
 
 export default defaultConfig;

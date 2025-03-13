@@ -9,7 +9,6 @@ import {
   withVisibility,
   withVariant,
   withColor, 
-  withSize,
   withPosition,
   withMax,
   withAttachment
@@ -22,18 +21,33 @@ import { createBaseConfig, getElementConfig, getApiConfig } from './config';
  * Creates a new Badge component
  * @param {BadgeConfig} config - Badge configuration object
  * @returns {BadgeComponent} Badge component instance
+ * 
+ * @example
+ * // Create a small dot badge
+ * const notificationBadge = createBadge({ 
+ *   variant: BADGE_VARIANTS.SMALL,
+ *   target: document.querySelector('.icon-button')
+ * });
+ * 
+ * @example
+ * // Create a large badge with a count
+ * const countBadge = createBadge({
+ *   variant: BADGE_VARIANTS.LARGE,
+ *   label: 5,
+ *   target: document.querySelector('.notification-icon')
+ * });
  */
 const createBadge = (config: BadgeConfig = {}): BadgeComponent => {
   const baseConfig = createBaseConfig(config);
 
   try {
+    // Compose the badge component from multiple feature enhancers
     const badge = pipe(
       createBase,
       withEvents(),
       withElement(getElementConfig(baseConfig)),
       withVariant(baseConfig),
       withColor(baseConfig),
-      withSize(baseConfig),
       withPosition(baseConfig),
       withMax(baseConfig),
       withVisibility(),

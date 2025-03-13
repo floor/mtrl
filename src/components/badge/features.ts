@@ -1,6 +1,11 @@
 // src/components/badge/features.ts
-import { BADGE_VARIANTS, BADGE_SIZES, BADGE_COLORS, BADGE_POSITIONS } from './constants';
+import { 
+  BADGE_VARIANTS, 
+  BADGE_COLORS, 
+  BADGE_POSITIONS 
+} from './constants';
 import { BadgeConfig } from './types';
+import { formatBadgeLabel } from './config';
 
 /**
  * Higher-order function that adds visibility control features to a component
@@ -64,16 +69,18 @@ export const withVisibility = () => component => {
  */
 export const withVariant = (config: BadgeConfig) => component => {
   // Get variant from config with fallback to default
-  const variant = config.variant || BADGE_VARIANTS.STANDARD;
+  const variant = config.variant || BADGE_VARIANTS.LARGE;
   
-  // Apply variant class if not standard variant
-  if (variant !== BADGE_VARIANTS.STANDARD) {
-    component.element.classList.add(`${component.getClass('badge')}--${variant}`);
-    
-    // Clear content if dot variant
-    if (variant === BADGE_VARIANTS.DOT) {
-      component.element.textContent = '';
-    }
+  // Apply variant class
+  component.element.classList.add(`${component.getClass('badge')}--${variant}`);
+  
+  // Small badges (dot variant) don't have text
+  if (variant === BADGE_VARIANTS.SMALL) {
+    component.element.textContent = '';
+    component.element.setAttribute('aria-hidden', 'true');
+  } else {
+    // Add accessibility for large badges
+    component.element.setAttribute('role', 'status');
   }
   
   return component;
@@ -95,39 +102,21 @@ export const withColor = (config: BadgeConfig) => component => {
 };
 
 /**
- * Higher-order function that adds size features to a badge component
- * @param {BadgeConfig} config - Badge configuration
- * @returns {Function} Component enhancer with size features
- */
-export const withSize = (config: BadgeConfig) => component => {
-  // Get size from config with fallback to default
-  const size = config.size || BADGE_SIZES.MEDIUM;
-  
-  // Apply size class if not medium (default)
-  if (size !== BADGE_SIZES.MEDIUM) {
-    component.element.classList.add(`${component.getClass('badge')}--${size}`);
-  }
-  
-  return component;
-};
-
-/**
  * Higher-order function that adds positioning features to a badge component
  * @param {BadgeConfig} config - Badge configuration
  * @returns {Function} Component enhancer with positioning features
  */
 export const withPosition = (config: BadgeConfig) => component => {
-  // Skip for standalone badges
-  if (config.standalone) {
-    return component;
-  }
-  
   // Get position from config with fallback to default
   const position = config.position || BADGE_POSITIONS.TOP_RIGHT;
   
-  // Apply position class and positioned class
+  // Apply position class
   component.element.classList.add(`${component.getClass('badge')}--${position}`);
-  component.element.classList.add(`${component.getClass('badge')}--positioned`);
+  
+  // If there's a target, add positioned class
+  if (config.target) {
+    component.element.classList.add(`${component.getClass('badge')}--positioned`);
+  }
   
   return component;
 };
@@ -138,8 +127,8 @@ export const withPosition = (config: BadgeConfig) => component => {
  * @returns {Function} Component enhancer with max value features
  */
 export const withMax = (config: BadgeConfig) => component => {
-  // Skip if no max is defined
-  if (config.max === undefined) {
+  // Skip if no max is defined or for small badges
+  if (config.max === undefined || config.variant === BADGE_VARIANTS.SMALL) {
     return component;
   }
   
@@ -147,9 +136,14 @@ export const withMax = (config: BadgeConfig) => component => {
   component.config.max = config.max;
   
   // Apply max formatting if needed
-  if (typeof config.content === 'number' && config.content > config.max) {
-    component.element.textContent = String(config.max);
-    component.element.classList.add(`${component.getClass('badge')}--max`);
+  if (config.label !== undefined && config.label !== '') {
+    const formattedLabel = formatBadgeLabel(config.label, config.max);
+    component.element.textContent = formattedLabel;
+    
+    // Add overflow class if label was truncated
+    if (typeof config.label === 'number' && config.label > config.max) {
+      component.element.classList.add(`${component.getClass('badge')}--overflow`);
+    }
   }
   
   return component;
@@ -161,14 +155,17 @@ export const withMax = (config: BadgeConfig) => component => {
  * @returns {Function} Component enhancer with attachment features
  */
 export const withAttachment = (config: BadgeConfig) => component => {
-  // Skip for standalone badges or if no target is provided
-  if (config.standalone || !config.target) {
+  // Skip if no target is provided
+  if (!config.target) {
     return component;
   }
   
   // Create wrapper to hold the target and badge
   const wrapper = document.createElement('div');
   wrapper.classList.add(component.getClass('badge-wrapper'));
+  
+  // Make sure positioning context is correct
+  wrapper.style.position = 'relative';
   
   // Replace the target with the wrapper
   const parent = config.target.parentNode;
