@@ -47,7 +47,7 @@ export const withSlider = (config: SliderConfig) => component => {
     step: config.step !== undefined ? config.step : 1,
     dragging: false,
     activeBubble: null,
-    activeThumb: null,
+    activeHandle: null,
     ticks: [],
     tickLabels: [],
     component
@@ -79,7 +79,7 @@ export const withSlider = (config: SliderConfig) => component => {
       return;
     }
     
-    const { handle, secondThumb } = component.structure;
+    const { handle, secondHandle } = component.structure;
     
     if (!handle) {
       console.warn('Cannot initialize slider: missing handle');
@@ -90,10 +90,10 @@ export const withSlider = (config: SliderConfig) => component => {
     handle.setAttribute('aria-valuemax', String(state.max));
     handle.setAttribute('aria-valuenow', String(state.value));
     
-    if (config.range && secondThumb && state.secondValue !== null) {
-      secondThumb.setAttribute('aria-valuemin', String(state.min));
-      secondThumb.setAttribute('aria-valuemax', String(state.max));
-      secondThumb.setAttribute('aria-valuenow', String(state.secondValue));
+    if (config.range && secondHandle && state.secondValue !== null) {
+      secondHandle.setAttribute('aria-valuemin', String(state.min));
+      secondHandle.setAttribute('aria-valuemax', String(state.max));
+      secondHandle.setAttribute('aria-valuenow', String(state.secondValue));
     }
     
     // Setup initial positions
@@ -207,8 +207,8 @@ export const withSlider = (config: SliderConfig) => component => {
         component.element.setAttribute('aria-valuemin', String(min));
         component.structure.handle.setAttribute('aria-valuemin', String(min));
         
-        if (config.range && component.structure.secondThumb) {
-          component.structure.secondThumb.setAttribute('aria-valuemin', String(min));
+        if (config.range && component.structure.secondHandle) {
+          component.structure.secondHandle.setAttribute('aria-valuemin', String(min));
         }
         
         // Clamp values to new min
@@ -250,8 +250,8 @@ export const withSlider = (config: SliderConfig) => component => {
         component.element.setAttribute('aria-valuemax', String(max));
         component.structure.handle.setAttribute('aria-valuemax', String(max));
         
-        if (config.range && component.structure.secondThumb) {
-          component.structure.secondThumb.setAttribute('aria-valuemax', String(max));
+        if (config.range && component.structure.secondHandle) {
+          component.structure.secondHandle.setAttribute('aria-valuemax', String(max));
         }
         
         // Clamp values to new max

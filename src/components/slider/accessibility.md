@@ -8,7 +8,7 @@ Based on the provided accessibility requirements, the slider component has been 
 
 ### Focus and Keyboard Navigation
 
-- **Direct Thumb Focus**: The initial focus now lands directly on the handle (not the container)
+- **Direct Handle Focus**: The initial focus now lands directly on the handle (not the container)
 - **Visual Feedback**: Added a clear outline on focus to provide visual cues for keyboard users
 - **Arrow Key Navigation**:
   - Left/Right arrows change the value by one step
@@ -19,7 +19,7 @@ Based on the provided accessibility requirements, the slider component has been 
 
 ### Visual Feedback During Interaction
 
-- **Thumb Shrinking**: The handle width shrinks slightly during interaction to provide feedback
+- **Handle Shrinking**: The handle width shrinks slightly during interaction to provide feedback
 - **Value Display**:
   - Value appears during interaction (touch, drag, mouse click, keyboard navigation)
   - Value remains visible briefly after interaction ends (1.5 seconds)

@@ -13,8 +13,8 @@ export const createUiHelpers = (config: SliderConfig, state) => {
   if (!state.component?.structure) {
     console.error('Cannot create UI helpers: component structure is missing');
     return Object.fromEntries(['getPercentage', 'getValueFromPosition', 'roundToStep', 
-      'clamp', 'setThumbPosition', 'updateActiveTrack', 'updateStartTrack', 
-      'updateRemainingTrack', 'updateThumbPositions', 'updateValueBubbles', 
+      'clamp', 'setHandlePosition', 'updateActiveTrack', 'updateStartTrack', 
+      'updateRemainingTrack', 'updateHandlePositions', 'updateValueBubbles', 
       'showValueBubble', 'generateTicks', 'updateTicks', 'updateUi']
       .map(method => [method, method === 'clamp' ? (v, min, max) => Math.min(Math.max(v, min), max) : 
                               method === 'roundToStep' ? v => v : 
@@ -31,7 +31,7 @@ export const createUiHelpers = (config: SliderConfig, state) => {
     remainingTrack = null, 
     handle = null, 
     valueBubble = null, 
-    secondThumb = null, 
+    secondHandle = null, 
     secondValueBubble = null, 
     ticksContainer = null
   } = state.component?.structure || {};
@@ -120,7 +120,7 @@ export const createUiHelpers = (config: SliderConfig, state) => {
   /**
    * Sets handle position based on a value percentage with proper edge mapping
    */
-  const setThumbPosition = (handleElement, bubbleElement, valuePercent) => {
+  const setHandlePosition = (handleElement, bubbleElement, valuePercent) => {
     if (!handleElement || !container) return;
     
     const dims = getTrackDimensions();
@@ -197,7 +197,7 @@ export const createUiHelpers = (config: SliderConfig, state) => {
       const hideThreshold = (handleSize / trackSize) * 100;
       
       if (valueDiffPercent <= hideThreshold) {
-        // Thumbs are too close together, hide the active track
+        // Handles are too close together, hide the active track
         activeTrack.style.display = 'none';
       } else {
         // Normal display of active track
@@ -252,23 +252,23 @@ export const createUiHelpers = (config: SliderConfig, state) => {
   /**
    * Updates handle positions
    */
-  const updateThumbPositions = () => {
+  const updateHandlePositions = () => {
     if (!handle || !container) return;
     
     // Update main handle
     const percent = getPercentage(state.value);
-    setThumbPosition(handle, valueBubble, percent);
+    setHandlePosition(handle, valueBubble, percent);
     
     // Update second handle if range slider
-    if (config.range && secondThumb && secondValueBubble && state.secondValue !== null) {
+    if (config.range && secondHandle && secondValueBubble && state.secondValue !== null) {
       const secondPercent = getPercentage(state.secondValue);
-      setThumbPosition(secondThumb, secondValueBubble, secondPercent);
+      setHandlePosition(secondHandle, secondValueBubble, secondPercent);
     }
     
     // Update ARIA attributes
     handle.setAttribute('aria-valuenow', String(state.value));
-    if (config.range && secondThumb && state.secondValue !== null) {
-      secondThumb.setAttribute('aria-valuenow', String(state.secondValue));
+    if (config.range && secondHandle && state.secondValue !== null) {
+      secondHandle.setAttribute('aria-valuenow', String(state.secondValue));
     }
   };
   
@@ -426,7 +426,7 @@ export const createUiHelpers = (config: SliderConfig, state) => {
    * Updates all UI elements
    */
   const updateUi = () => {
-    updateThumbPositions();
+    updateHandlePositions();
     updateStartTrack();
     updateActiveTrack();
     updateRemainingTrack();
@@ -440,11 +440,11 @@ export const createUiHelpers = (config: SliderConfig, state) => {
     getValueFromPosition,
     roundToStep,
     clamp,
-    setThumbPosition,
+    setHandlePosition,
     updateActiveTrack,
     updateStartTrack,
     updateRemainingTrack,
-    updateThumbPositions,
+    updateHandlePositions,
     updateValueBubbles,
     showValueBubble,
     generateTicks,

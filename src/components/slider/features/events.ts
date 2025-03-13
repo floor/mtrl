@@ -56,7 +56,7 @@ export const createEventHelpers = (state) => {
       container = null,
       track = null, 
       handle = null, 
-      secondThumb = null 
+      secondHandle = null 
     } = state.component.structure;
     
     if (!container || !track || !handle) {
@@ -65,7 +65,7 @@ export const createEventHelpers = (state) => {
     }
     
     const {
-      handleThumbMouseDown,
+      handleHandleMouseDown,
       handleTrackMouseDown
     } = interactionHandlers;
     
@@ -79,20 +79,20 @@ export const createEventHelpers = (state) => {
     container.addEventListener('mousedown', handleTrackMouseDown);
     container.addEventListener('touchstart', handleTrackMouseDown, { passive: false });
     
-    // Thumb events
-    handle.addEventListener('mousedown', (e) => handleThumbMouseDown(e, false));
-    handle.addEventListener('touchstart', (e) => handleThumbMouseDown(e, false), { passive: false });
+    // Handle events
+    handle.addEventListener('mousedown', (e) => handleHandleMouseDown(e, false));
+    handle.addEventListener('touchstart', (e) => handleHandleMouseDown(e, false), { passive: false });
     handle.addEventListener('keydown', (e) => handleKeyDown(e, false));
     handle.addEventListener('focus', (e) => handleFocus(e, false));
     handle.addEventListener('blur', (e) => handleBlur(e, false));
     
     // Second handle events for range slider
-    if (state.component.config && state.component.config.range && secondThumb) {
-      secondThumb.addEventListener('mousedown', (e) => handleThumbMouseDown(e, true));
-      secondThumb.addEventListener('touchstart', (e) => handleThumbMouseDown(e, true), { passive: false });
-      secondThumb.addEventListener('keydown', (e) => handleKeyDown(e, true));
-      secondThumb.addEventListener('focus', (e) => handleFocus(e, true));
-      secondThumb.addEventListener('blur', (e) => handleBlur(e, true));
+    if (state.component.config && state.component.config.range && secondHandle) {
+      secondHandle.addEventListener('mousedown', (e) => handleHandleMouseDown(e, true));
+      secondHandle.addEventListener('touchstart', (e) => handleHandleMouseDown(e, true), { passive: false });
+      secondHandle.addEventListener('keydown', (e) => handleKeyDown(e, true));
+      secondHandle.addEventListener('focus', (e) => handleFocus(e, true));
+      secondHandle.addEventListener('blur', (e) => handleBlur(e, true));
     }
   };
   
@@ -111,7 +111,7 @@ export const createEventHelpers = (state) => {
       container = null,
       track = null, 
       handle = null, 
-      secondThumb = null 
+      secondHandle = null 
     } = state.component.structure;
     
     if (!container || !track || !handle) {
@@ -119,7 +119,7 @@ export const createEventHelpers = (state) => {
     }
     
     const {
-      handleThumbMouseDown,
+      handleHandleMouseDown,
       handleTrackMouseDown,
       handleMouseMove,
       handleMouseUp
@@ -135,20 +135,20 @@ export const createEventHelpers = (state) => {
     container.removeEventListener('mousedown', handleTrackMouseDown);
     container.removeEventListener('touchstart', handleTrackMouseDown);
     
-    // Thumb events
-    handle.removeEventListener('mousedown', (e) => handleThumbMouseDown(e, false));
-    handle.removeEventListener('touchstart', (e) => handleThumbMouseDown(e, false));
+    // Handle events
+    handle.removeEventListener('mousedown', (e) => handleHandleMouseDown(e, false));
+    handle.removeEventListener('touchstart', (e) => handleHandleMouseDown(e, false));
     handle.removeEventListener('keydown', (e) => handleKeyDown(e, false));
     handle.removeEventListener('focus', (e) => handleFocus(e, false));
     handle.removeEventListener('blur', (e) => handleBlur(e, false));
     
     // Second handle events
-    if (state.component.config && state.component.config.range && secondThumb) {
-      secondThumb.removeEventListener('mousedown', (e) => handleThumbMouseDown(e, true));
-      secondThumb.removeEventListener('touchstart', (e) => handleThumbMouseDown(e, true));
-      secondThumb.removeEventListener('keydown', (e) => handleKeyDown(e, true));
-      secondThumb.removeEventListener('focus', (e) => handleFocus(e, true));
-      secondThumb.removeEventListener('blur', (e) => handleBlur(e, true));
+    if (state.component.config && state.component.config.range && secondHandle) {
+      secondHandle.removeEventListener('mousedown', (e) => handleHandleMouseDown(e, true));
+      secondHandle.removeEventListener('touchstart', (e) => handleHandleMouseDown(e, true));
+      secondHandle.removeEventListener('keydown', (e) => handleKeyDown(e, true));
+      secondHandle.removeEventListener('focus', (e) => handleFocus(e, true));
+      secondHandle.removeEventListener('blur', (e) => handleBlur(e, true));
     }
     
     // Global events
