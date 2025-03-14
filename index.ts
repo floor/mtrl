@@ -25,6 +25,7 @@ import {
   createSnackbar,
   createTabs,
   createTextfield,
+  createTimePicker,
   createTooltip,
   createTopAppBar,
   createSwitch
@@ -56,6 +57,7 @@ export {
   createSnackbar,
   createTabs,
   createTextfield,
+  createTimePicker,
   createTooltip,
   createTopAppBar,
   createSwitch
