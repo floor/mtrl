@@ -26,7 +26,7 @@ $component: '#{base.$prefix}-ripple';
     // Make the ripple more visible with these changes:
     background-color: currentColor;
     opacity: 0;  // Start with 0 opacity
-    transform: scale(0.5);  // Start slightly larger for better visibility
+    transform: scale(0);  // Start slightly larger for better visibility
     pointer-events: none;
     will-change: transform, opacity;
     
@@ -37,7 +37,7 @@ $component: '#{base.$prefix}-ripple';
     // Active ripple
     &.active {
       transform: scale(1);
-      opacity: 0.15;  // Increase opacity for better visibility
+      opacity: v.state('hover-state-layer-opacity');
     }
     
     &.fade-out {
