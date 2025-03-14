@@ -1,0 +1,117 @@
+// src/components/segmented-button/_styles.scss
+@use '../../styles/abstract/base' as base;
+@use '../../styles/abstract/variables' as v;
+@use '../../styles/abstract/functions' as f;
+@use '../../styles/abstract/mixins' as m;
+@use '../../styles/abstract/theme' as t;
+
+$component: '#{base.$prefix}-segmented-button';
+
+.#{$component} {
+  // Base styles
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  border-radius: v.shape('full');
+  border: 1px solid t.color('outline');
+  background-color: transparent;
+  overflow: hidden;
+  
+  // Disabled state
+  &--disabled {
+    opacity: 0.38;
+    pointer-events: none;
+  }
+
+  // Segment container
+  &-segment {
+    // Base styles
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    min-width: 48px;
+    padding: 0 12px;
+    border: none;
+    background-color: transparent;
+    color: t.color('on-surface');
+    cursor: pointer;
+    user-select: none;
+    
+    // Fix segmented borders
+    &:not(:first-child) {
+      border-left: 1px solid t.color('outline');
+    }
+    
+    // Typography
+    @include m.typography('label-large');
+    
+    // Transition
+    @include m.motion-transition(
+      background-color, 
+      color
+    );
+    
+    // States
+    &:focus {
+      outline: none;
+    }
+    
+    &:focus-visible {
+      outline: 2px solid t.color('outline');
+      outline-offset: -2px;
+    }
+    
+    &:hover:not(.#{$component}-segment--disabled) {
+      background-color: t.alpha('on-surface', 0.08);
+    }
+    
+    // Selected state
+    &--selected {
+      background-color: t.color('secondary-container');
+      color: t.color('on-secondary-container');
+      
+      &:hover:not(.#{$component}-segment--disabled) {
+        background-color: t.alpha('secondary-container', 0.8);
+      }
+    }
+    
+    // Disabled state
+    &--disabled {
+      opacity: 0.38;
+      cursor: not-allowed;
+    }
+    
+    // Text element
+    &-text {
+      // For when both icon and text are present
+      margin: 0 auto;
+    }
+    
+    // Icon styles
+    &-icon, &-checkmark {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 18px;
+      height: 18px;
+      
+      svg {
+        width: 18px;
+        height: 18px;
+      }
+      
+      + .#{$component}-segment-text {
+        margin-left: 8px;
+      }
+    }
+    
+    // Space the checkmark icon
+    &-checkmark + .#{$component}-segment-text {
+      margin-left: 8px;
+    }
+  }
+}
