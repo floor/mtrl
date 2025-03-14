@@ -1,0 +1,225 @@
+// src/components/fab/_styles.scss
+@use '../../styles/abstract/base' as base;
+@use '../../styles/abstract/variables' as v;
+@use '../../styles/abstract/functions' as f;
+@use '../../styles/abstract/mixins' as m;
+@use '../../styles/abstract/theme' as t;
+
+$component: '#{base.$prefix}-fab';
+
+.#{$component} {
+  // Base styles
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background-color: t.color('primary-container');
+  color: t.color('on-primary-container');
+  font: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  user-select: none;
+  vertical-align: middle;
+  appearance: none;
+  overflow: hidden;
+  
+  // FAB uses elevation in all variants
+  @include m.elevation(3);
+  
+  // Transitions
+  @include m.motion-transition(
+    transform,
+    box-shadow,
+    background-color,
+    color
+  );
+  
+  // Focus styles
+  &:focus {
+    outline: none;
+  }
+  
+  &:focus-visible {
+    outline: 2px solid t.color('outline');
+    outline-offset: 2px;
+  }
+  
+  // Default FAB size (56dp)
+  width: 56px;
+  height: 56px;
+  border-radius: f.get-shape('large');
+  
+  // Icon sizing
+  &-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    
+    svg {
+      width: 24px;
+      height: 24px;
+    }
+  }
+  
+  // Size variants
+  &--small {
+    width: 40px;
+    height: 40px;
+    border-radius: f.get-shape('medium');
+    
+    .#{$component}-icon {
+      width: 24px;
+      height: 24px;
+      
+      svg {
+        width: 24px;
+        height: 24px;
+      }
+    }
+  }
+  
+  &--default {
+    // Default is already defined in base styles
+  }
+  
+  &--large {
+    width: 96px;
+    height: 96px;
+    border-radius: f.get-shape('extra-large');
+    
+    .#{$component}-icon {
+      width: 36px;
+      height: 36px;
+      
+      svg {
+        width: 36px;
+        height: 36px;
+      }
+    }
+  }
+  
+  // Color variants - primary is the default
+
+  // Primary variant (default)
+  &--primary {
+    background-color: t.color('primary-container');
+    color: t.color('on-primary-container');
+    
+    &:hover {
+      @include m.state-layer(t.color('on-primary-container'), 'hover');
+    }
+    
+    &:active {
+      @include m.state-layer(t.color('on-primary-container'), 'pressed');
+      @include m.elevation(1);
+    }
+  }
+
+  // Secondary variant
+  &--secondary {
+    background-color: t.color('secondary-container');
+    color: t.color('on-secondary-container');
+    
+    &:hover {
+      @include m.state-layer(t.color('on-secondary-container'), 'hover');
+    }
+    
+    &:active {
+      @include m.state-layer(t.color('on-secondary-container'), 'pressed');
+      @include m.elevation(1);
+    }
+  }
+  
+  // Tertiary variant
+  &--tertiary {
+    background-color: t.color('tertiary-container');
+    color: t.color('on-tertiary-container');
+    
+    &:hover {
+      @include m.state-layer(t.color('on-tertiary-container'), 'hover');
+    }
+    
+    &:active {
+      @include m.state-layer(t.color('on-tertiary-container'), 'pressed');
+      @include m.elevation(1);
+    }
+  }
+  
+  // Surface variant
+  &--surface {
+    background-color: t.color('surface');
+    color: t.color('primary');
+    
+    &:hover {
+      @include m.state-layer(t.color('primary'), 'hover');
+    }
+    
+    &:active {
+      @include m.state-layer(t.color('primary'), 'pressed');
+      @include m.elevation(1);
+    }
+  }
+  
+  // Lowered state (when pressed)
+  &--lowered {
+    @include m.elevation(1);
+    transform: translateY(1px);
+  }
+  
+  // Disabled state
+  &--disabled,
+  &:disabled {
+    pointer-events: none;
+    @include m.elevation(0);
+    background-color: t.alpha('on-surface', 0.12);
+    color: t.alpha('on-surface', 0.38);
+  }
+  
+  // Positioning utilities
+  &--top-right {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: v.z-index('dropdown');
+  }
+  
+  &--top-left {
+    position: fixed;
+    top: 16px;
+    left: 16px;
+    z-index: v.z-index('dropdown');
+  }
+  
+  &--bottom-right {
+    position: fixed;
+    bottom: 16px;
+    right: 16px;
+    z-index: v.z-index('dropdown');
+  }
+  
+  &--bottom-left {
+    position: fixed;
+    bottom: 16px;
+    left: 16px;
+    z-index: v.z-index('dropdown');
+  }
+  
+  // Optional animations
+  @keyframes fab-enter {
+    from {
+      transform: scale(0);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+  
+  &--animate-enter {
+    animation: fab-enter 0.3s f.get-motion-easing('emphasized-decelerate') forwards;
+  }
+}
