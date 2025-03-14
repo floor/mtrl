@@ -1,4 +1,4 @@
-// src/components/dialog/api.ts
+// src/components/dialog/api.ts (partial update)
 import { DialogComponent, DialogEvent, DialogButton, DialogConfirmOptions } from './types';
 import { DIALOG_SIZES, DIALOG_ANIMATIONS, DIALOG_FOOTER_ALIGNMENTS, DIALOG_EVENTS } from './constants';
 import { removeClass } from '../../core/dom/classes';
@@ -33,6 +33,10 @@ interface ApiOptions {
   };
   size: {
     setSize: (size: keyof typeof DIALOG_SIZES | DIALOG_SIZES) => void;
+  };
+  dividers: {
+    toggleHeaderDivider: (show: boolean) => void;
+    toggleFooterDivider: (show: boolean) => void;
   };
   events: {
     on: (event: string, handler: Function) => void;
@@ -132,7 +136,7 @@ export const withAPI = (options: ApiOptions) =>
     getSubtitle() {
       return options.content.getSubtitle();
     },
-    
+
     /**
      * Sets dialog content
      * @param {string} content - Content HTML
@@ -188,7 +192,25 @@ export const withAPI = (options: ApiOptions) =>
       options.buttons.setFooterAlignment(alignment);
       return this;
     },
+
+    /**
+     * Shows or hides the divider
+     * @param {boolean} show - Whether to show the divider
+     * @returns {DialogComponent} Dialog component instance for chaining
+     */
+    toggleDivider(show: boolean) {
+      options.divider.toggleDivider(show);
+      return this;
+    },
     
+    /**
+     * Checks if the dialog has a divider
+     * @returns {boolean} True if the dialog has a divider
+     */
+    hasDivider() {
+      return options.divider.hasDivider();
+    },
+
     /**
      * Sets dialog size
      * @param {string} size - Size variant

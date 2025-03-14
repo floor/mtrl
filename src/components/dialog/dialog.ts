@@ -8,7 +8,8 @@ import {
   withContent, 
   withButtons, 
   withSize,
-  withConfirm
+  withConfirm,
+  withDivider // Simplified to single divider feature
 } from './features';
 import { withAPI } from './api';
 import { DialogConfig, DialogComponent } from './types';
@@ -33,6 +34,7 @@ const createDialog = (config: DialogConfig = {}): DialogComponent => {
       withContent(),
       withButtons(),
       withSize(),
+      withDivider(),              // Simplified divider feature
       withConfirm(),
       withLifecycle(),
       comp => withAPI(getApiConfig(comp))(comp)

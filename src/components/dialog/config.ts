@@ -20,8 +20,7 @@ export const defaultConfig: DialogConfig = {
   modal: true,
   autofocus: true,
   trapFocus: true,
-  headerDivider: false,
-  footerDivider: false,
+  divider: false,  // Default to no divider
   animationDuration: 150,
   buttons: []
 };
@@ -99,6 +98,10 @@ export const getApiConfig = (comp) => ({
   },
   size: {
     setSize: (size) => comp.size.setSize(size)
+  },
+  divider: {
+    toggleDivider: (show) => comp.divider.toggleDivider(show),
+    hasDivider: () => comp.divider.hasDivider()
   },
   events: {
     // Use the direct component methods from withEvents()
