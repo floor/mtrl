@@ -86,10 +86,10 @@ $component: '#{base.$prefix}-bottom-app-bar';
     }
   }
   
-  // Media query to hide on large screens
-  @media (min-width: map.get(v.$breakpoints, 'lg')) {
-    display: none;
-  }
+  // // Media query to hide on large screens
+  // @media (min-width: map.get(v.$breakpoints, 'lg')) {
+  //   display: none;
+  // }
   
   // Reduced motion support
   @include m.reduced-motion {
