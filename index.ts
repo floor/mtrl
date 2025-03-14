@@ -24,6 +24,7 @@ import {
   createTabs,
   createTextfield,
   createTooltip,
+  createTopAppBar,
   createSwitch
 } from './src/index.js'
 
@@ -52,5 +53,6 @@ export {
   createTabs,
   createTextfield,
   createTooltip,
+  createTopAppBar,
   createSwitch
 }
