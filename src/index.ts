@@ -2,6 +2,7 @@
 export { createElement } from './core/dom/create'
 export { default as createLayout } from './core/layout'
 export { default as createButton } from './components/button'
+export { default as createFab } from './components/fab'
 export { default as createBadge } from './components/badge'
 export { default as createCard } from './components/card'
 export { default as createCarousel } from './components/carousel'
