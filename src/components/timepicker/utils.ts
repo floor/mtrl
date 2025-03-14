@@ -126,6 +126,7 @@ export const getAngle = (value: number, max: number): number => {
  */
 export const getCoordinates = (radius: number, angle: number): { x: number; y: number } => {
   // Convert angle to radians and adjust to start from top (subtract 90 degrees)
+  // In CSS, 0 degrees is at 3 o'clock position, so we subtract 90 to start from 12 o'clock
   const radians = ((angle - 90) * Math.PI) / 180;
   
   return {

@@ -189,16 +189,10 @@ export const renderDialTimePicker = (
   center.style.height = `${DIAL_CONSTANTS.CENTER_SIZE}px`;
   clockFace.appendChild(center);
   
-  // Create dial hand
-  const hand = document.createElement('div');
-  hand.className = `${config.prefix}-time-picker-dial-hand`;
-  
   // Calculate current angle based on active selector
   let angle, value, radius, numbers;
   
   // Determine which time unit is active (hours, minutes, seconds)
-  const activeSelector = timeValue;
-  
   if (hoursInput.getAttribute('data-active') === 'true') {
     // Set up for hours
     value = config.format === TIME_FORMAT.MILITARY ? timeValue.hours : displayHours;
@@ -216,33 +210,38 @@ export const renderDialTimePicker = (
         angle = 0;
       }
     }
-    
-    // Adjust hand length for inner/outer rings in 24h mode
-    if (config.format === TIME_FORMAT.MILITARY) {
-      hand.style.height = isInnerRing 
-        ? `${DIAL_CONSTANTS.INNER_RADIUS}px` 
-        : `${DIAL_CONSTANTS.OUTER_RADIUS}px`;
-    } else {
-      hand.style.height = `${DIAL_CONSTANTS.OUTER_RADIUS}px`;
-    }
   } else if (minutesInput.getAttribute('data-active') === 'true') {
     // Set up for minutes
     value = timeValue.minutes;
     numbers = TIME_CONSTANTS.MINUTES.filter(m => m % 5 === 0); // Show only multiples of 5
     radius = DIAL_CONSTANTS.OUTER_RADIUS;
     angle = (timeValue.minutes / 60) * 360;
-    hand.style.height = `${DIAL_CONSTANTS.OUTER_RADIUS}px`;
   } else if (config.showSeconds && document.querySelector(`.${config.prefix}-time-picker-seconds[data-active="true"]`)) {
     // Set up for seconds
     value = timeValue.seconds || 0;
     numbers = TIME_CONSTANTS.SECONDS.filter(s => s % 5 === 0); // Show only multiples of 5
     radius = DIAL_CONSTANTS.OUTER_RADIUS;
     angle = ((timeValue.seconds || 0) / 60) * 360;
+  }
+  
+  // Create dial hand
+  const hand = document.createElement('div');
+  hand.className = `${config.prefix}-time-picker-dial-hand`;
+  
+  // Adjust hand length for inner/outer rings in 24h mode
+  if (config.format === TIME_FORMAT.MILITARY && hoursInput.getAttribute('data-active') === 'true') {
+    const isInnerRing = timeValue.hours > 12;
+    hand.style.height = isInnerRing 
+      ? `${DIAL_CONSTANTS.INNER_RADIUS}px` 
+      : `${DIAL_CONSTANTS.OUTER_RADIUS}px`;
+  } else {
     hand.style.height = `${DIAL_CONSTANTS.OUTER_RADIUS}px`;
   }
   
   // Position hand based on angle
-  hand.style.transform = `rotate(${angle}deg)`;
+  if (angle !== undefined) {
+    hand.style.transform = `rotate(${angle}deg)`;
+  }
   clockFace.appendChild(hand);
   
   // Create hand knob
