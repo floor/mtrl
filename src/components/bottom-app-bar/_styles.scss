@@ -10,7 +10,7 @@ $component: '#{base.$prefix}-bottom-app-bar';
 
 .#{$component} {
   // Core Properties
-  position: fixed;
+  position: absolute;
   bottom: 0;
   left: 0;
   right: 0;

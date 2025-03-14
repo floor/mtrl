@@ -1,0 +1,225 @@
+// src/components/top-app-bar/_styles.scss
+@use 'sass:map';
+@use '../../styles/abstract/base' as base;
+@use '../../styles/abstract/variables' as v;
+@use '../../styles/abstract/functions' as f;
+@use '../../styles/abstract/mixins' as m;
+@use '../../styles/abstract/theme' as t;
+
+$component: '#{base.$prefix}-top-app-bar';
+
+.#{$component} {
+  // Core Properties
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: f.get-z-index('fixed');
+  display: flex;
+  align-items: center;
+  width: 100%;
+  background-color: t.color('surface');
+  
+  // Default type (small) - 64dp height as per specs
+  height: 64px;
+  padding: 0 16px;
+  
+  // Apply transition for scroll behavior
+  transition: 
+    box-shadow 0.3s ease-in-out,
+    background-color 0.3s ease-in-out,
+    height 0.3s ease-in-out;
+  
+  // Container for the headline
+  &-headline {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    @include m.typography('title-large');
+    color: t.color('on-surface');
+    margin: 0;
+    padding: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: 
+      font-size 0.3s ease-in-out,
+      margin 0.3s ease-in-out,
+      padding 0.3s ease-in-out;
+  }
+  
+  // Leading section (usually navigation icon)
+  &-leading {
+    display: flex;
+    align-items: center;
+    margin-right: 24px;
+  }
+  
+  // Trailing section (usually action icons)
+  &-trailing {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+  }
+  
+  // Center-aligned top app bar
+  &--center {
+    .#{$component}-headline {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+      flex: 0;
+    }
+  }
+  
+  // Medium top app bar - 112dp height
+  &--medium {
+    height: 112px;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 0;
+    
+    .#{$component}-row {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      padding: 0 16px;
+      
+      &:first-child {
+        margin-top: 20px;
+      }
+    }
+    
+    .#{$component}-headline {
+      margin-bottom: 24px;
+      margin-left: 16px;
+      @include m.typography('headline-small');
+    }
+  }
+  
+  // Large top app bar - 152dp height
+  &--large {
+    height: 152px;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 0;
+    
+    .#{$component}-row {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      padding: 0 16px;
+      
+      &:first-child {
+        margin-top: 20px;
+      }
+    }
+    
+    .#{$component}-headline {
+      margin-bottom: 28px;
+      margin-left: 16px;
+      @include m.typography('headline-medium');
+    }
+  }
+  
+  // States for on-scroll behavior
+  &--scrolled {
+    background-color: t.color('surface-container');
+    @include m.elevation(1);
+    
+    // Compress medium and large variants to small on scroll if compressible
+    &.#{$component}--medium.#{$component}--compressible,
+    &.#{$component}--large.#{$component}--compressible {
+      height: 64px;
+      flex-direction: row;
+      align-items: center;
+      padding: 0 16px;
+      
+      .#{$component}-row {
+        display: none;
+      }
+      
+      .#{$component}-headline {
+        margin: 0;
+        @include m.typography('title-large');
+      }
+      
+      // Fix for headline that is inside row in medium/large
+      .#{$component}-row:nth-child(2) {
+        display: flex;
+        flex: 1;
+        margin: 0;
+        padding: 0;
+      }
+    }
+  }
+  
+  // RTL Support
+  [dir="rtl"] & {
+    .#{$component}-leading {
+      margin-right: 0;
+      margin-left: 24px;
+    }
+    
+    .#{$component}-trailing {
+      margin-left: 0;
+      margin-right: auto;
+    }
+    
+    &--medium,
+    &--large {
+      .#{$component}-headline {
+        margin-left: 0;
+        margin-right: 16px;
+      }
+    }
+    
+    &--center {
+      .#{$component}-headline {
+        left: auto;
+        right: 50%;
+        transform: translateX(50%);
+      }
+    }
+  }
+  
+  // Mobile screen adjustments
+  @media (max-width: map.get(v.$breakpoints, 'sm')) {
+    // Reduce side padding slightly on small screens
+    padding: 0 12px;
+    
+    .#{$component}-leading {
+      margin-right: 16px;
+    }
+    
+    .#{$component}-trailing {
+      gap: 4px;
+    }
+    
+    // Make icon buttons slightly smaller
+    .#{$component}-leading,
+    .#{$component}-trailing {
+      button {
+        padding: 8px;
+      }
+    }
+  }
+  
+  // Reduced motion support
+  @include m.reduced-motion {
+    transition-duration: 0.01ms;
+    
+    .#{$component}-headline {
+      transition-duration: 0.01ms;
+    }
+  }
+  
+  // High contrast mode support
+  @include m.high-contrast {
+    border-bottom: 1px solid currentColor;
+  }
+}
