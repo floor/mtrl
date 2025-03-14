@@ -1,0 +1,465 @@
+// src/components/timePicker/_styles.scss
+@use 'sass:map';
+@use '../../styles/abstract/base' as base;
+@use '../../styles/abstract/variables' as v;
+@use '../../styles/abstract/functions' as f;
+@use '../../styles/abstract/mixins' as m;
+@use '../../styles/abstract/theme' as t;
+
+$component: '#{base.$prefix}-time-picker';
+
+.#{$component} {
+  // Base styles
+  position: relative;
+  display: inline-block;
+  
+  &-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: map.get(v.$z-index, 'modal');
+  }
+  
+  &-dialog {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 280px;
+    max-width: 328px;
+    min-height: 320px;
+    max-height: 480px;
+    background-color: t.color('surface-container-high');
+    color: t.color('on-surface');
+    border-radius: f.get-shape('extra-large');
+    @include m.elevation(3);
+    
+    // State layer for elevations
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: inherit;
+      background-color: t.color('surface-tint');
+      opacity: 0.05;
+      pointer-events: none;
+    }
+    
+    // Types (dial vs input)
+    &--dial {
+      .#{$component}-content {
+        display: flex;
+        flex-direction: column;
+      }
+    }
+    
+    &--input {
+      .#{$component}-content {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        min-height: 208px;
+      }
+    }
+    
+    // Orientations
+    &--vertical {
+      min-height: 460px;
+      
+      .#{$component}-selectors {
+        flex-direction: row;
+      }
+      
+      .#{$component}-period {
+        flex-direction: column;
+        width: 52px;
+        height: 80px;
+        margin-left: 12px;
+      }
+    }
+    
+    &--horizontal {
+      min-width: 520px;
+      min-height: 360px;
+      
+      .#{$component}-content {
+        flex-direction: row;
+        align-items: center;
+      }
+      
+      .#{$component}-selectors {
+        flex-direction: row;
+      }
+      
+      .#{$component}-period {
+        flex-direction: column;
+        width: 52px;
+        height: 80px;
+        margin-left: 12px;
+      }
+      
+      .#{$component}-dial {
+        margin-left: 24px;
+      }
+    }
+    
+    // Time formats
+    &--24h {
+      .#{$component}-period {
+        display: none;
+      }
+    }
+  }
+  
+  // Title
+  &-title {
+    padding: 24px 24px 16px;
+    @include m.typography('headline-small');
+    color: t.color('on-surface-variant');
+  }
+  
+  // Content container
+  &-content {
+    flex: 1;
+    padding: 0 24px;
+    overflow: hidden;
+  }
+  
+  // Time selectors (hours, minutes, seconds)
+  &-selectors {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 24px;
+  }
+  
+  &-time-selector {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    
+    &[data-selected="true"] {
+      background-color: t.color('surface-container-highest');
+      border-radius: f.get-shape('small');
+    }
+  }
+  
+  &-hours,
+  &-minutes,
+  &-seconds {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 96px;
+    height: 80px;
+    font-size: 3.5rem;
+    font-weight: 400;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    
+    &[data-active="true"] {
+      color: t.color('primary');
+    }
+    
+    // Style for input type
+    &[type="number"] {
+      font-size: 3.5rem;
+      font-weight: 400;
+      width: 96px;
+      height: 72px;
+      text-align: center;
+      border: none;
+      background-color: t.color('surface-container-highest');
+      border-radius: f.get-shape('small');
+      padding: 0;
+      margin: 0;
+      color: t.color('on-surface');
+      
+      &:focus {
+        outline: none;
+        box-shadow: 0 0 0 2px t.color('primary');
+      }
+      
+      // Remove spinner arrows
+      -moz-appearance: textfield;
+      &::-webkit-outer-spin-button,
+      &::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+    }
+  }
+  
+  // Separator between hours, minutes, seconds
+  &-separator {
+    font-size: 3.5rem;
+    font-weight: 400;
+    margin: 0 4px;
+    color: t.color('on-surface-variant');
+  }
+  
+  // Period selector (AM/PM)
+  &-period {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background-color: t.color('surface-container-highest');
+    border-radius: f.get-shape('small');
+    overflow: hidden;
+    border: 1px solid t.color('outline');
+    margin-left: 16px;
+    
+    &-am,
+    &-pm {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 50%;
+      padding: 8px;
+      cursor: pointer;
+      @include m.typography('title-medium');
+      
+      &:hover {
+        background-color: t.alpha('on-surface', 0.08);
+      }
+      
+      &:focus {
+        outline: none;
+        background-color: t.alpha('on-surface', 0.12);
+      }
+    }
+    
+    &--selected {
+      background-color: t.color('tertiary-container');
+      color: t.color('on-tertiary-container');
+      
+      &:hover {
+        background-color: t.color('tertiary-container');
+      }
+    }
+  }
+  
+  // Clock dial
+  &-dial {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    margin: 0 auto 24px;
+    
+    &-face {
+      position: relative;
+      width: 256px;
+      height: 256px;
+      border-radius: 50%;
+      background-color: t.alpha('on-surface', 0.05);
+    }
+    
+    &-center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: t.color('primary');
+      z-index: 1;
+    }
+    
+    &-hand {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 2px;
+      height: 110px;
+      background-color: t.color('primary');
+      transform-origin: top center;
+      z-index: 1;
+    }
+    
+    &-hand-knob {
+      position: absolute;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background-color: t.color('primary');
+      color: t.color('on-primary');
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
+      @include m.elevation(1);
+    }
+    
+    &-numbers {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+    
+    &-number {
+      position: absolute;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      @include m.typography('title-medium');
+      cursor: pointer;
+      
+      &:hover {
+        background-color: t.alpha('on-surface', 0.08);
+      }
+      
+      &:focus {
+        outline: none;
+        background-color: t.alpha('on-surface', 0.12);
+      }
+      
+      &--selected {
+        background-color: t.color('primary-container');
+        color: t.color('on-primary-container');
+        
+        &:hover {
+          background-color: t.color('primary-container');
+        }
+      }
+    }
+  }
+  
+  // Input fields for input type
+  &-input-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 24px 0;
+  }
+  
+  &-time-input-field {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    
+    .#{$component}-input-label {
+      position: absolute;
+      bottom: 8px;
+      left: 0;
+      width: 100%;
+      text-align: center;
+      @include m.typography('body-small');
+      color: t.color('on-surface-variant');
+    }
+  }
+  
+  // Actions footer
+  &-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px 24px;
+  }
+  
+  &-toggle-type {
+    background: transparent;
+    border: none;
+    padding: 8px;
+    border-radius: 50%;
+    cursor: pointer;
+    color: t.color('on-surface-variant');
+    
+    &:hover {
+      background-color: t.alpha('on-surface', 0.08);
+    }
+    
+    &:focus {
+      outline: none;
+      background-color: t.alpha('on-surface', 0.12);
+    }
+  }
+  
+  &-cancel {
+    color: t.color('primary');
+  }
+  
+  &-confirm {
+    color: t.color('primary');
+  }
+  
+  // Responsive adjustments
+  @media (max-width: 599px) {
+    &-dialog {
+      width: 100%;
+      max-width: 100%;
+      height: 100%;
+      max-height: 100%;
+      border-radius: 0;
+      
+      &--horizontal {
+        flex-direction: column;
+        
+        .#{$component}-content {
+          flex-direction: column;
+        }
+        
+        .#{$component}-dial {
+          margin-left: 0;
+        }
+      }
+    }
+  }
+    // Dark mode adjustments
+  @media (prefers-color-scheme: dark) {
+    &-dialog {
+      &::before {
+        opacity: 0.08;
+      }
+    }
+  }
+  
+  // Animation
+  &-modal {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    
+    &.active {
+      opacity: 1;
+    }
+  }
+  
+  &-dialog {
+    transform: translateY(20px);
+    opacity: 0;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    
+    &.active {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+  
+  // Accessibility focus styles
+  &:focus-visible {
+    outline: 2px solid t.color('primary');
+    outline-offset: 2px;
+  }
+  
+  // Screen reader only text
+  &-sr-only {
+    @include m.visually-hidden;
+  }
+}
