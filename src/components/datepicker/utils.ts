@@ -26,7 +26,9 @@ export const parseDate = (date: Date | string | null): Date | null => {
 };
 
 /**
- * Formats a date according to the specified format
+ * Formats a date according to the specified format using a parser-based approach
+ * This avoids string replacement issues by building the output string from scratch
+ * 
  * @param date - Date to format
  * @param format - Format string (MM/DD/YYYY, etc.)
  * @returns Formatted date string
@@ -35,21 +37,60 @@ export const formatDate = (date: Date | null, format: string = 'MM/DD/YYYY'): st
   if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
     return '';
   }
-
-  const day = date.getDate();
-  const month = date.getMonth();
-  const year = date.getFullYear();
-
-  // Replace tokens in the format string
-  return format
-    .replace(/YYYY/g, year.toString())
-    .replace(/YY/g, year.toString().slice(-2))
-    .replace(/MMMM/g, MONTH_NAMES[month])
-    .replace(/MMM/g, MONTH_NAMES_SHORT[month])
-    .replace(/MM/g, (month + 1).toString().padStart(2, '0'))
-    .replace(/M/g, (month + 1).toString())
-    .replace(/DD/g, day.toString().padStart(2, '0'))
-    .replace(/D/g, day.toString());
+  
+  let result = '';
+  let i = 0;
+  
+  while (i < format.length) {
+    // Check for month name patterns
+    if (format.substring(i, i+4) === 'MMMM') {
+      // Full month name
+      result += MONTH_NAMES[date.getMonth()];
+      i += 4;
+    } 
+    else if (format.substring(i, i+3) === 'MMM') {
+      // Abbreviated month name
+      result += MONTH_NAMES_SHORT[date.getMonth()];
+      i += 3;
+    }
+    else if (format.substring(i, i+2) === 'MM') {
+      // Two-digit month
+      result += (date.getMonth() + 1).toString().padStart(2, '0');
+      i += 2;
+    }
+    else if (format.substring(i, i+1) === 'M') {
+      // Single-digit month
+      result += (date.getMonth() + 1);
+      i += 1;
+    }
+    else if (format.substring(i, i+4) === 'YYYY') {
+      // 4-digit year
+      result += date.getFullYear();
+      i += 4;
+    }
+    else if (format.substring(i, i+2) === 'YY') {
+      // 2-digit year
+      result += date.getFullYear().toString().slice(-2);
+      i += 2;
+    }
+    else if (format.substring(i, i+2) === 'DD') {
+      // Two-digit day
+      result += date.getDate().toString().padStart(2, '0');
+      i += 2;
+    }
+    else if (format.substring(i, i+1) === 'D') {
+      // Single-digit day
+      result += date.getDate();
+      i += 1;
+    }
+    else {
+      // Any other character is copied as-is
+      result += format[i];
+      i += 1;
+    }
+  }
+  
+  return result;
 };
 
 /**
