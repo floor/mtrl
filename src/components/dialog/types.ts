@@ -54,10 +54,7 @@ export interface DialogConfig {
   buttons?: DialogButton[];
   
   /** Whether to show a divider between header and content */
-  headerDivider?: boolean;
-  
-  /** Whether to show a divider between content and footer */
-  footerDivider?: boolean;
+  divider?: boolean;
   
   /** Dialog z-index (defaults to 1000) */
   zIndex?: number;
@@ -186,6 +183,12 @@ export interface DialogComponent {
   
   /** Gets dialog footer element */
   getFooterElement: () => HTMLElement | null;
+  
+  /** Shows or hides the divider */
+  toggleDivider: (show: boolean) => DialogComponent;
+  
+  /** Checks if the dialog has a divider */
+  hasDivider: () => boolean;
   
   /** Creates a confirmation dialog with Yes/No buttons */
   confirm: (options?: DialogConfirmOptions) => Promise<boolean>;

@@ -1,13 +1,15 @@
-// src/components/dialog/features.ts
+// src/components/dialog/features.ts (partial updated code)
+
 import { getOverlayConfig } from './config';
 import { DIALOG_SIZES, DIALOG_ANIMATIONS, DIALOG_FOOTER_ALIGNMENTS, DIALOG_EVENTS } from './constants';
 import { DialogConfig, DialogButton, DialogEvent } from './types';
 import createButton from '../button';
+import { createDivider } from '../divider'; // Import the divider component
 import { BUTTON_VARIANTS } from '../button/constants';
 import { addClass, removeClass, hasClass } from '../../core/dom/classes';
 
 /**
- * Creates the dialog DOM structure
+ * Creates the dialog DOM structure with proper divider handling
  * @param config Dialog configuration
  * @returns Component enhancer with DOM structure
  */
@@ -69,7 +71,6 @@ export const withStructure = (config: DialogConfig) => component => {
       
       // Close button click handler with event-based communication
       closeButton.addEventListener('click', (e) => {
-        console.log('closeButton click');
         e.preventDefault();
         e.stopPropagation();
         
@@ -114,22 +115,20 @@ export const withStructure = (config: DialogConfig) => component => {
     return footer;
   };
   
+  const createDividerElement = () => {
+    const divider = createDivider({
+      variant: 'full-width',
+      class: component.getClass('dialog-divider')
+    });
+    return divider;
+  };
+  
   // Create the dialog structure
   const header = createHeader();
   const content = createContent();
   const footer = Array.isArray(config.buttons) && config.buttons.length > 0 ? createFooter() : null;
   
-  // Add header, content, and footer to dialog
-  component.element.appendChild(header);
-  component.element.appendChild(content);
-  if (footer) {
-    component.element.appendChild(footer);
-  }
-  
-  // Add dialog to overlay
-  overlay.appendChild(component.element);
-  
-  // Add dialog classes
+  // Add dialog classes to the main component element
   addClass(component.element, component.getClass('dialog'));
   
   // Apply size class
@@ -144,6 +143,42 @@ export const withStructure = (config: DialogConfig) => component => {
     addClass(component.element, `${component.getClass('dialog')}--${animation}`);
   }
   
+  // Add header to dialog
+  component.element.appendChild(header);
+  
+  // Create divider elements if configured
+  let headerDivider = null;
+  let footerDivider = null;
+  
+  if (config.divider) {
+    // Add header divider (between header and content)
+    headerDivider = createDividerElement();
+    headerDivider.element.classList.add(component.getClass('dialog-header-divider'));
+    component.element.appendChild(headerDivider.element);
+    
+    // If footer exists, add footer divider (between content and footer)
+    if (footer) {
+      footerDivider = createDividerElement();
+      footerDivider.element.classList.add(component.getClass('dialog-footer-divider'));
+    }
+  }
+  
+  // Add content to dialog
+  component.element.appendChild(content);
+  
+  // Add footer divider before footer if it exists
+  if (footerDivider) {
+    component.element.appendChild(footerDivider.element);
+  }
+  
+  // Add footer to dialog if exists
+  if (footer) {
+    component.element.appendChild(footer);
+  }
+  
+  // Add the dialog element to the overlay
+  overlay.appendChild(component.element);
+  
   // Add overlay to container or document.body
   const container = config.container || document.body;
   container.appendChild(overlay);
@@ -156,10 +191,87 @@ export const withStructure = (config: DialogConfig) => component => {
       header,
       content,
       footer,
+      headerDivider,
+      footerDivider,
       container
     }
   };
 };
+
+
+/**
+ * Add methods to manage dividers
+ * @returns Component enhancer with divider management features
+ */
+export const withDivider = () => component => {
+  return {
+    ...component,
+    divider: {
+      /**
+       * Shows or hides the dividers
+       * @param show Whether to show the dividers
+       * @returns Component instance for chaining
+       */
+      toggleDivider(show) {
+        // Handle header divider
+        if (show && !component.structure.headerDivider) {
+          // Create and add header divider
+          const headerDivider = createDivider({
+            variant: 'full-width',
+            class: `${component.getClass('dialog-divider')} ${component.getClass('dialog-header-divider')}`
+          });
+          
+          // Insert after header, before content
+          component.element.insertBefore(
+            headerDivider.element, 
+            component.structure.content
+          );
+          
+          component.structure.headerDivider = headerDivider;
+          
+          // If footer exists, add footer divider
+          if (component.structure.footer && !component.structure.footerDivider) {
+            const footerDivider = createDivider({
+              variant: 'full-width',
+              class: `${component.getClass('dialog-divider')} ${component.getClass('dialog-footer-divider')}`
+            });
+            
+            // Insert before footer
+            component.element.insertBefore(
+              footerDivider.element,
+              component.structure.footer
+            );
+            
+            component.structure.footerDivider = footerDivider;
+          }
+        } else if (!show) {
+          // Remove header divider if it exists
+          if (component.structure.headerDivider) {
+            component.structure.headerDivider.element.remove();
+            component.structure.headerDivider = null;
+          }
+          
+          // Remove footer divider if it exists
+          if (component.structure.footerDivider) {
+            component.structure.footerDivider.element.remove();
+            component.structure.footerDivider = null;
+          }
+        }
+        
+        return component;
+      },
+      
+      /**
+       * Checks if the dialog has dividers
+       * @returns Whether the dialog has dividers
+       */
+      hasDivider() {
+        return component.structure.headerDivider !== null;
+      }
+    }
+  };
+};
+
 
 /**
  * Adds button to dialog footer
