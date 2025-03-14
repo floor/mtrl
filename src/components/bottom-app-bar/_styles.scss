@@ -1,0 +1,103 @@
+// src/components/bottom-app-bar/styles.scss
+@use 'sass:map';
+@use '../../styles/abstract/base' as base;
+@use '../../styles/abstract/variables' as v;
+@use '../../styles/abstract/functions' as f;
+@use '../../styles/abstract/mixins' as m;
+@use '../../styles/abstract/theme' as t;
+
+$component: '#{base.$prefix}-bottom-app-bar';
+
+.#{$component} {
+  // Core Properties
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: f.get-z-index('fixed');
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 80px; // Default height as per specs
+  padding: 12px 16px 12px 4px; // top/bottom 12px, right 16px, left 4px
+  background-color: t.color('surface-container');
+  
+  // Apply material elevation
+  @include m.elevation(2);
+  
+  // Apply border radius at the top
+  border-top-left-radius: t.shape('medium');
+  border-top-right-radius: t.shape('medium');
+  
+  // Add transition for smooth animations
+  transition: transform 0.3s ease-in-out;
+  
+  // Actions container on the left side
+  &-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px; // Small gap between action buttons
+    height: 100%;
+    
+    // Icon buttons should have consistent sizing
+    > * {
+      flex-shrink: 0;
+    }
+  }
+  
+  // FAB container on the right side
+  &-fab-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+  }
+  
+  // Adjustment for when FAB is present - use the specified height
+  &--with-fab {
+    height: 72px;
+  }
+  
+  // Adjustment for when FAB is centered
+  &--fab-center {
+    .#{$component}-fab-container {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+  }
+  
+  // Hidden state - moved off-screen
+  &--hidden {
+    transform: translateY(100%);
+  }
+  
+  // RTL Support
+  [dir="rtl"] & {
+    padding: 12px 4px 12px 16px;
+    
+    &-actions {
+      flex-direction: row-reverse;
+    }
+    
+    &-fab-container {
+      margin-right: auto;
+      margin-left: initial;
+    }
+  }
+  
+  // Media query to hide on large screens
+  @media (min-width: map.get(v.$breakpoints, 'lg')) {
+    display: none;
+  }
+  
+  // Reduced motion support
+  @include m.reduced-motion {
+    transition-duration: 0.01ms;
+  }
+  
+  // High contrast mode support
+  @include m.high-contrast {
+    border-top: 1px solid currentColor;
+  }
+}
