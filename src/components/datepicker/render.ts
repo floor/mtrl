@@ -89,15 +89,22 @@ export const renderHeader = ({
   });
   
   // Event listeners
-  monthButton.addEventListener('click', () => {
+  monthButton.addEventListener('click', (event) => {
+    // Prevent event from bubbling up
+    event.stopPropagation();
     emit('viewChange', { view: DATEPICKER_VIEWS.MONTH });
   });
   
-  yearButton.addEventListener('click', () => {
+  yearButton.addEventListener('click', (event) => {
+    // Prevent event from bubbling up
+    event.stopPropagation();
     emit('viewChange', { view: DATEPICKER_VIEWS.YEAR });
   });
   
-  prevButton.addEventListener('click', () => {
+  prevButton.addEventListener('click', (event) => {
+    // Prevent event from bubbling up
+    event.stopPropagation();
+    
     if (currentView === DATEPICKER_VIEWS.DAY) {
       emit('prevMonth');
     } else if (currentView === DATEPICKER_VIEWS.MONTH) {
@@ -107,7 +114,10 @@ export const renderHeader = ({
     }
   });
   
-  nextButton.addEventListener('click', () => {
+  nextButton.addEventListener('click', (event) => {
+    // Prevent event from bubbling up
+    event.stopPropagation();
+    
     if (currentView === DATEPICKER_VIEWS.DAY) {
       emit('nextMonth');
     } else if (currentView === DATEPICKER_VIEWS.MONTH) {
@@ -207,7 +217,10 @@ export const renderDays = ({
     });
     
     // Event listener
-    dayElement.addEventListener('click', () => {
+    dayElement.addEventListener('click', (event) => {
+      // Prevent event from bubbling up
+      event.stopPropagation();
+      
       if (!calendarDate.isDisabled) {
         emit('dateSelected', { date: calendarDate.date });
       }
@@ -249,7 +262,9 @@ export const renderMonthSelection = ({
       }
     });
     
-    monthElement.addEventListener('click', () => {
+    monthElement.addEventListener('click', (event) => {
+      // Prevent event from bubbling up
+      event.stopPropagation();
       emit('monthSelected', { month: index });
     });
     
@@ -290,7 +305,9 @@ export const renderYearSelection = ({
       }
     });
     
-    yearElement.addEventListener('click', () => {
+    yearElement.addEventListener('click', (event) => {
+      // Prevent event from bubbling up
+      event.stopPropagation();
       emit('yearSelected', { year });
     });
     
@@ -335,11 +352,15 @@ export const renderFooter = ({
     }
   });
   
-  cancelButton.addEventListener('click', () => {
+  cancelButton.addEventListener('click', (event) => {
+    // Prevent event from bubbling up
+    event.stopPropagation();
     emit('cancel');
   });
   
-  okButton.addEventListener('click', () => {
+  okButton.addEventListener('click', (event) => {
+    // Prevent event from bubbling up
+    event.stopPropagation();
     emit('confirm');
   });
   

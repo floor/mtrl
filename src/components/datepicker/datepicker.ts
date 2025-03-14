@@ -319,6 +319,12 @@ const createDatePicker = (config: DatePickerConfig = {}) => {
       }
     });
     
+    // BUGFIX: Prevent calendar close when clicking inside the calendar
+    state.calendarElement.addEventListener('click', (event) => {
+      // Stop propagation to prevent the document click handler from closing the calendar
+      event.stopPropagation();
+    });
+    
     // Handle outside clicks
     document.addEventListener('click', (event) => {
       if (state.isOpen && 
