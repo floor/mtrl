@@ -72,6 +72,12 @@ export const createTimePickerAPI = (
       // Show modal
       modalElement.style.display = 'block';
       
+      // Add the active class to trigger animations
+      // We need to force a reflow before adding the active class for the transition to work
+      void modalElement.offsetWidth; // Force reflow
+      modalElement.classList.add('active');
+      dialogElement.classList.add('active');
+      
       // Add event listeners
       document.addEventListener('keydown', handleKeydown);
       modalElement.addEventListener('click', handleClickOutside);
@@ -94,8 +100,15 @@ export const createTimePickerAPI = (
     close() {
       if (!isOpen) return this;
       
-      // Hide modal
-      modalElement.style.display = 'none';
+      // Remove active classes to trigger fade-out transition
+      modalElement.classList.remove('active');
+      dialogElement.classList.remove('active');
+      
+      // Use setTimeout to let the transition finish before hiding completely
+      setTimeout(() => {
+        // Hide modal
+        modalElement.style.display = 'none';
+      }, 300); // Match the transition duration
       
       // Remove event listeners
       document.removeEventListener('keydown', handleKeydown);
