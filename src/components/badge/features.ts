@@ -81,6 +81,13 @@ export const withVariant = (config: BadgeConfig) => component => {
   } else {
     // Add accessibility for large badges
     component.element.setAttribute('role', 'status');
+    
+    // Set the label if available and variant is large
+    if (config.label !== undefined && config.label !== '') {
+      // Format the label according to max value
+      const formattedLabel = formatBadgeLabel(config.label, config.max);
+      component.element.textContent = formattedLabel;
+    }
   }
   
   return component;
