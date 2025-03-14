@@ -1,0 +1,57 @@
+// src/components/divider/_styles.scss
+
+@use '../../styles/abstract/base' as base;
+@use '../../styles/abstract/variables' as v;
+@use '../../styles/abstract/functions' as f;
+@use '../../styles/abstract/mixins' as m;
+@use '../../styles/abstract/theme' as t;
+
+$component: '#{base.$prefix}-divider';
+
+.#{$component} {
+  // Base styles
+  display: block;
+  border: none;
+  margin: 0;
+  padding: 0;
+  background-color: t.color('outline-variant');
+  
+  // Orientation variants
+  &--horizontal {
+    width: 100%;
+    height: 1px;
+  }
+  
+  &--vertical {
+    height: 100%;
+    width: 1px;
+    display: inline-block;
+  }
+  
+  // Variant styles (these set the base for the variants, specific insets are handled via JS)
+  &--full-width {
+    width: 100%;
+  }
+  
+  &--inset {
+    // Base class for inset styles - specific margins are set via JS
+  }
+  
+  &--middle-inset {
+    // Base class for middle inset styles - specific margins are set via JS
+  }
+  
+  // Parent-child relationship context
+  .#{base.$prefix}-list & {
+    margin: 8px 0;
+  }
+  
+  .#{base.$prefix}-card & {
+    margin: 8px 0;
+  }
+  
+  // Dark theme support
+  :root[data-theme-mode="dark"] & {
+    // Dark theme color is handled through the CSS variable in theme
+  }
+}
