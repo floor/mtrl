@@ -39,17 +39,21 @@ export const getElementConfig = (config: BadgeConfig) => {
   // Create the attributes object
   const attrs: Record<string, any> = {};
   
-  // Convert numeric label to string if needed
-  const label = config.label !== undefined ? String(config.label) : '';
+  // For large badges, set appropriate ARIA attributes
+  if (config.variant !== BADGE_VARIANTS.SMALL) {
+    attrs.role = 'status';
+  }
   
-  // Small badges (dot variant) don't have text
-  const text = config.variant === BADGE_VARIANTS.SMALL ? '' : label;
+  // Format the label if needed
+  const formattedLabel = config.variant === BADGE_VARIANTS.SMALL 
+    ? '' 
+    : formatBadgeLabel(config.label || '', config.max);
   
   return createElementConfig(config, {
     tag: 'span',
     attrs,
     className: config.class,
-    text
+    text: formattedLabel // Use the formatted label
   });
 };
 
@@ -87,8 +91,10 @@ export const formatBadgeLabel = (label: string | number, max?: number): string =
   
   let formattedLabel = String(label);
   
+  const numericLabel = Number(label);
+
   // Apply max value formatting
-  if (max !== undefined && typeof label === 'number' && label > max) {
+  if (max !== undefined && !isNaN(numericLabel) && numericLabel > max) {
     formattedLabel = `${max}+`;
   }
   
