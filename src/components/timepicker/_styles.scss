@@ -121,8 +121,8 @@ $component: '#{base.$prefix}-time-picker';
   
   // Title
   &-title {
-    padding: 24px 24px 16px;
-    @include m.typography('headline-small');
+    padding: 24px 24px 12px;
+    @include m.typography('title-small');
     color: t.color('on-surface-variant');
   }
   
