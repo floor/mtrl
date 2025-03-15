@@ -1,10 +1,17 @@
 // src/components/card/config.ts
+
 import { 
   createComponentConfig, 
   createElementConfig
 } from '../../core/config/component-config';
-import { BaseComponent, CardSchema } from './types';
 import { CARD_VARIANTS, CARD_ELEVATIONS } from './constants';
+import { 
+  createCardHeader, 
+  createCardContent, 
+  createCardMedia, 
+  createCardActions 
+} from './content';
+import { CardComponent, CardSchema, ButtonConfig, BaseComponent } from './types';
 
 /**
  * Default configuration for the Card component
@@ -19,57 +26,95 @@ export const defaultConfig: CardSchema = {
 };
 
 /**
- * Initializes a card component with its configured elements in the correct order
+ * Processes inline configuration options into standard config format
+ * Maps shorthand properties to their proper config counterparts
  * 
- * Creates and adds all configured elements to the card in the following order:
- * 1. Top media elements (position='top')
- * 2. Header element
- * 3. Content elements
- * 4. Bottom media elements (position='bottom')
- * 5. Actions elements
- * 
- * This ordering ensures that media appears before header when both are configured,
- * maintaining proper visual hierarchy according to Material Design guidelines.
- * 
- * @param {CardComponent} card - Card component to initialize
- * @param {CardSchema} config - Card configuration
- * @returns {CardComponent} Initialized card component
- * @internal This is an internal utility for the Card component
+ * @param {CardSchema} config - Raw card configuration
+ * @returns {CardSchema} Processed configuration
  */
-export const initializeCardElements = (card: CardComponent, config: CardSchema): CardComponent => {
-  // 1. Add top media first 
+export const processInlineConfig = (config: CardSchema): CardSchema => {
+  const processedConfig: CardSchema = { ...config };
+  
+  // Map inline properties to their *Config counterparts
+  if (config.header) {
+    processedConfig.headerConfig = config.header;
+  }
+  
+  if (config.content) {
+    processedConfig.contentConfig = config.content;
+  }
+  
+  if (config.media) {
+    processedConfig.mediaConfig = config.media;
+  }
+  
+  if (config.actions) {
+    processedConfig.actionsConfig = config.actions;
+  }
+  
+  return processedConfig;
+};
+
+/**
+ * Applies inline configuration to a card component
+ * Adds configured elements to the card in the correct order
+ * 
+ * @param {CardComponent} card - Card component to configure
+ * @param {CardSchema} config - Processed configuration
+ */
+export const applyInlineConfiguration = (card: CardComponent, config: CardSchema): void => {
+  // Add media (top position) if configured
   if (config.mediaConfig && (!config.mediaConfig.position || config.mediaConfig.position === 'top')) {
     const { position, ...mediaConfigWithoutPosition } = config.mediaConfig;
     const mediaElement = createCardMedia(mediaConfigWithoutPosition);
     card.addMedia(mediaElement, 'top');
   }
   
-  // 2. Add header AFTER top media
+  // Add header if configured
   if (config.headerConfig) {
     const headerElement = createCardHeader(config.headerConfig);
     card.setHeader(headerElement);
   }
   
-  // 3. Add content AFTER header
+  // Add content if configured
   if (config.contentConfig) {
     const contentElement = createCardContent(config.contentConfig);
     card.addContent(contentElement);
   }
   
-  // 4. Add bottom media AFTER content
+  // Add media (bottom position) if configured
   if (config.mediaConfig && config.mediaConfig.position === 'bottom') {
     const { position, ...mediaConfigWithoutPosition } = config.mediaConfig;
     const mediaElement = createCardMedia(mediaConfigWithoutPosition);
     card.addMedia(mediaElement, 'bottom');
   }
   
-  // 5. Add actions LAST
+  // Add actions if configured
   if (config.actionsConfig) {
     const actionsElement = createCardActions(config.actionsConfig);
     card.setActions(actionsElement);
   }
   
-  return card;
+  // Process buttons if provided (asynchronously)
+  if (Array.isArray(config.buttons) && config.buttons.length > 0) {
+    import('../button').then(({ default: createButton }) => {
+      // Create buttons from configuration
+      const actionButtons = config.buttons!.map(buttonConfig => 
+        createButton(buttonConfig).element
+      );
+      
+      // Create actions container
+      const actionsElement = createCardActions({
+        actions: actionButtons,
+        align: config.actionsConfig?.align || 'end'
+      });
+      
+      // Add the actions to the card
+      card.setActions(actionsElement);
+    }).catch(error => {
+      console.error('Error processing buttons:', error);
+    });
+  }
 };
 
 /**

@@ -28,6 +28,21 @@ export enum CardElevation {
 }
 
 /**
+ * Button configuration interface for buttons shorthand
+ * @interface ButtonConfig
+ */
+export interface ButtonConfig {
+  /** Button text */
+  text?: string;
+  /** Button variant */
+  variant?: string;
+  /** Button icon */
+  icon?: string;
+  /** Additional button properties */
+  [key: string]: any;
+}
+
+/**
  * Card configuration interface
  * @interface CardSchema
  */
@@ -54,6 +69,19 @@ export interface CardSchema {
   mediaConfig?: CardMediaConfig;
   /** ARIA attributes for accessibility */
   aria?: CardAriaAttributes;
+  
+  // New inline configuration options
+  /** Inline header configuration (alternative to headerConfig) */
+  header?: CardHeaderConfig;
+  /** Inline content configuration (alternative to contentConfig) */
+  content?: CardContentConfig;
+  /** Inline media configuration (alternative to mediaConfig) */
+  media?: CardMediaConfig;
+  /** Inline actions configuration (alternative to actionsConfig) */
+  actions?: CardActionsConfig;
+  /** Simple buttons array for actions (will be converted to actionsConfig) */
+  buttons?: ButtonConfig[];
+
   /** Internal component name */
   componentName?: string;
   /** CSS class prefix */

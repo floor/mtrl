@@ -3,6 +3,9 @@ import { PREFIX } from '../../core/config';
 import { createElement } from '../../core/dom/create';
 import { BaseComponent, CardComponent, LoadingFeature, ExpandableFeature, SwipeableFeature } from './types';
 
+import { createCardHeader, createCardContent, createCardMedia, createCardActions } from './content';
+import { BaseComponent, CardComponent, CardHeaderConfig, CardContentConfig, CardMediaConfig, CardActionsConfig, CardSchema, ButtonConfig } from './types';
+
 interface LoadingConfig {
   initialState?: boolean;
 }
@@ -17,6 +20,114 @@ interface SwipeableConfig {
   onSwipeRight?: (component: CardComponent) => void;
   threshold?: number;
 }
+
+
+/**
+ * Higher-order function to add a header to a card
+ * 
+ * @param {CardSchema} config - Complete card configuration
+ * @returns {Function} Card component enhancer
+ */
+export const withHeader = (config: CardSchema) => (component: BaseComponent): BaseComponent => {
+  // Only proceed if headerConfig is provided
+  if (!config.headerConfig) return component;
+  
+  const headerElement = createCardHeader(config.headerConfig);
+  (component as CardComponent).setHeader(headerElement);
+  
+  return component;
+};
+
+/**
+ * Higher-order function to add content to a card
+ * 
+ * @param {CardSchema} config - Complete card configuration
+ * @returns {Function} Card component enhancer
+ */
+export const withContent = (config: CardSchema) => (component: BaseComponent): BaseComponent => {
+  // Only proceed if contentConfig is provided
+  if (!config.contentConfig) return component;
+  
+  const contentElement = createCardContent(config.contentConfig);
+  (component as CardComponent).addContent(contentElement);
+  
+  return component;
+};
+
+/**
+ * Higher-order function to add media to a card
+ * 
+ * @param {CardSchema} config - Complete card configuration
+ * @returns {Function} Card component enhancer
+ */
+export const withMedia = (config: CardSchema) => (component: BaseComponent): BaseComponent => {
+  // Only proceed if mediaConfig is provided
+  if (!config.mediaConfig) return component;
+  
+  // Handle both top and bottom media if configured
+  if (!config.mediaConfig.position || config.mediaConfig.position === 'top') {
+    // Top media (default)
+    const { position, ...mediaConfigWithoutPosition } = config.mediaConfig;
+    const mediaElement = createCardMedia(mediaConfigWithoutPosition);
+    (component as CardComponent).addMedia(mediaElement, 'top');
+  } else if (config.mediaConfig.position === 'bottom') {
+    // Bottom media
+    const { position, ...mediaConfigWithoutPosition } = config.mediaConfig;
+    const mediaElement = createCardMedia(mediaConfigWithoutPosition);
+    (component as CardComponent).addMedia(mediaElement, 'bottom');
+  }
+  
+  return component;
+};
+
+/**
+ * Higher-order function to add actions to a card
+ * 
+ * @param {CardSchema} config - Complete card configuration
+ * @returns {Function} Card component enhancer
+ */
+export const withActions = (config: CardSchema) => (component: BaseComponent): BaseComponent => {
+  // Only proceed if actionsConfig is provided
+  if (!config.actionsConfig) return component;
+  
+  const actionsElement = createCardActions(config.actionsConfig);
+  (component as CardComponent).setActions(actionsElement);
+  
+  return component;
+};
+
+/**
+ * Higher-order function to add buttons to a card
+ * This is an asynchronous enhancer that won't block card creation
+ * 
+ * @param {CardSchema} config - Complete card configuration
+ * @returns {Function} Card component enhancer
+ */
+export const withButtons = (config: CardSchema) => (component: BaseComponent): BaseComponent => {
+  // Only proceed if buttons are provided
+  if (!Array.isArray(config.buttons) || config.buttons.length === 0) return component;
+  
+  // Process buttons asynchronously
+  import('../button').then(({ default: createButton }) => {
+    // Create buttons from configuration
+    const actionButtons = config.buttons!.map(buttonConfig => 
+      createButton(buttonConfig).element
+    );
+    
+    // Create actions container
+    const actionsElement = createCardActions({
+      actions: actionButtons,
+      align: config.actionsConfig?.align || 'end'
+    });
+    
+    // Add the actions to the card
+    (component as CardComponent).setActions(actionsElement);
+  }).catch(error => {
+    console.error('Error processing buttons:', error);
+  });
+  
+  return component;
+};
 
 /**
  * Higher-order function to add loading state to a card

@@ -13,7 +13,9 @@ import {
   createBaseConfig, 
   getElementConfig, 
   getApiConfig, 
-  withInteractiveBehavior
+  withInteractiveBehavior,
+  processInlineConfig,
+  applyInlineConfiguration
 } from './config';
 import { withElevation } from './features';
 
@@ -25,44 +27,30 @@ import { withElevation } from './features';
  * 
  * @param {CardSchema} config - Card configuration object
  * @returns {CardComponent} Card component instance
- * 
- * @example
- * ```typescript
- * // Create a basic elevated card
- * const card = createCard();
- * 
- * // Create a filled card with content
- * const filledCard = createCard({
- *   variant: CardVariant.FILLED,
- *   contentConfig: { text: 'Card content' }
- * });
- * 
- * // Create an interactive outlined card
- * const interactiveCard = createCard({
- *   variant: CardVariant.OUTLINED,
- *   interactive: true,
- *   clickable: true,
- *   aria: { label: 'Click to view details' }
- * });
- * ```
  */
 const createCard = (config: CardSchema = {}): CardComponent => {
-  const baseConfig = createBaseConfig(config);
+  // Process inline configuration (map shorthand properties)
+  const processedConfig = processInlineConfig(config);
+  const baseConfig = createBaseConfig(processedConfig);
 
   try {
+    // Create the core card component
     const card = pipe(
       createBase,
       withEvents(),
       withElement(getElementConfig(baseConfig)),
       withVariant(baseConfig),
-      config.clickable ? withRipple(baseConfig) : (c: BaseComponent) => c,
+      baseConfig.clickable ? withRipple(baseConfig) : (c: BaseComponent) => c,
       withLifecycle(),
       withInteractiveBehavior,
       withElevation,
       comp => withAPI(getApiConfig(comp))(comp)
-    )(baseConfig);
+    )(baseConfig) as CardComponent;
     
-    return card as CardComponent;
+    // Apply any inline configuration
+    applyInlineConfiguration(card, processedConfig);
+    
+    return card;
   } catch (error) {
     console.error('Card creation error:', error instanceof Error ? error.message : String(error));
     throw new Error(`Failed to create card: ${error instanceof Error ? error.message : String(error)}`);
