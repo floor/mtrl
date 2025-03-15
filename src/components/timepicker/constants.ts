@@ -1,4 +1,4 @@
-// src/components/timePicker/constants.ts
+// src/components/timepicker/constants.ts
 
 import { 
   TIME_PICKER_TYPE, 
@@ -48,6 +48,7 @@ export const SELECTORS = {
   TITLE: '.mtrl-time-picker-title',
   CONTENT: '.mtrl-time-picker-content',
   DIAL: '.mtrl-time-picker-dial',
+  DIAL_CANVAS: '.mtrl-time-picker-dial-canvas',
   DIAL_FACE: '.mtrl-time-picker-dial-face',
   DIAL_HAND: '.mtrl-time-picker-dial-hand',
   DIAL_CENTER: '.mtrl-time-picker-dial-center',
@@ -66,6 +67,17 @@ export const SELECTORS = {
   CANCEL_BUTTON: '.mtrl-time-picker-cancel',
   CONFIRM_BUTTON: '.mtrl-time-picker-confirm',
 };
+
+export const DIAL_CONSTANTS = {
+  DIAMETER: 256,
+  INNER_RADIUS: 65,
+  OUTER_RADIUS: 110,
+  NUMBER_SIZE: 40,
+  CENTER_SIZE: 8,
+  HAND_SIZE: 36,
+  TRACK_WIDTH: 2,
+};
+
 
 /**
  * Z-index values for different parts of the time picker.
@@ -103,19 +115,6 @@ export const ANIMATION = {
   OPEN_DURATION: 300,
   CLOSE_DURATION: 200,
   DIAL_SELECT_DURATION: 150,
-};
-
-/**
- * Size constants for the time picker dial.
- */
-export const DIAL_CONSTANTS = {
-  DIAMETER: 256,
-  INNER_RADIUS: 65,
-  OUTER_RADIUS: 110,
-  NUMBER_SIZE: 40,
-  CENTER_SIZE: 8,
-  HAND_SIZE: 48,
-  TRACK_WIDTH: 2,
 };
 
 /**

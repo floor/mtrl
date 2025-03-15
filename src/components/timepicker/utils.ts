@@ -1,4 +1,4 @@
-// src/components/timePicker/utils.ts
+// src/components/timepicker/utils.ts
 
 import { TimeValue, TIME_PERIOD, TIME_FORMAT } from './types';
 

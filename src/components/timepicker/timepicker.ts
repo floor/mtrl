@@ -1,4 +1,4 @@
-// src/components/timePicker/timePicker.ts
+// src/components/timepicker/timePicker.ts
 
 import { PREFIX } from '../../core/config';
 import { pipe } from '../../core/compose';
