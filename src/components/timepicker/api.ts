@@ -6,11 +6,13 @@ import {
   TimeValue,
   TIME_PICKER_TYPE,
   TIME_PICKER_ORIENTATION,
-  TIME_FORMAT
+  TIME_FORMAT,
+  TIME_PERIOD
 } from './types';
 import { EVENTS, SELECTORS } from './constants';
-import { formatTime } from './utils';
+import { formatTime, padZero } from './utils';
 import { renderTimePicker } from './render';
+import { renderClockDial, getTimeValueFromClick } from './clockdial';
 
 interface ApiOptions {
   events: {
@@ -85,6 +87,12 @@ export const createTimePickerAPI = (
       // Update state
       isOpen = true;
       baseComponent.element.classList.add(`${config.prefix}-time-picker--open`);
+      
+      // Force re-render to ensure canvas is drawn after dialog is visible
+      // This ensures the canvas has proper dimensions for rendering
+      setTimeout(() => {
+        renderTimePicker(dialogElement, timeValue, config);
+      }, 50);
       
       // Emit open event
       options.events.emit(EVENTS.OPEN);
@@ -340,10 +348,9 @@ export const createTimePickerAPI = (
       timePickerAPI.setType(newType);
     }
     
-    // Handle period selection
     if (target.closest(SELECTORS.PERIOD_AM)) {
-      if (timeValue.period !== 'AM') {
-        timeValue.period = 'AM';
+      if (timeValue.period !== TIME_PERIOD.AM) {
+        timeValue.period = TIME_PERIOD.AM;
         if (timeValue.hours >= 12) {
           timeValue.hours -= 12;
         }
@@ -356,10 +363,10 @@ export const createTimePickerAPI = (
         }
       }
     }
-    
+
     if (target.closest(SELECTORS.PERIOD_PM)) {
-      if (timeValue.period !== 'PM') {
-        timeValue.period = 'PM';
+      if (timeValue.period !== TIME_PERIOD.PM) {
+        timeValue.period = TIME_PERIOD.PM;
         if (timeValue.hours < 12) {
           timeValue.hours += 12;
         }
@@ -373,53 +380,138 @@ export const createTimePickerAPI = (
       }
     }
     
-    // Handle dial number selection
-    if (config.type === TIME_PICKER_TYPE.DIAL) {
-      const dialNumber = target.closest(SELECTORS.DIAL_NUMBER);
-      if (dialNumber) {
-        const value = parseInt(dialNumber.getAttribute('data-value') || '0', 10);
-        const valueType = dialNumber.getAttribute('data-type');
+    // Handle canvas dial click
+    if (target.closest(SELECTORS.DIAL_CANVAS)) {
+      if (config.type === TIME_PICKER_TYPE.DIAL) {
+        const canvas = target as HTMLCanvasElement;
+        const rect = canvas.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
         
-        if (valueType === 'hour') {
-          // Handle hour selection
-          const newHours = config.format === TIME_FORMAT.MILITARY
-            ? value
-            : (timeValue.period === 'PM' && value !== 12 
-                ? value + 12 
-                : (timeValue.period === 'AM' && value === 12 ? 0 : value));
-          
-          if (timeValue.hours !== newHours) {
-            timeValue.hours = newHours;
-            renderTimePicker(dialogElement, timeValue, config);
-            options.events.emit(EVENTS.CHANGE, timePickerAPI.getValue());
+        // Determine active selector
+        let activeSelector: 'hour' | 'minute' | 'second' = 'hour';
+        const hoursEl = dialogElement.querySelector(SELECTORS.HOURS_INPUT);
+        const minutesEl = dialogElement.querySelector(SELECTORS.MINUTES_INPUT);
+        const secondsEl = dialogElement.querySelector(SELECTORS.SECONDS_INPUT);
+        
+        if (hoursEl && hoursEl.getAttribute('data-active') === 'true') {
+          activeSelector = 'hour';
+        } else if (minutesEl && minutesEl.getAttribute('data-active') === 'true') {
+          activeSelector = 'minute';
+        } else if (config.showSeconds && secondsEl && secondsEl.getAttribute('data-active') === 'true') {
+          activeSelector = 'second';
+        }
+        
+        // Get the time value from the click position
+        const selectedValue = getTimeValueFromClick(canvas, x, y, {
+          type: config.type,
+          format: config.format,
+          showSeconds: config.showSeconds,
+          prefix: config.prefix,
+          activeSelector
+        });
+        
+        if (selectedValue !== null) {
+          if (activeSelector === 'hour') {
+            let newHours = selectedValue;
             
-            // Call onChange callback if provided
-            if (config.onChange) {
-              config.onChange(timePickerAPI.getValue());
+            // Adjust for 12-hour format if needed
+            if (config.format === TIME_FORMAT.AMPM) {
+              // Convert to 24-hour format internally
+              if (timeValue.period === TIME_PERIOD.PM && selectedValue !== 12) {
+                newHours += 12;
+              } else if (timeValue.period === TIME_PERIOD.AM && selectedValue === 12) {
+                newHours = 0;
+              }
             }
-          }
-        } else if (valueType === 'minute') {
-          // Handle minute selection
-          if (timeValue.minutes !== value) {
-            timeValue.minutes = value;
-            renderTimePicker(dialogElement, timeValue, config);
-            options.events.emit(EVENTS.CHANGE, timePickerAPI.getValue());
             
-            // Call onChange callback if provided
-            if (config.onChange) {
-              config.onChange(timePickerAPI.getValue());
+            if (timeValue.hours !== newHours) {
+              timeValue.hours = newHours;
+              
+              // Update display time
+              const hoursDisplay = hoursEl as HTMLElement;
+              if (hoursDisplay) {
+                hoursDisplay.textContent = padZero(config.format === TIME_FORMAT.MILITARY 
+                  ? newHours 
+                  : (newHours % 12 || 12));
+              }
+              
+              // Directly update the canvas
+              const canvasElement = dialogElement.querySelector(SELECTORS.DIAL_CANVAS) as HTMLCanvasElement;
+              if (canvasElement) {
+                renderClockDial(canvasElement, timeValue, {
+                  type: config.type,
+                  format: config.format,
+                  showSeconds: config.showSeconds,
+                  prefix: config.prefix,
+                  activeSelector
+                });
+              }
+              
+              options.events.emit(EVENTS.CHANGE, timePickerAPI.getValue());
+              
+              // Call onChange callback if provided
+              if (config.onChange) {
+                config.onChange(timePickerAPI.getValue());
+              }
             }
-          }
-        } else if (valueType === 'second' && config.showSeconds) {
-          // Handle second selection
-          if (timeValue.seconds !== value) {
-            timeValue.seconds = value;
-            renderTimePicker(dialogElement, timeValue, config);
-            options.events.emit(EVENTS.CHANGE, timePickerAPI.getValue());
-            
-            // Call onChange callback if provided
-            if (config.onChange) {
-              config.onChange(timePickerAPI.getValue());
+          } else if (activeSelector === 'minute') {
+            if (timeValue.minutes !== selectedValue) {
+              timeValue.minutes = selectedValue;
+              
+              // Update display time
+              const minutesDisplay = minutesEl as HTMLElement;
+              if (minutesDisplay) {
+                minutesDisplay.textContent = padZero(selectedValue);
+              }
+              
+              // Directly update the canvas
+              const canvasElement = dialogElement.querySelector(SELECTORS.DIAL_CANVAS) as HTMLCanvasElement;
+              if (canvasElement) {
+                renderClockDial(canvasElement, timeValue, {
+                  type: config.type,
+                  format: config.format,
+                  showSeconds: config.showSeconds,
+                  prefix: config.prefix,
+                  activeSelector
+                });
+              }
+              
+              options.events.emit(EVENTS.CHANGE, timePickerAPI.getValue());
+              
+              // Call onChange callback if provided
+              if (config.onChange) {
+                config.onChange(timePickerAPI.getValue());
+              }
+            }
+          } else if (activeSelector === 'second' && config.showSeconds) {
+            if (timeValue.seconds !== selectedValue) {
+              timeValue.seconds = selectedValue;
+              
+              // Update display time
+              const secondsDisplay = secondsEl as HTMLElement;
+              if (secondsDisplay) {
+                secondsDisplay.textContent = padZero(selectedValue);
+              }
+              
+              // Directly update the canvas
+              const canvasElement = dialogElement.querySelector(SELECTORS.DIAL_CANVAS) as HTMLCanvasElement;
+              if (canvasElement) {
+                renderClockDial(canvasElement, timeValue, {
+                  type: config.type,
+                  format: config.format,
+                  showSeconds: config.showSeconds,
+                  prefix: config.prefix,
+                  activeSelector
+                });
+              }
+              
+              options.events.emit(EVENTS.CHANGE, timePickerAPI.getValue());
+              
+              // Call onChange callback if provided
+              if (config.onChange) {
+                config.onChange(timePickerAPI.getValue());
+              }
             }
           }
         }

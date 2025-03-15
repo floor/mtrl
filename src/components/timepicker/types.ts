@@ -1,4 +1,4 @@
-// src/components/timePicker/types.ts
+// src/components/timepicker/types.ts
 
 /**
  * Time picker display type

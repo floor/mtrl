@@ -1,4 +1,4 @@
-// src/components/timePicker/_styles.scss
+// src/components/timepicker/_styles.scss
 @use 'sass:map';
 @use '../../styles/abstract/base' as base;
 @use '../../styles/abstract/variables' as v;
@@ -24,6 +24,12 @@ $component: '#{base.$prefix}-time-picker';
     align-items: center;
     justify-content: center;
     z-index: map.get(v.$z-index, 'modal');
+    opacity: 0;
+    transition: opacity 0.25s cubic-bezier(0.4, 0.0, 0.2, 1);
+    
+    &.active {
+      opacity: 1;
+    }
   }
   
   &-dialog {
@@ -32,12 +38,19 @@ $component: '#{base.$prefix}-time-picker';
     flex-direction: column;
     min-width: 280px;
     max-width: 328px;
-    min-height: 320px;
-    max-height: 480px;
+    max-height: 520px;
     background-color: t.color('surface-container-high');
     color: t.color('on-surface');
     border-radius: f.get-shape('extra-large');
     @include m.elevation(3);
+    transform: translateY(20px) scale(0.9);
+    opacity: 0;
+    transition: transform 0.25s cubic-bezier(0.4, 0.0, 0.2, 1), opacity 0.25s cubic-bezier(0.4, 0.0, 0.2, 1);
+    
+    &.active {
+      transform: translateY(0) scale(1);
+      opacity: 1;
+    }
     
     // State layer for elevations
     &::before {
@@ -53,28 +66,11 @@ $component: '#{base.$prefix}-time-picker';
       pointer-events: none;
     }
     
-    // Types (dial vs input)
-    &--dial {
-      .#{$component}-content {
-        display: flex;
-        flex-direction: column;
-      }
-    }
-    
-    &--input {
-      .#{$component}-content {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        min-height: 208px;
-      }
-    }
-    
     // Orientations
     &--vertical {
-      min-height: 460px;
+      // min-height: 460px;
       
-      .#{$component}-selectors {
+      .#{$component}-input-container {
         flex-direction: row;
       }
       
@@ -95,7 +91,7 @@ $component: '#{base.$prefix}-time-picker';
         align-items: center;
       }
       
-      .#{$component}-selectors {
+      .#{$component}-input-container {
         flex-direction: row;
       }
       
@@ -121,7 +117,7 @@ $component: '#{base.$prefix}-time-picker';
   
   // Title
   &-title {
-    padding: 24px 24px 12px;
+    padding: 24px 24px 16px;
     @include m.typography('title-small');
     color: t.color('on-surface-variant');
   }
@@ -131,28 +127,27 @@ $component: '#{base.$prefix}-time-picker';
     flex: 1;
     padding: 0 24px;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
   
-  // Time selectors (hours, minutes, seconds)
-  &-selectors {
+  // Input container for both modes
+  &-input-container {
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 24px;
+    margin: 0 0 24px 0;
   }
   
-  &-time-selector {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  // Input field containers
+  &-time-input-field {
     position: relative;
-    
-    &[data-selected="true"] {
-      background-color: t.color('surface-container-highest');
-      border-radius: f.get-shape('small');
-    }
+    display: flex;
+    flex-direction: column;
   }
   
+  // Time input styles - shared for both modes
   &-hours,
   &-minutes,
   &-seconds {
@@ -171,12 +166,12 @@ $component: '#{base.$prefix}-time-picker';
       color: t.color('primary');
     }
     
-    // Style for input type
+    // Style for HTML input elements
     &[type="number"] {
       font-size: 3.5rem;
       font-weight: 400;
       width: 96px;
-      height: 72px;
+      height: 76px;
       text-align: center;
       border: none;
       background-color: t.color('surface-container-highest');
@@ -198,6 +193,20 @@ $component: '#{base.$prefix}-time-picker';
         margin: 0;
       }
     }
+    
+    // When in dial mode, add highlighting for active element
+    &:not([type="number"]) {
+      &[data-active="true"] {
+        color: t.color('primary');
+        background-color: t.alpha('primary', 0.1);
+        border-radius: f.get-shape('small');
+      }
+      
+      &:hover {
+        background-color: t.alpha('on-surface', 0.04);
+        border-radius: f.get-shape('small');
+      }
+    }
   }
   
   // Separator between hours, minutes, seconds
@@ -216,7 +225,7 @@ $component: '#{base.$prefix}-time-picker';
     background-color: t.color('surface-container-highest');
     border-radius: f.get-shape('small');
     overflow: hidden;
-    border: 1px solid t.color('outline');
+    border: 1px solid t.color('outline-variant');
     margin-left: 16px;
     
     &-am,
@@ -230,22 +239,32 @@ $component: '#{base.$prefix}-time-picker';
       cursor: pointer;
       @include m.typography('title-medium');
       
+      // Improve touch target sizes on mobile
+      @media (max-width: 599px) {
+        min-height: 48px;
+      }
+      
+      // Improve focus styles for keyboard navigation
+      &:focus-visible {
+        outline: 2px solid t.color('primary');
+        outline-offset: 2px;
+      }
+      
       &:hover {
         background-color: t.alpha('on-surface', 0.08);
       }
       
-      &:focus {
-        outline: none;
+      &:active {
         background-color: t.alpha('on-surface', 0.12);
       }
     }
     
     &--selected {
-      background-color: t.color('tertiary-container');
-      color: t.color('on-tertiary-container');
+      background-color: t.color('primary-container');
+      color: t.color('on-primary-container');
       
       &:hover {
-        background-color: t.color('tertiary-container');
+        background-color: t.color('primary-container');
       }
     }
   }
@@ -257,112 +276,25 @@ $component: '#{base.$prefix}-time-picker';
     justify-content: center;
     position: relative;
     margin: 0 auto 24px;
+    width: 256px;
+    height: 256px;
     
-    &-face {
-      position: relative;
-      width: 256px;
-      height: 256px;
-      border-radius: 50%;
-      background-color: t.alpha('on-surface', 0.05);
-    }
-    
-    &-center {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background-color: t.color('primary');
-      z-index: 1;
-    }
-    
-    &-hand {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 2px;
-      height: 110px;
-      background-color: t.color('primary');
-      transform-origin: top center;
-      z-index: 1;
-    }
-    
-    &-hand-knob {
-      position: absolute;
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      background-color: t.color('primary');
-      color: t.color('on-primary');
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 2;
-      @include m.elevation(1);
-    }
-    
-    &-numbers {
-      position: absolute;
-      top: 0;
-      left: 0;
+    &-canvas {
+      display: block;
       width: 100%;
       height: 100%;
-    }
-    
-    &-number {
-      position: absolute;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 40px;
-      height: 40px;
       border-radius: 50%;
-      @include m.typography('title-medium');
       cursor: pointer;
+      touch-action: none; // Prevent scrolling when touching the canvas
+      -webkit-tap-highlight-color: transparent; // Remove highlight on tap (mobile)
       
-      &:hover {
-        background-color: t.alpha('on-surface', 0.08);
-      }
+      // Add transition for smooth animations
+      transition: transform 0.2s ease;
       
       &:focus {
         outline: none;
-        background-color: t.alpha('on-surface', 0.12);
+        box-shadow: 0 0 0 2px t.color('primary');
       }
-      
-      &--selected {
-        background-color: t.color('primary-container');
-        color: t.color('on-primary-container');
-        
-        &:hover {
-          background-color: t.color('primary-container');
-        }
-      }
-    }
-  }
-  
-  // Input fields for input type
-  &-input-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 24px 0;
-  }
-  
-  &-time-input-field {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    
-    .#{$component}-input-label {
-      position: absolute;
-      bottom: 8px;
-      left: 0;
-      width: 100%;
-      text-align: center;
-      @include m.typography('body-small');
-      color: t.color('on-surface-variant');
     }
   }
   
@@ -382,22 +314,67 @@ $component: '#{base.$prefix}-time-picker';
     cursor: pointer;
     color: t.color('on-surface-variant');
     
+    // Improve touch target sizes on mobile
+    @media (max-width: 599px) {
+      min-height: 48px;
+      min-width: 48px;
+    }
+    
+    // Improve focus styles for keyboard navigation
+    &:focus-visible {
+      outline: 2px solid t.color('primary');
+      outline-offset: 2px;
+    }
+    
     &:hover {
       background-color: t.alpha('on-surface', 0.08);
     }
     
-    &:focus {
-      outline: none;
+    &:active {
       background-color: t.alpha('on-surface', 0.12);
+    }
+    
+    svg {
+      width: 24px;
+      height: 24px;
+      display: block;
     }
   }
   
-  &-cancel {
-    color: t.color('primary');
+  &-action-buttons {
+    display: flex;
+    gap: 8px;
   }
   
+  &-cancel,
   &-confirm {
+    padding: 10px 12px;
+    border: none;
+    background: transparent;
+    border-radius: f.get-shape('small');
+    cursor: pointer;
+    @include m.typography('label-large');
     color: t.color('primary');
+    
+    // Improve touch target sizes on mobile
+    @media (max-width: 599px) {
+      min-height: 48px;
+      padding: 12px 16px;
+    }
+    
+    // Improve focus styles for keyboard navigation
+    &:focus-visible {
+      outline: 2px solid t.color('primary');
+      outline-offset: 2px;
+    }
+    
+    &:hover {
+      background-color: t.alpha('primary', 0.08);
+    }
+    
+    &:active {
+      background-color: t.alpha('primary', 0.12);
+    }
   }
   
   // Responsive adjustments
@@ -405,9 +382,9 @@ $component: '#{base.$prefix}-time-picker';
     &-dialog {
       width: 100%;
       max-width: 100%;
-      height: 100%;
-      max-height: 100%;
+      min-height: 460px;
       border-radius: 0;
+      margin: 0;
       
       &--horizontal {
         flex-direction: column;
@@ -421,45 +398,54 @@ $component: '#{base.$prefix}-time-picker';
         }
       }
     }
+    
+    &-input-container {
+      margin: 16px 0;
+    }
+    
+    // Smaller inputs on mobile
+    &-hours,
+    &-minutes,
+    &-seconds {
+      width: 80px;
+      height: 76px;
+      font-size: 3rem;
+      
+      &[type="number"] {
+        width: 80px;
+        height: 76px;
+        font-size: 3rem;
+      }
+    }
   }
-    // Dark mode adjustments
+  
+  // Dark mode adjustments
   @media (prefers-color-scheme: dark) {
     &-dialog {
       &::before {
         opacity: 0.08;
       }
     }
-  }
-  
-  // Animation
-  &-modal {
-    opacity: 0;
-    transition: opacity 0.3s ease;
     
-    &.active {
-      opacity: 1;
+    &-hours,
+    &-minutes,
+    &-seconds {
+      &[type="number"] {
+        background-color: t.alpha('on-surface', 0.05);
+      }
     }
   }
   
-  &-dialog {
-    transform: translateY(20px);
-    opacity: 0;
-    transition: transform 0.3s ease, opacity 0.3s ease;
-    
-    &.active {
-      transform: translateY(0);
-      opacity: 1;
-    }
-  }
-  
-  // Accessibility focus styles
-  &:focus-visible {
-    outline: 2px solid t.color('primary');
-    outline-offset: 2px;
-  }
-  
-  // Screen reader only text
+  // Accessibility
   &-sr-only {
-    @include m.visually-hidden;
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
   }
 }

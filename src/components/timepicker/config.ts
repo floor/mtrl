@@ -1,4 +1,4 @@
-// src/components/timePicker/config.ts
+// src/components/timepicker/config.ts
 
 import { 
   createComponentConfig,

@@ -1,24 +1,28 @@
-// src/components/timePicker/render.ts
+// src/components/timepicker/render.ts
 
 import { TimePickerConfig, TimeValue, TIME_PICKER_TYPE, TIME_PICKER_ORIENTATION, TIME_FORMAT, TIME_PERIOD } from './types';
 import { 
   DIAL_CONSTANTS, 
   TIME_CONSTANTS, 
   DEFAULT_CLOCK_ICON,
-  DEFAULT_KEYBOARD_ICON 
+  DEFAULT_KEYBOARD_ICON,
+  SELECTORS
 } from './constants';
-import { padZero, convertTo12Hour, getAngle, getCoordinates } from './utils';
+import { padZero, convertTo12Hour } from './utils';
+import { renderClockDial, getTimeValueFromClick } from './clockdial';
 
 /**
  * Renders the time picker dialog
  * @param {HTMLElement} container - Dialog container element
  * @param {TimeValue} timeValue - Current time value
  * @param {TimePickerConfig} config - Time picker configuration
+ * @param {Function} onTimeChange - Optional callback when time changes
  */
 export const renderTimePicker = (
   container: HTMLElement,
   timeValue: TimeValue,
-  config: TimePickerConfig
+  config: TimePickerConfig,
+  onTimeChange?: (key: 'hours' | 'minutes' | 'seconds', value: number) => void
 ): void => {
   // Clear container content
   container.innerHTML = '';
@@ -37,12 +41,124 @@ export const renderTimePicker = (
   content.className = `${config.prefix}-time-picker-content`;
   container.appendChild(content);
   
-  // Render appropriate time picker type
-  if (config.type === TIME_PICKER_TYPE.DIAL) {
-    renderDialTimePicker(content, timeValue, config);
-  } else {
-    renderInputTimePicker(content, timeValue, config);
+  // Create time input container (same for both modes)
+  const inputContainer = document.createElement('div');
+  inputContainer.className = `${config.prefix}-time-picker-input-container`;
+  content.appendChild(inputContainer);
+  
+  // Determine display hours based on format
+  const { hours: displayHours } = config.format === TIME_FORMAT.MILITARY 
+    ? { hours: timeValue.hours } 
+    : convertTo12Hour(timeValue.hours);
+  
+  // Create hours input field
+  const hoursInputContainer = document.createElement('div');
+  hoursInputContainer.className = `${config.prefix}-time-picker-time-input-field`;
+  
+  const hoursInput = document.createElement('input');
+  hoursInput.type = 'number';
+  hoursInput.className = `${config.prefix}-time-picker-hours`;
+  hoursInput.min = config.format === TIME_FORMAT.MILITARY ? '0' : '1';
+  hoursInput.max = config.format === TIME_FORMAT.MILITARY ? '23' : '12';
+  hoursInput.value = padZero(displayHours);
+  hoursInput.setAttribute('data-type', 'hour');
+  hoursInput.setAttribute('inputmode', 'numeric');
+  hoursInput.setAttribute('pattern', '[0-9]*');
+    
+  hoursInputContainer.appendChild(hoursInput);
+  inputContainer.appendChild(hoursInputContainer);
+  
+  // Create separator
+  const separator = document.createElement('div');
+  separator.className = `${config.prefix}-time-picker-separator`;
+  separator.textContent = ':';
+  inputContainer.appendChild(separator);
+  
+  // Create minutes input field
+  const minutesInputContainer = document.createElement('div');
+  minutesInputContainer.className = `${config.prefix}-time-picker-time-input-field`;
+  
+  const minutesInput = document.createElement('input');
+  minutesInput.type = 'number';
+  minutesInput.className = `${config.prefix}-time-picker-minutes`;
+  minutesInput.min = '0';
+  minutesInput.max = '59';
+  minutesInput.value = padZero(timeValue.minutes);
+  minutesInput.setAttribute('data-type', 'minute');
+  minutesInput.setAttribute('inputmode', 'numeric');
+  minutesInput.setAttribute('pattern', '[0-9]*');
+  
+  minutesInputContainer.appendChild(minutesInput);
+  inputContainer.appendChild(minutesInputContainer);
+  
+  // Add seconds if enabled
+  let secondsInput;
+  if (config.showSeconds) {
+    const secondsSeparator = document.createElement('div');
+    secondsSeparator.className = `${config.prefix}-time-picker-separator`;
+    secondsSeparator.textContent = ':';
+    inputContainer.appendChild(secondsSeparator);
+    
+    const secondsInputContainer = document.createElement('div');
+    secondsInputContainer.className = `${config.prefix}-time-picker-time-input-field`;
+    
+    secondsInput = document.createElement('input');
+    secondsInput.type = 'number';
+    secondsInput.className = `${config.prefix}-time-picker-seconds`;
+    secondsInput.min = '0';
+    secondsInput.max = '59';
+    secondsInput.value = padZero(timeValue.seconds || 0);
+    secondsInput.setAttribute('data-type', 'second');
+    secondsInput.setAttribute('inputmode', 'numeric');
+    secondsInput.setAttribute('pattern', '[0-9]*');
+    
+    const secondsLabel = document.createElement('label');
+    secondsLabel.className = `${config.prefix}-time-picker-input-label`;
+    secondsLabel.textContent = 'Second';
+    
+    secondsInputContainer.appendChild(secondsInput);
+    secondsInputContainer.appendChild(secondsLabel);
+    inputContainer.appendChild(secondsInputContainer);
   }
+  
+  // Add period selector for 12-hour format
+  if (config.format === TIME_FORMAT.AMPM) {
+    const periodContainer = document.createElement('div');
+    periodContainer.className = `${config.prefix}-time-picker-period`;
+    
+    const amPeriod = document.createElement('div');
+    amPeriod.className = `${config.prefix}-time-picker-period-am ${timeValue.period === TIME_PERIOD.AM ? `${config.prefix}-time-picker-period--selected` : ''}`;
+    amPeriod.textContent = TIME_PERIOD.AM;
+    amPeriod.setAttribute('role', 'button');
+    amPeriod.setAttribute('tabindex', '0');
+    amPeriod.setAttribute('aria-pressed', timeValue.period === TIME_PERIOD.AM ? 'true' : 'false');
+    
+    const pmPeriod = document.createElement('div');
+    pmPeriod.className = `${config.prefix}-time-picker-period-pm ${timeValue.period === TIME_PERIOD.PM ? `${config.prefix}-time-picker-period--selected` : ''}`;
+    pmPeriod.textContent = TIME_PERIOD.PM;
+    pmPeriod.setAttribute('role', 'button');
+    pmPeriod.setAttribute('tabindex', '0');
+    pmPeriod.setAttribute('aria-pressed', timeValue.period === TIME_PERIOD.PM ? 'true' : 'false');
+    
+    periodContainer.appendChild(amPeriod);
+    periodContainer.appendChild(pmPeriod);
+    inputContainer.appendChild(periodContainer);
+  }
+  
+  // Create canvas-based dial container (shown/hidden based on mode)
+  const dialContainer = document.createElement('div');
+  dialContainer.className = `${config.prefix}-time-picker-dial`;
+  dialContainer.style.display = config.type === TIME_PICKER_TYPE.DIAL ? 'block' : 'none';
+  content.appendChild(dialContainer);
+  
+  // Create canvas element
+  const canvas = document.createElement('canvas');
+  canvas.className = `${config.prefix}-time-picker-dial-canvas`;
+  canvas.width = DIAL_CONSTANTS.DIAMETER;
+  canvas.height = DIAL_CONSTANTS.DIAMETER;
+  canvas.style.width = `${DIAL_CONSTANTS.DIAMETER}px`;
+  canvas.style.height = `${DIAL_CONSTANTS.DIAMETER}px`;
+  dialContainer.appendChild(canvas);
   
   // Create actions container
   const actions = document.createElement('div');
@@ -78,415 +194,420 @@ export const renderTimePicker = (
   confirmButton.textContent = config.confirmText || 'OK';
   confirmButton.setAttribute('type', 'button');
   actionButtons.appendChild(confirmButton);
-};
-
-/**
- * Renders the dial-based time picker
- * @param {HTMLElement} container - Content container element
- * @param {TimeValue} timeValue - Current time value
- * @param {TimePickerConfig} config - Time picker configuration
- */
-export const renderDialTimePicker = (
-  container: HTMLElement,
-  timeValue: TimeValue,
-  config: TimePickerConfig
-): void => {
-  // Create time selectors container
-  const selectors = document.createElement('div');
-  selectors.className = `${config.prefix}-time-picker-selectors`;
-  container.appendChild(selectors);
   
-  // Determine display hours based on format
-  const { hours: displayHours } = config.format === TIME_FORMAT.MILITARY 
-    ? { hours: timeValue.hours } 
-    : convertTo12Hour(timeValue.hours);
+  // Track active selector for clock dial
+  let activeSelector: 'hour' | 'minute' | 'second' = 'hour';
   
-  // Create hours input
-  const hoursContainer = document.createElement('div');
-  hoursContainer.className = `${config.prefix}-time-picker-time-selector`;
-  hoursContainer.setAttribute('data-selected', 'true');
-  
-  const hoursInput = document.createElement('div');
-  hoursInput.className = `${config.prefix}-time-picker-hours`;
-  hoursInput.textContent = padZero(displayHours);
-  hoursInput.setAttribute('data-type', 'hour');
-  hoursInput.setAttribute('data-active', 'true');
-  hoursContainer.appendChild(hoursInput);
-  
-  // Create separator
-  const separator = document.createElement('div');
-  separator.className = `${config.prefix}-time-picker-separator`;
-  separator.textContent = ':';
-  
-  // Create minutes input
-  const minutesContainer = document.createElement('div');
-  minutesContainer.className = `${config.prefix}-time-picker-time-selector`;
-  
-  const minutesInput = document.createElement('div');
-  minutesInput.className = `${config.prefix}-time-picker-minutes`;
-  minutesInput.textContent = padZero(timeValue.minutes);
-  minutesInput.setAttribute('data-type', 'minute');
-  minutesContainer.appendChild(minutesInput);
-  
-  // Add hours, separator, and minutes to selectors
-  selectors.appendChild(hoursContainer);
-  selectors.appendChild(separator);
-  selectors.appendChild(minutesContainer);
-  
-  // Add seconds if enabled
-  if (config.showSeconds) {
-    const secondsSeparator = document.createElement('div');
-    secondsSeparator.className = `${config.prefix}-time-picker-separator`;
-    secondsSeparator.textContent = ':';
-    selectors.appendChild(secondsSeparator);
-    
-    const secondsContainer = document.createElement('div');
-    secondsContainer.className = `${config.prefix}-time-picker-time-selector`;
-    
-    const secondsInput = document.createElement('div');
-    secondsInput.className = `${config.prefix}-time-picker-seconds`;
-    secondsInput.textContent = padZero(timeValue.seconds || 0);
-    secondsInput.setAttribute('data-type', 'second');
-    secondsContainer.appendChild(secondsInput);
-    
-    selectors.appendChild(secondsContainer);
+  // Render initial clock dial if in dial mode
+  if (config.type === TIME_PICKER_TYPE.DIAL) {
+    setTimeout(() => {
+      renderClockDial(canvas, timeValue, {
+        type: config.type,
+        format: config.format,
+        showSeconds: config.showSeconds,
+        prefix: config.prefix,
+        activeSelector
+      });
+    }, 0);
   }
   
-  // Add period selector for 12-hour format
-  if (config.format === TIME_FORMAT.AMPM) {
-    const periodContainer = document.createElement('div');
-    periodContainer.className = `${config.prefix}-time-picker-period`;
-    
-    const amPeriod = document.createElement('div');
-    amPeriod.className = `${config.prefix}-time-picker-period-am ${timeValue.period === TIME_PERIOD.AM ? `${config.prefix}-time-picker-period--selected` : ''}`;
-    amPeriod.textContent = TIME_PERIOD.AM;
-    
-    const pmPeriod = document.createElement('div');
-    pmPeriod.className = `${config.prefix}-time-picker-period-pm ${timeValue.period === TIME_PERIOD.PM ? `${config.prefix}-time-picker-period--selected` : ''}`;
-    pmPeriod.textContent = TIME_PERIOD.PM;
-    
-    periodContainer.appendChild(amPeriod);
-    periodContainer.appendChild(pmPeriod);
-    selectors.appendChild(periodContainer);
-  }
-  
-  // Create clock dial
-  const dial = document.createElement('div');
-  dial.className = `${config.prefix}-time-picker-dial`;
-  container.appendChild(dial);
-  
-  // Create clock face
-  const clockFace = document.createElement('div');
-  clockFace.className = `${config.prefix}-time-picker-dial-face`;
-  clockFace.style.width = `${DIAL_CONSTANTS.DIAMETER}px`;
-  clockFace.style.height = `${DIAL_CONSTANTS.DIAMETER}px`;
-  dial.appendChild(clockFace);
-  
-  // Create dial center
-  const center = document.createElement('div');
-  center.className = `${config.prefix}-time-picker-dial-center`;
-  center.style.width = `${DIAL_CONSTANTS.CENTER_SIZE}px`;
-  center.style.height = `${DIAL_CONSTANTS.CENTER_SIZE}px`;
-  clockFace.appendChild(center);
-  
-  // Calculate current angle based on active selector
-  let angle, value, radius, numbers;
-  
-  // Determine which time unit is active (hours, minutes, seconds)
-  if (hoursInput.getAttribute('data-active') === 'true') {
-    // Set up for hours
-    value = config.format === TIME_FORMAT.MILITARY ? timeValue.hours : displayHours;
-    const isInnerRing = config.format === TIME_FORMAT.MILITARY && timeValue.hours > 12;
-    numbers = config.format === TIME_FORMAT.MILITARY ? TIME_CONSTANTS.HOURS_24 : TIME_CONSTANTS.HOURS_12;
-    radius = isInnerRing ? DIAL_CONSTANTS.INNER_RADIUS : DIAL_CONSTANTS.OUTER_RADIUS;
-    
-    // Calculate hand angle for hours
-    if (config.format === TIME_FORMAT.MILITARY) {
-      angle = (timeValue.hours % 12) / 12 * 360;
+  // Add event listener for toggle button
+  toggleTypeButton.addEventListener('click', () => {
+    // Toggle dial visibility
+    if (dialContainer.style.display === 'none') {
+      // Switch to dial mode
+      dialContainer.style.display = 'block';
+      toggleTypeButton.innerHTML = config.keyboardIcon || DEFAULT_KEYBOARD_ICON;
+      toggleTypeButton.setAttribute('aria-label', 'Switch to keyboard input');
+      
+      // Set focus on dial
+      setTimeout(() => {
+        canvas.focus();
+        
+        // Apply active state to hour input by default
+        const hourElements = document.querySelectorAll(`.${config.prefix}-time-picker-hours`);
+        hourElements.forEach(el => el.setAttribute('data-active', 'true'));
+        
+        const minuteElements = document.querySelectorAll(`.${config.prefix}-time-picker-minutes`);
+        minuteElements.forEach(el => el.setAttribute('data-active', 'false'));
+        
+        const secondElements = document.querySelectorAll(`.${config.prefix}-time-picker-seconds`);
+        secondElements.forEach(el => el.setAttribute('data-active', 'false'));
+        
+        // Render clock dial
+        renderClockDial(canvas, timeValue, {
+          type: TIME_PICKER_TYPE.DIAL,
+          format: config.format,
+          showSeconds: config.showSeconds,
+          prefix: config.prefix,
+          activeSelector: 'hour'
+        });
+      }, 50);
     } else {
-      angle = (displayHours % 12) / 12 * 360;
-      // Handle 12 o'clock special case
-      if (displayHours === 12) {
-        angle = 0;
-      }
+      // Switch to input mode
+      dialContainer.style.display = 'none';
+      toggleTypeButton.innerHTML = config.clockIcon || DEFAULT_CLOCK_ICON;
+      toggleTypeButton.setAttribute('aria-label', 'Switch to dial selector');
+      
+      // Focus on hours input
+      setTimeout(() => {
+        hoursInput.focus();
+        hoursInput.select();
+      }, 50);
     }
-  } else if (minutesInput.getAttribute('data-active') === 'true') {
-    // Set up for minutes
-    value = timeValue.minutes;
-    numbers = TIME_CONSTANTS.MINUTES.filter(m => m % 5 === 0); // Show only multiples of 5
-    radius = DIAL_CONSTANTS.OUTER_RADIUS;
-    angle = (timeValue.minutes / 60) * 360;
-  } else if (config.showSeconds && document.querySelector(`.${config.prefix}-time-picker-seconds[data-active="true"]`)) {
-    // Set up for seconds
-    value = timeValue.seconds || 0;
-    numbers = TIME_CONSTANTS.SECONDS.filter(s => s % 5 === 0); // Show only multiples of 5
-    radius = DIAL_CONSTANTS.OUTER_RADIUS;
-    angle = ((timeValue.seconds || 0) / 60) * 360;
-  }
-  
-  // Create dial hand
-  const hand = document.createElement('div');
-  hand.className = `${config.prefix}-time-picker-dial-hand`;
-  
-  // Adjust hand length for inner/outer rings in 24h mode
-  if (config.format === TIME_FORMAT.MILITARY && hoursInput.getAttribute('data-active') === 'true') {
-    const isInnerRing = timeValue.hours > 12;
-    hand.style.height = isInnerRing 
-      ? `${DIAL_CONSTANTS.INNER_RADIUS}px` 
-      : `${DIAL_CONSTANTS.OUTER_RADIUS}px`;
-  } else {
-    hand.style.height = `${DIAL_CONSTANTS.OUTER_RADIUS}px`;
-  }
-  
-  // Position hand based on angle
-  if (angle !== undefined) {
-    hand.style.transform = `rotate(${angle}deg)`;
-  }
-  clockFace.appendChild(hand);
-  
-  // Create hand knob
-  const handKnob = document.createElement('div');
-  handKnob.className = `${config.prefix}-time-picker-dial-hand-knob`;
-  handKnob.style.width = `${DIAL_CONSTANTS.HAND_SIZE}px`;
-  handKnob.style.height = `${DIAL_CONSTANTS.HAND_SIZE}px`;
-  
-  // Position knob at end of hand
-  if (angle !== undefined && radius !== undefined) {
-    const coords = getCoordinates(radius, angle);
-    handKnob.style.left = `${coords.x + DIAL_CONSTANTS.DIAMETER / 2 - DIAL_CONSTANTS.HAND_SIZE / 2}px`;
-    handKnob.style.top = `${coords.y + DIAL_CONSTANTS.DIAMETER / 2 - DIAL_CONSTANTS.HAND_SIZE / 2}px`;
-  }
-  
-  clockFace.appendChild(handKnob);
-  
-  // Create dial numbers
-  if (numbers !== undefined && radius !== undefined) {
-    const numbersContainer = document.createElement('div');
-    numbersContainer.className = `${config.prefix}-time-picker-dial-numbers`;
-    
-    // Create 12/24 hour numbers or minute/second markers
-    const count = hoursInput.getAttribute('data-active') === 'true'
-      ? (config.format === TIME_FORMAT.MILITARY ? 24 : 12)
-      : 12; // For minutes/seconds we show 12 markers (every 5 minutes/seconds)
-    
-    const step = hoursInput.getAttribute('data-active') === 'true'
-      ? 1
-      : 5; // For minutes/seconds we step by 5
-    
-    for (let i = 0; i < count; i++) {
-      const index = i * step;
-      const numberValue = hoursInput.getAttribute('data-active') === 'true'
-        ? (config.format === TIME_FORMAT.MILITARY ? i : (i === 0 ? 12 : i))
-        : (index === 0 ? 0 : index);
-      
-      // Skip inner ring numbers for 12-hour mode
-      if (config.format === TIME_FORMAT.AMPM && hoursInput.getAttribute('data-active') === 'true' && i > 12) {
-        continue;
-      }
-      
-      // Calculate angle for this number
-      const numberAngle = (i / count) * 360;
-      
-      // Determine radius based on hour value for 24-hour clock
-      const numberRadius = (config.format === TIME_FORMAT.MILITARY && 
-                           hoursInput.getAttribute('data-active') === 'true' && 
-                           i >= 12) 
-        ? DIAL_CONSTANTS.INNER_RADIUS 
-        : DIAL_CONSTANTS.OUTER_RADIUS;
-      
-      // Calculate position
-      const numberCoords = getCoordinates(numberRadius, numberAngle);
-      
-      // Create number element
-      const numberEl = document.createElement('div');
-      numberEl.className = `${config.prefix}-time-picker-dial-number`;
-      numberEl.textContent = padZero(numberValue);
-      numberEl.setAttribute('data-value', numberValue.toString());
-      numberEl.setAttribute('data-type', hoursInput.getAttribute('data-active') === 'true' 
-        ? 'hour' 
-        : (minutesInput.getAttribute('data-active') === 'true' ? 'minute' : 'second'));
-      
-      // Position number
-      numberEl.style.left = `${numberCoords.x + DIAL_CONSTANTS.DIAMETER / 2 - DIAL_CONSTANTS.NUMBER_SIZE / 2}px`;
-      numberEl.style.top = `${numberCoords.y + DIAL_CONSTANTS.DIAMETER / 2 - DIAL_CONSTANTS.NUMBER_SIZE / 2}px`;
-      numberEl.style.width = `${DIAL_CONSTANTS.NUMBER_SIZE}px`;
-      numberEl.style.height = `${DIAL_CONSTANTS.NUMBER_SIZE}px`;
-      
-      // Highlight selected number
-      if (numberValue === value) {
-        numberEl.classList.add(`${config.prefix}-time-picker-dial-number--selected`);
-      }
-      
-      numbersContainer.appendChild(numberEl);
-    }
-    
-    clockFace.appendChild(numbersContainer);
-  }
-  
-  // Add event listeners to time selectors
-  hoursInput.addEventListener('click', () => {
-    // Deactivate all selectors
-    document.querySelectorAll(`.${config.prefix}-time-picker-hours, .${config.prefix}-time-picker-minutes, .${config.prefix}-time-picker-seconds`)
-      .forEach(el => el.setAttribute('data-active', 'false'));
-    
-    // Activate hours selector
-    hoursInput.setAttribute('data-active', 'true');
-    
-    // Re-render dial with hours
-    renderDialTimePicker(container, timeValue, config);
   });
   
-  minutesInput.addEventListener('click', () => {
-    // Deactivate all selectors
-    document.querySelectorAll(`.${config.prefix}-time-picker-hours, .${config.prefix}-time-picker-minutes, .${config.prefix}-time-picker-seconds`)
-      .forEach(el => el.setAttribute('data-active', 'false'));
+  // Handle input time changes
+  const handleInputChange = (e: Event) => {
+    const target = e.target as HTMLInputElement;
+    const type = target.getAttribute('data-type');
+    const value = target.value;
     
-    // Activate minutes selector
-    minutesInput.setAttribute('data-active', 'true');
+    // Skip processing if the field is empty (user might be in the middle of typing)
+    if (value === '') return;
     
-    // Re-render dial with minutes
-    renderDialTimePicker(container, timeValue, config);
+    const numValue = parseInt(value, 10);
+    if (isNaN(numValue)) return;
+    
+    if (type === 'hour') {
+      let newHours = numValue;
+      
+      // Handle hour constraints
+      if (config.format === TIME_FORMAT.AMPM) {
+        // Special handling for 12-hour format
+        if (numValue < 0) newHours = 1;
+        if (numValue > 12) newHours = 12;
+        
+        // Convert to 24h format internally
+        if (timeValue.period === 'PM' && newHours !== 12) {
+          newHours += 12;
+        } else if (timeValue.period === 'AM' && newHours === 12) {
+          newHours = 0;
+        }
+      } else {
+        // 24-hour format validation
+        if (numValue < 0) newHours = 0;
+        if (numValue > 23) newHours = 23;
+      }
+      
+      timeValue.hours = newHours;
+      
+      // Set this field as active for the dial
+      activeSelector = 'hour';
+      
+      // Update active states for visualization
+      hoursInput.setAttribute('data-active', 'true');
+      minutesInput.setAttribute('data-active', 'false');
+      if (secondsInput) secondsInput.setAttribute('data-active', 'false');
+      
+      // Always update the dial regardless of visibility
+      renderClockDial(canvas, timeValue, {
+        type: TIME_PICKER_TYPE.DIAL,
+        format: config.format,
+        showSeconds: config.showSeconds,
+        prefix: config.prefix,
+        activeSelector
+      });
+      
+      if (onTimeChange) {
+        onTimeChange('hours', newHours);
+      }
+    } else if (type === 'minute') {
+      let newMinutes = numValue;
+      
+      // Handle minute constraints
+      if (numValue < 0) newMinutes = 0;
+      if (numValue > 59) newMinutes = 59;
+      
+      timeValue.minutes = newMinutes;
+      
+      // Set this field as active for the dial
+      activeSelector = 'minute';
+      
+      // Update active states for visualization
+      hoursInput.setAttribute('data-active', 'false');
+      minutesInput.setAttribute('data-active', 'true');
+      if (secondsInput) secondsInput.setAttribute('data-active', 'false');
+      
+      // Always update the dial regardless of visibility
+      renderClockDial(canvas, timeValue, {
+        type: TIME_PICKER_TYPE.DIAL,
+        format: config.format,
+        showSeconds: config.showSeconds,
+        prefix: config.prefix,
+        activeSelector
+      });
+      
+      if (onTimeChange) {
+        onTimeChange('minutes', newMinutes);
+      }
+    } else if (type === 'second') {
+      let newSeconds = numValue;
+      
+      // Handle second constraints
+      if (numValue < 0) newSeconds = 0;
+      if (numValue > 59) newSeconds = 59;
+      
+      timeValue.seconds = newSeconds;
+      
+      // Set this field as active for the dial
+      activeSelector = 'second';
+      
+      // Update active states for visualization
+      hoursInput.setAttribute('data-active', 'false');
+      minutesInput.setAttribute('data-active', 'false');
+      if (secondsInput) secondsInput.setAttribute('data-active', 'true');
+      
+      // Always update the dial regardless of visibility
+      renderClockDial(canvas, timeValue, {
+        type: TIME_PICKER_TYPE.DIAL,
+        format: config.format,
+        showSeconds: config.showSeconds,
+        prefix: config.prefix,
+        activeSelector
+      });
+      
+      if (onTimeChange) {
+        onTimeChange('seconds', newSeconds);
+      }
+    }
+  };
+  
+  // Event handlers for input fields
+  hoursInput.addEventListener('input', handleInputChange);
+  minutesInput.addEventListener('input', handleInputChange);
+  if (secondsInput) {
+    secondsInput.addEventListener('input', handleInputChange);
+  }
+  
+  // Set up keyboard navigation
+  hoursInput.addEventListener('keyup', (e) => {
+    if (e.key === 'Enter') {
+      minutesInput.focus();
+      minutesInput.select();
+    }
   });
   
-  if (config.showSeconds) {
-    const secondsInput = document.querySelector(`.${config.prefix}-time-picker-seconds`);
-    if (secondsInput) {
-      secondsInput.addEventListener('click', () => {
-        // Deactivate all selectors
-        document.querySelectorAll(`.${config.prefix}-time-picker-hours, .${config.prefix}-time-picker-minutes, .${config.prefix}-time-picker-seconds`)
-          .forEach(el => el.setAttribute('data-active', 'false'));
-        
-        // Activate seconds selector
-        secondsInput.setAttribute('data-active', 'true');
-        
-        // Re-render dial with seconds
-        renderDialTimePicker(container, timeValue, config);
+  minutesInput.addEventListener('keyup', (e) => {
+    if (e.key === 'Enter') {
+      if (config.showSeconds && secondsInput) {
+        secondsInput.focus();
+        secondsInput.select();
+      } else {
+        confirmButton.focus();
+      }
+    }
+  });
+  
+  if (secondsInput) {
+    secondsInput.addEventListener('keyup', (e) => {
+      if (e.key === 'Enter') {
+        confirmButton.focus();
+      }
+    });
+  }
+  
+  // Handle period selection (AM/PM)
+  const handlePeriodChange = (period: TIME_PERIOD) => {
+    if (timeValue.period !== period) {
+      const oldPeriod = timeValue.period;
+      timeValue.period = period;
+      
+      // Adjust hours when switching between AM/PM
+      if (oldPeriod === TIME_PERIOD.AM && period === TIME_PERIOD.PM) {
+        if (timeValue.hours < 12) {
+          timeValue.hours += 12;
+        }
+      } else if (oldPeriod === TIME_PERIOD.PM && period === TIME_PERIOD.AM) {
+        if (timeValue.hours >= 12) {
+          timeValue.hours -= 12;
+        }
+      }
+      
+      // Update display for 12-hour format
+      if (config.format === TIME_FORMAT.AMPM) {
+        const displayHours = timeValue.hours === 0 ? 12 : (timeValue.hours > 12 ? timeValue.hours - 12 : timeValue.hours);
+        hoursInput.value = padZero(displayHours);
+      }
+      
+      // Update period selectors
+      document.querySelectorAll(`.${config.prefix}-time-picker-period-am, .${config.prefix}-time-picker-period-pm`)
+        .forEach(el => {
+          el.classList.remove(`${config.prefix}-time-picker-period--selected`);
+          el.setAttribute('aria-pressed', 'false');
+        });
+      
+      const selectedPeriod = document.querySelector(`.${config.prefix}-time-picker-period-${period.toLowerCase()}`);
+      if (selectedPeriod) {
+        selectedPeriod.classList.add(`${config.prefix}-time-picker-period--selected`);
+        selectedPeriod.setAttribute('aria-pressed', 'true');
+      }
+      
+      // Update dial if visible
+      if (dialContainer.style.display === 'block') {
+        renderClockDial(canvas, timeValue, {
+          type: TIME_PICKER_TYPE.DIAL,
+          format: config.format,
+          showSeconds: config.showSeconds,
+          prefix: config.prefix,
+          activeSelector
+        });
+      }
+      
+      if (onTimeChange) {
+        onTimeChange('hours', timeValue.hours);
+      }
+    }
+  };
+  
+  // Add event listeners for period selectors
+  if (config.format === TIME_FORMAT.AMPM) {
+    const amPeriodElement = document.querySelector(`.${config.prefix}-time-picker-period-am`);
+    const pmPeriodElement = document.querySelector(`.${config.prefix}-time-picker-period-pm`);
+    
+    if (amPeriodElement) {
+      amPeriodElement.addEventListener('click', () => {
+        handlePeriodChange(TIME_PERIOD.AM);
+      });
+    }
+    
+    if (pmPeriodElement) {
+      pmPeriodElement.addEventListener('click', () => {
+        handlePeriodChange(TIME_PERIOD.PM);
       });
     }
   }
-};
-
-/**
- * Renders the input-based time picker
- * @param {HTMLElement} container - Content container element
- * @param {TimeValue} timeValue - Current time value
- * @param {TimePickerConfig} config - Time picker configuration
- */
-export const renderInputTimePicker = (
-  container: HTMLElement,
-  timeValue: TimeValue,
-  config: TimePickerConfig
-): void => {
-  // Create time input container
-  const inputContainer = document.createElement('div');
-  inputContainer.className = `${config.prefix}-time-picker-input-container`;
-  container.appendChild(inputContainer);
   
-  // Determine display hours based on format
-  const { hours: displayHours } = config.format === TIME_FORMAT.MILITARY 
-    ? { hours: timeValue.hours } 
-    : convertTo12Hour(timeValue.hours);
-  
-  // Create hours input field
-  const hoursInputContainer = document.createElement('div');
-  hoursInputContainer.className = `${config.prefix}-time-picker-time-input-field`;
-  
-  const hoursInputLabel = document.createElement('label');
-  hoursInputLabel.className = `${config.prefix}-time-picker-input-label`;
-  hoursInputLabel.textContent = 'Hour';
-  
-  const hoursInput = document.createElement('input');
-  hoursInput.className = `${config.prefix}-time-picker-hours`;
-  hoursInput.type = 'number';
-  hoursInput.min = config.format === TIME_FORMAT.MILITARY ? '0' : '1';
-  hoursInput.max = config.format === TIME_FORMAT.MILITARY ? '23' : '12';
-  hoursInput.value = padZero(displayHours);
-  hoursInput.setAttribute('data-type', 'hour');
-  hoursInput.setAttribute('inputmode', 'numeric');
-  hoursInput.setAttribute('pattern', '[0-9]*');
-  
-  hoursInputContainer.appendChild(hoursInput);
-  hoursInputContainer.appendChild(hoursInputLabel);
-  inputContainer.appendChild(hoursInputContainer);
-  
-  // Create separator
-  const separator = document.createElement('div');
-  separator.className = `${config.prefix}-time-picker-separator`;
-  separator.textContent = ':';
-  inputContainer.appendChild(separator);
-  
-  // Create minutes input field
-  const minutesInputContainer = document.createElement('div');
-  minutesInputContainer.className = `${config.prefix}-time-picker-time-input-field`;
-  
-  const minutesInputLabel = document.createElement('label');
-  minutesInputLabel.className = `${config.prefix}-time-picker-input-label`;
-  minutesInputLabel.textContent = 'Minute';
-  
-  const minutesInput = document.createElement('input');
-  minutesInput.className = `${config.prefix}-time-picker-minutes`;
-  minutesInput.type = 'number';
-  minutesInput.min = '0';
-  minutesInput.max = '59';
-  minutesInput.value = padZero(timeValue.minutes);
-  minutesInput.setAttribute('data-type', 'minute');
-  minutesInput.setAttribute('inputmode', 'numeric');
-  minutesInput.setAttribute('pattern', '[0-9]*');
-  
-  minutesInputContainer.appendChild(minutesInput);
-  minutesInputContainer.appendChild(minutesInputLabel);
-  inputContainer.appendChild(minutesInputContainer);
-  
-  // Add seconds if enabled
-  if (config.showSeconds) {
-    const secondsSeparator = document.createElement('div');
-    secondsSeparator.className = `${config.prefix}-time-picker-separator`;
-    secondsSeparator.textContent = ':';
-    inputContainer.appendChild(secondsSeparator);
+  // Set up the clock dial interaction
+  if (config.type === TIME_PICKER_TYPE.DIAL || dialContainer.style.display === 'block') {
+    // Handle clock dial
+    canvas.addEventListener('click', (event) => {
+      const rect = canvas.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+      
+      const selectedValue = getTimeValueFromClick(canvas, x, y, {
+        type: TIME_PICKER_TYPE.DIAL,
+        format: config.format,
+        showSeconds: config.showSeconds,
+        prefix: config.prefix,
+        activeSelector
+      });
+      
+      if (selectedValue !== null) {
+        if (activeSelector === 'hour') {
+          let newHours = selectedValue;
+          
+          // Adjust for 12-hour format
+          if (config.format === TIME_FORMAT.AMPM) {
+            if (timeValue.period === TIME_PERIOD.PM && selectedValue !== 12) {
+              newHours += 12;
+            } else if (timeValue.period === TIME_PERIOD.AM && selectedValue === 12) {
+              newHours = 0;
+            }
+          }
+          
+          timeValue.hours = newHours;
+          
+          // Update input display
+          if (config.format === TIME_FORMAT.AMPM) {
+            const displayHours = newHours === 0 ? 12 : (newHours > 12 ? newHours - 12 : newHours);
+            hoursInput.value = padZero(displayHours);
+          } else {
+            hoursInput.value = padZero(newHours);
+          }
+          
+          if (onTimeChange) {
+            onTimeChange('hours', newHours);
+          }
+        } else if (activeSelector === 'minute') {
+          timeValue.minutes = selectedValue;
+          minutesInput.value = padZero(selectedValue);
+          
+          if (onTimeChange) {
+            onTimeChange('minutes', selectedValue);
+          }
+        } else if (activeSelector === 'second' && secondsInput) {
+          timeValue.seconds = selectedValue;
+          secondsInput.value = padZero(selectedValue);
+          
+          if (onTimeChange) {
+            onTimeChange('seconds', selectedValue);
+          }
+        }
+        
+        // Update dial
+        renderClockDial(canvas, timeValue, {
+          type: TIME_PICKER_TYPE.DIAL,
+          format: config.format,
+          showSeconds: config.showSeconds,
+          prefix: config.prefix,
+          activeSelector
+        });
+      }
+    });
     
-    const secondsInputContainer = document.createElement('div');
-    secondsInputContainer.className = `${config.prefix}-time-picker-time-input-field`;
+    // Setup clicking on input fields to change active selector in dial mode
+    hoursInput.addEventListener('click', () => {
+      if (dialContainer.style.display === 'block') {
+        activeSelector = 'hour';
+        
+        // Update active states
+        hoursInput.setAttribute('data-active', 'true');
+        minutesInput.setAttribute('data-active', 'false');
+        if (secondsInput) secondsInput.setAttribute('data-active', 'false');
+        
+        // Update dial
+        renderClockDial(canvas, timeValue, {
+          type: TIME_PICKER_TYPE.DIAL,
+          format: config.format,
+          showSeconds: config.showSeconds,
+          prefix: config.prefix,
+          activeSelector
+        });
+      }
+    });
     
-    const secondsInputLabel = document.createElement('label');
-    secondsInputLabel.className = `${config.prefix}-time-picker-input-label`;
-    secondsInputLabel.textContent = 'Second';
+    minutesInput.addEventListener('click', () => {
+      if (dialContainer.style.display === 'block') {
+        activeSelector = 'minute';
+        
+        // Update active states
+        hoursInput.setAttribute('data-active', 'false');
+        minutesInput.setAttribute('data-active', 'true');
+        if (secondsInput) secondsInput.setAttribute('data-active', 'false');
+        
+        // Update dial
+        renderClockDial(canvas, timeValue, {
+          type: TIME_PICKER_TYPE.DIAL,
+          format: config.format,
+          showSeconds: config.showSeconds,
+          prefix: config.prefix,
+          activeSelector
+        });
+      }
+    });
     
-    const secondsInput = document.createElement('input');
-    secondsInput.className = `${config.prefix}-time-picker-seconds`;
-    secondsInput.type = 'number';
-    secondsInput.min = '0';
-    secondsInput.max = '59';
-    secondsInput.value = padZero(timeValue.seconds || 0);
-    secondsInput.setAttribute('data-type', 'second');
-    secondsInput.setAttribute('inputmode', 'numeric');
-    secondsInput.setAttribute('pattern', '[0-9]*');
-    
-    secondsInputContainer.appendChild(secondsInput);
-    secondsInputContainer.appendChild(secondsInputLabel);
-    inputContainer.appendChild(secondsInputContainer);
-  }
-  
-  // Add period selector for 12-hour format
-  if (config.format === TIME_FORMAT.AMPM) {
-    const periodContainer = document.createElement('div');
-    periodContainer.className = `${config.prefix}-time-picker-period`;
-    
-    const amPeriod = document.createElement('div');
-    amPeriod.className = `${config.prefix}-time-picker-period-am ${timeValue.period === TIME_PERIOD.AM ? `${config.prefix}-time-picker-period--selected` : ''}`;
-    amPeriod.textContent = TIME_PERIOD.AM;
-    amPeriod.setAttribute('role', 'button');
-    amPeriod.setAttribute('tabindex', '0');
-    amPeriod.setAttribute('aria-pressed', timeValue.period === TIME_PERIOD.AM ? 'true' : 'false');
-    
-    const pmPeriod = document.createElement('div');
-    pmPeriod.className = `${config.prefix}-time-picker-period-pm ${timeValue.period === TIME_PERIOD.PM ? `${config.prefix}-time-picker-period--selected` : ''}`;
-    pmPeriod.textContent = TIME_PERIOD.PM;
-    pmPeriod.setAttribute('role', 'button');
-    pmPeriod.setAttribute('tabindex', '0');
-    pmPeriod.setAttribute('aria-pressed', timeValue.period === TIME_PERIOD.PM ? 'true' : 'false');
-    
-    periodContainer.appendChild(amPeriod);
-    periodContainer.appendChild(pmPeriod);
-    inputContainer.appendChild(periodContainer);
+    if (secondsInput) {
+      secondsInput.addEventListener('click', () => {
+        if (dialContainer.style.display === 'block') {
+          activeSelector = 'second';
+          
+          // Update active states
+          hoursInput.setAttribute('data-active', 'false');
+          minutesInput.setAttribute('data-active', 'false');
+          secondsInput.setAttribute('data-active', 'true');
+          
+          // Update dial
+          renderClockDial(canvas, timeValue, {
+            type: TIME_PICKER_TYPE.DIAL,
+            format: config.format,
+            showSeconds: config.showSeconds,
+            prefix: config.prefix,
+            activeSelector
+          });
+        }
+      });
+    }
   }
 };
