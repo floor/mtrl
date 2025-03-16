@@ -73,6 +73,11 @@ export const withAPI = ({ disabled, lifecycle }: ApiOptions) =>
     getIcon() {
       return component.icon.getIcon();
     },
+
+    setAriaLabel(label: string) {
+      component.element.setAttribute('aria-label', label);
+      return this;
+    },
     
     destroy() {
       lifecycle.destroy();

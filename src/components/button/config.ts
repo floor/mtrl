@@ -45,6 +45,11 @@ export const getElementConfig = (config: ButtonConfig) => {
     attrs.value = config.value;
   }
   
+  // Add aria-label attribute for accessibility
+  if (config.ariaLabel) {
+    attrs['aria-label'] = config.ariaLabel;
+  }
+  
   return createElementConfig(config, {
     tag: 'button',
     attrs,

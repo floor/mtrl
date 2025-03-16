@@ -35,6 +35,11 @@ export interface CreateElementOptions {
    * Element ID
    */
   id?: string;
+
+  /**
+   * Element ariaLabel
+   */
+  ariaLabel?: string;
   
   /**
    * Dataset attributes

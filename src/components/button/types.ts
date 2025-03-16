@@ -81,6 +81,12 @@ export interface ButtonConfig {
     /** Opacity values for ripple start and end [start, end] */
     opacity?: [string, string];
   };
+
+  /**
+   * Accessible name for the button (aria-label)
+   * Required for icon-only buttons without text
+   */
+  ariaLabel?: string;
 }
 
 /**
