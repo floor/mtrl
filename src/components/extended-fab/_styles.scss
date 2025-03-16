@@ -169,11 +169,14 @@ $component: '#{base.$prefix}-extended-fab';
   // Collapsed state (transforms into regular FAB)
   &--collapsed {
     width: 56px;
+    min-width: 56px;
     border-radius: 50%;
     padding: 0;
-    
+
     .#{$component}-text {
       // Hide text but keep it accessible to screen readers
+
+      display: none;
       opacity: 0;
       width: 0;
       overflow: hidden;

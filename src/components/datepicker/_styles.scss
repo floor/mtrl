@@ -55,7 +55,6 @@ $component: '#{base.$prefix}-datepicker';
     position: absolute;
     top: 100%;
     left: 0;
-    width: 328px;
     z-index: 10;
     margin-top: 8px;
     background-color: t.color('surface-container-high');
@@ -149,7 +148,7 @@ $component: '#{base.$prefix}-datepicker';
   &-days {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 4px;
+    gap: 0;
   }
   
   &-day {
@@ -165,9 +164,9 @@ $component: '#{base.$prefix}-datepicker';
     color: t.color('on-surface');
     cursor: pointer;
     
-    &:hover:not(:disabled) {
-      background-color: t.alpha('on-surface', 0.08);
-    }
+    // &:hover:not(:disabled) {
+    //   background-color: t.alpha('on-surface', 0.08);
+    // }
     
     &:focus {
       outline: none;
@@ -180,7 +179,16 @@ $component: '#{base.$prefix}-datepicker';
     }
     
     &.today {
-      border: 1px solid t.color('primary');
+      position: relative;
+      &::before {
+        position: absolute;
+        border-radius: 50%;
+        height: 100%;
+        width: 100%;
+        content: '';
+        border: 1px solid t.color('primary');
+      }
+      
     }
     
     &.selected {
@@ -201,7 +209,7 @@ $component: '#{base.$prefix}-datepicker';
     }
     
     &.range-middle {
-      background-color: t.color('primary-container');
+      background-color: t.alpha('primary-container', 0.18);
       color: t.color('on-primary-container');
       border-radius: 0;
     }
@@ -299,13 +307,31 @@ $component: '#{base.$prefix}-datepicker';
     .#{$component}-days {
       .#{$component}-day {
         &.range-start {
-          border-top-right-radius: 0;
-          border-bottom-right-radius: 0;
+          position: relative;
+          // border-top-right-radius: 0;
+          // border-bottom-right-radius: 0;
+          &::before {
+            position: absolute;
+            content: '';
+            right: 0;
+            width: 50%;
+            height: 100%;
+            background-color: t.alpha('primary', 0.1);
+          }
         }
         
         &.range-end {
-          border-top-left-radius: 0;
-          border-bottom-left-radius: 0;
+          position: relative;
+          // border-top-left-radius: 0;
+          // border-bottom-left-radius: 0;
+          &::before {
+            position: absolute;
+            content: '';
+            left: 0;
+            width: 50%;
+            height: 100%;
+            background-color: t.alpha('primary', 0.1);
+          }
         }
       }
     }
