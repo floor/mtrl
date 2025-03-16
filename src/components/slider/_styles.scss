@@ -5,8 +5,11 @@
 @use '../../styles/abstract/mixins' as m;
 @use '../../styles/abstract/theme' as t;
 
-// $transform: transform 0.2s ease, width 0.2s ease, height 0.2s ease;
-$transform: none;
+// Define the transition properties for smoother animations with absolute positioning
+$track-transition: left 0.2s ease, right 0.2s ease;
+$handle-transition: left 0.2s ease, transform 0.2s ease;
+$bubble-transition: left 0.2s ease, opacity 0.2s ease, visibility 0s linear 0.2s;
+$bubble-transition-visible: left 0.2s ease, opacity 0.2s ease, visibility 0s;
 
 $component: '#{base.$prefix}-slider';
 
@@ -95,7 +98,7 @@ $component: '#{base.$prefix}-slider';
     cursor: pointer;
     z-index: 4;
     padding: 4px 0;
-    transition: $transform;
+    transition: $handle-transition;
     width: 16px;
     height: 50px;
     border-radius: 16px;
@@ -214,7 +217,7 @@ $component: '#{base.$prefix}-slider';
     height: 100%;
     background-color: t.color('primary');
     transform-origin: left center;
-    transition: $transform;
+    transition: $track-transition;
     border-radius: 2px;
     opacity: 0.24;
     z-index: 1;
@@ -243,7 +246,7 @@ $component: '#{base.$prefix}-slider';
     height: 100%;
     background-color: t.color('primary');
     transform-origin: left center;
-    transition: $transform;
+    transition: $track-transition;
     border-radius: 2px;
     z-index: 1;
 
@@ -268,9 +271,8 @@ $component: '#{base.$prefix}-slider';
     height: 100%;
     background-color: t.color('primary');
     transform-origin: left center;
-    transition: $transform;
+    transition: $track-transition;
     border-radius: 2px;
-    width: 100%;
     z-index: 0;
     
     .#{$component}--secondary & {
@@ -423,14 +425,14 @@ $component: '#{base.$prefix}-slider';
     transform: translateX(-50%);
     visibility: hidden;
     opacity: 0;
-    transition: opacity 0.2s ease, visibility 0s linear 0.2s;
+    transition: $bubble-transition;
     pointer-events: none;
     
     // Show value when interacting
     &--visible {
       visibility: visible;
       opacity: 1;
-      transition: opacity 0.2s ease, visibility 0s;
+      transition: $bubble-transition-visible;
     }
   }
   
@@ -479,7 +481,8 @@ $component: '#{base.$prefix}-slider';
     .#{$component}-start-track, 
     .#{$component}-active-track, 
     .#{$component}-remaining-track, 
-    .#{$component}-handle {
+    .#{$component}-handle,
+    .#{$component}-value {
       transition: none;
     }
   }

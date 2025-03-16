@@ -140,6 +140,15 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
     }
   };
   
+  // Track whether a real drag has started
+  let hasActualDragStarted = false;
+  
+  // Track the initial position on mousedown
+  let initialX = 0;
+  
+  // Minimum distance to consider as a drag (in pixels)
+  const DRAG_THRESHOLD = 3;
+  
   /**
    * Handle handle mouse down with improved bubble handling
    */
@@ -158,14 +167,17 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
     // Clear any keyboard focus indicators globally
     clearGlobalKeyboardFocus();
     
-    state.dragging = true;
+    // Capture initial mouse position but don't set dragging yet
+    initialX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+    
+    // Only set ready-to-drag state
+    state.dragging = false;
+    hasActualDragStarted = false;
+    
     state.activeHandle = isSecondHandle ? secondHandle : handle;
     state.activeBubble = isSecondHandle ? secondValueBubble : valueBubble;
     
-    // Add dragging class to component element to style the handle differently
-    state.component.element.classList.add(`${state.component.getClass('slider')}--dragging`);
-    
-    // Show active bubble
+    // Show active bubble immediately on mousedown
     showActiveBubble(state.activeBubble);
     
     // Add global event listeners
@@ -254,6 +266,9 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
     state.activeHandle = isSecondHandle ? secondHandle : handle;
     state.activeBubble = isSecondHandle ? secondValueBubble : valueBubble;
     
+    // Store the initial position for drag detection
+    initialX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+    
     // Call handle mouse down to start dragging
     handleHandleMouseDown(e, isSecondHandle);
   };
@@ -262,18 +277,29 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
    * Handle mouse move with improved handle and bubble switching
    */
   const handleMouseMove = (e) => {
-    if (!state.dragging || !state.activeHandle || !container) return;
+    if (!state.activeHandle || !container) return;
     
     e.preventDefault();
     
     try {
-      // Get position
-      const position = e.type.includes('touch')
+      // Get current position
+      const currentX = e.type.includes('touch')
         ? e.touches[0].clientX
         : e.clientX;
       
+      // Check if we've moved enough to consider it a drag
+      if (!hasActualDragStarted && Math.abs(currentX - initialX) >= DRAG_THRESHOLD) {
+        // Now we're officially dragging
+        hasActualDragStarted = true;
+        state.dragging = true;
+        
+        // Add dragging class to component element to style the handle differently
+        // This only happens after the user has moved the handle by the threshold amount
+        state.component.element.classList.add(`${state.component.getClass('slider')}--dragging`);
+      }
+      
       // Calculate new value
-      let newValue = getValueFromPosition(position);
+      let newValue = getValueFromPosition(currentX);
       
       // Round to step if needed
       if (config.snapToSteps && state.step > 0) {
@@ -354,11 +380,13 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
    * Handle mouse up with consistent bubble hiding
    */
   const handleMouseUp = (e) => {
-    if (!state.dragging) return;
+    if (!state.activeHandle) return;
     
     e.preventDefault();
     
+    // Reset drag states
     state.dragging = false;
+    hasActualDragStarted = false;
     
     // Remove dragging class from component element
     state.component.element.classList.remove(`${state.component.getClass('slider')}--dragging`);

@@ -140,7 +140,8 @@ export const createUiHelpers = (config: SliderConfig, state) => {
   };
 
   /**
-   * Updates start track styles
+   * Updates start track styles using absolute positioning
+   * This section is for a background track in the lowest value section
    */
   const updateStartTrack = () => {
     if (!startTrack || !container || !handle) return;
@@ -149,26 +150,44 @@ export const createUiHelpers = (config: SliderConfig, state) => {
     if (!dims) return;
     
     const { handleSize, trackSize, paddingPercent } = dims;
+    const edgeConstraint = (handleSize / 2) / trackSize * 100;
     
     if (config.range && state.secondValue !== null) {
+      // For range slider, only visible when the minimum handle is not at the minimum value
       const lowerValue = Math.min(state.value, state.secondValue);
+      
+      // Get the percentage for the lower value
       const lowerPercent = getPercentage(lowerValue);
       
-      const edgeConstraint = (handleSize / 2) / trackSize * 100;
+      // Map to visual position respecting the handle's center
       const adjustedPercent = mapValueToVisualPercent(lowerPercent, edgeConstraint);
-      const finalPercent = Math.max(0, adjustedPercent - paddingPercent);
       
-      startTrack.style.display = 'block';
-      startTrack.style.width = `${finalPercent}%`;
-      startTrack.style.left = '0';
-      startTrack.style.height = '100%';
+      // Only make visible if the lowest handle is away from the start edge
+      if (lowerPercent > 1) { // Using a small threshold to avoid showing for tiny movements
+        // Position using right property for smoother transitions
+        startTrack.style.display = 'block';
+        startTrack.style.left = '0';
+        startTrack.style.right = `${100 - (adjustedPercent - paddingPercent)}%`;
+        startTrack.style.width = 'auto';
+        startTrack.style.height = '100%';
+      } else {
+        // Hide the start track when at or very near minimum
+        startTrack.style.display = 'none';
+      }
     } else {
-      startTrack.style.display = 'none';
+      // For single slider, only show if value is greater than min
+      const valuePercent = getPercentage(state.value);
+      
+      if (valuePercent > 1) { // Same small threshold
+        startTrack.style.display = 'none'; // For single slider, we don't show this track
+      } else {
+        startTrack.style.display = 'none';
+      }
     }
   };
 
   /**
-   * Updates active track styles
+   * Updates active track styles using absolute positioning
    */
   const updateActiveTrack = () => {
     if (!activeTrack || !container || !handle) return;
@@ -200,29 +219,29 @@ export const createUiHelpers = (config: SliderConfig, state) => {
         // Handles are too close together, hide the active track
         activeTrack.style.display = 'none';
       } else {
-        // Normal display of active track
-        let trackLength = Math.max(0, adjustedHigher - adjustedLower);
-        
+        // Use absolute positioning with left and right properties
         activeTrack.style.display = 'block';
-        activeTrack.style.width = `${trackLength}%`;
         activeTrack.style.left = `${adjustedLower}%`;
+        activeTrack.style.right = `${100 - adjustedHigher}%`;
+        activeTrack.style.width = 'auto'; // Let the browser calculate width
         activeTrack.style.height = '100%';
       }
     } else {
-      // Single handle slider - just update the value
+      // Single handle slider
       const valuePercent = getPercentage(state.value);
       const adjustedPercent = mapValueToVisualPercent(valuePercent, edgeConstraint);
-      const adjustedWidth = Math.max(0, adjustedPercent - paddingPercent);
       
+      // Use absolute positioning for smoother transitions
       activeTrack.style.display = 'block';
-      activeTrack.style.width = `${adjustedWidth}%`;
       activeTrack.style.left = '0';
+      activeTrack.style.right = `${100 - (adjustedPercent - paddingPercent)}%`;
+      activeTrack.style.width = 'auto'; // Let the browser calculate width
       activeTrack.style.height = '100%';
     }
   };
 
   /**
-   * Updates remaining track styles
+   * Updates remaining track styles using absolute positioning
    */
   const updateRemainingTrack = () => {
     if (!remainingTrack || !container || !handle) return;
@@ -240,12 +259,13 @@ export const createUiHelpers = (config: SliderConfig, state) => {
     const valuePercent = getPercentage(highValue);
     
     // Map percentage to visual range
-    const adjustedPercent = mapValueToVisualPercent(valuePercent, edgeConstraint) + paddingPercent;
-    const remainingSize = Math.max(0, 100 - adjustedPercent);
+    const adjustedPercent = mapValueToVisualPercent(valuePercent, edgeConstraint);
     
+    // Use absolute positioning for smoother transitions
     remainingTrack.style.display = 'block';
-    remainingTrack.style.width = `${remainingSize}%`;
-    remainingTrack.style.left = `${adjustedPercent}%`;
+    remainingTrack.style.left = `${adjustedPercent + paddingPercent}%`;
+    remainingTrack.style.right = '0';
+    remainingTrack.style.width = 'auto'; // Let the browser calculate width
     remainingTrack.style.height = '100%';
   };
   
