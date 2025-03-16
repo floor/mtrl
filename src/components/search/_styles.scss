@@ -1,0 +1,306 @@
+// src/components/search/_styles.scss
+@use '../../styles/abstract/base' as base;
+@use '../../styles/abstract/variables' as v;
+@use '../../styles/abstract/functions' as f;
+@use '../../styles/abstract/mixins' as m;
+@use '../../styles/abstract/theme' as t;
+
+$component: '#{base.$prefix}-search';
+
+.#{$component} {
+  // Base styles
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 720px;
+  min-width: 360px;
+  background-color: transparent;
+  transition: background-color 0.2s ease;
+  z-index: 1; 
+  
+  // Container
+  &-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    height: 56dp;
+    padding: 0 16px;
+    border-radius: v.shape('pill');
+    background-color: t.color('surface-container-high');
+    transition: background-color 0.2s ease;
+    overflow: hidden; 
+    
+    .#{$component}--disabled & {
+      opacity: 0.38;
+      pointer-events: none;
+    }
+  }
+  
+  // Leading Icon
+  &-leading-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    height: 24px;
+    margin-right: 16px;
+    color: t.color('on-surface');
+    cursor: pointer;
+    flex-shrink: 0;
+    
+    svg {
+      width: 24px;
+      height: 24px;
+    }
+    
+    &:focus {
+      outline: none;
+    }
+    
+    &:focus-visible {
+      outline: 2px solid t.color('outline');
+      border-radius: 50%;
+    }
+  }
+  
+  // Input wrapper
+  &-input-wrapper {
+    flex: 1;
+    min-width: 0;
+    height: 100%; 
+    display: flex;
+    align-items: center;
+  }
+  
+  // Input field
+  &-input {
+    width: 100%;
+    height: 100%; 
+    min-height: 36px; 
+    border: none;
+    background: transparent;
+    font-size: 16px;
+    color: t.color('on-surface');
+    padding: 8px 0; 
+    box-sizing: border-box;
+    outline: none;
+    
+    &::placeholder {
+      color: t.color('on-surface-variant');
+    }
+    
+    .#{$component}--disabled & {
+      cursor: not-allowed;
+    }
+  }
+  
+  // Clear button
+  &-clear-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    height: 24px;
+    margin-left: 16px;
+    color: t.color('on-surface-variant');
+    cursor: pointer;
+    flex-shrink: 0;
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.2s ease, visibility 0s;
+    
+    svg {
+      width: 20px;
+      height: 20px;
+    }
+    
+    &--hidden {
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.2s ease, visibility 0s 0.2s;
+    }
+    
+    &:focus {
+      outline: none;
+    }
+    
+    &:focus-visible {
+      outline: 2px solid t.color('outline');
+      border-radius: 50%;
+    }
+  }
+  
+  // Trailing icons
+  &-trailing-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    height: 24px;
+    margin-left: 16px;
+    color: t.color('on-surface-variant');
+    cursor: pointer;
+    flex-shrink: 0;
+    
+    svg {
+      width: 24px;
+      height: 24px;
+    }
+    
+    &:focus {
+      outline: none;
+    }
+    
+    &:focus-visible {
+      outline: 2px solid t.color('outline');
+      border-radius: 50%;
+    }
+  }
+  
+  // Avatar
+  &-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 16px;
+    min-width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    overflow: hidden;
+    
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+  
+  // Search variants
+  &--bar {
+    border-radius: v.shape('pill');
+    overflow: hidden;
+    transition: max-width 0.3s ease, width 0.3s ease;
+  }
+  
+  &--view {
+    border-radius: 0;
+    max-width: 100%;
+    width: 100%;
+    
+    .#{$component}-container {
+      border-radius: 0;
+    }
+    
+    // For docked view mode
+    @include m.breakpoint-up('md') {
+      border-radius: v.shape('extra-large');
+      
+      .#{$component}-container {
+        border-radius: v.shape('extra-large') v.shape('extra-large') 0 0;
+        height: 56dp;
+      }
+    }
+  }
+  
+  // Divider
+  &-divider {
+    display: block;
+    width: 100%;
+    height: 1px;
+    background-color: t.color('outline');
+    opacity: 0.5;
+  }
+  
+  // Suggestions container
+  &-suggestions-container {
+    display: none;
+    background-color: t.color('surface-container-high');
+    max-height: 400px;
+    overflow-y: auto;
+    border-bottom-left-radius: v.shape('medium');
+    border-bottom-right-radius: v.shape('medium');
+    
+    &--visible {
+      display: block;
+    }
+    
+    // For docked view mode
+    @include m.breakpoint-up('md') {
+      border-radius: 0 0 v.shape('extra-large') v.shape('extra-large');
+    }
+  }
+  
+  // Suggestions list
+  &-suggestions-list {
+    list-style: none;
+    padding: 8px 0;
+    margin: 0;
+  }
+  
+  // Suggestion item
+  &-suggestion-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    min-height: 48px; 
+    font-size: 16px;
+    color: t.color('on-surface');
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+    
+    &:hover, &:focus {
+      background-color: t.alpha('on-surface', 0.05);
+    }
+    
+    &:focus {
+      outline: none;
+    }
+    
+    // Highlight matched text
+    strong {
+      font-weight: 600;
+      color: t.color('on-surface');
+    }
+  }
+  
+  // Suggestion item icon
+  &-suggestion-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    margin-right: 16px;
+    color: t.color('on-surface-variant');
+    
+    svg {
+      width: 20px;
+      height: 20px;
+    }
+  }
+  
+  // Suggestion item text
+  &-suggestion-text {
+    flex: 1;
+  }
+  
+  // Focus state
+  &--focused {
+    .#{$component}-container {
+      // No additional styles needed for focus in MD3
+    }
+  }
+  
+  // Full width
+  &--fullwidth {
+    max-width: 100%;
+  }
+  
+  // Expanded state (transitioning from bar to view)
+  &--expanded {
+    max-width: 100%;
+    width: 100%;
+  }
+}
