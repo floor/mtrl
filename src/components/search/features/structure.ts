@@ -1,5 +1,5 @@
 // src/components/search/features/structure.ts
-import { SEARCH_VARIANTS, SEARCH_SIZES, SEARCH_COLORS } from '../constants';
+import { SEARCH_VARIANTS } from '../constants';
 import { SearchConfig } from '../types';
 import { createElement } from '../../../core/dom/create';
 
@@ -180,19 +180,7 @@ function applyStyleClasses(component, config, isViewMode, isDisabled) {
   
   // Apply variant class
   component.element.classList.add(`${baseClass}--${config.variant || SEARCH_VARIANTS.BAR}`);
-  
-  // Apply size class
-  const size = config.size || SEARCH_SIZES.MEDIUM;
-  if (size !== SEARCH_SIZES.MEDIUM) {
-    component.element.classList.add(`${baseClass}--${size}`);
-  }
-  
-  // Apply color class
-  const color = config.color || SEARCH_COLORS.PRIMARY;
-  if (color !== SEARCH_COLORS.PRIMARY) {
-    component.element.classList.add(`${baseClass}--${color}`);
-  }
-  
+    
   // Apply disabled class if needed
   if (isDisabled) {
     component.element.classList.add(`${baseClass}--disabled`);

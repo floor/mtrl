@@ -24,7 +24,7 @@ $component: '#{base.$prefix}-search';
     position: relative;
     display: flex;
     align-items: center;
-    height: 56dp;
+    height: 56px;
     padding: 0 16px;
     border-radius: v.shape('pill');
     background-color: t.color('surface-container-high');
@@ -199,7 +199,7 @@ $component: '#{base.$prefix}-search';
       
       .#{$component}-container {
         border-radius: v.shape('extra-large') v.shape('extra-large') 0 0;
-        height: 56dp;
+        height: 56px;
       }
     }
   }
