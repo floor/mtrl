@@ -56,7 +56,11 @@ export const createUiHelpers = (config: SliderConfig, state) => {
     const trackSize = trackRect.width;
     
     const edgeConstraint = (handleSize / 2) / trackSize * 100;
-    const paddingPercent = (8 / trackSize) * 100; // 8px padding
+    
+    // Determine padding based on whether a handle is being interacted with
+    // Use 6px padding when a handle is active (mousedown), otherwise 8px
+    const paddingPixels = state.activeHandle ? 6 : 8; 
+    const paddingPercent = (paddingPixels / trackSize) * 100;
     
     return { handleSize, trackSize, edgeConstraint, paddingPercent };
   };

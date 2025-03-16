@@ -186,6 +186,8 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
     document.addEventListener('touchmove', handleMouseMove, { passive: false });
     document.addEventListener('touchend', handleMouseUp);
     
+    updateUi();
+    
     // Try to trigger start event (with error handling)
     try {
       triggerEvent(SLIDER_EVENTS.START, e);
@@ -404,6 +406,8 @@ export const createInteractionHandlers = (config: SliderConfig, state, handlers)
     // Reset active handle
     state.activeHandle = null;
     
+    updateUi();
+
     try {
       // Trigger change event (only when done dragging)
       triggerEvent(SLIDER_EVENTS.CHANGE, e);
