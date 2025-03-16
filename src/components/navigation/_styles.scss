@@ -249,6 +249,7 @@ $component: '#{base.$prefix}-nav';
     padding: 12px 0;
     transition: transform v.motion('duration-short2') v.motion('easing-standard');
     transform: translateX(0);
+    overflow-y: auto;
 
     // Hidden state
     &.#{$component}--hidden {
