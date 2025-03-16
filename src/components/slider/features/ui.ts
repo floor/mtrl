@@ -2,7 +2,7 @@
 import { SliderConfig } from '../types';
 
 /**
- * Create UI update helpers for slider component with MD3 enhancements
+ * Create optimized UI update helpers for slider component
  * 
  * @param config Slider configuration
  * @param state Slider state object
@@ -12,17 +12,18 @@ export const createUiHelpers = (config: SliderConfig, state) => {
   // Return empty implementations if component structure is missing
   if (!state.component?.structure) {
     console.error('Cannot create UI helpers: component structure is missing');
-    return Object.fromEntries(['getPercentage', 'getValueFromPosition', 'roundToStep', 
-      'clamp', 'setHandlePosition', 'updateActiveTrack', 'updateStartTrack', 
-      'updateRemainingTrack', 'updateHandlePositions', 'updateValueBubbles', 
-      'showValueBubble', 'generateTicks', 'updateTicks', 'updateUi']
-      .map(method => [method, method === 'clamp' ? (v, min, max) => Math.min(Math.max(v, min), max) : 
-                              method === 'roundToStep' ? v => v : 
-                              method === 'getPercentage' || method === 'getValueFromPosition' ? () => 0 : 
-                              () => {}]));
+    return {
+      getPercentage: () => 0,
+      getValueFromPosition: () => 0,
+      roundToStep: v => v,
+      clamp: (v, min, max) => Math.min(Math.max(v, min), max),
+      updateUi: () => {},
+      showValueBubble: () => {},
+      generateTicks: () => {},
+      updateTicks: () => {}
+    };
   }
   
-  // Get required elements from structure (with fallbacks)
   const {
     container = null,
     track = null, 
@@ -34,7 +35,7 @@ export const createUiHelpers = (config: SliderConfig, state) => {
     secondHandle = null, 
     secondValueBubble = null, 
     ticksContainer = null
-  } = state.component?.structure || {};
+  } = state.component.structure;
   
   /**
    * Calculates percentage position for a value
@@ -56,9 +57,6 @@ export const createUiHelpers = (config: SliderConfig, state) => {
     const trackSize = trackRect.width;
     
     const edgeConstraint = (handleSize / 2) / trackSize * 100;
-    
-    // Determine padding based on whether a handle is being interacted with
-    // Use 6px padding when a handle is active (mousedown), otherwise 8px
     const paddingPixels = state.activeHandle ? 6 : 8; 
     const paddingPercent = (paddingPixels / trackSize) * 100;
     
@@ -66,7 +64,7 @@ export const createUiHelpers = (config: SliderConfig, state) => {
   };
   
   /**
-   * Map value percentage to visual position with edge constraints
+   * Maps value percentage to visual position with edge constraints
    */
   const mapValueToVisualPercent = (valuePercent, edgeConstraint) => {
     const minEdge = edgeConstraint;
@@ -87,9 +85,7 @@ export const createUiHelpers = (config: SliderConfig, state) => {
     try {
       const containerRect = container.getBoundingClientRect();
       const range = state.max - state.min;
-      
-      const handleRect = handle.getBoundingClientRect();
-      const handleWidth = handleRect.width || 20;
+      const handleWidth = handle.getBoundingClientRect().width || 20;
       
       const leftEdge = containerRect.left + (handleWidth / 2);
       const rightEdge = containerRect.right - (handleWidth / 2);
@@ -122,171 +118,38 @@ export const createUiHelpers = (config: SliderConfig, state) => {
   const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
   
   /**
-   * Sets handle position based on a value percentage with proper edge mapping
-   */
-  const setHandlePosition = (handleElement, bubbleElement, valuePercent) => {
-    if (!handleElement || !container) return;
-    
-    const dims = getTrackDimensions();
-    if (!dims) return;
-    
-    const { handleSize, trackSize } = dims;
-    const edgeConstraint = (handleSize / 2) / trackSize * 100;
-    const adjustedPercent = mapValueToVisualPercent(valuePercent, edgeConstraint);
-    
-    handleElement.style.left = `${adjustedPercent}%`;
-    handleElement.style.transform = 'translate(-50%, -50%)';
-    
-    if (bubbleElement) {
-      bubbleElement.style.left = `${adjustedPercent}%`;
-      bubbleElement.style.transform = 'translateX(-50%)';
-    }
-  };
-
-  /**
-   * Updates start track styles using absolute positioning
-   * This section is for a background track in the lowest value section
-   */
-  const updateStartTrack = () => {
-    if (!startTrack || !container || !handle) return;
-    
-    const dims = getTrackDimensions();
-    if (!dims) return;
-    
-    const { handleSize, trackSize, paddingPercent } = dims;
-    const edgeConstraint = (handleSize / 2) / trackSize * 100;
-    
-    if (config.range && state.secondValue !== null) {
-      // For range slider, only visible when the minimum handle is not at the minimum value
-      const lowerValue = Math.min(state.value, state.secondValue);
-      
-      // Get the percentage for the lower value
-      const lowerPercent = getPercentage(lowerValue);
-      
-      // Map to visual position respecting the handle's center
-      const adjustedPercent = mapValueToVisualPercent(lowerPercent, edgeConstraint);
-      
-      // Only make visible if the lowest handle is away from the start edge
-      if (lowerPercent > 1) { // Using a small threshold to avoid showing for tiny movements
-        // Position using right property for smoother transitions
-        startTrack.style.display = 'block';
-        startTrack.style.left = '0';
-        startTrack.style.right = `${100 - (adjustedPercent - paddingPercent)}%`;
-        startTrack.style.width = 'auto';
-        startTrack.style.height = '100%';
-      } else {
-        // Hide the start track when at or very near minimum
-        startTrack.style.display = 'none';
-      }
-    } else {
-      // For single slider, only show if value is greater than min
-      const valuePercent = getPercentage(state.value);
-      
-      if (valuePercent > 1) { // Same small threshold
-        startTrack.style.display = 'none'; // For single slider, we don't show this track
-      } else {
-        startTrack.style.display = 'none';
-      }
-    }
-  };
-
-  /**
-   * Updates active track styles using absolute positioning
-   */
-  const updateActiveTrack = () => {
-    if (!activeTrack || !container || !handle) return;
-    
-    const dims = getTrackDimensions();
-    if (!dims) return;
-    
-    const { handleSize, trackSize, paddingPercent } = dims;
-    const edgeConstraint = (handleSize / 2) / trackSize * 100;
-    
-    if (config.range && state.secondValue !== null) {
-      // Range slider (two handles)
-      const lowerValue = Math.min(state.value, state.secondValue);
-      const higherValue = Math.max(state.value, state.secondValue);
-      const lowerPercent = getPercentage(lowerValue);
-      const higherPercent = getPercentage(higherValue);
-      
-      const adjustedLower = mapValueToVisualPercent(lowerPercent, edgeConstraint) + paddingPercent;
-      const adjustedHigher = mapValueToVisualPercent(higherPercent, edgeConstraint) - paddingPercent;
-      
-      // Calculate the actual percentage difference between handles
-      const valueDiffPercent = Math.abs(higherPercent - lowerPercent);
-      
-      // Define a threshold below which we'll hide the active track
-      // This threshold is based on the handle width plus some margin
-      const hideThreshold = (handleSize / trackSize) * 100;
-      
-      if (valueDiffPercent <= hideThreshold) {
-        // Handles are too close together, hide the active track
-        activeTrack.style.display = 'none';
-      } else {
-        // Use absolute positioning with left and right properties
-        activeTrack.style.display = 'block';
-        activeTrack.style.left = `${adjustedLower}%`;
-        activeTrack.style.right = `${100 - adjustedHigher}%`;
-        activeTrack.style.width = 'auto'; // Let the browser calculate width
-        activeTrack.style.height = '100%';
-      }
-    } else {
-      // Single handle slider
-      const valuePercent = getPercentage(state.value);
-      const adjustedPercent = mapValueToVisualPercent(valuePercent, edgeConstraint);
-      
-      // Use absolute positioning for smoother transitions
-      activeTrack.style.display = 'block';
-      activeTrack.style.left = '0';
-      activeTrack.style.right = `${100 - (adjustedPercent - paddingPercent)}%`;
-      activeTrack.style.width = 'auto'; // Let the browser calculate width
-      activeTrack.style.height = '100%';
-    }
-  };
-
-  /**
-   * Updates remaining track styles using absolute positioning
-   */
-  const updateRemainingTrack = () => {
-    if (!remainingTrack || !container || !handle) return;
-    
-    const dims = getTrackDimensions();
-    if (!dims) return;
-    
-    const { handleSize, trackSize, paddingPercent } = dims;
-    const edgeConstraint = (handleSize / 2) / trackSize * 100;
-    
-    // Find the highest handle value
-    const highValue = config.range && state.secondValue !== null ? 
-      Math.max(state.value, state.secondValue) : state.value;
-    
-    const valuePercent = getPercentage(highValue);
-    
-    // Map percentage to visual range
-    const adjustedPercent = mapValueToVisualPercent(valuePercent, edgeConstraint);
-    
-    // Use absolute positioning for smoother transitions
-    remainingTrack.style.display = 'block';
-    remainingTrack.style.left = `${adjustedPercent + paddingPercent}%`;
-    remainingTrack.style.right = '0';
-    remainingTrack.style.width = 'auto'; // Let the browser calculate width
-    remainingTrack.style.height = '100%';
-  };
-  
-  /**
-   * Updates handle positions
+   * Updates handle and bubble positions and transforms
    */
   const updateHandlePositions = () => {
     if (!handle || !container) return;
     
-    // Update main handle
+    const dims = getTrackDimensions();
+    if (!dims) return;
+    
+    const { edgeConstraint } = dims;
+    
+    // Update main handle position
     const percent = getPercentage(state.value);
-    setHandlePosition(handle, valueBubble, percent);
+    const adjustedPercent = mapValueToVisualPercent(percent, edgeConstraint);
+    
+    handle.style.left = `${adjustedPercent}%`;
+    handle.style.transform = 'translate(-50%, -50%)';
+    if (valueBubble) {
+      valueBubble.style.left = `${adjustedPercent}%`;
+      valueBubble.style.transform = 'translateX(-50%)';
+    }
     
     // Update second handle if range slider
-    if (config.range && secondHandle && secondValueBubble && state.secondValue !== null) {
+    if (config.range && secondHandle && state.secondValue !== null) {
       const secondPercent = getPercentage(state.secondValue);
-      setHandlePosition(secondHandle, secondValueBubble, secondPercent);
+      const adjustedSecondPercent = mapValueToVisualPercent(secondPercent, edgeConstraint);
+      
+      secondHandle.style.left = `${adjustedSecondPercent}%`;
+      secondHandle.style.transform = 'translate(-50%, -50%)';
+      if (secondValueBubble) {
+        secondValueBubble.style.left = `${adjustedSecondPercent}%`;
+        secondValueBubble.style.transform = 'translateX(-50%)';
+      }
     }
     
     // Update ARIA attributes
@@ -297,16 +160,86 @@ export const createUiHelpers = (config: SliderConfig, state) => {
   };
   
   /**
+   * Updates all track segments at once with optimized positioning
+   */
+  const updateTrackSegments = () => {
+    if (!track || !container || !handle) return;
+    
+    const dims = getTrackDimensions();
+    if (!dims) return;
+    
+    const { handleSize, trackSize, paddingPercent } = dims;
+    const edgeConstraint = (handleSize / 2) / trackSize * 100;
+    
+    if (config.range && state.secondValue !== null) {
+      // Range slider setup
+      const lowerValue = Math.min(state.value, state.secondValue);
+      const higherValue = Math.max(state.value, state.secondValue);
+      const lowerPercent = getPercentage(lowerValue);
+      const higherPercent = getPercentage(higherValue);
+      
+      const adjustedLower = mapValueToVisualPercent(lowerPercent, edgeConstraint);
+      const adjustedHigher = mapValueToVisualPercent(higherPercent, edgeConstraint);
+      
+      // Start track (before first handle)
+      if (lowerPercent > 1) {
+        startTrack.style.display = 'block';
+        startTrack.style.left = '0';
+        startTrack.style.right = `${100 - (adjustedLower - paddingPercent)}%`;
+        startTrack.style.width = 'auto';
+      } else {
+        startTrack.style.display = 'none';
+      }
+      
+      // Active track (between handles)
+      const valueDiffPercent = Math.abs(higherPercent - lowerPercent);
+      const hideThreshold = (handleSize / trackSize) * 100;
+      
+      if (valueDiffPercent <= hideThreshold) {
+        activeTrack.style.display = 'none';
+      } else {
+        activeTrack.style.display = 'block';
+        activeTrack.style.left = `${adjustedLower + paddingPercent}%`;
+        activeTrack.style.right = `${100 - (adjustedHigher - paddingPercent)}%`;
+        activeTrack.style.width = 'auto';
+      }
+      
+      // Remaining track (after second handle)
+      remainingTrack.style.display = 'block';
+      remainingTrack.style.left = `${adjustedHigher + paddingPercent}%`;
+      remainingTrack.style.right = '0';
+      remainingTrack.style.width = 'auto';
+    } else {
+      // Single handle slider
+      const valuePercent = getPercentage(state.value);
+      const adjustedPercent = mapValueToVisualPercent(valuePercent, edgeConstraint);
+      
+      // Hide start track for single slider
+      startTrack.style.display = 'none';
+      
+      // Active track (filled part)
+      activeTrack.style.display = 'block';
+      activeTrack.style.left = '0';
+      activeTrack.style.right = `${100 - (adjustedPercent - paddingPercent)}%`;
+      activeTrack.style.width = 'auto';
+      
+      // Remaining track (unfilled part)
+      remainingTrack.style.display = 'block';
+      remainingTrack.style.left = `${adjustedPercent + paddingPercent}%`;
+      remainingTrack.style.right = '0';
+      remainingTrack.style.width = 'auto';
+    }
+  };
+  
+  /**
    * Updates value bubble content
    */
   const updateValueBubbles = () => {
     if (!valueBubble) return;
     
-    // Format the values
     const formatter = config.valueFormatter || (value => value.toString());
-    
-    // Update main and second value bubble if needed
     valueBubble.textContent = formatter(state.value);
+    
     if (config.range && secondValueBubble && state.secondValue !== null) {
       secondValueBubble.textContent = formatter(state.secondValue);
     }
@@ -318,38 +251,30 @@ export const createUiHelpers = (config: SliderConfig, state) => {
   const showValueBubble = (bubbleElement, show) => {
     if (!bubbleElement || !config.showValue) return;
     
-    const visibleClass = `${state.component.getClass('slider-value')}--visible`;
-    bubbleElement.classList[show ? 'add' : 'remove'](visibleClass);
+    bubbleElement.classList[show ? 'add' : 'remove'](`${state.component.getClass('slider-value')}--visible`);
   };
   
   /**
    * Generates tick marks
    */
   const generateTicks = () => {
-    if (!ticksContainer || !container) {
-      console.warn('Ticks container not found in component structure');
-      return;
-    }
+    if (!ticksContainer || !container) return;
     
     // Clear existing ticks
     while (ticksContainer.firstChild) {
       ticksContainer.removeChild(ticksContainer.firstChild);
     }
     
-    // Reset ticks array
     state.ticks = [];
-    
     if (!config.ticks) return;
     
-    // Generate tick values
     const numSteps = Math.floor((state.max - state.min) / state.step);
     const tickValues = [];
     
+    // Generate tick values
     for (let i = 0; i <= numSteps; i++) {
       const value = state.min + (i * state.step);
-      if (value <= state.max) {
-        tickValues.push(value);
-      }
+      if (value <= state.max) tickValues.push(value);
     }
     
     // Ensure max value is included
@@ -358,41 +283,35 @@ export const createUiHelpers = (config: SliderConfig, state) => {
     }
     
     // CSS classes
-    const activeClass = `${state.component.getClass('slider-tick')}--active`;
-    const inactiveClass = `${state.component.getClass('slider-tick')}--inactive`;
-    const hiddenClass = `${state.component.getClass('slider-tick')}--hidden`;
     const tickClass = state.component.getClass('slider-tick');
+    const activeClass = `${tickClass}--active`;
+    const inactiveClass = `${tickClass}--inactive`;
+    const hiddenClass = `${tickClass}--hidden`;
     
-    // Create ticks
+    // Create tick elements
     tickValues.forEach(value => {
       const percent = getPercentage(value);
+      const tick = document.createElement('div');
+      tick.classList.add(tickClass);
+      tick.style.left = `${percent}%`;
       
-      // Create tick mark if enabled
-      if (config.ticks) {
-        const tick = document.createElement('div');
-        tick.classList.add(tickClass);
+      // Determine tick active state
+      const isExactlySelected = (value === state.value || 
+                               (config.range && state.secondValue !== null && value === state.secondValue));
+      
+      if (isExactlySelected) {
+        tick.classList.add(hiddenClass);
+      } else if (config.range && state.secondValue !== null) {
+        const lowerValue = Math.min(state.value, state.secondValue);
+        const higherValue = Math.max(state.value, state.secondValue);
         
-        // Position tick
-        tick.style.left = `${percent}%`;
-        
-        // Check if this tick should be hidden (matches exactly a selected value)
-        const isExactlySelected = value === state.value || 
-          (config.range && state.secondValue !== null && value === state.secondValue);
-        
-        if (isExactlySelected) {
-          tick.classList.add(hiddenClass);
-        } else if (config.range && state.secondValue !== null) {
-          const lowerValue = Math.min(state.value, state.secondValue);
-          const higherValue = Math.max(state.value, state.secondValue);
-          
-          tick.classList.add(value >= lowerValue && value <= higherValue ? activeClass : inactiveClass);
-        } else {
-          tick.classList.add(value <= state.value ? activeClass : inactiveClass);
-        }
-        
-        ticksContainer.appendChild(tick);
-        state.ticks.push(tick);
+        tick.classList.add(value >= lowerValue && value <= higherValue ? activeClass : inactiveClass);
+      } else {
+        tick.classList.add(value <= state.value ? activeClass : inactiveClass);
       }
+      
+      ticksContainer.appendChild(tick);
+      state.ticks.push(tick);
     });
   };
   
@@ -402,24 +321,23 @@ export const createUiHelpers = (config: SliderConfig, state) => {
   const updateTicks = () => {
     if (!state.ticks || state.ticks.length === 0) return;
     
-    const activeClass = `${state.component.getClass('slider-tick')}--active`;
-    const inactiveClass = `${state.component.getClass('slider-tick')}--inactive`;
-    const hiddenClass = `${state.component.getClass('slider-tick')}--hidden`;
+    const tickClass = state.component.getClass('slider-tick');
+    const activeClass = `${tickClass}--active`;
+    const inactiveClass = `${tickClass}--inactive`;
+    const hiddenClass = `${tickClass}--hidden`;
     
-    // Update active ticks based on current value
     state.ticks.forEach((tick, index) => {
-      // Calculate the value for this tick based on its index
+      // Calculate the value for this tick
       const tickValue = state.min + (index * state.step);
       
-      // First, reset visibility
+      // Reset visibility first
       tick.classList.remove(hiddenClass);
       
       // Check if this tick should be hidden (matches exactly a selected value)
-      const isExactlySelected = tickValue === state.value || 
-        (config.range && state.secondValue !== null && tickValue === state.secondValue);
+      const isExactlySelected = (tickValue === state.value || 
+                              (config.range && state.secondValue !== null && tickValue === state.secondValue));
       
       if (isExactlySelected) {
-        // Hide this tick as it exactly matches a selected value
         tick.classList.add(hiddenClass);
       } else if (config.range && state.secondValue !== null) {
         // Range slider - ticks between values should be active
@@ -451,28 +369,20 @@ export const createUiHelpers = (config: SliderConfig, state) => {
    */
   const updateUi = () => {
     updateHandlePositions();
-    updateStartTrack();
-    updateActiveTrack();
-    updateRemainingTrack();
+    updateTrackSegments();
     updateValueBubbles();
     updateTicks();
   };
   
-  // Return helper methods
+  // Return consolidated helper methods
   return {
     getPercentage,
     getValueFromPosition,
     roundToStep,
     clamp,
-    setHandlePosition,
-    updateActiveTrack,
-    updateStartTrack,
-    updateRemainingTrack,
-    updateHandlePositions,
-    updateValueBubbles,
     showValueBubble,
     generateTicks,
     updateTicks,
     updateUi
   };
-};
+}

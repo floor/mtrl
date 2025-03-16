@@ -1,10 +1,8 @@
-// src/components/slider/features/slider.ts - Added initialization code
+// src/components/slider/features/slider.ts
 import { SLIDER_EVENTS } from '../constants';
 import { SliderConfig } from '../types';
 import { createUiHelpers } from './ui';
-import { createInteractionHandlers } from './interactions';
-import { createKeyboardHandlers } from './keyboard';
-import { createEventHelpers } from './events';
+import { createHandlers } from './handlers';
 
 /**
  * Add main slider functionality to component
@@ -16,20 +14,18 @@ export const withSlider = (config: SliderConfig) => component => {
   if (!component.events) {
     component.events = {
       listeners: {},
-      on: function(event, handler) {
-        if (!this.listeners[event]) {
-          this.listeners[event] = [];
-        }
+      on(event, handler) {
+        if (!this.listeners[event]) this.listeners[event] = [];
         this.listeners[event].push(handler);
         return this;
       },
-      off: function(event, handler) {
+      off(event, handler) {
         if (this.listeners[event]) {
           this.listeners[event] = this.listeners[event].filter(h => h !== handler);
         }
         return this;
       },
-      trigger: function(event, data) {
+      trigger(event, data) {
         if (this.listeners[event]) {
           this.listeners[event].forEach(handler => handler(data));
         }
@@ -49,23 +45,30 @@ export const withSlider = (config: SliderConfig) => component => {
     activeBubble: null,
     activeHandle: null,
     ticks: [],
-    tickLabels: [],
+    valueHideTimer: null,
     component
   };
   
-  // Create helper functions
-  const uiHelpers = createUiHelpers(config, state);
-  const eventHelpers = createEventHelpers(state);
-  
-  // Combine helpers for event handlers
-  const handlers = {
-    ...uiHelpers,
-    triggerEvent: eventHelpers.triggerEvent
+  // Create event helpers
+  const eventHelpers = {
+    triggerEvent(eventName, originalEvent = null) {
+      const eventData = {
+        slider: state.component,
+        value: state.value,
+        secondValue: state.secondValue,
+        originalEvent,
+        preventDefault: () => { eventData.defaultPrevented = true; },
+        defaultPrevented: false
+      };
+      
+      state.component.events.trigger(eventName, eventData);
+      return eventData;
+    }
   };
   
-  // Create event handlers
-  const interactionHandlers = createInteractionHandlers(config, state, handlers);
-  const keyboardHandlers = createKeyboardHandlers(state, handlers);
+  // Create UI helpers and handlers
+  const uiHelpers = createUiHelpers(config, state);
+  const handlers = createHandlers(config, state, uiHelpers, eventHelpers);
   
   // Initialize slider
   const initSlider = () => {
@@ -81,50 +84,40 @@ export const withSlider = (config: SliderConfig) => component => {
     
     const { handle, secondHandle } = component.structure;
     
-    if (!handle) {
-      console.warn('Cannot initialize slider: missing handle');
-      return;
+    if (handle) {
+      handle.setAttribute('aria-valuemin', String(state.min));
+      handle.setAttribute('aria-valuemax', String(state.max));
+      handle.setAttribute('aria-valuenow', String(state.value));
+      
+      if (config.range && secondHandle && state.secondValue !== null) {
+        secondHandle.setAttribute('aria-valuemin', String(state.min));
+        secondHandle.setAttribute('aria-valuemax', String(state.max));
+        secondHandle.setAttribute('aria-valuenow', String(state.secondValue));
+      }
     }
     
-    handle.setAttribute('aria-valuemin', String(state.min));
-    handle.setAttribute('aria-valuemax', String(state.max));
-    handle.setAttribute('aria-valuenow', String(state.value));
-    
-    if (config.range && secondHandle && state.secondValue !== null) {
-      secondHandle.setAttribute('aria-valuemin', String(state.min));
-      secondHandle.setAttribute('aria-valuemax', String(state.max));
-      secondHandle.setAttribute('aria-valuenow', String(state.secondValue));
-    }
-    
-    // Setup initial positions
+    // Initial UI update
     uiHelpers.updateUi();
     
     // Generate ticks if needed
     if (config.ticks || config.tickLabels) {
       uiHelpers.generateTicks();
-      uiHelpers.updateTicks();
     }
     
     // Setup event listeners
-    eventHelpers.setupEventListeners(interactionHandlers, keyboardHandlers);
+    handlers.setupEventListeners();
     
-    // Force one more UI update after a delay to ensure everything is properly positioned
-    // This is especially important for range sliders
+    // Force one more UI update after a delay to ensure proper positioning
     setTimeout(() => {
       uiHelpers.updateUi();
     }, 50);
   };
   
-  // Cleanup event listeners
-  const cleanup = () => {
-    eventHelpers.cleanupEventListeners(interactionHandlers, keyboardHandlers);
-  };
-  
-  // Register with lifecycle
+  // Register with lifecycle if available
   if (component.lifecycle) {
     const originalDestroy = component.lifecycle.destroy || (() => {});
     component.lifecycle.destroy = () => {
-      cleanup();
+      handlers.cleanupEventListeners();
       originalDestroy();
     };
   }
@@ -132,24 +125,21 @@ export const withSlider = (config: SliderConfig) => component => {
   // Initialize slider
   initSlider();
   
-  // Return enhanced component with the slider functionality
-  const enhancedComponent = {
+  // Return enhanced component
+  return {
     ...component,
     slider: {
       /**
        * Sets slider value
        * @param value New value
        * @param triggerEvent Whether to trigger change event
+       * @returns Slider controller for chaining
        */
       setValue(value, triggerEvent = true) {
-        // Validate and set value
         const newValue = uiHelpers.clamp(value, state.min, state.max);
         state.value = newValue;
-        
-        // Update UI
         uiHelpers.updateUi();
         
-        // Trigger events if needed
         if (triggerEvent) {
           eventHelpers.triggerEvent(SLIDER_EVENTS.CHANGE);
         }
@@ -169,18 +159,15 @@ export const withSlider = (config: SliderConfig) => component => {
        * Sets secondary slider value (for range slider)
        * @param value New secondary value
        * @param triggerEvent Whether to trigger change event
+       * @returns Slider controller for chaining
        */
       setSecondValue(value, triggerEvent = true) {
         if (!config.range) return this;
         
-        // Validate and set value
         const newValue = uiHelpers.clamp(value, state.min, state.max);
         state.secondValue = newValue;
-        
-        // Update UI
         uiHelpers.updateUi();
         
-        // Trigger events if needed
         if (triggerEvent) {
           eventHelpers.triggerEvent(SLIDER_EVENTS.CHANGE);
         }
@@ -199,23 +186,23 @@ export const withSlider = (config: SliderConfig) => component => {
       /**
        * Sets slider minimum value
        * @param min New minimum value
+       * @returns Slider controller for chaining
        */
       setMin(min) {
         state.min = min;
         
         // Update ARIA attributes
         component.element.setAttribute('aria-valuemin', String(min));
-        component.structure.handle.setAttribute('aria-valuemin', String(min));
+        if (component.structure.handle) {
+          component.structure.handle.setAttribute('aria-valuemin', String(min));
+        }
         
         if (config.range && component.structure.secondHandle) {
           component.structure.secondHandle.setAttribute('aria-valuemin', String(min));
         }
         
         // Clamp values to new min
-        if (state.value < min) {
-          state.value = min;
-        }
-        
+        if (state.value < min) state.value = min;
         if (config.range && state.secondValue !== null && state.secondValue < min) {
           state.secondValue = min;
         }
@@ -225,9 +212,7 @@ export const withSlider = (config: SliderConfig) => component => {
           uiHelpers.generateTicks();
         }
         
-        // Update UI
         uiHelpers.updateUi();
-        
         return this;
       },
       
@@ -242,23 +227,23 @@ export const withSlider = (config: SliderConfig) => component => {
       /**
        * Sets slider maximum value
        * @param max New maximum value
+       * @returns Slider controller for chaining
        */
       setMax(max) {
         state.max = max;
         
         // Update ARIA attributes
         component.element.setAttribute('aria-valuemax', String(max));
-        component.structure.handle.setAttribute('aria-valuemax', String(max));
+        if (component.structure.handle) {
+          component.structure.handle.setAttribute('aria-valuemax', String(max));
+        }
         
         if (config.range && component.structure.secondHandle) {
           component.structure.secondHandle.setAttribute('aria-valuemax', String(max));
         }
         
         // Clamp values to new max
-        if (state.value > max) {
-          state.value = max;
-        }
-        
+        if (state.value > max) state.value = max;
         if (config.range && state.secondValue !== null && state.secondValue > max) {
           state.secondValue = max;
         }
@@ -268,9 +253,7 @@ export const withSlider = (config: SliderConfig) => component => {
           uiHelpers.generateTicks();
         }
         
-        // Update UI
         uiHelpers.updateUi();
-        
         return this;
       },
       
@@ -285,16 +268,15 @@ export const withSlider = (config: SliderConfig) => component => {
       /**
        * Sets slider step size
        * @param step New step size
+       * @returns Slider controller for chaining
        */
       setStep(step) {
         state.step = step;
         
         // Add or remove discrete class
-        if (step > 0) {
-          component.element.classList.add(`${component.getClass('slider')}--discrete`);
-        } else {
-          component.element.classList.remove(`${component.getClass('slider')}--discrete`);
-        }
+        component.element.classList[step > 0 ? 'add' : 'remove'](
+          `${component.getClass('slider')}--discrete`
+        );
         
         // Regenerate ticks if needed
         if (config.ticks || config.tickLabels) {
@@ -315,6 +297,7 @@ export const withSlider = (config: SliderConfig) => component => {
       
       /**
        * Regenerate tick marks and labels
+       * @returns Slider controller for chaining
        */
       regenerateTicks() {
         uiHelpers.generateTicks();
@@ -324,6 +307,7 @@ export const withSlider = (config: SliderConfig) => component => {
       
       /**
        * Update all UI elements
+       * @returns Slider controller for chaining
        */
       updateUi() {
         uiHelpers.updateUi();
@@ -331,6 +315,4 @@ export const withSlider = (config: SliderConfig) => component => {
       }
     }
   };
-  
-  return enhancedComponent;
 };

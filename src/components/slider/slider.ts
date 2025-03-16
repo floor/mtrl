@@ -1,18 +1,9 @@
 // src/components/slider/slider.ts
 import { pipe } from '../../core/compose/pipe';
 import { createBase, withElement } from '../../core/compose/component';
-import { 
-  withEvents, 
-  withLifecycle,
-  withTextLabel,
-  withIcon
-} from '../../core/compose/features';
-import { 
-  withStructure, 
-  withDisabled,
-  withAppearance,
-  withSlider
-} from './features';
+import { withEvents, withLifecycle, withTextLabel, withIcon } from '../../core/compose/features';
+import { withStructure, withSlider } from './features';
+import { withStates } from './features/states';
 import { withAPI } from './api';
 import { SliderConfig, SliderComponent } from './types';
 import { createBaseConfig, getElementConfig, getApiConfig } from './config';
@@ -26,7 +17,7 @@ const createSlider = (config: SliderConfig = {}): SliderComponent => {
   const baseConfig = createBaseConfig(config);
 
   try {
-    // First create the component with all required features
+    // Create the component with all required features
     const component = pipe(
       createBase,
       withEvents(),
@@ -34,16 +25,15 @@ const createSlider = (config: SliderConfig = {}): SliderComponent => {
       withIcon(baseConfig),
       withTextLabel(baseConfig),
       withStructure(baseConfig),
-      withDisabled(baseConfig),
-      withAppearance(baseConfig),
+      withStates(baseConfig),
       withSlider(baseConfig),
       withLifecycle()
     )(baseConfig);
     
-    // Then generate the API configuration using the component
+    // Generate the API configuration
     const apiOptions = getApiConfig(component);
     
-    // Finally, apply the API layer with the generated options
+    // Apply the API layer
     const slider = withAPI(apiOptions)(component);
 
     // Register event handlers from config
