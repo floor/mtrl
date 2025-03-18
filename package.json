@@ -1,7 +1,9 @@
 {
   "name": "mtrl",
-  "version": "0.2.7",
+  "version": "0.2.8",
   "description": "A functional TypeScript/JavaScript component library with composable architecture based on Material Design 3",
+  "author": "floor",
+  "license": "MIT License",
   "keywords": [
     "component",
     "library",
@@ -13,8 +15,18 @@
     "material design 3",
     "md3"
   ],
+  "type": "module",
   "main": "index.js",
   "scripts": {
+    "start": "bun run server.js",
+    "dev": "bun --watch server.js",
+    "build:demo": "bun run demo/build.ts",
+    "dev:demo": "bun run demo/build.ts --watch",
+    "clean:demo": "rm -rf demo/dist",
+    "build:js": "bun build demo/main.js --outfile=demo/dist/bundle.js --format=esm",
+    "build:css": "sass src/styles/main.scss:demo/dist/styles.css --style=compressed",
+    "build": "bun run build:js && bun run build:css",
+    "build:watch": "bun build --watch demo/main.js --outfile=demo/dist/bundle.js & sass --watch src/styles/main.scss:demo/dist/styles.css",
     "test": "bun test",
     "test:watch": "bun test --watch",
     "test:coverage": "bun test --coverage",
@@ -29,9 +41,8 @@
     "type": "git",
     "url": "https://github.com/floor/mtrl.git"
   },
-  "author": "floor",
-  "license": "MIT License",
   "devDependencies": {
+    "sass": "^1.85.1",
     "typedoc": "^0.27.9"
   }
 }
