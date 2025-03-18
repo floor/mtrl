@@ -145,7 +145,7 @@ export const withVisibility = (config: MenuConfig) => (component: BaseComponent)
     if (!isVisible) return;
 
     // Store the opening button if available
-    const openingButton = config.openingButton?.element;
+    const origin = config.origin?.element;
 
     // Check if click is outside the menu but not on the opening button
     const clickedElement = event.target as Node;
@@ -156,7 +156,7 @@ export const withVisibility = (config: MenuConfig) => (component: BaseComponent)
     }
 
     // Don't close if the click is on the opening button (it will handle opening/closing)
-    if (openingButton && (openingButton === clickedElement || openingButton.contains(clickedElement))) {
+    if (origin && (origin === clickedElement || origin.contains(clickedElement))) {
       return;
     }
 

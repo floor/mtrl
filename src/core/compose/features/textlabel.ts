@@ -89,9 +89,6 @@ export const withTextLabel = <T extends TextLabelConfig>(config: T = {} as T) =>
       component.element.appendChild(labelElement);
     }
 
-    console.log('componentName', component.componentName)
-    console.log('position', position)
-
     if (position && component.componentName !== 'slider') {
       component.element.classList.add(`${config.prefix}-${config.componentName}--label-${position}`);
     }

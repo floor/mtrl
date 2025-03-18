@@ -113,8 +113,8 @@ export interface MenuConfig {
   /** Whether to keep menu open after selection */
   stayOpenOnSelect?: boolean;
   
-  /** Button element that opens the menu */
-  openingButton?: HTMLElement | { element: HTMLElement };
+  /** Orgin element that opens the menu */
+  origin?: HTMLElement | { element: HTMLElement };
   
   /** Parent item element (for submenus) */
   parentItem?: HTMLElement;

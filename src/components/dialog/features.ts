@@ -26,6 +26,15 @@ const ALL_SIZES = ['small', 'medium', 'large', 'fullwidth', 'fullscreen'];
 const ALL_ANIMATIONS = ['scale', 'slide-up', 'slide-down', 'fade'];
 const ALL_FOOTER_ALIGNMENTS = ['right', 'left', 'center', 'space-between'];
 
+const DIALOG_EVENTS = {
+  OPEN: 'open',
+  CLOSE: 'close',
+  BEFORE_OPEN: 'beforeopen',
+  BEFORE_CLOSE: 'beforeclose',
+  AFTER_OPEN: 'afteropen',
+  AFTER_CLOSE: 'afterclose'
+};
+
 /**
  * Creates the dialog DOM structure with proper divider handling
  * @param config Dialog configuration
