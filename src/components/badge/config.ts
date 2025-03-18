@@ -4,20 +4,19 @@ import {
   createElementConfig
 } from '../../core/config/component-config';
 import { BadgeConfig } from './types';
-import { 
-  BADGE_VARIANTS, 
-  BADGE_COLORS, 
-  BADGE_POSITIONS, 
-  BADGE_MAX_CHARACTERS 
-} from './constants';
+
+/**
+ * Maximum character count for badge labels
+ */
+export const BADGE_MAX_CHARACTERS = 4;
 
 /**
  * Default configuration for the Badge component
  */
 export const defaultConfig: BadgeConfig = {
-  variant: BADGE_VARIANTS.LARGE,
-  color: BADGE_COLORS.ERROR,
-  position: BADGE_POSITIONS.TOP_RIGHT,
+  variant: 'large',
+  color: 'error',
+  position: 'top-right',
   label: '',
   visible: true
 };
@@ -40,12 +39,12 @@ export const getElementConfig = (config: BadgeConfig) => {
   const attrs: Record<string, any> = {};
   
   // For large badges, set appropriate ARIA attributes
-  if (config.variant !== BADGE_VARIANTS.SMALL) {
+  if (config.variant !== 'small') {
     attrs.role = 'status';
   }
   
   // Format the label if needed
-  const formattedLabel = config.variant === BADGE_VARIANTS.SMALL 
+  const formattedLabel = config.variant === 'small' 
     ? '' 
     : formatBadgeLabel(config.label || '', config.max);
   

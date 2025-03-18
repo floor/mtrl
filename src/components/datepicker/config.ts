@@ -4,21 +4,18 @@ import {
   createElementConfig,
   BaseComponentConfig 
 } from '../../core/config/component-config';
-import { DatePickerConfig } from './types';
 import { 
-  DATEPICKER_VARIANTS, 
-  DATEPICKER_VIEWS, 
-  DATEPICKER_SELECTION_MODES,
-  DEFAULT_DATE_FORMAT
-} from './constants';
+  DatePickerConfig, 
+  DEFAULT_DATE_FORMAT 
+} from './types';
 
 /**
  * Default configuration for the DatePicker component
  */
 export const defaultConfig: DatePickerConfig = {
-  variant: DATEPICKER_VARIANTS.DOCKED,
-  initialView: DATEPICKER_VIEWS.DAY,
-  selectionMode: DATEPICKER_SELECTION_MODES.SINGLE,
+  variant: 'docked',
+  initialView: 'day',
+  selectionMode: 'single',
   dateFormat: DEFAULT_DATE_FORMAT,
   animate: true
 };
@@ -33,7 +30,7 @@ export const createBaseConfig = (config: DatePickerConfig = {}): DatePickerConfi
   
   // Set closeOnSelect default based on variant
   if (baseConfig.closeOnSelect === undefined) {
-    baseConfig.closeOnSelect = baseConfig.variant !== DATEPICKER_VARIANTS.DOCKED;
+    baseConfig.closeOnSelect = baseConfig.variant !== 'docked';
   }
   
   return baseConfig;
@@ -106,12 +103,12 @@ export const getCalendarConfig = (config: DatePickerConfig) => {
     tag: 'div',
     attrs: {
       role: 'dialog',
-      'aria-modal': config.variant !== DATEPICKER_VARIANTS.DOCKED ? 'true' : 'false'
+      'aria-modal': config.variant !== 'docked' ? 'true' : 'false'
     },
     className: [
       `${config.prefix}-datepicker-calendar`,
       `${config.prefix}-datepicker-${config.variant}`,
-      config.selectionMode === DATEPICKER_SELECTION_MODES.RANGE ? 
+      config.selectionMode === 'range' ? 
         `${config.prefix}-datepicker-range` : ''
     ],
     forwardEvents: {

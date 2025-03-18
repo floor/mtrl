@@ -5,13 +5,12 @@ import {
   BaseComponentConfig 
 } from '../../core/config/component-config';
 import { ChipConfig, BaseComponent } from './types';
-import { CHIP_VARIANTS } from './constants';
 
 /**
  * Default configuration for the Chip component
  */
 export const defaultConfig: ChipConfig = {
-  variant: CHIP_VARIANTS.FILLED,
+  variant: 'filled',
   ripple: true
 };
 

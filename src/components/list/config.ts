@@ -5,14 +5,13 @@ import {
   BaseComponentConfig 
 } from '../../core/config/component-config';
 import { ListConfig, BaseComponent } from './types';
-import { LIST_TYPES, LIST_LAYOUTS } from './constants';
 
 /**
  * Default configuration for the List component
  */
 export const defaultConfig: ListConfig = {
-  type: LIST_TYPES.DEFAULT,
-  layout: LIST_LAYOUTS.HORIZONTAL,
+  type: 'default',
+  layout: 'horizontal',
   items: []
 };
 
@@ -32,9 +31,9 @@ export const createBaseConfig = (config: ListConfig = {}): ListConfig =>
 export const getElementConfig = (config: ListConfig) => 
   createElementConfig(config, {
     tag: 'div',
-    role: config.type === LIST_TYPES.DEFAULT ? 'list' : 'listbox',
+    role: config.type === 'default' ? 'list' : 'listbox',
     attrs: {
-      'aria-multiselectable': config.type === LIST_TYPES.MULTI_SELECT ? 'true' : undefined
+      'aria-multiselectable': config.type === 'multi' ? 'true' : undefined
     },
     componentName: 'list',
     className: config.class

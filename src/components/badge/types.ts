@@ -1,5 +1,22 @@
 // src/components/badge/types.ts
-import { BADGE_VARIANTS, BADGE_COLORS, BADGE_POSITIONS } from './constants';
+
+/**
+ * Badge variant types
+ * @category Components
+ */
+export type BadgeVariant = 'small' | 'large';
+
+/**
+ * Badge color types
+ * @category Components
+ */
+export type BadgeColor = 'error' | 'primary' | 'secondary' | 'tertiary' | 'success' | 'warning' | 'info';
+
+/**
+ * Badge position types
+ * @category Components
+ */
+export type BadgePosition = 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left';
 
 /**
  * Configuration interface for the Badge component
@@ -9,18 +26,21 @@ export interface BadgeConfig {
   /** 
    * Badge variant (small dot or large numbered)
    * Small badge (6dp) or Large badge (16dp height)
+   * @default 'large'
    */
-  variant?: keyof typeof BADGE_VARIANTS | (typeof BADGE_VARIANTS)[keyof typeof BADGE_VARIANTS];
+  variant?: BadgeVariant | string;
   
   /** 
    * Badge color (error is default)
+   * @default 'error'
    */
-  color?: keyof typeof BADGE_COLORS | (typeof BADGE_COLORS)[keyof typeof BADGE_COLORS];
+  color?: BadgeColor | string;
   
   /** 
-   * Badge position relative to its container 
+   * Badge position relative to its container
+   * @default 'top-right' 
    */
-  position?: keyof typeof BADGE_POSITIONS | (typeof BADGE_POSITIONS)[keyof typeof BADGE_POSITIONS];
+  position?: BadgePosition | string;
   
   /** 
    * Text label inside the badge (for large badges)
@@ -83,13 +103,13 @@ export interface BadgeComponent {
   setMax: (max: number) => BadgeComponent;
   
   /** Sets badge color */
-  setColor: (color: keyof typeof BADGE_COLORS | (typeof BADGE_COLORS)[keyof typeof BADGE_COLORS]) => BadgeComponent;
+  setColor: (color: BadgeColor | string) => BadgeComponent;
   
   /** Sets badge variant */
-  setVariant: (variant: keyof typeof BADGE_VARIANTS | (typeof BADGE_VARIANTS)[keyof typeof BADGE_VARIANTS]) => BadgeComponent;
+  setVariant: (variant: BadgeVariant | string) => BadgeComponent;
   
   /** Sets badge position */
-  setPosition: (position: keyof typeof BADGE_POSITIONS | (typeof BADGE_POSITIONS)[keyof typeof BADGE_POSITIONS]) => BadgeComponent;
+  setPosition: (position: BadgePosition | string) => BadgeComponent;
   
   /** Attaches badge to a target element */
   attachTo: (target: HTMLElement) => BadgeComponent;

@@ -18,6 +18,28 @@ import {
  * Creates a new Menu component
  * @param {MenuConfig} config - Menu configuration
  * @returns {MenuComponent} Menu component instance
+ * 
+ * @example
+ * ```typescript
+ * // Create a basic menu with items
+ * const menu = createMenu({
+ *   items: [
+ *     { name: 'item1', text: 'Option 1' },
+ *     { name: 'item2', text: 'Option 2' },
+ *     { type: 'divider' },
+ *     { name: 'item3', text: 'Option 3' }
+ *   ]
+ * });
+ * 
+ * // Show the menu positioned relative to a button
+ * const button = document.getElementById('menuButton');
+ * menu.position(button).show();
+ * 
+ * // Listen for item selection
+ * menu.on('select', (event) => {
+ *   console.log(`Selected: ${event.name}`);
+ * });
+ * ```
  */
 const createMenu = (config: MenuConfig = {}): MenuComponent => {
   const baseConfig = createBaseConfig(config);

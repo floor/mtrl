@@ -9,12 +9,7 @@ import {
 } from '../../core/compose/features';
 
 import { withAPI } from './api';
-import { DatePickerConfig } from './types';
-import { 
-  DATEPICKER_VARIANTS, 
-  DATEPICKER_VIEWS, 
-  DATEPICKER_SELECTION_MODES 
-} from './constants';
+import { DatePickerConfig, DatePickerComponent } from './types';
 import { 
   createBaseConfig, 
   getContainerConfig, 
@@ -37,7 +32,7 @@ import { createElement } from '../../core/dom/create';
  * @param {DatePickerConfig} config - DatePicker configuration object
  * @returns {DatePickerComponent} DatePicker component instance
  */
-const createDatePicker = (config: DatePickerConfig = {}) => {
+const createDatePicker = (config: DatePickerConfig = {}): DatePickerComponent => {
   const baseConfig = createBaseConfig(config);
 
   try {
@@ -68,7 +63,7 @@ const createDatePicker = (config: DatePickerConfig = {}) => {
         }
         
         // Format for range selection
-        if (this.selectionMode === DATEPICKER_SELECTION_MODES.RANGE && this.rangeEndDate) {
+        if (this.selectionMode === 'range' && this.rangeEndDate) {
           const startStr = formatDate(this.selectedDate, this.dateFormat);
           const endStr = formatDate(this.rangeEndDate, this.dateFormat);
           this.input.value = `${startStr} - ${endStr}`;
@@ -94,13 +89,13 @@ const createDatePicker = (config: DatePickerConfig = {}) => {
               
             case 'monthSelected':
               this.currentMonth = data.month;
-              this.currentView = DATEPICKER_VIEWS.DAY;
+              this.currentView = 'day';
               this.updateCalendar();
               break;
               
             case 'yearSelected':
               this.currentYear = data.year;
-              this.currentView = DATEPICKER_VIEWS.MONTH;
+              this.currentView = 'month';
               this.updateCalendar();
               break;
               
@@ -152,7 +147,7 @@ const createDatePicker = (config: DatePickerConfig = {}) => {
       
       handleDateSelection(date: Date): void {
         // Range selection
-        if (this.selectionMode === DATEPICKER_SELECTION_MODES.RANGE) {
+        if (this.selectionMode === 'range') {
           // If no date is selected yet or both dates are already selected, start a new range
           if (!this.selectedDate || (this.selectedDate && this.rangeEndDate)) {
             this.selectedDate = date;
@@ -248,7 +243,7 @@ const createDatePicker = (config: DatePickerConfig = {}) => {
     
     // Initialize with provided value if any
     if (baseConfig.value) {
-      if (Array.isArray(baseConfig.value) && baseConfig.selectionMode === DATEPICKER_SELECTION_MODES.RANGE) {
+      if (Array.isArray(baseConfig.value) && baseConfig.selectionMode === 'range') {
         const start = parseDate(baseConfig.value[0]);
         const end = parseDate(baseConfig.value[1]);
         

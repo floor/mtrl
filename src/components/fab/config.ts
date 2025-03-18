@@ -5,14 +5,13 @@ import {
   BaseComponentConfig 
 } from '../../core/config/component-config';
 import { FabConfig } from './types';
-import { FAB_VARIANTS, FAB_SIZES } from './constants';
 
 /**
  * Default configuration for the FAB component
  */
 export const defaultConfig: FabConfig = {
-  variant: FAB_VARIANTS.PRIMARY,
-  size: FAB_SIZES.DEFAULT,
+  variant: 'primary',
+  size: 'default',
   type: 'button',
   ripple: true
 };
@@ -38,7 +37,7 @@ export const getElementConfig = (config: FabConfig) => {
   };
   
   // Add size class
-  const fabSizeClass = `${config.prefix}-fab--${config.size || FAB_SIZES.DEFAULT}`;
+  const fabSizeClass = `${config.prefix}-fab--${config.size || 'default'}`;
   let classNames = [fabSizeClass];
   
   // Add animation class if specified

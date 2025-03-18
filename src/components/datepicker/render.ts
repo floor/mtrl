@@ -8,10 +8,8 @@ import {
   OUTSIDE_MONTH_CLASS,
   RANGE_START_CLASS,
   RANGE_END_CLASS,
-  RANGE_MIDDLE_CLASS,
-  DATEPICKER_VIEWS,
-  DATEPICKER_VARIANTS
-} from './constants';
+  RANGE_MIDDLE_CLASS
+} from './types';
 import { CalendarDate } from './types';
 import { 
   generateCalendarDates,
@@ -71,8 +69,8 @@ export const renderHeader = ({
     html: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>',
     attrs: {
       type: 'button',
-      'aria-label': currentView === DATEPICKER_VIEWS.DAY ? 'Previous month' : 
-                    currentView === DATEPICKER_VIEWS.MONTH ? 'Previous year' : 'Previous year range'
+      'aria-label': currentView === 'day' ? 'Previous month' : 
+                    currentView === 'month' ? 'Previous year' : 'Previous year range'
     }
   });
   
@@ -83,8 +81,8 @@ export const renderHeader = ({
     html: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>',
     attrs: {
       type: 'button',
-      'aria-label': currentView === DATEPICKER_VIEWS.DAY ? 'Next month' : 
-                    currentView === DATEPICKER_VIEWS.MONTH ? 'Next year' : 'Next year range'
+      'aria-label': currentView === 'day' ? 'Next month' : 
+                    currentView === 'month' ? 'Next year' : 'Next year range'
     }
   });
   
@@ -92,22 +90,22 @@ export const renderHeader = ({
   monthButton.addEventListener('click', (event) => {
     // Prevent event from bubbling up
     event.stopPropagation();
-    emit('viewChange', { view: DATEPICKER_VIEWS.MONTH });
+    emit('viewChange', { view: 'month' });
   });
   
   yearButton.addEventListener('click', (event) => {
     // Prevent event from bubbling up
     event.stopPropagation();
-    emit('viewChange', { view: DATEPICKER_VIEWS.YEAR });
+    emit('viewChange', { view: 'year' });
   });
   
   prevButton.addEventListener('click', (event) => {
     // Prevent event from bubbling up
     event.stopPropagation();
     
-    if (currentView === DATEPICKER_VIEWS.DAY) {
+    if (currentView === 'day') {
       emit('prevMonth');
-    } else if (currentView === DATEPICKER_VIEWS.MONTH) {
+    } else if (currentView === 'month') {
       emit('prevYear');
     } else {
       emit('prevYearRange');
@@ -118,9 +116,9 @@ export const renderHeader = ({
     // Prevent event from bubbling up
     event.stopPropagation();
     
-    if (currentView === DATEPICKER_VIEWS.DAY) {
+    if (currentView === 'day') {
       emit('nextMonth');
-    } else if (currentView === DATEPICKER_VIEWS.MONTH) {
+    } else if (currentView === 'month') {
       emit('nextYear');
     } else {
       emit('nextYearRange');
@@ -406,7 +404,7 @@ export const renderCalendar = (state: any, emit: Function): HTMLElement => {
   calendar.appendChild(header);
   
   // Render content based on current view
-  if (currentView === DATEPICKER_VIEWS.DAY) {
+  if (currentView === 'day') {
     const weekdays = renderWeekdays(prefix);
     calendar.appendChild(weekdays);
     
@@ -421,7 +419,7 @@ export const renderCalendar = (state: any, emit: Function): HTMLElement => {
       emit
     });
     calendar.appendChild(days);
-  } else if (currentView === DATEPICKER_VIEWS.MONTH) {
+  } else if (currentView === 'month') {
     const months = renderMonthSelection({
       currentYear,
       currentMonth,
@@ -429,7 +427,7 @@ export const renderCalendar = (state: any, emit: Function): HTMLElement => {
       emit
     });
     calendar.appendChild(months);
-  } else if (currentView === DATEPICKER_VIEWS.YEAR) {
+  } else if (currentView === 'year') {
     const years = renderYearSelection({
       currentYear,
       prefix,
@@ -439,7 +437,7 @@ export const renderCalendar = (state: any, emit: Function): HTMLElement => {
   }
   
   // Only add footer for modal variants
-  if (variant !== DATEPICKER_VARIANTS.DOCKED) {
+  if (variant !== 'docked') {
     const footer = renderFooter({
       variant,
       prefix,

@@ -1,10 +1,8 @@
 // src/components/card/config.ts
-
 import { 
   createComponentConfig, 
   createElementConfig
 } from '../../core/config/component-config';
-import { CARD_VARIANTS, CARD_ELEVATIONS } from './constants';
 import { 
   createCardHeader, 
   createCardContent, 
@@ -18,7 +16,7 @@ import { CardComponent, CardSchema, ButtonConfig, BaseComponent } from './types'
  * @const {CardSchema}
  */
 export const defaultConfig: CardSchema = {
-  variant: CARD_VARIANTS.ELEVATED,
+  variant: 'elevated',
   interactive: false,
   fullWidth: false,
   clickable: false,
@@ -192,6 +190,16 @@ export const getApiConfig = (comp: any) => ({
 });
 
 /**
+ * Card elevation levels
+ */
+export const CARD_ELEVATION_LEVELS = {
+  LEVEL0: 0,
+  LEVEL1: 1,
+  LEVEL2: 2,
+  LEVEL4: 4
+};
+
+/**
  * Adds interactive behavior to card component
  * Uses the MTRL elevation system for proper elevation levels
  * 
@@ -206,14 +214,14 @@ export const withInteractiveBehavior = (comp: BaseComponent): BaseComponent => {
   if (isInteractive) {
     // Mouse interactions
     comp.element.addEventListener('mouseenter', () => {
-      if (config.variant === CARD_VARIANTS.ELEVATED) {
-        comp.element.style.setProperty('--card-elevation', String(CARD_ELEVATIONS.LEVEL2));
+      if (config.variant === 'elevated') {
+        comp.element.style.setProperty('--card-elevation', String(CARD_ELEVATION_LEVELS.LEVEL2));
       }
     });
 
     comp.element.addEventListener('mouseleave', () => {
-      if (config.variant === CARD_VARIANTS.ELEVATED) {
-        comp.element.style.setProperty('--card-elevation', String(CARD_ELEVATIONS.LEVEL1));
+      if (config.variant === 'elevated') {
+        comp.element.style.setProperty('--card-elevation', String(CARD_ELEVATION_LEVELS.LEVEL1));
       }
     });
     
@@ -241,7 +249,7 @@ export const withInteractiveBehavior = (comp: BaseComponent): BaseComponent => {
     comp.element.setAttribute('draggable', 'true');
     
     comp.element.addEventListener('dragstart', (e: DragEvent) => {
-      comp.element.style.setProperty('--card-elevation', String(CARD_ELEVATIONS.LEVEL4));
+      comp.element.style.setProperty('--card-elevation', String(CARD_ELEVATION_LEVELS.LEVEL4));
       comp.element.classList.add(`${comp.getClass('card')}--dragging`);
       comp.emit?.('dragstart', { event: e });
       
@@ -254,7 +262,7 @@ export const withInteractiveBehavior = (comp: BaseComponent): BaseComponent => {
     });
 
     comp.element.addEventListener('dragend', (e: DragEvent) => {
-      comp.element.style.setProperty('--card-elevation', String(CARD_ELEVATIONS.LEVEL1));
+      comp.element.style.setProperty('--card-elevation', String(CARD_ELEVATION_LEVELS.LEVEL1));
       comp.element.classList.remove(`${comp.getClass('card')}--dragging`);
       comp.emit?.('dragend', { event: e });
     });

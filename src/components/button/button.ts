@@ -13,7 +13,6 @@ import {
 } from '../../core/compose/features';
 import { withAPI } from './api';
 import { ButtonConfig } from './types';
-import { BUTTON_VARIANTS } from './constants';
 import { createBaseConfig, getElementConfig, getApiConfig } from './config';
 
 /**

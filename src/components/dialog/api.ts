@@ -1,6 +1,5 @@
 // src/components/dialog/api.ts (partial update)
-import { DialogComponent, DialogEvent, DialogButton, DialogConfirmOptions } from './types';
-import { DIALOG_SIZES, DIALOG_ANIMATIONS, DIALOG_FOOTER_ALIGNMENTS, DIALOG_EVENTS } from './constants';
+import { DialogComponent, DialogEvent, DialogButton, DialogConfirmOptions, DialogFooterAlignment, DialogSize, DialogEventType } from './types';
 import { removeClass } from '../../core/dom/classes';
 
 interface ApiOptions {
@@ -25,14 +24,14 @@ interface ApiOptions {
     addButton: (button: DialogButton) => void;
     removeButton: (indexOrText: number | string) => void;
     getButtons: () => DialogButton[];
-    setFooterAlignment: (alignment: keyof typeof DIALOG_FOOTER_ALIGNMENTS | DIALOG_FOOTER_ALIGNMENTS) => void;
+    setFooterAlignment: (alignment: DialogFooterAlignment | string) => void;
   };
   focus: {
     trapFocus: () => void;
     releaseFocus: () => void;
   };
   size: {
-    setSize: (size: keyof typeof DIALOG_SIZES | DIALOG_SIZES) => void;
+    setSize: (size: DialogSize | string) => void;
   };
   dividers: {
     toggleHeaderDivider: (show: boolean) => void;
@@ -188,7 +187,7 @@ export const withAPI = (options: ApiOptions) =>
      * @param {string} alignment - Footer alignment
      * @returns {DialogComponent} Dialog component instance for chaining
      */
-    setFooterAlignment(alignment: keyof typeof DIALOG_FOOTER_ALIGNMENTS | DIALOG_FOOTER_ALIGNMENTS) {
+    setFooterAlignment(alignment: DialogFooterAlignment | string) {
       options.buttons.setFooterAlignment(alignment);
       return this;
     },
@@ -216,7 +215,7 @@ export const withAPI = (options: ApiOptions) =>
      * @param {string} size - Size variant
      * @returns {DialogComponent} Dialog component instance for chaining
      */
-    setSize(size: keyof typeof DIALOG_SIZES | DIALOG_SIZES) {
+    setSize(size: DialogSize | string) {
       options.size.setSize(size);
       return this;
     },
@@ -227,7 +226,7 @@ export const withAPI = (options: ApiOptions) =>
      * @param {Function} handler - Event handler
      * @returns {DialogComponent} Dialog component instance for chaining
      */
-    on(event: keyof typeof DIALOG_EVENTS | DIALOG_EVENTS, handler: (event: DialogEvent) => void) {
+    on(event: DialogEventType | string, handler: (event: DialogEvent) => void) {
       options.events.on(event, handler);
       return this;
     },
@@ -238,7 +237,7 @@ export const withAPI = (options: ApiOptions) =>
      * @param {Function} handler - Event handler
      * @returns {DialogComponent} Dialog component instance for chaining
      */
-    off(event: keyof typeof DIALOG_EVENTS | DIALOG_EVENTS, handler: (event: DialogEvent) => void) {
+    off(event: DialogEventType | string, handler: (event: DialogEvent) => void) {
       options.events.off(event, handler);
       return this;
     },

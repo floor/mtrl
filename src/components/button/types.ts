@@ -1,5 +1,10 @@
 // src/components/button/types.ts
-import { BUTTON_VARIANTS } from './constants';
+
+/**
+ * Button variant types
+ * @category Components
+ */
+export type ButtonVariant = 'filled' | 'tonal' | 'outlined' | 'elevated' | 'text';
 
 /**
  * Configuration interface for the Button component
@@ -10,7 +15,7 @@ export interface ButtonConfig {
    * Button variant that determines visual styling
    * @default 'filled'
    */
-  variant?: keyof typeof BUTTON_VARIANTS | string;
+  variant?: ButtonVariant | string;
   
   /** 
    * Whether the button is initially disabled
@@ -260,4 +265,11 @@ export interface ButtonComponent {
    * @returns The button component for chaining
    */
   addClass: (...classes: string[]) => ButtonComponent;
+
+  /**
+   * Sets the aria-label attribute for accessibility
+   * @param label - Aria label text
+   * @returns The button component for chaining
+   */
+  setAriaLabel: (label: string) => ButtonComponent;
 }

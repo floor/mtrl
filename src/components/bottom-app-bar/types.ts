@@ -7,6 +7,12 @@
 import { ElementComponent } from '../../core/compose';
 
 /**
+ * FAB position type for Bottom App Bar
+ * @category Components
+ */
+export type FabPosition = 'center' | 'end';
+
+/**
  * Configuration options for Bottom App Bar component
  * @category Components
  */
@@ -27,7 +33,7 @@ export interface BottomAppBarConfig {
    * FAB position in bottom bar
    * @default 'end'
    */
-  fabPosition?: 'center' | 'end';
+  fabPosition?: FabPosition;
   
   /**
    * Additional CSS classes to apply

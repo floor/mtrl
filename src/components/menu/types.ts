@@ -1,9 +1,28 @@
 // src/components/menu/types.ts
-import { 
-  MENU_ALIGN, 
-  MENU_VERTICAL_ALIGN, 
-  MENU_ITEM_TYPES 
-} from './constants';
+
+/**
+ * Menu alignment options
+ * @category Components
+ */
+export type MenuAlign = 'left' | 'right' | 'center';
+
+/**
+ * Menu vertical alignment options
+ * @category Components
+ */
+export type MenuVerticalAlign = 'top' | 'bottom' | 'middle';
+
+/**
+ * Menu item types
+ * @category Components
+ */
+export type MenuItemType = 'item' | 'divider';
+
+/**
+ * Menu events
+ * @category Components
+ */
+export type MenuEvent = 'select' | 'open' | 'close' | 'submenuOpen' | 'submenuClose';
 
 /**
  * Menu item configuration
@@ -16,7 +35,7 @@ export interface MenuItemConfig {
   text: string;
   
   /** Type of menu item */
-  type?: keyof typeof MENU_ITEM_TYPES | string;
+  type?: MenuItemType | string;
   
   /** Whether the item is disabled */
   disabled?: boolean;
@@ -33,10 +52,10 @@ export interface MenuItemConfig {
  */
 export interface MenuPositionConfig {
   /** Horizontal alignment */
-  align?: keyof typeof MENU_ALIGN | string;
+  align?: MenuAlign | string;
   
   /** Vertical alignment */
-  vAlign?: keyof typeof MENU_VERTICAL_ALIGN | string;
+  vAlign?: MenuVerticalAlign | string;
   
   /** Horizontal offset in pixels */
   offsetX?: number;

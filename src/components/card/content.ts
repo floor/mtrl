@@ -2,8 +2,11 @@
 import { PREFIX } from '../../core/config';
 import { pipe } from '../../core/compose';
 import { createBase, withElement } from '../../core/compose/component';
-import { CardContentConfig } from './types';
-import { CARD_CONTENT_PADDING } from './constants';
+import { createElement } from '../../core/dom/create';
+import { CardContentConfig, CardHeaderConfig, CardMediaConfig, CardActionsConfig } from './types';
+
+// Constants for content padding
+export const CARD_CONTENT_PADDING = true;
 
 /**
  * Creates a card content component
@@ -78,9 +81,6 @@ export const createCardContent = (config: CardContentConfig = {}): HTMLElement =
   }
 };
 
-// src/components/card/header.ts
-import { createElement } from '../../core/dom/create';
-
 /**
  * Creates a card header component
  * 
@@ -103,7 +103,7 @@ import { createElement } from '../../core/dom/create';
  * });
  * ```
  */
-export const createCardHeader = (config: any = {}): HTMLElement => {
+export const createCardHeader = (config: CardHeaderConfig = {}): HTMLElement => {
   const baseConfig = {
     ...config,
     componentName: 'card-header',
@@ -200,7 +200,6 @@ export const createCardHeader = (config: any = {}): HTMLElement => {
   }
 };
 
-// src/components/card/actions.ts
 /**
  * Creates a card actions component
  * 
@@ -225,7 +224,7 @@ export const createCardHeader = (config: any = {}): HTMLElement => {
  * });
  * ```
  */
-export const createCardActions = (config: any = {}): HTMLElement => {
+export const createCardActions = (config: CardActionsConfig = {}): HTMLElement => {
   const baseConfig = {
     ...config,
     componentName: 'card-actions',
@@ -273,7 +272,6 @@ export const createCardActions = (config: any = {}): HTMLElement => {
   }
 };
 
-// src/components/card/media.ts
 /**
  * Creates a card media component
  * 
@@ -296,7 +294,7 @@ export const createCardActions = (config: any = {}): HTMLElement => {
  * });
  * ```
  */
-export const createCardMedia = (config: any = {}): HTMLElement => {
+export const createCardMedia = (config: CardMediaConfig = {}): HTMLElement => {
   const baseConfig = {
     ...config,
     componentName: 'card-media',

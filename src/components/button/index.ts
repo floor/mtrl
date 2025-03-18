@@ -1,4 +1,12 @@
 // src/components/button/index.ts
 export { default } from './button'
-export { BUTTON_VARIANTS } from './constants'
-export { ButtonConfig, ButtonComponent } from './types'
+export { ButtonConfig, ButtonComponent, ButtonVariant } from './types'
+
+// Export common button variants for convenience
+export const BUTTON_VARIANTS = {
+  FILLED: 'filled',
+  TONAL: 'tonal',
+  OUTLINED: 'outlined',
+  ELEVATED: 'elevated',
+  TEXT: 'text'
+} as const;

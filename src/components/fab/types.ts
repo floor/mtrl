@@ -1,5 +1,22 @@
 // src/components/fab/types.ts
-import { FAB_VARIANTS, FAB_SIZES } from './constants';
+
+/**
+ * FAB variants for styling
+ * @category Components
+ */
+export type FabVariant = 'primary' | 'secondary' | 'tertiary' | 'surface';
+
+/**
+ * FAB size variants
+ * @category Components
+ */
+export type FabSize = 'small' | 'default' | 'large';
+
+/**
+ * FAB position options
+ * @category Components
+ */
+export type FabPosition = 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left';
 
 /**
  * Configuration interface for the FAB component
@@ -10,13 +27,13 @@ export interface FabConfig {
    * FAB variant that determines visual styling
    * @default 'primary'
    */
-  variant?: keyof typeof FAB_VARIANTS | string;
+  variant?: FabVariant | string;
   
   /** 
    * FAB size variant
    * @default 'default'
    */
-  size?: keyof typeof FAB_SIZES | string;
+  size?: FabSize | string;
   
   /** 
    * Whether the FAB is initially disabled
@@ -51,7 +68,7 @@ export interface FabConfig {
    * Position of the FAB on the screen
    * @example 'bottom-right'
    */
-  position?: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left' | string;
+  position?: FabPosition | string;
   
   /** 
    * Button type attribute

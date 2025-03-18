@@ -2,9 +2,7 @@
 import { PREFIX } from '../../core/config';
 import { createElement } from '../../core/dom/create';
 import { BaseComponent, CardComponent, LoadingFeature, ExpandableFeature, SwipeableFeature } from './types';
-
-import { createCardHeader, createCardContent, createCardMedia, createCardActions } from './content';
-import { BaseComponent, CardComponent, CardHeaderConfig, CardContentConfig, CardMediaConfig, CardActionsConfig, CardSchema, ButtonConfig } from './types';
+import { CARD_ELEVATION_LEVELS } from './config';
 
 interface LoadingConfig {
   initialState?: boolean;
@@ -115,9 +113,9 @@ export const withElevation = (component: BaseComponent): BaseComponent => {
   
   // Set initial elevation based on variant
   if (config.variant === 'elevated') {
-    component.element.style.setProperty('--card-elevation', '1');
+    component.element.style.setProperty('--card-elevation', String(CARD_ELEVATION_LEVELS.LEVEL1));
   } else {
-    component.element.style.setProperty('--card-elevation', '0');
+    component.element.style.setProperty('--card-elevation', String(CARD_ELEVATION_LEVELS.LEVEL0));
   }
   
   return component;
@@ -266,7 +264,7 @@ export const withExpandable = (config: ExpandableConfig = {}) => (component: Bas
  *     onSwipeLeft: (card) => console.log('Swiped left'),
  *     onSwipeRight: (card) => console.log('Swiped right')
  *   })
- * )({ variant: CardVariant.ELEVATED });
+ * )({ variant: 'elevated' });
  * ```
  */
 export const withSwipeable = (config: SwipeableConfig = {}) => (component: BaseComponent): BaseComponent & { swipeable: SwipeableFeature } => {

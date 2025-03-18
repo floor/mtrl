@@ -1,5 +1,22 @@
 // src/components/extended-fab/types.ts
-import { FAB_VARIANTS } from '../fab/constants';
+
+/**
+ * Extended FAB variants
+ * @category Components
+ */
+export type ExtendedFabVariant = 'primary' | 'secondary' | 'tertiary' | 'surface';
+
+/**
+ * Extended FAB width behavior
+ * @category Components
+ */
+export type ExtendedFabWidth = 'fixed' | 'fluid';
+
+/**
+ * Extended FAB position
+ * @category Components
+ */
+export type ExtendedFabPosition = 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left';
 
 /**
  * Configuration interface for the Extended FAB component
@@ -10,7 +27,7 @@ export interface ExtendedFabConfig {
    * Extended FAB variant that determines visual styling
    * @default 'primary'
    */
-  variant?: keyof typeof FAB_VARIANTS | string;
+  variant?: ExtendedFabVariant | string;
   
   /** 
    * Whether the Extended FAB is initially disabled
@@ -57,7 +74,7 @@ export interface ExtendedFabConfig {
    * Position of the Extended FAB on the screen
    * @example 'bottom-right'
    */
-  position?: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left' | string;
+  position?: ExtendedFabPosition | string;
   
   /** 
    * Button type attribute
@@ -109,7 +126,7 @@ export interface ExtendedFabConfig {
    * Width behavior of the Extended FAB
    * @default 'fixed'
    */
-  width?: 'fixed' | 'fluid';
+  width?: ExtendedFabWidth | string;
   
   /**
    * Whether the Extended FAB should collapse to a standard FAB on scroll

@@ -1,5 +1,50 @@
 // src/components/list/types.ts
-import { LIST_TYPES, LIST_LAYOUTS } from './constants';
+
+/**
+ * List type variants
+ * @category Components
+ */
+export type ListType = 'default' | 'single' | 'multi' | 'radio';
+
+/**
+ * List layout variants
+ * @category Components
+ */
+export type ListLayout = 'horizontal' | 'vertical';
+
+/**
+ * List item layout variants
+ * @category Components
+ */
+export type ListItemLayout = 'horizontal' | 'vertical';
+
+/**
+ * List element class names
+ * @internal
+ */
+export interface ListClasses {
+  ROOT: string;
+  GROUP: string;
+  GROUP_TITLE: string;
+  DIVIDER: string;
+  SECTION: string;
+  SECTION_TITLE: string;
+  ITEM: string;
+  ITEM_CONTENT: string;
+  ITEM_LEADING: string;
+  ITEM_TEXT: string;
+  ITEM_OVERLINE: string;
+  ITEM_HEADLINE: string;
+  ITEM_SUPPORTING: string;
+  ITEM_META: string;
+  ITEM_TRAILING: string;
+}
+
+/**
+ * List item states
+ * @internal
+ */
+export type ListItemState = 'selected' | 'disabled' | 'focused' | 'hovered';
 
 /**
  * List item configuration
@@ -9,7 +54,7 @@ export interface ListItemConfig {
   id: string;
   
   /** Item layout (horizontal/vertical) */
-  layout?: keyof typeof LIST_LAYOUTS | string;
+  layout?: ListLayout | string;
   
   /** Leading content (icon/avatar) */
   leading?: string | HTMLElement;
@@ -70,7 +115,7 @@ export interface SelectionChangeEvent {
   item?: ListItemData;
   
   /** List selection type */
-  type: keyof typeof LIST_TYPES | string;
+  type: ListType | string;
 }
 
 /**
@@ -92,10 +137,10 @@ export interface ListItemData {
  */
 export interface ListConfig {
   /** List selection type */
-  type?: keyof typeof LIST_TYPES | string;
+  type?: ListType | string;
   
   /** List layout */
-  layout?: keyof typeof LIST_LAYOUTS | string;
+  layout?: ListLayout | string;
   
   /** List items */
   items?: ListItemConfig[];

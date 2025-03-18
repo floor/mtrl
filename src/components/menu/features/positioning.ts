@@ -1,6 +1,6 @@
 // src/components/menu/features/positioning.ts
 import { BaseComponent, MenuPositionConfig, MenuPosition } from '../types';
-import { MENU_ALIGN, MENU_VERTICAL_ALIGN } from '../constants';
+import { MENU_ALIGNMENT, MENU_VERTICAL_ALIGNMENT } from '../utils';
 
 /**
  * Positions a menu element relative to a target element
@@ -34,8 +34,8 @@ export const positionMenu = (
   menuElement.style.opacity = originalOpacity;
 
   const {
-    align = MENU_ALIGN.LEFT,
-    vAlign = MENU_VERTICAL_ALIGN.BOTTOM,
+    align = MENU_ALIGNMENT.LEFT,
+    vAlign = MENU_VERTICAL_ALIGNMENT.BOTTOM,
     offsetX = 0,
     offsetY = 0
   } = options;
@@ -44,16 +44,16 @@ export const positionMenu = (
   let top = targetRect.bottom + offsetY;
 
   // Handle horizontal alignment
-  if (align === MENU_ALIGN.RIGHT) {
+  if (align === MENU_ALIGNMENT.RIGHT) {
     left = targetRect.right - menuRect.width + offsetX;
-  } else if (align === MENU_ALIGN.CENTER) {
+  } else if (align === MENU_ALIGNMENT.CENTER) {
     left = targetRect.left + (targetRect.width - menuRect.width) / 2 + offsetX;
   }
 
   // Handle vertical alignment
-  if (vAlign === MENU_VERTICAL_ALIGN.TOP) {
+  if (vAlign === MENU_VERTICAL_ALIGNMENT.TOP) {
     top = targetRect.top - menuRect.height + offsetY;
-  } else if (vAlign === MENU_VERTICAL_ALIGN.MIDDLE) {
+  } else if (vAlign === MENU_VERTICAL_ALIGNMENT.MIDDLE) {
     top = targetRect.top + (targetRect.height - menuRect.height) / 2 + offsetY;
   }
 

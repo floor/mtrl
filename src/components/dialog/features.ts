@@ -1,12 +1,30 @@
 // src/components/dialog/features.ts (partial updated code)
 
 import { getOverlayConfig } from './config';
-import { DIALOG_SIZES, DIALOG_ANIMATIONS, DIALOG_FOOTER_ALIGNMENTS, DIALOG_EVENTS } from './constants';
-import { DialogConfig, DialogButton, DialogEvent } from './types';
+import { DialogConfig, DialogButton } from './types';
 import createButton from '../button';
 import { createDivider } from '../divider'; // Import the divider component
-import { BUTTON_VARIANTS } from '../button/constants';
 import { addClass, removeClass, hasClass } from '../../core/dom/classes';
+
+// Common constants for internal use
+const SIZE_MEDIUM = 'medium';
+const ANIMATION_SCALE = 'scale';
+const FOOTER_ALIGNMENT_RIGHT = 'right';
+const EVENT_BEFORE_OPEN = 'beforeopen';
+const EVENT_OPEN = 'open';
+const EVENT_AFTER_OPEN = 'afteropen';
+const EVENT_BEFORE_CLOSE = 'beforeclose';
+const EVENT_CLOSE = 'close';
+const EVENT_AFTER_CLOSE = 'afterclose';
+
+// Common button variants for internal use
+const BUTTON_VARIANT_TEXT = 'text';
+const BUTTON_VARIANT_FILLED = 'filled';
+
+// Arrays for class management
+const ALL_SIZES = ['small', 'medium', 'large', 'fullwidth', 'fullscreen'];
+const ALL_ANIMATIONS = ['scale', 'slide-up', 'slide-down', 'fade'];
+const ALL_FOOTER_ALIGNMENTS = ['right', 'left', 'center', 'space-between'];
 
 /**
  * Creates the dialog DOM structure with proper divider handling
@@ -102,8 +120,8 @@ export const withStructure = (config: DialogConfig) => component => {
     footer.classList.add(component.getClass('dialog-footer'));
     
     // Apply footer alignment
-    const alignment = config.footerAlignment || DIALOG_FOOTER_ALIGNMENTS.RIGHT;
-    if (alignment !== DIALOG_FOOTER_ALIGNMENTS.RIGHT) {
+    const alignment = config.footerAlignment || 'right';
+    if (alignment !== 'right') {
       addClass(footer, `${component.getClass('dialog-footer')}--${alignment}`);
     }
     
@@ -132,14 +150,14 @@ export const withStructure = (config: DialogConfig) => component => {
   addClass(component.element, component.getClass('dialog'));
   
   // Apply size class
-  const size = config.size || DIALOG_SIZES.MEDIUM;
-  if (size !== DIALOG_SIZES.MEDIUM) {
+  const size = config.size || 'medium';
+  if (size !== 'medium') {
     addClass(component.element, `${component.getClass('dialog')}--${size}`);
   }
   
   // Apply animation class
-  const animation = config.animation || DIALOG_ANIMATIONS.SCALE;
-  if (animation !== DIALOG_ANIMATIONS.SCALE) {
+  const animation = config.animation || 'scale';
+  if (animation !== 'scale') {
     addClass(component.element, `${component.getClass('dialog')}--${animation}`);
   }
   
@@ -282,7 +300,7 @@ export const withDivider = () => component => {
 const addButton = (footer: HTMLElement, buttonConfig: DialogButton, component: any) => {
   const {
     text,
-    variant = BUTTON_VARIANTS.TEXT,
+    variant = 'text', // Using string literal directly instead of BUTTON_VARIANTS.TEXT
     onClick,
     closeDialog = true,
     autofocus = false,
@@ -718,8 +736,8 @@ export const withButtons = () => component => {
           footer.classList.add(component.getClass('dialog-footer'));
           
           // Apply footer alignment
-          const alignment = component.config.footerAlignment || DIALOG_FOOTER_ALIGNMENTS.RIGHT;
-          if (alignment !== DIALOG_FOOTER_ALIGNMENTS.RIGHT) {
+          const alignment = component.config.footerAlignment || 'right';
+          if (alignment !== 'right') {
             addClass(footer, `${component.getClass('dialog-footer')}--${alignment}`);
           }
           
@@ -774,18 +792,21 @@ export const withButtons = () => component => {
        * Sets footer alignment
        * @param alignment Footer alignment
        */
-      setFooterAlignment(alignment: keyof typeof DIALOG_FOOTER_ALIGNMENTS | DIALOG_FOOTER_ALIGNMENTS) {
+      setFooterAlignment(alignment: string) {
         if (!component.structure.footer) return;
         
+        // Define all possible alignments
+        const ALL_ALIGNMENTS = ['right', 'left', 'center', 'space-between'];
+        
         // Remove existing alignment classes
-        Object.values(DIALOG_FOOTER_ALIGNMENTS).forEach(align => {
-          if (align !== DIALOG_FOOTER_ALIGNMENTS.RIGHT) {
+        ALL_ALIGNMENTS.forEach(align => {
+          if (align !== 'right') {
             removeClass(component.structure.footer, `${component.getClass('dialog-footer')}--${align}`);
           }
         });
         
         // Add new alignment class if not right (default)
-        if (alignment !== DIALOG_FOOTER_ALIGNMENTS.RIGHT) {
+        if (alignment !== 'right') {
           addClass(component.structure.footer, `${component.getClass('dialog-footer')}--${alignment}`);
         }
       }
@@ -805,14 +826,17 @@ export const withSize = () => component => {
        * Sets dialog size
        * @param size Size variant
        */
-      setSize(size: keyof typeof DIALOG_SIZES | DIALOG_SIZES) {
+      setSize(size: string) {
+        // Define all possible sizes
+        const ALL_SIZES = ['small', 'medium', 'large', 'fullwidth', 'fullscreen'];
+        
         // Remove existing size classes
-        Object.values(DIALOG_SIZES).forEach(sizeValue => {
+        ALL_SIZES.forEach(sizeValue => {
           removeClass(component.element, `${component.getClass('dialog')}--${sizeValue}`);
         });
         
         // Add new size class if not medium (default)
-        if (size !== DIALOG_SIZES.MEDIUM) {
+        if (size !== 'medium') {
           addClass(component.element, `${component.getClass('dialog')}--${size}`);
         }
       }
@@ -834,9 +858,10 @@ export const withConfirm = () => component => {
           message,
           confirmText = 'Yes',
           cancelText = 'No',
-          confirmVariant = BUTTON_VARIANTS.FILLED,
-          cancelVariant = BUTTON_VARIANTS.TEXT,
-          size = DIALOG_SIZES.SMALL
+          // Use string literals directly
+          confirmVariant = 'filled',
+          cancelVariant = 'text',
+          size = 'small'
         } = options;
         
         // Set dialog properties

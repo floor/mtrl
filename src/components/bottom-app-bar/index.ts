@@ -8,4 +8,10 @@ import { createBottomAppBar } from './bottom-app-bar';
 
 export default createBottomAppBar;
 export { createBottomAppBar };
-export type { BottomAppBarConfig } from './config';
+export type { BottomAppBarConfig, BottomAppBar } from './types';
+
+// Export position constants for convenience and backward compatibility
+export const FAB_POSITIONS = {
+  CENTER: 'center',
+  END: 'end'
+} as const;

@@ -1,10 +1,5 @@
 // src/components/badge/api.ts
-import { BadgeComponent } from './types';
-import { 
-  BADGE_VARIANTS,
-  BADGE_COLORS, 
-  BADGE_POSITIONS 
-} from './constants';
+import { BadgeComponent, BadgeColor, BadgeVariant, BadgePosition } from './types';
 import { formatBadgeLabel } from './config';
 
 interface ApiOptions {
@@ -34,6 +29,20 @@ interface ComponentWithElements {
   off: (event: string, handler: Function) => any;
 }
 
+// Common variant constants for internal use
+const VARIANT_SMALL = 'small';
+
+// Map of all badge colors for class removal
+const ALL_COLORS = [
+  'error', 'primary', 'secondary', 'tertiary', 'success', 'warning', 'info'
+];
+
+// Map of all badge variants for class removal
+const ALL_VARIANTS = ['small', 'large'];
+
+// Map of all badge positions for class removal
+const ALL_POSITIONS = ['top-right', 'top-left', 'bottom-right', 'bottom-left'];
+
 /**
  * Enhances a badge component with API methods
  * @param {ApiOptions} options - API configuration options
@@ -53,7 +62,7 @@ export const withAPI = ({ visibility, lifecycle }: ApiOptions) =>
       component.config.label = label;
       
       // Small badges (dot variant) don't have text
-      if (component.config.variant === BADGE_VARIANTS.SMALL) {
+      if (component.config.variant === VARIANT_SMALL) {
         component.element.textContent = '';
         return this;
       }
@@ -146,9 +155,9 @@ export const withAPI = ({ visibility, lifecycle }: ApiOptions) =>
      * @param {string} color - Color variant to apply
      * @returns {BadgeComponent} Badge component instance for chaining
      */
-    setColor(color: keyof typeof BADGE_COLORS | (typeof BADGE_COLORS)[keyof typeof BADGE_COLORS]) {
+    setColor(color: BadgeColor | string) {
       // Remove existing color classes
-      Object.values(BADGE_COLORS).forEach(colorName => {
+      ALL_COLORS.forEach(colorName => {
         component.element.classList.remove(`${component.getClass('badge')}--${colorName}`);
       });
       
@@ -162,9 +171,9 @@ export const withAPI = ({ visibility, lifecycle }: ApiOptions) =>
      * @param {string} variant - Variant to apply (small or large)
      * @returns {BadgeComponent} Badge component instance for chaining
      */
-    setVariant(variant: keyof typeof BADGE_VARIANTS | (typeof BADGE_VARIANTS)[keyof typeof BADGE_VARIANTS]) {
+    setVariant(variant: BadgeVariant | string) {
       // Remove existing variant classes
-      Object.values(BADGE_VARIANTS).forEach(variantName => {
+      ALL_VARIANTS.forEach(variantName => {
         component.element.classList.remove(`${component.getClass('badge')}--${variantName}`);
       });
       
@@ -175,7 +184,7 @@ export const withAPI = ({ visibility, lifecycle }: ApiOptions) =>
       component.config.variant = variant;
       
       // Update accessibility attributes
-      if (variant === BADGE_VARIANTS.SMALL) {
+      if (variant === VARIANT_SMALL) {
         component.element.textContent = '';
         component.element.setAttribute('aria-hidden', 'true');
       } else {
@@ -195,9 +204,9 @@ export const withAPI = ({ visibility, lifecycle }: ApiOptions) =>
      * @param {string} position - Position variant to apply
      * @returns {BadgeComponent} Badge component instance for chaining
      */
-    setPosition(position: keyof typeof BADGE_POSITIONS | (typeof BADGE_POSITIONS)[keyof typeof BADGE_POSITIONS]) {
+    setPosition(position: BadgePosition | string) {
       // Remove existing position classes
-      Object.values(BADGE_POSITIONS).forEach(posName => {
+      ALL_POSITIONS.forEach(posName => {
         component.element.classList.remove(`${component.getClass('badge')}--${posName}`);
       });
       

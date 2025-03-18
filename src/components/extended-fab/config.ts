@@ -5,13 +5,12 @@ import {
   BaseComponentConfig 
 } from '../../core/config/component-config';
 import { ExtendedFabConfig } from './types';
-import { FAB_VARIANTS, EXTENDED_FAB_WIDTH } from './constants';
 
 /**
  * Default configuration for the Extended FAB component
  */
 export const defaultConfig: ExtendedFabConfig = {
-  variant: FAB_VARIANTS.PRIMARY,
+  variant: 'primary',
   type: 'button',
   ripple: true,
   iconPosition: 'start',
@@ -40,6 +39,11 @@ export const getElementConfig = (config: ExtendedFabConfig) => {
   
   // Build class list
   let classNames = [`${config.prefix}-extended-fab`];
+  
+  // Add variant class
+  if (config.variant) {
+    classNames.push(`${config.prefix}-extended-fab--${config.variant}`);
+  }
   
   // Add width class
   if (config.width) {

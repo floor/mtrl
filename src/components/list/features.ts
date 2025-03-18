@@ -6,7 +6,6 @@ import {
   BaseComponent,
   SelectionChangeEvent
 } from './types';
-import { LIST_TYPES, LIST_LAYOUTS } from './constants';
 import { createDivider, createSectionTitle } from './utils';
 import createListItem from './list-item';
 
@@ -23,7 +22,7 @@ export const withListContent = (config: ListConfig) =>
     const selectedItems = new Set<string>();
 
     // Set list type
-    element.setAttribute('data-type', config.type || LIST_TYPES.DEFAULT);
+    element.setAttribute('data-type', config.type || 'default');
 
     // Handle keyboard navigation
     const handleKeyDown = (event: KeyboardEvent): void => {
@@ -71,7 +70,7 @@ export const withListContent = (config: ListConfig) =>
       if (!itemData || itemData.disabled) return;
 
       switch (config.type) {
-        case LIST_TYPES.SINGLE_SELECT:
+        case 'single':
           // Deselect previously selected item
           selectedItems.forEach(selectedId => {
             const selected = items.get(selectedId);
@@ -88,7 +87,7 @@ export const withListContent = (config: ListConfig) =>
           selectedItems.add(id);
           break;
 
-        case LIST_TYPES.MULTI_SELECT:
+        case 'multi':
           const isSelected = selectedItems.has(id);
           if (isSelected) {
             itemElement.classList.remove(`${prefix}-list-item--selected`);
@@ -119,8 +118,8 @@ export const withListContent = (config: ListConfig) =>
 
         const item = createListItem({
           ...itemConfig,
-          layout: config.layout || LIST_LAYOUTS.HORIZONTAL,
-          role: config.type === LIST_TYPES.RADIO ? 'radio' : 'option'
+          layout: config.layout || 'horizontal',
+          role: config.type === 'radio' ? 'radio' : 'option'
         });
 
         item.element.dataset.id = itemConfig.id;
@@ -200,7 +199,7 @@ export const withListContent = (config: ListConfig) =>
 
         const item = createListItem({
           ...itemConfig,
-          layout: config.layout || LIST_LAYOUTS.HORIZONTAL
+          layout: config.layout || 'horizontal'
         });
 
         item.element.dataset.id = itemConfig.id;

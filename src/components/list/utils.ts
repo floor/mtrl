@@ -1,5 +1,23 @@
 // src/components/list/utils.ts
-import { LIST_CLASSES } from './constants';
+
+// List element class names as strings for internal use
+const LIST_CLASS_NAMES = {
+  ROOT: 'list',
+  GROUP: 'list-group',
+  GROUP_TITLE: 'list-group-title',
+  DIVIDER: 'list-divider',
+  SECTION: 'list-section',
+  SECTION_TITLE: 'list-section-title',
+  ITEM: 'list-item',
+  ITEM_CONTENT: 'list-item-content',
+  ITEM_LEADING: 'list-item-leading',
+  ITEM_TEXT: 'list-item-text',
+  ITEM_OVERLINE: 'list-item-overline',
+  ITEM_HEADLINE: 'list-item-headline',
+  ITEM_SUPPORTING: 'list-item-supporting',
+  ITEM_META: 'list-item-meta',
+  ITEM_TRAILING: 'list-item-trailing'
+};
 
 /**
  * Creates a divider element
@@ -8,7 +26,7 @@ import { LIST_CLASSES } from './constants';
  */
 export const createDivider = (prefix: string): HTMLElement => {
   const divider = document.createElement('div');
-  divider.className = `${prefix}-${LIST_CLASSES.DIVIDER}`;
+  divider.className = `${prefix}-${LIST_CLASS_NAMES.DIVIDER}`;
   divider.setAttribute('role', 'separator');
   return divider;
 };
@@ -21,7 +39,7 @@ export const createDivider = (prefix: string): HTMLElement => {
  */
 export const createSectionTitle = (title: string, prefix: string): HTMLElement => {
   const titleEl = document.createElement('div');
-  titleEl.className = `${prefix}-${LIST_CLASSES.SECTION_TITLE}`;
+  titleEl.className = `${prefix}-${LIST_CLASS_NAMES.SECTION_TITLE}`;
   titleEl.textContent = title;
   return titleEl;
 };
@@ -44,4 +62,13 @@ export const createElement = (tag: string, className: string, content?: string |
     }
   }
   return element;
+};
+
+/**
+ * Gets the class name for a list element
+ * @param {string} element - Element name
+ * @returns {string} The class name string
+ */
+export const getListClass = (element: keyof typeof LIST_CLASS_NAMES): string => {
+  return LIST_CLASS_NAMES[element];
 };

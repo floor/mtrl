@@ -1,9 +1,90 @@
 // src/components/datepicker/types.ts
-import { 
-  DATEPICKER_VARIANTS, 
-  DATEPICKER_VIEWS, 
-  DATEPICKER_SELECTION_MODES 
-} from './constants';
+
+/**
+ * DatePicker variant types
+ * @category Components
+ */
+export type DatePickerVariant = 'docked' | 'modal' | 'modal-input';
+
+/**
+ * DatePicker view types
+ * @category Components
+ */
+export type DatePickerView = 'day' | 'month' | 'year';
+
+/**
+ * DatePicker selection mode types
+ * @category Components
+ */
+export type DatePickerSelectionMode = 'single' | 'range';
+
+/**
+ * Day names for the calendar
+ * @internal
+ */
+export const DAY_NAMES = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+
+/**
+ * Month names for the calendar
+ * @internal
+ */
+export const MONTH_NAMES = [
+  'January', 'February', 'March', 'April', 
+  'May', 'June', 'July', 'August',
+  'September', 'October', 'November', 'December'
+];
+
+/**
+ * Month names abbreviated
+ * @internal
+ */
+export const MONTH_NAMES_SHORT = [
+  'Jan', 'Feb', 'Mar', 'Apr', 
+  'May', 'Jun', 'Jul', 'Aug',
+  'Sep', 'Oct', 'Nov', 'Dec'
+];
+
+/**
+ * Default format for displaying dates
+ * @internal
+ */
+export const DEFAULT_DATE_FORMAT = 'MM/DD/YYYY';
+
+/**
+ * CSS class name for today's date
+ * @internal
+ */
+export const TODAY_CLASS = 'today';
+
+/**
+ * CSS class name for selected date
+ * @internal
+ */
+export const SELECTED_CLASS = 'selected';
+
+/**
+ * CSS class name for dates outside the current month
+ * @internal
+ */
+export const OUTSIDE_MONTH_CLASS = 'outside-month';
+
+/**
+ * CSS class for the first date in a range
+ * @internal
+ */
+export const RANGE_START_CLASS = 'range-start';
+
+/**
+ * CSS class for the last date in a range
+ * @internal
+ */
+export const RANGE_END_CLASS = 'range-end';
+
+/**
+ * CSS class for dates between start and end in a range
+ * @internal
+ */
+export const RANGE_MIDDLE_CLASS = 'range-middle';
 
 /**
  * Configuration interface for the DatePicker component
@@ -14,7 +95,7 @@ export interface DatePickerConfig {
    * DatePicker variant that determines display style
    * @default 'docked'
    */
-  variant?: keyof typeof DATEPICKER_VARIANTS | string;
+  variant?: DatePickerVariant | string;
   
   /** 
    * Whether the datepicker is initially disabled
@@ -26,13 +107,13 @@ export interface DatePickerConfig {
    * Initial view to display (day, month, year)
    * @default 'day'
    */
-  initialView?: keyof typeof DATEPICKER_VIEWS | string;
+  initialView?: DatePickerView | string;
   
   /** 
    * Selection mode for the datepicker (single or range)
    * @default 'single'
    */
-  selectionMode?: keyof typeof DATEPICKER_SELECTION_MODES | string;
+  selectionMode?: DatePickerSelectionMode | string;
   
   /** 
    * Initial selected date(s)
@@ -142,6 +223,39 @@ export interface CalendarDate {
 }
 
 /**
+ * Calendar API interface for managing calendar navigation
+ * @category Components
+ */
+export interface CalendarAPI {
+  /** Updates the calendar view to display a specific month/year */
+  goToDate: (date: Date) => void;
+  
+  /** Moves to the next month */
+  nextMonth: () => void;
+  
+  /** Moves to the previous month */
+  prevMonth: () => void;
+  
+  /** Moves to the next year */
+  nextYear: () => void;
+  
+  /** Moves to the previous year */
+  prevYear: () => void;
+  
+  /** Switches to day selection view */
+  showDayView: () => void;
+  
+  /** Switches to month selection view */
+  showMonthView: () => void;
+  
+  /** Switches to year selection view */
+  showYearView: () => void;
+  
+  /** Gets the current calendar view */
+  getCurrentView: () => string;
+}
+
+/**
  * DatePicker component interface
  * @category Components
  */
@@ -153,34 +267,30 @@ export interface DatePickerComponent {
   input: HTMLInputElement;
   
   /** API for managing calendar and selected dates */
-  calendar: {
-    /** Updates the calendar view to display a specific month/year */
-    goToDate: (date: Date) => void;
-    
-    /** Moves to the next month */
-    nextMonth: () => void;
-    
-    /** Moves to the previous month */
-    prevMonth: () => void;
-    
-    /** Moves to the next year */
-    nextYear: () => void;
-    
-    /** Moves to the previous year */
-    prevYear: () => void;
-    
-    /** Switches to day selection view */
-    showDayView: () => void;
-    
-    /** Switches to month selection view */
-    showMonthView: () => void;
-    
-    /** Switches to year selection view */
-    showYearView: () => void;
-    
-    /** Gets the current calendar view */
-    getCurrentView: () => string;
+  calendar: CalendarAPI;
+  
+  /** API for managing disabled state */
+  disabled: {
+    /** Enables the datepicker */
+    enable: () => void;
+    /** Disables the datepicker */
+    disable: () => void;
+    /** Checks if the datepicker is disabled */
+    isDisabled: () => boolean;
   };
+  
+  /** API for managing component lifecycle */
+  lifecycle: {
+    /** Destroys the component and cleans up resources */
+    destroy: () => void;
+  };
+  
+  /**
+   * Gets a class name with the component's prefix
+   * @param name - Base class name
+   * @returns Prefixed class name
+   */
+  getClass: (name: string) => string;
   
   /**
    * Opens the datepicker dropdown/modal
@@ -265,4 +375,23 @@ export interface DatePickerComponent {
    * @returns The datepicker component for chaining
    */
   off: (event: string, handler: Function) => DatePickerComponent;
+}
+
+/**
+ * API options interface for withAPI function
+ * @internal
+ */
+export interface ApiOptions {
+  disabled: {
+    enable: () => void;
+    disable: () => void;
+  };
+  lifecycle: {
+    destroy: () => void;
+  };
+  events: {
+    on: (event: string, handler: Function) => any;
+    off: (event: string, handler: Function) => any;
+    emit: (event: string, data: any) => any;
+  };
 }

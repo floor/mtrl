@@ -1,31 +1,14 @@
 // src/components/card/types.ts
-/**
- * Card variant types following Material Design 3 specifications
- * @enum {string}
- */
-export enum CardVariant {
-  /** Elevated card with shadow */
-  ELEVATED = 'elevated',
-  /** Filled card with higher surface container color */
-  FILLED = 'filled',
-  /** Outlined card with border */
-  OUTLINED = 'outlined'
-}
 
 /**
- * Card elevation levels based on MD3 guidelines
- * @enum {number}
+ * Card variant types
  */
-export enum CardElevation {
-  /** No elevation (for filled and outlined variants) */
-  LEVEL0 = 0,
-  /** Default elevation for elevated cards */
-  LEVEL1 = 1,
-  /** Elevation for hovered state */
-  LEVEL2 = 2,
-  /** Elevation for dragged state */
-  LEVEL4 = 4
-}
+export type CardVariant = 'elevated' | 'filled' | 'outlined';
+
+/**
+ * Card elevation levels
+ */
+export type CardElevationLevel = 0 | 1 | 2 | 4;
 
 /**
  * Button configuration interface for buttons shorthand
@@ -48,7 +31,7 @@ export interface ButtonConfig {
  */
 export interface CardSchema {
   /** Card variant type (elevated, filled, outlined) */
-  variant?: CardVariant;
+  variant?: CardVariant | string;
   /** Whether the card is interactive */
   interactive?: boolean;
   /** Whether the card should take full width */

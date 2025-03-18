@@ -29,7 +29,7 @@ import { createBaseConfig, getElementConfig, getApiConfig } from './config';
  * 
  * // Create a small FAB with a custom position
  * const smallFab = createFab({
- *   size: FAB_SIZES.SMALL,
+ *   size: 'small',
  *   icon: '<svg>...</svg>',
  *   variant: 'secondary',
  *   position: 'bottom-right'

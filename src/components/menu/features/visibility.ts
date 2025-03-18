@@ -1,6 +1,6 @@
 // src/components/menu/features/visibility.ts
 import { BaseComponent, MenuConfig } from '../types';
-import { MENU_EVENTS } from '../constants';
+import { MENU_EVENT, MENU_CLASSES } from '../utils';
 
 /**
  * Adds visibility management functionality to a menu component
@@ -56,11 +56,11 @@ export const withVisibility = (config: MenuConfig) => (component: BaseComponent)
       // Force a reflow before adding the visible class for animation
       // eslint-disable-next-line no-void
       void component.element.offsetHeight;
-      component.element.classList.add(`${prefix}-menu--visible`);
+      component.element.classList.add(`${prefix}-${MENU_CLASSES.VISIBLE}`);
       component.element.setAttribute('aria-hidden', 'false');
 
       // Emit open event
-      component.emit?.(MENU_EVENTS.OPEN, {});
+      component.emit?.(MENU_EVENT.OPEN, {});
 
       return this;
     },
@@ -92,7 +92,7 @@ export const withVisibility = (config: MenuConfig) => (component: BaseComponent)
       }
 
       // Hide the menu with visual indication first
-      component.element.classList.remove(`${prefix}-menu--visible`);
+      component.element.classList.remove(`${prefix}-${MENU_CLASSES.VISIBLE}`);
       component.element.setAttribute('aria-hidden', 'true');
 
       // Define a reliable cleanup function
@@ -123,7 +123,7 @@ export const withVisibility = (config: MenuConfig) => (component: BaseComponent)
       setTimeout(cleanupElement, 300);
 
       // Emit close event
-      component.emit?.(MENU_EVENTS.CLOSE, {});
+      component.emit?.(MENU_EVENT.CLOSE, {});
 
       return this;
     },

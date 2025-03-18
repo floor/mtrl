@@ -1,5 +1,14 @@
 // src/components/checkbox/types.ts
-import { CHECKBOX_VARIANTS, CHECKBOX_LABEL_POSITION } from './constants';
+
+/**
+ * Checkbox variant types
+ */
+export type CheckboxVariant = 'filled' | 'outlined';
+
+/**
+ * Checkbox label position types
+ */
+export type CheckboxLabelPosition = 'start' | 'end';
 
 /**
  * Configuration interface for the Checkbox component
@@ -27,10 +36,10 @@ export interface CheckboxConfig {
   label?: string;
   
   /** Label position (start/end) */
-  labelPosition?: keyof typeof CHECKBOX_LABEL_POSITION | string;
+  labelPosition?: CheckboxLabelPosition | string;
   
   /** Visual variant */
-  variant?: keyof typeof CHECKBOX_VARIANTS | string;
+  variant?: CheckboxVariant | string;
   
   /** Additional CSS classes */
   class?: string;

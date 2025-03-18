@@ -25,14 +25,14 @@ import { createBaseConfig, getElementConfig, getApiConfig } from './config';
  * @example
  * // Create a small dot badge
  * const notificationBadge = createBadge({ 
- *   variant: BADGE_VARIANTS.SMALL,
+ *   variant: 'small',
  *   target: document.querySelector('.icon-button')
  * });
  * 
  * @example
  * // Create a large badge with a count
  * const countBadge = createBadge({
- *   variant: BADGE_VARIANTS.LARGE,
+ *   variant: 'large',
  *   label: 5,
  *   target: document.querySelector('.notification-icon')
  * });

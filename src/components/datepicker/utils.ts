@@ -1,6 +1,5 @@
 // src/components/datepicker/utils.ts
-import { CalendarDate } from './types';
-import { MONTH_NAMES, MONTH_NAMES_SHORT } from './constants';
+import { CalendarDate, MONTH_NAMES, MONTH_NAMES_SHORT } from './types';
 
 /**
  * Parses a date from various input types

@@ -1,29 +1,11 @@
 // src/components/datepicker/api.ts
-import { DatePickerComponent } from './types';
+import { DatePickerComponent, ApiOptions } from './types';
 import { 
   formatDate, 
   parseDate,
-  isSameDay,
-  generateCalendarDates,
   addMonths,
   addYears 
 } from './utils';
-import { DATEPICKER_VIEWS, DATEPICKER_SELECTION_MODES } from './constants';
-
-interface ApiOptions {
-  disabled: {
-    enable: () => void;
-    disable: () => void;
-  };
-  lifecycle: {
-    destroy: () => void;
-  };
-  events: {
-    on: (event: string, handler: Function) => any;
-    off: (event: string, handler: Function) => any;
-    emit: (event: string, data: any) => any;
-  };
-}
 
 /**
  * Enhances a datepicker component with API methods
@@ -80,17 +62,17 @@ export const withAPI = (state: any, { disabled, lifecycle, events }: ApiOptions)
       },
       
       showDayView(): void {
-        state.currentView = DATEPICKER_VIEWS.DAY;
+        state.currentView = 'day';
         state.updateCalendar();
       },
       
       showMonthView(): void {
-        state.currentView = DATEPICKER_VIEWS.MONTH;
+        state.currentView = 'month';
         state.updateCalendar();
       },
       
       showYearView(): void {
-        state.currentView = DATEPICKER_VIEWS.YEAR;
+        state.currentView = 'year';
         state.updateCalendar();
       },
       
@@ -123,7 +105,7 @@ export const withAPI = (state: any, { disabled, lifecycle, events }: ApiOptions)
         if (!state.selectedDate) return null;
         
         // Range selection
-        if (state.selectionMode === DATEPICKER_SELECTION_MODES.RANGE && state.rangeEndDate) {
+        if (state.selectionMode === 'range' && state.rangeEndDate) {
           return [new Date(state.selectedDate), new Date(state.rangeEndDate)];
         }
         
@@ -133,7 +115,7 @@ export const withAPI = (state: any, { disabled, lifecycle, events }: ApiOptions)
       
       setValue(value: Date | string | [Date | string, Date | string]): DatePickerComponent {
         // Handle range selection
-        if (Array.isArray(value) && state.selectionMode === DATEPICKER_SELECTION_MODES.RANGE) {
+        if (Array.isArray(value) && state.selectionMode === 'range') {
           const start = parseDate(value[0]);
           const end = parseDate(value[1]);
           
@@ -196,7 +178,7 @@ export const withAPI = (state: any, { disabled, lifecycle, events }: ApiOptions)
         if (!state.selectedDate) return '';
         
         // Range selection
-        if (state.selectionMode === DATEPICKER_SELECTION_MODES.RANGE && state.rangeEndDate) {
+        if (state.selectionMode === 'range' && state.rangeEndDate) {
           const startStr = formatDate(state.selectedDate, state.dateFormat);
           const endStr = formatDate(state.rangeEndDate, state.dateFormat);
           return `${startStr} - ${endStr}`;
@@ -221,11 +203,13 @@ export const withAPI = (state: any, { disabled, lifecycle, events }: ApiOptions)
       
       enable(): DatePickerComponent {
         disabled.enable();
+        state.input.disabled = false;
         return this;
       },
       
       disable(): DatePickerComponent {
         disabled.disable();
+        state.input.disabled = true;
         return this;
       },
       
@@ -256,6 +240,15 @@ export const withAPI = (state: any, { disabled, lifecycle, events }: ApiOptions)
       },
       
       destroy(): void {
+        // Clean up event listeners
+        document.removeEventListener('click', state.outsideClickHandler);
+        
+        // Remove DOM elements
+        if (state.calendarElement && state.calendarElement.parentNode) {
+          state.calendarElement.parentNode.removeChild(state.calendarElement);
+        }
+        
+        // Call the lifecycle destroy method
         lifecycle.destroy();
       },
       

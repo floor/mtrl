@@ -5,13 +5,12 @@ import {
   BaseComponentConfig 
 } from '../../core/config/component-config';
 import { ButtonConfig } from './types';
-import { BUTTON_VARIANTS } from './constants';
 
 /**
  * Default configuration for the Button component
  */
 export const defaultConfig: ButtonConfig = {
-  variant: BUTTON_VARIANTS.FILLED,
+  variant: 'filled',
   type: 'button'
   // Don't set disabled: false as default - it should be undefined by default
 };

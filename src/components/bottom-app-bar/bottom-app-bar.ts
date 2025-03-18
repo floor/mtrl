@@ -13,50 +13,8 @@ import {
   BaseComponent 
 } from '../../core/compose';
 
-import { createConfig, BottomAppBarConfig } from './config';
-
-/**
- * Bottom app bar component interface
- */
-export interface BottomAppBar extends ElementComponent {
-  /**
-   * Adds an action button to the bottom bar
-   * @param {HTMLElement} button - Button element to add
-   * @returns {BottomAppBar} BottomAppBar instance for chaining
-   */
-  addAction: (button: HTMLElement) => BottomAppBar;
-  
-  /**
-   * Adds a floating action button to the bottom bar
-   * @param {HTMLElement} fab - FAB element to add
-   * @returns {BottomAppBar} BottomAppBar instance for chaining
-   */
-  addFab: (fab: HTMLElement) => BottomAppBar;
-  
-  /**
-   * Shows the bottom bar
-   * @returns {BottomAppBar} BottomAppBar instance for chaining
-   */
-  show: () => BottomAppBar;
-  
-  /**
-   * Hides the bottom bar
-   * @returns {BottomAppBar} BottomAppBar instance for chaining
-   */
-  hide: () => BottomAppBar;
-  
-  /**
-   * Checks if the bottom bar is visible
-   * @returns {boolean} Whether the bottom bar is visible
-   */
-  isVisible: () => boolean;
-
-  /**
-   * Get the actions container element
-   * @returns {HTMLElement} Actions container element
-   */
-  getActionsContainer: () => HTMLElement;
-}
+import { createConfig } from './config';
+import { BottomAppBar, BottomAppBarConfig } from './types';
 
 /**
  * Creates a bottom app bar component

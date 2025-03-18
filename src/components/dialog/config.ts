@@ -4,15 +4,14 @@ import {
   createElementConfig
 } from '../../core/config/component-config';
 import { DialogConfig } from './types';
-import { DIALOG_SIZES, DIALOG_ANIMATIONS, DIALOG_FOOTER_ALIGNMENTS } from './constants';
 
 /**
  * Default configuration for the Dialog component
  */
 export const defaultConfig: DialogConfig = {
-  size: DIALOG_SIZES.MEDIUM,
-  animation: DIALOG_ANIMATIONS.SCALE,
-  footerAlignment: DIALOG_FOOTER_ALIGNMENTS.RIGHT,
+  size: 'medium',
+  animation: 'scale',
+  footerAlignment: 'right',
   open: false,
   closeButton: true,
   closeOnOverlayClick: true,

@@ -1,5 +1,28 @@
 // src/components/dialog/types.ts
-import { DIALOG_SIZES, DIALOG_ANIMATIONS, DIALOG_FOOTER_ALIGNMENTS, DIALOG_EVENTS } from './constants';
+
+/**
+ * Dialog size types
+ * @category Components
+ */
+export type DialogSize = 'small' | 'medium' | 'large' | 'fullwidth' | 'fullscreen';
+
+/**
+ * Dialog animation types
+ * @category Components
+ */
+export type DialogAnimation = 'scale' | 'slide-up' | 'slide-down' | 'fade';
+
+/**
+ * Dialog footer alignment types
+ * @category Components
+ */
+export type DialogFooterAlignment = 'right' | 'left' | 'center' | 'space-between';
+
+/**
+ * Dialog event types
+ * @category Components
+ */
+export type DialogEventType = 'open' | 'close' | 'beforeopen' | 'beforeclose' | 'afteropen' | 'afterclose';
 
 /**
  * Configuration interface for the Dialog component
@@ -21,13 +44,13 @@ export interface DialogConfig {
   class?: string;
   
   /** Dialog size variant */
-  size?: keyof typeof DIALOG_SIZES | DIALOG_SIZES;
+  size?: DialogSize | string;
   
   /** Dialog animation variant */
-  animation?: keyof typeof DIALOG_ANIMATIONS | DIALOG_ANIMATIONS;
+  animation?: DialogAnimation | string;
   
   /** Footer buttons alignment */
-  footerAlignment?: keyof typeof DIALOG_FOOTER_ALIGNMENTS | DIALOG_FOOTER_ALIGNMENTS;
+  footerAlignment?: DialogFooterAlignment | string;
   
   /** Whether dialog is initially open */
   open?: boolean;
@@ -64,7 +87,7 @@ export interface DialogConfig {
   
   /** Event handlers for dialog events */
   on?: {
-    [key in keyof typeof DIALOG_EVENTS]?: (event: DialogEvent) => void;
+    [key in DialogEventType]?: (event: DialogEvent) => void;
   };
 }
 
@@ -164,16 +187,16 @@ export interface DialogComponent {
   getButtons: () => DialogButton[];
   
   /** Sets footer alignment */
-  setFooterAlignment: (alignment: keyof typeof DIALOG_FOOTER_ALIGNMENTS | DIALOG_FOOTER_ALIGNMENTS) => DialogComponent;
+  setFooterAlignment: (alignment: DialogFooterAlignment | string) => DialogComponent;
   
   /** Sets dialog size */
-  setSize: (size: keyof typeof DIALOG_SIZES | DIALOG_SIZES) => DialogComponent;
+  setSize: (size: DialogSize | string) => DialogComponent;
   
   /** Adds event listener */
-  on: (event: keyof typeof DIALOG_EVENTS | DIALOG_EVENTS, handler: (event: DialogEvent) => void) => DialogComponent;
+  on: (event: DialogEventType | string, handler: (event: DialogEvent) => void) => DialogComponent;
   
   /** Removes event listener */
-  off: (event: keyof typeof DIALOG_EVENTS | DIALOG_EVENTS, handler: (event: DialogEvent) => void) => DialogComponent;
+  off: (event: DialogEventType | string, handler: (event: DialogEvent) => void) => DialogComponent;
   
   /** Gets dialog header element */
   getHeaderElement: () => HTMLElement | null;
@@ -220,5 +243,5 @@ export interface DialogConfirmOptions {
   cancelVariant?: string;
   
   /** Dialog size */
-  size?: keyof typeof DIALOG_SIZES | DIALOG_SIZES;
+  size?: DialogSize | string;
 }

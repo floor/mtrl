@@ -1,6 +1,6 @@
 // src/components/menu/features/items-manager.ts
 import { createMenuItem } from '../menu-item';
-import { MENU_EVENTS } from '../constants';
+import { MENU_EVENT } from '../utils';
 import { BaseComponent, MenuConfig, MenuItemConfig, MenuItemData } from '../types';
 
 interface SubmenuMap {
@@ -63,8 +63,8 @@ export const withItemsManager = (config: MenuConfig) => (component: BaseComponen
     });
 
     // Handle submenu selection
-    submenu.on?.(MENU_EVENTS.SELECT, (detail: any) => {
-      component.emit?.(MENU_EVENTS.SELECT, {
+    submenu.on?.(MENU_EVENT.SELECT, (detail: any) => {
+      component.emit?.(MENU_EVENT.SELECT, {
         name: `${name}:${detail.name}`,
         text: detail.text,
         path: [name, detail.name]
@@ -116,7 +116,7 @@ export const withItemsManager = (config: MenuConfig) => (component: BaseComponen
       });
 
       // Emit submenu open event
-      component.emit?.(MENU_EVENTS.SUBMENU_OPEN, { name });
+      component.emit?.(MENU_EVENT.SUBMENU_OPEN, { name });
     }
   };
 
@@ -143,7 +143,7 @@ export const withItemsManager = (config: MenuConfig) => (component: BaseComponen
     activeSubmenu = null;
 
     // Emit submenu close event
-    component.emit?.(MENU_EVENTS.SUBMENU_CLOSE, { name });
+    component.emit?.(MENU_EVENT.SUBMENU_CLOSE, { name });
   };
 
   /**
@@ -160,7 +160,7 @@ export const withItemsManager = (config: MenuConfig) => (component: BaseComponen
     
     // Cancel any pending close timer for this item
     if (closeTimers.has(name)) {
-      window.clearTimeout(closeTimers.get(name));
+      window.clearTimeout(closeTimers.get(name)!);
       closeTimers.delete(name);
     }
     
@@ -194,7 +194,7 @@ export const withItemsManager = (config: MenuConfig) => (component: BaseComponen
     if (submenu && submenu.element) {
       // Cancel any existing close timer for this item
       if (closeTimers.has(name)) {
-        window.clearTimeout(closeTimers.get(name));
+        window.clearTimeout(closeTimers.get(name)!);
       }
 
       // Set a new close timer
@@ -254,7 +254,7 @@ export const withItemsManager = (config: MenuConfig) => (component: BaseComponen
     // For regular items, emit select event
     const name = item.getAttribute('data-name');
     if (name) {
-      component.emit?.(MENU_EVENTS.SELECT, { name, text: item.textContent });
+      component.emit?.(MENU_EVENT.SELECT, { name, text: item.textContent });
       // Hide menu after selection unless configured otherwise
       if (!config.stayOpenOnSelect) {
         component.hide?.();
@@ -430,7 +430,7 @@ export const withItemsManager = (config: MenuConfig) => (component: BaseComponen
 
     /**
      * Gets all registered items
-     * @returns {Map<string, MenuItemConfig>} Map of item names to configurations
+     * @returns {Map<string, MenuItemData>} Map of item names to data
      */
     getItems(): Map<string, MenuItemData> {
       const result = new Map<string, MenuItemData>();

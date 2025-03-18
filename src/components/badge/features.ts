@@ -1,11 +1,16 @@
 // src/components/badge/features.ts
-import { 
-  BADGE_VARIANTS, 
-  BADGE_COLORS, 
-  BADGE_POSITIONS 
-} from './constants';
 import { BadgeConfig } from './types';
 import { formatBadgeLabel } from './config';
+
+// Common badge variants
+const VARIANT_SMALL = 'small';
+const VARIANT_LARGE = 'large';
+
+// Common badge colors
+const COLOR_ERROR = 'error';
+
+// Common badge positions
+const POSITION_TOP_RIGHT = 'top-right';
 
 /**
  * Higher-order function that adds visibility control features to a component
@@ -69,13 +74,13 @@ export const withVisibility = () => component => {
  */
 export const withVariant = (config: BadgeConfig) => component => {
   // Get variant from config with fallback to default
-  const variant = config.variant || BADGE_VARIANTS.LARGE;
+  const variant = config.variant || VARIANT_LARGE;
   
   // Apply variant class
   component.element.classList.add(`${component.getClass('badge')}--${variant}`);
   
   // Small badges (dot variant) don't have text
-  if (variant === BADGE_VARIANTS.SMALL) {
+  if (variant === VARIANT_SMALL) {
     component.element.textContent = '';
     component.element.setAttribute('aria-hidden', 'true');
   } else {
@@ -100,7 +105,7 @@ export const withVariant = (config: BadgeConfig) => component => {
  */
 export const withColor = (config: BadgeConfig) => component => {
   // Get color from config with fallback to default
-  const color = config.color || BADGE_COLORS.ERROR;
+  const color = config.color || COLOR_ERROR;
   
   // Apply color class
   component.element.classList.add(`${component.getClass('badge')}--${color}`);
@@ -115,7 +120,7 @@ export const withColor = (config: BadgeConfig) => component => {
  */
 export const withPosition = (config: BadgeConfig) => component => {
   // Get position from config with fallback to default
-  const position = config.position || BADGE_POSITIONS.TOP_RIGHT;
+  const position = config.position || POSITION_TOP_RIGHT;
   
   // Apply position class
   component.element.classList.add(`${component.getClass('badge')}--${position}`);
@@ -135,7 +140,7 @@ export const withPosition = (config: BadgeConfig) => component => {
  */
 export const withMax = (config: BadgeConfig) => component => {
   // Skip if no max is defined or for small badges
-  if (config.max === undefined || config.variant === BADGE_VARIANTS.SMALL) {
+  if (config.max === undefined || config.variant === VARIANT_SMALL) {
     return component;
   }
   

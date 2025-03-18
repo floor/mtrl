@@ -5,14 +5,13 @@ import {
   BaseComponentConfig 
 } from '../../core/config/component-config';
 import { CheckboxConfig, BaseComponent, ApiOptions } from './types';
-import { CHECKBOX_VARIANTS, CHECKBOX_LABEL_POSITION } from './constants';
 
 /**
  * Default configuration for the Checkbox component
  */
 export const defaultConfig: CheckboxConfig = {
-  variant: CHECKBOX_VARIANTS.FILLED,
-  labelPosition: CHECKBOX_LABEL_POSITION.END
+  variant: 'filled',
+  labelPosition: 'end'
 };
 
 /**
@@ -58,7 +57,7 @@ export const withCheckIcon = (config: CheckboxConfig) => (component: BaseCompone
  * @param {CheckboxConfig} config - Component configuration
  */
 export const withLabelPosition = (config: CheckboxConfig) => (component: BaseComponent): BaseComponent => {
-  const position = config.labelPosition || CHECKBOX_LABEL_POSITION.END;
+  const position = config.labelPosition || 'end';
   const positionClass = `${config.prefix}-checkbox--label-${position}`;
 
   component.element.classList.add(positionClass);
