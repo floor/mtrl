@@ -1,3 +1,4 @@
+// src/components/timepicker/index.ts
 export { default } from './timepicker';
 export { 
   TIME_PICKER_TYPE, 

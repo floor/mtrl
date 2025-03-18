@@ -131,14 +131,14 @@ $component: '#{base.$prefix}-textfield';
   
   // ===== FILLED VARIANT =====
   &--filled {
-    border-bottom: 1px solid t.color('outline');
-    
     .#{$component}-input {
       background-color: t.color('surface-container-highest');
       padding: 20px 16px 7px;
+      border-bottom: 1px solid t.color('outline');
       border-radius: f.get-shape('extra-small') f.get-shape('extra-small') 0 0;
       @include m.motion-transition(background-color, border-color);
-      
+
+
       &:focus {
         padding-bottom: 6px;
       }
@@ -161,6 +161,19 @@ $component: '#{base.$prefix}-textfield';
       }
     }
 
+    &::before {
+      content: '';
+      position: absolute;
+      opacity: 0;
+      bottom: 0;
+      width: 100%;
+      height: 2px;
+      background-color: t.color('primary');
+      border-radius: 0;
+      pointer-events: none;
+      transition: 0.3s opacity ease;
+    }
+
     // Populated field (not empty) or focused field label position
     &:not(.#{$component}--empty) .#{$component}-label,
     &.#{$component}--focused .#{$component}-label {
@@ -168,47 +181,32 @@ $component: '#{base.$prefix}-textfield';
     }
 
     // Focus state
-    &.#{$component}--focused {
-      border-bottom: 2px solid t.color('primary');
-      
+    &.#{$component}--focused {    
       .#{$component}-label {
         color: t.color('primary');
       }
       
-      .#{$component}-input {
-        height: 55px;
-        padding: 20px 16px 6px;
-      }
-
-
-      &:hover {
-        border-bottom: 2px solid t.color('primary');
+      &::before {
+        opacity: 1
       }
     }
     
     // Hover state
-    &:hover {
-      border-bottom: 1px solid t.color('primary');
-      
+    &:hover {    
       .#{$component}-label {
         color: t.color('primary');
       }
     }
     
     // Error state
-    &.#{$component}--error {
-      border-bottom: 2px solid t.color('error');
-      
+    &.#{$component}--error {    
+      &::before {
+        opacity: 1;
+        background-color: t.color('error');
+      }
+
       .#{$component}-label {
         color: t.color('error');
-      }
-      
-      &:hover {
-        border-bottom: 2px solid t.color('error');
-      }
-      
-      &.#{$component}--focused {
-        border-bottom: 2px solid t.color('error');
       }
     }
     
@@ -233,13 +231,13 @@ $component: '#{base.$prefix}-textfield';
   
   // ===== OUTLINED VARIANT =====
   &--outlined {
-    border: 1px solid t.color('outline');
     border-radius: f.get-shape('extra-small');
     @include m.motion-transition(border-color);
     
     .#{$component}-input {
       background-color: transparent;
-      padding: 13px 16px 14px;
+      padding: 12px 15px 13px;
+      border: 1px solid t.color('outline');
       @include m.motion-transition(padding);
 
       // Autofill styles for outlined variant
@@ -249,8 +247,6 @@ $component: '#{base.$prefix}-textfield';
         & ~ .#{$component}-label {
           background-color: t.color('surface');
           transform: translateY(-145%) scale(0.75);
-          left: 13px;
-          padding: 0 4px;
         }
       }
 
@@ -258,73 +254,80 @@ $component: '#{base.$prefix}-textfield';
         & ~ .#{$component}-label {
           background-color: t.color('surface');
           transform: translateY(-145%) scale(0.75);
-          left: 13px;
-          padding: 0 4px;
         }
       }
+    }
+
+    .#{$component}-label {
+      padding: 0 4px;
+      left: 12px;
+      top: 49%;
+    }
+
+    &::before {
+      content: '';
+      position: absolute;
+      opacity: 0;
+      width: 100%;
+      height: 100%;
+      border: 2px solid t.color('primary');
+      border-radius: f.get-shape('extra-small');
+      pointer-events: none;
+      transition: 0.2s opacity ease;
     }
 
     // Populated field (not empty) or focused field label position
     &:not(.#{$component}--empty) .#{$component}-label,
     &.#{$component}--focused .#{$component}-label {
-      background-color: t.color('surface');
-      transform: translateY(-145%) scale(0.75);
-      left: 13px;
       padding: 0 4px;
+      background-color: t.color('surface');
+      transform: translateY(-147%) scale(0.75);
+      
     }
 
     // Focus state
     &.#{$component}--focused {
-      border: 2px solid t.color('primary');
-      
-      .#{$component}-label {
-        color: t.color('primary');
-        border-radius: 2px;
-        left: 12px;
+      &::before {
+        opacity: 1;
       }
-      
-      .#{$component}-input {
-        height: 54px;
-        padding: 12px 15px 13px;
-      }
-      
       &:hover {
-        border: 2px solid t.color('primary');
+        &::before {
+          border-width: 2px;
+        }
       }
     }
     
     // Hover state
-    &:hover {
-      border: 1px solid t.color('primary');
-      
+    &:hover {    
       .#{$component}-label {
         color: t.color('primary');
+      }
+
+      &::before {
+        opacity: 1;
+        border: 1px solid t.color('primary');
       }
     }
     
     // Error state
-    &.#{$component}--error {
-      border: 2px solid t.color('error');
-      
+    &.#{$component}--error {    
+      &::before {
+        opacity: 1;
+        border: 2px solid t.color('error');
+      }
+
       .#{$component}-label {
         color: t.color('error');
-        left: 12px;
-      }
-      
-      .#{$component}-input {
-        padding: 12px 15px 13px;
-      }
-      
-      &:hover,
-      &.#{$component}--focused {
-        border: 2px solid t.color('error');
       }
     }
     
     // Disabled state
     &.#{$component}--disabled {
-      border-color: t.alpha('on-surface', 0.38);
       pointer-events: none;
+      &::before {
+        opacity: 1;
+        border: 1px solid t.alpha('on-surface', 0.38);
+      }
     }
     
     // RTL support

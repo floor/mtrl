@@ -90,7 +90,7 @@ $container: '#{base.$prefix}-tabs';
   max-width: 360px;
   padding: 0 16px;
   border: none;
-  border-radius: 5px;
+  border-radius: 5px 5px 0 0;
   background-color: transparent;
   color: t.color('on-surface-variant');
   cursor: pointer;
