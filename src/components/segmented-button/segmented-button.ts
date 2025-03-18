@@ -6,7 +6,6 @@ import { createEmitter } from '../../core/state/emitter';
 import { SegmentedButtonConfig, SegmentedButtonComponent, SelectionMode, Segment } from './types';
 import { createBaseConfig, getContainerConfig } from './config';
 import { createSegment } from './segment';
-import { EVENTS } from './constants';
 
 /**
  * Creates a new Segmented Button component
@@ -91,7 +90,7 @@ const createSegmentedButton = (config: SegmentedButtonConfig = {}): SegmentedBut
         oldValue.some(v => !newValue.includes(v)) ||
         newValue.some(v => !oldValue.includes(v))
       ) {
-        emitter.emit(EVENTS.CHANGE, {
+        emitter.emit('change', {
           selected: getSelected(),
           value: newValue,
           oldValue
@@ -153,7 +152,7 @@ const createSegmentedButton = (config: SegmentedButtonConfig = {}): SegmentedBut
           // Emit change event
           const newValue = getSelectedValues();
           if (oldValue.join(',') !== newValue.join(',')) {
-            emitter.emit(EVENTS.CHANGE, {
+            emitter.emit('change', {
               selected: getSelected(),
               value: newValue,
               oldValue
@@ -177,7 +176,7 @@ const createSegmentedButton = (config: SegmentedButtonConfig = {}): SegmentedBut
               // Emit change event
               const newValue = getSelectedValues();
               if (oldValue.join(',') !== newValue.join(',')) {
-                emitter.emit(EVENTS.CHANGE, {
+                emitter.emit('change', {
                   selected: getSelected(),
                   value: newValue,
                   oldValue
@@ -192,7 +191,7 @@ const createSegmentedButton = (config: SegmentedButtonConfig = {}): SegmentedBut
             // Emit change event
             const newValue = getSelectedValues();
             if (oldValue.join(',') !== newValue.join(',')) {
-              emitter.emit(EVENTS.CHANGE, {
+              emitter.emit('change', {
                 selected: getSelected(),
                 value: newValue,
                 oldValue

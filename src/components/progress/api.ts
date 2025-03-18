@@ -1,7 +1,6 @@
 // src/components/progress/api.ts
 
 import { ProgressComponent } from './types';
-import { PROGRESS_EVENTS } from './constants';
 
 interface ApiOptions {
   value: {
@@ -80,7 +79,7 @@ export const withAPI = (options: ApiOptions) =>
         component.labelElement.textContent = formatter(value, options.value.getMax());
       }
       
-      component.emit(PROGRESS_EVENTS.VALUE_CHANGE, { value });
+      component.emit('valueChange', { value });
       return this;
     },
     
@@ -163,7 +162,7 @@ export const withAPI = (options: ApiOptions) =>
       }
       
       if (wasIndeterminate !== indeterminate) {
-        component.emit(PROGRESS_EVENTS.STATE_CHANGE, { indeterminate });
+        component.emit('stateChange', { indeterminate });
       }
       
       return this;

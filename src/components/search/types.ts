@@ -1,12 +1,22 @@
 // src/components/search/types.ts
-import { SEARCH_VARIANTS, SEARCH_EVENTS } from './constants';
+
+/**
+ * Navigation variants for the search component
+ */
+export type NavVariant = 'rail' | 'drawer' | 'bar' | 'modal' | 'standard';
+
+/**
+ * Valid event types for search component
+ */
+export type SearchEventType = 'focus' | 'blur' | 'input' | 'submit' | 'clear' | 'iconClick';
 
 /**
  * Configuration options for the search component
+ * @interface SearchConfig
  */
 export interface SearchConfig {
-  /** The variant of the search component (bar or view) */
-  variant?: keyof typeof SEARCH_VARIANTS | typeof SEARCH_VARIANTS[keyof typeof SEARCH_VARIANTS];
+  /** The variant of the search component (rail, drawer, bar, modal, or standard) */
+  variant?: NavVariant | string;
   
   /** Whether the search component is disabled */
   disabled?: boolean;
@@ -61,12 +71,13 @@ export interface SearchConfig {
   
   /** Event handlers for search events */
   on?: {
-    [key in keyof typeof SEARCH_EVENTS | typeof SEARCH_EVENTS[keyof typeof SEARCH_EVENTS]]?: (event: SearchEvent) => void;
+    [key in SearchEventType]?: (event: SearchEvent) => void;
   };
 }
 
 /**
  * Search event data
+ * @interface SearchEvent
  */
 export interface SearchEvent {
   /** The search component that triggered the event */
@@ -87,6 +98,7 @@ export interface SearchEvent {
 
 /**
  * Search component public API interface
+ * @interface SearchComponent
  */
 export interface SearchComponent {
   /** The root element of the search component */
@@ -153,10 +165,10 @@ export interface SearchComponent {
   isDisabled: () => boolean;
   
   /** Adds event listener */
-  on: (event: keyof typeof SEARCH_EVENTS | typeof SEARCH_EVENTS[keyof typeof SEARCH_EVENTS], handler: (event: SearchEvent) => void) => SearchComponent;
+  on: (event: SearchEventType, handler: (event: SearchEvent) => void) => SearchComponent;
   
   /** Removes event listener */
-  off: (event: keyof typeof SEARCH_EVENTS | typeof SEARCH_EVENTS[keyof typeof SEARCH_EVENTS], handler: (event: SearchEvent) => void) => SearchComponent;
+  off: (event: SearchEventType, handler: (event: SearchEvent) => void) => SearchComponent;
   
   /** Destroys the search component and cleans up resources */
   destroy: () => void;

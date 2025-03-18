@@ -10,13 +10,12 @@ import {
 } from '../../core/compose/features';
 import { withAPI } from './api';
 import { withNavItems } from './features/items';
-import { NavigationConfig, NavigationComponent } from './types';
+import { NavigationConfig, NavigationComponent, NavVariant } from './types';
 import { 
   createBaseConfig, 
   getElementConfig,
   getApiConfig
 } from './config';
-import { NAV_VARIANTS } from './constants';
 
 /**
  * Sets up proper ARIA roles based on navigation variant
@@ -32,7 +31,7 @@ const setupAccessibility = (nav: NavigationComponent, config: NavigationConfig):
   element.setAttribute('aria-label', config.ariaLabel || 'Main Navigation');
 
   // For bar navigation (bottom or top nav)
-  if (variant === NAV_VARIANTS.BAR) {
+  if (variant === 'bar') {
     // If bar navigation is acting as tabs
     const hasNestedItems = config.items?.some(item => item.items?.length) || false;
     
@@ -51,9 +50,8 @@ const setupAccessibility = (nav: NavigationComponent, config: NavigationConfig):
   }
 
   // Set hidden state for modal drawers if needed
-  if ((variant === NAV_VARIANTS.DRAWER_MODAL || 
-       variant === 'modal' || 
-       (variant === NAV_VARIANTS.DRAWER && config.behavior === 'dismissible')) && 
+  if ((variant === 'modal' || 
+       (variant === 'drawer' && config.behavior === 'dismissible')) && 
       !config.expanded) {
     element.classList.add(`${prefix}-nav--hidden`);
   }

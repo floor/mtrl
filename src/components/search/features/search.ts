@@ -1,5 +1,4 @@
 // src/components/search/features/search.ts
-import { SEARCH_EVENTS, SEARCH_VARIANTS } from '../constants';
 import { SearchConfig } from '../types';
 
 /**
@@ -39,7 +38,7 @@ export const withSearch = (config: SearchConfig) => component => {
     placeholder: config.placeholder || 'Search',
     suggestions: config.suggestions || [],
     isFocused: false,
-    isExpanded: config.variant === SEARCH_VARIANTS.VIEW,
+    isExpanded: config.variant === 'view',
     component
   };
   
@@ -95,7 +94,7 @@ export const withSearch = (config: SearchConfig) => component => {
     
     // Trigger input event
     if (triggerEvent) {
-      eventHelpers.triggerEvent(SEARCH_EVENTS.INPUT);
+      eventHelpers.triggerEvent('input');
     }
   };
   
@@ -104,7 +103,7 @@ export const withSearch = (config: SearchConfig) => component => {
    */
   const submitSearch = () => {
     if (state.value) {
-      eventHelpers.triggerEvent(SEARCH_EVENTS.SUBMIT);
+      eventHelpers.triggerEvent('submit');
       
       // Hide suggestions if in bar mode
       if (!state.isExpanded) {
@@ -124,7 +123,7 @@ export const withSearch = (config: SearchConfig) => component => {
     }
     
     if (triggerEvent) {
-      eventHelpers.triggerEvent(SEARCH_EVENTS.CLEAR);
+      eventHelpers.triggerEvent('clear');
     }
   };
   
@@ -308,11 +307,11 @@ export const withSearch = (config: SearchConfig) => component => {
         component.element.classList.add(`${component.getClass('search')}--focused`);
         
         // Expand search bar to view if in bar mode
-        if (!state.isExpanded && config.variant === SEARCH_VARIANTS.BAR) {
+        if (!state.isExpanded && config.variant === 'bar') {
           expandToView();
         }
         
-        eventHelpers.triggerEvent(SEARCH_EVENTS.FOCUS, e);
+        eventHelpers.triggerEvent('focus', e);
       });
       
       // Blur event
@@ -331,13 +330,13 @@ export const withSearch = (config: SearchConfig) => component => {
             hideSuggestions();
             
             // Collapse to bar mode if in expanded state and originally a bar
-            if (state.isExpanded && config.variant === SEARCH_VARIANTS.BAR) {
+            if (state.isExpanded && config.variant === 'bar') {
               collapseToBar();
             }
           }
         }, 200);
         
-        eventHelpers.triggerEvent(SEARCH_EVENTS.BLUR, e);
+        eventHelpers.triggerEvent('blur', e);
       });
       
       // Enter key for submit
@@ -351,7 +350,7 @@ export const withSearch = (config: SearchConfig) => component => {
           // Clear if there's a value, otherwise collapse
           if (state.value) {
             clearSearch();
-          } else if (state.isExpanded && config.variant === SEARCH_VARIANTS.BAR) {
+          } else if (state.isExpanded && config.variant === 'bar') {
             collapseToBar();
           }
         }
@@ -373,7 +372,7 @@ export const withSearch = (config: SearchConfig) => component => {
           expandToView();
         }
         
-        eventHelpers.triggerEvent(SEARCH_EVENTS.ICON_CLICK, e);
+        eventHelpers.triggerEvent('iconClick', e);
       });
       
       // Keyboard access
@@ -413,7 +412,7 @@ export const withSearch = (config: SearchConfig) => component => {
         // If disabled, do nothing
         if (component.disabled?.isDisabled()) return;
         
-        eventHelpers.triggerEvent(SEARCH_EVENTS.ICON_CLICK, e);
+        eventHelpers.triggerEvent('iconClick', e);
       });
       
       // Keyboard access
@@ -433,7 +432,7 @@ export const withSearch = (config: SearchConfig) => component => {
         // If disabled, do nothing
         if (component.disabled?.isDisabled()) return;
         
-        eventHelpers.triggerEvent(SEARCH_EVENTS.ICON_CLICK, e);
+        eventHelpers.triggerEvent('iconClick', e);
       });
       
       // Keyboard access
@@ -451,7 +450,7 @@ export const withSearch = (config: SearchConfig) => component => {
         hideSuggestions();
         
         // Collapse to bar mode if in expanded state and originally a bar
-        if (state.isExpanded && config.variant === SEARCH_VARIANTS.BAR) {
+        if (state.isExpanded && config.variant === 'bar') {
           collapseToBar();
         }
       }
@@ -471,7 +470,7 @@ export const withSearch = (config: SearchConfig) => component => {
         hideSuggestions();
         
         // Collapse to bar mode if in expanded state and originally a bar
-        if (state.isExpanded && config.variant === SEARCH_VARIANTS.BAR) {
+        if (state.isExpanded && config.variant === 'bar') {
           collapseToBar();
         }
       }

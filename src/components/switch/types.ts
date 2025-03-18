@@ -1,5 +1,6 @@
 // src/components/switch/types.ts
-import { SWITCH_LABEL_POSITION } from './constants';
+
+export type SwitchPosition = 'center' | 'start' | 'end';
 
 /**
  * Configuration interface for the Switch component
@@ -24,7 +25,7 @@ export interface SwitchConfig {
   label?: string;
   
   /** Label position (start/end) */
-  labelPosition?: keyof typeof SWITCH_LABEL_POSITION | string;
+  labelPosition?: SwitchPosition | string;
   
   /** Additional CSS classes */
   class?: string;

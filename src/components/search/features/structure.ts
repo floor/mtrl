@@ -1,5 +1,4 @@
 // src/components/search/features/structure.ts
-import { SEARCH_VARIANTS } from '../constants';
 import { SearchConfig } from '../types';
 import { createElement } from '../../../core/dom/create';
 
@@ -11,8 +10,8 @@ import { createElement } from '../../../core/dom/create';
 export const withStructure = (config: SearchConfig) => component => {
   // Get initial config values
   const isDisabled = config.disabled === true;
-  const variant = config.variant || SEARCH_VARIANTS.BAR;
-  const isViewMode = variant === SEARCH_VARIANTS.VIEW;
+  const variant = config.variant || 'bar';
+  const isViewMode = variant === 'view';
   const placeholder = config.placeholder || 'Search';
   const value = config.value || '';
   
@@ -179,7 +178,7 @@ function applyStyleClasses(component, config, isViewMode, isDisabled) {
   const baseClass = component.getClass('search');
   
   // Apply variant class
-  component.element.classList.add(`${baseClass}--${config.variant || SEARCH_VARIANTS.BAR}`);
+  component.element.classList.add(`${baseClass}--${config.variant || 'bar'}`);
     
   // Apply disabled class if needed
   if (isDisabled) {

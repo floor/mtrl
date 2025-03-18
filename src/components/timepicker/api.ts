@@ -9,7 +9,7 @@ import {
   TIME_FORMAT,
   TIME_PERIOD
 } from './types';
-import { EVENTS, SELECTORS } from './constants';
+import { EVENTS, SELECTORS } from './config';
 import { formatTime, padZero } from './utils';
 import { renderTimePicker } from './render';
 import { renderClockDial, getTimeValueFromClick } from './clockdial';

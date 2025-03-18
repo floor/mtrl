@@ -1,5 +1,15 @@
 // src/components/tooltip/types.ts
-import { TOOLTIP_POSITIONS, TOOLTIP_VARIANTS } from './constants';
+
+/**
+ * Available Textfield variants
+ */
+export type TooltipVariant = 'default' | 'rich' | 'plain';
+
+/**
+ * Available Textfield states
+ */
+export type TooltipPosition = 'top' | 'right' | 'bottom' | 'left' | 'top-start' | 'top-end' | 'right-start' | 'right-end' | 'bottom-start' | 'bottom-end' | 'left-start' | 'left-end';
+
 
 /**
  * Configuration interface for the Tooltip component
@@ -22,13 +32,13 @@ export interface TooltipConfig {
    * Tooltip position relative to the target
    * @default 'bottom'
    */
-  position?: keyof typeof TOOLTIP_POSITIONS | string;
+  position?: TooltipPosition | string;
   
   /** 
    * Tooltip variant that determines visual styling
    * @default 'default'
    */
-  variant?: keyof typeof TOOLTIP_VARIANTS | string;
+  variant?: TooltipVariants | string;
   
   /** 
    * Whether the tooltip is initially visible

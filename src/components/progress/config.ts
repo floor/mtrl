@@ -5,13 +5,12 @@ import {
   BaseComponentConfig 
 } from '../../core/config/component-config';
 import { ProgressConfig } from './types';
-import { PROGRESS_VARIANTS } from './constants';
 
 /**
  * Default configuration for the Progress component
  */
 export const defaultConfig: ProgressConfig = {
-  variant: PROGRESS_VARIANTS.LINEAR,
+  variant: 'linear',
   value: 0,
   max: 100,
   buffer: 0,
@@ -52,7 +51,7 @@ export const getElementConfig = (config: ProgressConfig) => {
     attrs['aria-disabled'] = 'true';
   }
   
-  const isCircular = config.variant === PROGRESS_VARIANTS.CIRCULAR;
+  const isCircular = config.variant === 'circular';
   
   return createElementConfig(config, {
     tag: 'div',

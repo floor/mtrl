@@ -5,13 +5,12 @@ import {
   BaseComponentConfig 
 } from '../../core/config/component-config';
 import { SwitchConfig, BaseComponent, ApiOptions } from './types';
-import { SWITCH_LABEL_POSITION } from './constants';
 
 /**
  * Default configuration for the Switch component
  */
 export const defaultConfig: SwitchConfig = {
-  labelPosition: SWITCH_LABEL_POSITION.END
+  labelPosition: 'end'
 };
 
 /**
@@ -42,7 +41,7 @@ export const getElementConfig = (config: SwitchConfig) =>
 export const withLabelPosition = (config: SwitchConfig) => (component: BaseComponent): BaseComponent => {
   if (!config.label) return component;
 
-  const position = config.labelPosition || SWITCH_LABEL_POSITION.END;
+  const position = config.labelPosition || 'end';
   const positionClass = `${config.prefix}-switch--label-${position}`;
 
   component.element.classList.add(positionClass);

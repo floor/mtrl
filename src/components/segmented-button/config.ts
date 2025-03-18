@@ -1,7 +1,20 @@
 // src/components/segmented-button/config.ts
 import { createComponentConfig } from '../../core/config/component-config';
 import { SegmentedButtonConfig, SelectionMode } from './types';
-import { DEFAULT_CONFIG, CLASSES } from './constants';
+
+export const DEFAULT_CHECKMARK_ICON = `
+<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <polyline points="20 6 9 17 4 12"></polyline>
+</svg>`;
+
+/**
+ * Default configuration values for segmented buttons
+ * @internal
+ */
+export const DEFAULT_CONFIG = {
+  mode: SelectionMode.SINGLE,
+  ripple: true
+};
 
 /**
  * Creates the base configuration for Segmented Button component
@@ -10,7 +23,7 @@ import { DEFAULT_CONFIG, CLASSES } from './constants';
  * @internal
  */
 export const createBaseConfig = (config: SegmentedButtonConfig = {}): SegmentedButtonConfig => 
-  createComponentConfig(DEFAULT_CONFIG, config, CLASSES.CONTAINER) as SegmentedButtonConfig;
+  createComponentConfig(DEFAULT_CONFIG, config, 'segmented-button') as SegmentedButtonConfig;
 
 /**
  * Generates element configuration for the Segmented Button container
@@ -20,7 +33,7 @@ export const createBaseConfig = (config: SegmentedButtonConfig = {}): SegmentedB
  */
 export const getContainerConfig = (config: SegmentedButtonConfig) => ({
   tag: 'div',
-  componentName: CLASSES.CONTAINER,
+  componentName: 'segmented-button',
   attrs: {
     role: 'group',
     'aria-label': 'Segmented button',
@@ -28,7 +41,7 @@ export const getContainerConfig = (config: SegmentedButtonConfig) => ({
   },
   className: [
     config.class,
-    config.disabled ? `${config.prefix}-${CLASSES.CONTAINER}--disabled` : null
+    config.disabled ? `${config.prefix}-segmented-button--disabled` : null
   ],
   interactive: true
 });
@@ -54,9 +67,9 @@ export const getSegmentConfig = (segment, prefix, groupDisabled = false) => {
       value: segment.value
     },
     className: [
-      `${prefix}-${CLASSES.SEGMENT}`,
-      segment.selected ? `${prefix}-${CLASSES.SEGMENT}--${CLASSES.SELECTED}` : null,
-      isDisabled ? `${prefix}-${CLASSES.SEGMENT}--${CLASSES.DISABLED}` : null,
+      `${prefix}-segment`,
+      segment.selected ? `${prefix}-segment--selected` : null,
+      isDisabled ? `${prefix}-segment--disabled` : null,
       segment.class
     ],
     forwardEvents: {

@@ -12,7 +12,7 @@ import { RADIO_DIRECTIONS } from './constants';
  */
 export const defaultConfig: RadiosConfig = {
   name: '',
-  direction: RADIO_DIRECTIONS.VERTICAL,
+  direction: 'vertical',
   disabled: false,
   ripple: true,
   options: []

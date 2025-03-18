@@ -1,7 +1,7 @@
 // src/components/timepicker/clockdial.ts
 
 import { TimeValue, TIME_FORMAT, TIME_PICKER_TYPE, TIME_PERIOD } from './types';
-import { DIAL_CONSTANTS, TIME_CONSTANTS } from './constants';
+import { DIAL_CONSTANTS, TIME_CONSTANTS } from './config';
 import { padZero } from './utils';
 
 /**

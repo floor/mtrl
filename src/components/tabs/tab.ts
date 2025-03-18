@@ -9,6 +9,18 @@ import createButton from '../button';
 import createBadge from '../badge';
 
 /**
+ * Tab layout types
+ */
+export const TAB_LAYOUT = {
+  /** Icon-only tab layout */
+  ICON_ONLY: 'icon-only',
+  /** Text-only tab layout */
+  TEXT_ONLY: 'text-only',
+  /** Icon and text layout */
+  ICON_AND_TEXT: 'icon-and-text'
+};
+
+/**
  * Creates a new Tab component following MD3 guidelines
  * @param {TabConfig} config - Tab configuration object
  * @returns {TabComponent} Tab component instance
@@ -49,7 +61,7 @@ export const createTab = (config: TabConfig = {}): TabComponent => {
     // Set up tab accessibility attributes
     baseComponent.element.setAttribute('role', 'tab');
     baseComponent.element.setAttribute('aria-selected', 
-      baseConfig.state === TAB_STATES.ACTIVE ? 'true' : 'false');
+      baseConfig.state === 'active' ? 'true' : 'false');
     
     // For better accessibility
     if (baseConfig.value) {
@@ -58,8 +70,8 @@ export const createTab = (config: TabConfig = {}): TabComponent => {
     }
     
     // Add active state if specified in config
-    if (baseConfig.state === TAB_STATES.ACTIVE) {
-      baseComponent.element.classList.add(`${baseComponent.getClass('tab')}--${TAB_STATES.ACTIVE}`);
+    if (baseConfig.state === 'active') {
+      baseComponent.element.classList.add(`${baseComponent.getClass('tab')}--active`);
     }
     
     // Forward button events to our component
@@ -95,7 +107,7 @@ export const createTab = (config: TabConfig = {}): TabComponent => {
       },
       
       activate() {
-        this.element.classList.add(`${this.getClass('tab')}--${TAB_STATES.ACTIVE}`);
+        this.element.classList.add(`${this.getClass('tab')}--active`);
         this.element.setAttribute('aria-selected', 'true');
         
         // Dispatch event for screen readers
@@ -109,13 +121,13 @@ export const createTab = (config: TabConfig = {}): TabComponent => {
       },
       
       deactivate() {
-        this.element.classList.remove(`${this.getClass('tab')}--${TAB_STATES.ACTIVE}`);
+        this.element.classList.remove(`${this.getClass('tab')}--active`);
         this.element.setAttribute('aria-selected', 'false');
         return this;
       },
       
       isActive() {
-        return this.element.classList.contains(`${this.getClass('tab')}--${TAB_STATES.ACTIVE}`);
+        return this.element.classList.contains(`${this.getClass('tab')}--active`);
       },
       
       enable() {

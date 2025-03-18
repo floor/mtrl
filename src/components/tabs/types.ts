@@ -1,7 +1,17 @@
 // src/components/tabs/types.ts
-import { TABS_VARIANTS, TAB_STATES, TAB_LAYOUT } from './constants';
 import { BadgeComponent } from '../badge/types';
 import { TabIndicator } from './indicator';
+
+/**
+ * Available tabs variants
+ */
+export type TabsVariant = 'primary' | 'secondary';
+
+/**
+ * Available tabs states
+ */
+
+export type TabStates = 'active' | 'inactive' | 'disabled';
 
 /**
  * Configuration for the tab indicator
@@ -55,7 +65,7 @@ export interface TabConfig {
    * Tab state that determines if it's the active destination
    * @default 'inactive'
    */
-  state?: keyof typeof TAB_STATES | string;
+  state?: TabStates | string;
   
   /** 
    * Whether the tab is initially disabled
@@ -154,7 +164,7 @@ export interface TabsConfig {
    * Tabs variant (primary or secondary)
    * @default 'primary'
    */
-  variant?: keyof typeof TABS_VARIANTS | string;
+  variant?: TabsVariant | string;
   
   /**
    * Initial tabs to create

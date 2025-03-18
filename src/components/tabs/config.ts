@@ -6,13 +6,12 @@ import {
 } from '../../core/config/component-config';
 import { withElement } from '../../core/compose/component';
 import { TabConfig } from './types';
-import { TABS_VARIANTS, TAB_STATES } from './constants';
 
 /**
  * Default configuration for a Tab
  */
 export const defaultTabConfig: TabConfig = {
-  state: TAB_STATES.INACTIVE,
+  state: 'inactive',
   componentName: 'tab',
   ripple: true
 };
@@ -21,7 +20,7 @@ export const defaultTabConfig: TabConfig = {
  * Default configuration for the Tabs component
  */
 export const defaultTabsConfig = {
-  variant: TABS_VARIANTS.PRIMARY,
+  variant: 'primary',
   scrollable: true,
   showDivider: true,
   componentName: 'tabs'
@@ -48,7 +47,7 @@ export const getTabsElementConfig = (config) => {
     },
     className: [
       `${config.prefix}-tabs`,
-      `${config.prefix}-tabs--${config.variant || TABS_VARIANTS.PRIMARY}`,
+      `${config.prefix}-tabs--${config.variant || 'primary'}`,
       config.class
     ]
   };

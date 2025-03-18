@@ -5,15 +5,14 @@ import {
   BaseComponentConfig 
 } from '../../core/config/component-config';
 import { NavigationConfig, BaseComponent, ApiOptions } from './types';
-import { NAV_VARIANTS, NAV_POSITIONS, NAV_BEHAVIORS } from './constants';
 
 /**
  * Default configuration for the Navigation component
  */
 export const defaultConfig: NavigationConfig = {
-  variant: NAV_VARIANTS.RAIL,
-  position: NAV_POSITIONS.LEFT,
-  behavior: NAV_BEHAVIORS.FIXED,
+  variant: 'rail',
+  position: 'left',
+  behavior: 'fixed',
   items: [],
   showLabels: true,
   scrimEnabled: false
@@ -32,16 +31,29 @@ export const createBaseConfig = (config: NavigationConfig = {}): NavigationConfi
  * @param {NavigationConfig} config - Navigation configuration
  * @returns {Object} Element configuration object for withElement
  */
-export const getElementConfig = (config: NavigationConfig) => 
-  createElementConfig(config, {
+export const getElementConfig = (config: NavigationConfig) => {
+  // Build class list - start with the variant class
+  const variantClass = config.variant ? `${config.prefix}-nav--${config.variant}` : '';
+  
+  // Add position class if specified
+  const positionClass = config.position ? `${config.prefix}-nav--${config.position}` : '';
+  
+  // Add user-provided classes
+  const userClass = config.class || '';
+  
+  // Combine all classes
+  const classNames = [variantClass, positionClass, userClass].filter(Boolean);
+  
+  return createElementConfig(config, {
     tag: 'nav',
     componentName: 'nav',
     attrs: {
       role: 'navigation',
       'aria-label': config.ariaLabel || 'Main Navigation'
     },
-    className: config.class
+    className: classNames
   });
+};
 
 /**
  * Creates API configuration for the Navigation component
@@ -50,11 +62,11 @@ export const getElementConfig = (config: NavigationConfig) =>
  */
 export const getApiConfig = (comp: BaseComponent): ApiOptions => ({
   disabled: {
-    enable: comp.disabled?.enable,
-    disable: comp.disabled?.disable
+    enable: comp.disabled?.enable || (() => {}),
+    disable: comp.disabled?.disable || (() => {})
   },
   lifecycle: {
-    destroy: comp.lifecycle?.destroy
+    destroy: comp.lifecycle?.destroy || (() => {})
   }
 });
 

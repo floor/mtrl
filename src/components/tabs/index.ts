@@ -8,21 +8,6 @@ import { createTabIndicator } from './indicator';
 import { updateTabPanels, setupKeyboardNavigation } from './utils';
 
 export { 
-  // Main component creators
-  createTabs,
-  createTab,
-  
-  // Constants
-  TABS_VARIANTS, 
-  TAB_STATES, 
-  TAB_LAYOUT,
-  TAB_INTERACTION_STATES,
-  TAB_ANIMATION,
-  TAB_A11Y,
-  TAB_COLORS
-} from './constants';
-
-export { 
   // Types
   TabsConfig, 
   TabsComponent, 

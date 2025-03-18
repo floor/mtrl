@@ -1,18 +1,12 @@
 // src/components/navigation/features/items.ts
 import { createNavItem, getAllNestedItems } from '../nav-item';
-import { NavItemConfig, NavItemData } from '../types';
+import { NavItemConfig, NavItemData, BaseComponent, NavClass } from '../types';
 
-// Type definitions to help with TypeScript conversion
-interface Component {
-  element: HTMLElement;
-  emit?: (event: string, data: any) => void;
-  lifecycle?: {
-    destroy: () => void;
-  };
-  [key: string]: any;
-}
-
-interface ItemsComponent extends Component {
+/**
+ * Interface for a component with items management capabilities
+ * @internal
+ */
+interface ItemsComponent extends BaseComponent {
   items: Map<string, NavItemData>;
   addItem: (config: NavItemConfig) => ItemsComponent;
   removeItem: (id: string) => ItemsComponent;
@@ -23,15 +17,25 @@ interface ItemsComponent extends Component {
   setActive: (id: string) => ItemsComponent;
 }
 
+/**
+ * Interface for navigation configuration
+ * @internal
+ */
 interface NavigationConfig {
   prefix?: string;
   items?: NavItemConfig[];
   [key: string]: any;
 }
 
-export const withNavItems = (config: NavigationConfig) => (component: Component): ItemsComponent => {
+/**
+ * Adds navigation items management to a component
+ * @param {NavigationConfig} config - Navigation configuration
+ * @returns {Function} Component enhancer function
+ */
+export const withNavItems = (config: NavigationConfig) => (component: BaseComponent): ItemsComponent => {
   const items = new Map<string, NavItemData>();
   let activeItem: NavItemData | null = null;
+  const prefix = config.prefix || 'mtrl';
 
   /**
    * Recursively stores items in the items Map
@@ -43,9 +47,9 @@ export const withNavItems = (config: NavigationConfig) => (component: Component)
 
     if (itemConfig.items?.length) {
       itemConfig.items.forEach(nestedConfig => {
-        const container = item.closest(`.${config.prefix}-nav-item-container`);
+        const container = item.closest(`.${prefix}-${NavClass.ITEM_CONTAINER}`);
         if (container) {
-          const nestedContainer = container.querySelector(`.${config.prefix}-nav-nested-container`);
+          const nestedContainer = container.querySelector(`.${prefix}-${NavClass.NESTED_CONTAINER}`);
           if (nestedContainer) {
             const nestedItem = nestedContainer.querySelector(`[data-id="${nestedConfig.id}"]`) as HTMLElement;
             if (nestedItem) {
@@ -68,7 +72,7 @@ export const withNavItems = (config: NavigationConfig) => (component: Component)
     const role = item.getAttribute('role');
     
     if (active) {
-      item.classList.add(`${config.prefix}-nav-item--active`);
+      item.classList.add(`${prefix}-${NavClass.ITEM}--active`);
       
       // Set appropriate attribute based on role
       if (role === 'tab') {
@@ -79,7 +83,7 @@ export const withNavItems = (config: NavigationConfig) => (component: Component)
         item.setAttribute('aria-current', 'page');
       }
     } else {
-      item.classList.remove(`${config.prefix}-nav-item--active`);
+      item.classList.remove(`${prefix}-${NavClass.ITEM}--active`);
       
       // Remove appropriate attribute based on role
       if (role === 'tab') {
@@ -94,7 +98,7 @@ export const withNavItems = (config: NavigationConfig) => (component: Component)
   // Create initial items
   if (config.items) {
     config.items.forEach(itemConfig => {
-      const item = createNavItem(itemConfig, component.element, config.prefix || 'mtrl');
+      const item = createNavItem(itemConfig, component.element, prefix);
       storeItem(itemConfig, item);
 
       if (itemConfig.active) {
@@ -106,7 +110,7 @@ export const withNavItems = (config: NavigationConfig) => (component: Component)
 
   // Handle item clicks
   component.element.addEventListener('click', (event: Event) => {
-    const item = (event.target as HTMLElement).closest(`.${config.prefix}-nav-item`) as HTMLElement;
+    const item = (event.target as HTMLElement).closest(`.${prefix}-${NavClass.ITEM}`) as HTMLElement;
     if (!item || (item as any).disabled || item.getAttribute('aria-haspopup') === 'menu') return;
 
     const id = item.dataset.id;
@@ -151,12 +155,12 @@ export const withNavItems = (config: NavigationConfig) => (component: Component)
 
     if (!currentItem) return path;
 
-    let parentContainer = currentItem.element.closest(`.${config.prefix}-nav-nested-container`);
+    let parentContainer = currentItem.element.closest(`.${prefix}-${NavClass.NESTED_CONTAINER}`);
     while (parentContainer) {
       const parentItemContainer = parentContainer.parentElement;
       if (!parentItemContainer) break;
 
-      const parentItem = parentItemContainer.querySelector(`.${config.prefix}-nav-item`);
+      const parentItem = parentItemContainer.querySelector(`.${prefix}-${NavClass.ITEM}`);
       if (!parentItem) break;
 
       const parentId = parentItem.getAttribute('data-id');
@@ -165,7 +169,7 @@ export const withNavItems = (config: NavigationConfig) => (component: Component)
       path.unshift(parentId);
       
       // Move up to next level
-      parentContainer = parentItemContainer.closest(`.${config.prefix}-nav-nested-container`);
+      parentContainer = parentItemContainer.closest(`.${prefix}-${NavClass.NESTED_CONTAINER}`);
     }
 
     return path;
@@ -189,7 +193,7 @@ export const withNavItems = (config: NavigationConfig) => (component: Component)
     addItem(itemConfig: NavItemConfig) {
       if (items.has(itemConfig.id)) return this;
 
-      const item = createNavItem(itemConfig, component.element, config.prefix || 'mtrl');
+      const item = createNavItem(itemConfig, component.element, prefix);
       storeItem(itemConfig, item);
 
       if (itemConfig.active) {
@@ -210,7 +214,7 @@ export const withNavItems = (config: NavigationConfig) => (component: Component)
       if (!item) return this;
 
       // Remove all nested items first
-      const nestedItems = getAllNestedItems(item.element, config.prefix || 'mtrl');
+      const nestedItems = getAllNestedItems(item.element, prefix);
       nestedItems.forEach(nestedItem => {
         const nestedId = nestedItem.dataset.id;
         if (nestedId) items.delete(nestedId);
@@ -221,7 +225,7 @@ export const withNavItems = (config: NavigationConfig) => (component: Component)
       }
 
       // Remove the entire item container
-      const container = item.element.closest(`.${config.prefix}-nav-item-container`);
+      const container = item.element.closest(`.${prefix}-${NavClass.ITEM_CONTAINER}`);
       if (container) {
         container.remove();
       }
@@ -255,9 +259,9 @@ export const withNavItems = (config: NavigationConfig) => (component: Component)
         const parentItem = items.get(parentId);
         if (parentItem) {
           const parentButton = parentItem.element;
-          const container = parentButton.closest(`.${config.prefix}-nav-item-container`);
+          const container = parentButton.closest(`.${prefix}-${NavClass.ITEM_CONTAINER}`);
           if (container) {
-            const nestedContainer = container.querySelector(`.${config.prefix}-nav-nested-container`);
+            const nestedContainer = container.querySelector(`.${prefix}-${NavClass.NESTED_CONTAINER}`);
             if (nestedContainer) {
               parentButton.setAttribute('aria-expanded', 'true');
               nestedContainer.hidden = false;

@@ -1,6 +1,24 @@
 // src/components/slider/types.ts
-import { SLIDER_COLORS, SLIDER_SIZES, SLIDER_EVENTS } from './constants';
 
+/**
+ * Available slider color variants
+ */
+export type SliderColor = 'primary' | 'secondary' | 'tertiary' | 'error';
+
+/**
+ * Available slider size variants
+ */
+export type SliderSize = 'small' | 'medium' | 'large';
+
+/**
+ * Available slider event types
+ */
+export type SliderEventType = 'change' | 'input' | 'focus' | 'blur' | 'start' | 'end';
+
+/**
+ * Configuration options for the slider component
+ * @interface SliderConfig
+ */
 export interface SliderConfig {
   /** Minimum value of the slider */
   min?: number;
@@ -21,10 +39,10 @@ export interface SliderConfig {
   disabled?: boolean;
   
   /** Color variant of the slider */
-  color?: keyof typeof SLIDER_COLORS | typeof SLIDER_COLORS[keyof typeof SLIDER_COLORS];
+  color?: SliderColor;
   
   /** Size variant of the slider */
-  size?: keyof typeof SLIDER_SIZES | typeof SLIDER_SIZES[keyof typeof SLIDER_SIZES];
+  size?: SliderSize;
   
   /** Whether to show tick marks */
   ticks?: boolean;
@@ -58,10 +76,14 @@ export interface SliderConfig {
   
   /** Event handlers for slider events */
   on?: {
-    [key in keyof typeof SLIDER_EVENTS | typeof SLIDER_EVENTS[keyof typeof SLIDER_EVENTS]]?: (event: SliderEvent) => void;
+    [key in SliderEventType]?: (event: SliderEvent) => void;
   };
 }
 
+/**
+ * Slider event data
+ * @interface SliderEvent
+ */
 export interface SliderEvent {
   /** The slider component that triggered the event */
   slider: any;
@@ -82,6 +104,10 @@ export interface SliderEvent {
   defaultPrevented: boolean;
 }
 
+/**
+ * Slider component public API interface
+ * @interface SliderComponent
+ */
 export interface SliderComponent {
   /** The root element of the slider */
   element: HTMLElement;
@@ -126,13 +152,13 @@ export interface SliderComponent {
   isDisabled: () => boolean;
   
   /** Sets slider color */
-  setColor: (color: keyof typeof SLIDER_COLORS | typeof SLIDER_COLORS[keyof typeof SLIDER_COLORS]) => SliderComponent;
+  setColor: (color: SliderColor) => SliderComponent;
   
   /** Gets slider color */
   getColor: () => string;
   
   /** Sets slider size */
-  setSize: (size: keyof typeof SLIDER_SIZES | typeof SLIDER_SIZES[keyof typeof SLIDER_SIZES]) => SliderComponent;
+  setSize: (size: SliderSize) => SliderComponent;
   
   /** Gets slider size */
   getSize: () => string;
@@ -156,10 +182,10 @@ export interface SliderComponent {
   getIcon: () => string;
   
   /** Adds event listener */
-  on: (event: keyof typeof SLIDER_EVENTS | typeof SLIDER_EVENTS[keyof typeof SLIDER_EVENTS], handler: (event: SliderEvent) => void) => SliderComponent;
+  on: (event: SliderEventType, handler: (event: SliderEvent) => void) => SliderComponent;
   
   /** Removes event listener */
-  off: (event: keyof typeof SLIDER_EVENTS | typeof SLIDER_EVENTS[keyof typeof SLIDER_EVENTS], handler: (event: SliderEvent) => void) => SliderComponent;
+  off: (event: SliderEventType, handler: (event: SliderEvent) => void) => SliderComponent;
   
   /** Destroys the slider component and cleans up resources */
   destroy: () => void;

@@ -1,234 +1,259 @@
-// src/components/button/types.ts
-import { BUTTON_VARIANTS } from './constants';
+// src/components/navigation/types.ts
 
 /**
- * Configuration interface for the Button component
+ * Navigation variants following Material Design 3
  * @category Components
  */
-export interface ButtonConfig {
-  /** 
-   * Button variant that determines visual styling
-   * @default 'filled'
-   */
-  variant?: keyof typeof BUTTON_VARIANTS | string;
+export type NavVariant = 'rail' | 'drawer' | 'bar' | 'modal' | 'standard';
+
+/**
+ * Navigation positions
+ * @category Components
+ */
+export type NavPosition = 'left' | 'right' | 'top' | 'bottom';
+
+/**
+ * Navigation behaviors
+ * @category Components
+ */
+export type NavBehavior = 'fixed' | 'dismissible' | 'modal';
+
+/**
+ * Navigation item state
+ * @category Components
+ */
+export type NavItemState = 'active' | 'disabled' | 'expanded' | 'collapsed' | 'hovered' | 'focused' | 'pressed';
+
+/**
+ * Navigation element class names
+ * Used internally to maintain consistent class names
+ * @internal
+ */
+export const NavClass = {
+  ITEM: 'nav-item',
+  ITEM_CONTAINER: 'nav-item-container',
+  ICON: 'nav-item-icon',
+  LABEL: 'nav-item-label',
+  BADGE: 'nav-item-badge',
+  DIVIDER: 'nav-divider',
+  SCRIM: 'nav-scrim',
+  GROUP: 'nav-group',
+  GROUP_TITLE: 'nav-group-title',
+  SUBTITLE: 'nav-subtitle',
+  NESTED_CONTAINER: 'nav-nested-container',
+  NESTED_ITEM: 'nav-nested-item',
+  EXPAND_ICON: 'nav-expand-icon'
+} as const;
+
+/**
+ * Navigation item configuration
+ */
+export interface NavItemConfig {
+  /** Unique identifier for the item */
+  id: string;
   
-  /** 
-   * Whether the button is initially disabled
-   * @default false
-   */
-  disabled?: boolean;
-  
-  /** 
-   * Initial button text content
-   * @example 'Submit'
-   */
-  text?: string;
-  
-  /** 
-   * Initial button icon HTML content
-   * @example '<svg>...</svg>'
-   */
+  /** Icon HTML content */
   icon?: string;
   
-  /** 
-   * Icon size in pixels or other CSS units
-   * @example '18px'
-   */
-  iconSize?: string;
+  /** Text label */
+  label?: string;
   
-  /** 
-   * Additional CSS classes to add to the button
-   * @example 'form-submit header-action'
-   */
-  class?: string;
+  /** Badge text */
+  badge?: string;
   
-  /** 
-   * Button value attribute
-   */
-  value?: string;
+  /** Whether the item is disabled */
+  disabled?: boolean;
   
-  /** 
-   * Button type attribute
-   * @default 'button'
-   */
-  type?: 'button' | 'submit' | 'reset';
+  /** Whether the item is active */
+  active?: boolean;
   
-  /** 
-   * Whether to enable ripple effect
-   * @default true
-   */
-  ripple?: boolean;
-
-  /**
-   * Component prefix for class names
-   * @default 'mtrl'
-   */
-  prefix?: string;
+  /** Whether nested items are expanded */
+  expanded?: boolean;
   
-  /**
-   * Component name used in class generation
-   */
-  componentName?: string;
+  /** Subtitle text (for drawer items) */
+  subtitle?: string;
   
-  /** 
-   * Ripple effect configuration
-   */
-  rippleConfig?: {
-    /** Duration of the ripple animation in milliseconds */
-    duration?: number;
-    /** Timing function for the ripple animation */
-    timing?: string;
-    /** Opacity values for ripple start and end [start, end] */
-    opacity?: [string, string];
-  };
+  /** Group ID this item belongs to */
+  groupId?: string;
   
-  /**
-   * Accessible name for the button (aria-label)
-   * Required for icon-only buttons without text
-   */
-  ariaLabel?: string;
-  
-  /**
-   * Descriptive name for the button
-   * Used to derive an accessible name for icon-only buttons
-   */
-  name?: string;
+  /** Nested navigation items */
+  items?: NavItemConfig[];
 }
 
 /**
- * Button component interface
- * @category Components
+ * Navigation group configuration
  */
-export interface ButtonComponent {
-  /** The button's DOM element */
-  element: HTMLButtonElement;
+export interface NavGroupConfig {
+  /** Unique identifier for the group */
+  id: string;
   
-  /** API for managing button text */
-  text: {
-    setText: (content: string) => any;
-    getText: () => string;
-    getElement: () => HTMLElement | null;
-  };
+  /** Group title text */
+  title: string;
   
-  /** API for managing button icons */
-  icon: {
-    setIcon: (html: string) => any;
-    getIcon: () => string;
-    getElement: () => HTMLElement | null;
-  };
+  /** Whether the group is expanded */
+  expanded?: boolean;
+}
+
+/**
+ * Navigation item data
+ */
+export interface NavItemData {
+  /** The item's DOM element */
+  element: HTMLElement;
   
-  /** API for managing disabled state */
-  disabled: {
-    /** Enables the button */
-    enable: () => void;
-    /** Disables the button */
-    disable: () => void;
-    /** Checks if the button is disabled */
-    isDisabled: () => boolean;
-  };
+  /** Item configuration */
+  config: NavItemConfig;
+}
+
+/**
+ * Navigation change event data
+ */
+export interface NavChangeEvent {
+  /** ID of the selected item */
+  id: string;
   
-  /** API for managing component lifecycle */
-  lifecycle: {
-    /** Destroys the component and cleans up resources */
+  /** Selected item data */
+  item: NavItemData;
+  
+  /** Previously selected item data */
+  previousItem?: NavItemData | null;
+  
+  /** Path of parent item IDs */
+  path: string[];
+}
+
+/**
+ * Configuration interface for the Navigation component
+ */
+export interface NavigationConfig {
+  /** Navigation variant */
+  variant?: NavVariant | string;
+  
+  /** Navigation position */
+  position?: NavPosition | string;
+  
+  /** Navigation behavior */
+  behavior?: NavBehavior | string;
+  
+  /** Navigation items */
+  items?: NavItemConfig[];
+  
+  /** Navigation groups */
+  groups?: NavGroupConfig[];
+  
+  /** Whether the navigation is disabled */
+  disabled?: boolean;
+  
+  /** Whether the navigation is expanded (for drawer) */
+  expanded?: boolean;
+  
+  /** Whether to show item labels */
+  showLabels?: boolean;
+  
+  /** Whether to enable background scrim (for modal drawer) */
+  scrimEnabled?: boolean;
+  
+  /** Additional CSS classes */
+  class?: string;
+  
+  /** Accessibility label */
+  ariaLabel?: string;
+  
+  /** Component prefix for class names */
+  prefix?: string;
+  
+  /** Component name */
+  componentName?: string;
+}
+
+/**
+ * Navigation component interface
+ */
+export interface NavigationComponent {
+  /** The navigation's DOM element */
+  element: HTMLElement;
+  
+  /** Map of navigation items */
+  items: Map<string, NavItemData>;
+  
+  /** Adds a navigation item */
+  addItem: (config: NavItemConfig) => NavigationComponent;
+  
+  /** Removes a navigation item */
+  removeItem: (id: string) => NavigationComponent;
+  
+  /** Gets a navigation item by ID */
+  getItem: (id: string) => NavItemData | undefined;
+  
+  /** Gets all navigation items */
+  getAllItems: () => NavItemData[];
+  
+  /** Gets the active navigation item */
+  getActive: () => NavItemData | null;
+  
+  /** Gets the path to an item (parent IDs) */
+  getItemPath: (id: string) => string[];
+  
+  /** Sets the active navigation item */
+  setActive: (id: string) => NavigationComponent;
+  
+  /** Enables the navigation */
+  enable: () => NavigationComponent;
+  
+  /** Disables the navigation */
+  disable: () => NavigationComponent;
+  
+  /** Expands the navigation (for drawer) */
+  expand: () => NavigationComponent;
+  
+  /** Collapses the navigation (for drawer) */
+  collapse: () => NavigationComponent;
+  
+  /** Checks if the navigation is expanded */
+  isExpanded: () => boolean;
+  
+  /** Toggles the navigation expansion state */
+  toggle: () => NavigationComponent;
+  
+  /** Adds an event listener */
+  on: (event: string, handler: Function) => NavigationComponent;
+  
+  /** Removes an event listener */
+  off: (event: string, handler: Function) => NavigationComponent;
+  
+  /** Destroys the navigation component */
+  destroy: () => void;
+}
+
+/**
+ * Base component interface
+ */
+export interface BaseComponent {
+  element: HTMLElement;
+  prefix?: string;
+  items?: Map<string, NavItemData>;
+  emit?: (event: string, data: any) => void;
+  on?: (event: string, handler: Function) => any;
+  off?: (event: string, handler: Function) => any;
+  lifecycle?: {
     destroy: () => void;
   };
-  
-  /**
-   * Gets a class name with the component's prefix
-   * @param name - Base class name
-   * @returns Prefixed class name
-   */
-  getClass: (name: string) => string;
-  
-  /**
-   * Gets the button's value attribute
-   * @returns Button value
-   */
-  getValue: () => string;
-  
-  /**
-   * Sets the button's value attribute
-   * @param value - New value
-   * @returns The button component for chaining
-   */
-  setValue: (value: string) => ButtonComponent;
-  
-  /**
-   * Enables the button (removes disabled attribute)
-   * @returns The button component for chaining
-   */
-  enable: () => ButtonComponent;
-  
-  /**
-   * Disables the button (adds disabled attribute)
-   * @returns The button component for chaining
-   */
-  disable: () => ButtonComponent;
-  
-  /**
-   * Sets the button's text content
-   * @param content - Text content
-   * @returns The button component for chaining
-   */
-  setText: (content: string) => ButtonComponent;
-  
-  /**
-   * Gets the button's text content
-   * @returns Button text content
-   */
-  getText: () => string;
-  
-  /**
-   * Sets the button's icon
-   * @param icon - Icon HTML content
-   * @returns The button component for chaining
-   */
-  setIcon: (icon: string) => ButtonComponent;
-  
-  /**
-   * Gets the button's icon HTML content
-   * @returns Icon HTML
-   */
-  getIcon: () => string;
-  
-  /**
-   * Sets the accessible name (aria-label) for the button
-   * @param label - Accessible name
-   * @returns The button component for chaining
-   */
-  setAriaLabel: (label: string) => ButtonComponent;
-  
-  /**
-   * Destroys the button component and cleans up resources
-   */
-  destroy: () => void;
-  
-  /**
-   * Updates the button's circular style based on content
-   * Internal method used when changing content
-   */
-  updateCircularStyle: () => void;
-  
-  /**
-   * Adds an event listener to the button
-   * @param event - Event name ('click', 'focus', etc.)
-   * @param handler - Event handler function
-   * @returns The button component for chaining
-   */
-  on: (event: string, handler: Function) => ButtonComponent;
-  
-  /**
-   * Removes an event listener from the button
-   * @param event - Event name
-   * @param handler - Event handler function
-   * @returns The button component for chaining
-   */
-  off: (event: string, handler: Function) => ButtonComponent;
-  
-  /**
-   * Adds CSS classes to the button element
-   * @param classes - One or more class names to add
-   * @returns The button component for chaining
-   */
-  addClass: (...classes: string[]) => ButtonComponent;
+  disabled?: {
+    enable: () => any;
+    disable: () => any;
+  };
+  [key: string]: any;
+}
+
+/**
+ * API options interface
+ */
+export interface ApiOptions {
+  disabled: {
+    enable: () => void;
+    disable: () => void;
+  };
+  lifecycle: {
+    destroy: () => void;
+  };
 }

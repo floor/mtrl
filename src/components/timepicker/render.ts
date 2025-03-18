@@ -7,7 +7,7 @@ import {
   DEFAULT_CLOCK_ICON,
   DEFAULT_KEYBOARD_ICON,
   SELECTORS
-} from './constants';
+} from './config';
 import { padZero, convertTo12Hour } from './utils';
 import { renderClockDial, getTimeValueFromClick } from './clockdial';
 

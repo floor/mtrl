@@ -4,13 +4,12 @@ import {
   createElementConfig
 } from '../../core/config/component-config';
 import { SearchConfig } from './types';
-import { SEARCH_VARIANTS } from './constants';
 
 /**
  * Default configuration for the Search component
  */
 export const defaultConfig: SearchConfig = {
-  variant: SEARCH_VARIANTS.BAR,
+  variant: 'bar',
   disabled: false,
   placeholder: 'Search',
   value: '',

@@ -2,7 +2,6 @@
 import { createElement } from '../../core/dom/create';
 import { createRipple } from '../../core/build/ripple';
 import { SegmentConfig, Segment } from './types';
-import { DEFAULT_CHECKMARK_ICON, CLASSES } from './constants';
 import { getSegmentConfig } from './config';
 
 /**
@@ -40,7 +39,7 @@ export const createSegment = (
   if (config.text) {
     textElement = createElement({
       tag: 'span',
-      className: `${prefix}-${CLASSES.SEGMENT}-${CLASSES.TEXT}`,
+      className: `${prefix}-segmentedbutton-segment-text`,
       text: config.text,
       container: element
     });
@@ -52,7 +51,7 @@ export const createSegment = (
     // Create icon element
     iconElement = createElement({
       tag: 'span',
-      className: `${prefix}-${CLASSES.SEGMENT}-${CLASSES.ICON}`,
+      className: `${prefix}-segmentedbutton-segment-icon`,
       html: config.icon,
       container: element
     });
@@ -60,8 +59,8 @@ export const createSegment = (
     // Create checkmark element (hidden initially)
     checkmarkElement = createElement({
       tag: 'span',
-      className: `${prefix}-${CLASSES.SEGMENT}-${CLASSES.CHECKMARK}`,
-      html: DEFAULT_CHECKMARK_ICON,
+      className: `${prefix}-segmentedbutton-segment-'checkmark'`,
+      html: 'icon',
       container: element
     });
     
@@ -82,7 +81,7 @@ export const createSegment = (
    * @private
    */
   const updateSelectedState = (selected: boolean) => {
-    element.classList.toggle(`${prefix}-${CLASSES.SEGMENT}--${CLASSES.SELECTED}`, selected);
+    element.classList.toggle(`${prefix}-segmentedbutton-segment--selected`, selected);
     element.setAttribute('aria-pressed', selected ? 'true' : 'false');
     
     // Handle icon/checkmark swap if we have both text and icon
@@ -102,7 +101,7 @@ export const createSegment = (
    */
   const updateDisabledState = (disabled: boolean) => {
     const isDisabled = disabled || groupDisabled;
-    element.classList.toggle(`${prefix}-${CLASSES.SEGMENT}--${CLASSES.DISABLED}`, isDisabled);
+    element.classList.toggle(`${prefix}-segmentedbutton-segment--disabled`, isDisabled);
     
     if (isDisabled) {
       element.setAttribute('disabled', 'true');

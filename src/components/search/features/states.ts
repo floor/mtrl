@@ -1,6 +1,10 @@
 // src/components/search/features/states.ts
-import { SEARCH_VARIANTS } from '../constants';
 import { SearchConfig } from '../types';
+
+const SEARCH_VARIANTS = {
+  BAR: 'bar',
+  VIEW: 'view'
+}
 
 /**
  * Add state management features to search component

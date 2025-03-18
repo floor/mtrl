@@ -1,102 +1,255 @@
 // src/components/progress/types.ts
-import { PROGRESS_VARIANTS } from './constants';
+
+/**
+ * Progress variant types
+ * @category Components
+ */
+export type ProgressVariant = 'linear' | 'circular';
+
+/**
+ * Progress component event types
+ * @category Components
+ */
+export type ProgressEvent = 'change' | 'complete';
+
+// /**
+//  * Progress variants object for internal reference
+//  * @internal
+//  */
+// export const PROGRESS_VARIANTS: Record<string, ProgressVariant> = {
+//   LINEAR: 'linear',
+//   CIRCULAR: 'circular'
+// };
+
+// /**
+//  * Progress events object for internal reference
+//  * @internal
+//  */
+// export const PROGRESS_EVENTS: Record<string, ProgressEvent> = {
+//   CHANGE: 'change',
+//   COMPLETE: 'complete'
+// };
 
 /**
  * Configuration interface for the Progress component
+ * @category Components
  */
 export interface ProgressConfig {
-  /** Progress variant (linear, circular) */
-  variant?: keyof typeof PROGRESS_VARIANTS | string;
+  /** 
+   * Progress variant that determines visual style
+   * @default 'linear'
+   */
+  variant?: ProgressVariant | string;
   
-  /** Initial progress value (0-100) */
+  /** 
+   * Initial progress value (0-100)
+   * @default 0
+   */
   value?: number;
   
-  /** Whether the progress indicator is initially disabled */
+  /** 
+   * Whether the progress indicator is initially disabled
+   * @default false
+   */
   disabled?: boolean;
   
-  /** Maximum value (defaults to 100) */
+  /** 
+   * Maximum value 
+   * @default 100
+   */
   max?: number;
   
-  /** Custom buffer value for linear progress */
+  /** 
+   * Buffer value for linear progress with buffer (like video loading)
+   * @default 0
+   */
   buffer?: number;
   
-  /** Additional CSS classes */
+  /** 
+   * Additional CSS classes to add to the progress component
+   * @example 'page-loader main-progress'
+   */
   class?: string;
   
-  /** Whether to show text label with percentage */
+  /** 
+   * Whether to show text label with percentage
+   * @default false
+   */
   showLabel?: boolean;
   
-  /** Whether progress is indeterminate */
+  /** 
+   * Whether progress is indeterminate (shows animation without specific value)
+   * @default false
+   */
   indeterminate?: boolean;
   
-  /** Custom label format function */
+  /** 
+   * Custom label formatter function
+   * @example (value, max) => `${Math.round((value/max) * 100)}%`
+   */
   labelFormatter?: (value: number, max: number) => string;
+  
+  /**
+   * Component prefix for class names
+   * @default 'mtrl'
+   */
+  prefix?: string;
+  
+  /**
+   * Component name used in class generation
+   * @default 'progress'
+   */
+  componentName?: string;
 }
 
 /**
  * Progress component interface
+ * @category Components
  */
 export interface ProgressComponent {
-  /** The component's root element */
+  /** The component's root DOM element */
   element: HTMLElement;
   
-  /** The track element */
+  /** The track element (background) */
   trackElement: HTMLElement;
   
-  /** The indicator element */
+  /** The indicator element (filled part) */
   indicatorElement: HTMLElement;
   
-  /** The buffer element (for linear variant) */
+  /** The buffer element for linear variant (pre-loaded state) */
   bufferElement?: HTMLElement;
   
-  /** The label element (if enabled) */
+  /** The label element if showLabel is enabled */
   labelElement?: HTMLElement;
   
-  /** Sets the current progress value */
+  /**
+   * Gets a class name with the component's prefix
+   * @param name - Base class name
+   * @returns Prefixed class name
+   */
+  getClass: (name: string) => string;
+  
+  /**
+   * Sets the current progress value
+   * @param value - Progress value (between 0 and max)
+   * @returns The progress component for chaining
+   */
   setValue: (value: number) => ProgressComponent;
   
-  /** Gets the current progress value */
+  /**
+   * Gets the current progress value
+   * @returns Current progress value
+   */
   getValue: () => number;
   
-  /** Sets the buffer value (for linear variant) */
+  /**
+   * Sets the buffer value (for linear variant with buffer indicators)
+   * @param value - Buffer value (between 0 and max)
+   * @returns The progress component for chaining
+   */
   setBuffer: (value: number) => ProgressComponent;
   
-  /** Gets the current buffer value */
+  /**
+   * Gets the current buffer value
+   * @returns Current buffer value
+   */
   getBuffer: () => number;
   
-  /** Enables the progress component */
+  /**
+   * Enables the progress component
+   * @returns The progress component for chaining
+   */
   enable: () => ProgressComponent;
   
-  /** Disables the progress component */
+  /**
+   * Disables the progress component
+   * @returns The progress component for chaining
+   */
   disable: () => ProgressComponent;
   
-  /** Checks if the component is disabled */
+  /**
+   * Checks if the component is disabled
+   * @returns Whether the component is disabled
+   */
   isDisabled: () => boolean;
   
-  /** Shows the label */
+  /**
+   * Shows the label element
+   * @returns The progress component for chaining
+   */
   showLabel: () => ProgressComponent;
   
-  /** Hides the label */
+  /**
+   * Hides the label element
+   * @returns The progress component for chaining
+   */
   hideLabel: () => ProgressComponent;
   
-  /** Sets a custom formatter for the label */
+  /**
+   * Sets a custom formatter for the label
+   * @param formatter - Function that formats the label text
+   * @returns The progress component for chaining
+   */
   setLabelFormatter: (formatter: (value: number, max: number) => string) => ProgressComponent;
   
-  /** Sets the indeterminate state */
+  /**
+   * Sets the indeterminate state
+   * @param indeterminate - Whether progress is indeterminate
+   * @returns The progress component for chaining
+   */
   setIndeterminate: (indeterminate: boolean) => ProgressComponent;
   
-  /** Checks if the component is indeterminate */
+  /**
+   * Checks if the component is in indeterminate state
+   * @returns Whether the component is indeterminate
+   */
   isIndeterminate: () => boolean;
   
-  /** Adds event listener */
+  /**
+   * Adds an event listener to the progress
+   * @param event - Event name ('change', 'complete')
+   * @param handler - Event handler function
+   * @returns The progress component for chaining
+   */
   on: (event: string, handler: Function) => ProgressComponent;
   
-  /** Removes event listener */
+  /**
+   * Removes an event listener from the progress
+   * @param event - Event name
+   * @param handler - Event handler function
+   * @returns The progress component for chaining
+   */
   off: (event: string, handler: Function) => ProgressComponent;
   
-  /** Destroys the component and cleans up resources */
+  /**
+   * Destroys the progress component and cleans up resources
+   */
   destroy: () => void;
   
-  /** Add CSS classes */
+  /**
+   * Adds CSS classes to the progress element
+   * @param classes - One or more class names to add
+   * @returns The progress component for chaining
+   */
   addClass: (...classes: string[]) => ProgressComponent;
+  
+  /**
+   * API for managing disabled state
+   */
+  disabled: {
+    /** Enables the progress */
+    enable: () => void;
+    /** Disables the progress */
+    disable: () => void;
+    /** Checks if the progress is disabled */
+    isDisabled: () => boolean;
+  };
+  
+  /**
+   * API for managing component lifecycle
+   */
+  lifecycle: {
+    /** Destroys the component and cleans up resources */
+    destroy: () => void;
+  };
 }

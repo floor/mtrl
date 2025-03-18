@@ -1,8 +1,16 @@
 // src/components/tabs/tab-api.ts
 import { TabComponent } from './types';
-import { TAB_STATES, TAB_LAYOUT } from './constants';
 import { BadgeComponent } from '../badge/types';
 import createBadge from '../badge';
+
+const TAB_LAYOUT = {
+  /** Icon-only tab layout */
+  ICON_ONLY: 'icon-only',
+  /** Text-only tab layout */
+  TEXT_ONLY: 'text-only',
+  /** Icon and text layout */
+  ICON_AND_TEXT: 'icon-and-text'
+}
 
 /**
  * API options for a Tab component
@@ -82,7 +90,7 @@ export const withTabAPI = ({ disabled, lifecycle, button }: ApiOptions) =>
        * Activates the tab
        */
       activate() {
-        component.element.classList.add(`${component.getClass('tab')}--${TAB_STATES.ACTIVE}`);
+        component.element.classList.add(`${component.getClass('tab')}--active`);
         component.element.setAttribute('aria-selected', 'true');
         return this;
       },
@@ -91,7 +99,7 @@ export const withTabAPI = ({ disabled, lifecycle, button }: ApiOptions) =>
        * Deactivates the tab
        */
       deactivate() {
-        component.element.classList.remove(`${component.getClass('tab')}--${TAB_STATES.ACTIVE}`);
+        component.element.classList.remove(`${component.getClass('tab')}--active`);
         component.element.setAttribute('aria-selected', 'false');
         return this;
       },
@@ -100,7 +108,7 @@ export const withTabAPI = ({ disabled, lifecycle, button }: ApiOptions) =>
        * Checks if the tab is active
        */
       isActive() {
-        return component.element.classList.contains(`${component.getClass('tab')}--${TAB_STATES.ACTIVE}`);
+        return component.element.classList.contains(`${component.getClass('tab')}--active`);
       },
       
       /**

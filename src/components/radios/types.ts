@@ -1,5 +1,4 @@
 // src/components/radios/types.ts
-import { RADIO_DIRECTIONS } from './constants';
 
 /**
  * Configuration for a radio option in the Radios component
@@ -57,12 +56,6 @@ export interface RadiosConfig {
    * @default false
    */
   disabled?: boolean;
-  
-  /** 
-   * Group layout direction
-   * @default 'vertical'
-   */
-  direction?: keyof typeof RADIO_DIRECTIONS | string;
   
   /** 
    * Whether to enable ripple effect

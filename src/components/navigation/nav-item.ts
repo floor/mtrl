@@ -1,17 +1,5 @@
 // src/components/navigation/nav-item.ts
-
-// Simple interface for NavItemConfig if not imported
-interface NavItemConfig {
-  id: string;
-  icon?: string;
-  label?: string;
-  badge?: string;
-  disabled?: boolean;
-  active?: boolean;
-  expanded?: boolean;
-  items?: NavItemConfig[];
-  [key: string]: any;
-}
+import { NavItemConfig, NavClass } from './types';
 
 /**
  * Creates an expand/collapse icon element
@@ -20,7 +8,7 @@ interface NavItemConfig {
  */
 export const createExpandIcon = (prefix: string): HTMLElement => {
   const icon = document.createElement('span');
-  icon.className = `${prefix}-nav-expand-icon`;
+  icon.className = `${prefix}-${NavClass.EXPAND_ICON}`;
   icon.innerHTML = `
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
       <polyline points="9 18 15 12 9 6"></polyline>
@@ -42,7 +30,7 @@ export const createNestedContainer = (
   createItem: (config: NavItemConfig, container: HTMLElement, prefix: string) => HTMLElement
 ): HTMLElement => {
   const container = document.createElement('div');
-  container.className = `${prefix}-nav-nested-container`;
+  container.className = `${prefix}-${NavClass.NESTED_CONTAINER}`;
   
   // Use appropriate role for nested menu
   container.setAttribute('role', 'menu');
@@ -68,7 +56,7 @@ export const createNavItem = (
   prefix: string
 ): HTMLElement => {
   const itemContainer = document.createElement('div');
-  itemContainer.className = `${prefix}-nav-item-container`;
+  itemContainer.className = `${prefix}-${NavClass.ITEM_CONTAINER}`;
 
   // Determine if parent container uses tabs or menu role pattern
   const isMenuContext = container.getAttribute('role') === 'menu';
@@ -77,7 +65,7 @@ export const createNavItem = (
   
   // Create the item element
   const itemElement = document.createElement('button');
-  itemElement.className = `${prefix}-nav-item`;
+  itemElement.className = `${prefix}-${NavClass.ITEM}`;
   itemElement.type = 'button'; // Ensure it's a button type for proper behavior
   
   // Set appropriate role based on context and items
@@ -114,7 +102,7 @@ export const createNavItem = (
   // Add icon if provided
   if (config.icon) {
     const icon = document.createElement('span');
-    icon.className = `${prefix}-nav-item-icon`;
+    icon.className = `${prefix}-${NavClass.ICON}`;
     icon.innerHTML = config.icon;
     itemElement.appendChild(icon);
   }
@@ -122,7 +110,7 @@ export const createNavItem = (
   // Add label if provided
   if (config.label) {
     const label = document.createElement('span');
-    label.className = `${prefix}-nav-item-label`;
+    label.className = `${prefix}-${NavClass.LABEL}`;
     label.textContent = config.label;
     itemElement.appendChild(label);
     itemElement.setAttribute('aria-label', config.label);
@@ -131,7 +119,7 @@ export const createNavItem = (
   // Add badge if provided
   if (config.badge) {
     const badge = document.createElement('span');
-    badge.className = `${prefix}-nav-item-badge`;
+    badge.className = `${prefix}-${NavClass.BADGE}`;
     badge.textContent = config.badge;
     // Use appropriate aria labeling
     badge.setAttribute('aria-label', `${config.badge} notifications`);
@@ -140,7 +128,7 @@ export const createNavItem = (
 
   // Mark active state with appropriate semantics
   if (config.active && !config.items?.length) {
-    itemElement.classList.add(`${prefix}-nav-item--active`);
+    itemElement.classList.add(`${prefix}-${NavClass.ITEM}--active`);
     
     // Use aria-current for standard navigation
     if (!isTabContext) {
@@ -184,13 +172,13 @@ export const createNavItem = (
  * @returns {Array<HTMLElement>} Array of all nested items
  */
 export const getAllNestedItems = (item: HTMLElement, prefix: string): HTMLElement[] => {
-  const container = item.closest(`.${prefix}-nav-item-container`);
+  const container = item.closest(`.${prefix}-${NavClass.ITEM_CONTAINER}`);
   if (!container) return [];
 
-  const nestedContainer = container.querySelector(`.${prefix}-nav-nested-container`);
+  const nestedContainer = container.querySelector(`.${prefix}-${NavClass.NESTED_CONTAINER}`);
   if (!nestedContainer) return [];
 
-  const items = Array.from(nestedContainer.querySelectorAll(`.${prefix}-nav-item`)) as HTMLElement[];
+  const items = Array.from(nestedContainer.querySelectorAll(`.${prefix}-${NavClass.ITEM}`)) as HTMLElement[];
   return items.reduce((acc: HTMLElement[], nestedItem: HTMLElement) => {
     return [...acc, nestedItem, ...getAllNestedItems(nestedItem, prefix)];
   }, []);

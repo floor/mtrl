@@ -1,15 +1,29 @@
 // src/components/textfield/types.ts
-import { TEXTFIELD_VARIANTS, TEXTFIELD_TYPES } from './constants';
+
+/**
+ * Available Textfield variants
+ */
+export type TextfieldVariant = 'filled' | 'outlined';
+
+/**
+ * Available Textfield states
+ */
+export type TextfieldStates = 'active' | 'inactive' | 'disabled';
+
+/**
+ * Available Textfield types
+ */
+export type TextfieldTypes = 'text' | 'password' | 'email' | 'number' | 'tel' | 'url' | 'search' | 'multiline';
 
 /**
  * Configuration interface for the Textfield component
  */
 export interface TextfieldConfig {
   /** Input type (text, password, email, etc.) */
-  type?: keyof typeof TEXTFIELD_TYPES | string;
+  type?: TextfieldTypes | string;
   
   /** Visual variant (filled, outlined) */
-  variant?: keyof typeof TEXTFIELD_VARIANTS | string;
+  variant?: TextfieldVariant | string;
   
   /** Input name attribute */
   name?: string;

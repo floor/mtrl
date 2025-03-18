@@ -12,6 +12,34 @@ export enum SelectionMode {
 }
 
 /**
+ * Event types for segmented button
+ */
+export type SegmentedButtonEventType = 'change';
+
+/**
+ * Event data for segmented button events
+ */
+export interface SegmentedButtonEvent {
+  /** The segmented button component that triggered the event */
+  segmentedButton: SegmentedButtonComponent;
+  
+  /** The selected segments */
+  selected: Segment[];
+  
+  /** Values of the selected segments */
+  values: string[];
+  
+  /** Original DOM event if available */
+  originalEvent: Event | null;
+  
+  /** Function to prevent default behavior */
+  preventDefault: () => void;
+  
+  /** Whether default behavior was prevented */
+  defaultPrevented: boolean;
+}
+
+/**
  * Configuration for a single segment within a segmented button
  * @category Components
  */
@@ -105,6 +133,13 @@ export interface SegmentedButtonConfig {
     timing?: string;
     /** Opacity values for ripple start and end [start, end] */
     opacity?: [string, string];
+  };
+  
+  /**
+   * Event handlers for segmented button events
+   */
+  on?: {
+    [key in SegmentedButtonEventType]?: (event: SegmentedButtonEvent) => void;
   };
 }
 
@@ -202,7 +237,7 @@ export interface SegmentedButtonComponent {
    * @param handler - Event handler function
    * @returns The SegmentedButtonComponent for chaining
    */
-  on: (event: string, handler: Function) => SegmentedButtonComponent;
+  on: (event: SegmentedButtonEventType, handler: (event: SegmentedButtonEvent) => void) => SegmentedButtonComponent;
 
   /**
    * Removes an event listener from the segmented button
@@ -210,7 +245,7 @@ export interface SegmentedButtonComponent {
    * @param handler - Event handler function
    * @returns The SegmentedButtonComponent for chaining
    */
-  off: (event: string, handler: Function) => SegmentedButtonComponent;
+  off: (event: SegmentedButtonEventType, handler: (event: SegmentedButtonEvent) => void) => SegmentedButtonComponent;
 
   /**
    * Destroys the component and cleans up resources

@@ -15,7 +15,7 @@ import {
   EVENTS,
   SELECTORS,
   Z_INDEX
-} from './constants';
+} from './config';
 import { createTimePickerAPI } from './api';
 import { renderTimePicker } from './render';
 import { parseTime, formatTime } from './utils';

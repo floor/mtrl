@@ -11,7 +11,6 @@ import {
 } from '../../core/compose/features';
 import { withAPI } from './api';
 import { ProgressConfig, ProgressComponent } from './types';
-import { PROGRESS_VARIANTS, PROGRESS_EVENTS } from './constants';
 import { createBaseConfig, getElementConfig, getApiConfig } from './config';
 
 // Helper functions
@@ -104,7 +103,7 @@ const createProgress = (config: ProgressConfig = {}): ProgressComponent => {
       // Add DOM structure based on variant
       (component) => {
         const baseClass = component.getClass('progress');
-        const isCircular = baseConfig.variant === PROGRESS_VARIANTS.CIRCULAR;
+        const isCircular = baseConfig.variant === 'circular';
         
         if (isCircular) {
           const { track, indicator, svg } = createCircularProgressDOM(baseClass);
