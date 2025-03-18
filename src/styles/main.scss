@@ -31,33 +31,33 @@
 @use './components/textfield' as textfield;
 @use './components/badge' as badge;
 @use './components/bottom-app-bar' as bottom-app-bar;
+@use './components/menu' as menu;
 @use './components/slider' as slider;
 @use './components/switch' as switch;
 @use './components/tabs' as tabs;
 @use './components/top-app-bar' as top-app-bar;
 
-@use '../components/button/styles' as button;
-@use '../components/fab/styles' as fab;
-@use '../components/extended-fab/styles' as extended-fab;
-@use '../components/segmented-button/styles' as segmented-button;
-@use '../components/card/styles' as card;
-@use '../components/carousel/styles' as carousel;
-@use '../components/checkbox/styles' as checkbox;
-@use '../components/chip/styles' as chip;
-@use '../components/datepicker/styles' as datepicker;
-@use '../components/dialog/styles' as dialog;
-@use '../components/divider/styles' as divider;
+@use '../components/styles/button' as button;
+@use '../components/styles/fab' as fab;
+@use '../components/styles/extended-fab' as extended-fab;
+@use '../components/styles/segmented-button' as segmented-button;
+@use '../components/styles/card' as card;
+@use '../components/styles/carousel' as carousel;
+@use '../components/styles/checkbox' as checkbox;
+@use '../components/styles/chip' as chip;
+@use '../components/styles/datepicker' as datepicker;
+@use '../components/styles/dialog' as dialog;
+@use '../components/styles/divider' as divider;
 
-@use '../components/menu/styles' as menu;
-@use '../components/progress/styles';
+@use '../components/styles/progress' as progress;
 
-@use '../components/radios/styles' as radios;
-@use '../components/timepicker/styles' as timepicker;
-@use '../components/search/styles' as search;
+@use '../components/styles/radios' as radios;
+@use '../components/styles/timepicker' as timepicker;
+@use '../components/styles/search' as search;
 
-@use '../components/snackbar/styles' as snackbar;
-@use '../components/navigation/styles' as navigation;
-@use '../components/list/styles' as list;
+@use '../components/styles/snackbar' as snackbar;
+@use '../components/styles/navigation' as navigation;
+@use '../components/styles/list' as list;
 
 @use '../core/build/ripple';
 
