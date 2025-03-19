@@ -139,10 +139,6 @@ $component: '#{base.$prefix}-textfield';
       @include m.motion-transition(background-color, border-color);
 
 
-      &:focus {
-        padding-bottom: 6px;
-      }
-
       // Autofill styles for filled variant
       &:-webkit-autofill {
         border-radius: f.get-shape('extra-small') f.get-shape('extra-small') 0 0;
@@ -171,7 +167,7 @@ $component: '#{base.$prefix}-textfield';
       background-color: t.color('primary');
       border-radius: 0;
       pointer-events: none;
-      transition: 0.3s opacity ease;
+      transition: 0.2s opacity ease;
     }
 
     // Populated field (not empty) or focused field label position
@@ -270,10 +266,10 @@ $component: '#{base.$prefix}-textfield';
       opacity: 0;
       width: 100%;
       height: 100%;
-      border: 2px solid t.color('primary');
+      border: 1.5px solid t.color('primary');
       border-radius: f.get-shape('extra-small');
       pointer-events: none;
-      transition: 0.2s opacity ease;
+      transition: 0.1s opacity ease;
     }
 
     // Populated field (not empty) or focused field label position
