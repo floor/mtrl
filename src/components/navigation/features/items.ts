@@ -28,6 +28,24 @@ interface NavigationConfig {
 }
 
 /**
+ * Helper to get element ID or component type
+ * @internal
+ */
+function getElementId(element: HTMLElement | null, prefix: string): string | null {
+  if (!element) return null;
+  
+  // Try to get data-id
+  const id = element.getAttribute('data-id');
+  if (id) return id;
+  
+  // Try to identify by component class
+  if (element.classList.contains(`${prefix}-nav--rail`)) return 'rail';
+  if (element.classList.contains(`${prefix}-nav--drawer`)) return 'drawer';
+  
+  return null;
+}
+
+/**
  * Adds navigation items management to a component
  * @param {NavigationConfig} config - Navigation configuration
  * @returns {Function} Component enhancer function
@@ -105,6 +123,52 @@ export const withNavItems = (config: NavigationConfig) => (component: BaseCompon
         activeItem = { element: item, config: itemConfig };
         updateActiveState(item, activeItem, true);
       }
+    });
+  }
+
+  // EXTENSION: Add mouse event handling
+  if (component.emit) {
+    // Mouse over event
+    component.element.addEventListener('mouseover', (event: MouseEvent) => {
+      // Find the closest item with data-id
+      const target = event.target as HTMLElement;
+      const item = target.closest(`[data-id]`) as HTMLElement;
+      
+      if (item) {
+        const id = item.dataset.id;
+        if (id) {
+          // Emit mouseover event with necessary data
+          component.emit('mouseover', {
+            id,
+            clientX: event.clientX,
+            clientY: event.clientY,
+            target: item,
+            item: items.get(id)
+          });
+        }
+      }
+    });
+
+    // Mouse enter event
+    component.element.addEventListener('mouseenter', (event: MouseEvent) => {
+      component.emit('mouseenter', {
+        clientX: event.clientX,
+        clientY: event.clientY,
+        id: component.element.dataset.id || component.componentName || 'nav'
+      });
+    });
+
+    // Mouse leave event
+    component.element.addEventListener('mouseleave', (event: MouseEvent) => {
+      const relatedTarget = event.relatedTarget as HTMLElement;
+      const relatedTargetId = getElementId(relatedTarget, prefix);
+      
+      component.emit('mouseleave', {
+        clientX: event.clientX,
+        clientY: event.clientY,
+        relatedTargetId,
+        id: component.element.dataset.id || component.componentName || 'nav'
+      });
     });
   }
 
