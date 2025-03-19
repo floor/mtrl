@@ -48,12 +48,9 @@ const CLOCK_CONSTANTS = {
 function getThemeColors(prefix: string): ThemeColors {
   const root = document.documentElement;
   const styles = getComputedStyle(root);
-  console.log('styles', styles)
+
   // Extract primary color
   const primaryColor = styles.getPropertyValue(`--${prefix}-sys-color-primary`).trim() || '#6750A4';
-  
-
-  console.log('primaryColor', primaryColor)
 
   // Extract on-primary color
   const onPrimaryColor = styles.getPropertyValue(`--${prefix}-sys-color-on-primary`).trim() || '#FFFFFF';
