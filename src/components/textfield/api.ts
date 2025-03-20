@@ -6,6 +6,11 @@ import { BaseComponent, TextfieldComponent, ApiOptions } from './types';
  * @param {ApiOptions} options - API configuration
  * @returns {Function} Higher-order function that adds API methods to component
  */
+/**
+ * Enhances textfield component with API methods
+ * @param {ApiOptions} options - API configuration
+ * @returns {Function} Higher-order function that adds API methods to component
+ */
 export const withAPI = ({ disabled, lifecycle }: ApiOptions) => 
   (component: BaseComponent): TextfieldComponent => ({
     ...component as any,
@@ -42,6 +47,54 @@ export const withAPI = ({ disabled, lifecycle }: ApiOptions) =>
     
     getLabel(): string {
       return component.label?.getText() || '';
+    },
+    
+    // Leading icon management (if present)
+    leadingIcon: component.leadingIcon || null,
+    setLeadingIcon(html: string): TextfieldComponent {
+      if (component.setLeadingIcon) {
+        component.setLeadingIcon(html);
+      }
+      return this;
+    },
+    
+    removeLeadingIcon(): TextfieldComponent {
+      if (component.removeLeadingIcon) {
+        component.removeLeadingIcon();
+      }
+      return this;
+    },
+    
+    // Trailing icon management (if present)
+    trailingIcon: component.trailingIcon || null,
+    setTrailingIcon(html: string): TextfieldComponent {
+      if (component.setTrailingIcon) {
+        component.setTrailingIcon(html);
+      }
+      return this;
+    },
+    
+    removeTrailingIcon(): TextfieldComponent {
+      if (component.removeTrailingIcon) {
+        component.removeTrailingIcon();
+      }
+      return this;
+    },
+    
+    // Supporting text management (if present)
+    supportingTextElement: component.supportingTextElement || null,
+    setSupportingText(text: string, isError?: boolean): TextfieldComponent {
+      if (component.setSupportingText) {
+        component.setSupportingText(text, isError);
+      }
+      return this;
+    },
+    
+    removeSupportingText(): TextfieldComponent {
+      if (component.removeSupportingText) {
+        component.removeSupportingText();
+      }
+      return this;
     },
 
     // Event handling

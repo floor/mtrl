@@ -31,9 +31,6 @@ export interface TextfieldConfig {
   /** Label text */
   label?: string;
   
-  /** Placeholder text */
-  placeholder?: string;
-  
   /** Initial value */
   value?: string;
   
@@ -51,6 +48,18 @@ export interface TextfieldConfig {
   
   /** Autocomplete attribute */
   autocomplete?: string;
+  
+  /** Leading icon HTML content */
+  leadingIcon?: string;
+  
+  /** Trailing icon HTML content */
+  trailingIcon?: string;
+  
+  /** Supporting text content */
+  supportingText?: string;
+  
+  /** Whether supporting text indicates an error */
+  error?: boolean;
   
   /** Additional CSS classes */
   class?: string;

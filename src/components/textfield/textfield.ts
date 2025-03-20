@@ -10,6 +10,11 @@ import {
   withTextLabel
 } from '../../core/compose/features';
 import { withAPI } from './api';
+import { 
+  withLeadingIcon, 
+  withTrailingIcon, 
+  withSupportingText 
+} from './features';
 import { TextfieldConfig, TextfieldComponent } from './types';
 import { 
   createBaseConfig, 
@@ -33,6 +38,9 @@ const createTextfield = (config: TextfieldConfig = {}): TextfieldComponent => {
       withVariant(baseConfig),
       withTextInput(baseConfig),
       withTextLabel(baseConfig),
+      withLeadingIcon(baseConfig),
+      withTrailingIcon(baseConfig),
+      withSupportingText(baseConfig),
       withDisabled(baseConfig),
       withLifecycle(),
       comp => withAPI(getApiConfig(comp))(comp)

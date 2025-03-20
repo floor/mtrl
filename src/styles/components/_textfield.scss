@@ -68,12 +68,76 @@ $component: '#{base.$prefix}-textfield';
       }
     }
   }
+  
+  // Leading icon
+  &-leading-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    pointer-events: none;
+    color: t.color('on-surface-variant');
+    z-index: 1;
+    
+    svg {
+      width: 20px;
+      height: 20px;
+    }
+  }
+  
+  // Trailing icon
+  &-trailing-icon {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    color: t.color('on-surface-variant');
+    z-index: 1;
+    cursor: pointer;
+    
+    svg {
+      width: 20px;
+      height: 20px;
+    }
+  }
+  
+  // Adjustments when icons are present
+  &--with-leading-icon {
+    .#{$component}-label {
+      left: 44px;
+    }
+    
+    .#{$component}-input {
+      padding-left: 44px;
+    }
+  }
+  
+  &--with-trailing-icon {
+    .#{$component}-input {
+      padding-right: 44px;
+    }
+  }
 
   // Error state
   &--error {
     border-color: t.color('error');
     
     .#{$component}-label {
+      color: t.color('error');
+    }
+    
+    .#{$component}-leading-icon,
+    .#{$component}-trailing-icon {
       color: t.color('error');
     }
   }
@@ -85,17 +149,23 @@ $component: '#{base.$prefix}-textfield';
     background-color: t.alpha('on-surface', 0.04);
     pointer-events: none;
     
-    & ~ .#{$component}-label {
+    & ~ .#{$component}-label,
+    & ~ .#{$component}-leading-icon,
+    & ~ .#{$component}-trailing-icon {
       color: t.color('on-surface');
       opacity: 0.38;
     }
   }
   
-  // Helper text
+  // Helper text / Supporting text
   &-helper {
     @include m.typography('body-small');
+    position: absolute;
+    bottom: -18px;
+    left: 16px;
     margin-top: 4px;
     color: t.color('on-surface-variant');
+
     
     &--error {
       color: t.color('error');
@@ -126,6 +196,35 @@ $component: '#{base.$prefix}-textfield';
     &-required {
       margin-left: 0;
       margin-right: 4px;
+    }
+    
+    &-leading-icon {
+      left: auto;
+      right: 12px;
+    }
+    
+    &-trailing-icon {
+      right: auto;
+      left: 12px;
+    }
+    
+    &--with-leading-icon {
+      .#{$component}-label {
+        left: auto;
+        right: 44px;
+      }
+      
+      .#{$component}-input {
+        padding-left: 16px;
+        padding-right: 44px;
+      }
+    }
+    
+    &--with-trailing-icon {
+      .#{$component}-input {
+        padding-right: 16px;
+        padding-left: 44px;
+      }
     }
   }
   
@@ -216,11 +315,65 @@ $component: '#{base.$prefix}-textfield';
       }
     }
     
+    // Icon adjustments for filled variant
+    &.#{$component}--with-leading-icon {
+      .#{$component}-input {
+        padding: 20px 16px 7px 44px;
+      }
+      
+      .#{$component}-label {
+        left: 44px;
+      }
+      
+      &:not(.#{$component}--empty) .#{$component}-label,
+      &.#{$component}--focused .#{$component}-label {
+        transform: translateY(-95%) scale(0.75);
+        left: 16px;
+      }
+      
+      .#{$component}-leading-icon {
+        top: 28px;
+      }
+    }
+    
+    &.#{$component}--with-trailing-icon {
+      .#{$component}-input {
+        padding-right: 44px;
+      }
+      
+      .#{$component}-trailing-icon {
+        top: 28px;
+      }
+    }
+    
     // RTL support
     @include m.rtl {
       .#{$component}-label {
         left: auto;
         right: 16px;
+      }
+      
+      &.#{$component}--with-leading-icon {
+        .#{$component}-input {
+          padding: 20px 44px 7px 16px;
+        }
+        
+        .#{$component}-label {
+          left: auto;
+          right: 44px;
+        }
+        
+        &:not(.#{$component}--empty) .#{$component}-label,
+        &.#{$component}--focused .#{$component}-label {
+          right: 16px;
+        }
+      }
+      
+      &.#{$component}--with-trailing-icon {
+        .#{$component}-input {
+          padding-right: 16px;
+          padding-left: 44px;
+        }
       }
     }
   }
@@ -278,7 +431,6 @@ $component: '#{base.$prefix}-textfield';
       padding: 0 4px;
       background-color: t.color('surface');
       transform: translateY(-147%) scale(0.75);
-      
     }
 
     // Focus state
@@ -326,6 +478,28 @@ $component: '#{base.$prefix}-textfield';
       }
     }
     
+    // Icon adjustments for outlined variant
+    &.#{$component}--with-leading-icon {
+      .#{$component}-input {
+        padding-left: 44px;
+      }
+      
+      .#{$component}-label {
+        left: 44px;
+      }
+      
+      &:not(.#{$component}--empty) .#{$component}-label,
+      &.#{$component}--focused .#{$component}-label {
+        left: 13px;
+      }
+    }
+    
+    &.#{$component}--with-trailing-icon {
+      .#{$component}-input {
+        padding-right: 44px;
+      }
+    }
+    
     // RTL support
     @include m.rtl {
       &:not(.#{$component}--empty) .#{$component}-label,
@@ -341,6 +515,42 @@ $component: '#{base.$prefix}-textfield';
       &.#{$component}--error .#{$component}-label {
         right: 12px;
       }
+      
+      &.#{$component}--with-leading-icon {
+        .#{$component}-input {
+          padding-left: 16px;
+          padding-right: 44px;
+        }
+        
+        .#{$component}-label {
+          left: auto;
+          right: 44px;
+        }
+        
+        &:not(.#{$component}--empty) .#{$component}-label,
+        &.#{$component}--focused .#{$component}-label {
+          right: 13px;
+        }
+      }
+      
+      &.#{$component}--with-trailing-icon {
+        .#{$component}-input {
+          padding-right: 16px;
+          padding-left: 44px;
+        }
+      }
+    }
+  }
+  
+  // Support for multiline inputs
+  &-input[type="multiline"] {
+    min-height: 100px;
+    resize: vertical;
+    
+    & ~ .#{$component}-leading-icon,
+    & ~ .#{$component}-trailing-icon {
+      top: 20px;
+      transform: none;
     }
   }
 }
