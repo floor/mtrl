@@ -9,8 +9,8 @@ import { SliderConfig } from '../types';
  * @returns UI update helper methods
  */
 export const createUiHelpers = (config: SliderConfig, state) => {
-  // Return empty implementations if component structure is missing
-  if (!state.component?.structure) {
+  // Return empty implementations if component components are missing
+  if (!state.component?.components) {
     console.error('Cannot create UI helpers: component structure is missing');
     return {
       getPercentage: () => 0,
@@ -24,18 +24,22 @@ export const createUiHelpers = (config: SliderConfig, state) => {
     };
   }
   
+  // Get flattened components
+  const components = state.component.components;
+  
+  // Extract all needed elements with simple destructuring
   const {
     container = null,
-    track = null, 
-    activeTrack = null, 
-    startTrack = null, 
-    remainingTrack = null, 
     handle = null, 
     valueBubble = null, 
     secondHandle = null, 
     secondValueBubble = null, 
-    ticksContainer = null
-  } = state.component.structure;
+    ticksContainer = null,
+    track = null,
+    startTrack = null,
+    activeTrack = null,
+    remainingTrack = null
+  } = components;
   
   /**
    * Calculates percentage position for a value

@@ -77,12 +77,12 @@ export const withSlider = (config: SliderConfig) => component => {
     component.element.setAttribute('aria-valuemax', String(state.max));
     component.element.setAttribute('aria-valuenow', String(state.value));
     
-    if (!component.structure) {
-      console.warn('Cannot initialize slider: missing structure');
+    if (!component.components) {
+      console.warn('Cannot initialize slider: missing components');
       return;
     }
     
-    const { handle, secondHandle } = component.structure;
+    const { handle, secondHandle } = component.components;
     
     if (handle) {
       handle.setAttribute('aria-valuemin', String(state.min));
@@ -193,12 +193,12 @@ export const withSlider = (config: SliderConfig) => component => {
         
         // Update ARIA attributes
         component.element.setAttribute('aria-valuemin', String(min));
-        if (component.structure.handle) {
-          component.structure.handle.setAttribute('aria-valuemin', String(min));
+        if (component.components?.handle) {
+          component.components.handle.setAttribute('aria-valuemin', String(min));
         }
         
-        if (config.range && component.structure.secondHandle) {
-          component.structure.secondHandle.setAttribute('aria-valuemin', String(min));
+        if (config.range && component.components?.secondHandle) {
+          component.components.secondHandle.setAttribute('aria-valuemin', String(min));
         }
         
         // Clamp values to new min
@@ -234,12 +234,12 @@ export const withSlider = (config: SliderConfig) => component => {
         
         // Update ARIA attributes
         component.element.setAttribute('aria-valuemax', String(max));
-        if (component.structure.handle) {
-          component.structure.handle.setAttribute('aria-valuemax', String(max));
+        if (component.components?.handle) {
+          component.components.handle.setAttribute('aria-valuemax', String(max));
         }
         
-        if (config.range && component.structure.secondHandle) {
-          component.structure.secondHandle.setAttribute('aria-valuemax', String(max));
+        if (config.range && component.components?.secondHandle) {
+          component.components.secondHandle.setAttribute('aria-valuemax', String(max));
         }
         
         // Clamp values to new max
