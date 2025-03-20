@@ -13,14 +13,17 @@ import { SliderConfig, SliderEvent } from '../types';
  */
 export const createHandlers = (config: SliderConfig, state, uiHelpers, eventHelpers) => {
   // Get required elements from structure (with fallbacks)
+  const components = state.component?.components || {};
+  
+  // Extract needed components
   const {
     container = null,
-    track = null, 
-    handle = null, 
+    handle = null,
+    track = null,
     valueBubble = null, 
     secondHandle = null, 
     secondValueBubble = null
-  } = state.component?.structure || {};
+  } = components;
   
   // Get required helper methods (with fallbacks)
   const {
@@ -406,7 +409,7 @@ export const createHandlers = (config: SliderConfig, state, uiHelpers, eventHelp
    * Set up all event listeners
    */
   const setupEventListeners = () => {
-    if (!state.component || !state.component.structure) {
+    if (!state.component || !state.component.components) {
       console.warn('Cannot set up event listeners: missing component structure');
       return;
     }
@@ -436,7 +439,7 @@ export const createHandlers = (config: SliderConfig, state, uiHelpers, eventHelp
    * Clean up all event listeners
    */
   const cleanupEventListeners = () => {
-    if (!state.component || !state.component.structure) return;
+    if (!state.component || !state.component.components) return;
     
     // Clean up container listeners
     if (container) {
