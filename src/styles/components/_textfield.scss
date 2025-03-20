@@ -28,7 +28,8 @@ $component: '#{base.$prefix}-textfield';
     border-radius: 2px;
     color: t.color('on-surface-variant');
     transition: transform v.motion('duration-short4') v.motion('easing-emphasized'),
-                color v.motion('duration-short2') v.motion('easing-standard');
+                color v.motion('duration-short2') v.motion('easing-standard'),
+                left v.motion('duration-short4') v.motion('easing-emphasized');
   }
   
   // Input element
@@ -491,10 +492,8 @@ $component: '#{base.$prefix}-textfield';
       
       &:not(.#{$component}--empty) .#{$component}-label,
       &.#{$component}--focused .#{$component}-label {
-        // Keep the label positioned above the input text but aligned horizontally with the icon
-        left: 44px;
-        // Adjust padding to ensure text doesn't overlap with icon
-        padding-left: 0;
+        // For outlined variant, move label to default position
+        left: 13px;
       }
     }
     
@@ -533,11 +532,9 @@ $component: '#{base.$prefix}-textfield';
         
         &:not(.#{$component}--empty) .#{$component}-label,
         &.#{$component}--focused .#{$component}-label {
-          // Keep the label positioned above the input text but aligned horizontally with the icon in RTL
-          right: 44px;
+          // For outlined variant in RTL, move label to default position
+          right: 13px;
           left: auto;
-          // Adjust padding for RTL
-          padding-right: 0;
         }
       }
       
