@@ -165,7 +165,6 @@ $component: '#{base.$prefix}-textfield';
     left: 16px;
     margin-top: 4px;
     color: t.color('on-surface-variant');
-
     
     &--error {
       color: t.color('error');
@@ -328,7 +327,8 @@ $component: '#{base.$prefix}-textfield';
       &:not(.#{$component}--empty) .#{$component}-label,
       &.#{$component}--focused .#{$component}-label {
         transform: translateY(-95%) scale(0.75);
-        left: 16px;
+        // Keep the label aligned with input text when focused/filled
+        left: 44px;
       }
       
       .#{$component}-leading-icon {
@@ -365,7 +365,8 @@ $component: '#{base.$prefix}-textfield';
         
         &:not(.#{$component}--empty) .#{$component}-label,
         &.#{$component}--focused .#{$component}-label {
-          right: 16px;
+          // Keep the label aligned with input text when focused/filled in RTL
+          right: 44px;
         }
       }
       
@@ -490,7 +491,10 @@ $component: '#{base.$prefix}-textfield';
       
       &:not(.#{$component}--empty) .#{$component}-label,
       &.#{$component}--focused .#{$component}-label {
-        left: 13px;
+        // Keep the label positioned above the input text but aligned horizontally with the icon
+        left: 44px;
+        // Adjust padding to ensure text doesn't overlap with icon
+        padding-left: 0;
       }
     }
     
@@ -529,7 +533,11 @@ $component: '#{base.$prefix}-textfield';
         
         &:not(.#{$component}--empty) .#{$component}-label,
         &.#{$component}--focused .#{$component}-label {
-          right: 13px;
+          // Keep the label positioned above the input text but aligned horizontally with the icon in RTL
+          right: 44px;
+          left: auto;
+          // Adjust padding for RTL
+          padding-right: 0;
         }
       }
       
