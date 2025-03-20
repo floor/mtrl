@@ -24,6 +24,7 @@ interface ItemsComponent extends BaseComponent {
 interface NavigationConfig {
   prefix?: string;
   items?: NavItemConfig[];
+  debug?: boolean;
   [key: string]: any;
 }
 
@@ -54,6 +55,13 @@ export const withNavItems = (config: NavigationConfig) => (component: BaseCompon
   const items = new Map<string, NavItemData>();
   let activeItem: NavItemData | null = null;
   const prefix = config.prefix || 'mtrl';
+  
+  // Debug logging
+  const debug = (...args: any[]) => {
+    if (config.debug) {
+      console.log('[NavItems]', ...args);
+    }
+  };
 
   /**
    * Recursively stores items in the items Map
@@ -126,9 +134,11 @@ export const withNavItems = (config: NavigationConfig) => (component: BaseCompon
     });
   }
 
-  // EXTENSION: Add mouse event handling
+  // Set up enhanced event handling
   if (component.emit) {
-    // Mouse over event
+    debug('Setting up event handlers for component');
+    
+    // Mouse over event handler
     component.element.addEventListener('mouseover', (event: MouseEvent) => {
       // Find the closest item with data-id
       const target = event.target as HTMLElement;
@@ -137,6 +147,8 @@ export const withNavItems = (config: NavigationConfig) => (component: BaseCompon
       if (item) {
         const id = item.dataset.id;
         if (id) {
+          debug('Mouseover on item:', id);
+          
           // Emit mouseover event with necessary data
           component.emit('mouseover', {
             id,
@@ -147,64 +159,111 @@ export const withNavItems = (config: NavigationConfig) => (component: BaseCompon
           });
         }
       }
-    });
+    }, { passive: true });
 
     // Mouse enter event
     component.element.addEventListener('mouseenter', (event: MouseEvent) => {
+      const componentId = component.element.dataset.id || component.componentName || 'nav';
+      debug('Mouseenter on component:', componentId);
+      
       component.emit('mouseenter', {
         clientX: event.clientX,
         clientY: event.clientY,
-        id: component.element.dataset.id || component.componentName || 'nav'
+        id: componentId
       });
-    });
+    }, { passive: true });
 
     // Mouse leave event
     component.element.addEventListener('mouseleave', (event: MouseEvent) => {
       const relatedTarget = event.relatedTarget as HTMLElement;
       const relatedTargetId = getElementId(relatedTarget, prefix);
+      const componentId = component.element.dataset.id || component.componentName || 'nav';
+      
+      debug('Mouseleave from component:', componentId, 'to:', relatedTargetId);
       
       component.emit('mouseleave', {
         clientX: event.clientX,
         clientY: event.clientY,
         relatedTargetId,
-        id: component.element.dataset.id || component.componentName || 'nav'
+        id: componentId
       });
     });
   }
 
-  // Handle item clicks
+  // Handle item clicks with improved error handling
   component.element.addEventListener('click', (event: Event) => {
-    const item = (event.target as HTMLElement).closest(`.${prefix}-${NavClass.ITEM}`) as HTMLElement;
-    if (!item || (item as any).disabled || item.getAttribute('aria-haspopup') === 'menu') return;
-
-    const id = item.dataset.id;
-    if (!id) return;
-    
-    const itemData = items.get(id);
-    if (!itemData) return;
-
-    // Skip if this is an expandable item
-    if (item.getAttribute('aria-expanded') !== null) return;
-
-    // Store previous item before updating
-    const previousItem = activeItem;
-
-    // Update active state
-    if (activeItem) {
-      updateActiveState(activeItem.element, activeItem, false);
-    }
-
-    updateActiveState(item, itemData, true);
-    activeItem = itemData;
-
-    // Emit change event with item data
-    if (component.emit) {
-      component.emit('change', {
-        id,
-        item: itemData,
-        previousItem,
-        path: getItemPath(id)
-      });
+    try {
+      const target = event.target as HTMLElement;
+      const item = target.closest(`.${prefix}-${NavClass.ITEM}`) as HTMLElement;
+      if (!item || (item as any).disabled) return;
+      
+      // Get the ID from the data attribute
+      const id = item.dataset.id;
+      if (!id) return;
+      
+      debug('Item clicked:', id);
+      
+      const itemData = items.get(id);
+      if (!itemData) return;
+      
+      // Special handling for expandable items
+      const isExpandable = item.getAttribute('aria-expanded') !== null;
+      if (isExpandable) {
+        debug('Expandable item clicked');
+        
+        // Toggle expanded state directly
+        const isExpanded = item.getAttribute('aria-expanded') === 'true';
+        item.setAttribute('aria-expanded', (!isExpanded).toString());
+        
+        // Find and toggle nested container
+        const container = item.closest(`.${prefix}-${NavClass.ITEM_CONTAINER}`);
+        if (container) {
+          const nestedContainer = container.querySelector(`.${prefix}-${NavClass.NESTED_CONTAINER}`);
+          if (nestedContainer) {
+            nestedContainer.hidden = isExpanded;
+          }
+        }
+        
+        // For expandable items, we still emit a change event
+        if (component.emit) {
+          debug('Emitting change event for expandable item:', id);
+          component.emit('change', {
+            id,
+            item: itemData,
+            previousItem: activeItem,
+            path: getItemPath(id),
+            isExpandable: true,
+            expanded: !isExpanded
+          });
+        }
+        
+        return;
+      }
+      
+      // For regular items, update active state and emit change
+      const previousItem = activeItem;
+      
+      if (activeItem && activeItem !== itemData) {
+        updateActiveState(activeItem.element, activeItem, false);
+      }
+      
+      updateActiveState(item, itemData, true);
+      activeItem = itemData;
+      
+      // Emit change event for regular items
+      if (component.emit) {
+        debug('Emitting change event for item:', id);
+        component.emit('change', {
+          id,
+          item: itemData,
+          previousItem,
+          path: getItemPath(id)
+        });
+      } else {
+        debug('Component.emit not available, cannot emit change event');
+      }
+    } catch (error) {
+      console.error('[NavItems] Error handling click:', error);
     }
   });
 
@@ -243,6 +302,7 @@ export const withNavItems = (config: NavigationConfig) => (component: BaseCompon
   if (component.lifecycle) {
     const originalDestroy = component.lifecycle.destroy;
     component.lifecycle.destroy = () => {
+      debug('Destroying component, clearing items');
       items.clear();
       if (originalDestroy) {
         originalDestroy();
@@ -257,6 +317,7 @@ export const withNavItems = (config: NavigationConfig) => (component: BaseCompon
     addItem(itemConfig: NavItemConfig) {
       if (items.has(itemConfig.id)) return this;
 
+      debug('Adding item:', itemConfig.id);
       const item = createNavItem(itemConfig, component.element, prefix);
       storeItem(itemConfig, item);
 
@@ -277,6 +338,8 @@ export const withNavItems = (config: NavigationConfig) => (component: BaseCompon
       const item = items.get(id);
       if (!item) return this;
 
+      debug('Removing item:', id);
+      
       // Remove all nested items first
       const nestedItems = getAllNestedItems(item.element, prefix);
       nestedItems.forEach(nestedItem => {
@@ -310,6 +373,8 @@ export const withNavItems = (config: NavigationConfig) => (component: BaseCompon
       const item = items.get(id);
       if (!item || item.config.disabled) return this;
 
+      debug('Setting active item:', id);
+      
       if (activeItem) {
         updateActiveState(activeItem.element, activeItem, false);
       }
