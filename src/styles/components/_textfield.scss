@@ -547,6 +547,34 @@ $component: '#{base.$prefix}-textfield';
     }
   }
   
+   // Multiline styles
+  &--multiline {
+    .#{$component}-input {
+      min-height: 100px;
+      height: auto;
+      resize: vertical;
+      padding-top: 12px;
+    }
+    
+    &--filled {
+      .#{$component}-input {
+
+      }
+    }
+
+    &--outlined {
+      .#{$component}-input {
+
+      }
+    }
+
+
+    .#{$component}-label {
+      top: 24px;
+    }
+  }
+
+
   // Support for multiline inputs
   &-input[type="multiline"] {
     min-height: 100px;

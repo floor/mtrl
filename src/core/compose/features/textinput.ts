@@ -112,14 +112,14 @@ export interface TextInputComponent extends ElementComponent {
  */
 export const withTextInput = <T extends TextInputConfig>(config: T = {} as T) => 
   <C extends ElementComponent>(component: C): C & TextInputComponent => {
-    const input = document.createElement(config.multiline ? 'textarea' : 'input') as 
+    const isMultiline = config.multiline || config.type === 'multiline';
+    const input = document.createElement(isMultiline ? 'textarea' : 'input') as 
       HTMLInputElement | HTMLTextAreaElement;
     
     input.className = `${component.getClass('textfield')}-input`;
 
     // Set input attributes
     const attributes: Record<string, string | number | boolean | undefined> = {
-      type: config.multiline ? undefined : (config.type || 'text'),
       name: config.name,
       required: config.required,
       disabled: config.disabled,
@@ -128,6 +128,14 @@ export const withTextInput = <T extends TextInputConfig>(config: T = {} as T) =>
       autocomplete: config.autocomplete,
       value: config.value || ''
     };
+
+    // Only set type attribute for input elements, not for textarea
+    if (!isMultiline) {
+      attributes.type = config.type || 'text';
+    } else {
+      // For textarea, add a data attribute to identify it as multiline
+      attributes['data-type'] = 'multiline';
+    }
 
     Object.entries(attributes).forEach(([key, value]) => {
       if (value !== null && value !== undefined) {
@@ -187,6 +195,11 @@ export const withTextInput = <T extends TextInputConfig>(config: T = {} as T) =>
 
     // Initial state
     updateInputState();
+
+    // Add multiline class to the component if it's a textarea
+    if (isMultiline) {
+      component.element.classList.add(`${component.getClass('textfield')}--multiline`);
+    }
 
     component.element.appendChild(input);
 
