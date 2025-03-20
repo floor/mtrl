@@ -76,3 +76,4 @@ temp/
 # Documentation build output
 docs/api/
 docs/dist/
+demo/
