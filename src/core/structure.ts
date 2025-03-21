@@ -1,135 +1,92 @@
 // src/core/structure.ts
-import { isObject } from './utils/object';
 
 /**
- * Element creator function type
+ * Creates a DOM structure based on a structure definition
+ * @param definition Structure definition object
+ * @param parentElement Optional parent element to attach structure to
+ * @returns Object containing all created elements
  */
-export type ElementCreator = (options: any) => HTMLElement;
-
-/**
- * Options for a structure node
- */
-export interface StructureNodeOptions {
-  /** Unique name identifier for the node */
-  name: string;
-  /** Element creator function */
-  creator: ElementCreator;
-  /** Options to pass to the creator function */
-  options: Record<string, any>;
-  /** Nested children elements */
-  children?: Record<string, StructureNodeOptions>;
-}
-
-/**
- * Structure node with its created DOM element
- */
-export interface StructureNode {
-  /** Node name */
-  name: string;
-  /** DOM element */
-  element: HTMLElement;
-  /** Child structure nodes */
-  children: Record<string, StructureNode>;
-}
-
-/**
- * Creates DOM structure from a structure definition object
- * 
- * @param structure - Structure definition object
- * @param container - Optional container to append to
- * @returns Structure node with created DOM elements
- */
-export function createStructure(
-  structure: Record<string, StructureNodeOptions>,
-  container?: HTMLElement
-): Record<string, StructureNode> {
-  const result: Record<string, StructureNode> = {};
-  const fragment = document.createDocumentFragment();
+export function createStructure(definition, parentElement = null) {
+  const structure = {};
   
-  // Process each top level node
-  Object.entries(structure).forEach(([key, options]) => {
-    const node = createStructureNode(options);
-    result[key] = node;
-    fragment.appendChild(node.element);
-  });
-  
-  // Append to container if provided
-  if (container && fragment.hasChildNodes()) {
-    container.appendChild(fragment);
-  }
-  
-  return result;
-}
-
-/**
- * Creates a structure node and its children recursively
- * 
- * @param options - Node options
- * @returns Structure node with element and children
- */
-function createStructureNode(options: StructureNodeOptions): StructureNode {
-  // Create the element using the provided creator function
-  const element = options.creator(options.options);
-  
-  // Process children recursively
-  const children: Record<string, StructureNode> = {};
-  if (options.children) {
-    Object.entries(options.children).forEach(([childKey, childOptions]) => {
-      const childNode = createStructureNode(childOptions);
-      children[childKey] = childNode;
-      element.appendChild(childNode.element);
-    });
-  }
-  
-  return {
-    name: options.name,
-    element,
-    children
-  };
-}
-
-// src/core/structure.ts
-/**
- * Flattens a nested structure object into a single-level object
- * 
- * @param structure - Structure node
- * @returns Flattened structure with component elements
- */
-export function flattenStructure(
-  structure: Record<string, StructureNode>
-): Record<string, HTMLElement> {
-  const result: Record<string, HTMLElement> = {};
-  
-  function processNode(node: StructureNode, path: string[] = []) {
-    // Add this node to the result
-    const nodePath = path.length ? [...path, node.name].join('.') : node.name;
-    result[nodePath] = node.element;
+  // Handle case for root component creation
+  if (definition.element && !parentElement) {
+    // Extract the element definition
+    const elementDef = definition.element;
     
-    // Process children
-    Object.entries(node.children).forEach(([childKey, childNode]) => {
-      const newPath = path.length ? [...path, node.name] : [node.name];
-      processNode(childNode, newPath);
-    });
+    // Create the root element
+    const rootElement = elementDef.creator(elementDef.options);
+    structure.element = rootElement;
+    
+    // Add element to structure with its name
+    if (elementDef.name) {
+      structure[elementDef.name] = rootElement;
+    }
+    
+    // Process children of the root element
+    if (elementDef.children) {
+      Object.entries(elementDef.children).forEach(([key, childDef]) => {
+        // Create child structure and attach to root element
+        const childStructure = createStructure({ [key]: childDef }, rootElement);
+        // Merge child components into the structure
+        Object.assign(structure, childStructure);
+      });
+    }
+    
+    return structure;
   }
   
-  // Process each top-level node
-  Object.entries(structure).forEach(([key, node]) => {
-    processNode(node);
-  });
-  
-  // Add special entries for commonly accessed elements to make them available at top level
-  // This lets us access both 'container.track' and just 'track' as needed
-  Object.keys(result).forEach(key => {
-    if (key.includes('.')) {
-      const parts = key.split('.');
-      const simpleName = parts[parts.length - 1];
-      
-      // Only add if it doesn't already exist to avoid overriding top-level elements
-      if (!result[simpleName]) {
-        result[simpleName] = result[key];
-      }
+  // Normal case for non-root structures
+  for (const [key, def] of Object.entries(definition)) {
+    // Skip if no definition
+    if (!def) continue;
+    
+    // Create the element
+    const element = def.creator(def.options);
+    
+    // Attach to parent if provided
+    if (parentElement) {
+      parentElement.appendChild(element);
     }
-  });
+    
+    // Add element to structure with its key
+    structure[key] = element;
+    
+    // Add element to structure with its name if different from key
+    if (def.name && def.name !== key) {
+      structure[def.name] = element;
+    }
+    
+    // Process children recursively
+    if (def.children) {
+      const childStructure = createStructure(def.children, element);
+      Object.assign(structure, childStructure);
+    }
+  }
   
-  return result;
+  return structure;
+}
+
+/**
+ * Flattens a nested structure into a simple object with element references
+ * @param structure Structure object
+ * @returns Flattened structure with all elements
+ */
+export function flattenStructure(structure) {
+  const flattened = {};
+  
+  // Process each key in the structure
+  for (const [key, value] of Object.entries(structure)) {
+    // Skip functions and objects that aren't DOM elements
+    if (typeof value === 'function' || 
+        (typeof value === 'object' && 
+         !(value instanceof Element || value instanceof HTMLElement))) {
+      continue;
+    }
+    
+    // Add to flattened structure
+    flattened[key] = value;
+  }
+  
+  return flattened;
 }

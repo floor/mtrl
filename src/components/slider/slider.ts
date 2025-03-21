@@ -1,12 +1,12 @@
 // src/components/slider/slider.ts
 import { pipe } from '../../core/compose/pipe';
-import { createBase, withElement } from '../../core/compose/component';
+import { createBase } from '../../core/compose/component';
 import { withEvents, withLifecycle, withTextLabel, withIcon } from '../../core/compose/features';
 import { withStructure, withSlider } from './features';
 import { withStates } from './features/states';
 import { withAPI } from './api';
 import { SliderConfig, SliderComponent } from './types';
-import { createBaseConfig, getElementConfig, getApiConfig } from './config';
+import { createBaseConfig, getApiConfig } from './config';
 
 /**
  * Creates a new Slider component
@@ -18,13 +18,13 @@ const createSlider = (config: SliderConfig = {}): SliderComponent => {
 
   try {
     // Create the component with all required features
+    // Note: No more withElement as withStructure handles element creation
     const component = pipe(
       createBase,
       withEvents(),
-      withElement(getElementConfig(baseConfig)),
+      withStructure(baseConfig),  // Creates the element and internal structure
       withIcon(baseConfig),
       withTextLabel(baseConfig),
-      withStructure(baseConfig),
       withStates(baseConfig),
       withSlider(baseConfig),
       withLifecycle()

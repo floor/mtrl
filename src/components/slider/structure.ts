@@ -8,7 +8,7 @@ import { createElement } from '../../core/dom/create'
  * @param config Slider configuration
  * @returns Structure definition object
  */
-export function createSliderStructure (component, config) {
+export function createSliderStructure(component, config) {
   // Set default values
   const min = config.min || 0
   const max = config.max || 100
@@ -29,150 +29,140 @@ export function createSliderStructure (component, config) {
     ? ((secondValue - min) / (max - min)) * 100
     : null
 
-  // Define slider structure
-  const structureDefinition = {
-    container: {
-      name: 'container',
+  // Create container children structure
+  const containerChildren = {
+    // Track with segments
+    track: {
+      name: 'track',
       creator: createElement,
       options: {
         tag: 'div',
-        className: getClass('slider-container')
+        className: getClass('slider-track')
       },
       children: {
-        // Track with segments
-        track: {
-          name: 'track',
+        startTrack: {
+          name: 'startTrack',
           creator: createElement,
           options: {
             tag: 'div',
-            className: getClass('slider-track')
-          },
-          children: {
-            startTrack: {
-              name: 'startTrack',
-              creator: createElement,
-              options: {
-                tag: 'div',
-                className: getClass('slider-start-track'),
-                style: {
-                  width: isRangeSlider
-                    ? `${Math.min(valuePercent, secondValuePercent)}%`
-                    : '0%'
-                }
-              }
-            },
-            activeTrack: {
-              name: 'activeTrack',
-              creator: createElement,
-              options: {
-                tag: 'div',
-                className: getClass('slider-active-track'),
-                style: {
-                  width: isRangeSlider
-                    ? `${Math.abs(secondValuePercent - valuePercent)}%`
-                    : `${valuePercent}%`
-                }
-              }
-            },
-            remainingTrack: {
-              name: 'remainingTrack',
-              creator: createElement,
-              options: {
-                tag: 'div',
-                className: getClass('slider-remaining-track'),
-                style: {
-                  width: isRangeSlider
-                    ? `${100 - Math.max(valuePercent, secondValuePercent)}%`
-                    : `${100 - valuePercent}%`
-                }
-              }
+            className: getClass('slider-start-track'),
+            style: {
+              width: isRangeSlider
+                ? `${Math.min(valuePercent, secondValuePercent)}%`
+                : '0%'
             }
           }
         },
-
-        // Ticks container
-        ticksContainer: {
-          name: 'ticksContainer',
+        activeTrack: {
+          name: 'activeTrack',
           creator: createElement,
           options: {
             tag: 'div',
-            className: getClass('slider-ticks-container')
-          }
-        },
-
-        // Dots for ends if needed
-        startDot: {
-          name: 'startDot',
-          creator: createElement,
-          options: {
-            tag: 'div',
-            className: [
-              getClass('slider-dot'),
-              getClass('slider-dot--start')
-            ]
-          }
-        },
-        endDot: {
-          name: 'endDot',
-          creator: createElement,
-          options: {
-            tag: 'div',
-            className: [
-              getClass('slider-dot'),
-              getClass('slider-dot--end')
-            ]
-          }
-        },
-
-        // Main handle
-        handle: {
-          name: 'handle',
-          creator: createElement,
-          options: {
-            tag: 'div',
-            className: getClass('slider-handle'),
-            attrs: {
-              role: 'slider',
-              'aria-valuemin': String(min),
-              'aria-valuemax': String(max),
-              'aria-valuenow': String(value),
-              'aria-orientation': 'horizontal',
-              tabindex: isDisabled ? '-1' : '0',
-              'aria-disabled': isDisabled ? 'true' : 'false',
-              'data-value': String(value),
-              'data-handle-index': '0'
-            },
+            className: getClass('slider-active-track'),
             style: {
-              left: `${valuePercent}%`
+              width: isRangeSlider
+                ? `${Math.abs(secondValuePercent - valuePercent)}%`
+                : `${valuePercent}%`
             }
           }
         },
-
-        // Main value bubble
-        valueBubble: {
-          name: 'valueBubble',
+        remainingTrack: {
+          name: 'remainingTrack',
           creator: createElement,
           options: {
             tag: 'div',
-            className: getClass('slider-value'),
-            attrs: {
-              'aria-hidden': 'true',
-              'data-handle-index': '0'
-            },
-            text: formatter(value),
+            className: getClass('slider-remaining-track'),
             style: {
-              left: `${valuePercent}%`
+              width: isRangeSlider
+                ? `${100 - Math.max(valuePercent, secondValuePercent)}%`
+                : `${100 - valuePercent}%`
             }
           }
         }
       }
-    }
-  }
+    },
 
-  // Add second handle and bubble for range slider
+    // Ticks container
+    ticksContainer: {
+      name: 'ticksContainer',
+      creator: createElement,
+      options: {
+        tag: 'div',
+        className: getClass('slider-ticks-container')
+      }
+    },
+
+    // Dots for ends if needed
+    startDot: {
+      name: 'startDot',
+      creator: createElement,
+      options: {
+        tag: 'div',
+        className: [
+          getClass('slider-dot'),
+          getClass('slider-dot--start')
+        ]
+      }
+    },
+    endDot: {
+      name: 'endDot',
+      creator: createElement,
+      options: {
+        tag: 'div',
+        className: [
+          getClass('slider-dot'),
+          getClass('slider-dot--end')
+        ]
+      }
+    },
+
+    // Main handle
+    handle: {
+      name: 'handle',
+      creator: createElement,
+      options: {
+        tag: 'div',
+        className: getClass('slider-handle'),
+        attrs: {
+          role: 'slider',
+          'aria-valuemin': String(min),
+          'aria-valuemax': String(max),
+          'aria-valuenow': String(value),
+          'aria-orientation': 'horizontal',
+          tabindex: isDisabled ? '-1' : '0',
+          'aria-disabled': isDisabled ? 'true' : 'false',
+          'data-value': String(value),
+          'data-handle-index': '0'
+        },
+        style: {
+          left: `${valuePercent}%`
+        }
+      }
+    },
+
+    // Main value bubble
+    valueBubble: {
+      name: 'valueBubble',
+      creator: createElement,
+      options: {
+        tag: 'div',
+        className: getClass('slider-value'),
+        attrs: {
+          'aria-hidden': 'true',
+          'data-handle-index': '0'
+        },
+        text: formatter(value),
+        style: {
+          left: `${valuePercent}%`
+        }
+      }
+    }
+  };
+  
+  // Add range slider components if needed
   if (isRangeSlider) {
-    // Add second handle to structure
-    structureDefinition.container.children.secondHandle = {
+    // Add second handle
+    containerChildren.secondHandle = {
       name: 'secondHandle',
       creator: createElement,
       options: {
@@ -193,10 +183,10 @@ export function createSliderStructure (component, config) {
           left: `${secondValuePercent}%`
         }
       }
-    }
-
-    // Add second value bubble to structure
-    structureDefinition.container.children.secondValueBubble = {
+    };
+    
+    // Add second value bubble
+    containerChildren.secondValueBubble = {
       name: 'secondValueBubble',
       creator: createElement,
       options: {
@@ -211,41 +201,38 @@ export function createSliderStructure (component, config) {
           left: `${secondValuePercent}%`
         }
       }
-    }
+    };
   }
 
-  // Add tick marks if discrete mode is enabled
-  if (config.step && config.step > 0 && config.showTicks) {
-    const stepCount = Math.floor((max - min) / config.step)
-
-    for (let i = 0; i <= stepCount; i++) {
-      const tickValue = min + (i * config.step)
-      const tickPercent = ((tickValue - min) / (max - min)) * 100
-
-      // Don't add ticks at the extreme ends
-      if (tickPercent > 0 && tickPercent < 100) {
-        const tickName = `tick${i}`
-
-        structureDefinition.container.children.ticksContainer.children =
-          structureDefinition.container.children.ticksContainer.children || {}
-
-        structureDefinition.container.children.ticksContainer.children[tickName] = {
-          name: tickName,
+  // Define slider structure with root element
+  return {
+    element: {
+      name: 'element',
+      creator: createElement,
+      options: {
+        tag: 'div',
+        className: [
+          getClass('slider'),
+          config.class
+        ].filter(Boolean),
+        attrs: {
+          tabindex: '-1',
+          role: 'none',
+          'aria-disabled': isDisabled ? 'true' : 'false'
+        }
+      },
+      children: {
+        // Container with all slider elements
+        container: {
+          name: 'container',
           creator: createElement,
           options: {
             tag: 'div',
-            className: getClass('slider-tick'),
-            attrs: {
-              'data-value': String(tickValue)
-            },
-            style: {
-              left: `${tickPercent}%`
-            }
-          }
+            className: getClass('slider-container')
+          },
+          children: containerChildren
         }
       }
     }
-  }
-
-  return structureDefinition
+  };
 }

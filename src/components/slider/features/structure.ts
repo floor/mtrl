@@ -11,32 +11,32 @@ import { createSliderStructure } from '../structure';
  * @returns Component enhancer with DOM components
  */
 export const withStructure = (config: SliderConfig) => 
-  <C extends ElementComponent>(component: C): C & { components: Record<string, HTMLElement> } => {
-  
-  // Create structure definition
-  const structureDefinition = createSliderStructure(component, config);
+  <C extends Pick<ElementComponent, 'getClass'>>(baseComponent: C): C & { 
+    element: HTMLElement;
+    components: Record<string, HTMLElement>; 
+  } => {
   
   try {
-    // Create structure and get nodes
-    const structure = createStructure(structureDefinition, component.element);
+    // Create structure definition (including root element)
+    const structureDefinition = createSliderStructure(baseComponent, config);
+    
+    // Create structure with no parent (it creates its own root)
+    const structure = createStructure(structureDefinition);
     
     // Flatten structure for easier access to components
     const components = flattenStructure(structure);
     
-    // Add component base class and accessibility attributes
-    component.element.classList.add(component.getClass('slider'));
-    component.element.setAttribute('tabindex', '-1');
-    component.element.setAttribute('role', 'none');
-    component.element.setAttribute('aria-disabled', config.disabled ? 'true' : 'false');
+    // Create component with the root element from our structure
+    const component = {
+      ...baseComponent,
+      element: components.element,
+      components
+    };
     
     // Apply style classes
     applyStyleClasses(component, config);
     
-    // Return enhanced component with components
-    return {
-      ...component,
-      components
-    };
+    return component;
   } catch (error) {
     console.error('Failed to create slider structure:', error);
     throw new Error(`Failed to create slider: ${error.message}`);
