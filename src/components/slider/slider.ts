@@ -2,11 +2,10 @@
 import { pipe } from '../../core/compose/pipe';
 import { createBase } from '../../core/compose/component';
 import { withEvents, withLifecycle } from '../../core/compose/features';
+import { withIcon, withLabel } from '../../core/composition/features';
 import { 
   withStructure, 
   withRange,
-  withLabel,
-  withIcon,
   withDom,
   withStates, 
   withController 
@@ -44,10 +43,10 @@ const createSlider = (config: SliderConfig = {}): SliderComponent => {
       // Define structure first (purely declarative, no DOM created yet)
       withStructure(baseConfig),
       
-      // Enhance structure with optional features
-      withRange(baseConfig),
-      withLabel(baseConfig),
+      // Enhance structure with optional features - uses core/composition features
       withIcon(baseConfig),
+      withLabel(baseConfig),
+      withRange(baseConfig),
       
       // Now create the actual DOM elements from the complete structure
       withDom(),
