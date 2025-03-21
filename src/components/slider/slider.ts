@@ -1,42 +1,70 @@
 // src/components/slider/slider.ts
 import { pipe } from '../../core/compose/pipe';
 import { createBase } from '../../core/compose/component';
-import { withEvents, withLifecycle, withTextLabel, withIcon } from '../../core/compose/features';
-import { withStructure, withSlider } from './features';
-import { withStates } from './features/states';
+import { withEvents, withLifecycle } from '../../core/compose/features';
+import { 
+  withStructure, 
+  withRange,
+  withLabel,
+  withIcon,
+  withDom,
+  withStates, 
+  withController 
+} from './features';
 import { withAPI } from './api';
 import { SliderConfig, SliderComponent } from './types';
 import { createBaseConfig, getApiConfig } from './config';
 
 /**
  * Creates a new Slider component
+ * 
+ * Slider follows a clear architectural pattern:
+ * 1. Structure definition - Describes the DOM structure declaratively
+ * 2. Feature enhancement - Adds specific capabilities (range, icons, labels)
+ * 3. DOM creation - Turns the structure into actual DOM elements
+ * 4. State management - Handles visual states and appearance
+ * 5. Controller - Manages behavior, events, and UI rendering
+ * 6. Lifecycle - Handles component lifecycle events
+ * 7. Public API - Exposes a clean, consistent API
+ *
  * @param {SliderConfig} config - Slider configuration object
  * @returns {SliderComponent} Slider component instance
  */
 const createSlider = (config: SliderConfig = {}): SliderComponent => {
+  // Process configuration with defaults
   const baseConfig = createBaseConfig(config);
 
   try {
-    // Create the component with all required features
-    // Note: No more withElement as withStructure handles element creation
+    // Create the component by composing features in a specific order
     const component = pipe(
+      // Base component with event system
       createBase,
       withEvents(),
-      withStructure(baseConfig),  // Creates the element and internal structure
+      
+      // Define structure first (purely declarative, no DOM created yet)
+      withStructure(baseConfig),
+      
+      // Enhance structure with optional features
+      withRange(baseConfig),
+      withLabel(baseConfig),
       withIcon(baseConfig),
-      withTextLabel(baseConfig),
+      
+      // Now create the actual DOM elements from the complete structure
+      withDom(),
+      
+      // Add state management and behavior
       withStates(baseConfig),
-      withSlider(baseConfig),
+      withController(baseConfig),
       withLifecycle()
     )(baseConfig);
     
-    // Generate the API configuration
+    // Generate the API configuration based on the enhanced component
     const apiOptions = getApiConfig(component);
     
-    // Apply the API layer
+    // Apply the public API layer
     const slider = withAPI(apiOptions)(component);
 
-    // Register event handlers from config
+    // Register event handlers from config for convenience
     if (baseConfig.on && typeof slider.on === 'function') {
       Object.entries(baseConfig.on).forEach(([event, handler]) => {
         if (typeof handler === 'function') {

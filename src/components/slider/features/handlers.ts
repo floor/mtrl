@@ -7,11 +7,11 @@ import { SliderConfig, SliderEvent } from '../types';
  * 
  * @param config Slider configuration
  * @param state Slider state object
- * @param uiHelpers UI helper methods
+ * @param uiRenderer UI renderer interface from controller
  * @param eventHelpers Event helper methods
  * @returns Event handlers for all slider interactions
  */
-export const createHandlers = (config: SliderConfig, state, uiHelpers, eventHelpers) => {
+export const createHandlers = (config: SliderConfig, state, uiRenderer, eventHelpers) => {
   // Get required elements from structure (with fallbacks)
   const components = state.component?.components || {};
   
@@ -31,8 +31,8 @@ export const createHandlers = (config: SliderConfig, state, uiHelpers, eventHelp
     roundToStep = value => value,
     clamp = (value, min, max) => value,
     showValueBubble = () => {},
-    updateUi = () => {}
-  } = uiHelpers;
+    render = () => {}
+  } = uiRenderer;
   
   const { triggerEvent = () => ({ defaultPrevented: false }) } = eventHelpers;
   
@@ -130,7 +130,7 @@ export const createHandlers = (config: SliderConfig, state, uiHelpers, eventHelp
     document.addEventListener('touchmove', handleMouseMove, { passive: false });
     document.addEventListener('touchend', handleMouseUp);
     
-    updateUi();
+    render();
     triggerEvent(SLIDER_EVENTS.START, e);
   };
   
@@ -172,7 +172,7 @@ export const createHandlers = (config: SliderConfig, state, uiHelpers, eventHelp
       }
       
       // Update UI and trigger events
-      updateUi();
+      render();
       triggerEvent(SLIDER_EVENTS.INPUT, e);
       triggerEvent(SLIDER_EVENTS.CHANGE, e);
     } catch (error) {
@@ -247,7 +247,7 @@ export const createHandlers = (config: SliderConfig, state, uiHelpers, eventHelp
         state.value = newValue;
       }
       
-      updateUi();
+      render();
       triggerEvent(SLIDER_EVENTS.INPUT, e);
     } catch (error) {
       console.warn('Error during slider drag:', error);
@@ -277,7 +277,7 @@ export const createHandlers = (config: SliderConfig, state, uiHelpers, eventHelp
     
     // Reset active handle and update UI
     state.activeHandle = null;
-    updateUi();
+    render();
     
     // Trigger events
     triggerEvent(SLIDER_EVENTS.CHANGE, e);
@@ -358,7 +358,7 @@ export const createHandlers = (config: SliderConfig, state, uiHelpers, eventHelp
     }
     
     // Update UI and trigger events
-    updateUi();
+    render();
     triggerEvent(SLIDER_EVENTS.INPUT, e);
     triggerEvent(SLIDER_EVENTS.CHANGE, e);
   };
@@ -495,4 +495,4 @@ export const createHandlers = (config: SliderConfig, state, uiHelpers, eventHelp
     hideAllBubbles,
     clearKeyboardFocus
   };
-};
+}

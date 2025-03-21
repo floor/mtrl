@@ -1,4 +1,5 @@
 // src/core/structure.ts
+import { createElement } from './dom/create';
 
 /**
  * Creates a DOM structure based on a structure definition
@@ -15,7 +16,9 @@ export function createStructure(definition, parentElement = null) {
     const elementDef = definition.element;
     
     // Create the root element
-    const rootElement = elementDef.creator(elementDef.options);
+    // If creator is missing, default to createElement
+    const createElementFn = elementDef.creator || createElement;
+    const rootElement = createElementFn(elementDef.options);
     structure.element = rootElement;
     
     // Add element to structure with its name
@@ -41,8 +44,9 @@ export function createStructure(definition, parentElement = null) {
     // Skip if no definition
     if (!def) continue;
     
-    // Create the element
-    const element = def.creator(def.options);
+    // Create the element - use default createElement if no creator is provided
+    const createElementFn = def.creator || createElement;
+    const element = createElementFn(def.options);
     
     // Attach to parent if provided
     if (parentElement) {
