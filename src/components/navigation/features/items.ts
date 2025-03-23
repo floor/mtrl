@@ -134,22 +134,18 @@ export const withNavItems = (config: NavigationConfig) => (component: BaseCompon
     });
   }
 
-  // Set up enhanced event handling
+  // Set up enhanced event handling for mouse events
   if (component.emit) {
-    debug('Setting up event handlers for component');
-    
+    debug('Setting up mouseover event handlers for component');
+
     // Mouse over event handler
     component.element.addEventListener('mouseover', (event: MouseEvent) => {
       // Find the closest item with data-id
       const target = event.target as HTMLElement;
       const item = target.closest(`[data-id]`) as HTMLElement;
-      
       if (item) {
         const id = item.dataset.id;
         if (id) {
-          debug('Mouseover on item:', id);
-          
-          // Emit mouseover event with necessary data
           component.emit('mouseover', {
             id,
             clientX: event.clientX,
@@ -190,113 +186,7 @@ export const withNavItems = (config: NavigationConfig) => (component: BaseCompon
     });
   }
 
-  // Handle item clicks with improved error handling
-  component.element.addEventListener('click', (event: Event) => {
-    try {
-      const target = event.target as HTMLElement;
-      const item = target.closest(`.${prefix}-${NavClass.ITEM}`) as HTMLElement;
-      if (!item || (item as any).disabled) return;
-      
-      // Get the ID from the data attribute
-      const id = item.dataset.id;
-      if (!id) return;
-      
-      debug('Item clicked:', id);
-      
-      const itemData = items.get(id);
-      if (!itemData) return;
-      
-      // Special handling for expandable items
-      const isExpandable = item.getAttribute('aria-expanded') !== null;
-      if (isExpandable) {
-        debug('Expandable item clicked');
-        
-        // Toggle expanded state directly
-        const isExpanded = item.getAttribute('aria-expanded') === 'true';
-        item.setAttribute('aria-expanded', (!isExpanded).toString());
-        
-        // Find and toggle nested container
-        const container = item.closest(`.${prefix}-${NavClass.ITEM_CONTAINER}`);
-        if (container) {
-          const nestedContainer = container.querySelector(`.${prefix}-${NavClass.NESTED_CONTAINER}`);
-          if (nestedContainer) {
-            nestedContainer.hidden = isExpanded;
-          }
-        }
-        
-        // For expandable items, we still emit a change event
-        if (component.emit) {
-          debug('Emitting change event for expandable item:', id);
-          component.emit('change', {
-            id,
-            item: itemData,
-            previousItem: activeItem,
-            path: getItemPath(id),
-            isExpandable: true,
-            expanded: !isExpanded
-          });
-        }
-        
-        return;
-      }
-      
-      // For regular items, update active state and emit change
-      const previousItem = activeItem;
-      
-      if (activeItem && activeItem !== itemData) {
-        updateActiveState(activeItem.element, activeItem, false);
-      }
-      
-      updateActiveState(item, itemData, true);
-      activeItem = itemData;
-      
-      // Emit change event for regular items
-      if (component.emit) {
-        debug('Emitting change event for item:', id);
-        component.emit('change', {
-          id,
-          item: itemData,
-          previousItem,
-          path: getItemPath(id)
-        });
-      } else {
-        debug('Component.emit not available, cannot emit change event');
-      }
-    } catch (error) {
-      console.error('[NavItems] Error handling click:', error);
-    }
-  });
-
-  /**
-   * Gets the path to an item (parent IDs)
-   * @param {string} id - Item ID to get path for
-   * @returns {Array<string>} Array of parent item IDs
-   */
-  const getItemPath = (id: string): string[] => {
-    const path: string[] = [];
-    let currentItem = items.get(id);
-
-    if (!currentItem) return path;
-
-    let parentContainer = currentItem.element.closest(`.${prefix}-${NavClass.NESTED_CONTAINER}`);
-    while (parentContainer) {
-      const parentItemContainer = parentContainer.parentElement;
-      if (!parentItemContainer) break;
-
-      const parentItem = parentItemContainer.querySelector(`.${prefix}-${NavClass.ITEM}`);
-      if (!parentItem) break;
-
-      const parentId = parentItem.getAttribute('data-id');
-      if (!parentId) break;
-
-      path.unshift(parentId);
-      
-      // Move up to next level
-      parentContainer = parentItemContainer.closest(`.${prefix}-${NavClass.NESTED_CONTAINER}`);
-    }
-
-    return path;
-  };
+  // Note: Click event handlers are removed since we'll use event delegation in the navigation component
 
   // Clean up when component is destroyed
   if (component.lifecycle) {
@@ -309,6 +199,90 @@ export const withNavItems = (config: NavigationConfig) => (component: BaseCompon
       }
     };
   }
+
+/**
+ * Gets the path to an item (parent IDs and the item's own ID)
+ * @param {string} id - Item ID to get path for
+ * @returns {Array<string>} Array of parent item IDs including the item's own ID
+ */
+const getItemPath = (id: string): string[] => {
+  // Always include the item's own ID in the path
+  const path: string[] = [id];
+  const currentItem = items.get(id);
+  
+  console.log('getItemPath', id);
+  if (!currentItem) {
+    console.log('Item not found');
+    return path; // Still return [id] even if item not found in map
+  }
+  
+  // First, find the item container that contains this element
+  const itemContainer = currentItem.element.closest(`.${prefix}-${NavClass.ITEM_CONTAINER}`);
+  if (!itemContainer) {
+    console.log('No item container found');
+    return path;
+  }
+  
+  // Then find the parent element of the item container
+  const parentElement = itemContainer.parentElement;
+  console.log('Parent element:', parentElement);
+  
+  // If parent element is not a nested container, this is a root-level item
+  // Just return the item's own ID
+  if (!parentElement || !parentElement.classList.contains(`${prefix}-${NavClass.NESTED_CONTAINER}`)) {
+    console.log('Item is at root level - path contains only self ID:', path);
+    return path;
+  }
+  
+  // We're dealing with a nested item - find its ancestors
+  let currentNestedContainer = parentElement;
+  
+  while (currentNestedContainer) {
+    // Find the parent item container
+    const parentItemContainer = currentNestedContainer.parentElement;
+    console.log('Parent item container:', parentItemContainer);
+    
+    if (!parentItemContainer || !parentItemContainer.classList.contains(`${prefix}-${NavClass.ITEM_CONTAINER}`)) {
+      console.log('No valid parent item container found');
+      break;
+    }
+    
+    // Find the parent item button/element
+    const parentItem = parentItemContainer.querySelector(`.${prefix}-${NavClass.ITEM}[data-id]`);
+    console.log('Parent item:', parentItem);
+    
+    if (!parentItem) {
+      console.log('No parent item element found');
+      break;
+    }
+    
+    const parentId = parentItem.getAttribute('data-id');
+    console.log('Parent ID:', parentId);
+    
+    if (!parentId) {
+      console.log('No parent ID attribute found');
+      break;
+    }
+    
+    // Add to the beginning of path (since we're going up the tree)
+    // This puts ancestors before the item's own ID
+    path.unshift(parentId);
+    console.log('Current path:', path);
+    
+    // Move up to the next level - find the container of this parent's container
+    const grandparentElement = parentItemContainer.parentElement;
+    
+    if (!grandparentElement || !grandparentElement.classList.contains(`${prefix}-${NavClass.NESTED_CONTAINER}`)) {
+      console.log('Reached top level, no more ancestors');
+      break;
+    }
+    
+    currentNestedContainer = grandparentElement;
+  }
+  
+  console.log('Final path (including self):', path);
+  return path;
+};
 
   return {
     ...component,

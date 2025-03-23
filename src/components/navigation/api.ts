@@ -1,107 +1,163 @@
-// src/components/button/api.ts
-import { ButtonComponent } from './types';
-
-interface ApiOptions {
-  disabled: {
-    enable: () => void;
-    disable: () => void;
-  };
-  lifecycle: {
-    destroy: () => void;
-  };
-}
-
-interface ComponentWithElements {
-  element: HTMLElement;
-  text: {
-    setText: (content: string) => any;
-    getText: () => string;
-    getElement: () => HTMLElement | null;
-  };
-  icon: {
-    setIcon: (html: string) => any;
-    getIcon: () => string;
-    getElement: () => HTMLElement | null;
-  };
-  getClass: (name: string) => string;
-}
+// src/components/navigation/api.ts
+import { NavigationComponent, NavItemConfig, NavItemData, BaseComponent, ApiOptions } from './types';
 
 /**
- * Enhances a button component with API methods
+ * Enhances a component with navigation-specific API methods
  * @param {ApiOptions} options - API configuration options
  * @returns {Function} Higher-order function that adds API methods to component
- * @internal This is an internal utility for the Button component
  */
-export const withAPI = ({ disabled, lifecycle }: ApiOptions) => 
-  (component: ComponentWithElements): ButtonComponent => ({
-    ...component as any,
-    element: component.element as HTMLButtonElement,
-    
-    getValue: () => component.element.value,
-    
-    setValue(value: string) {
-      component.element.value = value;
-      return this;
-    },
-    
-    enable() {
-      disabled.enable();
-      return this;
-    },
-    
-    disable() {
-      disabled.disable();
-      return this;
-    },
-    
-    setText(content: string) {
-      component.text.setText(content);
-      this.updateCircularStyle();
+export const withAPI = (options: ApiOptions) => 
+  (component: BaseComponent): NavigationComponent => {
+    const navComponent = {
+      ...component,
+      element: component.element,
+      items: component.items || new Map(),
       
-      // If removing text from a button with an icon, ensure it has an accessible name
-      if (!content && component.icon.getElement()) {
-        if (!this.element.getAttribute('aria-label')) {
-          const className = this.element.className.split(' ')
-            .find(cls => !cls.startsWith(`${component.getClass('button')}`));
-          
-          if (className) {
-            this.element.setAttribute('aria-label', className);
+      // Basic item operations
+      addItem(config: NavItemConfig): NavigationComponent {
+        if (typeof component.addItem === 'function') {
+          component.addItem(config);
+        } else {
+          console.warn('addItem method not available');
+        }
+        return this;
+      },
+      
+      removeItem(id: string): NavigationComponent {
+        if (typeof component.removeItem === 'function') {
+          component.removeItem(id);
+        } else {
+          console.warn('removeItem method not available');
+        }
+        return this;
+      },
+      
+      getItem(id: string): NavItemData | undefined {
+        if (typeof component.getItem === 'function') {
+          return component.getItem(id);
+        }
+        return this.items.get(id);
+      },
+      
+      getAllItems(): NavItemData[] {
+        if (typeof component.getAllItems === 'function') {
+          return component.getAllItems();
+        }
+        return Array.from(this.items.values());
+      },
+      
+      // Path and active item management
+      getActive(): NavItemData | null {
+        if (typeof component.getActive === 'function') {
+          return component.getActive();
+        }
+        return null;
+      },
+      
+      getItemPath(id: string): string[] {
+        if (typeof component.getItemPath === 'function') {
+          return component.getItemPath(id);
+        }
+        return [];
+      },
+      
+      setActive(id: string): NavigationComponent {
+        // Use the controller if available for consistent handling
+        if (typeof component.handleItemClick === 'function') {
+          component.handleItemClick(id);
+        } else if (typeof component.setActive === 'function') {
+          component.setActive(id);
+        } else {
+          // Fallback if setActive is not available
+          const item = this.items.get(id);
+          if (item && item.element) {
+            // Emit a change event to propagate the state change
+            if (component.emit) {
+              component.emit('change', {
+                id,
+                item,
+                source: 'api'
+              });
+            }
           }
         }
-      }
+        return this;
+      },
       
-      return this;
-    },
-    
-    getText() {
-      return component.text.getText();
-    },
-    
-    setIcon(icon: string) {
-      component.icon.setIcon(icon);
-      this.updateCircularStyle();
-      return this;
-    },
-    
-    getIcon() {
-      return component.icon.getIcon();
-    },
-    
-    setAriaLabel(label: string) {
-      component.element.setAttribute('aria-label', label);
-      return this;
-    },
-    
-    destroy() {
-      lifecycle.destroy();
-    },
-    
-    updateCircularStyle() {
-      const hasText = component.text.getText();
-      if (!hasText && component.icon.getElement()) {
-        component.element.classList.add(`${component.getClass('button')}--circular`);
-      } else {
-        component.element.classList.remove(`${component.getClass('button')}--circular`);
+      // Navigation state management
+      enable(): NavigationComponent {
+        if (options.disabled.enable) {
+          options.disabled.enable();
+        }
+        return this;
+      },
+      
+      disable(): NavigationComponent {
+        if (options.disabled.disable) {
+          options.disabled.disable();
+        }
+        return this;
+      },
+      
+      expand(): NavigationComponent {
+        this.element.classList.remove(`${this.element.className.split(' ')[0]}--hidden`);
+        this.element.setAttribute('aria-hidden', 'false');
+        
+        if (component.emit) {
+          component.emit('expanded', { source: 'api' });
+        }
+        return this;
+      },
+      
+      collapse(): NavigationComponent {
+        this.element.classList.add(`${this.element.className.split(' ')[0]}--hidden`);
+        this.element.setAttribute('aria-hidden', 'true');
+        
+        if (component.emit) {
+          component.emit('collapsed', { source: 'api' });
+        }
+        return this;
+      },
+      
+      isExpanded(): boolean {
+        return !this.element.classList.contains(`${this.element.className.split(' ')[0]}--hidden`);
+      },
+      
+      toggle(): NavigationComponent {
+        return this.isExpanded() ? this.collapse() : this.expand();
+      },
+      
+      // Event handling (delegate to component's event system)
+      on(event: string, handler: Function): NavigationComponent {
+        if (typeof component.on === 'function') {
+          console.log(`API wrapper registering handler for ${event} - WILL forward to inner component`);
+          component.on(event, (...args) => {
+            console.log(`Inner component event ${event} forwarded to outer handler`);
+            handler(...args);
+          });
+        } else {
+          console.warn(`Unable to register handler for ${event} (no event system available)`);
+        }
+        return this;
+      },
+      
+      off(event: string, handler: Function): NavigationComponent {
+        if (typeof component.off === 'function') {
+          component.off(event, handler);
+        }
+        return this;
+      },
+      
+      // Destruction
+      destroy(): void {
+        if (options.lifecycle.destroy) {
+          options.lifecycle.destroy();
+        }
       }
-    }
-  });
+    };
+    
+    // Return the enhanced component
+    return navComponent;
+  };
+
+export default withAPI;

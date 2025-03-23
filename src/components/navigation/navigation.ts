@@ -10,6 +10,7 @@ import {
 } from '../../core/compose/features';
 import { withAPI } from './api';
 import { withNavItems } from './features/items';
+import { withController } from './features/controller';
 import { NavigationConfig, NavigationComponent, NavVariant } from './types';
 import { 
   createBaseConfig, 
@@ -64,19 +65,36 @@ const setupAccessibility = (nav: NavigationComponent, config: NavigationConfig):
  */
 const createNavigation = (config: NavigationConfig = {}): NavigationComponent => {
   const baseConfig = createBaseConfig(config);
+  
+  // Add debug flag to help with troubleshooting
+  const debug = baseConfig.debug || false;
+  
+  if (debug) {
+    console.log('[Navigation] Creating navigation component with config:', baseConfig);
+  }
 
   try {
     const navigation = pipe(
       createBase,
-      // First add events system
-      withEvents(),
+      // First add events system - MUST be before other features that use events
+      base => {
+        console.log('Setting up event system');
+        return withEvents()(base);
+      },
+
       // Then add the element and other features
       withElement(getElementConfig(baseConfig)),
+      // Add core features
       withVariant(baseConfig),
       withPosition(baseConfig),
+      // Add navigation-specific features
       withNavItems(baseConfig),
+      // Add controller for event delegation AFTER items are set up
+      withController(baseConfig),
+      // Add standard component features
       withDisabled(baseConfig),
       withLifecycle(),
+      // Finally add the API - this must be last to include all features
       comp => withAPI(getApiConfig(comp))(comp)
     )(baseConfig);
 
@@ -89,10 +107,34 @@ const createNavigation = (config: NavigationConfig = {}): NavigationComponent =>
     if (baseConfig.disabled) {
       nav.disable();
     }
+    
+    // Set component variant property for component identification
+    nav.variant = baseConfig.variant;
+    
+    // Add explicit component identifier for debugging
+    nav.element.dataset.componentType = 'navigation';
+    if (baseConfig.variant) {
+      nav.element.dataset.variant = baseConfig.variant;
+    }
+    
+    if (debug) {
+      console.log('[Navigation] Component created successfully:', nav);
+      
+      // Test event emission/reception
+      setTimeout(() => {
+        console.log('[Navigation] Testing event system...');
+        if (nav.emit) {
+          nav.emit('test', { source: 'initialization' });
+          console.log('[Navigation] Test event emitted');
+        } else {
+          console.log('[Navigation] Event emitter not available');
+        }
+      }, 0);
+    }
 
     return nav;
   } catch (error) {
-    console.error('Navigation creation error:', error instanceof Error ? error.message : String(error));
+    console.error('[Navigation] Creation error:', error instanceof Error ? error.message : String(error));
     throw new Error(`Failed to create navigation: ${error instanceof Error ? error.message : String(error)}`);
   }
 };

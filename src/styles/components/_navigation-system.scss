@@ -1,0 +1,149 @@
+// src/components/navigation/system.scss
+
+// Navigation system specific styles
+// These complement the existing navigation component styles
+
+$nav-animation-duration: 0.2s;
+$nav-animation-function: cubic-bezier(0.4, 0, 0.2, 1);
+
+// Drawer animation states
+.mtrl-nav--drawer {
+  transition: transform $nav-animation-duration $nav-animation-function,
+              opacity $nav-animation-duration $nav-animation-function;
+  
+  // Hidden state (transform off-screen)
+  &.mtrl-nav--hidden {
+    transform: translateX(-100%);
+    opacity: 0;
+    pointer-events: none;
+  }
+  
+  // Right positioned drawer
+  &.mtrl-nav--right {
+    &.mtrl-nav--hidden {
+      transform: translateX(100%);
+    }
+  }
+  
+  // Animation classes
+  &.mtrl-nav--animate-in {
+    animation: nav-drawer-in $nav-animation-duration $nav-animation-function;
+  }
+  
+  &.mtrl-nav--animate-out {
+    animation: nav-drawer-out $nav-animation-duration $nav-animation-function;
+  }
+}
+
+// Navigation system container (optional - for wrapping rail + drawer)
+.mtrl-nav-system {
+  display: flex;
+  position: relative;
+  
+  // Rail is fixed width
+  .mtrl-nav--rail {
+    flex: 0 0 auto;
+  }
+  
+  // Drawer expands
+  .mtrl-nav--drawer {
+    flex: 1 0 auto;
+  }
+}
+
+// Drawer entry animation
+@keyframes nav-drawer-in {
+  0% {
+    transform: translateX(-20px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+// Drawer exit animation
+@keyframes nav-drawer-out {
+  0% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-20px);
+    opacity: 0;
+  }
+}
+
+// Right-side drawer animations
+.mtrl-nav--drawer.mtrl-nav--right {
+  &.mtrl-nav--animate-in {
+    animation: nav-drawer-right-in $nav-animation-duration $nav-animation-function;
+  }
+  
+  &.mtrl-nav--animate-out {
+    animation: nav-drawer-right-out $nav-animation-duration $nav-animation-function;
+  }
+}
+
+@keyframes nav-drawer-right-in {
+  0% {
+    transform: translateX(20px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes nav-drawer-right-out {
+  0% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(20px);
+    opacity: 0;
+  }
+}
+
+// Mobile optimizations
+@media (max-width: 960px) {
+  .mtrl-nav-system {
+    flex-direction: column;
+    
+    .mtrl-nav--rail {
+      // Mobile rail can be top or bottom
+      &.mtrl-nav--top, &.mtrl-nav--bottom {
+        width: 100%;
+      }
+    }
+    
+    .mtrl-nav--drawer {
+      // Mobile drawer takes full width
+      width: 100%;
+      max-width: 100%;
+      
+      &.mtrl-nav--hidden {
+        transform: translateY(-100%);
+      }
+      
+      &.mtrl-nav--bottom {
+        &.mtrl-nav--hidden {
+          transform: translateY(100%);
+        }
+      }
+    }
+  }
+}
+
+// Focus and accessibility enhancements
+.mtrl-nav-system {
+  [role="navigation"] {
+    &:focus-within {
+      outline: 2px solid var(--mtrl-primary-color, #6200ee);
+      outline-offset: -2px;
+    }
+  }
+}
