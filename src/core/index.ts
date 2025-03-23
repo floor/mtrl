@@ -11,7 +11,7 @@ export type {
   ComponentConfig, 
   ThemedComponentConfig, 
   VariantComponentConfig, 
-  StateComponentConfig 
+  StateComponentConfig
 } from './config';
 
 // Build

@@ -8,6 +8,7 @@ import { NavigationComponent, NavItemConfig, NavItemData, BaseComponent, ApiOpti
  */
 export const withAPI = (options: ApiOptions) => 
   (component: BaseComponent): NavigationComponent => {
+    
     const navComponent = {
       ...component,
       element: component.element,
@@ -17,8 +18,6 @@ export const withAPI = (options: ApiOptions) =>
       addItem(config: NavItemConfig): NavigationComponent {
         if (typeof component.addItem === 'function') {
           component.addItem(config);
-        } else {
-          console.warn('addItem method not available');
         }
         return this;
       },
@@ -26,8 +25,6 @@ export const withAPI = (options: ApiOptions) =>
       removeItem(id: string): NavigationComponent {
         if (typeof component.removeItem === 'function') {
           component.removeItem(id);
-        } else {
-          console.warn('removeItem method not available');
         }
         return this;
       },
@@ -126,27 +123,9 @@ export const withAPI = (options: ApiOptions) =>
       toggle(): NavigationComponent {
         return this.isExpanded() ? this.collapse() : this.expand();
       },
-      
-      // Event handling (delegate to component's event system)
-      on(event: string, handler: Function): NavigationComponent {
-        if (typeof component.on === 'function') {
-          console.log(`API wrapper registering handler for ${event} - WILL forward to inner component`);
-          component.on(event, (...args) => {
-            console.log(`Inner component event ${event} forwarded to outer handler`);
-            handler(...args);
-          });
-        } else {
-          console.warn(`Unable to register handler for ${event} (no event system available)`);
-        }
-        return this;
-      },
-      
-      off(event: string, handler: Function): NavigationComponent {
-        if (typeof component.off === 'function') {
-          component.off(event, handler);
-        }
-        return this;
-      },
+      // on: component.on,
+      // off: component.off,
+      // emit: component.emit,
       
       // Destruction
       destroy(): void {

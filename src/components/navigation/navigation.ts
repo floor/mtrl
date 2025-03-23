@@ -65,23 +65,12 @@ const setupAccessibility = (nav: NavigationComponent, config: NavigationConfig):
  */
 const createNavigation = (config: NavigationConfig = {}): NavigationComponent => {
   const baseConfig = createBaseConfig(config);
-  
-  // Add debug flag to help with troubleshooting
-  const debug = baseConfig.debug || false;
-  
-  if (debug) {
-    console.log('[Navigation] Creating navigation component with config:', baseConfig);
-  }
 
   try {
     const navigation = pipe(
       createBase,
       // First add events system - MUST be before other features that use events
-      base => {
-        console.log('Setting up event system');
-        return withEvents()(base);
-      },
-
+      withEvents(),
       // Then add the element and other features
       withElement(getElementConfig(baseConfig)),
       // Add core features
@@ -116,25 +105,9 @@ const createNavigation = (config: NavigationConfig = {}): NavigationComponent =>
     if (baseConfig.variant) {
       nav.element.dataset.variant = baseConfig.variant;
     }
-    
-    if (debug) {
-      console.log('[Navigation] Component created successfully:', nav);
-      
-      // Test event emission/reception
-      setTimeout(() => {
-        console.log('[Navigation] Testing event system...');
-        if (nav.emit) {
-          nav.emit('test', { source: 'initialization' });
-          console.log('[Navigation] Test event emitted');
-        } else {
-          console.log('[Navigation] Event emitter not available');
-        }
-      }, 0);
-    }
 
     return nav;
   } catch (error) {
-    console.error('[Navigation] Creation error:', error instanceof Error ? error.message : String(error));
     throw new Error(`Failed to create navigation: ${error instanceof Error ? error.message : String(error)}`);
   }
 };

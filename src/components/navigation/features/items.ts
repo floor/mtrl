@@ -55,13 +55,6 @@ export const withNavItems = (config: NavigationConfig) => (component: BaseCompon
   const items = new Map<string, NavItemData>();
   let activeItem: NavItemData | null = null;
   const prefix = config.prefix || 'mtrl';
-  
-  // Debug logging
-  const debug = (...args: any[]) => {
-    if (config.debug) {
-      console.log('[NavItems]', ...args);
-    }
-  };
 
   /**
    * Recursively stores items in the items Map
@@ -136,8 +129,6 @@ export const withNavItems = (config: NavigationConfig) => (component: BaseCompon
 
   // Set up enhanced event handling for mouse events
   if (component.emit) {
-    debug('Setting up mouseover event handlers for component');
-
     // Mouse over event handler
     component.element.addEventListener('mouseover', (event: MouseEvent) => {
       // Find the closest item with data-id
@@ -160,7 +151,6 @@ export const withNavItems = (config: NavigationConfig) => (component: BaseCompon
     // Mouse enter event
     component.element.addEventListener('mouseenter', (event: MouseEvent) => {
       const componentId = component.element.dataset.id || component.componentName || 'nav';
-      debug('Mouseenter on component:', componentId);
       
       component.emit('mouseenter', {
         clientX: event.clientX,
@@ -175,8 +165,6 @@ export const withNavItems = (config: NavigationConfig) => (component: BaseCompon
       const relatedTargetId = getElementId(relatedTarget, prefix);
       const componentId = component.element.dataset.id || component.componentName || 'nav';
       
-      debug('Mouseleave from component:', componentId, 'to:', relatedTargetId);
-      
       component.emit('mouseleave', {
         clientX: event.clientX,
         clientY: event.clientY,
@@ -186,13 +174,10 @@ export const withNavItems = (config: NavigationConfig) => (component: BaseCompon
     });
   }
 
-  // Note: Click event handlers are removed since we'll use event delegation in the navigation component
-
   // Clean up when component is destroyed
   if (component.lifecycle) {
     const originalDestroy = component.lifecycle.destroy;
     component.lifecycle.destroy = () => {
-      debug('Destroying component, clearing items');
       items.clear();
       if (originalDestroy) {
         originalDestroy();
@@ -200,89 +185,75 @@ export const withNavItems = (config: NavigationConfig) => (component: BaseCompon
     };
   }
 
-/**
- * Gets the path to an item (parent IDs and the item's own ID)
- * @param {string} id - Item ID to get path for
- * @returns {Array<string>} Array of parent item IDs including the item's own ID
- */
-const getItemPath = (id: string): string[] => {
-  // Always include the item's own ID in the path
-  const path: string[] = [id];
-  const currentItem = items.get(id);
-  
-  console.log('getItemPath', id);
-  if (!currentItem) {
-    console.log('Item not found');
-    return path; // Still return [id] even if item not found in map
-  }
-  
-  // First, find the item container that contains this element
-  const itemContainer = currentItem.element.closest(`.${prefix}-${NavClass.ITEM_CONTAINER}`);
-  if (!itemContainer) {
-    console.log('No item container found');
+  /**
+   * Gets the path to an item (parent IDs and the item's own ID)
+   * @param {string} id - Item ID to get path for
+   * @returns {Array<string>} Array of parent item IDs including the item's own ID
+   */
+  const getItemPath = (id: string): string[] => {
+    // Always include the item's own ID in the path
+    const path: string[] = [id];
+    const currentItem = items.get(id);
+    
+    if (!currentItem) {
+      return path; // Still return [id] even if item not found in map
+    }
+    
+    // First, find the item container that contains this element
+    const itemContainer = currentItem.element.closest(`.${prefix}-${NavClass.ITEM_CONTAINER}`);
+    if (!itemContainer) {
+      return path;
+    }
+    
+    // Then find the parent element of the item container
+    const parentElement = itemContainer.parentElement;
+    
+    // If parent element is not a nested container, this is a root-level item
+    // Just return the item's own ID
+    if (!parentElement || !parentElement.classList.contains(`${prefix}-${NavClass.NESTED_CONTAINER}`)) {
+      return path;
+    }
+    
+    // We're dealing with a nested item - find its ancestors
+    let currentNestedContainer = parentElement;
+    
+    while (currentNestedContainer) {
+      // Find the parent item container
+      const parentItemContainer = currentNestedContainer.parentElement;
+      
+      if (!parentItemContainer || !parentItemContainer.classList.contains(`${prefix}-${NavClass.ITEM_CONTAINER}`)) {
+        break;
+      }
+      
+      // Find the parent item button/element
+      const parentItem = parentItemContainer.querySelector(`.${prefix}-${NavClass.ITEM}[data-id]`);
+      
+      if (!parentItem) {
+        break;
+      }
+      
+      const parentId = parentItem.getAttribute('data-id');
+      
+      if (!parentId) {
+        break;
+      }
+      
+      // Add to the beginning of path (since we're going up the tree)
+      // This puts ancestors before the item's own ID
+      path.unshift(parentId);
+      
+      // Move up to the next level - find the container of this parent's container
+      const grandparentElement = parentItemContainer.parentElement;
+      
+      if (!grandparentElement || !grandparentElement.classList.contains(`${prefix}-${NavClass.NESTED_CONTAINER}`)) {
+        break;
+      }
+      
+      currentNestedContainer = grandparentElement;
+    }
+    
     return path;
-  }
-  
-  // Then find the parent element of the item container
-  const parentElement = itemContainer.parentElement;
-  console.log('Parent element:', parentElement);
-  
-  // If parent element is not a nested container, this is a root-level item
-  // Just return the item's own ID
-  if (!parentElement || !parentElement.classList.contains(`${prefix}-${NavClass.NESTED_CONTAINER}`)) {
-    console.log('Item is at root level - path contains only self ID:', path);
-    return path;
-  }
-  
-  // We're dealing with a nested item - find its ancestors
-  let currentNestedContainer = parentElement;
-  
-  while (currentNestedContainer) {
-    // Find the parent item container
-    const parentItemContainer = currentNestedContainer.parentElement;
-    console.log('Parent item container:', parentItemContainer);
-    
-    if (!parentItemContainer || !parentItemContainer.classList.contains(`${prefix}-${NavClass.ITEM_CONTAINER}`)) {
-      console.log('No valid parent item container found');
-      break;
-    }
-    
-    // Find the parent item button/element
-    const parentItem = parentItemContainer.querySelector(`.${prefix}-${NavClass.ITEM}[data-id]`);
-    console.log('Parent item:', parentItem);
-    
-    if (!parentItem) {
-      console.log('No parent item element found');
-      break;
-    }
-    
-    const parentId = parentItem.getAttribute('data-id');
-    console.log('Parent ID:', parentId);
-    
-    if (!parentId) {
-      console.log('No parent ID attribute found');
-      break;
-    }
-    
-    // Add to the beginning of path (since we're going up the tree)
-    // This puts ancestors before the item's own ID
-    path.unshift(parentId);
-    console.log('Current path:', path);
-    
-    // Move up to the next level - find the container of this parent's container
-    const grandparentElement = parentItemContainer.parentElement;
-    
-    if (!grandparentElement || !grandparentElement.classList.contains(`${prefix}-${NavClass.NESTED_CONTAINER}`)) {
-      console.log('Reached top level, no more ancestors');
-      break;
-    }
-    
-    currentNestedContainer = grandparentElement;
-  }
-  
-  console.log('Final path (including self):', path);
-  return path;
-};
+  };
 
   return {
     ...component,
@@ -291,7 +262,6 @@ const getItemPath = (id: string): string[] => {
     addItem(itemConfig: NavItemConfig) {
       if (items.has(itemConfig.id)) return this;
 
-      debug('Adding item:', itemConfig.id);
       const item = createNavItem(itemConfig, component.element, prefix);
       storeItem(itemConfig, item);
 
@@ -311,8 +281,6 @@ const getItemPath = (id: string): string[] => {
     removeItem(id: string) {
       const item = items.get(id);
       if (!item) return this;
-
-      debug('Removing item:', id);
       
       // Remove all nested items first
       const nestedItems = getAllNestedItems(item.element, prefix);
@@ -346,8 +314,6 @@ const getItemPath = (id: string): string[] => {
     setActive(id: string) {
       const item = items.get(id);
       if (!item || item.config.disabled) return this;
-
-      debug('Setting active item:', id);
       
       if (activeItem) {
         updateActiveState(activeItem.element, activeItem, false);

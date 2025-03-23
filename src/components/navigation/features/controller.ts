@@ -36,17 +36,6 @@ interface ControllerComponent extends BaseComponent {
 export const withController = (config: ControllerConfig) => (component: BaseComponent): ControllerComponent => {
   const prefix = config.prefix || 'mtrl';
   
-  console.log('withController initializing, debug mode:', config.debug);
-
-  // Debug logging
-  const debug = (...args: any[]) => {
-    if (config.debug) {
-      console.log('[NavController]', ...args);
-    }
-  };
-  
-  debug('Initializing controller with event delegation');
-  
   /**
    * Updates the active state for an item
    * @param {HTMLElement} item - Item element to activate
@@ -136,61 +125,39 @@ export const withController = (config: ControllerConfig) => (component: BaseComp
      * @param {string} id - ID of the clicked item
      */
     handleItemClick(id: string) {
-      console.log(`handleItemClick called with ID: ${id}`);
-      debug(`Handling item click: ${id}`);
-      
+      console.log('handleItemClick', id)
       if (!component.items) {
-        debug('No items collection found on component');
         return;
       }
       
       const itemData = component.items.get(id);
       if (!itemData) {
-        debug(`Item ${id} not found in items collection`);
         return;
       }
       
-      // IMPROVED: Find the currently active item by DOM query instead of relying on getActive
+      // Find the currently active item by DOM query instead of relying on getActive
       const activeElement = component.element.querySelector(`.${prefix}-${NavClass.ITEM}--active, .mtrl-nav-item--active`);
-      console.log('Currently active element:', activeElement);
       
       // Check if this item is already active - prevent infinite loops
-      if (activeElement && activeElement === itemData.element) {
-        debug(`Item ${id} is already active, ignoring to prevent loops`);
-        return;
-      }
+      // if (activeElement && activeElement === itemData.element) {
+      //   return;
+      // }
       
       // Deactivate previous active item if found
       if (activeElement) {
-        console.log('Deactivating previous item:', activeElement);
         updateItemState(activeElement as HTMLElement, false);
       }
       
       // Make sure itemData.element exists before updating
       if (itemData.element) {
-        console.log('Activating new item:', itemData.element);
         updateItemState(itemData.element, true);
-      } else {
-        debug('Warning: Item element is null, cannot update active state');
       }
       
-      console.log('component.emit', component.emit)
-
       // Emit change event
       if (component.emit) {
-        console.log(`Emitting change event for item: ${id}`);
-        
         // Get the path to the item (for nested items)
         const path = component.getItemPath ? component.getItemPath(id) : [];
         
-        console.log('path', path)
-
-        // Add more debugging
-        console.log('About to emit change event for', id);
-
-        console.log('component.emit', component.emit);
-        
-        // Use a try/catch to identify any potential errors
         component.emit('change', {
           id,
           item: itemData,
@@ -201,32 +168,21 @@ export const withController = (config: ControllerConfig) => (component: BaseComp
           path,
           source: 'userAction'
         });
-        console.log('Change event emitted successfully');
-      
       }
     }
   };
-
-  console.log('Enhanced component created with handleItemClick:', 
-              typeof enhancedComponent.handleItemClick === 'function');
   
   // Set up click event delegation for all navigation items
   component.element.addEventListener('click', (event: Event) => {
-    console.log('Navigation click detected', event.target);
-    
     const target = event.target as HTMLElement;
     
     // Use more flexible selectors that match actual DOM structure
     const item = target.closest(`.${prefix}-${NavClass.ITEM}, .mtrl-nav-item`) as HTMLElement;
     
-    console.log('Found item via closest?', !!item);
-    
     if (!item) {
-      console.log('No item found using selectors, trying data-id fallback');
       // Fallback to elements with data-id attribute
       const itemByDataId = target.closest('[data-id]') as HTMLElement;
       if (!itemByDataId) {
-        console.log('No navigation item found at all');
         return;
       }
     }
@@ -235,28 +191,19 @@ export const withController = (config: ControllerConfig) => (component: BaseComp
     const navItem = item || target.closest('[data-id]') as HTMLElement;
     
     if (navItem.hasAttribute('disabled') || navItem.getAttribute('aria-disabled') === 'true') {
-      console.log('Item is disabled, ignoring click');
       return;
     }
     
     // Get the ID from the data attribute
     const id = navItem.dataset.id;
     if (!id) {
-      console.log('Item has no data-id attribute');
       return;
     }
-    
-    debug(`Item clicked: ${id}`);
     
     // Handle expandable items first
     if (handleExpandableItem(navItem)) {
-      debug(`Handled as expandable item: ${id}`);
       return;
     }
-    
-    // Check and log whether handleItemClick exists
-    console.log('handleItemClick exists on component?', 
-                typeof enhancedComponent.handleItemClick === 'function');
     
     // Let the enhanced component handle normal item activation
     enhancedComponent.handleItemClick(id);
@@ -280,7 +227,6 @@ export const withController = (config: ControllerConfig) => (component: BaseComp
         
         const id = item.dataset.id;
         if (id) {
-          debug(`Keyboard activation for item: ${id}`);
           item.click(); // Trigger a click event for the item
         }
       }
@@ -321,8 +267,6 @@ export const withController = (config: ControllerConfig) => (component: BaseComp
       items[newIndex].focus();
     }
   });
-  
-  debug('Controller initialized with event delegation');
   
   return enhancedComponent;
 };
