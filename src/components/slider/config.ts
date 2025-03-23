@@ -5,6 +5,7 @@ import {
 } from '../../core/config/component-config';
 import { SliderConfig } from './types';
 import { SLIDER_COLORS, SLIDER_SIZES } from './constants';
+import { createSliderDefinition } from './structure';
 
 /**
  * Default configuration for the Slider component
@@ -31,8 +32,25 @@ export const defaultConfig: SliderConfig = {
  * @param {SliderConfig} config - User provided configuration
  * @returns {SliderConfig} Complete configuration with defaults applied
  */
-export const createBaseConfig = (config: SliderConfig = {}): SliderConfig => 
-  createComponentConfig(defaultConfig, config, 'slider') as SliderConfig;
+export const createBaseConfig = (config: SliderConfig = {}): SliderConfig => {
+  // Create the base config with defaults applied
+  const baseConfig = createComponentConfig(defaultConfig, config, 'slider') as SliderConfig;
+  
+  // Create a basic component object for structure generation
+  const baseComponent = {
+    componentName: 'slider',
+    config: baseConfig,
+    getClass: (className) => {
+      const prefix = baseConfig.prefix || 'mtrl';
+      return `${prefix}-${className}`;
+    }
+  };
+  
+  // Add the structure definition to the config
+  baseConfig.structureDefinition = createSliderDefinition(baseComponent, baseConfig);
+  
+  return baseConfig;
+};
 
 /**
  * Generates element configuration for the Slider component

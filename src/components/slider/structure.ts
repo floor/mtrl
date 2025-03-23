@@ -12,7 +12,7 @@ import { createElement } from '../../core/dom/create';
 export function createSliderDefinition(component, config: SliderConfig) {
   // Get prefixed class names
   const getClass = (className) => component.getClass(className);
-  
+
   // Set default values
   const min = config.min || 0;
   const max = config.max || 100;
