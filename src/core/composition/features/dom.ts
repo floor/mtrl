@@ -1,15 +1,15 @@
-// src/components/slider/features/dom.ts
-import { createStructure, flattenStructure } from '../../../core/structure';
+// src/core/composition/features/dom.ts
+import { createStructure, flattenStructure } from '../../structure';
 
 /**
  * Creates DOM elements from structure definition using the core createStructure utility
+ * This is a key feature that bridges the gap between declarative structure and actual DOM
  * 
  * @returns Component enhancer that creates DOM structure
  */
 export const withDom = () => component => {
   // Return unmodified component if no structure definition
   if (!component.structureDefinition) {
-    console.warn('Cannot create DOM: missing structure definition');
     return component;
   }
   
@@ -18,8 +18,8 @@ export const withDom = () => component => {
     const structure = createStructure(component.structureDefinition);
     
     // Use the existing flattenStructure function to create a flat reference map
-    const components = flattenStructure(structure);
-    
+    const components = structure.getAll();
+
     // Return enhanced component with DOM structure
     return {
       ...component,

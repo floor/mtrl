@@ -58,6 +58,7 @@ export interface LabelConfig {
  */
 export const withLabel = (config: LabelConfig) => component => {
   // If no label or missing structure definition, return unmodified
+
   if (!config.label || !component.structureDefinition) {
     return component;
   }

@@ -16,5 +16,11 @@
  */
 
 // Export features
-export { withIcon, withLabel } from './features';
+export {
+  withStructure
+  withDom
+  withIcon,
+  withLabel,
+} from './features';
+
 export type { IconConfig, LabelConfig } from './features';

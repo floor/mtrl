@@ -125,7 +125,6 @@ export const withController = (config: ControllerConfig) => (component: BaseComp
      * @param {string} id - ID of the clicked item
      */
     handleItemClick(id: string) {
-      console.log('handleItemClick', id)
       if (!component.items) {
         return;
       }
