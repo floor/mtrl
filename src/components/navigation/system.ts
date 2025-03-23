@@ -17,7 +17,7 @@ export const createNavigationSystem = (options = {}) => {
     activeSubsection: options.activeSubsection || null,
     items: options.items || {},
     mouseInDrawer: false,
-    mouseInRail: false,  // Add this to track mouse in rail state
+    mouseInRail: false,
     hoverTimer: null,
     closeTimer: null,
     processingChange: false
@@ -33,7 +33,7 @@ export const createNavigationSystem = (options = {}) => {
     
     // Timing options (ms)
     hoverDelay: options.hoverDelay || 200,
-    closeDelay: options.closeDelay || 100,  // Increased for better handling
+    closeDelay: options.closeDelay || 100,
     
     // Component options
     railOptions: options.railOptions || {},
@@ -44,12 +44,7 @@ export const createNavigationSystem = (options = {}) => {
    * Update drawer content for a specific section WITHOUT changing visibility
    */
   const updateDrawerContent = (sectionId) => {
-    if (!state.drawer) {
-      return;
-    }
-    
-    // Validate section
-    if (!sectionId || !state.items[sectionId]) {
+    if (!state.drawer || !sectionId || !state.items[sectionId]) {
       return;
     }
     
@@ -65,7 +60,7 @@ export const createNavigationSystem = (options = {}) => {
     
     // Clear existing drawer items first using the API
     const currentItems = state.drawer.getAllItems();
-    if (currentItems && currentItems.length > 0) {
+    if (currentItems?.length > 0) {
       currentItems.forEach(item => {
         state.drawer.removeItem(item.config.id);
       });
@@ -105,20 +100,14 @@ export const createNavigationSystem = (options = {}) => {
 
     // Register for change events - will listen for when rail items are clicked
     rail.on('change', (event) => {
-      // Extract ID from event data
       const id = event?.id;
       
-      if (!id) {
+      if (!id || state.processingChange) {
         return;
       }
       
       // Check if this is a user action
       const isUserAction = event?.source === 'userAction';
-      
-      // Skip logic if we're already processing changes
-      if (state.processingChange) {
-        return;
-      }
       
       // Set processing flag to prevent loops
       state.processingChange = true;
@@ -128,13 +117,6 @@ export const createNavigationSystem = (options = {}) => {
       
       // Handle internally first - update drawer content
       updateDrawerContent(id);
-      
-      // Show drawer if section has items
-      if (state.items[id]?.items?.length > 0) {
-        showDrawer();
-      } else {
-        hideDrawer();
-      }
       
       // Then notify external handlers
       if (system.onSectionChange && isUserAction) {
@@ -154,10 +136,8 @@ export const createNavigationSystem = (options = {}) => {
       state.mouseInRail = true;
       
       // Clear any existing hover timer
-      if (state.hoverTimer) {
-        clearTimeout(state.hoverTimer);
-        state.hoverTimer = null;
-      }
+      clearTimeout(state.hoverTimer);
+      state.hoverTimer = null;
       
       // Only schedule drawer operations if there's an ID
       if (id) {
@@ -165,13 +145,10 @@ export const createNavigationSystem = (options = {}) => {
         if (state.items[id]?.items?.length > 0) {
           // Has items - schedule drawer opening
           state.hoverTimer = setTimeout(() => {
-            // Only update if we're still hovering over the same item
             updateDrawerContent(id);
-            showDrawer();
           }, config.hoverDelay);
         } else {
           // No items - hide drawer after a delay to prevent flickering
-          // when moving between rail items
           state.closeTimer = setTimeout(() => {
             // Only hide if we're still in the rail but not in the drawer
             if (state.mouseInRail && !state.mouseInDrawer) {
@@ -186,20 +163,16 @@ export const createNavigationSystem = (options = {}) => {
       state.mouseInRail = true;
       
       // Clear any pending drawer close timer when entering rail
-      if (state.closeTimer) {
-        clearTimeout(state.closeTimer);
-        state.closeTimer = null;
-      }
+      clearTimeout(state.closeTimer);
+      state.closeTimer = null;
     });
 
     rail.on('mouseleave', () => {
       state.mouseInRail = false;
       
       // Clear any existing hover timer
-      if (state.hoverTimer) {
-        clearTimeout(state.hoverTimer);
-        state.hoverTimer = null;
-      }
+      clearTimeout(state.hoverTimer);
+      state.hoverTimer = null;
       
       // Only set timer to hide drawer if we're not in drawer either
       if (!state.mouseInDrawer) {
@@ -261,17 +234,11 @@ export const createNavigationSystem = (options = {}) => {
       drawer.on('mouseenter', () => {
         state.mouseInDrawer = true;
         
-        // Clear any hover timer on drawer enter
-        if (state.hoverTimer) {
-          clearTimeout(state.hoverTimer);
-          state.hoverTimer = null;
-        }
-        
-        // Clear any pending drawer hide timer
-        if (state.closeTimer) {
-          clearTimeout(state.closeTimer);
-          state.closeTimer = null;
-        }
+        // Clear any hover and close timers
+        clearTimeout(state.hoverTimer);
+        clearTimeout(state.closeTimer);
+        state.hoverTimer = null;
+        state.closeTimer = null;
       });
       
       drawer.on('mouseleave', () => {
@@ -358,15 +325,10 @@ export const createNavigationSystem = (options = {}) => {
    */
   const cleanup = () => {
     // Clear timers
-    if (state.hoverTimer) {
-      clearTimeout(state.hoverTimer);
-      state.hoverTimer = null;
-    }
-    
-    if (state.closeTimer) {
-      clearTimeout(state.closeTimer);
-      state.closeTimer = null;
-    }
+    clearTimeout(state.hoverTimer);
+    clearTimeout(state.closeTimer);
+    state.hoverTimer = null;
+    state.closeTimer = null;
     
     // Destroy components
     if (state.rail) {
@@ -409,17 +371,13 @@ export const createNavigationSystem = (options = {}) => {
       state.rail.setActive(section);
     }
     
+    // Update drawer content
+    updateDrawerContent(section);
+    
     // Update active subsection if specified
     if (subsection && state.drawer) {
       state.activeSubsection = subsection;
       state.drawer.setActive(subsection);
-    }
-    
-    // Show drawer if section has items (for explicit navigation)
-    if (state.items[section]?.items?.length > 0) {
-      showDrawer();
-    } else {
-      hideDrawer();
     }
   };
   
