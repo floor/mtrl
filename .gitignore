@@ -12,6 +12,7 @@ dist/
 lib/
 bundle/
 coverage/
+git-user-stats.js
 
 # Environment files
 .env
