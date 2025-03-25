@@ -1,0 +1,244 @@
+// src/components/navigation/_mobile.scss
+@use '../../styles/abstract/variables' as v;
+@use '../../styles/abstract/mixins' as m;
+@use '../../styles/abstract/base' as base;
+@use '../../styles/abstract/theme' as t;
+
+$prefix: base.$prefix;
+
+// Mobile navigation overlay
+.#{$prefix}-nav-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: t.alpha('shadow', 0.5);
+  z-index: v.z-index('modal') - 1; // Just below modal level but above most content
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s v.motion('easing-standard'), visibility 0.3s v.motion('easing-standard');
+  
+  // Add backdrop blur for a modern effect where supported
+  @supports (backdrop-filter: blur(4px)) {
+    backdrop-filter: blur(4px);
+    background-color: t.alpha('shadow', 0.4);
+  }
+  
+  &.active {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
+// Close button for mobile drawer
+.#{$prefix}-nav-close-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  display: none; // Hidden by default, shown on mobile
+  align-items: center;
+  justify-content: center;
+  color: t.color('on-surface');
+  z-index: 1;
+  -webkit-tap-highlight-color: transparent; // Removes default mobile tap highlight
+  
+  &:hover {
+    background-color: t.alpha('on-surface', 0.05);
+  }
+  
+  // Touch feedback state
+  &.active {
+    background-color: t.alpha('on-surface', 0.12);
+  }
+  
+  &:focus-visible {
+    outline: 2px solid t.color('primary');
+    outline-offset: 2px;
+  }
+  
+  svg {
+    width: 24px;
+    height: 24px;
+    stroke: currentColor;
+  }
+  
+  // Ensure WCAG-compliant touch target size
+  @media (pointer: coarse) {
+    min-width: 48px;
+    min-height: 48px;
+  }
+}
+
+// Body class to prevent scrolling when drawer is open
+.#{$prefix}-body-drawer-open {
+  overflow: hidden;
+  
+  // On iOS we need to handle the body position differently
+  @supports (-webkit-overflow-scrolling: touch) {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+// Responsive behavior for navigation system - apply to small screens or touch devices
+@media (max-width: 960px), (pointer: coarse) {
+  // Rail navigation
+  .#{$prefix}-nav--rail {
+    width: 56px;
+    z-index: v.z-index('modal') - 1;
+    border-right: 1px solid t.color('outline-variant');
+    
+    // Hide labels on mobile
+    .#{$prefix}-nav-label {
+      display: none;
+    }
+    
+    // Center align items
+    .#{$prefix}-nav-item {
+      justify-content: center;
+      height: 56px;
+      -webkit-tap-highlight-color: transparent; // Remove default mobile highlight
+      
+      // Increase touch targets for better accessibility
+      @media (pointer: coarse) {
+        min-height: 48px;
+        padding: 12px 8px;
+      }
+      
+      // Touch-friendly active state
+      &:active {
+        background-color: t.alpha('on-surface', 0.12);
+      }
+    }
+    
+    // Larger icons on mobile
+    .#{$prefix}-nav-icon {
+      font-size: 1.25rem;
+      
+      // Ensure icon touch target meets WCAG requirements
+      @media (pointer: coarse) {
+        min-width: 44px;
+        min-height: 44px;
+      }
+    }
+  }
+  
+  // Drawer navigation
+  .#{$prefix}-nav--drawer {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 280px;
+    max-width: 85vw;
+    z-index: v.z-index('modal');
+    background-color: t.color('surface');
+    box-shadow: v.elevation('level-3');
+    transform: translateX(-100%);
+    transition: transform 0.3s v.motion('easing-standard');
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch; // Smooth scrolling on iOS
+    
+    &:not(.#{$prefix}-nav--hidden) {
+      transform: translateX(0);
+    }
+    
+    // Optimize drawer items for touch
+    .#{$prefix}-nav-item {
+      -webkit-tap-highlight-color: transparent;
+      
+      @media (pointer: coarse) {
+        min-height: 48px;
+        padding: 12px 16px;
+      }
+      
+      // Touch feedback
+      &:active {
+        background-color: t.alpha('on-surface', 0.12);
+      }
+    }
+    
+    // Support RTL languages
+    @include m.rtl {
+      left: auto;
+      right: 0;
+      transform: translateX(100%);
+      
+      &:not(.#{$prefix}-nav--hidden) {
+        transform: translateX(0);
+      }
+    }
+  }
+}
+
+// Desktop behavior
+@media (min-width: 961px) {
+  .#{$prefix}-nav--drawer {
+    // For desktop, transition by width instead of transform
+    transition: width 0.3s v.motion('easing-standard'), opacity 0.3s v.motion('easing-standard');
+  }
+  
+  .#{$prefix}-nav-close-btn {
+    display: none !important; // Always hidden on desktop
+  }
+  
+  // Hide overlay on desktop
+  .#{$prefix}-nav-overlay.active {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+// Safe area insets for notched devices like iPhone X and newer
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .#{$prefix}-nav--drawer {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  .#{$prefix}-nav--rail {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  .#{$prefix}-nav--bar {
+    // For bottom navigation bars
+    &.#{$prefix}-nav--bottom {
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+  }
+}
+
+// Gesture hints for touch interfaces
+@media (pointer: coarse) {
+  // Add visual affordance for swipe gesture
+  .#{$prefix}-nav--drawer:not(.#{$prefix}-nav--hidden) {
+    &::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      right: 0;
+      width: 4px;
+      height: 40px;
+      border-radius: 4px 0 0 4px;
+      background-color: t.alpha('on-surface', 0.1);
+      transform: translateY(-50%);
+      opacity: 0.5;
+      // Hide after interaction to avoid cognitive load
+      animation: fadeOutAfterDelay 4s forwards;
+    }
+  }
+  
+  @keyframes fadeOutAfterDelay {
+    0%, 50% { opacity: 0.5; }
+    100% { opacity: 0; }
+  }
+}

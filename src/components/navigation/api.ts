@@ -58,7 +58,7 @@ export const withAPI = (options: ApiOptions) =>
         return [];
       },
       
-      setActive(id: string): NavigationComponent {
+      setActive(id: string, silent): NavigationComponent {
         // Use the controller if available for consistent handling
         if (typeof component.handleItemClick === 'function') {
           component.handleItemClick(id);

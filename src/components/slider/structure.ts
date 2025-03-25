@@ -1,6 +1,5 @@
 // src/components/slider/structure.ts
 import { SliderConfig } from './types';
-import { createElement } from '../../core/dom/create';
 
 /**
  * Creates the base slider structure definition
@@ -26,8 +25,6 @@ export function createSliderDefinition(component, config: SliderConfig) {
   // Return base structure definition formatted for createStructure
   return {
     element: {
-      name: 'element',
-      creator: createElement,
       options: {
         tag: 'div',
         className: [getClass('slider'), config.class].filter(Boolean),
@@ -40,8 +37,6 @@ export function createSliderDefinition(component, config: SliderConfig) {
       children: {
         // Container with all slider elements
         container: {
-          name: 'container',
-          creator: createElement,
           options: {
             tag: 'div',
             className: getClass('slider-container')
@@ -49,16 +44,12 @@ export function createSliderDefinition(component, config: SliderConfig) {
           children: {
             // Track with segments
             track: {
-              name: 'track',
-              creator: createElement,
               options: {
                 tag: 'div',
                 className: getClass('slider-track')
               },
               children: {
                 activeTrack: {
-                  name: 'activeTrack',
-                  creator: createElement,
                   options: {
                     tag: 'div',
                     className: getClass('slider-active-track'),
@@ -68,8 +59,6 @@ export function createSliderDefinition(component, config: SliderConfig) {
                   }
                 },
                 startTrack: {
-                  name: 'startTrack',
-                  creator: createElement,
                   options: {
                     tag: 'div',
                     className: getClass('slider-start-track'),
@@ -80,8 +69,6 @@ export function createSliderDefinition(component, config: SliderConfig) {
                   }
                 },
                 remainingTrack: {
-                  name: 'remainingTrack',
-                  creator: createElement,
                   options: {
                     tag: 'div',
                     className: getClass('slider-remaining-track'),
@@ -95,8 +82,6 @@ export function createSliderDefinition(component, config: SliderConfig) {
             
             // Ticks container
             ticksContainer: {
-              name: 'ticksContainer',
-              creator: createElement,
               options: {
                 tag: 'div',
                 className: getClass('slider-ticks-container')
@@ -105,8 +90,6 @@ export function createSliderDefinition(component, config: SliderConfig) {
             
             // Dots for ends
             startDot: {
-              name: 'startDot',
-              creator: createElement,
               options: {
                 tag: 'div',
                 className: [
@@ -116,8 +99,6 @@ export function createSliderDefinition(component, config: SliderConfig) {
               }
             },
             endDot: {
-              name: 'endDot',
-              creator: createElement,
               options: {
                 tag: 'div',
                 className: [
@@ -129,8 +110,6 @@ export function createSliderDefinition(component, config: SliderConfig) {
             
             // Main handle
             handle: {
-              name: 'handle',
-              creator: createElement,
               options: {
                 tag: 'div',
                 className: getClass('slider-handle'),
@@ -149,12 +128,9 @@ export function createSliderDefinition(component, config: SliderConfig) {
                   left: `${valuePercent}%`
                 }
               }
-            },
-            
+            }, 
             // Main value bubble
             valueBubble: {
-              name: 'valueBubble',
-              creator: createElement,
               options: {
                 tag: 'div',
                 className: getClass('slider-value'),
