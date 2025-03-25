@@ -1,5 +1,5 @@
 // src/core/composition/features/dom.ts
-import { createStructure, flattenStructure } from '../../structure';
+import createStructure from '../../structure';
 
 /**
  * Creates DOM elements from structure definition using the core createStructure utility

@@ -65,7 +65,7 @@ function createFragment(): DocumentFragment {
  * @param parentElement Optional parent element to attach structure to
  * @returns Object containing the structure and utility functions
  */
-export function createStructure(
+export default function createStructure(
   definition: StructureDefinition, 
   parentElement: HTMLElement | null = null
 ): StructureResult {
@@ -199,6 +199,8 @@ function createStructureResult(structure: Record<string, any>): StructureResult 
     // Root element reference for convenience
     element: structure.element,
     
+    component: flattenStructure(structure),
+
     /**
      * Gets a component by name
      * @param name Component name

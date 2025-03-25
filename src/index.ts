@@ -1,6 +1,7 @@
 // src/index.ts
 export { createElement } from './core/dom/create'
 export { default as createLayout } from './core/layout'
+export { default as createStructure } from './core/structure'
 export { default as createButton } from './components/button'
 export { default as createFab } from './components/fab'
 export { default as createExtendedFab } from './components/extended-fab'
