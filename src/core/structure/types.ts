@@ -1,7 +1,7 @@
 // src/core/structure/types.ts
 /**
  * @module core/structure
- * @description Type definitions for structure creation system
+ * @description Optimized type definitions for structure creation system
  */
 
 /**
@@ -36,7 +36,7 @@ export interface ElementDefinition {
   /**
    * Creator function that produces an HTMLElement or ComponentLike
    */
-  creator?: Function;
+  creator?: (options?: Record<string, any>) => HTMLElement | ComponentLike;
   
   /**
    * Options to pass to the creator function
@@ -59,13 +59,14 @@ export interface Schema {
   element?: ElementDefinition;
   
   /**
-   * Additional elements or custom properties
+   * Additional elements
    */
-  [key: string]: ElementDefinition | any;
+  [key: string]: ElementDefinition | undefined;
 }
 
 /**
  * Result object returned after creating a structure
+ * Simplified API with essential methods
  */
 export interface StructureResult {
   /**
@@ -88,16 +89,16 @@ export interface StructureResult {
    * @param name - Component name
    * @returns Component if found, null otherwise
    */
-  get: (name: string) => any;
+  get(name: string): any;
   
   /**
    * Gets all components in a flattened map
    * @returns Object with all components
    */
-  getAll: () => Record<string, any>;
+  getAll(): Record<string, any>;
   
   /**
    * Destroys the structure, cleaning up all components
    */
-  destroy: () => void;
+  destroy(): void;
 }

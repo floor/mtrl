@@ -1,7 +1,7 @@
 // src/core/structure/utils.ts
 /**
  * @module core/structure
- * @description Utility functions for structure creation
+ * @description Optimized utility functions for structure creation
  */
 
 import { PREFIX } from '../config';
@@ -9,18 +9,19 @@ import { ComponentLike } from './types';
 
 /**
  * Checks if a value is a component object (has an element property)
- * Uses a fast property check before the instanceof check
+ * Optimized fast path check by only validating that element property exists
  * 
  * @param value - Value to check
  * @returns True if the value is a component-like object
  */
 export function isComponent(value: any): value is ComponentLike {
-  // Fast path - just check for element property existence first
-  return value && typeof value === 'object' && 'element' in value;
+  return value && 
+         typeof value === 'object' && 
+         'element' in value;
 }
 
 /**
- * Creates a document fragment for faster DOM operations when appending multiple children
+ * Creates a document fragment for faster DOM operations
  * 
  * @returns New DocumentFragment
  */
@@ -30,40 +31,31 @@ export function createFragment(): DocumentFragment {
 
 /**
  * Processes className options to add prefix if needed
+ * Optimized version with fewer conditional branches
  * 
  * @param options - Element options
  * @returns Updated options with prefixed classNames
  */
 export function processClassNames(options: Record<string, any>): Record<string, any> {
-  if (!options) return options;
+  // Fast path - if no options or no className, return as is
+  if (!options || !options.className) return options;
   
+  // Clone options to avoid mutating the original
   const processed = { ...options };
   
-  // Process className property
-  if (processed.className && typeof processed.className === 'string') {
-    // Split className by spaces to process each class separately
-    const classes = processed.className.split(' ').map(cls => {
-      // Skip classes that already have the prefix
-      if (cls.startsWith(`${PREFIX}-`)) {
-        return cls;
-      }
-      
-      // // For BEM classes (with __ or --), only prefix the block part
-      // if (cls.includes('__')) {
-      //   // This is a BEM element, prefix only the block part
-      //   const [block, element] = cls.split('__');
-      //   return `${PREFIX}-${block}__${element}`;
-      // } else if (cls.includes('--')) {
-      //   // This is a BEM modifier, prefix only the block part
-      //   const [block, modifier] = cls.split('--');
-      //   return `${PREFIX}-${block}--${modifier}`;
-      // }
-
-      // Regular class, add prefix
-      return `${PREFIX}-${cls}`;
-    });
-    
-    processed.className = classes.join(' ');
+  // Handle string className
+  if (typeof processed.className === 'string') {
+    // Split and map in a single operation
+    processed.className = processed.className
+      .split(' ')
+      .map(cls => cls.startsWith(`${PREFIX}-`) ? cls : `${PREFIX}-${cls}`)
+      .join(' ');
+  }
+  // Handle array className
+  else if (Array.isArray(processed.className)) {
+    processed.className = processed.className
+      .map(cls => typeof cls === 'string' && !cls.startsWith(`${PREFIX}-`) ? `${PREFIX}-${cls}` : cls)
+      .join(' ');
   }
   
   return processed;
@@ -71,19 +63,25 @@ export function processClassNames(options: Record<string, any>): Record<string, 
 
 /**
  * Flattens a nested structure into a simple object with element and component references
- * Optimized version that avoids unnecessary type checks where possible
+ * Optimized by using a direct property access loop and early exits
  * 
  * @param structure - Structure object
  * @returns Flattened structure with all elements and components
  */
 export function flattenStructure(structure: Record<string, any>): Record<string, any> {
-  const flattened = {};
+  const flattened: Record<string, any> = {};
+  
   for (const key in structure) {
     const value = structure[key];
-    // Only include components and elements, skip functions and primitives
-    if (value && typeof value === 'object' && ('element' in value || value instanceof HTMLElement)) {
+    
+    // Only include components, elements, and non-functions
+    // Fast path with fewer type checks
+    if (value && 
+        typeof value !== 'function' && 
+        (value instanceof HTMLElement || 'element' in value)) {
       flattened[key] = value;
     }
   }
+  
   return flattened;
 }
