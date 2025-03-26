@@ -6,9 +6,9 @@ import { SliderConfig } from './types';
  * 
  * @param component Component for class name generation
  * @param config Slider configuration
- * @returns Structure definition object
+ * @returns Structure schema object
  */
-export function createSliderDefinition(component, config: SliderConfig) {
+export function createSliderSchema(component, config: SliderConfig) {
   // Get prefixed class names
   const getClass = (className) => component.getClass(className);
 

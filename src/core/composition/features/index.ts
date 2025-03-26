@@ -9,3 +9,4 @@ export { withStructure } from './structure';
 // Re-export interface types for better developer experience
 export type { IconConfig } from './icon';
 export type { LabelConfig } from './label';
+export type { StructureConfig } from './structure';

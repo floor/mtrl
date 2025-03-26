@@ -1,5 +1,6 @@
 // src/core/structure.ts
 import { createElement } from './dom/create';
+import { PREFIX, getComponentClass } from './config';
 
 /**
  * Type definitions for structure creation
@@ -17,7 +18,7 @@ export interface ElementDefinition {
   children?: Record<string, ElementDefinition>;
 }
 
-export interface StructureDefinition {
+export interface Schema {
   element?: ElementDefinition;
   [key: string]: ElementDefinition | any;
 }
@@ -60,23 +61,68 @@ function createFragment(): DocumentFragment {
 }
 
 /**
+ * Processes className options to add prefix if needed
+ * Correctly handles BEM notation by only prefixing the block part
+ * @param options Element options
+ * @returns Updated options with prefixed classNames
+ */
+function processClassNames(options: Record<string, any>): Record<string, any> {
+  if (!options) return options;
+  
+  const processed = { ...options };
+  
+  // Process className property
+  if (processed.className && typeof processed.className === 'string') {
+    // Split className by spaces to process each class separately
+    const classes = processed.className.split(' ').map(cls => {
+      // Skip classes that already have the prefix
+      if (cls.startsWith(`${PREFIX}-`)) {
+        return cls;
+      }
+      
+      // For BEM classes (with __ or --), only prefix the block part
+      if (cls.includes('__')) {
+        // This is a BEM element, prefix only the block part
+        const [block, element] = cls.split('__');
+        return `${PREFIX}-${block}__${element}`;
+      } else if (cls.includes('--')) {
+        // This is a BEM modifier, prefix only the block part
+        const [block, modifier] = cls.split('--');
+        return `${PREFIX}-${block}--${modifier}`;
+      }
+      
+      // Regular class, add prefix
+      return `${PREFIX}-${cls}`;
+    });
+    
+    processed.className = classes.join(' ');
+  }
+  
+  return processed;
+}
+
+/**
  * Creates a DOM or component structure based on a structure definition
  * @param definition Structure definition object
  * @param parentElement Optional parent element to attach structure to
  * @returns Object containing the structure and utility functions
  */
 export default function createStructure(
-  definition: StructureDefinition, 
+  schema: Schema, 
   parentElement: HTMLElement | null = null
 ): StructureResult {
   // Use object literal instead of empty object for faster property access
   const structure: Record<string, any> = Object.create(null);
   
   // Special case for root component creation
-  if (definition.element && !parentElement) {
-    const elementDef = definition.element;
+  if (schema.element && !parentElement) {
+    const elementDef = schema.element;
     const createElementFn = elementDef.creator || createElement;
-    const rootComponent = createElementFn(elementDef.options);
+    
+    // Process className options to add prefix
+    const processedOptions = processClassNames(elementDef.options);
+    
+    const rootComponent = createElementFn(processedOptions);
     const rootElement = isComponentLike(rootComponent) ? rootComponent.element : rootComponent;
     
     structure.element = rootComponent;
@@ -117,7 +163,7 @@ export default function createStructure(
   
   // Use fragment if we have multiple elements to append to the parent
   const fragment = parentElement ? createFragment() : null;
-  const keys = Object.keys(definition);
+  const keys = Object.keys(schema);
   const keyLength = keys.length;
   
   // Pre-allocate arrays for better performance
@@ -127,17 +173,20 @@ export default function createStructure(
   // First pass: create all elements
   for (let i = 0; i < keyLength; i++) {
     const key = keys[i];
-    const def = definition[key];
+    const def = schema[key];
     
-    // Skip if no definition
+    // Skip if no schema
     if (!def) {
       elements[i] = null;
       continue;
     }
     
+    // Process className options to add prefix
+    const processedOptions = processClassNames(def.options);
+    
     // Create the element
     const createElementFn = def.creator || createElement;
-    const created = createElementFn(def.options);
+    const created = createElementFn(processedOptions);
     elements[i] = created;
     
     // Add to structure
@@ -152,7 +201,7 @@ export default function createStructure(
   // Second pass: handle children and append to parent
   for (let i = 0; i < keyLength; i++) {
     const key = keys[i];
-    const def = definition[key];
+    const def = schema[key];
     const created = elements[i];
     
     if (!created || !def) continue;

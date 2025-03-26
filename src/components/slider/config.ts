@@ -5,7 +5,7 @@ import {
 } from '../../core/config/component-config';
 import { SliderConfig } from './types';
 import { SLIDER_COLORS, SLIDER_SIZES } from './constants';
-import { createSliderDefinition } from './structure';
+import { createSliderSchema } from './schema';
 
 /**
  * Default configuration for the Slider component
@@ -47,7 +47,7 @@ export const createBaseConfig = (config: SliderConfig = {}): SliderConfig => {
   };
   
   // Add the structure definition to the config
-  baseConfig.structureDefinition = createSliderDefinition(baseComponent, baseConfig);
+  baseConfig.schema = createSliderSchema(baseComponent, baseConfig);
   
   return baseConfig;
 };

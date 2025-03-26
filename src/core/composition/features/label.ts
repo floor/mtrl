@@ -39,16 +39,16 @@ export interface LabelConfig {
 }
 
 /**
- * Enhances structure definition with a label element
- * Unlike the traditional withLabel, this modifies the structure definition
+ * Enhances component schema with a label element
+ * Unlike the traditional withLabel, this modifies the schema
  * without creating actual DOM elements.
  * 
  * @param config Configuration containing label information
- * @returns Component enhancer that adds label to structure definition
+ * @returns Component enhancer that adds label to schema
  * 
  * @example
  * ```ts
- * // Add label to a structure definition
+ * // Add label to a component schema
  * const component = pipe(
  *   createBase,
  *   withStructure(config),
@@ -57,9 +57,8 @@ export interface LabelConfig {
  * ```
  */
 export const withLabel = (config: LabelConfig) => component => {
-  // If no label or missing structure definition, return unmodified
-
-  if (!config.label || !component.structureDefinition) {
+  // If no label or missing schema, return unmodified
+  if (!config.label || !component.schema) {
     return component;
   }
   
@@ -77,8 +76,8 @@ export const withLabel = (config: LabelConfig) => component => {
     const prefix = config.prefix || component.config?.prefix || 'mtrl';
     const componentName = config.componentName || component.componentName || 'component';
     
-    // Clone the structure definition
-    const structureDefinition = JSON.parse(JSON.stringify(component.structureDefinition));
+    // Clone the schema
+    const schema = JSON.parse(JSON.stringify(component.schema));
     
     // Determine position (default to 'start')
     const position = config.labelPosition || 'start';
@@ -89,7 +88,7 @@ export const withLabel = (config: LabelConfig) => component => {
     
     // Add required indicator if specified
     if (config.required) {
-      // For structure definition we need to define a child element
+      // For schema we need to define a child element
       labelChildren = {
         requiredIndicator: {
           name: 'requiredIndicator',
@@ -134,23 +133,23 @@ export const withLabel = (config: LabelConfig) => component => {
     // Add label to root element's children
     if (position === 'end' || position === 'bottom') {
       // Add at end of root element
-      structureDefinition.element.children.label = labelDef;
+      schema.element.children.label = labelDef;
     } else {
       // Add at beginning of root element (start/top)
-      const existingChildren = { ...structureDefinition.element.children };
-      structureDefinition.element.children = {
+      const existingChildren = { ...schema.element.children };
+      schema.element.children = {
         label: labelDef,
         ...existingChildren
       };
     }
     
-    // Return component with updated structure definition
+    // Return component with updated schema
     return {
       ...component,
-      structureDefinition
+      schema
     };
   } catch (error) {
-    console.warn('Error enhancing structure with label:', error);
+    console.warn('Error enhancing schema with label:', error);
     return component;
   }
 };

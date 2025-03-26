@@ -10,7 +10,7 @@ import { createElement } from '../../../core/dom/create';
  */
 export const withRange = (config: SliderConfig) => component => {
   // If not a range slider or missing structure definition, return unmodified
-  if (!config.range || !config.secondValue || !component.structureDefinition) {
+  if (!config.range || !config.secondValue || !component.schema) {
     return component;
   }
   
@@ -25,18 +25,18 @@ export const withRange = (config: SliderConfig) => component => {
     const getClass = component.getClass;
     
     // Clone the structure definition (deep copy)
-    const structureDefinition = JSON.parse(JSON.stringify(component.structureDefinition));
+    const schema = JSON.parse(JSON.stringify(component.schema));
     
     // Add range class to root element
-    const rootClasses = structureDefinition.element.options.className || [];
+    const rootClasses = schema.element.options.className || [];
     if (Array.isArray(rootClasses)) {
       rootClasses.push(getClass('slider--range'));
     } else {
-      structureDefinition.element.options.className = `${rootClasses} ${getClass('slider--range')}`.trim();
+      schema.element.options.className = `${rootClasses} ${getClass('slider--range')}`.trim();
     }
     
     // Add start track segment to track children
-    const trackChildren = structureDefinition.element.children.container.children.track.children;
+    const trackChildren = schema.element.children.container.children.track.children;
     trackChildren.startTrack = {
       name: 'startTrack',
       creator: createElement,
@@ -50,7 +50,7 @@ export const withRange = (config: SliderConfig) => component => {
     };
     
     // Add second handle to container children
-    const containerChildren = structureDefinition.element.children.container.children;
+    const containerChildren = schema.element.children.container.children;
     containerChildren.secondHandle = {
       name: 'secondHandle',
       creator: createElement,
@@ -95,7 +95,7 @@ export const withRange = (config: SliderConfig) => component => {
     // Return component with updated structure definition
     return {
       ...component,
-      structureDefinition
+      schema
     };
   } catch (error) {
     console.warn('Error enhancing structure with range functionality:', error);

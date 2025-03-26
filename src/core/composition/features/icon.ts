@@ -34,16 +34,16 @@ export interface IconConfig {
 }
 
 /**
- * Enhances structure definition with an icon element
- * Unlike the traditional withIcon, this modifies the structure definition
+ * Enhances component schema with an icon element
+ * Unlike the traditional withIcon, this modifies the schema
  * without creating actual DOM elements.
  * 
  * @param config Configuration containing icon information
- * @returns Component enhancer that adds icon to structure definition
+ * @returns Component enhancer that adds icon to schema
  * 
  * @example
  * ```ts
- * // Add icon to a structure definition
+ * // Add icon to a component schema
  * const component = pipe(
  *   createBase,
  *   withStructure(config),
@@ -52,8 +52,8 @@ export interface IconConfig {
  * ```
  */
 export const withIcon = (config: IconConfig) => component => {
-  // If no icon or missing structure definition, return unmodified
-  if (!config.icon || !component.structureDefinition) {
+  // If no icon or missing schema, return unmodified
+  if (!config.icon || !component.schema) {
     return component;
   }
   
@@ -62,14 +62,14 @@ export const withIcon = (config: IconConfig) => component => {
     const prefix = config.prefix || component.config?.prefix || 'mtrl';
     const componentName = config.componentName || component.componentName || 'component';
     
-    // Clone the structure definition
-    const structureDefinition = JSON.parse(JSON.stringify(component.structureDefinition));
+    // Clone the schema
+    const schema = JSON.parse(JSON.stringify(component.schema));
     
     // Determine icon position
     const position = config.iconPosition || 'start';
     
     // Add the --icon modifier class to the main element
-    const elementClasses = structureDefinition.element.options.className || [];
+    const elementClasses = schema.element.options.className || [];
     const iconModifierClass = `${prefix}-${componentName}--icon`;
     
     if (Array.isArray(elementClasses)) {
@@ -78,10 +78,10 @@ export const withIcon = (config: IconConfig) => component => {
       }
     } else if (typeof elementClasses === 'string') {
       if (!elementClasses.includes(iconModifierClass)) {
-        structureDefinition.element.options.className = `${elementClasses} ${iconModifierClass}`.trim();
+        schema.element.options.className = `${elementClasses} ${iconModifierClass}`.trim();
       }
     } else {
-      structureDefinition.element.options.className = [iconModifierClass];
+      schema.element.options.className = [iconModifierClass];
     }
     
     // Create icon element definition with component-specific class
@@ -109,23 +109,23 @@ export const withIcon = (config: IconConfig) => component => {
     // Add icon directly to the main element's children
     if (position === 'start') {
       // Create new children object with icon first
-      const existingChildren = { ...structureDefinition.element.children };
-      structureDefinition.element.children = {
+      const existingChildren = { ...schema.element.children };
+      schema.element.children = {
         icon: iconDef,
         ...existingChildren
       };
     } else {
       // Add icon after existing children
-      structureDefinition.element.children.icon = iconDef;
+      schema.element.children.icon = iconDef;
     }
     
-    // Return component with updated structure definition
+    // Return component with updated schema
     return {
       ...component,
-      structureDefinition
+      schema
     };
   } catch (error) {
-    console.warn('Error enhancing structure with icon:', error);
+    console.warn('Error enhancing schema with icon:', error);
     return component;
   }
 };

@@ -1,22 +1,47 @@
 // src/core/composition/features/structure.ts
 
 /**
- * Adds structure definition to component without creating DOM
- * Now uses the structure from the baseConfig
- * 
- * @param configuration
- * @returns Component enhancer with structure definition
+ * Configuration that includes a component schema
  */
-export const withStructure = (config: SliderConfig) => component => {
-  // Use the structure definition from the config
-  if (!config.structureDefinition) {
-    console.warn('No structure definition found in slider config');
+export interface StructureConfig {
+  /**
+   * Component schema definition
+   */
+  schema?: any;
+  
+  [key: string]: any;
+}
+
+/**
+ * Adds schema definition to component without creating DOM
+ * This establishes the blueprint for the component's structure
+ * before materializing it with withDom
+ * 
+ * @param config Configuration containing schema definition
+ * @returns Component enhancer with schema definition
+ * 
+ * @example
+ * ```ts
+ * // Add structure to a component
+ * const component = pipe(
+ *   createBase,
+ *   withStructure(config),
+ *   withIcon(config),
+ *   withLabel(config),
+ *   withDom()
+ * )(config);
+ * ```
+ */
+export const withStructure = (config: StructureConfig) => component => {
+  // Use the schema definition from the config
+  if (!config.schema) {
+    console.warn('No schema definition found in component config');
     return component;
   }
   
-  // Return enhanced component with structure definition
+  // Return enhanced component with schema definition
   return {
     ...component,
-    structureDefinition: config.structureDefinition
+    schema: config.schema
   };
 };
