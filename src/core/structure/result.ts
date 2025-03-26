@@ -15,70 +15,40 @@ import { isComponent, flattenStructure } from './utils';
  */
 export function createStructureResult(structure: Record<string, any>): StructureResult {
   return {
-    // Raw structure object
     structure,
-    
-    // Root element reference for convenience
     element: structure.element,
-    
-    // Flattened component map for easier access
     component: flattenStructure(structure),
-
-    /**
-     * Gets a component by name
-     * 
-     * @param name - Component name
-     * @returns Component if found, null otherwise
-     */
-    get: (name: string): any => {
+    
+    get(name: string) {
       return structure[name] || null;
     },
     
-    /**
-     * Gets all components in a flattened map
-     * 
-     * @returns Object with all components
-     */
-    getAll: (): Record<string, any> => {
+    getAll() {
       return flattenStructure(structure);
     },
     
-    /**
-     * Destroys the structure, cleaning up all components
-     */
-    destroy: (): void => {
-      // Clean up the root element if it exists
-      if (structure.element) {
-        // If element is a component with a destroy method, call it
-        if (isComponent(structure.element) && typeof structure.element.destroy === 'function') {
-          structure.element.destroy();
-        } 
-        // Otherwise, if it's a DOM element or component, remove it from the DOM
-        else if (isComponent(structure.element) && structure.element.element.parentNode) {
-          structure.element.element.parentNode.removeChild(structure.element.element);
-        }
-        else if (structure.element instanceof HTMLElement && structure.element.parentNode) {
-          structure.element.parentNode.removeChild(structure.element);
+    destroy() {
+      // Destroy root element
+      const root = structure.element;
+      if (root) {
+        if (typeof root.destroy === 'function') {
+          root.destroy();
+        } else if (root.element && root.element.parentNode) {
+          root.element.parentNode.removeChild(root.element);
+        } else if (root.parentNode) {
+          root.parentNode.removeChild(root);
         }
       }
       
-      // Clean up all other components in the structure
-      Object.keys(structure).forEach(key => {
-        if (key === 'element') {
-          return; // Already handled element
-        }
+      // Destroy other components
+      for (const key in structure) {
+        if (key === 'element') continue;
         
         const item = structure[key];
-        
-        // Handle component objects
-        if (isComponent(item) && typeof item.destroy === 'function') {
+        if (item && typeof item.destroy === 'function') {
           item.destroy();
         }
-        // Handle DOM elements
-        else if (item instanceof HTMLElement && item.parentNode) {
-          item.parentNode.removeChild(item);
-        }
-      });
+      }
     }
   };
 }

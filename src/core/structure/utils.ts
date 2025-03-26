@@ -15,10 +15,8 @@ import { ComponentLike } from './types';
  * @returns True if the value is a component-like object
  */
 export function isComponent(value: any): value is ComponentLike {
-  return value && 
-         typeof value === 'object' && 
-         'element' in value && 
-         value.element instanceof HTMLElement;
+  // Fast path - just check for element property existence first
+  return value && typeof value === 'object' && 'element' in value;
 }
 
 /**
@@ -79,26 +77,13 @@ export function processClassNames(options: Record<string, any>): Record<string, 
  * @returns Flattened structure with all elements and components
  */
 export function flattenStructure(structure: Record<string, any>): Record<string, any> {
-  const flattened: Record<string, any> = Object.create(null);
-  const keys = Object.keys(structure);
-  
-  for (let i = 0; i < keys.length; i++) {
-    const key = keys[i];
+  const flattened = {};
+  for (const key in structure) {
     const value = structure[key];
-    
-    // Fast path for common cases
-    if (value instanceof HTMLElement || 
-        (value && typeof value === 'object' && 'element' in value)) {
-      flattened[key] = value;
-      continue;
-    }
-    
-    // Skip functions and other non-element/component objects
-    if (typeof value !== 'function' && 
-        (value instanceof Element || isComponent(value))) {
+    // Only include components and elements, skip functions and primitives
+    if (value && typeof value === 'object' && ('element' in value || value instanceof HTMLElement)) {
       flattened[key] = value;
     }
   }
-  
   return flattened;
 }
