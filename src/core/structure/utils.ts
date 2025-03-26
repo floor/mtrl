@@ -14,7 +14,7 @@ import { ComponentLike } from './types';
  * @param value - Value to check
  * @returns True if the value is a component-like object
  */
-export function isComponentLike(value: any): value is ComponentLike {
+export function isComponent(value: any): value is ComponentLike {
   return value && 
          typeof value === 'object' && 
          'element' in value && 
@@ -95,7 +95,7 @@ export function flattenStructure(structure: Record<string, any>): Record<string,
     
     // Skip functions and other non-element/component objects
     if (typeof value !== 'function' && 
-        (value instanceof Element || isComponentLike(value))) {
+        (value instanceof Element || isComponent(value))) {
       flattened[key] = value;
     }
   }

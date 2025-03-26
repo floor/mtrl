@@ -8,7 +8,7 @@
 export { ComponentLike, ElementDefinition, Schema, StructureResult } from './types';
 
 // Export utility functions
-export { isComponentLike, processClassNames, flattenStructure } from './utils';
+export { isComponent, processClassNames, flattenStructure } from './utils';
 
 // Export result creation
 export { createStructureResult } from './result';

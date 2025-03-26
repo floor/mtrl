@@ -6,7 +6,7 @@
 
 import { createElement } from '../dom/create';
 import { Schema, StructureResult } from './types';
-import { isComponentLike, createFragment, processClassNames } from './utils';
+import { isComponent, createFragment, processClassNames } from './utils';
 import { createStructureResult } from './result';
 
 /**
@@ -32,7 +32,7 @@ export function createStructure(
     const processedOptions = processClassNames(elementDef.options);
     
     const rootComponent = createElementFn(processedOptions);
-    const rootElement = isComponentLike(rootComponent) ? rootComponent.element : rootComponent;
+    const rootElement = isComponent(rootComponent) ? rootComponent.element : rootComponent;
     
     structure.element = rootComponent;
     
@@ -116,7 +116,7 @@ export function createStructure(
     if (!created || !def) continue;
     
     // Get the actual DOM element
-    const element = isComponentLike(created) ? created.element : created;
+    const element = isComponent(created) ? created.element : created;
     
     // Append to fragment
     if (fragment) {

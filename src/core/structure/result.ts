@@ -5,7 +5,7 @@
  */
 
 import { StructureResult } from './types';
-import { isComponentLike, flattenStructure } from './utils';
+import { isComponent, flattenStructure } from './utils';
 
 /**
  * Creates a result object with the structure and utility functions
@@ -50,11 +50,11 @@ export function createStructureResult(structure: Record<string, any>): Structure
       // Clean up the root element if it exists
       if (structure.element) {
         // If element is a component with a destroy method, call it
-        if (isComponentLike(structure.element) && typeof structure.element.destroy === 'function') {
+        if (isComponent(structure.element) && typeof structure.element.destroy === 'function') {
           structure.element.destroy();
         } 
         // Otherwise, if it's a DOM element or component, remove it from the DOM
-        else if (isComponentLike(structure.element) && structure.element.element.parentNode) {
+        else if (isComponent(structure.element) && structure.element.element.parentNode) {
           structure.element.element.parentNode.removeChild(structure.element.element);
         }
         else if (structure.element instanceof HTMLElement && structure.element.parentNode) {
@@ -71,7 +71,7 @@ export function createStructureResult(structure: Record<string, any>): Structure
         const item = structure[key];
         
         // Handle component objects
-        if (isComponentLike(item) && typeof item.destroy === 'function') {
+        if (isComponent(item) && typeof item.destroy === 'function') {
           item.destroy();
         }
         // Handle DOM elements
