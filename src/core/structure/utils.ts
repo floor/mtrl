@@ -34,11 +34,15 @@ export function createFragment(): DocumentFragment {
  * Optimized version with fewer conditional branches
  * 
  * @param options - Element options
+ * @param skipPrefix - Whether to skip adding prefixes
  * @returns Updated options with prefixed classNames
  */
-export function processClassNames(options: Record<string, any>): Record<string, any> {
-  // Fast path - if no options or no className, return as is
-  if (!options || !options.className) return options;
+export function processClassNames(
+  options: Record<string, any>, 
+  skipPrefix: boolean = false
+): Record<string, any> {
+  // Fast path - if no options, no className, or skipping prefix
+  if (!options || !options.className || skipPrefix) return { ...options };
   
   // Clone options to avoid mutating the original
   const processed = { ...options };

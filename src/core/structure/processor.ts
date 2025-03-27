@@ -5,15 +5,24 @@
  */
 
 import { createElement } from '../dom/create';
-import { Schema, StructureResult } from './types';
+import { Schema, StructureResult, StructureOptions } from './types';
 import { isComponent, createFragment, processClassNames } from './utils';
 import { createStructureResult } from './result';
 import { isObject } from '../utils';
 
 /**
  * Creates a component from a constructor or factory function
+ * 
+ * @param Component - Component constructor or factory function
+ * @param options - Component creation options 
+ * @param structureOptions - Global structure options
+ * @returns Created component instance
  */
-export function createComponentInstance(Component, options = {}) {
+export function createComponentInstance(
+  Component: any, 
+  options: Record<string, any> = {}, 
+  structureOptions: StructureOptions = {}
+): any {
   return Component.prototype && Component.prototype.constructor === Component
     ? new Component(options)
     : Component(options);
@@ -21,17 +30,39 @@ export function createComponentInstance(Component, options = {}) {
 
 /**
  * Processes any type of structure definition (array or object)
+ * 
+ * @param schema - Structure schema to process
+ * @param parentElement - Parent element to attach to
+ * @param level - Current nesting level 
+ * @param options - Structure creation options
+ * @returns Structure result object
  */
-export function processSchema(schema, parentElement = null, level = 0) {
+export function processSchema(
+  schema: any, 
+  parentElement: HTMLElement | null = null, 
+  level: number = 0,
+  options: StructureOptions = {}
+): StructureResult {
   return Array.isArray(schema)
-    ? processArraySchema(schema, parentElement, level)
-    : processObjectSchema(schema, parentElement);
+    ? processArraySchema(schema, parentElement, level, options)
+    : processObjectSchema(schema, parentElement, options);
 }
 
 /**
  * Processes an array-based structure definition
+ * 
+ * @param schema - Array schema to process
+ * @param parentElement - Parent element to attach to
+ * @param level - Current nesting level
+ * @param options - Structure creation options
+ * @returns Structure result object
  */
-function processArraySchema(schema, parentElement = null, level = 0) {
+function processArraySchema(
+  schema: any[], 
+  parentElement: HTMLElement | null = null, 
+  level: number = 0,
+  options: StructureOptions = {}
+): StructureResult {
   level++;
   const structure = {};
   const components = [];
@@ -50,7 +81,7 @@ function processArraySchema(schema, parentElement = null, level = 0) {
     // Handle nested arrays recursively
     if (Array.isArray(item)) {
       const container = component || parentElement;
-      const result = processSchema(item, container, level);
+      const result = processSchema(item, container, level, options);
       Object.assign(structure, result.structure);
       continue;
     }
@@ -61,16 +92,21 @@ function processArraySchema(schema, parentElement = null, level = 0) {
     // Extract options and name
     const nextItem = schema[i+1];
     const afterNextItem = schema[i+2];
-    const options = isObject(nextItem) ? nextItem : (isObject(afterNextItem) ? afterNextItem : {});
-    const name = options.id || (typeof nextItem === 'string' ? nextItem : undefined);
+    const itemOptions = isObject(nextItem) ? nextItem : (isObject(afterNextItem) ? afterNextItem : {});
+    const name = itemOptions.id || (typeof nextItem === 'string' ? nextItem : undefined);
     
     // Add name to options if needed
     if (name && typeof nextItem === 'string' && !(item.isElement || item.isComponent)) {
-      options.name = name;
+      itemOptions.name = name;
     }
+    
+    // Process class names based on prefix option
+    const processedOptions = options.prefix !== false ? 
+      processClassNames(itemOptions) : 
+      { ...itemOptions };
 
     // Create and store component
-    component = createComponentInstance(item, options);
+    component = createComponentInstance(item, processedOptions, options);
     const element = isComponent(component) ? component.element : component;
     
     if (level === 1) structure.element = element;
@@ -109,15 +145,31 @@ function processArraySchema(schema, parentElement = null, level = 0) {
 
 /**
  * Processes an object-based structure definition
+ * 
+ * @param schema - Object schema to process
+ * @param parentElement - Parent element to attach to
+ * @param options - Structure creation options
+ * @returns Structure result object
  */
-function processObjectSchema(schema, parentElement = null) {
+function processObjectSchema(
+  schema: Schema, 
+  parentElement: HTMLElement | null = null,
+  options: StructureOptions = {}
+): StructureResult {
   const structure = {};
   
   // Handle root element creation
   if (schema.element && !parentElement) {
     const elementDef = schema.element;
-    const createElementFn = elementDef.creator || createElement;
-    const processedOptions = processClassNames(elementDef.options || {});
+    const defaultCreator = options.creator || createElement;
+    const createElementFn = elementDef.creator || defaultCreator;
+    
+    // Process class names based on prefix option
+    const elementOptions = elementDef.options || {};
+    const processedOptions = options.prefix !== false ? 
+      processClassNames(elementOptions) : 
+      { ...elementOptions };
+      
     const rootComponent = createElementFn(processedOptions);
     const rootElement = isComponent(rootComponent) ? rootComponent.element : rootComponent;
     
@@ -132,7 +184,8 @@ function processObjectSchema(schema, parentElement = null) {
       for (const key in elementDef.children) {
         const childResult = processObjectSchema(
           { [key]: elementDef.children[key] }, 
-          fragment
+          fragment,
+          options
         );
         childStructures.push(childResult.structure);
       }
@@ -156,10 +209,18 @@ function processObjectSchema(schema, parentElement = null) {
     const def = schema[key];
     if (!def) continue;
     
+    // Use appropriate creator
+    const defaultCreator = options.creator || createElement;
+    const elementCreator = def.creator || defaultCreator;
+    
+    // Process class names based on prefix option
+    const elementOptions = def.options || {};
+    const processedOptions = options.prefix !== false ? 
+      processClassNames(elementOptions) : 
+      { ...elementOptions };
+      
     // Create element
-    const processedOptions = processClassNames(def.options || {});
-    const createElementFn = def.creator || createElement;
-    const created = createElementFn(processedOptions);
+    const created = elementCreator(processedOptions);
     
     // Store in structure
     structure[key] = created;
@@ -171,7 +232,7 @@ function processObjectSchema(schema, parentElement = null) {
     
     // Process children
     if (def.children) {
-      const childResult = processObjectSchema(def.children, element);
+      const childResult = processObjectSchema(def.children, element, options);
       childStructuresToMerge.push(childResult.structure);
     }
   }

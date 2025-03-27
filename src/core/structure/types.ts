@@ -65,6 +65,27 @@ export interface Schema {
 }
 
 /**
+ * Options for structure creation
+ */
+export interface StructureOptions {
+  /**
+   * Default creator function to use if not specified in schema
+   */
+  creator?: (options?: Record<string, any>) => HTMLElement | ComponentLike;
+  
+  /**
+   * Whether to apply CSS class prefix
+   * @default true
+   */
+  prefix?: boolean;
+
+  /**
+   * Additional options
+   */
+  [key: string]: any;
+}
+
+/**
  * Result object returned after creating a structure
  * Simplified API with essential methods
  */

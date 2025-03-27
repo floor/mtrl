@@ -5,7 +5,13 @@
  */
 
 // Export essential types
-export type { ComponentLike, ElementDefinition, Schema, StructureResult } from './types';
+export type { 
+  ComponentLike, 
+  ElementDefinition, 
+  Schema, 
+  StructureResult,
+  StructureOptions 
+} from './types';
 
 // Export utility functions
 export { isComponent, processClassNames, flattenStructure } from './utils';

@@ -4,7 +4,7 @@
  * @description Main structure creation functionality with optimized DOM operations
  */
 
-import { Schema, StructureResult } from './types';
+import { Schema, StructureResult, StructureOptions } from './types';
 import { processSchema } from './processor';
 import { createStructureResult } from './result';
 
@@ -14,11 +14,13 @@ import { createStructureResult } from './result';
  * 
  * @param schema - Structure definition (array-based, object-based, or HTML string)
  * @param parentElement - Optional parent element to attach structure to
+ * @param options - Additional options for structure creation
  * @returns Object containing the structure and utility functions
  */
 export function createStructure(
   schema: Schema | any[] | string | Function, 
-  parentElement: HTMLElement | null = null
+  parentElement: HTMLElement | null = null,
+  options: StructureOptions = {}
 ): StructureResult {
   // If schema is a function, execute it to get the actual schema
   if (typeof schema === 'function') {
@@ -48,6 +50,6 @@ export function createStructure(
     return createStructureResult(structure);
   }
   
-  // Process the schema using our unified processor
-  return processSchema(schema, parentElement);
+  // Process the schema using our unified processor with options
+  return processSchema(schema, parentElement, 0, options);
 }
