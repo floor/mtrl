@@ -31,36 +31,81 @@ export function createFragment(): DocumentFragment {
 
 /**
  * Processes className options to add prefix if needed
- * Optimized version with fewer conditional branches
+ * Supports BEM naming conventions when enabled
  * 
  * @param options - Element options
  * @param skipPrefix - Whether to skip adding prefixes
+ * @param useBEM - Whether to respect BEM naming conventions
  * @returns Updated options with prefixed classNames
  */
 export function processClassNames(
   options: Record<string, any>, 
-  skipPrefix: boolean = false
+  skipPrefix: boolean = false,
+  useBEM: boolean = false
 ): Record<string, any> {
-  // Fast path - if no options, no className, or skipping prefix
-  if (!options || !options.className || skipPrefix) return { ...options };
+  // Fast path - if no options or skipping prefix, return as is
+  if (!options || skipPrefix) return { ...options };
   
   // Clone options to avoid mutating the original
   const processed = { ...options };
   
-  // Handle string className
-  if (typeof processed.className === 'string') {
-    // Split and map in a single operation
-    processed.className = processed.className
-      .split(' ')
-      .map(cls => cls.startsWith(`${PREFIX}-`) ? cls : `${PREFIX}-${cls}`)
-      .join(' ');
-  }
-  // Handle array className
-  else if (Array.isArray(processed.className)) {
-    processed.className = processed.className
-      .map(cls => typeof cls === 'string' && !cls.startsWith(`${PREFIX}-`) ? `${PREFIX}-${cls}` : cls)
-      .join(' ');
-  }
+  /**
+   * Processes a single class name with optional BEM handling
+   * 
+   * @param cls - Class name to process
+   * @returns Processed class name with prefix
+   */
+  const processClass = (cls: string): string => {
+    // Already prefixed - leave it as is
+    if (cls.startsWith(`${PREFIX}-`)) {
+      return cls;
+    }
+    
+    if (useBEM) {
+      // For BEM classes (with __ or --), only prefix the block part
+      if (cls.includes('__')) {
+        // This is a BEM element, prefix only the block part
+        const [block, element] = cls.split('__');
+        return `${PREFIX}-${block}__${element}`;
+      } else if (cls.includes('--')) {
+        // This is a BEM modifier, prefix only the block part
+        const [block, modifier] = cls.split('--');
+        return `${PREFIX}-${block}--${modifier}`;
+      }
+    }
+    
+    // Standard case - prefix the entire class name
+    return `${PREFIX}-${cls}`;
+  };
+  
+  /**
+   * Process a class property (either 'class' or 'className')
+   * 
+   * @param prop - Property name to process
+   */
+  const processProperty = (prop: string): void => {
+    if (!processed[prop]) return;
+    
+    // Handle string class names
+    if (typeof processed[prop] === 'string') {
+      processed[prop] = processed[prop]
+        .split(' ')
+        .map(cls => cls ? processClass(cls) : '')
+        .filter(Boolean)
+        .join(' ');
+    }
+    // Handle array class names
+    else if (Array.isArray(processed[prop])) {
+      processed[prop] = processed[prop]
+        .map(cls => typeof cls === 'string' ? processClass(cls) : cls)
+        .filter(Boolean)
+        .join(' ');
+    }
+  };
+  
+  // Process both possible class properties for compatibility
+  processProperty('class');
+  processProperty('className');
   
   return processed;
 }
