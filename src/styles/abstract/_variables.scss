@@ -207,6 +207,34 @@ $button: (
   'transition-easing': map.get($motion, 'easing-standard')
 ) !default;
 
+
+// Define spacing scale (this might already exist, if not, add it)
+$spacing-scale: (
+  '0': 0,
+  '1': 4px,
+  '2': 8px,
+  '3': 12px,
+  '4': 16px,
+  '5': 20px,
+  '6': 24px,
+  '8': 32px,
+  '10': 40px,
+  '12': 48px,
+  '14': 56px,
+  '16': 64px,
+  '20': 80px,
+  '24': 96px,
+  '32': 128px
+);
+
+// Add spacing function
+@function spacing($key) {
+  @if not map.has-key($spacing-scale, $key) {
+    @error 'Spacing key "#{$key}" not found in spacing scale.';
+  }
+  @return map.get($spacing-scale, $key);
+}
+
 // Helper functions for easier token access
 @function state($key) {
   @return map.get($state, $key);
