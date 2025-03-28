@@ -98,9 +98,10 @@ export function processArraySchema(
         itemOptions = {};
       }
       
-      // For default creator with string keys, set tag if not defined
+      // We should NOT automatically set the tag to match the name
+      // If tag is not provided in options, a default like 'div' should be used
       if (creator === createElement && !('tag' in itemOptions)) {
-        itemOptions.tag = name;
+        itemOptions.tag = 'div'; // Default to div if no tag is specified
       }
     }
     // Case 3: Item is an object (options for default creator with no name)
