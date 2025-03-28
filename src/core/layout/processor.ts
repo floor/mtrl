@@ -4,7 +4,6 @@
  * @description Lightweight processor for layout creation, optimized for bundle size
  */
 
-import { createElement } from '../dom/create';
 import { Schema, LayoutResult, LayoutOptions } from './types';
 import { isComponent } from './utils';
 import { processArraySchema } from './array';
@@ -39,6 +38,7 @@ export function createComponentInstance(
 
 /**
  * Processes any type of layout definition (array or object)
+ * This is the main entry point for schema processing
  * 
  * @param schema - Layout schema to process
  * @param parentElement - Parent element to attach to
@@ -52,8 +52,7 @@ export function processSchema(
   level: number = 0,
   options: LayoutOptions = {}
 ): LayoutResult {
-  // Delegate to specialized processors based on schema type
   return Array.isArray(schema)
-    ? processArraySchema(schema, parentElement, level)
-    : processObjectSchema(schema, parentElement);
+    ? processArraySchema(schema, parentElement, level, options)
+    : processObjectSchema(schema, parentElement, options);
 }

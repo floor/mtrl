@@ -2,7 +2,7 @@
 import { pipe } from '../../core/compose/pipe';
 import { createBase } from '../../core/compose/component';
 import { withEvents, withLifecycle } from '../../core/compose/features';
-import { withStructure, withIcon, withLabel, withDom  } from '../../core/composition/features';
+import { withLayout, withIcon, withLabel, withDom  } from '../../core/composition/features';
 import { 
   withRange,
   withStates,
@@ -11,6 +11,7 @@ import {
 import { withAPI } from './api';
 import { SliderConfig, SliderComponent } from './types';
 import { createBaseConfig, getApiConfig } from './config';
+
 /**
  * Creates a new Slider component
  * 
@@ -36,7 +37,7 @@ const createSlider = (config: SliderConfig = {}): SliderComponent => {
       // Base component with event system
       createBase,
       withEvents(),
-      withStructure(baseConfig),
+      withLayout(baseConfig),
       withIcon(baseConfig),
       withLabel(baseConfig),
       withRange(baseConfig),

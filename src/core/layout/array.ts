@@ -4,31 +4,15 @@
  * @description Processor for array-based layout schemas
  */
 
-import { ComponentLike, LayoutResult, LayoutOptions } from './types';
-import { isComponent, createFragment } from './utils';
+import { createElement } from '../dom/create';
+import { LayoutResult, LayoutOptions } from './types';
+import { isComponent, createFragment, processClassNames } from './utils';
 import { createLayoutResult } from './result';
-import { isObject } from '../utils'
+import { createComponentInstance } from './processor';
+import { isObject } from '../utils';
 
 /**
- * Creates a component from a constructor or factory function
- * 
- * @param Component - Constructor or factory function
- * @param options - Component options
- * @returns Created component or element
- */
-function createComponent(Component: Function, options: Record<string, any> = {}): any {
-  // Check if Component is a class (has prototype) or function
-  const isClass = Component.prototype && Component.prototype.constructor === Component;
-
-  if (isClass) {
-    return new (Component as new (options: Record<string, any>) => any)(options);
-  }
-
-  return (Component as Function)(options);
-}
-
-/**
- * Processes an array-based layout schema
+ * Processes an array-based layout definition
  * 
  * @param schema - Array-based layout definition
  * @param parentElement - Optional parent element to attach layout to
@@ -38,53 +22,159 @@ function createComponent(Component: Function, options: Record<string, any> = {})
  */
 export function processArraySchema(
   schema: any[], 
-  parentElement?: HTMLElement | null, 
-  level = 0,
+  parentElement: HTMLElement | null = null, 
+  level: number = 0,
   options: LayoutOptions = {}
 ): LayoutResult {
   level++;
   const layout = {};
-  const fragment = document.createDocumentFragment();
+  const components = [];
+  const fragment = createFragment();
   let component = null;
-  
-  // Single loop processing instead of multiple conditions
+
+  if (!Array.isArray(schema)) {
+    console.error('Schema is not an array!', parentElement, level, schema);
+    return createLayoutResult(layout);
+  }
+
+  // Get default creator function from options or use createElement
+  const defaultCreator = options.creator || createElement;
+
   for (let i = 0; i < schema.length; i++) {
     const item = schema[i];
-    
-    // Handle array recursively
+    if (!item) continue;
+
+    // Handle nested arrays recursively
     if (Array.isArray(item)) {
       const container = component || parentElement;
-      const result = processArraySchema(item, container, level);
+      // Use this function for recursion, not the external processSchema
+      const result = processArraySchema(item, container, level, options);
       Object.assign(layout, result.layout);
       continue;
     }
+
+    // Handle different item types
+    let creator, name, itemOptions;
+
+    // Case 1: Item is a function (component creator)
+    if (typeof item === 'function') {
+      creator = item;
+      
+      // Check next items for name (string) and options (object)
+      const nextItem = schema[i+1];
+      const afterNextItem = schema[i+2];
+      
+      if (typeof nextItem === 'string') {
+        name = nextItem;
+        i++; // Skip the name on next iteration
+        
+        // Check if options are provided after the name
+        if (isObject(afterNextItem)) {
+          itemOptions = afterNextItem;
+          i++; // Skip the options on next iteration
+        } else {
+          itemOptions = {};
+        }
+      } else if (isObject(nextItem)) {
+        // No name provided, just options
+        itemOptions = nextItem;
+        i++; // Skip the options on next iteration
+      } else {
+        // No name or options
+        itemOptions = {};
+      }
+    }
+    // Case 2: Item is a string (component name using default creator)
+    else if (typeof item === 'string') {
+      creator = defaultCreator;
+      name = item;
+      
+      // Check next item for options
+      const nextItem = schema[i+1];
+      if (isObject(nextItem)) {
+        itemOptions = nextItem;
+        i++; // Skip the options on next iteration
+      } else {
+        itemOptions = {};
+      }
+      
+      // For default creator with string keys, set tag if not defined
+      if (creator === createElement && !('tag' in itemOptions)) {
+        itemOptions.tag = name;
+      }
+    }
+    // Case 3: Item is an object (options for default creator with no name)
+    else if (isObject(item)) {
+      creator = defaultCreator;
+      itemOptions = item;
+    } 
+    else {
+      // Skip unsupported item types
+      console.warn('Skipping unsupported item type:', item);
+      continue;
+    }
     
-    // Skip non-component creators
-    if (typeof item !== 'function') continue;
+    // Check for additional options object after main options
+    const maybeAdditionalOptions = schema[i+1];
+    if (isObject(maybeAdditionalOptions) && !Array.isArray(maybeAdditionalOptions) && 
+        typeof maybeAdditionalOptions.prefix !== 'undefined') {
+      // Merge the additional options into main options
+      Object.assign(itemOptions, maybeAdditionalOptions);
+      i++; // Skip on next iteration
+    }
+
+    // Process options based on prefix setting
+    const shouldApplyPrefix = 
+      // Use item-specific prefix setting if available
+      'prefix' in itemOptions ? 
+        itemOptions.prefix : 
+        // Otherwise use global options prefix setting (default to true)
+        options.prefix !== false;
+
+    const processedOptions = shouldApplyPrefix ? 
+      processClassNames(itemOptions) : 
+      { ...itemOptions };
+
+    // Add name to options if needed and not a DOM element tag
+    if (name && !('name' in processedOptions) && 
+        !(creator === createElement || creator.isElement)) {
+      processedOptions.name = name;
+    }
+
+    // Create and store component
+    component = createComponentInstance(creator, processedOptions, options);
+    const element = isComponent(component) ? component.element : component;
     
-    // Determine options and name more efficiently
-    const options = schema[i+1] && typeof schema[i+1] === 'object' && !Array.isArray(schema[i+1]) ? 
-                    schema[i+1] : 
-                    (schema[i+2] && typeof schema[i+2] === 'object' ? schema[i+2] : {});
-                    
-    const name = options.id || (typeof schema[i+1] === 'string' ? schema[i+1] : undefined);
-    
-    // Create component
-    component = item.prototype ? new item(options) : item(options);
-    
-    // Add to layout and append to DOM
-    if (name) layout[name] = component;
-    if (level === 1) layout.element = component.element || component;
-    
-    // Append to fragment in one operation
-    const element = component.element || component;
-    fragment.appendChild(element);
+    if (level === 1) layout.element = element;
+    if (name) {
+      layout[name] = component;
+      components.push([name, component]);
+    }
+
+    // Append to DOM
+    if (component) {
+      if ('insert' in component && typeof component.insert === 'function') {
+        component.insert(fragment);
+      } else {
+        fragment.appendChild(element);
+      }
+
+      if (parentElement) {
+        component._container = parentElement;
+        
+        if ('onInserted' in component && typeof component.onInserted === 'function') {
+          component.onInserted(parentElement);
+        }
+      }
+    }
   }
-  
-  // Append to parent once
+
+  // Append fragment to parent in a single operation
   if (parentElement && fragment.hasChildNodes()) {
-    (parentElement.element || parentElement).appendChild(fragment);
+    const wrapper = isComponent(parentElement) ? parentElement.element : parentElement;
+    wrapper.appendChild(fragment);
   }
-  
+
+  layout.components = components;
   return createLayoutResult(layout);
 }
