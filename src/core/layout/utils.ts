@@ -1,7 +1,7 @@
-// src/core/structure/utils.ts
+// src/core/layout/utils.ts
 /**
- * @module core/structure
- * @description Optimized utility functions for structure creation
+ * @module core/layout
+ * @description Optimized utility functions for layout creation
  */
 
 import { PREFIX } from '../config';
@@ -111,17 +111,17 @@ export function processClassNames(
 }
 
 /**
- * Flattens a nested structure into a simple object with element and component references
+ * Flattens a nested layout into a simple object with element and component references
  * Optimized by using a direct property access loop and early exits
  * 
- * @param structure - Structure object
- * @returns Flattened structure with all elements and components
+ * @param layout - Layout object
+ * @returns Flattened layout with all elements and components
  */
-export function flattenStructure(structure: Record<string, any>): Record<string, any> {
+export function flattenLayout(layout: Record<string, any>): Record<string, any> {
   const flattened: Record<string, any> = {};
   
-  for (const key in structure) {
-    const value = structure[key];
+  for (const key in layout) {
+    const value = layout[key];
     
     // Only include components, elements, and non-functions
     // Fast path with fewer type checks

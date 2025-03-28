@@ -6,10 +6,10 @@
  * 
  * The composition module provides features that work with the structure definition
  * mechanism. Unlike traditional features that directly modify the DOM, these
- * features modify a structure definition that is later used to create DOM elements.
+ * features modify a layout schema that is later used to create DOM elements.
  * 
  * This approach provides several advantages:
- * - Clearer separation between structure definition and DOM creation
+ * - Clearer separation between layout and DOM creation
  * - More predictable component creation process
  * - Better support for server-side rendering
  * - Enhanced testability
@@ -17,8 +17,8 @@
 
 // Export features
 export {
-  withStructure
-  withDom
+  withLayout,
+  withDom,
   withIcon,
   withLabel,
 } from './features';

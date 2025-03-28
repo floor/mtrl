@@ -51,7 +51,7 @@ export interface LabelConfig {
  * // Add label to a component schema
  * const component = pipe(
  *   createBase,
- *   withStructure(config),
+ *   withLayout(config),
  *   withLabel(config)
  * )(config);
  * ```

@@ -1,23 +1,28 @@
-// src/core/structure/object.ts
+// src/core/layout/object.ts
 /**
- * @module core/structure
- * @description Processor for object-based structure schemas
+ * @module core/layout
+ * @description Processor for object-based layout schemas
  */
 
 import { createElement } from '../dom/create';
-import { Schema, ElementDefinition, StructureResult } from './types';
+import { Schema, ElementDefinition, LayoutResult, LayoutOptions } from './types';
 import { isComponent, createFragment, processClassNames } from './utils';
-import { createStructureResult } from './result';
+import { createLayoutResult } from './result';
 
 /**
- * Processes an object-based structure definition
+ * Processes an object-based layout definition
  * 
- * @param schema - Object-based structure definition
- * @param parentElement - Optional parent element to attach structure to
- * @returns Structure result object
+ * @param schema - Object-based layout definition
+ * @param parentElement - Optional parent element to attach layout to
+ * @param options - Layout creation options
+ * @returns Layout result object
  */
-export function processObjectSchema(schema: Schema, parentElement?: HTMLElement | null): StructureResult {
-  const structure = {};
+export function processObjectSchema(
+  schema: Schema, 
+  parentElement?: HTMLElement | null,
+  options: LayoutOptions = {}
+): LayoutResult {
+  const layout = {};
   const fragment = parentElement ? document.createDocumentFragment() : null;
   
   // Process keys in a single pass
@@ -25,17 +30,17 @@ export function processObjectSchema(schema: Schema, parentElement?: HTMLElement 
     const def = schema[key];
     if (!def) continue;
     
-    // Process className options to add prefix - THIS WAS MISSING
+    // Process className options to add prefix
     const processedOptions = processClassNames(def.options || {});
     
     // Create element
     const creator = def.creator || createElement;
     const element = creator(processedOptions);
-    structure[key] = element;
+    layout[key] = element;
     
     // Also add with its name if different from key
     if (def.name && def.name !== key) {
-      structure[def.name] = element;
+      layout[def.name] = element;
     }
     
     // Add to DOM
@@ -48,7 +53,7 @@ export function processObjectSchema(schema: Schema, parentElement?: HTMLElement 
     // Process children
     if (def.children) {
       const childResult = processObjectSchema(def.children, isComponent(element) ? element.element : element);
-      Object.assign(structure, childResult.structure);
+      Object.assign(layout, childResult.layout);
     }
   }
   
@@ -58,5 +63,5 @@ export function processObjectSchema(schema: Schema, parentElement?: HTMLElement 
     parentDom.appendChild(fragment);
   }
   
-  return createStructureResult(structure);
+  return createLayoutResult(layout);
 }

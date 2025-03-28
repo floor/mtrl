@@ -1,30 +1,30 @@
-// src/core/structure/result.ts
+// src/core/layout/result.ts
 /**
- * @module core/structure
- * @description Simplified structure result creation and management
+ * @module core/layout
+ * @description Simplified layout result creation and management
  */
 
-import { StructureResult } from './types';
-import { isComponent, flattenStructure } from './utils';
+import { LayoutResult } from './types';
+import { isComponent, flattenLayout } from './utils';
 
 /**
- * Creates a result object with the structure and utility functions
+ * Creates a result object with the layout and utility functions
  * Simplified API for better usability and reduced overhead
  * 
- * @param structure - The raw structure object
- * @returns Result object with structure and utility functions
+ * @param layout - The raw layout object
+ * @returns Result object with layout and utility functions
  */
-export function createStructureResult(structure: Record<string, any>): StructureResult {
-  // Pre-compute flattened structure for better performance
-  const flattenedComponents = flattenStructure(structure);
+export function createLayoutResult(layout: Record<string, any>): LayoutResult {
+  // Pre-compute flattened layout for better performance
+  const flattenedComponents = flattenLayout(layout);
   
-  // Create the result object with structure correctly exposed
-  const result: StructureResult = {
-    // Raw structure object
-    structure,
+  // Create the result object with layout correctly exposed
+  const result: LayoutResult = {
+    // Raw layout object
+    layout,
     
     // Root element reference for convenience
-    element: structure.element,
+    element: layout.element,
     
     // Flattened component map
     component: flattenedComponents,
@@ -36,7 +36,7 @@ export function createStructureResult(structure: Record<string, any>): Structure
      * @returns Component if found, null otherwise
      */
     get(name: string): any {
-      return structure[name] ?? null;
+      return layout[name] ?? null;
     },
     
     /**
@@ -49,11 +49,11 @@ export function createStructureResult(structure: Record<string, any>): Structure
     },
     
     /**
-     * Destroys the structure, cleaning up all components
+     * Destroys the layout, cleaning up all components
      */
     destroy(): void {
       // Handle root element
-      const root = structure.element;
+      const root = layout.element;
       if (root) {
         // Component with destroy method
         if (isComponent(root) && typeof root.destroy === 'function') {
@@ -70,10 +70,10 @@ export function createStructureResult(structure: Record<string, any>): Structure
       }
       
       // Clean up other components that have a destroy method
-      for (const key in structure) {
+      for (const key in layout) {
         if (key === 'element') continue;
         
-        const item = structure[key];
+        const item = layout[key];
         if (isComponent(item) && typeof item.destroy === 'function') {
           item.destroy();
         }

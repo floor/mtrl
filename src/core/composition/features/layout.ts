@@ -1,9 +1,9 @@
-// src/core/composition/features/structure.ts
+// src/core/composition/features/layout.ts
 
 /**
  * Configuration that includes a component schema
  */
-export interface StructureConfig {
+export interface LayoutConfig {
   /**
    * Component schema definition
    */
@@ -14,7 +14,7 @@ export interface StructureConfig {
 
 /**
  * Adds schema definition to component without creating DOM
- * This establishes the blueprint for the component's structure
+ * This establishes the blueprint for the component's layout
  * before materializing it with withDom
  * 
  * @param config Configuration containing schema definition
@@ -22,17 +22,17 @@ export interface StructureConfig {
  * 
  * @example
  * ```ts
- * // Add structure to a component
+ * // Add layout to a component
  * const component = pipe(
  *   createBase,
- *   withStructure(config),
+ *   withLayout(config),
  *   withIcon(config),
  *   withLabel(config),
  *   withDom()
  * )(config);
  * ```
  */
-export const withStructure = (config: StructureConfig) => component => {
+export const withLayout = (config: LayoutConfig) => component => {
   // Use the schema definition from the config
   if (!config.schema) {
     console.warn('No schema definition found in component config');

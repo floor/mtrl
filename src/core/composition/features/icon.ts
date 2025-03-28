@@ -46,7 +46,7 @@ export interface IconConfig {
  * // Add icon to a component schema
  * const component = pipe(
  *   createBase,
- *   withStructure(config),
+ *   withLayout(config),
  *   withIcon(config)
  * )(config);
  * ```

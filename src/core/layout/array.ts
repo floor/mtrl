@@ -1,12 +1,12 @@
-// src/core/structure/array.ts
+// src/core/layout/array.ts
 /**
- * @module core/structure
- * @description Processor for array-based structure schemas
+ * @module core/layout
+ * @description Processor for array-based layout schemas
  */
 
-import { ComponentLike, StructureResult } from './types';
+import { ComponentLike, LayoutResult, LayoutOptions } from './types';
 import { isComponent, createFragment } from './utils';
-import { createStructureResult } from './result';
+import { createLayoutResult } from './result';
 import { isObject } from '../utils'
 
 /**
@@ -28,16 +28,22 @@ function createComponent(Component: Function, options: Record<string, any> = {})
 }
 
 /**
- * Processes an array-based structure definition
+ * Processes an array-based layout schema
  * 
- * @param schema - Array-based structure definition
- * @param parentElement - Optional parent element to attach structure to
+ * @param schema - Array-based layout definition
+ * @param parentElement - Optional parent element to attach layout to
  * @param level - Current recursion level
- * @returns Structure result object
+ * @param options - Layout creation options
+ * @returns Layout result object
  */
-export function processArraySchema(schema: any[], parentElement?: HTMLElement | null, level = 0): StructureResult {
+export function processArraySchema(
+  schema: any[], 
+  parentElement?: HTMLElement | null, 
+  level = 0,
+  options: LayoutOptions = {}
+): LayoutResult {
   level++;
-  const structure = {};
+  const layout = {};
   const fragment = document.createDocumentFragment();
   let component = null;
   
@@ -49,7 +55,7 @@ export function processArraySchema(schema: any[], parentElement?: HTMLElement | 
     if (Array.isArray(item)) {
       const container = component || parentElement;
       const result = processArraySchema(item, container, level);
-      Object.assign(structure, result.structure);
+      Object.assign(layout, result.layout);
       continue;
     }
     
@@ -66,9 +72,9 @@ export function processArraySchema(schema: any[], parentElement?: HTMLElement | 
     // Create component
     component = item.prototype ? new item(options) : item(options);
     
-    // Add to structure and append to DOM
-    if (name) structure[name] = component;
-    if (level === 1) structure.element = component.element || component;
+    // Add to layout and append to DOM
+    if (name) layout[name] = component;
+    if (level === 1) layout.element = component.element || component;
     
     // Append to fragment in one operation
     const element = component.element || component;
@@ -80,5 +86,5 @@ export function processArraySchema(schema: any[], parentElement?: HTMLElement | 
     (parentElement.element || parentElement).appendChild(fragment);
   }
   
-  return createStructureResult(structure);
+  return createLayoutResult(layout);
 }

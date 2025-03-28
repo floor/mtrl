@@ -1,7 +1,7 @@
-// src/core/structure/types.ts
+// src/core/layout/types.ts
 /**
- * @module core/structure
- * @description Optimized type definitions for structure creation system
+ * @module core/layout
+ * @description Optimized type definitions for layout creation system
  */
 
 /**
@@ -25,7 +25,7 @@ export interface ComponentLike {
 }
 
 /**
- * Definition for a single element in the structure
+ * Definition for a single element in the layout
  */
 export interface ElementDefinition {
   /**
@@ -50,7 +50,7 @@ export interface ElementDefinition {
 }
 
 /**
- * Schema for structure creation
+ * Schema for layout creation
  */
 export interface Schema {
   /**
@@ -65,9 +65,9 @@ export interface Schema {
 }
 
 /**
- * Options for structure creation
+ * Options for layout creation
  */
-export interface StructureOptions {
+export interface LayoutOptions {
   /**
    * Default creator function to use if not specified in schema
    */
@@ -86,14 +86,14 @@ export interface StructureOptions {
 }
 
 /**
- * Result object returned after creating a structure
+ * Result object returned after creating a layout
  * Simplified API with essential methods
  */
-export interface StructureResult {
+export interface LayoutResult {
   /**
-   * The raw structure object with all components
+   * The raw layout object with all components
    */
-  structure: Record<string, any>;
+  layout: Record<string, any>;
   
   /**
    * Reference to the root element for convenience
@@ -119,7 +119,7 @@ export interface StructureResult {
   getAll(): Record<string, any>;
   
   /**
-   * Destroys the structure, cleaning up all components
+   * Destroys the layout, cleaning up all components
    */
   destroy(): void;
 }

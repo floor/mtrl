@@ -1,10 +1,10 @@
-# Structure Module
+# Layout Module
 
-A lightweight, flexible system for creating and managing DOM structures and component hierarchies.
+A lightweight, flexible system for creating and managing visual arrangements and component hierarchies.
 
 ## Overview
 
-The Structure Module provides a declarative approach to building UI structures using either arrays or objects. It efficiently handles DOM operations, component instantiation, and lifecycle management in a bundle-optimized way.
+The Layout Module provides a declarative approach to building UI layouts using either arrays or objects. It efficiently handles DOM operations, component instantiation, and visual arrangement in a bundle-optimized way.
 
 ## Features
 
@@ -17,12 +17,12 @@ The Structure Module provides a declarative approach to building UI structures u
 
 ## Basic Usage
 
-### Array-based Structure
+### Array-based Layout
 
 ```javascript
-import { createStructure, createButton, createDialog, createList, createListItem } from 'mtrl';
+import { createLayout, createButton, createDialog, createList, createListItem } from 'mtrl';
 
-const structure = createStructure([
+const layout = createLayout([
   // Root level contains primary components
   createButton, 'submitButton', { text: 'Submit', variant: 'primary' },
   
@@ -35,28 +35,28 @@ const structure = createStructure([
 ]);
 
 // Add content to the dialog separately
-const dialogContent = createStructure([
+const dialogContent = createLayout([
   createList, 'actionsList', {},
   [
     createListItem, 'confirmAction', { text: 'Confirm', leading: 'check' },
     createListItem, 'cancelAction', { text: 'Cancel', leading: 'close' }
   ]
-], structure.get('confirmDialog').contentElement);
+], layout.get('confirmDialog').contentElement);
 
 // Access components
-const submitButton = structure.get('submitButton');
-const confirmDialog = structure.get('confirmDialog');
+const submitButton = layout.get('submitButton');
+const confirmDialog = layout.get('confirmDialog');
 
 // Handle events
 submitButton.on('click', () => confirmDialog.open());
 ```
 
-### Object-based Structure
+### Object-based Layout
 
 ```javascript
-import { createStructure, createTopAppBar, createNavigation, createList, createListItem, createTextfield, createButton } from 'mtrl';
+import { createLayout, createTopAppBar, createNavigation, createList, createListItem, createTextfield, createButton } from 'mtrl';
 
-const structure = createStructure({
+const layout = createLayout({
   element: {
     creator: createTopAppBar,
     options: { 
@@ -111,21 +111,21 @@ const structure = createStructure({
 });
 
 // Access components
-const topAppBar = structure.element;
-const nameField = structure.get('nameField');
-const saveButton = structure.get('saveButton');
+const topAppBar = layout.element;
+const nameField = layout.get('nameField');
+const saveButton = layout.get('saveButton');
 
 // Use the components
 nameField.setValue('John Doe');
 saveButton.on('click', () => console.log('Profile updated'));
 ```
 
-### HTML String Structure
+### HTML String Layout
 
 ```javascript
-import createStructure from 'core/structure';
+import createLayout from 'core/layout';
 
-const structure = createStructure(`
+const layout = createLayout(`
   <div class="notification">
     <h3>Welcome!</h3>
     <p>Thank you for joining our platform.</p>
@@ -133,19 +133,17 @@ const structure = createStructure(`
 `);
 
 // Access the root element
-const notification = structure.element;
+const notification = layout.element;
 document.body.appendChild(notification);
 ```
 
 ### Using Options Parameter
 
-### Using Options Parameter
-
 ```javascript
-import { createStructure, createButton, createTextfield, createCard, createChip, createTopAppBar, createBottomAppBar } from 'mtrl';
+import { createLayout, createButton, createTextfield, createCard, createChip, createTopAppBar, createBottomAppBar } from 'mtrl';
 
 // With default creator and disabled prefix
-const formStructure = createStructure(
+const formLayout = createLayout(
   [
     // Using string keys relies on the default creator
     'nameField', { label: 'Name', required: true },
@@ -163,7 +161,7 @@ const formStructure = createStructure(
 );
 
 // With theme options for a complete dashboard layout
-const dashboardStructure = createStructure(
+const dashboardLayout = createLayout(
   [
     createTopAppBar, 'header', { 
       title: 'Dashboard', 
@@ -200,11 +198,11 @@ const dashboardStructure = createStructure(
   }
 );
 
-// Access and use the structure
-const nameField = formStructure.get('nameField');
+// Access and use the layout
+const nameField = formLayout.get('nameField');
 nameField.setValue('John Doe');
 
-const statsCard = dashboardStructure.get('statsCard');
+const statsCard = dashboardLayout.get('statsCard');
 statsCard.setTitle('Updated Metrics - ' + new Date().toLocaleDateString());
 ```
 
@@ -212,18 +210,18 @@ statsCard.setTitle('Updated Metrics - ' + new Date().toLocaleDateString());
 
 ### Core Functions
 
-#### `createStructure(schema, parentElement?, options?)`
+#### `createLayout(schema, parentElement?, options?)`
 
-Creates a structure from a schema definition.
+Creates a layout from a schema definition.
 
 - **Parameters**:
   - `schema`: Array, object, HTML string, or function returning one of these
-  - `parentElement` (optional): Parent element to attach the structure to
-  - `options` (optional): Configuration options for structure creation:
+  - `parentElement` (optional): Parent element to attach the layout to
+  - `options` (optional): Configuration options for layout creation:
     - `creator`: Default creator function to use when not specified in schema
     - `prefix`: Boolean to control whether CSS class prefixing is applied (default: true)
     - Custom options can be added and accessed in component creators
-- **Returns**: Structure result object with components and utility methods
+- **Returns**: Layout result object with components and utility methods
 
 #### `processSchema(schema, parentElement?, level?, options?)`
 
@@ -233,17 +231,17 @@ Low-level function for processing schemas directly.
   - `schema`: Array or object schema
   - `parentElement` (optional): Parent element to attach to
   - `level` (optional): Current recursion level
-  - `options` (optional): Structure creation options
-- **Returns**: Structure result object
+  - `options` (optional): Layout creation options
+- **Returns**: Layout result object
 
-#### `createComponentInstance(Component, options?, structureOptions?)`
+#### `createComponentInstance(Component, options?, layoutOptions?)`
 
 Creates a component instance from a constructor or factory function.
 
 - **Parameters**:
   - `Component`: Constructor or factory function
   - `options` (optional): Options to pass to the component
-  - `structureOptions` (optional): Global structure options
+  - `layoutOptions` (optional): Global layout options
 - **Returns**: Component instance
 
 ### Utility Functions
@@ -265,47 +263,47 @@ Processes class names in options to add prefixes.
   - `skipPrefix` (optional): Whether to skip adding prefixes
 - **Returns**: Updated options with prefixed classNames
 
-#### `flattenStructure(structure)`
+#### `flattenLayout(layout)`
 
-Flattens a nested structure for easier component access.
+Flattens a nested layout for easier component access.
 
 - **Parameters**:
-  - `structure`: Structure object to flatten
-- **Returns**: Flattened structure with components
+  - `layout`: Layout object to flatten
+- **Returns**: Flattened layout with components
 
 ### Result Object
 
-The structure result object contains:
+The layout result object contains:
 
-- `structure`: Raw structure object with all components
+- `layout`: Raw layout object with all components
 - `element`: Reference to the root element
 - `component`: Flattened component map for easy access
 - `get(name)`: Function to get a component by name
 - `getAll()`: Function to get all components
-- `destroy()`: Function to clean up the structure
+- `destroy()`: Function to clean up the layout
 
-## Integrating with Structure Manager
+## Integrating with Layout Manager
 
-This module works well with the Structure Manager for advanced application structures:
+This module works well with the Layout Manager for advanced application layouts:
 
 ```javascript
-import createStructure from 'core/structure';
-import createStructureManager from 'client/core/structure/structure-manager';
+import createLayout from 'core/layout';
+import createLayoutManager from 'client/core/layout/layout-manager';
 
-// Create application structure
-const appStructure = createStructure([
+// Create application layout
+const appLayout = createLayout([
   // Application components...
 ]);
 
-// Create structure manager with the structure
-const structureManager = createStructureManager({
-  structure: appStructure.structure,
-  structureAPI: appStructure
+// Create layout manager with the layout
+const layoutManager = createLayoutManager({
+  layout: appLayout.layout,
+  layoutAPI: appLayout
 });
 
-// Use structure manager API
-structureManager.setContent('<h1>Welcome to the app</h1>');
-structureManager.setPageTitle('Dashboard');
+// Use layout manager API
+layoutManager.setContent('<h1>Welcome to the app</h1>');
+layoutManager.setPageTitle('Dashboard');
 ```
 
 ## Performance Considerations
@@ -314,7 +312,7 @@ structureManager.setPageTitle('Dashboard');
 
 **Array-based schemas** generally outperform object-based schemas:
 
-- **Faster processing**: 15-30% faster for large structures
+- **Faster processing**: 15-30% faster for large layouts
 - **Lower memory usage**: Requires less memory without property names
 - **Better bundle size**: More compact representation in code
 - **Efficient iteration**: Arrays are optimized for sequential access
@@ -323,7 +321,7 @@ structureManager.setPageTitle('Dashboard');
 
 - **Readability**: More explicit structure with named properties
 - **Maintainability**: Easier to understand complex nested structures
-- **Self-documentation**: Property names describe the structure's purpose
+- **Self-documentation**: Property names describe the layout's purpose
 
 **Recommendations**:
 - For **performance-critical** applications, prefer array-based schemas
@@ -334,18 +332,18 @@ structureManager.setPageTitle('Dashboard');
 
 - Setting `prefix: false` can improve performance slightly by avoiding class name processing
 - Providing a `creator` function in options is more efficient than having many duplicate creator references in the schema
-- Consider memoizing structure creation for frequently used UI patterns with the same options
+- Consider memoizing layout creation for frequently used UI patterns with the same options
 
 ### General Optimization Tips
 
 - Use DocumentFragment for batch DOM operations
 - Create components only when needed
-- Consider memoizing frequently created structures
-- For large applications, lazy-load secondary structures
+- Consider memoizing frequently created layouts
+- For large applications, lazy-load secondary layouts
 
 ## Browser Compatibility
 
-The Structure Module is compatible with all modern browsers (Chrome, Firefox, Safari, Edge).
+The Layout Module is compatible with all modern browsers (Chrome, Firefox, Safari, Edge).
 
 ## License
 
