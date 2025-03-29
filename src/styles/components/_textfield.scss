@@ -286,12 +286,12 @@ $component: '#{base.$prefix}-textfield';
       }
     }
     
-    // Hover state
-    &:hover {    
-      .#{$component}-label {
-        color: t.color('primary');
-      }
-    }
+    // // Hover state
+    // &:hover {    
+    //   .#{$component}-label {
+    //     color: t.color('primary');
+    //   }
+    // }
     
     // Error state
     &.#{$component}--error {    
@@ -382,6 +382,7 @@ $component: '#{base.$prefix}-textfield';
   
   // ===== OUTLINED VARIANT =====
   &--outlined {
+    background-color: inherit;
     border-radius: f.get-shape('extra-small');
     @include m.motion-transition(border-color);
     
@@ -410,6 +411,7 @@ $component: '#{base.$prefix}-textfield';
     }
 
     .#{$component}-label {
+      background-color: inherit;
       padding: 0 4px;
       left: 12px;
       top: 49%;
@@ -431,7 +433,6 @@ $component: '#{base.$prefix}-textfield';
     &:not(.#{$component}--empty) .#{$component}-label,
     &.#{$component}--focused .#{$component}-label {
       padding: 0 4px;
-      background-color: t.color('surface');
       transform: translateY(-147%) scale(0.75);
     }
 
@@ -445,17 +446,9 @@ $component: '#{base.$prefix}-textfield';
           border-width: 2px;
         }
       }
-    }
-    
-    // Hover state
-    &:hover {    
+
       .#{$component}-label {
         color: t.color('primary');
-      }
-
-      &::before {
-        opacity: 1;
-        border: 1px solid t.color('primary');
       }
     }
     
