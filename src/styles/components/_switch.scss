@@ -53,13 +53,14 @@ $component: '#{base.$prefix}-switch';
       position: absolute;
       width: 40px;
       height: 40px;
-      left: -6px; // Default position for unchecked
       top: -6px;
       background-color: transparent;
       opacity: 0;
       border-radius: 50%;
       z-index: 0;
-      transition: opacity 0.15s ease, background-color 0.15s ease;
+      transition: opacity v.motion('duration-short4') v.motion('easing-emphasized'),
+                  background-color v.motion('duration-short4') v.motion('easing-emphasized'),
+                  transform v.motion('duration-short4') v.motion('easing-emphasized');
       pointer-events: none;
     }
   }
@@ -149,6 +150,10 @@ $component: '#{base.$prefix}-switch';
     .#{$component}-track {
       background-color: t.color('primary');
       border-color: t.color('primary');
+      
+      &::after {
+        transform: translateX(26px);
+      }
     }
 
     .#{$component}-thumb {
@@ -207,6 +212,7 @@ $component: '#{base.$prefix}-switch';
         &::after {
           background-color: t.color('on-surface');
           opacity: v.state('hover-state-layer-opacity');
+          transform: translateX(-6px);
         }
       }
       
@@ -222,8 +228,7 @@ $component: '#{base.$prefix}-switch';
         &::after {
           background-color: t.color('primary');
           opacity: v.state('hover-state-layer-opacity');
-          left: auto;
-          right: -6px;
+          transform: translateX(16px);
         }
       }
       
