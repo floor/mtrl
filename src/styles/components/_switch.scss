@@ -58,9 +58,9 @@ $component: '#{base.$prefix}-switch';
       opacity: 0;
       border-radius: 50%;
       z-index: 0;
-      transition: opacity v.motion('duration-short4') v.motion('easing-emphasized'),
-                  background-color v.motion('duration-short4') v.motion('easing-emphasized'),
-                  transform v.motion('duration-short4') v.motion('easing-emphasized');
+      transition: opacity v.motion('duration-medium1') v.motion('easing-emphasized'),
+                  background-color v.motion('duration-medium1') v.motion('easing-emphasized'),
+                  transform v.motion('duration-medium1') cubic-bezier(0.2, 1.4, 0.35, 1);
       pointer-events: none;
     }
   }
@@ -75,12 +75,12 @@ $component: '#{base.$prefix}-switch';
     border-radius: 50%;
     background-color: t.color('outline');
     transform: translateX(0);
-    transition: transform v.motion('duration-medium2') cubic-bezier(0.2, 1.4, 0.35, 1), 
-                background-color v.motion('duration-short4') v.motion('easing-emphasized'),
-                width v.motion('duration-short4') v.motion('easing-emphasized'),
-                height v.motion('duration-short4') v.motion('easing-emphasized'),
-                top v.motion('duration-short4') v.motion('easing-emphasized'),
-                left v.motion('duration-short4') v.motion('easing-emphasized');
+    transition: transform v.motion('duration-medium1') cubic-bezier(0.2, 1.4, 0.35, 1), 
+                background-color v.motion('duration-medium1') v.motion('easing-emphasized'),
+                width v.motion('duration-medium1') v.motion('easing-emphasized'),
+                height v.motion('duration-medium1') v.motion('easing-emphasized'),
+                top v.motion('duration-medium1') v.motion('easing-emphasized'),
+                left v.motion('duration-medium1') v.motion('easing-emphasized');
     display: flex;
     align-items: center;
     justify-content: center;
@@ -157,7 +157,7 @@ $component: '#{base.$prefix}-switch';
       border-color: t.color('primary');
       
       &::after {
-        transform: translateX(26px);
+        transform: translateX(14px);
       }
     }
 
@@ -233,7 +233,7 @@ $component: '#{base.$prefix}-switch';
         &::after {
           background-color: t.color('primary');
           opacity: v.state('hover-state-layer-opacity');
-          transform: translateX(16px);
+          transform: translateX(14px);
         }
       }
       
