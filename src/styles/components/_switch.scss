@@ -10,11 +10,19 @@ $component: '#{base.$prefix}-switch';
 .#{$component} {
   // Base styles
   display: inline-flex;
-  align-items: center;
+  flex-direction: column;
   position: relative;
-  min-height: 32px;
+  width: 100%;
   padding: 4px 0;
   user-select: none;
+
+  // Container for switch and label
+  &-container {
+    display: flex;
+    align-items: center;
+    min-height: 48px;
+    width: 100%;
+  }
 
   // Input (visually hidden but accessible)
   &-input {
@@ -104,43 +112,73 @@ $component: '#{base.$prefix}-switch';
     }
   }
 
+  // Content wrapper
+  &-content {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+  }
+
   // Label
   &-label {
-    @include m.typography('body-large');
-    margin-left: 12px;
+    @include m.typography('title-medium');
     color: t.color('on-surface');
   }
 
   // Label position variants
   &--label-start {
-    .#{$component}-label {
-      margin-left: 0;
+    .#{$component}-container {
+      flex-direction: row-reverse;
+      justify-content: space-between;
+    }
+
+    .#{$component}-content {
       margin-right: 12px;
     }
   }
 
   &--label-end {
-    flex-direction: row;
+    .#{$component}-container {
+      flex-direction: row;
+      justify-content: space-between;
+    }
 
-    .#{$component}-label {
+    .#{$component}-content {
       margin-left: 12px;
-      margin-right: 0;
+    }
+  }
+
+  &--label-center {
+    .#{$component}-container {
+      justify-content: center;
+    }
+  }
+
+  // Supporting text
+  &-helper {
+    @include m.typography('body-medium');
+    color: t.color('on-surface-variant');
+    margin-top: 4px;
+    margin-left: 12px;
+    
+    &--error {
+      color: t.color('error');
     }
   }
 
   // RTL support
   @include m.rtl {
     &--label-start {
-      .#{$component}-label {
+      .#{$component}-content {
         margin-left: 12px;
         margin-right: 0;
       }
     }
 
     &--label-end {
-      .#{$component}-label {
-        margin-left: 0;
+      .#{$component}-content {
         margin-right: 12px;
+        margin-left: 0;
       }
     }
     
@@ -176,21 +214,34 @@ $component: '#{base.$prefix}-switch';
     }
   }
 
+  // Error state
+  &--error {
+    .#{$component}-track {
+      border-color: t.color('error');
+    }
+  }
+
   // Disabled state
   &--disabled {
-    opacity: 0.38;
+    .#{$component}-track {
+      opacity: 0.38;
+    }
+    
+    .#{$component}-label {
+      opacity: 0.38;
+    }
     
     // Specific styles for disabled + checked
     &.#{$component}--checked {
       .#{$component}-track {
         background-color: t.color('outline');
         border-color: t.color('outline');
-        opacity: 0.64;
+        opacity: 0.38;
       }
       
       .#{$component}-thumb {
         background-color: t.color('surface-dim');
-        opacity: 1;
+        opacity: 0.38;
         &-icon {
           color: t.color('on-surface');
         }

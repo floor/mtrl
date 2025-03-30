@@ -11,6 +11,7 @@ import {
   withCheckable
 } from '../../core/compose/features';
 import { withAPI } from './api';
+import { withSupportingText } from './features';
 import { SwitchConfig, SwitchComponent, BaseComponent } from './types';
 import { 
   createBaseConfig, 
@@ -32,10 +33,11 @@ const createSwitch = (config: SwitchConfig = {}): SwitchComponent => {
       createBase,
       withEvents(), // Move events first to ensure system is available
       withElement(getElementConfig(baseConfig)),
-      withInput(baseConfig),
-      withTrack(baseConfig),
       withTextLabel(baseConfig),
       withLabelPosition(baseConfig),
+      withInput(baseConfig),
+      withTrack(baseConfig),
+      withSupportingText(baseConfig),
       withCheckable(baseConfig),
       withDisabled(baseConfig),
       withLifecycle(),

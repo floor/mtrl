@@ -26,7 +26,6 @@ export function createSliderSchema(component, config: SliderConfig) {
   return {
     element: {
       options: {
-        tag: 'div',
         className: [getClass('slider'), config.class].filter(Boolean),
         attrs: {
           tabindex: '-1',
@@ -38,20 +37,17 @@ export function createSliderSchema(component, config: SliderConfig) {
         // Container with all slider elements
         container: {
           options: {
-            tag: 'div',
             className: getClass('slider-container')
           },
           children: {
             // Track with segments
             track: {
               options: {
-                tag: 'div',
                 className: getClass('slider-track')
               },
               children: {
                 activeTrack: {
                   options: {
-                    tag: 'div',
                     className: getClass('slider-active-track'),
                     style: {
                       width: `${valuePercent}%`
@@ -60,7 +56,6 @@ export function createSliderSchema(component, config: SliderConfig) {
                 },
                 startTrack: {
                   options: {
-                    tag: 'div',
                     className: getClass('slider-start-track'),
                     style: {
                       display: 'none', // Initially hidden for single slider
@@ -70,7 +65,6 @@ export function createSliderSchema(component, config: SliderConfig) {
                 },
                 remainingTrack: {
                   options: {
-                    tag: 'div',
                     className: getClass('slider-remaining-track'),
                     style: {
                       width: `${100 - valuePercent}%`
@@ -83,7 +77,6 @@ export function createSliderSchema(component, config: SliderConfig) {
             // Ticks container
             ticksContainer: {
               options: {
-                tag: 'div',
                 className: getClass('slider-ticks-container')
               }
             },
@@ -91,7 +84,6 @@ export function createSliderSchema(component, config: SliderConfig) {
             // Dots for ends
             startDot: {
               options: {
-                tag: 'div',
                 className: [
                   getClass('slider-dot'),
                   getClass('slider-dot--start')
@@ -100,7 +92,6 @@ export function createSliderSchema(component, config: SliderConfig) {
             },
             endDot: {
               options: {
-                tag: 'div',
                 className: [
                   getClass('slider-dot'),
                   getClass('slider-dot--end')
@@ -111,7 +102,6 @@ export function createSliderSchema(component, config: SliderConfig) {
             // Main handle
             handle: {
               options: {
-                tag: 'div',
                 className: getClass('slider-handle'),
                 attrs: {
                   role: 'slider',
@@ -132,7 +122,6 @@ export function createSliderSchema(component, config: SliderConfig) {
             // Main value bubble
             valueBubble: {
               options: {
-                tag: 'div',
                 className: getClass('slider-value'),
                 attrs: {
                   'aria-hidden': 'true',

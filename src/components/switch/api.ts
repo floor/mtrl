@@ -48,6 +48,22 @@ export const withAPI = ({ disabled, lifecycle, checkable }: ApiOptions) =>
     getLabel(): string {
       return component.text?.getText() || '';
     },
+    
+    // Supporting text management (if present)
+    supportingTextElement: component.supportingTextElement || null,
+    setSupportingText(text: string, isError?: boolean): SwitchComponent {
+      if (component.setSupportingText) {
+        component.setSupportingText(text, isError);
+      }
+      return this;
+    },
+    
+    removeSupportingText(): SwitchComponent {
+      if (component.removeSupportingText) {
+        component.removeSupportingText();
+      }
+      return this;
+    },
 
     // Event handling
     on(event: string, handler: Function): SwitchComponent {

@@ -27,6 +27,12 @@ export interface SwitchConfig {
   /** Label position (start/end) */
   labelPosition?: SwitchPosition | string;
   
+  /** Supporting text content */
+  supportingText?: string;
+  
+  /** Whether supporting text indicates an error */
+  error?: boolean;
+  
   /** Additional CSS classes */
   class?: string;
   
@@ -76,6 +82,15 @@ export interface SwitchComponent {
   
   /** Gets the switch's label text */
   getLabel: () => string;
+  
+  /** Supporting text element */
+  supportingTextElement: HTMLElement | null;
+  
+  /** Sets supporting text content */
+  setSupportingText: (text: string, isError?: boolean) => SwitchComponent;
+  
+  /** Removes supporting text */
+  removeSupportingText: () => SwitchComponent;
   
   /** Adds event listener */
   on: (event: string, handler: Function) => SwitchComponent;
