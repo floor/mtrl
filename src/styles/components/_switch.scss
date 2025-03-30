@@ -170,8 +170,9 @@ $component: '#{base.$prefix}-switch';
     }
   }
 
-  // Hover effects (state layer)
-  &:not(&--disabled) {
+  // Interactive states for enabled switches
+  &:not(.#{$component}--disabled) {
+    // Hover state for unchecked
     .#{$component}-input:hover + .#{$component}-track {
       &::before {
         content: '';
@@ -180,13 +181,12 @@ $component: '#{base.$prefix}-switch';
         left: -8px;
         right: -8px;
         bottom: -8px;
-        background-color: t.color('on-surface');
         opacity: v.state('hover-state-layer-opacity');
         border-radius: 20px;
       }
     }
     
-    // Active/pressed state
+    // Pressed state ripple effect
     .#{$component}-input:active + .#{$component}-track {
       &::before {
         content: '';
@@ -195,17 +195,55 @@ $component: '#{base.$prefix}-switch';
         left: -8px;
         right: -8px;
         bottom: -8px;
-        background-color: t.color('on-surface');
         opacity: v.state('pressed-state-layer-opacity');
         border-radius: 20px;
       }
     }
     
-    // Hover/active states when checked
+    // Unchecked states
+    &:not(.#{$component}--checked) {
+      .#{$component}-input:hover + .#{$component}-track {
+        &::before {
+          background-color: t.color('on-surface');
+        }
+        
+        .#{$component}-thumb {
+          background-color: t.color('on-surface-variant');
+        }
+      }
+      
+      .#{$component}-input:active + .#{$component}-track {
+        &::before {
+          background-color: t.color('on-surface');
+        }
+        
+        .#{$component}-thumb {
+          background-color: t.color('on-surface-variant');
+        }
+      }
+      
+      // Active/pressed state with expanded thumb (unchecked)
+      .#{$component}-input:active ~ .#{$component}-track .#{$component}-thumb {
+        width: 28px;
+        height: 28px;
+        top: 0;
+        left: 0;
+      }
+    }
+    
+    // Checked states
     &.#{$component}--checked {
       .#{$component}-input:hover + .#{$component}-track::before,
       .#{$component}-input:active + .#{$component}-track::before {
         background-color: t.color('primary');
+      }
+      
+      // Active/pressed state with expanded thumb (checked)
+      .#{$component}-input:active ~ .#{$component}-track .#{$component}-thumb {
+        width: 28px;
+        height: 28px;
+        top: 0;
+        left: 0;
       }
     }
   }
