@@ -46,6 +46,22 @@ $component: '#{base.$prefix}-switch';
     background-color: t.color('surface-container-highest');
     border: 2px solid t.color('outline');
     @include m.motion-transition(background-color, border-color, outline);
+    
+    // Ripple effect (consistent size for both hover and press)
+    &::after {
+      content: '';
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      left: -6px; // Default position for unchecked
+      top: -6px;
+      background-color: transparent;
+      opacity: 0;
+      border-radius: 50%;
+      z-index: 0;
+      transition: opacity 0.15s ease, background-color 0.15s ease;
+      pointer-events: none;
+    }
   }
 
   // Switch thumb (slider)
@@ -62,6 +78,8 @@ $component: '#{base.$prefix}-switch';
     display: flex;
     align-items: center;
     justify-content: center;
+    z-index: 1; /* Ensure thumb is above ripple */
+    pointer-events: none;
 
     // Icon inside thumb
     &-icon {
@@ -164,7 +182,7 @@ $component: '#{base.$prefix}-switch';
         background-color: t.color('on-primary');
         opacity: 1;
         &-icon {
-          color: t.color('outline')
+          color: t.color('outline');
         }
       }
     }
@@ -172,79 +190,58 @@ $component: '#{base.$prefix}-switch';
 
   // Interactive states for enabled switches
   &:not(.#{$component}--disabled) {
-    // Hover state for unchecked
-    .#{$component}-input:hover + .#{$component}-track {
-      &::before {
-        content: '';
-        position: absolute;
-        top: -8px;
-        left: -8px;
-        right: -8px;
-        bottom: -8px;
-        opacity: v.state('hover-state-layer-opacity');
-        border-radius: 20px;
-      }
+    // Remove track hover effects
+    .#{$component}-input:hover + .#{$component}-track::before,
+    .#{$component}-input:active + .#{$component}-track::before {
+      display: none;
     }
-    
-    // Pressed state ripple effect
-    .#{$component}-input:active + .#{$component}-track {
-      &::before {
-        content: '';
-        position: absolute;
-        top: -8px;
-        left: -8px;
-        right: -8px;
-        bottom: -8px;
-        opacity: v.state('pressed-state-layer-opacity');
-        border-radius: 20px;
-      }
-    }
-    
-    // Unchecked states
+
+    // Handle hover and active states for both unchecked
     &:not(.#{$component}--checked) {
-      .#{$component}-input:hover + .#{$component}-track {
-        &::before {
-          background-color: t.color('on-surface');
-        }
-        
+      .#{$component}-input:hover ~ .#{$component}-track,
+      .#{$component}-input:active ~ .#{$component}-track {
         .#{$component}-thumb {
           background-color: t.color('on-surface-variant');
         }
-      }
-      
-      .#{$component}-input:active + .#{$component}-track {
-        &::before {
-          background-color: t.color('on-surface');
-        }
         
-        .#{$component}-thumb {
-          background-color: t.color('on-surface-variant');
+        &::after {
+          background-color: t.color('on-surface');
+          opacity: v.state('hover-state-layer-opacity');
         }
       }
       
-      // Active/pressed state with expanded thumb (unchecked)
-      .#{$component}-input:active ~ .#{$component}-track .#{$component}-thumb {
-        width: 28px;
-        height: 28px;
-        top: 0;
-        left: 0;
+      .#{$component}-input:active ~ .#{$component}-track::after {
+        opacity: v.state('pressed-state-layer-opacity');
       }
     }
     
-    // Checked states
+    // Hover/active states for checked
     &.#{$component}--checked {
-      .#{$component}-input:hover + .#{$component}-track::before,
-      .#{$component}-input:active + .#{$component}-track::before {
-        background-color: t.color('primary');
+      .#{$component}-input:hover ~ .#{$component}-track,
+      .#{$component}-input:active ~ .#{$component}-track {
+        &::after {
+          background-color: t.color('primary');
+          opacity: v.state('hover-state-layer-opacity');
+          left: auto;
+          right: -6px;
+        }
       }
       
-      // Active/pressed state with expanded thumb (checked)
-      .#{$component}-input:active ~ .#{$component}-track .#{$component}-thumb {
-        width: 28px;
-        height: 28px;
-        top: 0;
-        left: 0;
+      .#{$component}-input:active ~ .#{$component}-track::after {
+        opacity: v.state('pressed-state-layer-opacity');
       }
+    }
+
+    // Expand thumb on press for both checked and unchecked
+    .#{$component}-input:active ~ .#{$component}-track .#{$component}-thumb {
+      width: 28px;
+      height: 28px;
+      top: 0;
+      left: 0;
+    }
+    
+    &.#{$component}--checked .#{$component}-input:active ~ .#{$component}-track .#{$component}-thumb {
+      left: 0;
     }
   }
 
