@@ -75,7 +75,12 @@ $component: '#{base.$prefix}-switch';
     border-radius: 50%;
     background-color: t.color('outline');
     transform: translateX(0);
-    transition: all v.motion('duration-short4') v.motion('easing-emphasized');
+    transition: transform v.motion('duration-medium2') cubic-bezier(0.2, 1.4, 0.35, 1), 
+                background-color v.motion('duration-short4') v.motion('easing-emphasized'),
+                width v.motion('duration-short4') v.motion('easing-emphasized'),
+                height v.motion('duration-short4') v.motion('easing-emphasized'),
+                top v.motion('duration-short4') v.motion('easing-emphasized'),
+                left v.motion('duration-short4') v.motion('easing-emphasized');
     display: flex;
     align-items: center;
     justify-content: center;
@@ -180,14 +185,14 @@ $component: '#{base.$prefix}-switch';
       .#{$component}-track {
         background-color: t.color('outline');
         border-color: t.color('outline');
-        opacity: 0.38;
+        opacity: 0.64;
       }
       
       .#{$component}-thumb {
-        background-color: t.color('on-primary');
+        background-color: t.color('surface-dim');
         opacity: 1;
         &-icon {
-          color: t.color('outline');
+          color: t.color('on-surface');
         }
       }
     }
