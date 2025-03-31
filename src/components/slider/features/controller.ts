@@ -16,30 +16,6 @@ export const withController = (config: SliderConfig) => component => {
     console.warn('Cannot initialize slider controller: missing element or components');
     return component;
   }
-
-  // Ensure component has events
-  if (!component.events) {
-    component.events = {
-      listeners: {},
-      on(event, handler) {
-        if (!this.listeners[event]) this.listeners[event] = [];
-        this.listeners[event].push(handler);
-        return this;
-      },
-      off(event, handler) {
-        if (this.listeners[event]) {
-          this.listeners[event] = this.listeners[event].filter(h => h !== handler);
-        }
-        return this;
-      },
-      trigger(event, data) {
-        if (this.listeners[event]) {
-          this.listeners[event].forEach(handler => handler(data));
-        }
-        return this;
-      }
-    };
-  }
   
   // Initialize state
   const state = {
@@ -68,7 +44,7 @@ export const withController = (config: SliderConfig) => component => {
         defaultPrevented: false
       };
       
-      state.component.events.trigger(eventName, eventData);
+      state.component.emit(eventName, eventData);
       return eventData;
     }
   };

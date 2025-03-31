@@ -16,13 +16,43 @@ import { ButtonConfig } from './types';
 import { createBaseConfig, getElementConfig, getApiConfig } from './config';
 
 /**
- * Creates a new Button component
- * @param {ButtonConfig} config - Button configuration object
- * @returns {ButtonComponent} Button component instance
+ * Creates a new Button component with the specified configuration.
+ * 
+ * The Button component is created using a functional composition pattern,
+ * applying various features through the pipe function. This approach allows
+ * for flexible and modular component construction.
+ * 
+ * @param {ButtonConfig} config - Configuration options for the button
+ *  This can include text content, icon options, variant styling, disabled state, 
+ *  and other button properties. See {@link ButtonConfig} for available options.
+ * 
+ * @returns {ButtonComponent} A fully configured button component instance with
+ *  all requested features applied. The returned component has methods for
+ *  manipulation, event handling, and lifecycle management.
+ * 
+ * @throws {Error} Throws an error if button creation fails for any reason
+ * 
+ * @example
+ * // Create a simple text button
+ * const textButton = createButton({ text: 'Click me' });
+ * 
+ * @example
+ * // Create a primary button with an icon
+ * const primaryButton = createButton({ 
+ *   text: 'Submit',
+ *   variant: 'primary',
+ *   icon: 'send'
+ * });
+ * 
+ * @example
+ * // Create a disabled button
+ * const disabledButton = createButton({
+ *   text: 'Not available',
+ *   disabled: true
+ * });
  */
 const createButton = (config: ButtonConfig = {}) => {
   const baseConfig = createBaseConfig(config);
-
   try {
     const button = pipe(
       createBase,
@@ -36,7 +66,6 @@ const createButton = (config: ButtonConfig = {}) => {
       withLifecycle(),
       comp => withAPI(getApiConfig(comp))(comp)
     )(baseConfig);
-
     return button;
   } catch (error) {
     console.error('Button creation error:', error);

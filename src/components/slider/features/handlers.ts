@@ -174,7 +174,6 @@ export const createHandlers = (config: SliderConfig, state, uiRenderer, eventHel
       // Update UI and trigger events
       render();
       triggerEvent(SLIDER_EVENTS.INPUT, e);
-      triggerEvent(SLIDER_EVENTS.CHANGE, e);
     } catch (error) {
       console.warn('Error handling track click:', error);
     }
