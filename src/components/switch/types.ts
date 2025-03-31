@@ -24,9 +24,6 @@ export interface SwitchConfig {
   /** Label text */
   label?: string;
   
-  /** Label position (start/end) */
-  labelPosition?: SwitchPosition | string;
-  
   /** Supporting text content */
   supportingText?: string;
   

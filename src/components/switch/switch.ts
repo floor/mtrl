@@ -16,7 +16,6 @@ import { SwitchConfig, SwitchComponent, BaseComponent } from './types';
 import { 
   createBaseConfig, 
   getElementConfig, 
-  withLabelPosition,
   getApiConfig
 } from './config';
 
@@ -34,7 +33,6 @@ const createSwitch = (config: SwitchConfig = {}): SwitchComponent => {
       withEvents(), // Move events first to ensure system is available
       withElement(getElementConfig(baseConfig)),
       withTextLabel(baseConfig),
-      withLabelPosition(baseConfig),
       withInput(baseConfig),
       withTrack(baseConfig),
       withSupportingText(baseConfig),

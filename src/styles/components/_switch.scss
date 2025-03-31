@@ -19,9 +19,25 @@ $component: '#{base.$prefix}-switch';
   // Container for switch and label
   &-container {
     display: flex;
+    flex-direction: row;
+    justify-content: space-between;
     align-items: center;
     min-height: 48px;
     width: 100%;
+  }
+
+  // Content wrapper
+  &-content {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    margin-right: 12px;
+  }
+
+  // Label
+  &-label {
+    @include m.typography('title-medium');
+    color: t.color('on-surface');
   }
 
   // Input (visually hidden but accessible)
@@ -66,6 +82,7 @@ $component: '#{base.$prefix}-switch';
       opacity: 0;
       border-radius: 50%;
       z-index: 0;
+      transform: translateX(-6px);
       transition: opacity v.motion('duration-medium1') v.motion('easing-emphasized'),
                   background-color v.motion('duration-medium1') v.motion('easing-emphasized'),
                   transform v.motion('duration-medium1') cubic-bezier(0.2, 1.4, 0.35, 1);
@@ -112,54 +129,10 @@ $component: '#{base.$prefix}-switch';
     }
   }
 
-  // Content wrapper
-  &-content {
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
-  }
-
-  // Label
-  &-label {
-    @include m.typography('title-medium');
-    color: t.color('on-surface');
-  }
-
-  // Label position variants
-  &--label-start {
-    .#{$component}-container {
-      flex-direction: row-reverse;
-      justify-content: space-between;
-    }
-
-    .#{$component}-content {
-      margin-right: 12px;
-    }
-  }
-
-  &--label-end {
-    .#{$component}-container {
-      flex-direction: row;
-      justify-content: space-between;
-    }
-
-    .#{$component}-content {
-      margin-left: 12px;
-    }
-  }
-
-  &--label-center {
-    .#{$component}-container {
-      justify-content: center;
-    }
-  }
-
   // Supporting text
   &-helper {
     @include m.typography('body-medium');
     color: t.color('on-surface-variant');
-    margin-top: 4px;
-    margin-left: 12px;
     
     &--error {
       color: t.color('error');
@@ -168,18 +141,13 @@ $component: '#{base.$prefix}-switch';
 
   // RTL support
   @include m.rtl {
-    &--label-start {
-      .#{$component}-content {
-        margin-left: 12px;
-        margin-right: 0;
-      }
+    &-container {
+      flex-direction: row;
     }
-
-    &--label-end {
-      .#{$component}-content {
-        margin-right: 12px;
-        margin-left: 0;
-      }
+    
+    &-content {
+      margin-left: 12px;
+      margin-right: 0;
     }
     
     // Adjust thumb movement for RTL layout
