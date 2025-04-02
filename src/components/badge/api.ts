@@ -2,6 +2,11 @@
 import { BadgeComponent, BadgeColor, BadgeVariant, BadgePosition } from './types';
 import { formatBadgeLabel } from './config';
 
+/**
+ * API configuration options for badge component
+ * @category Components
+ * @internal
+ */
 interface ApiOptions {
   visibility: {
     show: () => void;
@@ -14,6 +19,11 @@ interface ApiOptions {
   };
 }
 
+/**
+ * Component with required elements and methods for API enhancement
+ * @category Components
+ * @internal
+ */
 interface ComponentWithElements {
   element: HTMLElement;
   wrapper?: HTMLElement;
@@ -44,9 +54,13 @@ const ALL_VARIANTS = ['small', 'large'];
 const ALL_POSITIONS = ['top-right', 'top-left', 'bottom-right', 'bottom-left'];
 
 /**
- * Enhances a badge component with API methods
+ * Enhances a badge component with API methods.
+ * This follows the higher-order function pattern to add public API methods
+ * to the component, making them available to the end user.
+ * 
  * @param {ApiOptions} options - API configuration options
  * @returns {Function} Higher-order function that adds API methods to component
+ * @category Components
  * @internal This is an internal utility for the Badge component
  */
 export const withAPI = ({ visibility, lifecycle }: ApiOptions) => 
