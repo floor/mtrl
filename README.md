@@ -292,6 +292,23 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 
 MTRL is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
+## Testing
+
+MTRL comes with a comprehensive test suite using Bun's test runner. The tests are written in TypeScript and use JSDOM for DOM testing.
+
+```bash
+# Run all tests
+bun test
+
+# Run tests in watch mode
+bun test --watch
+
+# Run tests with coverage report
+bun test --coverage
+```
+
+For more details on writing and running tests, see our [Testing Guide](TESTING.md).
+
 ## Documentation
 
 For detailed API documentation, examples, and guides, visit our [documentation site](https://mtrl.app).

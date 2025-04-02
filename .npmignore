@@ -1,0 +1,30 @@
+# Development files
+node_modules/
+.git/
+.github/
+.gitignore
+.DS_Store
+*.log
+*.lock
+bun.lockb
+
+# Build and test files
+test/
+demo/
+coverage/
+.nyc_output/
+docs/
+
+# Configuration files
+tsconfig.json
+typedoc.json
+typedoc.simple.json
+
+# Other files
+CLAUDE.md
+.vscode/
+.idea/
+.bun/
+
+# Keep test documentation 
+!TESTING.md

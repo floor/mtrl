@@ -13,7 +13,11 @@
     "functional",
     "composable",
     "material design 3",
-    "md3"
+    "md3",
+    "testing",
+    "jsdom",
+    "tested",
+    "type-safe"
   ],
   "type": "module",
   "main": "index.js",
