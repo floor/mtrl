@@ -1,7 +1,6 @@
 // index.js
 import {
   createLayout,
-  createStructure,
   createElement,
   createBadge,
   createBottomAppBar,
@@ -36,7 +35,6 @@ import {
 
 export {
   createLayout,
-  createStructure,
   createElement,
   createBadge,
   createBottomAppBar,
