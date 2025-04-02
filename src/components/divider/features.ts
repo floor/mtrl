@@ -6,8 +6,14 @@ import { DividerComponent } from './types';
 /**
  * Adds orientation functionality to divider
  * 
+ * Higher-order function that enhances a component with the ability to be
+ * oriented horizontally (default) or vertically. Controls the appropriate
+ * CSS classes and dimensional styling based on orientation.
+ * 
  * @param config - Divider configuration
  * @returns Function that enhances a component with orientation capabilities
+ * 
+ * @internal
  */
 export const withOrientation = (config: DividerConfig) => 
   <C extends ElementComponent & BaseComponent>(component: C): C & Partial<DividerComponent> => {
@@ -66,8 +72,18 @@ export const withOrientation = (config: DividerConfig) =>
 /**
  * Adds inset functionality to divider
  * 
+ * Higher-order function that enhances a component with the ability to have
+ * customized inset spacing. Supports three variants (full-width, inset, middle-inset)
+ * and allows fine-grained control over start and end insets.
+ * 
+ * Insets are applied as margins in the appropriate direction based on orientation:
+ * - For horizontal dividers: left/right margins
+ * - For vertical dividers: top/bottom margins
+ * 
  * @param config - Divider configuration
  * @returns Function that enhances a component with inset capabilities
+ * 
+ * @internal
  */
 export const withInset = (config: DividerConfig) => 
   <C extends ElementComponent & Partial<DividerComponent>>(component: C): C & Partial<DividerComponent> => {
@@ -164,8 +180,18 @@ export const withInset = (config: DividerConfig) =>
 /**
  * Adds style customization to divider
  * 
+ * Higher-order function that enhances a component with visual customization
+ * capabilities, including:
+ * - Custom thickness (height for horizontal, width for vertical dividers)
+ * - Custom colors (background-color CSS property)
+ * 
+ * These styling options allow dividers to be visually adapted to different
+ * design requirements while maintaining Material Design principles.
+ * 
  * @param config - Divider configuration
  * @returns Function that enhances a component with style capabilities
+ * 
+ * @internal
  */
 export const withStyle = (config: DividerConfig) => 
   <C extends ElementComponent & Partial<DividerComponent>>(component: C): C & Partial<DividerComponent> => {
