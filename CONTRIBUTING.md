@@ -1,10 +1,10 @@
-# Contributing to MTRL
+# Contributing to mtrl
 
-Thank you for your interest in contributing to MTRL! This document provides guidelines and instructions for contributing to this lightweight, ES6-focused JavaScript UI component library.
+Thank you for your interest in contributing to mtrl! This document provides guidelines and instructions for contributing to this lightweight, ES6-focused JavaScript UI component library.
 
 ## Why Contribute?
 
-MTRL aims to be a modern, flexible UI component library with:
+mtrl aims to be a modern, flexible UI component library with:
 
 - Zero dependencies (except Bun for development)
 - ES6+ focused codebase
@@ -12,7 +12,7 @@ MTRL aims to be a modern, flexible UI component library with:
 - Simple and extensible API
 - Excellent documentation
 
-By contributing to MTRL, you'll help create a lean alternative to heavier frameworks while gaining experience with modern JavaScript patterns and component design.
+By contributing to mtrl, you'll help create a lean alternative to heavier frameworks while gaining experience with modern JavaScript patterns and component design.
 
 ## Getting Started
 
@@ -31,7 +31,7 @@ By contributing to MTRL, you'll help create a lean alternative to heavier framew
 
 ### Testing Your Components with mtrl.app
 
-MTRL uses a separate repository called mtrl.app (https://mtrl.app) for showcasing and testing components. There are two ways to test your components:
+mtrl uses a separate repository called mtrl.app (https://mtrl.app) for showcasing and testing components. There are two ways to test your components:
 
 1. **Build and link locally**:
    ```bash
@@ -74,7 +74,7 @@ MTRL uses a separate repository called mtrl.app (https://mtrl.app) for showcasin
 
 ### Component Structure
 
-MTRL components follow a consistent pattern:
+mtrl components follow a consistent pattern:
 
 ```javascript
 // src/components/mycomponent/index.js
@@ -172,8 +172,8 @@ For any new feature or component:
 
 ## License
 
-By contributing to MTRL, you agree that your contributions will be licensed under the project's MIT License.
+By contributing to mtrl, you agree that your contributions will be licensed under the project's MIT License.
 
 ---
 
-Thank you for contributing to MTRL! Your efforts help make this library better for everyone.
+Thank you for contributing to mtrl! Your efforts help make this library better for everyone.

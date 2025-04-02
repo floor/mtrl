@@ -1,6 +1,6 @@
-# TypeDoc Installation and Usage Guide for MTRL
+# TypeDoc Installation and Usage Guide for mtrl
 
-This guide will help you set up and use TypeDoc with your MTRL library.
+This guide will help you set up and use TypeDoc with your mtrl library.
 
 ## Installation
 
@@ -86,7 +86,7 @@ function myFunction(paramName: string): number {
 
 ### Categories
 
-Use the `@category` tag to organize your MTRL components and utilities:
+Use the `@category` tag to organize your mtrl components and utilities:
 
 ```typescript
 /**

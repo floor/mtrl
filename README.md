@@ -1,26 +1,26 @@
-# MTRL Library
+# mtrl Library
 
-> **Project Status:** MTRL is in active development with TypeScript support! The core architecture and components are established, with more features on the roadmap. We welcome early adopters and contributors who want to help shape MTRL's future!
+> **Project Status:** mtrl is in active development with TypeScript support! The core architecture and components are established, with more features on the roadmap. We welcome early adopters and contributors who want to help shape mtrl's future!
 
-MTRL is a lightweight, composable TypeScript/JavaScript component library inspired by Material Design principles. Built with zero dependencies, MTRL provides a robust foundation for creating modern web interfaces with an emphasis on performance, type safety, and accessibility.
+mtrl is a lightweight, composable TypeScript/JavaScript component library inspired by Material Design principles. Built with zero dependencies, mtrl provides a robust foundation for creating modern web interfaces with an emphasis on performance, type safety, and accessibility.
 
-## Understanding MTRL
+## Understanding mtrl
 
-MTRL (pronounced "material") takes its inspiration from Material Design while providing a flexible, framework-agnostic implementation. The library's name is reflected in its component prefix `mtrl-`, which you'll see used consistently throughout the codebase.
+mtrl (pronounced "material") takes its inspiration from Material Design while providing a flexible, framework-agnostic implementation. The library's name is reflected in its component prefix `mtrl-`, which you'll see used consistently throughout the codebase.
 
 ### Design Philosophy
 
-MTRL is built on several core principles:
+mtrl is built on several core principles:
 
 1. **Composition Over Inheritance**: Components are constructed through functional composition with full type safety.
 2. **Zero Dependencies**: The entire library is built with vanilla TypeScript, ensuring minimal bundle size and maximum compatibility.
-3. **Material Design Inspiration**: While inspired by Material Design, MTRL provides flexibility in styling and behavior.
+3. **Material Design Inspiration**: While inspired by Material Design, mtrl provides flexibility in styling and behavior.
 4. **Accessibility First**: Built-in accessibility features ensure your applications are usable by everyone.
 5. **TypeScript First**: Comprehensive type definitions for better developer experience and code reliability.
 
 ## Core Components
 
-MTRL provides a comprehensive set of components, each following Material Design principles:
+mtrl provides a comprehensive set of components, each following Material Design principles:
 
 ```typescript
 import { createButton, createTextField } from 'mtrl'
@@ -63,7 +63,7 @@ bun add mtrl
 
 ## Component Architecture
 
-Let's look at how MTRL components are constructed:
+Let's look at how mtrl components are constructed:
 
 ```typescript
 // Example of a button component creation
@@ -78,7 +78,7 @@ const button = createButton({
 
 ### The Composition System
 
-MTRL uses a pipe-based composition system with full type safety for building components:
+mtrl uses a pipe-based composition system with full type safety for building components:
 
 ```typescript
 // Internal component creation
@@ -101,7 +101,7 @@ const createButton = (config: ButtonConfig): ButtonComponent => {
 
 ### TypeScript Integration
 
-MTRL provides comprehensive TypeScript definitions:
+mtrl provides comprehensive TypeScript definitions:
 
 ```typescript
 // Component interfaces for better developer experience
@@ -129,7 +129,7 @@ export interface ButtonComponent extends
 
 ### CSS Classes
 
-MTRL follows a consistent class naming convention:
+mtrl follows a consistent class naming convention:
 
 ```css
 .mtrl-component                /* Base component class */
@@ -140,7 +140,7 @@ MTRL follows a consistent class naming convention:
 
 ## State Management
 
-MTRL provides several approaches to state management:
+mtrl provides several approaches to state management:
 
 ### Local Component State
 
@@ -175,7 +175,7 @@ collection.subscribe(({ event, data }) => {
 
 ## Data Integration
 
-MTRL provides adapters for different data sources:
+mtrl provides adapters for different data sources:
 
 ```typescript
 // MongoDB adapter
@@ -199,7 +199,7 @@ const routeAdapter = createRouteAdapter({
 
 ### Creating Custom Components
 
-Extend MTRL by creating custom components with full type safety:
+Extend mtrl by creating custom components with full type safety:
 
 ```typescript
 interface CustomCardConfig {
@@ -234,7 +234,7 @@ const createCustomCard = (config: CustomCardConfig): CustomCardComponent => {
 
 ### Styling
 
-MTRL components can be styled through CSS custom properties:
+mtrl components can be styled through CSS custom properties:
 
 ```css
 :root {
@@ -249,7 +249,7 @@ MTRL components can be styled through CSS custom properties:
 
 ### Performance
 
-MTRL is designed with performance in mind:
+mtrl is designed with performance in mind:
 
 - Minimal DOM operations
 - Efficient event handling
@@ -258,7 +258,7 @@ MTRL is designed with performance in mind:
 
 ### Type Safety
 
-MTRL leverages TypeScript for better developer experience:
+mtrl leverages TypeScript for better developer experience:
 
 - Clear component interfaces
 - Type-safe method chaining
@@ -277,7 +277,7 @@ Built-in accessibility features include:
 
 ## Browser Support
 
-MTRL supports modern browsers:
+mtrl supports modern browsers:
 
 - Chrome (latest)
 - Firefox (latest)
@@ -290,11 +290,11 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 
 ## License
 
-MTRL is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+mtrl is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Testing
 
-MTRL comes with a comprehensive test suite using Bun's test runner. The tests are written in TypeScript and use JSDOM for DOM testing.
+mtrl comes with a comprehensive test suite using Bun's test runner. The tests are written in TypeScript and use JSDOM for DOM testing.
 
 ```bash
 # Run all tests

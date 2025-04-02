@@ -1,6 +1,6 @@
-# Testing MTRL Components
+# Testing mtrl Components
 
-This document provides guidelines for writing and running tests for the MTRL library. We use Bun's built-in test runner for fast, efficient testing.
+This document provides guidelines for writing and running tests for the mtrl library. We use Bun's built-in test runner for fast, efficient testing.
 
 ## Running Tests
 
@@ -45,7 +45,7 @@ test/
 
 ## Writing Tests
 
-When writing tests for MTRL components, follow these guidelines:
+When writing tests for mtrl components, follow these guidelines:
 
 ### 1. Test Component Creation
 

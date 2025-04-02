@@ -302,7 +302,7 @@ $component: '#{base.$prefix}-card';
   
   // State classes
   &--state-disabled {
-    opacity: 0.38; // Use MTRL standard opacity
+    opacity: 0.38; // Use mtrl standard opacity
     pointer-events: none;
   }
   

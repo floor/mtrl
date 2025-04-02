@@ -201,7 +201,7 @@ export const CARD_ELEVATION_LEVELS = {
 
 /**
  * Adds interactive behavior to card component
- * Uses the MTRL elevation system for proper elevation levels
+ * Uses the mtrl elevation system for proper elevation levels
  * 
  * @param {BaseComponent} comp - Card component
  * @returns {BaseComponent} Enhanced card component
