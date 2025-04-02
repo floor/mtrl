@@ -17,8 +17,24 @@ import { createBaseConfig, getElementConfig, getApiConfig } from './config';
 /**
  * Creates a new Extended Floating Action Button (Extended FAB) component
  * 
+ * Extended FABs are a variant of the standard Floating Action Button that include
+ * both an icon and text label. They're designed for primary actions that need
+ * more description than just an icon, and can be positioned in various corners
+ * of the interface.
+ * 
+ * Extended FABs follow Material Design 3 guidelines with support for:
+ * - Multiple color variants (primary, secondary, tertiary, surface)
+ * - Icon and text label configuration
+ * - Fixed or fluid width
+ * - Automatic collapse on scroll
+ * - Various positioning options
+ * 
  * @param {ExtendedFabConfig} config - Extended FAB configuration object
  * @returns {ExtendedFabComponent} Extended FAB component instance
+ * 
+ * @throws {Error} If the Extended FAB cannot be created due to invalid configuration
+ * 
+ * @category Components
  * 
  * @example
  * ```typescript
@@ -41,6 +57,18 @@ import { createBaseConfig, getElementConfig, getApiConfig } from './config';
  * // Add click handler
  * extendedFab.on('click', () => {
  *   console.log('Extended FAB clicked');
+ * });
+ * 
+ * // Attach to DOM
+ * document.body.appendChild(extendedFab.element);
+ * 
+ * // Programmatically collapse and expand
+ * document.querySelector('#collapseBtn').addEventListener('click', () => {
+ *   extendedFab.collapse();
+ * });
+ * 
+ * document.querySelector('#expandBtn').addEventListener('click', () => {
+ *   extendedFab.expand();
  * });
  * ```
  */

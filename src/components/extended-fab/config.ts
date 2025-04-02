@@ -8,6 +8,12 @@ import { ExtendedFabConfig } from './types';
 
 /**
  * Default configuration for the Extended FAB component
+ * 
+ * Provides reasonable defaults for creating Extended FABs
+ * according to Material Design 3 guidelines.
+ * 
+ * @category Components
+ * @internal
  */
 export const defaultConfig: ExtendedFabConfig = {
   variant: 'primary',
@@ -19,16 +25,31 @@ export const defaultConfig: ExtendedFabConfig = {
 
 /**
  * Creates the base configuration for Extended FAB component
+ * 
+ * Merges user-provided configuration with default values and validates
+ * the configuration to ensure all required properties have values.
+ * 
  * @param {ExtendedFabConfig} config - User provided configuration
  * @returns {ExtendedFabConfig} Complete configuration with defaults applied
+ * 
+ * @category Components
+ * @internal
  */
 export const createBaseConfig = (config: ExtendedFabConfig = {}): ExtendedFabConfig => 
   createComponentConfig(defaultConfig, config, 'extended-fab') as ExtendedFabConfig;
 
 /**
  * Generates element configuration for the Extended FAB component
+ * 
+ * Transforms the user-friendly ExtendedFabConfig into the internal format required
+ * by the withElement function. Creates all the appropriate CSS classes and attributes
+ * needed to properly render the Extended FAB in the DOM.
+ * 
  * @param {ExtendedFabConfig} config - Extended FAB configuration
  * @returns {Object} Element configuration object for withElement
+ * 
+ * @category Components
+ * @internal
  */
 export const getElementConfig = (config: ExtendedFabConfig) => {
   // Create the attributes object
@@ -91,8 +112,15 @@ export const getElementConfig = (config: ExtendedFabConfig) => {
 
 /**
  * Creates API configuration for the Extended FAB component
+ * 
+ * Provides access to various component sub-features like disabled state,
+ * lifecycle management, and text content.
+ * 
  * @param {Object} comp - Component with disabled and lifecycle features
- * @returns {Object} API configuration object
+ * @returns {Object} API configuration object for withAPI
+ * 
+ * @category Components
+ * @internal
  */
 export const getApiConfig = (comp: any) => ({
   disabled: {
