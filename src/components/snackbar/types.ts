@@ -6,14 +6,39 @@
 export type SnackbarVariant = 'basic' | 'action';
 
 /**
+ * Snackbar visual variants
+ */
+export const SNACKBAR_VARIANTS = {
+  BASIC: 'basic',
+  ACTION: 'action' // With action button
+} as const;
+
+/**
  * Available snackbar positions
  */
 export type SnackbarPosition = 'center' | 'start' | 'end';
 
 /**
+ * Snackbar display positions
+ */
+export const SNACKBAR_POSITIONS = {
+  CENTER: 'center',
+  START: 'start',
+  END: 'end'
+} as const;
+
+/**
  * Snackbar visibility states
  */
 export type SnackbarState = 'visible' | 'hidden';
+
+/**
+ * Snackbar state classes
+ */
+export const SNACKBAR_STATES = {
+  VISIBLE: 'visible',
+  HIDDEN: 'hidden'
+} as const;
 
 /**
  * Available snackbar event types

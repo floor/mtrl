@@ -4,5 +4,8 @@ export {
   NavigationConfig,
   NavigationComponent,
   NavItemConfig,
-  NavGroupConfig
+  NavGroupConfig,
+  NAV_VARIANTS,
+  NAV_POSITIONS,
+  NAV_BEHAVIORS
 } from './types'

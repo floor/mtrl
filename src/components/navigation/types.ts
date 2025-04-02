@@ -7,16 +7,49 @@
 export type NavVariant = 'rail' | 'drawer' | 'bar' | 'modal' | 'standard';
 
 /**
+ * Navigation variants enum
+ * @category Components
+ */
+export const NAV_VARIANTS: Record<string, NavVariant> = {
+  RAIL: 'rail',
+  DRAWER: 'drawer',
+  BAR: 'bar',
+  MODAL: 'modal',
+  STANDARD: 'standard'
+} as const;
+
+/**
  * Navigation positions
  * @category Components
  */
 export type NavPosition = 'left' | 'right' | 'top' | 'bottom';
 
 /**
+ * Navigation positions enum
+ * @category Components
+ */
+export const NAV_POSITIONS: Record<string, NavPosition> = {
+  LEFT: 'left',
+  RIGHT: 'right',
+  TOP: 'top',
+  BOTTOM: 'bottom'
+} as const;
+
+/**
  * Navigation behaviors
  * @category Components
  */
 export type NavBehavior = 'fixed' | 'dismissible' | 'modal';
+
+/**
+ * Navigation behaviors enum
+ * @category Components
+ */
+export const NAV_BEHAVIORS: Record<string, NavBehavior> = {
+  FIXED: 'fixed',
+  DISMISSIBLE: 'dismissible',
+  MODAL: 'modal'
+} as const;
 
 /**
  * Navigation item state

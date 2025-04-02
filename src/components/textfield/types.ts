@@ -6,6 +6,28 @@
 export type TextfieldVariant = 'filled' | 'outlined';
 
 /**
+ * Textfield variant constants
+ */
+export const TEXTFIELD_VARIANTS = {
+  FILLED: 'filled',
+  OUTLINED: 'outlined'
+} as const;
+
+/**
+ * Available Textfield sizes
+ */
+export type TextfieldSize = 'small' | 'medium' | 'large';
+
+/**
+ * Textfield size constants
+ */
+export const TEXTFIELD_SIZES = {
+  SMALL: 'small',
+  MEDIUM: 'medium',
+  LARGE: 'large'
+} as const;
+
+/**
  * Available Textfield states
  */
 export type TextfieldStates = 'active' | 'inactive' | 'disabled';
@@ -14,6 +36,20 @@ export type TextfieldStates = 'active' | 'inactive' | 'disabled';
  * Available Textfield types
  */
 export type TextfieldTypes = 'text' | 'password' | 'email' | 'number' | 'tel' | 'url' | 'search' | 'multiline';
+
+/**
+ * Textfield type constants
+ */
+export const TEXTFIELD_TYPES = {
+  TEXT: 'text',
+  PASSWORD: 'password',
+  EMAIL: 'email',
+  NUMBER: 'number',
+  TEL: 'tel',
+  URL: 'url',
+  SEARCH: 'search',
+  MULTILINE: 'multiline'
+} as const;
 
 /**
  * Configuration interface for the Textfield component

@@ -3,6 +3,19 @@
 export type SwitchPosition = 'center' | 'start' | 'end';
 
 /**
+ * Switch label position types
+ */
+export type SwitchLabelPosition = 'start' | 'end';
+
+/**
+ * Switch label positions
+ */
+export const SWITCH_LABEL_POSITION = {
+  START: 'start',
+  END: 'end'
+} as const;
+
+/**
  * Configuration interface for the Switch component
  */
 export interface SwitchConfig {
