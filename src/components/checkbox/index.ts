@@ -1,10 +1,13 @@
 // src/components/checkbox/index.ts
 export { default } from './checkbox';
-export { 
+export type { 
   CheckboxConfig, 
   CheckboxComponent, 
   CheckboxVariant, 
-  CheckboxLabelPosition,
+  CheckboxLabelPosition
+} from './types';
+
+export { 
   CHECKBOX_VARIANTS,
   CHECKBOX_LABEL_POSITION,
   CHECKBOX_STATES,

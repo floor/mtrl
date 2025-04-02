@@ -1,6 +1,6 @@
 // src/components/tabs/tab-api.ts
 import { TabComponent } from './types';
-import { BadgeComponent } from '../badge/types';
+import type { BadgeComponent } from '../badge';
 import createBadge from '../badge';
 
 const TAB_LAYOUT = {

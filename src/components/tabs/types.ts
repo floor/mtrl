@@ -1,5 +1,5 @@
 // src/components/tabs/types.ts
-import { BadgeComponent } from '../badge/types';
+import type { BadgeComponent } from '../badge';
 import { TabIndicator } from './indicator';
 
 /**

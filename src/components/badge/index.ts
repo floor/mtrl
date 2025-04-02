@@ -1,6 +1,6 @@
 // src/components/badge/index.ts
 export { default } from './badge';
-export { BadgeConfig, BadgeComponent, BadgeVariant, BadgeColor, BadgePosition } from './types';
+export type { BadgeConfig, BadgeComponent, BadgeVariant, BadgeColor, BadgePosition } from './types';
 
 // Export common badge constants for convenience and backward compatibility
 export const BADGE_VARIANTS = {
