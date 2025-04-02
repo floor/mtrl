@@ -305,6 +305,12 @@ bun test --watch
 
 # Run tests with coverage report
 bun test --coverage
+
+# Run tests with UI
+bun test --watch --ui
+
+# Run a specific test file
+bun test test/components/button.test.ts
 ```
 
 For more details on writing and running tests, see our [Testing Guide](TESTING.md).
