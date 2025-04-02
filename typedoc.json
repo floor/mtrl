@@ -18,8 +18,6 @@
     "GitHub": "https://github.com/floor/mtrl"
   },
   "skipErrorChecking": true,
-  "skipLibCheck": true,
-  "skipDiagnostics": true,
   "disableSources": false,
   "validation": {
     "invalidLink": false,

@@ -7,7 +7,10 @@ import {
 import { ButtonConfig } from './types';
 
 /**
- * Default configuration for the Button component
+ * Default configuration for the Button component.
+ * These values will be used when not explicitly specified by the user.
+ * 
+ * @category Components
  */
 export const defaultConfig: ButtonConfig = {
   variant: 'filled',
@@ -16,17 +19,26 @@ export const defaultConfig: ButtonConfig = {
 };
 
 /**
- * Creates the base configuration for Button component
+ * Creates the base configuration for Button component by merging user-provided
+ * config with default values.
+ * 
  * @param {ButtonConfig} config - User provided configuration
  * @returns {ButtonConfig} Complete configuration with defaults applied
+ * @category Components
+ * @internal
  */
 export const createBaseConfig = (config: ButtonConfig = {}): ButtonConfig => 
   createComponentConfig(defaultConfig, config, 'button') as ButtonConfig;
 
 /**
- * Generates element configuration for the Button component
+ * Generates element configuration for the Button component.
+ * This function creates the necessary attributes and configuration
+ * for the DOM element creation process.
+ * 
  * @param {ButtonConfig} config - Button configuration
  * @returns {Object} Element configuration object for withElement
+ * @category Components
+ * @internal
  */
 export const getElementConfig = (config: ButtonConfig) => {
   // Create the attributes object
@@ -62,9 +74,14 @@ export const getElementConfig = (config: ButtonConfig) => {
 };
 
 /**
- * Creates API configuration for the Button component
+ * Creates API configuration for the Button component.
+ * This connects the core component features (like disabled state)
+ * to the public API methods exposed to users.
+ * 
  * @param {Object} comp - Component with disabled and lifecycle features
  * @returns {Object} API configuration object
+ * @category Components
+ * @internal
  */
 export const getApiConfig = (comp) => ({
   disabled: {

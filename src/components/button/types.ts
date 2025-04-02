@@ -1,8 +1,14 @@
 // src/components/button/types.ts
 
 /**
- * Button variant types
+ * Button variant types - controls the visual style of the button
  * @category Components
+ * @remarks
+ * - filled: Primary action button with solid background (high emphasis)
+ * - tonal: Secondary action button with medium emphasis
+ * - outlined: Button with outline border and transparent background
+ * - elevated: Button with slight elevation/shadow
+ * - text: Button that appears as text without background or border (low emphasis)
  */
 export type ButtonVariant = 'filled' | 'tonal' | 'outlined' | 'elevated' | 'text';
 
