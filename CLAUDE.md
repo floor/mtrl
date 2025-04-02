@@ -23,6 +23,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Components follow a standard structure in their directories (api.ts, config.ts, etc.)
 - Use ES6+ features with full browser compatibility
 
+## Version Control Conventions
+- Do not include "Generated with Claude Code" or "Co-Authored-By: Claude" in commit messages or PRs
+- Use conventional commit format: type(scope): message
+- Commit types: feat, fix, docs, style, refactor, test, chore
+- Branch naming follows pattern: type/description (e.g., feat/new-component, fix/bug-name, chore/refactor-code)
+- Standard branch types: feat, fix, chore
+- Keep commit messages concise and descriptive
+
 ## Test Conventions
 - Tests live in `test/components/` with `.test.ts` extension
 - Use JSDOM for DOM manipulation in tests
