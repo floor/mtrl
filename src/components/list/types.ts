@@ -2,6 +2,10 @@
 
 /**
  * List types/variants
+ * 
+ * Different selection modes available for lists.
+ * 
+ * @category Components
  */
 export const LIST_TYPES = {
   DEFAULT: 'default', // Standard list
@@ -12,6 +16,10 @@ export const LIST_TYPES = {
 
 /**
  * List layout variants
+ * 
+ * Layout options for list items and content arrangement.
+ * 
+ * @category Components
  */
 export const LIST_LAYOUTS = {
   HORIZONTAL: 'horizontal', // Default horizontal layout
@@ -20,6 +28,10 @@ export const LIST_LAYOUTS = {
 
 /**
  * List item layouts
+ * 
+ * Individual item layout options controlling content arrangement.
+ * 
+ * @category Components
  */
 export const LIST_ITEM_LAYOUTS = {
   HORIZONTAL: 'horizontal', // Default horizontal layout
@@ -28,6 +40,10 @@ export const LIST_ITEM_LAYOUTS = {
 
 /**
  * List element class names
+ * 
+ * CSS class names for the various elements that make up a list.
+ * 
+ * @internal
  */
 export const LIST_CLASSES = {
   ROOT: 'list',
@@ -49,6 +65,10 @@ export const LIST_CLASSES = {
 
 /**
  * List validation schema
+ * 
+ * JSON Schema for validating list configuration options.
+ * 
+ * @internal
  */
 export const LIST_SCHEMA = {
   type: 'object',
@@ -107,6 +127,10 @@ export const LIST_SCHEMA = {
 
 /**
  * List item states
+ * 
+ * Visual states that list items can have.
+ * 
+ * @category Components
  */
 export const LIST_ITEM_STATES = {
   SELECTED: 'selected',
@@ -163,6 +187,11 @@ export type ListItemState = 'selected' | 'disabled' | 'focused' | 'hovered';
 
 /**
  * List item configuration
+ * 
+ * Configuration options for creating a list item with customizable content
+ * and appearance following Material Design 3 guidelines.
+ * 
+ * @category Components
  */
 export interface ListItemConfig {
   /** Unique identifier for the item */
@@ -207,6 +236,11 @@ export interface ListItemConfig {
 
 /**
  * List section configuration
+ * 
+ * Configuration for a list section, which groups items under a title.
+ * Sections help organize list content into logical groups.
+ * 
+ * @category Components
  */
 export interface ListSectionConfig {
   /** Unique identifier for the section */
@@ -221,6 +255,11 @@ export interface ListSectionConfig {
 
 /**
  * Selection change event data
+ * 
+ * Data structure provided with selectionChange events
+ * when list items are selected or deselected.
+ * 
+ * @category Components
  */
 export interface SelectionChangeEvent {
   /** Array of selected item IDs */
@@ -235,6 +274,10 @@ export interface SelectionChangeEvent {
 
 /**
  * List item data
+ * 
+ * Internal data structure for tracking list items and their state.
+ * 
+ * @internal
  */
 export interface ListItemData {
   /** The item's DOM element */
@@ -249,6 +292,11 @@ export interface ListItemData {
 
 /**
  * Configuration interface for the List component
+ * 
+ * Comprehensive options for creating and customizing a List
+ * according to Material Design 3 guidelines.
+ * 
+ * @category Components
  */
 export interface ListConfig {
   /** List selection type */
@@ -278,6 +326,11 @@ export interface ListConfig {
 
 /**
  * List component interface
+ * 
+ * Public API for the List component, providing methods for
+ * item management, selection handling, and event management.
+ * 
+ * @category Components
  */
 export interface ListComponent {
   /** The root element of the list */
@@ -319,6 +372,10 @@ export interface ListComponent {
 
 /**
  * Base component interface
+ * 
+ * Internal interface for component composition in the List component.
+ * 
+ * @internal
  */
 export interface BaseComponent {
   element: HTMLElement;

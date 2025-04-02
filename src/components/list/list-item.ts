@@ -8,9 +8,15 @@ import { createElement, getListClass } from './utils';
 
 /**
  * Creates list item content based on configuration
- * @param {BaseComponent} component - Component to enhance
+ * 
+ * Higher-order function that enhances a component with list item content structure
+ * according to Material Design 3 guidelines. Handles the creation and arrangement of
+ * item elements like headline text, supporting text, leading/trailing components, etc.
+ * 
  * @param {ListItemConfig} config - List item configuration
- * @returns {BaseComponent} Enhanced component
+ * @returns {Function} Function that enhances a component with list item content
+ * 
+ * @internal
  */
 const withItemContent = (config: ListItemConfig) => (component: any): any => {
   const { element } = component;
@@ -89,8 +95,46 @@ const withItemContent = (config: ListItemConfig) => (component: any): any => {
 
 /**
  * Creates a list item component
+ * 
+ * Creates an individual list item with customizable content following Material Design 3
+ * list item patterns. List items can have different layouts, content structures, and 
+ * visual states (selected, disabled, etc.).
+ * 
  * @param {ListItemConfig} config - List item configuration
  * @returns {Object} List item component instance
+ * 
+ * @category Components
+ * 
+ * @example
+ * ```typescript
+ * // Create a standard list item
+ * const listItem = createListItem({
+ *   id: 'user1',
+ *   headline: 'Alex Johnson',
+ *   supportingText: 'Software Engineer',
+ *   leading: '<span class="material-icons">person</span>'
+ * });
+ * 
+ * // Create a vertical layout list item with more content
+ * const detailedItem = createListItem({
+ *   id: 'event1',
+ *   layout: 'vertical',
+ *   overline: 'UPCOMING EVENT',
+ *   headline: 'Team Meeting',
+ *   supportingText: 'Discussion of quarterly goals',
+ *   meta: 'Tomorrow, 2:00 PM',
+ *   leading: '<span class="material-icons">event</span>',
+ *   trailing: '<span class="material-icons">more_vert</span>'
+ * });
+ * 
+ * // Create a selected list item
+ * const selectedItem = createListItem({
+ *   id: 'file1',
+ *   headline: 'Project Proposal.pdf',
+ *   supportingText: '2.4 MB',
+ *   selected: true
+ * });
+ * ```
  */
 const createListItem = (config: ListItemConfig): any => {
   const baseConfig = {

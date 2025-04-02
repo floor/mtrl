@@ -11,8 +11,14 @@ import createListItem from './list-item';
 
 /**
  * Enhances component with list content and functionality
+ * 
+ * Higher-order function that adds list content rendering, selection management,
+ * keyboard navigation, and item management capabilities to a component.
+ * 
  * @param {ListConfig} config - List configuration
  * @returns {Function} Higher-order function that adds list features to component
+ * 
+ * @internal This is an internal implementation detail for the List component
  */
 export const withListContent = (config: ListConfig) => 
   (component: BaseComponent): BaseComponent => {

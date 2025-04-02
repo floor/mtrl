@@ -20,9 +20,15 @@ const LIST_CLASS_NAMES = {
 };
 
 /**
- * Creates a divider element
+ * Creates a divider element for lists
+ * 
+ * Creates a horizontal divider that can be used to separate list items
+ * following Material Design 3 guidelines.
+ * 
  * @param {string} prefix - CSS class prefix
  * @returns {HTMLElement} Divider element
+ * 
+ * @internal
  */
 export const createDivider = (prefix: string): HTMLElement => {
   const divider = document.createElement('div');
@@ -32,10 +38,16 @@ export const createDivider = (prefix: string): HTMLElement => {
 };
 
 /**
- * Creates a section title element
+ * Creates a section title element for lists
+ * 
+ * Creates a section header element used to group list items into logical sections
+ * following Material Design 3 guidelines for list organization.
+ * 
  * @param {string} title - Section title text
  * @param {string} prefix - CSS class prefix
  * @returns {HTMLElement} Section title element
+ * 
+ * @internal
  */
 export const createSectionTitle = (title: string, prefix: string): HTMLElement => {
   const titleEl = document.createElement('div');
@@ -46,10 +58,16 @@ export const createSectionTitle = (title: string, prefix: string): HTMLElement =
 
 /**
  * Creates a DOM element with optional class and content
+ * 
+ * Utility function for creating DOM elements with proper class names and content
+ * for list items and their sub-elements.
+ * 
  * @param {string} tag - HTML tag name
  * @param {string} className - CSS class name
  * @param {string|HTMLElement} [content] - Element content or child element
  * @returns {HTMLElement} Created element
+ * 
+ * @internal
  */
 export const createElement = (tag: string, className: string, content?: string | HTMLElement): HTMLElement => {
   const element = document.createElement(tag);
@@ -66,8 +84,14 @@ export const createElement = (tag: string, className: string, content?: string |
 
 /**
  * Gets the class name for a list element
+ * 
+ * Retrieves the standard class name for list elements from a consistent
+ * centralized naming scheme.
+ * 
  * @param {string} element - Element name
  * @returns {string} The class name string
+ * 
+ * @internal
  */
 export const getListClass = (element: keyof typeof LIST_CLASS_NAMES): string => {
   return LIST_CLASS_NAMES[element];

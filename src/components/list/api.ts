@@ -2,7 +2,10 @@
 import { BaseComponent, ListComponent, ListItemConfig } from './types';
 
 /**
- * API options interface
+ * API options interface for List component
+ * 
+ * @category Components
+ * @internal
  */
 interface ApiOptions {
   disabled: {
@@ -15,9 +18,16 @@ interface ApiOptions {
 }
 
 /**
- * Enhances list component with API methods
+ * Enhances list component with public API methods
+ * 
+ * Higher-order function that adds the complete public API to the List component,
+ * exposing methods for managing items, selection, events, and component state.
+ * 
  * @param {ApiOptions} options - API configuration
  * @returns {Function} Higher-order function that adds API methods to component
+ * 
+ * @category Components
+ * @internal
  */
 export const withAPI = ({ disabled, lifecycle }: ApiOptions) => 
   (component: BaseComponent): ListComponent => ({
