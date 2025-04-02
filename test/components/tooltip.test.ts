@@ -42,30 +42,12 @@ afterAll(() => {
   window.close();
 });
 
-// Import only the types we need from the component
+// Import types and constants from the component
 import type { TooltipComponent, TooltipConfig } from '../../src/components/tooltip/types';
-
-// Define constants to avoid circular dependencies
-const TOOLTIP_POSITIONS = {
-  TOP: 'top',
-  RIGHT: 'right',
-  BOTTOM: 'bottom',
-  LEFT: 'left',
-  TOP_START: 'top-start',
-  TOP_END: 'top-end',
-  RIGHT_START: 'right-start',
-  RIGHT_END: 'right-end',
-  BOTTOM_START: 'bottom-start',
-  BOTTOM_END: 'bottom-end',
-  LEFT_START: 'left-start',
-  LEFT_END: 'left-end'
-};
-
-const TOOLTIP_VARIANTS = {
-  DEFAULT: 'default',
-  RICH: 'rich',
-  PLAIN: 'plain'
-};
+import { 
+  TOOLTIP_POSITIONS, 
+  TOOLTIP_VARIANTS 
+} from '../../src/components/tooltip/types';
 
 // Create mock tooltip component
 const createMockTooltip = (config: TooltipConfig = {}): TooltipComponent => {

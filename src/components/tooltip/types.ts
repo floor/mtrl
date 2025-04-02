@@ -1,12 +1,47 @@
 // src/components/tooltip/types.ts
 
 /**
- * Available Textfield variants
+ * Tooltip positions
+ */
+export const TOOLTIP_POSITIONS = {
+  TOP: 'top',
+  RIGHT: 'right',
+  BOTTOM: 'bottom',
+  LEFT: 'left',
+  TOP_START: 'top-start',
+  TOP_END: 'top-end',
+  RIGHT_START: 'right-start',
+  RIGHT_END: 'right-end',
+  BOTTOM_START: 'bottom-start',
+  BOTTOM_END: 'bottom-end',
+  LEFT_START: 'left-start',
+  LEFT_END: 'left-end'
+} as const;
+
+/**
+ * Tooltip variants
+ */
+export const TOOLTIP_VARIANTS = {
+  DEFAULT: 'default',
+  RICH: 'rich',
+  PLAIN: 'plain'
+} as const;
+
+/**
+ * Default values
+ */
+export const DEFAULT_SHOW_DELAY = 300;
+export const DEFAULT_HIDE_DELAY = 100;
+export const DEFAULT_OFFSET = 8;
+export const DEFAULT_ARROW_SIZE = 8;
+
+/**
+ * Available Tooltip variants
  */
 export type TooltipVariant = 'default' | 'rich' | 'plain';
 
 /**
- * Available Textfield states
+ * Available Tooltip positions
  */
 export type TooltipPosition = 'top' | 'right' | 'bottom' | 'left' | 'top-start' | 'top-end' | 'right-start' | 'right-end' | 'bottom-start' | 'bottom-end' | 'left-start' | 'left-end';
 
@@ -38,7 +73,7 @@ export interface TooltipConfig {
    * Tooltip variant that determines visual styling
    * @default 'default'
    */
-  variant?: TooltipVariants | string;
+  variant?: TooltipVariant | string;
   
   /** 
    * Whether the tooltip is initially visible

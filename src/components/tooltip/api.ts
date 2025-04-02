@@ -1,6 +1,10 @@
 // src/components/tooltip/api.ts
-import { TooltipComponent } from './types';
-import { TOOLTIP_POSITIONS, DEFAULT_OFFSET, DEFAULT_ARROW_SIZE } from './config';
+import { 
+  TooltipComponent, 
+  TOOLTIP_POSITIONS, 
+  DEFAULT_OFFSET, 
+  DEFAULT_ARROW_SIZE 
+} from './types';
 
 interface ApiOptions {
   lifecycle: {
