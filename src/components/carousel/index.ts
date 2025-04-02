@@ -1,24 +1,35 @@
 // src/components/carousel/index.ts
+
 /**
- * Carousel Component - Material Design 3 compatible carousel implementation
+ * Carousel Component Module
  * 
- * This module exports a carousel component with four layout types:
- * - Multi-browse: For browsing many visual items at once (photos, event feeds)
- * - Uncontained: For highly customized or text-heavy carousels (traditional behavior)
- * - Hero: For spotlighting very large visual items (featured content)
- * - Full-screen: For immersive vertical-scrolling experiences
+ * A Material Design 3 compatible carousel implementation that supports
+ * various layout types and scroll behaviors to accommodate different
+ * content presentation needs.
  * 
- * And two scroll behaviors:
- * - Default: Standard scrolling without snapping, recommended for uncontained layouts
- * - Snap: Items snap to carousel layout, recommended for multi-browse, hero, and full-screen layouts
- * 
- * @module Carousel
+ * @module components/carousel
+ * @category Components
  */
 
 // Main factory function
 export { default } from './carousel';
 
-// Constants for use with the carousel
+/**
+ * Constants for carousel configuration
+ * 
+ * Use these constants instead of string literals for better
+ * code completion, type safety, and to follow best practices.
+ * 
+ * @example
+ * import { createCarousel, CAROUSEL_LAYOUTS } from 'mtrl';
+ * 
+ * const carousel = createCarousel({
+ *   layout: CAROUSEL_LAYOUTS.MULTI_BROWSE,
+ *   // Other configuration options...
+ * });
+ * 
+ * @category Components
+ */
 export { 
   CAROUSEL_LAYOUTS, 
   CAROUSEL_SCROLL_BEHAVIORS, 
@@ -28,7 +39,14 @@ export {
   CAROUSEL_ITEM_SIZES
 } from './constants';
 
-// TypeScript interfaces for proper type checking
+/**
+ * TypeScript types and interfaces for the Carousel component
+ * 
+ * These provide proper type checking and IntelliSense support
+ * when using the carousel component in TypeScript projects.
+ * 
+ * @category Components
+ */
 export { 
   CarouselConfig, 
   CarouselComponent, 

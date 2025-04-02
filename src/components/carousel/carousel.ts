@@ -1,14 +1,18 @@
-// src/components/carousel/factory.ts
+// src/components/carousel/carousel.ts
 /**
- * Carousel Factory - Creates different types of carousel layouts based on Material Design 3 guidelines
+ * Creates carousels with different layouts based on Material Design 3 guidelines.
  * 
- * This factory implements four carousel layout types:
- * - Multi-browse: For browsing many visual items at once (photos, event feeds)
- * - Uncontained: For highly customized or text-heavy carousels (traditional behavior)
- * - Hero: For spotlighting very large visual items (featured content)
+ * This module implements a carousel component that supports four layout types:
+ * - Multi-browse: For browsing many visual items at once (photos, feeds)
+ * - Uncontained: For customized or text-heavy carousels (traditional)
+ * - Hero: For spotlighting large visual items (featured content)
  * - Full-screen: For immersive vertical-scrolling experiences
  * 
- * @module CarouselFactory
+ * Each layout is optimized for different content types and presentation needs,
+ * following the Material Design 3 component guidelines.
+ * 
+ * @module components/carousel
+ * @category Components
  */
 
 import { pipe } from '../../core/compose';
@@ -26,15 +30,22 @@ import { createBaseConfig, getElementConfig } from './config';
 import { CAROUSEL_DEFAULTS } from './constants';
 
 /**
- * Creates a new carousel with specified layout and scroll behavior
+ * Creates a new carousel component with the specified configuration.
  * 
- * @param {CarouselConfig} config - Carousel configuration
- * @returns {CarouselComponent} The configured carousel component
+ * The carousel supports different layout types for various content
+ * presentation needs, from image galleries to full-screen experiences.
+ * It handles gesture interactions, keyboard navigation, and responsive
+ * behavior following Material Design 3 guidelines.
+ * 
+ * @param {CarouselConfig} config - Configuration options for the carousel
+ * @returns {CarouselComponent} A fully configured carousel component instance
+ * @throws {Error} Throws an error if carousel creation fails
+ * 
+ * @category Components
  * 
  * @example
- * ```typescript
- * // Create a multi-browse carousel with snap scrolling
- * const carousel = createCarousel({
+ * // Create a multi-browse carousel for a photo gallery
+ * const photoGallery = createCarousel({
  *   layout: 'multi-browse',
  *   scrollBehavior: 'snap',
  *   slides: [
@@ -44,9 +55,36 @@ import { CAROUSEL_DEFAULTS } from './constants';
  *   showAllLink: true
  * });
  * 
- * // Add the carousel to the DOM
- * document.getElementById('container').appendChild(carousel.element);
- * ```
+ * document.getElementById('gallery-container').appendChild(photoGallery.element);
+ * 
+ * @example
+ * // Create a hero carousel for featured content
+ * const featuredContent = createCarousel({
+ *   layout: 'hero',
+ *   centered: true,
+ *   gap: 16,
+ *   slides: [
+ *     { image: 'hero1.jpg', title: 'Featured Story', buttonText: 'Read More' },
+ *     { image: 'hero2.jpg', title: 'Special Offer', buttonText: 'Shop Now' }
+ *   ]
+ * });
+ * 
+ * // Listen for slide changes
+ * featuredContent.on('slide-changed', (index) => {
+ *   console.log(`Now showing featured item ${index}`);
+ * });
+ * 
+ * @example
+ * // Create a full-screen immersive carousel
+ * const storyViewer = createCarousel({
+ *   layout: 'full-screen',
+ *   loop: false,
+ *   transition: 'fade',
+ *   slides: [
+ *     { image: 'story1.jpg', description: 'Chapter 1' },
+ *     { image: 'story2.jpg', description: 'Chapter 2' }
+ *   ]
+ * });
  */
 export const createCarousel = (config: CarouselConfig = {}): CarouselComponent => {
   // Ensure layout and scrollBehavior have defaults
@@ -106,72 +144,98 @@ export const createCarousel = (config: CarouselConfig = {}): CarouselComponent =
 };
 
 /**
- * Get default scroll behavior based on layout type
+ * Determines the optimal scroll behavior based on the selected layout type.
+ * 
+ * Material Design 3 recommendations suggest different scroll behaviors
+ * for each layout type to provide the best user experience.
  * 
  * @param {CarouselLayout} layout - Carousel layout type
- * @returns {CarouselScrollBehavior} Recommended scroll behavior
+ * @returns {CarouselScrollBehavior} The recommended scroll behavior
+ * @category Components
+ * @internal
  */
 function getDefaultScrollBehavior(layout: CarouselLayout): CarouselScrollBehavior {
   switch (layout) {
+    // These layouts work best with snap scrolling for defined stops
     case 'multi-browse':
     case 'hero':
     case 'full-screen':
       return 'snap';
+      
+    // Uncontained layout works best with standard scrolling
     case 'uncontained':
       return 'default';
+      
+    // Default to standard scrolling for unknown layouts
     default:
       return 'default';
   }
 }
 
 /**
- * Apply layout-specific configurations to the component
+ * Applies layout-specific configurations and styling to the carousel component.
+ * 
+ * Each carousel layout has specific CSS properties, data attributes,
+ * and behaviors that optimize it for different content types.
+ * This function sets up those properties based on the selected layout.
  * 
  * @param {any} component - The component to configure
  * @param {CarouselConfig} config - Carousel configuration
+ * @category Components
+ * @internal
  */
 function applyLayoutConfig(component: any, config: CarouselConfig): void {
-  // Add layout-specific class
+  // Add layout-specific class for CSS targeting
   component.element.classList.add(`${component.getClass('carousel')}-layout--${config.layout}`);
   
-  // Apply additional layout-specific styling
+  // Apply layout-specific configurations
   switch (config.layout) {
     case 'multi-browse':
-      // Configure for browsing many items with different sizes
+      // Multi-browse layout: For browsing many visual items at once
+      // Shows items of varying sizes with parallax scrolling effect
       component.element.dataset.enableParallax = 'true';
+      component.element.dataset.layout = 'multi-browse';
       break;
       
     case 'uncontained':
-      // Configure for same-sized items that flow past edge
+      // Uncontained layout: For text-heavy or consistent-sized items
+      // Allows content to flow past the viewport edges
       component.element.style.overflow = 'visible';
+      component.element.dataset.layout = 'uncontained';
       break;
       
     case 'hero':
-      // Configure for spotlight content with preview of next item
+      // Hero layout: For spotlighting featured content
+      // Large central item with preview of adjacent items
       component.element.dataset.largeItemFocus = 'true';
+      component.element.dataset.layout = 'hero';
       
-      // Apply center alignment if specified
+      // Optionally center items for balanced presentation
       if (config.centered) {
         component.element.dataset.centered = 'true';
       }
       break;
       
     case 'full-screen':
-      // Configure for immersive experience
+      // Full-screen layout: For immersive experiences
+      // Takes up entire viewport and supports vertical scrolling
       component.element.style.width = '100%';
       component.element.style.height = '100%';
       component.element.style.maxWidth = '100vw';
       component.element.style.maxHeight = '100vh';
       component.element.dataset.verticalScroll = 'true';
+      component.element.dataset.layout = 'full-screen';
       
-      // Force snap scrolling for full-screen layout
+      // Full-screen layout always uses snap scrolling for controlled navigation
       config.scrollBehavior = 'snap';
       break;
   }
   
-  // Apply scroll behavior
+  // Apply scroll behavior data attribute for CSS targeting
   if (config.scrollBehavior === 'snap') {
     component.element.dataset.snapScroll = 'true';
+  } else {
+    component.element.dataset.snapScroll = 'false';
   }
 }
 
