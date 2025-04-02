@@ -17,6 +17,6 @@
     "noErrorTruncation": true,
     "noEmitOnError": false
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "**/*.test.ts", "**/*.spec.ts"]
+  "include": ["src/**/*", "test/**/*"],
+  "exclude": ["node_modules"]
 }
