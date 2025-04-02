@@ -1,7 +1,7 @@
 // test/components/checkbox.test.ts
 import { describe, test, expect, mock, beforeAll, afterAll } from 'bun:test';
 import { JSDOM } from 'jsdom';
-import { CHECKBOX_VARIANTS, CHECKBOX_LABEL_POSITION } from '../../src/components/checkbox/constants';
+import { CHECKBOX_VARIANTS, CHECKBOX_LABEL_POSITION } from '../../src/components/checkbox';
 
 // IMPORTANT: Due to potential circular dependencies in the actual checkbox component
 // we are using a mock implementation for tests. For a full implementation
