@@ -1,5 +1,5 @@
 // src/components/sheet/features/gestures.ts
-import { SHEET_EVENTS, SHEET_POSITIONS } from '../constants';
+import { SHEET_EVENTS, SHEET_POSITIONS } from '../types';
 
 /**
  * Adds gesture support to a component

@@ -1,6 +1,5 @@
 // src/components/sheet/features/position.ts
-import { SheetConfig } from '../types';
-import { SHEET_POSITIONS } from '../constants';
+import { SheetConfig, SHEET_POSITIONS } from '../types';
 
 /**
  * Adds position functionality to a component

@@ -4,8 +4,7 @@ import {
   createElementConfig,
   BaseComponentConfig 
 } from '../../core/config/component-config';
-import { SheetConfig } from './types';
-import { SHEET_VARIANTS, SHEET_POSITIONS } from './constants';
+import { SheetConfig, SHEET_VARIANTS, SHEET_POSITIONS } from './types';
 
 /**
  * Default configuration for the Sheet component

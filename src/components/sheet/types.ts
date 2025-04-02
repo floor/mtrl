@@ -1,5 +1,33 @@
 // src/components/sheet/types.ts
-import { SHEET_VARIANTS, SHEET_POSITIONS } from './constants';
+
+/**
+ * Sheet variants
+ */
+export const SHEET_VARIANTS = {
+  STANDARD: 'standard',
+  MODAL: 'modal',
+  EXPANDED: 'expanded'
+} as const;
+
+/**
+ * Sheet positions
+ */
+export const SHEET_POSITIONS = {
+  BOTTOM: 'bottom',
+  TOP: 'top',
+  LEFT: 'left',
+  RIGHT: 'right'
+} as const;
+
+/**
+ * Sheet events
+ */
+export const SHEET_EVENTS = {
+  OPEN: 'open',
+  CLOSE: 'close',
+  DRAG_START: 'dragstart',
+  DRAG_END: 'dragend'
+} as const;
 
 /**
  * Configuration interface for the Sheet component

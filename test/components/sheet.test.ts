@@ -2,31 +2,11 @@
 import { describe, test, expect } from 'bun:test';
 import { 
   type SheetComponent,
-  type SheetConfig
+  type SheetConfig,
+  SHEET_VARIANTS,
+  SHEET_POSITIONS,
+  SHEET_EVENTS
 } from '../../src/components/sheet/types';
-
-// Constants for sheet variants
-const SHEET_VARIANTS = {
-  STANDARD: 'standard',
-  MODAL: 'modal',
-  EXPANDED: 'expanded'
-};
-
-// Constants for sheet positions
-const SHEET_POSITIONS = {
-  BOTTOM: 'bottom',
-  TOP: 'top',
-  LEFT: 'left',
-  RIGHT: 'right'
-};
-
-// Constants for sheet events
-const SHEET_EVENTS = {
-  OPEN: 'open',
-  CLOSE: 'close',
-  DRAG_START: 'dragstart',
-  DRAG_END: 'dragend'
-};
 
 // Mock sheet implementation
 const createMockSheet = (config: SheetConfig = {}): SheetComponent => {

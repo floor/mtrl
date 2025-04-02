@@ -1,5 +1,5 @@
 // src/components/sheet/features/state.ts
-import { SHEET_EVENTS } from '../constants';
+import { SHEET_EVENTS } from '../types';
 
 /**
  * Adds state management functionality to a component

@@ -17,8 +17,7 @@ import {
   withGestures
 } from './features';
 import { withAPI } from './api';
-import { SheetConfig } from './types';
-import { SHEET_VARIANTS, SHEET_POSITIONS } from './constants';
+import { SheetConfig, SHEET_VARIANTS, SHEET_POSITIONS } from './types';
 import { createBaseConfig, getElementConfig, getApiConfig } from './config';
 
 /**
