@@ -1,32 +1,72 @@
 // src/components/fab/api.ts
 import { FabComponent } from './types';
 
+/**
+ * API configuration options for the FAB component
+ * 
+ * @category Components
+ * @internal
+ */
 interface ApiOptions {
+  /**
+   * Disabled state management API
+   */
   disabled: {
+    /** Enables the component */
     enable: () => void;
+    /** Disables the component */
     disable: () => void;
   };
+  
+  /**
+   * Lifecycle management API
+   */
   lifecycle: {
+    /** Destroys the component */
     destroy: () => void;
   };
+  
+  /**
+   * Base class name for the FAB
+   */
   className: string;
 }
 
+/**
+ * Base component with element properties
+ * 
+ * @category Components
+ * @internal
+ */
 interface ComponentWithElements {
+  /** The DOM element */
   element: HTMLElement;
+  
+  /** Icon management */
   icon: {
+    /** Sets icon HTML content */
     setIcon: (html: string) => any;
+    /** Gets icon HTML content */
     getIcon: () => string;
+    /** Gets icon DOM element */
     getElement: () => HTMLElement | null;
   };
+  
+  /** Gets a class name with component's prefix */
   getClass: (name: string) => string;
 }
 
 /**
- * Enhances a FAB component with API methods
+ * Enhances a FAB component with public API methods
+ * 
+ * Higher-order function that adds the full public API to the FAB component,
+ * exposing methods for changing appearance, handling state, and managing position.
+ * 
  * @param {ApiOptions} options - API configuration options
  * @returns {Function} Higher-order function that adds API methods to component
- * @internal This is an internal utility for the FAB component
+ * 
+ * @category Components
+ * @internal
  */
 export const withAPI = ({ disabled, lifecycle, className }: ApiOptions) => 
   (component: ComponentWithElements): FabComponent => ({
