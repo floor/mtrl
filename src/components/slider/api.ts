@@ -1,6 +1,6 @@
 // src/components/slider/api.ts
 import { SliderComponent, SliderEvent } from './types';
-import { SLIDER_COLORS, SLIDER_SIZES, SLIDER_EVENTS } from './constants';
+import { SLIDER_COLORS, SLIDER_SIZES, SLIDER_EVENTS } from './types';
 
 /**
  * API options interface - structured by feature area

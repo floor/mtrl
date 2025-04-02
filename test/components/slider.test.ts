@@ -7,7 +7,10 @@ import {
   type SliderColor,
   type SliderSize,
   type SliderEventType,
-  type SliderEvent
+  type SliderEvent,
+  SLIDER_COLORS,
+  SLIDER_SIZES,
+  SLIDER_EVENTS
 } from '../../src/components/slider/types';
 
 // Setup jsdom environment
@@ -50,30 +53,7 @@ afterAll(() => {
   window.close();
 });
 
-// Constants for slider colors
-const SLIDER_COLORS = {
-  PRIMARY: 'primary',
-  SECONDARY: 'secondary',
-  TERTIARY: 'tertiary',
-  ERROR: 'error'
-} as const;
-
-// Constants for slider sizes
-const SLIDER_SIZES = {
-  SMALL: 'small',
-  MEDIUM: 'medium',
-  LARGE: 'large'
-} as const;
-
-// Constants for slider events
-const SLIDER_EVENTS = {
-  CHANGE: 'change',
-  INPUT: 'input',
-  FOCUS: 'focus',
-  BLUR: 'blur',
-  START: 'start',
-  END: 'end'
-} as const;
+// Using SLIDER_COLORS, SLIDER_SIZES, and SLIDER_EVENTS imported from types.ts
 
 // Mock slider implementation
 const createMockSlider = (config: SliderConfig = {}): SliderComponent => {

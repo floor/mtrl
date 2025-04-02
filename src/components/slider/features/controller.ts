@@ -1,5 +1,5 @@
 // src/components/slider/features/controller.ts
-import { SLIDER_EVENTS } from '../constants';
+import { SLIDER_EVENTS } from '../types';
 import { SliderConfig } from '../types';
 import { createHandlers } from './handlers';
 

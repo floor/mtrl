@@ -1,5 +1,5 @@
 // src/components/slider/features/states.ts
-import { SLIDER_COLORS, SLIDER_SIZES } from '../constants';
+import { SLIDER_COLORS, SLIDER_SIZES } from '../types';
 import { SliderConfig } from '../types';
 
 /**
