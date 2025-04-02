@@ -4,8 +4,24 @@ import { MENU_EVENT, MENU_CLASSES } from '../utils';
 
 /**
  * Adds visibility management functionality to a menu component
- * @param {MenuConfig} config - Menu configuration
- * @returns {Function} Component enhancer
+ * 
+ * This feature adds the ability to show and hide the menu with smooth transitions,
+ * along with proper event handling for clicks outside the menu and keyboard shortcuts.
+ * It implements the following functionality:
+ * 
+ * - Tracking visibility state
+ * - Showing the menu with animation
+ * - Hiding the menu with animation
+ * - Automatic handling of clicks outside the menu
+ * - Keyboard shortcut (Escape) for dismissing the menu
+ * - Proper ARIA attributes for accessibility
+ * - Event emission for component state changes
+ * 
+ * @param {MenuConfig} config - Menu configuration options
+ * @returns {Function} Component enhancer function that adds visibility features
+ * 
+ * @internal
+ * @category Components
  */
 export const withVisibility = (config: MenuConfig) => (component: BaseComponent): BaseComponent => {
   let isVisible = false;
@@ -19,6 +35,13 @@ export const withVisibility = (config: MenuConfig) => (component: BaseComponent)
 
     /**
      * Shows the menu
+     * 
+     * Makes the menu visible with a smooth transition animation.
+     * Handles DOM insertion, event binding, and ARIA attribute updates.
+     * Emits an 'open' event when the menu becomes visible.
+     * 
+     * @returns {BaseComponent} The component instance for method chaining
+     * @internal
      */
     show() {
       if (isVisible) return this;
@@ -67,6 +90,14 @@ export const withVisibility = (config: MenuConfig) => (component: BaseComponent)
 
     /**
      * Hides the menu
+     * 
+     * Makes the menu invisible with a smooth transition animation.
+     * Handles event cleanup, ARIA attribute updates, and DOM removal.
+     * Emits a 'close' event when the menu becomes hidden.
+     * Also ensures any open submenus are closed first.
+     * 
+     * @returns {BaseComponent} The component instance for method chaining
+     * @internal
      */
     hide() {
       // Return early if already hidden
@@ -130,7 +161,12 @@ export const withVisibility = (config: MenuConfig) => (component: BaseComponent)
 
     /**
      * Returns whether the menu is currently visible
-     * @returns {boolean} Visibility state
+     * 
+     * Provides the current visibility state of the menu component.
+     * This method is used internally and exposed via the public API.
+     * 
+     * @returns {boolean} True if the menu is visible, false otherwise
+     * @internal
      */
     isVisible() {
       return isVisible;
@@ -139,7 +175,14 @@ export const withVisibility = (config: MenuConfig) => (component: BaseComponent)
 
   /**
    * Handles clicks outside the menu
-   * @param {MouseEvent} event - Mouse event
+   * 
+   * Event handler for detecting and responding to mouse clicks outside the menu.
+   * Checks if the click occurred outside both the menu and its origin element,
+   * and if so, hides the menu. This provides the auto-dismiss behavior expected
+   * of temporary surfaces like menus.
+   * 
+   * @param {MouseEvent} event - Mouse event containing target information
+   * @internal
    */
   const handleOutsideClick = (event: MouseEvent) => {
     if (!isVisible) return;
@@ -165,8 +208,14 @@ export const withVisibility = (config: MenuConfig) => (component: BaseComponent)
   };
 
   /**
-   * Handles keyboard events
-   * @param {KeyboardEvent} event - Keyboard event
+   * Handles keyboard events for the menu
+   * 
+   * Event handler for keyboard interactions with the menu.
+   * Currently implements the Escape key to dismiss the menu,
+   * following standard interaction patterns for temporary UI surfaces.
+   * 
+   * @param {KeyboardEvent} event - Keyboard event containing key information
+   * @internal
    */
   const handleKeydown = (event: KeyboardEvent) => {
     if (!isVisible) return;

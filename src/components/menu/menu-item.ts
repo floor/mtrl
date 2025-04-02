@@ -3,10 +3,53 @@ import { MenuItemConfig } from './types';
 import { MENU_ITEM_TYPE, getMenuClass } from './utils';
 
 /**
- * Creates a menu item element
+ * Creates a DOM element for a menu item
+ * 
+ * Generates an HTMLElement (li) based on the provided configuration.
+ * Handles different types of menu items (standard, divider, submenu),
+ * applies proper CSS classes, and sets appropriate ARIA attributes
+ * for accessibility.
+ * 
  * @param {MenuItemConfig} itemConfig - Item configuration
- * @param {string} prefix - CSS class prefix
- * @returns {HTMLElement} Menu item element
+ * @param {string} prefix - CSS class prefix (default: 'mtrl')
+ * @returns {HTMLElement} Menu item DOM element
+ * 
+ * @example
+ * ```typescript
+ * // Create a standard menu item
+ * const itemElement = createMenuItem(
+ *   { name: 'edit', text: 'Edit' },
+ *   'mtrl'
+ * );
+ * 
+ * // Create a disabled menu item
+ * const disabledItem = createMenuItem(
+ *   { name: 'print', text: 'Print', disabled: true },
+ *   'mtrl'
+ * );
+ * 
+ * // Create a divider
+ * const divider = createMenuItem(
+ *   { type: 'divider' },
+ *   'mtrl'
+ * );
+ * 
+ * // Create an item with submenu indicator
+ * const submenuItem = createMenuItem(
+ *   {
+ *     name: 'share',
+ *     text: 'Share',
+ *     items: [
+ *       { name: 'email', text: 'Email' },
+ *       { name: 'link', text: 'Copy Link' }
+ *     ]
+ *   },
+ *   'mtrl'
+ * );
+ * ```
+ * 
+ * @internal
+ * @category Components
  */
 export const createMenuItem = (itemConfig: MenuItemConfig, prefix: string): HTMLElement => {
   const item = document.createElement('li');
