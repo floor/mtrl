@@ -10,7 +10,7 @@
  * - Button
  * - Card
  * - Checkbox
- * - Chip
+ * - Chip & ChipSet
  * - DatePicker
  * - Dialog
  * - Divider
@@ -23,7 +23,7 @@ export { default as createBadge } from './components/badge';
 export { default as createButton } from './components/button';
 export { default as createCard } from './components/card';
 export { default as createCheckbox } from './components/checkbox';
-export { default as createChip } from './components/chip';
+export { default as createChip, fChipSet as createChipSet } from './components/chip';
 export { default as createDatePicker } from './components/datepicker';
 
 // Import new card content functions and re-export with legacy names

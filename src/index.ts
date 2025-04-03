@@ -31,7 +31,7 @@ export {
   fCardMedia 
 } from './components/card/content';
 export { default as fCheckbox } from './components/checkbox';
-export { default as fChip } from './components/chip';
+export { default as fChip, fChipSet } from './components/chip';
 export { default as fDatePicker } from './components/datepicker';
 export { default as fDialog } from './components/dialog';
 export { fDivider } from './components/divider';

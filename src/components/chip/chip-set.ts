@@ -139,10 +139,47 @@ export interface ChipSetComponent {
 
 /**
  * Creates a chip set container for grouping related chips
- * @param {ChipSetConfig} config - ChipSet configuration
+ * 
+ * A ChipSet provides a container for organizing multiple chips into a cohesive group.
+ * It supports horizontal scrolling, vertical layout, and selection management.
+ *
+ * @param {ChipSetConfig} config - ChipSet configuration options
  * @returns {ChipSetComponent} ChipSet component instance
+ * 
+ * @category Components
+ * 
+ * @example
+ * // Create a basic chip set with initial chips
+ * const filterChipSet = fChipSet({
+ *   chips: [
+ *     { text: 'Option 1', variant: 'filter' },
+ *     { text: 'Option 2', variant: 'filter' },
+ *     { text: 'Option 3', variant: 'filter' }
+ *   ],
+ *   multiSelect: true
+ * });
+ * 
+ * // Add to the DOM
+ * document.body.appendChild(filterChipSet.element);
+ * 
+ * // Listen for selection changes
+ * filterChipSet.on('change', (selectedValues) => {
+ *   console.log('Selected values:', selectedValues);
+ * });
+ * 
+ * @example
+ * // Create a scrollable chip set and add chips dynamically
+ * const chipSet = fChipSet({
+ *   scrollable: true
+ * });
+ * 
+ * // Add chips programmatically
+ * chipSet.addChip({ text: 'JavaScript' });
+ * chipSet.addChip({ text: 'TypeScript' });
+ * chipSet.addChip({ text: 'HTML' });
+ * chipSet.addChip({ text: 'CSS' });
  */
-const createChipSet = (config: ChipSetConfig = {}): ChipSetComponent => {
+const fChipSet = (config: ChipSetConfig = {}): ChipSetComponent => {
   const {
     chips = [],
     scrollable = false,
@@ -425,4 +462,4 @@ const createChipSet = (config: ChipSetConfig = {}): ChipSetComponent => {
   }
 }
 
-export default createChipSet
+export default fChipSet

@@ -13,8 +13,8 @@
 // Export chip with both new and legacy naming
 export { default, default as fChip, default as createChip } from './chip'
 
-// Export chip-set with legacy naming (to be refactored later)
-export { default as createChipSet } from './chip-set'
+// Export chip-set with both new and legacy naming
+export { default as fChipSet, default as createChipSet } from './chip-set'
 
 // Export types
 export type { 

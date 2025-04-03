@@ -11,7 +11,7 @@ Starting from version X.X.X, factory functions in the MTRL library are being gra
 > - Button
 > - Card
 > - Checkbox
-> - Chip
+> - Chip & ChipSet
 > - DatePicker
 > - Dialog
 > - Divider
