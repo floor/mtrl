@@ -4,15 +4,16 @@
   "out": "docs",
   "name": "mtrl Documentation",
   "exclude": ["**/node_modules/**", "**/*.test.ts", "**/*.spec.ts"],
-  "excludePrivate": true,
+  "excludePrivate": false,
   "excludeExternals": true,
+  "excludeInternal": false,
+  "includeVersion": true,
+  "hideGenerator": true,
+  "searchInComments": true,
   "theme": "default",
   "categoryOrder": ["Core", "Components", "Utilities", "*"],
   "categorizeByGroup": true,
   "readme": "README.md",
-  "includeVersion": true,
-  "hideGenerator": true,
-  "searchInComments": true,
   "sort": ["static-first", "alphabetical"],
   "navigationLinks": {
     "GitHub": "https://github.com/floor/mtrl"
@@ -22,5 +23,11 @@
   "validation": {
     "invalidLink": false,
     "notDocumented": false
+  },
+  "visibilityFilters": {
+    "protected": true,
+    "private": false,
+    "inherited": true,
+    "external": false
   }
 }

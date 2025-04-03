@@ -82,9 +82,19 @@ const createChip = (config: ChipConfig = {}): ChipComponent => {
       chip.element.classList.add(`${chip.getClass('chip')}--selected`)
       chip.element.setAttribute('aria-selected', 'true')
     }
+    
+    // Set data-value attribute if provided
+    if (config.value) {
+      chip.element.setAttribute('data-value', config.value)
+    }
 
     // Add API methods to the component
     const enhancedChip = withAPI(getApiConfig(chip))(chip)
+    
+    // Initialize value if not already set
+    if (!chip.element.hasAttribute('data-value') && config.text) {
+      enhancedChip.getValue() // This will trigger the automatic value generation in our fixed API
+    }
 
     // Add click handler for selection toggle
     if (config.variant === 'filter' || 

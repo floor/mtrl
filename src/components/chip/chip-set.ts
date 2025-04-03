@@ -1,20 +1,148 @@
-// src/components/chip/chip-set.js
+// src/components/chip/chip-set.ts
 import { PREFIX } from '../../core/config'
 import createChip from './chip'
+import { ChipComponent } from './types'
+
+/**
+ * Configuration interface for the ChipSet component
+ * @category Components
+ */
+export interface ChipSetConfig {
+  /** 
+   * Array of chip configurations to initialize 
+   * @default []
+   */
+  chips?: any[];
+  
+  /** 
+   * Whether the chip set is horizontally scrollable 
+   * @default false
+   */
+  scrollable?: boolean;
+  
+  /** 
+   * Whether the chip set is vertically stacked 
+   * @default false
+   */
+  vertical?: boolean;
+  
+  /** 
+   * Additional CSS classes 
+   */
+  class?: string;
+  
+  /** 
+   * CSS selector for filtering behavior 
+   */
+  selector?: string | null;
+  
+  /** 
+   * Whether multiple chips can be selected simultaneously 
+   * @default false
+   */
+  multiSelect?: boolean;
+  
+  /** 
+   * Callback function when chip selection changes 
+   */
+  onChange?: (selectedValues: (string | null)[], changedValue: string | null) => void;
+}
+
+/**
+ * ChipSet component interface
+ * @category Components
+ */
+export interface ChipSetComponent {
+  /** The chip set's DOM element */
+  element: HTMLElement;
+  
+  /**
+   * Adds a new chip to the chip set
+   * @param chipConfig - Configuration for the chip
+   * @returns The chip set instance for chaining
+   */
+  addChip: (chipConfig: any) => ChipSetComponent;
+  
+  /**
+   * Removes a chip from the chip set
+   * @param chipOrIndex - Chip instance or index to remove
+   * @returns The chip set instance for chaining
+   */
+  removeChip: (chipOrIndex: ChipComponent | number) => ChipSetComponent;
+  
+  /**
+   * Gets all chip instances in the set
+   * @returns Array of chip instances
+   */
+  getChips: () => ChipComponent[];
+  
+  /**
+   * Gets currently selected chips
+   * @returns Array of selected chip instances
+   */
+  getSelectedChips: () => ChipComponent[];
+  
+  /**
+   * Gets the values of selected chips
+   * @returns Array of selected chip values
+   */
+  getSelectedValues: () => (string | null)[];
+  
+  /**
+   * Selects chips by their values
+   * @param values - Value or array of values to select
+   * @returns The chip set instance for chaining
+   */
+  selectByValue: (values: string | string[]) => ChipSetComponent;
+  
+  /**
+   * Clears all selections
+   * @returns The chip set instance for chaining
+   */
+  clearSelection: () => ChipSetComponent;
+  
+  /**
+   * Sets the scrollable state of the chip set
+   * @param isScrollable - Whether the chip set should be scrollable
+   * @returns The chip set instance for chaining
+   */
+  setScrollable: (isScrollable: boolean) => ChipSetComponent;
+  
+  /**
+   * Sets the vertical layout state
+   * @param isVertical - Whether the chip set should be vertically stacked
+   * @returns The chip set instance for chaining
+   */
+  setVertical: (isVertical: boolean) => ChipSetComponent;
+  
+  /**
+   * Destroys the chip set and all contained chips
+   */
+  destroy: () => void;
+  
+  /**
+   * Adds an event listener to the chip set
+   * @param event - Event name ('change', etc.)
+   * @param handler - Event handler function
+   * @returns The chip set instance for chaining
+   */
+  on: (event: string, handler: Function) => ChipSetComponent;
+  
+  /**
+   * Removes an event listener from the chip set
+   * @param event - Event name
+   * @param handler - Event handler function
+   * @returns The chip set instance for chaining
+   */
+  off: (event: string, handler: Function) => ChipSetComponent;
+}
 
 /**
  * Creates a chip set container for grouping related chips
- * @param {Object} config - ChipSet configuration
- * @param {Array} [config.chips=[]] - Array of chip configurations to initialize
- * @param {boolean} [config.scrollable=false] - Whether the chip set is horizontally scrollable
- * @param {boolean} [config.vertical=false] - Whether the chip set is vertically stacked
- * @param {string} [config.class] - Additional CSS classes
- * @param {string} [config.selector] - CSS selector for filtering behavior
- * @param {boolean} [config.multiSelect=false] - Whether multiple chips can be selected simultaneously
- * @param {Function} [config.onChange] - Callback function when chip selection changes
- * @returns {Object} ChipSet component instance
+ * @param {ChipSetConfig} config - ChipSet configuration
+ * @returns {ChipSetComponent} ChipSet component instance
  */
-const createChipSet = (config = {}) => {
+const createChipSet = (config: ChipSetConfig = {}): ChipSetComponent => {
   const {
     chips = [],
     scrollable = false,
@@ -42,13 +170,29 @@ const createChipSet = (config = {}) => {
   }
 
   // Store chip instances
-  const chipInstances = []
+  const chipInstances: ChipComponent[] = []
+  
+  // Event listeners storage
+  const eventListeners: Record<string, Function[]> = {
+    change: []
+  }
+
+  /**
+   * Dispatches custom events to registered handlers
+   * @param {string} eventName - Name of the event to trigger
+   * @param {any[]} args - Arguments to pass to the handlers
+   */
+  const dispatchEvent = (eventName: string, ...args: any[]): void => {
+    if (eventListeners[eventName]) {
+      eventListeners[eventName].forEach(handler => handler(...args))
+    }
+  }
 
   /**
    * Updates chip selection states based on multiSelect configuration
-   * @param {Object} selectedChip - The chip that was clicked/selected
+   * @param {ChipComponent} selectedChip - The chip that was clicked/selected
    */
-  const handleSelection = (selectedChip) => {
+  const handleSelection = (selectedChip: ChipComponent): void => {
     if (!multiSelect) {
       // Single selection mode - deselect all other chips
       chipInstances.forEach(chip => {
@@ -58,22 +202,29 @@ const createChipSet = (config = {}) => {
       })
     }
 
+    // Get all currently selected chips and their values
+    const selectedChips = chipInstances.filter(chip => chip.isSelected())
+    const selectedValues = selectedChips.map(chip => chip.getValue())
+    const changedValue = selectedChip ? selectedChip.getValue() : null
+    
     // Call onChange callback if provided
     if (typeof onChange === 'function') {
-      const selectedChips = chipInstances.filter(chip => chip.isSelected())
-      onChange(selectedChips, selectedChip)
+      onChange(selectedValues, changedValue)
     }
+    
+    // Dispatch change event to all registered handlers
+    dispatchEvent('change', selectedValues, changedValue)
   }
 
   /**
    * Adds a chip to the chip set
    * @param {Object} chipConfig - Configuration for the chip
-   * @returns {Object} The created chip instance
+   * @returns {ChipComponent} The created chip instance
    */
-  const addChip = (chipConfig) => {
+  const addChip = (chipConfig: any): ChipComponent => {
     const chipInstance = createChip({
       ...chipConfig,
-      onSelect: (chip) => {
+      onSelect: (chip: ChipComponent) => {
         handleSelection(chip)
         if (chipConfig.onSelect) {
           chipConfig.onSelect(chip)
@@ -86,7 +237,7 @@ const createChipSet = (config = {}) => {
 
     // Add click handler to toggle selection
     chipInstance.element.addEventListener('click', () => {
-      if (!chipInstance.element.getAttribute('aria-disabled') === 'true') {
+      if (!chipInstance.isDisabled()) {
         chipInstance.toggleSelected()
         handleSelection(chipInstance)
       }
@@ -104,19 +255,19 @@ const createChipSet = (config = {}) => {
     /**
      * Adds a new chip to the chip set
      * @param {Object} chipConfig - Configuration for the chip
-     * @returns {Object} The chip set instance for chaining
+     * @returns {ChipSetComponent} The chip set instance for chaining
      */
-    addChip (chipConfig) {
+    addChip(chipConfig): ChipSetComponent {
       addChip(chipConfig)
       return this
     },
 
     /**
      * Removes a chip from the chip set
-     * @param {Object|number} chipOrIndex - Chip instance or index to remove
-     * @returns {Object} The chip set instance for chaining
+     * @param {ChipComponent|number} chipOrIndex - Chip instance or index to remove
+     * @returns {ChipSetComponent} The chip set instance for chaining
      */
-    removeChip (chipOrIndex) {
+    removeChip(chipOrIndex): ChipSetComponent {
       const index = typeof chipOrIndex === 'number'
         ? chipOrIndex
         : chipInstances.indexOf(chipOrIndex)
@@ -132,34 +283,34 @@ const createChipSet = (config = {}) => {
 
     /**
      * Gets all chip instances in the set
-     * @returns {Array} Array of chip instances
+     * @returns {ChipComponent[]} Array of chip instances
      */
-    getChips () {
+    getChips(): ChipComponent[] {
       return [...chipInstances]
     },
 
     /**
      * Gets currently selected chips
-     * @returns {Array} Array of selected chip instances
+     * @returns {ChipComponent[]} Array of selected chip instances
      */
-    getSelectedChips () {
+    getSelectedChips(): ChipComponent[] {
       return chipInstances.filter(chip => chip.isSelected())
     },
 
     /**
      * Gets the values of selected chips
-     * @returns {Array} Array of selected chip values
+     * @returns {(string|null)[]} Array of selected chip values
      */
-    getSelectedValues () {
+    getSelectedValues(): (string | null)[] {
       return this.getSelectedChips().map(chip => chip.getValue())
     },
 
     /**
      * Selects chips by their values
-     * @param {Array|string} values - Value or array of values to select
-     * @returns {Object} The chip set instance for chaining
+     * @param {string|string[]} values - Value or array of values to select
+     * @returns {ChipSetComponent} The chip set instance for chaining
      */
-    selectByValue (values) {
+    selectByValue(values): ChipSetComponent {
       const valueArray = Array.isArray(values) ? values : [values]
 
       chipInstances.forEach(chip => {
@@ -168,27 +319,42 @@ const createChipSet = (config = {}) => {
           chip.setSelected(shouldSelect)
         }
       })
+      
+      // Dispatch change event if any chip selection has changed
+      const selectedValues = this.getSelectedValues()
+      if (selectedValues.length > 0) {
+        dispatchEvent('change', selectedValues, null)
+      }
 
       return this
     },
 
     /**
      * Clears all selections
-     * @returns {Object} The chip set instance for chaining
+     * @returns {ChipSetComponent} The chip set instance for chaining
      */
-    clearSelection () {
+    clearSelection(): ChipSetComponent {
+      const selectedValues = this.getSelectedValues()
+      const hadSelectedChips = selectedValues.length > 0
+      
       chipInstances.forEach(chip => {
         chip.setSelected(false)
       })
+      
+      // Only dispatch if there were actually chips deselected
+      if (hadSelectedChips) {
+        dispatchEvent('change', [], null)
+      }
+      
       return this
     },
 
     /**
      * Sets the scrollable state of the chip set
      * @param {boolean} isScrollable - Whether the chip set should be scrollable
-     * @returns {Object} The chip set instance for chaining
+     * @returns {ChipSetComponent} The chip set instance for chaining
      */
-    setScrollable (isScrollable) {
+    setScrollable(isScrollable): ChipSetComponent {
       if (isScrollable) {
         element.classList.add(`${PREFIX}-chip-set--scrollable`)
       } else {
@@ -200,9 +366,9 @@ const createChipSet = (config = {}) => {
     /**
      * Sets the vertical layout state
      * @param {boolean} isVertical - Whether the chip set should be vertically stacked
-     * @returns {Object} The chip set instance for chaining
+     * @returns {ChipSetComponent} The chip set instance for chaining
      */
-    setVertical (isVertical) {
+    setVertical(isVertical): ChipSetComponent {
       if (isVertical) {
         element.classList.add(`${PREFIX}-chip-set--vertical`)
       } else {
@@ -210,13 +376,50 @@ const createChipSet = (config = {}) => {
       }
       return this
     },
+    
+    /**
+     * Adds an event listener to the chip set
+     * @param {string} event - Event name ('change', etc.)
+     * @param {Function} handler - Event handler function
+     * @returns {ChipSetComponent} The chip set instance for chaining
+     */
+    on(event, handler): ChipSetComponent {
+      if (!eventListeners[event]) {
+        eventListeners[event] = []
+      }
+      
+      eventListeners[event].push(handler)
+      return this
+    },
+    
+    /**
+     * Removes an event listener from the chip set
+     * @param {string} event - Event name
+     * @param {Function} handler - Event handler function
+     * @returns {ChipSetComponent} The chip set instance for chaining
+     */
+    off(event, handler): ChipSetComponent {
+      if (eventListeners[event]) {
+        const index = eventListeners[event].indexOf(handler)
+        if (index !== -1) {
+          eventListeners[event].splice(index, 1)
+        }
+      }
+      return this
+    },
 
     /**
      * Destroys the chip set and all contained chips
      */
-    destroy () {
+    destroy(): void {
       chipInstances.forEach(chip => chip.destroy())
       chipInstances.length = 0
+      
+      // Clear all event listeners
+      Object.keys(eventListeners).forEach(event => {
+        eventListeners[event] = []
+      })
+      
       element.remove()
     }
   }

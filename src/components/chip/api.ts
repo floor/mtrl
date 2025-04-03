@@ -27,16 +27,56 @@ export const withAPI = ({ disabled, lifecycle }: ApiOptions) =>
     // Track selected state internally
     let isSelected = component.element.classList.contains(`${component.getClass('chip')}--selected`);
     
+    // Store the value internally as well to ensure reliability
+    let chipValue = component.element.getAttribute('data-value') || null;
+    
     return {
       ...component as any,
       element: component.element,
       
       getValue() {
-        return component.element.getAttribute('data-value') || null;
+        // First try to get from the element's attribute
+        const attrValue = component.element.getAttribute('data-value');
+        
+        // If we have an attribute value, update our internal value and return it
+        if (attrValue !== null) {
+          chipValue = attrValue;
+          return attrValue;
+        }
+        
+        // If we have an internal value, set it on the element and return it
+        if (chipValue !== null) {
+          component.element.setAttribute('data-value', chipValue);
+          return chipValue;
+        }
+        
+        // If we have text content, derive a value from it
+        const textElement = component.element.querySelector(`.${component.getClass('chip')}-text`);
+        if (textElement && textElement.textContent) {
+          // Convert text like "Ocean Theme" to "ocean"
+          const text = textElement.textContent;
+          if (text.includes(' Theme')) {
+            chipValue = text.replace(' Theme', '').toLowerCase();
+          } else {
+            chipValue = text.toLowerCase().replace(/\s+/g, '-');
+          }
+          
+          // Set the derived value on the element
+          component.element.setAttribute('data-value', chipValue);
+          return chipValue;
+        }
+        
+        return null;
       },
       
       setValue(value: string) {
-        component.element.setAttribute('data-value', value || '');
+        if (value !== null && value !== undefined) {
+          chipValue = value;
+          component.element.setAttribute('data-value', value);
+        } else {
+          chipValue = null;
+          component.element.removeAttribute('data-value');
+        }
         return this;
       },
       
