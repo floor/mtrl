@@ -13,10 +13,10 @@ export { ButtonConfig, ButtonComponent, ButtonVariant } from './types'
  * for better code completion and type safety.
  * 
  * @example
- * import { createButton, BUTTON_VARIANTS } from 'mtrl';
+ * import { fButton, BUTTON_VARIANTS } from 'mtrl';
  * 
  * // Create a filled button
- * const primaryButton = createButton({ 
+ * const primaryButton = fButton({ 
  *   text: 'Submit',
  *   variant: BUTTON_VARIANTS.FILLED 
  * });

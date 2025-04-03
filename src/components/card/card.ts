@@ -41,7 +41,7 @@ import { withElevation } from './features';
  * @example
  * ```typescript
  * // Create a basic card
- * const card = createCard({
+ * const card = fCard({
  *   variant: 'elevated',
  *   header: {
  *     title: 'Card Title',
@@ -53,7 +53,7 @@ import { withElevation } from './features';
  * });
  * 
  * // Create an interactive card with actions
- * const cardWithActions = createCard({
+ * const cardWithActions = fCard({
  *   variant: 'filled',
  *   interactive: true,
  *   header: { title: 'Interactive Card' },
@@ -65,7 +65,7 @@ import { withElevation } from './features';
  * });
  * 
  * // Card with media
- * const mediaCard = createCard({
+ * const mediaCard = fCard({
  *   media: {
  *     src: '/path/to/image.jpg',
  *     alt: 'Descriptive alt text',
@@ -75,7 +75,7 @@ import { withElevation } from './features';
  * });
  * 
  * // Using API methods
- * const card = createCard();
+ * const card = fCard();
  * const content = document.createElement('div');
  * content.className = 'mtrl-card-content';
  * content.textContent = 'Added programmatically';
@@ -83,7 +83,7 @@ import { withElevation } from './features';
  * card.makeDraggable();
  * ```
  */
-const createCard = (config: CardSchema = {}): CardComponent => {
+const fCard = (config: CardSchema = {}): CardComponent => {
   // Process inline configuration (map shorthand properties)
   const processedConfig = processInlineConfig(config);
   const baseConfig = createBaseConfig(processedConfig);
@@ -112,4 +112,4 @@ const createCard = (config: CardSchema = {}): CardComponent => {
   }
 };
 
-export default createCard;
+export default fCard;

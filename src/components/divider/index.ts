@@ -15,11 +15,11 @@
  * @example
  * ```typescript
  * // Create a standard horizontal divider
- * const divider = createDivider();
+ * const divider = fDivider();
  * document.body.appendChild(divider.element);
  * 
  * // Create a vertical divider with custom styles
- * const verticalDivider = createDivider({
+ * const verticalDivider = fDivider({
  *   orientation: 'vertical',
  *   thickness: 2,
  *   color: '#2196F3',
@@ -30,8 +30,12 @@
  * @category Components
  */
 
-// Use a more explicit export to avoid bundler confusion
-import { createDivider } from './divider';
+// Export new function name
+import { fDivider } from './divider';
+export { fDivider };
+
+// Re-export legacy function name for backward compatibility
+import { fDivider as createDivider } from './divider';
 export { createDivider };
 
 // Export types

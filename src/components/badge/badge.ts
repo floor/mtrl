@@ -34,7 +34,7 @@ import { createBaseConfig, getElementConfig, getApiConfig } from './config';
  * 
  * @example
  * // Create a small dot badge (notification indicator)
- * const notificationBadge = createBadge({ 
+ * const notificationBadge = fBadge({ 
  *   variant: 'small',
  *   color: 'error',
  *   target: document.querySelector('.icon-button')
@@ -42,7 +42,7 @@ import { createBaseConfig, getElementConfig, getApiConfig } from './config';
  * 
  * @example
  * // Create a large badge with a count (numbered indicator)
- * const countBadge = createBadge({
+ * const countBadge = fBadge({
  *   variant: 'large',
  *   label: 5,
  *   color: 'primary',
@@ -51,7 +51,7 @@ import { createBaseConfig, getElementConfig, getApiConfig } from './config';
  * 
  * @example
  * // Create a badge with a maximum value
- * const messagesBadge = createBadge({
+ * const messagesBadge = fBadge({
  *   variant: 'large',
  *   label: 1250,
  *   max: 999,  // Will display "999+"
@@ -61,7 +61,7 @@ import { createBaseConfig, getElementConfig, getApiConfig } from './config';
  * 
  * @example
  * // Control badge visibility programmatically
- * const toggleBadge = createBadge({
+ * const toggleBadge = fBadge({
  *   variant: 'small',
  *   color: 'success',
  *   target: document.querySelector('.toggle-button')
@@ -76,7 +76,7 @@ import { createBaseConfig, getElementConfig, getApiConfig } from './config';
  *   }
  * }
  */
-const createBadge = (config: BadgeConfig = {}): BadgeComponent => {
+const fBadge = (config: BadgeConfig = {}): BadgeComponent => {
   const baseConfig = createBaseConfig(config);
 
   try {
@@ -102,4 +102,4 @@ const createBadge = (config: BadgeConfig = {}): BadgeComponent => {
   }
 };
 
-export default createBadge;
+export default fBadge;

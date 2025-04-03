@@ -18,7 +18,7 @@
  * @example
  * ```typescript
  * // Create a primary Extended FAB with icon and text
- * const extendedFab = createExtendedFab({
+ * const extendedFab = fExtendedFab({
  *   text: 'Create',
  *   icon: '<svg>...</svg>',
  *   position: 'bottom-right',
@@ -35,7 +35,7 @@
  * @category Components
  */
 
-export { default, default as createExtendedFab } from './extended-fab';
+export { default, default as fExtendedFab, default as createExtendedFab } from './extended-fab';
 export {
   ExtendedFabConfig,
   ExtendedFabComponent,

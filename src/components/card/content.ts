@@ -17,16 +17,16 @@ export const CARD_CONTENT_PADDING = true;
  * @example
  * ```typescript
  * // Create text content
- * const textContent = createCardContent({ text: 'Simple text content' });
+ * const textContent = fCardContent({ text: 'Simple text content' });
  * 
  * // Create HTML content with no padding
- * const htmlContent = createCardContent({
+ * const htmlContent = fCardContent({
  *   html: '<p>Formatted <strong>HTML</strong> content</p>',
  *   padding: false
  * });
  * ```
  */
-export const createCardContent = (config: CardContentConfig = {}): HTMLElement => {
+export const fCardContent = (config: CardContentConfig = {}): HTMLElement => {
   const baseConfig = {
     ...config,
     componentName: 'card-content',
@@ -90,20 +90,20 @@ export const createCardContent = (config: CardContentConfig = {}): HTMLElement =
  * @example
  * ```typescript
  * // Create a header with title and subtitle
- * const header = createCardHeader({
+ * const header = fCardHeader({
  *   title: 'Card Title',
  *   subtitle: 'Supporting text'
  * });
  * 
  * // Create a header with an avatar and action
- * const avatarHeader = createCardHeader({
+ * const avatarHeader = fCardHeader({
  *   title: 'User Profile',
  *   avatar: '<img src="user.jpg" alt="User avatar">',
- *   action: createIconButton({ icon: 'more_vert' })
+ *   action: fIconButton({ icon: 'more_vert' })
  * });
  * ```
  */
-export const createCardHeader = (config: CardHeaderConfig = {}): HTMLElement => {
+export const fCardHeader = (config: CardHeaderConfig = {}): HTMLElement => {
   const baseConfig = {
     ...config,
     componentName: 'card-header',
@@ -209,22 +209,22 @@ export const createCardHeader = (config: CardHeaderConfig = {}): HTMLElement => 
  * @example
  * ```typescript
  * // Create simple actions container with buttons
- * const actions = createCardActions({
+ * const actions = fCardActions({
  *   actions: [
- *     createButton({ text: 'Cancel' }),
- *     createButton({ text: 'OK', variant: 'filled' })
+ *     fButton({ text: 'Cancel' }),
+ *     fButton({ text: 'OK', variant: 'filled' })
  *   ],
  *   align: 'end'
  * });
  * 
  * // Create full-bleed actions
- * const fullBleedActions = createCardActions({
- *   actions: [createButton({ text: 'View Details', fullWidth: true })],
+ * const fullBleedActions = fCardActions({
+ *   actions: [fButton({ text: 'View Details', fullWidth: true })],
  *   fullBleed: true
  * });
  * ```
  */
-export const createCardActions = (config: CardActionsConfig = {}): HTMLElement => {
+export const fCardActions = (config: CardActionsConfig = {}): HTMLElement => {
   const baseConfig = {
     ...config,
     componentName: 'card-actions',
@@ -281,20 +281,20 @@ export const createCardActions = (config: CardActionsConfig = {}): HTMLElement =
  * @example
  * ```typescript
  * // Create a media component with an image
- * const media = createCardMedia({
+ * const media = fCardMedia({
  *   src: 'image.jpg',
  *   alt: 'Descriptive alt text',
  *   aspectRatio: '16:9'
  * });
  * 
  * // Create a media component with a custom element
- * const customMedia = createCardMedia({
+ * const customMedia = fCardMedia({
  *   element: videoElement,
  *   aspectRatio: '4:3'
  * });
  * ```
  */
-export const createCardMedia = (config: CardMediaConfig = {}): HTMLElement => {
+export const fCardMedia = (config: CardMediaConfig = {}): HTMLElement => {
   const baseConfig = {
     ...config,
     componentName: 'card-media',

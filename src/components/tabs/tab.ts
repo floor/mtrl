@@ -5,7 +5,7 @@ import { withEvents, withLifecycle } from '../../core/compose/features';
 import { TabConfig, TabComponent } from './types';
 import { TAB_STATES, TAB_LAYOUT } from './constants';
 import { createTabConfig } from './config';
-import createButton from '../button';
+import fButton from '../button';
 import createBadge from '../badge';
 
 /**
@@ -37,7 +37,7 @@ export const createTab = (config: TabConfig = {}): TabComponent => {
     )(baseConfig);
     
     // Create a button for the tab
-    const button = createButton({
+    const button = fButton({
       text: baseConfig.text,
       icon: baseConfig.icon,
       iconSize: baseConfig.iconSize,

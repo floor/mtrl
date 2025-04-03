@@ -2,8 +2,8 @@
 
 import { getOverlayConfig } from './config';
 import { DialogConfig, DialogButton } from './types';
-import createButton from '../button';
-import { createDivider } from '../divider'; // Import the divider component
+import fButton from '../button';
+import { fDivider } from '../divider'; // Import the divider component
 import { addClass, removeClass, hasClass } from '../../core/dom/classes';
 
 // Common constants for internal use
@@ -143,7 +143,7 @@ export const withStructure = (config: DialogConfig) => component => {
   };
   
   const createDividerElement = () => {
-    const divider = createDivider({
+    const divider = fDivider({
       variant: 'full-width',
       class: component.getClass('dialog-divider')
     });
@@ -243,7 +243,7 @@ export const withDivider = () => component => {
         // Handle header divider
         if (show && !component.structure.headerDivider) {
           // Create and add header divider
-          const headerDivider = createDivider({
+          const headerDivider = fDivider({
             variant: 'full-width',
             class: `${component.getClass('dialog-divider')} ${component.getClass('dialog-header-divider')}`
           });
@@ -258,7 +258,7 @@ export const withDivider = () => component => {
           
           // If footer exists, add footer divider
           if (component.structure.footer && !component.structure.footerDivider) {
-            const footerDivider = createDivider({
+            const footerDivider = fDivider({
               variant: 'full-width',
               class: `${component.getClass('dialog-divider')} ${component.getClass('dialog-footer-divider')}`
             });
@@ -316,7 +316,7 @@ const addButton = (footer: HTMLElement, buttonConfig: DialogButton, component: a
     attrs = {}
   } = buttonConfig;
   
-  const button = createButton({
+  const button = fButton({
     text,
     variant,
     ...attrs

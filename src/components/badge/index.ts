@@ -7,7 +7,7 @@
  * or highlights an element requiring attention.
  */
 
-export { default } from './badge';
+export { default, default as fBadge, default as createBadge } from './badge';
 export type { BadgeConfig, BadgeComponent, BadgeVariant, BadgeColor, BadgePosition } from './types';
 
 /**
@@ -15,9 +15,9 @@ export type { BadgeConfig, BadgeComponent, BadgeVariant, BadgeColor, BadgePositi
  * Use these instead of string literals for better code completion and type safety.
  * 
  * @example
- * import { createBadge, BADGE_VARIANTS } from 'mtrl';
+ * import { fBadge, BADGE_VARIANTS } from 'mtrl';
  * 
- * const badge = createBadge({ variant: BADGE_VARIANTS.SMALL });
+ * const badge = fBadge({ variant: BADGE_VARIANTS.SMALL });
  * 
  * @category Components
  */
@@ -33,9 +33,9 @@ export const BADGE_VARIANTS = {
  * Colors follow Material Design 3 color system.
  * 
  * @example
- * import { createBadge, BADGE_COLORS } from 'mtrl';
+ * import { fBadge, BADGE_COLORS } from 'mtrl';
  * 
- * const badge = createBadge({ color: BADGE_COLORS.ERROR });
+ * const badge = fBadge({ color: BADGE_COLORS.ERROR });
  * 
  * @category Components
  */
@@ -61,9 +61,9 @@ export const BADGE_COLORS = {
  * Defines where the badge appears relative to its target element.
  * 
  * @example
- * import { createBadge, BADGE_POSITIONS } from 'mtrl';
+ * import { fBadge, BADGE_POSITIONS } from 'mtrl';
  * 
- * const badge = createBadge({ 
+ * const badge = fBadge({ 
  *   position: BADGE_POSITIONS.BOTTOM_RIGHT,
  *   target: document.querySelector('#notification-bell')
  * });

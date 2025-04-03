@@ -27,11 +27,11 @@ import { DividerComponent } from './types';
  * @example
  * ```typescript
  * // Create a basic horizontal divider
- * const divider = createDivider();
+ * const divider = fDivider();
  * container.appendChild(divider.element);
  * 
  * // Create a vertical divider with custom styling
- * const separator = createDivider({
+ * const separator = fDivider({
  *   orientation: 'vertical',
  *   thickness: 2,
  *   color: '#2196F3',
@@ -46,7 +46,7 @@ import { DividerComponent } from './types';
  * divider.setVariant('inset');
  * ```
  */
-export const createDivider = (config: DividerConfig = {}): DividerComponent => {
+export const fDivider = (config: DividerConfig = {}): DividerComponent => {
   // Process configuration
   const processedConfig = createBaseConfig(config);
   

@@ -37,27 +37,27 @@
 @use './components/tabs' as tabs;
 @use './components/top-app-bar' as top-app-bar;
 
-@use '../components/styles/button' as button;
-@use '../components/styles/fab' as fab;
-@use '../components/styles/extended-fab' as extended-fab;
-@use '../components/styles/segmented-button' as segmented-button;
-@use '../components/styles/card' as card;
-@use '../components/styles/carousel' as carousel;
-@use '../components/styles/checkbox' as checkbox;
-@use '../components/styles/chip' as chip;
-@use '../components/styles/datepicker' as datepicker;
-@use '../components/styles/dialog' as dialog;
-@use '../components/styles/divider' as divider;
+@use './components/button' as button;
+@use './components/fab' as fab;
+@use './components/extended-fab' as extended-fab;
+@use './components/segmented-button' as segmented-button;
+@use './components/card' as card;
+@use './components/carousel' as carousel;
+@use './components/checkbox' as checkbox;
+@use './components/chip' as chip;
+@use './components/datepicker' as datepicker;
+@use './components/dialog' as dialog;
+@use './components/divider' as divider;
 
-@use '../components/styles/progress' as progress;
+@use './components/progress' as progress;
 
-@use '../components/styles/radios' as radios;
-@use '../components/styles/timepicker' as timepicker;
-@use '../components/styles/search' as search;
+@use './components/radios' as radios;
+@use './components/timepicker' as timepicker;
+@use './components/search' as search;
 
-@use '../components/styles/snackbar' as snackbar;
-@use '../components/styles/navigation' as navigation;
-@use '../components/styles/list' as list;
+@use './components/snackbar' as snackbar;
+@use './components/navigation' as navigation;
+@use './components/list' as list;
 
 @use '../core/build/ripple';
 

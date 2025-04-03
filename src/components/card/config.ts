@@ -4,10 +4,10 @@ import {
   createElementConfig
 } from '../../core/config/component-config';
 import { 
-  createCardHeader, 
-  createCardContent, 
-  createCardMedia, 
-  createCardActions 
+  fCardHeader, 
+  fCardContent, 
+  fCardMedia, 
+  fCardActions 
 } from './content';
 import { CardComponent, CardSchema, ButtonConfig, BaseComponent } from './types';
 
@@ -76,45 +76,45 @@ export const applyInlineConfiguration = (card: CardComponent, config: CardSchema
   // Add media (top position) if configured
   if (config.mediaConfig && (!config.mediaConfig.position || config.mediaConfig.position === 'top')) {
     const { position, ...mediaConfigWithoutPosition } = config.mediaConfig;
-    const mediaElement = createCardMedia(mediaConfigWithoutPosition);
+    const mediaElement = fCardMedia(mediaConfigWithoutPosition);
     card.addMedia(mediaElement, 'top');
   }
   
   // Add header if configured
   if (config.headerConfig) {
-    const headerElement = createCardHeader(config.headerConfig);
+    const headerElement = fCardHeader(config.headerConfig);
     card.setHeader(headerElement);
   }
   
   // Add content if configured
   if (config.contentConfig) {
-    const contentElement = createCardContent(config.contentConfig);
+    const contentElement = fCardContent(config.contentConfig);
     card.addContent(contentElement);
   }
   
   // Add media (bottom position) if configured
   if (config.mediaConfig && config.mediaConfig.position === 'bottom') {
     const { position, ...mediaConfigWithoutPosition } = config.mediaConfig;
-    const mediaElement = createCardMedia(mediaConfigWithoutPosition);
+    const mediaElement = fCardMedia(mediaConfigWithoutPosition);
     card.addMedia(mediaElement, 'bottom');
   }
   
   // Add actions if configured
   if (config.actionsConfig) {
-    const actionsElement = createCardActions(config.actionsConfig);
+    const actionsElement = fCardActions(config.actionsConfig);
     card.setActions(actionsElement);
   }
   
   // Process buttons if provided (asynchronously)
   if (Array.isArray(config.buttons) && config.buttons.length > 0) {
-    import('../button').then(({ default: createButton }) => {
+    import('../button').then(({ default: fButton }) => {
       // Create buttons from configuration
       const actionButtons = config.buttons!.map(buttonConfig => 
-        createButton(buttonConfig).element
+        fButton(buttonConfig).element
       );
       
       // Create actions container
-      const actionsElement = createCardActions({
+      const actionsElement = fCardActions({
         actions: actionButtons,
         align: config.actionsConfig?.align || 'end'
       });

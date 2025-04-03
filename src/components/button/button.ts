@@ -40,12 +40,12 @@ import { createBaseConfig, getElementConfig, getApiConfig } from './config';
  * 
  * @example
  * // Create a simple text button
- * const textButton = createButton({ text: 'Click me' });
+ * const textButton = fButton({ text: 'Click me' });
  * document.body.appendChild(textButton.element);
  * 
  * @example
  * // Create a filled button with an icon
- * const primaryButton = createButton({ 
+ * const primaryButton = fButton({ 
  *   text: 'Submit',
  *   variant: 'filled',
  *   icon: '<svg>...</svg>'
@@ -58,7 +58,7 @@ import { createBaseConfig, getElementConfig, getApiConfig } from './config';
  * 
  * @example
  * // Create an outlined button with event handling
- * const submitButton = createButton({
+ * const submitButton = fButton({
  *   text: 'Save',
  *   variant: 'outlined'
  * });
@@ -71,7 +71,7 @@ import { createBaseConfig, getElementConfig, getApiConfig } from './config';
  * 
  * @example
  * // Create an icon-only button (circular)
- * const iconButton = createButton({
+ * const iconButton = fButton({
  *   icon: '<svg>...</svg>',
  *   ariaLabel: 'Add to favorites', // Important for accessibility
  *   variant: 'filled'
@@ -79,7 +79,7 @@ import { createBaseConfig, getElementConfig, getApiConfig } from './config';
  * 
  * @example
  * // Create a disabled button
- * const disabledButton = createButton({
+ * const disabledButton = fButton({
  *   text: 'Not available',
  *   disabled: true
  * });
@@ -87,7 +87,7 @@ import { createBaseConfig, getElementConfig, getApiConfig } from './config';
  * // Later, enable the button when available
  * disabledButton.enable();
  */
-const createButton = (config: ButtonConfig = {}) => {
+const fButton = (config: ButtonConfig = {}) => {
   const baseConfig = createBaseConfig(config);
   try {
     const button = pipe(
@@ -109,4 +109,4 @@ const createButton = (config: ButtonConfig = {}) => {
   }
 };
 
-export default createButton;
+export default fButton;

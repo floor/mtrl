@@ -36,9 +36,9 @@ export {
  * controlling the width and height of the dialog.
  * 
  * @example
- * import { createDialog, DIALOG_SIZES } from 'mtrl';
+ * import { fDialog, DIALOG_SIZES } from 'mtrl';
  * 
- * const dialog = createDialog({
+ * const dialog = fDialog({
  *   title: 'Settings',
  *   size: DIALOG_SIZES.MEDIUM
  * });
@@ -64,9 +64,9 @@ export const DIALOG_SIZES = {
  * These constants define the available dialog opening and closing animations.
  * 
  * @example
- * import { createDialog, DIALOG_ANIMATIONS } from 'mtrl';
+ * import { fDialog, DIALOG_ANIMATIONS } from 'mtrl';
  * 
- * const dialog = createDialog({
+ * const dialog = fDialog({
  *   animation: DIALOG_ANIMATIONS.SCALE
  * });
  * 
@@ -89,9 +89,9 @@ export const DIALOG_ANIMATIONS = {
  * These constants control how buttons in the footer are aligned.
  * 
  * @example
- * import { createDialog, DIALOG_FOOTER_ALIGNMENTS } from 'mtrl';
+ * import { fDialog, DIALOG_FOOTER_ALIGNMENTS } from 'mtrl';
  * 
- * const dialog = createDialog({
+ * const dialog = fDialog({
  *   footerAlignment: DIALOG_FOOTER_ALIGNMENTS.RIGHT
  * });
  * 
@@ -115,9 +115,9 @@ export const DIALOG_FOOTER_ALIGNMENTS = {
  * to changes in the dialog's state.
  * 
  * @example
- * import { createDialog, DIALOG_EVENTS } from 'mtrl';
+ * import { fDialog, DIALOG_EVENTS } from 'mtrl';
  * 
- * const dialog = createDialog();
+ * const dialog = fDialog();
  * 
  * dialog.on(DIALOG_EVENTS.AFTER_OPEN, () => {
  *   console.log('Dialog was opened');

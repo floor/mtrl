@@ -39,14 +39,14 @@ import { createBaseConfig, getElementConfig, getApiConfig } from './config';
  * @example
  * ```typescript
  * // Create a basic Extended FAB with icon and text
- * const extendedFab = createExtendedFab({
+ * const extendedFab = fExtendedFab({
  *   icon: '<svg>...</svg>',
  *   text: 'Create',
  *   ariaLabel: 'Create new item'
  * });
  * 
  * // Create a tertiary Extended FAB with a custom position
- * const customExtendedFab = createExtendedFab({
+ * const customExtendedFab = fExtendedFab({
  *   text: 'Add to cart',
  *   icon: '<svg>...</svg>',
  *   variant: 'tertiary',
@@ -72,7 +72,7 @@ import { createBaseConfig, getElementConfig, getApiConfig } from './config';
  * });
  * ```
  */
-const createExtendedFab = (config: ExtendedFabConfig = {}): ExtendedFabComponent => {
+const fExtendedFab = (config: ExtendedFabConfig = {}): ExtendedFabComponent => {
   const fabConfig = createBaseConfig(config);
 
   // Set up scroll collapse handler if needed
@@ -150,4 +150,4 @@ const createExtendedFab = (config: ExtendedFabConfig = {}): ExtendedFabComponent
   }
 };
 
-export default createExtendedFab;
+export default fExtendedFab;

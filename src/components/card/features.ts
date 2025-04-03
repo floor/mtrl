@@ -31,7 +31,7 @@ interface SwipeableConfig {
  * ```typescript
  * // Create a card with loading state
  * const card = pipe(
- *   createCard,
+ *   fCard,
  *   withLoading({ initialState: true })
  * )();
  * 
@@ -145,7 +145,7 @@ export const withElevation = (component: BaseComponent): BaseComponent => {
  * expandableContent.textContent = 'Additional content that can be expanded';
  * 
  * const card = pipe(
- *   createCard,
+ *   fCard,
  *   withExpandable({ 
  *     initialExpanded: false,
  *     expandableContent
@@ -276,7 +276,7 @@ export const withExpandable = (config: ExpandableConfig = {}) => (component: Bas
  * ```typescript
  * // Create a swipeable card with custom actions
  * const card = pipe(
- *   createCard,
+ *   fCard,
  *   withSwipeable({
  *     threshold: 100, // Swipe sensitivity in pixels
  *     onSwipeLeft: (card) => {

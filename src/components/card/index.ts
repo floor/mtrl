@@ -1,5 +1,5 @@
 // src/components/card/index.ts
-import defaultCreateCard from './card';
+import defaultFCard from './card';
 
 /**
  * @module Card
@@ -8,7 +8,7 @@ import defaultCreateCard from './card';
  * Cards are surfaces that display content and actions about a single topic.
  * They should be easy to scan for relevant and actionable information.
  * 
- * The main export is the {@link default | createCard} factory function that creates
+ * The main export is the {@link default | fCard} factory function that creates
  * a {@link CardComponent} instance with the provided configuration.
  * 
  * Features:
@@ -31,7 +31,7 @@ import defaultCreateCard from './card';
  * @example
  * ```typescript
  * // Create a basic card
- * const card = createCard({
+ * const card = fCard({
  *   variant: 'elevated',
  *   header: {
  *     title: 'Card Title',
@@ -85,13 +85,28 @@ export {
   SwipeableFeature
 } from './types';
 
-// Export card content helper functions
+// Export card content helper functions with new names
 export { 
-  createCardContent,
-  createCardHeader, 
-  createCardActions,
-  createCardMedia
+  fCardContent,
+  fCardHeader, 
+  fCardActions,
+  fCardMedia
 } from './content';
+
+// Re-export with legacy names for backward compatibility
+import {
+  fCardContent,
+  fCardHeader,
+  fCardActions,
+  fCardMedia
+} from './content';
+
+export {
+  fCardContent as createCardContent,
+  fCardHeader as createCardHeader,
+  fCardActions as createCardActions,
+  fCardMedia as createCardMedia
+};
 
 // Export API methods
 export { withAPI } from './api';

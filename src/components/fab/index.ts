@@ -18,7 +18,7 @@
  * @example
  * ```typescript
  * // Create a primary FAB with a plus icon
- * const fab = createFab({
+ * const fab = fFab({
  *   icon: '<svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>',
  *   position: 'bottom-right',
  *   ariaLabel: 'Add new item'
@@ -34,7 +34,8 @@
  * @category Components
  */
 
-export { default, default as createFab } from './fab';
+export { default as fFab } from './fab';
+export { default as createFab } from './fab';
 export {
   FabConfig,
   FabComponent,

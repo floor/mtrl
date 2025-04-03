@@ -49,7 +49,7 @@ import { createBaseConfig, getElementConfig, getApiConfig } from './config';
  * 
  * @example
  * // Create a basic dialog with title and content
- * const infoDialog = createDialog({
+ * const infoDialog = fDialog({
  *   title: 'Information',
  *   content: 'Your changes have been saved.',
  *   size: 'small',
@@ -63,7 +63,7 @@ import { createBaseConfig, getElementConfig, getApiConfig } from './config';
  * 
  * @example
  * // Create a form dialog with multiple buttons
- * const formDialog = createDialog({
+ * const formDialog = fDialog({
  *   title: 'Edit Profile',
  *   content: '<form id="profile-form">...</form>',
  *   size: 'medium',
@@ -88,7 +88,7 @@ import { createBaseConfig, getElementConfig, getApiConfig } from './config';
  * @example
  * // Create a confirmation dialog using the Promise-based API
  * async function confirmAction() {
- *   const dialog = createDialog();
+ *   const dialog = fDialog();
  *   const confirmed = await dialog.confirm({
  *     title: 'Confirm Action',
  *     message: 'Are you sure you want to proceed?',
@@ -102,7 +102,7 @@ import { createBaseConfig, getElementConfig, getApiConfig } from './config';
  *   }
  * }
  */
-const createDialog = (config: DialogConfig = {}): DialogComponent => {
+const fDialog = (config: DialogConfig = {}): DialogComponent => {
   const baseConfig = createBaseConfig(config);
 
   try {
@@ -139,4 +139,4 @@ const createDialog = (config: DialogConfig = {}): DialogComponent => {
   }
 };
 
-export default createDialog;
+export default fDialog;

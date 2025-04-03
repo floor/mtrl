@@ -1,4 +1,13 @@
 // test/components/button.test.ts
+/**
+ * This test file has been updated to use the new "f*" function naming convention
+ * instead of the previous "create*" convention.
+ * 
+ * For example:
+ * - Old: createButton() -> New: fButton()
+ * 
+ * See FUNCTION_NAMING.md for more details on this naming convention change.
+ */
 import { describe, test, expect, mock, beforeAll, afterAll } from 'bun:test';
 import { JSDOM } from 'jsdom';
 
@@ -47,7 +56,8 @@ afterAll(() => {
 });
 
 // Mock button component factory
-const createButton = (config: any = {}) => {
+// Using the new "f*" naming convention (was previously "createButton")
+const fButton = (config: any = {}) => {
   const element = document.createElement('button');
   element.className = `mtrl-button ${config.variant ? `mtrl-button--${config.variant}` : ''}`;
   
@@ -142,7 +152,7 @@ const createButton = (config: any = {}) => {
 
 describe('Button Component', () => {
   test('should create a button element', () => {
-    const button = createButton();
+    const button = fButton();
     expect(button.element).toBeDefined();
     expect(button.element.tagName).toBe('BUTTON');
     expect(button.element.className).toContain('mtrl-button');
@@ -150,7 +160,7 @@ describe('Button Component', () => {
 
   test('should add text content', () => {
     const buttonText = 'Click Me';
-    const button = createButton({
+    const button = fButton({
       text: buttonText
     });
 
@@ -161,7 +171,7 @@ describe('Button Component', () => {
 
   test('should apply variant class', () => {
     const variant = 'filled';
-    const button = createButton({
+    const button = fButton({
       variant
     });
 
@@ -169,7 +179,7 @@ describe('Button Component', () => {
   });
 
   test('should handle click events', () => {
-    const button = createButton();
+    const button = fButton();
     const handleClick = mock(() => {});
 
     button.on('click', handleClick);
@@ -182,7 +192,7 @@ describe('Button Component', () => {
   });
 
   test('should support disabled state', () => {
-    const button = createButton();
+    const button = fButton();
 
     // Initially not disabled
     expect(button.element.hasAttribute('disabled')).toBe(false);
@@ -197,7 +207,7 @@ describe('Button Component', () => {
   });
 
   test('should allow updating text', () => {
-    const button = createButton({
+    const button = fButton({
       text: 'Initial'
     });
 
@@ -210,7 +220,7 @@ describe('Button Component', () => {
   });
 
   test('should allow updating icon', () => {
-    const button = createButton();
+    const button = fButton();
 
     const iconSvg = '<svg><path d="M10 10"></path></svg>';
     button.setIcon(iconSvg);
@@ -221,7 +231,7 @@ describe('Button Component', () => {
   });
 
   test('should properly clean up resources', () => {
-    const button = createButton();
+    const button = fButton();
     const parentElement = document.createElement('div');
     parentElement.appendChild(button.element);
 
