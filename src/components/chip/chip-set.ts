@@ -1,6 +1,6 @@
 // src/components/chip/chip-set.ts
 import { PREFIX } from '../../core/config'
-import createChip from './chip'
+import fChip from './chip'
 import { ChipComponent } from './types'
 
 /**
@@ -222,7 +222,7 @@ const createChipSet = (config: ChipSetConfig = {}): ChipSetComponent => {
    * @returns {ChipComponent} The created chip instance
    */
   const addChip = (chipConfig: any): ChipComponent => {
-    const chipInstance = createChip({
+    const chipInstance = fChip({
       ...chipConfig,
       onSelect: (chip: ChipComponent) => {
         handleSelection(chip)

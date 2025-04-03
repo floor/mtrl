@@ -11,6 +11,9 @@
  * - Badge
  * - Button
  * - Card
+ * - Checkbox
+ * - Chip
+ * - DatePicker
  * - Dialog
  * - Divider
  * - Fab
@@ -27,6 +30,9 @@ export {
   fCardActions, 
   fCardMedia 
 } from './components/card/content';
+export { default as fCheckbox } from './components/checkbox';
+export { default as fChip } from './components/chip';
+export { default as fDatePicker } from './components/datepicker';
 export { default as fDialog } from './components/dialog';
 export { fDivider } from './components/divider';
 export { default as fFab } from './components/fab';
@@ -38,9 +44,7 @@ export { default as createLayout } from './core/layout';
 export { default as createSegmentedButton } from './components/segmented-button';
 export { default as createBottomAppBar } from './components/bottom-app-bar';
 export { default as createCarousel } from './components/carousel';
-export { default as createCheckbox } from './components/checkbox';
-export { default as createChip, createChipSet } from './components/chip';
-export { default as createDatePicker } from './components/datepicker';
+export { default as createChipSet } from './components/chip';
 export { default as createMenu } from './components/menu';
 export { default as createNavigation, createNavigationSystem } from './components/navigation';
 export { default as createProgress } from './components/progress';

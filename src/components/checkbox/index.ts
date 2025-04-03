@@ -10,8 +10,8 @@
  * @category Components
  */
 
-// Main factory function
-export { default } from './checkbox';
+// Main factory function with both new and legacy naming
+export { default, default as fCheckbox, default as createCheckbox } from './checkbox';
 
 // TypeScript types and interfaces
 export type { 
@@ -28,9 +28,9 @@ export type {
  * code completion, type safety, and to follow best practices.
  * 
  * @example
- * import { createCheckbox, CHECKBOX_VARIANTS } from 'mtrl';
+ * import { fCheckbox, CHECKBOX_VARIANTS } from 'mtrl';
  * 
- * const checkbox = createCheckbox({
+ * const checkbox = fCheckbox({
  *   variant: CHECKBOX_VARIANTS.OUTLINED,
  *   label: 'Accept terms'
  * });

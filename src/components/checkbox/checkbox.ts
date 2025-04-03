@@ -75,7 +75,7 @@ const enhanceWithCheckable = (component: BaseComponent, config: CheckboxConfig):
  * 
  * @example
  * // Create a basic checkbox
- * const checkbox = createCheckbox({
+ * const checkbox = fCheckbox({
  *   label: 'Accept terms and conditions',
  *   name: 'accept-terms'
  * });
@@ -84,7 +84,7 @@ const enhanceWithCheckable = (component: BaseComponent, config: CheckboxConfig):
  * 
  * @example
  * // Create a pre-checked checkbox with custom styling
- * const checkbox = createCheckbox({
+ * const checkbox = fCheckbox({
  *   label: 'Remember me',
  *   checked: true,
  *   variant: 'outlined',
@@ -98,7 +98,7 @@ const enhanceWithCheckable = (component: BaseComponent, config: CheckboxConfig):
  * 
  * @example
  * // Create an indeterminate checkbox for "select all" functionality
- * const selectAll = createCheckbox({
+ * const selectAll = fCheckbox({
  *   label: 'Select All',
  *   indeterminate: true
  * });
@@ -112,7 +112,7 @@ const enhanceWithCheckable = (component: BaseComponent, config: CheckboxConfig):
  *   selectAll.setIndeterminate(true);
  * }
  */
-const createCheckbox = (config: CheckboxConfig = {}): CheckboxComponent => {
+const fCheckbox = (config: CheckboxConfig = {}): CheckboxComponent => {
   const baseConfig = createBaseConfig(config);
 
   try {
@@ -139,4 +139,4 @@ const createCheckbox = (config: CheckboxConfig = {}): CheckboxComponent => {
   }
 };
 
-export default createCheckbox;
+export default fCheckbox;

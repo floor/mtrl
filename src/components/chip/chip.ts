@@ -16,11 +16,45 @@ import { ChipConfig, ChipComponent } from './types'
 import { createBaseConfig, getElementConfig, getApiConfig } from './config'
 
 /**
- * Creates a new Chip component
- * @param {ChipConfig} config - Chip configuration
- * @returns {ChipComponent} Chip component instance
+ * Creates a new Chip component following Material Design 3 guidelines.
+ * 
+ * Chips help people enter information, make selections, filter content, or trigger actions.
+ * They are small components that represent an input, attribute, or action.
+ * 
+ * @param {ChipConfig} config - Chip configuration options
+ * @returns {ChipComponent} Chip component instance with methods to control appearance and behavior
+ * 
+ * @category Components
+ * 
+ * @example
+ * // Create a basic input chip
+ * const chip = fChip({
+ *   text: 'Marketing',
+ *   variant: 'input'
+ * });
+ * 
+ * @example
+ * // Create a filter chip with an icon
+ * const filterChip = fChip({
+ *   text: 'Favorites',
+ *   variant: 'filter',
+ *   leadingIcon: '<svg>...</svg>',
+ *   selected: true
+ * });
+ * 
+ * @example
+ * // Create a suggestion chip with trailing icon and callback
+ * const suggestionChip = fChip({
+ *   text: 'Add to calendar',
+ *   variant: 'suggestion',
+ *   leadingIcon: '<svg>...</svg>',
+ *   trailingIcon: '<svg>...</svg>',
+ *   onTrailingIconClick: (chip) => {
+ *     console.log('Trailing icon clicked');
+ *   }
+ * });
  */
-const createChip = (config: ChipConfig = {}): ChipComponent => {
+const fChip = (config: ChipConfig = {}): ChipComponent => {
   const baseConfig = createBaseConfig(config)
 
   try {
@@ -125,4 +159,4 @@ const createChip = (config: ChipConfig = {}): ChipComponent => {
   }
 }
 
-export default createChip
+export default fChip

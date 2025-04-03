@@ -10,6 +10,9 @@ Starting from version X.X.X, factory functions in the MTRL library are being gra
 > - Badge
 > - Button
 > - Card
+> - Checkbox
+> - Chip
+> - DatePicker
 > - Dialog
 > - Divider
 > - Fab

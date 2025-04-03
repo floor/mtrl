@@ -28,11 +28,50 @@ import {
 import { createElement } from '../../core/dom/create';
 
 /**
- * Creates a new DatePicker component
+ * Creates a new DatePicker component following Material Design 3 guidelines.
+ * 
+ * The DatePicker provides a visual calendar for selecting dates, with
+ * support for various selection modes, date ranges, and formatting options.
+ * 
  * @param {DatePickerConfig} config - DatePicker configuration object
- * @returns {DatePickerComponent} DatePicker component instance
+ * @returns {DatePickerComponent} DatePicker component instance with API for
+ *   managing date selection, calendar views, and appearance
+ * 
+ * @category Components
+ * 
+ * @example
+ * // Create a basic date picker
+ * const datePicker = fDatePicker({
+ *   label: 'Select date',
+ *   placeholder: 'MM/DD/YYYY'
+ * });
+ * 
+ * document.body.appendChild(datePicker.element);
+ * 
+ * @example
+ * // Create a date picker with a pre-selected date and min/max constraints
+ * const datePicker = fDatePicker({
+ *   label: 'Delivery date',
+ *   value: new Date(2023, 5, 15),
+ *   minDate: new Date(2023, 5, 1),
+ *   maxDate: new Date(2023, 6, 31),
+ *   dateFormat: 'MM/dd/yyyy'
+ * });
+ * 
+ * // Listen for changes
+ * datePicker.on('change', (e) => {
+ *   console.log('Date selected:', e.value);
+ * });
+ * 
+ * @example
+ * // Create a date range picker
+ * const rangePicker = fDatePicker({
+ *   label: 'Select date range',
+ *   selectionMode: 'range',
+ *   value: [new Date(2023, 1, 10), new Date(2023, 1, 15)]
+ * });
  */
-const createDatePicker = (config: DatePickerConfig = {}): DatePickerComponent => {
+const fDatePicker = (config: DatePickerConfig = {}): DatePickerComponent => {
   const baseConfig = createBaseConfig(config);
 
   try {
@@ -338,4 +377,4 @@ const createDatePicker = (config: DatePickerConfig = {}): DatePickerComponent =>
   }
 };
 
-export default createDatePicker;
+export default fDatePicker;

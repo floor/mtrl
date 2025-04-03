@@ -9,6 +9,9 @@
  * - Badge
  * - Button
  * - Card
+ * - Checkbox
+ * - Chip
+ * - DatePicker
  * - Dialog
  * - Divider
  * - Fab
@@ -19,6 +22,9 @@
 export { default as createBadge } from './components/badge';
 export { default as createButton } from './components/button';
 export { default as createCard } from './components/card';
+export { default as createCheckbox } from './components/checkbox';
+export { default as createChip } from './components/chip';
+export { default as createDatePicker } from './components/datepicker';
 
 // Import new card content functions and re-export with legacy names
 import { 
