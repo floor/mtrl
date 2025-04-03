@@ -12,8 +12,11 @@ import {
 import { CardComponent, CardSchema, ButtonConfig, BaseComponent } from './types';
 
 /**
- * Default configuration for the Card component
+ * Default configuration for the Card component.
+ * These values are used when no configuration is provided.
+ * 
  * @const {CardSchema}
+ * @category Components
  */
 export const defaultConfig: CardSchema = {
   variant: 'elevated',
@@ -24,11 +27,18 @@ export const defaultConfig: CardSchema = {
 };
 
 /**
- * Processes inline configuration options into standard config format
- * Maps shorthand properties to their proper config counterparts
+ * Processes inline configuration options into standard config format.
+ * Maps shorthand properties to their proper config counterparts for ease of use.
  * 
  * @param {CardSchema} config - Raw card configuration
  * @returns {CardSchema} Processed configuration
+ * @category Components
+ * @example
+ * ```typescript
+ * // Before processing, these are equivalent:
+ * { header: { title: 'Example' } }
+ * { headerConfig: { title: 'Example' } }
+ * ```
  */
 export const processInlineConfig = (config: CardSchema): CardSchema => {
   const processedConfig: CardSchema = { ...config };
@@ -54,11 +64,13 @@ export const processInlineConfig = (config: CardSchema): CardSchema => {
 };
 
 /**
- * Applies inline configuration to a card component
- * Adds configured elements to the card in the correct order
+ * Applies inline configuration to a card component.
+ * Adds configured elements to the card in the correct order following
+ * Material Design layout guidelines. Handles media, header, content, and actions placement.
  * 
  * @param {CardComponent} card - Card component to configure
  * @param {CardSchema} config - Processed configuration
+ * @category Components
  */
 export const applyInlineConfiguration = (card: CardComponent, config: CardSchema): void => {
   // Add media (top position) if configured
@@ -116,19 +128,27 @@ export const applyInlineConfiguration = (card: CardComponent, config: CardSchema
 };
 
 /**
- * Creates the base configuration for Card component
+ * Creates the base configuration for Card component.
+ * Merges user-provided configuration with default values,
+ * ensuring all required properties are set.
  * 
  * @param {CardSchema} config - User provided configuration
  * @returns {CardSchema} Complete configuration with defaults applied
+ * @category Components
+ * 
  */
 export const createBaseConfig = (config: CardSchema = {}): CardSchema => 
   createComponentConfig(defaultConfig, config, 'card') as CardSchema;
 
 /**
- * Generates element configuration for the Card component
+ * Generates element configuration for the Card component.
+ * Sets up DOM attributes, accessibility features, and event forwarding
+ * based on the card's configuration.
  * 
  * @param {CardSchema} config - Card configuration
  * @returns {Object} Element configuration object for withElement
+ * @category Components
+ * 
  */
 export const getElementConfig = (config: CardSchema) => {
   const isInteractive = config.interactive || config.clickable;
@@ -178,10 +198,13 @@ export const getElementConfig = (config: CardSchema) => {
 };
 
 /**
- * Creates API configuration for the Card component
+ * Creates API configuration for the Card component.
+ * Prepares the configuration needed for the card's public API methods.
  * 
  * @param {Object} comp - Component with lifecycle feature
  * @returns {Object} API configuration object
+ * @category Components
+ * 
  */
 export const getApiConfig = (comp: any) => ({
   lifecycle: {
@@ -190,7 +213,10 @@ export const getApiConfig = (comp: any) => ({
 });
 
 /**
- * Card elevation levels
+ * Card elevation levels in density-independent pixels (dp).
+ * Following Material Design 3 elevation system guidelines.
+ * 
+ * @category Components
  */
 export const CARD_ELEVATION_LEVELS = {
   LEVEL0: 0,
@@ -200,11 +226,15 @@ export const CARD_ELEVATION_LEVELS = {
 };
 
 /**
- * Adds interactive behavior to card component
- * Uses the mtrl elevation system for proper elevation levels
+ * Adds interactive behavior to card component.
+ * Uses the mtrl elevation system for proper elevation levels according to Material Design 3
+ * guidelines. Implements mouse, keyboard, and touch interactions with appropriate
+ * visual feedback and accessibility support.
  * 
  * @param {BaseComponent} comp - Card component
  * @returns {BaseComponent} Enhanced card component
+ * @category Components
+ * 
  */
 export const withInteractiveBehavior = (comp: BaseComponent): BaseComponent => {
   const config = comp.config;

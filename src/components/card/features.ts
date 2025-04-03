@@ -20,11 +20,13 @@ interface SwipeableConfig {
 }
 
 /**
- * Higher-order function to add loading state to a card
+ * Higher-order function to add loading state to a card.
+ * Adds a loading overlay with spinner and proper ARIA attributes
+ * for accessibility during asynchronous operations.
  * 
  * @param {LoadingConfig} config - Loading state configuration
  * @returns {Function} Card component enhancer
- * 
+ * @category Components
  * @example
  * ```typescript
  * // Create a card with loading state
@@ -35,6 +37,9 @@ interface SwipeableConfig {
  * 
  * // Toggle loading state
  * setTimeout(() => card.loading.setLoading(false), 2000);
+ * 
+ * // Check loading state
+ * console.log(card.loading.isLoading()); // false after timeout
  * ```
  */
 export const withLoading = (config: LoadingConfig = {}) => (component: BaseComponent): BaseComponent & { loading: LoadingFeature } => {
@@ -90,14 +95,18 @@ export const withLoading = (config: LoadingConfig = {}) => (component: BaseCompo
 };
 
 /**
- * Higher-order function to add elevation to a card based on its variant
+ * Higher-order function to add elevation to a card based on its variant.
  * 
  * Sets the initial elevation CSS variable according to Material Design 3 guidelines:
  * - Elevated variant: 1dp elevation
  * - Filled and outlined variants: 0dp elevation
  * 
+ * These elevation values affect shadows and surface appearance of the card
+ * to create appropriate visual hierarchy.
+ * 
  * @param {BaseComponent} component - Card component
  * @returns {BaseComponent} Card component with elevation applied
+ * @category Components
  * @example
  * ```typescript
  * // Apply elevation in the composition chain
@@ -122,11 +131,13 @@ export const withElevation = (component: BaseComponent): BaseComponent => {
 };
 
 /**
- * Higher-order function to add expandable behavior to a card
+ * Higher-order function to add expandable behavior to a card.
+ * Creates a collapsible section with proper accessibility attributes and
+ * toggle controls. Supports keyboard interaction and screen readers.
  * 
  * @param {ExpandableConfig} config - Expandable configuration
  * @returns {Function} Card component enhancer
- * 
+ * @category Components
  * @example
  * ```typescript
  * // Create a card with expandable content
@@ -143,6 +154,11 @@ export const withElevation = (component: BaseComponent): BaseComponent => {
  * 
  * // Later toggle the expanded state
  * card.expandable.toggleExpanded();
+ * 
+ * // Or check current state
+ * if (card.expandable.isExpanded()) {
+ *   console.log('Card is expanded');
+ * }
  * ```
  */
 export const withExpandable = (config: ExpandableConfig = {}) => (component: BaseComponent): BaseComponent & { expandable: ExpandableFeature } => {
@@ -249,22 +265,33 @@ export const withExpandable = (config: ExpandableConfig = {}) => (component: Bas
 };
 
 /**
- * Higher-order function to add swipeable behavior to a card
+ * Higher-order function to add swipeable behavior to a card.
+ * Implements touch-based swipe gestures with customizable threshold and callbacks.
+ * Includes keyboard accessibility support and visual feedback during swipe.
  * 
- * @param {SwipeableConfig} config - Swipeable configuration
+ * @param {SwipeableConfig} config - Swipeable configuration 
  * @returns {Function} Card component enhancer
- * 
+ * @category Components
  * @example
  * ```typescript
- * // Create a swipeable card
+ * // Create a swipeable card with custom actions
  * const card = pipe(
  *   createCard,
  *   withSwipeable({
- *     threshold: 100,
- *     onSwipeLeft: (card) => console.log('Swiped left'),
- *     onSwipeRight: (card) => console.log('Swiped right')
+ *     threshold: 100, // Swipe sensitivity in pixels
+ *     onSwipeLeft: (card) => {
+ *       console.log('Swiped left');
+ *       // For example: Delete or archive action
+ *     },
+ *     onSwipeRight: (card) => { 
+ *       console.log('Swiped right');
+ *       // For example: Save or favorite action
+ *     }
  *   })
  * )({ variant: 'elevated' });
+ * 
+ * // Reset card position programmatically
+ * card.swipeable.reset();
  * ```
  */
 export const withSwipeable = (config: SwipeableConfig = {}) => (component: BaseComponent): BaseComponent & { swipeable: SwipeableFeature } => {

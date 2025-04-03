@@ -1,33 +1,65 @@
 // src/components/card/types.ts
 
 /**
- * Card variant types
+ * Card variant types following Material Design 3 guidelines.
+ * - elevated: Card with shadow elevation (default)
+ * - filled: Card with filled background color and no elevation
+ * - outlined: Card with outline border and no elevation
+ * 
+ * @category Components
  */
 export type CardVariant = 'elevated' | 'filled' | 'outlined';
 
 /**
- * Card elevation levels
+ * Card elevation levels in Material Design 3.
+ * Specifies the shadow height in density-independent pixels (dp).
+ * These values match the CARD_ELEVATION_LEVELS constants.
+ * 
+ * @category Components
  */
 export type CardElevationLevel = 0 | 1 | 2 | 4;
 
 /**
- * Button configuration interface for buttons shorthand
+ * Button configuration interface for buttons shorthand.
+ * Used in the card's `buttons` configuration property for simple button creation.
+ * 
  * @interface ButtonConfig
+ * @category Components
  */
 export interface ButtonConfig {
-  /** Button text */
+  /** Button text content */
   text?: string;
-  /** Button variant */
+  /** Button variant (text, outlined, filled, etc.) */
   variant?: string;
-  /** Button icon */
+  /** Button icon HTML content */
   icon?: string;
-  /** Additional button properties */
+  /** Additional button properties passed to button component */
   [key: string]: any;
 }
 
 /**
- * Card configuration interface
+ * Card configuration interface defining all possible card options.
+ * This is the primary configuration interface for creating card components.
+ * 
  * @interface CardSchema
+ * @category Components
+ * @example
+ * ```typescript
+ * const cardConfig: CardSchema = {
+ *   variant: 'elevated',
+ *   interactive: true,
+ *   header: {
+ *     title: 'Card Title',
+ *     subtitle: 'Secondary text'
+ *   },
+ *   content: {
+ *     text: 'Card content text'
+ *   },
+ *   buttons: [
+ *     { text: 'Action', variant: 'text' }
+ *   ]
+ * };
+ * ```
  */
 export interface CardSchema {
   /** Card variant type (elevated, filled, outlined) */
@@ -74,8 +106,11 @@ export interface CardSchema {
 }
 
 /**
- * ARIA attributes for card accessibility
+ * ARIA attributes for card accessibility.
+ * These attributes enhance the card's accessibility for assistive technologies.
+ * 
  * @interface CardAriaAttributes
+ * @category Components
  */
 export interface CardAriaAttributes {
   /** ARIA label */
@@ -91,8 +126,11 @@ export interface CardAriaAttributes {
 }
 
 /**
- * Card header configuration
+ * Card header configuration.
+ * Options for configuring the card's header section with title, subtitle, and actions.
+ * 
  * @interface CardHeaderConfig
+ * @category Components
  */
 export interface CardHeaderConfig {
   /** Header title text */
@@ -108,8 +146,11 @@ export interface CardHeaderConfig {
 }
 
 /**
- * Card content configuration
+ * Card content configuration.
+ * Options for configuring the card's main content area.
+ * 
  * @interface CardContentConfig
+ * @category Components
  */
 export interface CardContentConfig {
   /** Text content */
@@ -125,8 +166,11 @@ export interface CardContentConfig {
 }
 
 /**
- * Card actions configuration
+ * Card actions configuration.
+ * Options for configuring the card's action buttons area at the bottom.
+ * 
  * @interface CardActionsConfig
+ * @category Components
  */
 export interface CardActionsConfig {
   /** Action elements */
@@ -142,8 +186,11 @@ export interface CardActionsConfig {
 }
 
 /**
- * Card media configuration
+ * Card media configuration.
+ * Options for configuring the card's media section (images or other media content).
+ * 
  * @interface CardMediaConfig
+ * @category Components
  */
 export interface CardMediaConfig {
   /** Image source URL */
@@ -167,8 +214,11 @@ export interface CardMediaConfig {
 }
 
 /**
- * Base component interface
+ * Base component interface.
+ * Core interface that all components extend with basic functionality.
+ * 
  * @interface BaseComponent
+ * @category Components
  */
 export interface BaseComponent {
   /** The DOM element */
@@ -194,8 +244,11 @@ export interface BaseComponent {
 }
 
 /**
- * Touch state interface for touch interactions
+ * Touch state interface for touch interactions.
+ * Used to track touch events for interactive components.
+ * 
  * @interface TouchState
+ * @category Components
  */
 export interface TouchState {
   /** Timestamp when touch started */
@@ -209,8 +262,11 @@ export interface TouchState {
 }
 
 /**
- * Component lifecycle interface
+ * Component lifecycle interface.
+ * Defines the lifecycle hooks for component creation, updates, and destruction.
+ * 
  * @interface ComponentLifecycle
+ * @category Components
  */
 export interface ComponentLifecycle {
   /** Called when component is mounted to DOM */
@@ -222,9 +278,13 @@ export interface ComponentLifecycle {
 }
 
 /**
- * Card component configuration
+ * Card component configuration.
+ * Internal configuration object that extends the user-provided schema
+ * with additional required properties.
+ * 
  * @interface CardComponentConfig
  * @extends CardSchema
+ * @category Components
  */
 export interface CardComponentConfig extends CardSchema {
   /** Component name */
@@ -234,24 +294,141 @@ export interface CardComponentConfig extends CardSchema {
 }
 
 /**
- * Card component interface with methods
+ * Card component interface with methods.
+ * This is the public API of the card component that users interact with.
+ * 
  * @interface CardComponent
  * @extends BaseComponent
+ * @category Components
  */
 export interface CardComponent extends BaseComponent {
-  /** Add content to the card */
+  /**
+   * Adds content to the card.
+   * This method appends content to the card component.
+   * 
+   * @param contentElement - The content element to add
+   * @returns The card instance for chaining
+   * @example
+   * ```typescript
+   * const content = document.createElement('div');
+   * content.className = 'mtrl-card-content';
+   * content.textContent = 'Card content goes here';
+   * card.addContent(content);
+   * ```
+   */
   addContent: (contentElement: HTMLElement) => CardComponent;
-  /** Set the card header */
+  
+  /**
+   * Sets the card header.
+   * Places the header element in the card. When media elements exist,
+   * the header is placed after the last media element to ensure proper 
+   * visual hierarchy following Material Design guidelines.
+   * 
+   * @param headerElement - The header element to add
+   * @returns The card instance for chaining
+   * @example
+   * ```typescript
+   * // Add a header after media
+   * card.setHeader(headerElement);
+   * ```
+   */
   setHeader: (headerElement: HTMLElement) => CardComponent;
-  /** Add media to the card */
+  
+  /**
+   * Adds media to the card.
+   * Places media elements at the specified position in the card.
+   * 
+   * @param mediaElement - The media element to add
+   * @param position - Position to place media ('top', 'bottom')
+   * @returns The card instance for chaining
+   * @example
+   * ```typescript
+   * // Creating media element
+   * const media = document.createElement('div');
+   * media.className = 'mtrl-card-media';
+   * 
+   * // Adding at the top (default)
+   * card.addMedia(media);
+   * 
+   * // Or adding at the bottom
+   * card.addMedia(media, 'bottom');
+   * ```
+   */
   addMedia: (mediaElement: HTMLElement, position?: 'top' | 'bottom') => CardComponent;
-  /** Set the card actions */
+  
+  /**
+   * Sets the card actions section.
+   * Replaces any existing actions with the provided actions element.
+   * Actions typically contain buttons or other interactive controls,
+   * and are placed at the bottom of the card.
+   * 
+   * @param actionsElement - The actions element to add
+   * @returns The card instance for chaining
+   * @example
+   * ```typescript
+   * // Create actions container
+   * const actions = document.createElement('div');
+   * actions.className = 'mtrl-card-actions';
+   * 
+   * // Add buttons to actions
+   * const button = document.createElement('button');
+   * button.textContent = 'Action';
+   * actions.appendChild(button);
+   * 
+   * // Set actions on card
+   * card.setActions(actions);
+   * ```
+   */
   setActions: (actionsElement: HTMLElement) => CardComponent;
-  /** Make the card draggable */
+  
+  /**
+   * Makes the card draggable.
+   * Sets up native HTML5 drag and drop functionality and adds appropriate
+   * accessibility attributes. Automatically updates ARIA attributes during drag.
+   * 
+   * @param dragStartCallback - Callback for drag start event
+   * @returns The card instance for chaining
+   * @example
+   * ```typescript
+   * // Basic draggable card
+   * card.makeDraggable();
+   * 
+   * // With custom drag start handler
+   * card.makeDraggable((event) => {
+   *   // Set custom data or perform other actions on drag start
+   *   event.dataTransfer.setData('text/plain', 'Card data');
+   * });
+   * ```
+   */
   makeDraggable: (dragStartCallback?: (event: DragEvent) => void) => CardComponent;
-  /** Set focus to the card */
+  
+  /**
+   * Sets focus to the card.
+   * Useful for programmatic focus management, especially in keyboard navigation
+   * scenarios or after dynamic content changes.
+   * 
+   * @returns The card instance for chaining
+   * @example
+   * ```typescript
+   * // Focus the card
+   * card.focus();
+   * 
+   * // Can be chained with other methods
+   * card.setHeader(headerElement).focus();
+   * ```
+   */
   focus: () => CardComponent;
-  /** Destroy the card and clean up resources */
+  
+  /**
+   * Destroys the card component and removes event listeners.
+   * Call this method when the card is no longer needed to prevent memory leaks.
+   * 
+   * @example
+   * ```typescript
+   * // Clean up resources when done with the card
+   * card.destroy();
+   * ```
+   */
   destroy: () => void;
   
   /** Optional loading feature */
@@ -263,8 +440,11 @@ export interface CardComponent extends BaseComponent {
 }
 
 /**
- * Loading feature interface
+ * Loading feature interface.
+ * Provides methods to control loading state on the card.
+ * 
  * @interface LoadingFeature
+ * @category Components
  */
 export interface LoadingFeature {
   /** Check if loading state is active */
@@ -274,8 +454,11 @@ export interface LoadingFeature {
 }
 
 /**
- * Expandable feature interface
+ * Expandable feature interface.
+ * Provides methods to control the expanded/collapsed state of a card.
+ * 
  * @interface ExpandableFeature
+ * @category Components
  */
 export interface ExpandableFeature {
   /** Check if expanded state is active */
@@ -287,8 +470,11 @@ export interface ExpandableFeature {
 }
 
 /**
- * Swipeable feature interface
+ * Swipeable feature interface.
+ * Provides methods to control the swipe behavior of a card.
+ * 
  * @interface SwipeableFeature
+ * @category Components
  */
 export interface SwipeableFeature {
   /** Reset swipe position */
@@ -296,8 +482,11 @@ export interface SwipeableFeature {
 }
 
 /**
- * API options interface
+ * API options interface.
+ * Configuration object for the card's API methods.
+ * 
  * @interface ApiOptions
+ * @category Components
  */
 export interface ApiOptions {
   /** Lifecycle methods */
