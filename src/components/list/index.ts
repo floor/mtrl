@@ -17,7 +17,7 @@
  * @example
  * ```typescript
  * // Create a simple list with items
- * const userList = createList({
+ * const userList = fList({
  *   type: 'single', // Single selection mode
  *   items: [
  *     {
@@ -45,8 +45,8 @@
  * @category Components
  */
 
-export { default } from './list';
-export { default as createListItem } from './list-item';
+export { default, default as fList, default as createList } from './list';
+export { default as fListItem, default as createListItem } from './list-item';
 export {
   // Types
   ListConfig,

@@ -24,7 +24,7 @@ import { createBaseConfig, getElementConfig } from './config';
  * @example
  * ```typescript
  * // Create a simple list with single selection
- * const contactList = createList({
+ * const contactList = fList({
  *   type: 'single',
  *   items: [
  *     {
@@ -45,7 +45,7 @@ import { createBaseConfig, getElementConfig } from './config';
  * });
  * 
  * // Create a list with sections
- * const categorizedList = createList({
+ * const categorizedList = fList({
  *   type: 'multi',
  *   sections: [
  *     {
@@ -83,7 +83,7 @@ import { createBaseConfig, getElementConfig } from './config';
  * });
  * ```
  */
-const createList = (config: ListConfig = {}): any => {
+const fList = (config: ListConfig = {}): any => {
   const baseConfig = createBaseConfig(config);
 
   try {
@@ -105,4 +105,4 @@ const createList = (config: ListConfig = {}): any => {
   }
 };
 
-export default createList;
+export default fList;

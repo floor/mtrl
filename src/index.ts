@@ -18,6 +18,7 @@
  * - Divider
  * - Fab
  * - Extended-Fab
+ * - List
  */
 
 // Export new "f*" named factory functions for refactored components
@@ -37,6 +38,7 @@ export { default as fDialog } from './components/dialog';
 export { fDivider } from './components/divider';
 export { default as fFab } from './components/fab';
 export { default as fExtendedFab } from './components/extended-fab';
+export { default as fList, fListItem } from './components/list';
 
 // Export legacy functions for non-refactored components directly
 export { createElement } from './core/dom/create';
@@ -60,7 +62,6 @@ export { default as createTextfield } from './components/textfield';
 export { default as createTimePicker } from './components/timepicker';
 export { default as createTopAppBar } from './components/top-app-bar';
 export { default as createTooltip } from './components/tooltip';
-export { default as createList } from './components/list';
 
 // Export legacy "create*" functions for backward compatibility for refactored components
 export * from './compatibility';

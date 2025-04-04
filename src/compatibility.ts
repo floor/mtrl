@@ -16,6 +16,7 @@
  * - Divider
  * - Fab
  * - Extended-Fab
+ * - List
  */
 
 // Re-export with legacy names (only for refactored components)
@@ -45,3 +46,6 @@ export { default as createDialog } from './components/dialog';
 export { fDivider as createDivider } from './components/divider/divider';
 export { default as createFab } from './components/fab';
 export { default as createExtendedFab } from './components/extended-fab';
+// Import list components and re-export with legacy names
+import { fList, fListItem } from './components/list';
+export { fList as createList, fListItem as createListItem };

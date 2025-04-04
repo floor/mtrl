@@ -59,7 +59,9 @@ import {
   fDialog,
   fDivider,
   fFab,
-  fExtendedFab
+  fExtendedFab,
+  fList,
+  fListItem
 } from './src/index.js';
 
 // Export all functions - both legacy and new
@@ -113,5 +115,7 @@ export {
   fDialog,
   fDivider,
   fFab,
-  fExtendedFab
+  fExtendedFab,
+  fList,
+  fListItem
 };

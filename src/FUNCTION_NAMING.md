@@ -17,6 +17,7 @@ Starting from version X.X.X, factory functions in the MTRL library are being gra
 > - Divider
 > - Fab
 > - Extended-Fab
+> - List
 >
 > Other components will be updated in future releases.
 

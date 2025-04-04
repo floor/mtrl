@@ -34,8 +34,7 @@
  * @category Components
  */
 
-export { default as fFab } from './fab';
-export { default as createFab } from './fab';
+export { default } from './fab';
 export {
   FabConfig,
   FabComponent,

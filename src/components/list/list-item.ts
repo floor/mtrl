@@ -108,7 +108,7 @@ const withItemContent = (config: ListItemConfig) => (component: any): any => {
  * @example
  * ```typescript
  * // Create a standard list item
- * const listItem = createListItem({
+ * const listItem = fListItem({
  *   id: 'user1',
  *   headline: 'Alex Johnson',
  *   supportingText: 'Software Engineer',
@@ -116,7 +116,7 @@ const withItemContent = (config: ListItemConfig) => (component: any): any => {
  * });
  * 
  * // Create a vertical layout list item with more content
- * const detailedItem = createListItem({
+ * const detailedItem = fListItem({
  *   id: 'event1',
  *   layout: 'vertical',
  *   overline: 'UPCOMING EVENT',
@@ -128,7 +128,7 @@ const withItemContent = (config: ListItemConfig) => (component: any): any => {
  * });
  * 
  * // Create a selected list item
- * const selectedItem = createListItem({
+ * const selectedItem = fListItem({
  *   id: 'file1',
  *   headline: 'Project Proposal.pdf',
  *   supportingText: '2.4 MB',
@@ -136,7 +136,7 @@ const withItemContent = (config: ListItemConfig) => (component: any): any => {
  * });
  * ```
  */
-const createListItem = (config: ListItemConfig): any => {
+const fListItem = (config: ListItemConfig): any => {
   const baseConfig = {
     ...config,
     componentName: 'list-item',
@@ -160,4 +160,4 @@ const createListItem = (config: ListItemConfig): any => {
   )(baseConfig);
 };
 
-export default createListItem;
+export default fListItem;
