@@ -21,10 +21,44 @@ import {
 
 /**
  * Creates a new Switch component
- * @param {SwitchConfig} config - Switch configuration
- * @returns {SwitchComponent} Switch component instance
+ * 
+ * A Switch component is a toggle control that follows Material Design 3 guidelines.
+ * It provides a visual toggle between two states, typically on/off or enabled/disabled.
+ * 
+ * @param {SwitchConfig} config - Switch configuration options
+ * @returns {SwitchComponent} Switch component instance with methods for state management
+ * 
+ * @example
+ * ```typescript
+ * // Create a basic switch
+ * const basicSwitch = fSwitch({
+ *   label: 'Dark Mode',
+ *   checked: false
+ * });
+ * 
+ * // Create a disabled switch with supporting text
+ * const disabledSwitch = fSwitch({
+ *   label: 'Offline Mode',
+ *   supportingText: 'Enable when no internet connection is available',
+ *   disabled: true
+ * });
+ * 
+ * // Add an event listener
+ * basicSwitch.on('change', (event) => {
+ *   console.log('Switch toggled:', event.target.checked);
+ *   document.body.classList.toggle('dark-mode', event.target.checked);
+ * });
+ * 
+ * // Get/set state programmatically
+ * console.log('Is checked:', basicSwitch.isChecked());
+ * basicSwitch.check(); // Turn on
+ * basicSwitch.uncheck(); // Turn off
+ * basicSwitch.toggle(); // Toggle between states
+ * ```
+ * 
+ * @category Components
  */
-const createSwitch = (config: SwitchConfig = {}): SwitchComponent => {
+const fSwitch = (config: SwitchConfig = {}): SwitchComponent => {
   const baseConfig = createBaseConfig(config);
 
   try {
@@ -49,4 +83,4 @@ const createSwitch = (config: SwitchConfig = {}): SwitchComponent => {
   }
 };
 
-export default createSwitch;
+export default fSwitch;

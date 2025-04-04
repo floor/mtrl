@@ -17,25 +17,25 @@ import { MENU_ITEM_TYPE, getMenuClass } from './utils';
  * @example
  * ```typescript
  * // Create a standard menu item
- * const itemElement = createMenuItem(
+ * const itemElement = fMenuItem(
  *   { name: 'edit', text: 'Edit' },
  *   'mtrl'
  * );
  * 
  * // Create a disabled menu item
- * const disabledItem = createMenuItem(
+ * const disabledItem = fMenuItem(
  *   { name: 'print', text: 'Print', disabled: true },
  *   'mtrl'
  * );
  * 
  * // Create a divider
- * const divider = createMenuItem(
+ * const divider = fMenuItem(
  *   { type: 'divider' },
  *   'mtrl'
  * );
  * 
  * // Create an item with submenu indicator
- * const submenuItem = createMenuItem(
+ * const submenuItem = fMenuItem(
  *   {
  *     name: 'share',
  *     text: 'Share',
@@ -51,7 +51,7 @@ import { MENU_ITEM_TYPE, getMenuClass } from './utils';
  * @internal
  * @category Components
  */
-export const createMenuItem = (itemConfig: MenuItemConfig, prefix: string): HTMLElement => {
+export const fMenuItem = (itemConfig: MenuItemConfig, prefix: string): HTMLElement => {
   const item = document.createElement('li');
   item.className = `${prefix}-${getMenuClass('ITEM')}`;
 

@@ -7,7 +7,7 @@
  * Menus display a list of choices on a temporary surface, appearing when users
  * interact with a button, action, or other control.
  * 
- * The main export is the {@link default | createMenu} factory function that creates
+ * The main export is the {@link default | fMenu} factory function that creates
  * a {@link MenuComponent} instance with the provided configuration.
  * 
  * Features:
@@ -22,7 +22,7 @@
  * @example
  * ```typescript
  * // Create a basic menu
- * const menu = createMenu({
+ * const menu = fMenu({
  *   items: [
  *     { name: 'edit', text: 'Edit' },
  *     { name: 'duplicate', text: 'Duplicate' },
@@ -57,7 +57,7 @@
  * Factory function to create a new Menu component.
  * @see MenuComponent for the full API reference
  */
-export { default } from './menu';
+export { default, default as fMenu, default as createMenu } from './menu';
 
 /**
  * Menu component types and interfaces

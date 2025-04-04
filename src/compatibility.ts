@@ -17,6 +17,10 @@
  * - Fab
  * - Extended-Fab
  * - List
+ * - Menu
+ * - Switch
+ * - Textfield
+ * - TimePicker
  */
 
 // Re-export with legacy names (only for refactored components)
@@ -49,3 +53,18 @@ export { default as createExtendedFab } from './components/extended-fab';
 // Import list components and re-export with legacy names
 import { fList, fListItem } from './components/list';
 export { fList as createList, fListItem as createListItem };
+// Import menu component and re-export with legacy name
+import { fMenu } from './components/menu';
+export { fMenu as createMenu };
+
+// Import switch component and re-export with legacy name
+import { fSwitch } from './components/switch';
+export { fSwitch as createSwitch };
+
+// Import textfield component and re-export with legacy name
+import { fTextfield } from './components/textfield';
+export { fTextfield as createTextfield };
+
+// Import timepicker component and re-export with legacy name
+import { fTimePicker } from './components/timepicker';
+export { fTimePicker as createTimePicker };

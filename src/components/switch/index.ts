@@ -1,5 +1,5 @@
 // src/components/switch/index.ts
-export { default } from './switch'
+export { default, default as fSwitch, default as createSwitch } from './switch'
 export { 
   SwitchConfig, 
   SwitchComponent,

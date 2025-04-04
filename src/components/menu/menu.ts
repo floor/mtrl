@@ -40,7 +40,7 @@ import {
  * @example
  * ```typescript
  * // Create a basic menu with items
- * const menu = createMenu({
+ * const menu = fMenu({
  *   items: [
  *     { name: 'item1', text: 'Option 1' },
  *     { name: 'item2', text: 'Option 2' },
@@ -62,7 +62,7 @@ import {
  * @example
  * ```typescript
  * // Create a menu with nested submenus
- * const menu = createMenu({
+ * const menu = fMenu({
  *   items: [
  *     { name: 'edit', text: 'Edit' },
  *     { 
@@ -86,7 +86,7 @@ import {
  * @example
  * ```typescript
  * // Using menu with custom positioning
- * const menu = createMenu({
+ * const menu = fMenu({
  *   items: [
  *     { name: 'cut', text: 'Cut' },
  *     { name: 'copy', text: 'Copy' },
@@ -113,11 +113,7 @@ import {
  * });
  * ```
  */
-/**
- * @type {Function}
- * @name createMenu
- */
-const createMenu = (config: MenuConfig = {}): MenuComponent => {
+const fMenu = (config: MenuConfig = {}): MenuComponent => {
   const baseConfig = createBaseConfig(config);
 
   try {
@@ -138,7 +134,7 @@ const createMenu = (config: MenuConfig = {}): MenuComponent => {
     // This is needed because we need the complete menu factory function
     // to create submenus, but we can't import it directly in items-manager
     if (menu.setCreateSubmenuFunction) {
-      menu.setCreateSubmenuFunction(createMenu);
+      menu.setCreateSubmenuFunction(fMenu);
     }
 
     return menu as MenuComponent;
@@ -148,4 +144,4 @@ const createMenu = (config: MenuConfig = {}): MenuComponent => {
   }
 };
 
-export default createMenu;
+export default fMenu;

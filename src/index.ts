@@ -19,6 +19,10 @@
  * - Fab
  * - Extended-Fab
  * - List
+ * - Menu
+ * - Switch
+ * - Textfield
+ * - TimePicker
  */
 
 // Export new "f*" named factory functions for refactored components
@@ -39,6 +43,10 @@ export { fDivider } from './components/divider';
 export { default as fFab } from './components/fab';
 export { default as fExtendedFab } from './components/extended-fab';
 export { default as fList, fListItem } from './components/list';
+export { default as fMenu } from './components/menu';
+export { default as fSwitch } from './components/switch';
+export { default as fTextfield } from './components/textfield';
+export { default as fTimePicker } from './components/timepicker';
 
 // Export legacy functions for non-refactored components directly
 export { createElement } from './core/dom/create';
@@ -47,7 +55,6 @@ export { default as createSegmentedButton } from './components/segmented-button'
 export { default as createBottomAppBar } from './components/bottom-app-bar';
 export { default as createCarousel } from './components/carousel';
 export { default as createChipSet } from './components/chip';
-export { default as createMenu } from './components/menu';
 export { default as createNavigation, createNavigationSystem } from './components/navigation';
 export { default as createProgress } from './components/progress';
 export { default as createRadios } from './components/radios';
@@ -56,10 +63,7 @@ export { default as createSegment } from './components/segmented-button';
 export { default as createSheet } from './components/sheet';
 export { default as createSlider } from './components/slider';
 export { default as createSnackbar } from './components/snackbar';
-export { default as createSwitch } from './components/switch';
 export { default as createTabs } from './components/tabs';
-export { default as createTextfield } from './components/textfield';
-export { default as createTimePicker } from './components/timepicker';
 export { default as createTopAppBar } from './components/top-app-bar';
 export { default as createTooltip } from './components/tooltip';
 

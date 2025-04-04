@@ -18,6 +18,10 @@ Starting from version X.X.X, factory functions in the MTRL library are being gra
 > - Fab
 > - Extended-Fab
 > - List
+> - Menu
+> - Switch
+> - Textfield
+> - TimePicker
 >
 > Other components will be updated in future releases.
 

@@ -24,10 +24,50 @@ import {
 
 /**
  * Creates a new Textfield component
- * @param {TextfieldConfig} config - Textfield configuration
- * @returns {TextfieldComponent} Textfield component instance
+ * 
+ * A Textfield component provides an input field for users to enter and edit text,
+ * following Material Design 3 guidelines. It supports various input types, visual
+ * variants, and features like icons, labels, and supporting text.
+ * 
+ * @param {TextfieldConfig} config - Textfield configuration options
+ * @returns {TextfieldComponent} Textfield component instance with methods for state management
+ * 
+ * @example
+ * ```typescript
+ * // Create a simple outlined text field
+ * const emailField = fTextfield({
+ *   label: 'Email Address',
+ *   type: 'email',
+ *   variant: 'outlined',
+ *   required: true
+ * });
+ * 
+ * // Create a password field with error state
+ * const passwordField = fTextfield({
+ *   label: 'Password',
+ *   type: 'password',
+ *   supportingText: 'Password must be at least 8 characters',
+ *   error: true,
+ *   trailingIcon: '<svg>...</svg>'
+ * });
+ * 
+ * // Add event listeners
+ * emailField.on('input', (event) => {
+ *   console.log('Input value:', event.target.value);
+ *   validateEmail(emailField.getValue());
+ * });
+ * 
+ * // Programmatically set values and attributes
+ * emailField.setValue('user@example.com');
+ * emailField.setAttribute('autocomplete', 'email');
+ * 
+ * // Access the DOM elements
+ * document.body.appendChild(emailField.element);
+ * ```
+ * 
+ * @category Components
  */
-const createTextfield = (config: TextfieldConfig = {}): TextfieldComponent => {
+const fTextfield = (config: TextfieldConfig = {}): TextfieldComponent => {
   const baseConfig = createBaseConfig(config);
 
   try {
@@ -53,4 +93,4 @@ const createTextfield = (config: TextfieldConfig = {}): TextfieldComponent => {
   }
 };
 
-export default createTextfield;
+export default fTextfield;

@@ -42,7 +42,6 @@ import {
   createTimePicker,
   createTooltip,
   createTopAppBar,
-  createSwitch,
   
   // New functions (refactored components only)
   fBadge,
@@ -61,7 +60,9 @@ import {
   fFab,
   fExtendedFab,
   fList,
-  fListItem
+  fListItem,
+  fMenu,
+  fSwitch
 } from './src/index.js';
 
 // Export all functions - both legacy and new
@@ -93,12 +94,12 @@ export {
   createSheet,
   createSlider,
   createSnackbar,
+  createSwitch,
   createTabs,
   createTextfield,
   createTimePicker,
   createTooltip,
   createTopAppBar,
-  createSwitch,
   
   // New functions (refactored components only)
   fBadge,
@@ -117,5 +118,7 @@ export {
   fFab,
   fExtendedFab,
   fList,
-  fListItem
+  fListItem,
+  fMenu,
+  fSwitch
 };

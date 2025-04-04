@@ -1,5 +1,5 @@
 // src/components/textfield/index.ts
-export { default } from './textfield'
+export { default, default as fTextfield, default as createTextfield } from './textfield'
 export { 
   TextfieldConfig, 
   TextfieldComponent,

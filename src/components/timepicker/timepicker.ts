@@ -22,10 +22,41 @@ import { parseTime, formatTime } from './utils';
 
 /**
  * Creates a new TimePicker component
+ * 
+ * A TimePicker component provides an interface for selecting time values (hours, minutes, and optionally seconds)
+ * following Material Design 3 guidelines. It supports both dial (clock) and input interfaces, 12-hour (AM/PM)
+ * and 24-hour formats, and various configuration options.
+ * 
  * @param {TimePickerConfig} config - TimePicker configuration object
- * @returns {TimePickerComponent} TimePicker component instance
+ * @returns {TimePickerComponent} TimePicker component instance with methods for time selection and state management
+ * 
+ * @example
+ * ```typescript
+ * // Create a simple time picker with 12-hour format
+ * const meetingTime = fTimePicker({
+ *   title: 'Meeting Time',
+ *   format: 'ampm',
+ *   type: 'dial',
+ *   value: '10:30'
+ * });
+ * 
+ * // Create a 24-hour time picker with seconds shown
+ * const preciseTime = fTimePicker({
+ *   format: 'military',
+ *   showSeconds: true,
+ *   value: '14:30:00'
+ * });
+ * 
+ * // Add event listeners
+ * meetingTime.on('change', (time) => {
+ *   console.log('Selected time:', time);
+ * });
+ * 
+ * // Open the time picker programmatically
+ * meetingTime.open();
+ * ```
  */
-const createTimePicker = (config: TimePickerConfig = {}): TimePickerComponent => {
+const fTimePicker = (config: TimePickerConfig = {}): TimePickerComponent => {
   const baseConfig = createBaseConfig(config);
   
   try {
@@ -114,4 +145,4 @@ const createTimePicker = (config: TimePickerConfig = {}): TimePickerComponent =>
   }
 };
 
-export default createTimePicker;
+export default fTimePicker;

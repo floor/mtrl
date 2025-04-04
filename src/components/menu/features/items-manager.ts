@@ -1,5 +1,5 @@
 // src/components/menu/features/items-manager.ts
-import { createMenuItem } from '../menu-item';
+import { fMenuItem } from '../menu-item';
 import { MENU_EVENT } from '../utils';
 import { BaseComponent, MenuConfig, MenuItemConfig, MenuItemData } from '../types';
 
@@ -268,7 +268,7 @@ export const withItemsManager = (config: MenuConfig) => (component: BaseComponen
   // Create initial items
   if (config.items) {
     config.items.forEach(itemConfig => {
-      const item = createMenuItem(itemConfig, prefix);
+      const item = fMenuItem(itemConfig, prefix);
       list.appendChild(item);
 
       // Store item config for later use
@@ -379,7 +379,7 @@ export const withItemsManager = (config: MenuConfig) => (component: BaseComponen
     addItem(itemConfig: MenuItemConfig) {
       if (!itemConfig) return this;
 
-      const item = createMenuItem(itemConfig, prefix);
+      const item = fMenuItem(itemConfig, prefix);
       list.appendChild(item);
 
       // Store item config for later use
