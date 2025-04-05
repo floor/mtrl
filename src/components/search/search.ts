@@ -9,10 +9,40 @@ import { createBaseConfig, getElementConfig, getApiConfig } from './config';
 
 /**
  * Creates a new Search component
+ * 
+ * A Search component provides a user interface for search input with features 
+ * such as clear button, input validation, results display, and various states
+ * including focus, hover, and disabled.
+ * 
  * @param {SearchConfig} config - Search configuration object
  * @returns {SearchComponent} Search component instance
+ * 
+ * @example
+ * ```typescript
+ * // Create a basic search component
+ * const search = fSearch({
+ *   placeholder: 'Search products...',
+ *   clearable: true
+ * });
+ * 
+ * // Create a search with event handlers
+ * const advancedSearch = fSearch({
+ *   placeholder: 'Enter keywords',
+ *   icon: 'search',
+ *   on: {
+ *     input: (event) => console.log('Input:', event.value),
+ *     submit: (event) => performSearch(event.value),
+ *     clear: () => resetResults()
+ *   }
+ * });
+ * 
+ * // Listen for search events
+ * search.on('submit', (event) => {
+ *   fetchResults(event.value);
+ * });
+ * ```
  */
-const createSearch = (config: SearchConfig = {}): SearchComponent => {
+const fSearch = (config: SearchConfig = {}): SearchComponent => {
   const baseConfig = createBaseConfig(config);
 
   try {
@@ -49,4 +79,4 @@ const createSearch = (config: SearchConfig = {}): SearchComponent => {
   }
 };
 
-export default createSearch;
+export default fSearch;

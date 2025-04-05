@@ -24,10 +24,41 @@ const queue: SnackbarQueue = createSnackbarQueue();
 
 /**
  * Creates a new Snackbar component
+ * 
+ * A Snackbar component displays brief messages at the bottom of the screen.
+ * It can include an action button, automatically dismiss after a timeout,
+ * and manages multiple messages through a queue system.
+ * 
  * @param {SnackbarConfig} config - Snackbar configuration
  * @returns {SnackbarComponent} Snackbar component instance
+ * 
+ * @example
+ * ```typescript
+ * // Create a basic snackbar
+ * const simpleSnackbar = fSnackbar({
+ *   message: 'File saved successfully',
+ *   duration: 4000
+ * });
+ * 
+ * // Create a snackbar with an action
+ * const actionSnackbar = fSnackbar({
+ *   message: 'Connection lost',
+ *   action: {
+ *     text: 'Retry',
+ *     onClick: () => reconnect()
+ *   },
+ *   variant: 'error',
+ *   persistent: true
+ * });
+ * 
+ * // Show a snackbar immediately
+ * simpleSnackbar.show();
+ * 
+ * // Queue multiple snackbars
+ * actionSnackbar.queue();
+ * ```
  */
-const createSnackbar = (config: SnackbarConfig): SnackbarComponent => {
+const fSnackbar = (config: SnackbarConfig): SnackbarComponent => {
   if (!config.message) {
     throw new Error('Snackbar message is required');
   }
@@ -57,4 +88,4 @@ const createSnackbar = (config: SnackbarConfig): SnackbarComponent => {
   }
 };
 
-export default createSnackbar;
+export default fSnackbar;

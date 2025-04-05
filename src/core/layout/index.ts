@@ -17,7 +17,7 @@ export type {
 export { isComponent, processClassNames, flattenLayout } from './utils';
 
 // Export core functionality
-export { createLayout as fLayout } from './create';
+export { createLayout } from './create';
 export { createLayoutResult } from './result';
 export { processSchema, createComponentInstance } from './processor';
 

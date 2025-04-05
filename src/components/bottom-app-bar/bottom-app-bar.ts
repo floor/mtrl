@@ -22,7 +22,7 @@ import { BottomAppBar, BottomAppBarConfig } from './types';
  * @param {BottomAppBarConfig} config - Configuration options
  * @returns {BottomAppBar} Bottom app bar component instance
  */
-export const createBottomAppBar = (config: BottomAppBarConfig = {}): BottomAppBar => {
+export const fBottomAppBar = (config: BottomAppBarConfig = {}): BottomAppBar => {
   // Process configuration with defaults
   const componentConfig = createConfig(config);
   

@@ -20,21 +20,27 @@
  * - Extended-Fab
  * - List
  * - Menu
+ * - Progress
+ * - Radios
+ * - Search
+ * - Segmented Button
+ * - Sheet
+ * - Slider
+ * - Snackbar
  * - Switch
+ * - Tabs
  * - Textfield
  * - TimePicker
+ * - TopAppBar
+ * - Tooltip
  */
 
 // Export new "f*" named factory functions for refactored components
 export { default as fBadge } from './components/badge';
 export { default as fButton } from './components/button';
+export { default as fBottomAppBar } from './components/bottom-app-bar';
 export { default as fCard } from './components/card';
-export { 
-  fCardContent,
-  fCardHeader, 
-  fCardActions, 
-  fCardMedia 
-} from './components/card/content';
+export { fCardContent,fCardHeader, fCardActions, fCardMedia } from './components/card/content';
 export { default as fCheckbox } from './components/checkbox';
 export { default as fChip, fChipSet } from './components/chip';
 export { default as fDatePicker } from './components/datepicker';
@@ -47,25 +53,23 @@ export { default as fMenu } from './components/menu';
 export { default as fSwitch } from './components/switch';
 export { default as fTextfield } from './components/textfield';
 export { default as fTimePicker } from './components/timepicker';
+export { default as fTopAppBar } from './components/top-app-bar';
+export { default as fTooltip } from './components/tooltip';
+export { default as fProgress } from './components/progress';
+export { default as fRadios } from './components/radios';
+export { default as fSearch } from './components/search';
+export { default as fSegmentedButton, fSegment } from './components/segmented-button';
+export { default as fSheet } from './components/sheet';
+export { default as fSlider } from './components/slider';
+export { default as fSnackbar } from './components/snackbar';
+export { default as fTabs, fTab } from './components/tabs';
 
 // Export legacy functions for non-refactored components directly
 export { createElement } from './core/dom/create';
 export { default as createLayout } from './core/layout';
-export { default as createSegmentedButton } from './components/segmented-button';
-export { default as createBottomAppBar } from './components/bottom-app-bar';
-export { default as createCarousel } from './components/carousel';
-export { default as createChipSet } from './components/chip';
+export { default as fLayout } from './core/layout';
+export { default as fCarousel } from './components/carousel';
 export { default as createNavigation, createNavigationSystem } from './components/navigation';
-export { default as createProgress } from './components/progress';
-export { default as createRadios } from './components/radios';
-export { default as createSearch } from './components/search';
-export { default as createSegment } from './components/segmented-button';
-export { default as createSheet } from './components/sheet';
-export { default as createSlider } from './components/slider';
-export { default as createSnackbar } from './components/snackbar';
-export { default as createTabs } from './components/tabs';
-export { default as createTopAppBar } from './components/top-app-bar';
-export { default as createTooltip } from './components/tooltip';
 
 // Export legacy "create*" functions for backward compatibility for refactored components
 export * from './compatibility';

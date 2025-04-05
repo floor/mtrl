@@ -54,11 +54,11 @@ submitButton.on('click', () => confirmDialog.open());
 ### Object-based Layout
 
 ```javascript
-import { createLayout, createTopAppBar, createNavigation, createList, createListItem, createTextfield, createButton } from 'mtrl';
+import { createLayout, fTopAppBar, createNavigation, createList, createListItem, createTextfield, createButton } from 'mtrl';
 
 const layout = createLayout({
   element: {
-    creator: createTopAppBar,
+    creator: fTopAppBar,
     options: { 
       title: 'Profile Settings',
       variant: 'small' 
@@ -140,7 +140,7 @@ document.body.appendChild(notification);
 ### Using Options Parameter
 
 ```javascript
-import { createLayout, createButton, createTextfield, createCard, createChip, createTopAppBar, createBottomAppBar } from 'mtrl';
+import { createLayout, createButton, createTextfield, createCard, createChip, fTopAppBar, fBottomAppBar } from 'mtrl';
 
 // With default creator and disabled prefix
 const formLayout = createLayout(
@@ -163,7 +163,7 @@ const formLayout = createLayout(
 // With theme options for a complete dashboard layout
 const dashboardLayout = createLayout(
   [
-    createTopAppBar, 'header', { 
+    fTopAppBar, 'header', { 
       title: 'Dashboard', 
       actions: ['notifications', 'account'] 
     },
@@ -182,7 +182,7 @@ const dashboardLayout = createLayout(
       outlined: true
     },
     
-    createBottomAppBar, 'footer', {
+    fBottomAppBar, 'footer', {
       actions: [
         { icon: 'home', label: 'Home' },
         { icon: 'search', label: 'Search' },

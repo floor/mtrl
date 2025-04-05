@@ -22,10 +22,32 @@ export const TAB_LAYOUT = {
 
 /**
  * Creates a new Tab component following MD3 guidelines
+ * 
+ * A Tab component represents an individual tab within a Tabs container.
+ * It can display text, icons, or both, and supports badges, states, and
+ * accessibility attributes.
+ * 
  * @param {TabConfig} config - Tab configuration object
  * @returns {TabComponent} Tab component instance
+ * 
+ * @example
+ * ```typescript
+ * // Create a text-only tab
+ * const homeTab = fTab({
+ *   text: 'Home',
+ *   value: 'home'
+ * });
+ * 
+ * // Create a tab with icon and badge
+ * const notificationsTab = fTab({
+ *   text: 'Notifications',
+ *   icon: '<i class="material-icons">notifications</i>',
+ *   value: 'notifications',
+ *   badge: '5'
+ * });
+ * ```
  */
-export const createTab = (config: TabConfig = {}): TabComponent => {
+export const fTab = (config: TabConfig = {}): TabComponent => {
   const baseConfig = createTabConfig(config);
   
   try {

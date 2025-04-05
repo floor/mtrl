@@ -1,5 +1,5 @@
 // src/components/sheet/index.ts
-export { default } from './sheet';
+export { default, default as fSheet, default as createSheet } from './sheet';
 export { 
   // Constants
   SHEET_VARIANTS, 

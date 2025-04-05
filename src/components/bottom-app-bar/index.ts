@@ -4,10 +4,10 @@
  * @description Bottom app bar component for mobile interfaces
  */
 
-import { createBottomAppBar } from './bottom-app-bar';
+import { fBottomAppBar } from './bottom-app-bar';
 
-export default createBottomAppBar;
-export { createBottomAppBar };
+export default fBottomAppBar;
+export { fBottomAppBar };
 export type { BottomAppBarConfig, BottomAppBar } from './types';
 
 // Export position constants for convenience and backward compatibility

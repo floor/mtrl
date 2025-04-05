@@ -16,17 +16,36 @@ import { setupKeyboardNavigation } from './utils';
 
 /**
  * Creates a new Tabs component following MD3 guidelines
+ * 
+ * A Tabs component allows content to be organized across multiple screens, 
+ * datasets, or other interactions. Tabs can include text, icons, or both,
+ * and can be configured with various features such as scrolling, indicators,
+ * and dividers.
+ * 
  * @param {TabsConfig} config - Tabs configuration object
  * @returns {TabsComponent} Tabs component instance
+ * 
  * @example
  * ```typescript
  * // Create basic tabs with three items
- * const tabs = createTabs({
+ * const tabs = fTabs({
  *   tabs: [
  *     { text: 'Home', value: 'home', state: 'active' },
  *     { text: 'Products', value: 'products' },
  *     { text: 'About', value: 'about' }
  *   ]
+ * });
+ * 
+ * // Create tabs with icons and scrolling
+ * const iconTabs = fTabs({
+ *   tabs: [
+ *     { icon: '<i class="material-icons">home</i>', text: 'Home', value: 'home' },
+ *     { icon: '<i class="material-icons">shopping_cart</i>', text: 'Products', value: 'products' },
+ *     { icon: '<i class="material-icons">person</i>', text: 'Profile', value: 'profile' },
+ *     { icon: '<i class="material-icons">settings</i>', text: 'Settings', value: 'settings' }
+ *   ],
+ *   scrollable: true,
+ *   indicatorStyle: 'underline'
  * });
  * 
  * // Add tabs to DOM
@@ -38,7 +57,7 @@ import { setupKeyboardNavigation } from './utils';
  * });
  * ```
  */
-const createTabs = (config: TabsConfig = {}): TabsComponent => {
+const fTabs = (config: TabsConfig = {}): TabsComponent => {
   const baseConfig = createTabsConfig(config);
   
   // Add ripple styles for state transitions
@@ -68,4 +87,4 @@ const createTabs = (config: TabsConfig = {}): TabsComponent => {
   }
 };
 
-export default createTabs;
+export default fTabs;

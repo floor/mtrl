@@ -4,26 +4,7 @@ This document explains the transition from the `create*` function naming pattern
 
 ## Overview
 
-Starting from version X.X.X, factory functions in the MTRL library are being gradually renamed from the `create*` prefix to the shorter `f*` prefix:
-
-> **Note**: This transition is being done incrementally. Currently, the following components have been refactored:
-> - Badge
-> - Button
-> - Card
-> - Checkbox
-> - Chip & ChipSet
-> - DatePicker
-> - Dialog
-> - Divider
-> - Fab
-> - Extended-Fab
-> - List
-> - Menu
-> - Switch
-> - Textfield
-> - TimePicker
->
-> Other components will be updated in future releases.
+Starting from version 0.4.0, factory functions in the MTRL library are being renamed from the `create*` prefix to the shorter `f*` prefix:
 
 ```javascript
 // Old naming convention
@@ -126,6 +107,6 @@ Here's a complete list of the renamed functions:
 | `createTabs`            | `fTabs`           |
 | `createTextfield`       | `fTextfield`      |
 | `createTimePicker`      | `fTimePicker`     |
-| `createTopAppBar`       | `fTopAppBar`      |
+| `xreateTopAppBar`       | `fTopAppBar`      |
 | `createTooltip`         | `fTooltip`        |
 | `createList`            | `fList`           |

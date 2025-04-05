@@ -21,9 +21,9 @@ export { default } from './carousel';
  * code completion, type safety, and to follow best practices.
  * 
  * @example
- * import { createCarousel, CAROUSEL_LAYOUTS } from 'mtrl';
+ * import { fCarousel, CAROUSEL_LAYOUTS } from 'mtrl';
  * 
- * const carousel = createCarousel({
+ * const carousel = fCarousel({
  *   layout: CAROUSEL_LAYOUTS.MULTI_BROWSE,
  *   // Other configuration options...
  * });

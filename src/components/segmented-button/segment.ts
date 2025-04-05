@@ -6,6 +6,10 @@ import { getSegmentConfig } from './config';
 
 /**
  * Creates a segment for the segmented button
+ * 
+ * A segment is an individual button within a segmented button group.
+ * It can display text, icons, or both, and maintains its own selection and disabled states.
+ * 
  * @param {SegmentConfig} config - Segment configuration
  * @param {HTMLElement} container - Container element
  * @param {string} prefix - Component prefix
@@ -14,7 +18,7 @@ import { getSegmentConfig } from './config';
  * @returns {Segment} Segment object
  * @internal
  */
-export const createSegment = (
+export const fSegment = (
   config: SegmentConfig, 
   container: HTMLElement,
   prefix: string,

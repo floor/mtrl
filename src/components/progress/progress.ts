@@ -55,26 +55,42 @@ const createCircularProgressDOM = (baseClass: string) => {
 
 /**
  * Creates a new Progress component
+ * 
+ * A Progress component indicates the status of an ongoing operation, displaying
+ * determinate or indeterminate progress in either linear or circular form.
+ * It can include optional labels and buffer indicators.
+ * 
  * @param {ProgressConfig} config - Progress configuration object
  * @returns {ProgressComponent} Progress component instance
  * 
  * @example
  * ```ts
  * // Create a linear determinate progress bar
- * const progress = createProgress({
+ * const progress = fProgress({
  *   variant: 'linear',
  *   value: 42,
  *   showLabel: true
  * });
  * 
  * // Create an indeterminate circular progress
- * const loader = createProgress({
+ * const loader = fProgress({
  *   variant: 'circular',
  *   indeterminate: true
  * });
+ * 
+ * // Create a buffering progress indicator
+ * const bufferedProgress = fProgress({
+ *   value: 30,
+ *   buffer: 60,
+ *   max: 100
+ * });
+ * 
+ * // Update progress programmatically
+ * progress.setValue(75);
+ * progress.setBuffer(85);
  * ```
  */
-const createProgress = (config: ProgressConfig = {}): ProgressComponent => {
+const fProgress = (config: ProgressConfig = {}): ProgressComponent => {
   // Create base configuration
   const baseConfig = createBaseConfig(config);
   
@@ -156,4 +172,4 @@ const createProgress = (config: ProgressConfig = {}): ProgressComponent => {
   }
 };
 
-export default createProgress;
+export default fProgress;

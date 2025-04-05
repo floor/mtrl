@@ -1,5 +1,5 @@
 // src/components/tabs/features.ts
-import { createTab } from './tab';
+import { fTab } from './tab';
 import { TabConfig, TabComponent } from './types';
 import { BaseComponent } from '../../core/compose/component';
 import { updateTabPanels, getActiveTab } from './utils';
@@ -62,7 +62,7 @@ export const withTabsManagement = <T extends TabsManagementConfig>(config: T) =>
         };
         
         // Create the tab
-        const tab = createTab(mergedConfig);
+        const tab = fTab(mergedConfig);
         
         // Add to internal tabs array
         tabs.push(tab);

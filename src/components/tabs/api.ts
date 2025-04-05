@@ -1,6 +1,6 @@
 // src/components/tabs/api.ts
 import { TabsComponent, TabComponent, TabConfig } from './types';
-import { createTab } from './tab';
+import { fTab } from './tab';
 
 /**
  * API options for a Tabs component
@@ -65,7 +65,7 @@ export const withAPI = ({ lifecycle }: ApiOptions) =>
       }
       
       // Create the tab
-      const tab = createTab(mergedConfig);
+      const tab = fTab(mergedConfig);
       
       // Add to internal tabs array
       component.tabs.push(tab);

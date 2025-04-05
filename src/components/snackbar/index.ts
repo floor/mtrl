@@ -1,5 +1,5 @@
 // src/components/snackbar/index.ts
-export { default } from './snackbar'
+export { default, default as fSnackbar, default as createSnackbar } from './snackbar'
 export { 
   SnackbarConfig, 
   SnackbarComponent,

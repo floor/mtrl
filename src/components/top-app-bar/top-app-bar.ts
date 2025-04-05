@@ -82,10 +82,36 @@ export interface TopAppBar extends ElementComponent {
 /**
  * Creates a top app bar component
  * 
+ * A TopAppBar serves as the main header/navigation area at the top of the screen,
+ * displaying the title of the current screen, navigation controls, and action items.
+ * It supports different types (small, medium, large, center) and can respond to
+ * scroll events.
+ * 
  * @param {TopAppBarConfig} config - Configuration options
  * @returns {TopAppBar} Top app bar component instance
+ * 
+ * @example
+ * ```typescript
+ * // Create a basic small top app bar
+ * const appBar = fTopAppBar({
+ *   title: 'My Application',
+ *   scrollable: true
+ * });
+ * 
+ * // Add navigation and action elements
+ * const menuButton = document.createElement('button');
+ * menuButton.innerHTML = '<span class="material-icons">menu</span>';
+ * appBar.addLeadingElement(menuButton);
+ * 
+ * const searchButton = document.createElement('button');
+ * searchButton.innerHTML = '<span class="material-icons">search</span>';
+ * appBar.addTrailingElement(searchButton);
+ * 
+ * // Add the top app bar to the document
+ * document.body.prepend(appBar.element);
+ * ```
  */
-export const createTopAppBar = (config: TopAppBarConfig = {}): TopAppBar => {
+export const fTopAppBar = (config: TopAppBarConfig = {}): TopAppBar => {
   // Process configuration with defaults
   const componentConfig = createConfig(config);
   

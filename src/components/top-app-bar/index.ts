@@ -4,8 +4,8 @@
  * @description Top app bar component for application headers
  */
 
-import { createTopAppBar } from './top-app-bar';
+import { fTopAppBar } from './top-app-bar';
 
-export default createTopAppBar;
-export { createTopAppBar };
+export default fTopAppBar;
+export { fTopAppBar };
 export type { TopAppBarConfig, TopAppBarType } from './config';

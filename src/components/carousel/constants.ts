@@ -123,7 +123,7 @@ export const CAROUSEL_EVENTS = {
  * Default values for carousel configuration
  * 
  * These values will be used when not explicitly specified
- * in the configuration object passed to createCarousel().
+ * in the configuration object passed to fCarousel().
  * 
  * @category Components
  */

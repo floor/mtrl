@@ -15,6 +15,10 @@ import { createBaseConfig, getApiConfig } from './config';
 /**
  * Creates a new Slider component
  * 
+ * A Slider component provides an input control for selecting values from a range.
+ * It can be configured with various options including range selection, tick marks,
+ * custom icons, minimum and maximum values, and step size.
+ * 
  * Slider follows a clear architectural pattern:
  * 1. Structure definition - Describes the DOM structure declaratively
  * 2. Feature enhancement - Adds specific capabilities (range, icons, labels)
@@ -26,8 +30,37 @@ import { createBaseConfig, getApiConfig } from './config';
  *
  * @param {SliderConfig} config - Slider configuration object
  * @returns {SliderComponent} Slider component instance
+ * 
+ * @example
+ * ```typescript
+ * // Create a basic slider
+ * const volumeSlider = fSlider({
+ *   min: 0,
+ *   max: 100,
+ *   value: 50,
+ *   label: 'Volume'
+ * });
+ * 
+ * // Create a range slider with custom configuration
+ * const priceRange = fSlider({
+ *   min: 0,
+ *   max: 1000,
+ *   step: 10,
+ *   range: true,
+ *   value: [200, 500],
+ *   showTickMarks: true,
+ *   tickInterval: 100,
+ *   label: 'Price Range',
+ *   valueDisplay: (val) => `$${val}`
+ * });
+ * 
+ * // Listen for value changes
+ * volumeSlider.on('change', (event) => {
+ *   console.log('New volume:', event.value);
+ * });
+ * ```
  */
-const createSlider = (config: SliderConfig = {}): SliderComponent => {
+const fSlider = (config: SliderConfig = {}): SliderComponent => {
   // Process configuration with defaults
   const baseConfig = createBaseConfig(config);
 
@@ -73,4 +106,4 @@ const createSlider = (config: SliderConfig = {}): SliderComponent => {
   }
 };
 
-export default createSlider;
+export default fSlider;

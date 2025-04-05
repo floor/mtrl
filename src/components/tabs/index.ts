@@ -1,6 +1,6 @@
 // src/components/tabs/index.ts
-import createTabs from './tabs';
-import { createTab } from './tab';
+import fTabs from './tabs';
+import { fTab } from './tab';
 import { addScrollIndicators } from './scroll-indicators';
 import { setupResponsiveBehavior } from './responsive';
 import { createTabsState } from './state';
@@ -42,5 +42,7 @@ export {
   IndicatorComponent
 } from './features';
 
-// Default export
-export default createTabs;
+// Export main components with both new and legacy names
+export default fTabs;
+export { fTabs, fTabs as createTabs };
+export { fTab, fTab as createTab };

@@ -17,10 +17,38 @@ const createTooltipId = (): string => {
 
 /**
  * Creates a new Tooltip component
+ * 
+ * A Tooltip component provides contextual text information when a user hovers or focuses
+ * on an element. It can be positioned in various ways around the target element and
+ * supports customizable appearance and behavior.
+ * 
  * @param {TooltipConfig} config - Tooltip configuration object
  * @returns {TooltipComponent} Tooltip component instance
+ * 
+ * @example
+ * ```typescript
+ * // Create a basic tooltip for a button
+ * const button = document.getElementById('info-button');
+ * const tooltip = fTooltip({
+ *   text: 'Additional information',
+ *   target: button,
+ *   position: 'top'
+ * });
+ * 
+ * // Create a tooltip with custom configuration
+ * const tooltip = fTooltip({
+ *   text: 'Click to save changes',
+ *   position: 'bottom',
+ *   showDelay: 500,
+ *   variant: 'large'
+ * });
+ * 
+ * // Manually set target and control visibility
+ * tooltip.setTarget(document.getElementById('save-button'));
+ * tooltip.show();
+ * ```
  */
-const createTooltip = (config: TooltipConfig = {}) => {
+const fTooltip = (config: TooltipConfig = {}) => {
   const baseConfig = createBaseConfig(config);
 
   try {
@@ -57,4 +85,4 @@ const createTooltip = (config: TooltipConfig = {}) => {
   }
 };
 
-export default createTooltip;
+export default fTooltip;

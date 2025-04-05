@@ -45,7 +45,7 @@ import { CAROUSEL_DEFAULTS } from './constants';
  * 
  * @example
  * // Create a multi-browse carousel for a photo gallery
- * const photoGallery = createCarousel({
+ * const photoGallery = fCarousel({
  *   layout: 'multi-browse',
  *   scrollBehavior: 'snap',
  *   slides: [
@@ -59,7 +59,7 @@ import { CAROUSEL_DEFAULTS } from './constants';
  * 
  * @example
  * // Create a hero carousel for featured content
- * const featuredContent = createCarousel({
+ * const featuredContent = fCarousel({
  *   layout: 'hero',
  *   centered: true,
  *   gap: 16,
@@ -76,7 +76,7 @@ import { CAROUSEL_DEFAULTS } from './constants';
  * 
  * @example
  * // Create a full-screen immersive carousel
- * const storyViewer = createCarousel({
+ * const storyViewer = fCarousel({
  *   layout: 'full-screen',
  *   loop: false,
  *   transition: 'fade',
@@ -86,7 +86,7 @@ import { CAROUSEL_DEFAULTS } from './constants';
  *   ]
  * });
  */
-export const createCarousel = (config: CarouselConfig = {}): CarouselComponent => {
+export const fCarousel = (config: CarouselConfig = {}): CarouselComponent => {
   // Ensure layout and scrollBehavior have defaults
   config.layout = config.layout || 'multi-browse';
   config.scrollBehavior = config.scrollBehavior || getDefaultScrollBehavior(config.layout);
@@ -239,4 +239,4 @@ function applyLayoutConfig(component: any, config: CarouselConfig): void {
   }
 }
 
-export default createCarousel;
+export default fCarousel;

@@ -21,7 +21,7 @@ import {
   createExtendedFab,
   createSegmentedButton,
   createCard,
-  createCarousel,
+  fCarousel,
   createCheckbox,
   createChip,
   createChipSet,
@@ -44,7 +44,9 @@ import {
   createTopAppBar,
   
   // New functions (refactored components only)
+  fLayout,
   fBadge,
+  fBottomAppBar,
   fButton,
   fCard,
   fCardContent,
@@ -62,7 +64,21 @@ import {
   fList,
   fListItem,
   fMenu,
-  fSwitch
+  fProgress,
+  fRadios,
+  fSearch,
+  fSegmentedButton,
+  fSegment,
+  fSheet,
+  fSlider,
+  fSnackbar,
+  fSwitch,
+  fTabs,
+  fTab,
+  fTextfield,
+  fTimePicker,
+  fTooltip,
+  fTopAppBar
 } from './src/index.js';
 
 // Export all functions - both legacy and new
@@ -102,7 +118,9 @@ export {
   createTopAppBar,
   
   // New functions (refactored components only)
+  fLayout,
   fBadge,
+  fBottomAppBar,
   fButton,
   fCard,
   fCardContent,
@@ -120,5 +138,19 @@ export {
   fList,
   fListItem,
   fMenu,
-  fSwitch
+  fProgress,
+  fRadios,
+  fSearch,
+  fSegmentedButton,
+  fSegment,
+  fSheet,
+  fSlider,
+  fSnackbar,
+  fSwitch,
+  fTabs,
+  fTab,
+  fTextfield,
+  fTimePicker,
+  fTooltip,
+  fTopAppBar
 };

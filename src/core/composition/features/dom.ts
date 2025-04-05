@@ -2,7 +2,7 @@
 import createLayout from '../../layout';
 
 /**
- * Creates DOM elements from component schema using the core createLayout utility
+ * Creates DOM elements from component schema using the core fLayout utility
  * This is a key feature that bridges the gap between declarative schema and actual DOM
  * 
  * @returns Component enhancer that creates DOM structure from schema
@@ -26,7 +26,7 @@ export const withDom = () => component => {
   }
   
   try {
-    // Use the createLayout function to build the DOM from schema
+    // Use the fLayout function to build the DOM from schema
     const layout = createLayout(component.schema);
     
     // Use the layout's utility functions to get components

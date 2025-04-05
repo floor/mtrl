@@ -5,14 +5,47 @@ import { withEvents, withLifecycle } from '../../core/compose/features';
 import { createEmitter } from '../../core/state/emitter';
 import { SegmentedButtonConfig, SegmentedButtonComponent, SelectionMode, Segment } from './types';
 import { createBaseConfig, getContainerConfig } from './config';
-import { createSegment } from './segment';
+import { fSegment } from './segment';
 
 /**
  * Creates a new Segmented Button component
+ * 
+ * A Segmented Button component presents a set of related buttons in a horizontal layout,
+ * allowing users to select one or multiple options. It supports single and multiple selection modes,
+ * can display icons and text, and provides events for selection changes.
+ * 
  * @param {SegmentedButtonConfig} config - Segmented Button configuration
  * @returns {SegmentedButtonComponent} Segmented Button component instance
+ * 
+ * @example
+ * ```typescript
+ * // Create a single-select segmented button
+ * const viewMode = fSegmentedButton({
+ *   mode: 'single',
+ *   segments: [
+ *     { value: 'list', text: 'List View', icon: '<i class="material-icons">view_list</i>' },
+ *     { value: 'grid', text: 'Grid View', icon: '<i class="material-icons">grid_view</i>' },
+ *     { value: 'map', text: 'Map View', icon: '<i class="material-icons">map</i>' }
+ *   ]
+ * });
+ * 
+ * // Create a multi-select filter button
+ * const filters = fSegmentedButton({
+ *   mode: 'multiple',
+ *   segments: [
+ *     { value: 'available', text: 'In Stock' },
+ *     { value: 'sale', text: 'On Sale' },
+ *     { value: 'new', text: 'New Arrivals' }
+ *   ]
+ * });
+ * 
+ * // Listen for selection changes
+ * viewMode.on('change', (event) => {
+ *   console.log('Selected view:', event.value[0]);
+ * });
+ * ```
  */
-const createSegmentedButton = (config: SegmentedButtonConfig = {}): SegmentedButtonComponent => {
+const fSegmentedButton = (config: SegmentedButtonConfig = {}): SegmentedButtonComponent => {
   // Process configuration
   const baseConfig = createBaseConfig(config);
   const mode = baseConfig.mode || SelectionMode.SINGLE;
@@ -31,7 +64,7 @@ const createSegmentedButton = (config: SegmentedButtonConfig = {}): SegmentedBut
     const segments: Segment[] = [];
     if (baseConfig.segments && baseConfig.segments.length) {
       baseConfig.segments.forEach(segmentConfig => {
-        const segment = createSegment(
+        const segment = fSegment(
           segmentConfig,
           component.element,
           baseConfig.prefix,
@@ -246,4 +279,4 @@ const createSegmentedButton = (config: SegmentedButtonConfig = {}): SegmentedBut
   }
 };
 
-export default createSegmentedButton;
+export default fSegmentedButton;
