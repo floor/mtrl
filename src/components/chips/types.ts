@@ -1,4 +1,4 @@
-// src/components/chip/types.ts
+// src/components/chips/types.ts
 
 /**
  * Chip variant types
@@ -113,6 +113,51 @@ export interface ChipConfig {
    * Function called when the chip selection changes
    */
   onChange?: (chip: ChipComponent) => void;
+}
+
+/**
+ * Configuration interface for the Chips component
+ * @category Components
+ */
+export interface ChipsConfig {
+  /** 
+   * Array of chip configurations to initialize 
+   * @default []
+   */
+  chips?: any[];
+  
+  /** 
+   * Whether the chip set is horizontally scrollable 
+   * @default false
+   */
+  scrollable?: boolean;
+  
+  /** 
+   * Whether the chip set is vertically stacked 
+   * @default false
+   */
+  vertical?: boolean;
+  
+  /** 
+   * Additional CSS classes 
+   */
+  class?: string;
+  
+  /** 
+   * CSS selector for filtering behavior 
+   */
+  selector?: string | null;
+  
+  /** 
+   * Whether multiple chips can be selected simultaneously 
+   * @default false
+   */
+  multiSelect?: boolean;
+  
+  /** 
+   * Callback function when chip selection changes 
+   */
+  onChange?: (selectedValues: (string | null)[], changedValue: string | null) => void;
 }
 
 /**
@@ -320,6 +365,108 @@ export interface ChipComponent {
    * @returns The chip component for chaining
    */
   addClass: (...classes: string[]) => ChipComponent;
+}
+
+/**
+ * Chips component interface
+ * @category Components
+ */
+export interface ChipsComponent {
+  /** The chips container's DOM element */
+  element: HTMLElement;
+  
+  /**
+   * Adds a new chip to the chips container
+   * @param chipConfig - Configuration for the chip
+   * @returns The chips instance for chaining
+   */
+  addChip: (chipConfig: any) => ChipsComponent;
+  
+  /**
+   * Removes a chip from the chips container
+   * @param chipOrIndex - Chip instance or index to remove
+   * @returns The chips instance for chaining
+   */
+  removeChip: (chipOrIndex: ChipComponent | number) => ChipsComponent;
+  
+  /**
+   * Gets all chip instances in the set
+   * @returns Array of chip instances
+   */
+  getChips: () => ChipComponent[];
+  
+  /**
+   * Gets currently selected chips
+   * @returns Array of selected chip instances
+   */
+  getSelectedChips: () => ChipComponent[];
+  
+  /**
+   * Gets the values of selected chips
+   * @returns Array of selected chip values
+   */
+  getSelectedValues: () => (string | null)[];
+  
+  /**
+   * Selects chips by their values
+   * @param values - Value or array of values to select
+   * @returns The chips instance for chaining
+   */
+  selectByValue: (values: string | string[]) => ChipsComponent;
+  
+  /**
+   * Clears all selections
+   * @returns The chips instance for chaining
+   */
+  clearSelection: () => ChipsComponent;
+  
+  /**
+   * Sets the scrollable state of the chips container
+   * @param isScrollable - Whether the chips container should be scrollable
+   * @returns The chips instance for chaining
+   */
+  setScrollable: (isScrollable: boolean) => ChipsComponent;
+  
+  /**
+   * Sets the vertical layout state
+   * @param isVertical - Whether the chips container should be vertically stacked
+   * @returns The chips instance for chaining
+   */
+  setVertical: (isVertical: boolean) => ChipsComponent;
+  
+  /**
+   * Scrolls to a specific chip
+   * @param chipOrIndex - Chip instance or index to scroll to
+   * @returns The chips instance for chaining 
+   */
+  scrollToChip: (chipOrIndex: ChipComponent | number) => ChipsComponent;
+  
+  /**
+   * Enables keyboard navigation between chips in the set
+   * @returns The chips instance for chaining
+   */
+  enableKeyboardNavigation: () => ChipsComponent;
+  
+  /**
+   * Destroys the chips container and all contained chips
+   */
+  destroy: () => void;
+  
+  /**
+   * Adds an event listener to the chips container
+   * @param event - Event name ('change', etc.)
+   * @param handler - Event handler function
+   * @returns The chips instance for chaining
+   */
+  on: (event: string, handler: Function) => ChipsComponent;
+  
+  /**
+   * Removes an event listener from the chips container
+   * @param event - Event name
+   * @param handler - Event handler function
+   * @returns The chips instance for chaining
+   */
+  off: (event: string, handler: Function) => ChipsComponent;
 }
 
 /**

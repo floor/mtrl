@@ -1,4 +1,4 @@
-// src/components/chip/constants.js
+// src/components/chips/constants.ts
 
 /**
  * Available variants for the Chip component

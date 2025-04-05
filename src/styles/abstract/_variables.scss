@@ -189,11 +189,18 @@ $card: (
   'padding': 16px
 ) !default;
 
-// Chip configuration
+// Chip configuration - updated with MD3 values
 $chip-config: (
   'height': 32px,
   'border-radius': 8px,
-  'padding-horizontal': 12px
+  'padding-horizontal': 12px,
+  'outlined-border-opacity': 0.12,
+  'outlined-border-hover-opacity': 0.29,
+  'outlined-border-focus-opacity': 0.38,
+  'outlined-selected-border-opacity': 0,
+  'suggestion-height': 48px,
+  'icon-size': 18px,
+  'suggestion-icon-size': 24px
 ) !default;
 
 $button: (
@@ -272,6 +279,9 @@ $spacing-scale: (
   @return map.get($card, $key);
 }
 
-@function chip($key) {
-  @return map.get($chip-config, $key);
+@function chip($key, $fallback: null) {
+  @if map.has-key($chip-config, $key) {
+    @return map.get($chip-config, $key);
+  }
+  @return $fallback;
 }

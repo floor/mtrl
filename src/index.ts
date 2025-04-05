@@ -20,7 +20,7 @@ import {
 } from './components/card/content';
 import createCarousel from './components/carousel';
 import createCheckbox from './components/checkbox';
-import createChip, { createChipSet } from './components/chip';
+import { createChip, createChips } from './components/chips';
 import createDatePicker from './components/datepicker';
 import createDialog from './components/dialog';
 import { createDivider } from './components/divider';
@@ -101,7 +101,7 @@ export {
   createCarousel as fCarousel,
   createCheckbox as fCheckbox,
   createChip as fChip,
-  createChipSet as fChipSet,
+  createChips as fChips,
   createDatePicker as fDatePicker,
   createDialog as fDialog,
   createDivider as fDivider,

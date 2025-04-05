@@ -1,10 +1,10 @@
-// src/components/chip/config.ts
+// src/components/chips/chip/config.ts
 import { 
   createComponentConfig, 
   createElementConfig,
   BaseComponentConfig 
-} from '../../core/config/component-config';
-import { ChipConfig, BaseComponent } from './types';
+} from '../../../core/config/component-config';
+import { ChipConfig, BaseComponent } from '../types';
 
 /**
  * Default configuration for the Chip component
