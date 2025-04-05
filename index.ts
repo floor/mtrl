@@ -1,70 +1,10 @@
-// index.js
-import {
-  createLayout,
-  createElement,
-  createBadge,
-  createBottomAppBar,
-  createButton,
-  createDatePicker,
-  createFab,
-  createExtendedFab,
-  createSegmentedButton,
-  createCard,
-  createCarousel,
-  createCheckbox,
-  createChip,
-  createChipSet,
-  createDialog,
-  createDivider,
-  createList,
-  createMenu,
-  createNavigation,
-  createNavigationSystem,
-  createProgress,
-  createRadios,
-  createSearch,
-  createSheet,
-  createSlider,
-  createSnackbar,
-  createTabs,
-  createTextfield,
-  createTimePicker,
-  createTooltip,
-  createTopAppBar,
-  createSwitch
-} from './src/index.js'
+// index.ts
+/**
+ * Main mtrl library exports
+ * 
+ * This file re-exports everything from the internal implementation.
+ * 
+ * @packageDocumentation
+ */
 
-export {
-  createLayout,
-  createElement,
-  createBadge,
-  createBottomAppBar,
-  createButton,
-  createDatePicker,
-  createFab,
-  createExtendedFab,
-  createSegmentedButton,
-  createCard,
-  createCarousel,
-  createCheckbox,
-  createChip,
-  createChipSet,
-  createDialog,
-  createDivider,
-  createList,
-  createMenu,
-  createNavigation,
-  createNavigationSystem,
-  createProgress,
-  createRadios,
-  createSearch,
-  createSheet,
-  createSlider,
-  createSnackbar,
-  createTabs,
-  createTextfield,
-  createTimePicker,
-  createTooltip,
-  createTopAppBar,
-  createSwitch
-}
+export * from './src/index';

@@ -1,33 +1,130 @@
 // src/index.ts
-export { createElement } from './core/dom/create'
-export { default as createLayout } from './core/layout'
-export { default as createButton } from './components/button'
-export { default as createFab } from './components/fab'
-export { default as createExtendedFab } from './components/extended-fab'
-export { default as createSegmentedButton } from './components/segmented-button'
-export { default as createBottomAppBar } from './components/bottom-app-bar'
-export { default as createBadge } from './components/badge'
-export { default as createCard } from './components/card'
-export { default as createCarousel } from './components/carousel'
-export { default as createCheckbox } from './components/checkbox'
-export { default as createChip, createChipSet } from './components/chip'
-export { default as createDatePicker } from './components/datepicker'
-export { default as createDialog } from './components/dialog'
-export { default as createDivider } from './components/divider'
-export { default as createMenu } from './components/menu'
-export { default as createNavigation } from './components/navigation'
-export { default as createNavigationSystem } from './components/navigation'
-export { default as createProgress } from './components/progress'
-export { default as createRadios } from './components/radios'
-export { default as createSearch } from './components/search'
-export { default as createSegment } from './components/segmented-button'
-export { default as createSheet } from './components/sheet'
-export { default as createSlider } from './components/slider'
-export { default as createSnackbar } from './components/snackbar'
-export { default as createSwitch } from './components/switch'
-export { default as createTabs } from './components/tabs'
-export { default as createTextfield } from './components/textfield'
-export { default as createTimePicker } from './components/timepicker'
-export { default as createTopAppBar } from './components/top-app-bar'
-export { default as createTooltip } from './components/tooltip'
-export { default as createList } from './components/list'
+/**
+ * Main mtrl library exports
+ * 
+ * @packageDocumentation
+ */
+
+// Direct component imports
+import { createElement } from './core/dom/create';
+import createLayout from './core/layout';
+import createBadge from './components/badge';
+import createBottomAppBar from './components/bottom-app-bar';
+import createButton from './components/button';
+import createCard from './components/card';
+import { 
+  createCardContent, 
+  createCardHeader, 
+  createCardActions, 
+  createCardMedia 
+} from './components/card/content';
+import createCarousel from './components/carousel';
+import createCheckbox from './components/checkbox';
+import createChip, { createChipSet } from './components/chip';
+import createDatePicker from './components/datepicker';
+import createDialog from './components/dialog';
+import { createDivider } from './components/divider';
+import createFab from './components/fab';
+import createExtendedFab from './components/extended-fab';
+import createList, { createListItem } from './components/list';
+import createMenu from './components/menu';
+import createNavigation, { createNavigationSystem } from './components/navigation';
+import createProgress from './components/progress';
+import createRadios from './components/radios';
+import createSearch from './components/search';
+import createSegmentedButton, { createSegment } from './components/segmented-button';
+import createSheet from './components/sheet';
+import createSlider from './components/slider';
+import createSnackbar from './components/snackbar';
+import createSwitch from './components/switch';
+import createTabs, { createTab } from './components/tabs';
+import createTextfield from './components/textfield';
+import createTimePicker from './components/timepicker';
+import createTopAppBar from './components/top-app-bar';
+import createTooltip from './components/tooltip';
+
+// Export all "create*" functions
+export {
+  createElement,
+  createLayout,
+  createBadge,
+  createBottomAppBar,
+  createButton,
+  createCard,
+  createCardContent, 
+  createCardHeader, 
+  createCardActions, 
+  createCardMedia,
+  createCarousel,
+  createCheckbox,
+  createChip,
+  createChipSet,
+  createDatePicker,
+  createDialog,
+  createDivider,
+  createFab,
+  createExtendedFab,
+  createList,
+  createListItem,
+  createMenu,
+  createNavigation,
+  createNavigationSystem,
+  createProgress,
+  createRadios,
+  createSearch,
+  createSegmentedButton,
+  createSegment,
+  createSheet,
+  createSlider,
+  createSnackbar,
+  createSwitch,
+  createTabs,
+  createTab,
+  createTextfield,
+  createTimePicker,
+  createTopAppBar,
+  createTooltip
+};
+
+// Export all "f*" aliases
+export {
+  createElement as fElement,
+  createLayout as fLayout,
+  createBadge as fBadge,
+  createBottomAppBar as fBottomAppBar,
+  createButton as fButton,
+  createCard as fCard,
+  createCardContent as fCardContent, 
+  createCardHeader as fCardHeader, 
+  createCardActions as fCardActions, 
+  createCardMedia as fCardMedia,
+  createCarousel as fCarousel,
+  createCheckbox as fCheckbox,
+  createChip as fChip,
+  createChipSet as fChipSet,
+  createDatePicker as fDatePicker,
+  createDialog as fDialog,
+  createDivider as fDivider,
+  createFab as fFab,
+  createExtendedFab as fExtendedFab,
+  createList as fList,
+  createListItem as fListItem,
+  createMenu as fMenu,
+  createNavigation as fNavigation,
+  createNavigationSystem as fNavigationSystem,
+  createProgress as fProgress,
+  createRadios as fRadios,
+  createSearch as fSearch,
+  createSegmentedButton as fSegmentedButton,
+  createSegment as fSegment,
+  createSheet as fSheet,
+  createSlider as fSlider,
+  createSnackbar as fSnackbar,
+  createSwitch as fSwitch,
+  createTabs as fTabs,
+  createTab as fTab,
+  createTextfield as fTextfield,
+  createTimePicker as fTimePicker,
+  createTopAppBar as fTopAppBar,
+  createTooltip as fTooltip
+};
