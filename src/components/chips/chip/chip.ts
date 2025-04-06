@@ -105,16 +105,18 @@ const createChip = (config: ChipConfig = {}): ChipComponent => {
       chip.element.addEventListener('click', () => {
         if (enhancedChip.isDisabled()) return;
         
+        const wasSelected = enhancedChip.isSelected();
         enhancedChip.toggleSelected();
+        const isNowSelected = enhancedChip.isSelected();
         
-        // Call onChange callback if provided
-        if (config.onChange) {
-          config.onChange(enhancedChip as unknown as ChipComponent);
+        // Call onChange with correct parameters
+        if (config.onChange && wasSelected !== isNowSelected) {
+          config.onChange(isNowSelected, enhancedChip);
         }
         
-        // Call onSelect callback if provided
+        // Call onSelect with consistent parameters
         if (config.onSelect) {
-          config.onSelect(enhancedChip as unknown as ChipComponent);
+          config.onSelect(enhancedChip);
         }
       });
     }

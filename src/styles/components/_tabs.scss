@@ -14,7 +14,7 @@ $container: '#{base.$prefix}-tabs';
   display: flex;
   flex-direction: column;
   width: 100%;
-  background-color: t.color('surface'); // MD3: Surface color
+  // background-color: t.color('surface'); // MD3: Surface color
   box-sizing: border-box;
   
   // Basic container sizing

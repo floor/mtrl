@@ -7,6 +7,25 @@
 export type ChipVariant = 'filled' | 'outlined' | 'elevated' | 'assist' | 'filter' | 'input' | 'suggestion';
 
 /**
+ * Available chip event types
+ */
+export const CHIP_EVENTS = {
+  CHANGE: 'change',
+  SELECT: 'select',
+  DESELECT: 'deselect',
+  REMOVE: 'remove'
+} as const;
+
+/**
+ * Available chips event types
+ */
+export const CHIPS_EVENTS = {
+  CHANGE: 'change',
+  ADD: 'add',
+  REMOVE: 'remove'
+} as const;
+
+/**
  * Configuration interface for the Chip component
  * @category Components
  */
@@ -111,8 +130,10 @@ export interface ChipConfig {
   
   /**
    * Function called when the chip selection changes
+   * @param {boolean} selected - Whether the chip is selected
+   * @param {ChipComponent} chip - The chip component
    */
-  onChange?: (chip: ChipComponent) => void;
+  onChange?: (selected: boolean, chip: ChipComponent) => void;
 }
 
 /**
@@ -124,7 +145,7 @@ export interface ChipsConfig {
    * Array of chip configurations to initialize 
    * @default []
    */
-  chips?: any[];
+  chips?: ChipConfig[];
   
   /** 
    * Whether the chip set is horizontally scrollable 
@@ -158,56 +179,36 @@ export interface ChipsConfig {
    * Callback function when chip selection changes 
    */
   onChange?: (selectedValues: (string | null)[], changedValue: string | null) => void;
-}
-
-/**
- * Icon API interface for managing chip icons
- * @category Components
- */
-export interface IconAPI {
-  /**
-   * Sets the icon HTML content
-   * @param html - HTML string for the icon
-   * @returns The icon API for chaining
-   */
-  setIcon: (html: string) => IconAPI;
   
   /**
-   * Gets the current icon HTML content
-   * @returns HTML string for the icon
+   * Component prefix for class names
+   * @default 'mtrl'
    */
-  getIcon: () => string;
+  prefix?: string;
   
   /**
-   * Gets the icon DOM element
-   * @returns The icon element or null if not present
+   * Label text for the chips container
    */
-  getElement: () => HTMLElement | null;
-}
-
-/**
- * Text API interface for managing chip text
- * @category Components
- */
-export interface TextAPI {
-  /**
-   * Sets the text content
-   * @param content - Text content
-   * @returns The text API for chaining
-   */
-  setText: (content: string) => TextAPI;
+  label?: string;
   
   /**
-   * Gets the current text content
-   * @returns Chip text content
+   * Position of the label (start or end)
+   * @default 'start'
    */
-  getText: () => string;
+  labelPosition?: 'start' | 'end';
+  
+  /** 
+   * Schema definition for the component structure
+   * @internal
+   */
+  schema?: any;
   
   /**
-   * Gets the text DOM element
-   * @returns The text element or null if not present
+   * Event handlers for component events
    */
-  getElement: () => HTMLElement | null;
+  on?: {
+    [key: string]: Function;
+  };
 }
 
 /**
@@ -217,35 +218,6 @@ export interface TextAPI {
 export interface ChipComponent {
   /** The chip's DOM element */
   element: HTMLElement;
-  
-  /** API for managing chip text */
-  text: TextAPI;
-  
-  /** API for managing chip icons */
-  icon: IconAPI;
-  
-  /** API for managing disabled state */
-  disabled: {
-    /** Enables the chip */
-    enable: () => void;
-    /** Disables the chip */
-    disable: () => void;
-    /** Checks if the chip is disabled */
-    isDisabled: () => boolean;
-  };
-  
-  /** API for managing component lifecycle */
-  lifecycle: {
-    /** Destroys the component and cleans up resources */
-    destroy: () => void;
-  };
-  
-  /**
-   * Gets a class name with the component's prefix
-   * @param name - Base class name
-   * @returns Prefixed class name
-   */
-  getClass: (name: string) => string;
   
   /**
    * Gets the chip's value attribute
@@ -380,7 +352,7 @@ export interface ChipsComponent {
    * @param chipConfig - Configuration for the chip
    * @returns The chips instance for chaining
    */
-  addChip: (chipConfig: any) => ChipsComponent;
+  addChip: (chipConfig: ChipConfig) => ChipsComponent;
   
   /**
    * Removes a chip from the chips container
@@ -410,9 +382,10 @@ export interface ChipsComponent {
   /**
    * Selects chips by their values
    * @param values - Value or array of values to select
+   * @param triggerEvent - Whether to trigger change event (default: true)
    * @returns The chips instance for chaining
    */
-  selectByValue: (values: string | string[]) => ChipsComponent;
+  selectByValue: (values: string | string[], triggerEvent?: boolean) => ChipsComponent;
   
   /**
    * Clears all selections
@@ -433,6 +406,32 @@ export interface ChipsComponent {
    * @returns The chips instance for chaining
    */
   setVertical: (isVertical: boolean) => ChipsComponent;
+  
+  /**
+   * Sets the label text
+   * @param text - Label text
+   * @returns The chips instance for chaining
+   */
+  setLabel: (text: string) => ChipsComponent;
+  
+  /**
+   * Gets the label text
+   * @returns Label text
+   */
+  getLabel: () => string;
+  
+  /**
+   * Sets the label position
+   * @param position - Label position ('start' or 'end')
+   * @returns The chips instance for chaining
+   */
+  setLabelPosition: (position: 'start' | 'end') => ChipsComponent;
+  
+  /**
+   * Gets the label position
+   * @returns Label position
+   */
+  getLabelPosition: () => string;
   
   /**
    * Scrolls to a specific chip
@@ -467,39 +466,4 @@ export interface ChipsComponent {
    * @returns The chips instance for chaining
    */
   off: (event: string, handler: Function) => ChipsComponent;
-}
-
-/**
- * API options interface
- * @internal
- */
-export interface ApiOptions {
-  disabled: {
-    enable: () => void;
-    disable: () => void;
-  };
-  lifecycle: {
-    destroy: () => void;
-  };
-}
-
-/**
- * Base component interface
- * @internal
- */
-export interface BaseComponent {
-  element: HTMLElement;
-  getClass: (name?: string) => string;
-  config: any;
-  text?: TextAPI;
-  icon?: IconAPI;
-  disabled?: {
-    enable: () => void;
-    disable: () => void;
-    isDisabled: () => boolean;
-  };
-  lifecycle?: {
-    destroy: () => void;
-  };
-  [key: string]: any;
 }

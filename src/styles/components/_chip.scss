@@ -8,6 +8,7 @@
 $component: '#{base.$prefix}-chip';
 $container: '#{base.$prefix}-chips';
 
+// Chip component styling
 .#{$component} {
   // Base styles
   position: relative;
@@ -25,8 +26,13 @@ $container: '#{base.$prefix}-chips';
   // Typography
   @include m.typography('label-large');
   
-  // Interaction styles
-  @include m.motion-transition(background-color, color, border-color, box-shadow);
+  // Enhanced transition for width changes
+  transition: background-color v.motion('duration-short4') v.motion('easing-standard'),
+              color v.motion('duration-short4') v.motion('easing-standard'),
+              border-color v.motion('duration-short4') v.motion('easing-standard'),
+              box-shadow v.motion('duration-short4') v.motion('easing-standard'),
+              padding v.motion('duration-short4') v.motion('easing-standard'),
+              width v.motion('duration-short4') v.motion('easing-standard');
   
   // Focus styles
   &:focus {
@@ -54,7 +60,7 @@ $container: '#{base.$prefix}-chips';
     gap: v.spacing('2');
   }
   
-  // Ensure proper layout with icons
+  // Ensure proper layout with icons - independent of scrollable state
   &-leading-icon,
   &-trailing-icon {
     display: inline-flex;
@@ -63,6 +69,7 @@ $container: '#{base.$prefix}-chips';
     min-width: v.chip('icon-size');
     height: v.chip('icon-size');
     flex-shrink: 0;
+    position: relative; // Add this to ensure stable positioning
     
     svg {
       width: v.chip('icon-size');
@@ -110,24 +117,48 @@ $container: '#{base.$prefix}-chips';
     background-color: t.color('surface-container-highest');
     color: t.color('on-surface');
     
-    &:hover {
-      @include m.state-layer(t.color('on-surface'), 'hover');
+    &:hover::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-color: t.color('on-surface');
+      opacity: 0.08;
+      pointer-events: none;
+      border-radius: inherit;
     }
     
-    &:active {
-      @include m.state-layer(t.color('on-surface'), 'pressed');
+    &:active::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-color: t.color('on-surface');
+      opacity: 0.12;
+      pointer-events: none;
+      border-radius: inherit;
     }
     
     &.#{$component}--selected {
       background-color: t.color('secondary-container');
       color: t.color('on-secondary-container');
       
-      &:hover {
-        @include m.state-layer(t.color('on-secondary-container'), 'hover');
+      &:hover::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-color: t.color('on-secondary-container');
+        opacity: 0.08;
+        pointer-events: none;
+        border-radius: inherit;
       }
       
-      &:active {
-        @include m.state-layer(t.color('on-secondary-container'), 'pressed');
+      &:active::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-color: t.color('on-secondary-container');
+        opacity: 0.12;
+        pointer-events: none;
+        border-radius: inherit;
       }
     }
   }
@@ -137,18 +168,28 @@ $container: '#{base.$prefix}-chips';
     border: 1px solid t.alpha('outline', v.chip('outlined-border-opacity'));
     color: t.color('on-surface');
     
-    &:hover {
-      @include m.state-layer(t.color('on-surface'), 'hover');
-      border-color: t.alpha('outline', v.chip('outlined-border-hover-opacity'));
+    &:hover::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-color: t.color('on-surface');
+      opacity: 0.08;
+      pointer-events: none;
+      border-radius: inherit;
     }
     
     &:focus-visible {
       border-color: t.alpha('outline', v.chip('outlined-border-focus-opacity'));
     }
     
-    &:active {
-      @include m.state-layer(t.color('on-surface'), 'pressed');
-      border-color: t.alpha('outline', v.chip('outlined-border-hover-opacity'));
+    &:active::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-color: t.color('on-surface');
+      opacity: 0.12;
+      pointer-events: none;
+      border-radius: inherit;
     }
     
     &.#{$component}--selected {
@@ -156,9 +197,14 @@ $container: '#{base.$prefix}-chips';
       background-color: t.color('secondary-container');
       color: t.color('on-secondary-container');
       
-      &:hover {
-        @include m.state-layer(t.color('on-secondary-container'), 'hover');
-        border-color: t.alpha('outline', 0.08);
+      &:hover::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-color: t.color('on-secondary-container');
+        opacity: 0.08;
+        pointer-events: none;
+        border-radius: inherit;
       }
     }
   }
@@ -167,57 +213,103 @@ $container: '#{base.$prefix}-chips';
   &--elevated {
     background-color: t.color('surface-container-low');
     color: t.color('on-surface');
-    @include m.elevation(1);
+    box-shadow: f.get-elevation(1);
     
-    &:hover {
-      @include m.state-layer(t.color('on-surface'), 'hover');
-      @include m.elevation(2);
+    &:hover::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-color: t.color('on-surface');
+      opacity: 0.08;
+      pointer-events: none;
+      border-radius: inherit;
     }
     
-    &:active {
-      @include m.state-layer(t.color('on-surface'), 'pressed');
-      @include m.elevation(1);
+    &:active::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-color: t.color('on-surface');
+      opacity: 0.12;
+      pointer-events: none;
+      border-radius: inherit;
     }
     
     &.#{$component}--selected {
       background-color: t.color('secondary-container');
       color: t.color('on-secondary-container');
       
-      &:hover {
-        @include m.state-layer(t.color('on-secondary-container'), 'hover');
+      &:hover::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-color: t.color('on-secondary-container');
+        opacity: 0.08;
+        pointer-events: none;
+        border-radius: inherit;
       }
     }
   }
   
   // Filter chip
   &--filter {
-    background-color: t.color('surface-container-highest');
-    color: t.color('on-surface');
     
-    &:hover {
-      @include m.state-layer(t.color('on-surface'), 'hover');
+    color: t.color('on-surface');
+    position: relative;
+    border: 1px solid t.alpha('outline', v.chip('outlined-border-opacity'));
+    
+    // Hover state for unselected chips
+    &:hover::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-color: t.color('on-surface');
+      opacity: 0.08;
+      pointer-events: none;
+      border-radius: inherit;
     }
     
     &.#{$component}--selected {
+      
+      padding-left: 8px;
       background-color: t.color('secondary-container');
       color: t.color('on-secondary-container');
-      
+      --checkmark-color: currentColor; // Will inherit from text color
+      border: none;
       .#{$component}-leading-icon {
         color: t.color('on-secondary-container');
       }
       
-      // Selected filter chips sometimes show a checkmark
+      // Use ::before exclusively for the checkmark icon with mask technique
       &::before {
         content: '';
         display: inline-block;
         width: 18px;
         height: 18px;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z'/%3E%3C/svg%3E");
-        background-position: center;
-        background-repeat: no-repeat;
-        background-size: contain;
+        background-color: var(--checkmark-color);
+        mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z'/%3E%3C/svg%3E");
+        mask-position: center;
+        mask-repeat: no-repeat;
+        mask-size: contain;
+        -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z'/%3E%3C/svg%3E");
+        -webkit-mask-position: center;
+        -webkit-mask-repeat: no-repeat;
+        -webkit-mask-size: contain;
         margin-right: 8px;
         flex-shrink: 0;
+        position: static;
+        animation: checkmark-appear v.motion('duration-short4') v.motion('easing-emphasized') forwards;
+      }
+      
+      // Hover state for selected chips
+      &:hover::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-color: t.color('on-secondary-container');
+        opacity: 0.08;
+        pointer-events: none;
+        border-radius: inherit;
       }
     }
   }
@@ -231,8 +323,14 @@ $container: '#{base.$prefix}-chips';
       color: t.color('primary');
     }
     
-    &:hover {
-      @include m.state-layer(t.color('on-surface'), 'hover');
+    &:hover::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-color: t.color('on-surface');
+      opacity: 0.08;
+      pointer-events: none;
+      border-radius: inherit;
     }
     
     &.#{$component}--selected {
@@ -241,6 +339,16 @@ $container: '#{base.$prefix}-chips';
       
       .#{$component}-leading-icon {
         color: t.color('on-secondary-container');
+      }
+      
+      &:hover::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-color: t.color('on-secondary-container');
+        opacity: 0.08;
+        pointer-events: none;
+        border-radius: inherit;
       }
     }
   }
@@ -257,6 +365,16 @@ $container: '#{base.$prefix}-chips';
       &:hover {
         color: t.color('error');
       }
+    }
+    
+    &:hover::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-color: t.color('on-surface');
+      opacity: 0.08;
+      pointer-events: none;
+      border-radius: inherit;
     }
   }
   
@@ -276,10 +394,42 @@ $container: '#{base.$prefix}-chips';
       }
     }
     
+    &:hover::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-color: t.color('on-surface');
+      opacity: 0.08;
+      pointer-events: none;
+      border-radius: inherit;
+    }
+    
     &.#{$component}--selected {
       background-color: t.color('secondary-container');
       color: t.color('on-secondary-container');
+      
+      &:hover::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-color: t.color('on-secondary-container');
+        opacity: 0.08;
+        pointer-events: none;
+        border-radius: inherit;
+      }
     }
+  }
+}
+
+// Animation for checkmark appearance
+@keyframes checkmark-appear {
+  from {
+    transform: scale(0);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
   }
 }
 
@@ -292,48 +442,84 @@ $container: '#{base.$prefix}-chips';
   min-height: fit-content;
   height: auto;
   
+  // Label styling
+  &-label {
+    @include m.typography('title-medium');
+    color: t.color('on-surface-variant');
+    margin-bottom: v.spacing('2');
+    display: block;
+    width: 100%;
+  }
+  
+  // Layout with label
+  &--with-label {
+    display: flex;
+    flex-direction: column;
+    
+    // When label is at the end
+    &.#{$container}--label-end {
+      flex-direction: column-reverse;
+      
+      .#{$container}-label {
+        margin-bottom: 0;
+        margin-top: v.spacing('2');
+      }
+    }
+  }
+  
+  // Container for chips
+  &-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: v.spacing('2');
+    width: 100%;
+  }
+  
+  // Important: Scrollable state only affects the container, not the chip icons
   &--scrollable {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    overflow-y: visible; // Don't clip chips vertically
-    -webkit-overflow-scrolling: touch;
-    scroll-behavior: smooth;
-    padding-bottom: v.spacing('2');
-    
-    // Enhanced scrollable behavior
-    position: relative;
-    white-space: nowrap;
-    
-    // Improved scrollbar styling
-    &::-webkit-scrollbar {
-      height: 4px;
-    }
-    
-    &::-webkit-scrollbar-thumb {
-      background-color: t.alpha('on-surface', 0.2);
-      border-radius: 4px;
-    }
-    
-    &::-webkit-scrollbar-track {
-      background-color: t.alpha('on-surface', 0.05);
-      border-radius: 4px;
-    }
-    
-    // Style for Firefox
-    scrollbar-width: thin;
-    scrollbar-color: t.alpha('on-surface', 0.2) t.alpha('on-surface', 0.05);
-    
-    // Ensure chip visibility
-    .#{$component} {
-      flex-shrink: 0; // Prevent chips from shrinking
+    .#{$container}-container {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      overflow-y: visible; // Don't clip chips vertically
+      -webkit-overflow-scrolling: touch;
+      scroll-behavior: smooth;
+      padding-bottom: v.spacing('2');
+      
+      // Enhanced scrollable behavior
+      position: relative;
+      white-space: nowrap;
+      
+      // Improved scrollbar styling
+      &::-webkit-scrollbar {
+        height: 4px;
+      }
+      
+      &::-webkit-scrollbar-thumb {
+        background-color: t.alpha('on-surface', 0.2);
+        border-radius: 4px;
+      }
+      
+      &::-webkit-scrollbar-track {
+        background-color: t.alpha('on-surface', 0.05);
+        border-radius: 4px;
+      }
+      
+      // Style for Firefox
+      scrollbar-width: thin;
+      scrollbar-color: t.alpha('on-surface', 0.2) t.alpha('on-surface', 0.05);
+      
+      // Ensure chip visibility without affecting internal structure
+      .#{$component} {
+        flex-shrink: 0; // Prevent chips from shrinking
+      }
     }
   }
   
   &--vertical {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: v.spacing('2');
-    height: auto;
-    min-height: fit-content;
+    .#{$container}-container {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: v.spacing('2');
+    }
   }
 }

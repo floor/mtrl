@@ -37,17 +37,31 @@ $icons: (
 }
 
 // State Layers
-@mixin state-layer($color, $state: 'hover', $selector: '&::before') {
+@mixin state-layer($color, $state: 'hover', $selector: false) {
   position: relative;
   
-  #{$selector} {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background-color: $color;
-    opacity: f.get-state-opacity($state);
-    pointer-events: none;
-    border-radius: inherit;
+  @if $selector == false {
+    // Default behavior - create a pseudo-element for the state layer
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-color: $color;
+      opacity: f.get-state-opacity($state);
+      pointer-events: none;
+      border-radius: inherit;
+    }
+  } @else {
+    // Use the provided selector
+    #{$selector} {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-color: $color;
+      opacity: f.get-state-opacity($state);
+      pointer-events: none;
+      border-radius: inherit;
+    }
   }
 }
 

@@ -22,7 +22,7 @@ export function createSliderSchema(component, config: SliderConfig) {
   // Calculate initial position
   const valuePercent = ((value - min) / (max - min)) * 100;
   
-  // Return base structure definition formatted for createStructure
+  // Return base structure definition formatted for createLayout
   return {
     element: {
       options: {

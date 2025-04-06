@@ -26,3 +26,36 @@ export const CHIP_VARIANTS = {
   /** Suggestion chip for presenting options */
   SUGGESTION: 'suggestion'
 };
+
+/**
+ * Available event types for Chip component
+ * @enum {string}
+ */
+export const CHIP_EVENTS = {
+  /** Fired when chip selection state changes */
+  CHANGE: 'change',
+  
+  /** Fired when chip is selected */
+  SELECT: 'select',
+  
+  /** Fired when chip is deselected */
+  DESELECT: 'deselect',
+  
+  /** Fired when chip is about to be removed */
+  REMOVE: 'remove'
+};
+
+/**
+ * Available event types for Chips container component
+ * @enum {string}
+ */
+export const CHIPS_EVENTS = {
+  /** Fired when any chip selection changes */
+  CHANGE: 'change',
+  
+  /** Fired when a chip is added to the container */
+  ADD: 'add',
+  
+  /** Fired when a chip is removed from the container */
+  REMOVE: 'remove'
+};
