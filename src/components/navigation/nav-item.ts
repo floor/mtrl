@@ -107,11 +107,22 @@ export const createNavItem = (
     itemElement.appendChild(icon);
   }
 
-  // Add label if provided
+  // Add label if provided - CONVERTED TO ANCHOR FOR SEO
   if (config.label) {
-    const label = document.createElement('span');
+    // Create anchor instead of span for the label
+    const label = document.createElement('a');
     label.className = `${prefix}-${NavClass.LABEL}`;
     label.textContent = config.label;
+    label.href = `/${config.id}`; // Create path based on ID
+    
+    // Ensure the anchor looks the same as a span would
+    label.style.textDecoration = 'none';
+    label.style.color = 'inherit';
+    label.style.pointerEvents = 'none'; // Let the button handle click events
+    
+    // Add SEO attributes
+    label.setAttribute('title', config.label);
+    
     itemElement.appendChild(label);
     itemElement.setAttribute('aria-label', config.label);
   }
