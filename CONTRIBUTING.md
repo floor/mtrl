@@ -1,18 +1,18 @@
 # Contributing to mtrl
 
-Thank you for your interest in contributing to mtrl! This document provides guidelines and instructions for contributing to this lightweight, ES6-focused JavaScript UI component library.
+Thank you for your interest in contributing to mtrl! This document provides guidelines and instructions for contributing to this lightweight, TypeScript-focused UI component library.
 
 ## Why Contribute?
 
 mtrl aims to be a modern, flexible UI component library with:
 
 - Zero dependencies (except Bun for development)
-- ES6+ focused codebase
+- TypeScript-first codebase
 - Lightweight, tree-shakable components
 - Simple and extensible API
 - Excellent documentation
 
-By contributing to mtrl, you'll help create a lean alternative to heavier frameworks while gaining experience with modern JavaScript patterns and component design.
+By contributing to mtrl, you'll help create a lean alternative to heavier frameworks while gaining experience with modern TypeScript patterns and component design.
 
 ## Getting Started
 
@@ -76,16 +76,29 @@ mtrl uses a separate repository called mtrl.app (https://mtrl.app) for showcasin
 
 mtrl components follow a consistent pattern:
 
-```javascript
-// src/components/mycomponent/index.js
+```typescript
+// src/components/mycomponent/index.ts
 export { createMyComponent } from './mycomponent';
+export type { MyComponentOptions } from './types';
 
-// src/components/mycomponent/mycomponent.js
+// src/components/mycomponent/types.ts
+export interface MyComponentOptions {
+  text?: string;
+  onClick?: (event: MouseEvent) => void;
+  // other options...
+}
+
+// src/components/mycomponent/mycomponent.ts
 import { createElement } from '../../core/dom/create';
 import { createLifecycle } from '../../core/state/lifecycle';
-// etc...
+import type { MyComponentOptions } from './types';
 
-export const createMyComponent = (options = {}) => {
+/**
+ * Creates a new MyComponent instance
+ * @param options - Configuration options for MyComponent
+ * @returns The MyComponent instance
+ */
+export const createMyComponent = (options: MyComponentOptions = {}) => {
   // Create DOM elements
   const element = createElement({...});
   
@@ -108,21 +121,30 @@ export const createMyComponent = (options = {}) => {
 The mtrl.app showcase application is the best way to develop and test your components:
 
 1. Clone the mtrl.app repository alongside your mtrl clone.
-2. Create a new view file in `src/client/views/components/` for your component.
-3. Add the route in `src/client/core/navigation.js` of the mtrl.app repository.
+2. Create a new view file in `src/client/content/components/` for your component.
+3. Add the route in `src/client/core/navigation.ts` of the mtrl.app repository.
 4. Implement different variants and states for testing.
 5. Run the showcase server with `bun run dev` in the mtrl.app directory.
 
 This separation of the library code (mtrl) and the showcase app (mtrl.app) keeps the core library clean while providing a rich development environment.
 
+### TypeScript Standards
+
+- Use TypeScript's type system to create clear interfaces and types
+- Export types and interfaces separately from implementations
+- Use strict typing and avoid `any` when possible
+- Prefer interfaces for public APIs and type aliases for complex types
+- Add proper return types to all functions
+
 ### Coding Standards
 
-- Use ES6+ features but maintain browser compatibility
-- Follow functional programming principles when possible
+- Add file path as a comment on the first line of each file
+- Use functional programming principles when possible
 - Use consistent naming conventions:
   - Factory functions should be named `createXyz`
   - Utilities should use clear, descriptive names
-- Write JSDoc comments for all public functions
+  - Interfaces should be named in PascalCase (e.g., `ButtonOptions`)
+- Write TypeDoc comments for all public functions and types
 
 ### CSS/SCSS Guidelines
 
@@ -143,7 +165,7 @@ This separation of the library code (mtrl) and the showcase app (mtrl.app) keeps
 
 Please add appropriate tests for your changes:
 
-```javascript
+```typescript
 // Example test structure
 describe('myComponent', () => {
   it('should render correctly', () => {
@@ -158,11 +180,28 @@ describe('myComponent', () => {
 
 ## Documentation
 
-For any new feature or component:
+Documentation is crucial for this project:
 
-- Add JSDoc comments for API methods
+- Add TypeDoc comments for all public API methods and types
+- Comment the file path at the top of each file
 - Update the component's README.md (if applicable)
 - Consider adding example code in the playground
+
+Example of proper TypeDoc:
+
+```typescript
+/**
+ * Creates a button element with specified options
+ * 
+ * @param options - The button configuration options
+ * @returns A button component instance
+ * @example
+ * ```ts
+ * const button = createButton({ text: 'Click me', variant: 'primary' });
+ * document.body.appendChild(button.element);
+ * ```
+ */
+```
 
 ## Community and Communication
 
