@@ -6,6 +6,17 @@
 
 import { setAttributes } from './attributes';
 import { normalizeClasses } from '../utils';
+import { PREFIX } from '../config';
+
+/**
+ * Event handler function type
+ */
+export type EventHandler = (event: Event) => void;
+
+/**
+ * Event condition type - either a boolean or a function that returns a boolean
+ */
+export type EventCondition = boolean | ((context: any, event: Event) => boolean);
 
 /**
  * Options for element creation
@@ -59,7 +70,7 @@ export interface CreateElementOptions {
   /**
    * Events to forward when component has emit method
    */
-  forwardEvents?: Record<string, boolean | ((context: any, event: Event) => boolean)>;
+  forwardEvents?: Record<string, EventCondition>;
   
   /**
    * Callback after element creation
@@ -81,8 +92,11 @@ export interface CreateElementOptions {
  * Event handler storage to facilitate cleanup
  */
 export interface EventHandlerStorage {
-  [eventName: string]: EventListener;
+  [eventName: string]: EventHandler;
 }
+
+// Constant for prefix with dash
+const PREFIX_WITH_DASH = `${PREFIX}-`;
 
 /**
  * Creates a DOM element with the specified options
@@ -108,89 +122,78 @@ export const createElement = (options: CreateElementOptions = {}): HTMLElement =
 
   const element = document.createElement(tag);
 
-  // Handle content
+  // Apply basic properties
   if (html) element.innerHTML = html;
   if (text) element.textContent = text;
   if (id) element.id = id;
 
   // Handle classes
   if (className) {
-    const normalizedClasses = normalizeClasses(className);
-    if (normalizedClasses.length) {
-      element.classList.add(...normalizedClasses);
+    const classes = normalizeClasses(className);
+    if (classes.length) {
+      // Apply prefix to classes in a single operation
+      element.classList.add(...classes.map(cls => 
+        cls && !cls.startsWith(PREFIX_WITH_DASH) ? PREFIX_WITH_DASH + cls : cls
+      ).filter(Boolean));
     }
   }
 
-  // Handle data attributes
-  Object.entries(data).forEach(([key, value]) => {
-    element.dataset[key] = value;
-  });
-
-  // Handle all other attributes
-  const allAttrs = { ...attrs, ...rest };
-  Object.entries(allAttrs).forEach(([key, value]) => {
-    if (value != null) element.setAttribute(key, String(value));
-  });
-
-  // Initialize event handler storage if not present
-  if (!element.__eventHandlers) {
-    element.__eventHandlers = {};
+  // Handle data attributes directly
+  for (const key in data) {
+    element.dataset[key] = data[key];
   }
 
-  // Handle event forwarding if context has emit method or is a component with on method
+  // Handle regular attributes
+  const allAttrs = { ...attrs, ...rest };
+  for (const key in allAttrs) {
+    const value = allAttrs[key];
+    if (value != null) element.setAttribute(key, String(value));
+  }
+
+  // Handle event forwarding
   if (forwardEvents && (context?.emit || context?.on)) {
-    Object.entries(forwardEvents).forEach(([nativeEvent, eventConfig]) => {
-      // Create a wrapper handler function to evaluate condition and forward event
+    element.__eventHandlers = {};
+    
+    for (const nativeEvent in forwardEvents) {
+      const eventConfig = forwardEvents[nativeEvent];
+      
       const handler = (event: Event) => {
-        // Determine if the event should be forwarded
         let shouldForward = true;
         
         if (typeof eventConfig === 'function') {
           try {
-            // If it's a function, call with component context and event
-            shouldForward = eventConfig({ ...context, element }, event);
+            // Create a lightweight context clone
+            const ctxWithElement = { ...context, element };
+            shouldForward = eventConfig(ctxWithElement, event);
           } catch (error) {
             console.warn(`Error in event condition for ${nativeEvent}:`, error);
             shouldForward = false;
           }
         } else {
-          // If it's a boolean, use directly
           shouldForward = Boolean(eventConfig);
         }
         
-        // Forward the event if condition passes
         if (shouldForward) {
           if (context.emit) {
             context.emit(nativeEvent, { event, element, originalEvent: event });
           } else if (context.on) {
-            // This is a component with on method but no emit method
-            // Dispatch a custom event that can be listened to
-            const customEvent = new CustomEvent(nativeEvent, {
+            element.dispatchEvent(new CustomEvent(nativeEvent, {
               detail: { event, element, originalEvent: event },
               bubbles: true,
               cancelable: true
-            });
-            element.dispatchEvent(customEvent);
+            }));
           }
         }
       };
       
-      // Store the handler for future removal
       element.__eventHandlers[nativeEvent] = handler;
-      
-      // Add the actual event listener
       element.addEventListener(nativeEvent, handler);
-    });
+    }
   }
 
   // Append to container if provided
-  if (container) {
-    container.appendChild(element);
-  }
-
-  if (typeof onCreate === 'function') {
-    onCreate(element, context);
-  }
+  if (container) container.appendChild(element);
+  if (onCreate) onCreate(element, context);
 
   return element;
 };
@@ -200,10 +203,11 @@ export const createElement = (options: CreateElementOptions = {}): HTMLElement =
  * @param element - Element to cleanup
  */
 export const removeEventHandlers = (element: HTMLElement): void => {
-  if (element.__eventHandlers) {
-    Object.entries(element.__eventHandlers).forEach(([eventName, handler]) => {
-      element.removeEventListener(eventName, handler);
-    });
+  const handlers = element.__eventHandlers;
+  if (handlers) {
+    for (const event in handlers) {
+      element.removeEventListener(event, handlers[event]);
+    }
     delete element.__eventHandlers;
   }
 };
@@ -228,7 +232,9 @@ export const withClasses = (...classes: (string | string[])[]) =>
   (element: HTMLElement): HTMLElement => {
     const normalizedClasses = normalizeClasses(...classes);
     if (normalizedClasses.length) {
-      element.classList.add(...normalizedClasses);
+      element.classList.add(...normalizedClasses.map(cls => 
+        cls && !cls.startsWith(PREFIX_WITH_DASH) ? PREFIX_WITH_DASH + cls : cls
+      ).filter(Boolean));
     }
     return element;
   };
@@ -240,17 +246,17 @@ export const withClasses = (...classes: (string | string[])[]) =>
  */
 export const withContent = (content: Node | string) => 
   (element: HTMLElement): HTMLElement => {
-    if (content instanceof Node) {
-      element.appendChild(content);
-    } else {
-      element.textContent = content;
-    }
+    if (content instanceof Node) element.appendChild(content);
+    else element.textContent = content;
     return element;
   };
 
 // Extend HTMLElement interface to add eventHandlers property
 declare global {
   interface HTMLElement {
+    /**
+     * Storage for event handlers to enable cleanup
+     */
     __eventHandlers?: EventHandlerStorage;
   }
 }
