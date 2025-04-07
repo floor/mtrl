@@ -58,6 +58,9 @@
   --#{$prefix}-sys-color-on-info: #003060;
   --#{$prefix}-sys-color-on-info-rgb: 0, 48, 96;
 
+    // Include status colors for light theme
+  @include status-colors-light();
+
   &[data-theme-mode="dark"] {
     // Key colors
     --#{$prefix}-sys-color-primary: #DDB995; // Softer brown
