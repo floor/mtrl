@@ -3,19 +3,61 @@ import { pipe } from '../../core/compose/pipe';
 import { createBase, withElement } from '../../core/compose/component';
 import { withEvents, withLifecycle } from '../../core/compose/features';
 import { createEmitter } from '../../core/state/emitter';
-import { SegmentedButtonConfig, SegmentedButtonComponent, SelectionMode, Segment } from './types';
-import { createBaseConfig, getContainerConfig } from './config';
+import { SegmentedButtonConfig, SegmentedButtonComponent, SelectionMode, Density, Segment } from './types';
+import { createBaseConfig, getContainerConfig, getDensityStyles } from './config';
 import { createSegment } from './segment';
 
 /**
  * Creates a new Segmented Button component
+ * 
+ * The Segmented Button component provides a group of related buttons that can
+ * be used for selection and filtering. It supports single or multiple selection modes,
+ * configurable density, disabled states, and event handling.
+ * 
  * @param {SegmentedButtonConfig} config - Segmented Button configuration
  * @returns {SegmentedButtonComponent} Segmented Button component instance
+ * 
+ * @example
+ * // Create a segmented button with three segments in single selection mode
+ * const viewToggle = createSegmentedButton({
+ *   segments: [
+ *     { text: 'Day', value: 'day', selected: true },
+ *     { text: 'Week', value: 'week' },
+ *     { text: 'Month', value: 'month' }
+ *   ],
+ *   mode: SelectionMode.SINGLE
+ * });
+ * 
+ * // Listen for selection changes
+ * viewToggle.on('change', (event) => {
+ *   console.log('Selected view:', event.value[0]);
+ *   updateCalendarView(event.value[0]);
+ * });
+ * 
+ * @example
+ * // Create a compact multi-select segmented button with icons
+ * const filterOptions = createSegmentedButton({
+ *   segments: [
+ *     { 
+ *       icon: '<svg>...</svg>', 
+ *       text: 'Filter 1', 
+ *       value: 'filter1' 
+ *     },
+ *     { 
+ *       icon: '<svg>...</svg>', 
+ *       text: 'Filter 2', 
+ *       value: 'filter2' 
+ *     }
+ *   ],
+ *   mode: SelectionMode.MULTI,
+ *   density: Density.COMPACT
+ * });
  */
 const createSegmentedButton = (config: SegmentedButtonConfig = {}): SegmentedButtonComponent => {
   // Process configuration
   const baseConfig = createBaseConfig(config);
   const mode = baseConfig.mode || SelectionMode.SINGLE;
+  const density = baseConfig.density || Density.DEFAULT;
   const emitter = createEmitter();
   
   try {
@@ -26,6 +68,12 @@ const createSegmentedButton = (config: SegmentedButtonConfig = {}): SegmentedBut
       withElement(getContainerConfig(baseConfig)),
       withLifecycle()
     )(baseConfig);
+    
+    // Apply density styles
+    const densityStyles = getDensityStyles(density as string);
+    Object.entries(densityStyles).forEach(([prop, value]) => {
+      component.element.style.setProperty(prop, value);
+    });
     
     // Create segments
     const segments: Segment[] = [];
@@ -125,6 +173,34 @@ const createSegmentedButton = (config: SegmentedButtonConfig = {}): SegmentedBut
      */
     const findSegmentByValue = (value: string) => segments.find(segment => segment.value === value);
     
+    /**
+     * Updates the density of the segmented button
+     * @param {string} newDensity - New density value
+     * @private
+     */
+    const updateDensity = (newDensity: string) => {
+      // Remove existing density classes
+      [Density.DEFAULT, Density.COMFORTABLE, Density.COMPACT].forEach(d => {
+        if (d !== Density.DEFAULT) {
+          component.element.classList.remove(`${baseConfig.prefix}-segmented-button--${d}`);
+        }
+      });
+      
+      // Add new density class if not default
+      if (newDensity !== Density.DEFAULT) {
+        component.element.classList.add(`${baseConfig.prefix}-segmented-button--${newDensity}`);
+      }
+      
+      // Update data attribute
+      component.element.setAttribute('data-density', newDensity);
+      
+      // Apply density styles
+      const densityStyles = getDensityStyles(newDensity);
+      Object.entries(densityStyles).forEach(([prop, value]) => {
+        component.element.style.setProperty(prop, value);
+      });
+    };
+    
     // Create the component API
     const segmentedButton: SegmentedButtonComponent = {
       element: component.element,
@@ -205,12 +281,23 @@ const createSegmentedButton = (config: SegmentedButtonConfig = {}): SegmentedBut
       enable() {
         // Enable the entire component
         component.element.classList.remove(`${baseConfig.prefix}-segmented-button--disabled`);
+        // Enable all segments (unless individually disabled)
+        segments.forEach(segment => {
+          // Only enable if it wasn't individually disabled
+          if (!baseConfig.segments?.find(s => s.value === segment.value)?.disabled) {
+            segment.setDisabled(false);
+          }
+        });
         return this;
       },
       
       disable() {
         // Disable the entire component
         component.element.classList.add(`${baseConfig.prefix}-segmented-button--disabled`);
+        // Disable all segments
+        segments.forEach(segment => {
+          segment.setDisabled(true);
+        });
         return this;
       },
       
@@ -228,6 +315,15 @@ const createSegmentedButton = (config: SegmentedButtonConfig = {}): SegmentedBut
           segment.setDisabled(true);
         }
         return this;
+      },
+      
+      setDensity(newDensity) {
+        updateDensity(newDensity);
+        return this;
+      },
+      
+      getDensity() {
+        return component.element.getAttribute('data-density') || Density.DEFAULT;
       },
       
       on(event, handler) {

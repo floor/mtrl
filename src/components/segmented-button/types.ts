@@ -12,6 +12,20 @@ export enum SelectionMode {
 }
 
 /**
+ * Density options for segmented button
+ * Controls the overall sizing and spacing of the component.
+ * @category Components
+ */
+export enum Density {
+  /** Default size with standard spacing */
+  DEFAULT = 'default',
+  /** Reduced size and spacing, more compact */
+  COMFORTABLE = 'comfortable',
+  /** Minimal size and spacing, most compact */
+  COMPACT = 'compact'
+}
+
+/**
  * Event types for segmented button
  */
 export type SegmentedButtonEventType = 'change';
@@ -77,6 +91,11 @@ export interface SegmentConfig {
    * Additional CSS class names for this segment
    */
   class?: string;
+  
+  /**
+   * Custom icon to display when segment is selected (replaces default checkmark)
+   */
+  checkmarkIcon?: string;
 }
 
 /**
@@ -122,6 +141,12 @@ export interface SegmentedButtonConfig {
    * @default true
    */
   ripple?: boolean;
+  
+  /**
+   * Density setting that controls the component's size and spacing
+   * @default Density.DEFAULT
+   */
+  density?: Density | string;
 
   /**
    * Ripple effect configuration
@@ -230,6 +255,33 @@ export interface SegmentedButtonComponent {
    * @returns The SegmentedButtonComponent for chaining
    */
   disable: () => SegmentedButtonComponent;
+  
+  /**
+   * Enables a specific segment by its value
+   * @param value - The value of the segment to enable
+   * @returns The SegmentedButtonComponent for chaining 
+   */
+  enableSegment: (value: string) => SegmentedButtonComponent;
+  
+  /**
+   * Disables a specific segment by its value
+   * @param value - The value of the segment to disable
+   * @returns The SegmentedButtonComponent for chaining
+   */
+  disableSegment: (value: string) => SegmentedButtonComponent;
+  
+  /**
+   * Sets the density of the segmented button
+   * @param density - The density level to set
+   * @returns The SegmentedButtonComponent for chaining
+   */
+  setDensity: (density: Density | string) => SegmentedButtonComponent;
+  
+  /**
+   * Gets the current density setting
+   * @returns The current density
+   */
+  getDensity: () => string;
 
   /**
    * Adds an event listener to the segmented button

@@ -13,11 +13,53 @@ $component: '#{base.$prefix}-segmented-button';
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 40px;
   border-radius: 20px; // Half of height per MD3 specs
   border: 1px solid t.color('outline');
   background-color: transparent;
   overflow: hidden;
+  
+  // Density variables with defaults (Material Design 3 standard density)
+  --segment-height: 40px;
+  --segment-padding-x: 24px;
+  --segment-padding-icon-only: 12px;
+  --segment-padding-icon-text-left: 16px;
+  --segment-padding-icon-text-right: 24px;
+  --segment-icon-size: 18px;
+  --segment-text-size: 0.875rem;
+  --segment-border-radius: 20px;
+  
+  // Set height from the CSS variable
+  height: var(--segment-height);
+  // Adjust border radius based on height
+  border-radius: calc(var(--segment-height) / 2);
+  
+  // Comfortable density (medium)
+  &--comfortable {
+    --segment-height: 36px;
+    --segment-padding-x: 20px;
+    --segment-padding-icon-only: 10px;
+    --segment-padding-icon-text-left: 14px;
+    --segment-padding-icon-text-right: 20px;
+    --segment-icon-size: 16px;
+    --segment-text-size: 0.8125rem;
+    --segment-border-radius: 18px;
+    
+    border-radius: var(--segment-border-radius);
+  }
+  
+  // Compact density (small)
+  &--compact {
+    --segment-height: 32px;
+    --segment-padding-x: 16px;
+    --segment-padding-icon-only: 8px;
+    --segment-padding-icon-text-left: 12px;
+    --segment-padding-icon-text-right: 16px;
+    --segment-icon-size: 16px;
+    --segment-text-size: 0.75rem;
+    --segment-border-radius: 16px;
+    
+    border-radius: var(--segment-border-radius);
+  }
   
   // Disabled state for whole component
   &--disabled {
@@ -38,29 +80,28 @@ $component: '#{base.$prefix}-segmented-button';
     height: 100%;
     color: t.color('on-surface'); // Original color
     
-    // MD3 padding specs
-    // Default text-only padding
-    padding: 0 24px;
+    // Use CSS variables for dynamic sizing based on density
+    padding: 0 var(--segment-padding-x);
     
     // Icon-only segments have equal padding all around
     &.#{base.$prefix}-button--circular {
-      padding: 0 12px;
+      padding: 0 var(--segment-padding-icon-only);
     }
     
     // Segments with both icon and text
     &:has(.#{base.$prefix}-button-icon + .#{base.$prefix}-button-text) {
-      padding: 0 24px 0 16px;
+      padding: 0 var(--segment-padding-icon-text-right) 0 var(--segment-padding-icon-text-left);
     }
     
     // Only add border radius to first and last segments
     &:first-child {
-      border-top-left-radius: 20px;
-      border-bottom-left-radius: 20px;
+      border-top-left-radius: var(--segment-border-radius);
+      border-bottom-left-radius: var(--segment-border-radius);
     }
     
     &:last-child {
-      border-top-right-radius: 20px;
-      border-bottom-right-radius: 20px;
+      border-top-right-radius: var(--segment-border-radius);
+      border-bottom-right-radius: var(--segment-border-radius);
     }
     
     // Hover state - keeping original color
@@ -164,6 +205,8 @@ $component: '#{base.$prefix}-segmented-button';
     margin: 0;
     white-space: nowrap;
     @include m.typography('label-large');
+    // Apply density-specific font sizing
+    font-size: var(--segment-text-size);
   }
   
   .#{base.$prefix}-button-icon + .#{base.$prefix}-button-text {
@@ -177,8 +220,8 @@ $component: '#{base.$prefix}-segmented-button';
     justify-content: center;
     
     svg {
-      width: 18px;
-      height: 18px;
+      width: var(--segment-icon-size);
+      height: var(--segment-icon-size);
     }
   }
 }
