@@ -14,48 +14,61 @@ $component: '#{base.$prefix}-segmented-button';
   align-items: center;
   justify-content: center;
   height: 40px;
-  border-radius: v.shape('full');
+  border-radius: 20px; // Half of height per MD3 specs
   border: 1px solid t.color('outline');
   background-color: transparent;
   overflow: hidden;
   
-  // Disabled state
+  // Disabled state for whole component
   &--disabled {
     opacity: 0.38;
     pointer-events: none;
   }
 
-  // Segment container
-  &-segment {
-    // Base styles
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    min-width: 48px;
-    padding: 0 12px;
-    border: none;
+  // Style for button elements used as segments
+  .#{base.$prefix}-button {
+    // Reset button styles that we don't want
+    margin: 0;
+    box-shadow: none;
     background-color: transparent;
-    color: t.color('on-surface');
-    cursor: pointer;
-    user-select: none;
+    border: none;
+    position: relative; // For pseudo-elements
+    border-radius: 0; // Reset any border-radius
+    min-width: 48px;
+    height: 100%;
+    color: t.color('on-surface'); // Original color
     
-    // Fix segmented borders
-    &:not(:first-child) {
-      border-left: 1px solid t.color('outline');
+    // MD3 padding specs
+    // Default text-only padding
+    padding: 0 24px;
+    
+    // Icon-only segments have equal padding all around
+    &.#{base.$prefix}-button--circular {
+      padding: 0 12px;
     }
     
-    // Typography
-    @include m.typography('label-large');
+    // Segments with both icon and text
+    &:has(.#{base.$prefix}-button-icon + .#{base.$prefix}-button-text) {
+      padding: 0 24px 0 16px;
+    }
     
-    // Transition
-    @include m.motion-transition(
-      background-color, 
-      color
-    );
+    // Only add border radius to first and last segments
+    &:first-child {
+      border-top-left-radius: 20px;
+      border-bottom-left-radius: 20px;
+    }
     
-    // States
+    &:last-child {
+      border-top-right-radius: 20px;
+      border-bottom-right-radius: 20px;
+    }
+    
+    // Hover state - keeping original color
+    &:hover:not([disabled]) {
+      background-color: t.alpha('on-surface', 0.08);
+    }
+    
+    // Focus state
     &:focus {
       outline: none;
     }
@@ -65,53 +78,107 @@ $component: '#{base.$prefix}-segmented-button';
       outline-offset: -2px;
     }
     
-    &:hover:not(.#{$component}-segment--disabled) {
-      background-color: t.alpha('on-surface', 0.08);
+    // Replace border with pseudo-elements for better control
+    // Each segment has its own right border (except last)
+    &:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      height: 100%;
+      width: 1px;
+      background-color: t.color('outline');
+      pointer-events: none;
     }
     
-    // Selected state
-    &--selected {
+    // Disabled state handling
+    &[disabled] {
+      opacity: 0.38;
+      
+      // When a disabled button has a right border, make it lower opacity
+      &::after {
+        background-color: t.alpha('outline', 0.38);
+      }
+      
+      // When a disabled button is before a non-disabled button, let the non-disabled handle the border
+      + .#{base.$prefix}-button:not([disabled])::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 1px;
+        background-color: t.color('outline');
+        pointer-events: none;
+      }
+      
+      // When a disabled button is after a non-disabled button, make the non-disabled button's border low opacity
+      &:not(:first-child) {
+        &::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          height: 100%;
+          width: 1px;
+          background-color: t.alpha('outline', 0.38);
+          pointer-events: none;
+        }
+      }
+    }
+    
+    // Ensure all button styles are reset appropriately
+    &.#{base.$prefix}-button--filled,
+    &.#{base.$prefix}-button--outlined,
+    &.#{base.$prefix}-button--tonal,
+    &.#{base.$prefix}-button--elevated,
+    &.#{base.$prefix}-button--text {
+      background-color: transparent;
+      box-shadow: none;
+      color: t.color('on-surface');
+    }
+  }
+  
+  // Selected state
+  .#{base.$prefix}-segment--selected {
+    background-color: t.color('secondary-container');
+    color: t.color('on-secondary-container');
+    
+    &:hover:not([disabled]) {
+      background-color: t.alpha('secondary-container', 0.8);
+    }
+    
+    // Ensure color change even with different button variants
+    &.#{base.$prefix}-button--filled,
+    &.#{base.$prefix}-button--outlined,
+    &.#{base.$prefix}-button--tonal,
+    &.#{base.$prefix}-button--elevated,
+    &.#{base.$prefix}-button--text {
       background-color: t.color('secondary-container');
       color: t.color('on-secondary-container');
-      
-      &:hover:not(.#{$component}-segment--disabled) {
-        background-color: t.alpha('secondary-container', 0.8);
-      }
     }
+  }
+  
+  // Ensure proper spacing in button contents
+  .#{base.$prefix}-button-text {
+    margin: 0;
+    white-space: nowrap;
+    @include m.typography('label-large');
+  }
+  
+  .#{base.$prefix}-button-icon + .#{base.$prefix}-button-text {
+    margin-left: 8px; // MD3 spec for space between icon and text
+  }
+  
+  // Icon sizing per MD3
+  .#{base.$prefix}-button-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     
-    // Disabled state
-    &--disabled {
-      opacity: 0.38;
-      cursor: not-allowed;
-    }
-    
-    // Text element
-    &-text {
-      // For when both icon and text are present
-      margin: 0 auto;
-    }
-    
-    // Icon styles
-    &-icon, &-checkmark {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
+    svg {
       width: 18px;
       height: 18px;
-      
-      svg {
-        width: 18px;
-        height: 18px;
-      }
-      
-      + .#{$component}-segment-text {
-        margin-left: 8px;
-      }
-    }
-    
-    // Space the checkmark icon
-    &-checkmark + .#{$component}-segment-text {
-      margin-left: 8px;
     }
   }
 }

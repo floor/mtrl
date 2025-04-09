@@ -1,11 +1,10 @@
 // src/components/segmented-button/segment.ts
-import { createElement } from '../../core/dom/create';
-import { createRipple } from '../../core/build/ripple';
+import createButton from '../button';
 import { SegmentConfig, Segment } from './types';
-import { getSegmentConfig } from './config';
+import { DEFAULT_CHECKMARK_ICON } from './config';
 
 /**
- * Creates a segment for the segmented button
+ * Creates a segment for the segmented button using the button component
  * @param {SegmentConfig} config - Segment configuration
  * @param {HTMLElement} container - Container element
  * @param {string} prefix - Component prefix
@@ -21,59 +20,36 @@ export const createSegment = (
   groupDisabled = false,
   options = { ripple: true, rippleConfig: {} }
 ): Segment => {
-  const segmentConfig = getSegmentConfig(config, prefix, groupDisabled);
-  const element = createElement(segmentConfig);
+  const isDisabled = groupDisabled || config.disabled;
+  const originalIcon = config.icon;
+  const checkmarkIcon = config.checkmarkIcon || DEFAULT_CHECKMARK_ICON;
+
+  // Create segment using button component with appropriate initial icon
+  const button = createButton({
+    text: config.text,
+    // If selected and has both icon and text, use checkmark instead of the original icon
+    icon: (config.selected && config.text && originalIcon) ? checkmarkIcon : originalIcon,
+    value: config.value || config.text || '',
+    disabled: isDisabled,
+    ripple: options.ripple,
+    rippleConfig: options.rippleConfig,
+    class: config.class,
+    // No variant - we'll style it via the segmented button styles
+  });
+
+  // Add segment-specific classes
+  button.element.classList.add(`${prefix}-segmented-button-segment`);
+  
+  // Set initial selected state
+  if (config.selected) {
+    button.element.classList.add(`${prefix}-segment--selected`);
+    button.element.setAttribute('aria-pressed', 'true');
+  } else {
+    button.element.setAttribute('aria-pressed', 'false');
+  }
   
   // Add to container
-  container.appendChild(element);
-  
-  // Create ripple effect if enabled
-  let ripple;
-  if (options.ripple) {
-    ripple = createRipple(options.rippleConfig);
-    ripple.mount(element);
-  }
-  
-  // Create text element if provided
-  let textElement;
-  if (config.text) {
-    textElement = createElement({
-      tag: 'span',
-      className: `${prefix}-segmentedbutton-segment-text`,
-      text: config.text,
-      container: element
-    });
-  }
-  
-  // Create icon and checkmark elements
-  let iconElement, checkmarkElement;
-  if (config.icon) {
-    // Create icon element
-    iconElement = createElement({
-      tag: 'span',
-      className: `${prefix}-segmentedbutton-segment-icon`,
-      html: config.icon,
-      container: element
-    });
-    
-    // Create checkmark element (hidden initially)
-    checkmarkElement = createElement({
-      tag: 'span',
-      className: `${prefix}-segmentedbutton-segment-'checkmark'`,
-      html: 'icon',
-      container: element
-    });
-    
-    // Hide checkmark if not selected
-    if (!config.selected) {
-      checkmarkElement.style.display = 'none';
-    }
-    
-    // Hide icon if selected and we have text (icon replaced by checkmark)
-    if (config.selected && config.text) {
-      iconElement.style.display = 'none';
-    }
-  }
+  container.appendChild(button.element);
   
   /**
    * Updates the visual state based on selection
@@ -81,45 +57,27 @@ export const createSegment = (
    * @private
    */
   const updateSelectedState = (selected: boolean) => {
-    element.classList.toggle(`${prefix}-segmentedbutton-segment--selected`, selected);
-    element.setAttribute('aria-pressed', selected ? 'true' : 'false');
+    button.element.classList.toggle(`${prefix}-segment--selected`, selected);
+    button.element.setAttribute('aria-pressed', selected ? 'true' : 'false');
     
-    // Handle icon/checkmark swap if we have both text and icon
-    if (iconElement && checkmarkElement && config.text) {
-      iconElement.style.display = selected ? 'none' : '';
-      checkmarkElement.style.display = selected ? '' : 'none';
-    } else if (checkmarkElement) {
-      // If we have only icons (no text), show checkmark based on selection
-      checkmarkElement.style.display = selected ? '' : 'none';
+    // Handle icon/checkmark swap if we have both text and original icon
+    if (config.text && originalIcon) {
+      if (selected) {
+        // When selected and has both text and icon, show checkmark
+        button.setIcon(checkmarkIcon);
+      } else {
+        // When not selected, restore original icon
+        button.setIcon(originalIcon);
+      }
     }
   };
-  
-  /**
-   * Updates the disabled state
-   * @param {boolean} disabled - Whether the segment is disabled
-   * @private
-   */
-  const updateDisabledState = (disabled: boolean) => {
-    const isDisabled = disabled || groupDisabled;
-    element.classList.toggle(`${prefix}-segmentedbutton-segment--disabled`, isDisabled);
-    
-    if (isDisabled) {
-      element.setAttribute('disabled', 'true');
-    } else {
-      element.removeAttribute('disabled');
-    }
-  };
-  
-  // Value to use for the segment
-  const value = config.value || config.text || '';
   
   // Initialize state
   let isSelected = config.selected || false;
-  let isDisabled = config.disabled || false;
   
   return {
-    element,
-    value,
+    element: button.element,
+    value: config.value || config.text || '',
     
     isSelected() {
       return isSelected;
@@ -131,24 +89,20 @@ export const createSegment = (
     },
     
     isDisabled() {
-      return isDisabled || groupDisabled;
+      return button.disabled?.isDisabled?.() || false;
     },
     
     setDisabled(disabled: boolean) {
-      isDisabled = disabled;
-      updateDisabledState(disabled);
+      if (disabled) {
+        button.disable();
+      } else {
+        button.enable();
+      }
     },
     
     destroy() {
-      // Clean up ripple if it exists
-      if (ripple) {
-        ripple.unmount(element);
-      }
-      
-      // Remove from DOM
-      if (element.parentNode) {
-        element.parentNode.removeChild(element);
-      }
+      // Use the button's built-in destroy method for cleanup
+      button.destroy();
     }
   };
 };

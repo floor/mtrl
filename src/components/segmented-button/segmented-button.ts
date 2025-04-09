@@ -214,6 +214,22 @@ const createSegmentedButton = (config: SegmentedButtonConfig = {}): SegmentedBut
         return this;
       },
       
+      enableSegment(value) {
+        const segment = findSegmentByValue(value);
+        if (segment) {
+          segment.setDisabled(false);
+        }
+        return this;
+      },
+      
+      disableSegment(value) {
+        const segment = findSegmentByValue(value);
+        if (segment) {
+          segment.setDisabled(true);
+        }
+        return this;
+      },
+      
       on(event, handler) {
         emitter.on(event, handler);
         return this;

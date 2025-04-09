@@ -57,6 +57,7 @@ export const getContainerConfig = (config: SegmentedButtonConfig) => ({
 export const getSegmentConfig = (segment, prefix, groupDisabled = false) => {
   const isDisabled = groupDisabled || segment.disabled;
   
+  // We use button as our base class, but add segment-specific classes for states
   return {
     tag: 'button',
     attrs: {
@@ -67,10 +68,11 @@ export const getSegmentConfig = (segment, prefix, groupDisabled = false) => {
       value: segment.value
     },
     className: [
-      `${prefix}-button`,
-      segment.selected ? `${prefix}-segment--selected` : null,
-      isDisabled ? `${prefix}-segment--disabled` : null,
-      segment.class
+      `${prefix}-button`, // Base button class
+      `${prefix}-segmented-button-segment`, // Specific segment class
+      segment.selected ? `${prefix}-segment--selected` : null, // Selected state
+      isDisabled ? `${prefix}-segment--disabled` : null, // Disabled state
+      segment.class // Custom class if provided
     ],
     forwardEvents: {
       click: (component) => !isDisabled
