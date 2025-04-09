@@ -67,7 +67,7 @@ export const getSegmentConfig = (segment, prefix, groupDisabled = false) => {
       value: segment.value
     },
     className: [
-      `${prefix}-segment`,
+      `${prefix}-button`,
       segment.selected ? `${prefix}-segment--selected` : null,
       isDisabled ? `${prefix}-segment--disabled` : null,
       segment.class
