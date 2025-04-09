@@ -96,6 +96,12 @@ $component: '#{base.$prefix}-button';
     }
   }
   
+
+  &--icon {
+    padding: 0 v.button('padding-horizontal') 0 calc(v.button('padding-horizontal') / 2 + 6px);
+  }
+  
+
   &--disabled {
     opacity: 0.38
   }

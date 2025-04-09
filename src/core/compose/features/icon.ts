@@ -41,29 +41,31 @@ const updateCircularStyle = (component: ElementComponent, config: IconConfig): v
 
 /**
  * Adds icon management to a component
- * 
  * @param config - Configuration object containing icon information
  * @returns Function that enhances a component with icon capabilities
  */
 export const withIcon = <T extends IconConfig>(config: T) => 
   <C extends ElementComponent>(component: C): C & IconComponent => {
+    // Create the icon with configuration settings
     const icon = createIcon(component.element, {
       prefix: config.prefix,
       type: config.componentName || 'component',
       position: config.iconPosition,
       iconSize: config.iconSize
     });
-
-    if (config.icon) {
-      icon.setIcon(config.icon);
-    }
-
+    
+    // Set icon if provided in config
+    config.icon && icon.setIcon(config.icon);
+    
+    // Apply button-specific styling if the component is a button
     if (component.componentName === 'button') {
-      updateCircularStyle(component, config);
+      if (!config.text) {
+        updateCircularStyle(component, config);
+      } else if (config.icon && config.text) {
+        component.element.classList.add(`${component.getClass('button')}--icon`);
+      }
     }
-
-    return {
-      ...component,
-      icon
-    };
+    
+    // Return enhanced component with icon capabilities
+    return Object.assign(component, { icon });
   };
