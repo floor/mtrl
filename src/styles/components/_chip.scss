@@ -124,7 +124,7 @@ $container: '#{base.$prefix}-chips';
       background-color: t.color('on-surface');
       opacity: 0.08;
       pointer-events: none;
-      border-radius: inherit;
+      border-radius: v.chip('border-radius');
     }
     
     &:active::after {
@@ -253,7 +253,6 @@ $container: '#{base.$prefix}-chips';
   
   // Filter chip
   &--filter {
-    
     color: t.color('on-surface');
     position: relative;
     border: 1px solid t.alpha('outline', v.chip('outlined-border-opacity'));
@@ -266,7 +265,7 @@ $container: '#{base.$prefix}-chips';
       background-color: t.color('on-surface');
       opacity: 0.08;
       pointer-events: none;
-      border-radius: inherit;
+      border-radius: calc(v.chip('border-radius') - 1px);
     }
     
     &.#{$component}--selected {
@@ -309,7 +308,7 @@ $container: '#{base.$prefix}-chips';
         background-color: t.color('on-secondary-container');
         opacity: 0.08;
         pointer-events: none;
-        border-radius: inherit;
+        border-radius: calc(v.chip('border-radius') - 1px);
       }
     }
   }
@@ -330,7 +329,7 @@ $container: '#{base.$prefix}-chips';
       background-color: t.color('on-surface');
       opacity: 0.08;
       pointer-events: none;
-      border-radius: inherit;
+      border-radius: v.chip('border-radius');
     }
     
     &.#{$component}--selected {
