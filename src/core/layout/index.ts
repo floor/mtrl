@@ -10,7 +10,8 @@ export type {
   ElementDefinition, 
   Schema, 
   LayoutResult,
-  LayoutOptions 
+  LayoutOptions,
+  LayoutConfig 
 } from './types';
 
 // Export utility functions
@@ -20,6 +21,14 @@ export { isComponent, processClassNames, flattenLayout } from './utils';
 export { createLayout } from './create';
 export { createLayoutResult } from './result';
 export { processSchema, createComponentInstance } from './processor';
+
+// Export configuration utilities
+export { 
+  applyLayoutClasses, 
+  applyLayoutItemClasses, 
+  getLayoutType,
+  cleanupLayoutClasses
+} from './config';
 
 // Default export for backward compatibility and simpler usage
 import { createLayout } from './create';

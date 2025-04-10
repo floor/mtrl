@@ -8,7 +8,7 @@ import { createElement } from '../dom/create';
 import { Schema, LayoutResult, LayoutOptions } from './types';
 import { isComponent, createFragment, processClassNames } from './utils';
 import { createLayoutResult } from './result';
-import { createComponentInstance } from './processor';
+import { createComponentInstance } from './processor'; 
 import { processArraySchema } from './array';
 
 /**

@@ -5,6 +5,43 @@
  */
 
 /**
+ * Layout configuration options
+ */
+export interface LayoutConfig {
+  // Base layout types
+  type?: 'stack' | 'row' | 'grid' | 'masonry' | 'split' | 'sidebar' | string;
+  
+  // Common properties
+  gap?: number | string;
+  class?: string;
+  
+  // Stack layout properties
+  align?: 'start' | 'center' | 'end' | 'stretch';
+  justify?: 'start' | 'center' | 'end' | 'between' | 'around' | 'evenly';
+  
+  // Row layout properties
+  wrap?: boolean | 'reverse' | 'nowrap';
+  mobileStack?: boolean;
+  mobileScroll?: boolean;
+  
+  // Grid layout properties
+  columns?: number | 'auto-fit' | 'auto-fill';
+  minWidth?: string | number;
+  dense?: boolean;
+  autoHeight?: boolean;
+  
+  // Masonry layout properties
+  masonryColumns?: number;
+  
+  // Split layout properties
+  ratio?: '1-2' | '2-1' | '1-3' | '3-1';
+  
+  // Sidebar layout properties
+  sidebarPosition?: 'left' | 'right';
+  sidebarWidth?: 'normal' | 'wide' | 'narrow';
+}
+
+/**
  * Interface for component-like objects
  */
 export interface ComponentLike {
@@ -25,6 +62,16 @@ export interface ComponentLike {
 }
 
 /**
+ * Extended options for element creation
+ */
+export interface ElementOptions extends Record<string, any> {
+  /**
+   * Layout configuration for the element
+   */
+  layout?: LayoutConfig;
+}
+
+/**
  * Definition for a single element in the layout
  */
 export interface ElementDefinition {
@@ -39,9 +86,9 @@ export interface ElementDefinition {
   creator?: (options?: Record<string, any>) => HTMLElement | ComponentLike;
   
   /**
-   * Options to pass to the creator function
+   * Options to pass to the creator function, including layout configuration
    */
-  options?: Record<string, any>;
+  options?: ElementOptions;
   
   /**
    * Child elements to create and attach

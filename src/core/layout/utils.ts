@@ -38,9 +38,12 @@ export function normalizeClasses(...classes: (string | string[])[]): string[] {
   return normalizeClassesUtil(...classes);
 }
 
+// Constant for prefix with dash (defined once for better performance)
+const PREFIX_WITH_DASH = `${PREFIX}-`;
+
 /**
  * Processes className options to add prefix if needed
- * Supports BEM naming conventions when enabled
+ * Performance-optimized version with reduced object cloning
  * 
  * @param options - Element options
  * @param skipPrefix - Whether to skip adding prefixes
@@ -85,22 +88,22 @@ export function processClassNames(
       if (useBEM) {
         // Handle BEM notation with special prefixing rules
         processed.class = classes.map(cls => {
-          if (!cls || cls.startsWith(`${PREFIX}-`)) return cls;
+          if (!cls || cls.startsWith(PREFIX_WITH_DASH)) return cls;
           
           if (cls.includes('__')) {
             const [block, element] = cls.split('__');
-            return `${PREFIX}-${block}__${element}`;
+            return `${PREFIX_WITH_DASH}${block}__${element}`;
           } else if (cls.includes('--')) {
             const [block, modifier] = cls.split('--');
-            return `${PREFIX}-${block}--${modifier}`;
+            return `${PREFIX_WITH_DASH}${block}--${modifier}`;
           }
           
-          return `${PREFIX}-${cls}`;
+          return `${PREFIX_WITH_DASH}${cls}`;
         }).join(' ');
       } else {
         // Standard prefix handling
         processed.class = classes.map(cls => 
-          cls && !cls.startsWith(`${PREFIX}-`) ? `${PREFIX}-${cls}` : cls
+          cls && !cls.startsWith(PREFIX_WITH_DASH) ? `${PREFIX_WITH_DASH}${cls}` : cls
         ).filter(Boolean).join(' ');
       }
     } 
@@ -108,8 +111,8 @@ export function processClassNames(
     else if (Array.isArray(processed.class)) {
       processed.class = processed.class
         .filter(Boolean)
-        .map(cls => typeof cls === 'string' && !cls.startsWith(`${PREFIX}-`) ? 
-          `${PREFIX}-${cls}` : cls)
+        .map(cls => typeof cls === 'string' && !cls.startsWith(PREFIX_WITH_DASH) ? 
+          `${PREFIX_WITH_DASH}${cls}` : cls)
         .join(' ');
     }
   }
@@ -127,6 +130,9 @@ export function processClassNames(
 export function flattenLayout(layout: Record<string, any>): Record<string, any> {
   const flattened: Record<string, any> = {};
   
+  // Fast path - return empty object for empty layout
+  if (!layout || typeof layout !== 'object') return flattened;
+  
   for (const key in layout) {
     const value = layout[key];
     
@@ -134,7 +140,7 @@ export function flattenLayout(layout: Record<string, any>): Record<string, any> 
     // Fast path with fewer type checks
     if (value && 
         typeof value !== 'function' && 
-        (value instanceof HTMLElement || 'element' in value)) {
+        (value instanceof HTMLElement || isComponent(value))) {
       flattened[key] = value;
     }
   }

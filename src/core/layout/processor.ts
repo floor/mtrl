@@ -9,6 +9,7 @@ import { isComponent } from './utils';
 import { processArraySchema } from './array';
 import { processObjectSchema } from './object';
 import { isObject } from '../utils';
+import { applyLayoutClasses, applyLayoutItemClasses } from './config';
 
 /**
  * Creates a component from a constructor or factory function
@@ -23,17 +24,42 @@ export function createComponentInstance(
   options: Record<string, any> = {}, 
   layoutOptions: LayoutOptions = {}
 ): any {
-  // Check if Component is a class constructor
-  const isClass = typeof Component === 'function' && 
-                 Component.prototype && 
-                 Component.prototype.constructor === Component &&
-                 // Exclude native constructors like Object, Array, etc.
-                 Object.getPrototypeOf(Component) !== Function.prototype;
+  try {
+    // Check if Component is a class constructor
+    const isClass = typeof Component === 'function' && 
+                   Component.prototype && 
+                   Component.prototype.constructor === Component &&
+                   // Exclude native constructors like Object, Array, etc.
+                   Object.getPrototypeOf(Component) !== Function.prototype;
 
-  // Use 'new' for class constructors, call directly for function factories
-  return isClass
-    ? new Component(options)
-    : Component(options);
+    // Before creating the component, set up any layout configuration
+    const component = isClass
+      ? new Component(options)
+      : Component(options);
+      
+    // Apply layout configuration to the created component
+    if (component) {
+      // Get the actual DOM element
+      const element = component.element || (component instanceof HTMLElement ? component : null);
+      if (element) {
+        // Apply layout classes if layout config exists
+        if (options.layout) {
+          applyLayoutClasses(element, options.layout);
+        }
+        
+        // Apply layout item classes if layoutItem config exists
+        if (options.layoutItem) {
+          applyLayoutItemClasses(element, options.layoutItem);
+        }
+      }
+    }
+    
+    return component;
+  } catch (error) {
+    console.error('Error creating component instance:', error);
+    // Return a basic element as fallback
+    return document.createElement('div');
+  }
 }
 
 /**
@@ -52,6 +78,20 @@ export function processSchema(
   level: number = 0,
   options: LayoutOptions = {}
 ): LayoutResult {
+  // Validate input to provide helpful error messages
+  if (!schema) {
+    console.warn('Empty schema provided to layout processor');
+    return {
+      layout: {},
+      element: document.createElement('div'),
+      component: {},
+      get: () => null,
+      getAll: () => ({}),
+      destroy: () => {}
+    };
+  }
+  
+  // Process based on schema type
   return Array.isArray(schema)
     ? processArraySchema(schema, parentElement, level, options)
     : processObjectSchema(schema, parentElement, options);
