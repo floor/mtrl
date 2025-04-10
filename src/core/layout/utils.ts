@@ -6,6 +6,7 @@
 
 import { PREFIX } from '../config';
 import { ComponentLike } from './types';
+import { normalizeClasses as normalizeClassesUtil } from '../utils';
 
 /**
  * Checks if a value is a component object (has an element property)
@@ -30,6 +31,14 @@ export function createFragment(): DocumentFragment {
 }
 
 /**
+ * Normalizes class values into an array of strings
+ * Reusing the utility to ensure consistency
+ */
+export function normalizeClasses(...classes: (string | string[])[]): string[] {
+  return normalizeClassesUtil(...classes);
+}
+
+/**
  * Processes className options to add prefix if needed
  * Supports BEM naming conventions when enabled
  * 
@@ -46,66 +55,64 @@ export function processClassNames(
   // Fast path - if no options or skipping prefix, return as is
   if (!options || skipPrefix) return { ...options };
   
-  // Clone options to avoid mutating the original
+  // Avoid unnecessary clone if no class properties exist
+  const hasClassProps = options.class || options.className || options.rawClass;
+  if (!hasClassProps) return { ...options };
+  
+  // Create clone only once
   const processed = { ...options };
   
-  /**
-   * Processes a single class name with optional BEM handling
-   * 
-   * @param cls - Class name to process
-   * @returns Processed class name with prefix
-   */
-  const processClass = (cls: string): string => {
-    // Already prefixed - leave it as is
-    if (cls.startsWith(`${PREFIX}-`)) {
-      return cls;
+  // Unify class and className as aliases
+  if (processed.className) {
+    if (!processed.class) {
+      // Simple transfer if only className exists
+      processed.class = processed.className;
+    } else {
+      // Merge if both exist
+      const classNames = normalizeClasses([processed.class, processed.className]);
+      processed.class = classNames.join(' ');
     }
-    
-    if (useBEM) {
-      // For BEM classes (with __ or --), only prefix the block part
-      if (cls.includes('__')) {
-        // This is a BEM element, prefix only the block part
-        const [block, element] = cls.split('__');
-        return `${PREFIX}-${block}__${element}`;
-      } else if (cls.includes('--')) {
-        // This is a BEM modifier, prefix only the block part
-        const [block, modifier] = cls.split('--');
-        return `${PREFIX}-${block}--${modifier}`;
+    // Always remove className after processing
+    delete processed.className;
+  }
+  
+  // Process prefixed classes
+  if (processed.class && !skipPrefix) {
+    // Handle string format
+    if (typeof processed.class === 'string') {
+      const classes = processed.class.split(/\s+/).filter(Boolean);
+      
+      if (useBEM) {
+        // Handle BEM notation with special prefixing rules
+        processed.class = classes.map(cls => {
+          if (!cls || cls.startsWith(`${PREFIX}-`)) return cls;
+          
+          if (cls.includes('__')) {
+            const [block, element] = cls.split('__');
+            return `${PREFIX}-${block}__${element}`;
+          } else if (cls.includes('--')) {
+            const [block, modifier] = cls.split('--');
+            return `${PREFIX}-${block}--${modifier}`;
+          }
+          
+          return `${PREFIX}-${cls}`;
+        }).join(' ');
+      } else {
+        // Standard prefix handling
+        processed.class = classes.map(cls => 
+          cls && !cls.startsWith(`${PREFIX}-`) ? `${PREFIX}-${cls}` : cls
+        ).filter(Boolean).join(' ');
       }
-    }
-    
-    // Standard case - prefix the entire class name
-    return `${PREFIX}-${cls}`;
-  };
-  
-  /**
-   * Process a class property (either 'class' or 'className')
-   * 
-   * @param prop - Property name to process
-   */
-  const processProperty = (prop: string): void => {
-    if (!processed[prop]) return;
-    
-    // Handle string class names
-    if (typeof processed[prop] === 'string') {
-      processed[prop] = processed[prop]
-        .split(' ')
-        .map(cls => cls ? processClass(cls) : '')
+    } 
+    // Handle array format
+    else if (Array.isArray(processed.class)) {
+      processed.class = processed.class
         .filter(Boolean)
+        .map(cls => typeof cls === 'string' && !cls.startsWith(`${PREFIX}-`) ? 
+          `${PREFIX}-${cls}` : cls)
         .join(' ');
     }
-    // Handle array class names
-    else if (Array.isArray(processed[prop])) {
-      processed[prop] = processed[prop]
-        .map(cls => typeof cls === 'string' ? processClass(cls) : cls)
-        .filter(Boolean)
-        .join(' ');
-    }
-  };
-  
-  // Process both possible class properties for compatibility
-  processProperty('class');
-  processProperty('className');
+  }
   
   return processed;
 }

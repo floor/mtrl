@@ -58,9 +58,22 @@ export interface CreateElementOptions {
   data?: Record<string, string>;
   
   /**
-   * CSS classes
+   * CSS classes (will be automatically prefixed with 'mtrl-')
+   * Alias for 'className'
    */
-  className?: string | string[] | null;
+  class?: string | string[];
+  
+  /**
+   * CSS classes (will be automatically prefixed with 'mtrl-')
+   * Alias for 'class'
+   */
+  className?: string | string[];
+  
+  /**
+   * CSS classes that will NOT be prefixed
+   * Added as-is to the element
+   */
+  rawClass?: string | string[];
   
   /**
    * HTML attributes
@@ -112,7 +125,9 @@ export const createElement = (options: CreateElementOptions = {}): HTMLElement =
     text = '',
     id = '',
     data = {},
+    class: classOption,
     className,
+    rawClass,
     attrs = {},
     forwardEvents = {},
     onCreate,
@@ -127,14 +142,22 @@ export const createElement = (options: CreateElementOptions = {}): HTMLElement =
   if (text) element.textContent = text;
   if (id) element.id = id;
 
-  // Handle classes
-  if (className) {
-    const classes = normalizeClasses(className);
-    if (classes.length) {
-      // Apply prefix to classes in a single operation
-      element.classList.add(...classes.map(cls => 
+  // 1. Handle prefixed classes (class and className are aliases)
+  const prefixedClassSource = classOption || className;
+  if (prefixedClassSource) {
+    const normalizedClasses = normalizeClasses(prefixedClassSource);
+    if (normalizedClasses.length) {
+      element.classList.add(...normalizedClasses.map(cls => 
         cls && !cls.startsWith(PREFIX_WITH_DASH) ? PREFIX_WITH_DASH + cls : cls
       ).filter(Boolean));
+    }
+  }
+  
+  // 2. Handle raw classes (no prefix)
+  if (rawClass) {
+    const rawClasses = normalizeClasses(rawClass);
+    if (rawClasses.length) {
+      element.classList.add(...rawClasses);
     }
   }
 
