@@ -6,7 +6,7 @@
  */
 
 // Direct component imports
-import { createElement } from './core/dom/create';
+import { createElement, addClass, removeClass, hasClass, toggleClass } from './core/dom';
 import createLayout from './core/layout';
 import createBadge from './components/badge';
 import createBottomAppBar from './components/bottom-app-bar';
@@ -45,6 +45,7 @@ import createTooltip from './components/tooltip';
 
 // Export all "create*" functions
 export {
+  addClass, removeClass, hasClass, toggleClass,
   createElement,
   createLayout,
   createBadge,

@@ -7,6 +7,7 @@
 import { setAttributes } from './attributes';
 import { normalizeClasses } from '../utils';
 import { PREFIX } from '../config';
+import { addClass } from './classes'; // Import addClass
 
 /**
  * Event handler function type
@@ -108,9 +109,6 @@ export interface EventHandlerStorage {
   [eventName: string]: EventHandler;
 }
 
-// Constant for prefix with dash
-const PREFIX_WITH_DASH = `${PREFIX}-`;
-
 /**
  * Creates a DOM element with the specified options
  *
@@ -142,15 +140,10 @@ export const createElement = (options: CreateElementOptions = {}): HTMLElement =
   if (text) element.textContent = text;
   if (id) element.id = id;
 
-  // 1. Handle prefixed classes (class and className are aliases)
+  // 1. Handle prefixed classes using addClass
   const prefixedClassSource = classOption || className;
   if (prefixedClassSource) {
-    const normalizedClasses = normalizeClasses(prefixedClassSource);
-    if (normalizedClasses.length) {
-      element.classList.add(...normalizedClasses.map(cls => 
-        cls && !cls.startsWith(PREFIX_WITH_DASH) ? PREFIX_WITH_DASH + cls : cls
-      ).filter(Boolean));
-    }
+    addClass(element, prefixedClassSource);
   }
   
   // 2. Handle raw classes (no prefix)
@@ -253,12 +246,7 @@ export const withAttributes = (attrs: Record<string, any>) =>
  */
 export const withClasses = (...classes: (string | string[])[]) => 
   (element: HTMLElement): HTMLElement => {
-    const normalizedClasses = normalizeClasses(...classes);
-    if (normalizedClasses.length) {
-      element.classList.add(...normalizedClasses.map(cls => 
-        cls && !cls.startsWith(PREFIX_WITH_DASH) ? PREFIX_WITH_DASH + cls : cls
-      ).filter(Boolean));
-    }
+    addClass(element, ...classes);
     return element;
   };
 
