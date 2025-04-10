@@ -1,26 +1,40 @@
-# Layout Module
-
-A lightweight, flexible system for creating and managing visual arrangements and component hierarchies.
+# Layout Module Documentation
 
 ## Overview
 
-The Layout Module provides a declarative approach to building UI layouts using either arrays or objects. It efficiently handles DOM operations, component instantiation, and visual arrangement in a bundle-optimized way.
+The Layout Module is a lightweight, flexible system for creating and managing visual arrangements and component hierarchies. It provides a declarative approach to building UI layouts using either arrays or objects, with efficient DOM operations, component instantiation, and visual arrangement.
 
 ## Features
 
 - **Multiple Schema Formats** - Support for array-based, object-based, and HTML string schemas
 - **Efficient DOM Operations** - Batched DOM manipulations with DocumentFragment
 - **Component Management** - Easy access to component instances via consistent API
+- **Layout System Integration** - Direct access to powerful CSS layout classes
 - **Customizable Creation** - Control class prefixing and specify default creators
 - **Optimized for Bundle Size** - Minimal footprint with maximum functionality
 - **TypeScript Support** - Full type definitions for developer experience
+
+## Installation
+
+```bash
+npm install mtrl
+```
+
+## Core Concepts
+
+The Layout Module consists of several key parts:
+
+1. **Schema Definition** - A declarative way to describe your layout
+2. **Layout Processing** - Converting the schema into DOM elements
+3. **Layout Configuration** - Setting up responsive layouts and grids
+4. **Component Instance Management** - Accessing and controlling created components
 
 ## Basic Usage
 
 ### Array-based Layout
 
 ```javascript
-import { createLayout, createButton, createDialog, createList, createListItem } from 'mtrl';
+import { createLayout, createButton, createDialog } from 'mtrl';
 
 const layout = createLayout([
   // Root level contains primary components
@@ -34,15 +48,6 @@ const layout = createLayout([
   }
 ]);
 
-// Add content to the dialog separately
-const dialogContent = createLayout([
-  createList, 'actionsList', {},
-  [
-    createListItem, 'confirmAction', { text: 'Confirm', leading: 'check' },
-    createListItem, 'cancelAction', { text: 'Cancel', leading: 'close' }
-  ]
-], layout.get('confirmDialog').contentElement);
-
 // Access components
 const submitButton = layout.get('submitButton');
 const confirmDialog = layout.get('confirmDialog');
@@ -54,7 +59,7 @@ submitButton.on('click', () => confirmDialog.open());
 ### Object-based Layout
 
 ```javascript
-import { createLayout, createTopAppBar, createNavigation, createList, createListItem, createTextfield, createButton } from 'mtrl';
+import { createLayout, createTopAppBar, createList, createListItem } from 'mtrl';
 
 const layout = createLayout({
   element: {
@@ -66,7 +71,16 @@ const layout = createLayout({
     children: {
       navigation: {
         creator: createNavigation,
-        options: { variant: 'drawer', persistent: true },
+        options: { 
+          variant: 'drawer', 
+          persistent: true,
+          // CSS layout configuration
+          layout: {
+            type: 'stack',
+            gap: 4,
+            align: 'stretch'
+          }
+        },
         children: {
           navList: {
             creator: createList,
@@ -79,51 +93,33 @@ const layout = createLayout({
               settingsLink: {
                 creator: createListItem,
                 options: { text: 'Settings', leading: 'settings' }
-              },
-              logoutLink: {
-                creator: createListItem,
-                options: { text: 'Logout', leading: 'logout' }
               }
             }
           }
         }
       },
-      form: {
-        creator: createElement,
-        options: { tag: 'form', className: 'profile-form' },
-        children: {
-          nameField: {
-            creator: createTextfield,
-            options: { label: 'Full Name', required: true }
-          },
-          emailField: {
-            creator: createTextfield,
-            options: { label: 'Email', type: 'email', required: true }
-          },
-          saveButton: {
-            creator: createButton,
-            options: { text: 'Save Changes', variant: 'filled' }
+      content: {
+        options: { 
+          tag: 'main', 
+          className: 'content',
+          // Grid layout configuration
+          layout: {
+            type: 'grid',
+            columns: 3,
+            gap: 6,
+            autoHeight: true 
           }
         }
       }
     }
   }
 });
-
-// Access components
-const topAppBar = layout.element;
-const nameField = layout.get('nameField');
-const saveButton = layout.get('saveButton');
-
-// Use the components
-nameField.setValue('John Doe');
-saveButton.on('click', () => console.log('Profile updated'));
 ```
 
 ### HTML String Layout
 
 ```javascript
-import createLayout from 'core/layout';
+import { createLayout } from 'mtrl';
 
 const layout = createLayout(`
   <div class="notification">
@@ -137,143 +133,137 @@ const notification = layout.element;
 document.body.appendChild(notification);
 ```
 
-### Using Options Parameter
+## Layout Configuration
+
+The layout module supports direct integration with the CSS layout system through the `layout` property:
+
+### Grid Layout
 
 ```javascript
-import { createLayout, createButton, createTextfield, createCard, createChip, createTopAppBar, createBottomAppBar } from 'mtrl';
-
-// With default creator and disabled prefix
-const formLayout = createLayout(
-  [
-    // Using string keys relies on the default creator
-    'nameField', { label: 'Name', required: true },
-    'emailField', { label: 'Email', type: 'email', required: true },
-    'phoneField', { label: 'Phone', type: 'tel' },
-    
-    // Explicitly override the default creator
-    createButton, 'submitButton', { text: 'Submit', variant: 'filled' }
-  ],
-  document.getElementById('form-container'),
-  {
-    creator: createTextfield, // Default creator for all elements without a specific constructor
-    prefix: false // Disable automatic class prefixing
-  }
-);
-
-// With theme options for a complete dashboard layout
-const dashboardLayout = createLayout(
-  [
-    createTopAppBar, 'header', { 
-      title: 'Dashboard', 
-      actions: ['notifications', 'account'] 
+createLayout({
+  gridContainer: {
+    options: {
+      className: 'container',
+      layout: {
+        type: 'grid',
+        columns: 3,         // Number of columns
+        gap: 4,             // Gap size (using the gap scale)
+        autoHeight: true,   // Allow natural heights
+        dense: true,        // Dense packing algorithm
+        align: 'center'     // Alignment of items
+      }
     },
-    
-    createCard, 'statsCard', { 
-      title: 'Performance Metrics',
-      outlined: true 
-    },
-    [
-      createChip, 'visitsChip', { text: 'Visits: 1.2K', leadingIcon: 'visibility' },
-      createChip, 'conversionChip', { text: 'Conversion: 5.4%', leadingIcon: 'trending_up' }
-    ],
-    
-    createCard, 'activityCard', { 
-      title: 'Recent Activity',
-      outlined: true
-    },
-    
-    createBottomAppBar, 'footer', {
-      actions: [
-        { icon: 'home', label: 'Home' },
-        { icon: 'search', label: 'Search' },
-        { icon: 'settings', label: 'Settings' }
-      ]
+    children: {
+      item1: {
+        options: { 
+          text: 'Item 1',
+          // Individual item layout configuration
+          layoutItem: {
+            span: 2,        // Span 2 columns
+            rowSpan: 1,     // Span 1 row
+            align: 'start'  // Self-alignment
+          }
+        }
+      }
     }
-  ],
-  document.getElementById('app'),
-  {
-    theme: 'dark', // Custom theme option
-    density: 'comfortable', // Custom density option
-    animations: true // Custom animation option
   }
-);
-
-// Access and use the layout
-const nameField = formLayout.get('nameField');
-nameField.setValue('John Doe');
-
-const statsCard = dashboardLayout.get('statsCard');
-statsCard.setTitle('Updated Metrics - ' + new Date().toLocaleDateString());
+});
 ```
 
-## API Reference
+### Stack Layout (Vertical)
 
-### Core Functions
+```javascript
+createLayout({
+  stack: {
+    options: {
+      layout: {
+        type: 'stack',
+        gap: 4,             // Space between items
+        align: 'center',    // Center items horizontally
+        justify: 'between'  // Space between items vertically
+      }
+    },
+    children: {
+      header: { options: { text: 'Header' } },
+      content: { options: { text: 'Content' } },
+      footer: { options: { text: 'Footer' } }
+    }
+  }
+});
+```
 
-#### `createLayout(schema, parentElement?, options?)`
+### Row Layout (Horizontal)
+
+```javascript
+createLayout({
+  row: {
+    options: {
+      layout: {
+        type: 'row',
+        gap: 4,             // Space between items
+        align: 'center',    // Center items vertically
+        justify: 'between', // Space between items horizontally
+        wrap: true,         // Allow wrapping
+        mobileStack: true   // Stack on mobile devices
+      }
+    },
+    children: {
+      // Row items...
+    }
+  }
+});
+```
+
+## Layout Types
+
+The layout system supports several layout types that can be used in the `layout.type` property:
+
+| Type | Description | Key Options |
+|------|-------------|------------|
+| `stack` | Vertical column of elements | `align`, `justify`, `gap` |
+| `row` | Horizontal row of elements | `align`, `justify`, `wrap`, `gap`, `mobileStack` |
+| `grid` | CSS Grid-based layout | `columns`, `gap`, `autoHeight`, `dense` |
+| `masonry` | Masonry-style layout | `masonryColumns`, `gap` |
+| `split` | Two-column split layout | `ratio`, `gap` |
+| `sidebar` | Sidebar with main content | `sidebarPosition`, `sidebarWidth` |
+
+## Layout Item Properties
+
+When using the `layoutItem` property to configure individual items:
+
+| Property | Description | Example Values |
+|----------|-------------|----------------|
+| `width` | Column width in 12-column grid | `1` through `12` |
+| `span` | Grid column span | `1` through `12` |
+| `rowSpan` | Grid row span | `1` through `12` |
+| `sm`, `md`, `lg`, `xl` | Responsive widths | `1` through `12` |
+| `order` | Item ordering | `'first'`, `'last'`, or a number |
+| `align` | Self-alignment | `'start'`, `'center'`, `'end'`, `'stretch'` |
+| `auto` | Auto width (flex) | `true`, `false` |
+
+## Layout Functions
+
+### `createLayout(schema, parentElement?, options?)`
 
 Creates a layout from a schema definition.
 
 - **Parameters**:
   - `schema`: Array, object, HTML string, or function returning one of these
   - `parentElement` (optional): Parent element to attach the layout to
-  - `options` (optional): Configuration options for layout creation:
-    - `creator`: Default creator function to use when not specified in schema
-    - `prefix`: Boolean to control whether CSS class prefixing is applied (default: true)
-    - Custom options can be added and accessed in component creators
+  - `options` (optional): Configuration options for layout creation
 - **Returns**: Layout result object with components and utility methods
 
-#### `processSchema(schema, parentElement?, level?, options?)`
+```javascript
+const layout = createLayout(schema, document.getElementById('container'), {
+  creator: createCard,  // Default creator for elements without a specific one
+  prefix: true,         // Whether to apply automatic class prefixing
+  theme: 'dark'         // Custom options (passed to components)
+});
+```
 
-Low-level function for processing schemas directly.
+### Layout Result Object
 
-- **Parameters**:
-  - `schema`: Array or object schema
-  - `parentElement` (optional): Parent element to attach to
-  - `level` (optional): Current recursion level
-  - `options` (optional): Layout creation options
-- **Returns**: Layout result object
-
-#### `createComponentInstance(Component, options?, layoutOptions?)`
-
-Creates a component instance from a constructor or factory function.
-
-- **Parameters**:
-  - `Component`: Constructor or factory function
-  - `options` (optional): Options to pass to the component
-  - `layoutOptions` (optional): Global layout options
-- **Returns**: Component instance
-
-### Utility Functions
-
-#### `isComponent(value)`
-
-Checks if a value is a component-like object.
-
-- **Parameters**:
-  - `value`: Value to check
-- **Returns**: Boolean indicating if the value is a component
-
-#### `processClassNames(options, skipPrefix?)`
-
-Processes class names in options to add prefixes.
-
-- **Parameters**:
-  - `options`: Element options containing className
-  - `skipPrefix` (optional): Whether to skip adding prefixes
-- **Returns**: Updated options with prefixed classNames
-
-#### `flattenLayout(layout)`
-
-Flattens a nested layout for easier component access.
-
-- **Parameters**:
-  - `layout`: Layout object to flatten
-- **Returns**: Flattened layout with components
-
-### Result Object
-
-The layout result object contains:
+The object returned by `createLayout` contains:
 
 - `layout`: Raw layout object with all components
 - `element`: Reference to the root element
@@ -282,28 +272,307 @@ The layout result object contains:
 - `getAll()`: Function to get all components
 - `destroy()`: Function to clean up the layout
 
-## Integrating with Layout Manager
+```javascript
+// Access components in different ways
+const header = layout.get('header');       // By name
+const footer = layout.component.footer;    // Via flattened map
+const rootElement = layout.element;        // Root element
+```
 
-This module works well with the Layout Manager for advanced application layouts:
+## Examples
+
+### Array Schema Examples
+
+#### Grid Layout with Array Schema
 
 ```javascript
-import createLayout from 'core/layout';
-import createLayoutManager from 'client/core/layout/layout-manager';
+import { createLayout, createElement, createCard } from 'mtrl';
 
-// Create application layout
-const appLayout = createLayout([
-  // Application components...
+// Create a grid layout using array syntax
+const dashboard = createLayout([
+  // Container element with layout configuration  
+  'dashboardGrid', { 
+    className: 'dashboard-grid', 
+    layout: {
+      type: 'grid',
+      columns: 3,
+      gap: 4,
+      autoHeight: true
+    }
+  },
+  [
+    // First card
+    createCard, 'statsCard', {
+      title: 'Statistics',
+      outlined: true,
+      layoutItem: {
+        span: 2,  // Span 2 columns
+        sm: 12,   // Full width on small screens
+        md: 6     // Half width on medium screens
+      }
+    },
+    // Second card
+    createCard, 'activityCard', {
+      title: 'Recent Activity',
+      outlined: true,
+      layoutItem: {
+        span: 1,  // Span 1 column
+        sm: 12,   // Full width on small screens
+        md: 6     // Half width on medium screens
+      }
+    },
+    // Third card
+    createCard, 'revenueCard', {
+      title: 'Revenue',
+      outlined: true,
+      layoutItem: {
+        span: 3,  // Full width
+        md: 6     // Half width on medium screens
+      }
+    }
+  ]
 ]);
 
-// Create layout manager with the layout
-const layoutManager = createLayoutManager({
-  layout: appLayout.layout,
-  layoutAPI: appLayout
-});
+// Access components
+const statsCard = dashboard.get('statsCard');
+statsCard.update({ content: 'Updated statistics data' });
+```
 
-// Use layout manager API
-layoutManager.setContent('<h1>Welcome to the app</h1>');
-layoutManager.setPageTitle('Dashboard');
+#### Application Layout with Array Schema
+
+```javascript
+import { createLayout, createTopAppBar, createDrawer, createList, createListItem, createElement } from 'mtrl';
+
+// Create an application layout using array syntax
+const appLayout = createLayout([
+  // Create a container element
+  'appContainer', { 
+    className: 'app-container', 
+    layout: { type: 'stack', gap: 0 }
+  },
+  [
+    // Header
+    createTopAppBar, 'header', { 
+      title: 'My Application',
+      actions: ['menu', 'account']
+    },
+    
+    // Main content area
+    'main', { 
+      className: 'app-main', 
+      layout: { type: 'row', gap: 0 }
+    },
+    [
+      // Sidebar
+      createDrawer, 'sidebar', {
+        persistent: true,
+        layout: { type: 'stack', gap: 2 }
+      },
+      [
+        // Navigation list
+        createList, 'nav', { interactive: true },
+        [
+          createListItem, 'homeLink', { text: 'Home', leading: 'home' },
+          createListItem, 'settingsLink', { text: 'Settings', leading: 'settings' }
+        ]
+      ],
+      
+      // Main content
+      'content', {
+        tag: 'main',
+        className: 'app-content',
+        layout: { 
+          type: 'grid', 
+          columns: 'auto-fit',
+          gap: 4 
+        }
+      }
+    ]
+  ]
+]);
+
+// Access and modify components
+const header = appLayout.get('header');
+header.setTitle('Dashboard');
+
+// Add items to the grid content area
+const content = appLayout.get('content');
+const card = createCard({ title: 'Statistics', content: 'App usage data...' });
+content.appendChild(card.element);
+```
+
+#### Form Layout with Array Schema
+
+```javascript
+import { createLayout, createTextfield, createButton } from 'mtrl';
+
+// Create a form with fields and submit button using array syntax
+const form = createLayout([
+  'formContainer', { 
+    tag: 'form', 
+    className: 'login-form', 
+    layout: { type: 'stack', gap: 4 }
+  },
+  [
+    createTextfield, 'username', {
+      label: 'Username',
+      required: true,
+      layoutItem: {
+        width: 12  // Full width
+      }
+    },
+    createTextfield, 'password', {
+      label: 'Password',
+      type: 'password',
+      required: true,
+      layoutItem: {
+        width: 12  // Full width
+      }
+    },
+    'buttonRow', {
+      layout: { 
+        type: 'row', 
+        justify: 'end',
+        gap: 2 
+      }
+    },
+    [
+      createButton, 'resetButton', { 
+        text: 'Reset',
+        variant: 'text'
+      },
+      createButton, 'submitButton', { 
+        text: 'Login',
+        variant: 'filled'
+      }
+    ]
+  ]
+]);
+
+// Access form elements
+const usernameField = form.get('username');
+const submitButton = form.get('submitButton');
+
+// Add event handlers
+submitButton.on('click', (e) => {
+  e.preventDefault();
+  console.log('Username:', usernameField.getValue());
+});
+```
+
+### Object Schema Examples
+
+#### Dashboard Grid with Object Schema
+
+```javascript
+import { createLayout, createElement, createCard } from 'mtrl';
+
+const dashboard = createLayout({
+  dashboardGrid: {
+    options: {
+      className: 'dashboard-grid',
+      layout: {
+        type: 'grid',
+        columns: 3,
+        gap: 4,
+        autoHeight: true
+      }
+    },
+    children: {
+      statsCard: {
+        creator: createCard,
+        options: {
+          title: 'Statistics',
+          outlined: true,
+          layoutItem: {
+            span: 2,  // Span 2 columns
+            sm: 12,   // Full width on small screens
+            md: 6     // Half width on medium screens
+          }
+        }
+      },
+      activityCard: {
+        creator: createCard,
+        options: {
+          title: 'Recent Activity',
+          outlined: true,
+          layoutItem: {
+            span: 1,  // Span 1 column
+            sm: 12,   // Full width on small screens
+            md: 6     // Half width on medium screens
+          }
+        }
+      },
+      // More dashboard cards...
+    }
+  }
+});
+```
+
+#### Application Layout with Object Schema
+
+```javascript
+import { createLayout, createTopAppBar, createDrawer, createList, createListItem, createButton } from 'mtrl';
+
+const appLayout = createLayout({
+  app: {
+    options: {
+      className: 'app-container',
+      layout: { type: 'stack', gap: 0 }
+    },
+    children: {
+      header: {
+        creator: createTopAppBar,
+        options: { 
+          title: 'My Application',
+          actions: ['menu', 'account']
+        }
+      },
+      main: {
+        options: {
+          className: 'app-main',
+          layout: { type: 'row', gap: 0 }
+        },
+        children: {
+          sidebar: {
+            creator: createDrawer,
+            options: {
+              persistent: true,
+              layout: { type: 'stack', gap: 2 }
+            },
+            children: {
+              nav: {
+                creator: createList,
+                options: { interactive: true },
+                children: {
+                  home: {
+                    creator: createListItem,
+                    options: { text: 'Home', leading: 'home' }
+                  },
+                  settings: {
+                    creator: createListItem,
+                    options: { text: 'Settings', leading: 'settings' }
+                  }
+                }
+              }
+            }
+          },
+          content: {
+            options: {
+              tag: 'main',
+              className: 'app-content',
+              layout: { 
+                type: 'grid', 
+                columns: 'auto-fit',
+                gap: 4 
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+});
 ```
 
 ## Performance Considerations
@@ -340,6 +609,102 @@ layoutManager.setPageTitle('Dashboard');
 - Create components only when needed
 - Consider memoizing frequently created layouts
 - For large applications, lazy-load secondary layouts
+
+## Responsive Design
+
+The layout system provides several ways to create responsive designs:
+
+### Responsive Grid
+
+```javascript
+createLayout({
+  grid: {
+    options: {
+      layout: {
+        type: 'grid',
+        // Different columns at different breakpoints using CSS media queries
+        class: 'md:layout--grid-cols-2 lg:layout--grid-cols-3 xl:layout--grid-cols-4'
+      }
+    }
+  }
+});
+```
+
+### Layout Items with Responsive Widths
+
+```javascript
+createLayout({
+  row: {
+    options: {
+      layout: { type: 'row', gap: 4 }
+    },
+    children: {
+      sidebar: {
+        options: {
+          layoutItem: {
+            width: 3,    // Default: 3/12 (25%)
+            sm: 12,      // Small screens: 12/12 (100%)
+            md: 4,       // Medium screens: 4/12 (33.3%)
+            lg: 3        // Large screens: 3/12 (25%)
+          }
+        }
+      },
+      main: {
+        options: {
+          layoutItem: {
+            width: 9,    // Default: 9/12 (75%)
+            sm: 12,      // Small screens: 12/12 (100%)
+            md: 8,       // Medium screens: 8/12 (66.6%)
+            lg: 9        // Large screens: 9/12 (75%)
+          }
+        }
+      }
+    }
+  }
+});
+```
+
+### Mobile Behavior Options
+
+```javascript
+createLayout({
+  row: {
+    options: {
+      layout: {
+        type: 'row',
+        gap: 4,
+        mobileStack: true,    // Stack on mobile instead of row
+        // OR
+        mobileScroll: true    // Enable horizontal scrolling on mobile
+      }
+    },
+    children: {
+      // Row items...
+    }
+  }
+});
+```
+
+## Layout CSS Classes
+
+The layout system uses a consistent naming convention for CSS classes:
+
+### Layout Container Classes
+
+- **Base Layout**: `.layout--[type]` (e.g., `.layout--stack`, `.layout--grid`)
+- **Alignment**: `.layout--[type]-[align]` (e.g., `.layout--stack-center`)
+- **Justification**: `.layout--[type]-justify-[justify]` (e.g., `.layout--row-justify-between`)
+- **Spacing**: `.layout--[type]-gap-[size]` (e.g., `.layout--grid-gap-4`)
+- **Specific Options**: `.layout--[type]-[option]` (e.g., `.layout--grid-dense`)
+
+### Layout Item Classes
+
+- **Base Item**: `.layout__item`
+- **Width**: `.layout__item--[width]` (e.g., `.layout__item--4` for 4/12 width)
+- **Responsive Widths**: `.layout__item--[breakpoint]-[width]` (e.g., `.layout__item--md-6`)
+- **Ordering**: `.layout__item--order-[order]` (e.g., `.layout__item--order-first`)
+- **Alignment**: `.layout__item--self-[align]` (e.g., `.layout__item--self-center`)
+- **Grid Span**: `.layout__item--span-[span]` (e.g., `.layout__item--span-2`)
 
 ## Browser Compatibility
 
