@@ -1,76 +1,44 @@
 // src/components/menu/index.ts
 
 /**
- * @module Menu
+ * Menu component module
  * 
- * Menu component following Material Design 3 guidelines.
- * Menus display a list of choices on a temporary surface, appearing when users
- * interact with a button, action, or other control.
+ * The Menu component provides a Material Design 3 compliant dropdown menu
+ * system with support for nested menus, keyboard navigation, and accessibility.
  * 
- * The main export is the {@link default | createMenu} factory function that creates
- * a {@link MenuComponent} instance with the provided configuration.
- * 
- * Features:
- * - Configurable positioning relative to other elements
- * - Support for nested submenus
- * - Keyboard navigation and accessibility
- * - Item selection events
- * - Automatic handling of outside clicks
- * - Support for dividers and disabled items
- * - Dynamic item management
- * 
- * @example
- * ```typescript
- * // Create a basic menu
- * const menu = createMenu({
- *   items: [
- *     { name: 'edit', text: 'Edit' },
- *     { name: 'duplicate', text: 'Duplicate' },
- *     { type: 'divider' },
- *     { name: 'delete', text: 'Delete', class: 'danger-item' }
- *   ]
- * });
- * 
- * // Show the menu positioned relative to a button
- * const button = document.getElementById('menuButton');
- * button.addEventListener('click', () => {
- *   menu.position(button).show();
- * });
- * 
- * // Handle menu selection
- * menu.on('select', (event) => {
- *   console.log(`Selected: ${event.name}`);
- *   
- *   if (event.name === 'delete') {
- *     // Confirm deletion
- *     if (confirm('Are you sure?')) {
- *       deleteItem();
- *     }
- *   }
- * });
- * ```
- * 
+ * @module components/menu
  * @category Components
  */
 
-/**
- * Factory function to create a new Menu component.
- * @see MenuComponent for the full API reference
- */
+// Export main component factory
 export { default } from './menu';
 
-/**
- * Menu component types and interfaces
- * 
- * These types define the structure and behavior of the Menu component.
- */
-export {
-  MenuConfig,
-  MenuComponent,
-  MenuItemConfig,
-  MenuPositionConfig,
-  MenuAlign,
-  MenuVerticalAlign,
-  MenuItemType,
-  MenuEvent
+// Export types and interfaces
+export type { 
+  MenuConfig, 
+  MenuComponent, 
+  MenuItem, 
+  MenuDivider,
+  MenuContent,
+  MenuEvent,
+  MenuSelectEvent,
+  MenuPlacement
 } from './types';
+
+/**
+ * Constants for menu placement values - use these instead of string literals
+ * for better code completion and type safety.
+ * 
+ * @example
+ * import { createMenu, MENU_PLACEMENT } from 'mtrl';
+ * 
+ * // Create a menu positioned at the bottom-right of its anchor
+ * const menu = createMenu({ 
+ *   anchor: '#dropdown-button',
+ *   items: [...],
+ *   placement: MENU_PLACEMENT.BOTTOM_END 
+ * });
+ * 
+ * @category Components
+ */
+export { MENU_PLACEMENT } from './types';

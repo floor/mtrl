@@ -1,142 +1,378 @@
 // src/components/menu/types.ts
 
 /**
- * Menu horizontal alignment options
+ * Menu placement options
+ * Controls where the menu will appear relative to its anchor element
+ * 
+ * @category Components
  */
-export type MenuAlign = 'left' | 'right' | 'center';
+export const MENU_PLACEMENT = {
+  /** Places menu below the anchor, aligned to left edge */
+  BOTTOM_START: 'bottom-start',
+  /** Places menu below the anchor, centered */
+  BOTTOM: 'bottom',
+  /** Places menu below the anchor, aligned to right edge */
+  BOTTOM_END: 'bottom-end',
+  /** Places menu above the anchor, aligned to left edge */
+  TOP_START: 'top-start',
+  /** Places menu above the anchor, centered */
+  TOP: 'top',
+  /** Places menu above the anchor, aligned to right edge */
+  TOP_END: 'top-end',
+  /** Places menu to the right of the anchor, aligned to top edge */
+  RIGHT_START: 'right-start',
+  /** Places menu to the right of the anchor, centered */
+  RIGHT: 'right',
+  /** Places menu to the right of the anchor, aligned to bottom edge */
+  RIGHT_END: 'right-end',
+  /** Places menu to the left of the anchor, aligned to top edge */
+  LEFT_START: 'left-start',
+  /** Places menu to the left of the anchor, centered */
+  LEFT: 'left',
+  /** Places menu to the left of the anchor, aligned to bottom edge */
+  LEFT_END: 'left-end'
+} as const;
 
 /**
- * Menu vertical alignment options
+ * Alignment options for the menu
+ * 
+ * @category Components
  */
-export type MenuVerticalAlign = 'top' | 'bottom' | 'middle';
+export type MenuPlacement = typeof MENU_PLACEMENT[keyof typeof MENU_PLACEMENT];
 
 /**
- * Menu item types
+ * Configuration interface for a menu item
+ * 
+ * @category Components
  */
-export type MenuItemType = 'item' | 'divider';
-
-/**
- * Menu position configuration
- */
-export interface MenuPositionConfig {
-  /** Horizontal alignment */
-  align?: MenuAlign;
+export interface MenuItem {
+  /** 
+   * Unique ID for the menu item
+   * Required for accessibility and event handling
+   */
+  id: string;
   
-  /** Vertical alignment */
-  vAlign?: MenuVerticalAlign;
-  
-  /** Horizontal offset in pixels */
-  offsetX?: number;
-  
-  /** Vertical offset in pixels */
-  offsetY?: number;
-}
-
-/**
- * Menu item configuration
- */
-export interface MenuItemConfig {
-  /** Unique identifier for the item */
-  name: string;
-  
-  /** Text content displayed for the item */
+  /**
+   * Display text for the menu item
+   */
   text: string;
   
-  /** Type of menu item */
-  type?: MenuItemType;
+  /**
+   * Optional icon to display before the text
+   * Accepts HTML string (typically SVG)
+   */
+  icon?: string;
   
-  /** Whether the item is disabled */
+  /**
+   * Optional keyboard shortcut hint to display
+   * Shown at the end of the menu item
+   */
+  shortcut?: string;
+  
+  /**
+   * Whether the menu item is disabled
+   * Disabled items cannot be clicked but remain visible
+   */
   disabled?: boolean;
   
-  /** Additional CSS classes to apply to the item */
-  class?: string;
+  /**
+   * Whether this item has a submenu
+   * If true, the item will show an indicator and can open a nested menu
+   */
+  hasSubmenu?: boolean;
   
-  /** Submenu items */
-  items?: MenuItemConfig[];
+  /**
+   * Optional array of submenu items
+   * Only used when hasSubmenu is true
+   */
+  submenu?: MenuItem[];
+  
+  /**
+   * Additional data to associate with the menu item
+   * This can be used for custom behavior in click handlers
+   */
+  data?: any;
 }
 
 /**
- * Menu item internal data structure
+ * Menu item type for dividers
+ * 
+ * @category Components
  */
-export interface MenuItemData {
-  /** DOM element for the item */
-  element: HTMLElement;
+export interface MenuDivider {
+  /**
+   * Type must be 'divider' to differentiate from regular menu items
+   */
+  type: 'divider';
   
-  /** Item configuration */
-  config: MenuItemConfig;
+  /**
+   * Optional ID for the divider (for accessibility)
+   */
+  id?: string;
 }
 
 /**
- * Menu selection event data
+ * Combined type for menu content items (regular items or dividers)
+ * 
+ * @category Components
  */
-export interface MenuSelectEvent {
-  /** Name of the selected item */
-  name: string;
-  
-  /** Text content of the selected item */
-  text: string;
-  
-  /** Path of parent item names (for submenus) */
-  path?: string[];
-}
+export type MenuContent = MenuItem | MenuDivider;
 
 /**
- * Menu configuration options
+ * Configuration interface for the Menu component
+ * 
+ * @category Components
  */
 export interface MenuConfig {
-  /** Initial menu items */
-  items?: MenuItemConfig[];
+  /**
+   * Element to which the menu will be anchored
+   * Can be an HTML element or a CSS selector string
+   */
+  anchor: HTMLElement | string;
   
-  /** Additional CSS classes */
+  /**
+   * Array of menu items and dividers to display
+   */
+  items: MenuContent[];
+  
+  /**
+   * Placement of the menu relative to the anchor
+   * @default 'bottom-start'
+   */
+  placement?: MenuPlacement;
+  
+  /**
+   * Whether the menu should close when an item is clicked
+   * @default true
+   */
+  closeOnSelect?: boolean;
+  
+  /**
+   * Whether the menu should close when the user clicks outside
+   * @default true
+   */
+  closeOnClickOutside?: boolean;
+  
+  /**
+   * Whether the menu should close when the escape key is pressed
+   * @default true
+   */
+  closeOnEscape?: boolean;
+  
+  /**
+   * Whether submenus should open on hover
+   * @default true
+   */
+  openSubmenuOnHover?: boolean;
+  
+  /**
+   * Optional width for the menu (in CSS units)
+   * If not provided, menu will size to its content
+   */
+  width?: string;
+  
+  /**
+   * Optional maximum height for the menu (in CSS units)
+   * If content exceeds this height, the menu will scroll
+   */
+  maxHeight?: string;
+  
+  /**
+   * Optional offset from the anchor (in pixels)
+   * @default 8
+   */
+  offset?: number;
+  
+  /**
+   * Whether the menu should automatically flip placement to stay in viewport
+   * @default true
+   */
+  autoFlip?: boolean;
+  
+  /**
+   * Whether the menu is initially visible
+   * @default false
+   */
+  visible?: boolean;
+  
+  /**
+   * Additional CSS classes to add to the menu
+   */
   class?: string;
   
-  /** Whether to keep menu open after selection */
-  stayOpenOnSelect?: boolean;
-  
-  /** Origin element that opens the menu */
-  origin?: HTMLElement | { element: HTMLElement };
-  
-  /** Parent item element (for submenus) */
-  parentItem?: HTMLElement;
-  
-  /** Prefix for class names */
+  /**
+   * Component prefix for CSS class names
+   * @default 'mtrl'
+   */
   prefix?: string;
+  
+  /**
+   * Component name used in CSS class generation
+   * @default 'menu'
+   */
+  componentName?: string;
+  
+  /**
+   * Event handlers for the menu
+   */
+  on?: {
+    /**
+     * Called when the menu is opened
+     */
+    open?: (event: MenuEvent) => void;
+    
+    /**
+     * Called when the menu is closed
+     */
+    close?: (event: MenuEvent) => void;
+    
+    /**
+     * Called when a menu item is selected
+     */
+    select?: (event: MenuSelectEvent) => void;
+  };
+}
+
+/**
+ * Menu event interface
+ * 
+ * @category Components
+ */
+export interface MenuEvent {
+  /** The menu component that triggered the event */
+  menu: MenuComponent;
+  
+  /** Original DOM event if available */
+  originalEvent?: Event;
+  
+  /** Function to prevent default behavior */
+  preventDefault: () => void;
+  
+  /** Whether default behavior was prevented */
+  defaultPrevented: boolean;
+}
+
+/**
+ * Menu selection event interface
+ * 
+ * @category Components
+ */
+export interface MenuSelectEvent extends MenuEvent {
+  /** The selected menu item */
+  item: MenuItem;
+  
+  /** ID of the selected menu item */
+  itemId: string;
+  
+  /** Data associated with the menu item (if any) */
+  itemData?: any;
 }
 
 /**
  * Menu component interface
+ * 
+ * @category Components
  */
 export interface MenuComponent {
-  /** The root element of the menu */
+  /** The menu's root DOM element */
   element: HTMLElement;
   
-  /** Shows the menu */
-  show: () => MenuComponent;
+  /**
+   * Opens the menu
+   * @param event - Optional event that triggered the open
+   * @returns The menu component for chaining
+   */
+  open: (event?: Event) => MenuComponent;
   
-  /** Hides the menu */
-  hide: () => MenuComponent;
+  /**
+   * Closes the menu
+   * @param event - Optional event that triggered the close
+   * @returns The menu component for chaining
+   */
+  close: (event?: Event) => MenuComponent;
   
-  /** Checks if the menu is visible */
-  isVisible: () => boolean;
+  /**
+   * Toggles the menu's open state
+   * @param event - Optional event that triggered the toggle
+   * @returns The menu component for chaining
+   */
+  toggle: (event?: Event) => MenuComponent;
   
-  /** Positions the menu relative to a target */
-  position: (target: HTMLElement, options?: MenuPositionConfig) => MenuComponent;
+  /**
+   * Checks if the menu is currently open
+   * @returns True if the menu is open
+   */
+  isOpen: () => boolean;
   
-  /** Adds a menu item */
-  addItem: (config: MenuItemConfig) => MenuComponent;
+  /**
+   * Updates the menu items
+   * @param items - New array of menu items and dividers
+   * @returns The menu component for chaining
+   */
+  setItems: (items: MenuContent[]) => MenuComponent;
   
-  /** Removes a menu item by name */
-  removeItem: (name: string) => MenuComponent;
+  /**
+   * Gets the current menu items
+   * @returns Array of current menu items and dividers
+   */
+  getItems: () => MenuContent[];
   
-  /** Gets all menu items */
-  getItems: () => Map<string, MenuItemData>;
+  /**
+   * Updates the menu's anchor element
+   * @param anchor - New anchor element or selector
+   * @returns The menu component for chaining
+   */
+  setAnchor: (anchor: HTMLElement | string) => MenuComponent;
   
-  /** Adds event listener */
-  on: (event: string, handler: Function) => MenuComponent;
+  /**
+   * Gets the current anchor element
+   * @returns Current anchor element
+   */
+  getAnchor: () => HTMLElement;
   
-  /** Removes event listener */
-  off: (event: string, handler: Function) => MenuComponent;
+  /**
+   * Updates the menu's placement
+   * @param placement - New placement value
+   * @returns The menu component for chaining
+   */
+  setPlacement: (placement: MenuPlacement) => MenuComponent;
   
-  /** Destroys the menu component and cleans up resources */
-  destroy: () => MenuComponent;
+  /**
+   * Gets the current menu placement
+   * @returns Current placement
+   */
+  getPlacement: () => MenuPlacement;
+  
+  /**
+   * Adds an event listener to the menu
+   * @param event - Event name ('open', 'close', 'select')
+   * @param handler - Event handler function
+   * @returns The menu component for chaining
+   */
+  on: <T extends keyof MenuEvents>(event: T, handler: MenuEvents[T]) => MenuComponent;
+  
+  /**
+   * Removes an event listener from the menu
+   * @param event - Event name
+   * @param handler - Event handler function
+   * @returns The menu component for chaining
+   */
+  off: <T extends keyof MenuEvents>(event: T, handler: MenuEvents[T]) => MenuComponent;
+  
+  /**
+   * Destroys the menu component and cleans up resources
+   */
+  destroy: () => void;
+}
+
+/**
+ * Menu events interface for type-checking
+ * 
+ * @category Components
+ * @internal
+ */
+export interface MenuEvents {
+  'open': (event: MenuEvent) => void;
+  'close': (event: MenuEvent) => void;
+  'select': (event: MenuSelectEvent) => void;
 }
