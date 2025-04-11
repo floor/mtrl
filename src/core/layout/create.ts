@@ -1,7 +1,7 @@
 // src/core/layout/create.ts
 /**
  * @module core/layout
- * @description Main layout creation functionality with optimized DOM operations
+ * @description Main layout creation functionality
  */
 
 import { Schema, LayoutResult, LayoutOptions } from './types';
@@ -10,7 +10,6 @@ import { createLayoutResult } from './result';
 
 /**
  * Creates a DOM or component layout based on a layout definition
- * Uses batched DOM operations for better performance
  * 
  * @param schema - Layout definition (array-based, object-based, or HTML string)
  * @param parentElement - Optional parent element to attach layout to

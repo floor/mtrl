@@ -1,7 +1,7 @@
 // src/core/layout/processor.ts
 /**
  * @module core/layout
- * @description Lightweight processor for layout creation, optimized for bundle size
+ * @description Processor for layout creation
  */
 
 import { Schema, LayoutResult, LayoutOptions } from './types';
@@ -25,6 +25,15 @@ export function createComponentInstance(
   layoutOptions: LayoutOptions = {}
 ): any {
   try {
+    // Save layout and layoutItem configs before creating component
+    const layoutConfig = options.layout;
+    const layoutItemConfig = options.layoutItem;
+    
+    // Remove layout and layoutItem from options to prevent them becoming attributes
+    const cleanOptions = { ...options };
+    delete cleanOptions.layout;
+    delete cleanOptions.layoutItem;
+    
     // Check if Component is a class constructor
     const isClass = typeof Component === 'function' && 
                    Component.prototype && 
@@ -32,10 +41,10 @@ export function createComponentInstance(
                    // Exclude native constructors like Object, Array, etc.
                    Object.getPrototypeOf(Component) !== Function.prototype;
 
-    // Before creating the component, set up any layout configuration
+    // Create the component with clean options
     const component = isClass
-      ? new Component(options)
-      : Component(options);
+      ? new Component(cleanOptions)
+      : Component(cleanOptions);
       
     // Apply layout configuration to the created component
     if (component) {
@@ -43,13 +52,13 @@ export function createComponentInstance(
       const element = component.element || (component instanceof HTMLElement ? component : null);
       if (element) {
         // Apply layout classes if layout config exists
-        if (options.layout) {
-          applyLayoutClasses(element, options.layout);
+        if (layoutConfig) {
+          applyLayoutClasses(element, layoutConfig);
         }
         
         // Apply layout item classes if layoutItem config exists
-        if (options.layoutItem) {
-          applyLayoutItemClasses(element, options.layoutItem);
+        if (layoutItemConfig) {
+          applyLayoutItemClasses(element, layoutItemConfig);
         }
       }
     }
@@ -64,7 +73,6 @@ export function createComponentInstance(
 
 /**
  * Processes any type of layout definition (array or object)
- * This is the main entry point for schema processing
  * 
  * @param schema - Layout schema to process
  * @param parentElement - Parent element to attach to

@@ -1,7 +1,7 @@
 // src/core/layout/result.ts
 /**
  * @module core/layout
- * @description Simplified layout result creation and management
+ * @description Layout result creation and management
  */
 
 import { LayoutResult } from './types';
@@ -9,7 +9,6 @@ import { isComponent, flattenLayout } from './utils';
 
 /**
  * Creates a result object with the layout and utility functions
- * Simplified API for better usability and reduced overhead
  * 
  * @param layout - The raw layout object
  * @returns Result object with layout and utility functions

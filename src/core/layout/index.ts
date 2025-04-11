@@ -1,7 +1,7 @@
 // src/core/layout/index.ts
 /**
  * @module core/layout
- * @description Optimized layout creation system with simplified API
+ * @description Layout creation system with simplified API
  */
 
 // Export essential types
@@ -11,7 +11,8 @@ export type {
   Schema, 
   LayoutResult,
   LayoutOptions,
-  LayoutConfig 
+  LayoutConfig,
+  LayoutItemConfig
 } from './types';
 
 // Export utility functions

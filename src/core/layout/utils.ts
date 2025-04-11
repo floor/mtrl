@@ -1,7 +1,7 @@
 // src/core/layout/utils.ts
 /**
  * @module core/layout
- * @description Optimized utility functions for layout creation
+ * @description Utility functions for layout creation
  */
 
 import { PREFIX } from '../config';
@@ -10,7 +10,6 @@ import { normalizeClasses as normalizeClassesUtil } from '../utils';
 
 /**
  * Checks if a value is a component object (has an element property)
- * Optimized fast path check by only validating that element property exists
  * 
  * @param value - Value to check
  * @returns True if the value is a component-like object
@@ -32,18 +31,16 @@ export function createFragment(): DocumentFragment {
 
 /**
  * Normalizes class values into an array of strings
- * Reusing the utility to ensure consistency
  */
 export function normalizeClasses(...classes: (string | string[])[]): string[] {
   return normalizeClassesUtil(...classes);
 }
 
-// Constant for prefix with dash (defined once for better performance)
+// Constant for prefix with dash
 const PREFIX_WITH_DASH = `${PREFIX}-`;
 
 /**
  * Processes className options to add prefix if needed
- * Performance-optimized version with reduced object cloning
  * 
  * @param options - Element options
  * @param skipPrefix - Whether to skip adding prefixes
@@ -55,7 +52,7 @@ export function processClassNames(
   skipPrefix: boolean = false,
   useBEM: boolean = false
 ): Record<string, any> {
-  // Fast path - if no options or skipping prefix, return as is
+  // Fast path - if no options or skipping prefix, return a new object
   if (!options || skipPrefix) return { ...options };
   
   // Avoid unnecessary clone if no class properties exist
@@ -122,7 +119,6 @@ export function processClassNames(
 
 /**
  * Flattens a nested layout into a simple object with element and component references
- * Optimized by using a direct property access loop and early exits
  * 
  * @param layout - Layout object
  * @returns Flattened layout with all elements and components
@@ -137,7 +133,6 @@ export function flattenLayout(layout: Record<string, any>): Record<string, any> 
     const value = layout[key];
     
     // Only include components, elements, and non-functions
-    // Fast path with fewer type checks
     if (value && 
         typeof value !== 'function' && 
         (value instanceof HTMLElement || isComponent(value))) {
