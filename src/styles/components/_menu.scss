@@ -3,218 +3,166 @@
 @use '../../styles/abstract/mixins' as m;
 @use '../../styles/abstract/functions' as f;
 @use '../../styles/abstract/theme' as t;
-@use '../../styles/abstract/motion' as motion;
-@use '../../styles/abstract/typography' as typography;
 
 $component: 'mtrl-menu';
 
 .#{$component} {
   // Base styles
-  @include typography.style('body-medium');
+  @include m.typography('body-medium');
   @include m.shape('extra-small');
   
   position: fixed;
-  z-index: v.$z-index-menu;
+  z-index: f.get-z-index('menu');
   min-width: 112px;
   max-width: 280px;
-  overflow: hidden;
-  background-color: t.prop('surface-container');
-  color: t.prop('on-surface');
+  padding: 8px 0;
+  background-color: t.color('surface-container');
+  color: t.color('on-surface');
   @include m.elevation(2);
   
   // Initial state - hidden
+  display: block;
   opacity: 0;
-  visibility: hidden;
-  transform: scale(0.9);
+  transform: scale(0.8);
   transform-origin: top left;
   pointer-events: none;
-  transition: 
-    opacity motion.duration('medium') motion.easing('standard'),
-    transform motion.duration('medium') motion.easing('standard'),
-    visibility 0s linear motion.duration('medium');
+  visibility: hidden; // Added for better measurement handling
+  transition: opacity v.motion('duration-short2') v.motion('easing-standard'),
+              transform v.motion('duration-short2') v.motion('easing-standard'),
+              visibility 0s linear v.motion('duration-short2'); // Delay visibility change
   
-  // Visible state
   &--visible {
     opacity: 1;
-    visibility: visible;
     transform: scale(1);
     pointer-events: auto;
-    transition:
-      opacity motion.duration('medium') motion.easing('standard'),
-      transform motion.duration('medium') motion.easing('standard'),
-      visibility 0s linear 0s;
+    visibility: visible;
+    transition: opacity v.motion('duration-short2') v.motion('easing-standard'),
+                transform v.motion('duration-short2') v.motion('easing-standard'),
+                visibility 0s linear 0s; // No delay for visibility
   }
   
-  // Submenu specific styles
   &--submenu {
     position: absolute;
+    z-index: f.get-z-index('menu') + 1;
   }
-  
-  // Menu list container
+
+  // List container
   &-list {
     margin: 0;
-    padding: 8px 0;
+    padding: 0;
     list-style: none;
     overflow-y: auto;
     max-height: calc(100vh - 96px);
-    
-    // Scrollbar styling
     @include m.scrollbar;
   }
-  
-  // Menu item styles
+
+  // Menu items
   &-item {
+    @include m.typography('body-large');
+    @include m.flex-row;
+    
     position: relative;
-    display: flex;
-    align-items: center;
     min-height: 48px;
-    padding: 0 12px;
+    padding: 12px 16px;
     cursor: pointer;
     user-select: none;
-    outline: none;
-    @include m.interactive;
+    color: t.color('on-surface');
     
-    // State layers for interactions
     &:hover {
-      @include m.state-layer('hover');
+      @include m.state-layer(t.color('on-surface'), 'hover');
     }
     
-    &:focus-visible {
-      @include m.state-layer('focus');
+    &:focus {
+      @include m.state-layer(t.color('on-surface'), 'focus');
+      outline: none;
     }
     
     &:active {
-      @include m.state-layer('pressed');
+      @include m.state-layer(t.color('on-surface'), 'pressed');
     }
-    
-    // Disabled state
-    &--disabled {
-      opacity: 0.38;
-      pointer-events: none;
-    }
-    
-    // Item with submenu indicator
+
+    // Submenu indicator
     &--submenu {
+      padding-right: 48px;
+      
       &::after {
         content: '';
+        position: absolute;
+        right: 16px;
+        top: 50%;
+        transform: translateY(-50%);
         width: 24px;
         height: 24px;
-        margin-left: 4px;
-        @include m.icon('navigate_next');
-        opacity: 0.8;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' height='24' width='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='9 18 15 12 9 6'%3E%3C/polyline%3E%3C/svg%3E");
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: contain;
+        opacity: 0.87;
+        // This ensures the SVG inherits the exact same color as the menu item text
+        color: inherit;
       }
       
       &[aria-expanded="true"] {
-        @include m.state-layer('hover');
+        @include m.state-layer(t.color('on-surface'), 'hover');
         
         &::after {
           opacity: 1;
         }
       }
     }
-  }
-  
-  // Item content layout
-  &-item-content {
-    display: flex;
-    align-items: center;
-    width: 100%;
-    min-width: 0;
-  }
-  
-  // Icon in menu item
-  &-item-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 24px;
-    height: 24px;
-    margin-right: 12px;
-    color: t.prop('on-surface-variant');
-    
-    svg {
-      width: 20px;
-      height: 20px;
+
+    // Disabled state
+    &--disabled {
+      pointer-events: none;
+      color: t.alpha('on-surface', 0.38);
     }
   }
-  
-  // Text in menu item
-  &-item-text {
-    flex: 1;
-    padding: 14px 0;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-  }
-  
-  // Keyboard shortcut text
-  &-item-shortcut {
-    margin-left: 16px;
-    font-size: typography.size('label-large');
-    color: t.prop('on-surface-variant');
-    opacity: 0.8;
-  }
-  
+
   // Divider
   &-divider {
     height: 1px;
     margin: 8px 0;
-    background-color: t.prop('outline-variant');
+    background-color: t.color('outline-variant');
+  }
+
+  // Accessibility
+  @include m.focus-ring('.#{$component}-item:focus-visible');
+  
+  @include m.reduced-motion {
+    transition: none;
+    
+    .#{$component}-item {
+      transition: none;
+    }
   }
   
-  // Focus visible style
-  &-item:focus-visible {
-    @include m.focus-ring;
+  @include m.high-contrast {
+    border: 1px solid CurrentColor;
+    
+    .#{$component}-divider {
+      background-color: CurrentColor;
+    }
+    
+    .#{$component}-item--disabled {
+      opacity: 1;
+      color: GrayText;
+    }
   }
-  
+
   // RTL Support
-  [dir="rtl"] & {
+  @include m.rtl {
     transform-origin: top right;
     
     .#{$component}-item {
       &--submenu {
+        padding-right: 16px;
+        padding-left: 48px;
+        
         &::after {
-          transform: rotate(180deg);
-          margin-right: 4px;
-          margin-left: 0;
+          right: auto;
+          left: 16px;
+          transform: translateY(-50%) rotate(180deg);
         }
-      }
-      
-      &-icon {
-        margin-right: 0;
-        margin-left: 12px;
-      }
-      
-      &-shortcut {
-        margin-left: 0;
-        margin-right: 16px;
-      }
-    }
-  }
-  
-  // Reduced motion
-  @media (prefers-reduced-motion: reduce) {
-    transition: opacity 0.05s linear, visibility 0s linear 0.05s;
-    
-    &--visible {
-      transition: opacity 0.05s linear, visibility 0s linear 0s;
-    }
-    
-    transform: none;
-  }
-  
-  // High contrast mode
-  @media (forced-colors: active) {
-    border: 1px solid CanvasText;
-    
-    &-divider {
-      background-color: CanvasText;
-    }
-    
-    &-item {
-      &--disabled {
-        color: GrayText;
-        opacity: 1;
       }
     }
   }

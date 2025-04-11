@@ -86,6 +86,53 @@ import { createBaseConfig, getElementConfig, getApiConfig } from './config';
  * // Later, close the menu
  * userMenu.close();
  */
+/**
+ * Creates a new Menu component with the specified configuration.
+ * 
+ * The Menu component implements the Material Design 3 menu specifications,
+ * providing a flexible dropdown menu system with support for nested menus,
+ * keyboard navigation, and ARIA accessibility.
+ * 
+ * Menus are built using a functional composition pattern, applying various 
+ * features through the pipe function for a modular architecture.
+ * 
+ * The menu element is not added to the DOM until it's opened, and it's removed
+ * from the DOM when closed, following best practices for dropdown menus.
+ * 
+ * @param {MenuConfig} config - Configuration options for the menu
+ *  This must include an anchor element or selector, and an array of menu items.
+ *  See {@link MenuConfig} for all available options.
+ * 
+ * @returns {MenuComponent} A fully configured menu component instance with
+ *  all requested features applied. The returned component has methods for
+ *  menu manipulation, event handling, and lifecycle management.
+ * 
+ * @throws {Error} Throws an error if menu creation fails or if required
+ *  configuration (like anchor) is missing.
+ * 
+ * @category Components
+ * 
+ * @example
+ * // Create a simple menu anchored to a button
+ * const menuButton = document.getElementById('menu-button');
+ * const menu = createMenu({
+ *   anchor: menuButton,
+ *   items: [
+ *     { id: 'item1', text: 'Option 1' },
+ *     { id: 'item2', text: 'Option 2' },
+ *     { type: 'divider' },
+ *     { id: 'item3', text: 'Option 3' }
+ *   ]
+ * });
+ * 
+ * // Add event listener for item selection
+ * menu.on('select', (event) => {
+ *   console.log('Selected item:', event.itemId);
+ * });
+ * 
+ * // Menu will be added to the DOM when opened and removed when closed
+ * menuButton.addEventListener('click', () => menu.toggle());
+ */
 const createMenu = (config: MenuConfig): MenuComponent => {
   try {
     // Validate and create the base configuration
@@ -102,10 +149,7 @@ const createMenu = (config: MenuConfig): MenuComponent => {
       comp => withAPI(getApiConfig(comp))(comp)  // Public API
     )(baseConfig);
     
-    // Add the menu to the document body for proper positioning
-    if (!menu.element.parentNode) {
-      document.body.appendChild(menu.element);
-    }
+    // The menu will be added to the DOM when opened and removed when closed
     
     return menu;
   } catch (error) {

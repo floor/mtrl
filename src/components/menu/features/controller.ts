@@ -334,7 +334,7 @@ export const withController = (config: MenuConfig) => component => {
   /**
    * Handles click on a submenu item
    */
-  const handleSubmenuClick = (item: MenuItem, index: number, itemElement: HTMLElement): void => {
+  const handleSubmenuClick = (item: MenuItem, index: number, itemElement: HTMLElement, viaKeyboard = false): void => {
     if (!item.submenu || !item.hasSubmenu) return;
     
     const isOpen = itemElement.getAttribute('aria-expanded') === 'true';
@@ -347,7 +347,7 @@ export const withController = (config: MenuConfig) => component => {
       closeSubmenu();
       
       // Open new submenu
-      openSubmenu(item, index, itemElement);
+      openSubmenu(item, index, itemElement, viaKeyboard);
     }
   };
 
@@ -408,7 +408,7 @@ export const withController = (config: MenuConfig) => component => {
   /**
    * Opens a submenu
    */
-  const openSubmenu = (item: MenuItem, index: number, itemElement: HTMLElement): void => {
+  const openSubmenu = (item: MenuItem, index: number, itemElement: HTMLElement, viaKeyboard = false): void => {
     if (!item.submenu || !item.hasSubmenu) return;
     
     // Close any existing submenu
@@ -421,23 +421,31 @@ export const withController = (config: MenuConfig) => component => {
     const submenuElement = document.createElement('div');
     submenuElement.className = `${component.getClass('menu')} ${component.getClass('menu--submenu')}`;
     submenuElement.setAttribute('role', 'menu');
+    submenuElement.setAttribute('tabindex', '-1');
     
     // Create submenu list
     const submenuList = document.createElement('ul');
     submenuList.className = `${component.getClass('menu-list')}`;
     
     // Create submenu items
+    const submenuItems = [];
     item.submenu.forEach((subitem, subindex) => {
       if ('type' in subitem && subitem.type === 'divider') {
         submenuList.appendChild(createDivider(subitem, subindex));
       } else {
         const subitemElement = createMenuItem(subitem as MenuItem, subindex);
         submenuList.appendChild(subitemElement);
+        if (!(subitem as MenuItem).disabled) {
+          submenuItems.push(subitemElement);
+        }
       }
     });
     
     submenuElement.appendChild(submenuList);
     document.body.appendChild(submenuElement);
+    
+    // Setup keyboard navigation for submenu
+    submenuElement.addEventListener('keydown', handleMenuKeydown);
     
     // Add mouseenter event to prevent closing
     submenuElement.addEventListener('mouseenter', () => {
@@ -478,6 +486,13 @@ export const withController = (config: MenuConfig) => component => {
     // Make visible
     setTimeout(() => {
       submenuElement.classList.add(`${component.getClass('menu--visible')}`);
+      
+      // If opened via keyboard, focus the first item in the submenu
+      if (viaKeyboard && submenuItems.length > 0) {
+        setTimeout(() => {
+          submenuItems[0].focus();
+        }, 50);
+      }
     }, 10);
   };
 
@@ -567,11 +582,19 @@ export const withController = (config: MenuConfig) => component => {
   /**
    * Opens the menu
    */
+  /**
+   * Opens the menu
+   */
   const openMenu = (event?: Event): void => {
     if (state.visible) return;
     
     // Update state
     state.visible = true;
+    
+    // Add the menu to the DOM if it's not already there
+    if (!component.element.parentNode) {
+      document.body.appendChild(component.element);
+    }
     
     // Set attributes
     component.element.setAttribute('aria-hidden', 'false');
@@ -623,6 +646,13 @@ export const withController = (config: MenuConfig) => component => {
     
     // Trigger event
     eventHelpers.triggerEvent('close', {}, event);
+    
+    // Remove from DOM after animation completes
+    setTimeout(() => {
+      if (component.element.parentNode && !state.visible) {
+        component.element.parentNode.removeChild(component.element);
+      }
+    }, 300); // Match the animation duration in CSS
   };
 
   /**
@@ -697,31 +727,40 @@ export const withController = (config: MenuConfig) => component => {
   };
 
   /**
-   * Handles keydown events on the menu
+   * Handles keydown events on the menu or submenu
    */
   const handleMenuKeydown = (e: KeyboardEvent): void => {
-    const items = Array.from(component.element.querySelectorAll(
+    // Determine if this event is from the main menu or a submenu
+    const isSubmenu = state.activeSubmenu && state.activeSubmenu.contains(e.target as Node);
+    
+    // Get the appropriate menu element
+    const menuElement = isSubmenu ? state.activeSubmenu : component.element;
+    
+    // Get all non-disabled menu items from the current menu
+    const items = Array.from(menuElement.querySelectorAll(
       `.${component.getClass('menu-item')}:not(.${component.getClass('menu-item--disabled')})`
     )) as HTMLElement[];
     
     if (items.length === 0) return;
     
-    const { activeItemIndex } = state;
+    // Get the currently focused item index
+    let focusedItemIndex = -1;
+    const focusedElement = menuElement.querySelector(':focus') as HTMLElement;
+    if (focusedElement && focusedElement.classList.contains(component.getClass('menu-item'))) {
+      focusedItemIndex = items.indexOf(focusedElement);
+    }
     
     switch (e.key) {
       case 'ArrowDown':
       case 'Down':
         e.preventDefault();
         // If no item is active, select the first one
-        if (activeItemIndex < 0) {
+        if (focusedItemIndex < 0) {
           items[0].focus();
-          state.activeItemIndex = 0;
-        } else if (activeItemIndex < items.length - 1) {
-          items[activeItemIndex + 1].focus();
-          state.activeItemIndex = activeItemIndex + 1;
+        } else if (focusedItemIndex < items.length - 1) {
+          items[focusedItemIndex + 1].focus();
         } else {
           items[0].focus();
-          state.activeItemIndex = 0;
         }
         break;
         
@@ -729,74 +768,99 @@ export const withController = (config: MenuConfig) => component => {
       case 'Up':
         e.preventDefault();
         // If no item is active, select the last one
-        if (activeItemIndex < 0) {
+        if (focusedItemIndex < 0) {
           items[items.length - 1].focus();
-          state.activeItemIndex = items.length - 1;
-        } else if (activeItemIndex > 0) {
-          items[activeItemIndex - 1].focus();
-          state.activeItemIndex = activeItemIndex - 1;
+        } else if (focusedItemIndex > 0) {
+          items[focusedItemIndex - 1].focus();
         } else {
           items[items.length - 1].focus();
-          state.activeItemIndex = items.length - 1;
         }
         break;
         
       case 'Home':
         e.preventDefault();
         items[0].focus();
-        state.activeItemIndex = 0;
         break;
         
       case 'End':
         e.preventDefault();
         items[items.length - 1].focus();
-        state.activeItemIndex = items.length - 1;
         break;
         
       case 'Enter':
       case ' ':
         e.preventDefault();
-        // If an item is active, click it
-        if (activeItemIndex >= 0) {
-          items[activeItemIndex].click();
-        } else if (document.activeElement && document.activeElement.classList.contains(component.getClass('menu-item'))) {
-          // Otherwise, click the currently focused item if it's a menu item
-          (document.activeElement as HTMLElement).click();
+        // If an item is focused, click it
+        if (focusedItemIndex >= 0) {
+          items[focusedItemIndex].click();
         }
         break;
         
       case 'ArrowRight':
       case 'Right':
         e.preventDefault();
-        if (activeItemIndex >= 0) {
-          const activeItem = items[activeItemIndex];
-          if (activeItem.classList.contains(`${component.getClass('menu-item--submenu')}`)) {
-            activeItem.click();
+        // Handle right arrow in different contexts
+        if (isSubmenu) {
+          // In a submenu, right arrow opens nested submenus
+          if (focusedItemIndex >= 0 && items[focusedItemIndex].classList.contains(`${component.getClass('menu-item--submenu')}`)) {
+            items[focusedItemIndex].click();
           }
-        } else if (document.activeElement && 
-                  document.activeElement.classList.contains(component.getClass('menu-item')) &&
-                  document.activeElement.classList.contains(`${component.getClass('menu-item--submenu')}`)) {
-          // Handle case when an item has keyboard focus but isn't tracked in our state
-          (document.activeElement as HTMLElement).click();
+        } else {
+          // In main menu, right arrow opens a submenu
+          if (focusedItemIndex >= 0 && items[focusedItemIndex].classList.contains(`${component.getClass('menu-item--submenu')}`)) {
+            // Get the correct menu item data
+            const itemElement = items[focusedItemIndex];
+            const itemIndex = parseInt(itemElement.getAttribute('data-index'), 10);
+            const itemData = state.items[itemIndex] as MenuItem;
+            
+            // Open submenu via keyboard
+            handleSubmenuClick(itemData, itemIndex, itemElement, true);
+          }
         }
         break;
         
       case 'ArrowLeft':
       case 'Left':
         e.preventDefault();
-        if (state.activeSubmenu) {
-          closeSubmenu();
+        // Handle left arrow in different contexts
+        if (isSubmenu) {
+          // In a submenu, left arrow returns to the parent menu
+          if (state.activeSubmenuItem) {
+            // Store the reference to the parent item before closing the submenu
+            const parentItem = state.activeSubmenuItem;
+            closeSubmenu();
+            // Focus the parent item after closing
+            parentItem.focus();
+          } else {
+            closeSubmenu();
+          }
+        }
+        break;
+        
+      case 'Escape':
+        e.preventDefault();
+        if (isSubmenu) {
+          // In a submenu, Escape closes just the submenu
+          if (state.activeSubmenuItem) {
+            // Store the reference to the parent item before closing the submenu
+            const parentItem = state.activeSubmenuItem;
+            closeSubmenu();
+            // Focus the parent item after closing
+            parentItem.focus();
+          } else {
+            closeSubmenu();
+          }
+        } else {
+          // In main menu, Escape closes the entire menu
+          closeMenu(e);
         }
         break;
         
       case 'Tab':
         // Close the menu when tabbing out
-        closeMenu();
-        break;
-        
-      case 'Escape':
-        e.preventDefault();
-        closeMenu(e);
+        if (!isSubmenu) {
+          closeMenu();
+        }
         break;
     }
   };
