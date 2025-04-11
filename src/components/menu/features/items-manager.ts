@@ -1,45 +1,64 @@
 // src/components/menu/features/items-manager.ts
+import { PREFIX } from '../../../core/config';
 import { createMenuItem } from '../menu-item';
 import { MENU_EVENT } from '../utils';
 import { BaseComponent, MenuConfig, MenuItemConfig, MenuItemData } from '../types';
 
-interface SubmenuMap {
-  [key: string]: BaseComponent;
-}
-
 /**
  * Adds menu items management functionality to a component
+ * 
+ * This feature handles:
+ * - Creating and managing menu items
+ * - Handling item interactions (clicks, focus, hover)
+ * - Managing submenus with proper hover behavior
+ * - Selection events
+ * 
  * @param {MenuConfig} config - Menu configuration
  * @returns {Function} Component enhancer
+ * 
+ * @internal
  */
 export const withItemsManager = (config: MenuConfig) => (component: BaseComponent): BaseComponent => {
-  const submenus: Map<string, BaseComponent> = new Map();
-  const itemsMap: Map<string, MenuItemConfig> = new Map();
+  // State tracking
+  const itemsMap = new Map<string, MenuItemConfig>();
+  const submenus = new Map<string, BaseComponent>();
   let activeSubmenu: BaseComponent | null = null;
+  const prefix = config.prefix || PREFIX;
+  
+  // Track interaction state
+  let processingClick = false;
+  let lastSelectedTime = 0;
   let currentHoveredItem: HTMLElement | null = null;
-  const prefix = config.prefix || 'mtrl';
-
+  
+  // Timer references
+  const hoverTimers = new Map<string, number>();
+  const closeTimers = new Map<string, number>();
+  
+  // Store references to original methods
+  const originalShow = component.show;
+  const originalHide = component.hide;
+  const originalDestroy = component.lifecycle?.destroy;
+  
   // Create items container
   const list = document.createElement('ul');
   list.className = `${prefix}-menu-list`;
   list.setAttribute('role', 'menu');
   component.element.appendChild(list);
-
+  
   /**
-   * Factory function for creating a submenu
-   * This will be defined after we've created a createMenu import 
-   * to avoid circular dependency
+   * Create menu factory function reference
+   * This will be set after component creation to avoid circular dependencies
    */
-  let createSubmenuFunction: any = null;
-
+  let createMenuFunction: ((config: MenuConfig) => BaseComponent) | null = null;
+  
   /**
-   * Sets the submenu creation function
-   * @param {Function} createMenuFn - Function to create a menu
+   * Set the menu creation function
+   * @param {Function} fn - Menu creation function
    */
-  const setCreateSubmenuFunction = (createMenuFn: any): void => {
-    createSubmenuFunction = createMenuFn;
+  const setCreateMenuFunction = (fn: (config: MenuConfig) => BaseComponent): void => {
+    createMenuFunction = fn;
   };
-
+  
   /**
    * Creates a submenu for a menu item
    * @param {string} name - Item name
@@ -47,40 +66,59 @@ export const withItemsManager = (config: MenuConfig) => (component: BaseComponen
    * @returns {BaseComponent|null} Submenu component
    */
   const createSubmenu = (name: string, item: HTMLElement): BaseComponent | null => {
-    if (!createSubmenuFunction) {
-      console.error('Submenu creation function not set. Call setCreateSubmenuFunction first.');
+    if (!createMenuFunction) {
+      console.error('Menu creation function not set. Call setCreateMenuFunction first.');
       return null;
     }
-
+    
     const itemConfig = itemsMap.get(name);
-    if (!itemConfig?.items) return null;
-
-    const submenu = createSubmenuFunction({
+    if (!itemConfig?.items?.length) return null;
+    
+    // Create submenu with proper configuration
+    const submenu = createMenuFunction({
       ...config,
       items: itemConfig.items,
       class: `${prefix}-menu--submenu`,
       parentItem: item
     });
-
-    // Handle submenu selection
+    
+    // Set up event propagation for nested selection
     submenu.on?.(MENU_EVENT.SELECT, (detail: any) => {
-      component.emit?.(MENU_EVENT.SELECT, {
+      // Create a complete path for nested selection
+      const event = {
         name: `${name}:${detail.name}`,
         text: detail.text,
-        path: [name, detail.name]
-      });
+        path: [name, ...(detail.path || [detail.name])]
+      };
+      
+      // Emit the selection event
+      component.emit?.(MENU_EVENT.SELECT, event);
+      
+      // Hide parent menu after selection unless configured to stay open
+      if (!config.stayOpenOnSelect) {
+        // Use a small delay to prevent race conditions with click events
+        setTimeout(() => {
+          component.hide?.();
+        }, 10);
+      }
     });
-
+    
     return submenu;
   };
-
+  
   /**
    * Opens a submenu
    * @param {string} name - Item name
    * @param {HTMLElement} item - Menu item element
    */
   const openSubmenu = (name: string, item: HTMLElement): void => {
-    // Close any open submenu that's different
+    // Clear any pending close timer for this submenu
+    if (closeTimers.has(name)) {
+      window.clearTimeout(closeTimers.get(name)!);
+      closeTimers.delete(name);
+    }
+    
+    // Close any open submenu that's different from this one
     if (activeSubmenu && submenus.get(name) !== activeSubmenu) {
       const activeItem = list.querySelector('[aria-expanded="true"]');
       if (activeItem && activeItem !== item) {
@@ -89,63 +127,99 @@ export const withItemsManager = (config: MenuConfig) => (component: BaseComponen
       activeSubmenu.hide?.();
       activeSubmenu = null;
     }
-
-    // If submenu doesn't exist yet, create it
+    
+    // Create the submenu if it doesn't exist
     if (!submenus.has(name)) {
       const submenu = createSubmenu(name, item);
       if (submenu) {
         submenus.set(name, submenu);
       } else {
-        return; // No items to show
+        return; // No valid submenu to show
       }
     }
-
-    // Get submenu and show it if not already showing
-    const submenu = submenus.get(name);
-    if (submenu && (activeSubmenu !== submenu || item.getAttribute('aria-expanded') === 'false')) {
-      item.setAttribute('aria-expanded', 'true');
-      activeSubmenu = submenu;
-
-      // Position submenu relative to item
-      submenu.show?.();
-      submenu.position?.(item, {
-        align: 'right',
-        vAlign: 'top',
-        offsetX: 0,
-        offsetY: 0
-      });
-
-      // Emit submenu open event
-      component.emit?.(MENU_EVENT.SUBMENU_OPEN, { name });
+    
+    // Get the submenu
+    const submenu = submenus.get(name)!;
+    
+    // If submenu is already active and visible, do nothing
+    if (activeSubmenu === submenu && submenu.isVisible?.()) {
+      return;
     }
+    
+    // Update the expanded state
+    item.setAttribute('aria-expanded', 'true');
+    activeSubmenu = submenu;
+    
+    // Position and show the submenu
+    submenu.position?.(item, {
+      align: 'right',
+      vAlign: 'top',
+      offsetX: 0,
+      offsetY: 0
+    });
+    submenu.show?.();
+    
+    // Emit event
+    component.emit?.(MENU_EVENT.SUBMENU_OPEN, { name });
   };
-
+  
   /**
    * Closes a submenu
    * @param {string} name - Item name
-   * @param {boolean} force - Whether to force close even if submenu is hovered
+   * @param {boolean} force - Whether to force close even during transitions
    */
   const closeSubmenu = (name: string, force = false): void => {
     const submenu = submenus.get(name);
-    if (!submenu || activeSubmenu !== submenu) return;
-
-    // Don't close if submenu is currently being hovered, unless forced
-    if (!force && submenu.element && submenu.element.matches(':hover')) {
-      return;
-    }
-
+    if (!submenu || (!force && submenu !== activeSubmenu)) return;
+    
+    // Update expanded state
     const item = list.querySelector(`[data-name="${name}"][aria-expanded="true"]`);
     if (item) {
       item.setAttribute('aria-expanded', 'false');
     }
-
+    
+    // Hide the submenu
     submenu.hide?.();
     activeSubmenu = null;
-
-    // Emit submenu close event
+    
+    // Emit event
     component.emit?.(MENU_EVENT.SUBMENU_CLOSE, { name });
   };
-
+  
+  /**
+   * Schedules submenu close with delay
+   * @param {string} name - Item name
+   * @param {number} delay - Delay in milliseconds
+   */
+  const scheduleSubmenuClose = (name: string, delay: number = 300): void => {
+    // Clear any existing close timer
+    if (closeTimers.has(name)) {
+      window.clearTimeout(closeTimers.get(name)!);
+    }
+    
+    // Set new timer
+    const timerId = window.setTimeout(() => {
+      const submenu = submenus.get(name);
+      
+      // Only close if neither the submenu nor parent item is being hovered
+      if (submenu) {
+        const parentItem = list.querySelector(`[data-name="${name}"]`) as HTMLElement;
+        
+        // Check if submenu or parent is hovered
+        const submenuHovered = submenu.element && submenu.element.matches(':hover');
+        const parentHovered = parentItem && parentItem.matches(':hover');
+        
+        if (!submenuHovered && !parentHovered) {
+          closeSubmenu(name);
+        }
+      }
+      
+      closeTimers.delete(name);
+    }, delay) as unknown as number;
+    
+    closeTimers.set(name, timerId);
+  };
+  
   /**
    * Handles mouseenter for submenu items
    * @param {MouseEvent} event - Mouse event
@@ -154,29 +228,35 @@ export const withItemsManager = (config: MenuConfig) => (component: BaseComponen
     const target = event.target as HTMLElement;
     const item = target.closest(`.${prefix}-menu-item--submenu`) as HTMLElement;
     if (!item) return;
-
+    
     const name = item.getAttribute('data-name');
     if (!name) return;
     
-    // Cancel any pending close timer for this item
+    // Clear any existing hover timer
+    if (hoverTimers.has(name)) {
+      window.clearTimeout(hoverTimers.get(name)!);
+    }
+    
+    // Clear any existing close timer
     if (closeTimers.has(name)) {
       window.clearTimeout(closeTimers.get(name)!);
       closeTimers.delete(name);
     }
     
-    // Small delay before opening to prevent erratic behavior when moving quickly
-    window.setTimeout(() => {
-      // Only open if we're still hovering this item (prevents multiple open attempts)
+    // Set current hovered item
+    currentHoveredItem = item;
+    
+    // Set timer to open submenu with delay
+    const timerId = window.setTimeout(() => {
       if (item.matches(':hover')) {
         openSubmenu(name, item);
-        currentHoveredItem = item;
       }
-    }, 50);
+      hoverTimers.delete(name);
+    }, 200) as unknown as number;
+    
+    hoverTimers.set(name, timerId);
   };
-
-  // Track pending close timers
-  const closeTimers: Map<string, number> = new Map();
-
+  
   /**
    * Handles mouseleave for submenu items
    * @param {MouseEvent} event - Mouse event
@@ -185,254 +265,357 @@ export const withItemsManager = (config: MenuConfig) => (component: BaseComponen
     const target = event.target as HTMLElement;
     const item = target.closest(`.${prefix}-menu-item--submenu`) as HTMLElement;
     if (!item) return;
-
+    
     const name = item.getAttribute('data-name');
     if (!name) return;
-
-    // Only close if we're not entering the submenu
-    const submenu = submenus.get(name);
-    if (submenu && submenu.element) {
-      // Cancel any existing close timer for this item
-      if (closeTimers.has(name)) {
-        window.clearTimeout(closeTimers.get(name)!);
-      }
-
-      // Set a new close timer
-      const timerId = window.setTimeout(() => {
-        if (!submenu.element.matches(':hover') &&
-            !item.matches(':hover')) {
-          closeSubmenu(name);
-        }
-        closeTimers.delete(name);
-      }, 300); // Longer delay for smoother experience
-
-      closeTimers.set(name, timerId);
+    
+    // Clear any pending hover timer
+    if (hoverTimers.has(name)) {
+      window.clearTimeout(hoverTimers.get(name)!);
+      hoverTimers.delete(name);
     }
-
-    currentHoveredItem = null;
+    
+    // Schedule submenu close with delay (allows moving to submenu)
+    scheduleSubmenuClose(name, 300);
+    
+    // Reset current hovered item if it matches this one
+    if (currentHoveredItem === item) {
+      currentHoveredItem = null;
+    }
   };
-
+  
   /**
-   * Adds hover handlers to submenu items
+   * Handles submenu mouseenter to prevent closing
+   * @param {BaseComponent} submenu - Submenu component
+   * @param {string} parentName - Name of parent item
    */
-  const addHoverHandlers = (): void => {
-    // First remove any existing handlers to prevent duplicates
-    list.querySelectorAll(`.${prefix}-menu-item--submenu`).forEach(item => {
-      item.removeEventListener('mouseenter', handleMouseEnter);
-      item.removeEventListener('mouseleave', handleMouseLeave);
-
-      // Add the event listeners
-      item.addEventListener('mouseenter', handleMouseEnter);
-      item.addEventListener('mouseleave', handleMouseLeave);
+  const handleSubmenuMouseEnter = (submenu: BaseComponent, parentName: string): void => {
+    // Clear close timer if set
+    if (closeTimers.has(parentName)) {
+      window.clearTimeout(closeTimers.get(parentName)!);
+      closeTimers.delete(parentName);
+    }
+  };
+  
+  /**
+   * Handles submenu mouseleave
+   * @param {BaseComponent} submenu - Submenu component
+   * @param {string} parentName - Name of parent item
+   */
+  const handleSubmenuMouseLeave = (submenu: BaseComponent, parentName: string): void => {
+    // Schedule submenu close
+    scheduleSubmenuClose(parentName, 300);
+  };
+  
+  /**
+   * Set up mouse hover handlers for submenu items
+   * @param {HTMLElement} element - Menu item element
+   * @param {string} name - Item name
+   */
+  const setupHoverHandlers = (element: HTMLElement, name: string): void => {
+    if (!element) return;
+    
+    // Remove existing listeners to prevent duplicates
+    element.removeEventListener('mouseenter', handleMouseEnter);
+    element.removeEventListener('mouseleave', handleMouseLeave);
+    
+    // Add new listeners
+    element.addEventListener('mouseenter', handleMouseEnter);
+    element.addEventListener('mouseleave', handleMouseLeave);
+  };
+  
+  /**
+   * Set up mouse events for a submenu
+   * @param {BaseComponent} submenu - Submenu component
+   * @param {string} parentName - Name of parent item
+   */
+  const setupSubmenuEvents = (submenu: BaseComponent, parentName: string): void => {
+    if (!submenu || !submenu.element) return;
+    
+    // Set up mouse events on the submenu element
+    submenu.element.addEventListener('mouseenter', () => {
+      handleSubmenuMouseEnter(submenu, parentName);
+    });
+    
+    submenu.element.addEventListener('mouseleave', () => {
+      handleSubmenuMouseLeave(submenu, parentName);
     });
   };
-
+  
   /**
    * Handles click events on menu items
    * @param {MouseEvent} event - Click event
    */
   const handleItemClick = (event: MouseEvent): void => {
-    const target = event.target as HTMLElement;
-    const item = target.closest(`.${prefix}-menu-item`) as HTMLElement;
-    if (!item || item.getAttribute('aria-disabled') === 'true') return;
-
-    // For submenu items, toggle submenu
-    if (item.classList.contains(`${prefix}-menu-item--submenu`)) {
-      const name = item.getAttribute('data-name');
-      if (!name) return;
-
-      // If expanded, close it
-      if (item.getAttribute('aria-expanded') === 'true') {
-        closeSubmenu(name, true); // Force close
-      } else {
-        // Otherwise open it
-        openSubmenu(name, item);
-      }
+    // Prevent handling click events while another is being processed
+    if (processingClick) {
+      event.stopPropagation();
       return;
     }
-
-    // For regular items, emit select event
-    const name = item.getAttribute('data-name');
-    if (name) {
+    
+    // Set the processing flag to prevent re-entrancy issues
+    processingClick = true;
+    
+    try {
+      const target = event.target as HTMLElement;
+      const item = target.closest(`.${prefix}-menu-item`) as HTMLElement;
+      
+      // If no item found or item is disabled, do nothing
+      if (!item || item.getAttribute('aria-disabled') === 'true') {
+        processingClick = false;
+        return;
+      }
+      
+      // Get item name
+      const name = item.getAttribute('data-name');
+      if (!name) {
+        processingClick = false;
+        return;
+      }
+      
+      // Always stop event propagation
+      event.stopPropagation();
+      
+      // Handle submenu items
+      if (item.classList.contains(`${prefix}-menu-item--submenu`)) {
+        const isExpanded = item.getAttribute('aria-expanded') === 'true';
+        
+        if (isExpanded) {
+          closeSubmenu(name);
+        } else {
+          openSubmenu(name, item);
+        }
+        
+        processingClick = false;
+        return;
+      }
+      
+      // For regular items, emit select event
+      const now = Date.now();
+      lastSelectedTime = now;
+      
       component.emit?.(MENU_EVENT.SELECT, { name, text: item.textContent });
+      
       // Hide menu after selection unless configured otherwise
       if (!config.stayOpenOnSelect) {
-        component.hide?.();
+        // Use a small delay to avoid conflicts with document click handler
+        setTimeout(() => {
+          component.hide?.();
+        }, 10);
+      }
+    } finally {
+      // Always reset the processing flag
+      processingClick = false;
+    }
+  };
+  
+  /**
+   * Adds a single item to the menu
+   * @param {MenuItemConfig} itemConfig - Item configuration
+   */
+  const addSingleItem = (itemConfig: MenuItemConfig): void => {
+    if (!itemConfig) return;
+    
+    // Create the item element
+    const item = createMenuItem(itemConfig, prefix);
+    list.appendChild(item);
+    
+    // Store item config for reference
+    if (itemConfig.name) {
+      itemsMap.set(itemConfig.name, itemConfig);
+      
+      // Set up hover handlers for items with submenus
+      if (Array.isArray(itemConfig.items) && itemConfig.items.length > 0) {
+        setupHoverHandlers(item, itemConfig.name);
       }
     }
   };
-
-  // Handle item clicks
-  list.addEventListener('click', handleItemClick);
-
-  // Create initial items
-  if (config.items) {
-    config.items.forEach(itemConfig => {
-      const item = createMenuItem(itemConfig, prefix);
-      list.appendChild(item);
-
-      // Store item config for later use
-      if (itemConfig.name) {
-        itemsMap.set(itemConfig.name, itemConfig);
+  
+  /**
+   * Set up hover events for all submenu items
+   */
+  const setupAllHoverHandlers = (): void => {
+    // Set up handlers for all submenu items
+    const submenuItems = list.querySelectorAll(`.${prefix}-menu-item--submenu`);
+    submenuItems.forEach(item => {
+      const name = item.getAttribute('data-name');
+      if (name) {
+        setupHoverHandlers(item as HTMLElement, name);
       }
     });
+    
+    // Set up handlers for all existing submenus
+    submenus.forEach((submenu, name) => {
+      setupSubmenuEvents(submenu, name);
+    });
+  };
+  
+  /**
+   * Clears all pending timers
+   */
+  const clearAllTimers = (): void => {
+    // Clear hover timers
+    hoverTimers.forEach(timerId => window.clearTimeout(timerId));
+    hoverTimers.clear();
+    
+    // Clear close timers
+    closeTimers.forEach(timerId => window.clearTimeout(timerId));
+    closeTimers.clear();
+  };
+  
+  // Add initial items
+  if (config.items?.length) {
+    config.items.forEach(itemConfig => {
+      addSingleItem(itemConfig);
+    });
   }
-
-  // Add hover handlers after all items are created
-  addHoverHandlers();
-
-  // Override show method to reset state and ensure hover handlers
-  const originalShow = component.show;
-  if (originalShow) {
-    component.show = function (...args: any[]) {
-      // Reset state when showing menu
-      currentHoveredItem = null;
-
-      // Ensure all items have hover handlers
-      setTimeout(addHoverHandlers, 0);
-
-      return originalShow.apply(this, args);
-    };
-  }
-
-  // Override hide method to close all submenus
-  const originalHide = component.hide;
-  if (originalHide) {
-    component.hide = function (...args: any[]) {
-      // Close all submenus
+  
+  // Set up initial hover handlers
+  setupAllHoverHandlers();
+  
+  // Set up item click event
+  list.addEventListener('click', handleItemClick);
+  
+  // Create the enhanced component
+  const enhancedComponent: BaseComponent = {
+    ...component,
+    
+    // Store the menu factory function setter
+    setCreateMenuFunction,
+    
+    /**
+     * Shows the menu
+     * Override the show method to close any open submenus first
+     */
+    show() {
+      // Close any open submenus first
       if (activeSubmenu) {
-        activeSubmenu.hide?.();
-        activeSubmenu = null;
-
         const expandedItems = list.querySelectorAll('[aria-expanded="true"]');
         expandedItems.forEach(item => {
           item.setAttribute('aria-expanded', 'false');
         });
+        activeSubmenu.hide?.();
+        activeSubmenu = null;
       }
-
-      // Reset state
-      currentHoveredItem = null;
-
-      return originalHide.apply(this, args);
-    };
-  }
-
-  // Add cleanup
-  const originalDestroy = component.lifecycle?.destroy;
-  if (component.lifecycle) {
-    component.lifecycle.destroy = () => {
-      // Remove hover handlers from all items
-      list.querySelectorAll(`.${prefix}-menu-item--submenu`).forEach(item => {
-        item.removeEventListener('mouseenter', handleMouseEnter);
-        item.removeEventListener('mouseleave', handleMouseLeave);
-      });
-
-      // Remove click listener
-      list.removeEventListener('click', handleItemClick);
-
-      // Reset state
-      currentHoveredItem = null;
-
+      
       // Clear all pending timers
-      closeTimers.forEach(timerId => window.clearTimeout(timerId));
-      closeTimers.clear();
-
-      // Destroy all submenus
-      submenus.forEach(submenu => submenu.destroy?.());
-      submenus.clear();
-      itemsMap.clear();
-
-      if (originalDestroy) {
-        originalDestroy();
+      clearAllTimers();
+      
+      // Ensure hover handlers are set up
+      setTimeout(() => {
+        setupAllHoverHandlers();
+      }, 0);
+      
+      // Call the original show method
+      return originalShow?.call(this) || this;
+    },
+    
+    /**
+     * Hides the menu
+     * Override the hide method to close any open submenus first
+     */
+    hide() {
+      // Close any open submenus first
+      if (activeSubmenu) {
+        const expandedItems = list.querySelectorAll('[aria-expanded="true"]');
+        expandedItems.forEach(item => {
+          item.setAttribute('aria-expanded', 'false');
+        });
+        activeSubmenu.hide?.();
+        activeSubmenu = null;
       }
-    };
-  }
-
-  return {
-    ...component,
-
-    // Expose the setCreateSubmenuFunction method
-    setCreateSubmenuFunction,
-
+      
+      // Clear all pending timers
+      clearAllTimers();
+      
+      // Reset interaction state
+      currentHoveredItem = null;
+      
+      // Call the original hide method
+      return originalHide?.call(this) || this;
+    },
+    
     /**
      * Closes any open submenus
-     * @returns {BaseComponent} Component instance
+     * @returns {BaseComponent} Component instance for chaining
      */
     closeSubmenus() {
       if (activeSubmenu) {
-        activeSubmenu.hide?.();
-        activeSubmenu = null;
-
         const expandedItems = list.querySelectorAll('[aria-expanded="true"]');
         expandedItems.forEach(item => {
           item.setAttribute('aria-expanded', 'false');
         });
+        activeSubmenu.hide?.();
+        activeSubmenu = null;
       }
+      
+      clearAllTimers();
       return this;
     },
-
+    
     /**
      * Adds an item to the menu
      * @param {MenuItemConfig} itemConfig - Item configuration
-     * @returns {BaseComponent} Component instance
+     * @returns {BaseComponent} Component instance for chaining
      */
     addItem(itemConfig: MenuItemConfig) {
-      if (!itemConfig) return this;
-
-      const item = createMenuItem(itemConfig, prefix);
-      list.appendChild(item);
-
-      // Store item config for later use
-      if (itemConfig.name) {
-        itemsMap.set(itemConfig.name, itemConfig);
-      }
-
-      // If it's a submenu item, add hover handlers
-      if (itemConfig.items?.length) {
-        item.addEventListener('mouseenter', handleMouseEnter);
-        item.addEventListener('mouseleave', handleMouseLeave);
-      }
-
+      addSingleItem(itemConfig);
+      setupAllHoverHandlers();
       return this;
     },
-
+    
     /**
      * Removes an item from the menu
      * @param {string} name - Item name
-     * @returns {BaseComponent} Component instance
+     * @returns {BaseComponent} Component instance for chaining
      */
     removeItem(name: string) {
       if (!name) return this;
-
-      // First, ensure we remove the item from our internal map
+      
+      // Remove from map
       itemsMap.delete(name);
-
-      // Now try to remove the item from the DOM
+      
+      // Remove from DOM
       const item = list.querySelector(`[data-name="${name}"]`);
       if (item) {
-        // Remove event listeners
+        // Remove hover handlers
         item.removeEventListener('mouseenter', handleMouseEnter);
         item.removeEventListener('mouseleave', handleMouseLeave);
-
-        // Close any submenu associated with this item
-        if (submenus.has(name)) {
-          const submenu = submenus.get(name);
-          submenu?.destroy?.();
-          submenus.delete(name);
+        
+        // Clear any timers
+        if (hoverTimers.has(name)) {
+          window.clearTimeout(hoverTimers.get(name)!);
+          hoverTimers.delete(name);
         }
-
-        // Remove the item from the DOM
+        
+        if (closeTimers.has(name)) {
+          window.clearTimeout(closeTimers.get(name)!);
+          closeTimers.delete(name);
+        }
+        
+        // Close any associated submenu
+        if (submenus.has(name)) {
+          const submenu = submenus.get(name)!;
+          submenu.destroy?.();
+          submenus.delete(name);
+          
+          if (activeSubmenu === submenu) {
+            activeSubmenu = null;
+          }
+        }
+        
+        // Remove the item
         item.remove();
       }
-
+      
       return this;
     },
-
+    
     /**
-     * Gets all registered items
+     * Gets all menu items
      * @returns {Map<string, MenuItemData>} Map of item names to data
      */
-    getItems(): Map<string, MenuItemData> {
+    getItems() {
       const result = new Map<string, MenuItemData>();
       
       itemsMap.forEach((config, name) => {
@@ -443,15 +626,42 @@ export const withItemsManager = (config: MenuConfig) => (component: BaseComponen
       });
       
       return result;
-    },
-
-    /**
-     * Refreshes all hover handlers
-     * @returns {BaseComponent} Component instance
-     */
-    refreshHoverHandlers() {
-      addHoverHandlers();
-      return this;
     }
   };
+  
+  // Add cleanup to lifecycle
+  if (component.lifecycle) {
+    component.lifecycle.destroy = () => {
+      // Remove event listener
+      list.removeEventListener('click', handleItemClick);
+      
+      // Remove hover handlers
+      list.querySelectorAll(`.${prefix}-menu-item--submenu`).forEach(item => {
+        item.removeEventListener('mouseenter', handleMouseEnter);
+        item.removeEventListener('mouseleave', handleMouseLeave);
+      });
+      
+      // Clear all timers
+      clearAllTimers();
+      
+      // Destroy all submenus
+      submenus.forEach(submenu => submenu.destroy?.());
+      submenus.clear();
+      
+      // Clear item map
+      itemsMap.clear();
+      
+      // Reset state
+      activeSubmenu = null;
+      processingClick = false;
+      currentHoveredItem = null;
+      
+      // Call original destroy method if it exists
+      if (originalDestroy) {
+        originalDestroy();
+      }
+    };
+  }
+  
+  return enhancedComponent;
 };

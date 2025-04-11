@@ -1,86 +1,60 @@
 // src/components/menu/menu-item.ts
 import { MenuItemConfig } from './types';
-import { MENU_ITEM_TYPE, getMenuClass } from './utils';
+import { MENU_ITEM_TYPE } from './utils';
 
 /**
  * Creates a DOM element for a menu item
  * 
- * Generates an HTMLElement (li) based on the provided configuration.
- * Handles different types of menu items (standard, divider, submenu),
- * applies proper CSS classes, and sets appropriate ARIA attributes
- * for accessibility.
- * 
  * @param {MenuItemConfig} itemConfig - Item configuration
- * @param {string} prefix - CSS class prefix (default: 'mtrl')
+ * @param {string} prefix - CSS class prefix
  * @returns {HTMLElement} Menu item DOM element
  * 
- * @example
- * ```typescript
- * // Create a standard menu item
- * const itemElement = createMenuItem(
- *   { name: 'edit', text: 'Edit' },
- *   'mtrl'
- * );
- * 
- * // Create a disabled menu item
- * const disabledItem = createMenuItem(
- *   { name: 'print', text: 'Print', disabled: true },
- *   'mtrl'
- * );
- * 
- * // Create a divider
- * const divider = createMenuItem(
- *   { type: 'divider' },
- *   'mtrl'
- * );
- * 
- * // Create an item with submenu indicator
- * const submenuItem = createMenuItem(
- *   {
- *     name: 'share',
- *     text: 'Share',
- *     items: [
- *       { name: 'email', text: 'Email' },
- *       { name: 'link', text: 'Copy Link' }
- *     ]
- *   },
- *   'mtrl'
- * );
- * ```
- * 
  * @internal
- * @category Components
  */
 export const createMenuItem = (itemConfig: MenuItemConfig, prefix: string): HTMLElement => {
-  const item = document.createElement('li');
-  item.className = `${prefix}-${getMenuClass('ITEM')}`;
-
+  if (!itemConfig) {
+    throw new Error('Item configuration is required');
+  }
+  
+  // For dividers, create a simple divider element
   if (itemConfig.type === MENU_ITEM_TYPE.DIVIDER) {
-    item.className = `${prefix}-${getMenuClass('DIVIDER')}`;
-    return item;
+    const divider = document.createElement('li');
+    divider.className = `${prefix}-menu-divider`;
+    divider.setAttribute('role', 'separator');
+    divider.setAttribute('aria-orientation', 'horizontal');
+    return divider;
   }
-
-  if (itemConfig.class) {
-    item.className += ` ${itemConfig.class}`;
-  }
-
-  if (itemConfig.disabled) {
-    item.setAttribute('aria-disabled', 'true');
-    item.className += ` ${prefix}-${getMenuClass('ITEM')}--disabled`;
-  }
-
+  
+  // Create a regular menu item
+  const item = document.createElement('li');
+  item.className = `${prefix}-menu-item`;
+  item.setAttribute('role', 'menuitem');
+  
+  // Add item name as data attribute
   if (itemConfig.name) {
     item.setAttribute('data-name', itemConfig.name);
   }
-
+  
+  // Set text content
   item.textContent = itemConfig.text || '';
-
-  if (itemConfig.items?.length) {
-    item.className += ` ${prefix}-${getMenuClass('ITEM')}--submenu`;
+  
+  // Apply custom class if provided
+  if (itemConfig.class) {
+    item.className += ` ${itemConfig.class}`;
+  }
+  
+  // Handle disabled state
+  if (itemConfig.disabled) {
+    item.className += ` ${prefix}-menu-item--disabled`;
+    item.setAttribute('aria-disabled', 'true');
+  }
+  
+  // Handle submenu items
+  if (Array.isArray(itemConfig.items) && itemConfig.items.length > 0) {
+    item.className += ` ${prefix}-menu-item--submenu`;
     item.setAttribute('aria-haspopup', 'true');
     item.setAttribute('aria-expanded', 'false');
-    // We don't need to add a submenu indicator as it's handled by CSS ::after
   }
-
+  
   return item;
-}
+};

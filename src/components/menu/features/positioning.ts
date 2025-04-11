@@ -1,127 +1,134 @@
 // src/components/menu/features/positioning.ts
-import { BaseComponent, MenuPositionConfig, MenuPosition } from '../types';
-import { MENU_ALIGNMENT, MENU_VERTICAL_ALIGNMENT } from '../utils';
-
-/**
- * Positions a menu element relative to a target element
- * @param {HTMLElement} menuElement - Menu element to position
- * @param {HTMLElement} target - Target element to position against
- * @param {MenuPositionConfig} options - Positioning options
- * @returns {MenuPosition} The final position {left, top}
- */
-export const positionMenu = (
-  menuElement: HTMLElement, 
-  target: HTMLElement, 
-  options: MenuPositionConfig = {}
-): MenuPosition => {
-  if (!target || !menuElement) return { left: 0, top: 0 };
-
-  // Force the menu to be visible temporarily to get accurate dimensions
-  const originalDisplay = menuElement.style.display;
-  const originalVisibility = menuElement.style.visibility;
-  const originalOpacity = menuElement.style.opacity;
-
-  menuElement.style.display = 'block';
-  menuElement.style.visibility = 'hidden';
-  menuElement.style.opacity = '0';
-
-  const targetRect = target.getBoundingClientRect();
-  const menuRect = menuElement.getBoundingClientRect();
-
-  // Restore original styles
-  menuElement.style.display = originalDisplay;
-  menuElement.style.visibility = originalVisibility;
-  menuElement.style.opacity = originalOpacity;
-
-  const {
-    align = MENU_ALIGNMENT.LEFT,
-    vAlign = MENU_VERTICAL_ALIGNMENT.BOTTOM,
-    offsetX = 0,
-    offsetY = 0
-  } = options;
-
-  let left = targetRect.left + offsetX;
-  let top = targetRect.bottom + offsetY;
-
-  // Handle horizontal alignment
-  if (align === MENU_ALIGNMENT.RIGHT) {
-    left = targetRect.right - menuRect.width + offsetX;
-  } else if (align === MENU_ALIGNMENT.CENTER) {
-    left = targetRect.left + (targetRect.width - menuRect.width) / 2 + offsetX;
-  }
-
-  // Handle vertical alignment
-  if (vAlign === MENU_VERTICAL_ALIGNMENT.TOP) {
-    top = targetRect.top - menuRect.height + offsetY;
-  } else if (vAlign === MENU_VERTICAL_ALIGNMENT.MIDDLE) {
-    top = targetRect.top + (targetRect.height - menuRect.height) / 2 + offsetY;
-  }
-
-  // Determine if this is a submenu
-  const isSubmenu = menuElement.classList.contains('mtrl-menu--submenu');
-
-  // Special positioning for submenus
-  if (isSubmenu) {
-    // By default, position to the right of the parent item
-    left = targetRect.right + 2; // Add a small gap
-    top = targetRect.top;
-
-    // Check if submenu would go off-screen to the right
-    const viewportWidth = window.innerWidth;
-    if (left + menuRect.width > viewportWidth) {
-      // Position to the left of the parent item instead
-      left = targetRect.left - menuRect.width - 2;
-    }
-
-    // Check if submenu would go off-screen at the bottom
-    const viewportHeight = window.innerHeight;
-    if (top + menuRect.height > viewportHeight) {
-      // Align with bottom of viewport
-      top = Math.max(0, viewportHeight - menuRect.height);
-    }
-  } else {
-    // Standard menu positioning and boundary checking
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-
-    if (left + menuRect.width > viewportWidth) {
-      left = Math.max(0, viewportWidth - menuRect.width);
-    }
-
-    if (left < 0) left = 0;
-
-    if (top + menuRect.height > viewportHeight) {
-      top = Math.max(0, targetRect.top - menuRect.height + offsetY);
-    }
-
-    if (top < 0) top = 0;
-  }
-
-  // Apply position
-  menuElement.style.left = `${left}px`;
-  menuElement.style.top = `${top}px`;
-
-  return { left, top };
-};
+import { PREFIX } from '../../../core/config';
+import { BaseComponent, MenuPositionConfig } from '../types';
 
 /**
  * Adds positioning functionality to a menu component
- * @param {BaseComponent} component - Menu component
- * @returns {BaseComponent} Enhanced component with positioning methods
+ * 
+ * This feature:
+ * - Positions the menu relative to a target element
+ * - Handles different alignment options
+ * - Ensures the menu stays within viewport boundaries
+ * - Provides special handling for submenus
+ * 
+ * @returns {Function} Component enhancer
+ * 
+ * @internal
  */
-export const withPositioning = (component: BaseComponent): BaseComponent => {
+export const withPositioning = () => (component: BaseComponent): BaseComponent => {
+  /**
+   * Positions the menu relative to a target element
+   * 
+   * @param {HTMLElement} target - Target element to position against
+   * @param {MenuPositionConfig} options - Positioning options
+   * @returns {BaseComponent} Component instance for chaining
+   */
+  const position = (target: HTMLElement, options: MenuPositionConfig = {}): BaseComponent => {
+    if (!target || !component.element) return component;
+    
+    // Parse options with defaults
+    const {
+      align = 'left',
+      vAlign = 'bottom',
+      offsetX = 0,
+      offsetY = 0
+    } = options;
+    
+    // Get target and menu dimensions
+    const targetRect = target.getBoundingClientRect();
+    
+    // Make menu temporarily visible to get dimensions
+    const originalDisplay = component.element.style.display;
+    const originalVisibility = component.element.style.visibility;
+    
+    component.element.style.display = 'block';
+    component.element.style.visibility = 'hidden';
+    
+    const menuRect = component.element.getBoundingClientRect();
+    
+    // Restore original styles
+    component.element.style.display = originalDisplay;
+    component.element.style.visibility = originalVisibility;
+    
+    // Calculate initial position
+    let left = targetRect.left + offsetX;
+    let top = targetRect.bottom + offsetY;
+    
+    // Handle horizontal alignment
+    if (align === 'right') {
+      left = targetRect.right - menuRect.width + offsetX;
+    } else if (align === 'center') {
+      left = targetRect.left + (targetRect.width - menuRect.width) / 2 + offsetX;
+    }
+    
+    // Handle vertical alignment
+    if (vAlign === 'top') {
+      top = targetRect.top - menuRect.height + offsetY;
+    } else if (vAlign === 'middle') {
+      top = targetRect.top + (targetRect.height - menuRect.height) / 2 + offsetY;
+    }
+    
+    // Special handling for submenus
+    const isSubmenu = component.element.classList.contains(`${PREFIX}-menu--submenu`);
+    if (isSubmenu) {
+      // Default position for submenu (to the right of the parent item)
+      left = targetRect.right + 2; // Small gap
+      top = targetRect.top;
+      
+      // Check if submenu would go off the right edge of the viewport
+      if (left + menuRect.width > window.innerWidth) {
+        // Position to the left of the parent item instead
+        left = targetRect.left - menuRect.width - 2;
+      }
+      
+      // Check if submenu would go below the bottom of the viewport
+      if (top + menuRect.height > window.innerHeight) {
+        // Adjust top position to fit within viewport
+        top = Math.max(0, window.innerHeight - menuRect.height);
+      }
+    } else {
+      // Regular menu boundary checking
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      
+      // Prevent horizontal overflow
+      if (left < 0) {
+        left = 0;
+      } else if (left + menuRect.width > viewportWidth) {
+        left = Math.max(0, viewportWidth - menuRect.width);
+      }
+      
+      // Prevent vertical overflow
+      if (top + menuRect.height > viewportHeight) {
+        // Try positioning above the target
+        const topPosition = targetRect.top - menuRect.height + offsetY;
+        
+        if (topPosition >= 0) {
+          // If it fits above, position it there
+          top = topPosition;
+        } else {
+          // Otherwise position at top of viewport
+          top = 0;
+        }
+      } else if (top < 0) {
+        top = 0;
+      }
+    }
+    
+    // Update menu position
+    component.element.style.position = 'fixed';
+    component.element.style.left = `${Math.round(left)}px`;
+    component.element.style.top = `${Math.round(top)}px`;
+    
+    // Store origin for potential repositioning
+    component.origin = target;
+    
+    return component;
+  };
+  
   return {
     ...component,
-
-    /**
-     * Positions the menu relative to a target element
-     * @param {HTMLElement} target - Target element
-     * @param {MenuPositionConfig} options - Position options
-     * @returns {BaseComponent} Component instance
-     */
-    position(target: HTMLElement, options?: MenuPositionConfig) {
-      positionMenu(component.element, target, options);
-      return this;
-    }
+    position,
+    origin: null
   };
 };
