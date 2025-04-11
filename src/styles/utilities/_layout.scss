@@ -157,10 +157,16 @@ $defaults: (
 
 .#{$layout}--row {
   display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
   width: 100%;
   gap: map.get($defaults, 'row-gap');
+  
+  // Auto-stack on mobile by default
+  flex-direction: column;
+  
+  @media (min-width: map.get(map.get($defaults, 'breakpoints'), 'sm')) {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
   
   // Row alignment
   &-start {
@@ -206,12 +212,22 @@ $defaults: (
   
   // Row wrapping
   &-nowrap {
-    flex-wrap: nowrap;
-    overflow-x: auto;
+    @media (min-width: map.get(map.get($defaults, 'breakpoints'), 'sm')) {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+    }
   }
   
   &-wrap-reverse {
-    flex-wrap: wrap-reverse;
+    @media (min-width: map.get(map.get($defaults, 'breakpoints'), 'sm')) {
+      flex-wrap: wrap-reverse;
+    }
+  }
+  
+  // Add option to override auto-stacking for specific cases
+  &-no-stack {
+    flex-direction: row;
+    flex-wrap: wrap;
   }
   
   // Row spacing
@@ -221,21 +237,30 @@ $defaults: (
     }
   }
   
-  // Row items - equal width by default
+  // Row items - full width on mobile, equal width on larger screens
   > * {
-    flex: 1 1 0%; // Default to equal width
+    width: 100%; // Full width on mobile
+    
+    @media (min-width: map.get(map.get($defaults, 'breakpoints'), 'sm')) {
+      flex: 1 1 0%; // Equal width on larger screens
+    }
   }
   
   // Auto width items
   > .#{$layout}__item--auto {
-    flex: 0 0 auto;
+    @media (min-width: map.get(map.get($defaults, 'breakpoints'), 'sm')) {
+      flex: 0 0 auto;
+      width: auto;
+    }
   }
   
-  // Fixed width items
+  // Fixed width items - full width on mobile
   @for $i from 1 through 12 {
     > .#{$layout}__item--#{$i} {
-      flex: 0 0 auto;
-      width: calc(#{math.div($i, 12) * 100%} - (#{map.get($defaults, 'row-gap')} * #{math.div(12 - $i, 12)}));
+      @media (min-width: map.get(map.get($defaults, 'breakpoints'), 'sm')) {
+        flex: 0 0 auto;
+        width: calc(#{math.div($i, 12) * 100%} - (#{map.get($defaults, 'row-gap')} * #{math.div(12 - $i, 12)}));
+      }
     }
   }
   
@@ -252,6 +277,20 @@ $defaults: (
       }
     }
   }
+  
+  // Row items in a no-stack row
+  &-no-stack {
+    > * {
+      flex: 1 1 0%;
+    }
+    
+    @for $i from 1 through 12 {
+      > .#{$layout}__item--#{$i} {
+        flex: 0 0 auto;
+        width: calc(#{math.div($i, 12) * 100%} - (#{map.get($defaults, 'row-gap')} * #{math.div(12 - $i, 12)}));
+      }
+    }
+  }
 }
 
 // ----------------------------------------
@@ -263,18 +302,27 @@ $defaults: (
   gap: map.get($defaults, 'grid-gap');
   width: 100%;
   
-  // Default to auto-fit
-  grid-template-columns: repeat(auto-fit, minmax(map.get($defaults, 'grid-min'), 1fr));
+  // Auto-stack on mobile by default
+  grid-template-columns: 1fr;
+  
+  @media (min-width: map.get(map.get($defaults, 'breakpoints'), 'sm')) {
+    // Default to auto-fit for non-mobile screens
+    grid-template-columns: repeat(auto-fit, minmax(map.get($defaults, 'grid-min'), 1fr));
+  }
   
   // Grid modes: auto-fit (default), auto-fill
   &-fill {
-    grid-template-columns: repeat(auto-fill, minmax(map.get($defaults, 'grid-min'), 1fr));
+    @media (min-width: map.get(map.get($defaults, 'breakpoints'), 'sm')) {
+      grid-template-columns: repeat(auto-fill, minmax(map.get($defaults, 'grid-min'), 1fr));
+    }
   }
   
-  // Fixed column counts
+  // Fixed column counts - stack on mobile by default
   @for $i from 1 through 12 {
     &-cols-#{$i} {
-      grid-template-columns: repeat($i, 1fr);
+      @media (min-width: map.get(map.get($defaults, 'breakpoints'), 'sm')) {
+        grid-template-columns: repeat($i, 1fr);
+      }
     }
   }
   
@@ -288,6 +336,19 @@ $defaults: (
           }
         }
       }
+    }
+  }
+  
+  // Add option to override auto-stacking for specific cases
+  &-no-stack {
+    grid-template-columns: repeat(auto-fit, minmax(map.get($defaults, 'grid-min'), 1fr));
+    
+    &-cols-2 {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    
+    &-cols-3 {
+      grid-template-columns: repeat(3, 1fr);
     }
   }
   
@@ -435,7 +496,8 @@ $defaults: (
   }
 }
 
-// Mobile-specific layouts
+// Mobile-specific layouts - now redundant as stacking is default behavior
+// These are kept for backward compatibility
 .#{$layout}--stack-mobile {
   @media (max-width: map.get(map.get($defaults, 'breakpoints'), 'sm') - 1px) {
     display: flex;
@@ -444,13 +506,12 @@ $defaults: (
   }
 }
 
-.#{$layout}--row-mobile-stack {
-  @media (max-width: map.get(map.get($defaults, 'breakpoints'), 'sm') - 1px) {
-    flex-direction: column;
-    
-    > * {
-      width: 100% !important; // Override column widths on mobile
-    }
+// Still useful for layouts that specifically need to override
+.#{$layout}--force-stack {
+  flex-direction: column !important;
+  
+  > * {
+    width: 100% !important;
   }
 }
 
@@ -591,155 +652,8 @@ $defaults: (
 }
 
 // ----------------------------------------
-// Simple layout patterns
+// Hero layout
 // ----------------------------------------
-
-// Masonry-like layout (using CSS columns)
-.#{$layout}--masonry {
-  display: grid;
-  gap: map.get($defaults, 'grid-gap');
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  grid-auto-flow: dense;
-  
-  // Responsive column adjustments
-  @media (min-width: map.get(map.get($defaults, 'breakpoints'), 'sm')) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  
-  @media (min-width: map.get(map.get($defaults, 'breakpoints'), 'lg')) {
-    grid-template-columns: repeat(3, 1fr);
-  }
-  
-  // Variable heights for items to create masonry effect
-  > *:nth-child(3n) {
-    grid-row: span 1;
-  }
-  
-  > *:nth-child(3n+1) {
-    grid-row: span 2;
-  }
-  
-  > *:nth-child(3n+2) {
-    grid-row: span 1;
-  }
-  
-  // Expanded items
-  > *.#{$layout}__item--expanded {
-    grid-row: span 2;
-  }
-  
-  // Override for small screens
-  @media (max-width: map.get(map.get($defaults, 'breakpoints'), 'md') - 1) {
-    > *:nth-child(n) {
-      grid-row: span 1;
-    }
-    
-    > *.#{$layout}__item--expanded {
-      grid-row: span 1;
-    }
-  }
-  
-  // Custom column counts
-  @for $i from 2 through 6 {
-    &-cols-#{$i} {
-      @media (min-width: map.get(map.get($defaults, 'breakpoints'), 'md')) {
-        grid-template-columns: repeat($i, 1fr);
-      }
-    }
-  }
-  
-  // Gap sizes
-  @each $name, $size in $gap-sizes {
-    &-gap-#{$name} {
-      gap: $size;
-    }
-  }
-}
-
-// Split layout (side by side with responsive stacking)
-.#{$layout}--split {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: map.get($defaults, 'grid-gap');
-  width: 100%;
-  
-  @media (min-width: map.get(map.get($defaults, 'breakpoints'), 'md')) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  
-  // Split variants
-  &-1-2 {
-    @media (min-width: map.get(map.get($defaults, 'breakpoints'), 'md')) {
-      grid-template-columns: 1fr 2fr;
-    }
-  }
-  
-  &-2-1 {
-    @media (min-width: map.get(map.get($defaults, 'breakpoints'), 'md')) {
-      grid-template-columns: 2fr 1fr;
-    }
-  }
-  
-  &-1-3 {
-    @media (min-width: map.get(map.get($defaults, 'breakpoints'), 'md')) {
-      grid-template-columns: 1fr 3fr;
-    }
-  }
-  
-  &-3-1 {
-    @media (min-width: map.get(map.get($defaults, 'breakpoints'), 'md')) {
-      grid-template-columns: 3fr 1fr;
-    }
-  }
-  
-  // Gap sizes
-  @each $name, $size in $gap-sizes {
-    &-gap-#{$name} {
-      gap: $size;
-    }
-  }
-}
-
-// Sidebar layout with main content
-.#{$layout}--sidebar {
-  display: grid;
-  gap: 24px;
-  grid-template-columns: 1fr;
-  grid-template-areas: 
-    "sidebar"
-    "main";
-  
-  @media (min-width: map.get(map.get($defaults, 'breakpoints'), 'md')) {
-    grid-template-columns: 280px 1fr;
-    grid-template-areas: "sidebar main";
-  }
-  
-  &-right {
-    @media (min-width: map.get(map.get($defaults, 'breakpoints'), 'md')) {
-      grid-template-areas: "main sidebar";
-    }
-  }
-  
-  &-wide {
-    @media (min-width: map.get(map.get($defaults, 'breakpoints'), 'md')) {
-      grid-template-columns: 320px 1fr;
-    }
-  }
-  
-  &-narrow {
-    @media (min-width: map.get(map.get($defaults, 'breakpoints'), 'md')) {
-      grid-template-columns: 220px 1fr;
-    }
-  }
-  
-  > .sidebar {
-    grid-area: sidebar;
-  }
-  
-  > .main {
-    grid-area: main;
-  }
-}
 
 // Hero layout
 .#{$layout}--hero {

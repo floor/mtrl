@@ -9,7 +9,7 @@
  */
 export interface LayoutConfig {
   /** Base layout type */
-  type?: 'stack' | 'row' | 'grid' | 'masonry' | 'split' | 'sidebar' | string;
+  type?: 'stack' | 'row' | 'grid' | string;
   
   /** Spacing between elements */
   gap?: number | string;
@@ -43,18 +43,6 @@ export interface LayoutConfig {
   
   /** Whether grid items should adjust height automatically */
   autoHeight?: boolean;
-  
-  /** Number of columns for masonry layout */
-  masonryColumns?: number;
-  
-  /** Ratio between split panels */
-  ratio?: '1-2' | '2-1' | '1-3' | '3-1';
-  
-  /** Sidebar position */
-  sidebarPosition?: 'left' | 'right';
-  
-  /** Sidebar width preset */
-  sidebarWidth?: 'normal' | 'wide' | 'narrow';
 }
 
 /**

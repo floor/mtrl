@@ -38,10 +38,7 @@ export function cleanupLayoutClasses(element: HTMLElement): void {
 export function getLayoutType(element: HTMLElement): string {
   return hasClass(element, 'layout--stack') ? 'stack' : 
          hasClass(element, 'layout--row') ? 'row' : 
-         hasClass(element, 'layout--grid') ? 'grid' : 
-         hasClass(element, 'layout--masonry') ? 'masonry' :
-         hasClass(element, 'layout--split') ? 'split' :
-         hasClass(element, 'layout--sidebar') ? 'sidebar' : '';
+         hasClass(element, 'layout--grid') ? 'grid' : '';
 }
 
 /**
@@ -137,30 +134,7 @@ export function applyLayoutClasses(
     }
   }
   
-  // Apply masonry-specific properties
-  if (layoutConfig.type === 'masonry' || getLayoutType(element) === 'masonry') {
-    if (layoutConfig.masonryColumns) {
-      addClass(element, `layout--masonry-cols-${layoutConfig.masonryColumns}`);
-    }
-  }
-  
-  // Apply split-specific properties
-  if (layoutConfig.type === 'split' || getLayoutType(element) === 'split') {
-    if (layoutConfig.ratio) {
-      addClass(element, `layout--split-${layoutConfig.ratio}`);
-    }
-  }
-  
-  // Apply sidebar-specific properties
-  if (layoutConfig.type === 'sidebar' || getLayoutType(element) === 'sidebar') {
-    if (layoutConfig.sidebarPosition === 'right') {
-      addClass(element, 'layout--sidebar-right');
-    }
-    
-    if (layoutConfig.sidebarWidth) {
-      addClass(element, `layout--sidebar-${layoutConfig.sidebarWidth}`);
-    }
-  }
+  // No masonry, split or sidebar specific properties anymore
   
   // Add any additional custom classes
   if (layoutConfig.class) {
