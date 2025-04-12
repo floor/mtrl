@@ -184,6 +184,7 @@ export const withController = (config: MenuConfig) => component => {
 
   /**
    * Positions the menu relative to its anchor
+   * Ensures the menu maintains proper spacing from viewport edges
    */
   const positionMenu = (): void => {
     const anchor = getAnchorElement();
@@ -210,6 +211,7 @@ export const withController = (config: MenuConfig) => component => {
     let top = 0;
     let left = 0;
     
+    // Standard placement logic (unchanged)
     switch (placement) {
       case 'top-start':
         top = anchorRect.top - menuRect.height - offset;
@@ -261,46 +263,66 @@ export const withController = (config: MenuConfig) => component => {
         break;
     }
     
-    // Auto-flip if needed to stay in viewport
-    if (config.autoFlip) {
-      // Flip vertically if needed
-      if (top < 0) {
-        if (placement.startsWith('top')) {
-          top = anchorRect.bottom + offset;
-        }
-      } else if (top + menuRect.height > viewportHeight) {
-        if (placement.startsWith('bottom')) {
-          top = anchorRect.top - menuRect.height - offset;
+    // Ensure the menu has proper spacing from viewport edges
+    
+    // Top edge spacing
+    const minTopSpacing = 16; // Minimum distance from top of viewport
+    if (top < minTopSpacing) {
+      // If the menu would be too close to the top, reposition it
+      if (placement.startsWith('top')) {
+        // For 'top' placements, flip to 'bottom'
+        top = anchorRect.bottom + offset;
+      } else {
+        // For other placements, ensure minimum spacing
+        top = minTopSpacing;
+      }
+    }
+    
+    // Bottom edge spacing
+    const bottomEdge = top + menuRect.height;
+    const viewportBottomMargin = 16; // Minimum space from bottom of viewport
+    
+    if (bottomEdge > viewportHeight - viewportBottomMargin) {
+      // If menu would extend beyond bottom with margin, adjust maxHeight
+      const availableHeight = viewportHeight - top - viewportBottomMargin;
+      
+      // Set a minimum height to prevent tiny menus
+      const minMenuHeight = Math.min(menuRect.height, 100);
+      const newMaxHeight = Math.max(availableHeight, minMenuHeight);
+      
+      // Update maxHeight to fit within viewport
+      menuElement.style.maxHeight = `${newMaxHeight}px`;
+      
+      // If menu has a custom maxHeight already smaller than available space, don't override it
+      if (config.maxHeight) {
+        const configMaxHeight = parseInt(config.maxHeight, 10);
+        if (!isNaN(configMaxHeight) && configMaxHeight < newMaxHeight) {
+          menuElement.style.maxHeight = config.maxHeight;
         }
       }
       
-      // Flip horizontally if needed
-      if (left < 0) {
-        if (placement.startsWith('left')) {
-          left = anchorRect.right + offset;
-        } else if (placement.includes('start')) {
-          left = 0;
-        }
-      } else if (left + menuRect.width > viewportWidth) {
-        if (placement.startsWith('right')) {
-          left = anchorRect.left - menuRect.width - offset;
-        } else if (placement.includes('end')) {
-          left = viewportWidth - menuRect.width;
+      // If menu still won't fit below, try placing it above (if it would fit there)
+      if (availableHeight < minMenuHeight && placement.startsWith('bottom')) {
+        const topSpace = anchorRect.top - minTopSpacing;
+        if (topSpace >= minMenuHeight) {
+          top = anchorRect.top - menuRect.height - offset;
         }
       }
     }
     
-    // Apply position
-    menuElement.style.top = `${top}px`;
-    menuElement.style.left = `${left}px`;
-    
-    // Ensure it's in viewport
-    const updatedRect = menuElement.getBoundingClientRect();
-    if (updatedRect.top < 0) {
-      menuElement.style.top = '0';
+    // For 'width: 100%' configuration, match the anchor width
+    if (config.width === '100%') {
+      menuElement.style.width = `${anchorRect.width}px`;
     }
-    if (updatedRect.left < 0) {
-      menuElement.style.left = '0';
+    
+    // Apply final positions, ensuring menu stays within viewport
+    menuElement.style.top = `${Math.max(minTopSpacing, top)}px`;
+    menuElement.style.left = `${Math.max(16, left)}px`;
+    
+    // Make sure menu doesn't extend past right edge
+    if (left + menuRect.width > viewportWidth - 16) {
+      menuElement.style.left = 'auto';
+      menuElement.style.right = '16px';
     }
   };
 

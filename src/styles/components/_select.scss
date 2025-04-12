@@ -1,4 +1,4 @@
-// src/components/select/_styles.scss
+// src/styles/components/_select.scss
 @use '../../styles/abstract/base' as base;
 @use '../../styles/abstract/variables' as v;
 @use '../../styles/abstract/functions' as f;
@@ -31,13 +31,15 @@ $component: '#{base.$prefix}-select';
   .#{base.$prefix}-textfield-trailing-icon {
     pointer-events: auto; // Allow clicks on the icon
     cursor: pointer;
-    transition: transform 0.2s ease;
+    transform: translateY(-50%); // Keep vertical centering
+    transition: transform 0.2s ease, color 0.2s ease; // Add transition for smooth rotation and color changes
     
     svg {
       width: 18px;
       height: 18px;
       vertical-align: middle;
       color: inherit;
+      transition: transform 0.2s ease; // Add transition for the SVG itself
     }
   }
   
@@ -54,6 +56,11 @@ $component: '#{base.$prefix}-select';
       .#{base.$prefix}-textfield-label {
         color: t.color('primary');
       }
+      
+      // Fix for filled variant positioning
+      .#{base.$prefix}-textfield-trailing-icon {
+        top: 28px; // Match the filled textfield's icon positioning
+      }
     }
     
     .#{base.$prefix}-textfield--outlined {
@@ -67,9 +74,13 @@ $component: '#{base.$prefix}-select';
       }
     }
     
+    // Apply rotation to SVG instead of the container for better positioning
     .#{base.$prefix}-textfield-trailing-icon {
-      transform: rotate(180deg); // Flip the arrow when open
       color: t.color('primary');
+      
+      svg {
+        transform: rotate(180deg); // Rotate the SVG, not the container
+      }
     }
   }
   
