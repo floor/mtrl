@@ -126,9 +126,9 @@ export type MenuContent = MenuItem | MenuDivider;
 export interface MenuConfig {
   /**
    * Element to which the menu will be anchored
-   * Can be an HTML element or a CSS selector string
+   * Can be an HTML element, a CSS selector string, or a component with an element property
    */
-  anchor: HTMLElement | string;
+  anchor: HTMLElement | string | { element: HTMLElement };
   
   /**
    * Array of menu items and dividers to display

@@ -17,15 +17,17 @@ export const withAnchor = (config: MenuConfig) => component => {
 
   // Track anchor state
   const state = {
-    anchorElement: null as HTMLElement
+    anchorElement: null as HTMLElement,
+    anchorComponent: null as any
   };
 
   /**
-   * Resolves the anchor element from string or direct reference
+   * Resolves the anchor element from string, direct reference, or component
    */
-  const resolveAnchor = (anchor: HTMLElement | string): HTMLElement => {
+  const resolveAnchor = (anchor: HTMLElement | string | { element: HTMLElement }): HTMLElement => {
     if (!anchor) return null;
 
+    // Handle string selector
     if (typeof anchor === 'string') {
       const element = document.querySelector(anchor);
       if (!element) {
@@ -34,14 +36,21 @@ export const withAnchor = (config: MenuConfig) => component => {
       }
       return element as HTMLElement;
     }
+    
+    // Handle component with element property
+    if (typeof anchor === 'object' && anchor !== null && 'element' in anchor) {
+      console.log('')
+      return anchor.element;
+    }
 
-    return anchor;
+    // Handle direct HTML element
+    return anchor as HTMLElement;
   };
 
   /**
    * Sets up anchor click handler for toggling menu
    */
-  const setupAnchorEvents = (anchorElement: HTMLElement): void => {
+  const setupAnchorEvents = (anchorElement: HTMLElement, originalAnchor?: any): void => {
     if (!anchorElement) return;
 
     // Remove previously attached event if any
@@ -49,8 +58,15 @@ export const withAnchor = (config: MenuConfig) => component => {
       cleanup();
     }
 
-    // Store reference
+    // Store references
     state.anchorElement = anchorElement;
+    
+    // Store reference to component if it was provided
+    if (originalAnchor && typeof originalAnchor === 'object' && 'element' in originalAnchor) {
+      state.anchorComponent = originalAnchor;
+    } else {
+      state.anchorComponent = null;
+    }
 
     // Add click handler
     anchorElement.addEventListener('click', handleAnchorClick);
@@ -82,10 +98,8 @@ export const withAnchor = (config: MenuConfig) => component => {
       
       if (isOpen) {
         component.menu.close(e);
-        state.anchorElement.setAttribute('aria-expanded', 'false');
       } else {
         component.menu.open(e);
-        state.anchorElement.setAttribute('aria-expanded', 'true');
       }
     }
   };
@@ -99,12 +113,23 @@ export const withAnchor = (config: MenuConfig) => component => {
       state.anchorElement.removeAttribute('aria-haspopup');
       state.anchorElement.removeAttribute('aria-expanded');
       state.anchorElement.removeAttribute('aria-controls');
+      
+      // Clean up active state if present
+      if (state.anchorComponent && typeof state.anchorComponent.setActive === 'function') {
+        state.anchorComponent.setActive(false);
+      } else if (state.anchorElement.classList) {
+        state.anchorElement.classList.remove(`${component.getClass('anchor')}--active`);
+      }
     }
+    
+    // Reset state
+    state.anchorComponent = null;
   };
 
   // Initialize with provided anchor
-  const initialAnchor = resolveAnchor(config.anchor);
-  setupAnchorEvents(initialAnchor);
+  const initialAnchor = config.anchor;
+  const initialElement = resolveAnchor(initialAnchor);
+  setupAnchorEvents(initialElement, initialAnchor);
 
   // Register with lifecycle if available
   if (component.lifecycle) {
@@ -119,12 +144,28 @@ export const withAnchor = (config: MenuConfig) => component => {
   component.on('open', () => {
     if (state.anchorElement) {
       state.anchorElement.setAttribute('aria-expanded', 'true');
+      
+      // If it's a button component, set active state
+      if (state.anchorComponent && typeof state.anchorComponent.setActive === 'function') {
+        state.anchorComponent.setActive(true);
+      } else if (state.anchorElement.classList) {
+        // Fallback for regular elements
+        state.anchorElement.classList.add(`${component.getClass('anchor')}--active`);
+      }
     }
   });
 
   component.on('close', () => {
     if (state.anchorElement) {
       state.anchorElement.setAttribute('aria-expanded', 'false');
+      
+      // If it's a button component, remove active state
+      if (state.anchorComponent && typeof state.anchorComponent.setActive === 'function') {
+        state.anchorComponent.setActive(false);
+      } else if (state.anchorElement.classList) {
+        // Fallback for regular elements
+        state.anchorElement.classList.remove(`${component.getClass('anchor')}--active`);
+      }
     }
   });
 
@@ -134,13 +175,13 @@ export const withAnchor = (config: MenuConfig) => component => {
     anchor: {
       /**
        * Sets a new anchor element
-       * @param anchor - New anchor element or selector
+       * @param anchor - New anchor element, selector, or component
        * @returns Component for chaining
        */
-      setAnchor(anchor: HTMLElement | string) {
-        const newAnchor = resolveAnchor(anchor);
-        if (newAnchor) {
-          setupAnchorEvents(newAnchor);
+      setAnchor(anchor: HTMLElement | string | { element: HTMLElement }) {
+        const newElement = resolveAnchor(anchor);
+        if (newElement) {
+          setupAnchorEvents(newElement, anchor);
         }
         return component;
       },

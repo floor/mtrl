@@ -51,6 +51,12 @@ export const withController = (config: MenuConfig) => component => {
    * Gets the anchor element from config
    */
   const getAnchorElement = (): HTMLElement => {
+  // First try to get the resolved anchor from the anchor feature
+    if (component.anchor && typeof component.anchor.getAnchor === 'function') {
+      return component.anchor.getAnchor();
+    }
+
+    // Fall back to config anchor for initial positioning
     const { anchor } = config;
     
     if (typeof anchor === 'string') {
@@ -62,7 +68,13 @@ export const withController = (config: MenuConfig) => component => {
       return element as HTMLElement;
     }
     
-    return anchor;
+    // Handle component with element property
+    if (typeof anchor === 'object' && anchor !== null && 'element' in anchor) {
+      return anchor.element;
+    }
+    
+    // Handle direct HTML element
+    return anchor as HTMLElement;
   };
 
   /**
@@ -459,10 +471,13 @@ export const withController = (config: MenuConfig) => component => {
     
     // Position the submenu next to its parent item
     const itemRect = itemElement.getBoundingClientRect();
-    
+    const scrollX = window.pageXOffset || document.documentElement.scrollLeft;
+    const scrollY = window.pageYOffset || document.documentElement.scrollTop;
+
+
     // Default position is to the right
-    submenuElement.style.top = `${itemRect.top}px`;
-    submenuElement.style.left = `${itemRect.right + 8}px`;
+    submenuElement.style.top = `${itemRect.top + scrollY}px`; // Add scrollY to account for vertical scroll
+    submenuElement.style.left = `${itemRect.right + scrollX}px`; // Add scrollX to account for horizontal scroll
     
     // Check if submenu would be outside viewport and adjust if needed
     const submenuRect = submenuElement.getBoundingClientRect();
