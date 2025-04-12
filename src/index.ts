@@ -36,6 +36,7 @@ import createSegmentedButton, { createSegment } from './components/segmented-but
 import createSheet from './components/sheet';
 import createSlider from './components/slider';
 import createSnackbar from './components/snackbar';
+import createSelect from './components/select';
 import createSwitch from './components/switch';
 import createTabs, { createTab } from './components/tabs';
 import createTextfield from './components/textfield';
@@ -73,6 +74,7 @@ export {
   createProgress,
   createRadios,
   createSearch,
+  createSelect,
   createSegmentedButton,
   createSegment,
   createSheet,
@@ -116,6 +118,7 @@ export {
   createProgress as fProgress,
   createRadios as fRadios,
   createSearch as fSearch,
+  createSelect as fSelect,
   createSegmentedButton as fSegmentedButton,
   createSegment as fSegment,
   createSheet as fSheet,

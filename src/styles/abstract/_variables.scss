@@ -285,3 +285,21 @@ $spacing-scale: (
   }
   @return $fallback;
 }
+
+// Textfield configuration
+$textfield: (
+  'height': 56px,
+  'height-small': 48px,
+  'height-large': 64px,
+  'padding-horizontal': 16px,
+  'padding-vertical': 16px,
+  'border-radius': map.get($shape, 'extra-small'),
+  'border-width': 1px,
+  'label-offset': 16px,
+  'icon-size': 24px
+) !default;
+
+// Add textfield function
+@function textfield($key) {
+  @return map.get($textfield, $key);
+}
