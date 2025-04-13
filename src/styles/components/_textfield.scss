@@ -74,7 +74,7 @@ $component: '#{base.$prefix}-textfield';
   &-prefix {
     @include m.typography('body-large');
     position: absolute;
-    left: 16px;
+    left: 12px;
     top: 50%;
     transform: translateY(-50%);
     color: t.color('on-surface');
@@ -84,6 +84,7 @@ $component: '#{base.$prefix}-textfield';
     max-width: 40%; // Prevent extreme overflow
     overflow: hidden;
     text-overflow: ellipsis;
+    transition: top v.motion('duration-short4') v.motion('easing-emphasized'); // Add transition for top position
   }
   
   // Suffix text
@@ -100,6 +101,7 @@ $component: '#{base.$prefix}-textfield';
     max-width: 40%; // Prevent extreme overflow
     overflow: hidden;
     text-overflow: ellipsis;
+    transition: top v.motion('duration-short4') v.motion('easing-emphasized'); // Add transition for top position
   }
   
   // Leading icon
@@ -116,6 +118,7 @@ $component: '#{base.$prefix}-textfield';
     pointer-events: none;
     color: t.color('on-surface-variant');
     z-index: 1;
+    transition: top v.motion('duration-short4') v.motion('easing-emphasized'); // Add transition for top position
     
     svg {
       width: 20px;
@@ -137,6 +140,7 @@ $component: '#{base.$prefix}-textfield';
     color: t.color('on-surface-variant');
     z-index: 1;
     cursor: pointer;
+    transition: top v.motion('duration-short4') v.motion('easing-emphasized'); // Add transition for top position
     
     svg {
       width: 20px;
@@ -148,20 +152,19 @@ $component: '#{base.$prefix}-textfield';
   // JavaScript will handle dynamic sizing, these are fallbacks
   &--with-prefix {
     .#{$component}-label {
-      left: 48px; // More space for wider prefixes
+      // Default value - will be overridden by JS for precise positioning
+      left: 48px;
     }
     
     .#{$component}-input {
-      // We'll use inline style for exact padding in JS,
-      // but provide a reasonable default here
+      // Default value - will be overridden by JS for precise padding
       padding-left: 48px;
     }
   }
   
   &--with-suffix {
     .#{$component}-input {
-      // We'll use inline style for exact padding in JS,
-      // but provide a reasonable default here
+      // Default value - will be overridden by JS for precise padding
       padding-right: 48px;
     }
   }
@@ -183,11 +186,12 @@ $component: '#{base.$prefix}-textfield';
       }
       
       .#{$component}-label {
-        left: 76px; // Increased slightly for better spacing
+        // Default value - will be overridden by JS for precise positioning
+        left: 76px;
       }
       
       .#{$component}-input {
-        // JS will handle exact padding value, but provide a reasonable default
+        // Default value - will be overridden by JS for precise padding
         padding-left: 76px;
       }
     }
@@ -205,7 +209,7 @@ $component: '#{base.$prefix}-textfield';
       }
       
       .#{$component}-input {
-        // JS will handle exact padding value, but provide a reasonable default
+        // Default value - will be overridden by JS for precise padding
         padding-right: 76px;
       }
     }
@@ -269,6 +273,13 @@ $component: '#{base.$prefix}-textfield';
     &-label {
       transition: none;
     }
+    
+    &-prefix,
+    &-suffix,
+    &-leading-icon,
+    &-trailing-icon {
+      transition: none;
+    }
   }
   
   // RTL support
@@ -307,11 +318,13 @@ $component: '#{base.$prefix}-textfield';
     &--with-prefix {
       .#{$component}-label {
         left: auto;
-        right: 48px; // Increased for better spacing
+        // Default value - will be overridden by JS for precise positioning
+        right: 48px;
       }
       
       .#{$component}-input {
         padding-left: 16px;
+        // Default value - will be overridden by JS for precise padding
         padding-right: 48px;
       }
     }
@@ -319,6 +332,7 @@ $component: '#{base.$prefix}-textfield';
     &--with-suffix {
       .#{$component}-input {
         padding-right: 16px;
+        // Default value - will be overridden by JS for precise padding
         padding-left: 48px;
       }
     }
@@ -342,12 +356,14 @@ $component: '#{base.$prefix}-textfield';
         
         .#{$component}-label {
           left: auto;
-          right: 76px; // Increased for better spacing
+          // Default value - will be overridden by JS for precise positioning
+          right: 76px;
         }
         
         .#{$component}-input {
           padding-left: 16px;
-          padding-right: 76px; // Increased for better spacing
+          // Default value - will be overridden by JS for precise padding
+          padding-right: 76px;
         }
       }
     }
@@ -366,7 +382,8 @@ $component: '#{base.$prefix}-textfield';
         
         .#{$component}-input {
           padding-right: 16px;
-          padding-left: 76px; // Increased for better spacing
+          // Default value - will be overridden by JS for precise padding
+          padding-left: 76px;
         }
       }
     }
@@ -417,8 +434,20 @@ $component: '#{base.$prefix}-textfield';
     &:not(.#{$component}--empty) .#{$component}-label,
     &.#{$component}--focused .#{$component}-label {
       transform: translateY(-95%) scale(0.75);
+      // Don't specify left position here - let JS handle it
     }
-
+    
+    // Position adjustments for prefix/suffix when in filled focused/populated state
+    &.mtrl-textfield--with-prefix,
+    &.mtrl-textfield--with-suffix {
+      &:not(.#{$component}--empty),
+      &.#{$component}--focused {
+        .#{$component}-prefix,
+        .#{$component}-suffix {
+          top: 34px; // Align with input text when focused or populated
+        }
+      }
+    }
     // Focus state
     &.#{$component}--focused {    
       .#{$component}-label {
@@ -455,13 +484,13 @@ $component: '#{base.$prefix}-textfield';
     // Prefix/suffix adjustments for filled variant
     &.#{$component}--with-prefix {
       .#{$component}-prefix {
-        top: 28px; // Align with input text in filled variant
+        top: 28px; // Align with input text in filled variant - default state
       }
     }
     
     &.#{$component}--with-suffix {
       .#{$component}-suffix {
-        top: 28px; // Align with input text in filled variant
+        top: 28px; // Align with input text in filled variant - default state
       }
     }
     
@@ -475,18 +504,23 @@ $component: '#{base.$prefix}-textfield';
         left: 44px;
       }
       
-      &:not(.#{$component}--empty) .#{$component}-label,
-      &.#{$component}--focused .#{$component}-label {
-        transform: translateY(-95%) scale(0.75);
-        // Keep the label aligned with input text when focused/filled
-        left: 44px;
-      }
-      
       .#{$component}-leading-icon {
         top: 28px;
       }
+    
     }
     
+    // Populated field (not empty) or focused field label position
+    &:not(.#{$component}--empty) .#{$component}-label,
+    &.#{$component}--focused .#{$component}-label {
+      // Important change: For outlined variant, when focused/populated
+      // we want to reset the left position back to default (or to JS calculated equivalent)
+      // to handle the label moving up above the field
+      // The JS will handle special positioning depending on if it's prefixed
+      left: 16px;
+    }
+
+
     &.#{$component}--with-trailing-icon {
       .#{$component}-input {
         padding-right: 44px;
@@ -511,12 +545,6 @@ $component: '#{base.$prefix}-textfield';
         
         .#{$component}-label {
           left: auto;
-          right: 44px;
-        }
-        
-        &:not(.#{$component}--empty) .#{$component}-label,
-        &.#{$component}--focused .#{$component}-label {
-          // Keep the label aligned with input text when focused/filled in RTL
           right: 44px;
         }
       }
@@ -584,6 +612,11 @@ $component: '#{base.$prefix}-textfield';
     &.#{$component}--focused .#{$component}-label {
       padding: 0 4px;
       transform: translateY(-147%) scale(0.75);
+      // Important change: For outlined variant, when focused/populated
+      // we want to reset the left position back to default (or to JS calculated equivalent)
+      // to handle the label moving up above the field
+      // The JS will handle special positioning depending on if it's prefixed
+      left: 12px;
     }
 
     // Focus state
@@ -646,10 +679,11 @@ $component: '#{base.$prefix}-textfield';
         left: 44px;
       }
       
+      // Important change: For outlined variant, when focused/populated
+      // we still reset to 12px position (default)
       &:not(.#{$component}--empty) .#{$component}-label,
       &.#{$component}--focused .#{$component}-label {
-        // For outlined variant, move label to default position
-        left: 13px;
+        left: 12px;
       }
     }
     
@@ -664,7 +698,7 @@ $component: '#{base.$prefix}-textfield';
       &:not(.#{$component}--empty) .#{$component}-label,
       &.#{$component}--focused .#{$component}-label {
         left: auto;
-        right: 13px;
+        right: 12px;
       }
       
       &.#{$component}--focused .#{$component}-label {
@@ -688,8 +722,8 @@ $component: '#{base.$prefix}-textfield';
         
         &:not(.#{$component}--empty) .#{$component}-label,
         &.#{$component}--focused .#{$component}-label {
-          // For outlined variant in RTL, move label to default position
-          right: 13px;
+          // Reset to default value for focused state
+          right: 12px;
           left: auto;
         }
       }

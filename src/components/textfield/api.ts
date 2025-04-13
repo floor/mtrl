@@ -1,5 +1,6 @@
 // src/components/textfield/api.ts
 import { BaseComponent, TextfieldComponent, ApiOptions } from './types';
+import { PlacementComponent } from './features/placement';
 
 /**
  * Enhances textfield component with API methods
@@ -7,7 +8,7 @@ import { BaseComponent, TextfieldComponent, ApiOptions } from './types';
  * @returns {Function} Higher-order function that adds API methods to component
  */
 export const withAPI = ({ disabled, lifecycle }: ApiOptions) => 
-  (component: BaseComponent): TextfieldComponent => ({
+  (component: BaseComponent & Partial<PlacementComponent>): TextfieldComponent => ({
     ...component as any,
     element: component.element,
     input: component.input as HTMLInputElement | HTMLTextAreaElement,
@@ -37,6 +38,10 @@ export const withAPI = ({ disabled, lifecycle }: ApiOptions) =>
     // Label management
     setLabel(text: string): TextfieldComponent {
       component.label?.setText(text);
+      // Update positions after changing label
+      if (component.updateElementPositions) {
+        setTimeout(() => component.updateElementPositions(), 10);
+      }
       return this;
     },
     
@@ -49,6 +54,10 @@ export const withAPI = ({ disabled, lifecycle }: ApiOptions) =>
     setLeadingIcon(html: string): TextfieldComponent {
       if (component.setLeadingIcon) {
         component.setLeadingIcon(html);
+        // Update positions after changing icon
+        if (component.updateElementPositions) {
+          setTimeout(() => component.updateElementPositions(), 10);
+        }
       }
       return this;
     },
@@ -56,6 +65,10 @@ export const withAPI = ({ disabled, lifecycle }: ApiOptions) =>
     removeLeadingIcon(): TextfieldComponent {
       if (component.removeLeadingIcon) {
         component.removeLeadingIcon();
+        // Update positions after removing icon
+        if (component.updateElementPositions) {
+          setTimeout(() => component.updateElementPositions(), 10);
+        }
       }
       return this;
     },
@@ -65,6 +78,10 @@ export const withAPI = ({ disabled, lifecycle }: ApiOptions) =>
     setTrailingIcon(html: string): TextfieldComponent {
       if (component.setTrailingIcon) {
         component.setTrailingIcon(html);
+        // Update positions after changing icon
+        if (component.updateElementPositions) {
+          setTimeout(() => component.updateElementPositions(), 10);
+        }
       }
       return this;
     },
@@ -72,6 +89,10 @@ export const withAPI = ({ disabled, lifecycle }: ApiOptions) =>
     removeTrailingIcon(): TextfieldComponent {
       if (component.removeTrailingIcon) {
         component.removeTrailingIcon();
+        // Update positions after removing icon
+        if (component.updateElementPositions) {
+          setTimeout(() => component.updateElementPositions(), 10);
+        }
       }
       return this;
     },
@@ -97,6 +118,10 @@ export const withAPI = ({ disabled, lifecycle }: ApiOptions) =>
     setPrefixText(text: string): TextfieldComponent {
       if (component.setPrefixText) {
         component.setPrefixText(text);
+        // Update positions after changing prefix
+        if (component.updateElementPositions) {
+          setTimeout(() => component.updateElementPositions(), 10);
+        }
       }
       return this;
     },
@@ -104,6 +129,10 @@ export const withAPI = ({ disabled, lifecycle }: ApiOptions) =>
     removePrefixText(): TextfieldComponent {
       if (component.removePrefixText) {
         component.removePrefixText();
+        // Update positions after removing prefix
+        if (component.updateElementPositions) {
+          setTimeout(() => component.updateElementPositions(), 10);
+        }
       }
       return this;
     },
@@ -113,6 +142,10 @@ export const withAPI = ({ disabled, lifecycle }: ApiOptions) =>
     setSuffixText(text: string): TextfieldComponent {
       if (component.setSuffixText) {
         component.setSuffixText(text);
+        // Update positions after changing suffix
+        if (component.updateElementPositions) {
+          setTimeout(() => component.updateElementPositions(), 10);
+        }
       }
       return this;
     },
@@ -120,6 +153,18 @@ export const withAPI = ({ disabled, lifecycle }: ApiOptions) =>
     removeSuffixText(): TextfieldComponent {
       if (component.removeSuffixText) {
         component.removeSuffixText();
+        // Update positions after removing suffix
+        if (component.updateElementPositions) {
+          setTimeout(() => component.updateElementPositions(), 10);
+        }
+      }
+      return this;
+    },
+
+    // Update positioning manually (useful after DOM updates)
+    updatePositions(): TextfieldComponent {
+      if (component.updateElementPositions) {
+        component.updateElementPositions();
       }
       return this;
     },

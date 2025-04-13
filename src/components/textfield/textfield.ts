@@ -15,7 +15,8 @@ import {
   withTrailingIcon, 
   withSupportingText,
   withPrefixText,
-  withSuffixText
+  withSuffixText,
+  withPlacement
 } from './features';
 import { TextfieldConfig, TextfieldComponent } from './types';
 import { 
@@ -61,21 +62,24 @@ const createTextfield = (config: TextfieldConfig = {}): TextfieldComponent => {
   const baseConfig = createBaseConfig(config);
 
   try {
+    // Build textfield through functional composition
+    // Each function in the pipe adds specific capabilities
     const textfield = pipe(
-      createBase,
-      withEvents(),
-      withElement(getElementConfig(baseConfig)),
-      withVariant(baseConfig),
-      withTextInput(baseConfig),
-      withTextLabel(baseConfig),
-      withLeadingIcon(baseConfig),
-      withTrailingIcon(baseConfig),
-      withPrefixText(baseConfig),
-      withSuffixText(baseConfig),
-      withSupportingText(baseConfig),
-      withDisabled(baseConfig),
-      withLifecycle(),
-      comp => withAPI(getApiConfig(comp))(comp)
+      createBase,                       // Base component structure
+      withEvents(),                     // Event handling system
+      withElement(getElementConfig(baseConfig)), // Create DOM element
+      withVariant(baseConfig),          // Apply variant styling (filled/outlined)
+      withTextInput(baseConfig),        // Add input element
+      withTextLabel(baseConfig),        // Add text label
+      withLeadingIcon(baseConfig),      // Add leading icon (if specified)
+      withTrailingIcon(baseConfig),     // Add trailing icon (if specified)
+      withPrefixText(baseConfig),       // Add prefix text (if specified) 
+      withSuffixText(baseConfig),       // Add suffix text (if specified)
+      withSupportingText(baseConfig),   // Add supporting/helper text (if specified)
+      withDisabled(baseConfig),         // Add disabled state management
+      withLifecycle(),                  // Add lifecycle management
+      withPlacement(),                  // Add dynamic positioning for elements
+      comp => withAPI(getApiConfig(comp))(comp) // Add public API
     )(baseConfig);
 
     return textfield as TextfieldComponent;

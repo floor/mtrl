@@ -189,6 +189,9 @@ export interface TextfieldComponent {
   /** Removes the suffix text */
   removeSuffixText: () => TextfieldComponent;
   
+  /** Manually update element positions (useful after DOM changes) */
+  updatePositions: () => TextfieldComponent;
+  
   /** Adds event listener */
   on: (event: string, handler: Function) => TextfieldComponent;
   
@@ -248,6 +251,7 @@ export interface BaseComponent {
   suffixTextElement?: HTMLElement | null;
   setSuffixText?: (text: string) => any;
   removeSuffixText?: () => any;
+  updateElementPositions?: () => any;
   on?: (event: string, handler: Function) => any;
   off?: (event: string, handler: Function) => any;
   disabled?: {
