@@ -79,7 +79,11 @@ $component: '#{base.$prefix}-textfield';
     transform: translateY(-50%);
     color: t.color('on-surface');
     pointer-events: none;
-    z-index: 1;
+    z-index: 2; // Increased to ensure it stays above input
+    white-space: nowrap; // Prevent text wrapping
+    max-width: 40%; // Prevent extreme overflow
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   
   // Suffix text
@@ -91,7 +95,11 @@ $component: '#{base.$prefix}-textfield';
     transform: translateY(-50%);
     color: t.color('on-surface');
     pointer-events: none;
-    z-index: 1;
+    z-index: 2; // Increased to ensure it stays above input
+    white-space: nowrap; // Prevent text wrapping
+    max-width: 40%; // Prevent extreme overflow
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   
   // Leading icon
@@ -136,20 +144,25 @@ $component: '#{base.$prefix}-textfield';
     }
   }
   
-  // Adjustments when prefix/suffix are present
+  // Adjustments when prefix/suffix are present - base case styling
+  // JavaScript will handle dynamic sizing, these are fallbacks
   &--with-prefix {
     .#{$component}-label {
-      left: 44px;
+      left: 48px; // More space for wider prefixes
     }
     
     .#{$component}-input {
-      padding-left: 44px;
+      // We'll use inline style for exact padding in JS,
+      // but provide a reasonable default here
+      padding-left: 48px;
     }
   }
   
   &--with-suffix {
     .#{$component}-input {
-      padding-right: 44px;
+      // We'll use inline style for exact padding in JS,
+      // but provide a reasonable default here
+      padding-right: 48px;
     }
   }
   
@@ -170,11 +183,12 @@ $component: '#{base.$prefix}-textfield';
       }
       
       .#{$component}-label {
-        left: 72px;
+        left: 76px; // Increased slightly for better spacing
       }
       
       .#{$component}-input {
-        padding-left: 72px;
+        // JS will handle exact padding value, but provide a reasonable default
+        padding-left: 76px;
       }
     }
   }
@@ -191,7 +205,8 @@ $component: '#{base.$prefix}-textfield';
       }
       
       .#{$component}-input {
-        padding-right: 72px;
+        // JS will handle exact padding value, but provide a reasonable default
+        padding-right: 76px;
       }
     }
   }
@@ -292,19 +307,19 @@ $component: '#{base.$prefix}-textfield';
     &--with-prefix {
       .#{$component}-label {
         left: auto;
-        right: 44px;
+        right: 48px; // Increased for better spacing
       }
       
       .#{$component}-input {
         padding-left: 16px;
-        padding-right: 44px;
+        padding-right: 48px;
       }
     }
     
     &--with-suffix {
       .#{$component}-input {
         padding-right: 16px;
-        padding-left: 44px;
+        padding-left: 48px;
       }
     }
     
@@ -327,12 +342,12 @@ $component: '#{base.$prefix}-textfield';
         
         .#{$component}-label {
           left: auto;
-          right: 72px;
+          right: 76px; // Increased for better spacing
         }
         
         .#{$component}-input {
           padding-left: 16px;
-          padding-right: 72px;
+          padding-right: 76px; // Increased for better spacing
         }
       }
     }
@@ -351,7 +366,7 @@ $component: '#{base.$prefix}-textfield';
         
         .#{$component}-input {
           padding-right: 16px;
-          padding-left: 72px;
+          padding-left: 76px; // Increased for better spacing
         }
       }
     }
@@ -440,13 +455,13 @@ $component: '#{base.$prefix}-textfield';
     // Prefix/suffix adjustments for filled variant
     &.#{$component}--with-prefix {
       .#{$component}-prefix {
-        top: 28px;
+        top: 28px; // Align with input text in filled variant
       }
     }
     
     &.#{$component}--with-suffix {
       .#{$component}-suffix {
-        top: 28px;
+        top: 28px; // Align with input text in filled variant
       }
     }
     
@@ -608,16 +623,16 @@ $component: '#{base.$prefix}-textfield';
       }
     }
     
-    // Prefix/suffix adjustments for outlined variant
+    // Prefix/suffix vertical alignment for outlined variant
     &.#{$component}--with-prefix {
       .#{$component}-prefix {
-        top: 50%;
+        top: 50%; // Centered vertically in outlined variant
       }
     }
     
     &.#{$component}--with-suffix {
       .#{$component}-suffix {
-        top: 50%;
+        top: 50%; // Centered vertically in outlined variant
       }
     }
     
