@@ -96,7 +96,8 @@ export const withMenu = (config: SelectConfig) =>
       width: '100%', // Match width of textfield
       closeOnSelect: true,
       closeOnClickOutside: true,
-      closeOnEscape: true
+      closeOnEscape: true,
+      offset: 0 // Set offset to 0 to eliminate gap between textfield and menu
     });
     
     // Handle menu selection
@@ -124,7 +125,7 @@ export const withMenu = (config: SelectConfig) =>
     // Handle textfield click to open menu
     component.textfield.element.addEventListener('click', (e) => {
       if (!component.textfield.input.disabled) {
-        menu.open(e);
+        menu.open(e, 'mouse'); // Specify mouse interaction
         
         // Emit open event
         if (component.emit) {
@@ -135,6 +136,30 @@ export const withMenu = (config: SelectConfig) =>
             defaultPrevented: false
           });
         }
+      }
+    });
+
+    // Add keyboard event listener for textfield
+    component.textfield.element.addEventListener('keydown', (e) => {
+      if (component.textfield.input.disabled) return;
+      
+      // Handle keyboard-based open
+      if ((e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown') && !menu.isOpen()) {
+        e.preventDefault();
+        menu.open(e, 'keyboard'); // Specify keyboard interaction
+        
+        // Emit open event
+        if (component.emit) {
+          component.emit('open', {
+            select: component,
+            originalEvent: e,
+            preventDefault: () => {},
+            defaultPrevented: false
+          });
+        }
+      } else if (e.key === 'Escape' && menu.isOpen()) {
+        e.preventDefault();
+        menu.close(e);
       }
     });
     
@@ -211,7 +236,7 @@ export const withMenu = (config: SelectConfig) =>
     return {
       ...component,
       menu,
-      
+
       // Select controller
       select: {
         getValue: () => state.selectedOption?.id || null,
@@ -266,8 +291,8 @@ export const withMenu = (config: SelectConfig) =>
           return component;
         },
         
-        open: () => {
-          menu.open();
+        open: (event?: Event, interactionType: 'mouse' | 'keyboard' = 'mouse') => {
+          menu.open(event, interactionType);
           return component;
         },
         

@@ -1,5 +1,4 @@
 // src/components/select/api.ts
-
 import { SelectComponent, ApiOptions, SelectOption } from './types';
 
 /**
@@ -33,8 +32,8 @@ export const withAPI = (options: ApiOptions) =>
       return this;
     },
     
-    open(): SelectComponent {
-      options.select.open();
+    open(interactionType: 'mouse' | 'keyboard' = 'mouse'): SelectComponent {
+      options.select.open(undefined, interactionType);
       return this;
     },
     

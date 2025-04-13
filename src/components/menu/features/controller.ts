@@ -86,7 +86,7 @@ export const withController = (config: MenuConfig) => component => {
     
     itemElement.className = itemClass;
     itemElement.setAttribute('role', 'menuitem');
-    itemElement.setAttribute('tabindex', '-1');
+    itemElement.setAttribute('tabindex', '-1'); // Set to -1 by default, will update when needed
     itemElement.setAttribute('data-id', item.id);
     itemElement.setAttribute('data-index', index.toString());
     
@@ -133,7 +133,21 @@ export const withController = (config: MenuConfig) => component => {
     
     // Add event listeners
     if (!item.disabled) {
+      // Mouse events
       itemElement.addEventListener('click', (e) => handleItemClick(e, item, index));
+      
+      // Focus and blur events for proper focus styling
+      itemElement.addEventListener('focus', () => {
+        state.activeItemIndex = index;
+      });
+      
+      // Additional keyboard event handler for accessibility
+      itemElement.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleItemClick(e, item, index);
+        }
+      });
       
       if (item.hasSubmenu && config.openSubmenuOnHover) {
         itemElement.addEventListener('mouseenter', () => handleSubmenuHover(item, index, itemElement));
@@ -193,14 +207,16 @@ export const withController = (config: MenuConfig) => component => {
     const menuElement = component.element;
     const anchorRect = anchor.getBoundingClientRect();
     const { placement } = state;
-    const offset = config.offset || 8;
+    const offset = config.offset !== undefined ? config.offset : 0;
     
     // Reset styles for measurement
     menuElement.style.top = '0';
     menuElement.style.left = '0';
     menuElement.style.right = 'auto';
     menuElement.style.bottom = 'auto';
-    menuElement.style.maxHeight = config.maxHeight || '';
+    
+    // Clear any previously set max-height
+    menuElement.style.maxHeight = '';
     
     // Take measurements
     const menuRect = menuElement.getBoundingClientRect();
@@ -210,9 +226,36 @@ export const withController = (config: MenuConfig) => component => {
     // Calculate position based on placement
     let top = 0;
     let left = 0;
+    let calculatedPlacement = placement;
     
-    // Standard placement logic (unchanged)
+    // First determine correct position based on original placement
     switch (placement) {
+      case 'top-start':
+      case 'top':
+      case 'top-end':
+        // Check if enough space above
+        if (anchorRect.top < menuRect.height + offset + 16) {
+          // Not enough space above, flip to bottom
+          calculatedPlacement = placement.replace('top', 'bottom');
+        }
+        break;
+      
+      case 'bottom-start':
+      case 'bottom':
+      case 'bottom-end':
+        // Check if enough space below
+        if (anchorRect.bottom + menuRect.height + offset + 16 > viewportHeight) {
+          // Not enough space below, check if more space above
+          if (anchorRect.top > (viewportHeight - anchorRect.bottom)) {
+            // More space above, flip to top
+            calculatedPlacement = placement.replace('bottom', 'top');
+          }
+        }
+        break;
+    }
+    
+    // Now position based on the potentially flipped placement
+    switch (calculatedPlacement) {
       case 'top-start':
         top = anchorRect.top - menuRect.height - offset;
         left = anchorRect.left;
@@ -268,45 +311,40 @@ export const withController = (config: MenuConfig) => component => {
     // Top edge spacing
     const minTopSpacing = 16; // Minimum distance from top of viewport
     if (top < minTopSpacing) {
-      // If the menu would be too close to the top, reposition it
-      if (placement.startsWith('top')) {
-        // For 'top' placements, flip to 'bottom'
-        top = anchorRect.bottom + offset;
-      } else {
-        // For other placements, ensure minimum spacing
-        top = minTopSpacing;
-      }
+      top = minTopSpacing;
     }
     
     // Bottom edge spacing
-    const bottomEdge = top + menuRect.height;
     const viewportBottomMargin = 16; // Minimum space from bottom of viewport
+    const bottomEdge = top + menuRect.height;
     
     if (bottomEdge > viewportHeight - viewportBottomMargin) {
       // If menu would extend beyond bottom with margin, adjust maxHeight
       const availableHeight = viewportHeight - top - viewportBottomMargin;
       
-      // Set a minimum height to prevent tiny menus
-      const minMenuHeight = Math.min(menuRect.height, 100);
-      const newMaxHeight = Math.max(availableHeight, minMenuHeight);
+      // Only set maxHeight if we're not flipping from top to bottom
+      // Fixed: Only apply maxHeight in specific cases
+      if (calculatedPlacement.startsWith('top') || 
+          (calculatedPlacement.startsWith('bottom') && placement.startsWith('bottom'))) {
+        // Set a minimum height to prevent tiny menus
+        const minMenuHeight = Math.min(menuRect.height, 100);
+        const newMaxHeight = Math.max(availableHeight, minMenuHeight);
+        
+        // Update maxHeight to fit within viewport
+        menuElement.style.maxHeight = `${newMaxHeight}px`;
+      }
       
-      // Update maxHeight to fit within viewport
-      menuElement.style.maxHeight = `${newMaxHeight}px`;
-      
-      // If menu has a custom maxHeight already smaller than available space, don't override it
+      // If user has explicitly set a maxHeight, respect it if smaller than our calculated value
       if (config.maxHeight) {
         const configMaxHeight = parseInt(config.maxHeight, 10);
-        if (!isNaN(configMaxHeight) && configMaxHeight < newMaxHeight) {
+        if (!isNaN(configMaxHeight) && configMaxHeight < parseInt(menuElement.style.maxHeight, 10)) {
           menuElement.style.maxHeight = config.maxHeight;
         }
       }
-      
-      // If menu still won't fit below, try placing it above (if it would fit there)
-      if (availableHeight < minMenuHeight && placement.startsWith('bottom')) {
-        const topSpace = anchorRect.top - minTopSpacing;
-        if (topSpace >= minMenuHeight) {
-          top = anchorRect.top - menuRect.height - offset;
-        }
+    } else {
+      // If there's plenty of space, use the config's maxHeight (if provided)
+      if (config.maxHeight) {
+        menuElement.style.maxHeight = config.maxHeight;
       }
     }
     
@@ -334,6 +372,39 @@ export const withController = (config: MenuConfig) => component => {
       clearTimeout(state.hoverIntent.timer);
       state.hoverIntent.timer = null;
       state.hoverIntent.activeItem = null;
+    }
+  };
+
+  /**
+   * Sets focus appropriately based on interaction type
+   * For keyboard interactions, focuses the first item
+   * For mouse interactions, makes the menu container focusable but doesn't auto-focus
+   * 
+   * @param {'keyboard'|'mouse'} interactionType - Type of interaction that opened the menu
+   */
+  const handleFocus = (interactionType: 'keyboard' | 'mouse'): void => {
+    // Reset active item index
+    state.activeItemIndex = -1;
+    
+    if (interactionType === 'keyboard') {
+      // Find all focusable items
+      const items = Array.from(
+        component.element.querySelectorAll(`.${component.getClass('menu-item')}:not(.${component.getClass('menu-item--disabled')})`)
+      ) as HTMLElement[];
+      
+      if (items.length > 0) {
+        // Focus the first item for keyboard navigation
+        items[0].setAttribute('tabindex', '0');
+        items[0].focus();
+        state.activeItemIndex = 0;
+      } else {
+        // If no items, focus the menu itself
+        component.element.setAttribute('tabindex', '0');
+        component.element.focus();
+      }
+    } else {
+      // For mouse interaction, make the menu focusable but don't auto-focus
+      component.element.setAttribute('tabindex', '-1');
     }
   };
 
@@ -618,11 +689,10 @@ export const withController = (config: MenuConfig) => component => {
 
   /**
    * Opens the menu
+   * @param {Event} [event] - Optional event that triggered the open
+   * @param {'mouse'|'keyboard'} [interactionType='mouse'] - The type of interaction that triggered the open
    */
-  /**
-   * Opens the menu
-   */
-  const openMenu = (event?: Event): void => {
+  const openMenu = (event?: Event, interactionType: 'mouse' | 'keyboard' = 'mouse'): void => {
     if (state.visible) return;
     
     // Update state
@@ -640,9 +710,9 @@ export const withController = (config: MenuConfig) => component => {
     // Position
     positionMenu();
     
-    // Focus first item
+    // Focus based on interaction type
     setTimeout(() => {
-      focusFirstItem();
+      handleFocus(interactionType);
     }, 100);
     
     // Add document events

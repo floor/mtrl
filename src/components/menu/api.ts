@@ -58,13 +58,15 @@ export const withAPI = ({ menu, anchor, events, lifecycle }: ApiOptions) =>
     ...component as any,
     element: component.element,
     
+
     /**
      * Opens the menu
      * @param event - Optional event that triggered the open
+     * @param interactionType - The type of interaction that triggered the open ('mouse' or 'keyboard')
      * @returns Menu component for chaining
      */
-    open(event?: Event) {
-      menu.open(event);
+    open(event?: Event, interactionType: 'mouse' | 'keyboard' = 'mouse') {
+      menu.open(event, interactionType);
       return this;
     },
     

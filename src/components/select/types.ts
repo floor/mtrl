@@ -188,9 +188,10 @@ export interface SelectComponent {
   
   /**
    * Opens the select menu
+   * @param interactionType - The type of interaction ('mouse' or 'keyboard')
    * @returns Select component for chaining
    */
-  open: () => SelectComponent;
+  open: (interactionType?: 'mouse' | 'keyboard') => SelectComponent;
   
   /**
    * Closes the select menu

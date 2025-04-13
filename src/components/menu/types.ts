@@ -280,9 +280,10 @@ export interface MenuComponent {
   /**
    * Opens the menu
    * @param event - Optional event that triggered the open
+   * @param interactionType - The type of interaction that triggered the open ('mouse' or 'keyboard')
    * @returns The menu component for chaining
    */
-  open: (event?: Event) => MenuComponent;
+  open: (event?: Event, interactionType?: 'mouse' | 'keyboard') => MenuComponent;
   
   /**
    * Closes the menu
