@@ -17,6 +17,11 @@ export interface TextInputConfig {
   multiline?: boolean;
   
   /**
+   * Minimum number of rows for textarea
+   */
+  rows?: number;
+  
+  /**
    * Input name attribute
    */
   name?: string;
@@ -106,6 +111,7 @@ export interface TextInputComponent extends ElementComponent {
 
 /**
  * Enhances a component with text input functionality
+ * Creates either an input or textarea element based on config
  * 
  * @param config - Text input configuration
  * @returns Function that enhances a component with text input capabilities
@@ -116,7 +122,9 @@ export const withTextInput = <T extends TextInputConfig>(config: T = {} as T) =>
     const input = document.createElement(isMultiline ? 'textarea' : 'input') as 
       HTMLInputElement | HTMLTextAreaElement;
     
-    input.className = `${component.getClass('textfield')}-input`;
+    const prefix = config.prefix || 'mtrl';
+    const componentName = config.componentName || 'component';
+    input.className = `${prefix}-${componentName}-input`;
 
     // Set input attributes
     const attributes: Record<string, string | number | boolean | undefined> = {
@@ -124,7 +132,6 @@ export const withTextInput = <T extends TextInputConfig>(config: T = {} as T) =>
       required: config.required,
       disabled: config.disabled,
       maxLength: config.maxLength,
-      pattern: config.pattern,
       autocomplete: config.autocomplete,
       value: config.value || ''
     };
@@ -133,7 +140,12 @@ export const withTextInput = <T extends TextInputConfig>(config: T = {} as T) =>
     if (!isMultiline) {
       attributes.type = config.type || 'text';
     } else {
-      // For textarea, add a data attribute to identify it as multiline
+      // For textarea, add rows attribute if specified
+      if (config.rows) {
+        (input as HTMLTextAreaElement).rows = config.rows;
+      }
+      
+      // For textarea, set data-type attribute to identify it as multiline
       attributes['data-type'] = 'multiline';
     }
 
@@ -152,12 +164,11 @@ export const withTextInput = <T extends TextInputConfig>(config: T = {} as T) =>
     // Handle input state changes
     const updateInputState = (): boolean => {
       const isEmpty = !input.value;
-      component.element.classList.toggle(`${component.getClass('textfield')}--empty`, isEmpty);
+      component.element.classList.toggle(`${prefix}-${componentName}--empty`, isEmpty);
       return isEmpty;
     };
 
-    // Detect autofill using input events instead of animation
-    // This is more compatible with our testing environment
+    // Detect autofill using input events
     const handleAutofill = (): void => {
       // Check for webkit autofill background
       const isAutofilled =
@@ -167,27 +178,30 @@ export const withTextInput = <T extends TextInputConfig>(config: T = {} as T) =>
          window.getComputedStyle(input).backgroundColor === 'rgb(232, 240, 254)');
 
       if (isAutofilled) {
-        component.element.classList.remove(`${component.getClass('textfield')}--empty`);
+        component.element.classList.remove(`${prefix}-${componentName}--empty`);
         component.emit?.('input', { value: input.value, isEmpty: false, isAutofilled: true });
       }
     };
 
     // Event listeners
     input.addEventListener('focus', () => {
-      component.element.classList.add(`${component.getClass('textfield')}--focused`);
+      component.element.classList.add(`${prefix}-${componentName}--focused`);
       component.emit?.('focus', { isEmpty: updateInputState() });
       // Also check for autofill on focus
       setTimeout(handleAutofill, 100);
     });
 
     input.addEventListener('blur', () => {
-      component.element.classList.remove(`${component.getClass('textfield')}--focused`);
+      component.element.classList.remove(`${prefix}-${componentName}--focused`);
       component.emit?.('blur', { isEmpty: updateInputState() });
     });
 
     input.addEventListener('input', () => {
+      // Special handling for multiline with preserving line breaks
+      const value = isMultiline ? input.value : input.value;
+      
       component.emit?.('input', {
-        value: input.value,
+        value,
         isEmpty: updateInputState(),
         isAutofilled: false
       });
@@ -198,7 +212,7 @@ export const withTextInput = <T extends TextInputConfig>(config: T = {} as T) =>
 
     // Add multiline class to the component if it's a textarea
     if (isMultiline) {
-      component.element.classList.add(`${component.getClass('textfield')}--multiline`);
+      component.element.classList.add(`${prefix}-${componentName}--multiline`);
     }
 
     component.element.appendChild(input);
@@ -216,7 +230,12 @@ export const withTextInput = <T extends TextInputConfig>(config: T = {} as T) =>
       ...component,
       input,
       setValue(value: string) {
-        input.value = value || '';
+        if (isMultiline && input instanceof HTMLTextAreaElement) {
+          // For textarea, preserve line breaks
+          input.value = value || '';
+        } else {
+          input.value = value || '';
+        }
         updateInputState();
         return this;
       },

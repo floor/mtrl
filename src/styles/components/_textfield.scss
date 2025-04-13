@@ -70,6 +70,36 @@ $component: '#{base.$prefix}-textfield';
     }
   }
   
+  // Specialized styles for textarea element
+  textarea.#{$component}-input {
+    height: auto;
+    min-height: 56px;
+    resize: vertical;
+    line-height: 1.5;
+    padding-top: 24px;    // Increased top padding for label space
+    padding-bottom: 8px;  // Reduced bottom padding for better text alignment
+    transition: height 0.2s ease;
+    overflow-y: hidden;   // Hide scrollbar during auto-grow transitions
+    
+    // When scrollable (exceeds maxHeight)
+    &.scrollable {
+      overflow-y: auto;
+      
+      &::-webkit-scrollbar {
+        width: 8px;
+      }
+      
+      &::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      
+      &::-webkit-scrollbar-thumb {
+        background-color: t.alpha('on-surface', 0.2);
+        border-radius: 4px;
+      }
+    }
+  }
+  
   // Prefix text
   &-prefix {
     @include m.typography('body-large');
@@ -280,6 +310,10 @@ $component: '#{base.$prefix}-textfield';
     &-trailing-icon {
       transition: none;
     }
+    
+    textarea.#{$component}-input {
+      transition: none;
+    }
   }
   
   // RTL support
@@ -417,6 +451,17 @@ $component: '#{base.$prefix}-textfield';
       }
     }
 
+    // Textarea element in filled variant
+    textarea.#{$component}-input {
+      padding-top: 30px; // Increased top padding for label in filled variant
+      padding-bottom: 10px; // Gives more space for text content
+      
+      & ~ .#{$component}-label {
+        top: 25px; // Move label more toward the top in textarea
+        transform: translateY(0);
+      }
+    }
+
     &::before {
       content: '';
       position: absolute;
@@ -500,6 +545,11 @@ $component: '#{base.$prefix}-textfield';
         padding: 20px 16px 7px 44px;
       }
       
+      textarea.#{$component}-input {
+        padding-top: 30px;
+        padding-bottom: 10px;
+      }
+      
       .#{$component}-label {
         left: 44px;
       }
@@ -541,6 +591,11 @@ $component: '#{base.$prefix}-textfield';
       &.#{$component}--with-leading-icon {
         .#{$component}-input {
           padding: 20px 44px 7px 16px;
+        }
+        
+        textarea.#{$component}-input {
+          padding-top: 30px;
+          padding-bottom: 10px;
         }
         
         .#{$component}-label {
@@ -585,6 +640,17 @@ $component: '#{base.$prefix}-textfield';
           background-color: t.color('surface');
           transform: translateY(-145%) scale(0.75);
         }
+      }
+    }
+    
+    // Textarea element in outlined variant
+    textarea.#{$component}-input {
+      padding-top: 24px; // More padding for label
+      padding-bottom: 10px;
+      
+      & ~ .#{$component}-label {
+        top: 16px; // Position label near the top of the field for better visibility
+        transform: translateY(0);
       }
     }
 
@@ -661,11 +727,21 @@ $component: '#{base.$prefix}-textfield';
       .#{$component}-prefix {
         top: 50%; // Centered vertically in outlined variant
       }
+      
+      // Adjusted position for textarea
+      textarea.#{$component}-input ~ .#{$component}-prefix {
+        top: 30px; // Positioned lower for multiline inputs
+      }
     }
     
     &.#{$component}--with-suffix {
       .#{$component}-suffix {
         top: 50%; // Centered vertically in outlined variant
+      }
+      
+      // Adjusted position for textarea
+      textarea.#{$component}-input ~ .#{$component}-suffix {
+        top: 30px; // Positioned lower for multiline inputs
       }
     }
     
@@ -685,11 +761,21 @@ $component: '#{base.$prefix}-textfield';
       &.#{$component}--focused .#{$component}-label {
         left: 12px;
       }
+      
+      // Position the leading icon for textarea
+      textarea.#{$component}-input ~ .#{$component}-leading-icon {
+        top: 30px; // Positioned lower for multiline inputs
+      }
     }
     
     &.#{$component}--with-trailing-icon {
       .#{$component}-input {
         padding-right: 44px;
+      }
+      
+      // Position the trailing icon for textarea
+      textarea.#{$component}-input ~ .#{$component}-trailing-icon {
+        top: 30px; // Positioned lower for multiline inputs
       }
     }
     
@@ -737,37 +823,94 @@ $component: '#{base.$prefix}-textfield';
     }
   }
   
-   // Multiline styles
+  // Multiline-specific styles (overrides for both variants)
   &--multiline {
-    .#{$component}-input {
-      min-height: 100px;
-      height: auto;
-      resize: vertical;
-      padding-top: 12px;
+    .#{$component}-label {
+      top: 8px;
+      transform: translateY(0);
     }
     
+    // Common styles for icons in multiline textfields
+    .#{$component}-leading-icon,
+    .#{$component}-trailing-icon {
+      top: 22px;
+    }
+    
+    // Common styles for prefix/suffix in multiline textfields
     .#{$component}-prefix,
     .#{$component}-suffix {
-      top: 28px;
+      top: 22px;
     }
     
-    .#{$component}-label {
-      top: 24px;
+    // Update helper text position for multiline textfields
+    .#{$component}-helper {
+      position: relative;
+      margin-top: 4px;
+      bottom: auto;
     }
-  }
-
-
-  // Support for multiline inputs
-  &-input[type="multiline"] {
-    min-height: 100px;
-    resize: vertical;
     
-    & ~ .#{$component}-leading-icon,
-    & ~ .#{$component}-trailing-icon,
-    & ~ .#{$component}-prefix,
-    & ~ .#{$component}-suffix {
-      top: 20px;
-      transform: none;
+    // Empty state
+    &.#{$component}--empty {
+      .#{$component}-label {
+        // Label stays at the top for multiline even when empty
+        transform: translateY(0);
+      }
+    }
+    
+    // Non-empty state
+    &:not(.#{$component}--empty) {
+      .#{$component}-label {
+        transform: translateY(-50%) scale(0.75);
+      }
+    }
+    
+    // Outlined variant specific multiline adjustments
+    &.#{$component}--outlined {
+      .#{$component}-input {
+        min-height: 80px;
+      }
+      
+      &::before {
+        height: initial;
+        top: 0;
+        bottom: 20px;
+      }
+
+      // Outlined textarea cursor style
+      textarea.#{$component}-input {
+        cursor: text;
+      }
+      
+      // Label positioning when non-empty or focused
+      &:not(.#{$component}--empty) .#{$component}-label,
+      &.#{$component}--focused .#{$component}-label {
+        top: 0;
+        transform: translateY(-50%) scale(0.75);
+      }
+    }
+    
+    // Filled variant specific multiline adjustments
+    &.#{$component}--filled {
+      .#{$component}-input {
+        margin-top: 20px;
+        padding-top: 16px;
+        min-height: 80px;
+      }
+      
+      .#{$component}-label {
+        top: 20px;
+        transform: translateY(0);
+      }
+
+      &::before {
+        bottom: 20px;
+      }
+
+      // Label positioning when non-empty or focused
+      &:not(.#{$component}--empty) .#{$component}-label,
+      &.#{$component}--focused .#{$component}-label {
+        transform: translateY(-60%) scale(0.75);
+      }
     }
   }
 }

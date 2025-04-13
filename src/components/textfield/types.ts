@@ -111,6 +111,26 @@ export interface TextfieldConfig {
   
   /** Component name */
   componentName?: string;
+  
+  /** 
+   * Whether to use textarea instead of input (alternative to setting type="multiline") 
+   */
+  multiline?: boolean;
+  
+  /** 
+   * Number of rows for textarea (only valid for multiline) 
+   */
+  rows?: number;
+  
+  /**
+   * Whether to automatically grow the textarea as content increases
+   */
+  autoGrow?: boolean;
+  
+  /**
+   * Maximum height for auto-growing textarea in pixels
+   */
+  maxHeight?: number;
 }
 
 /**
@@ -189,6 +209,24 @@ export interface TextfieldComponent {
   /** Removes the suffix text */
   removeSuffixText: () => TextfieldComponent;
   
+  /** 
+   * Updates the height of the textarea based on content (for multiline only)
+   * Useful after programmatically setting content
+   */
+  updateHeight: () => TextfieldComponent;
+  
+  /**
+   * Sets the number of rows for a textarea (for multiline only)
+   * @param rows - Number of visible rows
+   */
+  setRows: (rows: number) => TextfieldComponent;
+  
+  /**
+   * Checks if this textfield is multiline
+   * @returns true if this is a multiline textfield (textarea)
+   */
+  isMultiline: () => boolean;
+  
   /** Manually update element positions (useful after DOM changes) */
   updatePositions: () => TextfieldComponent;
   
@@ -252,6 +290,8 @@ export interface BaseComponent {
   setSuffixText?: (text: string) => any;
   removeSuffixText?: () => any;
   updateElementPositions?: () => any;
+  updateHeight?: () => any;
+  setRows?: (rows: number) => any;
   on?: (event: string, handler: Function) => any;
   off?: (event: string, handler: Function) => any;
   disabled?: {

@@ -1,6 +1,7 @@
 // src/components/textfield/api.ts
 import { BaseComponent, TextfieldComponent, ApiOptions } from './types';
 import { PlacementComponent } from './features/placement';
+import { MultilineComponent } from './features/multiline';
 
 /**
  * Enhances textfield component with API methods
@@ -8,7 +9,7 @@ import { PlacementComponent } from './features/placement';
  * @returns {Function} Higher-order function that adds API methods to component
  */
 export const withAPI = ({ disabled, lifecycle }: ApiOptions) => 
-  (component: BaseComponent & Partial<PlacementComponent>): TextfieldComponent => ({
+  (component: BaseComponent & Partial<PlacementComponent> & Partial<MultilineComponent>): TextfieldComponent => ({
     ...component as any,
     element: component.element,
     input: component.input as HTMLInputElement | HTMLTextAreaElement,
@@ -159,6 +160,28 @@ export const withAPI = ({ disabled, lifecycle }: ApiOptions) =>
         }
       }
       return this;
+    },
+
+    // Multiline-specific methods
+    updateHeight(): TextfieldComponent {
+      if (component.updateHeight) {
+        component.updateHeight();
+      }
+      return this;
+    },
+    
+    setRows(rows: number): TextfieldComponent {
+      if (component.setRows) {
+        component.setRows(rows);
+      } else if (component.input instanceof HTMLTextAreaElement) {
+        component.input.rows = rows;
+      }
+      return this;
+    },
+    
+    // Determine if this is a multiline textfield
+    isMultiline(): boolean {
+      return component.input instanceof HTMLTextAreaElement;
     },
 
     // Update positioning manually (useful after DOM updates)

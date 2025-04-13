@@ -18,6 +18,7 @@ import {
   withSuffixText,
   withPlacement
 } from './features';
+import { withMultiline } from './features/multiline';
 import { TextfieldConfig, TextfieldComponent } from './types';
 import { 
   createBaseConfig, 
@@ -42,20 +43,19 @@ import {
  *   name: 'username'
  * });
  * 
- * document.querySelector('.form').appendChild(textfield.element);
- * 
  * @example
- * // Create a text field with prefix and suffix
- * const currencyField = createTextfield({
- *   label: 'Amount',
- *   type: 'number',
- *   prefixText: '$',
- *   suffixText: 'USD'
+ * // Create a multiline text field (textarea)
+ * const textarea = createTextfield({
+ *   label: 'Description',
+ *   multiline: true,
+ *   rows: 4
  * });
  * 
- * // Add event listener
- * currencyField.on('input', (e) => {
- *   console.log('Amount entered:', e.target.value);
+ * // Or alternatively:
+ * const textarea = createTextfield({
+ *   label: 'Description',
+ *   type: 'multiline',
+ *   rows: 4
  * });
  */
 const createTextfield = (config: TextfieldConfig = {}): TextfieldComponent => {
@@ -69,13 +69,14 @@ const createTextfield = (config: TextfieldConfig = {}): TextfieldComponent => {
       withEvents(),                     // Event handling system
       withElement(getElementConfig(baseConfig)), // Create DOM element
       withVariant(baseConfig),          // Apply variant styling (filled/outlined)
-      withTextInput(baseConfig),        // Add input element
+      withTextInput(baseConfig),        // Add input element (or textarea if multiline)
       withTextLabel(baseConfig),        // Add text label
       withLeadingIcon(baseConfig),      // Add leading icon (if specified)
       withTrailingIcon(baseConfig),     // Add trailing icon (if specified)
       withPrefixText(baseConfig),       // Add prefix text (if specified) 
       withSuffixText(baseConfig),       // Add suffix text (if specified)
       withSupportingText(baseConfig),   // Add supporting/helper text (if specified)
+      withMultiline(baseConfig),        // Add multiline capabilities (if specified)
       withDisabled(baseConfig),         // Add disabled state management
       withLifecycle(),                  // Add lifecycle management
       withPlacement(),                  // Add dynamic positioning for elements
