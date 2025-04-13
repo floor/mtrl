@@ -97,6 +97,12 @@ export interface TextfieldConfig {
   /** Whether supporting text indicates an error */
   error?: boolean;
   
+  /** Prefix text to display before the input */
+  prefixText?: string;
+  
+  /** Suffix text to display after the input */
+  suffixText?: string;
+  
   /** Additional CSS classes */
   class?: string;
   
@@ -137,6 +143,51 @@ export interface TextfieldComponent {
   
   /** Gets the textfield's label text */
   getLabel: () => string;
+  
+  /** Leading icon element (if present) */
+  leadingIcon: HTMLElement | null;
+  
+  /** Sets the leading icon HTML content */
+  setLeadingIcon: (html: string) => TextfieldComponent;
+  
+  /** Removes the leading icon */
+  removeLeadingIcon: () => TextfieldComponent;
+  
+  /** Trailing icon element (if present) */
+  trailingIcon: HTMLElement | null;
+  
+  /** Sets the trailing icon HTML content */
+  setTrailingIcon: (html: string) => TextfieldComponent;
+  
+  /** Removes the trailing icon */
+  removeTrailingIcon: () => TextfieldComponent;
+  
+  /** Supporting text element (if present) */
+  supportingTextElement: HTMLElement | null;
+  
+  /** Sets the supporting text content */
+  setSupportingText: (text: string, isError?: boolean) => TextfieldComponent;
+  
+  /** Removes the supporting text */
+  removeSupportingText: () => TextfieldComponent;
+  
+  /** Prefix text element (if present) */
+  prefixTextElement: HTMLElement | null;
+  
+  /** Sets the prefix text content */
+  setPrefixText: (text: string) => TextfieldComponent;
+  
+  /** Removes the prefix text */
+  removePrefixText: () => TextfieldComponent;
+  
+  /** Suffix text element (if present) */
+  suffixTextElement: HTMLElement | null;
+  
+  /** Sets the suffix text content */
+  setSuffixText: (text: string) => TextfieldComponent;
+  
+  /** Removes the suffix text */
+  removeSuffixText: () => TextfieldComponent;
   
   /** Adds event listener */
   on: (event: string, handler: Function) => TextfieldComponent;
@@ -182,6 +233,21 @@ export interface BaseComponent {
     setText: (content: string) => any;
     getText: () => string;
   };
+  leadingIcon?: HTMLElement | null;
+  setLeadingIcon?: (html: string) => any;
+  removeLeadingIcon?: () => any;
+  trailingIcon?: HTMLElement | null;
+  setTrailingIcon?: (html: string) => any;
+  removeTrailingIcon?: () => any;
+  supportingTextElement?: HTMLElement | null;
+  setSupportingText?: (text: string, isError?: boolean) => any;
+  removeSupportingText?: () => any;
+  prefixTextElement?: HTMLElement | null;
+  setPrefixText?: (text: string) => any;
+  removePrefixText?: () => any;
+  suffixTextElement?: HTMLElement | null;
+  setSuffixText?: (text: string) => any;
+  removeSuffixText?: () => any;
   on?: (event: string, handler: Function) => any;
   off?: (event: string, handler: Function) => any;
   disabled?: {

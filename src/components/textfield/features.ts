@@ -73,6 +73,50 @@ export interface SupportingTextConfig {
 }
 
 /**
+ * Configuration for prefix text feature
+ */
+export interface PrefixTextConfig {
+  /**
+   * Prefix text content to display before the input
+   */
+  prefixText?: string;
+  
+  /**
+   * CSS class prefix
+   */
+  prefix?: string;
+  
+  /**
+   * Component name
+   */
+  componentName?: string;
+  
+  [key: string]: any;
+}
+
+/**
+ * Configuration for suffix text feature
+ */
+export interface SuffixTextConfig {
+  /**
+   * Suffix text content to display after the input
+   */
+  suffixText?: string;
+  
+  /**
+   * CSS class prefix
+   */
+  prefix?: string;
+  
+  /**
+   * Component name
+   */
+  componentName?: string;
+  
+  [key: string]: any;
+}
+
+/**
  * Component with leading icon capabilities
  */
 export interface LeadingIconComponent extends BaseComponent {
@@ -140,6 +184,52 @@ export interface SupportingTextComponent extends BaseComponent {
    * @returns Component instance for chaining
    */
   removeSupportingText: () => SupportingTextComponent;
+}
+
+/**
+ * Component with prefix text capabilities
+ */
+export interface PrefixTextComponent extends BaseComponent {
+  /**
+   * Prefix text element
+   */
+  prefixTextElement: HTMLElement | null;
+  
+  /**
+   * Sets prefix text content
+   * @param text - Text content to display before the input
+   * @returns Component instance for chaining
+   */
+  setPrefixText: (text: string) => PrefixTextComponent;
+  
+  /**
+   * Removes prefix text
+   * @returns Component instance for chaining
+   */
+  removePrefixText: () => PrefixTextComponent;
+}
+
+/**
+ * Component with suffix text capabilities
+ */
+export interface SuffixTextComponent extends BaseComponent {
+  /**
+   * Suffix text element
+   */
+  suffixTextElement: HTMLElement | null;
+  
+  /**
+   * Sets suffix text content
+   * @param text - Text content to display after the input
+   * @returns Component instance for chaining
+   */
+  setSuffixText: (text: string) => SuffixTextComponent;
+  
+  /**
+   * Removes suffix text
+   * @returns Component instance for chaining
+   */
+  removeSuffixText: () => SuffixTextComponent;
 }
 
 /**
@@ -315,6 +405,134 @@ export const withSupportingText = <T extends SupportingTextConfig>(config: T) =>
           supportingElement.remove();
           this.supportingTextElement = null;
           component.element.classList.remove(`${PREFIX}-${config.componentName || 'textfield'}--error`);
+        }
+        return this;
+      }
+    };
+  };
+
+/**
+ * Creates and manages prefix text for a component
+ * @param config - Configuration object with prefix text settings
+ * @returns Function that enhances a component with prefix text functionality
+ */
+export const withPrefixText = <T extends PrefixTextConfig>(config: T) => 
+  <C extends ElementComponent>(component: C): C & PrefixTextComponent => {
+    if (!config.prefixText) {
+      return component as C & PrefixTextComponent;
+    }
+    
+    // Create prefix text element
+    const PREFIX = config.prefix || 'mtrl';
+    const prefixElement = document.createElement('span');
+    prefixElement.className = `${PREFIX}-${config.componentName || 'textfield'}-prefix`;
+    prefixElement.textContent = config.prefixText;
+    
+    // Add prefix text to the component - insert before input but after label
+    if (component.input) {
+      component.element.insertBefore(prefixElement, component.input);
+    } else {
+      component.element.appendChild(prefixElement);
+    }
+    
+    // Add prefix class to the component
+    component.element.classList.add(`${PREFIX}-${config.componentName || 'textfield'}--with-prefix`);
+    
+    // When there's a prefix, adjust input padding
+    if (component.input) {
+      component.input.classList.add(`${PREFIX}-${config.componentName || 'textfield'}-input--with-prefix`);
+    }
+    
+    // Add lifecycle integration if available
+    if ('lifecycle' in component && component.lifecycle?.destroy) {
+      const originalDestroy = component.lifecycle.destroy;
+      component.lifecycle.destroy = () => {
+        prefixElement.remove();
+        originalDestroy.call(component.lifecycle);
+      };
+    }
+
+    return {
+      ...component,
+      prefixTextElement: prefixElement,
+      
+      setPrefixText(text: string) {
+        prefixElement.textContent = text;
+        return this;
+      },
+      
+      removePrefixText() {
+        if (prefixElement.parentNode) {
+          prefixElement.remove();
+          component.element.classList.remove(`${PREFIX}-${config.componentName || 'textfield'}--with-prefix`);
+          if (component.input) {
+            component.input.classList.remove(`${PREFIX}-${config.componentName || 'textfield'}-input--with-prefix`);
+          }
+          this.prefixTextElement = null;
+        }
+        return this;
+      }
+    };
+  };
+
+/**
+ * Creates and manages suffix text for a component
+ * @param config - Configuration object with suffix text settings
+ * @returns Function that enhances a component with suffix text functionality
+ */
+export const withSuffixText = <T extends SuffixTextConfig>(config: T) => 
+  <C extends ElementComponent>(component: C): C & SuffixTextComponent => {
+    if (!config.suffixText) {
+      return component as C & SuffixTextComponent;
+    }
+    
+    // Create suffix text element
+    const PREFIX = config.prefix || 'mtrl';
+    const suffixElement = document.createElement('span');
+    suffixElement.className = `${PREFIX}-${config.componentName || 'textfield'}-suffix`;
+    suffixElement.textContent = config.suffixText;
+    
+    // Add suffix text to the component - insert after input
+    if (component.input) {
+      component.element.insertBefore(suffixElement, component.input.nextSibling);
+    } else {
+      component.element.appendChild(suffixElement);
+    }
+    
+    // Add suffix class to the component
+    component.element.classList.add(`${PREFIX}-${config.componentName || 'textfield'}--with-suffix`);
+    
+    // When there's a suffix, adjust input padding
+    if (component.input) {
+      component.input.classList.add(`${PREFIX}-${config.componentName || 'textfield'}-input--with-suffix`);
+    }
+    
+    // Add lifecycle integration if available
+    if ('lifecycle' in component && component.lifecycle?.destroy) {
+      const originalDestroy = component.lifecycle.destroy;
+      component.lifecycle.destroy = () => {
+        suffixElement.remove();
+        originalDestroy.call(component.lifecycle);
+      };
+    }
+
+    return {
+      ...component,
+      suffixTextElement: suffixElement,
+      
+      setSuffixText(text: string) {
+        suffixElement.textContent = text;
+        return this;
+      },
+      
+      removeSuffixText() {
+        if (suffixElement.parentNode) {
+          suffixElement.remove();
+          component.element.classList.remove(`${PREFIX}-${config.componentName || 'textfield'}--with-suffix`);
+          if (component.input) {
+            component.input.classList.remove(`${PREFIX}-${config.componentName || 'textfield'}-input--with-suffix`);
+          }
+          this.suffixTextElement = null;
         }
         return this;
       }

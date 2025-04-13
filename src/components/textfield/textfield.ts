@@ -13,7 +13,9 @@ import { withAPI } from './api';
 import { 
   withLeadingIcon, 
   withTrailingIcon, 
-  withSupportingText 
+  withSupportingText,
+  withPrefixText,
+  withSuffixText
 } from './features';
 import { TextfieldConfig, TextfieldComponent } from './types';
 import { 
@@ -24,8 +26,36 @@ import {
 
 /**
  * Creates a new Textfield component
- * @param {TextfieldConfig} config - Textfield configuration
- * @returns {TextfieldComponent} Textfield component instance
+ * 
+ * Textfields allow users to enter text into a UI. They typically appear in forms and dialogs.
+ * This implementation follows Material Design 3 guidelines for accessible, customizable textfields.
+ * 
+ * @param {TextfieldConfig} config - Textfield configuration options
+ * @returns {TextfieldComponent} A fully configured textfield component instance
+ * @throws {Error} Throws an error if textfield creation fails
+ * 
+ * @example
+ * // Create a basic text field
+ * const textfield = createTextfield({
+ *   label: 'Username',
+ *   name: 'username'
+ * });
+ * 
+ * document.querySelector('.form').appendChild(textfield.element);
+ * 
+ * @example
+ * // Create a text field with prefix and suffix
+ * const currencyField = createTextfield({
+ *   label: 'Amount',
+ *   type: 'number',
+ *   prefixText: '$',
+ *   suffixText: 'USD'
+ * });
+ * 
+ * // Add event listener
+ * currencyField.on('input', (e) => {
+ *   console.log('Amount entered:', e.target.value);
+ * });
  */
 const createTextfield = (config: TextfieldConfig = {}): TextfieldComponent => {
   const baseConfig = createBaseConfig(config);
@@ -40,6 +70,8 @@ const createTextfield = (config: TextfieldConfig = {}): TextfieldComponent => {
       withTextLabel(baseConfig),
       withLeadingIcon(baseConfig),
       withTrailingIcon(baseConfig),
+      withPrefixText(baseConfig),
+      withSuffixText(baseConfig),
       withSupportingText(baseConfig),
       withDisabled(baseConfig),
       withLifecycle(),

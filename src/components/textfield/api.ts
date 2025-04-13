@@ -6,11 +6,6 @@ import { BaseComponent, TextfieldComponent, ApiOptions } from './types';
  * @param {ApiOptions} options - API configuration
  * @returns {Function} Higher-order function that adds API methods to component
  */
-/**
- * Enhances textfield component with API methods
- * @param {ApiOptions} options - API configuration
- * @returns {Function} Higher-order function that adds API methods to component
- */
 export const withAPI = ({ disabled, lifecycle }: ApiOptions) => 
   (component: BaseComponent): TextfieldComponent => ({
     ...component as any,
@@ -93,6 +88,38 @@ export const withAPI = ({ disabled, lifecycle }: ApiOptions) =>
     removeSupportingText(): TextfieldComponent {
       if (component.removeSupportingText) {
         component.removeSupportingText();
+      }
+      return this;
+    },
+    
+    // Prefix text management (if present)
+    prefixTextElement: component.prefixTextElement || null,
+    setPrefixText(text: string): TextfieldComponent {
+      if (component.setPrefixText) {
+        component.setPrefixText(text);
+      }
+      return this;
+    },
+    
+    removePrefixText(): TextfieldComponent {
+      if (component.removePrefixText) {
+        component.removePrefixText();
+      }
+      return this;
+    },
+    
+    // Suffix text management (if present)
+    suffixTextElement: component.suffixTextElement || null,
+    setSuffixText(text: string): TextfieldComponent {
+      if (component.setSuffixText) {
+        component.setSuffixText(text);
+      }
+      return this;
+    },
+    
+    removeSuffixText(): TextfieldComponent {
+      if (component.removeSuffixText) {
+        component.removeSuffixText();
       }
       return this;
     },

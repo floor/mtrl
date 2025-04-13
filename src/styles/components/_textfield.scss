@@ -70,6 +70,30 @@ $component: '#{base.$prefix}-textfield';
     }
   }
   
+  // Prefix text
+  &-prefix {
+    @include m.typography('body-large');
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: t.color('on-surface');
+    pointer-events: none;
+    z-index: 1;
+  }
+  
+  // Suffix text
+  &-suffix {
+    @include m.typography('body-large');
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: t.color('on-surface');
+    pointer-events: none;
+    z-index: 1;
+  }
+  
   // Leading icon
   &-leading-icon {
     position: absolute;
@@ -112,8 +136,8 @@ $component: '#{base.$prefix}-textfield';
     }
   }
   
-  // Adjustments when icons are present
-  &--with-leading-icon {
+  // Adjustments when prefix/suffix are present
+  &--with-prefix {
     .#{$component}-label {
       left: 44px;
     }
@@ -123,9 +147,52 @@ $component: '#{base.$prefix}-textfield';
     }
   }
   
+  &--with-suffix {
+    .#{$component}-input {
+      padding-right: 44px;
+    }
+  }
+  
+  // Adjustments when icons are present
+  &--with-leading-icon {
+    .#{$component}-label {
+      left: 44px;
+    }
+    
+    .#{$component}-input {
+      padding-left: 44px;
+    }
+    
+    // If there's also a prefix, adjust positions
+    &.#{$component}--with-prefix {
+      .#{$component}-prefix {
+        left: 44px;
+      }
+      
+      .#{$component}-label {
+        left: 72px;
+      }
+      
+      .#{$component}-input {
+        padding-left: 72px;
+      }
+    }
+  }
+  
   &--with-trailing-icon {
     .#{$component}-input {
       padding-right: 44px;
+    }
+    
+    // If there's also a suffix, adjust positions
+    &.#{$component}--with-suffix {
+      .#{$component}-suffix {
+        right: 44px;
+      }
+      
+      .#{$component}-input {
+        padding-right: 72px;
+      }
     }
   }
 
@@ -138,7 +205,9 @@ $component: '#{base.$prefix}-textfield';
     }
     
     .#{$component}-leading-icon,
-    .#{$component}-trailing-icon {
+    .#{$component}-trailing-icon,
+    .#{$component}-prefix,
+    .#{$component}-suffix {
       color: t.color('error');
     }
   }
@@ -152,7 +221,9 @@ $component: '#{base.$prefix}-textfield';
     
     & ~ .#{$component}-label,
     & ~ .#{$component}-leading-icon,
-    & ~ .#{$component}-trailing-icon {
+    & ~ .#{$component}-trailing-icon,
+    & ~ .#{$component}-prefix,
+    & ~ .#{$component}-suffix {
       color: t.color('on-surface');
       opacity: 0.38;
     }
@@ -198,6 +269,16 @@ $component: '#{base.$prefix}-textfield';
       margin-right: 4px;
     }
     
+    &-prefix {
+      left: auto;
+      right: 16px;
+    }
+    
+    &-suffix {
+      right: auto;
+      left: 16px;
+    }
+    
     &-leading-icon {
       left: auto;
       right: 12px;
@@ -206,6 +287,25 @@ $component: '#{base.$prefix}-textfield';
     &-trailing-icon {
       right: auto;
       left: 12px;
+    }
+    
+    &--with-prefix {
+      .#{$component}-label {
+        left: auto;
+        right: 44px;
+      }
+      
+      .#{$component}-input {
+        padding-left: 16px;
+        padding-right: 44px;
+      }
+    }
+    
+    &--with-suffix {
+      .#{$component}-input {
+        padding-right: 16px;
+        padding-left: 44px;
+      }
     }
     
     &--with-leading-icon {
@@ -218,12 +318,41 @@ $component: '#{base.$prefix}-textfield';
         padding-left: 16px;
         padding-right: 44px;
       }
+      
+      &.#{$component}--with-prefix {
+        .#{$component}-prefix {
+          left: auto;
+          right: 44px;
+        }
+        
+        .#{$component}-label {
+          left: auto;
+          right: 72px;
+        }
+        
+        .#{$component}-input {
+          padding-left: 16px;
+          padding-right: 72px;
+        }
+      }
     }
     
     &--with-trailing-icon {
       .#{$component}-input {
         padding-right: 16px;
         padding-left: 44px;
+      }
+      
+      &.#{$component}--with-suffix {
+        .#{$component}-suffix {
+          right: auto;
+          left: 44px;
+        }
+        
+        .#{$component}-input {
+          padding-right: 16px;
+          padding-left: 72px;
+        }
       }
     }
   }
@@ -286,13 +415,6 @@ $component: '#{base.$prefix}-textfield';
       }
     }
     
-    // // Hover state
-    // &:hover {    
-    //   .#{$component}-label {
-    //     color: t.color('primary');
-    //   }
-    // }
-    
     // Error state
     &.#{$component}--error {    
       &::before {
@@ -312,6 +434,19 @@ $component: '#{base.$prefix}-textfield';
       
       .#{$component}-input {
         background-color: t.alpha('on-surface', 0.04);
+      }
+    }
+    
+    // Prefix/suffix adjustments for filled variant
+    &.#{$component}--with-prefix {
+      .#{$component}-prefix {
+        top: 28px;
+      }
+    }
+    
+    &.#{$component}--with-suffix {
+      .#{$component}-suffix {
+        top: 28px;
       }
     }
     
@@ -473,6 +608,19 @@ $component: '#{base.$prefix}-textfield';
       }
     }
     
+    // Prefix/suffix adjustments for outlined variant
+    &.#{$component}--with-prefix {
+      .#{$component}-prefix {
+        top: 50%;
+      }
+    }
+    
+    &.#{$component}--with-suffix {
+      .#{$component}-suffix {
+        top: 50%;
+      }
+    }
+    
     // Icon adjustments for outlined variant
     &.#{$component}--with-leading-icon {
       .#{$component}-input {
@@ -549,19 +697,11 @@ $component: '#{base.$prefix}-textfield';
       padding-top: 12px;
     }
     
-    &--filled {
-      .#{$component}-input {
-
-      }
+    .#{$component}-prefix,
+    .#{$component}-suffix {
+      top: 28px;
     }
-
-    &--outlined {
-      .#{$component}-input {
-
-      }
-    }
-
-
+    
     .#{$component}-label {
       top: 24px;
     }
@@ -574,7 +714,9 @@ $component: '#{base.$prefix}-textfield';
     resize: vertical;
     
     & ~ .#{$component}-leading-icon,
-    & ~ .#{$component}-trailing-icon {
+    & ~ .#{$component}-trailing-icon,
+    & ~ .#{$component}-prefix,
+    & ~ .#{$component}-suffix {
       top: 20px;
       transform: none;
     }
