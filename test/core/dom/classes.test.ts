@@ -1,7 +1,8 @@
 // test/core/dom.classes.test.ts
 import { describe, test, expect, beforeAll, afterAll } from 'bun:test';
 import { JSDOM } from 'jsdom';
-import { addClass, removeClass, toggleClass, hasClass } from '../../src/core/dom/classes';
+import { addClass, removeClass, toggleClass, hasClass } from '../../../src/core/dom/classes';
+import { PREFIX } from '../../../src/core/config';
 
 // Setup jsdom environment
 let dom: JSDOM;
@@ -45,31 +46,31 @@ describe('DOM Classes Utilities', () => {
   test('should add a single class', () => {
     const element = document.createElement('div');
     addClass(element, 'test');
-    expect(element.classList.contains('test')).toBe(true);
+    expect(element.classList.contains(`${PREFIX}-test`)).toBe(true);
   });
   
   test('should add multiple classes', () => {
     const element = document.createElement('div');
     addClass(element, 'test1', 'test2', 'test3');
-    expect(element.classList.contains('test1')).toBe(true);
-    expect(element.classList.contains('test2')).toBe(true);
-    expect(element.classList.contains('test3')).toBe(true);
+    expect(element.classList.contains(`${PREFIX}-test1`)).toBe(true);
+    expect(element.classList.contains(`${PREFIX}-test2`)).toBe(true);
+    expect(element.classList.contains(`${PREFIX}-test3`)).toBe(true);
   });
   
   test('should add classes from an array', () => {
     const element = document.createElement('div');
     addClass(element, ['test1', 'test2', 'test3']);
-    expect(element.classList.contains('test1')).toBe(true);
-    expect(element.classList.contains('test2')).toBe(true);
-    expect(element.classList.contains('test3')).toBe(true);
+    expect(element.classList.contains(`${PREFIX}-test1`)).toBe(true);
+    expect(element.classList.contains(`${PREFIX}-test2`)).toBe(true);
+    expect(element.classList.contains(`${PREFIX}-test3`)).toBe(true);
   });
   
   test('should add classes from space-separated strings', () => {
     const element = document.createElement('div');
     addClass(element, 'test1 test2', 'test3');
-    expect(element.classList.contains('test1')).toBe(true);
-    expect(element.classList.contains('test2')).toBe(true);
-    expect(element.classList.contains('test3')).toBe(true);
+    expect(element.classList.contains(`${PREFIX}-test1`)).toBe(true);
+    expect(element.classList.contains(`${PREFIX}-test2`)).toBe(true);
+    expect(element.classList.contains(`${PREFIX}-test3`)).toBe(true);
   });
   
   test('should not add empty classes', () => {
@@ -77,66 +78,74 @@ describe('DOM Classes Utilities', () => {
     addClass(element, '', '  ', 'test');
     expect(element.classList.contains('')).toBe(false);
     expect(element.classList.contains('  ')).toBe(false);
-    expect(element.classList.contains('test')).toBe(true);
-    expect(element.className).toBe('test');
+    expect(element.classList.contains(`${PREFIX}-test`)).toBe(true);
+    expect(element.className).toBe(`${PREFIX}-test`);
   });
   
   test('should remove a single class', () => {
     const element = document.createElement('div');
-    element.classList.add('test');
+    element.classList.add(`${PREFIX}-test`);
     removeClass(element, 'test');
-    expect(element.classList.contains('test')).toBe(false);
+    expect(element.classList.contains(`${PREFIX}-test`)).toBe(false);
   });
   
   test('should remove multiple classes', () => {
     const element = document.createElement('div');
-    element.classList.add('test1', 'test2', 'test3');
+    element.classList.add(`${PREFIX}-test1`, `${PREFIX}-test2`, `${PREFIX}-test3`);
     removeClass(element, 'test1', 'test3');
-    expect(element.classList.contains('test1')).toBe(false);
-    expect(element.classList.contains('test2')).toBe(true);
-    expect(element.classList.contains('test3')).toBe(false);
+    expect(element.classList.contains(`${PREFIX}-test1`)).toBe(false);
+    expect(element.classList.contains(`${PREFIX}-test2`)).toBe(true);
+    expect(element.classList.contains(`${PREFIX}-test3`)).toBe(false);
   });
   
   test('should remove classes from an array', () => {
     const element = document.createElement('div');
-    element.classList.add('test1', 'test2', 'test3');
+    element.classList.add(`${PREFIX}-test1`, `${PREFIX}-test2`, `${PREFIX}-test3`);
     removeClass(element, ['test1', 'test3']);
-    expect(element.classList.contains('test1')).toBe(false);
-    expect(element.classList.contains('test2')).toBe(true);
-    expect(element.classList.contains('test3')).toBe(false);
+    expect(element.classList.contains(`${PREFIX}-test1`)).toBe(false);
+    expect(element.classList.contains(`${PREFIX}-test2`)).toBe(true);
+    expect(element.classList.contains(`${PREFIX}-test3`)).toBe(false);
   });
   
   test('should toggle a single class', () => {
     const element = document.createElement('div');
     toggleClass(element, 'test');
-    expect(element.classList.contains('test')).toBe(true);
+    expect(element.classList.contains(`${PREFIX}-test`)).toBe(true);
     toggleClass(element, 'test');
-    expect(element.classList.contains('test')).toBe(false);
+    expect(element.classList.contains(`${PREFIX}-test`)).toBe(false);
   });
   
   test('should toggle multiple classes', () => {
     const element = document.createElement('div');
     toggleClass(element, 'test1', 'test2');
-    expect(element.classList.contains('test1')).toBe(true);
-    expect(element.classList.contains('test2')).toBe(true);
+    expect(element.classList.contains(`${PREFIX}-test1`)).toBe(true);
+    expect(element.classList.contains(`${PREFIX}-test2`)).toBe(true);
     toggleClass(element, 'test1', 'test3');
-    expect(element.classList.contains('test1')).toBe(false);
-    expect(element.classList.contains('test2')).toBe(true);
-    expect(element.classList.contains('test3')).toBe(true);
+    expect(element.classList.contains(`${PREFIX}-test1`)).toBe(false);
+    expect(element.classList.contains(`${PREFIX}-test2`)).toBe(true);
+    expect(element.classList.contains(`${PREFIX}-test3`)).toBe(true);
   });
   
   test('should check if element has a class', () => {
     const element = document.createElement('div');
-    element.classList.add('test1', 'test2');
+    element.classList.add(`${PREFIX}-test1`, `${PREFIX}-test2`);
     expect(hasClass(element, 'test1')).toBe(true);
     expect(hasClass(element, 'test3')).toBe(false);
   });
   
   test('should check if element has multiple classes', () => {
     const element = document.createElement('div');
-    element.classList.add('test1', 'test2', 'test3');
+    element.classList.add(`${PREFIX}-test1`, `${PREFIX}-test2`, `${PREFIX}-test3`);
     expect(hasClass(element, 'test1', 'test2')).toBe(true);
     expect(hasClass(element, 'test1', 'test4')).toBe(false);
+  });
+  
+  test('should handle classes that already have prefix', () => {
+    const element = document.createElement('div');
+    addClass(element, `${PREFIX}-prefixed-already`);
+    expect(element.classList.contains(`${PREFIX}-prefixed-already`)).toBe(true);
+    // Make sure it doesn't double prefix
+    expect(element.classList.contains(`${PREFIX}-${PREFIX}-prefixed-already`)).toBe(false);
   });
   
   test('should return the element from modifier functions', () => {

@@ -1,7 +1,7 @@
 // test/core/dom.events.test.ts
 import { describe, test, expect, mock, beforeAll, afterAll } from 'bun:test';
 import { JSDOM } from 'jsdom';
-import { createEventManager } from '../../src/core/dom/events';
+import { createEventManager } from '../../../src/core/dom/events';
 
 // Setup jsdom environment
 let dom: JSDOM;

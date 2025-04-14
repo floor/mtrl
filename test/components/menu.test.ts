@@ -1,19 +1,6 @@
 // test/components/menu.test.ts
-import { describe, test, expect, mock, beforeEach, afterEach, beforeAll, afterAll } from 'bun:test';
+import { describe, test, expect, mock, beforeAll, afterAll, beforeEach, afterEach } from 'bun:test';
 import { JSDOM } from 'jsdom';
-import type { MenuComponent, MenuConfig, MenuItemConfig, MenuPositionConfig } from '../../src/components/menu/types';
-
-// Import constants from utils instead of constants
-// The test was originally using constants but they're actually in utils
-import { 
-  MENU_ALIGNMENT as MENU_ALIGN, 
-  MENU_VERTICAL_ALIGNMENT as MENU_VERTICAL_ALIGN, 
-  MENU_EVENT as MENU_EVENTS, 
-  MENU_ITEM_TYPE as MENU_ITEM_TYPES 
-} from '../../src/components/menu/utils';
-
-// IMPORTANT: Due to potential circular dependencies in the actual menu component
-// we are using a mock implementation for tests.
 
 // Setup jsdom environment
 let dom: JSDOM;
@@ -21,8 +8,6 @@ let window: Window;
 let document: Document;
 let originalGlobalDocument: any;
 let originalGlobalWindow: any;
-let originalCreateElement: any;
-let globalEventListeners: Map<any, Map<string, Set<Function>>>;
 
 beforeAll(() => {
   // Create a new JSDOM instance
@@ -45,12 +30,9 @@ beforeAll(() => {
   global.Element = window.Element;
   global.HTMLElement = window.HTMLElement;
   global.Event = window.Event;
-  
-  // Store original createElement method
-  originalCreateElement = document.createElement;
-  
-  // Initialize event listeners map
-  globalEventListeners = new Map();
+  global.MouseEvent = window.MouseEvent;
+  global.KeyboardEvent = window.KeyboardEvent;
+  global.CustomEvent = window.CustomEvent;
 });
 
 afterAll(() => {
@@ -62,657 +44,724 @@ afterAll(() => {
   window.close();
 });
 
-// Mock DOM APIs that aren't available in the test environment
-beforeEach(() => {
-  // Mock Element.prototype methods
-  Element.prototype.getBoundingClientRect = function() {
-    return {
-      width: 100,
-      height: 100,
-      top: 0,
-      left: 0,
-      right: 100,
-      bottom: 100,
-      x: 0,
-      y: 0,
-      toJSON: () => ({})
-    };
-  };
+// Menu item type
+interface MenuItem {
+  id: string;
+  text: string;
+  icon?: string;
+  shortcut?: string;
+  disabled?: boolean;
+  hasSubmenu?: boolean;
+  submenu?: MenuItem[];
+  data?: any;
+}
 
-  Element.prototype.closest = function(selector: string) {
-    return null; // Simple mock that returns null by default
-  };
+// Menu divider type
+interface MenuDivider {
+  type: 'divider';
+  id?: string;
+}
 
-  Element.prototype.matches = function(selector: string) {
-    return false; // Simple mock that returns false by default
-  };
+// Menu content type
+type MenuContent = MenuItem | MenuDivider;
 
-  // Replace createElement to add our custom methods
-  document.createElement = function(tag: string) {
-    const element = originalCreateElement.call(document, tag);
+// Menu placement type
+type MenuPlacement = 'bottom-start' | 'bottom' | 'bottom-end' | 
+                    'top-start' | 'top' | 'top-end' | 
+                    'right-start' | 'right' | 'right-end' | 
+                    'left-start' | 'left' | 'left-end';
 
-    // Add closest method for our tests
-    element.closest = function(selector: string) {
-      if (selector.includes('menu-item')) {
-        return this.classList && this.classList.contains('mtrl-menu-item') ? this : null;
-      }
-      return null;
-    };
+// Menu config type
+interface MenuConfig {
+  anchor: HTMLElement | string | { element: HTMLElement };
+  items: MenuContent[];
+  placement?: MenuPlacement;
+  closeOnSelect?: boolean;
+  closeOnClickOutside?: boolean;
+  closeOnEscape?: boolean;
+  openSubmenuOnHover?: boolean;
+  width?: string;
+  maxHeight?: string;
+  offset?: number;
+  autoFlip?: boolean;
+  visible?: boolean;
+  class?: string;
+}
 
-    // Add matches method for our tests
-    element.matches = function(selector: string) {
-      if (selector === ':hover') return false;
-      return this.classList && this.classList.contains(selector.replace('.', ''));
-    };
+// Event types
+interface MenuEvent {
+  menu: any;
+  originalEvent?: Event;
+  preventDefault: () => void;
+  defaultPrevented: boolean;
+}
 
-    // Mock the querySelectorAll method
-    element.querySelectorAll = function(selector: string) {
-      return []; // Return empty array by default
-    };
-
-    // Mock the querySelector method
-    element.querySelector = function(selector: string) {
-      return null; // Return null by default
-    };
-
-    return element;
-  };
-
-  // Mock window properties
-  Object.defineProperty(global.window, 'innerWidth', { value: 1024 });
-  Object.defineProperty(global.window, 'innerHeight', { value: 768 });
-
-  // Mock event listeners
-  globalEventListeners.clear();
-
-  const originalAddEventListener = Element.prototype.addEventListener;
-  Element.prototype.addEventListener = function(event: string, handler: Function) {
-    if (!globalEventListeners.has(this)) {
-      globalEventListeners.set(this, new Map());
-    }
-    if (!globalEventListeners.get(this)!.has(event)) {
-      globalEventListeners.get(this)!.set(event, new Set());
-    }
-    globalEventListeners.get(this)!.get(event)!.add(handler);
-
-    // Call original if it exists
-    if (originalAddEventListener) {
-      originalAddEventListener.call(this, event, handler as EventListener);
-    }
-  };
-
-  const originalRemoveEventListener = Element.prototype.removeEventListener;
-  Element.prototype.removeEventListener = function(event: string, handler: Function) {
-    if (globalEventListeners.has(this) &&
-        globalEventListeners.get(this)!.has(event)) {
-      globalEventListeners.get(this)!.get(event)!.delete(handler);
-    }
-
-    // Call original if it exists
-    if (originalRemoveEventListener) {
-      originalRemoveEventListener.call(this, event, handler as EventListener);
-    }
-  };
-
-  // Mock offsetHeight/offsetWidth
-  Object.defineProperty(Element.prototype, 'offsetHeight', {
-    configurable: true,
-    get: function() { return 100; }
-  });
-
-  Object.defineProperty(Element.prototype, 'offsetWidth', {
-    configurable: true,
-    get: function() { return 100; }
-  });
-});
-
-afterEach(() => {
-  // Clean up our mocks and event listeners
-  if (Element.prototype.getBoundingClientRect) {
-    // @ts-ignore - We're deliberately cleaning up a property we added
-    delete Element.prototype.getBoundingClientRect;
-  }
-  
-  if (Element.prototype.closest) {
-    // @ts-ignore - We're deliberately cleaning up a property we added
-    delete Element.prototype.closest;
-  }
-  
-  if (Element.prototype.matches) {
-    // @ts-ignore - We're deliberately cleaning up a property we added
-    delete Element.prototype.matches;
-  }
-  
-  // Restore createElement
-  document.createElement = originalCreateElement;
-  
-  // Clear event listeners
-  globalEventListeners.clear();
-});
+interface MenuSelectEvent extends MenuEvent {
+  item: MenuItem;
+  itemId: string;
+  itemData?: any;
+}
 
 // Mock menu component factory
-const createMenu = (config: MenuConfig = {}): MenuComponent => {
-  // Create main element
+const createMenu = (config: MenuConfig) => {
   const element = document.createElement('div');
-  element.className = 'mtrl-menu';
-  
-  if (config.class) {
-    element.className += ` ${config.class}`;
-  }
-  
+  element.className = `mtrl-menu ${config.class || ''}`;
   element.setAttribute('role', 'menu');
+  element.setAttribute('tabindex', '-1');
+  element.setAttribute('aria-hidden', (!config.visible).toString());
   
-  // Track visibility state
-  let isVisibleState = false;
-  
-  // Create maps for items and event handlers
-  const itemsMap = new Map<string, any>();
-  const eventHandlers: Record<string, Function[]> = {};
-  const submenus: MenuComponent[] = [];
-  
-  // Create a menu item element
-  const createMenuItem = (item: MenuItemConfig): HTMLElement => {
-    const itemElement = document.createElement('div');
-    
-    // Set up the item based on type
-    if (item.type === MENU_ITEM_TYPES.DIVIDER) {
-      itemElement.className = 'mtrl-menu-divider';
-      itemElement.setAttribute('role', 'separator');
-    } else {
-      itemElement.className = 'mtrl-menu-item';
-      itemElement.setAttribute('role', 'menuitem');
-      
-      if (item.text) {
-        itemElement.textContent = item.text;
-      }
-      
-      if (item.disabled) {
-        itemElement.setAttribute('aria-disabled', 'true');
-        itemElement.classList.add('mtrl-menu-item--disabled');
-      }
-      
-      if (item.class) {
-        itemElement.className += ` ${item.class}`;
-      }
-      
-      // Setup click handler for normal items
-      itemElement.addEventListener('click', () => {
-        if (!item.disabled) {
-          emit(MENU_EVENTS.SELECT, {
-            name: item.name,
-            text: item.text
-          });
-          
-          // Hide menu after selection unless configured otherwise
-          if (!config.stayOpenOnSelect) {
-            hide();
-          }
-        }
-      });
-      
-      // If item has children, set up submenu
-      if (item.items && item.items.length > 0) {
-        itemElement.classList.add('mtrl-menu-item--has-submenu');
-        
-        // Create submenu for this item
-        const submenu = createMenu({
-          items: item.items,
-          parentItem: itemElement
-        });
-        
-        submenus.push(submenu);
-        
-        // Add hover handler to show submenu
-        itemElement.addEventListener('mouseenter', () => {
-          // Position submenu next to parent item
-          submenu.position(itemElement, {
-            align: MENU_ALIGN.RIGHT,
-            vAlign: MENU_VERTICAL_ALIGN.TOP
-          });
-          
-          submenu.show();
-          emit(MENU_EVENTS.SUBMENU_OPEN, { name: item.name });
-        });
-        
-        itemElement.addEventListener('mouseleave', () => {
-          submenu.hide();
-          emit(MENU_EVENTS.SUBMENU_CLOSE, { name: item.name });
-        });
-      }
-    }
-    
-    return itemElement;
-  };
-  
-  // Create menu list
-  const menuList = document.createElement('div');
-  menuList.className = 'mtrl-menu-list';
-  menuList.setAttribute('role', 'menu');
-  element.appendChild(menuList);
-  
-  // Add initial items
-  if (config.items && config.items.length > 0) {
-    config.items.forEach(item => {
-      // Skip items without name (like dividers)
-      if (item.type !== MENU_ITEM_TYPES.DIVIDER) {
-        // Add to items map
-        itemsMap.set(item.name, {
-          element: createMenuItem(item),
-          config: item
-        });
-        
-        menuList.appendChild(itemsMap.get(item.name).element);
-      } else {
-        // Just add divider directly
-        menuList.appendChild(createMenuItem(item));
-      }
-    });
+  // Resolve anchor element
+  let anchorElement: HTMLElement | null = null;
+  if (typeof config.anchor === 'string') {
+    anchorElement = document.querySelector(config.anchor) as HTMLElement;
+  } else if (config.anchor instanceof HTMLElement) {
+    anchorElement = config.anchor;
+  } else if (config.anchor && 'element' in config.anchor) {
+    anchorElement = config.anchor.element;
   }
   
-  // Show method
-  const show = (): MenuComponent => {
+  if (!anchorElement) {
+    // Create a mock anchor element if none was found
+    anchorElement = document.createElement('button');
+    anchorElement.className = 'mock-anchor';
+    document.body.appendChild(anchorElement);
+  }
+  
+  // Setup ARIA attributes
+  anchorElement.setAttribute('aria-haspopup', 'true');
+  anchorElement.setAttribute('aria-expanded', 'false');
+  
+  if (!element.id) {
+    element.id = `menu-${Date.now()}`;
+  }
+  anchorElement.setAttribute('aria-controls', element.id);
+  
+  // Track state
+  let visible = config.visible || false;
+  let items = [...config.items];
+  let placement = config.placement || 'bottom-start';
+  let activeSubmenu: HTMLElement | null = null;
+  
+  // Create menu items
+  const renderItems = () => {
+    // Clear existing items
+    element.innerHTML = '';
+    
+    // Create list container
+    const list = document.createElement('ul');
+    list.className = 'mtrl-menu-list';
+    list.setAttribute('role', 'menu');
+    
+    // Add menu items
+    items.forEach((item, index) => {
+      if ('type' in item && item.type === 'divider') {
+        // Create divider
+        const divider = document.createElement('li');
+        divider.className = 'mtrl-menu-divider';
+        divider.setAttribute('role', 'separator');
+        divider.setAttribute('data-index', index.toString());
+        
+        if (item.id) {
+          divider.setAttribute('id', item.id);
+        }
+        
+        list.appendChild(divider);
+      } else {
+        // Regular menu item
+        const menuItem = item as MenuItem;
+        const itemElement = document.createElement('li');
+        itemElement.className = 'mtrl-menu-item';
+        itemElement.setAttribute('role', 'menuitem');
+        itemElement.setAttribute('tabindex', '-1');
+        itemElement.setAttribute('data-id', menuItem.id);
+        itemElement.setAttribute('data-index', index.toString());
+        
+        if (menuItem.disabled) {
+          itemElement.classList.add('mtrl-menu-item--disabled');
+          itemElement.setAttribute('aria-disabled', 'true');
+        }
+        
+        if (menuItem.hasSubmenu) {
+          itemElement.classList.add('mtrl-menu-item--submenu');
+          itemElement.setAttribute('aria-haspopup', 'true');
+          itemElement.setAttribute('aria-expanded', 'false');
+        }
+        
+        // Create content container
+        const content = document.createElement('span');
+        content.className = 'mtrl-menu-item-content';
+        
+        // Add icon if present
+        if (menuItem.icon) {
+          const icon = document.createElement('span');
+          icon.className = 'mtrl-menu-item-icon';
+          icon.innerHTML = menuItem.icon;
+          content.appendChild(icon);
+        }
+        
+        // Add text
+        const text = document.createElement('span');
+        text.className = 'mtrl-menu-item-text';
+        text.textContent = menuItem.text;
+        content.appendChild(text);
+        
+        // Add shortcut if present
+        if (menuItem.shortcut) {
+          const shortcut = document.createElement('span');
+          shortcut.className = 'mtrl-menu-item-shortcut';
+          shortcut.textContent = menuItem.shortcut;
+          content.appendChild(shortcut);
+        }
+        
+        itemElement.appendChild(content);
+        list.appendChild(itemElement);
+      }
+    });
+    
+    element.appendChild(list);
+  };
+  
+  // Initial render
+  renderItems();
+  
+  // If visible, add to document body
+  if (visible) {
+    document.body.appendChild(element);
     element.classList.add('mtrl-menu--visible');
-    isVisibleState = true;
-    emit(MENU_EVENTS.OPEN, {});
-    return menuComponent;
-  };
+  }
   
-  // Hide method
-  const hide = (): MenuComponent => {
-    element.classList.remove('mtrl-menu--visible');
-    isVisibleState = false;
-    
-    // Hide any open submenus
-    submenus.forEach(submenu => submenu.hide());
-    
-    emit(MENU_EVENTS.CLOSE, {});
-    return menuComponent;
-  };
+  // Event handlers storage
+  const eventHandlers: Record<string, Function[]> = {};
   
-  // Position method
-  const position = (target: HTMLElement, options: MenuPositionConfig = {}): MenuComponent => {
-    const {
-      align = MENU_ALIGN.LEFT,
-      vAlign = MENU_VERTICAL_ALIGN.TOP,
-      offsetX = 0,
-      offsetY = 0
-    } = options;
+  // Position the menu
+  const positionMenu = () => {
+    if (!visible || !element.parentNode) return;
     
-    // Get target dimensions and position
-    const targetRect = target.getBoundingClientRect();
+    const anchorRect = anchorElement!.getBoundingClientRect();
     
-    // Calculate position based on alignment
-    let left = targetRect.left + offsetX;
-    let top = targetRect.top + offsetY;
-    
-    // Adjust horizontal position based on alignment
-    if (align === MENU_ALIGN.RIGHT) {
-      left = targetRect.right - element.offsetWidth + offsetX;
-    } else if (align === MENU_ALIGN.CENTER) {
-      left = targetRect.left + (targetRect.width - element.offsetWidth) / 2 + offsetX;
+    // Basic positioning based on placement
+    switch (placement) {
+      case 'bottom-start':
+        element.style.top = `${anchorRect.bottom + (config.offset || 8)}px`;
+        element.style.left = `${anchorRect.left}px`;
+        break;
+      case 'bottom':
+        element.style.top = `${anchorRect.bottom + (config.offset || 8)}px`;
+        element.style.left = `${anchorRect.left + (anchorRect.width / 2)}px`;
+        element.style.transform = 'translateX(-50%)';
+        break;
+      case 'bottom-end':
+        element.style.top = `${anchorRect.bottom + (config.offset || 8)}px`;
+        element.style.left = `${anchorRect.right}px`;
+        element.style.transform = 'translateX(-100%)';
+        break;
+      case 'top-start':
+        element.style.bottom = `${window.innerHeight - anchorRect.top + (config.offset || 8)}px`;
+        element.style.left = `${anchorRect.left}px`;
+        break;
+      default:
+        // Default positioning
+        element.style.top = `${anchorRect.bottom + (config.offset || 8)}px`;
+        element.style.left = `${anchorRect.left}px`;
     }
     
-    // Adjust vertical position based on alignment
-    if (vAlign === MENU_VERTICAL_ALIGN.BOTTOM) {
-      top = targetRect.bottom - element.offsetHeight + offsetY;
-    } else if (vAlign === MENU_VERTICAL_ALIGN.MIDDLE) {
-      top = targetRect.top + (targetRect.height - element.offsetHeight) / 2 + offsetY;
+    // Apply width if specified
+    if (config.width) {
+      element.style.width = config.width;
     }
     
-    // Set position
-    element.style.left = `${left}px`;
-    element.style.top = `${top}px`;
-    
-    return menuComponent;
-  };
-  
-  // Add item
-  const addItem = (item: MenuItemConfig): MenuComponent => {
-    // Skip if no name or already exists
-    if (!item.name || item.type === MENU_ITEM_TYPES.DIVIDER || itemsMap.has(item.name)) {
-      return menuComponent;
-    }
-    
-    const itemElement = createMenuItem(item);
-    
-    // Add to map and DOM
-    itemsMap.set(item.name, {
-      element: itemElement,
-      config: item
-    });
-    
-    menuList.appendChild(itemElement);
-    return menuComponent;
-  };
-  
-  // Remove item
-  const removeItem = (name: string): MenuComponent => {
-    if (itemsMap.has(name)) {
-      const itemData = itemsMap.get(name);
-      menuList.removeChild(itemData.element);
-      itemsMap.delete(name);
-    }
-    return menuComponent;
-  };
-  
-  // Event emitter
-  const emit = (event: string, data: any): void => {
-    if (eventHandlers[event]) {
-      eventHandlers[event].forEach(handler => handler(data));
+    // Apply max height if specified
+    if (config.maxHeight) {
+      element.style.maxHeight = config.maxHeight;
     }
   };
   
-  // Event handlers
-  const on = (event: string, handler: Function): MenuComponent => {
-    if (!eventHandlers[event]) {
-      eventHandlers[event] = [];
-    }
-    eventHandlers[event].push(handler);
-    return menuComponent;
-  };
-  
-  const off = (event: string, handler: Function): MenuComponent => {
-    if (eventHandlers[event]) {
-      eventHandlers[event] = eventHandlers[event].filter(h => h !== handler);
-    }
-    return menuComponent;
-  };
-  
-  // Destroy
-  const destroy = (): MenuComponent => {
-    // Clean up event handlers
-    Object.keys(eventHandlers).forEach(event => {
-      eventHandlers[event] = [];
-    });
-    
-    // Destroy submenus
-    submenus.forEach(submenu => submenu.destroy());
-    
-    // Remove from DOM
-    if (element.parentNode) {
-      element.parentNode.removeChild(element);
-    }
-    
-    return menuComponent;
-  };
-  
-  // Component interface
-  const menuComponent: MenuComponent = {
+  return {
     element,
     
-    show,
-    hide,
-    isVisible: () => isVisibleState,
+    // Open the menu
+    open(event?: Event, interactionType: 'mouse' | 'keyboard' = 'mouse') {
+      visible = true;
+      
+      // Add to DOM if not already there
+      if (!element.parentNode) {
+        document.body.appendChild(element);
+      }
+      
+      // Update ARIA attributes
+      element.setAttribute('aria-hidden', 'false');
+      element.classList.add('mtrl-menu--visible');
+      anchorElement?.setAttribute('aria-expanded', 'true');
+      
+      // Position the menu
+      positionMenu();
+      
+      // Trigger open event
+      this.triggerEvent('open', { originalEvent: event });
+      
+      return this;
+    },
     
-    position,
+    // Close the menu
+    close(event?: Event) {
+      visible = false;
+      
+      // Update ARIA attributes
+      element.setAttribute('aria-hidden', 'true');
+      element.classList.remove('mtrl-menu--visible');
+      anchorElement?.setAttribute('aria-expanded', 'false');
+      
+      // Trigger close event
+      this.triggerEvent('close', { originalEvent: event });
+      
+      // Remove from DOM after a delay (simulating animation)
+      setTimeout(() => {
+        if (element.parentNode && !visible) {
+          element.parentNode.removeChild(element);
+        }
+      }, 300);
+      
+      return this;
+    },
     
-    addItem,
-    removeItem,
-    getItems: () => itemsMap,
+    // Toggle menu visibility
+    toggle(event?: Event) {
+      if (visible) {
+        this.close(event);
+      } else {
+        this.open(event);
+      }
+      return this;
+    },
     
-    on,
-    off,
+    // Check if menu is open
+    isOpen() {
+      return visible;
+    },
     
-    destroy
+    // Set menu items
+    setItems(newItems: MenuContent[]) {
+      items = [...newItems];
+      renderItems();
+      return this;
+    },
+    
+    // Get menu items
+    getItems() {
+      return [...items];
+    },
+    
+    // Set anchor element
+    setAnchor(newAnchor: HTMLElement | string) {
+      let newAnchorElement: HTMLElement | null = null;
+      
+      if (typeof newAnchor === 'string') {
+        newAnchorElement = document.querySelector(newAnchor) as HTMLElement;
+      } else if (newAnchor instanceof HTMLElement) {
+        newAnchorElement = newAnchor;
+      }
+      
+      if (newAnchorElement) {
+        // Remove attributes from old anchor
+        anchorElement?.removeAttribute('aria-haspopup');
+        anchorElement?.removeAttribute('aria-expanded');
+        anchorElement?.removeAttribute('aria-controls');
+        
+        // Update to new anchor
+        anchorElement = newAnchorElement;
+        
+        // Setup ARIA attributes
+        anchorElement.setAttribute('aria-haspopup', 'true');
+        anchorElement.setAttribute('aria-expanded', visible.toString());
+        anchorElement.setAttribute('aria-controls', element.id);
+        
+        // Reposition if visible
+        if (visible) {
+          positionMenu();
+        }
+      }
+      
+      return this;
+    },
+    
+    // Get current anchor element
+    getAnchor() {
+      return anchorElement;
+    },
+    
+    // Set menu placement
+    setPlacement(newPlacement: MenuPlacement) {
+      placement = newPlacement;
+      if (visible) {
+        positionMenu();
+      }
+      return this;
+    },
+    
+    // Get current placement
+    getPlacement() {
+      return placement;
+    },
+    
+    // Event handling
+    on(event: string, handler: Function) {
+      if (!eventHandlers[event]) {
+        eventHandlers[event] = [];
+      }
+      eventHandlers[event].push(handler);
+      return this;
+    },
+    
+    off(event: string, handler: Function) {
+      if (eventHandlers[event]) {
+        eventHandlers[event] = eventHandlers[event].filter(h => h !== handler);
+      }
+      return this;
+    },
+    
+    // Helper to trigger events
+    triggerEvent(eventName: string, data: any = {}) {
+      const eventData = {
+        menu: this,
+        ...data,
+        preventDefault: () => { eventData.defaultPrevented = true; },
+        defaultPrevented: false
+      };
+      
+      if (eventHandlers[eventName]) {
+        eventHandlers[eventName].forEach(handler => handler(eventData));
+      }
+      
+      return eventData;
+    },
+    
+    // Cleanup
+    destroy() {
+      // Clear event handlers
+      Object.keys(eventHandlers).forEach(event => {
+        eventHandlers[event] = [];
+      });
+      
+      // Remove from DOM
+      if (element.parentNode) {
+        element.parentNode.removeChild(element);
+      }
+      
+      // Clean up anchor attributes
+      anchorElement?.removeAttribute('aria-haspopup');
+      anchorElement?.removeAttribute('aria-expanded');
+      anchorElement?.removeAttribute('aria-controls');
+      
+      // If we created a mock anchor, clean it up
+      if (anchorElement?.classList.contains('mock-anchor') && anchorElement.parentNode) {
+        anchorElement.parentNode.removeChild(anchorElement);
+      }
+    }
   };
-  
-  return menuComponent;
 };
 
 describe('Menu Component', () => {
-  // Sample menu items for testing
-  const testItems: MenuItemConfig[] = [
-    {
-      name: 'copy',
-      text: 'Copy'
-    },
-    {
-      name: 'paste',
-      text: 'Paste'
-    },
-    {
-      type: 'divider'
-    } as MenuItemConfig,
-    {
-      name: 'delete',
-      text: 'Delete',
-      disabled: true
+  let mockAnchor: HTMLElement;
+  
+  beforeEach(() => {
+    // Create a fresh anchor element for each test
+    mockAnchor = document.createElement('button');
+    mockAnchor.id = 'menu-anchor';
+    mockAnchor.textContent = 'Open Menu';
+    document.body.appendChild(mockAnchor);
+  });
+  
+  afterEach(() => {
+    // Clean up DOM after each test
+    if (mockAnchor.parentNode) {
+      mockAnchor.parentNode.removeChild(mockAnchor);
     }
-  ];
-
-  // Sample nested menu items
-  const nestedTestItems: MenuItemConfig[] = [
-    {
-      name: 'file',
-      text: 'File',
-      items: [
-        {
-          name: 'new',
-          text: 'New'
-        },
-        {
-          name: 'open',
-          text: 'Open'
-        }
-      ]
-    },
-    {
-      name: 'edit',
-      text: 'Edit',
-      items: [
-        {
-          name: 'copy',
-          text: 'Copy'
-        },
-        {
-          name: 'paste',
-          text: 'Paste'
-        }
-      ]
-    }
-  ];
-
+    
+    // Remove any menus that might have been added to the DOM
+    document.querySelectorAll('.mtrl-menu').forEach(el => {
+      if (el.parentNode) {
+        el.parentNode.removeChild(el);
+      }
+    });
+  });
+  
   test('should create a menu element', () => {
-    const menu = createMenu();
-
+    const menu = createMenu({
+      anchor: mockAnchor,
+      items: []
+    });
+    
     expect(menu.element).toBeDefined();
     expect(menu.element.tagName).toBe('DIV');
     expect(menu.element.className).toContain('mtrl-menu');
     expect(menu.element.getAttribute('role')).toBe('menu');
+    expect(menu.element.getAttribute('aria-hidden')).toBe('true');
   });
-
-  test('should apply custom class', () => {
-    const customClass = 'custom-menu';
+  
+  test('should properly connect to anchor element', () => {
     const menu = createMenu({
-      class: customClass
+      anchor: mockAnchor,
+      items: []
     });
-
-    expect(menu.element.className).toContain(customClass);
+    
+    expect(menu.getAnchor()).toBe(mockAnchor);
+    expect(mockAnchor.getAttribute('aria-haspopup')).toBe('true');
+    expect(mockAnchor.getAttribute('aria-expanded')).toBe('false');
+    expect(mockAnchor.getAttribute('aria-controls')).toBe(menu.element.id);
   });
-
-  test('should add initial items', () => {
-    const menu = createMenu({
-      items: testItems
-    });
-
-    // Check if items methods exist
-    expect(typeof menu.getItems).toBe('function');
-
-    // Get items and verify we have a Map
-    const items = menu.getItems();
-    expect(items instanceof Map).toBe(true);
-
-    // Verify item names in map
-    expect(items.has('copy')).toBe(true);
-    expect(items.has('paste')).toBe(true);
-    expect(items.has('delete')).toBe(true);
-  });
-
-  test('should have show/hide methods', () => {
-    const menu = createMenu();
-
-    // Check for API methods
-    expect(typeof menu.show).toBe('function');
-    expect(typeof menu.hide).toBe('function');
-    expect(typeof menu.isVisible).toBe('function');
-
-    // Test visibility state
-    expect(menu.isVisible()).toBe(false);
-
-    // Show menu
-    menu.show();
-    expect(menu.isVisible()).toBe(true);
-    expect(menu.element.classList.contains('mtrl-menu--visible')).toBe(true);
-
-    // Hide menu
-    menu.hide();
-    expect(menu.isVisible()).toBe(false);
-  });
-
-  test('should have positioning methods', () => {
-    const menu = createMenu();
-    const target = document.createElement('button');
-
-    // Check for API method
-    expect(typeof menu.position).toBe('function');
-
-    // Test with different alignments
-    const positionConfigs: MenuPositionConfig[] = [
-      { align: MENU_ALIGN.LEFT, vAlign: MENU_VERTICAL_ALIGN.TOP },
-      { align: MENU_ALIGN.RIGHT, vAlign: MENU_VERTICAL_ALIGN.BOTTOM },
-      { align: MENU_ALIGN.CENTER, vAlign: MENU_VERTICAL_ALIGN.MIDDLE }
+  
+  test('should correctly render menu items', () => {
+    const items: MenuContent[] = [
+      { id: 'item1', text: 'Item 1' },
+      { id: 'item2', text: 'Item 2', icon: '<svg></svg>' },
+      { type: 'divider' },
+      { id: 'item3', text: 'Item 3', disabled: true },
+      { id: 'item4', text: 'Item 4', shortcut: 'Ctrl+S' }
     ];
-
-    positionConfigs.forEach(config => {
-      try {
-        menu.position(target, config);
-        // If we reach here, no error was thrown
-        expect(true).toBe(true);
-      } catch (error) {
-        // If an error occurs, the test should fail
-        expect(error).toBeUndefined();
+    
+    const menu = createMenu({
+      anchor: mockAnchor,
+      items
+    });
+    
+    // Check menu list
+    const menuList = menu.element.querySelector('.mtrl-menu-list');
+    expect(menuList).toBeDefined();
+    expect(menuList?.getAttribute('role')).toBe('menu');
+    
+    // Check number of items (4 items + 1 divider)
+    expect(menuList?.children.length).toBe(5);
+    
+    // Check regular item
+    const item1 = menuList?.querySelector('[data-id="item1"]');
+    expect(item1).toBeDefined();
+    expect(item1?.textContent).toContain('Item 1');
+    
+    // Check item with icon
+    const item2 = menuList?.querySelector('[data-id="item2"]');
+    expect(item2).toBeDefined();
+    const icon = item2?.querySelector('.mtrl-menu-item-icon');
+    expect(icon).toBeDefined();
+    expect(icon?.innerHTML).toBe('<svg></svg>');
+    
+    // Check divider
+    const divider = menuList?.querySelector('.mtrl-menu-divider');
+    expect(divider).toBeDefined();
+    expect(divider?.getAttribute('role')).toBe('separator');
+    
+    // Check disabled item
+    const item3 = menuList?.querySelector('[data-id="item3"]');
+    expect(item3).toBeDefined();
+    expect(item3?.classList.contains('mtrl-menu-item--disabled')).toBe(true);
+    expect(item3?.getAttribute('aria-disabled')).toBe('true');
+    
+    // Check item with shortcut
+    const item4 = menuList?.querySelector('[data-id="item4"]');
+    expect(item4).toBeDefined();
+    const shortcut = item4?.querySelector('.mtrl-menu-item-shortcut');
+    expect(shortcut).toBeDefined();
+    expect(shortcut?.textContent).toBe('Ctrl+S');
+  });
+  
+  test('should handle submenu items correctly', () => {
+    const items: MenuContent[] = [
+      { id: 'item1', text: 'Item 1' },
+      { 
+        id: 'submenu', 
+        text: 'Submenu', 
+        hasSubmenu: true,
+        submenu: [
+          { id: 'sub1', text: 'Submenu Item 1' },
+          { id: 'sub2', text: 'Submenu Item 2' }
+        ]
       }
-    });
-  });
-
-  test('should add item dynamically', () => {
-    const menu = createMenu();
-
-    // Check for API method
-    expect(typeof menu.addItem).toBe('function');
-
-    // Test adding an item
-    const newItem: MenuItemConfig = {
-      name: 'newItem',
-      text: 'New Item'
-    };
-
-    menu.addItem(newItem);
-
-    // Verify item was added
-    const items = menu.getItems();
-    expect(items.has('newItem')).toBe(true);
-  });
-
-  test('should remove item dynamically', () => {
+    ];
+    
     const menu = createMenu({
-      items: testItems
+      anchor: mockAnchor,
+      items
     });
-
-    // Check for API method
-    expect(typeof menu.removeItem).toBe('function');
-
-    // Test removing an item
-    menu.removeItem('copy');
-
-    // Verify item was removed
-    const items = menu.getItems();
-    expect(items.has('copy')).toBe(false);
+    
+    const submenuItem = menu.element.querySelector('[data-id="submenu"]');
+    expect(submenuItem).toBeDefined();
+    expect(submenuItem?.classList.contains('mtrl-menu-item--submenu')).toBe(true);
+    expect(submenuItem?.getAttribute('aria-haspopup')).toBe('true');
+    expect(submenuItem?.getAttribute('aria-expanded')).toBe('false');
   });
-
-  test('should register event handlers', () => {
-    const menu = createMenu();
-
-    // Check for API methods
-    expect(typeof menu.on).toBe('function');
-    expect(typeof menu.off).toBe('function');
-
-    // Create a mock handler
-    const mockHandler = mock(() => {});
-
-    // Register handler
-    menu.on(MENU_EVENTS.SELECT, mockHandler);
-
-    // We can't easily test if the handler is called in this environment
-    // But we can check that the method works without error
-    expect(mockHandler.mock.calls.length).toBe(0);
-
-    // Unregister handler
-    menu.off(MENU_EVENTS.SELECT, mockHandler);
-  });
-
-  test('should create nested menus for items with children', () => {
-    // This test would be more complex in a real environment
-    // For now, just verify the basic menu creation works with nested items
-
+  
+  test('should be able to update items', () => {
+    const initialItems: MenuContent[] = [
+      { id: 'item1', text: 'Item 1' }
+    ];
+    
     const menu = createMenu({
-      items: nestedTestItems
+      anchor: mockAnchor,
+      items: initialItems
     });
-
-    // Verify parent items exist
-    const items = menu.getItems();
-    expect(items.has('file')).toBe(true);
-    expect(items.has('edit')).toBe(true);
-
-    // We can't easily test the submenu creation here
-    // But we can check that the parent items are created without error
+    
+    expect(menu.element.querySelectorAll('.mtrl-menu-item').length).toBe(1);
+    
+    const newItems: MenuContent[] = [
+      { id: 'item1', text: 'Item 1' },
+      { id: 'item2', text: 'Item 2' },
+      { id: 'item3', text: 'Item 3' }
+    ];
+    
+    menu.setItems(newItems);
+    
+    expect(menu.element.querySelectorAll('.mtrl-menu-item').length).toBe(3);
+    expect(menu.getItems()).toEqual(newItems);
   });
-
-  test('should properly clean up resources on destroy', () => {
-    const menu = createMenu();
-
-    // Check for API method
-    expect(typeof menu.destroy).toBe('function');
-
-    const parentElement = document.createElement('div');
-    parentElement.appendChild(menu.element);
-
-    // Destroy the component
+  
+  test('should handle opening and closing', () => {
+    const menu = createMenu({
+      anchor: mockAnchor,
+      items: [{ id: 'item1', text: 'Item 1' }]
+    });
+    
+    // Initially not added to DOM and not visible
+    expect(menu.isOpen()).toBe(false);
+    expect(menu.element.parentNode).toBeNull();
+    
+    // Open the menu
+    menu.open();
+    
+    // Should be added to DOM and marked as visible
+    expect(menu.isOpen()).toBe(true);
+    expect(menu.element.parentNode).toBe(document.body);
+    expect(menu.element.classList.contains('mtrl-menu--visible')).toBe(true);
+    expect(menu.element.getAttribute('aria-hidden')).toBe('false');
+    expect(mockAnchor.getAttribute('aria-expanded')).toBe('true');
+    
+    // Close the menu
+    menu.close();
+    
+    // Should be marked as hidden immediately
+    expect(menu.isOpen()).toBe(false);
+    expect(menu.element.classList.contains('mtrl-menu--visible')).toBe(false);
+    expect(menu.element.getAttribute('aria-hidden')).toBe('true');
+    expect(mockAnchor.getAttribute('aria-expanded')).toBe('false');
+    
+    // Should be removed from DOM after animation (mocked with setTimeout)
+    // Need to advance timers or wait for setTimeout
+  });
+  
+  test('should toggle visibility', () => {
+    const menu = createMenu({
+      anchor: mockAnchor,
+      items: [{ id: 'item1', text: 'Item 1' }]
+    });
+    
+    expect(menu.isOpen()).toBe(false);
+    
+    // Toggle on
+    menu.toggle();
+    expect(menu.isOpen()).toBe(true);
+    
+    // Toggle off
+    menu.toggle();
+    expect(menu.isOpen()).toBe(false);
+  });
+  
+  test('should be able to change anchor', () => {
+    const menu = createMenu({
+      anchor: mockAnchor,
+      items: [{ id: 'item1', text: 'Item 1' }]
+    });
+    
+    // Initial anchor
+    expect(menu.getAnchor()).toBe(mockAnchor);
+    
+    // Create a new anchor
+    const newAnchor = document.createElement('button');
+    newAnchor.id = 'new-anchor';
+    document.body.appendChild(newAnchor);
+    
+    // Change anchor
+    menu.setAnchor(newAnchor);
+    
+    // Check new anchor
+    expect(menu.getAnchor()).toBe(newAnchor);
+    expect(newAnchor.getAttribute('aria-haspopup')).toBe('true');
+    expect(newAnchor.getAttribute('aria-expanded')).toBe('false');
+    
+    // Old anchor should no longer have attributes
+    expect(mockAnchor.getAttribute('aria-haspopup')).toBeNull();
+    
+    // Clean up
+    if (newAnchor.parentNode) {
+      newAnchor.parentNode.removeChild(newAnchor);
+    }
+  });
+  
+  test('should be able to change placement', () => {
+    const menu = createMenu({
+      anchor: mockAnchor,
+      items: [{ id: 'item1', text: 'Item 1' }],
+      placement: 'bottom-start'
+    });
+    
+    expect(menu.getPlacement()).toBe('bottom-start');
+    
+    menu.setPlacement('top-end');
+    
+    expect(menu.getPlacement()).toBe('top-end');
+  });
+  
+  test('should trigger events', () => {
+    const menu = createMenu({
+      anchor: mockAnchor,
+      items: [
+        { id: 'item1', text: 'Item 1' },
+        { id: 'item2', text: 'Item 2' }
+      ]
+    });
+    
+    // Setup event handlers
+    const openHandler = mock((e: MenuEvent) => {});
+    const closeHandler = mock((e: MenuEvent) => {});
+    const selectHandler = mock((e: MenuSelectEvent) => {});
+    
+    menu.on('open', openHandler);
+    menu.on('close', closeHandler);
+    menu.on('select', selectHandler);
+    
+    // Test open event
+    menu.open();
+    expect(openHandler).toHaveBeenCalled();
+    
+    // Test close event
+    menu.close();
+    expect(closeHandler).toHaveBeenCalled();
+    
+    // Test select event
+    const item = { id: 'item1', text: 'Item 1' };
+    menu.triggerEvent('select', { item, itemId: item.id });
+    expect(selectHandler).toHaveBeenCalled();
+    expect(selectHandler.mock.calls[0][0].itemId).toBe('item1');
+  });
+  
+  test('should clean up properly on destroy', () => {
+    const menu = createMenu({
+      anchor: mockAnchor,
+      items: [{ id: 'item1', text: 'Item 1' }]
+    });
+    
+    // Open menu so it's in the DOM
+    menu.open();
+    
+    expect(document.body.contains(menu.element)).toBe(true);
+    expect(mockAnchor.hasAttribute('aria-haspopup')).toBe(true);
+    
+    // Destroy the menu
     menu.destroy();
-
-    // Check if element was removed
-    expect(parentElement.children.length).toBe(0);
-  });
-
-  test('should support keyboard navigation', () => {
-    // Skip detailed keyboard navigation tests due to test environment limitations
-    // Just verify the API methods exist
-
-    const menu = createMenu();
-
-    // Show the menu to initialize keyboard handlers
-    menu.show();
-
-    // In a real environment, we would dispatch keydown events and check results
-    // But here we just verify the basic setup happens without errors
-
-    // Hide and clean up
-    menu.hide();
-  });
-
-  test('should handle outside clicks', () => {
-    // This would typically close the menu
-    // We can't fully test this behavior in the current environment
-
-    const menu = createMenu();
-    menu.show();
-
-    // In a real environment, we would:
-    // 1. Create a click event outside the menu
-    // 2. Dispatch it
-    // 3. Verify menu is hidden
-
-    // For now, just ensure our menu API method is called without error
-    menu.hide();
+    
+    // Menu should be removed from DOM
+    expect(document.body.contains(menu.element)).toBe(false);
+    
+    // Anchor should have attributes removed
+    expect(mockAnchor.hasAttribute('aria-haspopup')).toBe(false);
+    expect(mockAnchor.hasAttribute('aria-expanded')).toBe(false);
+    expect(mockAnchor.hasAttribute('aria-controls')).toBe(false);
   });
 });

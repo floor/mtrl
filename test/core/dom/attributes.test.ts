@@ -1,7 +1,7 @@
 // test/core/dom.attributes.test.ts
 import { describe, test, expect, beforeAll, afterAll } from 'bun:test';
 import { JSDOM } from 'jsdom';
-import { setAttributes, removeAttributes } from '../../src/core/dom/attributes';
+import { setAttributes, removeAttributes } from '../../../src/core/dom/attributes';
 
 // Setup jsdom environment
 let dom: JSDOM;
