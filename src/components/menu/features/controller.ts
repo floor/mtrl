@@ -19,7 +19,7 @@ export const withController = (config: MenuConfig) => component => {
   const state = {
     visible: config.visible || false,
     items: config.items || [],
-    placement: config.placement,
+    position: config.position,
     activeSubmenu: null,
     activeSubmenuItem: null,
     activeItemIndex: -1,
@@ -196,7 +196,7 @@ export const withController = (config: MenuConfig) => component => {
     component.element.appendChild(menuList);
   };
 
-  /**
+/**
    * Positions the menu relative to its anchor
    * Ensures the menu maintains proper spacing from viewport edges
    */
@@ -206,7 +206,7 @@ export const withController = (config: MenuConfig) => component => {
     
     const menuElement = component.element;
     const anchorRect = anchor.getBoundingClientRect();
-    const { placement } = state;
+    const { position } = state;
     const offset = config.offset !== undefined ? config.offset : 0;
     
     // Reset styles for measurement
@@ -223,20 +223,20 @@ export const withController = (config: MenuConfig) => component => {
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
     
-    // Calculate position based on placement
+    // Calculate position based on position
     let top = 0;
     let left = 0;
-    let calculatedPlacement = placement;
+    let calculatedPosition = position;
     
-    // First determine correct position based on original placement
-    switch (placement) {
+    // First determine correct position based on original position
+    switch (position) {
       case 'top-start':
       case 'top':
       case 'top-end':
         // Check if enough space above
         if (anchorRect.top < menuRect.height + offset + 16) {
           // Not enough space above, flip to bottom
-          calculatedPlacement = placement.replace('top', 'bottom');
+          calculatedPosition = position.replace('top', 'bottom');
         }
         break;
       
@@ -248,14 +248,14 @@ export const withController = (config: MenuConfig) => component => {
           // Not enough space below, check if more space above
           if (anchorRect.top > (viewportHeight - anchorRect.bottom)) {
             // More space above, flip to top
-            calculatedPlacement = placement.replace('bottom', 'top');
+            calculatedPosition = position.replace('bottom', 'top');
           }
         }
         break;
     }
     
-    // Now position based on the potentially flipped placement
-    switch (calculatedPlacement) {
+    // Now position based on the potentially flipped position
+    switch (calculatedPosition) {
       case 'top-start':
         top = anchorRect.top - menuRect.height - offset;
         left = anchorRect.left;
@@ -324,8 +324,8 @@ export const withController = (config: MenuConfig) => component => {
       
       // Only set maxHeight if we're not flipping from top to bottom
       // Fixed: Only apply maxHeight in specific cases
-      if (calculatedPlacement.startsWith('top') || 
-          (calculatedPlacement.startsWith('bottom') && placement.startsWith('bottom'))) {
+      if (calculatedPosition.startsWith('top') || 
+          (calculatedPosition.startsWith('bottom') && position.startsWith('bottom'))) {
         // Set a minimum height to prevent tiny menus
         const minMenuHeight = Math.min(menuRect.height, 100);
         const newMaxHeight = Math.max(availableHeight, minMenuHeight);
@@ -1033,7 +1033,7 @@ export const withController = (config: MenuConfig) => component => {
   }
 
   // Return enhanced component
-  return {
+return {
     ...component,
     menu: {
       open: (event) => {
@@ -1061,15 +1061,15 @@ export const withController = (config: MenuConfig) => component => {
       
       getItems: () => state.items,
       
-      setPlacement: (placement) => {
-        state.placement = placement;
+      setPosition: (position) => {
+        state.position = position;
         if (state.visible) {
           positionMenu();
         }
         return component;
       },
       
-      getPlacement: () => state.placement
+      getPosition: () => state.position
     }
   };
 };

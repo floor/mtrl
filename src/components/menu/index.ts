@@ -22,23 +22,23 @@ export type {
   MenuContent,
   MenuEvent,
   MenuSelectEvent,
-  MenuPlacement
+  MenuPosition
 } from './types';
 
 /**
- * Constants for menu placement values - use these instead of string literals
+ * Constants for menu position values - use these instead of string literals
  * for better code completion and type safety.
  * 
  * @example
- * import { createMenu, MENU_PLACEMENT } from 'mtrl';
+ * import { createMenu, MENU_POSITION } from 'mtrl';
  * 
  * // Create a menu positioned at the bottom-right of its anchor
  * const menu = createMenu({ 
  *   anchor: '#dropdown-button',
  *   items: [...],
- *   placement: MENU_PLACEMENT.BOTTOM_END 
+ *   position: MENU_POSITION.BOTTOM_END 
  * });
  * 
  * @category Components
  */
-export { MENU_PLACEMENT } from './types';
+export { MENU_POSITION } from './types';

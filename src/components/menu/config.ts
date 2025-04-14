@@ -5,7 +5,7 @@ import {
   createElementConfig,
   BaseComponentConfig 
 } from '../../core/config/component-config';
-import { MenuConfig, MENU_PLACEMENT } from './types';
+import { MenuConfig, MENU_POSITION } from './types';
 
 /**
  * Default configuration for the Menu component
@@ -15,7 +15,7 @@ import { MenuConfig, MENU_PLACEMENT } from './types';
  */
 export const defaultConfig: MenuConfig = {
   items: [],
-  placement: MENU_PLACEMENT.BOTTOM_START,
+  position: MENU_POSITION.BOTTOM_START,
   closeOnSelect: true,
   closeOnClickOutside: true,
   closeOnEscape: true,
@@ -106,8 +106,8 @@ export const getApiConfig = (component) => ({
     isOpen: () => component.menu?.isOpen() || false,
     setItems: (items) => component.menu?.setItems(items),
     getItems: () => component.menu?.getItems() || [],
-    setPlacement: (placement) => component.menu?.setPlacement(placement),
-    getPlacement: () => component.menu?.getPlacement()
+    setPosition: (position) => component.menu?.setPosition(position),
+    getPosition: () => component.menu?.getPosition()
   },
   anchor: {
     setAnchor: (anchor) => component.anchor?.setAnchor(anchor),

@@ -60,7 +60,7 @@ export {
   createCarousel,
   createCheckbox,
   createChip,
-  createChipSet,
+  createChips,
   createDatePicker,
   createDialog,
   createDivider,

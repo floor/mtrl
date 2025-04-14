@@ -1,12 +1,12 @@
 // src/components/menu/types.ts
 
 /**
- * Menu placement options
+ * Menu position options
  * Controls where the menu will appear relative to its anchor element
  * 
  * @category Components
  */
-export const MENU_PLACEMENT = {
+export const MENU_POSITION = {
   /** Places menu below the anchor, aligned to left edge */
   BOTTOM_START: 'bottom-start',
   /** Places menu below the anchor, centered */
@@ -34,11 +34,11 @@ export const MENU_PLACEMENT = {
 } as const;
 
 /**
- * Alignment options for the menu
+ * Position options for the menu
  * 
  * @category Components
  */
-export type MenuPlacement = typeof MENU_PLACEMENT[keyof typeof MENU_PLACEMENT];
+export type MenuPosition = typeof MENU_POSITION[keyof typeof MENU_POSITION];
 
 /**
  * Configuration interface for a menu item
@@ -136,10 +136,10 @@ export interface MenuConfig {
   items: MenuContent[];
   
   /**
-   * Placement of the menu relative to the anchor
+   * Position of the menu relative to the anchor
    * @default 'bottom-start'
    */
-  placement?: MenuPlacement;
+  position?: MenuPosition;
   
   /**
    * Whether the menu should close when an item is clicked
@@ -184,7 +184,7 @@ export interface MenuConfig {
   offset?: number;
   
   /**
-   * Whether the menu should automatically flip placement to stay in viewport
+   * Whether the menu should automatically flip position to stay in viewport
    * @default true
    */
   autoFlip?: boolean;
@@ -332,17 +332,17 @@ export interface MenuComponent {
   getAnchor: () => HTMLElement;
   
   /**
-   * Updates the menu's placement
-   * @param placement - New placement value
+   * Updates the menu's position
+   * @param position - New position value
    * @returns The menu component for chaining
    */
-  setPlacement: (placement: MenuPlacement) => MenuComponent;
+  setPosition: (position: MenuPosition) => MenuComponent;
   
   /**
-   * Gets the current menu placement
-   * @returns Current placement
+   * Gets the current menu position
+   * @returns Current position
    */
-  getPlacement: () => MenuPlacement;
+  getPosition: () => MenuPosition;
   
   /**
    * Adds an event listener to the menu

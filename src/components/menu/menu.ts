@@ -18,84 +18,6 @@ import { createBaseConfig, getElementConfig, getApiConfig } from './config';
  * Menus are built using a functional composition pattern, applying various 
  * features through the pipe function for a modular architecture.
  * 
- * @param {MenuConfig} config - Configuration options for the menu
- *  This must include an anchor element or selector, and an array of menu items.
- *  See {@link MenuConfig} for all available options.
- * 
- * @returns {MenuComponent} A fully configured menu component instance with
- *  all requested features applied. The returned component has methods for
- *  menu manipulation, event handling, and lifecycle management.
- * 
- * @throws {Error} Throws an error if menu creation fails or if required
- *  configuration (like anchor) is missing.
- * 
- * @category Components
- * 
- * @example
- * // Create a simple menu anchored to a button
- * const menuButton = document.getElementById('menu-button');
- * const menu = createMenu({
- *   anchor: menuButton,
- *   items: [
- *     { id: 'item1', text: 'Option 1' },
- *     { id: 'item2', text: 'Option 2' },
- *     { type: 'divider' },
- *     { id: 'item3', text: 'Option 3' }
- *   ]
- * });
- * 
- * // Add the menu to the document
- * document.body.appendChild(menu.element);
- * 
- * // Add event listener for item selection
- * menu.on('select', (event) => {
- *   console.log('Selected item:', event.itemId);
- * });
- * 
- * @example
- * // Create a menu with nested submenus
- * const menu = createMenu({
- *   anchor: '#more-button',
- *   items: [
- *     { id: 'edit', text: 'Edit', icon: '<svg>...</svg>' },
- *     { 
- *       id: 'share', 
- *       text: 'Share', 
- *       hasSubmenu: true,
- *       submenu: [
- *         { id: 'email', text: 'Email' },
- *         { id: 'link', text: 'Copy link' }
- *       ]
- *     },
- *     { type: 'divider' },
- *     { id: 'delete', text: 'Delete', icon: '<svg>...</svg>' }
- *   ],
- *   placement: 'bottom-end'
- * });
- * 
- * @example
- * // Programmatically control menu visibility
- * const userMenu = createMenu({
- *   anchor: userAvatar,
- *   items: userMenuItems
- * });
- * 
- * // Open the menu programmatically
- * userMenu.open();
- * 
- * // Later, close the menu
- * userMenu.close();
- */
-/**
- * Creates a new Menu component with the specified configuration.
- * 
- * The Menu component implements the Material Design 3 menu specifications,
- * providing a flexible dropdown menu system with support for nested menus,
- * keyboard navigation, and ARIA accessibility.
- * 
- * Menus are built using a functional composition pattern, applying various 
- * features through the pipe function for a modular architecture.
- * 
  * The menu element is not added to the DOM until it's opened, and it's removed
  * from the DOM when closed, following best practices for dropdown menus.
  * 
@@ -132,6 +54,40 @@ import { createBaseConfig, getElementConfig, getApiConfig } from './config';
  * 
  * // Menu will be added to the DOM when opened and removed when closed
  * menuButton.addEventListener('click', () => menu.toggle());
+ * 
+ * @example
+ * // Create a menu with nested submenus
+ * const menu = createMenu({
+ *   anchor: '#more-button',
+ *   items: [
+ *     { id: 'edit', text: 'Edit', icon: '<svg>...</svg>' },
+ *     { 
+ *       id: 'share', 
+ *       text: 'Share', 
+ *       hasSubmenu: true,
+ *       submenu: [
+ *         { id: 'email', text: 'Email' },
+ *         { id: 'link', text: 'Copy link' }
+ *       ]
+ *     },
+ *     { type: 'divider' },
+ *     { id: 'delete', text: 'Delete', icon: '<svg>...</svg>' }
+ *   ],
+ *   position: 'bottom-end'
+ * });
+ * 
+ * @example
+ * // Specify a custom position for the menu
+ * const filterMenu = createMenu({
+ *   anchor: filterButton,
+ *   items: filterOptions,
+ *   position: MENU_POSITION.TOP_START,
+ *   width: '240px',
+ *   maxHeight: '400px'
+ * });
+ * 
+ * // Update the menu's position programmatically
+ * filterMenu.setPosition(MENU_POSITION.BOTTOM_END);
  */
 const createMenu = (config: MenuConfig): MenuComponent => {
   try {

@@ -1,6 +1,6 @@
 // src/components/menu/api.ts
 
-import { MenuComponent, MenuContent, MenuPlacement, MenuEvent, MenuSelectEvent } from './types';
+import { MenuComponent, MenuContent, MenuPosition, MenuEvent, MenuSelectEvent } from './types';
 
 /**
  * API configuration options for menu component
@@ -15,8 +15,8 @@ interface ApiOptions {
     isOpen: () => boolean;
     setItems: (items: MenuContent[]) => any;
     getItems: () => MenuContent[];
-    setPlacement: (placement: MenuPlacement) => any;
-    getPlacement: () => MenuPlacement;
+    setPosition: (position: MenuPosition) => any;
+    getPosition: () => MenuPosition;
   };
   anchor: {
     setAnchor: (anchor: HTMLElement | string) => any;
@@ -135,21 +135,21 @@ export const withAPI = ({ menu, anchor, events, lifecycle }: ApiOptions) =>
     },
     
     /**
-     * Updates the menu's placement
-     * @param placement - New placement value
+     * Updates the menu's position
+     * @param position - New position value
      * @returns Menu component for chaining
      */
-    setPlacement(placement: MenuPlacement) {
-      menu.setPlacement(placement);
+    setPosition(position: MenuPosition) {
+      menu.setPosition(position);
       return this;
     },
     
     /**
-     * Gets the current menu placement
-     * @returns Current placement
+     * Gets the current menu position
+     * @returns Current position
      */
-    getPlacement() {
-      return menu.getPlacement();
+    getPosition() {
+      return menu.getPosition();
     },
     
     /**
