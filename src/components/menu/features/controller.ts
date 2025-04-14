@@ -196,6 +196,9 @@ export const withController = (config: MenuConfig) => component => {
     component.element.appendChild(menuList);
   };
 
+  // src/components/menu/features/controller.ts
+  // Focusing on specific side positions that need vertical adjustment
+
   /**
    * Positions the menu relative to its anchor
    * Ensures the menu maintains proper spacing from viewport edges
@@ -263,26 +266,56 @@ export const withController = (config: MenuConfig) => component => {
           }
         }
         break;
+        
+      // Specifically handle right-start, right, left-start, and left positions
+      case 'right-start':
+      case 'right':
+      case 'left-start':
+      case 'left':
+        // Check if enough space below for these side positions
+        if (anchorRect.bottom + menuRect.height > viewportHeight - 16) {
+          // Not enough space below, shift the menu upward
+          if (position === 'right-start') {
+            calculatedPosition = 'right-end';
+          } else if (position === 'left-start') {
+            calculatedPosition = 'left-end';
+          } else if (position === 'right') {
+            // For center aligned, shift up by half menu height plus some spacing
+            top = anchorRect.top - (menuRect.height - anchorRect.height) - offset;
+          } else if (position === 'left') {
+            // For center aligned, shift up by half menu height plus some spacing
+            top = anchorRect.top - (menuRect.height - anchorRect.height) - offset;
+          }
+        }
+        break;
     }
     
     // Reset any existing position classes
     const positionClasses = [
-      'position-top', 'position-top-start', 'position-top-end',
-      'position-bottom', 'position-bottom-start', 'position-bottom-end',
-      'position-left', 'position-left-start', 'position-left-end',
-      'position-right', 'position-right-start', 'position-right-end'
+      'position-top', 'position-bottom'
     ];
     
     positionClasses.forEach(posClass => {
       component.element.classList.remove(`${component.getClass('menu')}--${posClass}`);
     });
     
-    // Add the position-specific class for proper transform-origin
-    component.element.classList.add(`${component.getClass('menu')}--position-${calculatedPosition}`);
+    // Determine transform origin based on vertical position
+    // Start by checking the calculated position to determine transform origin
+    const menuAppearsAboveAnchor = 
+      calculatedPosition.startsWith('top') || 
+      calculatedPosition === 'right-end' || 
+      calculatedPosition === 'left-end' ||
+      (calculatedPosition === 'right' && top < anchorRect.top) ||
+      (calculatedPosition === 'left' && top < anchorRect.top);
     
-    // Now position based on the potentially flipped position
+    if (menuAppearsAboveAnchor) {
+      component.element.classList.add(`${component.getClass('menu')}--position-top`);
+    } else {
+      component.element.classList.add(`${component.getClass('menu')}--position-bottom`);
+    }
+    
+    // Now calculate specific positions based on the calculatedPosition
     switch (calculatedPosition) {
-      // Position logic remains the same as in the previous version
       case 'top-start':
         top = anchorRect.top - menuRect.height - offset;
         left = anchorRect.left;
@@ -300,7 +333,10 @@ export const withController = (config: MenuConfig) => component => {
         left = anchorRect.right + offset;
         break;
       case 'right':
-        top = anchorRect.top + (anchorRect.height / 2) - (menuRect.height / 2);
+        // Custom top position might be set above; only set if not already defined
+        if (top === 0) {
+          top = anchorRect.top + (anchorRect.height / 2) - (menuRect.height / 2);
+        }
         left = anchorRect.right + offset;
         break;
       case 'right-end':
@@ -324,7 +360,10 @@ export const withController = (config: MenuConfig) => component => {
         left = anchorRect.left - menuRect.width - offset;
         break;
       case 'left':
-        top = anchorRect.top + (anchorRect.height / 2) - (menuRect.height / 2);
+        // Custom top position might be set above; only set if not already defined
+        if (top === 0) {
+          top = anchorRect.top + (anchorRect.height / 2) - (menuRect.height / 2);
+        }
         left = anchorRect.left - menuRect.width - offset;
         break;
       case 'left-end':
@@ -332,9 +371,6 @@ export const withController = (config: MenuConfig) => component => {
         left = anchorRect.left - menuRect.width - offset;
         break;
     }
-    
-    // Apply final positions (rest of the positioning logic remains unchanged)
-    // ...
     
     // Ensure the menu has proper spacing from viewport edges
     
@@ -352,16 +388,12 @@ export const withController = (config: MenuConfig) => component => {
       // If menu would extend beyond bottom with margin, adjust maxHeight
       const availableHeight = viewportHeight - top - viewportBottomMargin;
       
-      // Only set maxHeight if necessary
-      if (calculatedPosition.startsWith('top') || 
-          (calculatedPosition.startsWith('bottom') && position.startsWith('bottom'))) {
-        // Set a minimum height to prevent tiny menus
-        const minMenuHeight = Math.min(menuRect.height, 100);
-        const newMaxHeight = Math.max(availableHeight, minMenuHeight);
-        
-        // Update maxHeight to fit within viewport
-        component.element.style.maxHeight = `${newMaxHeight}px`;
-      }
+      // Set a minimum height to prevent tiny menus
+      const minMenuHeight = Math.min(menuRect.height, 100);
+      const newMaxHeight = Math.max(availableHeight, minMenuHeight);
+      
+      // Update maxHeight to fit within viewport
+      component.element.style.maxHeight = `${newMaxHeight}px`;
       
       // If user has explicitly set a maxHeight, respect it if smaller
       if (config.maxHeight) {
