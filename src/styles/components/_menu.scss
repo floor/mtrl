@@ -15,33 +15,39 @@ $component: 'mtrl-menu';
   z-index: f.get-z-index('menu');
   min-width: 112px;
   max-width: 280px;
-  padding: 8px 0;
+  padding: 8px 0; // Keep padding consistent
   background-color: t.color('surface-container');
   color: t.color('on-surface');
   @include m.elevation(2);
-  overflow: hidden; // Add explicit overflow hidden to the menu container
+  overflow: hidden;
   
-  // Initial state - hidden
-  display: flex;
+  // Initial state - hidden with proper transform origin
+  display: block;
   opacity: 0;
-  transform: scale(0.8);
-  transform-origin: top left;
+  transform-origin: top center; // Default transform origin
+  transform: scaleY(0);
   pointer-events: none;
-  visibility: hidden; // Added for better measurement handling
-  transition: opacity v.motion('duration-short2') v.motion('easing-standard'),
-              transform v.motion('duration-short2') v.motion('easing-standard'),
-              visibility 0s linear v.motion('duration-short2'); // Delay visibility change
   
+  // Material Design 3 standard animation curve for menus
+  transition: 
+    transform v.motion('duration-medium1') v.motion('easing-emphasized'),
+    opacity v.motion('duration-medium1') v.motion('easing-emphasized');
+  
+  // Visible state
   &--visible {
     opacity: 1;
-    transform: scale(1);
+    transform: scaleY(1);
     pointer-events: auto;
-    visibility: visible;
-    transition: opacity v.motion('duration-short2') v.motion('easing-standard'),
-                transform v.motion('duration-short2') v.motion('easing-standard'),
-                visibility 0s linear 0s; // No delay for visibility
   }
   
+  // Position variations with appropriate transform origins
+  &--position-top,
+  &--position-top-start,
+  &--position-top-end {
+    transform-origin: bottom center;
+  }
+  
+  // Submenu styling
   &--submenu {
     position: absolute;
     z-index: f.get-z-index('menu') + 1;
@@ -55,8 +61,6 @@ $component: 'mtrl-menu';
     overflow-y: auto;
     max-height: calc(100vh - 96px);
     @include m.scrollbar;
-    
-    // Ensure text within items doesn't overflow
     width: 100%;
   }
 
@@ -74,9 +78,10 @@ $component: 'mtrl-menu';
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
-    width: 100%; // Ensure items take full width
-    box-sizing: border-box; // Include padding in width calculation
+    width: 100%;
+    box-sizing: border-box;
     
+    // State layer effects
     &:hover {
       @include m.state-layer(t.color('on-surface'), 'hover');
     }
@@ -102,7 +107,6 @@ $component: 'mtrl-menu';
         transform: translateY(-50%);
         width: 24px;
         height: 24px;
-        // Use a mask image approach instead of background-image for better color inheritance
         mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' height='24px' viewBox='0 0 24 24' width='24px'%3E%3Cpath d='M0 0h24v24H0V0z' fill='none'/%3E%3Cpath d='M10 17l5-5-5-5v10z'/%3E%3C/svg%3E");
         -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' height='24px' viewBox='0 0 24 24' width='24px'%3E%3Cpath d='M0 0h24v24H0V0z' fill='none'/%3E%3Cpath d='M10 17l5-5-5-5v10z'/%3E%3C/svg%3E");
         mask-size: contain;
@@ -111,7 +115,7 @@ $component: 'mtrl-menu';
         -webkit-mask-repeat: no-repeat;
         mask-position: center;
         -webkit-mask-position: center;
-        background-color: currentColor; // This is the key change - use currentColor as the background
+        background-color: currentColor;
         opacity: 0.87;
       }
       
@@ -149,7 +153,7 @@ $component: 'mtrl-menu';
       }
     }
     
-    // Add styles for content containers inside menu items
+    // Content containers inside menu items
     &-content {
       display: flex;
       align-items: center;
@@ -194,14 +198,17 @@ $component: 'mtrl-menu';
   // Accessibility
   @include m.focus-ring('.#{$component}-item:focus-visible');
   
+  // Reduced motion preference support
   @include m.reduced-motion {
-    transition: none;
+    transition: opacity 0.1s linear;
+    transform: none !important;
     
-    .#{$component}-item {
-      transition: none;
+    &--visible {
+      transform: none !important;
     }
   }
   
+  // High contrast mode
   @include m.high-contrast {
     border: 1px solid CurrentColor;
     
@@ -218,6 +225,12 @@ $component: 'mtrl-menu';
   // RTL Support
   @include m.rtl {
     transform-origin: top right;
+    
+    &--position-top,
+    &--position-top-start,
+    &--position-top-end {
+      transform-origin: bottom right;
+    }
     
     .#{$component}-item {
       &--submenu {
