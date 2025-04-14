@@ -1,6 +1,6 @@
 // src/components/select/features.ts
-import createTextfield from '../textfield'; // Change from { createTextfield }
-import createMenu from '../menu'; // Change from { createMenu }
+import createTextfield from '../textfield';
+import createMenu from '../menu';
 import { SelectOption, SelectConfig, BaseComponent } from './types';
 
 /**
@@ -47,10 +47,37 @@ export const withTextfield = (config: SelectConfig) =>
   };
 
 /**
- * Creates a menu for the select component
- * @param config - Select configuration
- * @returns Function that enhances a component with menu functionality
+ * Recursively processes select options to create menu items
+ * Ensures all items have proper data structure
+ * @param options The options to process
+ * @returns Properly structured menu items
  */
+const processMenuItems = (options) => {
+  return options.map(option => {
+    if ('type' in option && option.type === 'divider') {
+      return option; // Just pass dividers through
+    }
+    
+    // Create a basic menu item
+    const menuItem = {
+      id: option.id,
+      text: option.text,
+      icon: option.icon,
+      disabled: option.disabled,
+      hasSubmenu: false,
+      data: option
+    };
+    
+    // If this option has a submenu, process those items recursively
+    if (option.hasSubmenu && Array.isArray(option.submenu)) {
+      menuItem.hasSubmenu = true;
+      menuItem.submenu = processMenuItems(option.submenu);
+    }
+    
+    return menuItem;
+  });
+};
+
 /**
  * Creates a menu for the select component
  * @param config - Select configuration
@@ -74,19 +101,8 @@ export const withMenu = (config: SelectConfig) =>
       state.selectedOption = state.options.find(opt => opt.id === config.value);
     }
     
-    // Convert options to menu items
-    const menuItems = state.options.map(option => {
-      if ('type' in option && option.type === 'divider') {
-        return option; // Just pass dividers through
-      }
-      return {
-        id: option.id,
-        text: option.text,
-        icon: option.icon,
-        disabled: option.disabled,
-        data: option
-      };
-    });
+    // Convert options to menu items with proper recursive processing
+    const menuItems = processMenuItems(state.options);
     
     // Create menu component
     const menu = createMenu({
@@ -102,7 +118,18 @@ export const withMenu = (config: SelectConfig) =>
     
     // Handle menu selection
     menu.on('select', (event) => {
-      const option = event.item.data as SelectOption;
+      // Safely access data properties with proper type checking
+      if (!event.item || event.item.hasSubmenu) {
+        return; // Skip processing for submenu items
+      }
+      
+      // Safely extract the option data and validate it
+      const option = event.item.data;
+      if (!option || !('id' in option) || !('text' in option)) {
+        console.warn('Invalid menu selection: missing required data properties');
+        return;
+      }
+      
       state.selectedOption = option;
       
       // Update textfield
@@ -227,11 +254,6 @@ export const withMenu = (config: SelectConfig) =>
       setTimeout(markSelectedMenuItem, 50); // Small delay to ensure DOM is ready
     });
     
-    // Mark selected item when menu opens
-    menu.on('open', () => {
-      setTimeout(markSelectedMenuItem, 50); // Small delay to ensure DOM is ready
-    });
-    
     // Expose select API
     return {
       ...component,
@@ -242,8 +264,8 @@ export const withMenu = (config: SelectConfig) =>
         getValue: () => state.selectedOption?.id || null,
         
         setValue: (value) => {
-          const option = state.options.find(opt => opt.id === value);
-          if (option) {
+          const option = state.options.find(opt => 'id' in opt && opt.id === value);
+          if (option && 'text' in option) {
             state.selectedOption = option;
             component.textfield.setValue(option.text);
             
@@ -264,20 +286,8 @@ export const withMenu = (config: SelectConfig) =>
         setOptions: (options) => {
           state.options = options;
           
-          // Convert options to menu items
-          const menuItems = options.map(option => {
-            if ('type' in option && option.type === 'divider') {
-              return option; // Just pass dividers through
-            }
-            return {
-              id: option.id,
-              text: option.text,
-              icon: option.icon,
-              disabled: option.disabled,
-              data: option
-            };
-          });
-          
+          // Process options to menu items with proper handling for submenus
+          const menuItems = processMenuItems(options);
           menu.setItems(menuItems);
           
           // If previously selected option is no longer available, clear selection

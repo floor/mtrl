@@ -38,6 +38,17 @@ export interface SelectOption {
   icon?: string;
   
   /**
+   * Whether this option has a submenu
+   */
+  hasSubmenu?: boolean;
+  
+  /**
+   * Optional array of submenu options
+   * Only used when hasSubmenu is true
+   */
+  submenu?: SelectOption[];
+  
+  /**
    * Additional data associated with the option
    */
   data?: any;

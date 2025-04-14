@@ -32,14 +32,14 @@ $component: '#{base.$prefix}-select';
     pointer-events: auto; // Allow clicks on the icon
     cursor: pointer;
     transform: translateY(-50%); // Keep vertical centering
-    transition: transform 0.2s ease, color 0.2s ease; // Add transition for smooth rotation and color changes
+    transition: v.motion('duration-medium1') v.motion('easing-emphasized'); // Add transition for smooth rotation and color changes
     
     svg {
-      width: 18px;
-      height: 18px;
+      width: 24px;
+      height: 24px;
       vertical-align: middle;
       color: inherit;
-      transition: transform 0.2s ease; // Add transition for the SVG itself
+      transition: v.motion('duration-medium1') v.motion('easing-emphasized'); // Add transition for the SVG itself
     }
   }
   
