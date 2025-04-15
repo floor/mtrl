@@ -15,6 +15,20 @@ const withAnchor = (config: MenuConfig) => component => {
     return component;
   }
 
+  // Track keyboard navigation state
+  let isTabNavigation = false;
+
+  // Add an event listener to detect Tab key navigation
+  document.addEventListener('keydown', (e: KeyboardEvent) => {
+    // Set flag when Tab key is pressed
+    isTabNavigation = e.key === 'Tab';
+    
+    // Reset flag after a short delay
+    setTimeout(() => {
+      isTabNavigation = false;
+    }, 100);
+  });
+
   // Track anchor state
   const state = {
     anchorElement: null as HTMLElement,
@@ -222,21 +236,43 @@ const withAnchor = (config: MenuConfig) => component => {
   };
 
   /**
-   * Adds blur/focusout handler to close menu when anchor loses focus
+   * Handles anchor blur/focusout events
    */
   const handleAnchorBlur = (e: FocusEvent): void => {
     // Only handle events if we have a menu controller and menu is open
     if (!component.menu || !component.menu.isOpen()) return;
     
-    // We need to check if focus is moving to an element within the menu
-    // If focus is moving to any element within the menu, we should NOT close it
-    
     // Get the related target (element receiving focus)
     const relatedTarget = e.relatedTarget as HTMLElement;
     
-    // If the relatedTarget is an element within our menu, don't close
-    if (relatedTarget && component.element.contains(relatedTarget)) {
+    // If this is tab navigation, always close the menu regardless of next focus target
+    if (isTabNavigation) {
+      setTimeout(() => {
+        // Verify menu is still open (may have been closed in the meantime)
+        if (component.menu && component.menu.isOpen()) {
+          // Close the menu but don't restore focus
+          component.menu.close(e, false);
+        }
+      }, 10);
       return;
+    }
+    
+    // For non-tab navigation (like mouse clicks):
+    // Don't close if focus is moving to any of these:
+    // 1. To the menu itself
+    // 2. To a child of the menu
+    // 3. To another menu button/anchor
+    if (relatedTarget) {
+      // Check if focus moved to menu or its children
+      if (component.element.contains(relatedTarget)) {
+        return;
+      }
+      
+      // Check if focus moved to another menu button/anchor (has aria-haspopup)
+      if (relatedTarget.getAttribute('aria-haspopup') === 'true' || 
+          relatedTarget.closest('[aria-haspopup="true"]')) {
+        return;
+      }
     }
     
     // Wait a brief moment to ensure we're not in the middle of another operation
@@ -245,7 +281,7 @@ const withAnchor = (config: MenuConfig) => component => {
       // Verify menu is still open (may have been closed in the meantime)
       if (component.menu && component.menu.isOpen()) {
         // Close the menu but don't restore focus since focus has moved elsewhere
-        component.menu.close(e);
+        component.menu.close(e, false);
       }
     }, 50);
   };

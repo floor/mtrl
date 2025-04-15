@@ -3,6 +3,8 @@
 import { MenuConfig, MenuContent, MenuItem, MenuDivider, MenuEvent, MenuSelectEvent } from '../types';
 import { createPositioner } from './position';
 
+let ignoreNextDocumentClick = false;
+
 /**
  * Adds controller functionality to the menu component
  * Manages state, rendering, positioning, and event handling
@@ -790,6 +792,9 @@ const withController = (config: MenuConfig) => component => {
     // Update state
     state.visible = true;
     
+    // First, remove any existing document click listener
+    document.removeEventListener('click', handleDocumentClick);
+    
     // Step 1: Add the menu to the DOM if it's not already there with initial hidden state
     if (!component.element.parentNode) {
       // Apply explicit initial styling to ensure it doesn't flash
@@ -827,17 +832,22 @@ const withController = (config: MenuConfig) => component => {
       setTimeout(() => {
         handleFocus(interactionType);
       }, 100);
+      
+      // Add the document click handler on the next event loop 
+      // after the current click is fully processed
+      setTimeout(() => {
+        if (config.closeOnClickOutside && state.visible) {
+          document.addEventListener('click', handleDocumentClick);
+        }
+        
+        // Add other document events normally
+        if (config.closeOnEscape) {
+          document.addEventListener('keydown', handleDocumentKeydown);
+        }
+        window.addEventListener('resize', handleWindowResize, { passive: true });
+        window.addEventListener('scroll', handleWindowScroll, { passive: true });
+      }, 0);
     }, 20); // Short delay for browser to process
-    
-    // Add document events
-    if (config.closeOnClickOutside) {
-      document.addEventListener('click', handleDocumentClick);
-    }
-    if (config.closeOnEscape) {
-      document.addEventListener('keydown', handleDocumentKeydown);
-    }
-    window.addEventListener('resize', handleWindowResize, { passive: true });
-    window.addEventListener('scroll', handleWindowScroll, { passive: true });
     
     // Trigger event
     eventHelpers.triggerEvent('open', {}, event);
@@ -958,6 +968,12 @@ const withController = (config: MenuConfig) => component => {
    * Handles document click
    */
   const handleDocumentClick = (e: MouseEvent): void => {
+    // If we should ignore this click (happens right after opening), reset the flag and return
+    if (ignoreNextDocumentClick) {
+      ignoreNextDocumentClick = false;
+      return;
+    }
+    
     // Don't close if clicked inside menu
     if (component.element.contains(e.target as Node)) {
       return;

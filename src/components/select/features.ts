@@ -79,7 +79,7 @@ const processMenuItems = (options) => {
 };
 
 /**
- * Creates a menu for the select component
+ * Creates a menu for the select component with improved keyboard navigation
  * @param config - Select configuration
  * @returns Function that enhances a component with menu functionality
  */
@@ -116,6 +116,9 @@ export const withMenu = (config: SelectConfig) =>
       offset: 0 // Set offset to 0 to eliminate gap between textfield and menu
     });
     
+    // This flag helps us know if we need to restore focus after menu closes
+    let needsFocusRestore = false;
+    
     // Handle menu selection
     menu.on('select', (event) => {
       // Safely access data properties with proper type checking
@@ -138,6 +141,9 @@ export const withMenu = (config: SelectConfig) =>
       // Update the selected state in the menu
       menu.setSelected(option.id);
       
+      // Set flag to restore focus after menu closes
+      needsFocusRestore = true;
+      
       // Emit change event
       if (component.emit) {
         component.emit('change', {
@@ -152,10 +158,6 @@ export const withMenu = (config: SelectConfig) =>
       }
     });
     
-    // NOTE: We're NOT adding our own click handler to the textfield here
-    // because the menu's withAnchor feature already adds a toggle behavior.
-    // Adding our own click handler would cause conflicts.
-    
     // Add keyboard event listener for textfield
     component.textfield.element.addEventListener('keydown', (e) => {
       if (component.textfield.input.disabled) return;
@@ -163,7 +165,18 @@ export const withMenu = (config: SelectConfig) =>
       // Handle keyboard-based open
       if ((e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown') && !menu.isOpen()) {
         e.preventDefault();
-        menu.open(e, 'keyboard'); // Specify keyboard interaction
+        
+        // Set flag to restore focus
+        needsFocusRestore = true;
+        
+        // Open menu with keyboard interaction
+        menu.open(e, 'keyboard');
+        
+        // Ensure textfield keeps focus
+        setTimeout(() => {
+          // Focus on the textfield to ensure we can capture further keyboard events
+          component.textfield.input.focus();
+        }, 50);
         
         // Emit open event
         if (component.emit) {
@@ -176,6 +189,7 @@ export const withMenu = (config: SelectConfig) =>
         }
       } else if (e.key === 'Escape' && menu.isOpen()) {
         e.preventDefault();
+        needsFocusRestore = true;
         menu.close(e);
       }
     });
@@ -199,13 +213,32 @@ export const withMenu = (config: SelectConfig) =>
       // Remove open class from the select component
       component.textfield.element.classList.remove(`${config.prefix || 'mtrl'}-select--open`);
       
-      // Remove focused class from the textfield
-      const PREFIX = config.prefix || 'mtrl';
-      component.textfield.element.classList.remove(`${PREFIX}-textfield--focused`);
-      
-      // Remove filled focus class if present
-      if (component.textfield.element.classList.contains(`${PREFIX}-textfield--filled`)) {
-        component.textfield.element.classList.remove(`${PREFIX}-textfield--filled-focused`);
+      // Restore focus to textfield if needed
+      if (needsFocusRestore) {
+        // Small delay to ensure menu is fully closed
+        setTimeout(() => {
+          // Explicitly focus the textfield input
+          component.textfield.input.focus();
+          
+          // Keep focused styling
+          const PREFIX = config.prefix || 'mtrl';
+          component.textfield.element.classList.add(`${PREFIX}-textfield--focused`);
+          
+          if (component.textfield.element.classList.contains(`${PREFIX}-textfield--filled`)) {
+            component.textfield.element.classList.add(`${PREFIX}-textfield--filled-focused`);
+          }
+          
+          // Reset the flag
+          needsFocusRestore = false;
+        }, 50);
+      } else {
+        // Only remove focus styling if we're not restoring focus
+        const PREFIX = config.prefix || 'mtrl';
+        component.textfield.element.classList.remove(`${PREFIX}-textfield--focused`);
+        
+        if (component.textfield.element.classList.contains(`${PREFIX}-textfield--filled`)) {
+          component.textfield.element.classList.remove(`${PREFIX}-textfield--filled-focused`);
+        }
       }
       
       // Emit close event
@@ -278,6 +311,11 @@ export const withMenu = (config: SelectConfig) =>
         },
         
         open: (event?: Event, interactionType: 'mouse' | 'keyboard' = 'mouse') => {
+          // Set focus restore flag for keyboard interactions
+          if (interactionType === 'keyboard') {
+            needsFocusRestore = true;
+          }
+          
           menu.open(event, interactionType);
           return component;
         },
