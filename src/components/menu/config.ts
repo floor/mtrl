@@ -20,7 +20,7 @@ export const defaultConfig: MenuConfig = {
   closeOnClickOutside: true,
   closeOnEscape: true,
   openSubmenuOnHover: true,
-  offset: 0,
+  offset: 8,
   autoFlip: true,
   visible: false
 };
@@ -100,9 +100,9 @@ export const getElementConfig = (config: MenuConfig) => {
  */
 export const getApiConfig = (component) => ({
   menu: {
-    open: () => component.menu?.open(),
-    close: () => component.menu?.close(),
-    toggle: () => component.menu?.toggle(),
+    open: (event, interactionType) => component.menu?.open(event, interactionType),
+    close: (event) => component.menu?.close(event),
+    toggle: (event, interactionType) => component.menu?.toggle(event, interactionType),
     isOpen: () => component.menu?.isOpen() || false,
     setItems: (items) => component.menu?.setItems(items),
     getItems: () => component.menu?.getItems() || [],

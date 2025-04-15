@@ -334,7 +334,7 @@ export const createPositioner = (component, config: MenuConfig) => {
  * @param config - Menu configuration options
  * @returns Component enhancer with positioning functionality
  */
-export const withPosition = (config: MenuConfig) => component => {
+const withPosition = (config: MenuConfig) => component => {
   // Do nothing if no element
   if (!component.element) {
     return component;

@@ -9,9 +9,9 @@ import { MenuComponent, MenuContent, MenuPosition, MenuEvent, MenuSelectEvent } 
  */
 interface ApiOptions {
   menu: {
-    open: (event?: Event) => any;
+    open: (event?: Event, interactionType?: 'mouse' | 'keyboard') => any;
     close: (event?: Event) => any;
-    toggle: (event?: Event) => any;
+    toggle: (event?: Event, interactionType?: 'mouse' | 'keyboard') => any;
     isOpen: () => boolean;
     setItems: (items: MenuContent[]) => any;
     getItems: () => MenuContent[];
@@ -53,7 +53,7 @@ interface ComponentWithElements {
  * @category Components
  * @internal This is an internal utility for the Menu component
  */
-export const withAPI = ({ menu, anchor, events, lifecycle }: ApiOptions) => 
+const withAPI = ({ menu, anchor, events, lifecycle }: ApiOptions) => 
   (component: ComponentWithElements): MenuComponent => ({
     ...component as any,
     element: component.element,
@@ -66,6 +66,13 @@ export const withAPI = ({ menu, anchor, events, lifecycle }: ApiOptions) =>
      * @returns Menu component for chaining
      */
     open(event?: Event, interactionType: 'mouse' | 'keyboard' = 'mouse') {
+      // Determine interaction type from event if not explicitly provided
+      if (event && !interactionType) {
+        if (event instanceof KeyboardEvent) {
+          interactionType = 'keyboard';
+        }
+      }
+      
       menu.open(event, interactionType);
       return this;
     },
@@ -83,10 +90,20 @@ export const withAPI = ({ menu, anchor, events, lifecycle }: ApiOptions) =>
     /**
      * Toggles the menu's open state
      * @param event - Optional event that triggered the toggle
+     * @param interactionType - The type of interaction that triggered the toggle
      * @returns Menu component for chaining
      */
-    toggle(event?: Event) {
-      menu.toggle(event);
+    toggle(event?: Event, interactionType?: 'mouse' | 'keyboard') {
+      // Determine interaction type from event if not explicitly provided
+      if (event && !interactionType) {
+        if (event instanceof KeyboardEvent) {
+          interactionType = 'keyboard';
+        } else if (event instanceof MouseEvent) {
+          interactionType = 'mouse';
+        }
+      }
+      
+      menu.toggle(event, interactionType);
       return this;
     },
     
@@ -190,4 +207,4 @@ export const withAPI = ({ menu, anchor, events, lifecycle }: ApiOptions) =>
     }
   });
 
-export default withAPI;
+export { withAPI };

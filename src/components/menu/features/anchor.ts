@@ -9,7 +9,7 @@ import { MenuConfig } from '../types';
  * @param config - Menu configuration
  * @returns Component enhancer with anchor management functionality
  */
-export const withAnchor = (config: MenuConfig) => component => {
+const withAnchor = (config: MenuConfig) => component => {
   if (!component.element) {
     console.warn('Cannot initialize menu anchor: missing element');
     return component;
@@ -95,6 +95,9 @@ export const withAnchor = (config: MenuConfig) => component => {
     // Add click handler
     anchorElement.addEventListener('click', handleAnchorClick);
     
+    // Add keyboard handlers
+    anchorElement.addEventListener('keydown', handleAnchorKeydown);
+    
     // Add ARIA attributes
     anchorElement.setAttribute('aria-haspopup', 'true');
     anchorElement.setAttribute('aria-expanded', 'false');
@@ -142,15 +145,76 @@ export const withAnchor = (config: MenuConfig) => component => {
   const handleAnchorClick = (e: MouseEvent): void => {
     e.preventDefault();
     
-    // Toggle menu visibility
+    // Toggle menu visibility with mouse interaction type
     if (component.menu) {
       const isOpen = component.menu.isOpen();
       
       if (isOpen) {
         component.menu.close(e);
       } else {
-        component.menu.open(e);
+        component.menu.open(e, 'mouse');
       }
+    }
+  };
+  
+  /**
+   * Handles keyboard events on the anchor element
+   */
+  const handleAnchorKeydown = (e: KeyboardEvent): void => {
+    // Only handle events if we have a menu controller
+    if (!component.menu) return;
+    
+    // Determine if menu is currently open
+    const isOpen = component.menu.isOpen();
+    
+    switch (e.key) {
+      case 'Enter':
+      case ' ':  // Space
+      case 'ArrowDown':
+      case 'Down':
+        // Prevent default browser behavior
+        e.preventDefault();
+        
+        // Open menu if closed, with keyboard interaction type
+        if (!isOpen) {
+          component.menu.open(e, 'keyboard');
+        }
+        break;
+        
+      case 'Escape':
+        // Close the menu if it's open
+        if (isOpen) {
+          e.preventDefault();
+          component.menu.close(e);
+        }
+        break;
+        
+      case 'ArrowUp':
+      case 'Up':
+        e.preventDefault();
+        
+        // Special case: open menu with focus on last item
+        if (!isOpen) {
+          component.menu.open(e, 'keyboard');
+          
+          // Wait for menu to open and grab the last item
+          setTimeout(() => {
+            const items = component.element.querySelectorAll(
+              `.${component.getClass('menu-item')}:not(.${component.getClass('menu-item--disabled')})`
+            ) as NodeListOf<HTMLElement>;
+            
+            if (items.length > 0) {
+              // Reset tabindex for all items
+              items.forEach(item => item.setAttribute('tabindex', '-1'));
+              
+              // Set the last item as active
+              const lastItem = items[items.length - 1];
+              lastItem.setAttribute('tabindex', '0');
+              lastItem.focus();
+            }
+          }, 100);
+        }
+        break;
     }
   };
 
@@ -160,6 +224,7 @@ export const withAnchor = (config: MenuConfig) => component => {
   const cleanup = (): void => {
     if (state.anchorElement) {
       state.anchorElement.removeEventListener('click', handleAnchorClick);
+      state.anchorElement.removeEventListener('keydown', handleAnchorKeydown);
       state.anchorElement.removeAttribute('aria-haspopup');
       state.anchorElement.removeAttribute('aria-expanded');
       state.anchorElement.removeAttribute('aria-controls');

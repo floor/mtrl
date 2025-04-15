@@ -3,8 +3,10 @@
 import { pipe } from '../../core/compose';
 import { createBase, withElement } from '../../core/compose/component';
 import { withEvents, withLifecycle } from '../../core/compose/features';
-import { withController, withAnchor } from './features';
-import { withPosition } from './features/position';
+// Import withController directly from the file
+import withController from './features/controller';
+import withAnchor from './features/anchor';
+import withPosition from './features/position';
 import { withAPI } from './api';
 import { MenuConfig, MenuComponent } from './types';
 import { createBaseConfig, getElementConfig, getApiConfig } from './config';

@@ -1,5 +1,13 @@
 // src/components/menu/features/index.ts
 
-export { default as withController } from './controller';
-export { default as withAnchor } from './anchor';
-export { default as withPosition } from './position';
+// Individual feature imports
+import withController from './controller';
+import withAnchor from './anchor';
+import withPosition from './position';
+
+// Export features
+export {
+  withController,
+  withAnchor,
+  withPosition
+};
