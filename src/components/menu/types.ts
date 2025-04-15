@@ -343,6 +343,19 @@ export interface MenuComponent {
    * @returns Current position
    */
   getPosition: () => MenuPosition;
+
+  /**
+   * Sets the selected menu item
+   * @param itemId - ID of the menu item to mark as selected
+   * @returns The menu component for chaining
+   */
+  setSelected: (itemId: string) => MenuComponent;
+  
+  /**
+   * Gets the currently selected menu item's ID
+   * @returns ID of the selected menu item or null if none is selected
+   */
+  getSelected: () => string | null;
   
   /**
    * Adds an event listener to the menu

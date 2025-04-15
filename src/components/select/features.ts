@@ -135,6 +135,9 @@ export const withMenu = (config: SelectConfig) =>
       // Update textfield
       component.textfield.setValue(option.text);
       
+      // Update the selected state in the menu
+      menu.setSelected(option.id);
+      
       // Emit change event
       if (component.emit) {
         component.emit('change', {
@@ -220,20 +223,8 @@ export const withMenu = (config: SelectConfig) =>
     const markSelectedMenuItem = () => {
       if (!state.selectedOption) return;
       
-      // Get all menu items
-      const menuList = menu.element.querySelector(`.${config.prefix || 'mtrl'}-menu-list`);
-      if (!menuList) return;
-      
-      // Find and mark the selected item
-      const items = menuList.querySelectorAll(`.${config.prefix || 'mtrl'}-menu-item`);
-      items.forEach(item => {
-        const itemId = item.getAttribute('data-id');
-        if (itemId === state.selectedOption.id) {
-          item.classList.add(`${config.prefix || 'mtrl'}-menu-item--selected`);
-        } else {
-          item.classList.remove(`${config.prefix || 'mtrl'}-menu-item--selected`);
-        }
-      });
+      // Use menu's setSelected method to update the selected state
+      menu.setSelected(state.selectedOption.id);
     };
     
     // Mark selected item when menu opens
@@ -256,10 +247,8 @@ export const withMenu = (config: SelectConfig) =>
             state.selectedOption = option;
             component.textfield.setValue(option.text);
             
-            // Update menu item if menu is open
-            if (menu.isOpen()) {
-              markSelectedMenuItem();
-            }
+            // Update selected state using menu's setSelected
+            menu.setSelected(option.id);
           }
           return component;
         },

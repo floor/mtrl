@@ -21,6 +21,7 @@ const withController = (config: MenuConfig) => component => {
     visible: config.visible || false,
     items: config.items || [],
     position: config.position,
+    selectedItemId: null as string | null,
     activeSubmenu: null as HTMLElement,
     activeSubmenuItem: null as HTMLElement,
     activeItemIndex: -1,
@@ -109,6 +110,14 @@ const withController = (config: MenuConfig) => component => {
       itemElement.setAttribute('aria-disabled', 'false');
     }
     
+    if (state.selectedItemId && item.id === state.selectedItemId) {
+      itemElement.classList.add(`${itemClass}--selected`);
+      itemElement.setAttribute('aria-selected', 'true');
+    } else {
+      itemElement.setAttribute('aria-selected', 'false');
+    }
+
+
     if (item.hasSubmenu) {
       itemElement.classList.add(`${itemClass}--submenu`);
       itemElement.setAttribute('aria-haspopup', 'true');
@@ -919,6 +928,33 @@ const withController = (config: MenuConfig) => component => {
   };
 
   /**
+   * Updates the selected state of menu items
+   * @param itemId - The ID of the item to mark as selected, or null to clear selection
+   */
+  const updateSelectedState = (itemId: string | null): void => {
+    if (!component.element) return;
+    
+    // Get all menu items
+    const menuItems = component.element.querySelectorAll(`.${component.getClass('menu-item')}`) as NodeListOf<HTMLElement>;
+    
+    // Update selected state for each item
+    menuItems.forEach(item => {
+      const currentItemId = item.getAttribute('data-id');
+      
+      if (currentItemId === itemId) {
+        item.classList.add(`${component.getClass('menu-item--selected')}`);
+        item.setAttribute('aria-selected', 'true');
+      } else {
+        item.classList.remove(`${component.getClass('menu-item--selected')}`);
+        item.setAttribute('aria-selected', 'false');
+      }
+    });
+    
+    // Also update state
+    state.selectedItemId = itemId;
+  };
+
+  /**
    * Handles document click
    */
   const handleDocumentClick = (e: MouseEvent): void => {
@@ -1356,7 +1392,14 @@ const withController = (config: MenuConfig) => component => {
         return component;
       },
       
-      getPosition: () => state.position
+      getPosition: () => state.position,
+
+      setSelected: (itemId: string | null) => {
+        updateSelectedState(itemId);
+        return component;
+      },
+    
+      getSelected: () => state.selectedItemId
     }
   };
 };

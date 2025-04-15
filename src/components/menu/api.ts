@@ -17,6 +17,8 @@ interface ApiOptions {
     getItems: () => MenuContent[];
     setPosition: (position: MenuPosition) => any;
     getPosition: () => MenuPosition;
+    setSelected: (itemId: string) => any;
+    getSelected: () => string | null;
   };
   anchor: {
     setAnchor: (anchor: HTMLElement | string) => any;
@@ -167,6 +169,24 @@ const withAPI = ({ menu, anchor, events, lifecycle }: ApiOptions) =>
      */
     getPosition() {
       return menu.getPosition();
+    },
+    
+    /**
+     * Sets the selected menu item
+     * @param itemId - ID of the menu item to mark as selected
+     * @returns Menu component for chaining
+     */
+    setSelected(itemId: string) {
+      menu.setSelected(itemId);
+      return this;
+    },
+    
+    /**
+     * Gets the currently selected menu item's ID
+     * @returns ID of the selected menu item or null if none is selected
+     */
+    getSelected() {
+      return menu.getSelected();
     },
     
     /**

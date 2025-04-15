@@ -101,13 +101,15 @@ export const getElementConfig = (config: MenuConfig) => {
 export const getApiConfig = (component) => ({
   menu: {
     open: (event, interactionType) => component.menu?.open(event, interactionType),
-    close: (event) => component.menu?.close(event),
+    close: (event, restoreFocus, skipAnimation) => component.menu?.close(event, restoreFocus, skipAnimation),
     toggle: (event, interactionType) => component.menu?.toggle(event, interactionType),
     isOpen: () => component.menu?.isOpen() || false,
     setItems: (items) => component.menu?.setItems(items),
     getItems: () => component.menu?.getItems() || [],
     setPosition: (position) => component.menu?.setPosition(position),
-    getPosition: () => component.menu?.getPosition()
+    getPosition: () => component.menu?.getPosition(),
+    setSelected: (itemId) => component.menu?.setSelected(itemId),
+    getSelected: () => component.menu?.getSelected()
   },
   anchor: {
     setAnchor: (anchor) => component.anchor?.setAnchor(anchor),
