@@ -149,23 +149,10 @@ export const withMenu = (config: SelectConfig) =>
       }
     });
     
-    // Handle textfield click to open menu
-    component.textfield.element.addEventListener('click', (e) => {
-      if (!component.textfield.input.disabled) {
-        menu.open(e, 'mouse'); // Specify mouse interaction
-        
-        // Emit open event
-        if (component.emit) {
-          component.emit('open', {
-            select: component,
-            originalEvent: e,
-            preventDefault: () => {},
-            defaultPrevented: false
-          });
-        }
-      }
-    });
-
+    // NOTE: We're NOT adding our own click handler to the textfield here
+    // because the menu's withAnchor feature already adds a toggle behavior.
+    // Adding our own click handler would cause conflicts.
+    
     // Add keyboard event listener for textfield
     component.textfield.element.addEventListener('keydown', (e) => {
       if (component.textfield.input.disabled) return;

@@ -12,7 +12,7 @@ import createBadge from './components/badge';
 import createBottomAppBar from './components/bottom-app-bar';
 import createButton from './components/button';
 import createCard from './components/card';
-import { 
+import {
   createCardContent, 
   createCardHeader, 
   createCardActions, 
@@ -87,48 +87,4 @@ export {
   createTimePicker,
   createTopAppBar,
   createTooltip
-};
-
-// Export all "f*" aliases
-export {
-  createElement as fElement,
-  createLayout as fLayout,
-  createBadge as fBadge,
-  createBottomAppBar as fBottomAppBar,
-  createButton as fButton,
-  createCard as fCard,
-  createCardContent as fCardContent, 
-  createCardHeader as fCardHeader, 
-  createCardActions as fCardActions, 
-  createCardMedia as fCardMedia,
-  createCarousel as fCarousel,
-  createCheckbox as fCheckbox,
-  createChip as fChip,
-  createChips as fChips,
-  createDatePicker as fDatePicker,
-  createDialog as fDialog,
-  createDivider as fDivider,
-  createFab as fFab,
-  createExtendedFab as fExtendedFab,
-  createList as fList,
-  createListItem as fListItem,
-  createMenu as fMenu,
-  createNavigation as fNavigation,
-  createNavigationSystem as fNavigationSystem,
-  createProgress as fProgress,
-  createRadios as fRadios,
-  createSearch as fSearch,
-  createSelect as fSelect,
-  createSegmentedButton as fSegmentedButton,
-  createSegment as fSegment,
-  createSheet as fSheet,
-  createSlider as fSlider,
-  createSnackbar as fSnackbar,
-  createSwitch as fSwitch,
-  createTabs as fTabs,
-  createTab as fTab,
-  createTextfield as fTextfield,
-  createTimePicker as fTimePicker,
-  createTopAppBar as fTopAppBar,
-  createTooltip as fTooltip
 };
