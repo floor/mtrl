@@ -106,6 +106,17 @@ $component: '#{base.$prefix}-button';
     opacity: 0.38
   }
 
+  // Active state - applied when the button has a menu open
+  &--active {
+    // Common active state styling for all variants
+    box-shadow: none;
+    
+    // ARIA attribute to indicate active state for accessibility
+    &[aria-expanded="true"] {
+      // For compatibility with ARIA
+    }
+  }
+
   // Variants
   &--filled {
     background-color: t.color('primary');
@@ -116,7 +127,8 @@ $component: '#{base.$prefix}-button';
       @include m.elevation(1);
     }
     
-    &:active {
+    &:active,
+    &.#{$component}--active {
       @include m.state-layer(t.color('on-primary'), 'pressed');
       @include m.elevation(0);
     }
@@ -133,7 +145,8 @@ $component: '#{base.$prefix}-button';
       @include m.elevation(2);
     }
     
-    &:active {
+    &:active,
+    &.#{$component}--active {
       @include m.state-layer(t.color('primary'), 'pressed');
       @include m.elevation(1);
     }
@@ -160,7 +173,8 @@ $component: '#{base.$prefix}-button';
       @include m.elevation(1);
     }
     
-    &:active {
+    &:active,
+    &.#{$component}--active {
       @include m.state-layer(t.color('on-secondary-container'), 'pressed');
       @include m.elevation(0);
     }
@@ -175,7 +189,8 @@ $component: '#{base.$prefix}-button';
       background-color: t.alpha('primary', 0.08);
     }
     
-    &:active {
+    &:active,
+    &.#{$component}--active {
       @include m.state-layer(t.color('primary'), 'pressed');
     }
   }
@@ -189,7 +204,8 @@ $component: '#{base.$prefix}-button';
       background-color: t.alpha('primary', 0.08);
     }
     
-    &:active {
+    &:active,
+    &.#{$component}--active {
       background-color: t.alpha('primary', 0.12);
     }
     

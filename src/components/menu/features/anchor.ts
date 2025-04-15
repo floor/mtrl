@@ -18,7 +18,8 @@ export const withAnchor = (config: MenuConfig) => component => {
   // Track anchor state
   const state = {
     anchorElement: null as HTMLElement,
-    anchorComponent: null as any
+    anchorComponent: null as any,
+    activeClass: '' // Store the appropriate active class based on element type
   };
 
   /**
@@ -39,12 +40,32 @@ export const withAnchor = (config: MenuConfig) => component => {
     
     // Handle component with element property
     if (typeof anchor === 'object' && anchor !== null && 'element' in anchor) {
-      console.log('')
       return anchor.element;
     }
 
     // Handle direct HTML element
     return anchor as HTMLElement;
+  };
+
+  /**
+   * Determine the appropriate active class based on element type
+   */
+  const determineActiveClass = (element: HTMLElement): string => {
+    // Check if this is one of our component types
+    const classPrefix = component.getClass('').split('-')[0];
+    
+    // Check element tag and classes to determine appropriate active class
+    if (element.tagName === 'BUTTON') {
+      return `${classPrefix}-button--active`;
+    } else if (element.classList.contains(`${classPrefix}-chip`)) {
+      return `${classPrefix}-chip--selected`;
+    } else if (element.classList.contains(`${classPrefix}-textfield`) || 
+               element.classList.contains(`${classPrefix}-select`)) {
+      return `${classPrefix}-textfield--focused`;
+    } else {
+      // Default active class for other elements
+      return `${classPrefix}-menu-anchor--active`;
+    }
   };
 
   /**
@@ -68,6 +89,9 @@ export const withAnchor = (config: MenuConfig) => component => {
       state.anchorComponent = null;
     }
 
+    // Determine the appropriate active class for this anchor
+    state.activeClass = determineActiveClass(anchorElement);
+
     // Add click handler
     anchorElement.addEventListener('click', handleAnchorClick);
     
@@ -84,6 +108,32 @@ export const withAnchor = (config: MenuConfig) => component => {
     
     // Connect menu and anchor with ARIA
     anchorElement.setAttribute('aria-controls', menuId);
+  };
+
+  /**
+   * Applies active visual state to anchor
+   */
+  const setAnchorActive = (active: boolean): void => {
+    if (!state.anchorElement) return;
+    
+    // For component with setActive method (our button component has this)
+    if (state.anchorComponent && typeof state.anchorComponent.setActive === 'function') {
+      state.anchorComponent.setActive(active);
+    } 
+    // For component with .selected property (like our chip component)
+    else if (state.anchorComponent && 'selected' in state.anchorComponent) {
+      state.anchorComponent.selected = active;
+    }
+    // Standard DOM element fallback
+    else if (state.anchorElement.classList) {
+      if (active) {
+        // Add the appropriate active class
+        state.anchorElement.classList.add(state.activeClass);
+      } else {
+        // Remove active class
+        state.anchorElement.classList.remove(state.activeClass);
+      }
+    }
   };
 
   /**
@@ -115,15 +165,12 @@ export const withAnchor = (config: MenuConfig) => component => {
       state.anchorElement.removeAttribute('aria-controls');
       
       // Clean up active state if present
-      if (state.anchorComponent && typeof state.anchorComponent.setActive === 'function') {
-        state.anchorComponent.setActive(false);
-      } else if (state.anchorElement.classList) {
-        state.anchorElement.classList.remove(`${component.getClass('anchor')}--active`);
-      }
+      setAnchorActive(false);
     }
     
     // Reset state
     state.anchorComponent = null;
+    state.activeClass = '';
   };
 
   // Initialize with provided anchor
@@ -144,28 +191,14 @@ export const withAnchor = (config: MenuConfig) => component => {
   component.on('open', () => {
     if (state.anchorElement) {
       state.anchorElement.setAttribute('aria-expanded', 'true');
-      
-      // If it's a button component, set active state
-      if (state.anchorComponent && typeof state.anchorComponent.setActive === 'function') {
-        state.anchorComponent.setActive(true);
-      } else if (state.anchorElement.classList) {
-        // Fallback for regular elements
-        state.anchorElement.classList.add(`${component.getClass('anchor')}--active`);
-      }
+      setAnchorActive(true);
     }
   });
 
   component.on('close', () => {
     if (state.anchorElement) {
       state.anchorElement.setAttribute('aria-expanded', 'false');
-      
-      // If it's a button component, remove active state
-      if (state.anchorComponent && typeof state.anchorComponent.setActive === 'function') {
-        state.anchorComponent.setActive(false);
-      } else if (state.anchorElement.classList) {
-        // Fallback for regular elements
-        state.anchorElement.classList.remove(`${component.getClass('anchor')}--active`);
-      }
+      setAnchorActive(false);
     }
   });
 
@@ -192,6 +225,16 @@ export const withAnchor = (config: MenuConfig) => component => {
        */
       getAnchor() {
         return state.anchorElement;
+      },
+      
+      /**
+       * Sets the active state of the anchor
+       * @param active - Whether anchor should appear active
+       * @returns Component for chaining
+       */
+      setActive(active: boolean) {
+        setAnchorActive(active);
+        return component;
       }
     }
   };

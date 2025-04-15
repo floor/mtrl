@@ -250,6 +250,15 @@ export interface ButtonComponent {
   updateCircularStyle: () => void;
   
   /**
+   * Sets the active state of the button
+   * Used to visually indicate the button's active state, such as when it has a menu open
+   * 
+   * @param active - Whether the button should appear active
+   * @returns The button component for chaining
+   */
+  setActive: (active: boolean) => ButtonComponent;
+  
+  /**
    * Adds an event listener to the button
    * @param event - Event name ('click', 'focus', etc.)
    * @param handler - Event handler function

@@ -124,6 +124,22 @@ export const withAPI = ({ disabled, lifecycle }: ApiOptions) =>
     },
 
     /**
+     * Sets the active state of the button
+     * Used to visually indicate the button's active state, such as when it has a menu open
+     * 
+     * @param active - Whether the button should appear active
+     * @returns Button component for method chaining
+     */
+    setActive(active: boolean) {
+      if (active) {
+        component.element.classList.add(`${component.getClass('button')}--active`);
+      } else {
+        component.element.classList.remove(`${component.getClass('button')}--active`);
+      }
+      return this;
+    },
+
+    /**
      * Sets the button's aria-label attribute for accessibility
      * @param label - Accessible label text
      * @returns Button component for method chaining

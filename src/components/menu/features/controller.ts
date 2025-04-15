@@ -25,19 +25,18 @@ export const withController = (config: MenuConfig) => component => {
     activeSubmenuItem: null as HTMLElement,
     activeItemIndex: -1,
     submenuLevel: 0, // Track nesting level of submenus
-    activeSubmenus: [] as Array<{element: HTMLElement, menuItem: HTMLElement, level: number}>, // Track all active submenus
+    activeSubmenus: [] as Array<{
+      element: HTMLElement, 
+      menuItem: HTMLElement, 
+      level: number,
+      isOpening: boolean // Track if submenu is in opening transition
+    }>,
     submenuTimer: null,
     hoverIntent: {
       timer: null,
       activeItem: null
     },
-    component,
-    activeSubmenus: [] as Array<{
-      element: HTMLElement, 
-      menuItem: HTMLElement, 
-      level: number, 
-      isOpening: boolean  // Add this flag to track transition state
-    }>,
+    component
   };
 
   // Create positioner
@@ -286,15 +285,31 @@ export const withController = (config: MenuConfig) => component => {
   const handleSubmenuClick = (item: MenuItem, index: number, itemElement: HTMLElement, viaKeyboard = false): void => {
     if (!item.submenu || !item.hasSubmenu) return;
     
+    // Check if the submenu is already open
     const isOpen = itemElement.getAttribute('aria-expanded') === 'true';
     
+    // Find if any submenu is currently in opening transition
+    const anySubmenuTransitioning = state.activeSubmenus.some(s => s.isOpening);
+    
+    // Completely ignore clicks during any submenu transition
+    if (anySubmenuTransitioning) {
+      return;
+    }
+    
     if (isOpen) {
-      // Close submenu
-      closeSubmenu();
-    } else {
-      // Close any open submenu
-      closeSubmenu();
+      // Close submenu - only if fully open
+      // Find the closest submenu level
+      const currentLevel = parseInt(
+        itemElement.closest(`.${component.getClass('menu--submenu')}`)?.getAttribute('data-level') || '0',
+        10
+      );
       
+      // Close this level + 1 and deeper
+      closeSubmenuAtLevel(currentLevel + 1);
+      
+      // Reset expanded state
+      itemElement.setAttribute('aria-expanded', 'false');
+    } else {
       // Open new submenu
       openSubmenu(item, index, itemElement, viaKeyboard);
     }
@@ -317,7 +332,6 @@ export const withController = (config: MenuConfig) => component => {
       if (isCurrentlyHovered) {
         // Only close and reopen if this is a different submenu item
         if (state.activeSubmenuItem !== itemElement) {
-          closeSubmenu();
           openSubmenu(item, index, itemElement);
         }
       }
@@ -346,7 +360,7 @@ export const withController = (config: MenuConfig) => component => {
         const overMenuItem = menuItemElement.matches(':hover');
         
         if (!overSubmenu && !overMenuItem) {
-          closeSubmenu();
+          closeSubmenuAtLevel(state.submenuLevel);
         }
       }
       
@@ -367,6 +381,14 @@ export const withController = (config: MenuConfig) => component => {
 
     // Close any deeper level submenus first, preserving the current level
     closeSubmenuAtLevel(currentLevel);
+    
+    // Check if this submenu is already in opening state - if so, do nothing
+    const existingSubmenuIndex = state.activeSubmenus.findIndex(
+      s => s.menuItem === itemElement && s.isOpening
+    );
+    if (existingSubmenuIndex >= 0) {
+      return; // Already opening this submenu, don't restart the process
+    }
     
     // Set expanded state
     itemElement.setAttribute('aria-expanded', 'true');
@@ -459,7 +481,8 @@ export const withController = (config: MenuConfig) => component => {
     state.activeSubmenus.push({
       element: submenuElement, 
       menuItem: itemElement, 
-      level: currentLevel
+      level: currentLevel,
+      isOpening: true // Mark as in opening transition
     });
     
     // Update submenu level
@@ -473,6 +496,16 @@ export const withController = (config: MenuConfig) => component => {
     // Make visible with animation
     requestAnimationFrame(() => {
       submenuElement.classList.add(`${component.getClass('menu--visible')}`);
+      
+      // Wait for transition to complete before marking as fully opened
+      // This should match your CSS transition duration
+      setTimeout(() => {
+        // Find this submenu in the active submenus array and update its state
+        const index = state.activeSubmenus.findIndex(s => s.element === submenuElement);
+        if (index !== -1) {
+          state.activeSubmenus[index].isOpening = false;
+        }
+      }, 300); // Adjust to match your transition duration
       
       // If opened via keyboard, focus the first item in the submenu
       if (viaKeyboard && submenuItems.length > 0) {
@@ -493,7 +526,7 @@ export const withController = (config: MenuConfig) => component => {
     clearHoverIntent();
     clearSubmenuTimer();
     
-    // Set hover intent
+    // Set hover intent with a slightly longer delay for nested menus
     state.hoverIntent.activeItem = itemElement;
     state.hoverIntent.timer = setTimeout(() => {
       const isCurrentlyHovered = itemElement.matches(':hover');
@@ -517,7 +550,16 @@ export const withController = (config: MenuConfig) => component => {
   const handleNestedSubmenuClick = (item: MenuItem, index: number, itemElement: HTMLElement, viaKeyboard = false): void => {
     if (!item.submenu || !item.hasSubmenu) return;
     
+    // Check if the submenu is already open
     const isOpen = itemElement.getAttribute('aria-expanded') === 'true';
+    
+    // Find if any submenu is currently in opening transition
+    const anySubmenuTransitioning = state.activeSubmenus.some(s => s.isOpening);
+    
+    // Completely ignore clicks during any submenu transition
+    if (anySubmenuTransitioning) {
+      return;
+    }
     
     if (isOpen) {
       // Find the closest submenu level
@@ -531,6 +573,16 @@ export const withController = (config: MenuConfig) => component => {
     } else {
       // Open the nested submenu
       openSubmenu(item, index, itemElement, viaKeyboard);
+    }
+  };
+
+  /**
+   * Clear submenu close timer
+   */
+  const clearSubmenuTimer = () => {
+    if (state.submenuTimer) {
+      clearTimeout(state.submenuTimer);
+      state.submenuTimer = null;
     }
   };
 
@@ -591,17 +643,7 @@ export const withController = (config: MenuConfig) => component => {
   };
 
   /**
-   * Clear submenu close timer
-   */
-  const clearSubmenuTimer = () => {
-    if (state.submenuTimer) {
-      clearTimeout(state.submenuTimer);
-      state.submenuTimer = null;
-    }
-  };
-
-  /**
-   * Closes any open submenu
+   * Closes all submenus
    */
   const closeSubmenu = (): void => {
     // Clear timers
@@ -1065,8 +1107,12 @@ export const withController = (config: MenuConfig) => component => {
       window.removeEventListener('scroll', handleWindowScrollForSubmenu);
       
       // Clean up submenu element
-      if (state.activeSubmenu && state.activeSubmenu.parentNode) {
-        state.activeSubmenu.parentNode.removeChild(state.activeSubmenu);
+      if (state.activeSubmenus.length > 0) {
+        state.activeSubmenus.forEach(submenu => {
+          if (submenu.element.parentNode) {
+            submenu.element.parentNode.removeChild(submenu.element);
+          }
+        });
       }
       
       originalDestroy();
