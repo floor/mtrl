@@ -834,10 +834,15 @@ const withController = (config: MenuConfig) => component => {
     eventHelpers.triggerEvent('open', {}, event);
   };
 
+// src/components/menu/features/controller.ts - focus fix
+
+  // Update the closeMenu function to restore focus to anchor element
   /**
    * Closes the menu
+   * @param {Event} [event] - Optional event that triggered the close
+   * @param {boolean} [restoreFocus=true] - Whether to restore focus to the anchor element
    */
-  const closeMenu = (event?: Event): void => {
+  const closeMenu = (event?: Event, restoreFocus: boolean = true): void => {
     if (!state.visible) return;
     
     // Reset keyboard navigation state on close
@@ -853,6 +858,9 @@ const withController = (config: MenuConfig) => component => {
     component.element.setAttribute('aria-hidden', 'true');
     component.element.classList.remove(`${component.getClass('menu--visible')}`);
     
+    // Get anchor element for focus restoration
+    const anchorElement = getAnchorElement();
+    
     // Remove document events
     document.removeEventListener('click', handleDocumentClick);
     document.removeEventListener('keydown', handleDocumentKeydown);
@@ -866,6 +874,14 @@ const withController = (config: MenuConfig) => component => {
     setTimeout(() => {
       if (component.element.parentNode && !state.visible) {
         component.element.parentNode.removeChild(component.element);
+        
+        // Restore focus to anchor element if requested
+        if (restoreFocus && anchorElement && event?.type !== 'click') {
+          // Use requestAnimationFrame to ensure focus happens after DOM operations
+          requestAnimationFrame(() => {
+            anchorElement.focus();
+          });
+        }
       }
     }, 300); // Match the animation duration in CSS
   };
@@ -913,7 +929,8 @@ const withController = (config: MenuConfig) => component => {
    */
   const handleDocumentKeydown = (e: KeyboardEvent): void => {
     if (e.key === 'Escape') {
-      closeMenu(e);
+      // When closing with Escape, always restore focus
+      closeMenu(e, true);
     }
   };
 
@@ -1128,8 +1145,8 @@ const withController = (config: MenuConfig) => component => {
             closeSubmenu();
           }
         } else {
-          // In main menu, Escape closes the entire menu
-          closeMenu(e);
+          // In main menu, Escape closes the entire menu and restores focus to anchor
+          closeMenu(e, true);
         }
         break;
         

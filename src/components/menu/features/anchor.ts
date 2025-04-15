@@ -260,10 +260,21 @@ const withAnchor = (config: MenuConfig) => component => {
     }
   });
 
-  component.on('close', () => {
+  /**
+   * Update the event listener for menu close event to ensure focus restoration
+   */
+  component.on('close', (event) => {
     if (state.anchorElement) {
       state.anchorElement.setAttribute('aria-expanded', 'false');
       setAnchorActive(false);
+      
+      // When closing with keyboard (Escape key), ensure focus is restored to the anchor
+      if (event.originalEvent?.key === 'Escape') {
+        // Use requestAnimationFrame to ensure focus happens after other operations
+        requestAnimationFrame(() => {
+          state.anchorElement.focus();
+        });
+      }
     }
   });
 
