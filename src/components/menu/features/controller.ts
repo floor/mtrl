@@ -1,6 +1,7 @@
 // src/components/menu/features/controller.ts
 
 import { MenuConfig, MenuContent, MenuItem, MenuDivider, MenuEvent, MenuSelectEvent } from '../types';
+import { createPositioner } from './position';
 
 /**
  * Adds controller functionality to the menu component
@@ -20,16 +21,27 @@ export const withController = (config: MenuConfig) => component => {
     visible: config.visible || false,
     items: config.items || [],
     position: config.position,
-    activeSubmenu: null,
-    activeSubmenuItem: null,
+    activeSubmenu: null as HTMLElement,
+    activeSubmenuItem: null as HTMLElement,
     activeItemIndex: -1,
+    submenuLevel: 0, // Track nesting level of submenus
+    activeSubmenus: [] as Array<{element: HTMLElement, menuItem: HTMLElement, level: number}>, // Track all active submenus
     submenuTimer: null,
     hoverIntent: {
       timer: null,
       activeItem: null
     },
-    component
+    component,
+    activeSubmenus: [] as Array<{
+      element: HTMLElement, 
+      menuItem: HTMLElement, 
+      level: number, 
+      isOpening: boolean  // Add this flag to track transition state
+    }>,
   };
+
+  // Create positioner
+  const positioner = createPositioner(component, config);
 
   // Create event helpers
   const eventHelpers = {
@@ -51,7 +63,7 @@ export const withController = (config: MenuConfig) => component => {
    * Gets the anchor element from config
    */
   const getAnchorElement = (): HTMLElement => {
-  // First try to get the resolved anchor from the anchor feature
+    // First try to get the resolved anchor from the anchor feature
     if (component.anchor && typeof component.anchor.getAnchor === 'function') {
       return component.anchor.getAnchor();
     }
@@ -194,235 +206,6 @@ export const withController = (config: MenuConfig) => component => {
     // Clear and append
     component.element.innerHTML = '';
     component.element.appendChild(menuList);
-  };
-
-  // src/components/menu/features/controller.ts
-  // Focusing on specific side positions that need vertical adjustment
-
-  /**
-   * Positions the menu relative to its anchor
-   * Ensures the menu maintains proper spacing from viewport edges
-   */
-  const positionMenu = (): void => {
-    const anchor = getAnchorElement();
-    if (!anchor || !component.element) return;
-    
-    // Make a copy of the menu for measurement without affecting the real menu
-    const tempMenu = component.element.cloneNode(true) as HTMLElement;
-    
-    // Make the temp menu visible but not displayed
-    tempMenu.style.visibility = 'hidden';
-    tempMenu.style.display = 'block';
-    tempMenu.style.position = 'absolute';
-    tempMenu.style.top = '0';
-    tempMenu.style.left = '0';
-    tempMenu.style.transform = 'none';
-    tempMenu.style.opacity = '0';
-    tempMenu.style.pointerEvents = 'none';
-    tempMenu.classList.add(`${component.getClass('menu--visible')}`); // Add visible class for proper dimensions
-    
-    // Add it to the DOM temporarily
-    document.body.appendChild(tempMenu);
-    
-    // Get measurements
-    const anchorRect = anchor.getBoundingClientRect();
-    const menuRect = tempMenu.getBoundingClientRect();
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-    
-    // Remove the temp element after measurements
-    document.body.removeChild(tempMenu);
-    
-    // Get values needed for calculations
-    const { position } = state;
-    const offset = config.offset !== undefined ? config.offset : 0;
-    
-    // Calculate position based on position
-    let top = 0;
-    let left = 0;
-    let calculatedPosition = position;
-    
-    // First determine correct position based on original position
-    switch (position) {
-      case 'top-start':
-      case 'top':
-      case 'top-end':
-        // Check if enough space above
-        if (anchorRect.top < menuRect.height + offset + 16) {
-          // Not enough space above, flip to bottom
-          calculatedPosition = position.replace('top', 'bottom');
-        }
-        break;
-      
-      case 'bottom-start':
-      case 'bottom':
-      case 'bottom-end':
-        // Check if enough space below
-        if (anchorRect.bottom + menuRect.height + offset + 16 > viewportHeight) {
-          // Not enough space below, check if more space above
-          if (anchorRect.top > (viewportHeight - anchorRect.bottom)) {
-            // More space above, flip to top
-            calculatedPosition = position.replace('bottom', 'top');
-          }
-        }
-        break;
-        
-      // Specifically handle right-start, right, left-start, and left positions
-      case 'right-start':
-      case 'right':
-      case 'left-start':
-      case 'left':
-        // Check if enough space below for these side positions
-        if (anchorRect.bottom + menuRect.height > viewportHeight - 16) {
-          // Not enough space below, shift the menu upward
-          if (position === 'right-start') {
-            calculatedPosition = 'right-end';
-          } else if (position === 'left-start') {
-            calculatedPosition = 'left-end';
-          } else if (position === 'right') {
-            // For center aligned, shift up by half menu height plus some spacing
-            top = anchorRect.top - (menuRect.height - anchorRect.height) - offset;
-          } else if (position === 'left') {
-            // For center aligned, shift up by half menu height plus some spacing
-            top = anchorRect.top - (menuRect.height - anchorRect.height) - offset;
-          }
-        }
-        break;
-    }
-    
-    // Reset any existing position classes
-    const positionClasses = [
-      'position-top', 'position-bottom'
-    ];
-    
-    positionClasses.forEach(posClass => {
-      component.element.classList.remove(`${component.getClass('menu')}--${posClass}`);
-    });
-    
-    // Determine transform origin based on vertical position
-    // Start by checking the calculated position to determine transform origin
-    const menuAppearsAboveAnchor = 
-      calculatedPosition.startsWith('top') || 
-      calculatedPosition === 'right-end' || 
-      calculatedPosition === 'left-end' ||
-      (calculatedPosition === 'right' && top < anchorRect.top) ||
-      (calculatedPosition === 'left' && top < anchorRect.top);
-    
-    if (menuAppearsAboveAnchor) {
-      component.element.classList.add(`${component.getClass('menu')}--position-top`);
-    } else {
-      component.element.classList.add(`${component.getClass('menu')}--position-bottom`);
-    }
-    
-    // Now calculate specific positions based on the calculatedPosition
-    switch (calculatedPosition) {
-      case 'top-start':
-        top = anchorRect.top - menuRect.height - offset;
-        left = anchorRect.left;
-        break;
-      case 'top':
-        top = anchorRect.top - menuRect.height - offset;
-        left = anchorRect.left + (anchorRect.width / 2) - (menuRect.width / 2);
-        break;
-      case 'top-end':
-        top = anchorRect.top - menuRect.height - offset;
-        left = anchorRect.right - menuRect.width;
-        break;
-      case 'right-start':
-        top = anchorRect.top;
-        left = anchorRect.right + offset;
-        break;
-      case 'right':
-        // Custom top position might be set above; only set if not already defined
-        if (top === 0) {
-          top = anchorRect.top + (anchorRect.height / 2) - (menuRect.height / 2);
-        }
-        left = anchorRect.right + offset;
-        break;
-      case 'right-end':
-        top = anchorRect.bottom - menuRect.height;
-        left = anchorRect.right + offset;
-        break;
-      case 'bottom-start':
-        top = anchorRect.bottom + offset;
-        left = anchorRect.left;
-        break;
-      case 'bottom':
-        top = anchorRect.bottom + offset;
-        left = anchorRect.left + (anchorRect.width / 2) - (menuRect.width / 2);
-        break;
-      case 'bottom-end':
-        top = anchorRect.bottom + offset;
-        left = anchorRect.right - menuRect.width;
-        break;
-      case 'left-start':
-        top = anchorRect.top;
-        left = anchorRect.left - menuRect.width - offset;
-        break;
-      case 'left':
-        // Custom top position might be set above; only set if not already defined
-        if (top === 0) {
-          top = anchorRect.top + (anchorRect.height / 2) - (menuRect.height / 2);
-        }
-        left = anchorRect.left - menuRect.width - offset;
-        break;
-      case 'left-end':
-        top = anchorRect.bottom - menuRect.height;
-        left = anchorRect.left - menuRect.width - offset;
-        break;
-    }
-    
-    // Ensure the menu has proper spacing from viewport edges
-    
-    // Top edge spacing
-    const minTopSpacing = 16; // Minimum distance from top of viewport
-    if (top < minTopSpacing) {
-      top = minTopSpacing;
-    }
-    
-    // Bottom edge spacing
-    const viewportBottomMargin = 16; // Minimum space from bottom of viewport
-    const bottomEdge = top + menuRect.height;
-    
-    if (bottomEdge > viewportHeight - viewportBottomMargin) {
-      // If menu would extend beyond bottom with margin, adjust maxHeight
-      const availableHeight = viewportHeight - top - viewportBottomMargin;
-      
-      // Set a minimum height to prevent tiny menus
-      const minMenuHeight = Math.min(menuRect.height, 100);
-      const newMaxHeight = Math.max(availableHeight, minMenuHeight);
-      
-      // Update maxHeight to fit within viewport
-      component.element.style.maxHeight = `${newMaxHeight}px`;
-      
-      // If user has explicitly set a maxHeight, respect it if smaller
-      if (config.maxHeight) {
-        const configMaxHeight = parseInt(config.maxHeight, 10);
-        if (!isNaN(configMaxHeight) && configMaxHeight < parseInt(component.element.style.maxHeight || '0', 10)) {
-          component.element.style.maxHeight = config.maxHeight;
-        }
-      }
-    } else {
-      // If there's plenty of space, use the config's maxHeight (if provided)
-      if (config.maxHeight) {
-        component.element.style.maxHeight = config.maxHeight;
-      }
-    }
-    
-    // For 'width: 100%' configuration, match the anchor width
-    if (config.width === '100%') {
-      component.element.style.width = `${anchorRect.width}px`;
-    }
-    
-    // Apply final positions, ensuring menu stays within viewport
-    component.element.style.top = `${Math.max(minTopSpacing, top)}px`;
-    component.element.style.left = `${Math.max(16, left)}px`;
-    
-    // Make sure menu doesn't extend past right edge
-    if (left + menuRect.width > viewportWidth - 16) {
-      component.element.style.left = 'auto';
-      component.element.style.right = '16px';
-    }
   };
 
   /**
@@ -577,19 +360,27 @@ export const withController = (config: MenuConfig) => component => {
   const openSubmenu = (item: MenuItem, index: number, itemElement: HTMLElement, viaKeyboard = false): void => {
     if (!item.submenu || !item.hasSubmenu) return;
     
-    // Close any existing submenu
-    closeSubmenu();
+    // Get current level of the submenu we're opening
+    const currentLevel = itemElement.closest(`.${component.getClass('menu--submenu')}`) 
+      ? parseInt(itemElement.closest(`.${component.getClass('menu--submenu')}`).getAttribute('data-level') || '0', 10) + 1
+      : 1;
+
+    // Close any deeper level submenus first, preserving the current level
+    closeSubmenuAtLevel(currentLevel);
     
     // Set expanded state
     itemElement.setAttribute('aria-expanded', 'true');
     
-    // Create submenu element with initial hidden state
+    // Create submenu element with proper classes and attributes
     const submenuElement = document.createElement('div');
     submenuElement.className = `${component.getClass('menu')} ${component.getClass('menu--submenu')}`;
-    submenuElement.style.transform = 'scaleY(0)';
-    submenuElement.style.opacity = '0';
     submenuElement.setAttribute('role', 'menu');
     submenuElement.setAttribute('tabindex', '-1');
+    submenuElement.setAttribute('data-level', currentLevel.toString());
+    submenuElement.setAttribute('data-parent-item', item.id);
+    
+    // Increase z-index for each level of submenu
+    submenuElement.style.zIndex = `${1000 + (currentLevel * 10)}`;
     
     // Create submenu list
     const submenuList = document.createElement('ul');
@@ -611,86 +402,192 @@ export const withController = (config: MenuConfig) => component => {
     
     submenuElement.appendChild(submenuList);
     
-    // Create a clone for measurement
-    const tempSubmenu = submenuElement.cloneNode(true) as HTMLElement;
-    tempSubmenu.style.visibility = 'hidden';
-    tempSubmenu.style.display = 'block';
-    tempSubmenu.style.position = 'absolute';
-    tempSubmenu.style.transform = 'none';
-    tempSubmenu.style.opacity = '0';
-    tempSubmenu.style.pointerEvents = 'none';
-    tempSubmenu.classList.add(`${component.getClass('menu--visible')}`);
-    
-    document.body.appendChild(tempSubmenu);
-    
-    // Position setup
-    const itemRect = itemElement.getBoundingClientRect();
-    const submenuRect = tempSubmenu.getBoundingClientRect();
-    const scrollX = window.pageXOffset || document.documentElement.scrollLeft;
-    const scrollY = window.pageYOffset || document.documentElement.scrollTop;
-    const viewportWidth = window.innerWidth;
-    
-    // Remove clone
-    document.body.removeChild(tempSubmenu);
-    
-    // Now add the real submenu
+    // Add to DOM to enable measurement and transitions
     document.body.appendChild(submenuElement);
     
-    // Determine position and set appropriate class
-    let submenuPosition = 'right-start';
+    // Position the submenu using our positioner with the current nesting level
+    positioner.positionSubmenu(submenuElement, itemElement, currentLevel);
     
-    // Default position is to the right
-    submenuElement.style.top = `${itemRect.top + scrollY}px`; 
-    submenuElement.style.left = `${itemRect.right + scrollX}px`;
-    
-    // Check if submenu would be outside viewport and adjust if needed
-    if (itemRect.right + submenuRect.width > viewportWidth) {
-      // Position to the left instead
-      submenuElement.style.left = 'auto';
-      submenuElement.style.right = `${window.innerWidth - itemRect.left + 8}px`;
-      submenuPosition = 'left-start';
-    }
-    
-    // Add position class for correct transform-origin
-    submenuElement.classList.add(`${component.getClass('menu')}--position-${submenuPosition}`);
-    
-    // Setup event listeners
+    // Setup keyboard navigation for submenu
     submenuElement.addEventListener('keydown', handleMenuKeydown);
+    
+    // Add mouseenter event to prevent closing
     submenuElement.addEventListener('mouseenter', () => {
       clearSubmenuTimer();
     });
+    
+    // Add mouseleave event to handle closing
     submenuElement.addEventListener('mouseleave', (e) => {
       handleSubmenuLeave(e);
     });
     
-    // Add to state
+    // Setup submenu event handlers for nested submenus
+    const setupNestedSubmenuHandlers = (parent: HTMLElement) => {
+      const submenuItems = parent.querySelectorAll(`.${component.getClass('menu-item--submenu')}`) as NodeListOf<HTMLElement>;
+      
+      submenuItems.forEach((menuItem) => {
+        const itemIndex = parseInt(menuItem.getAttribute('data-index'), 10);
+        const menuItemData = item.submenu[itemIndex] as MenuItem;
+        
+        if (menuItemData && menuItemData.hasSubmenu) {
+          // Add hover handler for nested submenus
+          if (config.openSubmenuOnHover) {
+            menuItem.addEventListener('mouseenter', () => {
+              handleNestedSubmenuHover(menuItemData, itemIndex, menuItem);
+            });
+            menuItem.addEventListener('mouseleave', handleSubmenuLeave);
+          }
+          
+          // Add click handler for nested submenus
+          menuItem.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleNestedSubmenuClick(menuItemData, itemIndex, menuItem, false);
+          });
+        }
+      });
+    };
+    
+    // Setup handlers for any nested submenus
+    setupNestedSubmenuHandlers(submenuElement);
+    
+    // Update state with active submenu
     state.activeSubmenu = submenuElement;
     state.activeSubmenuItem = itemElement;
     
-    // Add document events
+    // Add to active submenus array to maintain hierarchy
+    state.activeSubmenus.push({
+      element: submenuElement, 
+      menuItem: itemElement, 
+      level: currentLevel
+    });
+    
+    // Update submenu level
+    state.submenuLevel = currentLevel;
+    
+    // Add document events for this submenu
     document.addEventListener('click', handleDocumentClickForSubmenu);
-    window.addEventListener('resize', handleWindowResizeForSubmenu);
-    window.addEventListener('scroll', handleWindowScrollForSubmenu);
+    window.addEventListener('resize', handleWindowResizeForSubmenu, { passive: true });
+    window.addEventListener('scroll', handleWindowScrollForSubmenu, { passive: true });
     
     // Make visible with animation
-    setTimeout(() => {
-      // Remove inline styles
-      submenuElement.style.transform = '';
-      submenuElement.style.opacity = '';
-      
-      // Force reflow
-      void submenuElement.getBoundingClientRect();
-      
-      // Add visible class
+    requestAnimationFrame(() => {
       submenuElement.classList.add(`${component.getClass('menu--visible')}`);
       
-      // Handle keyboard navigation
+      // If opened via keyboard, focus the first item in the submenu
       if (viaKeyboard && submenuItems.length > 0) {
         setTimeout(() => {
           submenuItems[0].focus();
         }, 50);
       }
-    }, 20);
+    });
+  };
+
+  /**
+   * Handles hover on a nested submenu item
+   */
+  const handleNestedSubmenuHover = (item: MenuItem, index: number, itemElement: HTMLElement): void => {
+    if (!config.openSubmenuOnHover || !item.hasSubmenu) return;
+    
+    // Clear any existing timers
+    clearHoverIntent();
+    clearSubmenuTimer();
+    
+    // Set hover intent
+    state.hoverIntent.activeItem = itemElement;
+    state.hoverIntent.timer = setTimeout(() => {
+      const isCurrentlyHovered = itemElement.matches(':hover');
+      if (isCurrentlyHovered) {
+        // Find the closest submenu level of this item
+        const currentLevel = parseInt(
+          itemElement.closest(`.${component.getClass('menu--submenu')}`)?.getAttribute('data-level') || '1',
+          10
+        );
+        
+        // Open the nested submenu (will handle closing deeper levels properly)
+        handleNestedSubmenuClick(item, index, itemElement, false);
+      }
+      state.hoverIntent.timer = null;
+    }, 120); // Slightly longer delay for nested submenus
+  };
+
+  /**
+   * Handles click on a nested submenu item
+   */
+  const handleNestedSubmenuClick = (item: MenuItem, index: number, itemElement: HTMLElement, viaKeyboard = false): void => {
+    if (!item.submenu || !item.hasSubmenu) return;
+    
+    const isOpen = itemElement.getAttribute('aria-expanded') === 'true';
+    
+    if (isOpen) {
+      // Find the closest submenu level
+      const currentLevel = parseInt(
+        itemElement.closest(`.${component.getClass('menu--submenu')}`)?.getAttribute('data-level') || '1',
+        10
+      );
+      
+      // Close submenus at and deeper than the next level
+      closeSubmenuAtLevel(currentLevel + 1);
+    } else {
+      // Open the nested submenu
+      openSubmenu(item, index, itemElement, viaKeyboard);
+    }
+  };
+
+  /**
+   * Closes submenus at or deeper than the specified level
+   * @param level - The level to start closing from
+   */
+  const closeSubmenuAtLevel = (level: number): void => {
+    // Clear any hover intent or submenu timers
+    clearHoverIntent();
+    clearSubmenuTimer();
+    
+    // Find submenus at or deeper than the specified level
+    const submenusCopy = [...state.activeSubmenus];
+    const submenuIndicesToRemove = [];
+    
+    // Identify which submenus to remove, working from deepest level first
+    for (let i = submenusCopy.length - 1; i >= 0; i--) {
+      if (submenusCopy[i].level >= level) {
+        const submenuToClose = submenusCopy[i];
+        
+        // Set aria-expanded attribute to false on the parent menu item
+        if (submenuToClose.menuItem) {
+          submenuToClose.menuItem.setAttribute('aria-expanded', 'false');
+        }
+        
+        // Hide with animation
+        submenuToClose.element.classList.remove(`${component.getClass('menu--visible')}`);
+        
+        // Schedule for removal
+        setTimeout(() => {
+          if (submenuToClose.element.parentNode) {
+            submenuToClose.element.parentNode.removeChild(submenuToClose.element);
+          }
+        }, 200);
+        
+        // Mark for removal from state
+        submenuIndicesToRemove.push(i);
+      }
+    }
+    
+    // Remove the closed submenus from state
+    submenuIndicesToRemove.forEach(index => {
+      state.activeSubmenus.splice(index, 1);
+    });
+    
+    // Update active submenu references based on what's left
+    if (state.activeSubmenus.length > 0) {
+      const deepestRemaining = state.activeSubmenus[state.activeSubmenus.length - 1];
+      state.activeSubmenu = deepestRemaining.element;
+      state.activeSubmenuItem = deepestRemaining.menuItem;
+      state.submenuLevel = deepestRemaining.level;
+    } else {
+      state.activeSubmenu = null;
+      state.activeSubmenuItem = null;
+      state.submenuLevel = 0;
+    }
   };
 
   /**
@@ -711,29 +608,31 @@ export const withController = (config: MenuConfig) => component => {
     clearHoverIntent();
     clearSubmenuTimer();
     
-    if (!state.activeSubmenu) return;
+    if (state.activeSubmenus.length === 0) return;
     
-    // Remove expanded state from all items
-    if (state.activeSubmenuItem) {
-      state.activeSubmenuItem.setAttribute('aria-expanded', 'false');
-    }
-    
-    // Remove submenu element with animation
-    state.activeSubmenu.classList.remove(`${component.getClass('menu--visible')}`);
-    
-    // Store reference for cleanup
-    const submenuToRemove = state.activeSubmenu;
-    
-    // Remove after animation
-    setTimeout(() => {
-      if (submenuToRemove && submenuToRemove.parentNode) {
-        submenuToRemove.parentNode.removeChild(submenuToRemove);
+    // Close all active submenus
+    [...state.activeSubmenus].forEach(submenu => {
+      // Remove expanded state from parent item
+      if (submenu.menuItem) {
+        submenu.menuItem.setAttribute('aria-expanded', 'false');
       }
-    }, 200);
+      
+      // Remove submenu element with animation
+      submenu.element.classList.remove(`${component.getClass('menu--visible')}`);
+      
+      // Remove after animation
+      setTimeout(() => {
+        if (submenu.element.parentNode) {
+          submenu.element.parentNode.removeChild(submenu.element);
+        }
+      }, 200);
+    });
     
     // Clear state
     state.activeSubmenu = null;
     state.activeSubmenuItem = null;
+    state.activeSubmenus = [];
+    state.submenuLevel = 0;
     
     // Remove document events
     document.removeEventListener('click', handleDocumentClickForSubmenu);
@@ -764,16 +663,24 @@ export const withController = (config: MenuConfig) => component => {
    * Handles window resize for submenu
    */
   const handleWindowResizeForSubmenu = (): void => {
-    // Reposition or close submenu on resize
-    closeSubmenu();
+    // Reposition open submenu on resize
+    if (state.activeSubmenu && state.activeSubmenuItem) {
+      positioner.positionSubmenu(state.activeSubmenu, state.activeSubmenuItem, state.submenuLevel);
+    }
   };
 
   /**
    * Handles window scroll for submenu
+   * Repositions the submenu to stay attached to its parent during scrolling
    */
   const handleWindowScrollForSubmenu = (): void => {
-    // Reposition or close submenu on scroll
-    closeSubmenu();
+    // Use requestAnimationFrame to optimize scroll performance
+    window.requestAnimationFrame(() => {
+      // Only reposition if we have an active submenu
+      if (state.activeSubmenu && state.activeSubmenuItem) {
+        positioner.positionSubmenu(state.activeSubmenu, state.activeSubmenuItem, state.submenuLevel);
+      }
+    });
   };
 
   /**
@@ -800,7 +707,10 @@ export const withController = (config: MenuConfig) => component => {
     }
     
     // Step 2: Position the menu (will be invisible)
-    positionMenu();
+    const anchorElement = getAnchorElement();
+    if (anchorElement) {
+      positioner.positionMenu(anchorElement);
+    }
     
     // Step 3: Use a small delay to ensure DOM operations are complete
     setTimeout(() => {
@@ -830,8 +740,8 @@ export const withController = (config: MenuConfig) => component => {
     if (config.closeOnEscape) {
       document.addEventListener('keydown', handleDocumentKeydown);
     }
-    window.addEventListener('resize', handleWindowResize);
-    window.addEventListener('scroll', handleWindowScroll);
+    window.addEventListener('resize', handleWindowResize, { passive: true });
+    window.addEventListener('scroll', handleWindowScroll, { passive: true });
     
     // Trigger event
     eventHelpers.triggerEvent('open', {}, event);
@@ -914,31 +824,33 @@ export const withController = (config: MenuConfig) => component => {
    */
   const handleWindowResize = (): void => {
     if (state.visible) {
-      positionMenu();
+      const anchorElement = getAnchorElement();
+      if (anchorElement) {
+        positioner.positionMenu(anchorElement);
+      }
     }
   };
 
   /**
    * Handles window scroll
+   * Repositions the menu to stay attached to its anchor during scrolling
    */
   const handleWindowScroll = (): void => {
     if (state.visible) {
-      positionMenu();
+      // Use requestAnimationFrame to optimize scroll performance
+      window.requestAnimationFrame(() => {
+        // Reposition the main menu to stay attached to anchor when scrolling
+        const anchorElement = getAnchorElement();
+        if (anchorElement) {
+          positioner.positionMenu(anchorElement);
+        }
+        
+        // Also reposition any open submenu relative to its parent menu item
+        if (state.activeSubmenu && state.activeSubmenuItem) {
+          positioner.positionSubmenu(state.activeSubmenu, state.activeSubmenuItem, state.submenuLevel);
+        }
+      });
     }
-  };
-
-  /**
-   * Sets focus to the menu itself, but doesn't auto-select the first item
-   * This improves usability by not having an item automatically selected
-   */
-  const focusFirstItem = (): void => {
-    // Instead of focusing the first item directly, focus the menu container
-    // which will still allow keyboard navigation to work
-    component.element.setAttribute('tabindex', '0');
-    component.element.focus();
-    
-    // Reset active item index
-    state.activeItemIndex = -1;
   };
 
   /**
@@ -1043,7 +955,16 @@ export const withController = (config: MenuConfig) => component => {
           if (state.activeSubmenuItem) {
             // Store the reference to the parent item before closing the submenu
             const parentItem = state.activeSubmenuItem;
-            closeSubmenu();
+            
+            // Get the current level
+            const currentLevel = parseInt(
+              menuElement.getAttribute('data-level') || '1',
+              10
+            );
+            
+            // Close this level of submenu
+            closeSubmenuAtLevel(currentLevel);
+            
             // Focus the parent item after closing
             parentItem.focus();
           } else {
@@ -1059,7 +980,16 @@ export const withController = (config: MenuConfig) => component => {
           if (state.activeSubmenuItem) {
             // Store the reference to the parent item before closing the submenu
             const parentItem = state.activeSubmenuItem;
-            closeSubmenu();
+            
+            // Get the current level
+            const currentLevel = parseInt(
+              menuElement.getAttribute('data-level') || '1',
+              10
+            );
+            
+            // Close this level of submenu
+            closeSubmenuAtLevel(currentLevel);
+            
             // Focus the parent item after closing
             parentItem.focus();
           } else {
@@ -1092,7 +1022,10 @@ export const withController = (config: MenuConfig) => component => {
     
     // Position if visible
     if (state.visible) {
-      positionMenu();
+      const anchorElement = getAnchorElement();
+      if (anchorElement) {
+        positioner.positionMenu(anchorElement);
+      }
       
       // Show immediately
       component.element.classList.add(`${component.getClass('menu--visible')}`);
@@ -1141,7 +1074,7 @@ export const withController = (config: MenuConfig) => component => {
   }
 
   // Return enhanced component
-return {
+  return {
     ...component,
     menu: {
       open: (event) => {
@@ -1172,7 +1105,10 @@ return {
       setPosition: (position) => {
         state.position = position;
         if (state.visible) {
-          positionMenu();
+          const anchorElement = getAnchorElement();
+          if (anchorElement) {
+            positioner.positionMenu(anchorElement);
+          }
         }
         return component;
       },

@@ -4,6 +4,7 @@ import { pipe } from '../../core/compose';
 import { createBase, withElement } from '../../core/compose/component';
 import { withEvents, withLifecycle } from '../../core/compose/features';
 import { withController, withAnchor } from './features';
+import { withPosition } from './features/position';
 import { withAPI } from './api';
 import { MenuConfig, MenuComponent } from './types';
 import { createBaseConfig, getElementConfig, getApiConfig } from './config';
@@ -99,6 +100,7 @@ const createMenu = (config: MenuConfig): MenuComponent => {
       createBase,                                // Base component
       withEvents(),                              // Event handling
       withElement(getElementConfig(baseConfig)), // DOM element
+      withPosition(baseConfig),                  // Position management
       withController(baseConfig),                // Menu controller
       withAnchor(baseConfig),                    // Anchor management
       withLifecycle(),                           // Lifecycle management
