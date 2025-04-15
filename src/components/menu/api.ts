@@ -10,7 +10,7 @@ import { MenuComponent, MenuContent, MenuPosition, MenuEvent, MenuSelectEvent } 
 interface ApiOptions {
   menu: {
     open: (event?: Event, interactionType?: 'mouse' | 'keyboard') => any;
-    close: (event?: Event) => any;
+    close: (event?: Event, restoreFocus?: boolean, skipAnimation?: boolean) => any;
     toggle: (event?: Event, interactionType?: 'mouse' | 'keyboard') => any;
     isOpen: () => boolean;
     setItems: (items: MenuContent[]) => any;
@@ -82,8 +82,8 @@ const withAPI = ({ menu, anchor, events, lifecycle }: ApiOptions) =>
      * @param event - Optional event that triggered the close
      * @returns Menu component for chaining
      */
-    close(event?: Event) {
-      menu.close(event);
+    close(event?: Event, restoreFocus: boolean = true, skipAnimation: boolean = false) {
+      menu.close(event, restoreFocus, skipAnimation);
       return this;
     },
     

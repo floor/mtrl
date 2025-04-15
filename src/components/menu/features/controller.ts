@@ -834,16 +834,20 @@ const withController = (config: MenuConfig) => component => {
     eventHelpers.triggerEvent('open', {}, event);
   };
 
-// src/components/menu/features/controller.ts - focus fix
-
-  // Update the closeMenu function to restore focus to anchor element
   /**
    * Closes the menu
    * @param {Event} [event] - Optional event that triggered the close
    * @param {boolean} [restoreFocus=true] - Whether to restore focus to the anchor element
+   * @param {boolean} [skipAnimation=false] - Whether to skip animation (for focus changes)
    */
-  const closeMenu = (event?: Event, restoreFocus: boolean = true): void => {
+  const closeMenu = (event?: Event, restoreFocus: boolean = true, skipAnimation: boolean = false): void => {
     if (!state.visible) return;
+    
+    // Check if we're in a tab navigation - if so, don't restore focus
+    const isTabNavigation = document.body.hasAttribute('data-menu-tab-navigation');
+    if (isTabNavigation) {
+      restoreFocus = false;
+    }
     
     // Reset keyboard navigation state on close
     state.keyboardNavActive = false;
@@ -858,7 +862,7 @@ const withController = (config: MenuConfig) => component => {
     component.element.setAttribute('aria-hidden', 'true');
     component.element.classList.remove(`${component.getClass('menu--visible')}`);
     
-    // Get anchor element for focus restoration
+    // Store anchor reference before potentially removing the menu
     const anchorElement = getAnchorElement();
     
     // Remove document events
@@ -867,23 +871,32 @@ const withController = (config: MenuConfig) => component => {
     window.removeEventListener('resize', handleWindowResize);
     window.removeEventListener('scroll', handleWindowScroll);
     
-    // Trigger event
-    eventHelpers.triggerEvent('close', {}, event);
+    // Trigger event with added data
+    eventHelpers.triggerEvent('close', {
+      isFocusRelated: event instanceof FocusEvent,
+      shouldRestoreFocus: restoreFocus,
+      isTabNavigation: isTabNavigation || event?.key === 'Tab'
+    }, event);
     
-    // Remove from DOM after animation completes
+    // Determine animation duration - for tab navigation we want to close immediately
+    const animationDuration = skipAnimation ? 0 : 300;
+    
+    // Remove from DOM after animation completes (or immediately if skipAnimation)
     setTimeout(() => {
       if (component.element.parentNode && !state.visible) {
         component.element.parentNode.removeChild(component.element);
         
-        // Restore focus to anchor element if requested
-        if (restoreFocus && anchorElement && event?.type !== 'click') {
-          // Use requestAnimationFrame to ensure focus happens after DOM operations
-          requestAnimationFrame(() => {
-            anchorElement.focus();
-          });
+        // Only restore focus if explicitly requested AND not in tab navigation
+        if (restoreFocus && anchorElement && !isTabNavigation && event?.type !== 'click') {
+          // Additional check to make sure we're not in an ongoing tab navigation
+          if (!document.body.hasAttribute('data-menu-tab-navigation')) {
+            requestAnimationFrame(() => {
+              anchorElement.focus();
+            });
+          }
         }
       }
-    }, 300); // Match the animation duration in CSS
+    }, animationDuration);
   };
 
   /**
@@ -1151,16 +1164,66 @@ const withController = (config: MenuConfig) => component => {
         break;
         
       case 'Tab':
-        // Close the menu when tabbing out
-        if (!e.shiftKey && focusedItemIndex === items.length - 1) {
-          // Last item and tabbing forward - close menu
-          closeMenu();
-        } else if (e.shiftKey && focusedItemIndex === 0) {
-          // First item and tabbing backward - close menu
-          closeMenu();
+        // Modified Tab handling - we want to close the menu and move focus to the next focusable element
+        e.preventDefault(); // Prevent default tab behavior
+        
+        // Find the focusable elements before closing the menu
+        const focusableElements = getFocusableElements();
+        const anchorElement = getAnchorElement();
+        const anchorIndex = anchorElement ? focusableElements.indexOf(anchorElement) : -1;
+        
+        // Calculate the next element to focus
+        let nextElementIndex = -1;
+        if (anchorIndex >= 0) {
+          nextElementIndex = e.shiftKey ? 
+            // For Shift+Tab, go to previous element or last element if we're at the start
+            (anchorIndex > 0 ? anchorIndex - 1 : focusableElements.length - 1) : 
+            // For Tab, go to next element or first element if we're at the end
+            (anchorIndex < focusableElements.length - 1 ? anchorIndex + 1 : 0);
+        }
+        
+        // Store the next element to focus before closing the menu
+        const nextElementToFocus = nextElementIndex >= 0 ? focusableElements[nextElementIndex] : null;
+        
+        // Create a flag that prevents focus restoration
+        const tabNavigationInProgress = true;
+        
+        // Close the menu with focus restoration explicitly disabled
+        closeMenu(e, false, true);
+        
+        // Focus the next element if found, with a slight delay to ensure menu is closed
+        if (nextElementToFocus) {
+          // Use setTimeout with a very small delay to ensure this happens after all other operations
+          setTimeout(() => {
+            // Set a flag to prevent any other focus management from interfering
+            document.body.setAttribute('data-menu-tab-navigation', 'true');
+            
+            // Focus the element
+            nextElementToFocus.focus();
+            
+            // Remove the flag after focus is set
+            setTimeout(() => {
+              document.body.removeAttribute('data-menu-tab-navigation');
+            }, 100);
+          }, 10);
         }
         break;
     }
+  };
+
+  /**
+   * Gets all focusable elements in the document
+   * Useful for Tab navigation management
+   */
+  const getFocusableElements = (): HTMLElement[] => {
+    // Query all potentially focusable elements
+    const focusableElementsString = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+    const elements = document.querySelectorAll(focusableElementsString) as NodeListOf<HTMLElement>;
+    
+    // Convert to array and filter out hidden elements
+    return Array.from(elements).filter(element => {
+      return element.offsetParent !== null && !element.classList.contains('hidden');
+    });
   };
 
   /**
@@ -1257,20 +1320,20 @@ const withController = (config: MenuConfig) => component => {
   return {
     ...component,
     menu: {
-      open: (event, interactionType = 'mouse') => {
-        openMenu(event, interactionType);
-        return component;
-      },
-      
-      close: (event) => {
-        closeMenu(event);
-        return component;
-      },
-      
-      toggle: (event, interactionType = 'mouse') => {
-        toggleMenu(event, interactionType);
-        return component;
-      },
+    open: (event, interactionType = 'mouse') => {
+      openMenu(event, interactionType);
+      return component;
+    },
+    
+    close: (event, restoreFocus = true, skipAnimation = false) => {
+      closeMenu(event, restoreFocus, skipAnimation);
+      return component;
+    },
+    
+    toggle: (event, interactionType = 'mouse') => {
+      toggleMenu(event, interactionType);
+      return component;
+    },
       
       isOpen: () => state.visible,
       

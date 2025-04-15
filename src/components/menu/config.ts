@@ -20,7 +20,7 @@ export const defaultConfig: MenuConfig = {
   closeOnClickOutside: true,
   closeOnEscape: true,
   openSubmenuOnHover: true,
-  offset: 8,
+  offset: 0,
   autoFlip: true,
   visible: false
 };

@@ -98,6 +98,9 @@ const withAnchor = (config: MenuConfig) => component => {
     // Add keyboard handlers
     anchorElement.addEventListener('keydown', handleAnchorKeydown);
     
+    // Add blur/focusout handler to close menu when anchor loses focus
+    anchorElement.addEventListener('blur', handleAnchorBlur);
+    
     // Add ARIA attributes
     anchorElement.setAttribute('aria-haspopup', 'true');
     anchorElement.setAttribute('aria-expanded', 'false');
@@ -219,12 +222,42 @@ const withAnchor = (config: MenuConfig) => component => {
   };
 
   /**
+   * Adds blur/focusout handler to close menu when anchor loses focus
+   */
+  const handleAnchorBlur = (e: FocusEvent): void => {
+    // Only handle events if we have a menu controller and menu is open
+    if (!component.menu || !component.menu.isOpen()) return;
+    
+    // We need to check if focus is moving to an element within the menu
+    // If focus is moving to any element within the menu, we should NOT close it
+    
+    // Get the related target (element receiving focus)
+    const relatedTarget = e.relatedTarget as HTMLElement;
+    
+    // If the relatedTarget is an element within our menu, don't close
+    if (relatedTarget && component.element.contains(relatedTarget)) {
+      return;
+    }
+    
+    // Wait a brief moment to ensure we're not in the middle of another operation
+    // This helps prevent conflicts with click handlers
+    setTimeout(() => {
+      // Verify menu is still open (may have been closed in the meantime)
+      if (component.menu && component.menu.isOpen()) {
+        // Close the menu but don't restore focus since focus has moved elsewhere
+        component.menu.close(e);
+      }
+    }, 50);
+  };
+
+  /**
    * Removes event listeners from anchor
    */
   const cleanup = (): void => {
     if (state.anchorElement) {
       state.anchorElement.removeEventListener('click', handleAnchorClick);
       state.anchorElement.removeEventListener('keydown', handleAnchorKeydown);
+      state.anchorElement.removeEventListener('blur', handleAnchorBlur);
       state.anchorElement.removeAttribute('aria-haspopup');
       state.anchorElement.removeAttribute('aria-expanded');
       state.anchorElement.removeAttribute('aria-controls');
@@ -265,12 +298,18 @@ const withAnchor = (config: MenuConfig) => component => {
    */
   component.on('close', (event) => {
     if (state.anchorElement) {
+      // Always update ARIA attributes
       state.anchorElement.setAttribute('aria-expanded', 'false');
       setAnchorActive(false);
       
-      // When closing with keyboard (Escape key), ensure focus is restored to the anchor
-      if (event.originalEvent?.key === 'Escape') {
-        // Use requestAnimationFrame to ensure focus happens after other operations
+      // Only handle focus restoration for Escape key cases
+      // Do NOT restore focus if:
+      // 1. It's a tab navigation event, OR
+      // 2. There's a next focus element waiting to be focused
+      const isTabNavigation = event.isTabNavigation || window._menuNextFocusElement !== null;
+      
+      if (event.originalEvent?.key === 'Escape' && !isTabNavigation) {
+        // Only in this case, restore focus to anchor
         requestAnimationFrame(() => {
           state.anchorElement.focus();
         });
