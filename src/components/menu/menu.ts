@@ -3,10 +3,7 @@
 import { pipe } from '../../core/compose';
 import { createBase, withElement } from '../../core/compose/component';
 import { withEvents, withLifecycle } from '../../core/compose/features';
-// Import withController directly from the file
-import withController from './features/controller';
-import withAnchor from './features/anchor';
-import withPosition from './features/position';
+import { withController, withAnchor, withPosition, withKeyboard } from './features';
 import { withAPI } from './api';
 import { MenuConfig, MenuComponent } from './types';
 import { createBaseConfig, getElementConfig, getApiConfig } from './config';
@@ -103,6 +100,7 @@ const createMenu = (config: MenuConfig): MenuComponent => {
       withEvents(),                              // Event handling
       withElement(getElementConfig(baseConfig)), // DOM element
       withPosition(baseConfig),                  // Position management
+      withKeyboard(baseConfig),                  // Keyboard navigation
       withController(baseConfig),                // Menu controller
       withAnchor(baseConfig),                    // Anchor management
       withLifecycle(),                           // Lifecycle management
@@ -116,6 +114,3 @@ const createMenu = (config: MenuConfig): MenuComponent => {
     console.error('Menu creation error:', error);
     throw new Error(`Failed to create menu: ${(error as Error).message}`);
   }
-};
-
-export default createMenu;

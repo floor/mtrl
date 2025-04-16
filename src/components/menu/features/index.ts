@@ -4,10 +4,12 @@
 import withController from './controller';
 import withAnchor from './anchor';
 import withPosition from './position';
+import withKeyboard from './keyboard';
 
 // Export features
 export {
   withController,
   withAnchor,
-  withPosition
+  withPosition,
+  withKeyboard
 };
