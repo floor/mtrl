@@ -122,7 +122,6 @@ const withController = (config: MenuConfig) => component => {
       itemElement.setAttribute('aria-selected', 'false');
     }
 
-
     if (item.hasSubmenu) {
       itemElement.classList.add(`${itemClass}--submenu`);
       itemElement.setAttribute('aria-haspopup', 'true');
@@ -170,23 +169,9 @@ const withController = (config: MenuConfig) => component => {
         }
       });
       
-      // Focus handling - only set keyboard mode when focus comes from keyboard
-      // We'll check if the focus is from a pointer event instead of setting keyboard
-      // mode on all focus events
+      // Focus handling
       itemElement.addEventListener('focus', (e) => {
         state.activeItemIndex = index;
-        
-        // Only enable keyboard mode if focus wasn't triggered by a pointer
-        if (!state.pointerFocusActive) {
-          keyboard.setKeyboardActive(true);
-        }
-      });
-      
-      // Track pointer-initiated focus
-      itemElement.addEventListener('mousedown', () => {
-        state.pointerFocusActive = true;
-        // Reset after a short delay
-        setTimeout(() => { state.pointerFocusActive = false; }, 100);
       });
       
       if (item.hasSubmenu && config.openSubmenuOnHover) {
@@ -250,8 +235,7 @@ const withController = (config: MenuConfig) => component => {
   /**
    * Handles click on a menu item
    */
-  const handleItemClick = (e: MouseEvent, item: MenuItem, index: number): void => {
-    console.log('handleItemClick', e, item, index)
+  const handleItemClick = (e: MouseEvent | KeyboardEvent, item: MenuItem, index: number): void => {
     e.preventDefault();
     e.stopPropagation();
     
@@ -272,14 +256,14 @@ const withController = (config: MenuConfig) => component => {
     
     // Close menu if needed
     if (config.closeOnSelect && !selectEvent.defaultPrevented) {
-      closeMenu(e);
+      closeMenu(e, true);
     }
   };
 
   /**
    * Handles click on a submenu item
    */
-  const handleSubmenuClick = (item: MenuItem, index: number, itemElement: HTMLElement, viaKeyboard = false): void => {
+  const handleSubmenuClick = (item: MenuItem, index: number, itemElement: HTMLElement): void => {
     if (!item.submenu || !item.hasSubmenu) return;
     
     // Check if the submenu is already open
@@ -306,13 +290,9 @@ const withController = (config: MenuConfig) => component => {
       
       // Reset expanded state
       itemElement.setAttribute('aria-expanded', 'false');
-      
-      // FIX: After clicking to close a submenu, reset keyboard mode
-      // This ensures hover events will work again
-      keyboard.setKeyboardActive(false);
     } else {
       // Open new submenu
-      openSubmenu(item, index, itemElement, viaKeyboard);
+      openSubmenu(item, index, itemElement);
     }
   };
 
@@ -321,9 +301,6 @@ const withController = (config: MenuConfig) => component => {
    */
   const handleSubmenuHover = (item: MenuItem, index: number, itemElement: HTMLElement): void => {
     if (!config.openSubmenuOnHover || !item.hasSubmenu) return;
-    
-    // If keyboard navigation is active, don't open submenu on hover
-    if (keyboard.isKeyboardActive()) return;
     
     // Clear any existing timers
     clearHoverIntent();
@@ -347,9 +324,6 @@ const withController = (config: MenuConfig) => component => {
    * Handles mouse leave from submenu
    */
   const handleSubmenuLeave = (e: MouseEvent): void => {
-    // If keyboard navigation is active, don't close submenu on mouse leave
-    if (keyboard.isKeyboardActive()) return;
-    
     // Clear hover intent
     clearHoverIntent();
     
@@ -378,13 +352,8 @@ const withController = (config: MenuConfig) => component => {
   /**
    * Opens a submenu with proper animation and positioning
    */
-  const openSubmenu = (item: MenuItem, index: number, itemElement: HTMLElement, viaKeyboard = false): void => {
+  const openSubmenu = (item: MenuItem, index: number, itemElement: HTMLElement): void => {
     if (!item.submenu || !item.hasSubmenu) return;
-    
-    // If opened via keyboard, update the keyboard navigation state
-    if (viaKeyboard) {
-      keyboard.setKeyboardActive(true);
-    }
     
     // Get current level of the submenu we're opening
     const currentLevel = itemElement.closest(`.${component.getClass('menu--submenu')}`) 
@@ -442,61 +411,24 @@ const withController = (config: MenuConfig) => component => {
     // Position the submenu using our positioner with the current nesting level
     positioner.positionSubmenu(submenuElement, itemElement, currentLevel);
     
-    // Setup keyboard navigation for submenu using the keyboard controller
-    const keyboardActions = {
+    // Setup keyboard navigation for submenu
+    keyboard.setupKeyboardHandlers(submenuElement, state, {
       closeMenu,
       closeSubmenuAtLevel,
       findItemById: (id: string) => findItemById(id),
       handleSubmenuClick,
       handleNestedSubmenuClick
-    };
-    
-    // Use the keyboard controller to set up keyboard handlers
-    keyboard.setupKeyboardHandlers(submenuElement, state, keyboardActions);
+    });
     
     // Add mouseenter event to prevent closing
     submenuElement.addEventListener('mouseenter', () => {
-      if (!keyboard.isKeyboardActive()) {
-        clearSubmenuTimer();
-      }
+      clearSubmenuTimer();
     });
     
     // Add mouseleave event to handle closing
     submenuElement.addEventListener('mouseleave', (e) => {
-      if (!keyboard.isKeyboardActive()) {
-        handleSubmenuLeave(e);
-      }
+      handleSubmenuLeave(e);
     });
-    
-    // Setup submenu event handlers for nested submenus
-    const setupNestedSubmenuHandlers = (parent: HTMLElement) => {
-      const submenuItems = parent.querySelectorAll(`.${component.getClass('menu-item--submenu')}`) as NodeListOf<HTMLElement>;
-      
-      submenuItems.forEach((menuItem) => {
-        const itemIndex = parseInt(menuItem.getAttribute('data-index'), 10);
-        const menuItemData = item.submenu[itemIndex] as MenuItem;
-        
-        if (menuItemData && menuItemData.hasSubmenu) {
-          // Add hover handler for nested submenus
-          if (config.openSubmenuOnHover) {
-            menuItem.addEventListener('mouseenter', () => {
-              handleNestedSubmenuHover(menuItemData, itemIndex, menuItem);
-            });
-            menuItem.addEventListener('mouseleave', handleSubmenuLeave);
-          }
-          
-          // Add click handler for nested submenus
-          menuItem.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            handleNestedSubmenuClick(menuItemData, itemIndex, menuItem, false);
-          });
-        }
-      });
-    };
-    
-    // Setup handlers for any nested submenus
-    setupNestedSubmenuHandlers(submenuElement);
     
     // Update state with active submenu
     state.activeSubmenu = submenuElement;
@@ -530,57 +462,22 @@ const withController = (config: MenuConfig) => component => {
         if (index !== -1) {
           state.activeSubmenus[index].isOpening = false;
         }
-      }, 300); // Adjust to match your transition duration
-      
-      // If opened via keyboard, focus the first item in the submenu
-      if (viaKeyboard && submenuItems.length > 0) {
-        submenuItems[0].setAttribute('tabindex', '0');
         
-        // Set other items to -1
-        for (let i = 1; i < submenuItems.length; i++) {
-          submenuItems[i].setAttribute('tabindex', '-1');
+        // Focus the first item in the submenu if we have keyboard focus
+        if (document.activeElement === itemElement) {
+          if (submenuItems.length > 0) {
+            submenuItems[0].setAttribute('tabindex', '0');
+            submenuItems[0].focus();
+          }
         }
-        
-        // Focus with a short delay to allow animation to start
-        setTimeout(() => {
-          submenuItems[0].focus();
-        }, 50);
-      }
+      }, 300); // Adjust to match your transition duration
     });
   };
 
   /**
-   * Handles hover on a nested submenu item
+   * Handles keyboard-triggered nested submenu click
    */
-  const handleNestedSubmenuHover = (item: MenuItem, index: number, itemElement: HTMLElement): void => {
-    if (!config.openSubmenuOnHover || !item.hasSubmenu || keyboard.isKeyboardActive()) return;
-    
-    // Clear any existing timers
-    clearHoverIntent();
-    clearSubmenuTimer();
-    
-    // Set hover intent with a slightly longer delay for nested menus
-    state.hoverIntent.activeItem = itemElement;
-    state.hoverIntent.timer = setTimeout(() => {
-      const isCurrentlyHovered = itemElement.matches(':hover');
-      if (isCurrentlyHovered) {
-        // Find the closest submenu level of this item
-        const currentLevel = parseInt(
-          itemElement.closest(`.${component.getClass('menu--submenu')}`)?.getAttribute('data-level') || '1',
-          10
-        );
-        
-        // Open the nested submenu (will handle closing deeper levels properly)
-        handleNestedSubmenuClick(item, index, itemElement, false);
-      }
-      state.hoverIntent.timer = null;
-    }, 120); // Slightly longer delay for nested submenus
-  };
-
-  /**
-   * Handles click on a nested submenu item
-   */
-  const handleNestedSubmenuClick = (item: MenuItem, index: number, itemElement: HTMLElement, viaKeyboard = false): void => {
+  const handleNestedSubmenuClick = (item: MenuItem, index: number, itemElement: HTMLElement): void => {
     if (!item.submenu || !item.hasSubmenu) return;
     
     // Check if the submenu is already open
@@ -603,12 +500,9 @@ const withController = (config: MenuConfig) => component => {
       
       // Close submenus at and deeper than the next level
       closeSubmenuAtLevel(currentLevel + 1);
-      
-      // FIX: Also reset keyboard mode when closing via click
-      keyboard.setKeyboardActive(false);
     } else {
       // Open the nested submenu
-      openSubmenu(item, index, itemElement, viaKeyboard);
+      openSubmenu(item, index, itemElement);
     }
   };
 
@@ -627,18 +521,18 @@ const withController = (config: MenuConfig) => component => {
    * @param level - The level to start closing from
    */
   const closeSubmenuAtLevel = (level: number): void => {
+    console.trace('closeSubmenuAtLevel')
     // Clear any hover intent or submenu timers
     clearHoverIntent();
     clearSubmenuTimer();
     
     // Find submenus at or deeper than the specified level
-    const submenusCopy = [...state.activeSubmenus];
     const submenuIndicesToRemove = [];
     
     // Identify which submenus to remove, working from deepest level first
-    for (let i = submenusCopy.length - 1; i >= 0; i--) {
-      if (submenusCopy[i].level >= level) {
-        const submenuToClose = submenusCopy[i];
+    for (let i = state.activeSubmenus.length - 1; i >= 0; i--) {
+      if (state.activeSubmenus[i].level >= level) {
+        const submenuToClose = state.activeSubmenus[i];
         
         // Set aria-expanded attribute to false on the parent menu item
         if (submenuToClose.menuItem) {
@@ -671,21 +565,22 @@ const withController = (config: MenuConfig) => component => {
       state.activeSubmenu = deepestRemaining.element;
       state.activeSubmenuItem = deepestRemaining.menuItem;
       state.submenuLevel = deepestRemaining.level;
+      
+      // If the parent menu item still has focus, keep it focused
+      if (deepestRemaining.menuItem) {
+        deepestRemaining.menuItem.focus();
+      }
     } else {
       state.activeSubmenu = null;
       state.activeSubmenuItem = null;
       state.submenuLevel = 0;
     }
-    
-    // FIX: Reset keyboard mode when closing a submenu level
-    // This ensures hover events will work again
-    keyboard.setKeyboardActive(false);
   };
 
   /**
    * Closes all submenus
    */
-  const closeSubmenu = (): void => {
+  const closeAllSubmenus = (): void => {
     // Clear timers
     clearHoverIntent();
     clearSubmenuTimer();
@@ -720,9 +615,6 @@ const withController = (config: MenuConfig) => component => {
     document.removeEventListener('click', handleDocumentClickForSubmenu);
     window.removeEventListener('resize', handleWindowResizeForSubmenu);
     window.removeEventListener('scroll', handleWindowScrollForSubmenu);
-    
-    // FIX: Reset keyboard mode when closing all submenus
-    keyboard.setKeyboardActive(false);
   };
 
   /**
@@ -741,7 +633,7 @@ const withController = (config: MenuConfig) => component => {
     }
     
     // Close submenu if clicked outside
-    closeSubmenu();
+    closeAllSubmenus();
   };
 
   /**
@@ -756,7 +648,6 @@ const withController = (config: MenuConfig) => component => {
 
   /**
    * Handles window scroll for submenu
-   * Repositions the submenu to stay attached to its parent during scrolling
    */
   const handleWindowScrollForSubmenu = (): void => {
     // Use requestAnimationFrame to optimize scroll performance
@@ -775,12 +666,6 @@ const withController = (config: MenuConfig) => component => {
    */
   const openMenu = (event?: Event, interactionType: 'mouse' | 'keyboard' = 'mouse'): void => {
     if (state.visible) return;
-    
-    // Set keyboard navigation state based on interaction type
-    keyboard.setKeyboardActive(interactionType === 'keyboard');
-    
-    // Track pointer-initiated focus
-    state.pointerFocusActive = interactionType === 'mouse';
     
     // Update state
     state.visible = true;
@@ -821,9 +706,46 @@ const withController = (config: MenuConfig) => component => {
       // Add visible class to start the CSS transition
       component.element.classList.add(`${component.getClass('menu--visible')}`);
       
-      // Step 4: Focus based on interaction type (after animation starts)
+      // Step 4: Set up initial focus based on interaction type
       setTimeout(() => {
-        keyboard.handleInitialFocus(component.element, interactionType);
+        if (interactionType === 'keyboard') {
+          // Find all focusable items
+          const items = Array.from(
+            component.element.querySelectorAll(`.${component.getClass('menu-item')}:not(.${component.getClass('menu-item--disabled')})`)
+          ) as HTMLElement[];
+          
+          if (items.length > 0) {
+            // Make sure ALL items are focusable with tabindex -1
+            items.forEach(item => {
+              item.tabIndex = -1;
+            });
+            
+            // Only set first item as regularly focusable
+            items[0].tabIndex = 0;
+            
+            // Focus the first item
+            items[0].focus();
+          } else {
+            // If no items, focus the menu itself
+            component.element.tabIndex = 0;
+            component.element.focus();
+          }
+        } else {
+          // For mouse interaction, make the menu focusable but don't auto-focus
+          component.element.tabIndex = -1;
+          
+          // Still make the first item focusable for keyboard navigation after mouse open
+          const items = Array.from(
+            component.element.querySelectorAll(`.${component.getClass('menu-item')}:not(.${component.getClass('menu-item--disabled')})`)
+          ) as HTMLElement[];
+          
+          if (items.length > 0) {
+            items.forEach(item => {
+              item.tabIndex = -1;
+            });
+            items[0].tabIndex = 0;
+          }
+        }
       }, 100);
       
       // Add the document click handler on the next event loop 
@@ -846,69 +768,56 @@ const withController = (config: MenuConfig) => component => {
     eventHelpers.triggerEvent('open', {}, event);
   };
 
-  /**
+ /**
    * Closes the menu
    * @param {Event} [event] - Optional event that triggered the close
    * @param {boolean} [restoreFocus=true] - Whether to restore focus to the anchor element
-   * @param {boolean} [skipAnimation=false] - Whether to skip animation (for focus changes)
    */
-  const closeMenu = (event?: Event, restoreFocus: boolean = true, skipAnimation: boolean = false): void => {
+  const closeMenu = (event?: Event, restoreFocus: boolean = true): void => {
+    console.trace('closeMenu', event, restoreFocus);
+    
     if (!state.visible) return;
     
-    // Check if we're in a tab navigation - if so, don't restore focus
-    const isTabNavigation = keyboard.isTabNavigationActive() || document.body.hasAttribute('data-menu-tab-navigation');
-    if (isTabNavigation) {
-      restoreFocus = false;
-    }
-    
-    // Reset keyboard navigation state on close
-    keyboard.setKeyboardActive(false);
+    // Get the anchor element reference immediately at the beginning
+    // This ensures we have it before any async operations
+    const anchorElement = getAnchorElement();
+    console.trace('anchorElement', anchorElement);
     
     // Close any open submenu first
-    closeSubmenu();
-    
-    // Update state
-    state.visible = false;
-    
-    // Set attributes
-    component.element.setAttribute('aria-hidden', 'true');
-    component.element.classList.remove(`${component.getClass('menu--visible')}`);
-    
-    // Store anchor reference before potentially removing the menu
-    const anchorElement = getAnchorElement();
-    
-    // Remove document events
-    document.removeEventListener('click', handleDocumentClick);
-    document.removeEventListener('keydown', handleDocumentKeydown);
-    window.removeEventListener('resize', handleWindowResize);
-    window.removeEventListener('scroll', handleWindowScroll);
-    
-    // Trigger event with added data
-    eventHelpers.triggerEvent('close', {
-      isFocusRelated: event instanceof FocusEvent,
-      shouldRestoreFocus: restoreFocus,
-      isTabNavigation: isTabNavigation || event?.key === 'Tab'
-    }, event);
-    
-    // Determine animation duration - for tab navigation we want to close immediately
-    const animationDuration = skipAnimation ? 0 : 300;
-    
-    // Remove from DOM after animation completes (or immediately if skipAnimation)
     setTimeout(() => {
-      if (component.element.parentNode && !state.visible) {
-        component.element.parentNode.removeChild(component.element);
-        
-        // Only restore focus if explicitly requested AND not in tab navigation
-        if (restoreFocus && anchorElement && !isTabNavigation && event?.type !== 'click') {
-          // Additional check to make sure we're not in an ongoing tab navigation
-          if (!document.body.hasAttribute('data-menu-tab-navigation')) {
+      closeAllSubmenus();
+      
+      // Update state
+      state.visible = false;
+      
+      // Set attributes
+      component.element.setAttribute('aria-hidden', 'true');
+      component.element.classList.remove(`${component.getClass('menu--visible')}`);
+      
+      // Remove document events
+      document.removeEventListener('click', handleDocumentClick);
+      document.removeEventListener('keydown', handleDocumentKeydown);
+      window.removeEventListener('resize', handleWindowResize);
+      window.removeEventListener('scroll', handleWindowScroll);
+      
+      // Trigger event
+      eventHelpers.triggerEvent('close', {}, event);
+      
+      // Remove from DOM after animation completes
+      setTimeout(() => {
+        if (component.element.parentNode && !state.visible) {
+          component.element.parentNode.removeChild(component.element);
+          
+          // Restore focus to anchor if specified, regardless of event type
+          if (restoreFocus && anchorElement) {
+            // Small delay to ensure DOM is updated before focus
             requestAnimationFrame(() => {
               anchorElement.focus();
             });
           }
         }
-      }
-    }, animationDuration);
+      }, 300); // Match the animation duration in CSS
+    }, 50);
   };
 
   /**
@@ -1002,16 +911,36 @@ const withController = (config: MenuConfig) => component => {
     }
     
     // Close menu
-    closeMenu(e);
+    closeMenu(e, false);
   };
 
   /**
    * Handles document keydown
    */
   const handleDocumentKeydown = (e: KeyboardEvent): void => {
-    if (e.key === 'Escape') {
-      // When closing with Escape, always restore focus
-      closeMenu(e, true);
+    // Check if the event target is already inside the menu or submenu
+    const isTargetInsideMenu = component.element.contains(e.target as Node) || 
+                              state.activeSubmenus.some(s => s.element.contains(e.target as Node));
+    
+    // If the event target is inside the menu/submenu, the dedicated menu keydown handler 
+    // will already process it, so we only need to handle Escape here
+    if (state.visible) {
+      if (isTargetInsideMenu) {
+        // Only handle Escape at the document level for menu items
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          closeMenu(e, true);
+        }
+      } else {
+        // If target is outside menu, but menu is open, handle all keyboard navigation
+        keyboard.handleMenuKeydown(e, state, {
+          closeMenu,
+          closeSubmenuAtLevel,
+          findItemById: (id: string) => findItemById(id),
+          handleSubmenuClick,
+          handleNestedSubmenuClick
+        });
+      }
     }
   };
 
@@ -1029,7 +958,6 @@ const withController = (config: MenuConfig) => component => {
 
   /**
    * Handles window scroll
-   * Repositions the menu to stay attached to its anchor during scrolling
    */
   const handleWindowScroll = (): void => {
     if (state.visible) {
@@ -1053,23 +981,17 @@ const withController = (config: MenuConfig) => component => {
    * Sets up the menu
    */
   const initMenu = () => {
-    // Initialize the state for pointer focus tracking
-    state.pointerFocusActive = false;
-    
     // Set up menu structure
     renderMenuItems();
     
-    // Set up keyboard navigation for the main menu
-    const keyboardActions = {
+    // Set up keyboard navigation
+    keyboard.setupKeyboardHandlers(component.element, state, {
       closeMenu,
       closeSubmenuAtLevel,
-      findItemById,
+      findItemById: (id: string) => findItemById(id),
       handleSubmenuClick,
       handleNestedSubmenuClick
-    };
-    
-    // Use the keyboard controller to set up keyboard handlers
-    keyboard.setupKeyboardHandlers(component.element, state, keyboardActions);
+    });
     
     // Position if visible
     if (state.visible) {
@@ -1137,8 +1059,8 @@ const withController = (config: MenuConfig) => component => {
         return component;
       },
       
-      close: (event, restoreFocus = true, skipAnimation = false) => {
-        closeMenu(event, restoreFocus, skipAnimation);
+      close: (event, restoreFocus = true) => {
+        closeMenu(event, restoreFocus);
         return component;
       },
       
