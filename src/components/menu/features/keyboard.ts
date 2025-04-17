@@ -93,7 +93,7 @@ export const createKeyboardNavigation = (component) => {
     
     // Get the appropriate menu element
     const menuElement = isSubmenu ? state.activeSubmenu : component.element;
-    
+
     // Get all non-disabled menu items from the current menu
     const items = Array.from(menuElement.querySelectorAll(
       `.${component.getClass('menu-item')}:not(.${component.getClass('menu-item--disabled')})`
@@ -253,30 +253,29 @@ export const createKeyboardNavigation = (component) => {
         // Close the menu when tabbing out and move focus to next focusable element
         e.preventDefault(); 
         
-        // Find the focusable elements before closing the menu
-        const focusableElements = getFocusableElements();
+        // Find the anchor element
         const anchorElement = component.anchor?.getAnchor?.();
-        const anchorIndex = anchorElement ? focusableElements.indexOf(anchorElement) : -1;
         
-        // Calculate the next element to focus
-        let nextElementIndex = -1;
-        if (anchorIndex >= 0) {
-          nextElementIndex = e.shiftKey ? 
-            (anchorIndex > 0 ? anchorIndex - 1 : focusableElements.length - 1) : 
-            (anchorIndex < focusableElements.length - 1 ? anchorIndex + 1 : 0);
-        }
+        // Always close the menu
+        actions.closeMenu(e, true); // Pass true to restore focus to anchor
         
-        // Store the next element to focus before closing the menu
-        const nextElementToFocus = nextElementIndex >= 0 ? focusableElements[nextElementIndex] : null;
-        
-        // Close the menu with focus restoration explicitly disabled
-        actions.closeMenu(e, false);
-        
-        // Focus the next element if found, with a slight delay to ensure menu is closed
-        if (nextElementToFocus) {
+        // If we want to move to the next/previous focusable element after the anchor:
+        if (anchorElement) {
+          // Let the browser focus the anchor first (happens because we passed true above)
+          // Then we can optionally set a timeout to move to next element
           setTimeout(() => {
-            nextElementToFocus.focus();
-          }, 10);
+            // Optional: If you want to move focus to next/prev element after restoring to anchor
+            if (e.shiftKey) {
+              // For shift+tab, we could let natural tabbing continue from the anchor
+            } else {
+              // For tab, we could programmatically focus the next element
+              const focusableElements = getFocusableElements();
+              const anchorIndex = focusableElements.indexOf(anchorElement);
+              if (anchorIndex >= 0 && anchorIndex < focusableElements.length - 1) {
+                focusableElements[anchorIndex + 1].focus();
+              }
+            }
+          }, 0);
         }
         break;
     }

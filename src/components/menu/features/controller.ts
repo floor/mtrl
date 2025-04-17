@@ -353,6 +353,7 @@ const withController = (config: MenuConfig) => component => {
    * Opens a submenu with proper animation and positioning
    */
   const openSubmenu = (item: MenuItem, index: number, itemElement: HTMLElement): void => {
+    
     if (!item.submenu || !item.hasSubmenu) return;
     
     // Get current level of the submenu we're opening
@@ -455,7 +456,6 @@ const withController = (config: MenuConfig) => component => {
       submenuElement.classList.add(`${component.getClass('menu--visible')}`);
       
       // Wait for transition to complete before marking as fully opened
-      // This should match your CSS transition duration
       setTimeout(() => {
         // Find this submenu in the active submenus array and update its state
         const index = state.activeSubmenus.findIndex(s => s.element === submenuElement);
@@ -463,9 +463,10 @@ const withController = (config: MenuConfig) => component => {
           state.activeSubmenus[index].isOpening = false;
         }
         
-        // Focus the first item in the submenu if we have keyboard focus
-        if (document.activeElement === itemElement) {
-          if (submenuItems.length > 0) {
+        // Focus the first item in the submenu if keyboard navigation is being used
+        if (submenuItems.length > 0) {
+          // If we're at level 2 or above, we should always focus the first item
+          if (currentLevel >= 2 || document.activeElement === itemElement) {
             submenuItems[0].setAttribute('tabindex', '0');
             submenuItems[0].focus();
           }
@@ -521,7 +522,6 @@ const withController = (config: MenuConfig) => component => {
    * @param level - The level to start closing from
    */
   const closeSubmenuAtLevel = (level: number): void => {
-    console.trace('closeSubmenuAtLevel')
     // Clear any hover intent or submenu timers
     clearHoverIntent();
     clearSubmenuTimer();
@@ -795,6 +795,11 @@ const withController = (config: MenuConfig) => component => {
       document.removeEventListener('keydown', handleDocumentKeydown);
       window.removeEventListener('resize', handleWindowResize);
       window.removeEventListener('scroll', handleWindowScroll);
+      
+      // Restore focus to anchor if requested
+      if (restoreFocus && anchorElement) {
+        anchorElement.focus();
+      }
       
       // Trigger event with restoreFocus info
       eventHelpers.triggerEvent('close', {
