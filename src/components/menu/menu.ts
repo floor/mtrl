@@ -114,3 +114,6 @@ const createMenu = (config: MenuConfig): MenuComponent => {
     console.error('Menu creation error:', error);
     throw new Error(`Failed to create menu: ${(error as Error).message}`);
   }
+};
+
+export default createMenu;

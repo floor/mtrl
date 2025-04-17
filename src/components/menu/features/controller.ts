@@ -162,18 +162,31 @@ const withController = (config: MenuConfig) => component => {
       // Mouse events
       itemElement.addEventListener('click', (e) => handleItemClick(e, item, index));
       
-      // Focus and blur events for proper focus styling
-      itemElement.addEventListener('focus', () => {
-        state.activeItemIndex = index;
-        keyboard.setKeyboardActive(true);
-      });
-      
       // Additional keyboard event handler for accessibility
       itemElement.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
           handleItemClick(e, item, index);
         }
+      });
+      
+      // Focus handling - only set keyboard mode when focus comes from keyboard
+      // We'll check if the focus is from a pointer event instead of setting keyboard
+      // mode on all focus events
+      itemElement.addEventListener('focus', (e) => {
+        state.activeItemIndex = index;
+        
+        // Only enable keyboard mode if focus wasn't triggered by a pointer
+        if (!state.pointerFocusActive) {
+          keyboard.setKeyboardActive(true);
+        }
+      });
+      
+      // Track pointer-initiated focus
+      itemElement.addEventListener('mousedown', () => {
+        state.pointerFocusActive = true;
+        // Reset after a short delay
+        setTimeout(() => { state.pointerFocusActive = false; }, 100);
       });
       
       if (item.hasSubmenu && config.openSubmenuOnHover) {
@@ -238,6 +251,7 @@ const withController = (config: MenuConfig) => component => {
    * Handles click on a menu item
    */
   const handleItemClick = (e: MouseEvent, item: MenuItem, index: number): void => {
+    console.log('handleItemClick', e, item, index)
     e.preventDefault();
     e.stopPropagation();
     
@@ -292,6 +306,10 @@ const withController = (config: MenuConfig) => component => {
       
       // Reset expanded state
       itemElement.setAttribute('aria-expanded', 'false');
+      
+      // FIX: After clicking to close a submenu, reset keyboard mode
+      // This ensures hover events will work again
+      keyboard.setKeyboardActive(false);
     } else {
       // Open new submenu
       openSubmenu(item, index, itemElement, viaKeyboard);
@@ -585,6 +603,9 @@ const withController = (config: MenuConfig) => component => {
       
       // Close submenus at and deeper than the next level
       closeSubmenuAtLevel(currentLevel + 1);
+      
+      // FIX: Also reset keyboard mode when closing via click
+      keyboard.setKeyboardActive(false);
     } else {
       // Open the nested submenu
       openSubmenu(item, index, itemElement, viaKeyboard);
@@ -655,6 +676,10 @@ const withController = (config: MenuConfig) => component => {
       state.activeSubmenuItem = null;
       state.submenuLevel = 0;
     }
+    
+    // FIX: Reset keyboard mode when closing a submenu level
+    // This ensures hover events will work again
+    keyboard.setKeyboardActive(false);
   };
 
   /**
@@ -695,6 +720,9 @@ const withController = (config: MenuConfig) => component => {
     document.removeEventListener('click', handleDocumentClickForSubmenu);
     window.removeEventListener('resize', handleWindowResizeForSubmenu);
     window.removeEventListener('scroll', handleWindowScrollForSubmenu);
+    
+    // FIX: Reset keyboard mode when closing all submenus
+    keyboard.setKeyboardActive(false);
   };
 
   /**
@@ -750,6 +778,9 @@ const withController = (config: MenuConfig) => component => {
     
     // Set keyboard navigation state based on interaction type
     keyboard.setKeyboardActive(interactionType === 'keyboard');
+    
+    // Track pointer-initiated focus
+    state.pointerFocusActive = interactionType === 'mouse';
     
     // Update state
     state.visible = true;
@@ -1022,6 +1053,9 @@ const withController = (config: MenuConfig) => component => {
    * Sets up the menu
    */
   const initMenu = () => {
+    // Initialize the state for pointer focus tracking
+    state.pointerFocusActive = false;
+    
     // Set up menu structure
     renderMenuItems();
     
