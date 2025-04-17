@@ -38,27 +38,50 @@ const withAnchor = (config: MenuConfig) => component => {
 
   /**
    * Resolves the anchor element from string, direct reference, or component
+   * Handles components with element property, components with getElement() method,
+   * or DOM elements directly
    */
-  const resolveAnchor = (anchor: HTMLElement | string | { element: HTMLElement }): HTMLElement => {
-    if (!anchor) return null;
+  const resolveAnchor = (anchor: any): { element: HTMLElement, component: any } => {
+    if (!anchor) return { element: null, component: null };
 
     // Handle string selector
     if (typeof anchor === 'string') {
       const element = document.querySelector(anchor);
       if (!element) {
         console.warn(`Menu anchor not found: ${anchor}`);
-        return null;
+        return { element: null, component: null };
       }
-      return element as HTMLElement;
+      return { element: element as HTMLElement, component: null };
     }
     
-    // Handle component with element property
-    if (typeof anchor === 'object' && anchor !== null && 'element' in anchor) {
-      return anchor.element;
+    // Handle component with element property (most common case)
+    if (typeof anchor === 'object' && anchor !== null) {
+      // Case 1: Component with element property
+      if ('element' in anchor && anchor.element instanceof HTMLElement) {
+        return { element: anchor.element, component: anchor };
+      }
+      
+      // Case 2: Component with getElement method
+      if ('getElement' in anchor && typeof anchor.getElement === 'function') {
+        const element = anchor.getElement();
+        if (element instanceof HTMLElement) {
+          return { element, component: anchor };
+        }
+      }
+      
+      // Case 3: Component with input property (like textfield)
+      if ('input' in anchor && anchor.input instanceof HTMLElement) {
+        return { element: anchor.input, component: anchor };
+      }
+      
+      // Case 4: Direct HTML element
+      if (anchor instanceof HTMLElement) {
+        return { element: anchor, component: null };
+      }
     }
 
-    // Handle direct HTML element
-    return anchor as HTMLElement;
+    console.warn('Invalid anchor type:', anchor);
+    return { element: null, component: null };
   };
 
   /**
@@ -85,7 +108,9 @@ const withAnchor = (config: MenuConfig) => component => {
   /**
    * Sets up anchor click handler for toggling menu
    */
-  const setupAnchorEvents = (anchorElement: HTMLElement, originalAnchor?: any): void => {
+  const setupAnchorEvents = (anchorData: { element: HTMLElement, component: any }): void => {
+    const { element: anchorElement, component: anchorComponent } = anchorData;
+    
     if (!anchorElement) return;
 
     // Remove previously attached event if any
@@ -95,14 +120,8 @@ const withAnchor = (config: MenuConfig) => component => {
 
     // Store references
     state.anchorElement = anchorElement;
+    state.anchorComponent = anchorComponent;
     
-    // Store reference to component if it was provided
-    if (originalAnchor && typeof originalAnchor === 'object' && 'element' in originalAnchor) {
-      state.anchorComponent = originalAnchor;
-    } else {
-      state.anchorComponent = null;
-    }
-
     // Determine the appropriate active class for this anchor
     state.activeClass = determineActiveClass(anchorElement);
 
@@ -136,24 +155,71 @@ const withAnchor = (config: MenuConfig) => component => {
   const setAnchorActive = (active: boolean): void => {
     if (!state.anchorElement) return;
     
-    // For component with setActive method (our button component has this)
+    // Case 1: Component with setActive method (like our button component)
     if (state.anchorComponent && typeof state.anchorComponent.setActive === 'function') {
       state.anchorComponent.setActive(active);
-    } 
-    // For component with .selected property (like our chip component)
-    else if (state.anchorComponent && 'selected' in state.anchorComponent) {
-      state.anchorComponent.selected = active;
+      return;
     }
-    // Standard DOM element fallback
-    else if (state.anchorElement.classList) {
+    
+    // Case 2: Component with selected property (like our chip component)
+    if (state.anchorComponent && 'selected' in state.anchorComponent) {
+      state.anchorComponent.selected = active;
+      return;
+    }
+    
+    // Case 3: Textfield component with focus/blur methods
+    if (state.anchorComponent && typeof state.anchorComponent.focus === 'function' && 
+        typeof state.anchorComponent.blur === 'function') {
       if (active) {
-        // Add the appropriate active class
+        state.anchorComponent.focus();
+      } else {
+        state.anchorComponent.blur();
+      }
+      return;
+    }
+    
+    // Case 4: Standard DOM element fallback with classes
+    if (state.anchorElement.classList) {
+      if (active) {
         state.anchorElement.classList.add(state.activeClass);
       } else {
-        // Remove active class
         state.anchorElement.classList.remove(state.activeClass);
       }
     }
+  };
+
+  /**
+   * Restores focus to the anchor properly
+   * Handles both component and element cases
+   */
+  const restoreFocusToAnchor = (): void => {
+    // Skip if we don't have a valid anchor
+    if (!state.anchorElement) return;
+    
+    // Case 1: Component with focus method
+    if (state.anchorComponent && typeof state.anchorComponent.focus === 'function') {
+      requestAnimationFrame(() => {
+        state.anchorComponent.focus();
+      });
+      return;
+    }
+    
+    // Case
+    
+    // Case 2: Component with input that can be focused (like textfield)
+    if (state.anchorComponent && 
+        'input' in state.anchorComponent && 
+        state.anchorComponent.input instanceof HTMLElement) {
+      requestAnimationFrame(() => {
+        state.anchorComponent.input.focus();
+      });
+      return;
+    }
+    
+    // Case 3: Default - focus the element directly
+    requestAnimationFrame(() => {
+      state.anchorElement.focus();
+    });
   };
 
   /**
@@ -304,13 +370,13 @@ const withAnchor = (config: MenuConfig) => component => {
     
     // Reset state
     state.anchorComponent = null;
+    state.anchorElement = null;
     state.activeClass = '';
   };
 
   // Initialize with provided anchor
-  const initialAnchor = config.anchor;
-  const initialElement = resolveAnchor(initialAnchor);
-  setupAnchorEvents(initialElement, initialAnchor);
+  const { element, component: anchorComponent } = resolveAnchor(config.anchor);
+  setupAnchorEvents({ element, component: anchorComponent });
 
   // Register with lifecycle if available
   if (component.lifecycle) {
@@ -329,26 +395,15 @@ const withAnchor = (config: MenuConfig) => component => {
     }
   });
 
-  /**
-   * Update the event listener for menu close event to ensure focus restoration
-   */
   component.on('close', (event) => {
     if (state.anchorElement) {
       // Always update ARIA attributes
       state.anchorElement.setAttribute('aria-expanded', 'false');
       setAnchorActive(false);
       
-      // Only handle focus restoration for Escape key cases
-      // Do NOT restore focus if:
-      // 1. It's a tab navigation event, OR
-      // 2. There's a next focus element waiting to be focused
-      const isTabNavigation = event.isTabNavigation || window._menuNextFocusElement !== null;
-      
-      if (event.originalEvent?.key === 'Escape' && !isTabNavigation) {
-        // Only in this case, restore focus to anchor
-        requestAnimationFrame(() => {
-          state.anchorElement.focus();
-        });
+      // Handle focus restoration when requested
+      if (event.restoreFocus && !isTabNavigation) {
+        restoreFocusToAnchor();
       }
     }
   });
@@ -362,10 +417,10 @@ const withAnchor = (config: MenuConfig) => component => {
        * @param anchor - New anchor element, selector, or component
        * @returns Component for chaining
        */
-      setAnchor(anchor: HTMLElement | string | { element: HTMLElement }) {
-        const newElement = resolveAnchor(anchor);
-        if (newElement) {
-          setupAnchorEvents(newElement, anchor);
+      setAnchor(anchor: any) {
+        const resolved = resolveAnchor(anchor);
+        if (resolved.element) {
+          setupAnchorEvents(resolved);
         }
         return component;
       },
@@ -379,12 +434,29 @@ const withAnchor = (config: MenuConfig) => component => {
       },
       
       /**
+       * Gets the current anchor component if available
+       * @returns Current anchor component or null
+       */
+      getAnchorComponent() {
+        return state.anchorComponent;
+      },
+      
+      /**
        * Sets the active state of the anchor
        * @param active - Whether anchor should appear active
        * @returns Component for chaining
        */
       setActive(active: boolean) {
         setAnchorActive(active);
+        return component;
+      },
+      
+      /**
+       * Restores focus to the anchor
+       * @returns Component for chaining
+       */
+      focus() {
+        restoreFocusToAnchor();
         return component;
       }
     }

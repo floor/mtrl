@@ -78,8 +78,10 @@ const processMenuItems = (options) => {
   });
 };
 
+// src/components/select/features.ts
+
 /**
- * Creates a menu for the select component with improved keyboard navigation
+ * Creates a menu for the select component
  * @param config - Select configuration
  * @returns Function that enhances a component with menu functionality
  */
@@ -104,9 +106,10 @@ export const withMenu = (config: SelectConfig) =>
     // Convert options to menu items with proper recursive processing
     const menuItems = processMenuItems(state.options);
     
-    // Create menu component
+    // Create menu component - pass the entire textfield component as anchor
+    // This is crucial - passing the whole component instead of just its element
     const menu = createMenu({
-      anchor: component.textfield.element,
+      anchor: component.textfield, // Pass the entire textfield component
       items: menuItems,
       placement: config.placement || 'bottom-start',
       width: '100%', // Match width of textfield
@@ -115,9 +118,6 @@ export const withMenu = (config: SelectConfig) =>
       closeOnEscape: true,
       offset: 0 // Set offset to 0 to eliminate gap between textfield and menu
     });
-    
-    // This flag helps us know if we need to restore focus after menu closes
-    let needsFocusRestore = false;
     
     // Handle menu selection
     menu.on('select', (event) => {
@@ -141,9 +141,6 @@ export const withMenu = (config: SelectConfig) =>
       // Update the selected state in the menu
       menu.setSelected(option.id);
       
-      // Set flag to restore focus after menu closes
-      needsFocusRestore = true;
-      
       // Emit change event
       if (component.emit) {
         component.emit('change', {
@@ -166,17 +163,8 @@ export const withMenu = (config: SelectConfig) =>
       if ((e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown') && !menu.isOpen()) {
         e.preventDefault();
         
-        // Set flag to restore focus
-        needsFocusRestore = true;
-        
         // Open menu with keyboard interaction
         menu.open(e, 'keyboard');
-        
-        // Ensure textfield keeps focus
-        setTimeout(() => {
-          // Focus on the textfield to ensure we can capture further keyboard events
-          component.textfield.input.focus();
-        }, 50);
         
         // Emit open event
         if (component.emit) {
@@ -189,7 +177,6 @@ export const withMenu = (config: SelectConfig) =>
         }
       } else if (e.key === 'Escape' && menu.isOpen()) {
         e.preventDefault();
-        needsFocusRestore = true;
         menu.close(e);
       }
     });
@@ -203,7 +190,7 @@ export const withMenu = (config: SelectConfig) =>
       const PREFIX = config.prefix || 'mtrl';
       component.textfield.element.classList.add(`${PREFIX}-textfield--focused`);
       
-      // If using the filled variant, we need to add focus styles to ensure the label changes color
+      // If using the filled variant, we need to add focus styles
       if (component.textfield.element.classList.contains(`${PREFIX}-textfield--filled`)) {
         component.textfield.element.classList.add(`${PREFIX}-textfield--filled-focused`);
       }
@@ -213,33 +200,26 @@ export const withMenu = (config: SelectConfig) =>
       // Remove open class from the select component
       component.textfield.element.classList.remove(`${config.prefix || 'mtrl'}-select--open`);
       
-      // Restore focus to textfield if needed
-      if (needsFocusRestore) {
-        // Small delay to ensure menu is fully closed
-        setTimeout(() => {
-          // Explicitly focus the textfield input
-          component.textfield.input.focus();
-          
-          // Keep focused styling
-          const PREFIX = config.prefix || 'mtrl';
+      // Let focus restoration happen naturally via the anchor component
+      // Just update styling based on actual focus state with a small delay
+      setTimeout(() => {
+        const PREFIX = config.prefix || 'mtrl';
+        const isFocused = document.activeElement === component.textfield.input || 
+                          component.textfield.element.contains(document.activeElement);
+        
+        // Update styling based on actual focus state
+        if (isFocused) {
           component.textfield.element.classList.add(`${PREFIX}-textfield--focused`);
-          
           if (component.textfield.element.classList.contains(`${PREFIX}-textfield--filled`)) {
             component.textfield.element.classList.add(`${PREFIX}-textfield--filled-focused`);
           }
-          
-          // Reset the flag
-          needsFocusRestore = false;
-        }, 50);
-      } else {
-        // Only remove focus styling if we're not restoring focus
-        const PREFIX = config.prefix || 'mtrl';
-        component.textfield.element.classList.remove(`${PREFIX}-textfield--focused`);
-        
-        if (component.textfield.element.classList.contains(`${PREFIX}-textfield--filled`)) {
-          component.textfield.element.classList.remove(`${PREFIX}-textfield--filled-focused`);
+        } else {
+          component.textfield.element.classList.remove(`${PREFIX}-textfield--focused`);
+          if (component.textfield.element.classList.contains(`${PREFIX}-textfield--filled`)) {
+            component.textfield.element.classList.remove(`${PREFIX}-textfield--filled-focused`);
+          }
         }
-      }
+      }, 10);
       
       // Emit close event
       if (component.emit) {
@@ -255,14 +235,12 @@ export const withMenu = (config: SelectConfig) =>
     // Handle special case for showing selected item in menu
     const markSelectedMenuItem = () => {
       if (!state.selectedOption) return;
-      
-      // Use menu's setSelected method to update the selected state
       menu.setSelected(state.selectedOption.id);
     };
     
     // Mark selected item when menu opens
     menu.on('open', () => {
-      setTimeout(markSelectedMenuItem, 50); // Small delay to ensure DOM is ready
+      setTimeout(markSelectedMenuItem, 50);
     });
     
     // Expose select API
@@ -279,8 +257,6 @@ export const withMenu = (config: SelectConfig) =>
           if (option && 'text' in option) {
             state.selectedOption = option;
             component.textfield.setValue(option.text);
-            
-            // Update selected state using menu's setSelected
             menu.setSelected(option.id);
           }
           return component;
@@ -295,7 +271,6 @@ export const withMenu = (config: SelectConfig) =>
         setOptions: (options) => {
           state.options = options;
           
-          // Process options to menu items with proper handling for submenus
           const menuItems = processMenuItems(options);
           menu.setItems(menuItems);
           
@@ -311,17 +286,12 @@ export const withMenu = (config: SelectConfig) =>
         },
         
         open: (event?: Event, interactionType: 'mouse' | 'keyboard' = 'mouse') => {
-          // Set focus restore flag for keyboard interactions
-          if (interactionType === 'keyboard') {
-            needsFocusRestore = true;
-          }
-          
           menu.open(event, interactionType);
           return component;
         },
         
-        close: () => {
-          menu.close();
+        close: (event?: Event) => {
+          menu.close(event);
           return component;
         },
         

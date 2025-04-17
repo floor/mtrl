@@ -768,20 +768,16 @@ const withController = (config: MenuConfig) => component => {
     eventHelpers.triggerEvent('open', {}, event);
   };
 
- /**
+  /**
    * Closes the menu
    * @param {Event} [event] - Optional event that triggered the close
    * @param {boolean} [restoreFocus=true] - Whether to restore focus to the anchor element
    */
   const closeMenu = (event?: Event, restoreFocus: boolean = true): void => {
-    console.trace('closeMenu', event, restoreFocus);
-    
     if (!state.visible) return;
     
-    // Get the anchor element reference immediately at the beginning
-    // This ensures we have it before any async operations
+    // Get the anchor element reference immediately
     const anchorElement = getAnchorElement();
-    console.trace('anchorElement', anchorElement);
     
     // Close any open submenu first
     setTimeout(() => {
@@ -800,21 +796,15 @@ const withController = (config: MenuConfig) => component => {
       window.removeEventListener('resize', handleWindowResize);
       window.removeEventListener('scroll', handleWindowScroll);
       
-      // Trigger event
-      eventHelpers.triggerEvent('close', {}, event);
+      // Trigger event with restoreFocus info
+      eventHelpers.triggerEvent('close', {
+        restoreFocus: restoreFocus
+      }, event);
       
       // Remove from DOM after animation completes
       setTimeout(() => {
         if (component.element.parentNode && !state.visible) {
           component.element.parentNode.removeChild(component.element);
-          
-          // Restore focus to anchor if specified, regardless of event type
-          if (restoreFocus && anchorElement) {
-            // Small delay to ensure DOM is updated before focus
-            requestAnimationFrame(() => {
-              anchorElement.focus();
-            });
-          }
         }
       }, 300); // Match the animation duration in CSS
     }, 50);
