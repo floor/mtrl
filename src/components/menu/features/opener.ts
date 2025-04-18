@@ -1,17 +1,17 @@
-// src/components/menu/features/anchor.ts
+// src/components/menu/features/opener.ts
 
 import { MenuConfig } from '../types';
 
 /**
- * Adds anchor functionality to menu component
- * Manages the relationship between menu and its anchor element
+ * Adds opener functionality to menu component
+ * Manages the relationship between menu and its opener element
  * 
  * @param config - Menu configuration
- * @returns Component enhancer with anchor management functionality
+ * @returns Component enhancer with opener management functionality
  */
-const withAnchor = (config: MenuConfig) => component => {
+const withOpener = (config: MenuConfig) => component => {
   if (!component.element) {
-    console.warn('Cannot initialize menu anchor: missing element');
+    console.warn('Cannot initialize menu opener: missing element');
     return component;
   }
 
@@ -29,58 +29,58 @@ const withAnchor = (config: MenuConfig) => component => {
     }, 100);
   });
 
-  // Track anchor state
+  // Track opener state
   const state = {
-    anchorElement: null as HTMLElement,
-    anchorComponent: null as any,
+    openerElement: null as HTMLElement,
+    openerComponent: null as any,
     activeClass: '' // Store the appropriate active class based on element type
   };
 
   /**
-   * Resolves the anchor element from string, direct reference, or component
+   * Resolves the opener element from string, direct reference, or component
    * Handles components with element property, components with getElement() method,
    * or DOM elements directly
    */
-  const resolveAnchor = (anchor: any): { element: HTMLElement, component: any } => {
-    if (!anchor) return { element: null, component: null };
+  const resolveOpener = (opener: any): { element: HTMLElement, component: any } => {
+    if (!opener) return { element: null, component: null };
 
     // Handle string selector
-    if (typeof anchor === 'string') {
-      const element = document.querySelector(anchor);
+    if (typeof opener === 'string') {
+      const element = document.querySelector(opener);
       if (!element) {
-        console.warn(`Menu anchor not found: ${anchor}`);
+        console.warn(`Menu opener not found: ${opener}`);
         return { element: null, component: null };
       }
       return { element: element as HTMLElement, component: null };
     }
     
     // Handle component with element property (most common case)
-    if (typeof anchor === 'object' && anchor !== null) {
+    if (typeof opener === 'object' && opener !== null) {
       // Case 1: Component with element property
-      if ('element' in anchor && anchor.element instanceof HTMLElement) {
-        return { element: anchor.element, component: anchor };
+      if ('element' in opener && opener.element instanceof HTMLElement) {
+        return { element: opener.element, component: opener };
       }
       
       // Case 2: Component with getElement method
-      if ('getElement' in anchor && typeof anchor.getElement === 'function') {
-        const element = anchor.getElement();
+      if ('getElement' in opener && typeof opener.getElement === 'function') {
+        const element = opener.getElement();
         if (element instanceof HTMLElement) {
-          return { element, component: anchor };
+          return { element, component: opener };
         }
       }
       
       // Case 3: Component with input property (like textfield)
-      if ('input' in anchor && anchor.input instanceof HTMLElement) {
-        return { element: anchor.input, component: anchor };
+      if ('input' in opener && opener.input instanceof HTMLElement) {
+        return { element: opener.input, component: opener };
       }
       
       // Case 4: Direct HTML element
-      if (anchor instanceof HTMLElement) {
-        return { element: anchor, component: null };
+      if (opener instanceof HTMLElement) {
+        return { element: opener, component: null };
       }
     }
 
-    console.warn('Invalid anchor type:', anchor);
+    console.warn('Invalid opener type:', opener);
     return { element: null, component: null };
   };
 
@@ -101,42 +101,42 @@ const withAnchor = (config: MenuConfig) => component => {
       return `${classPrefix}-textfield--focused`;
     } else {
       // Default active class for other elements
-      return `${classPrefix}-menu-anchor--active`;
+      return `${classPrefix}-menu-opener--active`;
     }
   };
 
   /**
-   * Sets up anchor click handler for toggling menu
+   * Sets up opener click handler for toggling menu
    */
-  const setupAnchorEvents = (anchorData: { element: HTMLElement, component: any }): void => {
-    const { element: anchorElement, component: anchorComponent } = anchorData;
+  const setupOpenerEvents = (openerData: { element: HTMLElement, component: any }): void => {
+    const { element: openerElement, component: openerComponent } = openerData;
     
-    if (!anchorElement) return;
+    if (!openerElement) return;
 
     // Remove previously attached event if any
-    if (state.anchorElement && state.anchorElement !== anchorElement) {
+    if (state.openerElement && state.openerElement !== openerElement) {
       cleanup();
     }
 
     // Store references
-    state.anchorElement = anchorElement;
-    state.anchorComponent = anchorComponent;
+    state.openerElement = openerElement;
+    state.openerComponent = openerComponent;
     
-    // Determine the appropriate active class for this anchor
-    state.activeClass = determineActiveClass(anchorElement);
+    // Determine the appropriate active class for this opener
+    state.activeClass = determineActiveClass(openerElement);
 
     // Add click handler
-    anchorElement.addEventListener('click', handleAnchorClick);
+    openerElement.addEventListener('click', handleOpenerClick);
     
     // Add keyboard handlers
-    anchorElement.addEventListener('keydown', handleAnchorKeydown);
+    openerElement.addEventListener('keydown', handleOpenerKeydown);
     
-    // Add blur/focusout handler to close menu when anchor loses focus
-    anchorElement.addEventListener('blur', handleAnchorBlur);
+    // Add blur/focusout handler to close menu when opener loses focus
+    openerElement.addEventListener('blur', handleOpenerBlur);
     
     // Add ARIA attributes
-    anchorElement.setAttribute('aria-haspopup', 'true');
-    anchorElement.setAttribute('aria-expanded', 'false');
+    openerElement.setAttribute('aria-haspopup', 'true');
+    openerElement.setAttribute('aria-expanded', 'false');
     
     // Get menu ID or generate one
     let menuId = component.element.id;
@@ -145,61 +145,61 @@ const withAnchor = (config: MenuConfig) => component => {
       component.element.id = menuId;
     }
     
-    // Connect menu and anchor with ARIA
-    anchorElement.setAttribute('aria-controls', menuId);
+    // Connect menu and opener with ARIA
+    openerElement.setAttribute('aria-controls', menuId);
   };
 
   /**
-   * Applies active visual state to anchor
+   * Applies active visual state to opener
    */
-  const setAnchorActive = (active: boolean): void => {
-    if (!state.anchorElement) return;
+  const setOpenerActive = (active: boolean): void => {
+    if (!state.openerElement) return;
     
     // Case 1: Component with setActive method (like our button component)
-    if (state.anchorComponent && typeof state.anchorComponent.setActive === 'function') {
-      state.anchorComponent.setActive(active);
+    if (state.openerComponent && typeof state.openerComponent.setActive === 'function') {
+      state.openerComponent.setActive(active);
       return;
     }
     
     // Case 2: Component with selected property (like our chip component)
-    if (state.anchorComponent && 'selected' in state.anchorComponent) {
-      state.anchorComponent.selected = active;
+    if (state.openerComponent && 'selected' in state.openerComponent) {
+      state.openerComponent.selected = active;
       return;
     }
     
     // Case 3: Textfield component with focus/blur methods
-    if (state.anchorComponent && typeof state.anchorComponent.focus === 'function' && 
-        typeof state.anchorComponent.blur === 'function') {
+    if (state.openerComponent && typeof state.openerComponent.focus === 'function' && 
+        typeof state.openerComponent.blur === 'function') {
       if (active) {
-        state.anchorComponent.focus();
+        state.openerComponent.focus();
       } else {
-        state.anchorComponent.blur();
+        state.openerComponent.blur();
       }
       return;
     }
     
     // Case 4: Standard DOM element fallback with classes
-    if (state.anchorElement.classList) {
+    if (state.openerElement.classList) {
       if (active) {
-        state.anchorElement.classList.add(state.activeClass);
+        state.openerElement.classList.add(state.activeClass);
       } else {
-        state.anchorElement.classList.remove(state.activeClass);
+        state.openerElement.classList.remove(state.activeClass);
       }
     }
   };
 
   /**
-   * Restores focus to the anchor properly
+   * Restores focus to the opener properly
    * Handles both component and element cases
    */
-  const restoreFocusToAnchor = (): void => {
-    // Skip if we don't have a valid anchor
-    if (!state.anchorElement) return;
+  const restoreFocusToOpener = (): void => {
+    // Skip if we don't have a valid opener
+    if (!state.openerElement) return;
     
     // Case 1: Component with focus method
-    if (state.anchorComponent && typeof state.anchorComponent.focus === 'function') {
+    if (state.openerComponent && typeof state.openerComponent.focus === 'function') {
       requestAnimationFrame(() => {
-        state.anchorComponent.focus();
+        state.openerComponent.focus();
       });
       return;
     }
@@ -207,25 +207,25 @@ const withAnchor = (config: MenuConfig) => component => {
     // Case
     
     // Case 2: Component with input that can be focused (like textfield)
-    if (state.anchorComponent && 
-        'input' in state.anchorComponent && 
-        state.anchorComponent.input instanceof HTMLElement) {
+    if (state.openerComponent && 
+        'input' in state.openerComponent && 
+        state.openerComponent.input instanceof HTMLElement) {
       requestAnimationFrame(() => {
-        state.anchorComponent.input.focus();
+        state.openerComponent.input.focus();
       });
       return;
     }
     
     // Case 3: Default - focus the element directly
     requestAnimationFrame(() => {
-      state.anchorElement.focus();
+      state.openerElement.focus();
     });
   };
 
   /**
-   * Handles anchor element click
+   * Handles opener element click
    */
-  const handleAnchorClick = (e: MouseEvent): void => {
+  const handleOpenerClick = (e: MouseEvent): void => {
     e.preventDefault();
     
     // Toggle menu visibility with mouse interaction type
@@ -241,9 +241,9 @@ const withAnchor = (config: MenuConfig) => component => {
   };
   
   /**
-   * Handles keyboard events on the anchor element
+   * Handles keyboard events on the opener element
    */
-  const handleAnchorKeydown = (e: KeyboardEvent): void => {
+  const handleOpenerKeydown = (e: KeyboardEvent): void => {
     // Only handle events if we have a menu controller
     if (!component.menu) return;
     
@@ -302,9 +302,9 @@ const withAnchor = (config: MenuConfig) => component => {
   };
 
   /**
-   * Handles anchor blur/focusout events
+   * Handles opener blur/focusout events
    */
-  const handleAnchorBlur = (e: FocusEvent): void => {
+  const handleOpenerBlur = (e: FocusEvent): void => {
     // Only handle events if we have a menu controller and menu is open
     if (!component.menu || !component.menu.isOpen()) return;
     
@@ -327,14 +327,14 @@ const withAnchor = (config: MenuConfig) => component => {
     // Don't close if focus is moving to any of these:
     // 1. To the menu itself
     // 2. To a child of the menu
-    // 3. To another menu button/anchor
+    // 3. To another menu button/opener
     if (relatedTarget) {
       // Check if focus moved to menu or its children
       if (component.element.contains(relatedTarget)) {
         return;
       }
       
-      // Check if focus moved to another menu button/anchor (has aria-haspopup)
+      // Check if focus moved to another menu button/opener (has aria-haspopup)
       if (relatedTarget.getAttribute('aria-haspopup') === 'true' || 
           relatedTarget.closest('[aria-haspopup="true"]')) {
         return;
@@ -353,30 +353,30 @@ const withAnchor = (config: MenuConfig) => component => {
   };
 
   /**
-   * Removes event listeners from anchor
+   * Removes event listeners from opener
    */
   const cleanup = (): void => {
-    if (state.anchorElement) {
-      state.anchorElement.removeEventListener('click', handleAnchorClick);
-      state.anchorElement.removeEventListener('keydown', handleAnchorKeydown);
-      state.anchorElement.removeEventListener('blur', handleAnchorBlur);
-      state.anchorElement.removeAttribute('aria-haspopup');
-      state.anchorElement.removeAttribute('aria-expanded');
-      state.anchorElement.removeAttribute('aria-controls');
+    if (state.openerElement) {
+      state.openerElement.removeEventListener('click', handleOpenerClick);
+      state.openerElement.removeEventListener('keydown', handleOpenerKeydown);
+      state.openerElement.removeEventListener('blur', handleOpenerBlur);
+      state.openerElement.removeAttribute('aria-haspopup');
+      state.openerElement.removeAttribute('aria-expanded');
+      state.openerElement.removeAttribute('aria-controls');
       
       // Clean up active state if present
-      setAnchorActive(false);
+      setOpenerActive(false);
     }
     
     // Reset state
-    state.anchorComponent = null;
-    state.anchorElement = null;
+    state.openerComponent = null;
+    state.openerElement = null;
     state.activeClass = '';
   };
 
-  // Initialize with provided anchor
-  const { element, component: anchorComponent } = resolveAnchor(config.anchor);
-  setupAnchorEvents({ element, component: anchorComponent });
+  // Initialize with provided opener
+  const { element, component: openerComponent } = resolveOpener(config.opener);
+  setupOpenerEvents({ element, component: openerComponent });
 
   // Register with lifecycle if available
   if (component.lifecycle) {
@@ -387,23 +387,23 @@ const withAnchor = (config: MenuConfig) => component => {
     };
   }
 
-  // Listen for menu state changes to update anchor
+  // Listen for menu state changes to update opener
   component.on('open', () => {
-    if (state.anchorElement) {
-      state.anchorElement.setAttribute('aria-expanded', 'true');
-      setAnchorActive(true);
+    if (state.openerElement) {
+      state.openerElement.setAttribute('aria-expanded', 'true');
+      setOpenerActive(true);
     }
   });
 
   component.on('close', (event) => {
-    if (state.anchorElement) {
+    if (state.openerElement) {
       // Always update ARIA attributes
-      state.anchorElement.setAttribute('aria-expanded', 'false');
-      setAnchorActive(false);
+      state.openerElement.setAttribute('aria-expanded', 'false');
+      setOpenerActive(false);
       
       // Handle focus restoration when requested
       if (event.restoreFocus && !isTabNavigation) {
-        restoreFocusToAnchor();
+        restoreFocusToOpener();
       }
     }
   });
@@ -411,56 +411,56 @@ const withAnchor = (config: MenuConfig) => component => {
   // Return enhanced component
   return {
     ...component,
-    anchor: {
+    opener: {
       /**
-       * Sets a new anchor element
-       * @param anchor - New anchor element, selector, or component
+       * Sets a new opener element
+       * @param opener - New opener element, selector, or component
        * @returns Component for chaining
        */
-      setAnchor(anchor: any) {
-        const resolved = resolveAnchor(anchor);
+      setOpener(opener: any) {
+        const resolved = resolveOpener(opener);
         if (resolved.element) {
-          setupAnchorEvents(resolved);
+          setupOpenerEvents(resolved);
         }
         return component;
       },
       
       /**
-       * Gets the current anchor element
-       * @returns Current anchor element
+       * Gets the current opener element
+       * @returns Current opener element
        */
-      getAnchor() {
-        return state.anchorElement;
+      getOpener() {
+        return state.openerElement;
       },
       
       /**
-       * Gets the current anchor component if available
-       * @returns Current anchor component or null
+       * Gets the current opener component if available
+       * @returns Current opener component or null
        */
-      getAnchorComponent() {
-        return state.anchorComponent;
+      getOpenerComponent() {
+        return state.openerComponent;
       },
       
       /**
-       * Sets the active state of the anchor
-       * @param active - Whether anchor should appear active
+       * Sets the active state of the opener
+       * @param active - Whether opener should appear active
        * @returns Component for chaining
        */
       setActive(active: boolean) {
-        setAnchorActive(active);
+        setOpenerActive(active);
         return component;
       },
       
       /**
-       * Restores focus to the anchor
+       * Restores focus to the opener
        * @returns Component for chaining
        */
       focus() {
-        restoreFocusToAnchor();
+        restoreFocusToOpener();
         return component;
       }
     }
   };
 };
 
-export default withAnchor;
+export default withOpener;

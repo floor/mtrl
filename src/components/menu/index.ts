@@ -32,9 +32,9 @@ export type {
  * @example
  * import { createMenu, MENU_POSITION } from 'mtrl';
  * 
- * // Create a menu positioned at the bottom-right of its anchor
+ * // Create a menu positioned at the bottom-right of its opener
  * const menu = createMenu({ 
- *   anchor: '#dropdown-button',
+ *   opener: '#dropdown-button',
  *   items: [...],
  *   position: MENU_POSITION.BOTTOM_END 
  * });

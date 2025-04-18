@@ -20,9 +20,9 @@ interface ApiOptions {
     setSelected: (itemId: string) => any;
     getSelected: () => string | null;
   };
-  anchor: {
-    setAnchor: (anchor: HTMLElement | string) => any;
-    getAnchor: () => HTMLElement;
+  opener: {
+    setOpener: (opener: HTMLElement | string) => any;
+    getOpener: () => HTMLElement;
   };
   events?: {
     on: <T extends string>(event: T, handler: (event: any) => void) => any;
@@ -55,7 +55,7 @@ interface ComponentWithElements {
  * @category Components
  * @internal This is an internal utility for the Menu component
  */
-const withAPI = ({ menu, anchor, events, lifecycle }: ApiOptions) => 
+const withAPI = ({ menu, opener, events, lifecycle }: ApiOptions) => 
   (component: ComponentWithElements): MenuComponent => ({
     ...component as any,
     element: component.element,
@@ -136,21 +136,21 @@ const withAPI = ({ menu, anchor, events, lifecycle }: ApiOptions) =>
     },
     
     /**
-     * Updates the menu's anchor element
-     * @param anchorElement - New anchor element or selector
+     * Updates the menu's opener element
+     * @param openerElement - New opener element or selector
      * @returns Menu component for chaining
      */
-    setAnchor(anchorElement: HTMLElement | string) {
-      anchor.setAnchor(anchorElement);
+    setOpener(openerElement: HTMLElement | string) {
+      opener.setOpener(openerElement);
       return this;
     },
     
     /**
-     * Gets the current anchor element
-     * @returns Current anchor element
+     * Gets the current opener element
+     * @returns Current opener element
      */
-    getAnchor() {
-      return anchor.getAnchor();
+    getOpener() {
+      return opener.getOpener();
     },
     
     /**

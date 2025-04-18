@@ -244,7 +244,7 @@ export const createKeyboardNavigation = (component) => {
             actions.closeSubmenuAtLevel(1);
           }
         } else {
-          // In main menu, Escape closes the entire menu and restores focus to anchor
+          // In main menu, Escape closes the entire menu and restores focus to opener
           actions.closeMenu(e, true);
         }
         break;
@@ -253,26 +253,26 @@ export const createKeyboardNavigation = (component) => {
         // Close the menu when tabbing out and move focus to next focusable element
         e.preventDefault(); 
         
-        // Find the anchor element
-        const anchorElement = component.anchor?.getAnchor?.();
+        // Find the opener element
+        const openerElement = component.opener?.getOpener?.();
         
         // Always close the menu
-        actions.closeMenu(e, true); // Pass true to restore focus to anchor
+        actions.closeMenu(e, true); // Pass true to restore focus to opener
         
-        // If we want to move to the next/previous focusable element after the anchor:
-        if (anchorElement) {
-          // Let the browser focus the anchor first (happens because we passed true above)
+        // If we want to move to the next/previous focusable element after the opener:
+        if (openerElement) {
+          // Let the browser focus the opener first (happens because we passed true above)
           // Then we can optionally set a timeout to move to next element
           setTimeout(() => {
-            // Optional: If you want to move focus to next/prev element after restoring to anchor
+            // Optional: If you want to move focus to next/prev element after restoring to opener
             if (e.shiftKey) {
-              // For shift+tab, we could let natural tabbing continue from the anchor
+              // For shift+tab, we could let natural tabbing continue from the opener
             } else {
               // For tab, we could programmatically focus the next element
               const focusableElements = getFocusableElements();
-              const anchorIndex = focusableElements.indexOf(anchorElement);
-              if (anchorIndex >= 0 && anchorIndex < focusableElements.length - 1) {
-                focusableElements[anchorIndex + 1].focus();
+              const openerIndex = focusableElements.indexOf(openerElement);
+              if (openerIndex >= 0 && openerIndex < focusableElements.length - 1) {
+                focusableElements[openerIndex + 1].focus();
               }
             }
           }, 0);

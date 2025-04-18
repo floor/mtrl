@@ -35,9 +35,9 @@ export const defaultConfig: MenuConfig = {
  * @internal
  */
 export const createBaseConfig = (config: MenuConfig): MenuConfig => {
-  // First, ensure we have an anchor element
-  if (!config.anchor) {
-    throw new Error('Menu component requires an anchor element or selector');
+  // First, ensure we have an opener element
+  if (!config.opener) {
+    throw new Error('Menu component requires an opener element or selector');
   }
   
   // Apply default configuration
@@ -111,9 +111,9 @@ export const getApiConfig = (component) => ({
     setSelected: (itemId) => component.menu?.setSelected(itemId),
     getSelected: () => component.menu?.getSelected()
   },
-  anchor: {
-    setAnchor: (anchor) => component.anchor?.setAnchor(anchor),
-    getAnchor: () => component.anchor?.getAnchor()
+  opener: {
+    setOpener: (opener) => component.opener?.setOpener(opener),
+    getOpener: () => component.opener?.getOpener()
   },
   events: {
     on: (event, handler) => component.on?.(event, handler),

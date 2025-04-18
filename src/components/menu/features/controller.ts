@@ -66,33 +66,33 @@ const withController = (config: MenuConfig) => component => {
   };
 
   /**
-   * Gets the anchor element from config
+   * Gets the opener element from config
    */
-  const getAnchorElement = (): HTMLElement => {
-    // First try to get the resolved anchor from the anchor feature
-    if (component.anchor && typeof component.anchor.getAnchor === 'function') {
-      return component.anchor.getAnchor();
+  const getOpenerElement = (): HTMLElement => {
+    // First try to get the resolved opener from the opener feature
+    if (component.opener && typeof component.opener.getOpener === 'function') {
+      return component.opener.getOpener();
     }
 
-    // Fall back to config anchor for initial positioning
-    const { anchor } = config;
+    // Fall back to config opener for initial positioning
+    const { opener } = config;
     
-    if (typeof anchor === 'string') {
-      const element = document.querySelector(anchor);
+    if (typeof opener === 'string') {
+      const element = document.querySelector(opener);
       if (!element) {
-        console.warn(`Menu anchor not found: ${anchor}`);
+        console.warn(`Menu opener not found: ${opener}`);
         return null;
       }
       return element as HTMLElement;
     }
     
     // Handle component with element property
-    if (typeof anchor === 'object' && anchor !== null && 'element' in anchor) {
-      return anchor.element;
+    if (typeof opener === 'object' && opener !== null && 'element' in opener) {
+      return opener.element;
     }
     
     // Handle direct HTML element
-    return anchor as HTMLElement;
+    return opener as HTMLElement;
   };
 
   /**
@@ -686,9 +686,9 @@ const withController = (config: MenuConfig) => component => {
     }
     
     // Step 2: Position the menu (will be invisible)
-    const anchorElement = getAnchorElement();
-    if (anchorElement) {
-      positioner.positionMenu(anchorElement);
+    const openerElement = getOpenerElement();
+    if (openerElement) {
+      positioner.positionMenu(openerElement);
     }
     
     // Step 3: Use a small delay to ensure DOM operations are complete
@@ -771,13 +771,13 @@ const withController = (config: MenuConfig) => component => {
   /**
    * Closes the menu
    * @param {Event} [event] - Optional event that triggered the close
-   * @param {boolean} [restoreFocus=true] - Whether to restore focus to the anchor element
+   * @param {boolean} [restoreFocus=true] - Whether to restore focus to the opener element
    */
   const closeMenu = (event?: Event, restoreFocus: boolean = true): void => {
     if (!state.visible) return;
     
-    // Get the anchor element reference immediately
-    const anchorElement = getAnchorElement();
+    // Get the opener element reference immediately
+    const openerElement = getOpenerElement();
     
     // Close any open submenu first
     setTimeout(() => {
@@ -796,9 +796,9 @@ const withController = (config: MenuConfig) => component => {
       window.removeEventListener('resize', handleWindowResize);
       window.removeEventListener('scroll', handleWindowScroll);
       
-      // Restore focus to anchor if requested
-      if (restoreFocus && anchorElement) {
-        anchorElement.focus();
+      // Restore focus to opener if requested
+      if (restoreFocus && openerElement) {
+        openerElement.focus();
       }
       
       // Trigger event with restoreFocus info
@@ -899,9 +899,9 @@ const withController = (config: MenuConfig) => component => {
       return;
     }
     
-    // Check if clicked on anchor element
-    const anchor = getAnchorElement();
-    if (anchor && anchor.contains(e.target as Node)) {
+    // Check if clicked on opener element
+    const opener = getOpenerElement();
+    if (opener && opener.contains(e.target as Node)) {
       return;
     }
     
@@ -944,9 +944,9 @@ const withController = (config: MenuConfig) => component => {
    */
   const handleWindowResize = (): void => {
     if (state.visible) {
-      const anchorElement = getAnchorElement();
-      if (anchorElement) {
-        positioner.positionMenu(anchorElement);
+      const openerElement = getOpenerElement();
+      if (openerElement) {
+        positioner.positionMenu(openerElement);
       }
     }
   };
@@ -958,10 +958,10 @@ const withController = (config: MenuConfig) => component => {
     if (state.visible) {
       // Use requestAnimationFrame to optimize scroll performance
       window.requestAnimationFrame(() => {
-        // Reposition the main menu to stay attached to anchor when scrolling
-        const anchorElement = getAnchorElement();
-        if (anchorElement) {
-          positioner.positionMenu(anchorElement);
+        // Reposition the main menu to stay attached to opener when scrolling
+        const openerElement = getOpenerElement();
+        if (openerElement) {
+          positioner.positionMenu(openerElement);
         }
         
         // Also reposition any open submenu relative to its parent menu item
@@ -990,9 +990,9 @@ const withController = (config: MenuConfig) => component => {
     
     // Position if visible
     if (state.visible) {
-      const anchorElement = getAnchorElement();
-      if (anchorElement) {
-        positioner.positionMenu(anchorElement);
+      const openerElement = getOpenerElement();
+      if (openerElement) {
+        positioner.positionMenu(openerElement);
       }
       
       // Show immediately
@@ -1077,9 +1077,9 @@ const withController = (config: MenuConfig) => component => {
       setPosition: (position) => {
         state.position = position;
         if (state.visible) {
-          const anchorElement = getAnchorElement();
-          if (anchorElement) {
-            positioner.positionMenu(anchorElement);
+          const openerElement = getOpenerElement();
+          if (openerElement) {
+            positioner.positionMenu(openerElement);
           }
         }
         return component;

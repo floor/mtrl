@@ -106,10 +106,10 @@ export const withMenu = (config: SelectConfig) =>
     // Convert options to menu items with proper recursive processing
     const menuItems = processMenuItems(state.options);
     
-    // Create menu component - pass the entire textfield component as anchor
+    // Create menu component - pass the entire textfield component as opener
     // This is crucial - passing the whole component instead of just its element
     const menu = createMenu({
-      anchor: component.textfield, // Pass the entire textfield component
+      opener: component.textfield, // Pass the entire textfield component
       items: menuItems,
       placement: config.placement || 'bottom-start',
       width: '100%', // Match width of textfield

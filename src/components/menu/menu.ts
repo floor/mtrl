@@ -3,7 +3,7 @@
 import { pipe } from '../../core/compose';
 import { createBase, withElement } from '../../core/compose/component';
 import { withEvents, withLifecycle } from '../../core/compose/features';
-import { withController, withAnchor, withPosition, withKeyboard } from './features';
+import { withController, withOpener, withPosition, withKeyboard } from './features';
 import { withAPI } from './api';
 import { MenuConfig, MenuComponent } from './types';
 import { createBaseConfig, getElementConfig, getApiConfig } from './config';
@@ -22,7 +22,7 @@ import { createBaseConfig, getElementConfig, getApiConfig } from './config';
  * from the DOM when closed, following best practices for dropdown menus.
  * 
  * @param {MenuConfig} config - Configuration options for the menu
- *  This must include an anchor element or selector, and an array of menu items.
+ *  This must include an opener element or selector, and an array of menu items.
  *  See {@link MenuConfig} for all available options.
  * 
  * @returns {MenuComponent} A fully configured menu component instance with
@@ -30,15 +30,15 @@ import { createBaseConfig, getElementConfig, getApiConfig } from './config';
  *  menu manipulation, event handling, and lifecycle management.
  * 
  * @throws {Error} Throws an error if menu creation fails or if required
- *  configuration (like anchor) is missing.
+ *  configuration (like opener) is missing.
  * 
  * @category Components
  * 
  * @example
- * // Create a simple menu anchored to a button
+ * // Create a simple menu openered to a button
  * const menuButton = document.getElementById('menu-button');
  * const menu = createMenu({
- *   anchor: menuButton,
+ *   opener: menuButton,
  *   items: [
  *     { id: 'item1', text: 'Option 1' },
  *     { id: 'item2', text: 'Option 2' },
@@ -58,7 +58,7 @@ import { createBaseConfig, getElementConfig, getApiConfig } from './config';
  * @example
  * // Create a menu with nested submenus
  * const menu = createMenu({
- *   anchor: '#more-button',
+ *   opener: '#more-button',
  *   items: [
  *     { id: 'edit', text: 'Edit', icon: '<svg>...</svg>' },
  *     { 
@@ -79,7 +79,7 @@ import { createBaseConfig, getElementConfig, getApiConfig } from './config';
  * @example
  * // Specify a custom position for the menu
  * const filterMenu = createMenu({
- *   anchor: filterButton,
+ *   opener: filterButton,
  *   items: filterOptions,
  *   position: MENU_POSITION.TOP_START,
  *   width: '240px',
@@ -102,7 +102,7 @@ const createMenu = (config: MenuConfig): MenuComponent => {
       withPosition(baseConfig),                  // Position management
       withKeyboard(baseConfig),                  // Keyboard navigation
       withController(baseConfig),                // Menu controller
-      withAnchor(baseConfig),                    // Anchor management
+      withOpener(baseConfig),                    // Opener management
       withLifecycle(),                           // Lifecycle management
       comp => withAPI(getApiConfig(comp))(comp)  // Public API
     )(baseConfig);

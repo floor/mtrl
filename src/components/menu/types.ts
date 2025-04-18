@@ -2,34 +2,34 @@
 
 /**
  * Menu position options
- * Controls where the menu will appear relative to its anchor element
+ * Controls where the menu will appear relative to its opener element
  * 
  * @category Components
  */
 export const MENU_POSITION = {
-  /** Places menu below the anchor, aligned to left edge */
+  /** Places menu below the opener, aligned to left edge */
   BOTTOM_START: 'bottom-start',
-  /** Places menu below the anchor, centered */
+  /** Places menu below the opener, centered */
   BOTTOM: 'bottom',
-  /** Places menu below the anchor, aligned to right edge */
+  /** Places menu below the opener, aligned to right edge */
   BOTTOM_END: 'bottom-end',
-  /** Places menu above the anchor, aligned to left edge */
+  /** Places menu above the opener, aligned to left edge */
   TOP_START: 'top-start',
-  /** Places menu above the anchor, centered */
+  /** Places menu above the opener, centered */
   TOP: 'top',
-  /** Places menu above the anchor, aligned to right edge */
+  /** Places menu above the opener, aligned to right edge */
   TOP_END: 'top-end',
-  /** Places menu to the right of the anchor, aligned to top edge */
+  /** Places menu to the right of the opener, aligned to top edge */
   RIGHT_START: 'right-start',
-  /** Places menu to the right of the anchor, centered */
+  /** Places menu to the right of the opener, centered */
   RIGHT: 'right',
-  /** Places menu to the right of the anchor, aligned to bottom edge */
+  /** Places menu to the right of the opener, aligned to bottom edge */
   RIGHT_END: 'right-end',
-  /** Places menu to the left of the anchor, aligned to top edge */
+  /** Places menu to the left of the opener, aligned to top edge */
   LEFT_START: 'left-start',
-  /** Places menu to the left of the anchor, centered */
+  /** Places menu to the left of the opener, centered */
   LEFT: 'left',
-  /** Places menu to the left of the anchor, aligned to bottom edge */
+  /** Places menu to the left of the opener, aligned to bottom edge */
   LEFT_END: 'left-end'
 } as const;
 
@@ -125,10 +125,10 @@ export type MenuContent = MenuItem | MenuDivider;
  */
 export interface MenuConfig {
   /**
-   * Element to which the menu will be anchored
+   * Element to which the menu will be openered
    * Can be an HTML element, a CSS selector string, or a component with an element property
    */
-  anchor: HTMLElement | string | { element: HTMLElement };
+  opener: HTMLElement | string | { element: HTMLElement };
   
   /**
    * Array of menu items and dividers to display
@@ -136,7 +136,7 @@ export interface MenuConfig {
   items: MenuContent[];
   
   /**
-   * Position of the menu relative to the anchor
+   * Position of the menu relative to the opener
    * @default 'bottom-start'
    */
   position?: MenuPosition;
@@ -178,7 +178,7 @@ export interface MenuConfig {
   maxHeight?: string;
   
   /**
-   * Optional offset from the anchor (in pixels)
+   * Optional offset from the opener (in pixels)
    * @default 8
    */
   offset?: number;
@@ -319,17 +319,17 @@ export interface MenuComponent {
   getItems: () => MenuContent[];
   
   /**
-   * Updates the menu's anchor element
-   * @param anchor - New anchor element or selector
+   * Updates the menu's opener element
+   * @param opener - New opener element or selector
    * @returns The menu component for chaining
    */
-  setAnchor: (anchor: HTMLElement | string) => MenuComponent;
+  setOpener: (opener: HTMLElement | string) => MenuComponent;
   
   /**
-   * Gets the current anchor element
-   * @returns Current anchor element
+   * Gets the current opener element
+   * @returns Current opener element
    */
-  getAnchor: () => HTMLElement;
+  getOpener: () => HTMLElement;
   
   /**
    * Updates the menu's position
