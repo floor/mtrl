@@ -24,6 +24,10 @@ interface ApiOptions {
     setOpener: (opener: HTMLElement | string) => any;
     getOpener: () => HTMLElement;
   };
+  submenu?: {
+    hasOpenSubmenu: () => boolean;
+    closeAllSubmenus: () => void;
+  };
   events?: {
     on: <T extends string>(event: T, handler: (event: any) => void) => any;
     off: <T extends string>(event: T, handler: (event: any) => void) => any;
@@ -153,6 +157,17 @@ const withAPI = ({ menu, opener, events, lifecycle }: ApiOptions) =>
       return opener.getOpener();
     },
     
+    hasOpenSubmenu() {
+      return submenu?.hasOpenSubmenu() || false;
+    },
+    
+    closeSubmenus() {
+      if (submenu) {
+        submenu.closeAllSubmenus();
+      }
+      return this;
+    },
+
     /**
      * Updates the menu's position
      * @param position - New position value

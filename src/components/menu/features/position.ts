@@ -82,7 +82,7 @@ export const createPositioner = (component, config: MenuConfig) => {
       
       // Check vertical positioning as well for submenus
       // If submenu would extend beyond the bottom of the viewport, adjust positioning
-      if (openerRect.top + menuRect.height > viewportHeight - 16) {
+      if (openerRect.top + menuRect.height > viewportHeight - 48) {
         if (calculatedPosition === 'right-start') {
           calculatedPosition = 'right-end';
         } else if (calculatedPosition === 'left-start') {
@@ -97,7 +97,7 @@ export const createPositioner = (component, config: MenuConfig) => {
         case 'top':
         case 'top-end':
           // Check if enough space above
-          if (openerRect.top < menuRect.height + offset + 16) {
+          if (openerRect.top < menuRect.height + offset + 48) {
             // Not enough space above, flip to bottom
             calculatedPosition = preferredPosition.replace('top', 'bottom');
           }
@@ -107,7 +107,7 @@ export const createPositioner = (component, config: MenuConfig) => {
         case 'bottom':
         case 'bottom-end':
           // Check if enough space below
-          if (openerRect.bottom + menuRect.height + offset + 16 > viewportHeight) {
+          if (openerRect.bottom + menuRect.height + offset + 48 > viewportHeight) {
             // Not enough space below, check if more space above
             if (openerRect.top > (viewportHeight - openerRect.bottom)) {
               // More space above, flip to top
@@ -122,7 +122,7 @@ export const createPositioner = (component, config: MenuConfig) => {
         case 'left-start':
         case 'left':
           // Check if enough space below for these side positions
-          if (openerRect.bottom + menuRect.height > viewportHeight - 16) {
+          if (openerRect.bottom + menuRect.height > viewportHeight - 48) {
             // Not enough space below, shift the menu upward
             if (preferredPosition === 'right-start') {
               calculatedPosition = 'right-end';
@@ -234,13 +234,13 @@ export const createPositioner = (component, config: MenuConfig) => {
     // Ensure the menu has proper spacing from viewport edges
     
     // Top edge spacing - ensure the menu doesn't go above the viewport + padding
-    const minTopSpacing = 16; // Minimum distance from top of viewport
+    const minTopSpacing = 48; // Minimum distance from top of viewport
     if (top - scrollY < minTopSpacing) {
       top = minTopSpacing + scrollY;
     }
     
     // Bottom edge spacing - ensure the menu doesn't go below the viewport - padding
-    const viewportBottomMargin = 16; // Minimum space from bottom of viewport
+    const viewportBottomMargin = 48; // Minimum space from bottom of viewport
     const bottomEdge = (top - scrollY) + menuRect.height;
     
     if (bottomEdge > viewportHeight - viewportBottomMargin) {

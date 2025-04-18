@@ -82,7 +82,7 @@ export const createKeyboardNavigation = (component) => {
     state: any, 
     actions: {
       closeMenu: (event: Event, restoreFocus?: boolean) => void,
-      closeSubmenuAtLevel: (level: number) => void,
+      closeSubmenu: (level: number) => void,
       findItemById: (id: string) => MenuItem | null,
       handleSubmenuClick: (item: MenuItem, index: number, itemElement: HTMLElement) => void,
       handleNestedSubmenuClick: (item: MenuItem, index: number, itemElement: HTMLElement) => void
@@ -207,14 +207,14 @@ export const createKeyboardNavigation = (component) => {
             );
             
             // Close this level of submenu
-            actions.closeSubmenuAtLevel(currentLevel);
+            actions.closeSubmenu(currentLevel);
             
             // Focus the parent item after closing
             if (parentItem) {
               parentItem.focus();
             }
           } else {
-            actions.closeSubmenuAtLevel(1);
+            actions.closeSubmenu(1);
           }
         }
         break;
@@ -234,14 +234,14 @@ export const createKeyboardNavigation = (component) => {
             );
             
             // Close this level of submenu
-            actions.closeSubmenuAtLevel(currentLevel);
+            actions.closeSubmenu(currentLevel);
             
             // Focus the parent item after closing
             if (parentItem) {
               parentItem.focus();
             }
           } else {
-            actions.closeSubmenuAtLevel(1);
+            actions.closeSubmenu(1);
           }
         } else {
           // In main menu, Escape closes the entire menu and restores focus to opener

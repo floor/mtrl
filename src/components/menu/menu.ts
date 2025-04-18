@@ -3,7 +3,7 @@
 import { pipe } from '../../core/compose';
 import { createBase, withElement } from '../../core/compose/component';
 import { withEvents, withLifecycle } from '../../core/compose/features';
-import { withController, withOpener, withPosition, withKeyboard } from './features';
+import { withController, withOpener, withPosition, withKeyboard, withSubmenu } from './features';
 import { withAPI } from './api';
 import { MenuConfig, MenuComponent } from './types';
 import { createBaseConfig, getElementConfig, getApiConfig } from './config';
@@ -33,61 +33,6 @@ import { createBaseConfig, getElementConfig, getApiConfig } from './config';
  *  configuration (like opener) is missing.
  * 
  * @category Components
- * 
- * @example
- * // Create a simple menu openered to a button
- * const menuButton = document.getElementById('menu-button');
- * const menu = createMenu({
- *   opener: menuButton,
- *   items: [
- *     { id: 'item1', text: 'Option 1' },
- *     { id: 'item2', text: 'Option 2' },
- *     { type: 'divider' },
- *     { id: 'item3', text: 'Option 3' }
- *   ]
- * });
- * 
- * // Add event listener for item selection
- * menu.on('select', (event) => {
- *   console.log('Selected item:', event.itemId);
- * });
- * 
- * // Menu will be added to the DOM when opened and removed when closed
- * menuButton.addEventListener('click', () => menu.toggle());
- * 
- * @example
- * // Create a menu with nested submenus
- * const menu = createMenu({
- *   opener: '#more-button',
- *   items: [
- *     { id: 'edit', text: 'Edit', icon: '<svg>...</svg>' },
- *     { 
- *       id: 'share', 
- *       text: 'Share', 
- *       hasSubmenu: true,
- *       submenu: [
- *         { id: 'email', text: 'Email' },
- *         { id: 'link', text: 'Copy link' }
- *       ]
- *     },
- *     { type: 'divider' },
- *     { id: 'delete', text: 'Delete', icon: '<svg>...</svg>' }
- *   ],
- *   position: 'bottom-end'
- * });
- * 
- * @example
- * // Specify a custom position for the menu
- * const filterMenu = createMenu({
- *   opener: filterButton,
- *   items: filterOptions,
- *   position: MENU_POSITION.TOP_START,
- *   width: '240px',
- *   maxHeight: '400px'
- * });
- * 
- * // Update the menu's position programmatically
- * filterMenu.setPosition(MENU_POSITION.BOTTOM_END);
  */
 const createMenu = (config: MenuConfig): MenuComponent => {
   try {
@@ -101,6 +46,7 @@ const createMenu = (config: MenuConfig): MenuComponent => {
       withElement(getElementConfig(baseConfig)), // DOM element
       withPosition(baseConfig),                  // Position management
       withKeyboard(baseConfig),                  // Keyboard navigation
+      withSubmenu(baseConfig),                   // Submenu management
       withController(baseConfig),                // Menu controller
       withOpener(baseConfig),                    // Opener management
       withLifecycle(),                           // Lifecycle management

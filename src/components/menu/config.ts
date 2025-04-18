@@ -115,6 +115,10 @@ export const getApiConfig = (component) => ({
     setOpener: (opener) => component.opener?.setOpener(opener),
     getOpener: () => component.opener?.getOpener()
   },
+  submenu: {
+    hasOpenSubmenu: () => component.submenu?.hasOpenSubmenu() || false,
+    closeAllSubmenus: () => component.submenu?.closeAllSubmenus()
+  },
   events: {
     on: (event, handler) => component.on?.(event, handler),
     off: (event, handler) => component.off?.(event, handler)
