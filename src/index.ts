@@ -8,6 +8,7 @@
 // Direct component imports
 import { createElement, addClass, removeClass, hasClass, toggleClass } from './core/dom';
 import createLayout from './core/layout';
+import { createJsxLayout, h, Fragment } from './core/layout/jsx';
 import createBadge from './components/badge';
 import createBottomAppBar from './components/bottom-app-bar';
 import createButton from './components/button';
@@ -88,3 +89,8 @@ export {
   createTopAppBar,
   createTooltip
 };
+
+
+export const jsx = h;
+export const jsxs = h;
+export const jsxDEV = h;

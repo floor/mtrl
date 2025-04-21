@@ -2,11 +2,11 @@
 
 ## Overview
 
-The Layout Module is a lightweight, flexible system for creating and managing visual arrangements and component hierarchies. It provides a declarative approach to building UI layouts using either arrays or objects, with efficient DOM operations, component instantiation, and visual arrangement.
+The Layout Module is a lightweight, flexible system for creating and managing visual arrangements and component hierarchies. It provides a declarative approach to building UI layouts using arrays, objects, JSX, or HTML strings, with efficient DOM operations, component instantiation, and visual arrangement.
 
 ## Features
 
-- **Multiple Schema Formats** - Support for array-based, object-based, and HTML string schemas
+- **Multiple Schema Formats** - Support for array-based, object-based, JSX-based, and HTML string schemas
 - **Efficient DOM Operations** - Batched DOM manipulations with DocumentFragment
 - **Component Management** - Easy access to component instances via consistent API
 - **Layout System Integration** - Direct access to powerful CSS layout classes
@@ -114,6 +114,62 @@ const layout = createLayout({
     }
   }
 });
+```
+
+### JSX-based Layout
+
+The layout system now supports JSX syntax for creating layouts, offering a more familiar and readable approach:
+
+```jsx
+/** @jsx h */
+import { h, Fragment, createJsxLayout } from 'mtrl';
+
+// Create a layout using JSX
+const layout = (
+  <div className="container" layout={{ type: 'grid', columns: 3, gap: 4 }}>
+    <header layoutItem={{ span: 3 }}>
+      <h1>Dashboard</h1>
+    </header>
+    
+    <aside layoutItem={{ span: 1, sm: 12, md: 4 }}>
+      <nav>
+        <ul>
+          <li><a href="#home">Home</a></li>
+          <li><a href="#stats">Statistics</a></li>
+          <li><a href="#settings">Settings</a></li>
+        </ul>
+      </nav>
+    </aside>
+    
+    <main layoutItem={{ span: 2, sm: 12, md: 8 }}>
+      <section className="content">
+        <h2>Welcome to the Dashboard</h2>
+        <p>This layout was created using JSX syntax.</p>
+        
+        {/* Conditional rendering */}
+        {hasNotifications && (
+          <div className="notifications">
+            You have {notificationCount} new notifications.
+          </div>
+        )}
+        
+        {/* Using components */}
+        {createButton({
+          text: "Click Me",
+          variant: "filled"
+        })}
+      </section>
+    </main>
+    
+    <footer layoutItem={{ span: 3 }}>
+      © 2025 MTRL Framework
+    </footer>
+  </div>
+);
+
+// Create the actual DOM structure
+const result = createJsxLayout(layout);
+document.body.appendChild(result.element);
 ```
 
 ### HTML String Layout
@@ -233,7 +289,7 @@ When using the `layoutItem` property to configure individual items:
 
 | Property | Description | Example Values |
 |----------|-------------|----------------|
-| `width` | Column width in 12-column grid | `1` through `12` |
+| `width` | Column width in a 12-column grid | `1` through `12` |
 | `span` | Grid column span | `1` through `12` |
 | `rowSpan` | Grid row span | `1` through `12` |
 | `sm`, `md`, `lg`, `xl` | Responsive widths | `1` through `12` |
@@ -248,7 +304,7 @@ When using the `layoutItem` property to configure individual items:
 Creates a layout from a schema definition.
 
 - **Parameters**:
-  - `schema`: Array, object, HTML string, or function returning one of these
+  - `schema`: Array, object, JSX, or HTML string
   - `parentElement` (optional): Parent element to attach the layout to
   - `options` (optional): Configuration options for layout creation
 - **Returns**: Layout result object with components and utility methods
@@ -259,6 +315,23 @@ const layout = createLayout(schema, document.getElementById('container'), {
   prefix: true,         // Whether to apply automatic class prefixing
   theme: 'dark'         // Custom options (passed to components)
 });
+```
+
+### `createJsxLayout(jsxElement, parentElement?)`
+
+Creates a layout from a JSX element.
+
+- **Parameters**:
+  - `jsxElement`: JSX element created with the `h` function
+  - `parentElement` (optional): Parent element to attach the layout to
+- **Returns**: Layout result object with components and utility methods
+
+```jsx
+/** @jsx h */
+import { h, createJsxLayout } from 'mtrl';
+
+const jsxElement = <div className="container">Hello, world!</div>;
+const layout = createJsxLayout(jsxElement);
 ```
 
 ### Layout Result Object
@@ -278,6 +351,39 @@ const header = layout.get('header');       // By name
 const footer = layout.component.footer;    // Via flattened map
 const rootElement = layout.element;        // Root element
 ```
+
+## JSX Support
+
+### Setting Up JSX
+
+To use JSX, add these settings to your `tsconfig.json`:
+
+```json
+{
+  "compilerOptions": {
+    "jsx": "react",
+    "jsxFactory": "h",
+    "jsxFragmentFactory": "Fragment"
+  }
+}
+```
+
+And add the JSX pragma comment to your `.tsx` files:
+
+```jsx
+/** @jsx h */
+import { h, Fragment, createJsxLayout } from 'mtrl';
+```
+
+### JSX Features
+
+- **HTML Elements & Components**: Mix standard HTML with MTRL components
+- **Conditional Rendering**: Use conditional expressions (`condition ? x : y`)
+- **Fragments**: Group elements without extra DOM nodes using `<Fragment>`
+- **Iteration**: Generate lists using `.map()` 
+- **Event Handling**: Direct event handler attachment
+- **Inline Styles**: Support for object-style CSS properties
+- **Layout Props**: Direct support for layout configuration
 
 ## Examples
 
@@ -401,178 +507,127 @@ const card = createCard({ title: 'Statistics', content: 'App usage data...' });
 content.appendChild(card.element);
 ```
 
-#### Form Layout with Array Schema
+### JSX Schema Examples
 
-```javascript
-import { createLayout, createTextfield, createButton } from 'mtrl';
+#### Dashboard Grid with JSX Schema
 
-// Create a form with fields and submit button using array syntax
-const form = createLayout([
-  'formContainer', { 
-    tag: 'form', 
-    className: 'login-form', 
-    layout: { type: 'stack', gap: 4 }
-  },
-  [
-    createTextfield, 'username', {
-      label: 'Username',
-      required: true,
-      layoutItem: {
-        width: 12  // Full width
-      }
-    },
-    createTextfield, 'password', {
-      label: 'Password',
-      type: 'password',
-      required: true,
-      layoutItem: {
-        width: 12  // Full width
-      }
-    },
-    'buttonRow', {
-      layout: { 
-        type: 'row', 
-        justify: 'end',
-        gap: 2 
-      }
-    },
-    [
-      createButton, 'resetButton', { 
-        text: 'Reset',
-        variant: 'text'
-      },
-      createButton, 'submitButton', { 
-        text: 'Login',
-        variant: 'filled'
-      }
-    ]
-  ]
-]);
+```jsx
+/** @jsx h */
+import { h, Fragment, createJsxLayout } from 'mtrl';
+import { createCard } from 'mtrl';
 
-// Access form elements
-const usernameField = form.get('username');
-const submitButton = form.get('submitButton');
-
-// Add event handlers
-submitButton.on('click', (e) => {
-  e.preventDefault();
-  console.log('Username:', usernameField.getValue());
-});
-```
-
-### Object Schema Examples
-
-#### Dashboard Grid with Object Schema
-
-```javascript
-import { createLayout, createElement, createCard } from 'mtrl';
-
-const dashboard = createLayout({
-  dashboardGrid: {
-    options: {
-      className: 'dashboard-grid',
-      layout: {
-        type: 'grid',
-        columns: 3,
-        gap: 4,
-        autoHeight: true
-      }
-    },
-    children: {
-      statsCard: {
-        creator: createCard,
-        options: {
+function createDashboard(stats) {
+  const layout = (
+    <div 
+      className="dashboard-grid"
+      layout={{ type: 'grid', columns: 3, gap: 4, autoHeight: true }}
+    >
+      <div layoutItem={{ span: 2, sm: 12, md: 6 }}>
+        {createCard({
           title: 'Statistics',
           outlined: true,
-          layoutItem: {
-            span: 2,  // Span 2 columns
-            sm: 12,   // Full width on small screens
-            md: 6     // Half width on medium screens
-          }
-        }
-      },
-      activityCard: {
-        creator: createCard,
-        options: {
+          content: stats.totalUsers.toString()
+        })}
+      </div>
+      
+      <div layoutItem={{ span: 1, sm: 12, md: 6 }}>
+        {createCard({
           title: 'Recent Activity',
           outlined: true,
-          layoutItem: {
-            span: 1,  // Span 1 column
-            sm: 12,   // Full width on small screens
-            md: 6     // Half width on medium screens
-          }
-        }
-      },
-      // More dashboard cards...
-    }
-  }
+          content: `${stats.activeUsers} active users`
+        })}
+      </div>
+      
+      <div layoutItem={{ span: 3, md: 6 }}>
+        {createCard({
+          title: 'Revenue',
+          outlined: true,
+          content: `$${stats.revenue.toLocaleString()}`
+        })}
+      </div>
+    </div>
+  );
+  
+  return createJsxLayout(layout);
+}
+
+// Usage
+const dashboard = createDashboard({
+  totalUsers: 12583,
+  activeUsers: 4321,
+  revenue: 1234567
 });
+
+document.body.appendChild(dashboard.element);
 ```
 
-#### Application Layout with Object Schema
+#### Form Layout with JSX Schema
 
-```javascript
-import { createLayout, createTopAppBar, createDrawer, createList, createListItem, createButton } from 'mtrl';
+```jsx
+/** @jsx h */
+import { h, createJsxLayout } from 'mtrl';
+import { createTextField, createButton } from 'mtrl';
 
-const appLayout = createLayout({
-  app: {
-    options: {
-      className: 'app-container',
-      layout: { type: 'stack', gap: 0 }
-    },
-    children: {
-      header: {
-        creator: createTopAppBar,
-        options: { 
-          title: 'My Application',
-          actions: ['menu', 'account']
-        }
-      },
-      main: {
-        options: {
-          className: 'app-main',
-          layout: { type: 'row', gap: 0 }
-        },
-        children: {
-          sidebar: {
-            creator: createDrawer,
-            options: {
-              persistent: true,
-              layout: { type: 'stack', gap: 2 }
-            },
-            children: {
-              nav: {
-                creator: createList,
-                options: { interactive: true },
-                children: {
-                  home: {
-                    creator: createListItem,
-                    options: { text: 'Home', leading: 'home' }
-                  },
-                  settings: {
-                    creator: createListItem,
-                    options: { text: 'Settings', leading: 'settings' }
-                  }
-                }
-              }
-            }
-          },
-          content: {
-            options: {
-              tag: 'main',
-              className: 'app-content',
-              layout: { 
-                type: 'grid', 
-                columns: 'auto-fit',
-                gap: 4 
-              }
-            }
-          }
-        }
-      }
-    }
-  }
+function createLoginForm(onSubmit) {
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const username = form.elements.username.value;
+    const password = form.elements.password.value;
+    onSubmit({ username, password });
+  };
+
+  const layout = (
+    <form 
+      className="login-form"
+      onSubmit={handleSubmit}
+      layout={{ type: 'stack', gap: 4 }}
+    >
+      <div layoutItem={{ width: 12 }}>
+        {createTextField({
+          label: 'Username',
+          name: 'username',
+          required: true
+        })}
+      </div>
+      
+      <div layoutItem={{ width: 12 }}>
+        {createTextField({
+          label: 'Password',
+          name: 'password',
+          type: 'password',
+          required: true
+        })}
+      </div>
+      
+      <div
+        layout={{ type: 'row', justify: 'end', gap: 2 }}
+      >
+        {createButton({
+          text: 'Reset',
+          variant: 'text',
+          type: 'reset'
+        })}
+        
+        {createButton({
+          text: 'Login',
+          variant: 'filled',
+          type: 'submit'
+        })}
+      </div>
+    </form>
+  );
+  
+  return createJsxLayout(layout);
+}
+
+// Usage
+const form = createLoginForm(credentials => {
+  console.log('Login attempt:', credentials);
+  alert(`Login attempt for: ${credentials.username}`);
 });
+
+document.body.appendChild(form.element);
 ```
 
 ## Performance Considerations
@@ -592,16 +647,31 @@ const appLayout = createLayout({
 - **Maintainability**: Easier to understand complex nested structures
 - **Self-documentation**: Property names describe the layout's purpose
 
+**JSX schemas** offer:
+
+- **Familiarity**: Syntax familiar to many developers
+- **Readability**: Clear visual hierarchy mirroring the DOM
+- **Features**: Natural support for conditionals and iteration
+- **Performance**: Converted to efficient array schemas internally
+
 **Recommendations**:
 - For **performance-critical** applications, prefer array-based schemas
 - For **complex, deeply nested** structures where maintainability is key, consider object-based schemas
-- For the **best balance**, use array-based schemas for large structures and object-based for complex configurations
+- For **the best readability** and **familiar syntax**, use JSX schemas
+- For the **best balance**, use array-based schemas for large structures and JSX for user interfaces
 
 ### Options Performance Considerations
 
 - Setting `prefix: false` can improve performance slightly by avoiding class name processing
 - Providing a `creator` function in options is more efficient than having many duplicate creator references in the schema
 - Consider memoizing layout creation for frequently used UI patterns with the same options
+
+### JSX Performance Considerations
+
+- The JSX implementation is optimized for performance and converts to efficient array schemas
+- Style objects are converted to strings at creation time, not during rendering
+- Fragment support prevents unnecessary DOM nodes
+- Children are flattened for more efficient processing
 
 ### General Optimization Tips
 

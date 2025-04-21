@@ -118,6 +118,17 @@ export function createComponentInstance(
 }
 
 /**
+ * Determines if a schema is in JSX format (transformed by h function)
+ */
+export function isJsxSchema(schema: any): boolean {
+  return Array.isArray(schema) && 
+         (schema.length >= 3) && 
+         (typeof schema[0] === 'function') &&
+         (typeof schema[1] === 'string') && 
+         (isObject(schema[2]));
+}
+
+/**
  * Processes any type of layout definition (array or object)
  * 
  * @param schema - Layout schema to process
@@ -143,6 +154,10 @@ export function processSchema(
       getAll: () => ({}),
       destroy: () => {}
     };
+  }
+
+  if (isJsxSchema(schema)) {
+    return processArraySchema(schema, parentElement, level, options);
   }
   
   // Process based on schema type

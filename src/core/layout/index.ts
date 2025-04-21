@@ -21,7 +21,7 @@ export { isComponent, processClassNames, flattenLayout } from './utils';
 // Export core functionality
 export { createLayout } from './create';
 export { createLayoutResult } from './result';
-export { processSchema, createComponentInstance } from './processor';
+export { processSchema, createComponentInstance, isJsxSchema } from './processor';
 
 // Export configuration utilities
 export { 
@@ -30,6 +30,9 @@ export {
   getLayoutType,
   cleanupLayoutClasses
 } from './config';
+
+// Export JSX support
+export { h, Fragment, createJsxLayout } from './jsx';
 
 // Default export for backward compatibility and simpler usage
 import { createLayout } from './create';
