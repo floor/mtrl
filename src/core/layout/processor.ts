@@ -25,14 +25,23 @@ export function createComponentInstance(
   layoutOptions: LayoutOptions = {}
 ): any {
   try {
-    // Save layout and layoutItem configs before creating component
+    // Save special configs before creating component
     const layoutConfig = options.layout;
     const layoutItemConfig = options.layoutItem;
+    const styleConfig = options.style;
+    const attributesConfig = options.attributes;
     
-    // Remove layout and layoutItem from options to prevent them becoming attributes
+    // Handle both event and events for flexibility (events is preferred)
+    const eventsConfig = options.events || options.event;
+    
+    // Remove these special configs from options to prevent them becoming attributes
     const cleanOptions = { ...options };
     delete cleanOptions.layout;
     delete cleanOptions.layoutItem;
+    if (typeof cleanOptions.style === 'object') delete cleanOptions.style;
+    if (typeof cleanOptions.attributes === 'object') delete cleanOptions.attributes;
+    delete cleanOptions.events;
+    delete cleanOptions.event;
     
     // Check if Component is a class constructor
     const isClass = typeof Component === 'function' && 
@@ -46,7 +55,7 @@ export function createComponentInstance(
       ? new Component(cleanOptions)
       : Component(cleanOptions);
       
-    // Apply layout configuration to the created component
+    // Apply configuration to the created component
     if (component) {
       // Get the actual DOM element
       const element = component.element || (component instanceof HTMLElement ? component : null);
@@ -59,6 +68,43 @@ export function createComponentInstance(
         // Apply layout item classes if layoutItem config exists
         if (layoutItemConfig) {
           applyLayoutItemClasses(element, layoutItemConfig);
+        }
+        
+        // Apply style if style config exists and is an object
+        if (styleConfig && typeof styleConfig === 'object') {
+          Object.assign(element.style, styleConfig);
+        }
+        
+        // Apply attributes if attributes config exists and is an object
+        if (attributesConfig && typeof attributesConfig === 'object') {
+          for (const [key, value] of Object.entries(attributesConfig)) {
+            if (value !== undefined && value !== null) {
+              element.setAttribute(key, value.toString());
+            }
+          }
+        }
+        
+        // Attach event listeners if events config exists
+        if (eventsConfig) {
+          // Handle object format: { click: fn, mouseover: fn }
+          if (typeof eventsConfig === 'object' && !Array.isArray(eventsConfig)) {
+            for (const [eventName, handler] of Object.entries(eventsConfig)) {
+              if (typeof handler === 'function') {
+                element.addEventListener(eventName, handler);
+              }
+            }
+          }
+          // Handle array format: [['click', fn], ['mouseover', fn]]
+          else if (Array.isArray(eventsConfig)) {
+            for (const eventDef of eventsConfig) {
+              if (Array.isArray(eventDef) && eventDef.length >= 2) {
+                const [eventName, handler] = eventDef;
+                if (typeof eventName === 'string' && typeof handler === 'function') {
+                  element.addEventListener(eventName, handler);
+                }
+              }
+            }
+          }
         }
       }
     }
