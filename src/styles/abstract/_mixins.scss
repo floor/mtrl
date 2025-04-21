@@ -76,7 +76,7 @@ $icons: (
   @each $prop in $properties {
     $transitions: list.append(
       $transitions,
-      $prop f.get-motion-duration('short2') f.get-motion-easing('standard'),
+      $prop f.get-motion-duration('short2') v.motion('easing-standard'),
       comma
     );
   }
@@ -88,7 +88,7 @@ $icons: (
   @each $prop in $properties {
     $transitions: list.append(
       $transitions,
-      $prop f.get-motion-duration('short4') f.get-motion-easing('standard-accelerate'),
+      $prop f.get-motion-duration('short4') v.motion('easing-exit'),
       comma
     );
   }
@@ -100,7 +100,56 @@ $icons: (
   @each $prop in $properties {
     $transitions: list.append(
       $transitions,
-      $prop f.get-motion-duration('short4') f.get-motion-easing('standard-decelerate'),
+      $prop f.get-motion-duration('short4') v.motion('easing-enter'),
+      comma
+    );
+  }
+  transition: $transitions;
+}
+
+// New mixins for specific animation behaviors
+@mixin motion-appear($properties...) {
+  $transitions: ();
+  @each $prop in $properties {
+    $transitions: list.append(
+      $transitions,
+      $prop f.get-motion-duration('short3') v.motion('easing-appear'),
+      comma
+    );
+  }
+  transition: $transitions;
+}
+
+@mixin motion-disappear($properties...) {
+  $transitions: ();
+  @each $prop in $properties {
+    $transitions: list.append(
+      $transitions,
+      $prop f.get-motion-duration('short2') v.motion('easing-disappear'),
+      comma
+    );
+  }
+  transition: $transitions;
+}
+
+@mixin motion-expand($properties...) {
+  $transitions: ();
+  @each $prop in $properties {
+    $transitions: list.append(
+      $transitions,
+      $prop f.get-motion-duration('short4') v.motion('easing-expand'),
+      comma
+    );
+  }
+  transition: $transitions;
+}
+
+@mixin motion-collapse($properties...) {
+  $transitions: ();
+  @each $prop in $properties {
+    $transitions: list.append(
+      $transitions,
+      $prop f.get-motion-duration('short3') v.motion('easing-collapse'),
       comma
     );
   }

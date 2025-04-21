@@ -12,11 +12,11 @@ $component: '#{base.$prefix}-extended-fab';
   position: relative;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
   border: none;
   background-color: t.color('primary-container');
   color: t.color('on-primary-container');
   font: inherit;
+  justify-content: center;
   text-decoration: none;
   cursor: pointer;
   user-select: none;
@@ -25,18 +25,27 @@ $component: '#{base.$prefix}-extended-fab';
   overflow: hidden;
   
   // Extended FAB uses elevation in all variants
-  @include m.elevation(3);
+  @include m.elevation(2);
   
-  // Transitions for all property changes including collapse/expand
+  // Transitions for property changes (separated for performance)
   @include m.motion-transition(
     transform,
     box-shadow,
     background-color,
-    color,
-    width,
-    border-radius,
-    padding
+    color
   );
+  
+  // Extended FAB dimensions (56dp height, min-width 80dp)
+  height: 56px;
+  min-width: 80px;
+  padding: 0 16px 0 16px; // Left and right padding
+  border-radius: f.get-shape('large'); // 16px corners
+  
+  // Transition for dimension changes
+  transition: 
+    width 0.3s v.motion('easing-standard'),
+    min-width 0.3s v.motion('easing-standard'),
+    padding 0.3s v.motion('easing-standard');
   
   // Focus styles
   &:focus {
@@ -48,17 +57,24 @@ $component: '#{base.$prefix}-extended-fab';
     outline-offset: 2px;
   }
   
-  // Extended FAB dimensions (56dp height, min-width 80dp)
-  height: 56px;
-  min-width: 80px;
-  padding: 0 16px;
-  border-radius: f.get-shape('large'); // 16px corners
-  
-  // Flexbox layout for icon and text
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 8px;
+  // Icon styles
+  &-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    padding: 2px;
+    transition: 
+      transform 0.3s v.motion('easing-standard'),
+      margin 0.3s v.motion('easing-standard');
+    
+    svg {
+      width: 24px;
+      height: 24px;
+    }
+  }
   
   // Text styles
   &-text {
@@ -66,21 +82,13 @@ $component: '#{base.$prefix}-extended-fab';
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-  }
-  
-  // Icon sizing and positioning
-  &-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 24px;
-    height: 24px;
-    flex-shrink: 0;
-    
-    svg {
-      width: 24px;
-      height: 24px;
-    }
+    max-width: 280px;
+    margin: 0 6px 0 12px; 
+    transition: 
+      max-width 0.3s v.motion('easing-standard'),
+      opacity 0.2s v.motion('easing-standard'),
+      width 0.3s v.motion('easing-standard'),
+      margin 0.3s v.motion('easing-standard');
   }
   
   // Width variants
@@ -90,23 +98,17 @@ $component: '#{base.$prefix}-extended-fab';
   
   &--fluid {
     width: 100%;
-    justify-content: center;
   }
   
-  // RTL support for icon positioning
+  // RTL support
   html[dir="rtl"] & {
     .#{$component}-icon {
-      order: 1;
-    }
-    
-    .#{$component}-text {
-      order: 0;
+      margin-right: 0;
+      margin-left: 12px;
     }
   }
   
-  // Color variants - primary is the default
-  
-  // Primary variant (default)
+  // Color variants
   &--primary {
     background-color: t.color('primary-container');
     color: t.color('on-primary-container');
@@ -121,7 +123,6 @@ $component: '#{base.$prefix}-extended-fab';
     }
   }
 
-  // Secondary variant
   &--secondary {
     background-color: t.color('secondary-container');
     color: t.color('on-secondary-container');
@@ -136,7 +137,6 @@ $component: '#{base.$prefix}-extended-fab';
     }
   }
   
-  // Tertiary variant
   &--tertiary {
     background-color: t.color('tertiary-container');
     color: t.color('on-tertiary-container');
@@ -151,7 +151,6 @@ $component: '#{base.$prefix}-extended-fab';
     }
   }
   
-  // Surface variant
   &--surface {
     background-color: t.color('surface');
     color: t.color('primary');
@@ -166,28 +165,51 @@ $component: '#{base.$prefix}-extended-fab';
     }
   }
   
-  // Collapsed state (transforms into regular FAB)
+  // Collapsed state
   &--collapsed {
     width: 56px;
     min-width: 56px;
-    border-radius: 50%;
-    padding: 0;
-
-    .#{$component}-text {
-      // Hide text but keep it accessible to screen readers
-
-      display: none;
-      opacity: 0;
-      width: 0;
-      overflow: hidden;
-    }
     
     .#{$component}-icon {
       margin: 0;
+      transform: scale(1.05);
+    }
+    
+    .#{$component}-text {
+      opacity: 0;
+      max-width: 0;
+      width: 0;
+      margin: 0;
+      transition: 
+        opacity 0.1s v.motion('easing-disappear'),
+        max-width 0.3s v.motion('easing-collapse') 0.05s,
+        width 0.3s v.motion('easing-collapse') 0.05s,
+        margin 0.3s v.motion('easing-collapse') 0.05s;
     }
   }
   
-  // Lowered state (when pressed)
+  &:not(.#{$component}--collapsed) {
+    // Ensure the icon scales smoothly
+    .#{$component}-icon {
+      transform: scale(1);
+    }
+    
+    .#{$component}-text {
+      transition: 
+        width 0.25s v.motion('easing-expand'),
+        max-width 0.25s v.motion('easing-expand'),
+        opacity 0.2s v.motion('easing-appear') 0.05s,
+        margin 0.25s v.motion('easing-expand');
+    }
+  }
+  
+  // Long-press state
+  &--long-press {
+    @include m.state-layer(t.color('on-primary-container'), 'dragged');
+    @include m.elevation(1);
+  }
+  
+  // Lowered state
   &--lowered {
     @include m.elevation(1);
     transform: translateY(1px);
@@ -231,10 +253,10 @@ $component: '#{base.$prefix}-extended-fab';
     z-index: v.z-index('dropdown');
   }
   
-  // Optional animations
+  // Animation effects
   @keyframes extended-fab-enter {
     from {
-      transform: scale(0);
+      transform: scale(0.8);
       opacity: 0;
     }
     to {
@@ -244,12 +266,11 @@ $component: '#{base.$prefix}-extended-fab';
   }
   
   &--animate-enter {
-    animation: extended-fab-enter 0.3s f.get-motion-easing('emphasized-decelerate') forwards;
+    animation: extended-fab-enter 0.3s v.motion('emphasized-decelerate') forwards;
   }
   
-  // Responsive behavior for different screen sizes
+  // Mobile behaviors
   @media (max-width: v.breakpoint('sm')) {
-    // Center alignment option for mobile
     &--center-mobile {
       left: 50%;
       transform: translateX(-50%);
@@ -260,8 +281,9 @@ $component: '#{base.$prefix}-extended-fab';
     }
   }
   
-  // Collapsible behavior on scroll
+  // Collapsible behavior
   &--collapsible {
-    transition-duration: 0.2s;
+    transition-duration: 0.3s;
+    transition-timing-function: v.motion('easing-standard');
   }
 }

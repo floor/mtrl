@@ -11,6 +11,7 @@ $state: (
 ) !default;
 
 $motion: (
+  // Duration tokens
   'duration-short1': 100ms,
   'duration-short2': 200ms,
   'duration-short3': 250ms,
@@ -19,12 +20,28 @@ $motion: (
   'duration-medium2': 500ms,
   'duration-long1': 600ms,
   'duration-long2': 700ms,
+  
+  // Standard easing tokens (Material Design 3 defaults)
   'easing-standard': cubic-bezier(0.2, 0.0, 0.0, 1.0),
   'easing-standard-accelerate': cubic-bezier(0.3, 0.0, 1.0, 1.0),
   'easing-standard-decelerate': cubic-bezier(0.0, 0.0, 0.2, 1.0),
+  
+  // Emphasized easing tokens (Material Design 3 defaults)
   'easing-emphasized': cubic-bezier(0.2, 0.0, 0.0, 1.0),
   'easing-emphasized-accelerate': cubic-bezier(0.3, 0.0, 0.8, 0.15),
-  'easing-emphasized-decelerate': cubic-bezier(0.05, 0.7, 0.1, 1.0)
+  'easing-emphasized-decelerate': cubic-bezier(0.05, 0.7, 0.1, 1.0),
+  
+  // Semantic motion tokens (aliases for better developer experience)
+  'easing-accelerated': cubic-bezier(0.3, 0.0, 1.0, 1.0),  // Same as standard-accelerate
+  'easing-decelerated': cubic-bezier(0.0, 0.0, 0.2, 1.0),  // Same as standard-decelerate
+  'easing-exit': cubic-bezier(0.3, 0.0, 1.0, 1.0),         // Element leaving - accelerated motion
+  'easing-enter': cubic-bezier(0.0, 0.0, 0.2, 1.0),        // Element entering - decelerated motion
+  
+  // Animation tokens for specific behaviors
+  'easing-appear': cubic-bezier(0.0, 0.0, 0.2, 1.0),       // Elements appearing (decelerated)
+  'easing-disappear': cubic-bezier(0.3, 0.0, 1.0, 1.0),    // Elements disappearing (accelerated)
+  'easing-expand': cubic-bezier(0.0, 0.0, 0.2, 1.0),       // Elements expanding (decelerated)
+  'easing-collapse': cubic-bezier(0.3, 0.0, 1.0, 1.0)      // Elements collapsing (accelerated)
 ) !default;
 
 $elevation: (

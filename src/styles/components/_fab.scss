@@ -25,7 +25,7 @@ $component: '#{base.$prefix}-fab';
   overflow: hidden;
   
   // FAB uses elevation in all variants
-  @include m.elevation(3);
+  @include m.elevation(2);
   
   // Transitions
   @include m.motion-transition(

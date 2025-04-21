@@ -51,7 +51,6 @@ $component: '#{base.$prefix}-button';
   // Interactive states
   &:disabled {
     pointer-events: none;
-    opacity: 0.38;
   }
   
   // Ensure proper layout with icons
@@ -96,17 +95,10 @@ $component: '#{base.$prefix}-button';
     }
   }
   
-
   &--icon {
     padding: 0 v.button('padding-horizontal') 0 calc(v.button('padding-horizontal') / 2 + 6px);
   }
   
-
-  &--disabled {
-    opacity: 0.38
-  }
-
-  // Active state - applied when the button has a menu open
   &--active {
     // Common active state styling for all variants
     box-shadow: none;
@@ -117,24 +109,30 @@ $component: '#{base.$prefix}-button';
     }
   }
 
-  // Variants
+  // FILLED BUTTON
   &--filled {
     background-color: t.color('primary');
     color: t.color('on-primary');
     
     &:hover {
       @include m.state-layer(t.color('on-primary'), 'hover');
-      @include m.elevation(1);
+      // No elevation in MD3 spec for filled buttons
     }
     
     &:active,
     &.#{$component}--active {
       @include m.state-layer(t.color('on-primary'), 'pressed');
-      @include m.elevation(0);
+      // No elevation in MD3 spec for filled buttons
+    }
+    
+    &:disabled {
+      background-color: t.alpha('on-surface', 0.12);
+      color: t.alpha('on-surface', 0.38);
+      box-shadow: none;
     }
   }
   
-  // Elevated button variant
+  // ELEVATED BUTTON
   &--elevated {
     background-color: t.color('surface-container-low');
     color: t.color('primary');
@@ -164,53 +162,68 @@ $component: '#{base.$prefix}-button';
     }
   }
   
+  // TONAL BUTTON
   &--tonal {
     background-color: t.color('secondary-container');
     color: t.color('on-secondary-container');
     
     &:hover {
       @include m.state-layer(t.color('on-secondary-container'), 'hover');
-      @include m.elevation(1);
+      // No elevation in MD3 spec for tonal buttons
     }
     
     &:active,
     &.#{$component}--active {
       @include m.state-layer(t.color('on-secondary-container'), 'pressed');
-      @include m.elevation(0);
+      // No elevation in MD3 spec for tonal buttons
+    }
+    
+    &:disabled {
+      background-color: t.alpha('on-surface', 0.12);
+      color: t.alpha('on-surface', 0.38);
+      box-shadow: none;
     }
   }
   
+  // OUTLINED BUTTON
   &--outlined {
     border: 1px solid t.color('outline');
     color: t.color('primary');
     
     &:hover {
       @include m.state-layer(t.color('primary'), 'hover');
-      background-color: t.alpha('primary', 0.08);
     }
     
     &:active,
     &.#{$component}--active {
       @include m.state-layer(t.color('primary'), 'pressed');
     }
+    
+    &:disabled {
+      color: t.alpha('on-surface', 0.38);
+      border-color: t.alpha('on-surface', 0.12);
+      background-color: transparent;
+    }
   }
   
+  // TEXT BUTTON
   &--text {
-    min-width: 0;
+    min-width: v.button('min-width');
     padding: 0 v.button('padding-horizontal-small');
     color: t.color('primary');
     
     &:hover {
-      background-color: t.alpha('primary', 0.08);
+      @include m.state-layer(t.color('primary'), 'hover');
     }
     
     &:active,
     &.#{$component}--active {
-      background-color: t.alpha('primary', 0.12);
+      @include m.state-layer(t.color('primary'), 'pressed');
     }
     
     &:disabled {
       color: t.alpha('on-surface', 0.38);
+      background-color: transparent;
     }
   }
   
