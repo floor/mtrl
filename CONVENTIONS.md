@@ -1,6 +1,6 @@
-# CLAUDE.md
+# CONVENTIONS.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance for Code mconventions when working with code in this repository.
 
 ## Build & Development Commands
 - Build: `bun run build`
@@ -24,7 +24,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Use ES6+ features with full browser compatibility
 
 ## Version Control Conventions
-- Do not include "Generated with Claude Code" or "Co-Authored-By: Claude" in commit messages or PRs
 - Use conventional commit format: type(scope): message
 - Commit types: feat, fix, docs, style, refactor, test, chore
 - Branch naming follows pattern: type/description (e.g., feat/new-component, fix/bug-name, chore/refactor-code)
