@@ -1,4 +1,4 @@
-// src/core/compose/features/gesture.ts
+// src/core/compose/features/gestures.ts
 /**
  * @module core/compose/features
  * @description Adds gesture recognition capabilities to components
@@ -11,12 +11,12 @@ import {
   GestureConfig,
   GestureHandler,
   AnyGestureEvent
-} from '../../gesture/manager';
+} from '../../gestures';
 
 /**
- * Configuration for gesture feature
+ * Configuration for gestures feature
  */
-export interface GestureFeatureConfig extends GestureConfig {
+export interface GesturesFeatureConfig extends GestureConfig {
   /**
    * Whether to enable gesture recognition immediately
    * @default true
@@ -34,7 +34,7 @@ export interface GestureFeatureConfig extends GestureConfig {
 /**
  * Component with gesture recognition capabilities
  */
-export interface GestureComponent extends BaseComponent {
+export interface GesturesComponent extends BaseComponent {
   /**
    * Gesture manager instance
    */
@@ -44,17 +44,17 @@ export interface GestureComponent extends BaseComponent {
    * Add a gesture event handler
    * @param eventType - Type of gesture event
    * @param handler - Event handler function
-   * @returns GestureComponent for chaining
+   * @returns GesturesComponent for chaining
    */
-  onGesture: (eventType: string, handler: GestureHandler) => GestureComponent;
+  onGesture: (eventType: string, handler: GestureHandler) => GesturesComponent;
   
   /**
    * Remove a gesture event handler
    * @param eventType - Type of gesture event
    * @param handler - Event handler function
-   * @returns GestureComponent for chaining
+   * @returns GesturesComponent for chaining
    */
-  offGesture: (eventType: string, handler: GestureHandler) => GestureComponent;
+  offGesture: (eventType: string, handler: GestureHandler) => GesturesComponent;
   
   /**
    * Check if a gesture type is supported on the current device
@@ -65,19 +65,21 @@ export interface GestureComponent extends BaseComponent {
   
   /**
    * Enable gesture recognition
-   * @returns GestureComponent for chaining
+   * @returns GesturesComponent for chaining
    */
-  enableGestures: () => GestureComponent;
+  enableGestures: () => GesturesComponent;
   
   /**
    * Disable gesture recognition
-   * @returns GestureComponent for chaining
+   * @returns GesturesComponent for chaining
    */
-  disableGestures: () => GestureComponent;
+  disableGestures: () => GesturesComponent;
 }
 
 /**
- * Adds gesture recognition capabilities to a component
+ * Adds gesture recognition capabilities to a component.
+ * This is a comprehensive gesture feature that adds support for all gesture types.
+ * For more lightweight, specific gestures, use the individual gesture features.
  * 
  * @param config - Configuration object containing gesture settings
  * @returns Function that enhances a component with gesture capabilities
@@ -88,7 +90,7 @@ export interface GestureComponent extends BaseComponent {
  * const component = pipe(
  *   createBase,
  *   withElement(...),
- *   withGesture({
+ *   withGestures({
  *     swipeThreshold: 50,
  *     gestureHandlers: {
  *       'tap': (e) => handleTap(e),
@@ -99,11 +101,11 @@ export interface GestureComponent extends BaseComponent {
  * )(config);
  * ```
  */
-export const withGesture = (config: GestureFeatureConfig = {}) => 
-  <C extends ElementComponent>(component: C): C & GestureComponent => {
+export const withGestures = (config: GesturesFeatureConfig = {}) => 
+  <C extends ElementComponent>(component: C): C & GesturesComponent => {
     if (!component.element) {
       console.warn('Cannot add gesture recognition: missing element');
-      return component as C & GestureComponent;
+      return component as C & GesturesComponent;
     }
     
     // Default configuration
@@ -164,7 +166,7 @@ export const withGesture = (config: GestureFeatureConfig = {}) =>
        * Add a gesture event handler
        * @param eventType - Type of gesture event
        * @param handler - Event handler function
-       * @returns GestureComponent for chaining
+       * @returns GesturesComponent for chaining
        */
       onGesture(eventType: string, handler: GestureHandler) {
         gestureManager.on(eventType, handler);
@@ -175,7 +177,7 @@ export const withGesture = (config: GestureFeatureConfig = {}) =>
        * Remove a gesture event handler
        * @param eventType - Type of gesture event
        * @param handler - Event handler function
-       * @returns GestureComponent for chaining
+       * @returns GesturesComponent for chaining
        */
       offGesture(eventType: string, handler: GestureHandler) {
         gestureManager.off(eventType, handler);
@@ -193,7 +195,7 @@ export const withGesture = (config: GestureFeatureConfig = {}) =>
       
       /**
        * Enable gesture recognition
-       * @returns GestureComponent for chaining
+       * @returns GesturesComponent for chaining
        */
       enableGestures() {
         gestureManager.enable();
@@ -202,7 +204,7 @@ export const withGesture = (config: GestureFeatureConfig = {}) =>
       
       /**
        * Disable gesture recognition
-       * @returns GestureComponent for chaining
+       * @returns GesturesComponent for chaining
        */
       disableGestures() {
         gestureManager.disable();
@@ -210,5 +212,3 @@ export const withGesture = (config: GestureFeatureConfig = {}) =>
       }
     };
   };
-
-export default withGesture;

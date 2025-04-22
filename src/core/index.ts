@@ -47,8 +47,14 @@ export {
   withRipple,
   withThrottle,
   withDebounce,
-  withGesture
+  withGestures
 } from './compose/features';
+
+// Gesture features
+export { withTapGesture } from './compose/features/gestures/tap';
+export { withSwipeGesture } from './compose/features/gestures/swipe';
+export { withLongPressGesture } from './compose/features/gestures/longpress';
+export { withPanGesture } from './compose/features/gestures/pan';
 
 // Utilities
 export { 
@@ -131,4 +137,4 @@ export type {
   PanEvent,
   AnyGestureEvent,
   GestureHandler
-} from './gesture';
+} from './gestures';

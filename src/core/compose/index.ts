@@ -26,8 +26,14 @@ export {
   withEnhancedEvents,
   withThrottle,
   withDebounce,
-  withGesture
+  withGestures
 } from './features';
+
+// Gesture features
+export { withTapGesture } from './features/gestures/tap';
+export { withSwipeGesture } from './features/gestures/swipe';
+export { withLongPressGesture } from './features/gestures/longpress';
+export { withPanGesture } from './features/gestures/pan';
 
 // Component feature interfaces
 export type { Component } from './base';
