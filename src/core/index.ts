@@ -44,7 +44,10 @@ export {
   withPosition,
   withDisabled,
   withLifecycle,
-  withRipple
+  withRipple,
+  withThrottle,
+  withDebounce,
+  withGesture
 } from './compose/features';
 
 // Utilities
@@ -56,7 +59,10 @@ export {
   byString,
   hasTouchSupport,
   isMobileDevice,
-  normalizeEvent
+  normalizeEvent,
+  throttle,
+  debounce,
+  once
 } from './utils';
 
 // Component feature interfaces for better developer experience
@@ -74,7 +80,10 @@ export type {
   Lifecycle,
   DisabledComponent,
   DisabledManager,
-  RippleComponent
+  RippleComponent,
+  ThrottleComponent,
+  DebounceComponent,
+  GestureComponent
 } from './compose/features';
 
 // Other interfaces
@@ -109,3 +118,17 @@ export type {
 export type { 
   NormalizedEvent 
 } from './utils/mobile';
+
+export type {
+  GestureManager,
+  GestureConfig,
+  GestureEvent,
+  TapEvent,
+  SwipeEvent,
+  LongPressEvent,
+  PinchEvent,
+  RotateEvent,
+  PanEvent,
+  AnyGestureEvent,
+  GestureHandler
+} from './gesture';

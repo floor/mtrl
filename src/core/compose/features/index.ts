@@ -16,6 +16,9 @@ export { withTextLabel } from './textlabel';
 export { withTrack } from './track';
 export { withEvents as withEnhancedEvents } from './withEvents';
 export { withBadge } from './badge';
+export { withThrottle } from './throttle';
+export { withDebounce } from './debounce';
+export { withGesture } from './gesture';
 
 // State management features
 export { withDisabled } from './disabled';
@@ -35,3 +38,6 @@ export type { LabelComponent, LabelManager } from './textlabel';
 export type { TrackComponent } from './track';
 export type { EnhancedEventComponent } from './withEvents';
 export type { BadgeComponent, BadgeConfig } from './badge';
+export type { ThrottleComponent, ThrottleConfig } from './throttle';
+export type { DebounceComponent, DebounceConfig } from './debounce';
+export type { GestureComponent, GestureFeatureConfig } from './gesture';

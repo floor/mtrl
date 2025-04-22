@@ -23,7 +23,10 @@ export {
   withTextInput,
   withTextLabel,
   withTrack,
-  withEnhancedEvents
+  withEnhancedEvents,
+  withThrottle,
+  withDebounce,
+  withGesture
 } from './features';
 
 // Component feature interfaces
@@ -50,5 +53,11 @@ export type {
   TextInputComponent,
   LabelComponent,
   TrackComponent,
-  EnhancedEventComponent
+  EnhancedEventComponent,
+  ThrottleComponent,
+  ThrottleConfig,
+  DebounceComponent,
+  DebounceConfig,
+  GestureComponent,
+  GestureFeatureConfig
 } from './features';

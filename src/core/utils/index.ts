@@ -2,6 +2,7 @@
 
 export { isObject, byString } from './object';
 export { normalizeEvent, hasTouchSupport, TOUCH_CONFIG, PASSIVE_EVENTS } from './mobile';
+export { throttle, debounce, once } from './performance';
 
 /**
  * Normalizes class names by handling various input formats

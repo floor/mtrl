@@ -7,6 +7,9 @@
 
 // Direct component imports
 import { createElement, addClass, removeClass, hasClass, toggleClass } from './core/dom';
+import { throttle, debounce, once } from './core/utils';
+
+import { createGestureManager } from './core';
 import createLayout from './core/layout';
 import { createJsxLayout, h, Fragment } from './core/layout/jsx';
 import createBadge from './components/badge';
@@ -48,6 +51,8 @@ import createTooltip from './components/tooltip';
 // Export all "create*" functions
 export {
   addClass, removeClass, hasClass, toggleClass,
+  throttle, debounce, once,
+  createGestureManager,
   createElement,
   createLayout,
   createBadge,
