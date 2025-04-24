@@ -12,10 +12,25 @@ $list-item-dense-height: 40px !default;
 $list-padding: 8px !default;
 $list-item-padding: 16px !default;
 $list-section-padding: 16px !default;
+$list-container-min-height: 200px !default;
 
-// Component-specific mixins
-@mixin list-item-hover {
-  @include m.state-layer(t.color('on-surface'), 'hover');
+// Customized variables for smoother state transitions
+$state-transition-duration: v.motion('duration-medium1') !default;  // Slightly longer for smoothness
+$state-transition-easing: v.motion('easing-standard') !default;
+
+// Component-specific mixins - using proper state layer implementation
+@mixin list-item-state-layer($state: 'hover', $color: 'on-surface') {
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-color: t.color($color);
+    opacity: f.get-state-opacity($state);
+    pointer-events: none;
+    border-radius: inherit;
+    // State layers transition - Using custom variable for duration
+    transition: opacity $state-transition-duration $state-transition-easing;
+  }
 }
 
 @mixin list-section-title {
@@ -24,19 +39,74 @@ $list-section-padding: 16px !default;
   padding: $list-section-padding $list-item-padding 8px;
 }
 
+// LIST CONTAINER - Root component
+.#{$component}-container {
+  position: relative;
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: 100%;
+  min-height: $list-container-min-height;
+  background-color: t.color('surface');
+  -webkit-overflow-scrolling: touch; // Improved scrolling on iOS
+  scrollbar-width: thin; // Firefox
+  transition: background-color $state-transition-duration $state-transition-easing;
+  
+  // Styling for webkit scrollbars
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background-color: t.color('outline-variant');
+    border-radius: 4px;
+    transition: background-color $state-transition-duration $state-transition-easing;
+    
+    &:hover {
+      background-color: t.alpha('outline', 0.38);
+    }
+  }
+
+  // States
+  &--loading {
+    &::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(to right, transparent, t.color('primary'), transparent);
+      animation: loading-shimmer 1.5s infinite v.motion('easing-standard');
+    }
+  }
+}
+
 // LIST COMPONENT
 .#{$component} {
   display: flex;
   flex-direction: column;
   padding: $list-padding 0;
-  min-width: 200px;
-  background-color: t.color('surface');
+  width: 100%;
+  position: relative;
+  transition: padding $state-transition-duration $state-transition-easing,
+              opacity $state-transition-duration $state-transition-easing;
+  
+  // For virtualized list inner content container
+  &-content {
+    position: relative;
+    width: 100%;
+  }
 
   // Sections
   &-section {
     display: flex;
     flex-direction: column;
     width: 100%;
+    transition: margin-bottom $state-transition-duration $state-transition-easing;
 
     &:not(:last-child) {
       margin-bottom: $list-padding;
@@ -45,6 +115,7 @@ $list-section-padding: 16px !default;
 
   &-section-title {
     @include list-section-title;
+    transition: color $state-transition-duration $state-transition-easing;
   }
 
   // Dividers
@@ -52,6 +123,68 @@ $list-section-padding: 16px !default;
     height: 1px;
     margin: $list-padding 0;
     background-color: t.color('outline-variant');
+    transition: background-color $state-transition-duration $state-transition-easing;
+  }
+
+  // Virtualization spacer (for scroll height)
+  &-spacer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1px;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  // Empty state
+  &-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 16px;
+    text-align: center;
+    color: t.color('on-surface-variant');
+    transition: color $state-transition-duration $state-transition-easing,
+                opacity $state-transition-duration $state-transition-easing;
+    
+    &-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+      opacity: 0.6;
+      transition: opacity $state-transition-duration $state-transition-easing;
+    }
+    
+    &-text {
+      @include m.typography('body-large');
+      transition: color $state-transition-duration $state-transition-easing;
+    }
+    
+    &-action {
+      margin-top: 16px;
+      transition: opacity $state-transition-duration $state-transition-easing;
+    }
+  }
+
+  // Loading indicator (shown at bottom when loading more)
+  &-loading-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 48px;
+    width: 100%;
+    color: t.color('on-surface-variant');
+    transition: color $state-transition-duration $state-transition-easing;
+    
+    &::after {
+      content: '';
+      width: 24px;
+      height: 24px;
+      border: 2px solid currentColor;
+      border-bottom-color: transparent;
+      border-radius: 50%;
+      animation: rotation 0.8s infinite linear;
+    }
   }
 
   // Selection states
@@ -64,14 +197,66 @@ $list-section-padding: 16px !default;
       &--selected {
         background-color: t.color('secondary-container');
         color: t.color('on-secondary-container');
+        transition: background-color $state-transition-duration $state-transition-easing,
+                    color $state-transition-duration $state-transition-easing;
 
         &:hover {
-          background-color: t.color('secondary-container');
-          @include m.state-layer(t.color('on-secondary-container'), 'hover');
+          position: relative;
+          
+          &::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-color: t.color('on-secondary-container');
+            opacity: f.get-state-opacity('hover');
+            pointer-events: none;
+            border-radius: inherit;
+            transition: opacity $state-transition-duration $state-transition-easing;
+          }
         }
 
-        .#{$component}-item-supporting {
+        &:focus-visible {
+          position: relative;
+          outline: none;
+          
+          &::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-color: t.color('on-secondary-container');
+            opacity: f.get-state-opacity('focus');
+            pointer-events: none;
+            border-radius: inherit;
+            transition: opacity $state-transition-duration $state-transition-easing;
+          }
+        }
+
+        &:active {
+          position: relative;
+          
+          &::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-color: t.color('on-secondary-container');
+            opacity: f.get-state-opacity('pressed');
+            pointer-events: none;
+            border-radius: inherit;
+            transition: opacity $state-transition-duration $state-transition-easing;
+          }
+        }
+
+        .#{$component}-item-supporting,
+        .#{$component}-item-overline,
+        .#{$component}-item-meta {
           color: t.color('on-secondary-container');
+          transition: color $state-transition-duration $state-transition-easing;
+        }
+        
+        .#{$component}-item-leading,
+        .#{$component}-item-trailing {
+          color: t.color('on-secondary-container');
+          transition: color $state-transition-duration $state-transition-easing;
         }
       }
     }
@@ -88,6 +273,7 @@ $list-section-padding: 16px !default;
   &--disabled {
     pointer-events: none;
     opacity: 0.38;
+    transition: opacity $state-transition-duration $state-transition-easing;
   }
 
   // RTL Support
@@ -107,29 +293,66 @@ $list-section-padding: 16px !default;
     }
   }
   
-  // LIST ITEM STYLES
+  // VIRTUAL LIST ITEM STYLES
   &-item {
     display: flex;
     align-items: center;
     min-height: $list-item-height;
     padding: $list-padding $list-item-padding;
-    position: relative;
+    position: absolute; // Required for virtual list positioning
+    top: 0;
+    left: 0;
+    width: 100%;
     gap: 16px;
     cursor: pointer;
     color: t.color('on-surface');
-    @include m.motion-transition(background-color);
+    box-sizing: border-box;
+    position: relative; // Needed for state layers
+    overflow: hidden;
+    transition: background-color $state-transition-duration $state-transition-easing,
+                color $state-transition-duration $state-transition-easing;
 
-    &:hover {
-      @include list-item-hover;
+    // Use a single pseudo-element for all state layers
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-color: t.color('on-surface');
+      opacity: 0; // Start with 0 opacity
+      pointer-events: none;
+      border-radius: inherit;
+      transition: opacity $state-transition-duration $state-transition-easing;
+    }
+
+    // State layer implementation - strictly following MD3
+    // Instead of recreating the pseudo-element, just change its opacity
+    &:hover::before {
+      opacity: f.get-state-opacity('hover');
     }
 
     &:focus-visible {
-      @include m.state-layer(t.color('on-surface'), 'focus');
-      outline: none;
+      outline: none; // Remove default outline
+      
+      &::before {
+        opacity: f.get-state-opacity('focus');
+      }
+      
+      // Focus ring
+      &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        box-shadow: inset 0 0 0 2px t.color('primary');
+        pointer-events: none;
+        transition: box-shadow $state-transition-duration $state-transition-easing;
+      }
     }
 
-    &:active {
-      @include m.state-layer(t.color('on-surface'), 'pressed');
+    &:active::before {
+      opacity: f.get-state-opacity('pressed');
+      // Using a slightly faster transition for press state feedback
+      transition: opacity v.motion('duration-short4') v.motion('easing-standard-accelerate');
     }
 
     // Content layout
@@ -139,6 +362,7 @@ $list-section-padding: 16px !default;
       display: flex;
       flex-direction: column;
       justify-content: center;
+      transition: opacity $state-transition-duration $state-transition-easing;
     }
 
     // Text elements
@@ -151,22 +375,32 @@ $list-section-padding: 16px !default;
     &-overline {
       @include m.typography('label-small');
       color: t.color('on-surface-variant');
+      transition: color $state-transition-duration $state-transition-easing;
     }
 
     &-headline {
       @include m.typography('body-large');
       color: t.color('on-surface');
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: color $state-transition-duration $state-transition-easing;
     }
 
     &-supporting {
       @include m.typography('body-medium');
       color: t.color('on-surface-variant');
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: color $state-transition-duration $state-transition-easing;
     }
 
     &-meta {
       @include m.typography('label-small');
       color: t.color('on-surface-variant');
       margin-top: 4px;
+      transition: color $state-transition-duration $state-transition-easing;
     }
 
     // Leading/trailing elements
@@ -176,6 +410,8 @@ $list-section-padding: 16px !default;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
+      transition: color $state-transition-duration $state-transition-easing,
+                  opacity $state-transition-duration $state-transition-easing;
     }
 
     &-leading {
@@ -186,6 +422,8 @@ $list-section-padding: 16px !default;
       svg {
         width: 100%;
         height: 100%;
+        transition: fill $state-transition-duration $state-transition-easing,
+                    stroke $state-transition-duration $state-transition-easing;
       }
     }
 
@@ -210,15 +448,22 @@ $list-section-padding: 16px !default;
       }
     }
 
-    // States
+    // States - using the same pattern of a single pseudo-element
     &--selected {
       background-color: t.color('secondary-container');
       color: t.color('on-secondary-container');
+      transition: background-color $state-transition-duration $state-transition-easing,
+                  color $state-transition-duration $state-transition-easing;
+
+      &::before {
+        background-color: t.color('on-secondary-container'); // Change the color for the state layer
+      }
 
       .#{$component}-item {
         &-leading,
         &-trailing {
           color: t.color('on-secondary-container');
+          transition: color $state-transition-duration $state-transition-easing;
         }
       }
     }
@@ -226,6 +471,7 @@ $list-section-padding: 16px !default;
     &--disabled {
       opacity: 0.38;
       pointer-events: none;
+      transition: opacity $state-transition-duration $state-transition-easing;
     }
 
     // RTL Support
@@ -244,5 +490,57 @@ $list-section-padding: 16px !default;
         outline-offset: -2px;
       }
     }
+    
+    // Skeleton loading state for items
+    &--skeleton {
+      pointer-events: none;
+      
+      .#{$component}-item-headline,
+      .#{$component}-item-supporting,
+      .#{$component}-item-leading {
+        background-color: t.color('surface-variant');
+        border-radius: 4px;
+        color: transparent;
+        animation: skeleton-pulse 1.5s infinite;
+      }
+      
+      .#{$component}-item-headline {
+        width: 70%;
+        height: 16px;
+      }
+      
+      .#{$component}-item-supporting {
+        width: 50%;
+        height: 14px;
+      }
+    }
+  }
+}
+
+// ANIMATIONS
+@keyframes loading-shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes rotation {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes skeleton-pulse {
+  0%, 100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 0.8;
   }
 }

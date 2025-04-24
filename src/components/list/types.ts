@@ -1,396 +1,314 @@
 // src/components/list/types.ts
 
 /**
- * List types/variants
- * 
- * Different selection modes available for lists.
- * 
- * @category Components
- */
-export const LIST_TYPES = {
-  DEFAULT: 'default', // Standard list
-  SINGLE_SELECT: 'single', // Single selection list
-  MULTI_SELECT: 'multi', // Multiple selection list
-  RADIO: 'radio' // Radio button list
-} as const;
-
-/**
- * List layout variants
- * 
- * Layout options for list items and content arrangement.
- * 
- * @category Components
- */
-export const LIST_LAYOUTS = {
-  HORIZONTAL: 'horizontal', // Default horizontal layout
-  VERTICAL: 'vertical' // Items with more content stacked vertically
-} as const;
-
-/**
- * List item layouts
- * 
- * Individual item layout options controlling content arrangement.
- * 
- * @category Components
- */
-export const LIST_ITEM_LAYOUTS = {
-  HORIZONTAL: 'horizontal', // Default horizontal layout
-  VERTICAL: 'vertical' // Stacked layout with vertical alignment
-} as const;
-
-/**
- * List element class names
- * 
- * CSS class names for the various elements that make up a list.
- * 
- * @internal
- */
-export const LIST_CLASSES = {
-  ROOT: 'list',
-  GROUP: 'list-group',
-  GROUP_TITLE: 'list-group-title',
-  DIVIDER: 'list-divider',
-  SECTION: 'list-section',
-  SECTION_TITLE: 'list-section-title',
-  ITEM: 'list-item',
-  ITEM_CONTENT: 'list-item-content',
-  ITEM_LEADING: 'list-item-leading',
-  ITEM_TEXT: 'list-item-text',
-  ITEM_OVERLINE: 'list-item-overline',
-  ITEM_HEADLINE: 'list-item-headline',
-  ITEM_SUPPORTING: 'list-item-supporting',
-  ITEM_META: 'list-item-meta',
-  ITEM_TRAILING: 'list-item-trailing'
-} as const;
-
-/**
- * List validation schema
- * 
- * JSON Schema for validating list configuration options.
- * 
- * @internal
- */
-export const LIST_SCHEMA = {
-  type: 'object',
-  properties: {
-    type: {
-      type: 'string',
-      enum: Object.values(LIST_TYPES),
-      default: LIST_TYPES.DEFAULT
-    },
-    layout: {
-      type: 'string',
-      enum: Object.values(LIST_LAYOUTS),
-      default: LIST_LAYOUTS.HORIZONTAL
-    },
-    items: {
-      type: 'array',
-      items: {
-        type: 'object'
-      },
-      default: []
-    },
-    groups: {
-      type: 'array',
-      items: {
-        type: 'object',
-        properties: {
-          id: { type: 'string', required: true },
-          title: { type: 'string' },
-          items: { type: 'array' }
-        }
-      },
-      optional: true
-    },
-    sections: {
-      type: 'array',
-      items: {
-        type: 'object',
-        properties: {
-          id: { type: 'string', required: true },
-          title: { type: 'string', required: true },
-          items: { type: 'array', required: true }
-        }
-      },
-      optional: true
-    },
-    disabled: {
-      type: 'boolean',
-      default: false
-    },
-    class: {
-      type: 'string',
-      optional: true
-    }
-  }
-} as const;
-
-/**
- * List item states
- * 
- * Visual states that list items can have.
- * 
- * @category Components
- */
-export const LIST_ITEM_STATES = {
-  SELECTED: 'selected',
-  DISABLED: 'disabled',
-  FOCUSED: 'focused',
-  HOVERED: 'hovered'
-} as const;
-
-/**
- * List type variants
- * @category Components
- */
-export type ListType = 'default' | 'single' | 'multi' | 'radio';
-
-/**
- * List layout variants
- * @category Components
- */
-export type ListLayout = 'horizontal' | 'vertical';
-
-/**
- * List item layout variants
- * @category Components
- */
-export type ListItemLayout = 'horizontal' | 'vertical';
-
-/**
- * List element class names
- * @internal
- */
-export interface ListClasses {
-  ROOT: string;
-  GROUP: string;
-  GROUP_TITLE: string;
-  DIVIDER: string;
-  SECTION: string;
-  SECTION_TITLE: string;
-  ITEM: string;
-  ITEM_CONTENT: string;
-  ITEM_LEADING: string;
-  ITEM_TEXT: string;
-  ITEM_OVERLINE: string;
-  ITEM_HEADLINE: string;
-  ITEM_SUPPORTING: string;
-  ITEM_META: string;
-  ITEM_TRAILING: string;
-}
-
-/**
- * List item states
- * @internal
- */
-export type ListItemState = 'selected' | 'disabled' | 'focused' | 'hovered';
-
-/**
- * List item configuration
- * 
- * Configuration options for creating a list item with customizable content
- * and appearance following Material Design 3 guidelines.
- * 
- * @category Components
- */
-export interface ListItemConfig {
-  /** Unique identifier for the item */
-  id: string;
-  
-  /** Item layout (horizontal/vertical) */
-  layout?: ListLayout | string;
-  
-  /** Leading content (icon/avatar) */
-  leading?: string | HTMLElement;
-  
-  /** Primary text */
-  headline?: string;
-  
-  /** Secondary text */
-  supportingText?: string;
-  
-  /** Trailing content (icon/meta) */
-  trailing?: string | HTMLElement;
-  
-  /** Text above headline (vertical only) */
-  overline?: string;
-  
-  /** Meta information (vertical only) */
-  meta?: string | HTMLElement;
-  
-  /** Whether the item is disabled */
-  disabled?: boolean;
-  
-  /** Whether the item is selected */
-  selected?: boolean;
-  
-  /** Additional CSS classes */
-  class?: string;
-  
-  /** ARIA role */
-  role?: string;
-  
-  /** Whether this is a divider instead of an item */
-  divider?: boolean;
-}
-
-/**
- * List section configuration
- * 
- * Configuration for a list section, which groups items under a title.
- * Sections help organize list content into logical groups.
- * 
- * @category Components
- */
-export interface ListSectionConfig {
-  /** Unique identifier for the section */
-  id: string;
-  
-  /** Section title text */
-  title: string;
-  
-  /** Items in this section */
-  items: ListItemConfig[];
-}
-
-/**
- * Selection change event data
- * 
- * Data structure provided with selectionChange events
- * when list items are selected or deselected.
- * 
- * @category Components
- */
-export interface SelectionChangeEvent {
-  /** Array of selected item IDs */
-  selected: string[];
-  
-  /** The item that was clicked */
-  item?: ListItemData;
-  
-  /** List selection type */
-  type: ListType | string;
-}
-
-/**
- * List item data
- * 
- * Internal data structure for tracking list items and their state.
- * 
- * @internal
- */
-export interface ListItemData {
-  /** The item's DOM element */
-  element: HTMLElement;
-  
-  /** Whether the item is disabled */
-  disabled?: boolean;
-  
-  /** Internal properties */
-  [key: string]: any;
-}
-
-/**
- * Configuration interface for the List component
- * 
- * Comprehensive options for creating and customizing a List
- * according to Material Design 3 guidelines.
- * 
- * @category Components
+ * Configuration for the List component
+ * @interface ListConfig
  */
 export interface ListConfig {
-  /** List selection type */
-  type?: ListType | string;
+  /**
+   * Collection name to fetch data from
+   * @default 'items'
+   */
+  collection?: string;
   
-  /** List layout */
-  layout?: ListLayout | string;
+  /**
+   * Transform function for API items
+   * @param {any} item - Raw item from API
+   * @returns {any} Transformed item
+   */
+  transform?: (item: any) => any;
   
-  /** List items */
-  items?: ListItemConfig[];
+  /**
+   * Base URL for API requests
+   * @default 'http://localhost:4000/api'
+   */
+  baseUrl?: string;
   
-  /** List sections */
-  sections?: ListSectionConfig[];
+  /**
+   * Default height for items in pixels
+   * This is used for calculation before actual measurement
+   * @default 48
+   */
+  itemHeight?: number;
   
-  /** Whether the list is disabled */
-  disabled?: boolean;
+  /**
+   * Number of items to fetch per page
+   * @default 20
+   */
+  pageSize?: number;
   
-  /** Additional CSS classes */
+  /**
+   * Number of extra items to render above/below viewport
+   * Higher values reduce blank spaces during fast scrolling but impact performance
+   * @default 5
+   */
+  renderBufferSize?: number;
+  
+  /**
+   * Function to render an item
+   * @param {any} item - Item to render
+   * @param {number} index - Item index in the list
+   * @returns {HTMLElement} Rendered DOM element
+   */
+  renderItem: (item: any, index: number) => HTMLElement;
+  
+  /**
+   * Callback when items are loaded
+   * @param {Object} data - Load result data
+   */
+  afterLoad?: (data: LoadResult) => void;
+  
+  /**
+   * Whether to track item selection
+   * When true, clicked items will receive a selected class
+   * @default true
+   */
+  trackSelection?: boolean;
+  
+  /**
+   * Whether to allow multiple item selection
+   * @default false
+   */
+  multiSelect?: boolean;
+  
+  /**
+   * Initial selection state (array of item IDs)
+   */
+  initialSelection?: string[];
+
+  /**
+   * ARIA label for accessibility
+   */
+  ariaLabel?: string;
+  
+  /**
+   * Additional CSS classes
+   */
   class?: string;
+}
+
+/**
+ * Result of a load operation
+ * @interface LoadResult
+ */
+export interface LoadResult {
+  /**
+   * Whether the list is currently loading
+   */
+  loading: boolean;
   
-  /** Prefix for class names */
-  prefix?: string;
+  /**
+   * Whether there are more items to load
+   */
+  hasNext: boolean;
   
-  /** Component name */
-  componentName?: string;
+  /**
+   * Whether there are previous items (if paginating)
+   */
+  hasPrev: boolean;
+  
+  /**
+   * Newly loaded items
+   */
+  items: any[];
+  
+  /**
+   * All loaded items
+   */
+  allItems: any[];
+}
+
+/**
+ * Selection event data
+ * @interface SelectEvent
+ */
+export interface SelectEvent {
+  /**
+   * Selected item data
+   */
+  item: any;
+  
+  /**
+   * DOM element for the selected item
+   */
+  element: HTMLElement;
+  
+  /**
+   * Original DOM event
+   */
+  originalEvent: Event;
+  
+  /**
+   * Component instance
+   */
+  component: ListComponent;
+  
+  /**
+   * Prevent default behavior
+   */
+  preventDefault: () => void;
+  
+  /**
+   * Whether default was prevented
+   */
+  defaultPrevented: boolean;
+}
+
+/**
+ * Load event data
+ * @interface LoadEvent
+ */
+export interface LoadEvent extends LoadResult {
+  /**
+   * Component instance
+   */
+  component: VirtualListComponent;
+  
+  /**
+   * Prevent default behavior
+   */
+  preventDefault: () => void;
+  
+  /**
+   * Whether default was prevented
+   */
+  defaultPrevented: boolean;
 }
 
 /**
  * List component interface
- * 
- * Public API for the List component, providing methods for
- * item management, selection handling, and event management.
- * 
- * @category Components
+ * @interface ListComponent
  */
 export interface ListComponent {
-  /** The root element of the list */
+  /**
+   * Component's root DOM element
+   */
   element: HTMLElement;
   
-  /** Map of list items */
-  items: Map<string, ListItemData>;
+  /**
+   * Refreshes the list with the latest data
+   * @returns {Promise<VirtualListComponent>} Promise that resolves with component
+   */
+  refresh: () => Promise<VirtualListComponent>;
   
-  /** Set of selected item IDs */
-  selectedItems: Set<string>;
+  /**
+   * Loads more items
+   * @returns {Promise<{hasNext: boolean, items: any[]}>} Promise with load result
+   */
+  loadMore: () => Promise<{hasNext: boolean, items: any[]}>;
   
-  /** Gets the currently selected items */
-  getSelected: () => string[];
+  /**
+   * Scrolls to a specific item by ID
+   * @param {string} itemId - Item ID to scroll to
+   * @param {string} position - Position ('start', 'center', 'end')
+   * @returns {VirtualListComponent} Component instance for chaining
+   */
+  scrollToItem: (itemId: string, position?: 'start' | 'center' | 'end') => VirtualListComponent;
   
-  /** Sets the selected items */
-  setSelected: (ids: string[]) => void;
+  /**
+   * Gets all currently visible items
+   * @returns {any[]} Visible items
+   */
+  getVisibleItems: () => any[];
   
-  /** Adds a new item to the list */
-  addItem: (itemConfig: ListItemConfig) => void;
+  /**
+   * Gets all loaded items
+   * @returns {any[]} All loaded items
+   */
+  getAllItems: () => any[];
   
-  /** Removes an item from the list */
-  removeItem: (id: string) => void;
+  /**
+   * Checks if the list is currently loading
+   * @returns {boolean} True if loading
+   */
+  isLoading: () => boolean;
   
-  /** Adds event listener */
-  on: (event: string, handler: Function) => ListComponent;
+  /**
+   * Checks if the list has more items to load
+   * @returns {boolean} True if has more items
+   */
+  hasNextPage: () => boolean;
   
-  /** Removes event listener */
-  off: (event: string, handler: Function) => ListComponent;
+  /**
+   * Gets the currently selected items
+   * @returns {any[]} Selected items
+   */
+  getSelectedItems: () => any[];
   
-  /** Enables the list */
-  enable: () => ListComponent;
+  /**
+   * Gets the IDs of currently selected items
+   * @returns {string[]} Selected item IDs
+   */
+  getSelectedItemIds: () => string[];
   
-  /** Disables the list */
-  disable: () => ListComponent;
+  /**
+   * Checks if an item is selected
+   * @param {string} itemId - Item ID to check
+   * @returns {boolean} True if item is selected
+   */
+  isItemSelected: (itemId: string) => boolean;
   
-  /** Destroys the list component and cleans up resources */
+  /**
+   * Selects an item
+   * @param {string} itemId - Item ID to select
+   * @returns {ListComponent} Component instance for chaining
+   */
+  selectItem: (itemId: string) => ListComponent;
+  
+  /**
+   * Deselects an item
+   * @param {string} itemId - Item ID to deselect
+   * @returns {ListComponent} Component instance for chaining
+   */
+  deselectItem: (itemId: string) => ListComponent;
+  
+  /**
+   * Clears all selections
+   * @returns {ListComponent} Component instance for chaining
+   */
+  clearSelection: () => ListComponent;
+  
+  /**
+   * Sets the selection to the specified item IDs
+   * @param {string[]} itemIds - Item IDs to select
+   * @returns {ListComponent} Component instance for chaining
+   */
+  setSelection: (itemIds: string[]) => ListComponent;
+  
+  /**
+   * Adds an event listener to the list
+   * @param {string} event - Event name
+   * @param {Function} handler - Event handler
+   * @returns {ListComponent} Component instance for chaining
+   */
+  on: <T extends keyof ListEvents>(
+    event: T, 
+    handler: ListEvents[T]
+  ) => ListComponent;
+  
+  /**
+   * Removes an event listener from the list
+   * @param {string} event - Event name
+   * @param {Function} handler - Event handler
+   * @returns {ListComponent} Component instance for chaining
+   */
+  off: <T extends keyof ListEvents>(
+    event: T, 
+    handler: ListEvents[T]
+  ) => ListComponent;
+  
+  /**
+   * Destroys the component and cleans up resources
+   */
   destroy: () => void;
 }
 
 /**
- * Base component interface
- * 
- * Internal interface for component composition in the List component.
- * 
- * @internal
+ * Event handlers for List
+ * @interface ListEvents
  */
-export interface BaseComponent {
-  element: HTMLElement;
-  prefix?: string;
-  items?: Map<string, ListItemData>;
-  selectedItems?: Set<string>;
-  emit?: (event: string, data: any) => void;
-  on?: (event: string, handler: Function) => any;
-  off?: (event: string, handler: Function) => any;
-  lifecycle?: {
-    destroy: () => void;
-  };
-  disabled?: {
-    enable: () => any;
-    disable: () => any;
-  };
-  [key: string]: any;
+export interface ListEvents {
+  'select': (event: SelectEvent) => void;
+  'load': (event: LoadEvent) => void;
+  'scroll': (event: { originalEvent: Event, component: VirtualListComponent }) => void;
 }

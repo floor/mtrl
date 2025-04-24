@@ -20,17 +20,27 @@ export const createRouteAdapter = (config = {}) => {
   const base = createBaseAdapter(config)
   let controller = null
   const cache = new Map()
+  const urlCache = new Map();
 
   const buildUrl = (endpoint, params = {}) => {
-    const url = new URL(config.base + endpoint)
+    const cacheKey = endpoint + JSON.stringify(params);
+    
+    if (urlCache.has(cacheKey)) {
+      return urlCache.get(cacheKey);
+    }
+    
+    const url = new URL(config.base + endpoint);
     Object.entries(params).forEach(([key, value]) => {
       if (Array.isArray(value)) {
-        value.forEach(v => url.searchParams.append(key, v))
+        value.forEach(v => url.searchParams.append(key, v));
       } else if (value !== null && value !== undefined) {
-        url.searchParams.append(key, value)
+        url.searchParams.append(key, value);
       }
-    })
-    return url.toString()
+    });
+    
+    const urlString = url.toString();
+    urlCache.set(cacheKey, urlString);
+    return urlString;
   }
 
   const transformQuery = (query) => {

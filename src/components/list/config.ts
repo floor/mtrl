@@ -1,63 +1,111 @@
 // src/components/list/config.ts
+
 import { 
   createComponentConfig, 
-  createElementConfig,
-  BaseComponentConfig 
+  createElementConfig as coreCreateElementConfig
 } from '../../core/config/component-config';
-import { ListConfig, BaseComponent } from './types';
 
 /**
  * Default configuration for the List component
- * 
- * Provides reasonable defaults for creating lists according
- * to Material Design 3 guidelines.
- * 
- * @category Components
- * @internal
  */
-export const defaultConfig: ListConfig = {
-  type: 'default',
-  layout: 'horizontal',
-  items: []
+export const defaultConfig = {
+  // Collection settings (for API-connected lists)
+  collection: 'items',
+  transform: item => item,
+  baseUrl: 'http://localhost:4000/api',
+  
+  // Static data (for in-memory lists)
+  items: [],
+  
+  // Rendering settings
+  itemHeight: 48,
+  pageSize: 20,
+  renderBufferSize: 5,
+  renderItem: null,
+  
+  // Behavior settings
+  trackSelection: true,
+  multiSelect: false
 };
 
 /**
  * Creates the base configuration for List component
- * 
- * Merges user-provided configuration with default values and ensures
- * all required properties have values.
- * 
- * @param {ListConfig} config - User provided configuration
- * @returns {ListConfig} Complete configuration with defaults applied
- * 
- * @category Components
- * @internal
+ * @param {Object} config - User provided configuration
+ * @returns {Object} Complete configuration with defaults applied
  */
-export const createBaseConfig = (config: ListConfig = {}): ListConfig => 
-  createComponentConfig(defaultConfig, config, 'list') as ListConfig;
+export const createBaseConfig = (config = {}) => {
+  // Validate required props
+  if (!config.renderItem && !Array.isArray(config.items)) {
+    throw new Error('List requires either static items or a renderItem function');
+  }
+  
+  // If static items are provided but no renderItem, create a default renderer
+  if (Array.isArray(config.items) && !config.renderItem) {
+    config.renderItem = (item) => {
+      const element = document.createElement('div');
+      element.className = 'mtrl-list-item';
+      element.textContent = item.text || item.title || item.headline || item.name || item.id;
+      return element;
+    };
+  }
+  
+  // Create component config with defaults
+  return createComponentConfig(defaultConfig, config, 'list');
+};
 
 /**
  * Generates element configuration for the List component
- * 
- * Transforms the user-friendly ListConfig into the internal format required
- * by the withElement function, setting appropriate attributes for accessibility
- * and proper DOM structure.
- * 
- * @param {ListConfig} config - List configuration
+ * @param {Object} config - List configuration
  * @returns {Object} Element configuration object for withElement
- * 
- * @category Components
- * @internal
  */
-export const getElementConfig = (config: ListConfig) => 
-  createElementConfig(config, {
+export const getElementConfig = (config) => {
+  const attrs = {
+    role: 'list',
+    tabindex: '0'
+  };
+  
+  // Add ARIA attributes for accessibility
+  if (config.ariaLabel) {
+    attrs['aria-label'] = config.ariaLabel;
+  }
+  
+  // Create element config
+  return coreCreateElementConfig(config, {
     tag: 'div',
-    role: config.type === 'default' ? 'list' : 'listbox',
-    attrs: {
-      'aria-multiselectable': config.type === 'multi' ? 'true' : undefined
-    },
-    componentName: 'list',
-    className: config.class
+    attrs,
+    className: [
+      'list-container',
+      config.class
+    ],
+    forwardEvents: {
+      scroll: true,
+      keydown: true
+    }
   });
+};
+
+/**
+ * Creates API configuration for the List component
+ * @param {Object} component - Component with list manager
+ * @returns {Object} API configuration object
+ */
+export const getApiConfig = (component) => ({
+  list: {
+    refresh: component.list?.refresh,
+    loadMore: component.list?.loadMore,
+    scrollToItem: component.list?.scrollToItem,
+    getVisibleItems: component.list?.getVisibleItems,
+    getAllItems: component.list?.getAllItems,
+    isLoading: component.list?.isLoading,
+    hasNextPage: component.list?.hasNextPage
+  },
+  events: {
+    on: component.on,
+    off: component.off
+  },
+  lifecycle: {
+    destroy: component.lifecycle?.destroy
+  }
+});
 
 export default defaultConfig;

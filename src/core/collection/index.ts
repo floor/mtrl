@@ -1,11 +1,9 @@
 // src/core/collection/index.ts
 
 // Export collection class and types
-export { 
-  Collection, 
-  COLLECTION_EVENTS, 
-  OPERATORS as COLLECTION_OPERATORS 
-} from './collection';
+export { Collection } from './collection';
+export { COLLECTION_EVENTS } from './collection';
+export { OPERATORS as COLLECTION_OPERATORS } from './collection';
 
 export type { 
   CollectionItem, 

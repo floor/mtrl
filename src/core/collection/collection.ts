@@ -108,8 +108,16 @@ export class Collection<T extends CollectionItem> {
    * @param event - Event type
    * @param data - Event data
    */
+  
+  #notifyCache = [];
+
   #notify(event: CollectionEvent, data: any): void {
-    this.#observers.forEach(observer => observer({ event, data }));
+    this.#notifyCache.length = 0;
+    this.#observers.forEach(observer => this.#notifyCache.push(observer));
+    
+    for (let i = 0; i < this.#notifyCache.length; i++) {
+      this.#notifyCache[i]({ event, data });
+    }
   }
 
   /**
