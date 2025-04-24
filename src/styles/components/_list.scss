@@ -14,11 +14,17 @@ $list-item-padding: 16px !default;
 $list-section-padding: 16px !default;
 $list-container-min-height: 200px !default;
 
-// Customized variables for smoother state transitions
-$state-transition-duration: v.motion('duration-medium1') !default;  // Slightly longer for smoothness
+// Transition variables
+$state-transition-duration: v.motion('duration-medium1') !default;
 $state-transition-easing: v.motion('easing-standard') !default;
+$quick-transition: v.motion('duration-short4') v.motion('easing-standard-accelerate');
 
-// Component-specific mixins - using proper state layer implementation
+// Reusable transitions
+$color-transition: color $state-transition-duration $state-transition-easing;
+$bg-transition: background-color $state-transition-duration $state-transition-easing;
+$opacity-transition: opacity $state-transition-duration $state-transition-easing;
+
+// Component-specific mixins
 @mixin list-item-state-layer($state: 'hover', $color: 'on-surface') {
   &::before {
     content: '';
@@ -28,8 +34,7 @@ $state-transition-easing: v.motion('easing-standard') !default;
     opacity: f.get-state-opacity($state);
     pointer-events: none;
     border-radius: inherit;
-    // State layers transition - Using custom variable for duration
-    transition: opacity $state-transition-duration $state-transition-easing;
+    transition: $opacity-transition;
   }
 }
 
@@ -39,7 +44,7 @@ $state-transition-easing: v.motion('easing-standard') !default;
   padding: $list-section-padding $list-item-padding 8px;
 }
 
-// LIST CONTAINER - Root component
+// LIST CONTAINER
 .#{$component}-container {
   position: relative;
   overflow-y: auto;
@@ -47,41 +52,35 @@ $state-transition-easing: v.motion('easing-standard') !default;
   height: 100%;
   min-height: $list-container-min-height;
   background-color: t.color('surface');
-  -webkit-overflow-scrolling: touch; // Improved scrolling on iOS
-  scrollbar-width: thin; // Firefox
-  transition: background-color $state-transition-duration $state-transition-easing;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  transition: $bg-transition;
   
-  // Styling for webkit scrollbars
+  // Scrollbar styling
   &::-webkit-scrollbar {
     width: 8px;
-  }
-  
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  
-  &::-webkit-scrollbar-thumb {
-    background-color: t.color('outline-variant');
-    border-radius: 4px;
-    transition: background-color $state-transition-duration $state-transition-easing;
     
-    &:hover {
-      background-color: t.alpha('outline', 0.38);
+    &-track { background: transparent; }
+    
+    &-thumb {
+      background-color: t.color('outline-variant');
+      border-radius: 4px;
+      transition: $bg-transition;
+      
+      &:hover { background-color: t.alpha('outline', 0.38); }
     }
   }
 
-  // States
-  &--loading {
-    &::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 3px;
-      background: linear-gradient(to right, transparent, t.color('primary'), transparent);
-      animation: loading-shimmer 1.5s infinite v.motion('easing-standard');
-    }
+  // Loading state
+  &--loading::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(to right, transparent, t.color('primary'), transparent);
+    animation: loading-shimmer 1.5s infinite v.motion('easing-standard');
   }
 }
 
@@ -92,10 +91,11 @@ $state-transition-easing: v.motion('easing-standard') !default;
   padding: $list-padding 0;
   width: 100%;
   position: relative;
-  transition: padding $state-transition-duration $state-transition-easing,
-              opacity $state-transition-duration $state-transition-easing;
+  transition: 
+    padding $state-transition-duration $state-transition-easing,
+    $opacity-transition;
   
-  // For virtualized list inner content container
+  // Inner containers
   &-content {
     position: relative;
     width: 100%;
@@ -108,14 +108,12 @@ $state-transition-easing: v.motion('easing-standard') !default;
     width: 100%;
     transition: margin-bottom $state-transition-duration $state-transition-easing;
 
-    &:not(:last-child) {
-      margin-bottom: $list-padding;
-    }
+    &:not(:last-child) { margin-bottom: $list-padding; }
   }
 
   &-section-title {
     @include list-section-title;
-    transition: color $state-transition-duration $state-transition-easing;
+    transition: $color-transition;
   }
 
   // Dividers
@@ -123,10 +121,10 @@ $state-transition-easing: v.motion('easing-standard') !default;
     height: 1px;
     margin: $list-padding 0;
     background-color: t.color('outline-variant');
-    transition: background-color $state-transition-duration $state-transition-easing;
+    transition: $bg-transition;
   }
 
-  // Virtualization spacer (for scroll height)
+  // Virtual list helper elements
   &-spacer {
     position: absolute;
     top: 0;
@@ -145,28 +143,27 @@ $state-transition-easing: v.motion('easing-standard') !default;
     padding: 32px 16px;
     text-align: center;
     color: t.color('on-surface-variant');
-    transition: color $state-transition-duration $state-transition-easing,
-                opacity $state-transition-duration $state-transition-easing;
+    transition: $color-transition, $opacity-transition;
     
     &-icon {
       font-size: 48px;
       margin-bottom: 16px;
       opacity: 0.6;
-      transition: opacity $state-transition-duration $state-transition-easing;
+      transition: $opacity-transition;
     }
     
     &-text {
       @include m.typography('body-large');
-      transition: color $state-transition-duration $state-transition-easing;
+      transition: $color-transition;
     }
     
     &-action {
       margin-top: 16px;
-      transition: opacity $state-transition-duration $state-transition-easing;
+      transition: $opacity-transition;
     }
   }
 
-  // Loading indicator (shown at bottom when loading more)
+  // Loading indicator
   &-loading-indicator {
     display: flex;
     align-items: center;
@@ -174,7 +171,7 @@ $state-transition-easing: v.motion('easing-standard') !default;
     height: 48px;
     width: 100%;
     color: t.color('on-surface-variant');
-    transition: color $state-transition-duration $state-transition-easing;
+    transition: $color-transition;
     
     &::after {
       content: '';
@@ -187,157 +184,66 @@ $state-transition-easing: v.motion('easing-standard') !default;
     }
   }
 
-  // Selection states
-  &[data-type="single"],
-  &[data-type="multi"],
-  &[data-type="radio"] {
-    .#{$component}-item {
-      cursor: pointer;
-
-      &--selected {
-        background-color: t.color('secondary-container');
-        color: t.color('on-secondary-container');
-        transition: background-color $state-transition-duration $state-transition-easing,
-                    color $state-transition-duration $state-transition-easing;
-
-        &:hover {
-          position: relative;
-          
-          &::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background-color: t.color('on-secondary-container');
-            opacity: f.get-state-opacity('hover');
-            pointer-events: none;
-            border-radius: inherit;
-            transition: opacity $state-transition-duration $state-transition-easing;
-          }
-        }
-
-        &:focus-visible {
-          position: relative;
-          outline: none;
-          
-          &::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background-color: t.color('on-secondary-container');
-            opacity: f.get-state-opacity('focus');
-            pointer-events: none;
-            border-radius: inherit;
-            transition: opacity $state-transition-duration $state-transition-easing;
-          }
-        }
-
-        &:active {
-          position: relative;
-          
-          &::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background-color: t.color('on-secondary-container');
-            opacity: f.get-state-opacity('pressed');
-            pointer-events: none;
-            border-radius: inherit;
-            transition: opacity $state-transition-duration $state-transition-easing;
-          }
-        }
-
-        .#{$component}-item-supporting,
-        .#{$component}-item-overline,
-        .#{$component}-item-meta {
-          color: t.color('on-secondary-container');
-          transition: color $state-transition-duration $state-transition-easing;
-        }
-        
-        .#{$component}-item-leading,
-        .#{$component}-item-trailing {
-          color: t.color('on-secondary-container');
-          transition: color $state-transition-duration $state-transition-easing;
-        }
-      }
-    }
-  }
-
   // Dense variant
-  &--dense {
-    .#{$component}-item {
-      min-height: $list-item-dense-height;
-    }
+  &--dense .#{$component}-item {
+    min-height: $list-item-dense-height;
   }
 
   // Disabled state
   &--disabled {
     pointer-events: none;
     opacity: 0.38;
-    transition: opacity $state-transition-duration $state-transition-easing;
-  }
-
-  // RTL Support
-  @include m.rtl {
-    .#{$component}-section-title {
-      text-align: right;
-    }
+    transition: $opacity-transition;
   }
 
   // High contrast mode
   @include m.high-contrast {
     border: 1px solid currentColor;
-
+    
     &-divider {
       border-top: 1px solid currentColor;
       background: none;
     }
   }
   
-  // VIRTUAL LIST ITEM STYLES
+  // LIST ITEMS
   &-item {
     display: flex;
     align-items: center;
     min-height: $list-item-height;
     padding: $list-padding $list-item-padding;
-    position: absolute; // Required for virtual list positioning
+    position: absolute; // For virtual list
     top: 0;
     left: 0;
     width: 100%;
     gap: 16px;
-    cursor: pointer;
     color: t.color('on-surface');
+    cursor: pointer;
     box-sizing: border-box;
-    position: relative; // Needed for state layers
+    position: relative; // For state layers
     overflow: hidden;
-    transition: background-color $state-transition-duration $state-transition-easing,
-                color $state-transition-duration $state-transition-easing;
+    transition: $bg-transition, $color-transition;
 
-    // Use a single pseudo-element for all state layers
+    // State layer base
     &::before {
       content: '';
       position: absolute;
       inset: 0;
       background-color: t.color('on-surface');
-      opacity: 0; // Start with 0 opacity
+      opacity: 0;
       pointer-events: none;
       border-radius: inherit;
-      transition: opacity $state-transition-duration $state-transition-easing;
+      transition: $opacity-transition;
     }
 
-    // State layer implementation - strictly following MD3
-    // Instead of recreating the pseudo-element, just change its opacity
-    &:hover::before {
-      opacity: f.get-state-opacity('hover');
-    }
-
+    // State interactions
+    &:hover::before { opacity: f.get-state-opacity('hover'); }
+    
     &:focus-visible {
-      outline: none; // Remove default outline
+      outline: none;
       
-      &::before {
-        opacity: f.get-state-opacity('focus');
-      }
+      &::before { opacity: f.get-state-opacity('focus'); }
       
-      // Focus ring
       &::after {
         content: '';
         position: absolute;
@@ -351,31 +257,35 @@ $state-transition-easing: v.motion('easing-standard') !default;
 
     &:active::before {
       opacity: f.get-state-opacity('pressed');
-      // Using a slightly faster transition for press state feedback
-      transition: opacity v.motion('duration-short4') v.motion('easing-standard-accelerate');
+      transition: opacity $quick-transition;
     }
 
-    // Content layout
+    // Content elements
     &-content {
       flex: 1;
-      min-width: 0; // Enable text truncation
+      min-width: 0;
       display: flex;
       flex-direction: column;
       justify-content: center;
-      transition: opacity $state-transition-duration $state-transition-easing;
+      transition: $opacity-transition;
     }
 
-    // Text elements
     &-text {
       display: flex;
       flex-direction: column;
       gap: 4px;
     }
 
+    // Text elements with shared properties
+    &-overline,
+    &-supporting,
+    &-meta {
+      color: t.color('on-surface-variant');
+      transition: $color-transition;
+    }
+
     &-overline {
       @include m.typography('label-small');
-      color: t.color('on-surface-variant');
-      transition: color $state-transition-duration $state-transition-easing;
     }
 
     &-headline {
@@ -384,23 +294,19 @@ $state-transition-easing: v.motion('easing-standard') !default;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      transition: color $state-transition-duration $state-transition-easing;
+      transition: $color-transition;
     }
 
     &-supporting {
       @include m.typography('body-medium');
-      color: t.color('on-surface-variant');
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      transition: color $state-transition-duration $state-transition-easing;
     }
 
     &-meta {
       @include m.typography('label-small');
-      color: t.color('on-surface-variant');
       margin-top: 4px;
-      transition: color $state-transition-duration $state-transition-easing;
     }
 
     // Leading/trailing elements
@@ -410,25 +316,21 @@ $state-transition-easing: v.motion('easing-standard') !default;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-      transition: color $state-transition-duration $state-transition-easing,
-                  opacity $state-transition-duration $state-transition-easing;
+      color: t.color('on-surface-variant');
+      transition: $color-transition, $opacity-transition;
     }
 
     &-leading {
       width: 24px;
       height: 24px;
-      color: t.color('on-surface-variant');
 
       svg {
         width: 100%;
         height: 100%;
-        transition: fill $state-transition-duration $state-transition-easing,
-                    stroke $state-transition-duration $state-transition-easing;
+        transition: 
+          fill $state-transition-duration $state-transition-easing,
+          stroke $state-transition-duration $state-transition-easing;
       }
-    }
-
-    &-trailing {
-      color: t.color('on-surface-variant');
     }
 
     // Vertical layout variant
@@ -437,61 +339,43 @@ $state-transition-easing: v.motion('easing-standard') !default;
       padding: 12px $list-item-padding;
 
       .#{$component}-item {
-        &-content {
-          flex-direction: column;
-          gap: 4px;
-        }
-
-        &-meta {
-          margin-top: $list-padding;
-        }
+        &-content { flex-direction: column; gap: 4px; }
+        &-meta { margin-top: $list-padding; }
       }
     }
 
-    // States - using the same pattern of a single pseudo-element
+    // Selected state
     &--selected {
       background-color: t.color('secondary-container');
       color: t.color('on-secondary-container');
-      transition: background-color $state-transition-duration $state-transition-easing,
-                  color $state-transition-duration $state-transition-easing;
+      transition: $bg-transition, $color-transition;
 
+      // Update state layer color for selected state
       &::before {
-        background-color: t.color('on-secondary-container'); // Change the color for the state layer
+        background-color: t.color('on-secondary-container');
       }
 
+      // Update text and icon colors for selected state
       .#{$component}-item {
         &-leading,
-        &-trailing {
+        &-trailing,
+        &-supporting,
+        &-overline,
+        &-meta {
           color: t.color('on-secondary-container');
-          transition: color $state-transition-duration $state-transition-easing;
+          transition: $color-transition;
         }
       }
     }
 
+    // Disabled state
     &--disabled {
       opacity: 0.38;
       pointer-events: none;
-      transition: opacity $state-transition-duration $state-transition-easing;
+      transition: $opacity-transition;
     }
 
-    // RTL Support
-    @include m.rtl {
-      .#{$component}-item {
-        &-text {
-          text-align: right;
-        }
-      }
-    }
-
-    // High contrast mode
-    @include m.high-contrast {
-      &--selected {
-        outline: 2px solid currentColor;
-        outline-offset: -2px;
-      }
-    }
-    
-    // Skeleton loading state for items
+    // Skeleton loading state
     &--skeleton {
       pointer-events: none;
       
@@ -517,30 +401,37 @@ $state-transition-easing: v.motion('easing-standard') !default;
   }
 }
 
+// Selection specific styling (single/multi/radio)
+.#{$component}[data-type="single"],
+.#{$component}[data-type="multi"],
+.#{$component}[data-type="radio"] {
+  .#{$component}-item {
+    cursor: pointer;
+  }
+}
+
+// RTL Support
+@include m.rtl {
+  .#{$component}-section-title,
+  .#{$component}-item-text {
+    text-align: right;
+  }
+}
+
+// High contrast mode for selected items
+@include m.high-contrast {
+  .#{$component}-item--selected {
+    outline: 2px solid currentColor;
+    outline-offset: -2px;
+  }
+}
+
 // ANIMATIONS
 @keyframes loading-shimmer {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(100%);
-  }
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
 }
 
 @keyframes rotation {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes skeleton-pulse {
-  0%, 100% {
-    opacity: 0.5;
-  }
-  50% {
-    opacity: 0.8;
-  }
-}
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg
