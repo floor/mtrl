@@ -92,7 +92,6 @@ export const createRouteAdapter = (config: RouteAdapterConfig = {}) => {
       
       // Normalize the base URL to ensure it works with URL constructor
       const normalizedBase = normalizeBaseUrl(config.base);
-      console.log('Normalized base URL:', normalizedBase);
       
       const url = new URL(normalizedBase + endpoint);
       
@@ -142,8 +141,6 @@ export const createRouteAdapter = (config: RouteAdapterConfig = {}) => {
   };
 
   const request = async (url: string, options: RequestInit = {}): Promise<any> => {
-    console.log(`API request to: ${url}`, options);
-    
     if (controller) {
       controller.abort();
     }
@@ -160,8 +157,6 @@ export const createRouteAdapter = (config: RouteAdapterConfig = {}) => {
         signal: controller.signal
       });
 
-      console.log(`API response status: ${response.status}`);
-
       if (!response.ok) {
         let errorData: any;
         try {
@@ -176,11 +171,9 @@ export const createRouteAdapter = (config: RouteAdapterConfig = {}) => {
       const contentType = response.headers.get('content-type');
       if (contentType && contentType.includes('application/json')) {
         const data = await response.json();
-        console.log('API success response:', data);
         return data;
       } else {
         const text = await response.text();
-        console.log('API success response (text):', text);
         return text;
       }
     } catch (error) {
@@ -284,7 +277,7 @@ export const createRouteAdapter = (config: RouteAdapterConfig = {}) => {
     },
 
     read: async (query: Record<string, any> = {}, options: Record<string, any> = {}): Promise<ParsedResponse> => {
-      console.log('Route adapter read called with query:', query, 'options:', options);
+      // console.log('Route adapter read called with query:', query, 'options:', options);
       
       // Extract pagination params from both query and options, prioritizing query
       const cursor = query.cursor || options.cursor;
@@ -292,10 +285,7 @@ export const createRouteAdapter = (config: RouteAdapterConfig = {}) => {
       const search = query.search || options.search;
       const sort = query.sort || options.sort;
       const fields = query.fields || options.fields;
-      
-      // Log for debugging
-      console.log('Extracted parameters: ', { cursor, limit, search });
-      
+          
       // Filter out pagination and search params from query
       const filteredQuery = { ...query };
       ['cursor', 'page', 'limit', 'sort', 'fields', 'search'].forEach(key => {
@@ -328,11 +318,8 @@ export const createRouteAdapter = (config: RouteAdapterConfig = {}) => {
           delete params[key];
         }
       });
-      
-      console.log('Route adapter params after transform:', params);
 
       const url = buildUrl(config.endpoints?.list || '/list', params);
-      console.log('Route adapter URL:', url);
       const cacheKey = url.toString();
 
       const cached = getCache(cacheKey);
