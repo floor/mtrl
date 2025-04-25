@@ -1,7 +1,7 @@
 // src/core/collection/index.ts
 
-// Export collection class and types
-export { Collection } from './collection';
+// Export collection factory and types
+export { createCollection } from './collection';
 export { COLLECTION_EVENTS } from './collection';
 export { OPERATORS as COLLECTION_OPERATORS } from './collection';
 
@@ -9,7 +9,8 @@ export type {
   CollectionItem, 
   CollectionConfig, 
   CollectionEvent, 
-  CollectionObserver 
+  CollectionObserver,
+  Collection
 } from './collection';
 
 // Export list manager
@@ -46,10 +47,6 @@ export {
 } from './adapters/route';
 
 export type { 
-  RouteAdapter,
   RouteAdapterConfig,
-  RouteEndpoints,
-  QueryDefinition,
-  QueryCondition,
-  RequestOptions
+  ParsedResponse
 } from './adapters/route';

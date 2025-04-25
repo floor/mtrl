@@ -1,5 +1,5 @@
 // src/core/collection/list-manager/index.ts
-import { Collection, COLLECTION_EVENTS } from '../collection';
+import { createCollection, COLLECTION_EVENTS } from '../collection';
 import { createRouteAdapter } from '../adapters/route';
 import { 
   ListManagerConfig, ListManager, ListManagerElements, 
@@ -52,12 +52,6 @@ export const createListManager = (
   const useStatic = !useApi;
   const initialItems = getStaticItems(validatedConfig);
   
-  // console.log('Mode determination:', {
-  //   baseUrl: validatedConfig.baseUrl,
-  //   useApi,
-  //   useStatic
-  // });
-  
   // Initialize state
   const state = createInitialState(validatedConfig);
   
@@ -70,7 +64,7 @@ export const createListManager = (
   const renderer = createRenderer(validatedConfig, elements, itemMeasurement, recyclePool);
   
   // Initialize collection for data management
-  const itemsCollection = new Collection({ transform: validatedConfig.transform });
+  const itemsCollection = createCollection({ transform: validatedConfig.transform });
   
   // Initialize route adapter (only if in API mode)
   const adapter = useApi ? createRouteAdapter({
@@ -82,11 +76,6 @@ export const createListManager = (
       'Content-Type': 'application/json'
     }
   }) : null;
-  
-  // console.log('Adapter created:', adapter ? 'yes' : 'no');
-  // console.log('Using API mode:', useApi);
-  // console.log('Using static items:', useStatic);
-  // console.log('Initial items:', initialItems);
   
   // Track cleanup functions
   const cleanupFunctions: (() => void)[] = [];
@@ -102,9 +91,6 @@ export const createListManager = (
       
       // For static data, simulate loading by returning available items
       if (state.useStatic) {
-        // console.log('Using static data source')
-        // console.log('Current static items:', state.items);
-        
         // Always return a copy of state.items to ensure proper handling
         return {
           items: [...state.items],
@@ -482,6 +468,71 @@ export const createListManager = (
       // Remove DOM elements
       cleanupDomElements(elements);
     }
+  };
+};
+
+/**
+ * Utility to create a cursor-based page loader
+ * @param list List interface
+ * @param config Page loader configuration
+ * @returns Page loader interface
+ */
+export const createPageLoader = (
+  list: { setItems: (items: any[]) => void },
+  listManager: ReturnType<typeof createListManager>,
+  config: { onLoad?: (status: LoadStatus) => void; pageSize?: number } = {}
+) => {
+  let currentCursor: string | null = null;
+  let loading = false;
+  const pageHistory: (string | null)[] = [];
+  const pageSize = config.pageSize || 20;
+
+  const load = async (cursor = null, addToHistory = true) => {
+    if (loading) return;
+
+    loading = true;
+    config.onLoad?.({ loading: true, hasNext: false, hasPrev: false, items: [], allItems: [] });
+
+    const result = await listManager.loadItems({
+      limit: pageSize,
+      cursor
+    });
+
+    if (addToHistory && cursor) {
+      pageHistory.push(currentCursor);
+    }
+    currentCursor = result.meta.cursor;
+
+    list.setItems(result.items);
+    loading = false;
+
+    config.onLoad?.({
+      loading: false,
+      hasNext: result.meta.hasNext,
+      hasPrev: pageHistory.length > 0,
+      items: result.items,
+      allItems: listManager.getAllItems()
+    });
+
+    return {
+      hasNext: result.meta.hasNext,
+      hasPrev: pageHistory.length > 0
+    };
+  };
+
+  const loadNext = () => load(currentCursor);
+
+  const loadPrev = () => {
+    const previousCursor = pageHistory.pop();
+    return load(previousCursor, false);
+  };
+
+  return {
+    load,
+    loadNext,
+    loadPrev,
+    get loading() { return loading },
+    get cursor() { return currentCursor }
   };
 };
 
