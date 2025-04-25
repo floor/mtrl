@@ -50,10 +50,13 @@ export const createListManager = (
   // Determine API mode and get static items
   const useApi = determineApiMode(validatedConfig);
   const useStatic = !useApi;
-  const initialItems = getStaticItems(validatedConfig);
+  
+  // Get initial static items (only if we're in static mode)
+  const initialItems = useStatic ? getStaticItems(validatedConfig) : [];
   
   // Initialize state
   const state = createInitialState(validatedConfig);
+  state.useStatic = useStatic;
   
   // Create DOM elements
   const elements = createDomElements(container);
@@ -64,7 +67,10 @@ export const createListManager = (
   const renderer = createRenderer(validatedConfig, elements, itemMeasurement, recyclePool);
   
   // Initialize collection for data management
-  const itemsCollection = createCollection({ transform: validatedConfig.transform });
+  const itemsCollection = createCollection({ 
+    transform: validatedConfig.transform,
+    initialCapacity: useStatic ? initialItems.length : 50 // Optimize initial capacity
+  });
   
   // Initialize route adapter (only if in API mode)
   const adapter = useApi ? createRouteAdapter({
@@ -74,7 +80,8 @@ export const createListManager = (
     },
     headers: {
       'Content-Type': 'application/json'
-    }
+    },
+    cache: true // Enable caching for API requests
   }) : null;
   
   // Track cleanup functions
@@ -87,11 +94,11 @@ export const createListManager = (
    */
   const loadItems = async (params = {}): Promise<{items: any[], meta: PaginationMeta}> => {
     try {
+      // Update loading state
       Object.assign(state, updateLoadingState(state, true));
       
       // For static data, simulate loading by returning available items
       if (state.useStatic) {
-        // Always return a copy of state.items to ensure proper handling
         return {
           items: [...state.items],
           meta: {
@@ -103,7 +110,6 @@ export const createListManager = (
       
       // For API-connected lists, use the adapter
       if (!adapter) {
-        console.error('Cannot load items: API adapter not initialized')
         throw new Error('Cannot load items: API adapter not initialized');
       }
       
@@ -122,21 +128,34 @@ export const createListManager = (
         validatedConfig.dedupeItems
       ));
       
-      // Add to collection
-      await itemsCollection.add(items);
+      // Add to collection, skipping items that already exist if deduplication is enabled
+      if (validatedConfig.dedupeItems) {
+        const existingIds = new Set(state.items.map(item => item.id).filter(Boolean));
+        const newItems = items.filter(item => !existingIds.has(item.id));
+        if (newItems.length > 0) {
+          await itemsCollection.add(newItems);
+        }
+      } else {
+        // Add all items regardless of duplication
+        await itemsCollection.add(items);
+      }
       
       // Set totalHeight as dirty to trigger recalculation
       state.totalHeightDirty = true;
       
       // Call afterLoad callback if provided
       if (validatedConfig.afterLoad) {
+        // Create a read-only copy of the items array to prevent mutation
+        const itemsCopy = Object.freeze([...state.items]);
+        
         const loadData: LoadStatus = {
           loading: false,
           hasNext: state.hasNext,
           hasPrev: !!params.cursor,
-          items: items,
-          allItems: state.items
+          items: Object.freeze([...items]), // Freeze to prevent modification
+          allItems: itemsCopy
         };
+        
         validatedConfig.afterLoad(loadData);
       }
       
@@ -146,6 +165,7 @@ export const createListManager = (
       };
     } catch (error) {
       console.error(`Error loading ${collection}:`, error);
+      // Return empty result on error
       return {
         items: [],
         meta: {
@@ -154,40 +174,24 @@ export const createListManager = (
         }
       };
     } finally {
+      // Reset loading state
       Object.assign(state, updateLoadingState(state, false));
     }
   };
   
   /**
-   * Checks if we need to load more data based on scroll position
-   * @param {number} scrollTop - Current scroll position
-   */
-  const checkLoadMore = (scrollTop: number): void => {
-    if (state.loading || !state.hasNext) return;
-    
-    const shouldLoadMore = isLoadThresholdReached(
-      scrollTop,
-      state.containerHeight,
-      state.totalHeight,
-      validatedConfig.loadThreshold!
-    );
-    
-    if (shouldLoadMore) {
-      loadMore();
-    }
-  };
-  
-  /**
-   * Updates visible items based on scroll position
-   * @param {number} scrollTop - Current scroll position
+   * Pre-bound update visible items function to avoid recreation
+   * @param {number} scrollTop Current scroll position
    */
   const updateVisibleItems = (scrollTop = state.scrollTop): void => {
     if (!state.mounted) return;
     
-    // Get current container dimensions
+    // Get current container dimensions if not available
     if (state.containerHeight === 0) {
       state.containerHeight = container.clientHeight;
     }
+    
+    // Update scroll position
     state.scrollTop = scrollTop;
     
     // Calculate which items should be visible
@@ -211,6 +215,11 @@ export const createListManager = (
       state.items.slice(visibleRange.start, visibleRange.end).filter(Boolean),
       visibleRange
     ));
+    
+    // Ensure offsets are cached for efficient access
+    if (typeof itemMeasurement.calculateOffsets === 'function') {
+      itemMeasurement.calculateOffsets(state.items);
+    }
     
     // Calculate total height if needed
     if (state.totalHeightDirty) {
@@ -239,6 +248,25 @@ export const createListManager = (
   };
   
   /**
+   * Checks if we need to load more data based on scroll position
+   * @param {number} scrollTop - Current scroll position
+   */
+  const checkLoadMore = (scrollTop: number): void => {
+    if (state.loading || !state.hasNext) return;
+    
+    const shouldLoadMore = isLoadThresholdReached(
+      scrollTop,
+      state.containerHeight,
+      state.totalHeight,
+      validatedConfig.loadThreshold!
+    );
+    
+    if (shouldLoadMore) {
+      loadMore();
+    }
+  };
+  
+  /**
    * Loads more items using cursor pagination
    * @returns {Promise<Object>} Load result
    */
@@ -254,7 +282,7 @@ export const createListManager = (
     const loadParams = createLoadParams(state);
     
     const result = await loadItems(loadParams);
-    updateVisibleItems();
+    updateVisibleItems(state.scrollTop);
     
     return {
       hasNext: state.hasNext,
@@ -286,7 +314,7 @@ export const createListManager = (
     }
     
     // Update view
-    updateVisibleItems();
+    updateVisibleItems(0); // Reset scroll position to top
   };
   
   /**
@@ -295,6 +323,11 @@ export const createListManager = (
    * @param {string} position - Position ('start', 'center', 'end')
    */
   const scrollToItem = (itemId: string, position: ScrollToPosition = 'start'): void => {
+    // Ensure offsets are cached
+    if (typeof itemMeasurement.calculateOffsets === 'function') {
+      itemMeasurement.calculateOffsets(state.items);
+    }
+    
     const offset = itemMeasurement.getItemOffset(state.items, itemId);
     if (offset === -1) return;
     
@@ -304,9 +337,10 @@ export const createListManager = (
     if (position === 'center') {
       scrollPosition = offset - (state.containerHeight / 2);
     } else if (position === 'end') {
-      const itemHeight = itemMeasurement.getItemHeight(
-        state.items.find(item => item.id === itemId)
-      );
+      const itemIndex = state.items.findIndex(item => item && item.id === itemId);
+      if (itemIndex === -1) return;
+      
+      const itemHeight = itemMeasurement.getItemHeight(state.items[itemIndex]);
       scrollPosition = offset - state.containerHeight + itemHeight;
     }
     
@@ -340,13 +374,13 @@ export const createListManager = (
     // Subscribe to collection changes
     const unsubscribe = itemsCollection.subscribe(({ event, data }) => {
       if (event === COLLECTION_EVENTS.CHANGE) {
-        // Wait a tick to allow collection to fully update
-        setTimeout(() => {
-          // Mark total height as dirty to trigger recalculation
-          state.totalHeightDirty = true;
-          // Update items on collection change
-          updateVisibleItems();
-        }, 0);
+        // Mark total height as dirty to trigger recalculation
+        state.totalHeightDirty = true;
+        
+        // Use rAF to delay update to next frame for better performance
+        requestAnimationFrame(() => {
+          updateVisibleItems(state.scrollTop);
+        });
       }
     });
     
@@ -357,18 +391,20 @@ export const createListManager = (
       itemsCollection.add(initialItems)
         .then(() => {
           // Force an update after adding items
-          setTimeout(() => {
-            updateVisibleItems();
-          }, 10);
+          requestAnimationFrame(() => {
+            updateVisibleItems(state.scrollTop);
+          });
         })
         .catch(err => {
           console.error('Error adding static items to collection:', err);
         });
-    } else {
+    } else if (!state.useStatic) {
       // Initial load for API data
       loadItems()
-        .then((result) => {
-          updateVisibleItems();
+        .then(() => {
+          requestAnimationFrame(() => {
+            updateVisibleItems(state.scrollTop);
+          });
         })
         .catch(err => {
           console.error('Error loading items:', err);
@@ -377,12 +413,25 @@ export const createListManager = (
     
     // Handle resize events with ResizeObserver if available
     if ('ResizeObserver' in window) {
-      const resizeObserver = new ResizeObserver(() => {
+      const resizeObserver = new ResizeObserver((entries) => {
         // Only update if container dimensions changed
-        const newHeight = container.clientHeight;
-        if (newHeight !== state.containerHeight) {
-          state.containerHeight = newHeight;
-          updateVisibleItems();
+        for (const entry of entries) {
+          if (entry.target === container) {
+            const newHeight = container.clientHeight;
+            if (newHeight !== state.containerHeight) {
+              state.containerHeight = newHeight;
+              
+              // Debounce resize handling
+              if (state.resizeRAF) {
+                cancelAnimationFrame(state.resizeRAF);
+              }
+              
+              state.resizeRAF = requestAnimationFrame(() => {
+                updateVisibleItems(state.scrollTop);
+                state.resizeRAF = null;
+              });
+            }
+          }
         }
       });
       
@@ -390,19 +439,43 @@ export const createListManager = (
       
       cleanupFunctions.push(() => {
         resizeObserver.disconnect();
+        
+        if (state.resizeRAF) {
+          cancelAnimationFrame(state.resizeRAF);
+          state.resizeRAF = null;
+        }
       });
     } else {
       // Fallback to window resize event
+      let resizeTimeout: number | null = null;
+      
       const handleResize = () => {
-        const newHeight = container.clientHeight;
-        if (newHeight !== state.containerHeight) {
-          state.containerHeight = newHeight;
-          updateVisibleItems();
+        // Debounce resize event
+        if (resizeTimeout) {
+          clearTimeout(resizeTimeout);
         }
+        
+        resizeTimeout = window.setTimeout(() => {
+          const newHeight = container.clientHeight;
+          if (newHeight !== state.containerHeight) {
+            state.containerHeight = newHeight;
+            updateVisibleItems(state.scrollTop);
+          }
+          
+          resizeTimeout = null;
+        }, 100);
       };
       
-      window.addEventListener('resize', handleResize);
-      cleanupFunctions.push(() => window.removeEventListener('resize', handleResize));
+      window.addEventListener('resize', handleResize, { passive: true });
+      
+      cleanupFunctions.push(() => {
+        window.removeEventListener('resize', handleResize);
+        
+        if (resizeTimeout) {
+          clearTimeout(resizeTimeout);
+          resizeTimeout = null;
+        }
+      });
     }
     
     // Return cleanup function
@@ -433,8 +506,9 @@ export const createListManager = (
       const updated = itemMeasurement.setItemHeights(heightsMap);
       if (updated) {
         state.totalHeightDirty = true;
-        updateVisibleItems();
+        updateVisibleItems(state.scrollTop);
       }
+      return updated; // Return whether heights were updated
     },
     
     // Collection access
@@ -451,7 +525,7 @@ export const createListManager = (
     setRenderHook: (hookFn) => {
       renderer.setRenderHook(hookFn);
       // Rerender visible items to apply the hook
-      updateVisibleItems();
+      updateVisibleItems(state.scrollTop);
     },
     
     // Cleanup method
@@ -460,13 +534,27 @@ export const createListManager = (
       
       // Clear all data
       itemsCollection.clear();
-      elements.content.innerHTML = '';
+      
+      // Clear cached state
+      if (typeof itemMeasurement.clear === 'function') {
+        itemMeasurement.clear();
+      }
       
       // Empty recycling pools
       recyclePool.clear();
       
+      // Clear DOM content
+      if (elements.content) {
+        elements.content.innerHTML = '';
+      }
+      
       // Remove DOM elements
       cleanupDomElements(elements);
+      
+      // Disconnect adapter if exists
+      if (adapter && typeof adapter.disconnect === 'function') {
+        adapter.disconnect();
+      }
     }
   };
 };
@@ -474,6 +562,7 @@ export const createListManager = (
 /**
  * Utility to create a cursor-based page loader
  * @param list List interface
+ * @param listManager List manager instance
  * @param config Page loader configuration
  * @returns Page loader interface
  */
@@ -486,38 +575,63 @@ export const createPageLoader = (
   let loading = false;
   const pageHistory: (string | null)[] = [];
   const pageSize = config.pageSize || 20;
+  
+  // Use a throttle to prevent rapid load calls
+  let loadThrottleTimer: number | null = null;
+  const throttleMs = 200; // Minimum time between load operations
 
   const load = async (cursor = null, addToHistory = true) => {
+    // Prevent concurrent load operations
     if (loading) return;
-
-    loading = true;
-    config.onLoad?.({ loading: true, hasNext: false, hasPrev: false, items: [], allItems: [] });
-
-    const result = await listManager.loadItems({
-      limit: pageSize,
-      cursor
-    });
-
-    if (addToHistory && cursor) {
-      pageHistory.push(currentCursor);
+    
+    // Apply throttling to prevent rapid load operations
+    if (loadThrottleTimer !== null) {
+      clearTimeout(loadThrottleTimer);
     }
-    currentCursor = result.meta.cursor;
-
-    list.setItems(result.items);
-    loading = false;
-
-    config.onLoad?.({
-      loading: false,
-      hasNext: result.meta.hasNext,
-      hasPrev: pageHistory.length > 0,
-      items: result.items,
-      allItems: listManager.getAllItems()
+    
+    loading = true;
+    config.onLoad?.({ 
+      loading: true, 
+      hasNext: false, 
+      hasPrev: pageHistory.length > 0, 
+      items: [], 
+      allItems: listManager.getAllItems() 
     });
 
-    return {
-      hasNext: result.meta.hasNext,
-      hasPrev: pageHistory.length > 0
-    };
+    try {
+      const result = await listManager.loadItems({
+        limit: pageSize,
+        cursor
+      });
+  
+      if (addToHistory && cursor) {
+        pageHistory.push(currentCursor);
+      }
+      currentCursor = result.meta.cursor;
+  
+      // Update the list with the new items
+      list.setItems(result.items);
+  
+      // Notify about load completion
+      config.onLoad?.({
+        loading: false,
+        hasNext: result.meta.hasNext,
+        hasPrev: pageHistory.length > 0,
+        items: result.items,
+        allItems: listManager.getAllItems()
+      });
+  
+      return {
+        hasNext: result.meta.hasNext,
+        hasPrev: pageHistory.length > 0
+      };
+    } finally {
+      // Set timer to prevent rapid consecutive loads
+      loadThrottleTimer = window.setTimeout(() => {
+        loading = false;
+        loadThrottleTimer = null;
+      }, throttleMs);
+    }
   };
 
   const loadNext = () => load(currentCursor);

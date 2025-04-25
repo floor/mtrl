@@ -27,7 +27,7 @@ export function createScrollTracker(
     onLoadMore: () => void;
   }
 ): ScrollTracker {
-  const { scrollStrategy } = config;
+  const { scrollStrategy = 'scroll' } = config;
   
   switch (scrollStrategy) {
     case 'intersection':
@@ -38,7 +38,7 @@ export function createScrollTracker(
       
     case 'scroll':
     default:
-      return createTraditionalScrollTracker(container, callbacks);
+      return createTraditionalScrollTracker(container, config, callbacks);
   }
 }
 
@@ -47,10 +47,17 @@ export function createScrollTracker(
  */
 function createTraditionalScrollTracker(
   container: HTMLElement,
+  config: ListManagerConfig,
   callbacks: { onScroll: (scrollTop: number) => void; onLoadMore: () => void }
 ): ScrollTracker {
-  let scrollHandler: ((e: Event) => void) | null = null;
   let scrollRAF: number | null = null;
+  let lastScrollTop = 0;
+  const scrollThreshold = 5; // Only process changes larger than this
+  const throttleMs = config.throttleMs || 16; // Default to 16ms (~60fps)
+  
+  // Calculate how often we need to process scroll events
+  // based on the configured throttle value
+  let lastProcessTime = 0;
   
   return {
     /**
@@ -59,14 +66,35 @@ function createTraditionalScrollTracker(
      */
     setup: (): () => void => {
       // Create optimized handler function
-      scrollHandler = (e: Event): void => {
-        if (scrollRAF) return;
+      const scrollHandler = (e: Event): void => {
+        const currentScrollTop = (e.target as HTMLElement).scrollTop;
         
-        scrollRAF = requestAnimationFrame(() => {
-          const scrollTop = (e.target as HTMLElement).scrollTop;
-          callbacks.onScroll(scrollTop);
-          scrollRAF = null;
-        });
+        // Skip processing if scroll amount is too small
+        if (Math.abs(currentScrollTop - lastScrollTop) < scrollThreshold) {
+          return;
+        }
+        
+        // Apply throttling based on time
+        const now = Date.now();
+        if (now - lastProcessTime < throttleMs) {
+          // If we're already waiting for a frame, don't schedule another one
+          if (scrollRAF) return;
+          
+          // Schedule processing on next frame
+          scrollRAF = requestAnimationFrame(() => {
+            lastScrollTop = currentScrollTop;
+            lastProcessTime = Date.now();
+            callbacks.onScroll(currentScrollTop);
+            scrollRAF = null;
+          });
+          
+          return;
+        }
+        
+        // Process immediately if enough time has passed
+        lastScrollTop = currentScrollTop;
+        lastProcessTime = now;
+        callbacks.onScroll(currentScrollTop);
       };
       
       // Add listener with passive option for better performance
@@ -74,10 +102,7 @@ function createTraditionalScrollTracker(
       
       // Return cleanup function
       return () => {
-        if (scrollHandler) {
-          container.removeEventListener('scroll', scrollHandler);
-          scrollHandler = null;
-        }
+        container.removeEventListener('scroll', scrollHandler);
         
         if (scrollRAF) {
           cancelAnimationFrame(scrollRAF);
@@ -106,6 +131,7 @@ function createIntersectionScrollTracker(
   let intersectionObserver: IntersectionObserver | null = null;
   let throttledScrollHandler: ((e: Event) => void) | null = null;
   let scrollTimeout: number | null = null;
+  let isIntersecting = false;
   
   return {
     /**
@@ -116,7 +142,7 @@ function createIntersectionScrollTracker(
       // Fall back to scroll events if IntersectionObserver not supported
       if (!('IntersectionObserver' in window)) {
         console.warn('IntersectionObserver not supported, falling back to scroll events');
-        const tracker = createTraditionalScrollTracker(container, callbacks);
+        const tracker = createTraditionalScrollTracker(container, {}, callbacks);
         return tracker.setup();
       }
       
@@ -127,7 +153,13 @@ function createIntersectionScrollTracker(
       
       // Create intersection observer
       intersectionObserver = new IntersectionObserver((entries) => {
+        // Early exit if we're already handling an intersection
+        if (isIntersecting) return;
+        
+        isIntersecting = true;
+        
         let needsUpdate = false;
+        let bottomVisible = false;
         
         entries.forEach(entry => {
           // Top sentinel handles scrolling up
@@ -137,15 +169,33 @@ function createIntersectionScrollTracker(
           
           // Bottom sentinel handles loading more content
           if (entry.target === elements.bottomSentinel && entry.isIntersecting) {
-            callbacks.onLoadMore();
+            bottomVisible = true;
             needsUpdate = true;
           }
         });
+        
+        // Load more content if bottom is visible
+        if (bottomVisible) {
+          // Debounce load more operations
+          if (scrollTimeout !== null) {
+            clearTimeout(scrollTimeout);
+          }
+          
+          scrollTimeout = window.setTimeout(() => {
+            callbacks.onLoadMore();
+            scrollTimeout = null;
+          }, 100);
+        }
         
         // Update visible items if needed
         if (needsUpdate) {
           callbacks.onScroll(container.scrollTop);
         }
+        
+        // Reset flag after a short delay
+        setTimeout(() => {
+          isIntersecting = false;
+        }, 100);
       }, { 
         root: container,
         // Use a large margin to trigger earlier
@@ -165,19 +215,20 @@ function createIntersectionScrollTracker(
       // We still need minimal scroll handling for position updates
       // but much less frequent than full scroll handler
       const lightScrollHandler = () => {
-        requestAnimationFrame(() => {
+        // Only update if we're not already handling an intersection
+        if (!isIntersecting) {
           callbacks.onScroll(container.scrollTop);
-        });
+        }
       };
       
       // Use a throttled scroll event for position updates
-      throttledScrollHandler = () => {
-        if (scrollTimeout !== null) return;
+      let lastTime = 0;
+      throttledScrollHandler = (e: Event) => {
+        const now = Date.now();
+        if (now - lastTime < 200) return; // 5fps for background updates
         
-        scrollTimeout = window.setTimeout(() => {
-          lightScrollHandler();
-          scrollTimeout = null;
-        }, 100); // Lower frequency for position updates
+        lastTime = now;
+        lightScrollHandler();
       };
       
       container.addEventListener('scroll', throttledScrollHandler, { passive: true });
@@ -212,14 +263,41 @@ function createIntersectionScrollTracker(
 
 /**
  * Creates a hybrid scroll tracker using both traditional and intersection approaches
+ * This approach is optimized to use the best of both worlds:
+ * - Intersection observer for detecting when to load more and large scroll changes
+ * - Regular scroll events (at low frequency) for smooth position updates
  */
 function createHybridScrollTracker(
   container: HTMLElement,
   elements: ListManagerElements,
   callbacks: { onScroll: (scrollTop: number) => void; onLoadMore: () => void }
 ): ScrollTracker {
-  const traditionalTracker = createTraditionalScrollTracker(container, callbacks);
-  const intersectionTracker = createIntersectionScrollTracker(container, elements, callbacks);
+  // Configure a highly optimized scroll tracker for regular updates
+  const scrollConfig: ListManagerConfig = {
+    throttleMs: 32 // ~30fps for regular scroll updates
+  };
+  
+  const scrollTracker = createTraditionalScrollTracker(container, scrollConfig, {
+    // Smooth scroll updates from the traditional tracker
+    onScroll: callbacks.onScroll,
+    // Never trigger load more from scroll events in hybrid mode
+    onLoadMore: () => {}
+  });
+  
+  // Configure intersection observer for load-more detection only
+  const intersectionTracker = createIntersectionScrollTracker(container, elements, {
+    // Minimal scroll updates from intersection events
+    onScroll: (scrollTop) => {
+      // Only update on major position changes
+      const currentScrollTop = container.scrollTop;
+      if (Math.abs(currentScrollTop - scrollTop) > 50) {
+        callbacks.onScroll(currentScrollTop);
+      }
+    },
+    // Always use intersection observer for load more
+    onLoadMore: callbacks.onLoadMore
+  });
+  
   let cleanupFunctions: (() => void)[] = [];
   
   return {
@@ -229,7 +307,7 @@ function createHybridScrollTracker(
      */
     setup: (): () => void => {
       // Use both methods simultaneously
-      cleanupFunctions.push(traditionalTracker.setup());
+      cleanupFunctions.push(scrollTracker.setup());
       cleanupFunctions.push(intersectionTracker.setup());
       
       return () => {
@@ -242,7 +320,7 @@ function createHybridScrollTracker(
      * Gets current scroll position
      */
     getScrollTop: (): number => {
-      return traditionalTracker.getScrollTop();
+      return scrollTracker.getScrollTop();
     }
   };
 }

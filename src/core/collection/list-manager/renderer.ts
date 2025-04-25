@@ -21,6 +21,7 @@ export const createRenderer = (
   // State for renderer
   let renderHook: ((item: any, element: HTMLElement) => void) | null = null;
   const itemElements = new Map<string, HTMLElement>();
+  let lastVisibleRange: VisibleRange = { start: 0, end: 0 };
   
   /**
    * Create a wrapped renderItem function with hooks and optimizations
@@ -29,6 +30,14 @@ export const createRenderer = (
    * @returns DOM element
    */
   const createItemElement = (item: any, index: number): HTMLElement => {
+    // Skip invalid items
+    if (!item) {
+      console.warn('Attempted to render undefined item at index', index);
+      const placeholder = document.createElement('div');
+      placeholder.style.height = `${config.itemHeight}px`;
+      return placeholder;
+    }
+    
     // Check for recycled element first
     const recycled = recyclePool.getRecycledElement(item);
     
@@ -61,6 +70,39 @@ export const createRenderer = (
     return element;
   };
   
+  /**
+   * Determine if we should do a partial update or full rerender
+   * @param currentVisibleIds Set of currently visible item IDs
+   * @param previousVisibleIds Set of previously visible item IDs
+   * @returns Whether to do a partial update
+   */
+  const shouldUsePartialUpdate = (
+    currentVisibleIds: Set<string>,
+    previousVisibleIds: Set<string>,
+    visibleRange: VisibleRange
+  ): boolean => {
+    // If range has changed dramatically, do a full rerender
+    const rangeDifference = Math.abs(
+      (visibleRange.end - visibleRange.start) - 
+      (lastVisibleRange.end - lastVisibleRange.start)
+    );
+    
+    if (rangeDifference > 10) {
+      return false;
+    }
+    
+    // Count how many items are the same
+    let sameItemCount = 0;
+    for (const id of currentVisibleIds) {
+      if (previousVisibleIds.has(id)) {
+        sameItemCount++;
+      }
+    }
+    
+    // If more than 50% of items are the same, do partial update
+    return sameItemCount >= currentVisibleIds.size / 2;
+  };
+  
   return {
     /**
      * Sets a render hook function that will be called for each rendered item
@@ -86,79 +128,155 @@ export const createRenderer = (
         return new Map();
       }
       
-      // Save references to existing elements for recycling
-      const existingElements = new Map<string, HTMLElement>();
-      Array.from(elements.content.children).forEach(child => {
-        if (child === elements.topSentinel || child === elements.bottomSentinel) return;
-        
-        const id = (child as HTMLElement).getAttribute('data-id');
-        if (id) {
-          existingElements.set(id, child as HTMLElement);
-          child.remove(); // Remove but keep reference
-        }
-      });
+      // Skip rendering if range hasn't changed
+      if (visibleRange.start === lastVisibleRange.start && 
+          visibleRange.end === lastVisibleRange.end) {
+        return itemElements;
+      }
       
-      // Slice the visible items
-      const visibleItems = items.slice(visibleRange.start, visibleRange.end).filter(item => item !== undefined);
+      // Save previous visible range
+      const prevVisibleRange = lastVisibleRange;
+      lastVisibleRange = visibleRange;
+      
+      // Cache sentinel elements if they exist
+      const topSentinel = elements.topSentinel;
+      const bottomSentinel = elements.bottomSentinel;
       
       // Calculate positions for each visible item
       const positions = calculateItemPositions(items, visibleRange, itemMeasurement);
       
-      // Create document fragment for batch DOM updates
-      const fragment = document.createDocumentFragment();
+      // Get current visible IDs
+      const currentVisibleIds = new Set(positions.map(p => p.item.id));
+      const previousVisibleIds = new Set(itemElements.keys());
       
-      // Add sentinel elements back to fragment if they exist
-      if (elements.topSentinel) fragment.appendChild(elements.topSentinel);
+      // Determine if we should do a partial update
+      const doPartialUpdate = shouldUsePartialUpdate(
+        currentVisibleIds, 
+        previousVisibleIds,
+        visibleRange
+      );
       
-      // Clear the item elements map before adding new elements
-      itemElements.clear();
-      
-      // Render visible items
-      positions.forEach(({ index, item, offset }) => {
-        let element: HTMLElement;
+      if (doPartialUpdate) {
+        // Partial update - only add/remove/reposition necessary items
         
-        // Reuse existing element if available
-        if (existingElements.has(item.id)) {
-          element = existingElements.get(item.id)!;
-          existingElements.delete(item.id);
-        } else {
-          element = createItemElement(item, index);
+        // Find items to add and remove
+        const toAdd = positions.filter(p => !previousVisibleIds.has(p.item.id));
+        const toRemove = Array.from(itemElements.entries())
+                         .filter(([id]) => !currentVisibleIds.has(id));
+        
+        // Remove items that are no longer visible
+        toRemove.forEach(([id, element]) => {
+          recyclePool.recycleElement(element);
+          itemElements.delete(id);
+          element.remove();
+        });
+        
+        // Add new items
+        if (toAdd.length > 0) {
+          const fragment = document.createDocumentFragment();
+          
+          toAdd.forEach(({ index, item, offset }) => {
+            const element = createItemElement(item, index);
+            
+            element.style.position = 'absolute';
+            element.style.top = `${offset}px`;
+            element.style.left = '0';
+            element.style.width = '100%';
+            
+            fragment.appendChild(element);
+            itemElements.set(item.id, element);
+            
+            if (!itemMeasurement.getAllHeights().has(item.id)) {
+              element.dataset.needsMeasurement = 'true';
+            }
+          });
+          
+          elements.content.appendChild(fragment);
         }
         
-        if (!element) return;
+        // Reposition existing items
+        positions.forEach(({ item, offset }) => {
+          if (itemElements.has(item.id)) {
+            const element = itemElements.get(item.id)!;
+            if (parseInt(element.style.top, 10) !== offset) {
+              element.style.top = `${offset}px`;
+            }
+          }
+        });
+      } else {
+        // Full rerender - replace all elements
         
-        // Position the element absolutely
-        element.style.display = '';
-        element.style.position = 'absolute';
-        element.style.top = `${offset}px`;
-        element.style.left = '0';
-        element.style.width = '100%';
+        // Save references to existing elements for recycling
+        const existingElements = new Map<string, HTMLElement>();
+        Array.from(elements.content.children).forEach(child => {
+          if (child === topSentinel || child === bottomSentinel) return;
+          
+          const id = (child as HTMLElement).getAttribute('data-id');
+          if (id) {
+            existingElements.set(id, child as HTMLElement);
+            child.remove(); // Remove but keep reference
+          }
+        });
         
-        // Add to fragment
-        fragment.appendChild(element);
+        // Create document fragment for batch DOM updates
+        const fragment = document.createDocumentFragment();
         
-        // Mark for measurement if height not known
-        if (!itemMeasurement.getAllHeights().has(item.id)) {
-          element.dataset.needsMeasurement = 'true';
-        }
+        // Clear the item elements map before adding new elements
+        itemElements.clear();
         
-        // Store the element reference
-        itemElements.set(item.id, element);
-      });
+        // Render visible items
+        positions.forEach(({ index, item, offset }) => {
+          let element: HTMLElement;
+          
+          // Reuse existing element if available
+          if (existingElements.has(item.id)) {
+            element = existingElements.get(item.id)!;
+            existingElements.delete(item.id);
+            
+            // Update position
+            element.style.top = `${offset}px`;
+          } else {
+            element = createItemElement(item, index);
+            
+            // Position the element absolutely
+            element.style.position = 'absolute';
+            element.style.top = `${offset}px`;
+            element.style.left = '0';
+            element.style.width = '100%';
+            
+            // Mark for measurement if height not known
+            if (!itemMeasurement.getAllHeights().has(item.id)) {
+              element.dataset.needsMeasurement = 'true';
+            }
+          }
+          
+          // Add to fragment
+          fragment.appendChild(element);
+          
+          // Store the element reference
+          itemElements.set(item.id, element);
+        });
+        
+        // Recycle any remaining elements
+        existingElements.forEach(element => {
+          recyclePool.recycleElement(element);
+        });
+        
+        // Batch DOM update
+        elements.content.innerHTML = '';
+        elements.content.appendChild(fragment);
+      }
       
-      // Add bottom sentinel after items if it exists
-      if (elements.bottomSentinel) fragment.appendChild(elements.bottomSentinel);
+      // Add sentinel elements back if they exist
+      if (topSentinel && !topSentinel.parentNode) {
+        elements.content.insertBefore(topSentinel, elements.content.firstChild);
+      }
       
-      // Recycle any remaining elements
-      existingElements.forEach(element => {
-        recyclePool.recycleElement(element);
-      });
+      if (bottomSentinel && !bottomSentinel.parentNode) {
+        elements.content.appendChild(bottomSentinel);
+      }
       
-      // Batch DOM update
-      elements.content.innerHTML = '';
-      elements.content.appendChild(fragment);
-      
-      return new Map(itemElements);
+      return itemElements;
     },
     
     /**

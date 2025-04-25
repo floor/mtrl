@@ -5,21 +5,84 @@ import { Collection } from '../collection';
  * Configuration for list manager
  */
 export interface ListManagerConfig {
+  /**
+   * Transform function for items
+   */
   transform?: (item: any) => any;
+  
+  /**
+   * Base URL for API requests
+   */
   baseUrl?: string | null;
+  
+  /**
+   * Function to render an item
+   */
   renderItem: (item: any, index: number, recycledElement?: HTMLElement) => HTMLElement;
+  
+  /**
+   * Callback after load operations
+   */
   afterLoad?: (result: LoadStatus) => void;
+  
+  /**
+   * Items for static mode
+   */
   staticItems?: any[] | null;
+  
+  /**
+   * Number of extra items to render outside viewport
+   */
   renderBufferSize?: number;
+  
+  /**
+   * Number of items to keep in DOM but invisible
+   */
   overscanCount?: number;
+  
+  /**
+   * Default height for items
+   */
   itemHeight?: number;
+  
+  /**
+   * Whether to measure initial items
+   */
   measureItemsInitially?: boolean;
+  
+  /**
+   * Number of items per page
+   */
   pageSize?: number;
+  
+  /**
+   * Threshold for loading more (0.0-1.0)
+   */
   loadThreshold?: number;
+  
+  /**
+   * Throttle time for scroll events (ms)
+   */
   throttleMs?: number;
+  
+  /**
+   * Whether to deduplicate items by ID
+   */
   dedupeItems?: boolean;
+  
+  /**
+   * Scroll detection strategy
+   */
   scrollStrategy?: ScrollStrategy;
-  items?: any[]; // For backward compatibility
+  
+  /**
+   * Legacy support for static items
+   */
+  items?: any[];
+  
+  /**
+   * Collection name
+   */
   collection?: string;
 }
 
@@ -32,19 +95,74 @@ export type ScrollStrategy = 'scroll' | 'intersection' | 'hybrid';
  * List manager interface
  */
 export interface ListManager {
+  /**
+   * Loads items from API or static data
+   */
   loadItems: (params?: any) => Promise<{items: any[], meta: PaginationMeta}>;
+  
+  /**
+   * Loads more items (next page)
+   */
   loadMore: () => Promise<{hasNext: boolean, items: any[]}>;
+  
+  /**
+   * Refreshes the list
+   */
   refresh: () => Promise<void>;
+  
+  /**
+   * Updates visible items based on scroll position
+   */
   updateVisibleItems: (scrollTop?: number) => void;
+  
+  /**
+   * Scrolls to a specific item by ID
+   */
   scrollToItem: (itemId: string, position?: ScrollToPosition) => void;
-  setItemHeights: (heightsMap: Record<string, number>) => void;
+  
+  /**
+   * Sets custom heights for items
+   */
+  setItemHeights: (heightsMap: Record<string, number>) => boolean;
+  
+  /**
+   * Gets the underlying collection
+   */
   getCollection: () => Collection<any>;
+  
+  /**
+   * Gets currently visible items
+   */
   getVisibleItems: () => any[];
+  
+  /**
+   * Gets all items
+   */
   getAllItems: () => any[];
+  
+  /**
+   * Checks if list is loading
+   */
   isLoading: () => boolean;
+  
+  /**
+   * Checks if there are more items to load
+   */
   hasNextPage: () => boolean;
+  
+  /**
+   * Checks if list is in API mode
+   */
   isApiMode: () => boolean;
+  
+  /**
+   * Sets a hook function for rendering
+   */
   setRenderHook?: (hookFn: (item: any, element: HTMLElement) => void) => void;
+  
+  /**
+   * Destroys the list manager
+   */
   destroy: () => void;
 }
 
@@ -115,22 +233,94 @@ export interface ListItem {
  * Internal list manager state
  */
 export interface ListManagerState {
+  /**
+   * All items
+   */
   items: any[];
+  
+  /**
+   * Currently visible items
+   */
   visibleItems: any[];
+  
+  /**
+   * Visible range indices
+   */
   visibleRange: { start: number; end: number };
+  
+  /**
+   * Total height of all items
+   */
   totalHeight: number;
+  
+  /**
+   * Whether total height needs recalculation
+   */
   totalHeightDirty: boolean;
+  
+  /**
+   * Map of item heights (legacy - use itemMeasurement)
+   */
   itemHeights: Map<string, number>;
+  
+  /**
+   * Whether list is currently loading
+   */
   loading: boolean;
+  
+  /**
+   * Current pagination cursor
+   */
   cursor: string | null;
+  
+  /**
+   * Whether there are more items to load
+   */
   hasNext: boolean;
+  
+  /**
+   * Map of item elements for DOM recycling
+   */
   itemElements: Map<string, HTMLElement>;
+  
+  /**
+   * Current scroll position
+   */
   scrollTop: number;
+  
+  /**
+   * Container height
+   */
   containerHeight: number;
+  
+  /**
+   * RequestAnimationFrame ID for scroll updates
+   */
   scrollRAF: number | null;
+  
+  /**
+   * RequestAnimationFrame ID for resize updates
+   */
+  resizeRAF: number | null;
+  
+  /**
+   * Whether component is mounted
+   */
   mounted: boolean;
+  
+  /**
+   * Total item count (may differ from items.length)
+   */
   itemCount: number;
+  
+  /**
+   * Whether list is in static mode
+   */
   useStatic: boolean;
+  
+  /**
+   * Custom render hook function
+   */
   renderHook: ((item: any, element: HTMLElement) => void) | null;
 }
 
@@ -138,10 +328,29 @@ export interface ListManagerState {
  * DOM elements used by the list manager
  */
 export interface ListManagerElements {
+  /**
+   * Container element
+   */
   container: HTMLElement;
+  
+  /**
+   * Content container element
+   */
   content: HTMLElement;
+  
+  /**
+   * Spacer element for scroll height
+   */
   spacer: HTMLElement;
+  
+  /**
+   * Top sentinel for intersection detection
+   */
   topSentinel?: HTMLElement | null;
+  
+  /**
+   * Bottom sentinel for intersection detection
+   */
   bottomSentinel?: HTMLElement | null;
 }
 
@@ -149,6 +358,13 @@ export interface ListManagerElements {
  * Visible range calculation result
  */
 export interface VisibleRange {
+  /**
+   * Start index
+   */
   start: number;
+  
+  /**
+   * End index
+   */
   end: number;
 }

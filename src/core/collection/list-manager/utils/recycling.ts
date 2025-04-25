@@ -6,6 +6,7 @@
  */
 export const createRecyclingPool = () => {
   const pools = new Map<string, HTMLElement[]>();
+  const poolSizeLimit = 50; // Limit pool size to prevent memory leaks
   
   return {
     /**
@@ -34,22 +35,32 @@ export const createRecyclingPool = () => {
     recycleElement: (element: HTMLElement, forceRecycle = false): void => {
       if (!element) return;
       
-      // Check if recycling is appropriate (not always needed for simple items)
+      // Skip recycling for simple elements unless forced
       if (!forceRecycle && element.innerHTML.length < 100) return;
       
-      // Get type from data attribute or use default
       const itemType = element.dataset.itemType || 'default';
       
       if (!pools.has(itemType)) {
         pools.set(itemType, []);
       }
       
-      // Basic cleanup - move offscreen
-      element.style.display = 'none';
-      element.style.top = '-9999px';
+      const pool = pools.get(itemType)!;
       
-      // Add to appropriate pool
-      pools.get(itemType)!.push(element);
+      // Limit pool size to prevent memory bloat
+      if (pool.length < poolSizeLimit) {
+        // Clear internal state to prevent memory leaks
+        element.style.display = 'none';
+        element.style.top = '-9999px';
+        
+        // Remove any data-* attributes except itemType
+        for (const key in element.dataset) {
+          if (key !== 'itemType') {
+            delete element.dataset[key];
+          }
+        }
+        
+        pool.push(element);
+      }
     },
     
     /**
