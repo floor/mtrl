@@ -13,11 +13,11 @@ export function createInitialState(config: ListManagerConfig): ListManagerState 
   const useStatic = !useApi;
   
   // Get initial static items
-  const initialItems = getStaticItems(config);
+  const initialItems = useStatic ? getStaticItems(config) : [];
   
-  // Create state object
+  // Create more efficient initial state
   return {
-    items: useStatic && initialItems ? [...initialItems] : [],
+    items: initialItems,  // Start with initial items for static mode
     visibleItems: [],
     visibleRange: { start: 0, end: 0 },
     totalHeight: 0,
@@ -30,8 +30,9 @@ export function createInitialState(config: ListManagerConfig): ListManagerState 
     scrollTop: 0,
     containerHeight: 0,
     scrollRAF: null,
+    resizeRAF: null, // For resize handling
     mounted: false,
-    itemCount: useStatic && initialItems ? initialItems.length : 0,
+    itemCount: initialItems.length,  // Initialize with correct count
     useStatic: useStatic,
     renderHook: null
   };
@@ -50,35 +51,43 @@ export function updateStateAfterLoad(
   newItems: any[],
   meta: { cursor?: string | null; hasNext?: boolean; total?: number },
   dedupe: boolean = true
-): ListManagerState {
+): Partial<ListManagerState> {
   // Process metadata
   const cursor = meta.cursor ?? null;
   const hasNext = meta.hasNext ?? false;
   
   // Deduplicate items if needed
   let itemsToAdd = newItems;
-  if (dedupe) {
-    const existingIds = new Set(state.items.map(item => item.id));
-    itemsToAdd = newItems.filter(item => !existingIds.has(item.id));
+  if (dedupe && newItems.length > 0 && state.items.length > 0) {
+    // Use a Set for faster lookup with large arrays
+    const existingIds = new Set<string>();
+    
+    // Only build the id cache if we have items and need to dedupe
+    for (let i = 0; i < state.items.length; i++) {
+      const item = state.items[i];
+      if (item && item.id) {
+        existingIds.add(item.id);
+      }
+    }
+    
+    // Filter out items that already exist in the collection
+    itemsToAdd = newItems.filter(item => item && item.id && !existingIds.has(item.id));
   }
   
-  // Create updated state
-  const updatedState: ListManagerState = {
-    ...state,
-    items: [...state.items, ...itemsToAdd],
+  // Create updated items array
+  const updatedItems = [...state.items, ...itemsToAdd];
+  
+  // Calculate item count - use meta.total if provided, otherwise use item count
+  const itemCount = meta.total !== undefined ? meta.total : updatedItems.length;
+  
+  // Return only changed properties
+  return {
+    items: updatedItems,
     cursor,
     hasNext,
-    totalHeightDirty: true
+    totalHeightDirty: true,
+    itemCount
   };
-  
-  // Update item count if provided
-  if (meta.total) {
-    updatedState.itemCount = meta.total;
-  } else {
-    updatedState.itemCount = updatedState.items.length + (hasNext ? 1 : 0);
-  }
-  
-  return updatedState;
 }
 
 /**
@@ -92,9 +101,8 @@ export function updateVisibleItems(
   state: ListManagerState,
   visibleItems: any[],
   visibleRange: { start: number; end: number }
-): ListManagerState {
+): Partial<ListManagerState> {
   return {
-    ...state,
     visibleItems,
     visibleRange
   };
@@ -109,9 +117,8 @@ export function updateVisibleItems(
 export function updateTotalHeight(
   state: ListManagerState,
   totalHeight: number
-): ListManagerState {
+): Partial<ListManagerState> {
   return {
-    ...state,
     totalHeight,
     totalHeightDirty: false
   };
@@ -126,11 +133,8 @@ export function updateTotalHeight(
 export function updateLoadingState(
   state: ListManagerState,
   loading: boolean
-): ListManagerState {
-  return {
-    ...state,
-    loading
-  };
+): Partial<ListManagerState> {
+  return { loading };
 }
 
 /**
@@ -142,13 +146,11 @@ export function updateLoadingState(
 export function resetState(
   state: ListManagerState,
   initialItems: any[] = []
-): ListManagerState {
+): Partial<ListManagerState> {
   return {
-    ...state,
     items: state.useStatic ? [...initialItems] : [],
     visibleItems: [],
     visibleRange: { start: 0, end: 0 },
-    itemHeights: new Map<string, number>(),
     itemElements: new Map<string, HTMLElement>(),
     cursor: null,
     hasNext: !state.useStatic, // Reset hasNext based on data type
@@ -163,15 +165,14 @@ export function resetState(
  * @returns Load parameters object
  */
 export function createLoadParams(state: ListManagerState): Record<string, any> {
-  let loadParams: Record<string, any> = {};
+  const loadParams: Record<string, any> = {};
   
   if (state.cursor) {
     loadParams.cursor = state.cursor;
     
-    // If cursor can be interpreted as a page number, also pass it directly
-    const pageNum = parseInt(state.cursor, 10);
-    if (!isNaN(pageNum)) {
-      loadParams.page = pageNum;
+    // Add page param if cursor is numeric
+    if (/^\d+$/.test(state.cursor)) {
+      loadParams.page = parseInt(state.cursor, 10);
     }
   }
   
