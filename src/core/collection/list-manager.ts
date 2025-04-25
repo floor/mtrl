@@ -1,7 +1,10 @@
 // src/core/collection/list-manager.ts
 
+// Key fix: Modified how static items are handled in the loadItems function
+
 import { createRouteAdapter } from './adapters/route';
 import { Collection, COLLECTION_EVENTS } from './collection';
+// import { normalizeBaseUrl } from '../utils/url'
 
 /**
  * Default configuration for list manager
@@ -30,7 +33,7 @@ const DEFAULT_CONFIG = {
  */
 export interface ListManagerConfig {
   transform?: (item: any) => any;
-  baseUrl?: string;
+  baseUrl?: string | null;
   renderItem: (item: any, index: number, recycledElement?: HTMLElement) => HTMLElement;
   afterLoad?: (result: LoadStatus) => void;
   staticItems?: any[] | null;
@@ -43,6 +46,7 @@ export interface ListManagerConfig {
   throttleMs?: number;
   dedupeItems?: boolean;
   scrollStrategy?: 'scroll' | 'intersection' | 'hybrid';
+  items?: any[]; // For backward compatibility
 }
 
 /**
@@ -60,6 +64,7 @@ export interface ListManager {
   getAllItems: () => any[];
   isLoading: () => boolean;
   hasNextPage: () => boolean;
+  isApiMode: () => boolean;
   setRenderHook?: (hookFn: (item: any, element: HTMLElement) => void) => void;
   destroy: () => void;
 }
@@ -133,7 +138,7 @@ export const createListManager = (collection: string, container: HTMLElement, co
   // Merge configuration with defaults
   const {
     transform = (item) => item,
-    baseUrl = 'http://localhost:4000/api',
+    baseUrl = null,
     renderItem,
     afterLoad,
     staticItems = null,
@@ -149,9 +154,22 @@ export const createListManager = (collection: string, container: HTMLElement, co
     throw new Error('List manager requires a renderItem function');
   }
   
+  // Determine mode based on baseUrl presence
+  const useApi = baseUrl !== null;
+  const useStatic = !useApi;
+  
+  // Get initial static items from either staticItems or items property for backward compatibility
+  const initialItems = staticItems || config.items || [];
+  
+  console.log('Mode determination:', {
+    baseUrl,
+    useApi,
+    useStatic
+  });
+  
   // Initialize state
   const state = {
-    items: staticItems ? [...staticItems] : [],
+    items: useStatic && initialItems ? [...initialItems] : [],
     visibleItems: [],
     visibleRange: { start: 0, end: 0 },
     totalHeight: 0,
@@ -159,14 +177,14 @@ export const createListManager = (collection: string, container: HTMLElement, co
     itemHeights: new Map<string, number>(),
     loading: false,
     cursor: null as string | null,
-    hasNext: staticItems ? false : true, // No more items if using static data
+    hasNext: useApi, // If using API, assume there might be data to load
     itemElements: new Map<string, HTMLElement>(),
     scrollTop: 0,
     containerHeight: 0,
     scrollRAF: null as number | null,
     mounted: false,
-    itemCount: staticItems ? staticItems.length : 0,
-    useStatic: !!staticItems, // Flag indicating we're using static data
+    itemCount: useStatic && initialItems ? initialItems.length : 0,
+    useStatic: useStatic,
     renderHook: null as ((item: any, element: HTMLElement) => void) | null
   };
   
@@ -178,9 +196,13 @@ export const createListManager = (collection: string, container: HTMLElement, co
   let intersectionObserver: IntersectionObserver | null = null;
   let scrollHandler: ((e: Event) => void) | null = null;
   
-  // Initialize route adapter (only if not using static data)
-  const adapter = !state.useStatic ? createRouteAdapter({
-    base: baseUrl,
+  console.log('createListManager called for collection:', collection);
+  console.log('Config:', config);
+  console.log('Initial items:', initialItems);
+
+  // Initialize route adapter (only if in API mode)
+  const adapter = useApi ? createRouteAdapter({
+    base: baseUrl!,
     endpoints: {
       list: `/${collection}`
     },
@@ -189,6 +211,10 @@ export const createListManager = (collection: string, container: HTMLElement, co
     }
   }) : null;
   
+  console.log('Adapter created:', adapter ? 'yes' : 'no');
+  console.log('Using API mode:', useApi);
+  console.log('Using static items:', state.useStatic);
+
   // Create element recycling pool for better performance
   const recyclePool: Map<string, HTMLElement[]> = new Map();
   
@@ -273,6 +299,7 @@ export const createListManager = (collection: string, container: HTMLElement, co
    * @returns Rendered DOM element
    */
   const wrappedRenderItem = (item: any, index: number): HTMLElement => {
+    console.log('Rendering item:', item);
     // Check for recycled element first
     const recycled = getRecycledElement(item);
     
@@ -312,14 +339,17 @@ export const createListManager = (collection: string, container: HTMLElement, co
    */
   const loadItems = async (params = {}): Promise<{items: any[], meta: PaginationMeta}> => {
     try {
+      console.log('Loading items with params:', params)
       state.loading = true;
       
       // For static data, simulate loading by returning available items
       if (state.useStatic) {
-        const currentItems = state.items;
+        console.log('Using static data source')
+        console.log('Current static items:', state.items);
         
+        // FIX: Always return a copy of state.items to ensure proper handling
         return {
-          items: currentItems,
+          items: [...state.items],
           meta: {
             cursor: null,
             hasNext: false // Static data has no "next" page
@@ -329,15 +359,22 @@ export const createListManager = (collection: string, container: HTMLElement, co
       
       // For API-connected lists, use the adapter
       if (!adapter) {
+        console.error('Cannot load items: API adapter not initialized')
         throw new Error('Cannot load items: API adapter not initialized');
       }
       
+      console.log('Calling adapter.read with params:', params)
       const response = await adapter.read(params);
+      console.log('Adapter read response:', response)
       
       // Process items and update state
-      const items = response.items.map(transform);
+      const items = Array.isArray(response.items) ? response.items.map(transform) : [];
+      console.log('Transformed items:', items)
+      
       state.cursor = response.meta?.cursor;
       state.hasNext = !!response.meta?.hasNext;
+      
+      console.log('Updated state: cursor=', state.cursor, 'hasNext=', state.hasNext)
       
       // Remove duplicates if enabled
       let newItems = items;
@@ -362,13 +399,15 @@ export const createListManager = (collection: string, container: HTMLElement, co
       
       // Call afterLoad callback if provided
       if (afterLoad) {
-        afterLoad({
+        const loadData = {
           loading: false,
           hasNext: state.hasNext,
           hasPrev: !!params.cursor,
           items: newItems,
           allItems: state.items
-        });
+        };
+        console.log('Calling afterLoad with:', loadData)
+        afterLoad(loadData);
       }
       
       return {
@@ -397,13 +436,18 @@ export const createListManager = (collection: string, container: HTMLElement, co
    */
   const measureItemHeight = (item: any, element: HTMLElement): number => {
     if (!element) return listConfig.itemHeight;
+    if (!item) return listConfig.itemHeight;
+    
+    // Get item ID, handling the transformed structure
+    const itemId = item.id || (item.original && item.original.id);
+    if (!itemId) return listConfig.itemHeight;
     
     // Get element height
     const height = element.offsetHeight || listConfig.itemHeight;
     
     // Store height for this item
     if (height > 0) {
-      state.itemHeights.set(item.id, height);
+      state.itemHeights.set(itemId, height);
     }
     
     return height;
@@ -415,9 +459,23 @@ export const createListManager = (collection: string, container: HTMLElement, co
    * @returns {number} Item height in pixels
    */
   const getItemHeight = (item: any): number => {
+    // Handle case when item is undefined
+    if (!item) {
+      console.warn('Attempted to get height of undefined item');
+      return listConfig.itemHeight;
+    }
+    
+    // Get the item ID, which might be directly on the item or in the original property
+    const itemId = item.id || (item.original && item.original.id);
+    
+    if (!itemId) {
+      console.warn('Item has no ID', item);
+      return listConfig.itemHeight;
+    }
+    
     // Use cached height if available
-    if (state.itemHeights.has(item.id)) {
-      return state.itemHeights.get(item.id) || listConfig.itemHeight;
+    if (state.itemHeights.has(itemId)) {
+      return state.itemHeights.get(itemId) || listConfig.itemHeight;
     }
     
     // Default to configured item height
@@ -515,6 +573,12 @@ export const createListManager = (collection: string, container: HTMLElement, co
     
     // Find the first visible item
     for (let i = 0; i < state.items.length; i++) {
+      // Add null/undefined check
+      if (!state.items[i]) {
+        console.warn(`Item at index ${i} is undefined`);
+        continue;
+      }
+      
       const itemHeight = getItemHeight(state.items[i]);
       
       if (currentOffset + itemHeight > scrollTop - (renderBufferSize * listConfig.itemHeight)) {
@@ -594,8 +658,11 @@ export const createListManager = (collection: string, container: HTMLElement, co
     });
     
     // Slice the visible items
-    const visibleItems = state.items.slice(visibleRange.start, visibleRange.end);
+    const visibleItems = state.items.slice(visibleRange.start, visibleRange.end).filter(item => item !== undefined);
     state.visibleItems = visibleItems;
+    
+    console.log('Visible range:', visibleRange);
+    console.log('Visible items:', visibleItems);
     
     // Calculate positions for each visible item
     let currentOffset = 0;
@@ -667,7 +734,12 @@ export const createListManager = (collection: string, container: HTMLElement, co
       elementsToMeasure.forEach(el => {
         const id = (el as HTMLElement).getAttribute('data-id');
         if (id) {
-          const item = state.items.find(item => item.id === id);
+          // Find the item, accounting for possible transformed structures
+          const item = state.items.find(item => {
+            const itemId = item && (item.id || (item.original && item.original.id));
+            return itemId === id;
+          });
+          
           if (item) {
             const height = (el as HTMLElement).offsetHeight;
             if (height > 0) {
@@ -721,7 +793,24 @@ export const createListManager = (collection: string, container: HTMLElement, co
       return { hasNext: false, items: [] };
     }
     
-    const result = await loadItems({ cursor: state.cursor });
+    // Improved loadMore function to handle numeric cursors
+    // If the cursor is a numeric string, we need to pass it as both cursor and page
+    // to ensure compatibility with different API implementations
+    let loadParams: Record<string, any> = {};
+    
+    if (state.cursor) {
+      loadParams.cursor = state.cursor;
+      
+      // If cursor can be interpreted as a page number, also pass it directly
+      const pageNum = parseInt(state.cursor, 10);
+      if (!isNaN(pageNum)) {
+        console.log(`Loading next page: ${pageNum} (from cursor)`);
+        loadParams.page = pageNum;
+      }
+    }
+    
+    console.log('Loading more items with params:', loadParams);
+    const result = await loadItems(loadParams);
     updateVisibleItems();
     
     return {
@@ -729,7 +818,7 @@ export const createListManager = (collection: string, container: HTMLElement, co
       items: result.items
     };
   };
-  
+
   /**
    * Set up scroll event handler for traditional approach
    */
@@ -925,9 +1014,9 @@ export const createListManager = (collection: string, container: HTMLElement, co
     itemsCollection.clear();
     
     // For static data, re-add the original items
-    if (state.useStatic && staticItems) {
-      state.items = [...staticItems];
-      await itemsCollection.add(staticItems);
+    if (state.useStatic && initialItems && initialItems.length > 0) {
+      state.items = [...initialItems];
+      await itemsCollection.add(initialItems);
     } else {
       // Load initial data from API
       await loadItems();
@@ -1007,6 +1096,7 @@ export const createListManager = (collection: string, container: HTMLElement, co
    * Initialize the virtual list
    */
   const initialize = (): () => void => {
+    console.log('Initializing list manager');
     // Set mounted flag
     state.mounted = true;
     
@@ -1027,18 +1117,24 @@ export const createListManager = (collection: string, container: HTMLElement, co
     });
     
     // If using static items, add them to the collection right away
-    if (state.useStatic && staticItems) {
-      itemsCollection.add(staticItems)
+    if (state.useStatic && initialItems && initialItems.length > 0) {
+      console.log('Using static items:', initialItems);
+      itemsCollection.add(initialItems)
         .then(() => {
-          updateVisibleItems();
+          // FIX: Force an update after adding items
+          setTimeout(() => {
+            updateVisibleItems();
+          }, 10);
         })
         .catch(err => {
           console.error('Error adding static items to collection:', err);
         });
     } else {
       // Initial load for API data
+      console.log('Loading initial data from API');
       loadItems()
-        .then(() => {
+        .then((result) => {
+          console.log('Initial data loaded:', result);
           updateVisibleItems();
         })
         .catch(err => {
@@ -1119,6 +1215,7 @@ export const createListManager = (collection: string, container: HTMLElement, co
     getAllItems: () => state.items,
     isLoading: () => state.loading,
     hasNextPage: () => state.hasNext,
+    isApiMode: () => useApi,
     
     // Hook for external code to affect rendering
     setRenderHook: (hookFn) => {

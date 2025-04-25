@@ -59,13 +59,10 @@ export const withListManager = (config) => component => {
     config.collection,
     component.element,
     {
-      transform: config.transform,
+      // Pass all original properties
+      ...config,
+      // Override specific ones
       renderItem: wrappedRenderItem,
-      itemHeight: config.itemHeight,
-      pageSize: config.pageSize,
-      renderBufferSize: config.renderBufferSize,
-      baseUrl: config.baseUrl,
-      staticItems: Array.isArray(config.items) ? config.items : null,
       afterLoad: (data) => {
         component.emit('load', data);
         if (config.afterLoad) config.afterLoad(data);

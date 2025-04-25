@@ -410,13 +410,13 @@ $opacity-transition: opacity $state-transition-duration $state-transition-easing
   }
 }
 
-// RTL Support
-@include m.rtl {
-  .#{$component}-section-title,
-  .#{$component}-item-text {
-    text-align: right;
-  }
-}
+// // RTL Support
+// @include m.rtl {
+//   .#{$component}-section-title,
+//   .#{$component}-item-text {
+//     text-align: right;
+//   }
+// }
 
 // High contrast mode for selected items
 @include m.high-contrast {
@@ -434,4 +434,5 @@ $opacity-transition: opacity $state-transition-duration $state-transition-easing
 
 @keyframes rotation {
   from { transform: rotate(0deg); }
-  to { transform: rotate(360deg
+  to { transform: rotate(360deg); }
+}
