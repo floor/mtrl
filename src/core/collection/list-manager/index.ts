@@ -81,7 +81,9 @@ export const createListManager = (
     headers: {
       'Content-Type': 'application/json'
     },
-    cache: true // Enable caching for API requests
+    cache: true, // Enable caching for API requests
+    // Pass the pagination configuration if provided
+    pagination: validatedConfig.pagination
   }) : null;
   
   // Track cleanup functions
@@ -113,7 +115,16 @@ export const createListManager = (
         throw new Error('Cannot load items: API adapter not initialized');
       }
       
+      // Debug log for parameters being sent to API
+      // console.log('Loading items with params:', params, 'Strategy:', state.paginationStrategy);
+      
       const response = await adapter.read(params);
+      
+      // Debug log for response from API
+      // console.log('API response:', {
+      //   items: response.items?.length,
+      //   meta: response.meta
+      // });
       
       // Process items
       const items = Array.isArray(response.items) 
@@ -128,16 +139,26 @@ export const createListManager = (
         validatedConfig.dedupeItems
       ));
       
-      // Add to collection, skipping items that already exist if deduplication is enabled
-      if (validatedConfig.dedupeItems) {
-        const existingIds = new Set(state.items.map(item => item.id).filter(Boolean));
-        const newItems = items.filter(item => !existingIds.has(item.id));
-        if (newItems.length > 0) {
-          await itemsCollection.add(newItems);
+      // For page-based pagination, don't add to collection if it's page 1 (replace instead)
+      if (state.paginationStrategy === 'page' && params.page === 1) {
+        // Clear existing collection
+        await itemsCollection.clear();
+        // Add all items from page 1
+        if (items.length > 0) {
+          await itemsCollection.add(items);
         }
       } else {
-        // Add all items regardless of duplication
-        await itemsCollection.add(items);
+        // Add to collection, skipping items that already exist if deduplication is enabled
+        if (validatedConfig.dedupeItems) {
+          const existingIds = new Set(state.items.map(item => item.id).filter(Boolean));
+          const newItems = items.filter(item => !existingIds.has(item.id));
+          if (newItems.length > 0) {
+            await itemsCollection.add(newItems);
+          }
+        } else {
+          // Add all items regardless of duplication
+          await itemsCollection.add(items);
+        }
       }
       
       // Set totalHeight as dirty to trigger recalculation
@@ -151,7 +172,7 @@ export const createListManager = (
         const loadData: LoadStatus = {
           loading: false,
           hasNext: state.hasNext,
-          hasPrev: !!params.cursor,
+          hasPrev: !!params.cursor || (params.page && params.page > 1),
           items: Object.freeze([...items]), // Freeze to prevent modification
           allItems: itemsCopy
         };
@@ -267,19 +288,61 @@ export const createListManager = (
   };
   
   /**
-   * Loads more items using cursor pagination
+   * Loads more items using appropriate pagination strategy
    * @returns {Promise<Object>} Load result
    */
   const loadMore = async (): Promise<{hasNext: boolean, items: any[]}> => {
-    if (state.loading || !state.hasNext) return { hasNext: state.hasNext, items: [] };
+    if (state.loading || !state.hasNext) {
+      return { hasNext: state.hasNext, items: [] };
+    }
     
     // If using static data, there are no more items to load
     if (state.useStatic) {
       return { hasNext: false, items: [] };
     }
     
+    // Get pagination strategy from configuration
+    const paginationStrategy = validatedConfig.pagination?.strategy || 'cursor';
+    
+    // Store the pagination strategy in state for future use
+    state.paginationStrategy = paginationStrategy;
+    
+    // For page-based pagination, we need to increment the page number
+    if (paginationStrategy === 'page') {
+      // If we have a numeric cursor, use that to determine the next page
+      if (state.cursor && /^\d+$/.test(state.cursor)) {
+        state.page = parseInt(state.cursor, 10);
+      } 
+      // Otherwise increment the current page
+      else if (state.page !== undefined) {
+        state.page += 1;
+      } 
+      // If no page set yet, start with page 1
+      else {
+        state.page = 1;
+      }
+      
+      // console.log(`Loading page ${state.page}`);
+    }
+    
     // Create load params for pagination
-    const loadParams = createLoadParams(state);
+    const loadParams = createLoadParams(state, paginationStrategy);
+    
+    // Add pageSize/limit regardless of strategy
+    if (!loadParams.limit && !loadParams.per_page) {
+      if (paginationStrategy === 'page') {
+        // For page-based, use perPage parameter
+        const perPageParam = validatedConfig.pagination?.perPageParamName || 'per_page';
+        loadParams[perPageParam] = validatedConfig.pageSize || 20;
+      } else {
+        // For other strategies, use limit parameter
+        const limitParam = validatedConfig.pagination?.limitParamName || 'limit';
+        loadParams[limitParam] = validatedConfig.pageSize || 20;
+      }
+    }
+    
+    // Log the params to help with debugging
+    // console.log(`Pagination strategy: ${paginationStrategy}, Load params:`, loadParams);
     
     const result = await loadItems(loadParams);
     updateVisibleItems(state.scrollTop);

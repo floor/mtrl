@@ -46,6 +46,13 @@ export interface ListManagerConfig {
   itemHeight?: number;
   
   /**
+   * Whether items can have varying heights
+   * When false (default), all items use the same height for better performance
+   * When true, each item's height is measured individually
+   */
+  dynamicItemSize?: boolean;
+  
+  /**
    * Whether to measure initial items
    */
   measureItemsInitially?: boolean;
@@ -232,6 +239,9 @@ export interface ListItem {
 /**
  * Internal list manager state
  */
+/**
+ * Internal list manager state
+ */
 export interface ListManagerState {
   /**
    * All items
@@ -272,6 +282,16 @@ export interface ListManagerState {
    * Current pagination cursor
    */
   cursor: string | null;
+  
+  /**
+   * Current page number (when using page-based pagination)
+   */
+  page?: number;
+  
+  /**
+   * Pagination strategy being used
+   */
+  paginationStrategy?: string;
   
   /**
    * Whether there are more items to load

@@ -17,40 +17,154 @@ const QUERY_PARAMS = {
 } as const;
 
 /**
+ * Pagination strategies supported by the route adapter
+ */
+export type PaginationStrategy = 'cursor' | 'offset' | 'page';
+
+/**
+ * Pagination configuration
+ */
+export interface PaginationConfig {
+  /**
+   * Pagination strategy to use
+   * @default 'cursor'
+   */
+  strategy: PaginationStrategy;
+  
+  /**
+   * Parameter name for pagination cursor
+   * @default 'cursor'
+   */
+  cursorParamName?: string;
+  
+  /**
+   * Parameter name for page number
+   * @default 'page'
+   */
+  pageParamName?: string;
+  
+  /**
+   * Parameter name for page size / items per page
+   * @default 'per_page'
+   */
+  perPageParamName?: string;
+  
+  /**
+   * Parameter name for offset
+   * @default 'offset'
+   */
+  offsetParamName?: string;
+  
+  /**
+   * Parameter name for limit
+   * @default 'limit'
+   */
+  limitParamName?: string;
+  
+  /**
+   * Default page size for pagination
+   * @default 20
+   */
+  defaultPageSize?: number;
+}
+
+/**
  * Route adapter configuration interface
  */
 export interface RouteAdapterConfig {
+  /**
+   * Base URL for API requests
+   */
   base?: string;
+  
+  /**
+   * API endpoints
+   */
   endpoints?: {
     create?: string;
     list?: string;
     update?: string;
     delete?: string;
   };
+  
+  /**
+   * HTTP headers to include with requests
+   */
   headers?: Record<string, string>;
+  
+  /**
+   * Whether to enable response caching
+   */
   cache?: boolean;
+  
+  /**
+   * Error handler function
+   */
   onError?: (error: Error, context?: any) => void;
+  
+  /**
+   * Custom adapter options
+   */
   adapter?: {
+    /**
+     * Custom response parser
+     */
     parseResponse?: (response: any) => any;
   };
+  
+  /**
+   * Pagination configuration
+   */
+  pagination?: PaginationConfig;
 }
 
 /**
  * Response metadata interface
  */
 export interface ResponseMeta {
+  /**
+   * Cursor for next page (cursor-based pagination)
+   */
   cursor: string | null;
+  
+  /**
+   * Whether there are more items available
+   */
   hasNext: boolean;
+  
+  /**
+   * Total number of items (if available)
+   */
   total?: number;
+  
+  /**
+   * Current page number (page-based pagination)
+   */
   page?: number;
+  
+  /**
+   * Total number of pages (page-based pagination)
+   */
   pages?: number;
+  
+  /**
+   * Current offset (offset-based pagination)
+   */
+  offset?: number;
 }
 
 /**
  * Parsed response interface
  */
 export interface ParsedResponse<T = any> {
+  /**
+   * Items returned in the response
+   */
   items: T[];
+  
+  /**
+   * Pagination metadata
+   */
   meta: ResponseMeta;
 }
 
@@ -59,6 +173,18 @@ export const createRouteAdapter = (config: RouteAdapterConfig = {}) => {
   let controller: AbortController | null = null;
   const cache = new Map<string, { data: any; timestamp: number }>();
   const urlCache = new Map<string, string>();
+
+  // Initialize pagination config from provided configuration
+  // This ensures we respect the user's desired pagination strategy
+  const paginationConfig: Required<PaginationConfig> = {
+    strategy: config.pagination?.strategy || 'cursor',
+    cursorParamName: config.pagination?.cursorParamName || 'cursor',
+    pageParamName: config.pagination?.pageParamName || 'page',
+    perPageParamName: config.pagination?.perPageParamName || 'per_page',
+    offsetParamName: config.pagination?.offsetParamName || 'offset',
+    limitParamName: config.pagination?.limitParamName || 'limit',
+    defaultPageSize: config.pagination?.defaultPageSize || 20
+  };
 
   /**
    * Normalizes a base URL to ensure it can be used in URL construction
@@ -208,11 +334,79 @@ export const createRouteAdapter = (config: RouteAdapterConfig = {}) => {
   };
 
   /**
+   * Creates pagination parameters based on the configured strategy
+   * @param query - Query parameters from the request
+   * @param options - Additional options
+   * @returns Pagination parameters for the request
+   */
+  const createPaginationParams = (
+    query: Record<string, any> = {}, 
+    options: Record<string, any> = {}
+  ): Record<string, any> => {
+    const params: Record<string, any> = {};
+    
+    // Ensure we're using the correct pagination strategy
+    const strategy = paginationConfig.strategy;
+    
+    switch (strategy) {
+      case 'cursor': {
+        // Cursor-based pagination
+        const cursor = query.cursor || options.cursor;
+        if (cursor) {
+          params[paginationConfig.cursorParamName] = cursor;
+        }
+        
+        // Add limit parameter
+        const limit = query.limit || options.limit || paginationConfig.defaultPageSize;
+        params[paginationConfig.limitParamName] = limit;
+        break;
+      }
+      
+      case 'offset': {
+        // Offset-based pagination
+        const offset = query.offset !== undefined ? query.offset : 
+                      (options.offset !== undefined ? options.offset : 0);
+        params[paginationConfig.offsetParamName] = offset;
+        
+        // Add limit parameter
+        const limit = query.limit || options.limit || paginationConfig.defaultPageSize;
+        params[paginationConfig.limitParamName] = limit;
+        break;
+      }
+      
+      case 'page': {
+        // Page-based pagination
+        const page = query.page !== undefined ? query.page : 
+                    (options.page !== undefined ? options.page : 
+                     (query.cursor ? query.cursor : 1)); // Use cursor as page if specified
+        
+        params[paginationConfig.pageParamName] = page;
+        
+        // Add page size parameter
+        const perPage = query.per_page || query.perPage || query.limit || 
+                       options.per_page || options.perPage || options.limit || 
+                       paginationConfig.defaultPageSize;
+        
+        params[paginationConfig.perPageParamName] = perPage;
+        break;
+      }
+    }
+    
+    return params;
+  };
+
+  /**
    * Parse API response, allowing for custom response format handling
    * @param response - The raw API response
+   * @param query - Original query parameters
+   * @param options - Original options
    * @returns Parsed response with standardized format
    */
-  const parseResponse = (response: any): ParsedResponse => {
+  const parseResponse = (
+    response: any, 
+    query: Record<string, any> = {}, 
+    options: Record<string, any> = {}
+  ): ParsedResponse => {
     // If a custom parser is provided in config, use it
     if (config.adapter?.parseResponse) {
       return config.adapter.parseResponse(response);
@@ -231,36 +425,106 @@ export const createRouteAdapter = (config: RouteAdapterConfig = {}) => {
       };
     }
     
-    // Check for pagination data in different formats
-    let cursor = null;
-    let hasNext = false;
+    // Extract common data fields from the response
+    const data = response.data || response.items || response.results || response.content || [];
+    const meta = response.meta || response.pagination || response.page || {};
+    const total = meta.total || response.total || data.length;
     
-    if (response) {
-      // Look for pagination info in common formats
-      const pagination = response.pagination || response.meta || response.page || {};
-      
-      if (pagination.next || pagination.nextPage) {
-        cursor = String(pagination.next || pagination.nextPage);
-        hasNext = true;
-      } else if (pagination.hasMore || pagination.hasNext) {
-        hasNext = true;
-        cursor = pagination.cursor || 
-                 (pagination.page ? String(pagination.page + 1) : null);
+    // Initialize metadata object
+    const metadata: ResponseMeta = { 
+      cursor: null,
+      hasNext: false,
+      total: total
+    };
+    
+    // Process metadata based on strategy
+    const strategy = paginationConfig.strategy;
+    
+    switch (strategy) {
+      case 'cursor': {
+        // For cursor-based pagination
+        if (meta.next || meta.nextCursor || meta.nextPage) {
+          metadata.cursor = String(meta.next || meta.nextCursor || meta.nextPage);
+          metadata.hasNext = true;
+        } else if (meta.hasMore || meta.hasNext) {
+          metadata.hasNext = Boolean(meta.hasMore || meta.hasNext);
+          metadata.cursor = meta.cursor || 
+                          (meta.page ? String(Number(meta.page) + 1) : null);
+        } else {
+          // Default determination based on data
+          // If items returned equals limit, assume there could be more
+          const limit = query.limit || options.limit || paginationConfig.defaultPageSize;
+          metadata.hasNext = data.length >= limit;
+          
+          // Try to generate a cursor based on the last item's ID
+          if (metadata.hasNext && data.length > 0) {
+            const lastItem = data[data.length - 1];
+            metadata.cursor = lastItem.id || lastItem._id || String(data.length);
+          }
+        }
+        break;
       }
       
-      // Try to determine the items array
-      const items = response.data || response.items || response.results || response.content || [];
+      case 'offset': {
+        // For offset-based pagination
+        const offset = Number(query.offset || options.offset || meta.offset || 0);
+        const limit = Number(query.limit || options.limit || meta.limit || paginationConfig.defaultPageSize);
+        const fetchedItems = data.length;
+        
+        // If total is available, use it to determine if more items exist
+        if (total !== undefined) {
+          metadata.hasNext = offset + fetchedItems < total;
+        } else {
+          // If total is not provided, assume more items if we got a full page
+          metadata.hasNext = fetchedItems >= limit;
+        }
+        
+        // Set next cursor/offset
+        metadata.cursor = metadata.hasNext ? String(offset + fetchedItems) : null;
+        
+        // Add offset to metadata
+        metadata.offset = offset;
+        break;
+      }
       
-      return {
-        items,
-        meta: { cursor, hasNext }
-      };
+      case 'page': {
+        // For page-based pagination
+        const page = Number(query.page || options.page || meta.page || meta.current_page || 1);
+        const perPage = Number(
+          query.per_page || query.perPage || query.limit || 
+          options.per_page || options.perPage || options.limit || 
+          meta.per_page || meta.perPage || meta.size || meta.limit || 
+          paginationConfig.defaultPageSize
+        );
+        
+        // Store page in the metadata
+        metadata.page = page;
+        
+        // If we have total pages info
+        const totalPages = Number(meta.totalPages || meta.total_pages || meta.pages || meta.pageCount || 0);
+        
+        if (totalPages > 0) {
+          metadata.hasNext = page < totalPages;
+          metadata.pages = totalPages;
+        } else if (total !== undefined) {
+          // Calculate if more pages exist based on total items
+          const calculatedTotalPages = Math.ceil(total / perPage);
+          metadata.hasNext = page < calculatedTotalPages;
+          metadata.pages = calculatedTotalPages;
+        } else {
+          // If neither is available, assume more items if we got a full page
+          metadata.hasNext = data.length >= perPage;
+        }
+        
+        // Set next cursor to the next page number
+        metadata.cursor = metadata.hasNext ? String(page + 1) : null;
+        break;
+      }
     }
     
-    // Default fallback
     return {
-      items: [],
-      meta: { cursor: null, hasNext: false }
+      items: data,
+      meta: metadata
     };
   };
 
@@ -277,40 +541,42 @@ export const createRouteAdapter = (config: RouteAdapterConfig = {}) => {
     },
 
     read: async (query: Record<string, any> = {}, options: Record<string, any> = {}): Promise<ParsedResponse> => {
-      // console.log('Route adapter read called with query:', query, 'options:', options);
-      
-      // Extract pagination params from both query and options, prioritizing query
-      const cursor = query.cursor || options.cursor;
-      const limit = query.limit || options.limit || 20;
-      const search = query.search || options.search;
-      const sort = query.sort || options.sort;
-      const fields = query.fields || options.fields;
-          
       // Filter out pagination and search params from query
       const filteredQuery = { ...query };
-      ['cursor', 'page', 'limit', 'sort', 'fields', 'search'].forEach(key => {
+      ['cursor', 'page', 'offset', 'limit', 'per_page', 'perPage', 'sort', 'fields', 'search'].forEach(key => {
         delete filteredQuery[key];
       });
       
-      // Prepare parameters, prioritizing cursor-based pagination
-      const params: Record<string, any> = {
-        ...transformQuery(filteredQuery),
-        limit
-      };
+      // Transform filters
+      const filterParams = transformQuery(filteredQuery);
       
-      // Only add cursor if it exists
-      if (cursor) {
-        params.cursor = cursor;
-      }
+      // Get pagination parameters based on configured strategy
+      const paginationParams = createPaginationParams(query, options);
+      
+      // Add additional common parameters
+      const additionalParams: Record<string, any> = {};
       
       // Add search parameter if provided
-      if (search) {
-        params.search = search;
+      if (query.search || options.search) {
+        additionalParams.search = query.search || options.search;
       }
       
-      // Add optional parameters if provided
-      if (sort) params.sort = sort;
-      if (fields) params.fields = fields;
+      // Add sort parameter if provided
+      if (query.sort || options.sort) {
+        additionalParams.sort = query.sort || options.sort;
+      }
+      
+      // Add fields parameter if provided
+      if (query.fields || options.fields) {
+        additionalParams.fields = query.fields || options.fields;
+      }
+      
+      // Combine all parameters
+      const params = {
+        ...filterParams,
+        ...paginationParams,
+        ...additionalParams
+      };
       
       // Clean up undefined params
       Object.keys(params).forEach(key => {
@@ -326,7 +592,7 @@ export const createRouteAdapter = (config: RouteAdapterConfig = {}) => {
       if (cached) return cached;
 
       const response = await request(url);
-      const parsed = parseResponse(response);
+      const parsed = parseResponse(response, query, options);
       setCache(cacheKey, parsed);
 
       return parsed;
@@ -351,39 +617,55 @@ export const createRouteAdapter = (config: RouteAdapterConfig = {}) => {
     },
 
     query: async (query: Record<string, any> = {}, options: Record<string, any> = {}): Promise<ParsedResponse> => {
-      // Extract pagination params from both query and options
-      const cursor = query.cursor || options.cursor;
-      const limit = query.limit || options.limit || 20;
-      const search = query.search || options.search;
-      
-      // Filter out pagination params from query and options
+      // Filter out pagination and search params from query and options
       const filteredQuery = { ...query };
       const filteredOptions = { ...options };
-      ['cursor', 'page', 'limit', 'sort', 'fields', 'search'].forEach(key => {
+      ['cursor', 'page', 'offset', 'limit', 'per_page', 'perPage', 'sort', 'fields', 'search'].forEach(key => {
         delete filteredQuery[key];
         delete filteredOptions[key];
       });
       
-      // Build params for cursor-based pagination
-      const params = {
-        ...transformQuery(filteredQuery),
-        ...filteredOptions,
-        limit
-      };
+      // Transform filters
+      const filterParams = transformQuery(filteredQuery);
       
-      // Only add cursor if it exists
-      if (cursor) {
-        params.cursor = cursor;
-      }
+      // Get pagination parameters
+      const paginationParams = createPaginationParams(query, options);
+      
+      // Add remaining filter options
+      const remainingParams = { ...filteredOptions };
       
       // Add search parameter if provided
-      if (search) {
-        params.search = search;
+      if (query.search || options.search) {
+        remainingParams.search = query.search || options.search;
       }
+      
+      // Combine all parameters
+      const params = {
+        ...filterParams,
+        ...paginationParams,
+        ...remainingParams
+      };
 
       const url = buildUrl(config.endpoints?.list || '/list', params);
       const response = await request(url);
-      return parseResponse(response);
+      return parseResponse(response, query, options);
+    },
+
+    /**
+     * Change the pagination strategy
+     * @param strategy - New pagination strategy
+     * @returns Updated adapter
+     */
+    setPaginationStrategy: (strategy: PaginationStrategy): void => {
+      paginationConfig.strategy = strategy;
+    },
+
+    /**
+     * Get the current pagination configuration
+     * @returns Current pagination config
+     */
+    getPaginationConfig: (): Required<PaginationConfig> => {
+      return { ...paginationConfig };
     },
 
     disconnect: () => {

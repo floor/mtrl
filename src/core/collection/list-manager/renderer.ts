@@ -23,6 +23,11 @@ export const createRenderer = (
   const itemElements = new Map<string, HTMLElement>();
   let lastVisibleRange: VisibleRange = { start: 0, end: 0 };
   
+  // Initialize item measurement system
+  if (typeof itemMeasurement.setup === 'function') {
+    itemMeasurement.setup(config);
+  }
+  
   /**
    * Create a wrapped renderItem function with hooks and optimizations
    * @param item Item to render
@@ -34,7 +39,7 @@ export const createRenderer = (
     if (!item) {
       console.warn('Attempted to render undefined item at index', index);
       const placeholder = document.createElement('div');
-      placeholder.style.height = `${config.itemHeight}px`;
+      placeholder.style.height = `${config.itemHeight || 48}px`;
       return placeholder;
     }
     
@@ -48,8 +53,13 @@ export const createRenderer = (
       console.warn('renderItem returned null or undefined for item', item);
       // Create a placeholder element to prevent errors
       const placeholder = document.createElement('div');
-      placeholder.style.height = `${config.itemHeight}px`;
+      placeholder.style.height = `${config.itemHeight || 48}px`;
       return placeholder;
+    }
+    
+    // Add CSS class for easier selection
+    if (!element.classList.contains('mtrl-list-item')) {
+      element.classList.add('mtrl-list-item');
     }
     
     // Ensure element has a data-id attribute for selection targeting
@@ -60,6 +70,14 @@ export const createRenderer = (
     // Set type for recycling
     if (item.type) {
       element.dataset.itemType = item.type;
+    }
+    
+    // Add measurement flag if using dynamic sizing or for auto-detecting first item
+    if (
+      (config.dynamicItemSize === true || itemElements.size === 0) && 
+      !element.hasAttribute('data-needs-measurement')
+    ) {
+      element.dataset.needsMeasurement = 'true';
     }
     
     // Apply any post-render hooks if available
@@ -185,10 +203,6 @@ export const createRenderer = (
             
             fragment.appendChild(element);
             itemElements.set(item.id, element);
-            
-            if (!itemMeasurement.getAllHeights().has(item.id)) {
-              element.dataset.needsMeasurement = 'true';
-            }
           });
           
           elements.content.appendChild(fragment);
@@ -235,6 +249,11 @@ export const createRenderer = (
             
             // Update position
             element.style.top = `${offset}px`;
+            
+            // Check if it needs measurement (first item or dynamic sizing)
+            if (config.dynamicItemSize === true || itemElements.size === 0) {
+              element.dataset.needsMeasurement = 'true';
+            }
           } else {
             element = createItemElement(item, index);
             
@@ -243,11 +262,6 @@ export const createRenderer = (
             element.style.top = `${offset}px`;
             element.style.left = '0';
             element.style.width = '100%';
-            
-            // Mark for measurement if height not known
-            if (!itemMeasurement.getAllHeights().has(item.id)) {
-              element.dataset.needsMeasurement = 'true';
-            }
           }
           
           // Add to fragment

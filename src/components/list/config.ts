@@ -18,7 +18,7 @@ export const defaultConfig = {
   items: [],
   
   // Rendering settings
-  itemHeight: 48,
+  // itemHeight: 48, // disabled to force itemHeightCalculation
   pageSize: 20,
   renderBufferSize: 5,
   renderItem: null,

@@ -19,6 +19,9 @@ export const DEFAULT_CONFIG: Partial<ListManagerConfig> = {
   throttleMs: 16,        // Throttle scroll event (ms)
   dedupeItems: true,     // Remove duplicate items based on ID
   
+  // Item measurement options
+  dynamicItemSize: false, // Whether items can have different heights
+
   // Scroll detection strategy
   scrollStrategy: 'scroll' // 'scroll', 'intersection', or 'hybrid'
 };
@@ -63,7 +66,7 @@ export function validateConfig(config: ListManagerConfig): ListManagerConfig {
  * @returns Whether to use API mode
  */
 export function determineApiMode(config: ListManagerConfig): boolean {
-  return config.baseUrl !== null;
+  return Boolean(config.baseUrl);
 }
 
 /**
