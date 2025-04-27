@@ -61,6 +61,7 @@ $wrapper: '#{base.$prefix}-badge-wrapper';
     padding: 0 4px;
     font-size: 11px;
     line-height: 16px;
+    padding-top: 0.5px; // for some reason, we need this to be properly vertically centered
     
     // Handle max character count container (16dp x 34dp)
     &.#{$component}--overflow {

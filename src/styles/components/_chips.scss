@@ -557,7 +557,8 @@ $container: '#{base.$prefix}-chips';
   
   // Label styling
   &-label {
-    @include m.typography('title-medium');
+    @include m.typography('label-medium');
+    font-size: 18px;
     color: t.color('on-surface-variant');
     margin-bottom: v.spacing('2');
     display: block;

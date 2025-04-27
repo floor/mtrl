@@ -21,7 +21,6 @@ $component: '#{base.$prefix}-slider';
   flex-direction: column;
   user-select: none;
   touch-action: none;
-  padding: 8px 0;
   
   // Container should not have a focus outline
   &:focus {

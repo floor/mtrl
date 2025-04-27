@@ -410,13 +410,17 @@ $opacity-transition: opacity $state-transition-duration $state-transition-easing
   }
 }
 
-// // RTL Support
-// @include m.rtl {
-//   .#{$component}-section-title,
-//   .#{$component}-item-text {
-//     text-align: right;
-//   }
-// }
+@mixin rtl {
+  // Replace this problematic line:
+  // [dir='rtl'] & {
+  //   @content;
+  // }
+  
+  // With this correct approach:
+  [dir='rtl'] {
+    @content;
+  }
+}
 
 // High contrast mode for selected items
 @include m.high-contrast {

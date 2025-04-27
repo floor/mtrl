@@ -108,6 +108,7 @@ $component: '#{base.$prefix}-select';
     // Additional styles for the connected menu
     max-height: 20rem;
     overflow-y: auto;
+    max-width: initial;
     
     .#{base.$prefix}-menu-item {
       min-height: 3rem;
