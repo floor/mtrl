@@ -2,61 +2,43 @@
 /**
  * @module core
  * @description Core utilities and building blocks for the component system
+ * 
+ * This module provides the foundational elements used to build components
+ * in a functional, composable way.
+ * 
+ * @packageDocumentation
  */
 
-// Config
-export { PREFIX, COMPONENTS, STATES, classNames } from './config';
-export type { 
-  ThemeConfig, 
-  ComponentConfig, 
-  ThemedComponentConfig, 
-  VariantComponentConfig, 
-  StateComponentConfig
+// Re-export core modules by category
+// This makes imports cleaner for library users while maintaining an organized codebase
+
+// 1. Component composition system
+export * from './compose';
+
+// 2. DOM manipulation utilities
+export * from './dom';
+
+// 3. State management
+export * from './state';
+
+// 4. Layout system
+export * from './layout';
+
+// 5. Collection
+export * from './collection';
+
+// 6. Config and constants
+export { 
+  PREFIX, 
+  COMPONENTS, 
+  STATES, 
+  classNames,
+  getComponentClass,
+  getModifierClass,
+  getElementClass
 } from './config';
 
-// Build
-export { createText } from './build/text';
-export { createIcon } from './build/icon';
-export { createRipple } from './build/ripple';
-export { RIPPLE_TIMING } from './build/constants';
-
-// DOM manipulation
-export { createElement, withAttributes, withClasses, withContent } from './dom/create';
-export { setAttributes, removeAttributes } from './dom/attributes';
-export { addClass, removeClass, toggleClass, hasClass } from './dom/classes';
-
-// State Management
-export { createDisabled } from './state/disabled';
-export { createEventManager } from './state/events';
-export { createLifecycle } from './state/lifecycle';
-export { createEmitter } from './state/emitter';
-export { createStore } from './state/store';
-
-// Composition Utilities
-export { pipe, compose, transform } from './compose/pipe';
-export { createBase, withElement } from './compose/component';
-export {
-  withEvents,
-  withText,
-  withIcon,
-  withVariant,
-  withSize,
-  withPosition,
-  withDisabled,
-  withLifecycle,
-  withRipple,
-  withThrottle,
-  withDebounce,
-  withGestures
-} from './compose/features';
-
-// Gesture features
-export { withTapGesture } from './compose/features/gestures/tap';
-export { withSwipeGesture } from './compose/features/gestures/swipe';
-export { withLongPressGesture } from './compose/features/gestures/longpress';
-export { withPanGesture } from './compose/features/gestures/pan';
-
-// Utilities
+// 7. Utility functions
 export { 
   normalizeClasses, 
   when, 
@@ -71,31 +53,36 @@ export {
   once
 } from './utils';
 
-// Component feature interfaces for better developer experience
-export type { 
-  BaseComponent, 
-  ElementComponent, 
-  TouchState 
-} from './compose/component';
-
+// 8. Gesture system
+export { createGestureManager } from './gestures';
 export type {
-  EventComponent,
-  TextComponent,
-  IconComponent,
-  LifecycleComponent,
-  Lifecycle,
-  DisabledComponent,
-  DisabledManager,
-  RippleComponent,
-  ThrottleComponent,
-  DebounceComponent,
-  GestureComponent
-} from './compose/features';
+  GestureManager,
+  GestureConfig,
+  GestureEvent,
+  TapEvent,
+  SwipeEvent,
+  LongPressEvent,
+  PinchEvent,
+  RotateEvent,
+  PanEvent,
+  AnyGestureEvent,
+  GestureHandler
+} from './gestures';
 
-// Other interfaces
+// Type re-exports for better developer experience
 export type { 
-  CreateElementOptions 
-} from './dom/create';
+  ThemeConfig, 
+  ComponentConfig, 
+  ThemedComponentConfig, 
+  VariantComponentConfig, 
+  StateComponentConfig
+} from './config';
+
+// Export specialized build utilities directly for convenience
+export { createText } from './build/text';
+export { createIcon } from './build/icon';
+export { createRipple } from './build/ripple';
+export { RIPPLE_TIMING } from './build/constants';
 
 export type { 
   TextManager, 
@@ -113,28 +100,5 @@ export type {
 } from './build/ripple';
 
 export type { 
-  Emitter, 
-  EventCallback 
-} from './state/emitter';
-
-export type { 
-  DisabledState 
-} from './state/disabled';
-
-export type { 
   NormalizedEvent 
 } from './utils/mobile';
-
-export type {
-  GestureManager,
-  GestureConfig,
-  GestureEvent,
-  TapEvent,
-  SwipeEvent,
-  LongPressEvent,
-  PinchEvent,
-  RotateEvent,
-  PanEvent,
-  AnyGestureEvent,
-  GestureHandler
-} from './gestures';

@@ -495,6 +495,4 @@ export {
   TOP_APP_BAR_STATES,
   TOP_APP_BAR_DEFAULTS,
   TOP_APP_BAR_CLASSES
-  
-  // Other component constants will be added below...
 };
