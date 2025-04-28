@@ -1,5 +1,6 @@
 // src/components/switch/features.ts
 import { BaseComponent, ElementComponent } from '../../core/compose/component';
+import { SWITCH_CLASSES } from './constants';
 
 /**
  * Configuration for supporting text feature

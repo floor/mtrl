@@ -5,13 +5,14 @@ import {
   BaseComponentConfig 
 } from '../../core/config/component-config';
 import { TextfieldConfig, BaseComponent, ApiOptions } from './types';
+import { TEXTFIELD_DEFAULTS, TEXTFIELD_TYPES, TEXTFIELD_VARIANTS } from './constants';
 
 /**
  * Default configuration for the Textfield component
  */
 export const defaultConfig: TextfieldConfig = {
-  type: 'text',
-  variant: 'filled'
+  type: TEXTFIELD_DEFAULTS.TYPE,
+  variant: TEXTFIELD_DEFAULTS.VARIANT
 };
 
 /**

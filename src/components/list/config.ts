@@ -4,23 +4,24 @@ import {
   createComponentConfig, 
   createElementConfig as coreCreateElementConfig
 } from '../../core/config/component-config';
+import { LIST_DEFAULTS, LIST_CLASSES } from './constants';
 
 /**
  * Default configuration for the List component
  */
 export const defaultConfig = {
   // Collection settings (for API-connected lists)
-  collection: 'items',
+  collection: LIST_DEFAULTS.COLLECTION,
   transform: item => item,
-  baseUrl: 'http://localhost:4000/api',
+  baseUrl: LIST_DEFAULTS.BASE_URL,
   
   // Static data (for in-memory lists)
   items: [],
   
   // Rendering settings
   // itemHeight: 48, // disabled to force itemHeightCalculation
-  pageSize: 20,
-  renderBufferSize: 5,
+  pageSize: LIST_DEFAULTS.PAGE_SIZE,
+  renderBufferSize: LIST_DEFAULTS.RENDER_BUFFER_SIZE,
   renderItem: null,
   
   // Behavior settings
@@ -74,7 +75,7 @@ export const getElementConfig = (config) => {
     tag: 'div',
     attrs,
     className: [
-      'list-container',
+      LIST_CLASSES.CONTAINER,
       config.class
     ],
     forwardEvents: {

@@ -1,9 +1,19 @@
 // src/components/textfield/index.ts
 export { default } from './textfield'
+
+// Export constants
 export { 
-  TextfieldConfig, 
-  TextfieldComponent,
   TEXTFIELD_VARIANTS,
   TEXTFIELD_SIZES,
-  TEXTFIELD_TYPES
+  TEXTFIELD_STATES,
+  TEXTFIELD_TYPES,
+  TEXTFIELD_EVENTS,
+  TEXTFIELD_DEFAULTS,
+  TEXTFIELD_CLASSES
+} from './constants'
+
+// Export types
+export { 
+  TextfieldConfig, 
+  TextfieldComponent
 } from './types'

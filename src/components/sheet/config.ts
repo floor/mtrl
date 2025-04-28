@@ -4,7 +4,8 @@ import {
   createElementConfig,
   BaseComponentConfig 
 } from '../../core/config/component-config';
-import { SheetConfig, SHEET_VARIANTS, SHEET_POSITIONS } from './types';
+import { SheetConfig } from './types';
+import { SHEET_VARIANTS, SHEET_POSITIONS, SHEET_DEFAULTS } from './constants';
 
 /**
  * Default configuration for the Sheet component
@@ -12,11 +13,11 @@ import { SheetConfig, SHEET_VARIANTS, SHEET_POSITIONS } from './types';
 export const defaultConfig: SheetConfig = {
   variant: SHEET_VARIANTS.STANDARD,
   position: SHEET_POSITIONS.BOTTOM,
-  open: false,
-  dismissible: true,
-  dragHandle: true,
-  elevation: 3,
-  enableGestures: true
+  open: SHEET_DEFAULTS.OPEN,
+  dismissible: SHEET_DEFAULTS.DISMISSIBLE,
+  dragHandle: SHEET_DEFAULTS.DRAG_HANDLE,
+  elevation: SHEET_DEFAULTS.ELEVATION,
+  enableGestures: SHEET_DEFAULTS.ENABLE_GESTURES
 };
 
 /**

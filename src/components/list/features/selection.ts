@@ -1,5 +1,9 @@
 // src/components/list/features/selection.ts
 
+import { LIST_CLASSES, LIST_SELECTION_MODES, LIST_EVENTS, LIST_TYPES } from '../constants';
+import { addClass, hasClass, removeClass, toggleClass } from '../../../core/dom'
+
+
 /**
  * Adds selection management capabilities to a list component
  * Optimized implementation for better performance
@@ -45,11 +49,11 @@ export const withSelection = (config) => component => {
       component.list.setRenderHook((item, element) => {
         // Apply selection state only if needed (avoid unnecessary DOM ops)
         if (selectedItems.has(item.id)) {
-          if (!element.classList.contains('mtrl-list-item--selected')) {
-            element.classList.add('mtrl-list-item--selected');
+          if (!hasClass(element, LIST_CLASSES.SELECTED)) {
+            addClass(element, LIST_CLASSES.SELECTED);
           }
-        } else if (element.classList.contains('mtrl-list-item--selected')) {
-          element.classList.remove('mtrl-list-item--selected');
+        } else if (hasClass(element, LIST_CLASSES.SELECTED)) {
+          removeClass(element, LIST_CLASSES.SELECTED);
         }
       });
     }
@@ -89,7 +93,7 @@ export const withSelection = (config) => component => {
     };
     
     // Emit event before modifying selection
-    component.emit('select', selectionEvent);
+    component.emit(LIST_EVENTS.SELECT, selectionEvent);
     
     // Exit if default was prevented
     if (selectionEvent.defaultPrevented) return;
@@ -98,14 +102,14 @@ export const withSelection = (config) => component => {
     if (config.multiSelect) {
       if (selectedItems.has(itemId)) {
         selectedItems.delete(itemId);
-        itemElement.classList.remove('mtrl-list-item--selected');
+        removeClass(itemElement, LIST_CLASSES.SELECTED);
       } else {
         selectedItems.add(itemId);
-        itemElement.classList.add('mtrl-list-item--selected');
+        addClass(itemElement, LIST_CLASSES.SELECTED);
       }
     } else {
       // For single-select, use classList method to determine current state
-      const isCurrentlySelected = itemElement.classList.contains('mtrl-list-item--selected');
+      const isCurrentlySelected = hasClass(itemElement, LIST_CLASSES.SELECTED);
       
       // If not selected, select it and deselect others
       if (!isCurrentlySelected) {
@@ -114,15 +118,19 @@ export const withSelection = (config) => component => {
         selectedItems.add(itemId);
         
         // Update DOM - only update what's visible
-        const visibleItems = component.element.querySelectorAll('[data-id]');
-        visibleItems.forEach(el => {
-          const isTarget = el === itemElement;
-          el.classList.toggle('mtrl-list-item--selected', isTarget);
-        });
+        const currentlySelected = component.element.querySelector(`.${LIST_CLASSES.SELECTED}`);
+        if (currentlySelected && currentlySelected !== itemElement) {
+          removeClass(currentlySelected, LIST_CLASSES.SELECTED);
+        }
+
+        // Then add the class to the new target element
+        if (!hasClass(itemElement, LIST_CLASSES.SELECTED)) {
+          addClass(itemElement, LIST_CLASSES.SELECTED);
+        }
       } else {
         // If already selected, just deselect
         selectedItems.clear();
-        itemElement.classList.remove('mtrl-list-item--selected');
+        removeClass(itemElement, LIST_CLASSES.SELECTED);
       }
     }
   };
@@ -143,10 +151,10 @@ export const withSelection = (config) => component => {
       const itemId = el.getAttribute('data-id');
       const isSelected = selectedItems.has(itemId);
       
-      if (isSelected && !el.classList.contains('mtrl-list-item--selected')) {
-        el.classList.add('mtrl-list-item--selected');
-      } else if (!isSelected && el.classList.contains('mtrl-list-item--selected')) {
-        el.classList.remove('mtrl-list-item--selected');
+      if (isSelected && !el.classList.contains(LIST_CLASSES.SELECTED)) {
+        addClass(el, LIST_CLASSES.SELECTED);
+      } else if (!isSelected && el.classList.contains(LIST_CLASSES.SELECTED)) {
+        removeClass(el, LIST_CLASSES.SELECTED);
       }
     });
   };
@@ -168,10 +176,10 @@ export const withSelection = (config) => component => {
     // Find the element only if it's in the visible viewport
     const itemElement = component.element.querySelector(`[data-id="${itemId}"]`);
     if (itemElement) {
-      if (selected && !itemElement.classList.contains('mtrl-list-item--selected')) {
-        itemElement.classList.add('mtrl-list-item--selected');
-      } else if (!selected && itemElement.classList.contains('mtrl-list-item--selected')) {
-        itemElement.classList.remove('mtrl-list-item--selected');
+      if (selected && !itemElement.classList.contains(LIST_CLASSES.SELECTED)) {
+        addClass(itemElement, LIST_CLASSES.SELECTED);
+      } else if (!selected && itemElement.classList.contains(LIST_CLASSES.SELECTED)) {
+        removeClass(itemElement, LIST_CLASSES.SELECTED);
       }
     }
     // Non-visible elements will be updated when they're rendered via the hook
@@ -213,8 +221,8 @@ export const withSelection = (config) => component => {
         selectedItems.clear();
         
         // Then update the visible DOM elements
-        component.element.querySelectorAll('.mtrl-list-item--selected')
-          .forEach(el => el.classList.remove('mtrl-list-item--selected'));
+        component.element.querySelectorAll(`.${LIST_CLASSES.SELECTED}`)
+          .forEach(el => removeClass(el, LIST_CLASSES.SELECTED));
       }
       
       return component;

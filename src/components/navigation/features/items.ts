@@ -1,6 +1,7 @@
 // src/components/navigation/features/items.ts
 import { createNavItem, getAllNestedItems } from '../nav-item';
-import { NavItemConfig, NavItemData, BaseComponent, NavClass } from '../types';
+import { NavItemConfig, NavItemData, BaseComponent } from '../types';
+import { NAV_CLASSES, NAV_EVENTS } from '../constants';
 
 /**
  * Interface for a component with items management capabilities
@@ -66,9 +67,9 @@ export const withNavItems = (config: NavigationConfig) => (component: BaseCompon
 
     if (itemConfig.items?.length) {
       itemConfig.items.forEach(nestedConfig => {
-        const container = item.closest(`.${prefix}-${NavClass.ITEM_CONTAINER}`);
+        const container = item.closest(`.${prefix}-${NAV_CLASSES.ITEM_CONTAINER}`);
         if (container) {
-          const nestedContainer = container.querySelector(`.${prefix}-${NavClass.NESTED_CONTAINER}`);
+          const nestedContainer = container.querySelector(`.${prefix}-${NAV_CLASSES.NESTED_CONTAINER}`);
           if (nestedContainer) {
             const nestedItem = nestedContainer.querySelector(`[data-id="${nestedConfig.id}"]`) as HTMLElement;
             if (nestedItem) {
@@ -91,7 +92,7 @@ export const withNavItems = (config: NavigationConfig) => (component: BaseCompon
     const role = item.getAttribute('role');
     
     if (active) {
-      item.classList.add(`${prefix}-${NavClass.ITEM}--active`);
+      item.classList.add(`${prefix}-${NAV_CLASSES.ACTIVE}`);
       
       // Set appropriate attribute based on role
       if (role === 'tab') {
@@ -102,7 +103,7 @@ export const withNavItems = (config: NavigationConfig) => (component: BaseCompon
         item.setAttribute('aria-current', 'page');
       }
     } else {
-      item.classList.remove(`${prefix}-${NavClass.ITEM}--active`);
+      item.classList.remove(`${prefix}-${NAV_CLASSES.ACTIVE}`);
       
       // Remove appropriate attribute based on role
       if (role === 'tab') {
@@ -200,7 +201,7 @@ export const withNavItems = (config: NavigationConfig) => (component: BaseCompon
     }
     
     // First, find the item container that contains this element
-    const itemContainer = currentItem.element.closest(`.${prefix}-${NavClass.ITEM_CONTAINER}`);
+    const itemContainer = currentItem.element.closest(`.${prefix}-${NAV_CLASSES.ITEM_CONTAINER}`);
     if (!itemContainer) {
       return path;
     }
@@ -210,7 +211,7 @@ export const withNavItems = (config: NavigationConfig) => (component: BaseCompon
     
     // If parent element is not a nested container, this is a root-level item
     // Just return the item's own ID
-    if (!parentElement || !parentElement.classList.contains(`${prefix}-${NavClass.NESTED_CONTAINER}`)) {
+    if (!parentElement || !parentElement.classList.contains(`${prefix}-${NAV_CLASSES.NESTED_CONTAINER}`)) {
       return path;
     }
     
@@ -221,12 +222,12 @@ export const withNavItems = (config: NavigationConfig) => (component: BaseCompon
       // Find the parent item container
       const parentItemContainer = currentNestedContainer.parentElement;
       
-      if (!parentItemContainer || !parentItemContainer.classList.contains(`${prefix}-${NavClass.ITEM_CONTAINER}`)) {
+      if (!parentItemContainer || !parentItemContainer.classList.contains(`${prefix}-${NAV_CLASSES.ITEM_CONTAINER}`)) {
         break;
       }
       
       // Find the parent item button/element
-      const parentItem = parentItemContainer.querySelector(`.${prefix}-${NavClass.ITEM}[data-id]`);
+      const parentItem = parentItemContainer.querySelector(`.${prefix}-${NAV_CLASSES.ITEM}[data-id]`);
       
       if (!parentItem) {
         break;
@@ -245,7 +246,7 @@ export const withNavItems = (config: NavigationConfig) => (component: BaseCompon
       // Move up to the next level - find the container of this parent's container
       const grandparentElement = parentItemContainer.parentElement;
       
-      if (!grandparentElement || !grandparentElement.classList.contains(`${prefix}-${NavClass.NESTED_CONTAINER}`)) {
+      if (!grandparentElement || !grandparentElement.classList.contains(`${prefix}-${NAV_CLASSES.NESTED_CONTAINER}`)) {
         break;
       }
       
@@ -294,7 +295,7 @@ export const withNavItems = (config: NavigationConfig) => (component: BaseCompon
       }
 
       // Remove the entire item container
-      const container = item.element.closest(`.${prefix}-${NavClass.ITEM_CONTAINER}`);
+      const container = item.element.closest(`.${prefix}-${NAV_CLASSES.ITEM_CONTAINER}`);
       if (container) {
         container.remove();
       }
@@ -328,9 +329,9 @@ export const withNavItems = (config: NavigationConfig) => (component: BaseCompon
         const parentItem = items.get(parentId);
         if (parentItem) {
           const parentButton = parentItem.element;
-          const container = parentButton.closest(`.${prefix}-${NavClass.ITEM_CONTAINER}`);
+          const container = parentButton.closest(`.${prefix}-${NAV_CLASSES.ITEM_CONTAINER}`);
           if (container) {
-            const nestedContainer = container.querySelector(`.${prefix}-${NavClass.NESTED_CONTAINER}`);
+            const nestedContainer = container.querySelector(`.${prefix}-${NAV_CLASSES.NESTED_CONTAINER}`);
             if (nestedContainer) {
               parentButton.setAttribute('aria-expanded', 'true');
               nestedContainer.hidden = false;
@@ -340,7 +341,7 @@ export const withNavItems = (config: NavigationConfig) => (component: BaseCompon
       });
 
       if (component.emit) {
-        component.emit('activeChanged', {
+        component.emit(NAV_EVENTS.CHANGE, {
           id,
           item,
           previousItem: activeItem,

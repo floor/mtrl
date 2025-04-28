@@ -104,30 +104,14 @@ export {
   withElevation 
 } from './features';
 
-// Export card constants for backward compatibility
-export const CARD_VARIANTS = {
-  ELEVATED: 'elevated',
-  FILLED: 'filled',
-  OUTLINED: 'outlined'
-} as const;
-
-export const CARD_ELEVATIONS = {
-  LEVEL0: 0,
-  LEVEL1: 1,
-  LEVEL2: 2,
-  LEVEL4: 4
-} as const;
-
-// Additional constants
-export const CARD_WIDTHS = {
-  SMALL: '344px',
-  MEDIUM: '480px',
-  LARGE: '624px',
-  FULL: '100%'
-} as const;
-
-export const CARD_CORNER_RADIUS = {
-  SMALL: '8px',
-  MEDIUM: '12px',
-  LARGE: '16px'
-} as const;
+// Export card constants
+export {
+  CARD_VARIANTS,
+  CARD_ELEVATIONS,
+  CARD_WIDTHS,
+  CARD_CORNER_RADIUS,
+  CARD_ASPECT_RATIOS,
+  CARD_ACTION_ALIGNMENT,
+  CARD_MEDIA_POSITION,
+  CARD_CLASSES
+} from './constants';

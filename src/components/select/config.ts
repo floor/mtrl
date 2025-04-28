@@ -5,14 +5,15 @@ import {
   createElementConfig
 } from '../../core/config/component-config';
 import { SelectConfig, BaseComponent, ApiOptions } from './types';
+import { SELECT_VARIANTS, SELECT_PLACEMENT, SELECT_DEFAULTS } from './constants';
 
 /**
  * Default configuration for the Select component
  */
 export const defaultConfig: SelectConfig = {
   options: [],
-  variant: 'filled',
-  placement: 'bottom-start'
+  variant: SELECT_DEFAULTS.VARIANT,
+  placement: SELECT_DEFAULTS.PLACEMENT
 };
 
 /**

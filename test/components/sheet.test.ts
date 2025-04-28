@@ -2,11 +2,14 @@
 import { describe, test, expect } from 'bun:test';
 import { 
   type SheetComponent,
-  type SheetConfig,
+  type SheetConfig
+} from '../../src/components/sheet/types';
+import {
   SHEET_VARIANTS,
   SHEET_POSITIONS,
-  SHEET_EVENTS
-} from '../../src/components/sheet/types';
+  SHEET_EVENTS,
+  SHEET_DEFAULTS
+} from '../../src/components/sheet/constants';
 
 // Mock sheet implementation
 const createMockSheet = (config: SheetConfig = {}): SheetComponent => {
@@ -24,16 +27,16 @@ const createMockSheet = (config: SheetConfig = {}): SheetComponent => {
   const settings = {
     variant: config.variant || SHEET_VARIANTS.STANDARD,
     position: config.position || SHEET_POSITIONS.BOTTOM,
-    open: config.open || false,
-    dismissible: config.dismissible !== undefined ? config.dismissible : true,
-    dragHandle: config.dragHandle !== undefined ? config.dragHandle : true,
+    open: config.open !== undefined ? config.open : SHEET_DEFAULTS.OPEN,
+    dismissible: config.dismissible !== undefined ? config.dismissible : SHEET_DEFAULTS.DISMISSIBLE,
+    dragHandle: config.dragHandle !== undefined ? config.dragHandle : SHEET_DEFAULTS.DRAG_HANDLE,
     content: config.content || '',
     title: config.title || '',
     prefix: config.prefix || 'mtrl',
     componentName: config.componentName || 'sheet',
-    elevation: config.elevation || 3,
+    elevation: config.elevation || SHEET_DEFAULTS.ELEVATION,
     maxHeight: config.maxHeight || '80%',
-    enableGestures: config.enableGestures !== undefined ? config.enableGestures : true
+    enableGestures: config.enableGestures !== undefined ? config.enableGestures : SHEET_DEFAULTS.ENABLE_GESTURES
   };
   
   // Apply variant class

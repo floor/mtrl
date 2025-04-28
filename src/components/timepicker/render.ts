@@ -2,12 +2,11 @@
 
 import { TimePickerConfig, TimeValue, TIME_PICKER_TYPE, TIME_PICKER_ORIENTATION, TIME_FORMAT, TIME_PERIOD } from './types';
 import { 
-  DIAL_CONSTANTS, 
-  TIME_CONSTANTS, 
-  DEFAULT_CLOCK_ICON,
-  DEFAULT_KEYBOARD_ICON,
-  SELECTORS
-} from './config';
+  TIMEPICKER_DIAL, 
+  TIMEPICKER_VALUES, 
+  TIMEPICKER_ICONS,
+  TIMEPICKER_SELECTORS
+} from './constants';
 import { padZero, convertTo12Hour } from './utils';
 import { renderClockDial, getTimeValueFromClick } from './clockdial';
 
@@ -154,10 +153,10 @@ export const renderTimePicker = (
   // Create canvas element
   const canvas = document.createElement('canvas');
   canvas.className = `${config.prefix}-time-picker-dial-canvas`;
-  canvas.width = DIAL_CONSTANTS.DIAMETER;
-  canvas.height = DIAL_CONSTANTS.DIAMETER;
-  canvas.style.width = `${DIAL_CONSTANTS.DIAMETER}px`;
-  canvas.style.height = `${DIAL_CONSTANTS.DIAMETER}px`;
+  canvas.width = TIMEPICKER_DIAL.DIAMETER;
+  canvas.height = TIMEPICKER_DIAL.DIAMETER;
+  canvas.style.width = `${TIMEPICKER_DIAL.DIAMETER}px`;
+  canvas.style.height = `${TIMEPICKER_DIAL.DIAMETER}px`;
   dialContainer.appendChild(canvas);
   
   // Create actions container
@@ -172,8 +171,8 @@ export const renderTimePicker = (
     ? 'Switch to keyboard input' 
     : 'Switch to dial selector');
   toggleTypeButton.innerHTML = config.type === TIME_PICKER_TYPE.DIAL 
-    ? config.keyboardIcon || DEFAULT_KEYBOARD_ICON 
-    : config.clockIcon || DEFAULT_CLOCK_ICON;
+    ? config.keyboardIcon || TIMEPICKER_ICONS.KEYBOARD 
+    : config.clockIcon || TIMEPICKER_ICONS.CLOCK;
   actions.appendChild(toggleTypeButton);
   
   // Create action buttons container
@@ -217,7 +216,7 @@ export const renderTimePicker = (
     if (dialContainer.style.display === 'none') {
       // Switch to dial mode
       dialContainer.style.display = 'block';
-      toggleTypeButton.innerHTML = config.keyboardIcon || DEFAULT_KEYBOARD_ICON;
+      toggleTypeButton.innerHTML = config.keyboardIcon || TIMEPICKER_ICONS.KEYBOARD;
       toggleTypeButton.setAttribute('aria-label', 'Switch to keyboard input');
       
       // Set focus on dial
@@ -246,7 +245,7 @@ export const renderTimePicker = (
     } else {
       // Switch to input mode
       dialContainer.style.display = 'none';
-      toggleTypeButton.innerHTML = config.clockIcon || DEFAULT_CLOCK_ICON;
+      toggleTypeButton.innerHTML = config.clockIcon || TIMEPICKER_ICONS.CLOCK;
       toggleTypeButton.setAttribute('aria-label', 'Switch to dial selector');
       
       // Focus on hours input

@@ -5,16 +5,17 @@ import {
   BaseComponentConfig 
 } from '../../core/config/component-config';
 import { ProgressConfig } from './types';
+import { PROGRESS_VARIANTS, PROGRESS_DEFAULTS, PROGRESS_CLASSES } from './constants';
 
 /**
  * Default configuration for the Progress component
  */
 export const defaultConfig: ProgressConfig = {
-  variant: 'linear',
-  value: 0,
-  max: 100,
-  buffer: 0,
-  showLabel: false
+  variant: PROGRESS_DEFAULTS.VARIANT,
+  value: PROGRESS_DEFAULTS.VALUE,
+  max: PROGRESS_DEFAULTS.MAX,
+  buffer: PROGRESS_DEFAULTS.BUFFER,
+  showLabel: PROGRESS_DEFAULTS.SHOW_LABEL
   // Don't set disabled: false as default - it should be undefined by default
 };
 
@@ -51,7 +52,7 @@ export const getElementConfig = (config: ProgressConfig) => {
     attrs['aria-disabled'] = 'true';
   }
   
-  const isCircular = config.variant === 'circular';
+  const isCircular = config.variant === PROGRESS_VARIANTS.CIRCULAR;
   
   return createElementConfig(config, {
     tag: 'div',
@@ -89,7 +90,7 @@ export const getApiConfig = (comp, state) => ({
     show: () => {
       if (!state.labelElement) {
         const labelElement = document.createElement('div');
-        labelElement.className = `${comp.getClass('progress')}-label`;
+        labelElement.className = `${comp.getClass(PROGRESS_CLASSES.LABEL)}`;
         labelElement.textContent = state.labelFormatter(state.value, state.max);
         comp.element.appendChild(labelElement);
         state.labelElement = labelElement;

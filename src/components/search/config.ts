@@ -4,21 +4,26 @@ import {
   createElementConfig
 } from '../../core/config/component-config';
 import { SearchConfig } from './types';
+import { 
+  SEARCH_VARIANTS, 
+  SEARCH_DEFAULTS, 
+  SEARCH_ICONS 
+} from './constants';
 
 /**
  * Default configuration for the Search component
  */
 export const defaultConfig: SearchConfig = {
-  variant: 'bar',
+  variant: SEARCH_VARIANTS.BAR,
   disabled: false,
-  placeholder: 'Search',
-  value: '',
-  leadingIcon: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>',
-  showClearButton: true,
-  minWidth: 360,
-  maxWidth: 720,
-  fullWidth: false,
-  showDividers: true
+  placeholder: SEARCH_DEFAULTS.PLACEHOLDER,
+  value: SEARCH_DEFAULTS.VALUE,
+  leadingIcon: SEARCH_ICONS.SEARCH,
+  showClearButton: SEARCH_DEFAULTS.SHOW_CLEAR_BUTTON,
+  minWidth: SEARCH_DEFAULTS.MIN_WIDTH,
+  maxWidth: SEARCH_DEFAULTS.MAX_WIDTH,
+  fullWidth: SEARCH_DEFAULTS.FULL_WIDTH,
+  showDividers: SEARCH_DEFAULTS.SHOW_DIVIDERS
 };
 
 /**

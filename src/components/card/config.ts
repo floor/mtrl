@@ -10,6 +10,7 @@ import {
   createCardActions 
 } from './content';
 import { CardComponent, CardSchema, ButtonConfig, BaseComponent } from './types';
+import { CARD_VARIANTS, CARD_ELEVATIONS } from './constants';
 
 /**
  * Default configuration for the Card component.
@@ -19,7 +20,7 @@ import { CardComponent, CardSchema, ButtonConfig, BaseComponent } from './types'
  * @category Components
  */
 export const defaultConfig: CardSchema = {
-  variant: 'elevated',
+  variant: CARD_VARIANTS.ELEVATED,
   interactive: false,
   fullWidth: false,
   clickable: false,
@@ -218,12 +219,7 @@ export const getApiConfig = (comp: any) => ({
  * 
  * @category Components
  */
-export const CARD_ELEVATION_LEVELS = {
-  LEVEL0: 0,
-  LEVEL1: 1,
-  LEVEL2: 2,
-  LEVEL4: 4
-};
+export const CARD_ELEVATION_LEVELS = CARD_ELEVATIONS;
 
 /**
  * Adds interactive behavior to card component.
@@ -244,13 +240,13 @@ export const withInteractiveBehavior = (comp: BaseComponent): BaseComponent => {
   if (isInteractive) {
     // Mouse interactions
     comp.element.addEventListener('mouseenter', () => {
-      if (config.variant === 'elevated') {
+      if (config.variant === CARD_VARIANTS.ELEVATED) {
         comp.element.style.setProperty('--card-elevation', String(CARD_ELEVATION_LEVELS.LEVEL2));
       }
     });
 
     comp.element.addEventListener('mouseleave', () => {
-      if (config.variant === 'elevated') {
+      if (config.variant === CARD_VARIANTS.ELEVATED) {
         comp.element.style.setProperty('--card-elevation', String(CARD_ELEVATION_LEVELS.LEVEL1));
       }
     });

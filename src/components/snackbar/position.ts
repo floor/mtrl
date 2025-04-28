@@ -1,14 +1,6 @@
 // src/components/snackbar/position.ts
 import { BaseComponent } from './types';
-
-/**
- * Snackbar display positions
- */
-const SNACKBAR_POSITIONS = {
-  CENTER: 'center',
-  START: 'start',
-  END: 'end'
-}
+import { SNACKBAR_POSITIONS } from './constants';
 
 /**
  * Position configuration for the withPosition function

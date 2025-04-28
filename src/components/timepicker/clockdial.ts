@@ -1,7 +1,7 @@
 // src/components/timepicker/clockdial.ts
 
 import { TimeValue, TIME_FORMAT, TIME_PICKER_TYPE, TIME_PERIOD } from './types';
-import { DIAL_CONSTANTS, TIME_CONSTANTS } from './config';
+import { TIMEPICKER_DIAL, TIMEPICKER_VALUES } from './constants';
 import { padZero } from './utils';
 
 /**
@@ -30,7 +30,7 @@ interface ThemeColors {
  * Updated constants for clock dial rendering
  */
 const CLOCK_CONSTANTS = {
-  ...DIAL_CONSTANTS,
+  ...TIMEPICKER_DIAL,
   KNOB_SIZE: 45, // Large hand knob size
   CENTER_SIZE: 8,
   NUMBER_SIZE: 24, // Same size for all numbers

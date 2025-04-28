@@ -6,23 +6,29 @@ import {
 } from '../../core/config/component-config';
 import { withElement } from '../../core/compose/component';
 import { TabConfig } from './types';
+import { 
+  TAB_VARIANTS, 
+  TAB_STATES, 
+  TABS_DEFAULTS, 
+  TAB_CLASSES 
+} from './constants';
 
 /**
  * Default configuration for a Tab
  */
 export const defaultTabConfig: TabConfig = {
-  state: 'inactive',
+  state: TAB_STATES.INACTIVE,
   componentName: 'tab',
-  ripple: true
+  ripple: TABS_DEFAULTS.RIPPLE
 };
 
 /**
  * Default configuration for the Tabs component
  */
 export const defaultTabsConfig = {
-  variant: 'primary',
-  scrollable: true,
-  showDivider: true,
+  variant: TABS_DEFAULTS.VARIANT,
+  scrollable: TABS_DEFAULTS.SCROLLABLE,
+  showDivider: TABS_DEFAULTS.SHOW_DIVIDER,
   componentName: 'tabs'
 };
 

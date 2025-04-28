@@ -10,12 +10,12 @@ import {
 import { TimePickerConfig, TimePickerComponent, TimeValue, TIME_PERIOD, TIME_FORMAT } from './types';
 import { createBaseConfig, getContainerConfig, getModalConfig, getDialogConfig, getApiConfig } from './config';
 import { 
-  TIME_PICKER_TYPE, 
-  TIME_PICKER_ORIENTATION,
-  EVENTS,
-  SELECTORS,
-  Z_INDEX
-} from './config';
+  TIMEPICKER_TYPES as TIME_PICKER_TYPE, 
+  TIMEPICKER_ORIENTATIONS as TIME_PICKER_ORIENTATION,
+  TIMEPICKER_EVENTS as EVENTS,
+  TIMEPICKER_SELECTORS as SELECTORS,
+  TIMEPICKER_Z_INDEX as Z_INDEX
+} from './constants';
 import { createTimePickerAPI } from './api';
 import { renderTimePicker } from './render';
 import { parseTime, formatTime } from './utils';

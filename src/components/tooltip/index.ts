@@ -1,12 +1,17 @@
 // src/components/tooltip/index.ts
 export { default } from './tooltip';
+
+// Export constants
+export { 
+  TOOLTIP_POSITIONS,
+  TOOLTIP_VARIANTS,
+  TOOLTIP_EVENTS,
+  TOOLTIP_DEFAULTS,
+  TOOLTIP_CLASSES
+} from './constants';
+
+// Export types
 export { 
   TooltipConfig, 
-  TooltipComponent, 
-  TOOLTIP_POSITIONS, 
-  TOOLTIP_VARIANTS,
-  DEFAULT_SHOW_DELAY,
-  DEFAULT_HIDE_DELAY,
-  DEFAULT_OFFSET,
-  DEFAULT_ARROW_SIZE
+  TooltipComponent
 } from './types';

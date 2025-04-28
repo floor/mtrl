@@ -1,6 +1,7 @@
 // src/components/list/features/listmanager.ts
 
 import { createListManager } from '../../../core/collection/list-manager';
+import { LIST_CLASSES, LIST_EVENTS } from '../constants';
 
 /**
  * Adds list management capabilities to a component
@@ -49,7 +50,7 @@ export const withListManager = (config) => component => {
    */
   function renderDefaultItem(item, recycledElement) {
     const element = recycledElement || document.createElement('div');
-    element.className = 'mtrl-list-item';
+    element.className = LIST_CLASSES.ITEM;
     element.textContent = item.text || item.title || item.headline || item.name || item.id;
     return element;
   }
@@ -64,7 +65,7 @@ export const withListManager = (config) => component => {
       // Override specific ones
       renderItem: wrappedRenderItem,
       afterLoad: (data) => {
-        component.emit('load', data);
+        component.emit(LIST_EVENTS.LOAD, data);
         if (config.afterLoad) config.afterLoad(data);
       }
     }

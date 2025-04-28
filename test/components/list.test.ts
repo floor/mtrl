@@ -1,7 +1,7 @@
 // test/components/list.test.ts
 import { describe, test, expect, beforeAll, afterAll } from 'bun:test';
 import { JSDOM } from 'jsdom';
-import { LIST_TYPES } from '../../src/components/list/types';
+import { LIST_TYPES } from '../../src/components/list/constants';
 import type { ListConfig, ListComponent, ListItemConfig } from '../../src/components/list/types';
 
 // IMPORTANT: Due to potential circular dependencies in the actual list component

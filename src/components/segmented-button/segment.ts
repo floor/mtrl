@@ -1,7 +1,7 @@
 // src/components/segmented-button/segment.ts
 import createButton from '../button';
 import { SegmentConfig, Segment } from './types';
-import { DEFAULT_CHECKMARK_ICON } from './config';
+import { DEFAULT_CHECKMARK_ICON } from './constants';
 
 /**
  * Creates a segment for the segmented button using the button component

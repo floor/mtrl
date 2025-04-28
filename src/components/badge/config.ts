@@ -4,13 +4,12 @@ import {
   createElementConfig
 } from '../../core/config/component-config';
 import { BadgeConfig } from './types';
-
-/**
- * Maximum character count for badge labels
- * @category Components
- * @internal
- */
-export const BADGE_MAX_CHARACTERS = 4;
+import { 
+  BADGE_VARIANTS, 
+  BADGE_COLORS, 
+  BADGE_POSITIONS, 
+  BADGE_MAX_CHARACTERS 
+} from './constants';
 
 /**
  * Default configuration for the Badge component
@@ -20,11 +19,11 @@ export const BADGE_MAX_CHARACTERS = 4;
  */
 export const defaultConfig: BadgeConfig = {
   /** Default to large badge (with text capability) */
-  variant: 'large',
+  variant: BADGE_VARIANTS.LARGE,
   /** Default to error (red) color */
-  color: 'error',
+  color: BADGE_COLORS.ERROR,
   /** Default to top-right corner positioning */
-  position: 'top-right',
+  position: BADGE_POSITIONS.TOP_RIGHT,
   /** Default to empty label */
   label: '',
   /** Default to visible */

@@ -7,6 +7,7 @@
 import { createComponentConfig, BaseComponentConfig } from '../../core/config/component-config';
 import { PREFIX } from '../../core/config';
 import { BottomAppBarConfig } from './types';
+import { FAB_POSITIONS, DEFAULT_TRANSITION_DURATION } from './constants';
 
 /**
  * Default configuration for bottom app bar
@@ -14,9 +15,9 @@ import { BottomAppBarConfig } from './types';
 export const defaultConfig: Partial<BottomAppBarConfig> = {
   tag: 'div',
   hasFab: false,
-  fabPosition: 'end',
+  fabPosition: FAB_POSITIONS.END,
   autoHide: false,
-  transitionDuration: 300
+  transitionDuration: DEFAULT_TRANSITION_DURATION
 };
 
 /**

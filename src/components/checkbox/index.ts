@@ -42,4 +42,4 @@ export {
   CHECKBOX_LABEL_POSITION,
   CHECKBOX_STATES,
   CHECKBOX_CLASSES
-} from './types';
+} from './constants';

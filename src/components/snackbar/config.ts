@@ -5,14 +5,15 @@ import {
   BaseComponentConfig 
 } from '../../core/config/component-config';
 import { SnackbarConfig, BaseComponent, ApiOptions } from './types';
+import { SNACKBAR_VARIANTS, SNACKBAR_POSITIONS, SNACKBAR_DEFAULTS } from './constants';
 
 /**
  * Default configuration for the Snackbar component
  */
 export const defaultConfig: SnackbarConfig = {
-  variant: 'basic',
-  position: 'center',
-  duration: 4000
+  variant: SNACKBAR_DEFAULTS.VARIANT,
+  position: SNACKBAR_DEFAULTS.POSITION,
+  duration: SNACKBAR_DEFAULTS.DURATION
 };
 
 /**

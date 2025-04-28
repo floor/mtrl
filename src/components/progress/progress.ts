@@ -12,17 +12,18 @@ import {
 import { withAPI } from './api';
 import { ProgressConfig, ProgressComponent } from './types';
 import { createBaseConfig, getElementConfig, getApiConfig } from './config';
+import { PROGRESS_VARIANTS, PROGRESS_CLASSES } from './constants';
 
 // Helper functions
 const createLinearProgressDOM = (baseClass: string) => {
   const track = document.createElement('div');
-  track.className = `${baseClass}-track`;
+  track.className = `${baseClass}__${PROGRESS_CLASSES.TRACK}`;
   
   const indicator = document.createElement('div');
-  indicator.className = `${baseClass}-indicator`;
+  indicator.className = `${baseClass}__${PROGRESS_CLASSES.INDICATOR}`;
   
   const buffer = document.createElement('div');
-  buffer.className = `${baseClass}-buffer`;
+  buffer.className = `${baseClass}__${PROGRESS_CLASSES.BUFFER}`;
   
   return { track, indicator, buffer };
 };
@@ -35,7 +36,7 @@ const createCircularProgressDOM = (baseClass: string) => {
   track.setAttribute('r', '45');
   track.setAttribute('fill', 'none');
   track.setAttribute('stroke-width', '6');
-  track.setAttribute('class', `${baseClass}-track`); // FIXED: use setAttribute instead of className
+  track.setAttribute('class', `${baseClass}__${PROGRESS_CLASSES.TRACK}`); // FIXED: use setAttribute instead of className
   
   const indicator = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
   indicator.setAttribute('cx', '48');
@@ -43,7 +44,7 @@ const createCircularProgressDOM = (baseClass: string) => {
   indicator.setAttribute('r', '45');
   indicator.setAttribute('fill', 'none');
   indicator.setAttribute('stroke-width', '6');
-  indicator.setAttribute('class', `${baseClass}-indicator`); // FIXED: use setAttribute instead of className
+  indicator.setAttribute('class', `${baseClass}__${PROGRESS_CLASSES.INDICATOR}`); // FIXED: use setAttribute instead of className
   
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svg.setAttribute('viewBox', `0 0 ${size} ${size}`);
@@ -103,7 +104,7 @@ const createProgress = (config: ProgressConfig = {}): ProgressComponent => {
       // Add DOM structure based on variant
       (component) => {
         const baseClass = component.getClass('progress');
-        const isCircular = baseConfig.variant === 'circular';
+        const isCircular = baseConfig.variant === PROGRESS_VARIANTS.CIRCULAR;
         
         if (isCircular) {
           const { track, indicator, svg } = createCircularProgressDOM(baseClass);
@@ -122,7 +123,7 @@ const createProgress = (config: ProgressConfig = {}): ProgressComponent => {
         // Add label if requested
         if (baseConfig.showLabel) {
           const labelElement = document.createElement('div');
-          labelElement.className = `${baseClass}-label`;
+          labelElement.className = `${baseClass}__${PROGRESS_CLASSES.LABEL}`;
           labelElement.textContent = state.labelFormatter(state.value, state.max);
           component.element.appendChild(labelElement);
           state.labelElement = labelElement;

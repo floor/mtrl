@@ -4,6 +4,11 @@ import { TabConfig, TabComponent } from './types';
 import { BaseComponent } from '../../core/compose/component';
 import { updateTabPanels, getActiveTab } from './utils';
 import { createTabIndicator, TabIndicator } from './indicator';
+import { 
+  TABS_CLASSES, 
+  TAB_INDICATOR_WIDTH_STRATEGIES, 
+  TABS_DEFAULTS 
+} from './constants';
 
 /**
  * Configuration for tabs management feature

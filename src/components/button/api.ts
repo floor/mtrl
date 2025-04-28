@@ -124,6 +124,49 @@ export const withAPI = ({ disabled, lifecycle }: ApiOptions) =>
     },
 
     /**
+     * Sets the button's variant (visual style)
+     * @param variant - New variant to apply ('filled', 'outlined', 'text', etc.)
+     * @returns Button component for method chaining
+     */
+    setVariant(variant: string) {
+      const compName = component.componentName || 'button';
+      const buttonClass = component.getClass(compName);
+      
+      // First remove all existing variant classes
+      const variantClasses = ['filled', 'tonal', 'outlined', 'elevated', 'text']
+        .map(v => `${buttonClass}--${v}`);
+      
+      variantClasses.forEach(cls => {
+        component.element.classList.remove(cls);
+      });
+      
+      component.element.classList.add(`${buttonClass}--${variant}`);
+
+      
+      return this;
+    },
+
+    /**
+     * Gets the button's current variant
+     * @returns Current variant name ('filled', 'outlined', etc.)
+     */
+    getVariant() {
+      const compName = component.componentName || 'button';
+      const buttonClass = component.getClass(compName);
+      const variants = ['filled', 'tonal', 'outlined', 'elevated', 'text'];
+      
+      // Check which variant class is present on the element
+      for (const variant of variants) {
+        if (component.element.classList.contains(`${buttonClass}--${variant}`)) {
+          return variant;
+        }
+      }
+      
+      // If no variant class is found, return the default variant
+      return 'filled';
+    },
+
+    /**
      * Sets the active state of the button
      * Used to visually indicate the button's active state, such as when it has a menu open
      * 

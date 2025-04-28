@@ -4,26 +4,26 @@ import {
   createElementConfig
 } from '../../core/config/component-config';
 import { SliderConfig } from './types';
-import { SLIDER_COLORS, SLIDER_SIZES } from './types';
+import { SLIDER_COLORS, SLIDER_SIZES, SLIDER_DEFAULTS, SLIDER_POSITIONS } from './constants';
 import { createSliderSchema } from './schema';
 
 /**
  * Default configuration for the Slider component
  */
 export const defaultConfig: SliderConfig = {
-  min: 0,
-  max: 100,
-  value: 0,
-  step: 1,
-  disabled: false,
-  color: SLIDER_COLORS.PRIMARY,
-  size: SLIDER_SIZES.MEDIUM,
-  ticks: false,
-  showValue: true,
-  snapToSteps: true,
-  range: false,
-  iconPosition: 'start',
-  labelPosition: 'start',
+  min: SLIDER_DEFAULTS.MIN,
+  max: SLIDER_DEFAULTS.MAX,
+  value: SLIDER_DEFAULTS.VALUE,
+  step: SLIDER_DEFAULTS.STEP,
+  disabled: SLIDER_DEFAULTS.DISABLED,
+  color: SLIDER_DEFAULTS.COLOR,
+  size: SLIDER_DEFAULTS.SIZE,
+  ticks: SLIDER_DEFAULTS.TICKS,
+  showValue: SLIDER_DEFAULTS.SHOW_VALUE,
+  snapToSteps: SLIDER_DEFAULTS.SNAP_TO_STEPS,
+  range: SLIDER_DEFAULTS.RANGE,
+  iconPosition: SLIDER_DEFAULTS.ICON_POSITION,
+  labelPosition: SLIDER_DEFAULTS.LABEL_POSITION,
   valueFormatter: (value) => value.toString()
 };
 

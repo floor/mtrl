@@ -7,6 +7,18 @@ import { createTabsState } from './state';
 import { createTabIndicator } from './indicator';
 import { updateTabPanels, setupKeyboardNavigation } from './utils';
 
+// Export constants
+export {
+  TAB_VARIANTS,
+  TAB_STATES,
+  TAB_INDICATOR_WIDTH_STRATEGIES,
+  TAB_EVENTS,
+  TABS_EVENTS,
+  TABS_DEFAULTS,
+  TABS_CLASSES,
+  TAB_CLASSES
+} from './constants';
+
 export { 
   // Types
   TabsConfig, 

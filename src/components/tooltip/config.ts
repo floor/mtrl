@@ -3,28 +3,25 @@ import {
   createComponentConfig, 
   createElementConfig
 } from '../../core/config/component-config';
+import { TooltipConfig } from './types';
 import { 
-  TooltipConfig, 
   TOOLTIP_POSITIONS,
   TOOLTIP_VARIANTS,
-  DEFAULT_SHOW_DELAY,
-  DEFAULT_HIDE_DELAY,
-  DEFAULT_OFFSET,
-  DEFAULT_ARROW_SIZE
-} from './types';
+  TOOLTIP_DEFAULTS
+} from './constants';
 
 /**
  * Default configuration for the Tooltip component
  */
 export const defaultConfig: TooltipConfig = {
-  position: TOOLTIP_POSITIONS.BOTTOM,
-  variant: TOOLTIP_VARIANTS.DEFAULT,
-  visible: false,
-  showDelay: DEFAULT_SHOW_DELAY,
-  hideDelay: DEFAULT_HIDE_DELAY,
-  showOnFocus: true,
-  showOnHover: true,
-  rich: false
+  position: TOOLTIP_DEFAULTS.POSITION,
+  variant: TOOLTIP_DEFAULTS.VARIANT,
+  visible: TOOLTIP_DEFAULTS.VISIBLE,
+  showDelay: TOOLTIP_DEFAULTS.SHOW_DELAY,
+  hideDelay: TOOLTIP_DEFAULTS.HIDE_DELAY,
+  showOnFocus: TOOLTIP_DEFAULTS.SHOW_ON_FOCUS,
+  showOnHover: TOOLTIP_DEFAULTS.SHOW_ON_HOVER,
+  rich: TOOLTIP_DEFAULTS.RICH
 };
 
 /**

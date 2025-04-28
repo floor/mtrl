@@ -5,7 +5,8 @@ import {
   createElementConfig,
   BaseComponentConfig 
 } from '../../core/config/component-config';
-import { MenuConfig, MENU_POSITION } from './types';
+import { MenuConfig } from './types';
+import { MENU_POSITION, MENU_DEFAULTS, MENU_CLASSES } from './constants';
 
 /**
  * Default configuration for the Menu component
@@ -15,13 +16,13 @@ import { MenuConfig, MENU_POSITION } from './types';
  */
 export const defaultConfig: MenuConfig = {
   items: [],
-  position: MENU_POSITION.BOTTOM_START,
-  closeOnSelect: true,
-  closeOnClickOutside: true,
-  closeOnEscape: true,
-  openSubmenuOnHover: true,
-  offset: 0,
-  autoFlip: true,
+  position: MENU_DEFAULTS.POSITION,
+  closeOnSelect: MENU_DEFAULTS.CLOSE_ON_SELECT,
+  closeOnClickOutside: MENU_DEFAULTS.CLOSE_ON_CLICK_OUTSIDE,
+  closeOnEscape: MENU_DEFAULTS.CLOSE_ON_ESCAPE,
+  openSubmenuOnHover: MENU_DEFAULTS.OPEN_SUBMENU_ON_HOVER,
+  offset: MENU_DEFAULTS.OFFSET,
+  autoFlip: MENU_DEFAULTS.AUTO_FLIP,
   visible: false
 };
 
@@ -80,7 +81,7 @@ export const getElementConfig = (config: MenuConfig) => {
     tag: 'div',
     attrs,
     className: [
-      config.visible ? 'menu--visible' : null,
+      config.visible ? MENU_CLASSES.VISIBLE : null,
       config.class
     ].filter(Boolean),
     forwardEvents: {

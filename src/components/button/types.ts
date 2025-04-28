@@ -199,6 +199,19 @@ export interface ButtonComponent {
    * @returns The button component for chaining
    */
   setValue: (value: string) => ButtonComponent;
+
+  /**
+   * Gets the button's current variant
+   * @returns Current variant name ('filled', 'outlined', etc.)
+   */
+  getVariant: () => ButtonVariant | string;
+
+  /**
+   * Sets the button's variant (visual style)
+   * @param variant - New variant to apply ('filled', 'outlined', 'text', etc.)
+   * @returns The button component for chaining
+   */
+  setVariant: (variant: ButtonVariant | string) => ButtonComponent;
   
   /**
    * Enables the button (removes disabled attribute)

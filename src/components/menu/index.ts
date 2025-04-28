@@ -41,4 +41,11 @@ export type {
  * 
  * @category Components
  */
-export { MENU_POSITION } from './types';
+export { 
+  MENU_POSITION,
+  MENU_DEFAULTS,
+  MENU_INTERACTION_TYPES,
+  MENU_ITEM_TYPES,
+  MENU_EVENTS,
+  MENU_CLASSES
+} from './constants';
