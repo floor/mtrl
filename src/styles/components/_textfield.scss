@@ -14,7 +14,6 @@ $component: '#{base.$prefix}-textfield';
   display: inline-flex;
   flex-direction: column;
   min-width: 210px;
-  align-self: flex-start; // Prevents growing to fill the container's height
   flex: 0 0 auto; // Don't grow or shrink; keep natural size
   // Label
   &-label {
