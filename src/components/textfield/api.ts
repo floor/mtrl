@@ -35,6 +35,39 @@ export const withAPI = ({ disabled, lifecycle }: ApiOptions) =>
       return this;
     },
 
+    // Variant management
+    setVariant(variant: TextfieldVariant): TextfieldComponent {
+      const PREFIX = component.config?.prefix || 'mtrl';
+      const COMPONENT = component.config?.componentName || 'textfield';
+      
+      // Remove existing variant classes
+      component.element.classList.remove(
+        `${PREFIX}-${COMPONENT}--filled`,
+        `${PREFIX}-${COMPONENT}--outlined`
+      );
+      
+      // Add the new variant class
+      component.element.classList.add(`${PREFIX}-${COMPONENT}--${variant}`);
+      
+      // Update positioning after variant change
+      if (component.updateElementPositions) {
+        setTimeout(() => component.updateElementPositions(), 10);
+      }
+      
+      return this;
+    },
+    
+    getVariant(): TextfieldVariant {
+      const PREFIX = component.config?.prefix || 'mtrl';
+      const COMPONENT = component.config?.componentName || 'textfield';
+      
+      if (component.element.classList.contains(`${PREFIX}-${COMPONENT}--outlined`)) {
+        return 'outlined';
+      }
+      
+      return 'filled'; // Default to filled if no class found
+    },
+
     // Label management
     setLabel(text: string): TextfieldComponent {
       component.label?.setText(text);

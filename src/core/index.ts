@@ -50,7 +50,8 @@ export {
   normalizeEvent,
   throttle,
   debounce,
-  once
+  once,
+  getInheritedBackground
 } from './utils';
 
 // 8. Gesture system

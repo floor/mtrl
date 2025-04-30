@@ -1,6 +1,5 @@
-// src/components/textfield/features/placement.ts
-
 import { BaseComponent, ElementComponent } from '../../../core/compose/component';
+import { getInheritedBackground } from '../../../core/utils/background';
 
 /**
  * Component with placement management capabilities
@@ -24,6 +23,11 @@ export const withPlacement = () =>
     const PREFIX = component.config.prefix || 'mtrl';
     const COMPONENT = component.config.componentName || 'textfield';
     
+    // Use WeakMaps to store observers without extending HTMLElement
+    const bgSourceObservers = new WeakMap<HTMLElement, MutationObserver>();
+    const parentObservers = new WeakMap<HTMLElement, MutationObserver[]>();
+    const themeChangeHandlers = new WeakMap<HTMLElement, EventListener>();
+    
     /**
      * Updates positions of labels and adjusts input padding
      * to accommodate prefix/suffix elements
@@ -38,10 +42,87 @@ export const withPlacement = () =>
       
       // Get component states
       const isOutlined = component.element.classList.contains(`${PREFIX}-${COMPONENT}--outlined`);
-      const isFilled = component.element.classList.contains(`${PREFIX}-${COMPONENT}--filled`);
       const isFocused = component.element.classList.contains(`${PREFIX}-${COMPONENT}--focused`);
       const isEmpty = component.element.classList.contains(`${PREFIX}-${COMPONENT}--empty`);
       const hasLeadingIcon = component.element.classList.contains(`${PREFIX}-${COMPONENT}--with-leading-icon`);
+      
+      // For outlined variant, set the label background color to match parent
+      if (isOutlined && labelEl) {
+        // Get the inherited background color and its source element
+        const { color: parentBgColor, element: bgSourceElement } = getInheritedBackground(component.element);
+        
+        // Apply the background color to the label (only in focus/filled state)
+        if (isFocused || !isEmpty) {
+          labelEl.style.backgroundColor = parentBgColor;
+          
+          // Add padding to create the proper "floating label" appearance
+          labelEl.style.paddingLeft = '4px';
+          labelEl.style.paddingRight = '4px';
+          
+          // Set up observer for background source element if not already done
+          if (bgSourceElement && !bgSourceObservers.has(component.element)) {
+            const observer = new MutationObserver(() => {
+              // Update label background when source element changes
+              const { color } = getInheritedBackground(component.element);
+              labelEl.style.backgroundColor = color;
+            });
+            
+            observer.observe(bgSourceElement, { 
+              attributes: true, 
+              attributeFilter: ['style', 'class']
+            });
+            
+            // Store the observer in our WeakMap
+            bgSourceObservers.set(component.element, observer);
+            
+            // Observe parent nodes to catch theme changes, including dark mode
+            let parent = bgSourceElement.parentElement;
+            const observers: MutationObserver[] = [];
+            
+            while (parent && parent !== document.documentElement) {
+              const parentObserver = new MutationObserver(() => {
+                // Update label background when parent attributes change
+                const { color: newColor } = getInheritedBackground(component.element);
+                labelEl.style.backgroundColor = newColor;
+              });
+              
+              parentObserver.observe(parent, {
+                attributes: true,
+                attributeFilter: ['style', 'class', 'data-theme', 'data-theme-mode'] // Added data-theme-mode
+              });
+              
+              observers.push(parentObserver);
+              parent = parent.parentElement;
+            }
+            
+            // Store parent observers
+            if (observers.length) {
+              parentObservers.set(component.element, observers);
+            }
+          }
+          
+          // Set up theme change listeners if not already done
+          if (!themeChangeHandlers.has(component.element)) {
+            const themeChangeHandler = () => {
+              // Update label background on theme change
+              const { color } = getInheritedBackground(component.element);
+              if (isFocused || !isEmpty) {
+                labelEl.style.backgroundColor = color;
+              }
+            };
+            
+            document.addEventListener('themeChanged', themeChangeHandler);
+            document.addEventListener('themechange', themeChangeHandler);
+            document.addEventListener('theme-changed', themeChangeHandler);
+            
+            themeChangeHandlers.set(component.element, themeChangeHandler);
+          }
+        } else {
+          // Reset background when not floating
+          labelEl.style.backgroundColor = '';
+          labelEl.style.padding = '';
+        }
+      }
       
       // Handle prefix positioning and input padding
       if (prefixEl && component.input) {
@@ -68,7 +149,6 @@ export const withPlacement = () =>
             // When focused or filled, move to default position
             labelEl.style.left = '12px';
           }
-          
         }
       } else if (hasLeadingIcon && labelEl) {
         // Handle case with leading icon but no prefix
@@ -125,6 +205,14 @@ export const withPlacement = () =>
       
       // Update positions on window resize
       window.addEventListener('resize', updateElementPositions);
+      
+      // Update positions when element is connected to DOM
+      const domObserver = new MutationObserver(() => {
+        if (component.element.isConnected) {
+          updateElementPositions();
+        }
+      });
+      domObserver.observe(document.body, { childList: true, subroutine: true });
     };
     
     // Perform initial setup
@@ -138,6 +226,30 @@ export const withPlacement = () =>
       const originalDestroy = component.lifecycle.destroy;
       component.lifecycle.destroy = () => {
         window.removeEventListener('resize', updateElementPositions);
+        
+        // Disconnect background source observer
+        const bgObserver = bgSourceObservers.get(component.element);
+        if (bgObserver) {
+          bgObserver.disconnect();
+          bgSourceObservers.delete(component.element);
+        }
+        
+        // Disconnect parent observers
+        const observers = parentObservers.get(component.element);
+        if (observers) {
+          observers.forEach(observer => observer.disconnect());
+          parentObservers.delete(component.element);
+        }
+        
+        // Remove theme change listeners
+        const themeHandler = themeChangeHandlers.get(component.element);
+        if (themeHandler) {
+          document.removeEventListener('themeChanged', themeHandler);
+          document.removeEventListener('themechange', themeHandler);
+          document.removeEventListener('theme-changed', themeHandler);
+          themeChangeHandlers.delete(component.element);
+        }
+        
         originalDestroy.call(component.lifecycle);
       };
     }

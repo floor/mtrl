@@ -137,6 +137,12 @@ export interface TextfieldComponent {
   
   /** Removes an attribute from the input element */
   removeAttribute: (name: string) => TextfieldComponent;
+
+  /** Sets the textfield's variant (filled or outlined) */
+  setVariant: (variant: TextfieldVariant) => TextfieldComponent;
+  
+  /** Gets the textfield's current variant */
+  getVariant: () => TextfieldVariant;
   
   /** Sets the textfield's label text */
   setLabel: (text: string) => TextfieldComponent;
@@ -227,6 +233,11 @@ export interface ApiOptions {
 export interface BaseComponent {
   element: HTMLElement;
   input?: HTMLInputElement | HTMLTextAreaElement;
+  config?: {
+    prefix?: string;
+    componentName?: string;
+    [key: string]: any;
+  };
   getValue?: () => string;
   setValue?: (value: string) => any;
   setAttribute?: (name: string, value: string) => any;
