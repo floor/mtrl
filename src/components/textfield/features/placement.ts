@@ -88,7 +88,7 @@ export const withPlacement = () =>
               
               parentObserver.observe(parent, {
                 attributes: true,
-                attributeFilter: ['style', 'class', 'data-theme', 'data-theme-mode'] // Added data-theme-mode
+                attributeFilter: ['style', 'class', 'data-theme', 'data-theme-mode']
               });
               
               observers.push(parentObserver);
@@ -101,7 +101,7 @@ export const withPlacement = () =>
             }
           }
           
-          // Set up theme change listeners if not already done
+          // Set up theme change listener if not already done
           if (!themeChangeHandlers.has(component.element)) {
             const themeChangeHandler = () => {
               // Update label background on theme change
@@ -111,9 +111,8 @@ export const withPlacement = () =>
               }
             };
             
-            document.addEventListener('themeChanged', themeChangeHandler);
+            // Only listen for themechange, as it's the event dispatched by theme-manager.js
             document.addEventListener('themechange', themeChangeHandler);
-            document.addEventListener('theme-changed', themeChangeHandler);
             
             themeChangeHandlers.set(component.element, themeChangeHandler);
           }
@@ -212,7 +211,7 @@ export const withPlacement = () =>
           updateElementPositions();
         }
       });
-      domObserver.observe(document.body, { childList: true, subroutine: true });
+      domObserver.observe(document.body, { childList: true, subtree: true });
     };
     
     // Perform initial setup
@@ -241,12 +240,10 @@ export const withPlacement = () =>
           parentObservers.delete(component.element);
         }
         
-        // Remove theme change listeners
+        // Remove theme change listener
         const themeHandler = themeChangeHandlers.get(component.element);
         if (themeHandler) {
-          document.removeEventListener('themeChanged', themeHandler);
           document.removeEventListener('themechange', themeHandler);
-          document.removeEventListener('theme-changed', themeHandler);
           themeChangeHandlers.delete(component.element);
         }
         
