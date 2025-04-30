@@ -34,6 +34,7 @@ interface ComponentWithElements {
     getElement: () => HTMLElement | null;
   };
   getClass: (name: string) => string;
+  componentName?: string;
 }
 
 /**
@@ -105,22 +106,65 @@ export const withAPI = ({ disabled, lifecycle }: ApiOptions) =>
     },
     
     /**
+     * Checks if the button has an icon
+     * @returns True if the button has an icon, false otherwise
+     */
+    hasIcon() {
+      const iconElement = component.icon.getElement();
+      return !!iconElement && !!iconElement.innerHTML.trim() && !!iconElement.parentNode;
+    },
+    
+    /**
      * Sets the button's icon HTML content
-     * @param icon - HTML string for the icon
+     * If empty string is provided, completely removes the icon
+     * @param icon - HTML string for the icon, or empty string to remove
      * @returns Button component for method chaining
      */
     setIcon(icon: string) {
-      component.icon.setIcon(icon);
+      if (!icon) {
+        // Remove the icon if it exists
+        const iconElement = component.icon.getElement();
+        if (iconElement && iconElement.parentNode) {
+          iconElement.parentNode.removeChild(iconElement);
+          
+          // Override getElement to return null for removed icon
+          component.icon.getElement = () => null;
+          component.icon.getIcon = () => '';
+        }
+      } else if (!this.hasIcon()) {
+        // Create new icon element when re-adding
+        const newIconElement = document.createElement('span');
+        newIconElement.className = `${component.getClass('button-icon')}`;
+        newIconElement.innerHTML = icon;
+        
+        // Insert at the beginning of button
+        if (component.element.firstChild) {
+          component.element.insertBefore(newIconElement, component.element.firstChild);
+        } else {
+          component.element.appendChild(newIconElement);
+        }
+        
+        // Update component's reference to the new element
+        component.icon.getElement = () => newIconElement;
+        component.icon.getIcon = () => icon;
+      } else {
+        // Update existing icon without creating a new one
+        const iconElement = component.icon.getElement();
+        if (iconElement) {
+          iconElement.innerHTML = icon;
+        }
+      }
+      
       this.updateCircularStyle();
       return this;
     },
     
     /**
      * Gets the button's current icon HTML content
-     * @returns Current icon HTML
+     * @returns Current icon HTML or empty string if removed
      */
     getIcon() {
-      return component.icon.getIcon();
+      return this.hasIcon() ? component.icon.getIcon() : '';
     },
 
     /**
@@ -141,8 +185,6 @@ export const withAPI = ({ disabled, lifecycle }: ApiOptions) =>
       });
       
       component.element.classList.add(`${buttonClass}--${variant}`);
-
-      
       return this;
     },
 
@@ -205,8 +247,10 @@ export const withAPI = ({ disabled, lifecycle }: ApiOptions) =>
      * @internal
      */
     updateCircularStyle() {
-      const hasText = component.text.getElement();
-      if (!hasText && component.icon.getElement()) {
+      const hasText = !!component.text.getElement();
+      const hasIcon = this.hasIcon();
+      
+      if (!hasText && hasIcon) {
         component.element.classList.add(`${component.getClass('button')}--circular`);
       } else {
         component.element.classList.remove(`${component.getClass('button')}--circular`);

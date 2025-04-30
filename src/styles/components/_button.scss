@@ -51,6 +51,10 @@ $component: '#{base.$prefix}-button';
   // Interactive states
   &:disabled {
     pointer-events: none;
+
+    .#{$component}-icon {
+      color: t.alpha('on-surface', 0.38); // Same as the text in disabled state
+    }
   }
   
   // Ensure proper layout with icons

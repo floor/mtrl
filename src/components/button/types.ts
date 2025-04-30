@@ -239,8 +239,15 @@ export interface ButtonComponent {
   getText: () => string;
   
   /**
+   * Checks if the button has an icon
+   * @returns True if the button has an icon, false otherwise
+   */
+  hasIcon: () => boolean;
+  
+  /**
    * Sets the button's icon
-   * @param icon - Icon HTML content
+   * If empty string is provided, removes the icon completely
+   * @param icon - Icon HTML content, or empty string to remove
    * @returns The button component for chaining
    */
   setIcon: (icon: string) => ButtonComponent;
