@@ -29,9 +29,9 @@ $container: '#{base.$prefix}-chips';
   // Enhanced transition for width changes
   transition: background-color v.motion('duration-short4') v.motion('easing-standard'),
               color v.motion('duration-short4') v.motion('easing-standard'),
-              border-color v.motion('duration-short4') v.motion('easing-standard'),
+              // border-color v.motion('duration-short4') v.motion('easing-standard'),
               box-shadow v.motion('duration-short4') v.motion('easing-standard'),
-              padding v.motion('duration-short4') v.motion('easing-standard'),
+              // padding v.motion('duration-short4') v.motion('easing-standard'),
               width v.motion('duration-short4') v.motion('easing-standard');
   
   // Focus styles

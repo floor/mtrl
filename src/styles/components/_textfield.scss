@@ -14,7 +14,8 @@ $component: '#{base.$prefix}-textfield';
   display: inline-flex;
   flex-direction: column;
   min-width: 210px;
-  
+  align-self: flex-start; // Prevents growing to fill the container's height
+  flex: 0 0 auto; // Don't grow or shrink; keep natural size
   // Label
   &-label {
     @include m.typography('body-large');
@@ -232,6 +233,29 @@ $component: '#{base.$prefix}-textfield';
   }
   
   // Disabled state
+  &--disabled {
+    .#{$component}-input {
+      opacity: 0.38;
+      border-color: t.color('on-surface');
+      background-color: t.alpha('on-surface', 0.04);
+      pointer-events: none;
+    }
+    
+    .#{$component}-label {
+      color: t.color('on-surface');
+      opacity: 0.38;
+    }
+    
+    .#{$component}-leading-icon,
+    .#{$component}-trailing-icon,
+    .#{$component}-prefix,
+    .#{$component}-suffix {
+      color: t.color('on-surface');
+      opacity: 0.38;
+    }
+  }
+  
+  // Disabled state - legacy support for direct input disabled
   &-input:disabled {
     opacity: 0.38;
     border-color: t.color('on-surface');
@@ -756,11 +780,12 @@ $component: '#{base.$prefix}-textfield';
     }
   }
 
-
   // Support for multiline inputs
   &-input[type="multiline"] {
     min-height: 100px;
-    resize: vertical;
+    height: auto; // Allow height to adjust based on content
+    max-height: none; // Remove max-height constraint from regular inputs
+    flex-shrink: 1; // Allow some shrinking for multiline
     
     & ~ .#{$component}-leading-icon,
     & ~ .#{$component}-trailing-icon,
