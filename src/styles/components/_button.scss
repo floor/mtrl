@@ -31,11 +31,14 @@ $component: '#{base.$prefix}-button';
   // Typography
   @include m.typography('label-large');
   
-  // Transition
+  // Transition (updated to match MD3 animation timing and properties)
   @include m.motion-transition(
     background-color, 
     color, 
-    box-shadow
+    box-shadow,
+    width,
+    border-radius,
+    opacity
   );
   
   // Focus styles
@@ -53,8 +56,22 @@ $component: '#{base.$prefix}-button';
     pointer-events: none;
 
     .#{$component}-icon {
-      color: t.alpha('on-surface', 0.38); // Same as the text in disabled state
+      color: t.alpha('on-surface', 0.38);
     }
+  }
+  
+  // State layer for ripple effect
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: currentColor;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   }
   
   // Ensure proper layout with icons
@@ -84,6 +101,7 @@ $component: '#{base.$prefix}-button';
     }
   }
   
+  // Button shape variants
   &--circular {
     border-radius: 50%;
     padding: 8px;
@@ -100,12 +118,15 @@ $component: '#{base.$prefix}-button';
   }
   
   &--icon {
-    padding: 0 v.button('padding-horizontal') 0 calc(v.button('padding-horizontal') / 2 + 6px);
+    padding: 0 v.button('padding-horizontal') 0 calc(v.button('padding-horizontal') / 2 + 4px);
   }
   
   &--active {
     // Common active state styling for all variants
     box-shadow: none;
+    
+    // Per MD3, buttons should have a subtle pressed state with reduced radius
+    border-radius: calc(v.button('border-radius') - 2px);
     
     // ARIA attribute to indicate active state for accessibility
     &[aria-expanded="true"] {
@@ -120,13 +141,17 @@ $component: '#{base.$prefix}-button';
     
     &:hover {
       @include m.state-layer(t.color('on-primary'), 'hover');
-      // No elevation in MD3 spec for filled buttons
+      // According to MD3, filled buttons DO have elevation on hover
+      @include m.elevation(1);
     }
     
     &:active,
     &.#{$component}--active {
       @include m.state-layer(t.color('on-primary'), 'pressed');
-      // No elevation in MD3 spec for filled buttons
+      // MD3 reduces elevation on press
+      @include m.elevation(0);
+      // MD3 reduces the border radius slightly when pressed
+      border-radius: calc(v.button('border-radius') - 2px);
     }
     
     &:disabled {
@@ -144,13 +169,17 @@ $component: '#{base.$prefix}-button';
     
     &:hover {
       @include m.state-layer(t.color('primary'), 'hover');
+      // MD3 increases elevation on hover
       @include m.elevation(2);
     }
     
     &:active,
     &.#{$component}--active {
       @include m.state-layer(t.color('primary'), 'pressed');
+      // MD3 reduces elevation on press, but not completely removed
       @include m.elevation(1);
+      // MD3 reduces the border radius slightly when pressed
+      border-radius: calc(v.button('border-radius') - 2px);
     }
     
     &:disabled {
@@ -170,16 +199,22 @@ $component: '#{base.$prefix}-button';
   &--tonal {
     background-color: t.color('secondary-container');
     color: t.color('on-secondary-container');
+    // MD3 tonal buttons have a subtle initial elevation
+    @include m.elevation(0);
     
     &:hover {
       @include m.state-layer(t.color('on-secondary-container'), 'hover');
-      // No elevation in MD3 spec for tonal buttons
+      // MD3 tonal buttons have elevation on hover
+      @include m.elevation(1);
     }
     
     &:active,
     &.#{$component}--active {
       @include m.state-layer(t.color('on-secondary-container'), 'pressed');
-      // No elevation in MD3 spec for tonal buttons
+      // MD3 reduces elevation on press
+      @include m.elevation(0);
+      // MD3 reduces the border radius slightly when pressed
+      border-radius: calc(v.button('border-radius') - 2px);
     }
     
     &:disabled {
@@ -201,6 +236,8 @@ $component: '#{base.$prefix}-button';
     &:active,
     &.#{$component}--active {
       @include m.state-layer(t.color('primary'), 'pressed');
+      // MD3 reduces the border radius slightly when pressed
+      border-radius: calc(v.button('border-radius') - 2px);
     }
     
     &:disabled {
@@ -223,6 +260,8 @@ $component: '#{base.$prefix}-button';
     &:active,
     &.#{$component}--active {
       @include m.state-layer(t.color('primary'), 'pressed');
+      // MD3 reduces the border radius slightly when pressed
+      border-radius: calc(v.button('border-radius') - 2px);
     }
     
     &:disabled {
@@ -237,5 +276,23 @@ $component: '#{base.$prefix}-button';
     width: v.button('height');
     padding: 0;
     border-radius: 50%;
+    
+    &:active,
+    &.#{$component}--active {
+      // For circular buttons, keep the border-radius at 50%
+      border-radius: 50%;
+    }
+  }
+  
+  // MD3 introduces motion animation for the pressed state
+  &:active {
+    transform: scale(0.97);
+    transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  // Reset transform when not pressed
+  &:not(:active) {
+    transform: scale(1);
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   }
 }

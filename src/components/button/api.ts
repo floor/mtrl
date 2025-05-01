@@ -121,6 +121,8 @@ export const withAPI = ({ disabled, lifecycle }: ApiOptions) =>
      * @returns Button component for method chaining
      */
     setIcon(icon: string) {
+      const compName = component.componentName || 'button';
+      const buttonClass = component.getClass(compName);
       if (!icon) {
         // Remove the icon if it exists
         const iconElement = component.icon.getElement();
@@ -131,6 +133,8 @@ export const withAPI = ({ disabled, lifecycle }: ApiOptions) =>
           component.icon.getElement = () => null;
           component.icon.getIcon = () => '';
         }
+
+        component.element.classList.remove(`${buttonClass}--icon`);
       } else if (!this.hasIcon()) {
         // Create new icon element when re-adding
         const newIconElement = document.createElement('span');
@@ -147,6 +151,7 @@ export const withAPI = ({ disabled, lifecycle }: ApiOptions) =>
         // Update component's reference to the new element
         component.icon.getElement = () => newIconElement;
         component.icon.getIcon = () => icon;
+        component.element.classList.add(`${buttonClass}--icon`);
       } else {
         // Update existing icon without creating a new one
         const iconElement = component.icon.getElement();
@@ -155,6 +160,8 @@ export const withAPI = ({ disabled, lifecycle }: ApiOptions) =>
         }
       }
       
+
+
       this.updateCircularStyle();
       return this;
     },
