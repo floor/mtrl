@@ -27,19 +27,18 @@ $component: '#{base.$prefix}-button';
   vertical-align: middle;
   appearance: none;
   overflow: hidden;
+  will-change: border-radius, transform;
   
   // Typography
   @include m.typography('label-large');
   
-  // Transition (updated to match MD3 animation timing and properties)
-  @include m.motion-transition(
-    background-color, 
-    color, 
-    box-shadow,
-    width,
-    border-radius,
-    opacity
-  );
+  // Explicitly apply fast transition to border-radius
+  transition: 
+    background-color v.motion('duration-short2') v.motion('easing-standard'),
+    color v.motion('duration-short2') v.motion('easing-standard'),
+    box-shadow v.motion('duration-short2') v.motion('easing-standard'),
+    border-radius v.motion('duration-short1') v.motion('easing-standard-accelerate'),
+    transform v.motion('duration-short1') v.motion('easing-standard-accelerate');
   
   // Focus styles
   &:focus {
@@ -101,7 +100,7 @@ $component: '#{base.$prefix}-button';
     }
   }
   
-  // Button shape variants
+  // Circular buttons
   &--circular {
     border-radius: 50%;
     padding: 8px;
@@ -115,6 +114,8 @@ $component: '#{base.$prefix}-button';
     .#{$component}-icon {
      margin: 0;
     }
+    
+    // Allow the border-radius transition to work naturally
   }
   
   &--icon {
@@ -125,8 +126,8 @@ $component: '#{base.$prefix}-button';
     // Common active state styling for all variants
     box-shadow: none;
     
-    // Per MD3, buttons should have a subtle pressed state with reduced radius
-    border-radius: calc(v.button('border-radius') - 2px);
+    // Per MD3, buttons have a significantly more rectangular appearance when pressed
+    border-radius: f.get-shape('small');
     
     // ARIA attribute to indicate active state for accessibility
     &[aria-expanded="true"] {
@@ -150,13 +151,13 @@ $component: '#{base.$prefix}-button';
       @include m.state-layer(t.color('on-primary'), 'pressed');
       // MD3 reduces elevation on press
       @include m.elevation(0);
-      // MD3 reduces the border radius slightly when pressed
-      border-radius: calc(v.button('border-radius') - 2px);
+      // MD3 uses a much more rectangular shape when pressed
+      border-radius: f.get-shape('small');
     }
     
     &:disabled {
-      background-color: t.alpha('on-surface', 0.12);
-      color: t.alpha('on-surface', 0.38);
+      background-color: t.alpha('outline-variant', 0.12);
+      color: t.alpha('surface', 0.38);
       box-shadow: none;
     }
   }
@@ -178,14 +179,14 @@ $component: '#{base.$prefix}-button';
       @include m.state-layer(t.color('primary'), 'pressed');
       // MD3 reduces elevation on press, but not completely removed
       @include m.elevation(1);
-      // MD3 reduces the border radius slightly when pressed
-      border-radius: calc(v.button('border-radius') - 2px);
+      // MD3 uses a much more rectangular shape when pressed
+      border-radius: f.get-shape('small');
     }
     
     &:disabled {
       @include m.elevation(0);
-      background-color: t.alpha('on-surface', 0.12);
-      color: t.alpha('on-surface', 0.38);
+      background-color: t.alpha('outline-variant', 0.12);
+      color: t.alpha('surface', 0.38);
       box-shadow: none;
     }
     
@@ -213,13 +214,13 @@ $component: '#{base.$prefix}-button';
       @include m.state-layer(t.color('on-secondary-container'), 'pressed');
       // MD3 reduces elevation on press
       @include m.elevation(0);
-      // MD3 reduces the border radius slightly when pressed
-      border-radius: calc(v.button('border-radius') - 2px);
+      // MD3 uses a much more rectangular shape when pressed
+      border-radius: f.get-shape('small');
     }
     
     &:disabled {
-      background-color: t.alpha('on-surface', 0.12);
-      color: t.alpha('on-surface', 0.38);
+      background-color: t.alpha('outline-variant', 0.12);
+      color: t.alpha('surface', 0.38);
       box-shadow: none;
     }
   }
@@ -236,14 +237,14 @@ $component: '#{base.$prefix}-button';
     &:active,
     &.#{$component}--active {
       @include m.state-layer(t.color('primary'), 'pressed');
-      // MD3 reduces the border radius slightly when pressed
-      border-radius: calc(v.button('border-radius') - 2px);
+      // MD3 uses a much more rectangular shape when pressed
+      border-radius: f.get-shape('small');
     }
     
     &:disabled {
-      color: t.alpha('on-surface', 0.38);
-      border-color: t.alpha('on-surface', 0.12);
-      background-color: transparent;
+      border: 1px solid t.alpha('outline', 0.12);
+      background-color: t.alpha('outline-variant', 0.12);
+      color: t.alpha('surface', 0.38);
     }
   }
   
@@ -260,12 +261,12 @@ $component: '#{base.$prefix}-button';
     &:active,
     &.#{$component}--active {
       @include m.state-layer(t.color('primary'), 'pressed');
-      // MD3 reduces the border radius slightly when pressed
-      border-radius: calc(v.button('border-radius') - 2px);
+      // MD3 uses a much more rectangular shape when pressed
+      border-radius: f.get-shape('small');
     }
     
     &:disabled {
-      color: t.alpha('on-surface', 0.38);
+      color: t.alpha('surface', 0.38);
       background-color: transparent;
     }
   }
@@ -276,23 +277,9 @@ $component: '#{base.$prefix}-button';
     width: v.button('height');
     padding: 0;
     border-radius: 50%;
-    
-    &:active,
-    &.#{$component}--active {
-      // For circular buttons, keep the border-radius at 50%
-      border-radius: 50%;
-    }
   }
   
-  // MD3 introduces motion animation for the pressed state
-  &:active {
-    transform: scale(0.97);
-    transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  
-  // Reset transform when not pressed
-  &:not(:active) {
-    transform: scale(1);
-    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  }
+  // FIX: Remove conflicting styles here that were preventing transitions
+  // The ":active" selector defined here was overriding the variant-specific selectors
+  // Instead, all variants should define their own active state styles
 }

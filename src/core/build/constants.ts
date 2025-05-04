@@ -14,11 +14,12 @@ export enum RIPPLE_TIMING {
 
 /**
  * Default configuration for ripple effect
+ * Enhanced for better visibility
  */
 export const RIPPLE_CONFIG = {
-  duration: 375,
-  timing: RIPPLE_TIMING.LINEAR,
-  opacity: ['1', '0.3'] as [string, string]
+  duration: 450,                        // Slightly longer duration
+  timing: RIPPLE_TIMING.MATERIAL,       // Material Design timing function
+  opacity: ['0.4', '0'] as [string, string]  // Higher initial opacity for better visibility
 };
 
 /**

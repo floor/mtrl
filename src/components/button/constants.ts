@@ -39,9 +39,10 @@ export const BUTTON_CLASSES = {
 
 /**
  * Default ripple effect configuration
+ * Enhanced for better visibility
  */
 export const DEFAULT_RIPPLE_CONFIG = {
-  DURATION: 650,
-  TIMING: 'ease-out',
-  OPACITY: ['0.2', '0']
+  DURATION: 450,                             // Duration in ms (slightly increased)
+  TIMING: 'cubic-bezier(0.4, 0.0, 0.2, 1)',  // Material Design timing function
+  OPACITY: ['0.7', '0']                      // Increased initial opacity for better visibility
 } as const;

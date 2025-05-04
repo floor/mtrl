@@ -5,7 +5,7 @@ import {
   BaseComponentConfig 
 } from '../../core/config/component-config';
 import { ButtonConfig } from './types';
-import { BUTTON_VARIANTS, BUTTON_TYPES } from './constants';
+import { BUTTON_VARIANTS, BUTTON_TYPES, DEFAULT_RIPPLE_CONFIG } from './constants';
 
 /**
  * Default configuration for the Button component.
@@ -15,8 +15,14 @@ import { BUTTON_VARIANTS, BUTTON_TYPES } from './constants';
  */
 export const defaultConfig: ButtonConfig = {
   variant: BUTTON_VARIANTS.FILLED,
-  type: BUTTON_TYPES.BUTTON
-  // Don't set disabled: false as default - it should be undefined by default
+  type: BUTTON_TYPES.BUTTON,
+  ripple: true,  // Explicitly enable ripple effects by default
+  rippleConfig: {
+    // Apply the enhanced ripple settings for better visibility
+    duration: DEFAULT_RIPPLE_CONFIG.DURATION,
+    timing: DEFAULT_RIPPLE_CONFIG.TIMING,
+    opacity: DEFAULT_RIPPLE_CONFIG.OPACITY
+  }
 };
 
 /**

@@ -226,7 +226,7 @@ $button: (
   'padding-horizontal': 24px,
   'padding-horizontal-small': 16px,
   'padding-icon': 16px,
-  'border-radius': map.get($shape, 'full'),
+  'border-radius': 20px,
   'transition-duration': map.get($motion, 'duration-short2'),
   'transition-easing': map.get($motion, 'easing-standard')
 ) !default;
