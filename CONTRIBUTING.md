@@ -29,18 +29,18 @@ By contributing to mtrl, you'll help create a lean alternative to heavier framew
    bun install
    ```
 
-### Testing Your Components with mtrl.app
+### Testing Your Components with mtrl-app
 
-mtrl uses a separate repository called mtrl.app (https://mtrl.app) for showcasing and testing components. There are two ways to test your components:
+mtrl uses a separate repository called mtrl-app (https://mtrl.app) for showcasing and testing components. There are two ways to test your components:
 
 1. **Build and link locally**:
    ```bash
    # In the mtrl repository
    bun run build
    
-   # Clone the mtrl.app repository 
-   git clone https://github.com/YOUR-USERNAME/mtrl.app.git
-   cd mtrl.app
+   # Clone the mtrl-app repository 
+   git clone https://github.com/YOUR-USERNAME/mtrl-app.git
+   cd mtrl-app
    
    # Install dependencies and link to your local mtrl build
    bun install
@@ -116,17 +116,17 @@ export const createMyComponent = (options: MyComponentOptions = {}) => {
 };
 ```
 
-### Using mtrl.app for Development
+### Using mtrl-app for Development
 
-The mtrl.app showcase application is the best way to develop and test your components:
+The mtrl-app showcase application is the best way to develop and test your components:
 
-1. Clone the mtrl.app repository alongside your mtrl clone.
+1. Clone the mtrl-app repository alongside your mtrl clone.
 2. Create a new view file in `src/client/content/components/` for your component.
-3. Add the route in `src/client/core/navigation.ts` of the mtrl.app repository.
+3. Add the route in `src/client/core/navigation.ts` of the mtrl-app repository.
 4. Implement different variants and states for testing.
-5. Run the showcase server with `bun run dev` in the mtrl.app directory.
+5. Run the showcase server with `bun run dev` in the mtrl-app directory.
 
-This separation of the library code (mtrl) and the showcase app (mtrl.app) keeps the core library clean while providing a rich development environment.
+This separation of the library code (mtrl) and the showcase app (mtrl-app) keeps the core library clean while providing a rich development environment.
 
 ### TypeScript Standards
 
