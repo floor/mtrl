@@ -25,6 +25,7 @@ export function createComponentInstance(
   layoutOptions: LayoutOptions = {}
 ): any {
   try {
+
     // Save special configs before creating component
     const layoutConfig = options.layout;
     const layoutItemConfig = options.layoutItem;
@@ -45,10 +46,7 @@ export function createComponentInstance(
     
     // Check if Component is a class constructor
     const isClass = typeof Component === 'function' && 
-                   Component.prototype && 
-                   Component.prototype.constructor === Component &&
-                   // Exclude native constructors like Object, Array, etc.
-                   Object.getPrototypeOf(Component) !== Function.prototype;
+      Object.getOwnPropertyDescriptor(Component, 'prototype')?.writable === false;
 
     // Create the component with clean options
     const component = isClass
