@@ -8,7 +8,9 @@ import { PREFIX } from '../config';
 export interface BaseComponentConfig {
   componentName?: string;
   prefix?: string;
-  class?: string;
+  class?: string | string[];      // Support both string and array
+  className?: string | string[];  // Alternative to class
+  rawClass?: string | string[];   // Classes that should not be prefixed
   [key: string]: any;
 }
 
@@ -30,14 +32,25 @@ export const createComponentConfig = (
   userConfig: BaseComponentConfig = {}, 
   componentName: string
 ): BaseComponentConfig => {
+  // First check for className, fall back to class
+  const userClassName = userConfig.className !== undefined ? userConfig.className : userConfig.class;
+  const defaultClassName = defaults.className !== undefined ? defaults.className : defaults.class;
+  
   // Create a new object with defaults and user config
   const config = {
     ...defaults,
     ...userConfig,
     // Force these values to ensure consistency
     componentName,
-    prefix: PREFIX
+    prefix: PREFIX,
+    // Use className as the canonical property, falling back to alternatives
+    className: userClassName !== undefined ? userClassName : defaultClassName
   };
+
+  // Remove potentially confusing duplicate class property
+  if ('class' in config && config.className !== undefined) {
+    delete config.class;
+  }
 
   return config;
 };
@@ -123,14 +136,25 @@ export const createElementConfig = (
     interactive?: boolean;
   }
 ) => {
+  // Handle class and className from both sources
+  const configClasses = config.className || config.class;
+  const optionsClasses = options.className;
+  
+  // Combine all classes
+  const combinedClassNames = [
+    ...(Array.isArray(configClasses) ? configClasses : [configClasses]),
+    ...(Array.isArray(optionsClasses) ? optionsClasses : [optionsClasses])
+  ].filter(Boolean);
+  
   return {
     tag: options.tag,
     componentName: config.componentName,
     attrs: options.attrs || {},
-    className: options.className,
+    className: combinedClassNames.length > 0 ? combinedClassNames : undefined,
+    rawClass: config.rawClass,
     html: options.html,
     text: options.text,
     forwardEvents: options.forwardEvents || {},
     interactive: options.interactive
   };
-};
+}
