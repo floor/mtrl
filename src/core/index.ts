@@ -79,12 +79,6 @@ export type {
   StateComponentConfig
 } from './config';
 
-// Export specialized build utilities directly for convenience
-export { createText } from './build/text';
-export { createIcon } from './build/icon';
-export { createRipple } from './build/ripple';
-export { RIPPLE_TIMING } from './build/constants';
-
 export type { 
   TextManager, 
   TextConfig 
