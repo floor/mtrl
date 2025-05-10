@@ -57,35 +57,41 @@ export const getElementConfig = (config: FabConfig) => {
     'aria-label': config.ariaLabel || (config.icon ? 'action' : undefined)
   };
   
+  // Only add disabled attribute if it's explicitly true
+  if (config.disabled === true) {
+    attrs.disabled = true;
+  }
+  
+  // Create component-specific classes that don't need prefixing (they already include the prefix)
+  const componentClasses = [];
+  
   // Add size class
-  const fabSizeClass = `${config.prefix}-fab--${config.size || 'default'}`;
-  let classNames = [fabSizeClass];
+  componentClasses.push(`fab--${config.size || 'default'}`);
   
   // Add animation class if specified
   if (config.animate) {
-    classNames.push(`${config.prefix}-fab--animate-enter`);
+    componentClasses.push(`fab--animate-enter`);
   }
   
   // Add position class if specified
   if (config.position) {
-    classNames.push(`${config.prefix}-fab--${config.position}`);
+    componentClasses.push(`fab--${config.position}`);
   }
   
-  // Add user classes
-  if (config.class) {
-    classNames.push(config.class);
-  }
-  
-  // Only add disabled attribute if it's explicitly true
+  // Add disabled class if specified
   if (config.disabled === true) {
-    attrs.disabled = true;
-    classNames.push(`${config.prefix}-fab--disabled`);
+    componentClasses.push(`fab--disabled`);
   }
   
-  return createElementConfig(config, {
+  // Create a new config with our component classes added to className
+  const enhancedConfig = {
+    ...config,
+    className: componentClasses
+  };
+  
+  return createElementConfig(enhancedConfig, {
     tag: 'button',
     attrs,
-    className: classNames,
     forwardEvents: {
       click: (component) => !component.element.disabled,
       focus: true,

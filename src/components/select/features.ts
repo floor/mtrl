@@ -113,6 +113,7 @@ export const withMenu = (config: SelectConfig) =>
       items: menuItems,
       placement: config.placement || 'bottom-start',
       width: '100%', // Match width of textfield
+      className: 'select-menu',
       closeOnSelect: true,
       closeOnClickOutside: true,
       closeOnEscape: true,

@@ -1,5 +1,6 @@
 // src/components/button/api.ts
 import { ButtonComponent } from './types';
+import { addClass, removeClass } from '../../core';
 
 /**
  * API configuration options for button component
@@ -254,13 +255,18 @@ export const withAPI = ({ disabled, lifecycle }: ApiOptions) =>
      * @internal
      */
     updateCircularStyle() {
-      const hasText = !!component.text.getElement();
+      const hasText = component.text.getText() !== '';
       const hasIcon = this.hasIcon();
-      
-      if (!hasText && hasIcon) {
-        component.element.classList.add(`${component.getClass('button')}--circular`);
+
+      if (!hasText) {
+        addClass(component.element, 'button--circular');
+        removeClass(component.element, 'button--icon');
       } else {
-        component.element.classList.remove(`${component.getClass('button')}--circular`);
+        removeClass(component.element, 'button--circular');
+      }
+
+      if (hasIcon && hasText) {
+        addClass(component.element, 'button--icon');
       }
     }
   });
