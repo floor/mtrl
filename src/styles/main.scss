@@ -12,20 +12,19 @@
 @use 'abstract/mixins' as m;
 @use 'abstract/theme' as t;
 
-
 // Utilities
 @use 'utilities/spacing';
 @use 'utilities/visibility';
 @use 'utilities/colors';
 @use 'utilities/flexbox';
-@use 'utilities/typography';
+@use 'utilities/typography' as typo;
 
 // Themes
 @use 'themes/index';
 
 // Reset
 @use 'base/reset';
-//@use 'base/typography';
+@use 'base/typography';
 
 // Components
 @use './components/textfield' as textfield;
@@ -60,68 +59,16 @@
 @use './components/navigation' as navigation;
 @use './components/list' as list;
 
-@use './utilities/ripple';
+@use './utilities/ripple' as ripple;
+@use './utilities/layout' as layout;
 
-// Initialize theme system
-:root {
-  // Apply the base theme CSS variables
-  @include t.light-theme;
 
-  // State layer variables - accessing individual values
-  --#{base.$prefix}-sys-state-hover-state-layer-opacity: #{v.state('hover-state-layer-opacity')};
-  --#{base.$prefix}-sys-state-focus-state-layer-opacity: #{v.state('focus-state-layer-opacity')};
-  --#{base.$prefix}-sys-state-pressed-state-layer-opacity: #{v.state('pressed-state-layer-opacity')};
-  --#{base.$prefix}-sys-state-dragged-state-layer-opacity: #{v.state('dragged-state-layer-opacity')};
-  
-  // Motion variables - accessing individual values
-  --#{base.$prefix}-sys-motion-duration-short1: #{v.motion('duration-short1')};
-  --#{base.$prefix}-sys-motion-duration-short2: #{v.motion('duration-short2')};
-  --#{base.$prefix}-sys-motion-duration-short3: #{v.motion('duration-short3')};
-  --#{base.$prefix}-sys-motion-duration-short4: #{v.motion('duration-short4')};
-  --#{base.$prefix}-sys-motion-duration-medium1: #{v.motion('duration-medium1')};
-  --#{base.$prefix}-sys-motion-duration-medium2: #{v.motion('duration-medium2')};
-  --#{base.$prefix}-sys-motion-duration-long1: #{v.motion('duration-long1')};
-  --#{base.$prefix}-sys-motion-duration-long2: #{v.motion('duration-long2')};
-  --#{base.$prefix}-sys-motion-easing-standard: #{v.motion('easing-standard')};
-  --#{base.$prefix}-sys-motion-easing-standard-accelerate: #{v.motion('easing-standard-accelerate')};
-  --#{base.$prefix}-sys-motion-easing-standard-decelerate: #{v.motion('easing-standard-decelerate')};
-  --#{base.$prefix}-sys-motion-easing-emphasized: #{v.motion('easing-emphasized')};
-  --#{base.$prefix}-sys-motion-easing-emphasized-accelerate: #{v.motion('easing-emphasized-accelerate')};
-  --#{base.$prefix}-sys-motion-easing-emphasized-decelerate: #{v.motion('easing-emphasized-decelerate')};
-
-  // Shape variables - accessing individual values
-  --#{base.$prefix}-sys-shape-none: #{v.shape('none')};
-  --#{base.$prefix}-sys-shape-extra-tiny: #{v.shape('extra-tiny')};
-  --#{base.$prefix}-sys-shape-tiny: #{v.shape('tiny')};
-  --#{base.$prefix}-sys-shape-extra-small: #{v.shape('extra-small')};
-  --#{base.$prefix}-sys-shape-small: #{v.shape('small')};
-  --#{base.$prefix}-sys-shape-medium: #{v.shape('medium')};
-  --#{base.$prefix}-sys-shape-large: #{v.shape('large')};
-  --#{base.$prefix}-sys-shape-extra-large: #{v.shape('extra-large')};
-  --#{base.$prefix}-sys-shape-full: #{v.shape('full')};
-  --#{base.$prefix}-sys-shape-pill: #{v.shape('pill')};
-  
-  // Typography - extracting individual properties
-  @each $scale, $properties in v.$typescale {
-    $font-family: map.get($properties, 'font-family');
-    $primary-font: sasslist.nth($font-family, 1);
-    $fallback-font: if(sasslist.length($font-family) > 1, sasslist.nth($font-family, 2), 'sans-serif');
-    
-    --#{base.$prefix}-sys-typescale-#{$scale}-font-family-name: #{$primary-font};
-    --#{base.$prefix}-sys-typescale-#{$scale}-font-family-fallback: #{$fallback-font};
-    --#{base.$prefix}-sys-typescale-#{$scale}-font-size: #{map.get($properties, 'font-size')};
-    --#{base.$prefix}-sys-typescale-#{$scale}-line-height: #{map.get($properties, 'line-height')};
-    --#{base.$prefix}-sys-typescale-#{$scale}-letter-spacing: #{map.get($properties, 'letter-spacing')};
-    --#{base.$prefix}-sys-typescale-#{$scale}-font-weight: #{map.get($properties, 'font-weight')};
-  }
-}
-
-// Dark mode support
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) {
-    @include t.dark-theme;
-  }
-}
+// // Dark mode support
+// @media (prefers-color-scheme: dark) {
+//   :root:not([data-theme]) {
+//     @include t.dark-theme;
+//   }
+// }
 
 // Base styles
 body {
@@ -139,28 +86,28 @@ body {
   @include m.motion-transition(background-color, color);
 }
 
-// Ensure links have the correct contrast
-a {
-  color: var(--#{base.$prefix}-sys-color-primary);
-  text-decoration: none;
+// // Ensure links have the correct contrast
+// a {
+//   color: var(--#{base.$prefix}-sys-color-primary);
+//   text-decoration: none;
   
-  &:hover {
-    text-decoration: underline;
-  }
+//   &:hover {
+//     text-decoration: underline;
+//   }
   
-  &:focus-visible {
-    outline: 2px solid var(--#{base.$prefix}-sys-color-primary);
-    outline-offset: 2px;
-  }
-}
+//   // &:focus-visible {
+//   //   outline: 2px solid var(--#{base.$prefix}-sys-color-primary);
+//   //   outline-offset: 2px;
+//   // }
+// }
 
-// Focus styles for keyboard navigation
-:focus-visible {
-  outline: 2px solid var(--#{base.$prefix}-sys-color-primary);
-  outline-offset: 2px;
-}
+// // Focus styles for keyboard navigation
+// // :focus-visible {
+// //   outline: 2px solid var(--#{base.$prefix}-sys-color-primary);
+// //   outline-offset: 2px;
+// // }
 
-// Use smooth scrolling for the page
+// // Use smooth scrolling for the page
 html {
   scroll-behavior: smooth;
   
