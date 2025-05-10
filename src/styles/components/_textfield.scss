@@ -615,7 +615,7 @@ $component: '#{base.$prefix}-textfield';
     .#{$component}-label {
       background-color: inherit;
       padding: 0 4px;
-      left: 12px;
+      left: 14px;
       top: 50%;
     }
 
@@ -640,19 +640,20 @@ $component: '#{base.$prefix}-textfield';
       // we want to reset the left position back to default (or to JS calculated equivalent)
       // to handle the label moving up above the field
       // The JS will handle special positioning depending on if it's prefixed
-      left: 12px;
+      left: 14px;
     }
 
     // Focus state
     &.#{$component}--focused {
       &::before {
         opacity: 1;
+        border-width: 2px;
       }
-      &:hover {
-        &::before {
-          border-width: 2px;
-        }
-      }
+      // &:hover {
+      //   &::before {
+          
+      //   }
+      // }
 
       .#{$component}-label {
         color: t.color('primary');
@@ -707,7 +708,7 @@ $component: '#{base.$prefix}-textfield';
       // we still reset to 12px position (default)
       &:not(.#{$component}--empty) .#{$component}-label,
       &.#{$component}--focused .#{$component}-label {
-        left: 12px;
+        left: 14px;
       }
     }
     

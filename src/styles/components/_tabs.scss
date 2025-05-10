@@ -5,7 +5,7 @@
 @use '../../styles/abstract/mixins' as m;
 @use '../../styles/abstract/theme' as t;
 
-$component: '#{base.$prefix}-tab';
+$component: '#{base.$prefix}-button.#{base.$prefix}-tab';
 $container: '#{base.$prefix}-tabs';
 
 // Tabs Container Styles (1. Container)
@@ -97,6 +97,8 @@ $container: '#{base.$prefix}-tabs';
   user-select: none;
   flex-shrink: 0;
   
+
+
   // Typography for label text (4. Label)
   @include m.typography('label-large');
   
@@ -217,6 +219,7 @@ $container: '#{base.$prefix}-tabs';
       // Pressed state for active tabs
       &:active, &.#{$component}--pressed {
         background-color: t.alpha('primary', 0.12);
+        border-radius: 5px 5px 0 0;
       }
     }
     
@@ -238,6 +241,7 @@ $container: '#{base.$prefix}-tabs';
       // Pressed state for inactive tabs
       &:active, &.#{$component}--pressed {
         background-color: t.alpha('on-surface-variant', 0.12);
+        border-radius: 5px 5px 0 0;
       }
     }
   }

@@ -220,8 +220,8 @@ $component: '#{base.$prefix}-extended-fab';
   &:disabled {
     pointer-events: none;
     @include m.elevation(0);
-    background-color: t.alpha('on-surface', 0.12);
-    color: t.alpha('on-surface', 0.38);
+    color: t.alpha('surface', 0.38);
+    background-color: t.alpha('surface', 0.12);
   }
   
   // Positioning utilities
@@ -287,3 +287,23 @@ $component: '#{base.$prefix}-extended-fab';
     transition-timing-function: v.motion('easing-standard');
   }
 }
+
+
+// FIX: Disabled on dark theme (recommandations do not work as expected)
+body[data-theme-mode=dark] {
+    // Interactive states
+    .#{$component} {
+      &:disabled {
+        color: t.alpha('on-surface-dim', 0.38);
+        background-color: t.alpha('surface-dim', 0.12);
+
+        .#{$component}-text { 
+          opacity: 0.38;
+        }
+        .#{$component}-icon {
+          opacity: 0.38;
+          color: t.alpha('on-surface-dim', 0.12);
+        }
+      }
+    }
+  }

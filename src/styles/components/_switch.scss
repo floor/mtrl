@@ -191,11 +191,12 @@ $component: '#{base.$prefix}-switch';
 
   // Disabled state
   &--disabled {
+    pointer-events: none;
     .#{$component}-track {
       opacity: 0.38;
     }
     
-    .#{$component}-label {
+    .#{$component}-label, .#{$component}-helper {
       opacity: 0.38;
     }
     
@@ -209,7 +210,6 @@ $component: '#{base.$prefix}-switch';
       
       .#{$component}-thumb {
         background-color: t.color('surface-dim');
-        opacity: 0.38;
         &-icon {
           color: t.color('on-surface');
         }

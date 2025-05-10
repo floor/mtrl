@@ -200,45 +200,46 @@ $component: '#{base.$prefix}-select';
   margin-top: 4px;
   max-height: 300px;
   overflow-y: auto;
+  max-width: 460px;
   
-  .#{base.$prefix}-menu-list {
-    padding: 8px 0;
-  }
+  // .#{base.$prefix}-menu-list {
+  //   padding: 8px 0;
+  // }
   
-  .#{base.$prefix}-menu-item {
-    padding: 0 16px;
-    height: 48px;
-    display: flex;
-    align-items: center;
-    position: relative;
+  // .#{base.$prefix}-menu-item {
+  //   padding: 0 16px;
+  //   height: 48px;
+  //   display: flex;
+  //   align-items: center;
+  //   position: relative;
     
-    &--selected {
-      color: t.color('primary');
-      font-weight: 500;
-    }
+  //   &--selected {
+  //     color: t.color('primary');
+  //     font-weight: 500;
+  //   }
     
-    &-icon {
-      margin-right: 16px;
-      display: flex;
-      align-items: center;
+  //   &-icon {
+  //     margin-right: 16px;
+  //     display: flex;
+  //     align-items: center;
       
-      svg {
-        width: 18px;
-        height: 18px;
-      }
-    }
+  //     svg {
+  //       width: 18px;
+  //       height: 18px;
+  //     }
+  //   }
     
-    &-text {
-      flex: 1;
-      @include m.truncate;
-    }
-  }
+  //   &-text {
+  //     flex: 1;
+  //     @include m.truncate;
+  //   }
+  // }
   
-  .#{base.$prefix}-menu-divider {
-    height: 1px;
-    margin: 8px 0;
-    background-color: t.color('outline-variant');
-  }
+  // .#{base.$prefix}-menu-divider {
+  //   height: 1px;
+  //   margin: 8px 0;
+  //   background-color: t.color('outline-variant');
+  // }
 }
 
 // Animation for the menu

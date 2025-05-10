@@ -1,10 +1,13 @@
 // src/styles/components/_menu.scss
+@use '../../styles/abstract/base' as base;
 @use '../../styles/abstract/variables' as v;
 @use '../../styles/abstract/mixins' as m;
 @use '../../styles/abstract/functions' as f;
 @use '../../styles/abstract/theme' as t;
 
-$component: 'mtrl-menu';
+$prefix: base.$prefix;
+
+$component: '#{$prefix}-menu';
 
 .#{$component} {
   // Base styles
