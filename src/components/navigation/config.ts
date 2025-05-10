@@ -3,7 +3,7 @@ import {
   createComponentConfig, 
   createElementConfig,
   BaseComponentConfig 
-} from '../../core/config/component-config';
+} from '../../core/config/component';
 import { NavigationConfig, BaseComponent, ApiOptions } from './types';
 import { NAV_VARIANTS, NAV_POSITIONS, NAV_BEHAVIORS, NAV_DEFAULTS, NAV_CLASSES } from './constants';
 

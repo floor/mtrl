@@ -3,7 +3,7 @@ import {
   createComponentConfig, 
   createElementConfig,
   BaseComponentConfig 
-} from '../../core/config/component-config';
+} from '../../core/config/component';
 import { CheckboxConfig, BaseComponent, ApiOptions } from './types';
 
 /**

@@ -4,7 +4,7 @@
  * @description Configuration for bottom app bar component
  */
 
-import { createComponentConfig, BaseComponentConfig } from '../../core/config/component-config';
+import { createComponentConfig, BaseComponentConfig } from '../../core/config/component';
 import { PREFIX } from '../../core/config';
 import { BottomAppBarConfig } from './types';
 import { FAB_POSITIONS, DEFAULT_TRANSITION_DURATION } from './constants';

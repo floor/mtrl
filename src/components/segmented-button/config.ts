@@ -1,5 +1,5 @@
 // src/components/segmented-button/config.ts
-import { createComponentConfig } from '../../core/config/component-config';
+import { createComponentConfig } from '../../core/config/component';
 import { SegmentedButtonConfig, SelectionMode, Density } from './types';
 import {
   SEGMENTED_BUTTON_MODES,

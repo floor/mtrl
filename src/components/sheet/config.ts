@@ -3,7 +3,7 @@ import {
   createComponentConfig, 
   createElementConfig,
   BaseComponentConfig 
-} from '../../core/config/component-config';
+} from '../../core/config/component';
 import { SheetConfig } from './types';
 import { SHEET_VARIANTS, SHEET_POSITIONS, SHEET_DEFAULTS } from './constants';
 

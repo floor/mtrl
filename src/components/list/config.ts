@@ -3,7 +3,7 @@
 import { 
   createComponentConfig, 
   createElementConfig as coreCreateElementConfig
-} from '../../core/config/component-config';
+} from '../../core/config/component';
 import { LIST_DEFAULTS, LIST_CLASSES } from './constants';
 
 /**

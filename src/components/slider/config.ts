@@ -2,7 +2,7 @@
 import { 
   createComponentConfig, 
   createElementConfig
-} from '../../core/config/component-config';
+} from '../../core/config/component';
 import { SliderConfig } from './types';
 import { SLIDER_COLORS, SLIDER_SIZES, SLIDER_DEFAULTS, SLIDER_POSITIONS } from './constants';
 import { createSliderSchema } from './schema';

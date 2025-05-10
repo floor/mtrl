@@ -3,7 +3,7 @@
 import { 
   createComponentConfig, 
   createElementConfig
-} from '../../core/config/component-config';
+} from '../../core/config/component';
 import { SelectConfig, BaseComponent, ApiOptions } from './types';
 import { SELECT_VARIANTS, SELECT_PLACEMENT, SELECT_DEFAULTS } from './constants';
 

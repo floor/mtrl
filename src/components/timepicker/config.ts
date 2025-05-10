@@ -4,7 +4,7 @@ import {
   createComponentConfig,
   createElementConfig,
   BaseComponentConfig 
-} from '../../core/config/component-config';
+} from '../../core/config/component';
 import { TimePickerConfig } from './types';
 import { 
   TIME_PICKER_TYPE, 

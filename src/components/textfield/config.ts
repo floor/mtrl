@@ -3,7 +3,7 @@ import {
   createComponentConfig, 
   createElementConfig,
   BaseComponentConfig 
-} from '../../core/config/component-config';
+} from '../../core/config/component';
 import { TextfieldConfig, BaseComponent, ApiOptions } from './types';
 import { TEXTFIELD_DEFAULTS, TEXTFIELD_TYPES, TEXTFIELD_VARIANTS } from './constants';
 

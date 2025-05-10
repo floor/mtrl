@@ -2,7 +2,7 @@
 import { 
   createComponentConfig, 
   createElementConfig
-} from '../../core/config/component-config';
+} from '../../core/config/component';
 import { DialogConfig } from './types';
 
 /**

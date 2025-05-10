@@ -1,5 +1,5 @@
 // src/components/divider/config.ts
-import { createComponentConfig } from '../../core/config/component-config';
+import { createComponentConfig } from '../../core/config/component';
 
 /**
  * Configuration options for divider components

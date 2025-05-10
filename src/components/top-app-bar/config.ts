@@ -4,7 +4,7 @@
  * @description Configuration for top app bar component
  */
 
-import { createComponentConfig } from '../../core/config/component-config';
+import { createComponentConfig } from '../../core/config/component';
 import { TopAppBarConfig } from './types';
 import { TOP_APP_BAR_DEFAULTS } from './constants';
 

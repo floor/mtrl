@@ -3,7 +3,7 @@ import {
   createComponentConfig, 
   createElementConfig,
   BaseComponentConfig 
-} from '../../core/config/component-config';
+} from '../../core/config/component';
 import { RadiosConfig } from './types';
 import { RADIO_DIRECTIONS } from './constants';
 

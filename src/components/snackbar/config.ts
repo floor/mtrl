@@ -3,7 +3,7 @@ import {
   createComponentConfig, 
   createElementConfig,
   BaseComponentConfig 
-} from '../../core/config/component-config';
+} from '../../core/config/component';
 import { SnackbarConfig, BaseComponent, ApiOptions } from './types';
 import { SNACKBAR_VARIANTS, SNACKBAR_POSITIONS, SNACKBAR_DEFAULTS } from './constants';
 
