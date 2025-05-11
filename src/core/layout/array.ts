@@ -12,6 +12,15 @@ import { createComponentInstance } from './processor';
 import { isObject } from '../utils';
 
 /**
+ * Interface for the layout object
+ */
+interface LayoutObject {
+  element?: HTMLElement;
+  components?: Array<[string, any]>;
+  [key: string]: any;
+}
+
+/**
  * Processes an array-based layout definition
  * 
  * @param schema - Array-based layout definition
@@ -27,8 +36,8 @@ export function processArraySchema(
   options: LayoutOptions = {}
 ): LayoutResult {
   level++;
-  const layout = {};
-  const components = [];
+  const layout: LayoutObject = {};
+  const components: Array<[string, any]> = [];
   const fragment = createFragment();
   let component = null;
 

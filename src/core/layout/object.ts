@@ -11,6 +11,14 @@ import { createLayoutResult } from './result';
 import { createComponentInstance } from './processor'; 
 
 /**
+ * Interface for the layout object
+ */
+interface LayoutObject {
+  element?: any;
+  [key: string]: any;
+}
+
+/**
  * Processes an object-based layout definition
  * 
  * @param schema - Object-based layout definition
@@ -20,10 +28,10 @@ import { createComponentInstance } from './processor';
  */
 export function processObjectSchema(
   schema: Schema, 
-  parentElement: HTMLElement | null = null,
+  parentElement: HTMLElement | DocumentFragment | null = null,
   options: LayoutOptions = {}
 ): LayoutResult {
-  const layout = {};
+  const layout: LayoutObject = {};
   
   // Get default creator function from options or use createElement
   const defaultCreator = options.creator || createElement;
