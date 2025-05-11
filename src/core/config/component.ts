@@ -132,7 +132,7 @@ export const createElementConfig = (
     className?: string | string[] | null;
     html?: string;
     text?: string;
-    forwardEvents?: Record<string, boolean | Function>;
+    forwardEvents?: Record<string, boolean | ((component: any, event: Event) => boolean)>;
     interactive?: boolean;
   }
 ) => {

@@ -18,9 +18,8 @@ import { createBaseConfig, getElementConfig, getApiConfig } from './config';
 /**
  * Creates a new Button component with the specified configuration.
  * 
- * The Button component implements the Material Design 3 Button component guidelines
- * with support for different variants, states, and features. It follows accessibility
- * best practices and provides a rich API for state management.
+ * The Button component implements support for different variants, states, and features.
+ * It follows accessibility best practices and provides a rich API for state management.
  * 
  * The Button component is created using a functional composition pattern,
  * applying various features through the pipe function. This approach allows

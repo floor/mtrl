@@ -21,7 +21,7 @@ export const defaultConfig: ButtonConfig = {
     // Apply the enhanced ripple settings for better visibility
     duration: DEFAULT_RIPPLE_CONFIG.DURATION,
     timing: DEFAULT_RIPPLE_CONFIG.TIMING,
-    opacity: DEFAULT_RIPPLE_CONFIG.OPACITY
+    opacity: DEFAULT_RIPPLE_CONFIG.OPACITY as unknown as [string, string]
   }
 };
 
@@ -73,7 +73,7 @@ export const getElementConfig = (config: ButtonConfig) => {
     attrs,
     className: config.class,
     forwardEvents: {
-      click: (component) => !component.element.disabled,
+      click: (component: any, event: Event) => !component.element.disabled,
       focus: true,
       blur: true
     }
