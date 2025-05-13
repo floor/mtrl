@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noImplicitAny": false,
+    "skipLibCheck": true,
+    "allowJs": true,
+    "checkJs": false,
+    "noStrictGenericChecks": true,
+    "strictNullChecks": false,
+    "strictFunctionTypes": false,
+    "strictPropertyInitialization": false
+  },
+  "include": ["test/**/*", "src/**/*"],
+  "exclude": ["node_modules"]
+} 
