@@ -6,6 +6,10 @@
 
 import { BaseComponent, ElementComponent } from '../component';
 import { throttle } from '../../utils/performance';
+import { 
+  hasLifecycle, 
+  ComponentWithLifecycle 
+} from '../utils/type-guards';
 
 /**
  * Configuration for throttled event handlers
@@ -130,7 +134,7 @@ export const withThrottle = (config: ThrottleConfig = {}) =>
     };
     
     // Handle lifecycle integration if available
-    if ('lifecycle' in component && component.lifecycle?.destroy) {
+    if (hasLifecycle(component)) {
       const originalDestroy = component.lifecycle.destroy;
       
       component.lifecycle.destroy = () => {

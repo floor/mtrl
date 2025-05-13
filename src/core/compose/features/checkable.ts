@@ -14,8 +14,10 @@ export interface CheckableConfig {
  * Component with input element
  */
 export interface InputComponent extends BaseComponent {
+  element: HTMLElement;
   input: HTMLInputElement;
   emit?: (event: string, data: any) => InputComponent;
+  on?: (event: string, handler: Function) => InputComponent;
 }
 
 /**

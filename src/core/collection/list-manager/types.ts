@@ -101,6 +101,18 @@ export interface ListManagerConfig {
      * @default 'cursor'
      */
     strategy?: 'cursor' | 'page' | 'offset';
+
+    /**
+     * Parameter name for page size (for page-based pagination)
+     * @default 'per_page'
+     */
+    perPageParamName?: string;
+    
+    /**
+     * Parameter name for limit (for cursor/offset pagination)
+     * @default 'limit'
+     */
+    limitParamName?: string;
   };
 }
 

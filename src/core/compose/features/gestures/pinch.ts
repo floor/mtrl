@@ -7,6 +7,19 @@
 import { BaseComponent, ElementComponent } from '../../component';
 import { PinchEvent, GestureHandler } from '../../../gestures';
 import { getDistance } from '../../../gestures/utils';
+import { 
+  hasLifecycle, 
+  hasEmit, 
+  ComponentWithLifecycle, 
+  ComponentWithEmit 
+} from '../../utils/type-guards';
+
+/**
+ * Extended PinchEvent to support our custom event types
+ */
+interface ExtendedPinchEvent extends Omit<PinchEvent, 'type'> {
+  type: 'pinch' | 'pinchstart' | 'pinchend';
+}
 
 /**
  * Configuration for pinch gesture feature
@@ -174,8 +187,8 @@ export const withPinchGesture = (config: PinchGestureConfig = {}) =>
       scale: number,
       centerX: number,
       centerY: number
-    ): PinchEvent => {
-      return {
+    ): ExtendedPinchEvent => {
+      const event: ExtendedPinchEvent = {
         type,
         originalEvent: e,
         target: e.target!,
@@ -184,7 +197,7 @@ export const withPinchGesture = (config: PinchGestureConfig = {}) =>
         duration: Date.now() - startTime,
         defaultPrevented: false,
         preventDefault: () => {
-          pinchEvent.defaultPrevented = true;
+          event.defaultPrevented = true;
           if (e.cancelable) {
             e.preventDefault();
           }
@@ -196,6 +209,7 @@ export const withPinchGesture = (config: PinchGestureConfig = {}) =>
         centerX,
         centerY
       };
+      return event;
     };
     
     /**
@@ -208,25 +222,26 @@ export const withPinchGesture = (config: PinchGestureConfig = {}) =>
       centerX: number,
       centerY: number
     ): void => {
-      const pinchEvent = createPinchEvent(e, type, scale, centerX, centerY);
+      const extendedPinchEvent = createPinchEvent(e, type, scale, centerX, centerY);
       
       // Call each handler for this type
       handlers[type].forEach(handler => {
         try {
-          handler(pinchEvent);
+          // Type assertion for the handler call
+          handler(extendedPinchEvent as unknown as PinchEvent);
         } catch (error) {
           console.error(`Error in ${type} handler:`, error);
         }
       });
       
       // Forward to component's event system if available
-      if ('emit' in component) {
-        (component as any).emit(type, pinchEvent);
+      if (hasEmit(component)) {
+        component.emit(type, extendedPinchEvent);
       }
       
       // Apply preventDefault if configured
-      if (preventDefault && !pinchEvent.defaultPrevented) {
-        pinchEvent.preventDefault();
+      if (preventDefault && !extendedPinchEvent.defaultPrevented) {
+        extendedPinchEvent.preventDefault();
       }
     };
     
@@ -375,7 +390,7 @@ export const withPinchGesture = (config: PinchGestureConfig = {}) =>
     }
     
     // Handle lifecycle integration
-    if ('lifecycle' in component && component.lifecycle?.destroy) {
+    if (hasLifecycle(component)) {
       const originalDestroy = component.lifecycle.destroy;
       
       component.lifecycle.destroy = () => {

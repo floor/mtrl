@@ -50,6 +50,20 @@ export interface InputConfig {
 }
 
 /**
+ * Interface for components with emit capability
+ */
+interface ComponentWithEmit extends ElementComponent {
+  emit: (event: string, data: any) => any;
+}
+
+/**
+ * Type guard to check if a component has emit capability
+ */
+function hasEmit(component: any): component is ComponentWithEmit {
+  return 'emit' in component && typeof component.emit === 'function';
+}
+
+/**
  * Component with input element and related methods
  */
 export interface InputComponent extends ElementComponent {
@@ -126,7 +140,7 @@ export const withInput = <T extends InputConfig>(config: T = {} as T) =>
 
     // Bridge native checkbox events to our event system
     input.addEventListener('change', (event) => {
-      if (component.emit) {
+      if (hasEmit(component)) {
         component.emit('change', {
           checked: input.checked,
           value: input.value,
@@ -165,7 +179,7 @@ export const withInput = <T extends InputConfig>(config: T = {} as T) =>
        */
       setValue(value: string) {
         input.value = value;
-        if (component.emit) {
+        if (hasEmit(component)) {
           component.emit('value', { value });
         }
         return this;

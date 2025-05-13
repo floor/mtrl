@@ -6,6 +6,12 @@
 
 import { BaseComponent, ElementComponent } from '../../component';
 import { SwipeEvent, SWIPE_DIRECTIONS, GestureHandler } from '../../../gestures';
+import { 
+  hasLifecycle, 
+  hasEmit, 
+  ComponentWithLifecycle, 
+  ComponentWithEmit 
+} from '../../utils/type-guards';
 
 /**
  * Configuration for swipe gesture feature
@@ -289,9 +295,9 @@ export const withSwipeGesture = (config: SwipeGestureConfig = {}) =>
       });
       
       // Forward to component's event system if available
-      if ('emit' in component) {
-        (component as any).emit('swipe', swipeEvent);
-        (component as any).emit(directionKey, swipeEvent);
+      if (hasEmit(component)) {
+        component.emit('swipe', swipeEvent);
+        component.emit(directionKey, swipeEvent);
       }
       
       // Apply preventDefault if configured
@@ -382,7 +388,7 @@ export const withSwipeGesture = (config: SwipeGestureConfig = {}) =>
     }
     
     // Handle lifecycle integration
-    if ('lifecycle' in component && component.lifecycle?.destroy) {
+    if (hasLifecycle(component)) {
       const originalDestroy = component.lifecycle.destroy;
       
       component.lifecycle.destroy = () => {

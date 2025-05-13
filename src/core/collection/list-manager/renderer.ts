@@ -111,11 +111,13 @@ export const createRenderer = (
     
     // Count how many items are the same
     let sameItemCount = 0;
-    for (const id of currentVisibleIds) {
+    
+    // Convert Set to array and iterate
+    Array.from(currentVisibleIds).forEach(id => {
       if (previousVisibleIds.has(id)) {
         sameItemCount++;
       }
-    }
+    });
     
     // If more than 50% of items are the same, do partial update
     return sameItemCount >= currentVisibleIds.size / 2;

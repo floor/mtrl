@@ -1,6 +1,12 @@
 // src/core/compose/features/textinput.ts
 
 import { BaseComponent, ElementComponent } from '../component';
+import { 
+  hasLifecycle, 
+  hasEmit, 
+  ComponentWithLifecycle, 
+  ComponentWithEmit 
+} from '../utils/type-guards';
 
 /**
  * Configuration for text input feature
@@ -168,29 +174,39 @@ export const withTextInput = <T extends TextInputConfig>(config: T = {} as T) =>
 
       if (isAutofilled) {
         component.element.classList.remove(`${component.getClass('textfield')}--empty`);
-        component.emit?.('input', { value: input.value, isEmpty: false, isAutofilled: true });
+        if (hasEmit(component)) {
+          component.emit('input', { value: input.value, isEmpty: false, isAutofilled: true });
+        }
       }
     };
 
     // Event listeners
     input.addEventListener('focus', () => {
       component.element.classList.add(`${component.getClass('textfield')}--focused`);
-      component.emit?.('focus', { isEmpty: updateInputState() });
+      if (hasEmit(component)) {
+        component.emit('focus', { isEmpty: updateInputState() });
+      }
       // Also check for autofill on focus
       setTimeout(handleAutofill, 100);
     });
 
     input.addEventListener('blur', () => {
       component.element.classList.remove(`${component.getClass('textfield')}--focused`);
-      component.emit?.('blur', { isEmpty: updateInputState() });
+      if (hasEmit(component)) {
+        component.emit('blur', { isEmpty: updateInputState() });
+      }
     });
 
     input.addEventListener('input', () => {
-      component.emit?.('input', {
-        value: input.value,
-        isEmpty: updateInputState(),
-        isAutofilled: false
-      });
+      if (hasEmit(component)) {
+        component.emit('input', {
+          value: input.value,
+          isEmpty: updateInputState(),
+          isAutofilled: false
+        });
+      } else {
+        updateInputState();
+      }
     });
 
     // Initial state
@@ -204,7 +220,7 @@ export const withTextInput = <T extends TextInputConfig>(config: T = {} as T) =>
     component.element.appendChild(input);
 
     // Cleanup
-    if ('lifecycle' in component && component.lifecycle?.destroy) {
+    if (hasLifecycle(component)) {
       const originalDestroy = component.lifecycle.destroy;
       component.lifecycle.destroy = () => {
         input.remove();

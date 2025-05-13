@@ -3,6 +3,15 @@
 import { BaseComponent, ElementComponent } from '../../../core/compose/component';
 
 /**
+ * Extended element component with lifecycle
+ */
+interface LifecycleElementComponent extends ElementComponent {
+  lifecycle?: {
+    destroy: () => void;
+  };
+}
+
+/**
  * Configuration for supporting text feature
  */
 export interface SupportingTextConfig {
@@ -59,7 +68,7 @@ export interface SupportingTextComponent extends BaseComponent {
  * @returns Function that enhances a component with supporting text
  */
 export const withSupportingText = <T extends SupportingTextConfig>(config: T) => 
-  <C extends ElementComponent>(component: C): C & SupportingTextComponent => {
+  <C extends LifecycleElementComponent>(component: C): C & SupportingTextComponent => {
     if (!config.supportingText) {
       return component as any;
     }
@@ -80,7 +89,7 @@ export const withSupportingText = <T extends SupportingTextConfig>(config: T) =>
     
     // Add lifecycle integration if available
     if ('lifecycle' in component && component.lifecycle?.destroy) {
-      const originalDestroy = component.lifecycle.destroy;
+      const originalDestroy = component.lifecycle.destroy as Function;
       component.lifecycle.destroy = () => {
         supportingElement.remove();
         originalDestroy.call(component.lifecycle);

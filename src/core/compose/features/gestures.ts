@@ -12,6 +12,12 @@ import {
   GestureHandler,
   AnyGestureEvent
 } from '../../gestures';
+import { 
+  hasLifecycle, 
+  hasEmit, 
+  ComponentWithLifecycle, 
+  ComponentWithEmit 
+} from '../utils/type-guards';
 
 /**
  * Configuration for gestures feature
@@ -129,10 +135,10 @@ export const withGestures = (config: GesturesFeatureConfig = {}) =>
     }
     
     // Connect with existing event system if available
-    if ('emit' in component) {
+    if (hasEmit(component)) {
       // Forward gesture events to the component's event system
       const forwardGestureEvents = (event: AnyGestureEvent) => {
-        (component as any).emit(event.type, event);
+        component.emit(event.type, event);
       };
       
       // Register forwarder for common gesture types
@@ -145,7 +151,7 @@ export const withGestures = (config: GesturesFeatureConfig = {}) =>
     }
     
     // Handle lifecycle integration
-    if ('lifecycle' in component && component.lifecycle?.destroy) {
+    if (hasLifecycle(component)) {
       const originalDestroy = component.lifecycle.destroy;
       
       component.lifecycle.destroy = () => {

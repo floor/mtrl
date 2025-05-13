@@ -9,18 +9,6 @@ import createButton from '../button';
 import createBadge from '../badge';
 
 /**
- * Tab layout types
- */
-export const TAB_LAYOUT = {
-  /** Icon-only tab layout */
-  ICON_ONLY: 'icon-only',
-  /** Text-only tab layout */
-  TEXT_ONLY: 'text-only',
-  /** Icon and text layout */
-  ICON_AND_TEXT: 'icon-and-text'
-};
-
-/**
  * Creates a new Tab component following MD3 guidelines
  * @param {TabConfig} config - Tab configuration object
  * @returns {TabComponent} Tab component instance

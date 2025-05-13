@@ -59,7 +59,7 @@ interface ComponentWithElements {
  * @category Components
  * @internal This is an internal utility for the Menu component
  */
-const withAPI = ({ menu, opener, events, lifecycle }: ApiOptions) => 
+const withAPI = ({ menu, opener, events, lifecycle, submenu }: ApiOptions) => 
   (component: ComponentWithElements): MenuComponent => ({
     ...component as any,
     element: component.element,

@@ -78,6 +78,9 @@ export interface SliderConfig {
   /** Whether to show tick marks */
   ticks?: boolean;
   
+  /** Custom labels for ticks, if provided */
+  tickLabels?: string[] | Record<number, string>;
+  
   /** Format function for displayed values */
   valueFormatter?: (value: number) => string;
   

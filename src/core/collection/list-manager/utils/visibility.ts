@@ -81,10 +81,19 @@ function binarySearchVisibleRange(
     }
   } else {
     // Fall back to estimation using average height
-    const avgHeight = itemMeasurement.getAllHeights().size > 0 
-      ? [...itemMeasurement.getAllHeights().values()].reduce((a, b) => a + b, 0) / 
-        itemMeasurement.getAllHeights().size
-      : itemHeight;
+    const allHeights = itemMeasurement.getAllHeights();
+    let avgHeight = itemHeight;
+    
+    if (allHeights.size > 0) {
+      // Calculate average without using spread operator on values iterator
+      let sum = 0;
+      let count = 0;
+      allHeights.forEach((height) => {
+        sum += height;
+        count++;
+      });
+      avgHeight = sum / count;
+    }
       
     // Estimate start index based on average height
     bestStartIndex = Math.floor(scrollTop / avgHeight);

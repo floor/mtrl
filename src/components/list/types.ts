@@ -25,6 +25,12 @@ export interface ListConfig {
   baseUrl?: string;
   
   /**
+   * Static array of items to display
+   * @default []
+   */
+  items?: any[];
+  
+  /**
    * Default height for items in pixels
    * This is used for calculation before actual measurement
    * @default 48
@@ -173,6 +179,31 @@ export interface LoadEvent extends LoadResult {
    * Whether default was prevented
    */
   defaultPrevented: boolean;
+}
+
+/**
+ * Virtual List component interface - enhanced list with virtual scrolling
+ * @interface VirtualListComponent
+ */
+export interface VirtualListComponent extends ListComponent {
+  /**
+   * Updates the virtual scroll parameters
+   * @returns {VirtualListComponent} Component instance for chaining
+   */
+  updateScrollParams?: () => VirtualListComponent;
+  
+  /**
+   * Gets the scroll position
+   * @returns {number} Current scroll position
+   */
+  getScrollTop?: () => number;
+  
+  /**
+   * Sets the scroll position
+   * @param {number} scrollTop - Scroll position to set
+   * @returns {VirtualListComponent} Component instance for chaining
+   */
+  setScrollTop?: (scrollTop: number) => VirtualListComponent;
 }
 
 /**

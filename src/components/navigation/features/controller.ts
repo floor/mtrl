@@ -92,20 +92,20 @@ export const withController = (config: ControllerConfig) => (component: BaseComp
         `.${prefix}-${NavClass.NESTED_CONTAINER}, .mtrl-nav-nested-container`
       );
       if (nestedContainer) {
-        nestedContainer.hidden = isExpanded;
+        (nestedContainer as HTMLElement).hidden = isExpanded;
         
         // Also toggle expand icon rotation if present
         const expandIcon = item.querySelector(
           `.${prefix}-${NavClass.EXPAND_ICON}, .mtrl-nav-expand-icon`
         );
-        if (expandIcon && expandIcon.style) {
-          expandIcon.style.transform = isExpanded ? '' : 'rotate(90deg)';
+        if (expandIcon && (expandIcon as HTMLElement).style) {
+          (expandIcon as HTMLElement).style.transform = isExpanded ? '' : 'rotate(90deg)';
         }
       }
     }
     
     // For expandable items, we still emit a change event
-    const id = item.dataset.id;
+    const id = (item as HTMLElement).dataset.id;
     if (id && component.emit) {
       component.emit('expandToggle', {
         id,
@@ -162,7 +162,7 @@ export const withController = (config: ControllerConfig) => (component: BaseComp
           item: itemData,
           previousItem: activeElement ? { 
             element: activeElement as HTMLElement,
-            config: { id: activeElement.dataset.id } 
+            config: { id: (activeElement as HTMLElement).dataset.id } 
           } : null,
           path,
           source: 'userAction'

@@ -89,6 +89,19 @@ export const TABS_DEFAULTS = {
 } as const;
 
 /**
+ * Tab layout types
+ * @category Components
+ */
+export const TAB_LAYOUT = {
+  /** Icon-only tab layout */
+  ICON_ONLY: 'icon-only',
+  /** Text-only tab layout */
+  TEXT_ONLY: 'text-only',
+  /** Icon and text layout */
+  ICON_AND_TEXT: 'icon-and-text'
+} as const;
+
+/**
  * CSS class names used by the tabs component
  * @category Components
  */

@@ -142,7 +142,11 @@ function createIntersectionScrollTracker(
       // Fall back to scroll events if IntersectionObserver not supported
       if (!('IntersectionObserver' in window)) {
         console.warn('IntersectionObserver not supported, falling back to scroll events');
-        const tracker = createTraditionalScrollTracker(container, {}, callbacks);
+        // Create a minimal config with the required renderItem property
+        const minimalConfig: ListManagerConfig = {
+          renderItem: () => document.createElement('div')
+        };
+        const tracker = createTraditionalScrollTracker(container, minimalConfig, callbacks);
         return tracker.setup();
       }
       
@@ -273,9 +277,9 @@ function createHybridScrollTracker(
   callbacks: { onScroll: (scrollTop: number) => void; onLoadMore: () => void }
 ): ScrollTracker {
   // Configure a highly optimized scroll tracker for regular updates
-  // @ts-ignore: Fix later - Property 'renderItem' is missing in type '{ throttleMs: number; }' but required in type 'ListManagerConfig'.
   const scrollConfig: ListManagerConfig = {
-    throttleMs: 32 // ~30fps for regular scroll updates
+    throttleMs: 32, // ~30fps for regular scroll updates
+    renderItem: () => document.createElement('div') // Required field
   };
   
   const scrollTracker = createTraditionalScrollTracker(container, scrollConfig, {

@@ -156,8 +156,12 @@ export const withSupportingText = <T extends SupportingTextConfig>(config: T) =>
     }
     
     // Add lifecycle integration if available
-    if ('lifecycle' in component && component.lifecycle?.destroy && supportingElement) {
-      const originalDestroy = component.lifecycle.destroy;
+    if ('lifecycle' in component && 
+        component.lifecycle && 
+        typeof component.lifecycle === 'object' && 
+        'destroy' in component.lifecycle && 
+        supportingElement) {
+      const originalDestroy = component.lifecycle.destroy as Function;
       component.lifecycle.destroy = () => {
         if (supportingElement) supportingElement.remove();
         originalDestroy.call(component.lifecycle);

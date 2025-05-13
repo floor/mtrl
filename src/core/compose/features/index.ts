@@ -40,4 +40,4 @@ export type { EnhancedEventComponent } from './withEvents';
 export type { BadgeComponent, BadgeConfig } from './badge';
 export type { ThrottleComponent, ThrottleConfig } from './throttle';
 export type { DebounceComponent, DebounceConfig } from './debounce';
-export type { GestureComponent, GestureFeatureConfig } from './gestures';
+export type { GesturesComponent, GesturesFeatureConfig } from './gestures';

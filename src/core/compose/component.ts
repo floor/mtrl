@@ -113,7 +113,8 @@ export const createBase = (config: Record<string, any> = {}): BaseComponent => (
    * Tracks touch position and timing for gesture recognition.
    */
   updateTouchState(event: Event, status: 'start' | 'end'): void {
-    const normalized = normalizeEvent(event);
+    // Cast to MouseEvent as a safe fallback when working with general Events
+    const normalized = normalizeEvent(event as MouseEvent);
 
     if (status === 'start') {
       this.touchState = {

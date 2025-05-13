@@ -5,7 +5,6 @@ import { createBase, withElement } from '../../core/compose/component';
 import {
   withEvents,
   withVariant,
-  withState,
   withLifecycle,
   withGestures
 } from '../../core/compose/features';
@@ -14,7 +13,7 @@ import {
   withTitle,
   withPosition,
   withState,
-  withGestures
+  withGestures as sheetWithGestures
 } from './features';
 import { withAPI } from './api';
 import { SheetConfig, SHEET_VARIANTS, SHEET_POSITIONS } from './types';
@@ -38,7 +37,7 @@ const createSheet = (config: SheetConfig = {}) => {
       withContent(baseConfig),
       withTitle(baseConfig),
       withState(baseConfig),
-      withGestures(baseConfig),
+      sheetWithGestures(baseConfig),
       withLifecycle(),
       comp => withAPI(getApiConfig(comp))(comp)
     )(baseConfig);

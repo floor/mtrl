@@ -3,6 +3,16 @@
 import { BaseComponent, ElementComponent } from '../../../core/compose/component';
 
 /**
+ * Extended element component with input field
+ */
+interface InputElementComponent extends ElementComponent {
+  input?: HTMLInputElement | HTMLTextAreaElement;
+  lifecycle?: {
+    destroy: () => void;
+  };
+}
+
+/**
  * Configuration for trailing icon feature
  */
 export interface TrailingIconConfig {
@@ -53,7 +63,7 @@ export interface TrailingIconComponent extends BaseComponent {
  * @returns Function that enhances a component with trailing icon
  */
 export const withTrailingIcon = <T extends TrailingIconConfig>(config: T) => 
-  <C extends ElementComponent>(component: C): C & TrailingIconComponent => {
+  <C extends InputElementComponent>(component: C): C & TrailingIconComponent => {
     if (!config.trailingIcon) {
       return component as any;
     }

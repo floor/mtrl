@@ -65,11 +65,26 @@ export const hasTouchSupport = (): boolean => {
 };
 
 /**
+ * Type guard for TouchEvent
+ */
+function isTouchEvent(event: Event): event is TouchEvent {
+  return 'touches' in event;
+}
+
+/**
+ * Type guard for MouseEvent
+ */
+function isMouseEvent(event: Event): event is MouseEvent {
+  return 'clientX' in event && 'clientY' in event;
+}
+
+/**
  * Normalizes both mouse and touch events into a consistent format
  * This allows components to handle interactions uniformly
  */
-export const normalizeEvent = (event: MouseEvent | TouchEvent): NormalizedEvent => {
-  if ('touches' in event && event.touches.length > 0) {
+export const normalizeEvent = (event: Event): NormalizedEvent => {
+  // Handle TouchEvent
+  if (isTouchEvent(event) && event.touches.length > 0) {
     const touch = event.touches[0];
     return {
       clientX: touch.clientX,
@@ -83,16 +98,29 @@ export const normalizeEvent = (event: MouseEvent | TouchEvent): NormalizedEvent 
     };
   }
   
-  // For mouse events
-  const mouseEvent = event as MouseEvent;
+  // Handle MouseEvent
+  if (isMouseEvent(event)) {
+    return {
+      clientX: event.clientX,
+      clientY: event.clientY,
+      pageX: event.pageX,
+      pageY: event.pageY,
+      target: event.target as EventTarget,
+      preventDefault: () => event.preventDefault(),
+      stopPropagation: () => event.stopPropagation(),
+      type: event.type
+    };
+  }
+  
+  // Fallback for other event types
   return {
-    clientX: mouseEvent.clientX,
-    clientY: mouseEvent.clientY,
-    pageX: mouseEvent.pageX,
-    pageY: mouseEvent.pageY,
-    target: mouseEvent.target as EventTarget,
-    preventDefault: () => mouseEvent.preventDefault(),
-    stopPropagation: () => mouseEvent.stopPropagation(),
-    type: mouseEvent.type
+    clientX: 0,
+    clientY: 0,
+    pageX: 0,
+    pageY: 0,
+    target: event.target as EventTarget,
+    preventDefault: () => event.preventDefault(),
+    stopPropagation: () => event.stopPropagation(),
+    type: event.type
   };
 };

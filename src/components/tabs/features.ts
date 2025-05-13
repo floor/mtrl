@@ -10,6 +10,18 @@ import {
   TABS_DEFAULTS 
 } from './constants';
 
+// All component interfaces that are extended 
+interface ComponentBase {
+  element: HTMLElement;
+  getClass: (name: string) => string;
+  scrollContainer?: HTMLElement;
+  emit?: (event: string, data: any) => any;
+  destroy?: () => void;
+  tabs?: TabComponent[];
+  handleTabClick?: (event: any, tab: TabComponent) => void;
+  variant?: string;
+}
+
 /**
  * Configuration for tabs management feature
  */
@@ -50,7 +62,7 @@ export interface TabsManagementComponent {
  * @returns {Function} Component enhancer with tabs management
  */
 export const withTabsManagement = <T extends TabsManagementConfig>(config: T) => 
-  <C extends any>(component: C): C & TabsManagementComponent => {
+  <C extends ComponentBase>(component: C): C & TabsManagementComponent => {
     const tabs: TabComponent[] = [];
     
     // Store the target container for tabs
@@ -173,7 +185,7 @@ export interface ScrollableComponent {
  * @returns {Function} Component enhancer with scrollable container
  */
 export const withScrollable = <T extends ScrollableConfig>(config: T) => 
-  <C extends any>(component: C): C & ScrollableComponent => {
+  <C extends ComponentBase>(component: C): C & ScrollableComponent => {
     // Skip if scrollable is explicitly false
     if (config.scrollable === false) {
       return component as C & ScrollableComponent;
@@ -216,7 +228,7 @@ export interface DividerConfig {
  * @returns {Function} Component enhancer with divider
  */
 export const withDivider = <T extends DividerConfig>(config: T) => 
-  <C extends any>(component: C): C => {
+  <C extends ComponentBase>(component: C): C => {
     // Skip if divider is explicitly disabled
     if (config.showDivider === false) {
       return component;
@@ -281,7 +293,7 @@ export interface IndicatorComponent {
  * @returns Component enhancer with indicator functionality
  */
 export const withIndicator = <T extends IndicatorFeatureConfig>(config: T) => 
-  <C extends any>(component: C): C & IndicatorComponent => {
+  <C extends ComponentBase & { tabs: TabComponent[] }>(component: C): C & IndicatorComponent => {
     // Create indicator with proper config
     const indicatorConfig = config.indicator || {};
     const indicator: TabIndicator = createTabIndicator({
@@ -294,7 +306,7 @@ export const withIndicator = <T extends IndicatorFeatureConfig>(config: T) =>
       animationTiming: indicatorConfig.animationTiming || 'cubic-bezier(0.4, 0, 0.2, 1)',
       color: indicatorConfig.color,
       // Pass the tabs variant to the indicator
-      variant: config.variant || 'primary'
+      variant: (config as any).variant ?? 'primary'
     });
     
     // Find the scroll container and add the indicator to it

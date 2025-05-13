@@ -3,6 +3,15 @@
 import { BaseComponent, ElementComponent } from '../../../core/compose/component';
 
 /**
+ * Extended element component with lifecycle
+ */
+interface LifecycleElementComponent extends ElementComponent {
+  lifecycle?: {
+    destroy: () => void;
+  };
+}
+
+/**
  * Configuration for prefix text feature
  */
 export interface PrefixTextConfig {
@@ -53,7 +62,7 @@ export interface PrefixTextComponent extends BaseComponent {
  * @returns Function that enhances a component with prefix text
  */
 export const withPrefixText = <T extends PrefixTextConfig>(config: T) => 
-  <C extends ElementComponent>(component: C): C & PrefixTextComponent => {
+  <C extends LifecycleElementComponent>(component: C): C & PrefixTextComponent => {
     if (!config.prefixText) {
       return component as any;
     }
@@ -72,7 +81,7 @@ export const withPrefixText = <T extends PrefixTextConfig>(config: T) =>
     
     // Add lifecycle integration
     if ('lifecycle' in component && component.lifecycle?.destroy) {
-      const originalDestroy = component.lifecycle.destroy;
+      const originalDestroy = component.lifecycle.destroy as Function;
       component.lifecycle.destroy = () => {
         prefixElement.remove();
         originalDestroy.call(component.lifecycle);

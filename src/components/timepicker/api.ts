@@ -169,7 +169,7 @@ export const createTimePickerAPI = (
         timeValue.hours = hours;
         timeValue.minutes = minutes;
         timeValue.seconds = seconds;
-        timeValue.period = hours >= 12 ? 'PM' : 'AM';
+        timeValue.period = hours >= 12 ? TIME_PERIOD.PM : TIME_PERIOD.AM;
         
         // Re-render time picker
         renderTimePicker(dialogElement, timeValue, config);
@@ -227,10 +227,10 @@ export const createTimePickerAPI = (
       // Adjust time value if needed
       if (format === TIME_FORMAT.MILITARY) {
         // No need to change the hours, just ensure period is set correctly
-        timeValue.period = timeValue.hours >= 12 ? 'PM' : 'AM';
+        timeValue.period = timeValue.hours >= 12 ? TIME_PERIOD.PM : TIME_PERIOD.AM;
       } else {
         // Convert 24h to 12h display (though internally we keep 24h)
-        timeValue.period = timeValue.hours >= 12 ? 'PM' : 'AM';
+        timeValue.period = timeValue.hours >= 12 ? TIME_PERIOD.PM : TIME_PERIOD.AM;
       }
       
       // Re-render time picker
@@ -536,9 +536,9 @@ export const createTimePickerAPI = (
         if (value > 12) newHours = 1;
         
         // Convert to 24h format internally
-        if (timeValue.period === 'PM' && newHours !== 12) {
+        if (timeValue.period === TIME_PERIOD.PM && newHours !== 12) {
           newHours += 12;
-        } else if (timeValue.period === 'AM' && newHours === 12) {
+        } else if (timeValue.period === TIME_PERIOD.AM && newHours === 12) {
           newHours = 0;
         }
       } else {

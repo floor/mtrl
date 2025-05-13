@@ -2,6 +2,10 @@
 
 import { createEventManager } from '../../state/events';
 import { BaseComponent, ElementComponent } from '../component';
+import { 
+  hasLifecycle, 
+  ComponentWithLifecycle 
+} from '../utils/type-guards';
 
 /**
  * Event manager interface
@@ -120,7 +124,7 @@ export const withEvents = (target?: HTMLElement) =>
     };
 
     // Add lifecycle integration
-    if ('lifecycle' in component && component.lifecycle?.destroy) {
+    if (hasLifecycle(component)) {
       const originalDestroy = component.lifecycle.destroy;
       component.lifecycle.destroy = () => {
         events.destroy();

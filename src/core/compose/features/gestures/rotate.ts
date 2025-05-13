@@ -7,6 +7,19 @@
 import { BaseComponent, ElementComponent } from '../../component';
 import { RotateEvent, GestureHandler } from '../../../gestures';
 import { getAngle } from '../../../gestures/utils';
+import { 
+  hasLifecycle, 
+  hasEmit, 
+  ComponentWithLifecycle, 
+  ComponentWithEmit 
+} from '../../utils/type-guards';
+
+/**
+ * Extend the RotateEvent interface to support our custom event types
+ */
+interface ExtendedRotateEvent extends Omit<RotateEvent, 'type'> {
+  type: 'rotate' | 'rotatestart' | 'rotateend';
+}
 
 /**
  * Configuration for rotate gesture feature
@@ -174,8 +187,8 @@ export const withRotateGesture = (config: RotateGestureConfig = {}) =>
       rotation: number,
       centerX: number,
       centerY: number
-    ): RotateEvent => {
-      return {
+    ): ExtendedRotateEvent => {
+      const event: ExtendedRotateEvent = {
         type,
         originalEvent: e,
         target: e.target!,
@@ -184,7 +197,7 @@ export const withRotateGesture = (config: RotateGestureConfig = {}) =>
         duration: Date.now() - startTime,
         defaultPrevented: false,
         preventDefault: () => {
-          rotateEvent.defaultPrevented = true;
+          event.defaultPrevented = true;
           if (e.cancelable) {
             e.preventDefault();
           }
@@ -196,6 +209,7 @@ export const withRotateGesture = (config: RotateGestureConfig = {}) =>
         centerX,
         centerY
       };
+      return event;
     };
     
     /**
@@ -208,25 +222,26 @@ export const withRotateGesture = (config: RotateGestureConfig = {}) =>
       centerX: number,
       centerY: number
     ): void => {
-      const rotateEvent = createRotateEvent(e, type, rotation, centerX, centerY);
+      const extendedRotateEvent = createRotateEvent(e, type, rotation, centerX, centerY);
       
       // Call each handler for this type
       handlers[type].forEach(handler => {
         try {
-          handler(rotateEvent);
+          // Type assertion to handle the extended type
+          handler(extendedRotateEvent as unknown as RotateEvent);
         } catch (error) {
           console.error(`Error in ${type} handler:`, error);
         }
       });
       
       // Forward to component's event system if available
-      if ('emit' in component) {
-        (component as any).emit(type, rotateEvent);
+      if (hasEmit(component)) {
+        component.emit(type, extendedRotateEvent);
       }
       
       // Apply preventDefault if configured
-      if (preventDefault && !rotateEvent.defaultPrevented) {
-        rotateEvent.preventDefault();
+      if (preventDefault && !extendedRotateEvent.defaultPrevented) {
+        extendedRotateEvent.preventDefault();
       }
     };
     
@@ -379,7 +394,7 @@ export const withRotateGesture = (config: RotateGestureConfig = {}) =>
     }
     
     // Handle lifecycle integration
-    if ('lifecycle' in component && component.lifecycle?.destroy) {
+    if (hasLifecycle(component)) {
       const originalDestroy = component.lifecycle.destroy;
       
       component.lifecycle.destroy = () => {

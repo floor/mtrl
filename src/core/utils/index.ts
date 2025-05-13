@@ -11,18 +11,23 @@ export { throttle, debounce, once } from './performance';
  * @returns {string[]} Array of unique, non-empty class names
  */
 export const normalizeClasses = (...classes: (string | string[])[]): string[] => {
-  return [...new Set(
-    classes
-      .flat()
-      .reduce((acc: string[], cls) => {
-        if (typeof cls === 'string') {
-          // Split space-separated classes and add them individually
-          acc.push(...cls.split(/\s+/));
-        }
-        return acc;
-      }, [])
-      .filter(Boolean) // Remove empty strings
-  )];
+  // Process the input classes
+  const processedClasses = classes
+    .flat()
+    .reduce((acc: string[], cls) => {
+      if (typeof cls === 'string') {
+        // Split space-separated classes and add them individually
+        acc.push(...cls.split(/\s+/));
+      }
+      return acc;
+    }, [])
+    .filter(Boolean); // Remove empty strings
+  
+  // Create a Set and convert back to array without spread operator
+  const uniqueClasses = new Set<string>();
+  processedClasses.forEach(cls => uniqueClasses.add(cls));
+  
+  return Array.from(uniqueClasses);
 };
 
 /**

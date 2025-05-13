@@ -64,6 +64,16 @@ export type {
   ThrottleConfig,
   DebounceComponent,
   DebounceConfig,
-  GestureComponent,
-  GestureFeatureConfig
+  GesturesComponent,
+  GesturesFeatureConfig
 } from './features';
+
+// Type guards export
+export { 
+  hasLifecycle, 
+  hasEmit 
+} from './utils/type-guards';
+export type { 
+  ComponentWithLifecycle, 
+  ComponentWithEmit 
+} from './utils/type-guards';

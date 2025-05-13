@@ -4,6 +4,63 @@ import { createEmitter, Emitter } from '../../state/emitter';
 import { BaseComponent, ElementComponent } from '../component';
 
 /**
+ * Component with events manager
+ */
+interface ComponentWithEvents extends ElementComponent {
+  events: {
+    destroy: () => void;
+    [key: string]: any;
+  };
+}
+
+/**
+ * Component with text manager
+ */
+interface ComponentWithText extends ElementComponent {
+  text: {
+    getElement: () => HTMLElement | null;
+    [key: string]: any;
+  };
+}
+
+/**
+ * Component with icon manager
+ */
+interface ComponentWithIcon extends ElementComponent {
+  icon: {
+    getElement: () => HTMLElement | null;
+    [key: string]: any;
+  };
+}
+
+/**
+ * Type guards for component managers
+ */
+function hasEvents(component: any): component is ComponentWithEvents {
+  return 'events' in component && 
+         component.events && 
+         typeof component.events === 'object' &&
+         'destroy' in component.events &&
+         typeof component.events.destroy === 'function';
+}
+
+function hasText(component: any): component is ComponentWithText {
+  return 'text' in component && 
+         component.text && 
+         typeof component.text === 'object' &&
+         'getElement' in component.text &&
+         typeof component.text.getElement === 'function';
+}
+
+function hasIcon(component: any): component is ComponentWithIcon {
+  return 'icon' in component && 
+         component.icon && 
+         typeof component.icon === 'object' &&
+         'getElement' in component.icon &&
+         typeof component.icon.getElement === 'function';
+}
+
+/**
  * Component managers that can be passed to lifecycle
  */
 export interface ComponentManagers {
@@ -105,12 +162,12 @@ export const withLifecycle = () =>
         }
 
         // Clean up all event listeners
-        if ('events' in component && component.events?.destroy) {
+        if (hasEvents(component)) {
           component.events.destroy();
         }
         
         // Clean up text element
-        if ('text' in component && component.text?.getElement) {
+        if (hasText(component)) {
           const textElement = component.text.getElement();
           if (textElement) {
             textElement.remove();
@@ -118,7 +175,7 @@ export const withLifecycle = () =>
         }
         
         // Clean up icon element
-        if ('icon' in component && component.icon?.getElement) {
+        if (hasIcon(component)) {
           const iconElement = component.icon.getElement();
           if (iconElement) {
             iconElement.remove();

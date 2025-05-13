@@ -1,7 +1,8 @@
 // src/components/tooltip/api.ts
 import { 
   TooltipComponent, 
-  TOOLTIP_POSITIONS, 
+  TOOLTIP_POSITIONS,
+  TooltipPosition,
   DEFAULT_OFFSET, 
   DEFAULT_ARROW_SIZE 
 } from './types';
@@ -27,7 +28,7 @@ export const withAPI = ({ lifecycle }: ApiOptions) =>
   (component: ComponentWithElements): TooltipComponent => {
     // Set up internal state
     let target: HTMLElement | null = null;
-    let position = TOOLTIP_POSITIONS.BOTTOM;
+    let position: TooltipPosition = TOOLTIP_POSITIONS.BOTTOM;
     let isVisible = false;
     let showTimer: number | null = null;
     let hideTimer: number | null = null;

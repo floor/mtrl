@@ -6,6 +6,12 @@
 
 import { BaseComponent, ElementComponent } from '../../component';
 import { TapEvent, GestureHandler } from '../../../gestures';
+import { 
+  hasLifecycle, 
+  hasEmit, 
+  ComponentWithLifecycle, 
+  ComponentWithEmit 
+} from '../../utils/type-guards';
 
 /**
  * Configuration for tap gesture feature
@@ -168,8 +174,8 @@ export const withTapGesture = (config: TapGestureConfig = {}) =>
       });
       
       // Forward to component's event system if available
-      if ('emit' in component) {
-        (component as any).emit('tap', tapEvent);
+      if (hasEmit(component)) {
+        component.emit('tap', tapEvent);
       }
       
       // Apply preventDefault if configured
@@ -259,7 +265,7 @@ export const withTapGesture = (config: TapGestureConfig = {}) =>
     }
     
     // Handle lifecycle integration
-    if ('lifecycle' in component && component.lifecycle?.destroy) {
+    if (hasLifecycle(component)) {
       const originalDestroy = component.lifecycle.destroy;
       
       component.lifecycle.destroy = () => {

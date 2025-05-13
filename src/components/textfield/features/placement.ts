@@ -2,6 +2,16 @@ import { BaseComponent, ElementComponent } from '../../../core/compose/component
 import { getInheritedBackground } from '../../../core/utils/background';
 
 /**
+ * Extended element component with input field
+ */
+interface InputElementComponent extends ElementComponent {
+  input?: HTMLInputElement | HTMLTextAreaElement;
+  lifecycle?: {
+    destroy: () => void;
+  };
+}
+
+/**
  * Component with placement management capabilities
  */
 export interface PlacementComponent extends BaseComponent {
@@ -19,7 +29,7 @@ export interface PlacementComponent extends BaseComponent {
  * @returns Function that enhances a component with dynamic positioning
  */
 export const withPlacement = () => 
-  <C extends ElementComponent>(component: C): C & PlacementComponent => {
+  <C extends InputElementComponent>(component: C): C & PlacementComponent => {
     const PREFIX = component.config.prefix || 'mtrl';
     const COMPONENT = component.config.componentName || 'textfield';
     
@@ -33,7 +43,7 @@ export const withPlacement = () =>
      * to accommodate prefix/suffix elements
      */
     const updateElementPositions = () => {
-      if (!component.element || !component.element.isConnected) return component;
+      if (!component.element || !component.element.isConnected) return component as any;
       
       // Get necessary elements
       const labelEl = component.element.querySelector(`.${PREFIX}-${COMPONENT}-label`) as HTMLElement;
@@ -172,7 +182,7 @@ export const withPlacement = () =>
         component.input.style.paddingRight = `${inputPadding}px`;
       }
       
-      return component;
+      return component as any;
     };
     
     // Set up event listeners for dynamic positioning
@@ -253,6 +263,9 @@ export const withPlacement = () =>
     
     return {
       ...component,
-      updateElementPositions
+      updateElementPositions: () => {
+        updateElementPositions();
+        return component as unknown as C & PlacementComponent;
+      }
     };
   };

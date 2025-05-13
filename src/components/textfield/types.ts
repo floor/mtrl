@@ -76,6 +76,9 @@ export interface TextfieldConfig {
   /** Whether textfield is disabled */
   disabled?: boolean;
   
+  /** Whether textfield is readonly */
+  readonly?: boolean;
+  
   /** Maximum input length */
   maxLength?: number;
   

@@ -278,9 +278,9 @@ export const renderTimePicker = (
         if (numValue > 12) newHours = 12;
         
         // Convert to 24h format internally
-        if (timeValue.period === 'PM' && newHours !== 12) {
+        if (timeValue.period === TIME_PERIOD.PM && newHours !== 12) {
           newHours += 12;
-        } else if (timeValue.period === 'AM' && newHours === 12) {
+        } else if (timeValue.period === TIME_PERIOD.AM && newHours === 12) {
           newHours = 0;
         }
       } else {

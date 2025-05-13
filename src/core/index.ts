@@ -19,7 +19,22 @@ export * from './compose';
 export * from './dom';
 
 // 3. State management
-export * from './state';
+// Explicit re-exports to avoid ambiguity
+export { createEmitter } from './state/emitter';
+export type { Emitter, EventCallback } from './state/emitter';
+
+export { createStore, loggingMiddleware, deriveFiltered } from './state/store';
+export type { Store, StoreOptions, Selector, Computation, Updater } from './state/store';
+
+export { createLifecycle } from './state/lifecycle';
+export type { LifecycleManager, LifecycleManagers } from './state/lifecycle';
+
+export { createDisabled } from './state/disabled';
+export type { DisabledState } from './state/disabled';
+
+// Renamed to avoid conflict with DOM's createEventManager
+export { createEventManager as createStateEventManager } from './state/events';
+export type { EventManagerState } from './state/events';
 
 // 4. Layout system
 export * from './layout';
@@ -46,7 +61,6 @@ export {
   isObject, 
   byString,
   hasTouchSupport,
-  isMobileDevice,
   normalizeEvent,
   throttle,
   debounce,
@@ -79,21 +93,4 @@ export type {
   StateComponentConfig
 } from './config';
 
-export type { 
-  TextManager, 
-  TextConfig 
-} from './build/text';
-
-export type { 
-  IconManager, 
-  IconConfig 
-} from './build/icon';
-
-export type { 
-  RippleController, 
-  RippleConfig 
-} from './build/ripple';
-
-export type { 
-  NormalizedEvent 
-} from './utils/mobile';
+export type { NormalizedEvent } from './utils/mobile';

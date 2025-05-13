@@ -6,6 +6,12 @@
 
 import { BaseComponent, ElementComponent } from '../../component';
 import { PanEvent, GestureHandler } from '../../../gestures';
+import { 
+  hasLifecycle, 
+  hasEmit, 
+  ComponentWithLifecycle, 
+  ComponentWithEmit 
+} from '../../utils/type-guards';
 
 /**
  * Configuration for pan gesture feature
@@ -39,6 +45,13 @@ export interface PanGestureConfig {
   enabled?: boolean;
   
   [key: string]: any;
+}
+
+/**
+ * Extend the PanEvent interface to support our custom event types
+ */
+interface ExtendedPanEvent extends Omit<PanEvent, 'type'> {
+  type: 'pan' | 'panstart' | 'panend';
 }
 
 /**
@@ -168,8 +181,8 @@ export const withPanGesture = (config: PanGestureConfig = {}) =>
     const createPanEvent = (
       e: MouseEvent | TouchEvent, 
       type: 'panstart' | 'pan' | 'panend'
-    ): PanEvent => {
-      return {
+    ): ExtendedPanEvent => {
+      const event: ExtendedPanEvent = {
         type,
         originalEvent: e,
         target: e.target!,
@@ -178,7 +191,7 @@ export const withPanGesture = (config: PanGestureConfig = {}) =>
         duration: Date.now() - startTime,
         defaultPrevented: false,
         preventDefault: () => {
-          panEvent.defaultPrevented = true;
+          event.defaultPrevented = true;
           if (e.cancelable) {
             e.preventDefault();
           }
@@ -193,31 +206,33 @@ export const withPanGesture = (config: PanGestureConfig = {}) =>
         currentX,
         currentY
       };
+      return event;
     };
     
     /**
      * Dispatch a pan event to all registered handlers
      */
     const dispatchPan = (e: MouseEvent | TouchEvent, type: 'panstart' | 'pan' | 'panend'): void => {
-      const panEvent = createPanEvent(e, type);
+      const extendedPanEvent = createPanEvent(e, type);
       
       // Call each handler for this phase
       handlers[type].forEach(handler => {
         try {
-          handler(panEvent);
+          // Type assertion for the handler call - we're deliberately passing our extended event
+          handler(extendedPanEvent as unknown as PanEvent);
         } catch (error) {
           console.error(`Error in ${type} handler:`, error);
         }
       });
       
       // Forward to component's event system if available
-      if ('emit' in component) {
-        (component as any).emit(type, panEvent);
+      if (hasEmit(component)) {
+        component.emit(type, extendedPanEvent);
       }
       
       // Apply preventDefault if configured
-      if (preventDefault && !panEvent.defaultPrevented) {
-        panEvent.preventDefault();
+      if (preventDefault && !extendedPanEvent.defaultPrevented) {
+        extendedPanEvent.preventDefault();
       }
     };
     
@@ -334,7 +349,7 @@ export const withPanGesture = (config: PanGestureConfig = {}) =>
     }
     
     // Handle lifecycle integration
-    if ('lifecycle' in component && component.lifecycle?.destroy) {
+    if (hasLifecycle(component)) {
       const originalDestroy = component.lifecycle.destroy;
       
       component.lifecycle.destroy = () => {

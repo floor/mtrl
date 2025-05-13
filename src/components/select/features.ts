@@ -1,6 +1,7 @@
 // src/components/select/features.ts
 import createTextfield from '../textfield';
 import createMenu from '../menu';
+import { MenuItem, MenuContent, MenuPosition } from '../menu/types';
 import { SelectOption, SelectConfig, BaseComponent } from './types';
 
 /**
@@ -52,15 +53,15 @@ export const withTextfield = (config: SelectConfig) =>
  * @param options The options to process
  * @returns Properly structured menu items
  */
-const processMenuItems = (options) => {
+const processMenuItems = (options): MenuContent[] => {
   return options.map(option => {
     if ('type' in option && option.type === 'divider') {
       return option; // Just pass dividers through
     }
     
     // Create a basic menu item
-    const menuItem = {
-      id: option.id,
+    const menuItem: MenuItem = {
+      id: option.id.toString(), // Convert to string to match MenuItem type
       text: option.text,
       icon: option.icon,
       disabled: option.disabled,
@@ -71,14 +72,12 @@ const processMenuItems = (options) => {
     // If this option has a submenu, process those items recursively
     if (option.hasSubmenu && Array.isArray(option.submenu)) {
       menuItem.hasSubmenu = true;
-      menuItem.submenu = processMenuItems(option.submenu);
+      menuItem.submenu = processMenuItems(option.submenu) as MenuItem[];
     }
     
     return menuItem;
   });
 };
-
-// src/components/select/features.ts
 
 /**
  * Creates a menu for the select component
@@ -111,9 +110,9 @@ export const withMenu = (config: SelectConfig) =>
     const menu = createMenu({
       opener: component.textfield, // Pass the entire textfield component
       items: menuItems,
-      placement: config.placement || 'bottom-start',
+      position: (config.placement || 'bottom-start') as MenuPosition,
       width: '100%', // Match width of textfield
-      className: 'select-menu',
+      class: 'select-menu',
       closeOnSelect: true,
       closeOnClickOutside: true,
       closeOnEscape: true,

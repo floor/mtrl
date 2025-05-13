@@ -15,7 +15,7 @@ export const COLLECTION_EVENTS = {
 /**
  * Collection event type
  */
-export type CollectionEvent = keyof typeof COLLECTION_EVENTS;
+export type CollectionEvent = typeof COLLECTION_EVENTS[keyof typeof COLLECTION_EVENTS];
 
 /**
  * Observer callback type for collection events

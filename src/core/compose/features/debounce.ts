@@ -8,6 +8,27 @@ import { BaseComponent, ElementComponent } from '../component';
 import { debounce } from '../../utils/performance';
 
 /**
+ * Interface for components with lifecycle
+ */
+export interface ComponentWithLifecycle extends ElementComponent {
+  lifecycle: {
+    destroy: () => void;
+    [key: string]: any;
+  };
+}
+
+/**
+ * Type guard to check if component has lifecycle
+ */
+function hasLifecycle(component: any): component is ComponentWithLifecycle {
+  return 'lifecycle' in component && 
+         component.lifecycle && 
+         typeof component.lifecycle === 'object' &&
+         'destroy' in component.lifecycle &&
+         typeof component.lifecycle.destroy === 'function';
+}
+
+/**
  * Configuration for debounced event handlers
  */
 export interface DebounceConfig {
@@ -130,7 +151,7 @@ export const withDebounce = (config: DebounceConfig = {}) =>
     };
     
     // Handle lifecycle integration if available
-    if ('lifecycle' in component && component.lifecycle?.destroy) {
+    if (hasLifecycle(component)) {
       const originalDestroy = component.lifecycle.destroy;
       
       component.lifecycle.destroy = () => {

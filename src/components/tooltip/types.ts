@@ -43,8 +43,7 @@ export type TooltipVariant = 'default' | 'rich' | 'plain';
 /**
  * Available Tooltip positions
  */
-export type TooltipPosition = 'top' | 'right' | 'bottom' | 'left' | 'top-start' | 'top-end' | 'right-start' | 'right-end' | 'bottom-start' | 'bottom-end' | 'left-start' | 'left-end';
-
+export type TooltipPosition = typeof TOOLTIP_POSITIONS[keyof typeof TOOLTIP_POSITIONS];
 
 /**
  * Configuration interface for the Tooltip component
@@ -175,13 +174,13 @@ export interface TooltipComponent {
    * @param position - Position value
    * @returns The tooltip component for chaining
    */
-  setPosition: (position: keyof typeof TOOLTIP_POSITIONS | string) => TooltipComponent;
+  setPosition: (position: TooltipPosition) => TooltipComponent;
   
   /**
    * Gets the current tooltip position
    * @returns Current position
    */
-  getPosition: () => string;
+  getPosition: () => TooltipPosition;
   
   /**
    * Sets the tooltip target element

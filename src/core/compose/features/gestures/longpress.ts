@@ -6,6 +6,12 @@
 
 import { BaseComponent, ElementComponent } from '../../component';
 import { LongPressEvent, GestureHandler } from '../../../gestures';
+import { 
+  hasLifecycle, 
+  hasEmit, 
+  ComponentWithLifecycle, 
+  ComponentWithEmit 
+} from '../../utils/type-guards';
 
 /**
  * Configuration for long press gesture feature
@@ -165,8 +171,8 @@ export const withLongPressGesture = (config: LongPressGestureConfig = {}) =>
       });
       
       // Forward to component's event system if available
-      if ('emit' in component) {
-        (component as any).emit('longpress', longPressEvent);
+      if (hasEmit(component)) {
+        component.emit('longpress', longPressEvent);
       }
       
       // Apply preventDefault if configured
@@ -295,7 +301,7 @@ export const withLongPressGesture = (config: LongPressGestureConfig = {}) =>
     }
     
     // Handle lifecycle integration
-    if ('lifecycle' in component && component.lifecycle?.destroy) {
+    if (hasLifecycle(component)) {
       const originalDestroy = component.lifecycle.destroy;
       
       component.lifecycle.destroy = () => {

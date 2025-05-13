@@ -3,6 +3,15 @@
 import { BaseComponent, ElementComponent } from '../../../core/compose/component';
 
 /**
+ * Extended element component with lifecycle
+ */
+interface LifecycleElementComponent extends ElementComponent {
+  lifecycle?: {
+    destroy: () => void;
+  };
+}
+
+/**
  * Configuration for suffix text feature
  */
 export interface SuffixTextConfig {
@@ -53,7 +62,7 @@ export interface SuffixTextComponent extends BaseComponent {
  * @returns Function that enhances a component with suffix text
  */
 export const withSuffixText = <T extends SuffixTextConfig>(config: T) => 
-  <C extends ElementComponent>(component: C): C & SuffixTextComponent => {
+  <C extends LifecycleElementComponent>(component: C): C & SuffixTextComponent => {
     if (!config.suffixText) {
       return component as any;
     }
@@ -72,7 +81,7 @@ export const withSuffixText = <T extends SuffixTextConfig>(config: T) =>
     
     // Add lifecycle integration
     if ('lifecycle' in component && component.lifecycle?.destroy) {
-      const originalDestroy = component.lifecycle.destroy;
+      const originalDestroy = component.lifecycle.destroy as Function;
       component.lifecycle.destroy = () => {
         suffixElement.remove();
         originalDestroy.call(component.lifecycle);

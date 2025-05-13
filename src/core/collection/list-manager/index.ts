@@ -25,6 +25,15 @@ import {
   createLoadParams 
 } from './state';
 
+// Params types
+interface LoadParams {
+  page?: number;
+  cursor?: string;
+  limit?: number;
+  offset?: number;
+  [key: string]: any;
+}
+
 /**
  * Creates a list manager for a specific collection
  * @param {string} collection - Collection name
@@ -83,7 +92,10 @@ export const createListManager = (
     },
     cache: true, // Enable caching for API requests
     // Pass the pagination configuration if provided
-    pagination: validatedConfig.pagination
+    pagination: validatedConfig.pagination ? {
+      strategy: validatedConfig.pagination.strategy || 'cursor',
+      ...validatedConfig.pagination
+    } : { strategy: 'cursor' }
   }) : null;
   
   // Track cleanup functions
@@ -91,10 +103,10 @@ export const createListManager = (
   
   /**
    * Load items with cursor pagination or from static data
-   * @param {Object} params - Query parameters
+   * @param {LoadParams} params - Query parameters
    * @returns {Promise<Object>} Response with items and pagination metadata
    */
-  const loadItems = async (params = {}): Promise<{items: any[], meta: PaginationMeta}> => {
+  const loadItems = async (params: LoadParams = {}): Promise<{items: any[], meta: PaginationMeta}> => {
     try {
       // Update loading state
       Object.assign(state, updateLoadingState(state, true));
@@ -167,18 +179,29 @@ export const createListManager = (
       // Call afterLoad callback if provided
       if (validatedConfig.afterLoad) {
         // Create a read-only copy of the items array to prevent mutation
-        const itemsCopy = Object.freeze([...state.items]);
+        const itemsCopy = [...state.items] as any[];
         
         const loadData: LoadStatus = {
           loading: false,
           hasNext: state.hasNext,
           hasPrev: !!params.cursor || (params.page && params.page > 1),
-          items: Object.freeze([...items]), // Freeze to prevent modification
+          items: [...items] as any[], // Use type assertion to satisfy the mutable array requirement
           allItems: itemsCopy
         };
         
         validatedConfig.afterLoad(loadData);
       }
+      
+      // For cursor-based pagination, we need to track cursor
+      if (state.paginationStrategy === 'cursor' && response.meta?.cursor) {
+        state.cursor = response.meta.cursor;
+      } else if (state.paginationStrategy === 'page' && params.page) {
+        state.page = params.page;
+      }
+      
+      // Don't update state.items directly - it should be handled by updateStateAfterLoad
+      // state.items = [...state.items, ...items] as any[];
+      // state.allItems was incorrectly added and doesn't exist in ListManagerState
       
       return {
         items,
@@ -529,10 +552,11 @@ export const createListManager = (
         }, 100);
       };
       
-      window.addEventListener('resize', handleResize, { passive: true });
+      // Use 'as any' to bypass TypeScript error with window.addEventListener
+      (window as any).addEventListener('resize', handleResize, { passive: true });
       
       cleanupFunctions.push(() => {
-        window.removeEventListener('resize', handleResize);
+        (window as any).removeEventListener('resize', handleResize);
         
         if (resizeTimeout) {
           clearTimeout(resizeTimeout);

@@ -5,6 +5,7 @@ import {
   createElementConfig as coreCreateElementConfig
 } from '../../core/config/component';
 import { LIST_DEFAULTS, LIST_CLASSES } from './constants';
+import { ListConfig } from './types';
 
 /**
  * Default configuration for the List component
@@ -31,10 +32,10 @@ export const defaultConfig = {
 
 /**
  * Creates the base configuration for List component
- * @param {Object} config - User provided configuration
+ * @param {ListConfig} config - User provided configuration
  * @returns {Object} Complete configuration with defaults applied
  */
-export const createBaseConfig = (config = {}) => {
+export const createBaseConfig = (config: Partial<ListConfig> = {}) => {
   // Validate required props
   if (!config.renderItem && !Array.isArray(config.items)) {
     throw new Error('List requires either static items or a renderItem function');

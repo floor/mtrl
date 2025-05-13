@@ -3,6 +3,16 @@
 import { BaseComponent, ElementComponent } from '../../../core/compose/component';
 
 /**
+ * Extended element component with input field
+ */
+interface InputElementComponent extends ElementComponent {
+  input?: HTMLInputElement | HTMLTextAreaElement;
+  lifecycle?: {
+    destroy: () => void;
+  };
+}
+
+/**
  * Configuration for leading icon feature
  */
 export interface LeadingIconConfig {
@@ -53,7 +63,7 @@ export interface LeadingIconComponent extends BaseComponent {
  * @returns Function that enhances a component with leading icon
  */
 export const withLeadingIcon = <T extends LeadingIconConfig>(config: T) => 
-  <C extends ElementComponent>(component: C): C & LeadingIconComponent => {
+  <C extends InputElementComponent>(component: C): C & LeadingIconComponent => {
     if (!config.leadingIcon) {
       return component as any;
     }
