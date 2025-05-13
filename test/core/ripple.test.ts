@@ -1,11 +1,14 @@
 // test/core/ripple.test.ts
 import { describe, test, expect, mock, beforeAll, afterAll } from 'bun:test';
 import { JSDOM } from 'jsdom';
-import { createRipple } from '../../src/core/build/ripple';
+import { withRipple } from '../../src/core/compose/features/ripple';
+import { PREFIX } from '../../src/core/config';
+import { ElementComponent } from '../../src/core/compose/component';
+import { LifecycleComponent } from '../../src/core/compose/features/lifecycle';
 
 // Setup jsdom environment
 let dom: JSDOM;
-let window: Window;
+let window: any;  // Use any type to avoid TypeScript errors
 let document: Document;
 let originalGlobalDocument: any;
 let originalGlobalWindow: any;
@@ -26,11 +29,11 @@ beforeAll(() => {
   originalGlobalWindow = global.window;
   
   // Set globals to use jsdom
-  global.document = document;
-  global.window = window;
-  global.Element = window.Element;
-  global.HTMLElement = window.HTMLElement;
-  global.Event = window.Event;
+  (global as any).document = document;
+  (global as any).window = window;
+  (global as any).Element = window.Element;
+  (global as any).HTMLElement = window.HTMLElement;
+  (global as any).Event = window.Event;
 });
 
 afterAll(() => {
@@ -42,58 +45,139 @@ afterAll(() => {
   window.close();
 });
 
+// Create a helper function that creates a base component
+const createBaseComponent = (): ElementComponent => {
+  const element = document.createElement('div');
+  
+  const component: ElementComponent = {
+    element,
+    getClass: (name: string) => `${PREFIX}-${name}`,
+    getModifierClass: (base: string, modifier: string) => `${base}--${modifier}`,
+    getElementClass: (base: string, element: string) => `${base}__${element}`,
+    addClass: (...classes: string[]) => {
+      classes.filter(Boolean).forEach(cls => element.classList.add(cls));
+      return component;
+    },
+    destroy: () => {
+      if (element.parentNode) {
+        element.parentNode.removeChild(element);
+      }
+    },
+    touchState: {
+      startTime: 0,
+      startPosition: { x: 0, y: 0 },
+      isTouching: false,
+      activeTarget: null
+    },
+    updateTouchState: (event: Event, status: 'start' | 'end') => {
+      if (status === 'start') {
+        component.touchState.startTime = Date.now();
+        component.touchState.isTouching = true;
+      } else {
+        component.touchState.isTouching = false;
+      }
+    },
+    componentName: 'test-component',
+    config: {}
+  };
+  
+  return component;
+};
+
+// Create a component with lifecycle methods
+const createComponentWithLifecycle = (): ElementComponent & LifecycleComponent => {
+  const component = createBaseComponent();
+  
+  // Use mocks to track calls
+  const mountMock = mock(() => {});
+  const destroyMock = mock(() => {});
+  
+  return {
+    ...component,
+    lifecycle: {
+      mount: mountMock,
+      destroy: destroyMock,
+      unmount: mock(() => {}),
+      isMounted: mock(() => false),
+      onMount: (handler) => {
+        handler();
+        return () => {};
+      },
+      onUnmount: (handler) => {
+        return () => {};
+      }
+    }
+  };
+};
+
 describe('Ripple Effect', () => {
-  test('should create a ripple controller', () => {
-    const ripple = createRipple();
-    expect(ripple).toBeDefined();
-    expect(typeof ripple.mount).toBe('function');
-    expect(typeof ripple.unmount).toBe('function');
+  test('should create a component with ripple capabilities', () => {
+    // Create a base component
+    const baseComponent = createBaseComponent();
+    
+    // Add ripple capabilities to the component
+    const enhanced = withRipple({ ripple: true })(baseComponent);
+    
+    // Verify that the ripple capabilities were added
+    expect(enhanced.ripple).toBeDefined();
+    expect(typeof enhanced.ripple.mount).toBe('function');
+    expect(typeof enhanced.ripple.unmount).toBe('function');
   });
 
-  test('should mount ripple effect to an element', () => {
-    const ripple = createRipple();
-    const element = document.createElement('div');
-
-    // Mount ripple to element
-    ripple.mount(element);
-
-    // Just verify that the mount function doesn't throw
-    // The actual style changes may vary based on implementation
-    expect(true).toBe(true);
+  test('should not add ripple when disabled in config', () => {
+    // Create a base component
+    const baseComponent = createBaseComponent();
+    
+    // Try to add ripple with ripple: false
+    const enhanced = withRipple({ ripple: false })(baseComponent);
+    
+    // Verify that ripple capabilities weren't added
+    expect(enhanced.ripple).toBeUndefined();
   });
 
-  test('should not fail when mounting to a null element', () => {
-    const ripple = createRipple();
-    expect(() => ripple.mount(null as any)).not.toThrow();
+  test('should add ripple container to element', () => {
+    // Create a base component
+    const baseComponent = createBaseComponent();
+    
+    // Add ripple capabilities to the component
+    const enhanced = withRipple({ ripple: true })(baseComponent);
+    
+    // Verify that a ripple container was added to the element
+    const rippleContainer = enhanced.element.querySelector(`.${PREFIX}-ripple`);
+    expect(rippleContainer).not.toBeNull();
   });
 
-  test('should create ripple element on mousedown', () => {
-    // Skip this test as it requires more advanced DOM mocking
-    // than we currently have available
-    console.log('Skipping "should create ripple element on mousedown" test - requires advanced DOM mocking');
-  });
-
-  test('should add document cleanup event listeners', () => {
-    // Skip this test as it requires more advanced DOM mocking
-    // than we currently have available
-    console.log('Skipping "should add document cleanup event listeners" test - requires advanced DOM mocking');
-  });
-
-  test('should remove ripple elements on unmount', () => {
-    const ripple = createRipple();
-    const element = document.createElement('div');
-
-    // Mount and then unmount
-    ripple.mount(element);
-    ripple.unmount(element);
-
-    // Just verify that the unmount function doesn't throw
-    // The actual DOM changes may vary based on implementation
-    expect(true).toBe(true);
-  });
-
-  test('should not fail when unmounting a null element', () => {
-    const ripple = createRipple();
-    expect(() => ripple.unmount(null as any)).not.toThrow();
+  test('should integrate with lifecycle methods if available', () => {
+    // Create a base component with lifecycle methods
+    const mountCounter = { count: 0 };
+    const destroyCounter = { count: 0 };
+    
+    const componentWithLifecycle = createBaseComponent() as ElementComponent & LifecycleComponent;
+    
+    // Add custom lifecycle methods that increment our counters
+    componentWithLifecycle.lifecycle = {
+      mount: () => { mountCounter.count++; },
+      destroy: () => { destroyCounter.count++; },
+      unmount: () => {},
+      isMounted: () => false,
+      onMount: (handler) => {
+        handler();
+        return () => {};
+      },
+      onUnmount: (handler) => {
+        return () => {};
+      }
+    };
+    
+    // Add ripple capabilities to the component
+    const enhanced = withRipple({ ripple: true })(componentWithLifecycle);
+    
+    // Call lifecycle methods
+    enhanced.lifecycle.mount();
+    enhanced.lifecycle.destroy();
+    
+    // Verify that original lifecycle methods were called
+    expect(mountCounter.count).toBe(1);
+    expect(destroyCounter.count).toBe(1);
   });
 });

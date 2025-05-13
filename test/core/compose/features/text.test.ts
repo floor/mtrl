@@ -1,34 +1,7 @@
 // test/core/compose/features/text.test.ts
-import { describe, test, expect, beforeEach, mock } from 'bun:test';
+import { describe, test, expect, beforeEach } from 'bun:test';
 import { withText } from '../../../../src/core/compose/features/text';
 import '../../../setup'; // Import the jsdom setup
-
-// Keep track of parameters passed to createText
-let lastCreateTextElement;
-let lastCreateTextConfig;
-
-// Mock text manager methods
-const mockSetText = mock(function(text) { return this; });
-const mockGetText = mock(() => 'Test text');
-const mockGetElement = mock(() => document.createElement('span'));
-
-// Use Bun's mock functionality
-mock.module('../../../../src/core/build/text', () => {
-  return {
-    createText: (element, config) => {
-      // Store parameters for test inspection
-      lastCreateTextElement = element;
-      lastCreateTextConfig = config;
-      
-      // Return text manager interface
-      return {
-        setText: mockSetText,
-        getText: mockGetText,
-        getElement: mockGetElement
-      };
-    }
-  };
-});
 
 describe('withText', () => {
   let component;
@@ -39,15 +12,6 @@ describe('withText', () => {
       element: document.createElement('div'),
       getClass: (name) => `mtrl-${name}`
     };
-    
-    // Reset state
-    lastCreateTextElement = null;
-    lastCreateTextConfig = null;
-    
-    // Reset mocks
-    mockSetText.mockClear();
-    mockGetText.mockClear();
-    mockGetElement.mockClear();
   });
   
   test('should add text manager to component', () => {
@@ -64,40 +28,85 @@ describe('withText', () => {
     expect(typeof enhanced.text.getElement).toBe('function');
   });
   
-  test('should pass correct parameters to createText', () => {
+  test('should pass correct options to createText', () => {
     const config = {
       prefix: 'custom',
       componentName: 'checkbox'
     };
     
-    withText(config)(component);
+    const enhanced = withText(config)(component);
     
-    // Check that correct parameters were passed to createText
-    expect(lastCreateTextElement).toBe(component.element);
-    expect(lastCreateTextConfig).toBeDefined();
-    expect(lastCreateTextConfig.prefix).toBe('custom');
-    expect(lastCreateTextConfig.type).toBe('checkbox');
+    const textElement = enhanced.text.getElement();
+    expect(textElement).toBeNull(); // Should be null until text is set
+  });
+  
+  test('should use componentName as type if provided', () => {
+    const config = {
+      prefix: 'mtrl',
+      componentName: 'button',
+      text: 'Test'
+    };
+    
+    const enhanced = withText(config)(component);
+    
+    const textElement = enhanced.text.getElement();
+    expect(textElement).not.toBeNull();
+    expect(textElement.className).toBe('mtrl-button-text');
+  });
+  
+  test('should use "component" as default type if componentName not provided', () => {
+    const config = {
+      prefix: 'mtrl',
+      text: 'Test'
+    };
+    
+    const enhanced = withText(config)(component);
+    
+    const textElement = enhanced.text.getElement();
+    expect(textElement).not.toBeNull();
+    expect(textElement.className).toBe('mtrl-component-text');
+  });
+  
+  test('should pass correct parameters to createText', () => {
+    const config = {
+      prefix: 'custom',
+      componentName: 'checkbox',
+      text: 'Test text'
+    };
+    
+    const enhanced = withText(config)(component);
+    
+    const textElement = enhanced.text.getElement();
+    expect(textElement).not.toBeNull();
+    expect(textElement.className).toBe('custom-checkbox-text');
+    expect(textElement.textContent).toBe('Test text');
   });
   
   test('should use componentName from config for text type', () => {
     const config = {
       prefix: 'mtrl',
-      componentName: 'button'
+      componentName: 'button',
+      text: 'Test text'
     };
     
-    withText(config)(component);
+    const enhanced = withText(config)(component);
     
-    expect(lastCreateTextConfig.type).toBe('button');
+    const textElement = enhanced.text.getElement();
+    expect(textElement).not.toBeNull();
+    expect(textElement.className).toBe('mtrl-button-text');
   });
   
   test('should fallback to "component" if componentName is missing', () => {
     const config = {
-      prefix: 'mtrl'
+      prefix: 'mtrl',
+      text: 'Test text'
     };
     
-    withText(config)(component);
+    const enhanced = withText(config)(component);
     
-    expect(lastCreateTextConfig.type).toBe('component');
+    const textElement = enhanced.text.getElement();
+    expect(textElement).not.toBeNull();
+    expect(textElement.className).toBe('mtrl-component-text');
   });
   
   test('should set initial text if provided in config', () => {
@@ -107,10 +116,10 @@ describe('withText', () => {
       text: 'Initial text'
     };
     
-    withText(config)(component);
+    const enhanced = withText(config)(component);
     
-    expect(mockSetText).toHaveBeenCalledTimes(1);
-    expect(mockSetText).toHaveBeenCalledWith('Initial text');
+    expect(enhanced.text.getText()).toBe('Initial text');
+    expect(enhanced.text.getElement().textContent).toBe('Initial text');
   });
   
   test('should not set text if not provided in config', () => {
@@ -119,9 +128,10 @@ describe('withText', () => {
       componentName: 'button'
     };
     
-    withText(config)(component);
+    const enhanced = withText(config)(component);
     
-    expect(mockSetText).toHaveBeenCalledTimes(0);
+    expect(enhanced.text.getElement()).toBeNull();
+    expect(enhanced.text.getText()).toBe('');
   });
   
   test('should pass text manager methods directly to component', () => {
@@ -134,13 +144,8 @@ describe('withText', () => {
     
     // Call text methods on the enhanced component
     enhanced.text.setText('New text');
-    enhanced.text.getText();
-    enhanced.text.getElement();
     
-    // Verify the mock functions were called
-    expect(mockSetText).toHaveBeenCalledTimes(1);
-    expect(mockSetText).toHaveBeenCalledWith('New text');
-    expect(mockGetText).toHaveBeenCalledTimes(1);
-    expect(mockGetElement).toHaveBeenCalledTimes(1);
+    expect(enhanced.text.getText()).toBe('New text');
+    expect(enhanced.text.getElement().textContent).toBe('New text');
   });
 });

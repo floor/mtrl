@@ -15,7 +15,8 @@
     "noImplicitAny": false,
     "allowJs": true,
     "noErrorTruncation": true,
-    "noEmitOnError": false
+    "noEmitOnError": false,
+    "downlevelIteration": true
   },
   "include": ["src/**/*", "test/**/*"],
   "exclude": ["node_modules"]

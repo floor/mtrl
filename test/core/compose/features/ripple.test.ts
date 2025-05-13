@@ -1,25 +1,9 @@
-// test/core/compose/features/text.test.ts
-import { describe, test, expect, beforeEach, mock } from 'bun:test';
+// test/core/compose/features/ripple.test.ts
+import { describe, test, expect, beforeEach } from 'bun:test';
 import { withText } from '../../../../src/core/compose/features/text';
 import '../../../setup'; // Import the jsdom setup
 
-// Mock text manager
-const mockTextManager = {
-  setText: mock(() => mockTextManager),
-  getText: mock(() => "Mock text"),
-  getElement: mock(() => document.createElement('span'))
-};
-
-// Mock the createText function in the module
-let createTextOptions = null;
-mock.module('../../../../src/core/build/text', () => ({
-  createText: (element, options) => {
-    createTextOptions = options;
-    return mockTextManager;
-  }
-}));
-
-describe('withText', () => {
+describe('withText (additional tests)', () => {
   let component;
   
   beforeEach(() => {
@@ -28,12 +12,6 @@ describe('withText', () => {
       element: document.createElement('div'),
       getClass: (name) => `mtrl-${name}`
     };
-    
-    // Reset our mocks
-    mockTextManager.setText.mockClear();
-    mockTextManager.getText.mockClear();
-    mockTextManager.getElement.mockClear();
-    createTextOptions = null;
   });
   
   test('should add text manager to component', () => {
@@ -54,8 +32,9 @@ describe('withText', () => {
     
     const enhanced = withText(config)(component);
     
-    expect(mockTextManager.setText).toHaveBeenCalledTimes(1);
-    expect(mockTextManager.setText).toHaveBeenCalledWith('Initial text');
+    const textElement = enhanced.text.getElement();
+    expect(textElement).not.toBeNull();
+    expect(textElement.textContent).toBe('Initial text');
   });
   
   test('should not set text if not provided in config', () => {
@@ -66,41 +45,48 @@ describe('withText', () => {
     
     const enhanced = withText(config)(component);
     
-    expect(mockTextManager.setText).toHaveBeenCalledTimes(0);
+    expect(enhanced.text.getElement()).toBeNull();
   });
   
   test('should pass correct options to createText', () => {
     const config = {
       prefix: 'custom-prefix',
-      componentName: 'custom-component'
+      componentName: 'custom-component',
+      text: 'Test text'
     };
     
     const enhanced = withText(config)(component);
     
-    expect(createTextOptions).toEqual({
-      prefix: 'custom-prefix',
-      type: 'custom-component'
-    });
+    const textElement = enhanced.text.getElement();
+    expect(textElement).not.toBeNull();
+    expect(textElement.className).toBe('custom-prefix-custom-component-text');
+    expect(textElement.textContent).toBe('Test text');
   });
   
   test('should use componentName as type if provided', () => {
     const config = {
       prefix: 'mtrl',
-      componentName: 'custom-component'
+      componentName: 'custom-component',
+      text: 'Test'
     };
     
     const enhanced = withText(config)(component);
     
-    expect(createTextOptions.type).toBe('custom-component');
+    const textElement = enhanced.text.getElement();
+    expect(textElement).not.toBeNull();
+    expect(textElement.className).toBe('mtrl-custom-component-text');
   });
   
   test('should use "component" as default type if componentName not provided', () => {
     const config = {
-      prefix: 'mtrl'
+      prefix: 'mtrl',
+      text: 'Test'
     };
     
     const enhanced = withText(config)(component);
     
-    expect(createTextOptions.type).toBe('component');
+    const textElement = enhanced.text.getElement();
+    expect(textElement).not.toBeNull();
+    expect(textElement.className).toBe('mtrl-component-text');
   });
 });
