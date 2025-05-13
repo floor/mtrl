@@ -20,7 +20,20 @@
     "type-safe"
   ],
   "type": "module",
-  "main": "index.js",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    },
+    "./styles": "./dist/styles.css"
+  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "start": "bun run server.js",
     "dev": "bun --watch server.js",
@@ -30,7 +43,8 @@
     "build:js": "bun build demo/main.js --outfile=demo/dist/bundle.js --format=esm",
     "build:css": "sass src/styles/main.scss:demo/dist/styles.css --style=compressed",
     "build": "bun run build:js && bun run build:css",
-    "build:watch": "bun build --watch demo/main.js --outfile=demo/dist/bundle.js & sass --watch src/styles/main.scss:demo/dist/styles.css",
+    "build:lib": "bun run build.ts",
+    "prepublishOnly": "bun run build:lib",
     "test": "bun test",
     "test:watch": "bun test --watch",
     "test:coverage": "bun test --coverage",
