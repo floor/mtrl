@@ -222,7 +222,7 @@ export const applyDefaults = <T extends Record<string, any>>(
   config: T, 
   schema: ValidationSchema
 ): T => {
-  const result = { ...config };
+  const result = { ...config } as Record<string, any>;
 
   Object.entries(schema).forEach(([key, rule]) => {
     if (result[key] === undefined && rule.default !== undefined) {
@@ -230,5 +230,5 @@ export const applyDefaults = <T extends Record<string, any>>(
     }
   });
 
-  return result;
+  return result as T;
 };

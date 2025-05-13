@@ -85,8 +85,7 @@ export const createNavigationSystem = (options: NavigationSystemConfig = {}): Na
       state, 
       mobileConfig, 
       hideDrawer, 
-      isDrawerVisible,
-      showDrawer
+      isDrawerVisible
     );
   };
 

@@ -1,5 +1,5 @@
 // src/components/chips/features/controller.ts
-import { ChipsConfig } from '../types';
+import { ChipsConfig, ChipComponent } from '../types';
 import createChip from '../chip/chip';
 import { CHIPS_EVENTS } from '../constants';
 
@@ -38,7 +38,7 @@ export const withController = (config: ChipsConfig) => component => {
     }
   };
 
-  const handleSelection = (selectedChip) => {
+  const handleSelection = (selectedChip: ChipComponent) => {
     // Always ensure the chip's class is set correctly
     if (selectedChip.isSelected()) {
       selectedChip.element.classList.add(`${component.getClass('chip')}--selected`);
@@ -50,7 +50,7 @@ export const withController = (config: ChipsConfig) => component => {
 
     if (!config.multiSelect) {
       // Single selection mode - deselect all other chips
-      component.chipInstances.forEach(chip => {
+      component.chipInstances.forEach((chip: ChipComponent) => {
         if (chip !== selectedChip && chip.isSelected()) {
           chip.setSelected(false);
           chip.element.classList.remove(`${component.getClass('chip')}--selected`);
@@ -244,6 +244,8 @@ export const withController = (config: ChipsConfig) => component => {
       }
     });
 
+    chipInstance.element.addEventListener('keydown', handleKeyboardNavigation);
+
     // Dispatch add event
     dispatchEvent(CHIPS_EVENTS.ADD, chipInstance);
 
@@ -290,7 +292,7 @@ export const withController = (config: ChipsConfig) => component => {
    * @returns {ChipComponent[]} Array of selected chip instances
    */
   const getSelectedChips = () => {
-    return component.chipInstances.filter(chip => chip.isSelected());
+    return component.chipInstances.filter((chip: ChipComponent) => chip.isSelected());
   };
   
   /**
@@ -298,7 +300,7 @@ export const withController = (config: ChipsConfig) => component => {
    * @returns {(string|null)[]} Array of selected chip values
    */
   const getSelectedValues = () => {
-    return getSelectedChips().map(chip => chip.getValue());
+    return getSelectedChips().map((chip: ChipComponent) => chip.getValue());
   };
   
   /**
@@ -312,7 +314,7 @@ export const withController = (config: ChipsConfig) => component => {
 
     if (exclusive) {
       // First handle deselection if exclusive mode
-      component.chipInstances.forEach(chip => {
+      component.chipInstances.forEach((chip: ChipComponent) => {
         const shouldSelect = valueArray.includes(chip.getValue());
         if (!shouldSelect && chip.isSelected()) {
           chip.setSelected(false);
@@ -324,7 +326,7 @@ export const withController = (config: ChipsConfig) => component => {
     }
 
     // Then handle selection
-    component.chipInstances.forEach(chip => {
+    component.chipInstances.forEach((chip: ChipComponent) => {
       const shouldSelect = valueArray.includes(chip.getValue());
       if (shouldSelect && !chip.isSelected()) {
         chip.setSelected(true);
@@ -350,7 +352,7 @@ export const withController = (config: ChipsConfig) => component => {
     const selectedValues = getSelectedValues();
     const hadSelectedChips = selectedValues.length > 0;
     
-    component.chipInstances.forEach(chip => {
+    component.chipInstances.forEach((chip: ChipComponent) => {
       chip.setSelected(false);
       chip.element.classList.remove(`${component.getClass('chip')}--selected`);
       chip.element.setAttribute('aria-selected', 'false');
@@ -367,15 +369,18 @@ export const withController = (config: ChipsConfig) => component => {
    */
   const enableKeyboardNavigation = () => {
     // Add keyboard event listener to the chips container
-    component.element.tabIndex = 0; // Make the chips container focusable
-    component.element.addEventListener('keydown', handleKeyboardNavigation);
+    component.chipInstances.forEach((chip: ChipComponent) => {
+      chip.element.addEventListener('keydown', handleKeyboardNavigation);
+    });
   };
   
   /**
    * Disables keyboard navigation
    */
   const disableKeyboardNavigation = () => {
-    component.element.removeEventListener('keydown', handleKeyboardNavigation);
+    component.chipInstances.forEach((chip: ChipComponent) => {
+      chip.element.removeEventListener('keydown', handleKeyboardNavigation);
+    });
   };
   
   // Initialize keyboard navigation
@@ -392,10 +397,12 @@ export const withController = (config: ChipsConfig) => component => {
     
     component.lifecycle.destroy = () => {
       // Clean up event listeners
-      component.element.removeEventListener('keydown', handleKeyboardNavigation);
+      component.chipInstances.forEach((chip: ChipComponent) => {
+        chip.element.removeEventListener('keydown', handleKeyboardNavigation);
+      });
       
       // Clean up all chip instances
-      component.chipInstances.forEach(chip => chip.destroy());
+      component.chipInstances.forEach((chip: ChipComponent) => chip.destroy());
       component.chipInstances.length = 0;
       
       // Clear all event listeners

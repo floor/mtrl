@@ -56,7 +56,6 @@ export const createDivider = (config: DividerConfig = {}): DividerComponent => {
     withElement({
       tag: 'hr',
       componentName: 'divider',
-      prefix: processedConfig.prefix || PREFIX,
       className: config.class
     }),
     withOrientation(processedConfig),

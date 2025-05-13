@@ -19,11 +19,12 @@ export interface DividerConfig {
   /**
    * CSS class to add to the divider
    * 
-   * Additional classes for custom styling needs
+   * Additional classes for custom styling needs.
+   * Can be a single class string or an array of class strings.
    * 
-   * @example 'my-custom-divider'
+   * @example 'my-custom-divider' or ['my-custom-divider', 'special-spacing']
    */
-  class?: string;
+  class?: string | string[];
   
   /**
    * Orientation of the divider

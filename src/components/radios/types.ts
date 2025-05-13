@@ -51,6 +51,12 @@ export interface RadiosConfig {
    */
   value?: string;
   
+  /**
+   * Layout direction for radio buttons
+   * @default 'vertical'
+   */
+  direction?: 'vertical' | 'horizontal';
+  
   /** 
    * Whether the entire group is initially disabled
    * @default false

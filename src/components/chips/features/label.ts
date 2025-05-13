@@ -7,7 +7,7 @@ import { ChipsConfig } from '../types';
  * @param config Chips configuration
  * @returns Component enhancer that adds label functionality
  */
-export const withLabel = (config: ChipsConfig) => component => {
+export const withChipsLabel = (config: ChipsConfig) => component => {
   // Track current label state
   const state = {
     text: config.label || '',

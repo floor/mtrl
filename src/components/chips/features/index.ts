@@ -2,4 +2,4 @@
 export { withContainer } from './container';
 export { withChipItems } from './chip-items';
 export { withController } from './controller';
-export { withLabel } from './label';
+export { withChipsLabel } from './label';

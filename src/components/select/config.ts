@@ -21,7 +21,7 @@ export const defaultConfig: SelectConfig = {
  * @param {SelectConfig} config - User provided configuration
  * @returns {SelectConfig} Complete configuration with defaults applied
  */
-export const createBaseConfig = (config: SelectConfig = {}): SelectConfig => 
+export const createBaseConfig = (config: SelectConfig = { options: [] }): SelectConfig => 
   createComponentConfig(defaultConfig, config, 'select') as SelectConfig;
 
 /**

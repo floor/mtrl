@@ -37,7 +37,7 @@ const createSearch = (config: SearchConfig = {}): SearchComponent => {
     if (baseConfig.on && typeof search.on === 'function') {
       Object.entries(baseConfig.on).forEach(([event, handler]) => {
         if (typeof handler === 'function') {
-          search.on(event, handler);
+          search.on(event as any, handler);
         }
       });
     }

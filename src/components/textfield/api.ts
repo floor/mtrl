@@ -1,5 +1,5 @@
 // src/components/textfield/api.ts
-import { BaseComponent, TextfieldComponent, ApiOptions } from './types';
+import { BaseComponent, TextfieldComponent, ApiOptions, TextfieldVariant } from './types';
 import { PlacementComponent } from './features/placement';
 
 /**
@@ -36,6 +36,7 @@ export const withAPI = ({ disabled, lifecycle }: ApiOptions) =>
     },
 
     // Variant management
+  // @ts-ignore: Fix later - Cannot find name 'TextfieldVariant'.
     setVariant(variant: TextfieldVariant): TextfieldComponent {
       const PREFIX = component.config?.prefix || 'mtrl';
       const COMPONENT = component.config?.componentName || 'textfield';

@@ -7,11 +7,10 @@ import {
   withDisabled,
   withLifecycle,
   withInput,
-  withTrack,
   withCheckable
 } from '../../core/compose/features';
 import { withAPI } from './api';
-import { withSupportingText } from './features';
+import { withSupportingText, withTrack } from './features';
 import { SwitchConfig, SwitchComponent, BaseComponent } from './types';
 import { 
   createBaseConfig, 

@@ -10,6 +10,43 @@
  * @packageDocumentation
  */
 
+// Export list types with explicit naming for the ambiguous SelectEvent
+export {
+  LIST_DEFAULTS,
+  LIST_TYPES,
+  LIST_SELECTION_MODES,
+  LIST_EVENTS,
+  LIST_SCROLL_POSITIONS,
+  LIST_CLASSES
+} from './list/constants';
+
+export type { 
+  ListConfig, 
+  ListComponent, 
+  SelectEvent as ListSelectEvent,  // Rename to avoid collision
+  LoadEvent,
+  LoadResult 
+} from './list/types';
+
+// Export select types with explicit naming
+export {
+  SELECT_VARIANTS,
+  SELECT_PLACEMENT,
+  SELECT_INTERACTION,
+  SELECT_EVENTS,
+  SELECT_ICONS,
+  SELECT_DEFAULTS,
+  SELECT_CLASSES
+} from './select/constants';
+
+export type { 
+  SelectConfig, 
+  SelectComponent,
+  SelectOption,
+  SelectEvent,  // Keep the original name since select is more commonly used
+  SelectChangeEvent
+} from './select/types';
+
 // Re-export all named exports from components
 export * from './badge';
 export * from './bottom-app-bar';
@@ -20,16 +57,13 @@ export * from './checkbox';
 export * from './chips';
 export * from './datepicker';
 export * from './dialog';
-export * from './divider';
 export * from './fab';
 export * from './extended-fab';
-export * from './list';
 export * from './menu';
 export * from './navigation';
 export * from './progress';
 export * from './radios';
 export * from './search';
-export * from './select';
 export * from './segmented-button';
 export * from './sheet';
 export * from './slider';
@@ -40,6 +74,11 @@ export * from './textfield';
 export * from './timepicker';
 export * from './top-app-bar';
 export * from './tooltip';
+
+// Explicitly re-export divider items to avoid naming collisions
+export { createDivider } from './divider';
+export type { DividerConfig } from './divider/config';
+export type { DividerComponent } from './divider/types';
 
 // Re-export card content components
 export { createCardContent, createCardHeader, createCardActions, createCardMedia } from './card/content';
@@ -54,22 +93,24 @@ export { default as createCheckbox } from './checkbox';
 // export { default as createChip, default as createChips } from './chips';
 export { default as createDatePicker } from './datepicker';
 export { default as createDialog } from './dialog';
-export { default as createDivider } from './divider';
 export { default as createFab } from './fab';
 export { default as createExtendedFab } from './extended-fab';
-export { default as createList, createListItem } from './list';
+export { default as createList } from './list';
 export { default as createMenu } from './menu';
-export { default as createNavigation, createNavigationSystem } from './navigation';
+export { default as createNavigation } from './navigation';
+export { default as createNavigationSystem } from './navigation/system';
 export { default as createProgress } from './progress';
 export { default as createRadios } from './radios';
 export { default as createSearch } from './search';
 export { default as createSelect } from './select';
-export { default as createSegmentedButton, createSegment } from './segmented-button';
+export { default as createSegmentedButton } from './segmented-button';
+export { createSegment } from './segmented-button/segment';
 export { default as createSheet } from './sheet';
 export { default as createSlider } from './slider';
 export { default as createSnackbar } from './snackbar';
 export { default as createSwitch } from './switch';
-export { default as createTabs, createTab } from './tabs';
+export { default as createTabs } from './tabs';
+export { createTab } from './tabs/tab';
 export { default as createTextfield } from './textfield';
 export { default as createTimePicker } from './timepicker';
 export { default as createTopAppBar } from './top-app-bar';

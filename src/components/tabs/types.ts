@@ -375,6 +375,13 @@ export interface TabsComponent {
   element: HTMLElement;
   
   /**
+   * Gets a class name with the component's prefix
+   * @param name - Base class name
+   * @returns Prefixed class name
+   */
+  getClass: (name: string) => string;
+  
+  /**
    * Creates and adds a new tab to the tabs component
    * @param config - Tab configuration
    * @returns The created tab component

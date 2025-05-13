@@ -75,6 +75,12 @@ export const getApiConfig = (comp) => ({
     isDisabled: () => comp.disabled?.isDisabled?.() ?? false
   },
   appearance: {
+    setColor: (c) => comp.appearance?.setColor?.(c),
+    getColor: () => comp.appearance?.getColor?.() ?? '',
+    setSize: (s) => comp.appearance?.setSize?.(s),
+    getSize: () => comp.appearance?.getSize?.() ?? ''
+  },
+  icons: {
     setLeadingIcon: (i) => comp.icons?.setLeadingIcon?.(i),
     setTrailingIcon: (i) => comp.icons?.setTrailingIcon?.(i),
     setTrailingIcon2: (i) => comp.icons?.setTrailingIcon2?.(i),

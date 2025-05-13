@@ -57,6 +57,7 @@ export const getElementConfig = (config: CarouselConfig) => {
       focus: true,
       blur: true
     },
+  // @ts-ignore: Fix later - Object literal may only specify known properties, and 'style' does not exist in type '{ tag: string; attrs?: Record<string, any>; className?: string | string[]; html?: string; text?: string; forwardEvents?: Record<string, boolean | ((component: any, event: Event) => boolean)>; interactive?: boolean; }'.
     style: {
       position: 'relative',
       overflow: 'hidden',

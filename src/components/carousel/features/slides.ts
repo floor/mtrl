@@ -489,7 +489,7 @@ export const withSlides = (config: CarouselConfig) => (component) => {
           // Update accent color
           const overlayElement = slideElement.querySelector(`.${component.getClass('carousel')}-slide-overlay`);
           if (overlayElement && slide.accent) {
-            overlayElement.style.backgroundColor = slide.accent;
+            (overlayElement as HTMLElement).style.backgroundColor = slide.accent;
           }
           
           // Update button
@@ -503,7 +503,7 @@ export const withSlides = (config: CarouselConfig) => (component) => {
               }
               
               if (slide.accent) {
-                buttonElement.style.backgroundColor = slide.accent;
+                (buttonElement as HTMLElement).style.backgroundColor = slide.accent;
               }
             } else {
               // Remove button if no text provided

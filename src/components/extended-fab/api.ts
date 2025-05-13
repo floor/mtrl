@@ -94,10 +94,10 @@ export const withAPI = ({ disabled, lifecycle, text, className }: ApiOptions) =>
     ...component as any,
     element: component.element as HTMLButtonElement,
     
-    getValue: () => component.element.value,
+    getValue: () => (component.element as HTMLButtonElement).value,
     
     setValue(value: string) {
-      component.element.value = value;
+      (component.element as HTMLButtonElement).value = value;
       return this;
     },
     

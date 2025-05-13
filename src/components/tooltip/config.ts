@@ -49,17 +49,15 @@ export const getElementConfig = (config: TooltipConfig) => {
     attrs['style'] = `z-index: ${config.zIndex};`;
   }
   
-  const extraClasses: string[] = [
-    `--${config.position}`,
-    `--${config.variant}`
-  ];
-  
   return createElementConfig(config, {
     tag: 'div',
     attrs,
-    className: config.class,
-    extraClasses,
-    content: config.text || ''
+    className: [
+      config.class, 
+      `${config.prefix}-tooltip--${config.position}`,
+      `${config.prefix}-tooltip--${config.variant}`
+    ],
+    text: config.text || ''
   });
 };
 

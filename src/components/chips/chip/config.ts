@@ -4,7 +4,24 @@ import {
   createElementConfig,
   BaseComponentConfig 
 } from '../../../core/config/component';
-import { ChipConfig, BaseComponent } from '../types';
+
+import { ChipConfig } from '../types';
+
+/**
+ * Component with required elements and methods
+ * @internal
+ */
+interface BaseComponent {
+  element: HTMLElement;
+  disabled?: {
+    enable: () => any;
+    disable: () => any;
+  };
+  lifecycle?: {
+    destroy: () => void;
+  };
+  [key: string]: any;
+}
 
 /**
  * Default configuration for the Chip component

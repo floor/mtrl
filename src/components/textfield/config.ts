@@ -31,7 +31,6 @@ export const createBaseConfig = (config: TextfieldConfig = {}): TextfieldConfig 
 export const getElementConfig = (config: TextfieldConfig) => 
   createElementConfig(config, {
     tag: 'div',
-    componentName: 'textfield',
     className: config.class
   });
 

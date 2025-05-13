@@ -47,7 +47,6 @@ export const getElementConfig = (config: NavigationConfig) => {
   
   return createElementConfig(config, {
     tag: 'nav',
-    componentName: 'nav',
     attrs: {
       role: 'navigation',
       'aria-label': config.ariaLabel || 'Main Navigation'

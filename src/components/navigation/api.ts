@@ -58,7 +58,7 @@ export const withAPI = (options: ApiOptions) =>
         return [];
       },
       
-      setActive(id: string, silent): NavigationComponent {
+      setActive(id: string): NavigationComponent {
         // Use the controller if available for consistent handling
         if (typeof component.handleItemClick === 'function') {
           component.handleItemClick(id);
@@ -123,9 +123,21 @@ export const withAPI = (options: ApiOptions) =>
       toggle(): NavigationComponent {
         return this.isExpanded() ? this.collapse() : this.expand();
       },
-      // on: component.on,
-      // off: component.off,
-      // emit: component.emit,
+      
+      // Event handling
+      on(event: string, handler: Function): NavigationComponent {
+        if (component.on) {
+          component.on(event, handler);
+        }
+        return this;
+      },
+      
+      off(event: string, handler: Function): NavigationComponent {
+        if (component.off) {
+          component.off(event, handler);
+        }
+        return this;
+      },
       
       // Destruction
       destroy(): void {
@@ -136,6 +148,7 @@ export const withAPI = (options: ApiOptions) =>
     };
     
     // Return the enhanced component
+  
     return navComponent;
   };
 

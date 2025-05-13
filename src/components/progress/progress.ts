@@ -90,8 +90,8 @@ const createProgress = (config: ProgressConfig = {}): ProgressComponent => {
       labelElement: undefined as HTMLElement | undefined
     };
     
-    let trackElement: HTMLElement;
-    let indicatorElement: HTMLElement;
+    let trackElement: HTMLElement | SVGElement;
+    let indicatorElement: HTMLElement | SVGElement;
     
     // Create the component with the pipe pattern
     const component = pipe(
@@ -109,6 +109,7 @@ const createProgress = (config: ProgressConfig = {}): ProgressComponent => {
         if (isCircular) {
           const { track, indicator, svg } = createCircularProgressDOM(baseClass);
           component.element.appendChild(svg);
+  
           trackElement = track;
           indicatorElement = indicator;
         } else {

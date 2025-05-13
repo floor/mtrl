@@ -73,7 +73,7 @@ export const withAPI = ({ list, events, lifecycle }: ApiOptions) =>
      * @param {string} position - Position ('start', 'center', 'end')
      * @returns {Object} Component instance for chaining
      */
-    scrollToItem: (itemId, position = 'start') => {
+    scrollToItem: (itemId: string, position: 'start' | 'center' | 'end' = 'start') => {
       list.scrollToItem(itemId, position);
       return component;
     },

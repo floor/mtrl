@@ -147,6 +147,19 @@ export interface BadgeComponent {
   getLabel: () => string;
   
   /**
+   * Sets the badge's content (alias for setLabel)
+   * @param content - Text or number to display in the badge
+   * @returns Badge component for method chaining
+   */
+  setContent: (content: string | number) => BadgeComponent;
+  
+  /**
+   * Gets the badge's current content (alias for getLabel)
+   * @returns Current text content of the badge
+   */
+  getContent: () => string;
+  
+  /**
    * Shows the badge (makes it visible)
    * @returns Badge component for method chaining
    */

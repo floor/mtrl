@@ -53,6 +53,12 @@ export interface NavigationSystemConfig {
   bodyLockClass?: string;
   
   /**
+   * Show drawer transition animations
+   * @default true
+   */
+  animateDrawer?: boolean;
+  
+  /**
    * Display labels on rail navigation items
    * @default true
    */

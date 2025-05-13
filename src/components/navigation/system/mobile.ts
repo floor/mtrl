@@ -150,7 +150,7 @@ export const setupOutsideClickHandling = (
   const handleOutsideClick = (event: Event) => {
     if (!state.isMobile || !isDrawerVisible()) return;
     
-    const normalizedEvent = normalizeEvent(event);
+    const normalizedEvent = normalizeEvent(event as MouseEvent | TouchEvent);
     const target = normalizedEvent.target as HTMLElement;
     
     // Don't close if clicking on drawer, rail, or excluded elements

@@ -91,6 +91,17 @@ export interface ListManagerConfig {
    * Collection name
    */
   collection?: string;
+  
+  /**
+   * Pagination configuration
+   */
+  pagination?: {
+    /**
+     * Pagination strategy to use ('cursor', 'page', or 'offset')
+     * @default 'cursor'
+     */
+    strategy?: 'cursor' | 'page' | 'offset';
+  };
 }
 
 /**

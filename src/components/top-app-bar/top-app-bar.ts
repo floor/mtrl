@@ -13,7 +13,8 @@ import {
   BaseComponent 
 } from '../../core/compose';
 
-import { createConfig, TopAppBarConfig, TopAppBarType } from './config';
+import { createConfig } from './config';
+import { TopAppBarConfig, TopAppBarType } from './types';
 
 /**
  * Top app bar component interface

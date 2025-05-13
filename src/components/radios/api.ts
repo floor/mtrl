@@ -42,13 +42,13 @@ export const withAPI = ({ disabled, lifecycle }: ApiOptions) =>
     // Ensure component has events
     if (!component.events) {
       component.events = {
-        on: (event, handler) => {
-          component.element.addEventListener(event, (e) => handler(e.detail));
+        on: (event: string, handler: Function) => {
+          component.element.addEventListener(event, ((e: CustomEvent) => handler(e.detail)) as EventListener);
         },
-        off: (event, handler) => {
-          component.element.removeEventListener(event, handler);
+        off: (event: string, handler: Function) => {
+          component.element.removeEventListener(event, handler as EventListener);
         },
-        emit: (event, data) => {
+        emit: (event: string, data: any) => {
           const customEvent = new CustomEvent(event, { detail: data });
           component.element.dispatchEvent(customEvent);
         }

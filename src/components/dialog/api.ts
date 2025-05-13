@@ -33,9 +33,9 @@ interface ApiOptions {
   size: {
     setSize: (size: DialogSize | string) => void;
   };
-  dividers: {
-    toggleHeaderDivider: (show: boolean) => void;
-    toggleFooterDivider: (show: boolean) => void;
+  divider: {
+    toggleDivider: (show: boolean) => void;
+    hasDivider: () => boolean;
   };
   events: {
     on: (event: string, handler: Function) => void;

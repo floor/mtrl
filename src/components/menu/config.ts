@@ -14,7 +14,8 @@ import { MENU_POSITION, MENU_DEFAULTS, MENU_CLASSES } from './constants';
  * 
  * @category Components
  */
-export const defaultConfig: MenuConfig = {
+
+export const defaultConfig: Partial<MenuConfig> = {
   items: [],
   position: MENU_DEFAULTS.POSITION,
   closeOnSelect: MENU_DEFAULTS.CLOSE_ON_SELECT,

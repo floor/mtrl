@@ -9,7 +9,10 @@ import { SwitchConfig, BaseComponent, ApiOptions } from './types';
 /**
  * Default configuration for the Switch component
  */
-export const defaultConfig: SwitchConfig = {};
+export const defaultConfig: SwitchConfig = {
+  prefix: 'mtrl',
+  componentName: 'switch'
+};
 
 /**
  * Creates the base configuration for Switch component
@@ -27,7 +30,6 @@ export const createBaseConfig = (config: SwitchConfig = {}): SwitchConfig =>
 export const getElementConfig = (config: SwitchConfig) => 
   createElementConfig(config, {
     tag: 'div',
-    componentName: 'switch',
     className: config.class,
     interactive: true
   });

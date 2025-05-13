@@ -1,6 +1,8 @@
 // src/components/switch/features.ts
 import { BaseComponent, ElementComponent } from '../../core/compose/component';
+import { withTrack as withTrackCore, TrackComponent } from '../../core/compose/features';
 import { SWITCH_CLASSES } from './constants';
+import { SwitchConfig } from './types';
 
 /**
  * Configuration for supporting text feature
@@ -196,4 +198,22 @@ export const withSupportingText = <T extends SupportingTextConfig>(config: T) =>
         return this;
       }
     };
+  };
+
+/**
+ * Wrapper for the core withTrack function that works with SwitchConfig
+ * 
+ * @param config - Switch configuration
+ * @returns Function that enhances a component with track and thumb elements
+ */
+export const withTrack = (config: SwitchConfig) => 
+  <C extends ElementComponent>(component: C): C & TrackComponent => {
+    // Ensure prefix and componentName are set
+    const trackConfig = {
+      ...config,
+      prefix: config.prefix || 'mtrl',
+      componentName: config.componentName || 'switch'
+    };
+    
+    return withTrackCore(trackConfig)(component);
   };

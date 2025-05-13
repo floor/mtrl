@@ -9,7 +9,7 @@ import {
 } from './components/badge/constants';
 
 import {
-  FAB_POSITIONS, 
+  FAB_POSITIONS as BOTTOM_APP_BAR_FAB_POSITIONS, 
   BOTTOM_APP_BAR_CLASSES, 
   DEFAULT_TRANSITION_DURATION
 } from './components/bottom-app-bar/constants';
@@ -272,7 +272,7 @@ export {
   BADGE_MAX_CHARACTERS,
 
   // Bottom App Bar
-  // FAB_POSITIONS, 
+  BOTTOM_APP_BAR_FAB_POSITIONS, 
   BOTTOM_APP_BAR_CLASSES, 
   DEFAULT_TRANSITION_DURATION,
 

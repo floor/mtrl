@@ -644,17 +644,17 @@ const withController = (config: MenuConfig) => component => {
   return {
     ...component,
     menu: {
-      open: (event, interactionType = 'mouse') => {
+      open: (event?: Event, interactionType: 'mouse' | 'keyboard' = 'mouse') => {
         openMenu(event, interactionType);
         return component;
       },
       
-      close: (event, restoreFocus = true) => {
+      close: (event?: Event, restoreFocus = true) => {
         closeMenu(event, restoreFocus);
         return component;
       },
       
-      toggle: (event, interactionType = 'mouse') => {
+      toggle: (event?: Event, interactionType: 'mouse' | 'keyboard' = 'mouse') => {
         toggleMenu(event, interactionType);
         return component;
       },

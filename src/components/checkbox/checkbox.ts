@@ -18,8 +18,10 @@ import {
   withDisabled,
   withLifecycle,
   withInput,
-  withCheckable
+  withCheckable,
+  InputComponent
 } from '../../core/compose/features';
+import { TextLabelConfig } from '../../core/compose/features/textlabel';
 import { withAPI } from './api';
 import { CheckboxConfig, CheckboxComponent, BaseComponent } from './types';
 import { 
@@ -36,13 +38,13 @@ import {
  * The indeterminate state is a third visual state for checkboxes that represents
  * a mixed or partial selection (neither fully checked nor unchecked).
  * 
- * @param {BaseComponent} component - The component to enhance
+ * @param {BaseComponent & InputComponent} component - The component to enhance
  * @param {CheckboxConfig} config - Configuration options
  * @returns {BaseComponent} The enhanced component
  * @category Components
  * @internal
  */
-const enhanceWithCheckable = (component: BaseComponent, config: CheckboxConfig): BaseComponent => {
+const enhanceWithCheckable = (component: BaseComponent & InputComponent, config: CheckboxConfig): BaseComponent => {
   const enhanced = withCheckable(config)(component);
 
   // Set initial indeterminate state if specified in config
@@ -57,7 +59,7 @@ const enhanceWithCheckable = (component: BaseComponent, config: CheckboxConfig):
     return enhanced;
   };
 
-  return enhanced;
+  return enhanced as unknown as BaseComponent;
 };
 
 /**
@@ -124,9 +126,9 @@ const createCheckbox = (config: CheckboxConfig = {}): CheckboxComponent => {
       withElement(getElementConfig(baseConfig)),             // DOM element
       withInput(baseConfig),                                 // Input element
       withCheckIcon(baseConfig),                             // Checkbox icon
-      withTextLabel(baseConfig),                             // Text label
+      withTextLabel(baseConfig as TextLabelConfig),          // Text label
       withLabelPosition(baseConfig),                         // Label positioning
-      component => enhanceWithCheckable(component, baseConfig), // Checkable state
+      component => enhanceWithCheckable(component as BaseComponent & InputComponent, baseConfig), // Checkable state
       withDisabled(baseConfig),                              // Disabled state
       withLifecycle(),                                       // Lifecycle management
       comp => withAPI(getApiConfig(comp))(comp)              // Public API

@@ -80,6 +80,7 @@ export interface ComponentConfig {
 export interface ThemedComponentConfig extends ComponentConfig {
   theme: string;
   getThemeClass: (variant: string) => string;
+  getCssVariables: () => Record<string, string>;
 }
 
 /**
@@ -122,7 +123,8 @@ export const createComponentConfig = (type: string): ComponentConfig => {
     withTheme: (theme) => ({
       ...config,
       theme,
-      getThemeClass: (variant) => `${baseClass}--theme-${theme}-${variant}`
+      getThemeClass: (variant) => `${baseClass}--theme-${theme}-${variant}`,
+      getCssVariables: () => ({}) // Empty implementation as placeholder
     }),
 
     // Variant support

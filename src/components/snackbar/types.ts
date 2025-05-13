@@ -118,6 +118,18 @@ export interface SnackbarComponent {
   /** Current state of the snackbar */
   state: SnackbarState;
   
+  /** The action button element (if present) */
+  actionButton?: HTMLElement;
+  
+  /** Timer for auto-dismissal */
+  timer?: SnackbarTimer;
+  
+  /** Position management functions */
+  position?: {
+    getPosition: () => SnackbarPosition;
+    setPosition: (position: SnackbarPosition) => BaseComponent;
+  };
+  
   /** Displays the snackbar */
   show: () => SnackbarComponent;
   
@@ -156,4 +168,52 @@ export interface SnackbarComponent {
   
   /** Destroys the snackbar component and cleans up resources */
   destroy: () => void;
+}
+
+/**
+ * Basic component with element property
+ */
+export interface BaseComponent {
+  element: HTMLElement;
+  emit?: (event: string, data?: any) => void;
+  lifecycle?: {
+    destroy?: () => void;
+  };
+  [key: string]: any;
+}
+
+/**
+ * Timer interface for snackbar auto-dismissal
+ */
+export interface SnackbarTimer {
+  start: () => void;
+  stop: () => void;
+}
+
+/**
+ * Interface for snackbars managed by the queue
+ */
+export interface QueuedSnackbar {
+  _show: () => void;
+  on: (event: string, handler: () => void) => void;
+  off: (event: string, handler: () => void) => void;
+}
+
+/**
+ * Interface for the snackbar queue manager
+ */
+export interface SnackbarQueue {
+  add: (snackbar: QueuedSnackbar) => void;
+  clear: () => void;
+  getLength: () => number;
+}
+
+/**
+ * API options for enhancing a snackbar with API methods
+ */
+export interface ApiOptions {
+  lifecycle: {
+    destroy: () => void;
+  };
+  queue: SnackbarQueue;
 }

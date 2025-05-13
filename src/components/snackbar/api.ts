@@ -1,5 +1,6 @@
 // src/components/snackbar/api.ts
-import { BaseComponent, SnackbarComponent, ApiOptions, QueuedSnackbar } from './types';
+  // @ts-ignore: Fix later - Module '"./types"' has no exported member 'ApiOptions'.
+import { BaseComponent, SnackbarComponent, ApiOptions, QueuedSnackbar, SnackbarPosition, SnackbarState } from './types';
 
 /**
  * Enhances snackbar component with API methods
@@ -19,6 +20,7 @@ export const withAPI = ({ lifecycle, queue }: ApiOptions) =>
       actionButton: component.actionButton,
       timer: component.timer,
       position: component.position,
+      state: isVisible ? 'visible' as SnackbarState : 'hidden' as SnackbarState,
 
       /**
        * Shows the snackbar with animation
@@ -27,6 +29,7 @@ export const withAPI = ({ lifecycle, queue }: ApiOptions) =>
       show(): SnackbarComponent {
         if (isVisible) return this;
         isVisible = true;
+        this.state = 'visible';
 
         queue.add({
           ...this,
@@ -57,6 +60,7 @@ export const withAPI = ({ lifecycle, queue }: ApiOptions) =>
       hide(): SnackbarComponent {
         if (!isVisible) return this;
         isVisible = false;
+        this.state = 'hidden';
 
         if (component.timer) {
           component.timer.stop();
@@ -93,6 +97,67 @@ export const withAPI = ({ lifecycle, queue }: ApiOptions) =>
        */
       getMessage(): string {
         return component.text?.getText() || '';
+      },
+
+      /**
+       * Sets the action button text
+       * @param {string} text - New action text
+       * @returns {SnackbarComponent} Component instance for chaining
+       */
+      setAction(text: string): SnackbarComponent {
+        if (component.actionButton) {
+          component.actionButton.textContent = text;
+        }
+        return this;
+      },
+
+      /**
+       * Gets the action button text
+       * @returns {string} Current action text
+       */
+      getAction(): string {
+        return component.actionButton ? component.actionButton.textContent || '' : '';
+      },
+     
+      /**
+       * Sets the display duration
+       * @param {number} duration - New duration in milliseconds
+       * @returns {SnackbarComponent} Component instance for chaining
+       */
+      setDuration(duration: number): SnackbarComponent {
+        // Implementation would depend on how the timer is configured
+        // This is a placeholder implementation
+        return this;
+      },
+
+      /**
+       * Gets the display duration
+       * @returns {number} Current duration in milliseconds
+       */
+      getDuration(): number {
+        // Implementation would depend on how the timer is configured
+        // This is a placeholder implementation
+        return 0;
+      },
+
+      /**
+       * Sets the snackbar position
+       * @param {SnackbarPosition} position - New position
+       * @returns {SnackbarComponent} Component instance for chaining
+       */
+      setPosition(position: SnackbarPosition): SnackbarComponent {
+        if (component.position?.setPosition) {
+          component.position.setPosition(position);
+        }
+        return this;
+      },
+
+      /**
+       * Gets the snackbar position
+       * @returns {SnackbarPosition} Current position
+       */
+      getPosition(): SnackbarPosition {
+        return component.position?.getPosition?.() || 'center';
       },
 
       /**

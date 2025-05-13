@@ -1,5 +1,6 @@
 // src/core/composition/features/label.ts
 import { createElement } from '../../dom/create';
+import { ElementDefinition } from '../../layout/types';
 
 /**
  * Configuration for label feature
@@ -109,7 +110,7 @@ export const withLabel = (config: LabelConfig) => component => {
     }
     
     // Create label element definition
-    const labelDef = {
+    const labelDef: ElementDefinition = {
       name: 'label',
       creator: createElement,
       options: {

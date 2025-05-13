@@ -1,6 +1,6 @@
 // src/components/search/api.ts
 import { SearchComponent, SearchEvent } from './types';
-import { SEARCH_COLORS, SEARCH_SIZES, SEARCH_EVENTS } from './constants';
+import { SEARCH_ICONS, SEARCH_VARIANTS, SEARCH_EVENTS } from './constants';
 
 /**
  * API options interface - structured by feature area
@@ -164,22 +164,22 @@ export const withAPI = (options: ApiOptions) =>
       },
       
       // Appearance management
-      setColor(color: keyof typeof SEARCH_COLORS | typeof SEARCH_COLORS[keyof typeof SEARCH_COLORS]) {
+      setColor(color: keyof typeof SEARCH_ICONS | typeof SEARCH_ICONS[keyof typeof SEARCH_ICONS]) {
         options.appearance.setColor(color);
         return this;
       },
       
       getColor() {
-        return options.appearance.getColor();
+        return options.appearance.getColor() as keyof typeof SEARCH_ICONS | typeof SEARCH_ICONS[keyof typeof SEARCH_ICONS];
       },
       
-      setSize(size: keyof typeof SEARCH_SIZES | typeof SEARCH_SIZES[keyof typeof SEARCH_SIZES]) {
+      setSize(size: keyof typeof SEARCH_VARIANTS | typeof SEARCH_VARIANTS[keyof typeof SEARCH_VARIANTS]) {
         options.appearance.setSize(size);
         return this;
       },
       
       getSize() {
-        return options.appearance.getSize();
+        return options.appearance.getSize() as keyof typeof SEARCH_VARIANTS | typeof SEARCH_VARIANTS[keyof typeof SEARCH_VARIANTS];
       },
       
       // Event management

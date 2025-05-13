@@ -2,12 +2,16 @@
 import { pipe } from '../../core/compose/pipe';
 import { createBase } from '../../core/compose/component';
 import { withEvents, withLifecycle } from '../../core/compose/features';
-import { withLayout, withIcon, withLabel, withDom  } from '../../core/composition/features';
+import { 
+  withLayout, 
+  withIcon, 
+  withLabel as withCompositionLabel, 
+  withDom
+} from '../../core/composition/features';
 import { 
   withContainer,
   withChipItems,
-  withController,
-  withLabel
+  withController
 } from './features';
 import { withAPI } from './api';
 import { ChipsConfig, ChipsComponent } from './types';
@@ -39,7 +43,7 @@ const createChips = (config: ChipsConfig = {}): ChipsComponent => {
       withEvents(),
       withLayout(baseConfig),
       withContainer(baseConfig),
-      withLabel(baseConfig),
+      withCompositionLabel(baseConfig),
       withChipItems(baseConfig),
       
       // Now create the actual DOM elements from the complete structure

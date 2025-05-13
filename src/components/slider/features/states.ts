@@ -1,5 +1,5 @@
 // src/components/slider/features/states.ts
-import { SLIDER_COLORS, SLIDER_SIZES } from '../types';
+import { SLIDER_COLORS, SLIDER_SIZES, SliderColor, SliderSize } from '../types';
 import { SliderConfig } from '../types';
 
 /**
@@ -116,7 +116,7 @@ export const withStates = (config: SliderConfig) => component => {
        * @param color Color variant
        * @returns Appearance manager for chaining
        */
-      setColor(color: keyof typeof SLIDER_COLORS | SLIDER_COLORS) {
+      setColor(color: SliderColor) {
         // Remove existing color classes
         Object.values(SLIDER_COLORS).forEach(colorName => {
           component.element.classList.remove(`${component.getClass('slider')}--${colorName}`);
@@ -143,7 +143,7 @@ export const withStates = (config: SliderConfig) => component => {
        * @param size Size variant
        * @returns Appearance manager for chaining
        */
-      setSize(size: keyof typeof SLIDER_SIZES | SLIDER_SIZES) {
+      setSize(size: SliderSize) {
         // Remove existing size classes
         Object.values(SLIDER_SIZES).forEach(sizeName => {
           component.element.classList.remove(`${component.getClass('slider')}--${sizeName}`);

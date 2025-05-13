@@ -57,7 +57,7 @@ export const withAPI = ({ disabled, lifecycle }: ApiOptions) =>
      * Gets the button's value attribute
      * @returns Current value of the button
      */
-    getValue: () => component.element.value,
+    getValue: () => (component.element as HTMLButtonElement).value,
     
     /**
      * Sets the button's value attribute
@@ -65,7 +65,7 @@ export const withAPI = ({ disabled, lifecycle }: ApiOptions) =>
      * @returns Button component for method chaining
      */
     setValue(value: string) {
-      component.element.value = value;
+      (component.element as HTMLButtonElement).value = value;
       return this;
     },
     

@@ -68,7 +68,7 @@ export const hasTouchSupport = (): boolean => {
  * Normalizes both mouse and touch events into a consistent format
  * This allows components to handle interactions uniformly
  */
-export const normalizeEvent = (event: Event): NormalizedEvent => {
+export const normalizeEvent = (event: MouseEvent | TouchEvent): NormalizedEvent => {
   if ('touches' in event && event.touches.length > 0) {
     const touch = event.touches[0];
     return {

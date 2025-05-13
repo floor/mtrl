@@ -97,9 +97,6 @@ const createNavigation = (config: NavigationConfig = {}): NavigationComponent =>
       nav.disable();
     }
     
-    // Set component variant property for component identification
-    nav.variant = baseConfig.variant;
-    
     // Add explicit component identifier for debugging
     nav.element.dataset.componentType = 'navigation';
     if (baseConfig.variant) {

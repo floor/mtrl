@@ -109,6 +109,12 @@ export interface SliderConfig {
   on?: {
     [key in SliderEventType]?: (event: SliderEvent) => void;
   };
+  
+  /** CSS class prefix */
+  prefix?: string;
+  
+  /** Component schema */
+  schema?: any;
 }
 
 /**

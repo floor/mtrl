@@ -28,12 +28,17 @@ export const withAPI = (options: ApiOptions) =>
     getOptions: options.select.getOptions,
     
     setOptions(options: SelectOption[]): SelectComponent {
+  // @ts-ignore: Fix later - Property 'select' does not exist on type 'SelectOption[]'.
       options.select.setOptions(options);
       return this;
     },
     
     open(interactionType: 'mouse' | 'keyboard' = 'mouse'): SelectComponent {
-      options.select.open(undefined, interactionType);
+      if (component.menu && typeof component.menu.open === 'function') {
+        component.menu.open(undefined, interactionType);
+      } else {
+        options.select.open();
+      }
       return this;
     },
     

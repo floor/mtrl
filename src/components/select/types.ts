@@ -61,7 +61,7 @@ export interface SelectConfig {
   /**
    * Array of options to display in the select menu
    */
-  options: SelectOption[];
+  options?: SelectOption[];
   
   /**
    * Currently selected value (option id)

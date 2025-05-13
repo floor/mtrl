@@ -9,7 +9,7 @@ import {
   withController
 } from './features';
 import { withAPI } from './api';
-import { SliderConfig, SliderComponent } from './types';
+import { SliderConfig, SliderComponent, SliderEventType } from './types';
 import { createBaseConfig, getApiConfig } from './config';
 
 /**
@@ -61,7 +61,7 @@ const createSlider = (config: SliderConfig = {}): SliderComponent => {
     if (baseConfig.on && typeof slider.on === 'function') {
       Object.entries(baseConfig.on).forEach(([event, handler]) => {
         if (typeof handler === 'function') {
-          slider.on(event, handler);
+          slider.on(event as SliderEventType, handler);
         }
       });
     }
