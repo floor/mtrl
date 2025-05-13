@@ -290,9 +290,6 @@ body[data-theme-mode=dark] {
         opacity: 0.38;
         color: t.alpha('on-surface-dim', 0.12);
       }
-      &.#{$component}--text {
-        background-color: transparent;
-      }
     }
   }
 }
