@@ -9,6 +9,7 @@ node_modules/
 # Build outputs
 dist/
 /build
+analysis/
 lib/
 bundle/
 coverage/

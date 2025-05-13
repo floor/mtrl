@@ -39,7 +39,12 @@
     "docs:js": "typedoc --options typedoc.simple.json",
     "docs:alt": "bun generate-docs.js",
     "docs:serve": "bun run --bun serve docs",
-    "docs:fix-errors": "tsc --noEmit --allowJs --skipLibCheck"
+    "docs:fix-errors": "tsc --noEmit --allowJs --skipLibCheck",
+    "ts:check": "tsc --noEmit --skipLibCheck",
+    "ts:next-error": "bun scripts/next-ts-error.ts",
+    "ts:fix": "bun scripts/fix-typescript.ts",
+    "ts:fix-file": "bun scripts/fix-typescript.ts",
+    "ts:fix-next": "bun scripts/fix-next-error.ts"
   },
   "repository": {
     "type": "git",
