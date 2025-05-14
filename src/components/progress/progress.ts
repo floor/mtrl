@@ -17,41 +17,71 @@ import { PROGRESS_VARIANTS, PROGRESS_CLASSES } from './constants';
 // Helper functions
 const createLinearProgressDOM = (baseClass: string) => {
   const track = document.createElement('div');
-  track.className = `${baseClass}__${PROGRESS_CLASSES.TRACK}`;
+  track.className = `${baseClass}-${PROGRESS_CLASSES.TRACK}`;
   
   const indicator = document.createElement('div');
-  indicator.className = `${baseClass}__${PROGRESS_CLASSES.INDICATOR}`;
+  indicator.className = `${baseClass}-${PROGRESS_CLASSES.INDICATOR}`;
+  
+  const remaining = document.createElement('div');
+  remaining.className = `${baseClass}-${PROGRESS_CLASSES.REMAINING}`;
   
   const buffer = document.createElement('div');
-  buffer.className = `${baseClass}__${PROGRESS_CLASSES.BUFFER}`;
+  buffer.className = `${baseClass}-${PROGRESS_CLASSES.BUFFER}`;
   
-  return { track, indicator, buffer };
+  return { track, indicator, remaining, buffer };
 };
 
 const createCircularProgressDOM = (baseClass: string) => {
-  const size = 96; // Default SVG viewBox size
-  const track = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-  track.setAttribute('cx', '48');
-  track.setAttribute('cy', '48');
-  track.setAttribute('r', '45');
-  track.setAttribute('fill', 'none');
-  track.setAttribute('stroke-width', '6');
-  track.setAttribute('class', `${baseClass}__${PROGRESS_CLASSES.TRACK}`); // FIXED: use setAttribute instead of className
+  const size = 40; // MD3 spec: circular progress size is 40px
+  const outerRadius = 16; // MD3 spec: track radius
+  const innerRadius = 12; // MD3 spec: indicator radius (4px less than track for the spacing)
+  const centerPoint = size / 2; // Center point of the SVG
+  const trackCircumference = 2 * Math.PI * outerRadius;
+  const indicatorCircumference = 2 * Math.PI * innerRadius;
   
-  const indicator = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-  indicator.setAttribute('cx', '48');
-  indicator.setAttribute('cy', '48');
-  indicator.setAttribute('r', '45');
-  indicator.setAttribute('fill', 'none');
-  indicator.setAttribute('stroke-width', '6');
-  indicator.setAttribute('class', `${baseClass}__${PROGRESS_CLASSES.INDICATOR}`); // FIXED: use setAttribute instead of className
-  
+  // Create SVG container first
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svg.setAttribute('viewBox', `0 0 ${size} ${size}`);
+  svg.setAttribute('width', '100%');
+  svg.setAttribute('height', '100%');
+  
+  // Create the track circle (outer circle)
+  const track = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+  track.setAttribute('cx', `${centerPoint}`);
+  track.setAttribute('cy', `${centerPoint}`);
+  track.setAttribute('r', `${outerRadius}`);
+  track.setAttribute('fill', 'none');
+  track.setAttribute('stroke-width', '4');
+  track.setAttribute('class', `${baseClass}-${PROGRESS_CLASSES.TRACK}`);
+  
+  // Create the indicator circle (inner circle with 4px less radius)
+  const indicator = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+  indicator.setAttribute('cx', `${centerPoint}`);
+  indicator.setAttribute('cy', `${centerPoint}`);
+  indicator.setAttribute('r', `${innerRadius}`);
+  indicator.setAttribute('fill', 'none');
+  indicator.setAttribute('stroke-width', '4');
+  indicator.setAttribute('class', `${baseClass}-${PROGRESS_CLASSES.INDICATOR}`);
+  
+  // Create the remaining circle (complements the indicator)
+  const remaining = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+  remaining.setAttribute('cx', `${centerPoint}`);
+  remaining.setAttribute('cy', `${centerPoint}`);
+  remaining.setAttribute('r', `${innerRadius}`);
+  remaining.setAttribute('fill', 'none');
+  remaining.setAttribute('stroke-width', '4');
+  remaining.setAttribute('class', `${baseClass}-${PROGRESS_CLASSES.REMAINING}`);
+  
+  // Initial state for determinate mode
+  indicator.setAttribute('stroke-dasharray', `${indicatorCircumference}`);
+  indicator.setAttribute('stroke-dashoffset', `${indicatorCircumference}`); // Start at 0% progress
+  
+  // Add elements to SVG - track first, then remaining, then indicator
   svg.appendChild(track);
+  svg.appendChild(remaining);
   svg.appendChild(indicator);
   
-  return { track, indicator, svg };
+  return { track, indicator, remaining, svg };
 };
 
 /**
@@ -107,24 +137,27 @@ const createProgress = (config: ProgressConfig = {}): ProgressComponent => {
         const isCircular = baseConfig.variant === PROGRESS_VARIANTS.CIRCULAR;
         
         if (isCircular) {
-          const { track, indicator, svg } = createCircularProgressDOM(baseClass);
+          const { track, indicator, remaining, svg } = createCircularProgressDOM(baseClass);
           component.element.appendChild(svg);
   
           trackElement = track;
           indicatorElement = indicator;
+          component.remainingElement = remaining;
         } else {
-          const { track, indicator, buffer } = createLinearProgressDOM(baseClass);
+          const { track, indicator, remaining, buffer } = createLinearProgressDOM(baseClass);
           component.element.appendChild(buffer);
           component.element.appendChild(track);
           component.element.appendChild(indicator);
+          component.element.appendChild(remaining);
           trackElement = track;
           indicatorElement = indicator;
+          component.remainingElement = remaining;
         }
         
         // Add label if requested
         if (baseConfig.showLabel) {
           const labelElement = document.createElement('div');
-          labelElement.className = `${baseClass}__${PROGRESS_CLASSES.LABEL}`;
+          labelElement.className = `${baseClass}-${PROGRESS_CLASSES.LABEL}`;
           labelElement.textContent = state.labelFormatter(state.value, state.max);
           component.element.appendChild(labelElement);
           state.labelElement = labelElement;
@@ -134,6 +167,7 @@ const createProgress = (config: ProgressConfig = {}): ProgressComponent => {
           ...component,
           trackElement,
           indicatorElement,
+          remainingElement: component.remainingElement,
           labelElement: state.labelElement
         };
       },

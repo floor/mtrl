@@ -111,13 +111,16 @@ export interface ProgressComponent {
   element: HTMLElement;
   
   /** The track element (background) */
-  trackElement: HTMLElement;
+  trackElement: HTMLElement | SVGElement;
   
   /** The indicator element (filled part) */
-  indicatorElement: HTMLElement;
+  indicatorElement: HTMLElement | SVGElement;
   
   /** The buffer element for linear variant (pre-loaded state) */
   bufferElement?: HTMLElement;
+  
+  /** The remaining element (space between indicator and track) */
+  remainingElement?: HTMLElement | SVGElement;
   
   /** The label element if showLabel is enabled */
   labelElement?: HTMLElement;
@@ -141,6 +144,12 @@ export interface ProgressComponent {
    * @returns Current progress value
    */
   getValue: () => number;
+  
+  /**
+   * Gets the maximum progress value
+   * @returns Maximum progress value
+   */
+  getMax: () => number;
   
   /**
    * Sets the buffer value (for linear variant with buffer indicators)

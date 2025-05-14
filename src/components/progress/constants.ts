@@ -49,13 +49,15 @@ export const PROGRESS_CLASSES = {
   /** Circular variant class */
   CIRCULAR: 'progress--circular',
   /** Track element (background) class */
-  TRACK: 'progress__track',
+  TRACK: 'track',
   /** Indicator element (filled part) class */
-  INDICATOR: 'progress__indicator',
+  INDICATOR: 'indicator',
+  /** Remaining element (space between filled part and 100%) class */
+  REMAINING: 'remaining',
   /** Buffer element class */
-  BUFFER: 'progress__buffer',
+  BUFFER: 'buffer',
   /** Label element class */
-  LABEL: 'progress__label',
+  LABEL: 'label',
   /** Indeterminate state class */
   INDETERMINATE: 'progress--indeterminate',
   /** Disabled state class */

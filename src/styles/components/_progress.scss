@@ -4,8 +4,14 @@
 @use '../../styles/abstract/functions' as f;
 @use '../../styles/abstract/mixins' as m;
 @use '../../styles/abstract/theme' as t;
+@use 'sass:math';
 
 $component: '#{base.$prefix}-progress';
+
+// Material Design 3 spec constants
+$linear-height: 4px;
+$circular-size: 40px;
+$stroke-width: 4px;
 
 .#{$component} {
   // Base styles
@@ -19,11 +25,13 @@ $component: '#{base.$prefix}-progress';
     pointer-events: none;
   }
   
-  // Linear progress variant
+  // Linear progress variant - MD3 specs
   &--linear {
     width: 100%;
-    height: 4px; // Default height
-    border-radius: 2px;
+    height: $linear-height; // MD3 spec height
+    border-radius: calc($linear-height / 2);
+    
+    // Track - the "remaining" part (lighter color)
     .#{$component}-track {
       position: absolute;
       top: 0;
@@ -31,9 +39,10 @@ $component: '#{base.$prefix}-progress';
       width: 100%;
       height: 100%;
       background-color: t.color('surface-container-highest');
-      border-radius: 2px;
+      border-radius: calc($linear-height / 2);
     }
     
+    // Buffer element for "buffering" scenarios (video loading, etc.)
     .#{$component}-buffer {
       position: absolute;
       top: 0;
@@ -42,9 +51,10 @@ $component: '#{base.$prefix}-progress';
       width: 0;
       background-color: t.alpha('primary', 0.4);
       transition: width 0.3s ease;
-      border-radius: 2px;
+      border-radius: calc($linear-height / 2);
     }
     
+    // Indicator - the "active" part (primary color)
     .#{$component}-indicator {
       position: absolute;
       top: 0;
@@ -53,7 +63,19 @@ $component: '#{base.$prefix}-progress';
       width: 0;
       background-color: t.color('primary');
       transition: width 0.3s ease;
-      border-radius: 2px;
+      border-radius: calc($linear-height / 2);
+    }
+    
+    // Remaining - the space between indicator and 100%
+    .#{$component}-remaining {
+      position: absolute;
+      top: 0;
+      height: 100%;
+      // Width and left position are set dynamically in JavaScript
+      // to maintain the 4px gap between indicator and remaining
+      background-color: t.alpha('primary', 0.24);
+      border-radius: calc($linear-height / 2);
+      transition: width 0.3s ease, left 0.3s ease;
     }
     
     // Indeterminate animation for linear progress
@@ -62,61 +84,98 @@ $component: '#{base.$prefix}-progress';
         display: none;
       }
       
+      .#{$component}-remaining {
+        display: none;
+      }
+      
       .#{$component}-indicator {
         width: 30%;
         animation: linear-indeterminate 2s infinite;
-        border-radius: 2px;
+        border-radius: calc($linear-height / 2);
       }
     }
     
+    // Label element
     .#{$component}-label {
       position: absolute;
       right: 0;
-      top: 8px;
+      top: calc($linear-height + 4px); // Position below the progress bar
       font-size: 12px;
       color: t.color('on-surface-variant');
     }
   }
   
-  // Circular progress variant
+  // Circular progress variant - MD3 specs
   &--circular {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 48px;
-    height: 48px;
+    width: $circular-size;
+    height: $circular-size;
     
     svg {
       width: 100%;
       height: 100%;
       transform: rotate(-90deg);
+      transform-origin: center;
     }
     
+    // Track - the "remaining" part (lighter color)
     .#{$component}-track {
       stroke: t.color('surface-container-highest');
       fill: none;
+      stroke-width: $stroke-width;
     }
     
+    // Indicator - the "active" part (primary color)
     .#{$component}-indicator {
       stroke: t.color('primary');
       fill: none;
+      stroke-width: $stroke-width;
       stroke-dasharray: 283; // 2*PI*45
       stroke-dashoffset: 283;
       transition: stroke-dashoffset 0.3s ease;
       stroke-linecap: round;
+      transform-origin: center;
+      // MD3 adds a 4px gap between the indicator and track
+      // This is handled in the SVG circle radius
+    }
+    
+    // Remaining - the space between indicator and track
+    .#{$component}-remaining {
+      stroke: t.alpha('primary', 0.24);
+      fill: none;
+      stroke-width: $stroke-width;
+      stroke-linecap: round;
+      transform-origin: center;
+      // Dash array and offset will be managed with JS
     }
     
     // Indeterminate animation for circular progress
     &.#{$component}--indeterminate {
+      svg {
+        // Add a rotation to the svg to create a spinning effect
+        animation: circular-rotate 2s linear infinite;
+      }
+      
+      .#{$component}-remaining {
+        display: none;
+      }
+      
       .#{$component}-indicator {
-        animation: circular-indeterminate 1.5s linear infinite;
+        // Modify this animation to not include rotation, just the stroke dash
+        animation: circular-dash 1.5s ease-in-out infinite;
+        stroke-dasharray: 80, 200;
+        stroke-dashoffset: 0;
       }
     }
     
+    // Label element
     .#{$component}-label {
       position: absolute;
       font-size: 12px;
       color: t.color('on-surface-variant');
+      text-align: center;
     }
   }
   
@@ -137,15 +196,27 @@ $component: '#{base.$prefix}-progress';
   }
 }
 
-@keyframes circular-indeterminate {
+// Split the circular animation into two parts
+@keyframes circular-rotate {
   0% {
-    stroke-dashoffset: 283;
-  }
-  50% {
-    stroke-dashoffset: 70;
+    transform: rotate(-90deg);
   }
   100% {
-    stroke-dashoffset: 283;
-    transform: rotate(360deg);
+    transform: rotate(270deg); // Full rotation
+  }
+}
+
+@keyframes circular-dash {
+  0% {
+    stroke-dasharray: 1, 200;
+    stroke-dashoffset: 0;
+  }
+  50% {
+    stroke-dasharray: 100, 200;
+    stroke-dashoffset: -15;
+  }
+  100% {
+    stroke-dasharray: 100, 200;
+    stroke-dashoffset: -125;
   }
 }
