@@ -181,13 +181,18 @@ export const withAPI = (options: any) => (comp: any): ProgressComponent => {
           addClass(element, PROGRESS_CLASSES.INDETERMINATE);
           element.removeAttribute('aria-valuenow');
           
-          // For linear progress, set the indicator width to 100%
+          // For linear progress, let CSS handle the animations
           if (!isCircular && indicatorElement && indicatorElement instanceof HTMLElement) {
+            // Clear any inline styles that might interfere with the CSS animations
             indicatorElement.style.width = '';
+            indicatorElement.style.left = '';
           }
           
-          // Hide remaining element
-          if (remainingElement) {
+          // For linear indeterminate, hide the remaining element
+          if (!isCircular && remainingElement && remainingElement instanceof HTMLElement) {
+            remainingElement.style.display = 'none';
+          } else if (remainingElement) {
+            // For circular, hide the remaining
             remainingElement.style.display = 'none';
           }
         } else {

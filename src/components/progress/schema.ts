@@ -18,7 +18,7 @@ export function createProgressSchema(component, config: ProgressConfig) {
   const value = config.value !== undefined ? config.value : 0;
   const isDisabled = config.disabled === true;
   const isCircular = config.variant === PROGRESS_VARIANTS.CIRCULAR;
-  
+
   // Calculate initial position
   const valuePercent = (value / max) * 100;
   
@@ -29,7 +29,7 @@ export function createProgressSchema(component, config: ProgressConfig) {
     const outerRadius = 16; // MD3 spec: track radius
     const innerRadius = 12; // MD3 spec: indicator radius (4px less than track for the spacing)
     const centerPoint = size / 2; // Center point of the SVG
-    
+
     return {
       element: {
         options: {
@@ -99,6 +99,7 @@ export function createProgressSchema(component, config: ProgressConfig) {
     };
   } else {
     // Linear progress - create div-based structure
+
     return {
       element: {
         options: {
@@ -114,7 +115,7 @@ export function createProgressSchema(component, config: ProgressConfig) {
         children: {
           buffer: {
             options: {
-              className: getClass(PROGRESS_CLASSES.BUFFER),
+              className: `${PROGRESS_CLASSES.CONTAINER}-${PROGRESS_CLASSES.BUFFER}`,
               style: {
                 width: `${config.buffer || 0}%`
               }
@@ -122,12 +123,12 @@ export function createProgressSchema(component, config: ProgressConfig) {
           },
           track: {
             options: {
-              className: getClass(PROGRESS_CLASSES.TRACK)
+              className: `${PROGRESS_CLASSES.CONTAINER}-${PROGRESS_CLASSES.TRACK}`,
             }
           },
           indicator: {
             options: {
-              className: getClass(PROGRESS_CLASSES.INDICATOR),
+              className: `${PROGRESS_CLASSES.CONTAINER}-${PROGRESS_CLASSES.INDICATOR}`,
               style: {
                 width: `${valuePercent}%`
               }
@@ -135,7 +136,7 @@ export function createProgressSchema(component, config: ProgressConfig) {
           },
           remaining: {
             options: {
-              className: getClass(PROGRESS_CLASSES.REMAINING),
+              className: `${PROGRESS_CLASSES.CONTAINER}-${PROGRESS_CLASSES.REMAINING}`,
               style: {
                 left: `calc(${valuePercent}% + 4px)`,
                 width: `calc(${100 - valuePercent}% - 4px)`

@@ -38,7 +38,7 @@ $stroke-width: 4px;
       left: 0;
       width: 100%;
       height: 100%;
-      background-color: t.color('surface-container-highest');
+      // background-color: t.color('surface-container-highest');
       border-radius: calc($linear-height / 2);
       z-index: 0; // Lowest layer
     }
@@ -66,9 +66,9 @@ $stroke-width: 4px;
       transition: width 0.3s ease;
       border-radius: calc($linear-height / 2);
       z-index: 2; // Higher than remaining and track
-      animation: 
-        linear-indeterminate-translate 2.5s infinite linear,
-        linear-indeterminate-width 2.5s infinite ease-in-out;
+      // animation: 
+      //   linear-indeterminate-translate 2.5s infinite linear,
+      //   linear-indeterminate-width 2.5s infinite ease-in-out;
     }
     
     // Remaining - the space between indicator and 100%
@@ -92,16 +92,17 @@ $stroke-width: 4px;
       }
       
       .#{$component}-indicator {
-        width: 20%; // Initial width
+        width: 0; // Initial width
         animation: 
-          linear-indeterminate-translate 2.5s infinite linear,
-          linear-indeterminate-width 2.5s infinite ease-in-out;
+          linear-indeterminate-translate 1.7s infinite linear,
+          linear-indeterminate-width 1.7s infinite ease-in-out;
         border-radius: calc($linear-height / 2);
         z-index: 2;
       }
       
       .#{$component}-remaining {
-        display: none; // We're only using a single segment
+        display: block;
+        width: 100%;
       }
     }
     
@@ -233,10 +234,10 @@ $stroke-width: 4px;
 
 @keyframes linear-indeterminate-translate {
   0% {
-    left: 0%;    // Start at the beginning of the visible area
+    left: -12%; 
   }
   100% {
-    left: 100%; // End exactly at the right edge
+    left: 112%;
   }
 }
 
@@ -244,8 +245,8 @@ $stroke-width: 4px;
   0% {
     width: 12%;
   }
-  50% {
-    width: 40%;
+  30% {
+    width: 33%;
   }
   100% {
     width: 12%;
