@@ -40,6 +40,7 @@ $stroke-width: 4px;
       height: 100%;
       background-color: t.color('surface-container-highest');
       border-radius: calc($linear-height / 2);
+      z-index: 0; // Lowest layer
     }
     
     // Buffer element for "buffering" scenarios (video loading, etc.)
@@ -64,6 +65,7 @@ $stroke-width: 4px;
       background-color: t.color('primary');
       transition: width 0.3s ease;
       border-radius: calc($linear-height / 2);
+      z-index: 2; // Higher than remaining and track
     }
     
     // Remaining - the space between indicator and 100%
@@ -71,11 +73,12 @@ $stroke-width: 4px;
       position: absolute;
       top: 0;
       height: 100%;
-      // Width and left position are set dynamically in JavaScript
-      // to maintain the 4px gap between indicator and remaining
+      // Left and width are set programmatically
       background-color: t.alpha('primary', 0.24);
       border-radius: calc($linear-height / 2);
-      transition: width 0.3s ease, left 0.3s ease;
+      transition: left 0.3s ease, width 0.3s ease, margin-left 0.3s ease;
+      z-index: 1; // Lower than indicator but higher than track
+      box-sizing: border-box; // Ensure consistent sizing
     }
     
     // Indeterminate animation for linear progress

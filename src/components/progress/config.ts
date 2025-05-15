@@ -1,11 +1,11 @@
 // src/components/progress/config.ts
 import { 
   createComponentConfig, 
-  createElementConfig,
-  BaseComponentConfig 
+  createElementConfig
 } from '../../core/config/component';
 import { ProgressConfig } from './types';
 import { PROGRESS_VARIANTS, PROGRESS_DEFAULTS, PROGRESS_CLASSES } from './constants';
+import { createProgressSchema } from './schema';
 
 /**
  * Default configuration for the Progress component
@@ -20,12 +20,31 @@ export const defaultConfig: ProgressConfig = {
 };
 
 /**
- * Creates the base configuration for Progress component
- * @param {ProgressConfig} config - User provided configuration
- * @returns {ProgressConfig} Complete configuration with defaults applied
+ * Creates the base configuration for the Progress component
+ * with all defaults applied
+ * 
+ * @param config User-provided configuration
+ * @returns Complete configuration with defaults
  */
-export const createBaseConfig = (config: ProgressConfig = {}): ProgressConfig => 
-  createComponentConfig(defaultConfig, config, 'progress') as ProgressConfig;
+export const createBaseConfig = (config: ProgressConfig = {}): ProgressConfig => {
+  // Create configuration with defaults
+  const baseConfig = createComponentConfig(defaultConfig, config, 'progress') as ProgressConfig;
+  
+  // Create a basic component object for schema generation
+  const baseComponent = {
+    componentName: 'progress',
+    config: baseConfig,
+    getClass: (className) => {
+      const prefix = baseConfig.prefix || 'mtrl';
+      return `${prefix}-${className}`;
+    }
+  };
+  
+  // Add the structure definition to the config
+  baseConfig.schema = createProgressSchema(baseComponent, baseConfig);
+  
+  return baseConfig;
+};
 
 /**
  * Generates element configuration for the Progress component
@@ -104,7 +123,9 @@ export const getApiConfig = (comp, state) => ({
         comp.labelElement = undefined;
       }
     },
-    format: (formatter) => { state.labelFormatter = formatter; },
+    format: (formatter) => { 
+      state.labelFormatter = formatter; 
+    },
     setContent: (content) => {
       if (state.labelElement) {
         state.labelElement.textContent = content;
@@ -112,7 +133,9 @@ export const getApiConfig = (comp, state) => ({
     }
   },
   state: {
-    setIndeterminate: (indeterminate: boolean) => { state.indeterminate = indeterminate; },
+    setIndeterminate: (indeterminate: boolean) => { 
+      state.indeterminate = indeterminate; 
+    },
     isIndeterminate: () => state.indeterminate
   },
   lifecycle: {

@@ -2,6 +2,8 @@
 
 import { ProgressComponent } from './types';
 import { PROGRESS_CLASSES, PROGRESS_VARIANTS } from './constants';
+import { PREFIX } from '../../core/config';
+import { addClass, removeClass } from '../../core/dom';
 
 interface ApiOptions {
   value: {
@@ -34,90 +36,80 @@ interface ApiOptions {
 }
 
 export const withAPI = (options: any) => (comp: any): ProgressComponent => {
-  // Get DOM elements
+  // Get references to DOM elements
   const element = comp.element as HTMLElement;
-  const trackElement = comp.trackElement as (HTMLElement | SVGElement);
-  const indicatorElement = comp.indicatorElement as (HTMLElement | SVGElement);
-  const remainingElement = element.querySelector(`.${comp.getClass(PROGRESS_CLASSES.REMAINING)}`) as (HTMLElement | SVGElement);
+  const indicatorElement = comp.indicatorElement;
+  const remainingElement = comp.remainingElement;
+  const bufferElement = comp.bufferElement;
   const labelElement = comp.labelElement as HTMLElement | undefined;
+  
+  // Debug components
+  console.log('[Progress] Component structure:', {
+    hasElement: !!element,
+    hasIndicator: !!indicatorElement,
+    hasRemaining: !!remainingElement,
+    hasBuffer: !!bufferElement
+  });
   
   // Configuration
   const isCircular = element.classList.contains(comp.getClass(PROGRESS_CLASSES.CIRCULAR));
   
-  // Reference to the API
-  let api: ProgressComponent;
-  
-  // Update the visual representation
-  const updateVisuals = () => {
-    // Skip if in indeterminate mode
-    if (options.state.isIndeterminate()) {
-      return;
-    }
+  // Update progress visuals based on current state
+  const updateProgress = (value: number, max: number) => {
+    if (options.state.isIndeterminate()) return;
     
-    // Calculate percentage
-    const max = options.value.getMax();
-    const value = options.value.getValue();
     const percentage = (value / max) * 100;
     
-    if (isCircular) {
-      // Circular progress - update stroke-dashoffset
-      // The circumference depends on the radius of the circle
-      // We'll use the one from the indicator since it's the one we want to animate
-      const circle = indicatorElement as SVGCircleElement;
-      const radius = parseFloat(circle.getAttribute('r') || '0');
-      const circumference = 2 * Math.PI * radius;
+    // Debug logging
+    console.log('[Progress] Updating with:', { value, max, percentage });
+    
+    // Update linear progress elements
+    if (!isCircular) {
+      // Update indicator width
+      if (indicatorElement) {
+        console.log('[Progress] Updating indicator width:', `${percentage}%`);
+        indicatorElement.style.width = `${percentage}%`;
+      }
       
-      // For indicator - we want it to show only the progress
-      const indicatorOffset = circumference - (percentage / 100 * circumference);
-      circle.style.strokeDasharray = `${circumference}`;
-      circle.style.strokeDashoffset = `${indicatorOffset}`;
-      
-      // For remaining - we want it to show only after the indicator ends
-      // We'll use the complementary dasharray/dashoffset
+      // Update remaining position with 4px gap
       if (remainingElement) {
-        const remainingCircle = remainingElement as SVGCircleElement;
-        remainingCircle.style.strokeDasharray = `${circumference}`;
-        
-        // Calculate the offset to start where the indicator ends
-        // and end at the full circumference
-        const remainingOffset = (percentage / 100 * circumference);
-        remainingCircle.style.strokeDasharray = `${circumference - remainingOffset} ${remainingOffset}`;
-        remainingCircle.style.strokeDashoffset = `0`;
+        console.log('[Progress] Updating remaining element:', `left: calc(${percentage}% + 4px), width: calc(${100 - percentage}% - 4px)`);
+        remainingElement.style.left = `calc(${percentage}% + 4px)`;
+        remainingElement.style.width = `calc(${100 - percentage}% - 4px)`;
+        remainingElement.style.display = percentage >= 100 ? 'none' : 'block';
       }
     } else {
-      // Linear progress - update width
-      indicatorElement.style.width = `${percentage}%`;
-      
-      // Update remaining element position and width
-      if (remainingElement) {
-        const htmlRemainingElement = remainingElement as HTMLElement;
-        htmlRemainingElement.style.left = `calc(${percentage}% + 4px)`;
-        htmlRemainingElement.style.width = `calc(${100 - percentage}% - 4px)`;
+      // Update circular progress
+      if (indicatorElement) {
+        // Update indicator circle
+        const radius = parseFloat(indicatorElement.getAttribute('r') || '0');
+        const circumference = 2 * Math.PI * radius;
+        const dashOffset = circumference - (percentage / 100 * circumference);
+        
+        indicatorElement.style.strokeDasharray = `${circumference}`;
+        indicatorElement.style.strokeDashoffset = `${dashOffset}`;
+        
+        // Update remaining circle (complementary)
+        if (remainingElement) {
+          remainingElement.style.display = percentage >= 100 ? 'none' : 'block';
+        }
       }
-      
-      // Buffer handling (if applicable)
-      const bufferElement = element.querySelector(`.${comp.getClass(PROGRESS_CLASSES.BUFFER)}`);
-      if (bufferElement) {
-        const bufferPercentage = (options.buffer.getBuffer() / max) * 100;
-        (bufferElement as HTMLElement).style.width = `${bufferPercentage}%`;
-      }
-    }
-    
-    // Update label (if available)
-    if (labelElement && options.label) {
-      const formatter = options.label.formatter || ((v: number, m: number) => `${Math.round((v / m) * 100)}%`);
-      labelElement.textContent = formatter(value, max);
     }
     
     // Update ARIA attributes
     element.setAttribute('aria-valuenow', value.toString());
-    element.setAttribute('aria-valuemax', max.toString());
+    
+    // Update label if available
+    if (labelElement) {
+      const formatter = options.label.formatter || ((v: number, m: number) => `${Math.round((v / m) * 100)}%`);
+      labelElement.textContent = formatter(value, max);
+    }
   };
   
   // API implementation
-  api = {
+  const api: ProgressComponent = {
     element,
-    trackElement,
+    trackElement: comp.trackElement,
     indicatorElement,
     remainingElement,
     getClass: comp.getClass,
@@ -125,16 +117,32 @@ export const withAPI = (options: any) => (comp: any): ProgressComponent => {
     // Value management
     getValue: options.value.getValue,
     setValue: (value: number) => {
+      // Log initial request
+      console.log('[Progress] setValue called with:', value);
+      
+      // Update value in state
       options.value.setValue(value);
-      updateVisuals();
+      
+      // Log after state update
+      console.log('[Progress] State after setValue:', {
+        value: options.value.getValue(),
+        max: options.value.getMax()
+      });
+      
+      // Update visuals
+      updateProgress(options.value.getValue(), options.value.getMax());
       
       // Emit change event
-      const event = new CustomEvent('change', { detail: { value, max: options.value.getMax() } });
+      const event = new CustomEvent('change', { 
+        detail: { value: options.value.getValue(), max: options.value.getMax() }
+      });
       element.dispatchEvent(event);
       
-      // Check if completed (value >= max)
-      if (value >= options.value.getMax()) {
-        const completeEvent = new CustomEvent('complete', { detail: { value, max: options.value.getMax() } });
+      // Check if completed
+      if (options.value.getValue() >= options.value.getMax()) {
+        const completeEvent = new CustomEvent('complete', { 
+          detail: { value: options.value.getValue(), max: options.value.getMax() }
+        });
         element.dispatchEvent(completeEvent);
       }
       
@@ -142,23 +150,53 @@ export const withAPI = (options: any) => (comp: any): ProgressComponent => {
     },
     getMax: options.value.getMax,
     
-    // Buffer management (for linear progress)
+    // Buffer management
     getBuffer: options.buffer.getBuffer,
     setBuffer: (value: number) => {
       options.buffer.setBuffer(value);
-      updateVisuals();
+      
+      // Directly update buffer width for linear variant
+      if (!isCircular && bufferElement && !options.state.isIndeterminate()) {
+        const max = options.value.getMax();
+        const bufferPercentage = (options.buffer.getBuffer() / max) * 100;
+        bufferElement.style.width = `${bufferPercentage}%`;
+      }
+      
       return api;
     },
     
     // Indeterminate state
     setIndeterminate: (indeterminate: boolean) => {
+      console.log('[Progress] setIndeterminate called with:', indeterminate);
+      
+      const wasIndeterminate = options.state.isIndeterminate();
       options.state.setIndeterminate(indeterminate);
       
-      if (indeterminate) {
-        element.classList.add(comp.getClass(PROGRESS_CLASSES.INDETERMINATE));
-      } else {
-        element.classList.remove(comp.getClass(PROGRESS_CLASSES.INDETERMINATE));
-        updateVisuals();
+      // Only update if state changed
+      if (wasIndeterminate !== indeterminate) {
+        console.log('[Progress] Changing indeterminate state from', wasIndeterminate, 'to', indeterminate);
+        
+        if (indeterminate) {
+          // Enter indeterminate mode
+          addClass(element, PROGRESS_CLASSES.INDETERMINATE);
+          element.removeAttribute('aria-valuenow');
+          
+          // For linear progress, set the indicator width to 100%
+          if (!isCircular && indicatorElement && indicatorElement instanceof HTMLElement) {
+            indicatorElement.style.width = '';
+          }
+          
+          // Hide remaining element
+          if (remainingElement) {
+            remainingElement.style.display = 'none';
+          }
+        } else {
+          // Exit indeterminate mode
+          removeClass(element, PROGRESS_CLASSES.INDETERMINATE);
+          
+          // Restore determinate state
+          updateProgress(options.value.getValue(), options.value.getMax());
+        }
       }
       
       return api;
@@ -167,22 +205,17 @@ export const withAPI = (options: any) => (comp: any): ProgressComponent => {
     
     // Label management
     showLabel: () => {
-      if (options.label && options.label.show) {
-        options.label.show();
-        updateVisuals();
-      }
+      if (options.label.show) options.label.show();
       return api;
     },
     hideLabel: () => {
-      if (options.label && options.label.hide) {
-        options.label.hide();
-      }
+      if (options.label.hide) options.label.hide();
       return api;
     },
-    setLabelFormatter: (formatter: (value: number, max: number) => string) => {
-      if (options.label && options.label.format) {
-        options.label.format(formatter);
-        updateVisuals();
+    setLabelFormatter: (formatter) => {
+      if (options.label.format) options.label.format(formatter);
+      if (labelElement) {
+        labelElement.textContent = formatter(options.value.getValue(), options.value.getMax());
       }
       return api;
     },
@@ -199,11 +232,11 @@ export const withAPI = (options: any) => (comp: any): ProgressComponent => {
     isDisabled: options.disabled.isDisabled,
     
     // Event handling
-    on: (event: string, handler: Function) => {
+    on: (event, handler) => {
       element.addEventListener(event, handler as EventListener);
       return api;
     },
-    off: (event: string, handler: Function) => {
+    off: (event, handler) => {
       element.removeEventListener(event, handler as EventListener);
       return api;
     },
@@ -211,13 +244,13 @@ export const withAPI = (options: any) => (comp: any): ProgressComponent => {
     // Cleanup
     destroy: options.lifecycle.destroy,
     
-    // Advanced features (for component consumers)
-    addClass: (...classes: string[]) => {
+    // Extension points
+    addClass: (...classes) => {
       classes.forEach(className => element.classList.add(className));
       return api;
     },
     
-    // Components extension requirements
+    // Required interfaces
     disabled: {
       enable: options.disabled.enable,
       disable: options.disabled.disable,
@@ -229,8 +262,10 @@ export const withAPI = (options: any) => (comp: any): ProgressComponent => {
     }
   };
   
-  // Initialize visual state
-  updateVisuals();
+  // Initialize with current values
+  if (!options.state.isIndeterminate()) {
+    updateProgress(options.value.getValue(), options.value.getMax());
+  }
   
   return api;
 };

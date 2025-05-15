@@ -100,6 +100,12 @@ export interface ProgressConfig {
    * @default 'progress'
    */
   componentName?: string;
+  
+  /**
+   * DOM structure schema
+   * @internal
+   */
+  schema?: any;
 }
 
 /**

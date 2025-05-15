@@ -9,10 +9,12 @@ import {
   withDisabled,
   withLifecycle
 } from '../../core/compose/features';
+import { withLayout, withDom } from '../../core/composition/features';
 import { withAPI } from './api';
 import { ProgressConfig, ProgressComponent } from './types';
 import { createBaseConfig, getElementConfig, getApiConfig } from './config';
 import { PROGRESS_VARIANTS, PROGRESS_CLASSES } from './constants';
+import { addClass } from '../../core/dom';
 
 // Helper functions
 const createLinearProgressDOM = (baseClass: string) => {
@@ -21,9 +23,15 @@ const createLinearProgressDOM = (baseClass: string) => {
   
   const indicator = document.createElement('div');
   indicator.className = `${baseClass}-${PROGRESS_CLASSES.INDICATOR}`;
+  indicator.style.width = '0%'; // Initial state
   
   const remaining = document.createElement('div');
   remaining.className = `${baseClass}-${PROGRESS_CLASSES.REMAINING}`;
+  // Initial state for remaining element - simpler approach
+  remaining.style.position = 'absolute';
+  remaining.style.top = '0';
+  remaining.style.left = '4px'; // Start 4px from left when indicator is 0%
+  remaining.style.width = '100%'; // Start with full width, will be adjusted dynamically
   
   const buffer = document.createElement('div');
   buffer.className = `${baseClass}-${PROGRESS_CLASSES.BUFFER}`;
@@ -127,7 +135,8 @@ const createProgress = (config: ProgressConfig = {}): ProgressComponent => {
     const component = pipe(
       createBase,
       withEvents(),
-      withElement(getElementConfig(baseConfig)),
+      withLayout(baseConfig),
+      withDom(),
       withVariant(baseConfig),
       withDisabled(baseConfig),
       withLifecycle(),
@@ -135,6 +144,21 @@ const createProgress = (config: ProgressConfig = {}): ProgressComponent => {
       (component) => {
         const baseClass = component.getClass('progress');
         const isCircular = baseConfig.variant === PROGRESS_VARIANTS.CIRCULAR;
+        
+        // Apply indeterminate class directly if configured
+        if (baseConfig.indeterminate) {
+          addClass(component.element, PROGRESS_CLASSES.INDETERMINATE);
+          
+          // For linear progress, remove the inline width style in indeterminate mode
+          if (!isCircular && component.element) {
+            setTimeout(() => {
+              const indicator = component.element.querySelector(`.${baseClass}-${PROGRESS_CLASSES.INDICATOR}`);
+              if (indicator && indicator instanceof HTMLElement) {
+                indicator.style.width = '';
+              }
+            }, 0);
+          }
+        }
         
         if (isCircular) {
           const { track, indicator, remaining, svg } = createCircularProgressDOM(baseClass);
@@ -161,6 +185,7 @@ const createProgress = (config: ProgressConfig = {}): ProgressComponent => {
           labelElement.textContent = state.labelFormatter(state.value, state.max);
           component.element.appendChild(labelElement);
           state.labelElement = labelElement;
+          component.labelElement = labelElement;
         }
         
         return {
@@ -177,11 +202,44 @@ const createProgress = (config: ProgressConfig = {}): ProgressComponent => {
     
     // Initialize state based on configuration
     if (baseConfig.indeterminate) {
+      // Set the indeterminate state through the API
+      // (We've already applied the class during component creation above)
       component.setIndeterminate(true);
     } else {
+      // Set initial values
       component.setValue(state.value);
       if (baseConfig.buffer !== undefined) {
         component.setBuffer(baseConfig.buffer);
+      }
+      
+      // Ensure the remaining element is properly positioned for the initial value
+      // For linear progress, we need to adjust the remaining element manually
+      if (baseConfig.variant === PROGRESS_VARIANTS.LINEAR && component.remainingElement) {
+        const remainingElement = component.remainingElement as HTMLElement;
+        const percentage = (state.value / state.max) * 100;
+        
+        // Get the container width to calculate precise pixel positions
+        const totalWidth = component.element.clientWidth || component.element.offsetWidth;
+        
+        if (totalWidth > 0) {
+          // Calculate indicator width in pixels
+          const indicatorWidthPx = Math.floor((percentage / 100) * totalWidth);
+          // Position remaining element 4px after indicator
+          remainingElement.style.left = `${indicatorWidthPx + 4}px`;
+          // Set width to fill remaining space minus the 4px gap
+          remainingElement.style.width = `${totalWidth - indicatorWidthPx - 4}px`;
+        } else {
+          // Fallback if we can't get the element width
+          if (percentage === 0) {
+            remainingElement.style.left = '4px';
+            remainingElement.style.width = '100%';
+          } else {
+            // Use a simpler approach without calc
+            remainingElement.style.left = `${percentage}%`;
+            remainingElement.style.marginLeft = '4px';
+            remainingElement.style.width = `${100 - percentage}%`;
+          }
+        }
       }
     }
 
