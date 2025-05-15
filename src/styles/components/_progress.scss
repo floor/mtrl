@@ -66,6 +66,9 @@ $stroke-width: 4px;
       transition: width 0.3s ease;
       border-radius: calc($linear-height / 2);
       z-index: 2; // Higher than remaining and track
+      animation: 
+        linear-indeterminate-translate 2.5s infinite linear,
+        linear-indeterminate-width 2.5s infinite ease-in-out;
     }
     
     // Remaining - the space between indicator and 100%
@@ -79,6 +82,7 @@ $stroke-width: 4px;
       transition: left 0.3s ease, width 0.3s ease, margin-left 0.3s ease;
       z-index: 1; // Lower than indicator but higher than track
       box-sizing: border-box; // Ensure consistent sizing
+      display: none; // We're only using a single segment
     }
     
     // Indeterminate animation for linear progress
@@ -87,14 +91,17 @@ $stroke-width: 4px;
         display: none;
       }
       
-      .#{$component}-remaining {
-        display: none;
+      .#{$component}-indicator {
+        width: 20%; // Initial width
+        animation: 
+          linear-indeterminate-translate 2.5s infinite linear,
+          linear-indeterminate-width 2.5s infinite ease-in-out;
+        border-radius: calc($linear-height / 2);
+        z-index: 2;
       }
       
-      .#{$component}-indicator {
-        width: 30%;
-        animation: linear-indeterminate 2s infinite;
-        border-radius: calc($linear-height / 2);
+      .#{$component}-remaining {
+        display: none; // We're only using a single segment
       }
     }
     
@@ -192,7 +199,7 @@ $stroke-width: 4px;
 // Keyframes for indeterminate animations
 @keyframes linear-indeterminate {
   0% {
-    left: -30%;
+    left: -40%;
   }
   100% {
     left: 100%;
@@ -221,5 +228,26 @@ $stroke-width: 4px;
   100% {
     stroke-dasharray: 100, 200;
     stroke-dashoffset: -125;
+  }
+}
+
+@keyframes linear-indeterminate-translate {
+  0% {
+    left: 0%;    // Start at the beginning of the visible area
+  }
+  100% {
+    left: 100%; // End exactly at the right edge
+  }
+}
+
+@keyframes linear-indeterminate-width {
+  0% {
+    width: 12%;
+  }
+  50% {
+    width: 40%;
+  }
+  100% {
+    width: 12%;
   }
 }

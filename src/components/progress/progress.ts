@@ -149,12 +149,20 @@ const createProgress = (config: ProgressConfig = {}): ProgressComponent => {
         if (baseConfig.indeterminate) {
           addClass(component.element, PROGRESS_CLASSES.INDETERMINATE);
           
-          // For linear progress, remove the inline width style in indeterminate mode
+          // For linear progress, prepare the elements for animation
           if (!isCircular && component.element) {
             setTimeout(() => {
+              // For the indicator, we'll let CSS handle the width and left position animations
               const indicator = component.element.querySelector(`.${baseClass}-${PROGRESS_CLASSES.INDICATOR}`);
               if (indicator && indicator instanceof HTMLElement) {
                 indicator.style.width = '';
+                indicator.style.left = '';
+              }
+              
+              // Hide the remaining element 
+              const remaining = component.element.querySelector(`.${baseClass}-${PROGRESS_CLASSES.REMAINING}`);
+              if (remaining && remaining instanceof HTMLElement) {
+                remaining.style.display = 'none';
               }
             }, 0);
           }
