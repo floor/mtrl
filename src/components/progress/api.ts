@@ -42,15 +42,7 @@ export const withAPI = (options: any) => (comp: any): ProgressComponent => {
   const remainingElement = comp.remainingElement;
   const bufferElement = comp.bufferElement;
   const labelElement = comp.labelElement as HTMLElement | undefined;
-  
-  // Debug components
-  console.log('[Progress] Component structure:', {
-    hasElement: !!element,
-    hasIndicator: !!indicatorElement,
-    hasRemaining: !!remainingElement,
-    hasBuffer: !!bufferElement
-  });
-  
+    
   // Configuration
   const isCircular = element.classList.contains(comp.getClass(PROGRESS_CLASSES.CIRCULAR));
   
@@ -60,14 +52,10 @@ export const withAPI = (options: any) => (comp: any): ProgressComponent => {
     
     const percentage = (value / max) * 100;
     
-    // Debug logging
-    console.log('[Progress] Updating with:', { value, max, percentage });
-    
     // Update linear progress elements
     if (!isCircular) {
       // Update indicator width
       if (indicatorElement) {
-        console.log('[Progress] Updating indicator width:', `${percentage}%`);
         indicatorElement.style.width = `${percentage}%`;
       }
       
@@ -119,6 +107,12 @@ export const withAPI = (options: any) => (comp: any): ProgressComponent => {
     setValue: (value: number) => {
       // Log initial request
       console.log('[Progress] setValue called with:', value);
+      console.log('[Progress] Component state:', {
+        isIndeterminate: options.state.isIndeterminate(),
+        element: element,
+        indicatorElement: indicatorElement,
+        remainingElement: remainingElement
+      });
       
       // Update value in state
       options.value.setValue(value);
@@ -129,8 +123,14 @@ export const withAPI = (options: any) => (comp: any): ProgressComponent => {
         max: options.value.getMax()
       });
       
-      // Update visuals
-      updateProgress(options.value.getValue(), options.value.getMax());
+      // Only update visuals if not in indeterminate state
+      if (!options.state.isIndeterminate()) {
+        console.log('[Progress] Updating visuals with value:', value);
+        // Update visuals
+        updateProgress(options.value.getValue(), options.value.getMax());
+      } else {
+        console.log('[Progress] Not updating visuals because component is in indeterminate state');
+      }
       
       // Emit change event
       const event = new CustomEvent('change', { 

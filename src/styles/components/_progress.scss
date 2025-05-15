@@ -82,7 +82,7 @@ $stroke-width: 4px;
       transition: left 0.3s ease, width 0.3s ease, margin-left 0.3s ease;
       z-index: 1; // Lower than indicator but higher than track
       box-sizing: border-box; // Ensure consistent sizing
-      display: none; // We're only using a single segment
+      // display: none; // We're only using a single segment
     }
     
     // Indeterminate animation for linear progress
