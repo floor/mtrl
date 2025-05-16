@@ -56,7 +56,7 @@ export const withLoading = (config: LoadingConfig = {}) => (component: BaseCompo
         tag: 'div',
         className: `${PREFIX}-card-loading-overlay`,
         container: component.element,
-        attrs: {
+        attributes: {
           'role': 'progressbar',
           'aria-busy': 'true',
           'aria-label': 'Loading'
@@ -171,7 +171,7 @@ export const withExpandable = (config: ExpandableConfig = {}) => (component: Bas
   expandButton = createElement({
     tag: 'button',
     className: `${PREFIX}-card-expand-button`,
-    attrs: {
+    attributes: {
       'aria-expanded': isExpanded ? 'true' : 'false',
       'aria-label': isExpanded ? 'Collapse content' : 'Expand content',
       'aria-controls': expandableContent?.id || `${component.element.id || 'card'}-expandable-content`
@@ -188,7 +188,7 @@ export const withExpandable = (config: ExpandableConfig = {}) => (component: Bas
       tag: 'div',
       className: `${PREFIX}-card-actions`,
       container: component.element,
-      attrs: {
+      attributes: {
         'role': 'group'
       }
     });
@@ -308,7 +308,7 @@ export const withSwipeable = (config: SwipeableConfig = {}) => (component: BaseC
     className: `${PREFIX}-card-swipe-left-action`,
     text: 'Swipe Left Action',
     container: component.element,
-    attrs: {
+    attributes: {
       'aria-label': 'Perform swipe left action',
       'style': 'position: absolute; left: -9999px; top: -9999px; visibility: hidden;' // Visually hidden but accessible
     }
@@ -319,7 +319,7 @@ export const withSwipeable = (config: SwipeableConfig = {}) => (component: BaseC
     className: `${PREFIX}-card-swipe-right-action`,
     text: 'Swipe Right Action',
     container: component.element,
-    attrs: {
+    attributes: {
       'aria-label': 'Perform swipe right action',
       'style': 'position: absolute; left: -9999px; top: -9999px; visibility: hidden;' // Visually hidden but accessible
     }

@@ -39,19 +39,19 @@ export const createBaseConfig = (config: TooltipConfig = {}): TooltipConfig =>
  */
 export const getElementConfig = (config: TooltipConfig) => {
   // Create the attributes object
-  const attrs: Record<string, any> = {
+  const attributes: Record<string, any> = {
     role: 'tooltip',
     'aria-hidden': 'true'
   };
   
   // Add z-index if provided
   if (config.zIndex !== undefined) {
-    attrs['style'] = `z-index: ${config.zIndex};`;
+    attributes['style'] = `z-index: ${config.zIndex};`;
   }
   
   return createElementConfig(config, {
     tag: 'div',
-    attrs,
+    attributes,
     className: [
       config.class, 
       `${config.prefix}-tooltip--${config.position}`,

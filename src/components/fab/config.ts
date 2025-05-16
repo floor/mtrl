@@ -52,14 +52,14 @@ export const createBaseConfig = (config: FabConfig = {}): FabConfig =>
  */
 export const getElementConfig = (config: FabConfig) => {
   // Create the attributes object
-  const attrs: Record<string, any> = {
+  const attributes: Record<string, any> = {
     type: config.type || 'button',
     'aria-label': config.ariaLabel || (config.icon ? 'action' : undefined)
   };
   
   // Only add disabled attribute if it's explicitly true
   if (config.disabled === true) {
-    attrs.disabled = true;
+    attributes.disabled = true;
   }
   
   // Create component-specific classes that don't need prefixing (they already include the prefix)
@@ -91,7 +91,7 @@ export const getElementConfig = (config: FabConfig) => {
   
   return createElementConfig(enhancedConfig, {
     tag: 'button',
-    attrs,
+    attributes,
     forwardEvents: {
       click: (component) => !component.element.disabled,
       focus: true,

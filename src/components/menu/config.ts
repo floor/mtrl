@@ -69,7 +69,7 @@ export const getElementConfig = (config: MenuConfig) => {
   }
   
   // Element attributes
-  const attrs: Record<string, any> = {
+  const attributes: Record<string, any> = {
     role: 'menu',
     tabindex: '-1',
     'aria-hidden': (!config.visible).toString(),
@@ -80,7 +80,7 @@ export const getElementConfig = (config: MenuConfig) => {
   
   return createElementConfig(config, {
     tag: 'div',
-    attrs,
+    attributes,
     className: [
       config.visible ? MENU_CLASSES.VISIBLE : null,
       config.class

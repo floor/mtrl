@@ -36,7 +36,7 @@ export const getElementConfig = (config: ProgressConfig) => {
   const isIndeterminate = config.indeterminate === true;
   
   // Create the attributes object
-  const attrs: Record<string, any> = {
+  const attributes: Record<string, any> = {
     role: 'progressbar',
     'aria-valuemin': '0',
     'aria-valuemax': (config.max || 100).toString()
@@ -44,19 +44,19 @@ export const getElementConfig = (config: ProgressConfig) => {
   
   // Only add aria-valuenow if not indeterminate
   if (!isIndeterminate && config.value !== undefined) {
-    attrs['aria-valuenow'] = config.value.toString();
+    attributes['aria-valuenow'] = config.value.toString();
   }
   
   // Only add disabled attribute if it's explicitly true
   if (config.disabled === true) {
-    attrs['aria-disabled'] = 'true';
+    attributes['aria-disabled'] = 'true';
   }
   
   const isCircular = config.variant === PROGRESS_VARIANTS.CIRCULAR;
   
   return createElementConfig(config, {
     tag: 'div',
-    attrs,
+    attributes,
     className: config.class
   });
 };

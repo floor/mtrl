@@ -40,7 +40,7 @@ export const getContainerConfig = (config: SegmentedButtonConfig) => {
   return {
     tag: 'div',
     componentName: 'segmented-button',
-    attrs: {
+    attributes: {
       role: 'group',
       'aria-label': 'Segmented button',
       'data-mode': config.mode || SelectionMode.SINGLE,
@@ -99,7 +99,7 @@ export const getSegmentConfig = (segment, prefix, groupDisabled = false) => {
   // We use button as our base class, but add segment-specific classes for states
   return {
     tag: 'button',
-    attrs: {
+    attributes: {
       type: 'button',
       role: 'button',
       disabled: isDisabled ? true : undefined,

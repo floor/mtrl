@@ -27,7 +27,7 @@ export function createSliderSchema(component, config: SliderConfig) {
     element: {
       options: {
         className: [getClass('slider'), config.class].filter(Boolean),
-        attrs: {
+        attributes: {
           tabindex: '-1',
           role: 'none',
           'aria-disabled': isDisabled ? 'true' : 'false'
@@ -103,7 +103,7 @@ export function createSliderSchema(component, config: SliderConfig) {
             handle: {
               options: {
                 className: getClass('slider-handle'),
-                attrs: {
+                attributes: {
                   role: 'slider',
                   'aria-valuemin': String(min),
                   'aria-valuemax': String(max),
@@ -123,7 +123,7 @@ export function createSliderSchema(component, config: SliderConfig) {
             valueBubble: {
               options: {
                 className: getClass('slider-value'),
-                attrs: {
+                attributes: {
                   'aria-hidden': 'true',
                   'data-handle-index': '0'
                 },

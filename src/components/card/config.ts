@@ -156,26 +156,26 @@ export const getElementConfig = (config: CardSchema) => {
   const defaultRole = isInteractive ? 'button' : 'region';
   
   // Prepare ARIA attributes
-  const ariaAttrs: Record<string, string> = {};
+  const ariaAttributes: Record<string, string> = {};
   if (config.aria) {
     // Add all ARIA attributes from config
     Object.entries(config.aria).forEach(([key, value]) => {
       if (value !== undefined) {
         // Convert attribute name to aria-* format if not already
         const attrName = key.startsWith('aria-') ? key : `aria-${key}`;
-        ariaAttrs[attrName] = value;
+        ariaAttributes[attrName] = value;
       }
     });
   }
   
   // Set default ARIA role if not specified
-  if (!ariaAttrs['role'] && !config.aria?.role) {
-    ariaAttrs['role'] = defaultRole;
+  if (!ariaAttributes['role'] && !config.aria?.role) {
+    ariaAttributes['role'] = defaultRole;
   }
   
   // Add tabindex for interactive cards if not specified
-  if (isInteractive && !ariaAttrs['tabindex']) {
-    ariaAttrs['tabindex'] = '0';
+  if (isInteractive && !ariaAttributes['tabindex']) {
+    ariaAttributes['tabindex'] = '0';
   }
   
   return createElementConfig(config, {
@@ -185,7 +185,7 @@ export const getElementConfig = (config: CardSchema) => {
       config.fullWidth ? `${config.prefix}-card--full-width` : null,
       isInteractive ? `${config.prefix}-card--interactive` : null
     ],
-    attrs: ariaAttrs,
+    attributes: ariaAttributes,
     forwardEvents: {
       click: (component: BaseComponent) => !!config.clickable,
       mouseenter: (component: BaseComponent) => !!isInteractive,

@@ -57,16 +57,42 @@ export const createBaseConfig = (config: SliderConfig = {}): SliderConfig => {
  * @param {SliderConfig} config - Slider configuration
  * @returns {Object} Element configuration object for withElement
  */
-export const getElementConfig = (config: SliderConfig) => 
-  createElementConfig(config, {
+export const getElementConfig = (config: SliderConfig) => {
+  const classes = [
+    'mtrl-slider',
+    config.class,
+    config.disabled ? 'mtrl-disabled' : '',
+    config.size ? `mtrl-${config.size}` : '',
+    config.color ? `mtrl-${config.color}` : '',
+    config.iconPosition ? `mtrl-${config.iconPosition}` : '',
+    config.labelPosition ? `mtrl-${config.labelPosition}` : ''
+  ].join(' ');
+
+  return createElementConfig(config, {
     tag: 'div',
-    attrs: {
-      tabindex: '-1',
-      'aria-disabled': config.disabled === true ? 'true' : 'false',
-      role: 'none'
+    attributes: {
+      role: 'slider',
+      'aria-valuemin': String(config.min),
+      'aria-valuemax': String(config.max),
+      'aria-valuenow': String(config.value),
+      'aria-orientation': 'horizontal',
+      'tabindex': '0',
+      'aria-disabled': config.disabled ? 'true' : 'false'
     },
-    className: config.class
+    className: classes,
+    forwardEvents: {
+      click: true,
+      keydown: true,
+      touchstart: true,
+      touchmove: true,
+      touchend: true,
+      mousedown: true,
+      mousemove: true,
+      mouseup: true
+    },
+    interactive: true
   });
+};
 
 /**
  * Creates API configuration for the Slider component

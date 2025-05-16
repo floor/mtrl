@@ -34,7 +34,7 @@ export const createBaseConfig = (config: RadiosConfig): RadiosConfig =>
 export const getElementConfig = (config: RadiosConfig) => {
   return createElementConfig(config, {
     tag: 'div',
-    attrs: {
+    attributes: {
       role: 'radiogroup'
     },
     className: config.class

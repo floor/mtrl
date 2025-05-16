@@ -54,11 +54,11 @@ export const createBaseConfig = (config: BadgeConfig = {}): BadgeConfig =>
  */
 export const getElementConfig = (config: BadgeConfig) => {
   // Create the attributes object
-  const attrs: Record<string, any> = {};
+  const attributes: Record<string, any> = {};
   
   // For large badges, set appropriate ARIA attributes for screen readers
   if (config.variant !== 'small') {
-    attrs.role = 'status';
+    attributes.role = 'status';
   }
   
   // Format the label if needed - small badges have no text
@@ -68,7 +68,7 @@ export const getElementConfig = (config: BadgeConfig) => {
   
   return createElementConfig(config, {
     tag: 'span',
-    attrs,
+    attributes,
     className: config.class,
     text: formattedLabel // Use the formatted label
   });

@@ -139,7 +139,7 @@ export const createTopAppBar = (config: TopAppBarConfig = {}): TopAppBar => {
     tag: componentConfig.tag,
     componentName: 'top-app-bar',
     className: getInitialClasses(),
-    attrs: {
+    attributes: {
       role: 'banner',
       'aria-label': 'Top app bar'
     },

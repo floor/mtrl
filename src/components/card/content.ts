@@ -45,7 +45,7 @@ export const createCardContent = (config: CardContentConfig = {}): HTMLElement =
           config.class,
           config.padding === false ? `${PREFIX}-card-content--no-padding` : null
         ],
-        attrs: {
+        attributes: {
           'role': 'region',
           // Add explicit style attributes to ensure visibility
           'style': 'display: block; color: inherit;'
@@ -117,7 +117,7 @@ export const createCardHeader = (config: CardHeaderConfig = {}): HTMLElement => 
         tag: 'div',
         componentName: 'card-header',
         className: config.class,
-        attrs: {
+        attributes: {
           'role': 'heading',
           'aria-level': '3' // Default heading level
         }
@@ -138,7 +138,7 @@ export const createCardHeader = (config: CardHeaderConfig = {}): HTMLElement => 
         className: `${PREFIX}-card-header-title`,
         text: config.title,
         container: textContainer,
-        attrs: {
+        attributes: {
           id: `${header.element.id || 'card-header'}-title`
         }
       });
@@ -243,7 +243,7 @@ export const createCardActions = (config: CardActionsConfig = {}): HTMLElement =
           config.vertical ? `${PREFIX}-card-actions--vertical` : null,
           config.align ? `${PREFIX}-card-actions--${config.align}` : null
         ],
-        attrs: {
+        attributes: {
           'role': 'group' // Semantically group actions together
         }
       })

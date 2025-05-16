@@ -49,28 +49,28 @@ export const createBaseConfig = (config: ButtonConfig = {}): ButtonConfig =>
  */
 export const getElementConfig = (config: ButtonConfig) => {
   // Create the attributes object
-  const attrs: Record<string, any> = {
+  const attributes: Record<string, any> = {
     type: config.type || 'button'
   };
   
   // Only add disabled attribute if it's explicitly true
   if (config.disabled === true) {
-    attrs.disabled = true;
+    attributes.disabled = true;
   }
   
   // Add value attribute only if it exists
   if (config.value !== undefined) {
-    attrs.value = config.value;
+    attributes.value = config.value;
   }
   
   // Add aria-label attribute for accessibility
   if (config.ariaLabel) {
-    attrs['aria-label'] = config.ariaLabel;
+    attributes['aria-label'] = config.ariaLabel;
   }
   
   return createElementConfig(config, {
     tag: 'button',
-    attrs,
+    attributes,
     className: config.class,
     forwardEvents: {
       click: (component: any, event: Event) => !component.element.disabled,

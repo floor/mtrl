@@ -31,7 +31,7 @@ export function createChipsSchema(component, config: ChipsConfig) {
           hasLabel && labelPosition === 'end' ? getClass('chips--label-end') : null,
           config.class
         ].filter(Boolean),
-        attrs: {
+        attributes: {
           tabindex: '0',
           role: 'group',
           'aria-multiselectable': isMultiSelect ? 'true' : 'false'

@@ -36,36 +36,26 @@ export const createBaseConfig = (config: CarouselConfig = {}): CarouselConfig =>
  */
 export const getElementConfig = (config: CarouselConfig) => {
   // Create the attributes object
-  const attrs: Record<string, any> = {
+  const attributes: Record<string, any> = {
     role: 'region',
     'aria-roledescription': 'carousel',
     'aria-live': 'polite'
   };
   
   // Create data attributes for configuration
-  const dataAttrs = {
+  const dataAttributes = {
     'data-transition': config.transition,
     'data-loop': config.loop ? 'true' : 'false'
   };
   
   return createElementConfig(config, {
     tag: 'div',
-    attrs: { ...attrs, ...dataAttrs },
+    attributes: { ...attributes, ...dataAttributes },
     className: config.class,
     forwardEvents: {
       keydown: true,
       focus: true,
       blur: true
-    },
-  // @ts-ignore: Fix later - Object literal may only specify known properties, and 'style' does not exist in type '{ tag: string; attrs?: Record<string, any>; className?: string | string[]; html?: string; text?: string; forwardEvents?: Record<string, boolean | ((component: any, event: Event) => boolean)>; interactive?: boolean; }'.
-    style: {
-      position: 'relative',
-      overflow: 'hidden',
-      borderRadius: `${config.borderRadius}px`,
-      width: '100%',
-      height: 'auto',
-      display: 'flex',
-      flexDirection: 'column'
     }
   });
 };

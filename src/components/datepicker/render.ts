@@ -39,7 +39,7 @@ export const renderHeader = ({
     tag: 'button',
     className: `${prefix}-datepicker-month-selector`,
     text: MONTH_NAMES[currentMonth],
-    attrs: {
+    attributes: {
       type: 'button',
       'aria-label': 'Select month'
     }
@@ -50,7 +50,7 @@ export const renderHeader = ({
     tag: 'button',
     className: `${prefix}-datepicker-year-selector`,
     text: currentYear.toString(),
-    attrs: {
+    attributes: {
       type: 'button',
       'aria-label': 'Select year'
     }
@@ -67,7 +67,7 @@ export const renderHeader = ({
     tag: 'button',
     className: `${prefix}-datepicker-prev-btn`,
     html: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>',
-    attrs: {
+    attributes: {
       type: 'button',
       'aria-label': currentView === 'day' ? 'Previous month' : 
                     currentView === 'month' ? 'Previous year' : 'Previous year range'
@@ -79,7 +79,7 @@ export const renderHeader = ({
     tag: 'button',
     className: `${prefix}-datepicker-next-btn`,
     html: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>',
-    attrs: {
+    attributes: {
       type: 'button',
       'aria-label': currentView === 'day' ? 'Next month' : 
                     currentView === 'month' ? 'Next year' : 'Next year range'
@@ -204,7 +204,7 @@ export const renderDays = ({
       tag: 'button',
       className: classNames,
       text: calendarDate.day.toString(),
-      attrs: {
+      attributes: {
         type: 'button',
         'aria-label': calendarDate.date.toLocaleDateString(),
         'aria-selected': calendarDate.isSelected ? 'true' : 'false',
@@ -253,7 +253,7 @@ export const renderMonthSelection = ({
       tag: 'button',
       className: `${prefix}-datepicker-month ${isSelected ? SELECTED_CLASS : ''}`,
       text: month,
-      attrs: {
+      attributes: {
         type: 'button',
         'aria-selected': isSelected ? 'true' : 'false',
         'data-month': index.toString()
@@ -296,7 +296,7 @@ export const renderYearSelection = ({
       tag: 'button',
       className: `${prefix}-datepicker-year ${isSelected ? SELECTED_CLASS : ''}`,
       text: year.toString(),
-      attrs: {
+      attributes: {
         type: 'button',
         'aria-selected': isSelected ? 'true' : 'false',
         'data-year': year.toString()
@@ -335,7 +335,7 @@ export const renderFooter = ({
     tag: 'button',
     className: `${prefix}-datepicker-cancel ${prefix}-button ${prefix}-button--text`,
     text: 'Cancel',
-    attrs: {
+    attributes: {
       type: 'button'
     }
   });
@@ -345,7 +345,7 @@ export const renderFooter = ({
     tag: 'button',
     className: `${prefix}-datepicker-ok ${prefix}-button ${prefix}-button--text`,
     text: 'OK',
-    attrs: {
+    attributes: {
       type: 'button'
     }
   });

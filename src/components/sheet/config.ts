@@ -36,7 +36,7 @@ export const createBaseConfig = (config: SheetConfig = {}): SheetConfig =>
 export const getElementConfig = (config: SheetConfig) => {
   return createElementConfig(config, {
     tag: 'div',
-    attrs: {
+    attributes: {
       role: 'dialog',
       'aria-modal': config.variant === SHEET_VARIANTS.MODAL ? 'true' : 'false'
     },

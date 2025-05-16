@@ -40,7 +40,7 @@ export const createBaseConfig = (config: DialogConfig = {}): DialogConfig =>
 export const getElementConfig = (config: DialogConfig) => {
   return createElementConfig(config, {
     tag: 'div',
-    attrs: {},
+    attributes: {},
     className: config.class
   });
 };
@@ -53,7 +53,7 @@ export const getElementConfig = (config: DialogConfig) => {
 export const getOverlayConfig = (config: DialogConfig) => {
   return {
     tag: 'div',
-    attrs: {
+    attributes: {
       'aria-modal': config.modal === false ? false : true,
       'role': 'dialog',
       'tabindex': -1
