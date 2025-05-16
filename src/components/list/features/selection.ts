@@ -2,6 +2,7 @@
 
 import { LIST_CLASSES, LIST_SELECTION_MODES, LIST_EVENTS, LIST_TYPES } from '../constants';
 import { addClass, hasClass, removeClass, toggleClass } from '../../../core/dom'
+import { PREFIX } from '../../../core'
 
 
 /**
@@ -97,7 +98,7 @@ export const withSelection = (config) => component => {
     
     // Exit if default was prevented
     if (selectionEvent.defaultPrevented) return;
-    
+
     // Toggle selection based on mode
     if (config.multiSelect) {
       if (selectedItems.has(itemId)) {
@@ -110,27 +111,23 @@ export const withSelection = (config) => component => {
     } else {
       // For single-select, use classList method to determine current state
       const isCurrentlySelected = hasClass(itemElement, LIST_CLASSES.SELECTED);
-      
-      // If not selected, select it and deselect others
-      if (!isCurrentlySelected) {
-        // Clear all selections
-        selectedItems.clear();
-        selectedItems.add(itemId);
-        
-        // Update DOM - only update what's visible
-        const currentlySelected = component.element.querySelector(`.${LIST_CLASSES.SELECTED}`);
-        if (currentlySelected && currentlySelected !== itemElement) {
-          removeClass(currentlySelected, LIST_CLASSES.SELECTED);
-        }
 
-        // Then add the class to the new target element
-        if (!hasClass(itemElement, LIST_CLASSES.SELECTED)) {
-          addClass(itemElement, LIST_CLASSES.SELECTED);
-        }
-      } else {
-        // If already selected, just deselect
+      // If already selected, just deselect
+      if (isCurrentlySelected) {
         selectedItems.clear();
         removeClass(itemElement, LIST_CLASSES.SELECTED);
+      } else {
+        // Clear previous selection from DOM first
+        const prevSelected = component.element.querySelectorAll(`.${PREFIX}-${LIST_CLASSES.SELECTED}`);
+
+        prevSelected.forEach(el => {
+          removeClass(el, LIST_CLASSES.SELECTED);
+        });
+        
+        // Clear all selections and add new one
+        selectedItems.clear();
+        selectedItems.add(itemId);
+        addClass(itemElement, LIST_CLASSES.SELECTED);
       }
     }
   };
@@ -151,9 +148,9 @@ export const withSelection = (config) => component => {
       const itemId = el.getAttribute('data-id');
       const isSelected = selectedItems.has(itemId);
       
-      if (isSelected && !el.classList.contains(LIST_CLASSES.SELECTED)) {
+      if (isSelected && !hasClass(el, LIST_CLASSES.SELECTED)) {
         addClass(el, LIST_CLASSES.SELECTED);
-      } else if (!isSelected && el.classList.contains(LIST_CLASSES.SELECTED)) {
+      } else if (!isSelected && hasClass(el,LIST_CLASSES.SELECTED)) {
         removeClass(el, LIST_CLASSES.SELECTED);
       }
     });
@@ -176,9 +173,9 @@ export const withSelection = (config) => component => {
     // Find the element only if it's in the visible viewport
     const itemElement = component.element.querySelector(`[data-id="${itemId}"]`);
     if (itemElement) {
-      if (selected && !itemElement.classList.contains(LIST_CLASSES.SELECTED)) {
+      if (selected && !hasClass(itemElement, LIST_CLASSES.SELECTED)) {
         addClass(itemElement, LIST_CLASSES.SELECTED);
-      } else if (!selected && itemElement.classList.contains(LIST_CLASSES.SELECTED)) {
+      } else if (!selected && hasClass(itemElement, LIST_CLASSES.SELECTED)) {
         removeClass(itemElement, LIST_CLASSES.SELECTED);
       }
     }
@@ -221,7 +218,7 @@ export const withSelection = (config) => component => {
         selectedItems.clear();
         
         // Then update the visible DOM elements
-        component.element.querySelectorAll(`.${LIST_CLASSES.SELECTED}`)
+        component.element.querySelectorAll(`.${PREFIX}-${LIST_CLASSES.SELECTED}`)
           .forEach(el => removeClass(el, LIST_CLASSES.SELECTED));
       }
       
