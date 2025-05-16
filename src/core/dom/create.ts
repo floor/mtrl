@@ -82,12 +82,6 @@ export interface CreateElementOptions {
   attributes?: Record<string, any>;
   
   /**
-   * HTML attributes
-   * @deprecated Use attributes instead
-   */
-  attrs?: Record<string, any>;
-  
-  /**
    * Events to forward when component has emit method
    */
   forwardEvents?: Record<string, EventCondition>;
@@ -132,7 +126,6 @@ export const createElement = (options: CreateElementOptions = {}): HTMLElement =
     class: classOption,
     className,
     rawClass,
-    attrs = {},
     attributes = {},
     forwardEvents = {},
     onCreate,
@@ -166,10 +159,10 @@ export const createElement = (options: CreateElementOptions = {}): HTMLElement =
     element.dataset[key] = data[key];
   }
 
-  // Handle regular attributes - attributes takes precedence over attrs
-  const allAttrs = { ...attrs, ...attributes, ...rest };
-  for (const key in allAttrs) {
-    const value = allAttrs[key];
+  // Handle regular attributes
+  const allAttributes = { ...attributes, ...rest };
+  for (const key in allAttributes) {
+    const value = allAttributes[key];
     if (value != null) element.setAttribute(key, String(value));
   }
 

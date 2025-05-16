@@ -129,7 +129,6 @@ export const createElementConfig = (
   options: {
     tag: string;
     attributes?: Record<string, any>;
-    attrs?: Record<string, any>;
     className?: string | string[] | null;
     html?: string;
     text?: string;
@@ -147,8 +146,8 @@ export const createElementConfig = (
     ...(Array.isArray(optionsClasses) ? optionsClasses : [optionsClasses])
   ].filter(Boolean);
   
-  // Prioritize attributes over attrs for backward compatibility
-  const elementAttributes = options.attributes || options.attrs || {};
+  // Set up element attributes
+  const elementAttributes = options.attributes || {};
   
   return {
     tag: options.tag,

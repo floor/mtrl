@@ -41,8 +41,8 @@ const mockCreateElement = mock((options) => {
     const classes = Array.isArray(options.className) ? options.className : [options.className];
     classes.filter(Boolean).forEach(cls => mockElement.classList.add(cls));
   }
-  if (options.attrs) {
-    Object.entries(options.attrs).forEach(([key, value]) => {
+  if (options.attributes) {
+    Object.entries(options.attributes).forEach(([key, value]) => {
       mockElement.setAttribute(key, String(value));
     });
   }
@@ -108,7 +108,7 @@ const withElement = (options: any = {}) =>
         mockHasTouchSupport() && options.interactive ? component.getClass('interactive') : null,
         ...(Array.isArray(options.className) ? options.className : [options.className])
       ].filter(Boolean),
-      attrs: options.attrs || {}
+      attributes: options.attributes || {}
     });
 
     return {
@@ -292,17 +292,17 @@ describe('Core Component Module', () => {
     });
     
     test('should add custom attributes if provided', () => {
-      const attrs = {
+      const attributes = {
         id: 'test-id',
         'aria-label': 'Test Label',
         'data-test': 'test-value'
       };
       
       const baseComponent = createBase();
-      const enhancedComponent = withElement({ attrs })(baseComponent);
+      const enhancedComponent = withElement({ attributes })(baseComponent);
       
       expect(mockCreateElement).toHaveBeenCalledWith(expect.objectContaining({
-        attrs
+        attributes
       }));
     });
     
