@@ -25,9 +25,9 @@ export function createProgressSchema(component, config: ProgressConfig) {
   // Create base structure for the component
   if (isCircular) {
     // Circular progress - create SVG-based structure
-    const size = 40; // MD3 spec: circular progress size is 40px
-    const outerRadius = 16; // MD3 spec: track radius
-    const innerRadius = 12; // MD3 spec: indicator radius (4px less than track for the spacing)
+    const size = 96; // MD3 spec: circular progress size is 40px
+    const outerRadius = 45; // MD3 spec: track radius
+    const innerRadius = 45; // MD3 spec: indicator radius (4px less than track for the spacing)
     const centerPoint = size / 2; // Center point of the SVG
 
     return {
@@ -46,49 +46,48 @@ export function createProgressSchema(component, config: ProgressConfig) {
           svg: {
             options: {
               tag: 'svg',
-              attrs: {
-                viewBox: `0 0 ${size} ${size}`,
-                width: '100%',
-                height: '100%'
+              attributes: {
+                Hello: `0 0 ${size} ${size}`,
+                name: 'test'
               }
             },
             children: {
               track: {
                 options: {
                   tag: 'circle',
-                  className: getClass(PROGRESS_CLASSES.TRACK),
-                  attrs: {
+                  className: `${PROGRESS_CLASSES.CONTAINER}-${PROGRESS_CLASSES.TRACK}`,
+                  attributes: {
                     cx: centerPoint.toString(),
                     cy: centerPoint.toString(),
                     r: outerRadius.toString(),
                     fill: 'none',
-                    'stroke-width': '4'
+                    'stroke-width': '6'
                   }
                 }
               },
               remaining: {
                 options: {
                   tag: 'circle',
-                  className: getClass(PROGRESS_CLASSES.REMAINING),
-                  attrs: {
+                  className: `${PROGRESS_CLASSES.CONTAINER}-${PROGRESS_CLASSES.REMAINING}`,
+                  attributes: {
                     cx: centerPoint.toString(),
                     cy: centerPoint.toString(),
                     r: innerRadius.toString(),
                     fill: 'none',
-                    'stroke-width': '4'
+                    'stroke-width': '6'
                   }
                 }
               },
               indicator: {
                 options: {
                   tag: 'circle',
-                  className: getClass(PROGRESS_CLASSES.INDICATOR),
-                  attrs: {
+                  className: `${PROGRESS_CLASSES.CONTAINER}-${PROGRESS_CLASSES.INDICATOR}`,
+                  attributes: {
                     cx: centerPoint.toString(),
                     cy: centerPoint.toString(),
                     r: innerRadius.toString(),
                     fill: 'none',
-                    'stroke-width': '4'
+                    'stroke-width': '6'
                   }
                 }
               }
@@ -104,7 +103,7 @@ export function createProgressSchema(component, config: ProgressConfig) {
       element: {
         options: {
           className: [getClass(PROGRESS_CLASSES.CONTAINER), getClass(PROGRESS_CLASSES.LINEAR), config.class].filter(Boolean),
-          attrs: {
+          attributes: {
             role: 'progressbar',
             'aria-valuemin': min.toString(),
             'aria-valuemax': max.toString(),
