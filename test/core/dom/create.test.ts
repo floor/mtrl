@@ -100,6 +100,7 @@ const DOMCreateModule = {
       className,
       rawClass,
       attrs = {},
+      attributes = {},
       forwardEvents = {},
       onCreate,
       context,
@@ -132,8 +133,8 @@ const DOMCreateModule = {
       element.dataset[key] = data[key];
     }
 
-    // Handle regular attributes
-    const allAttrs = { ...attrs, ...rest };
+    // Handle regular attributes - attributes takes precedence over attrs
+    const allAttrs = { ...attrs, ...attributes, ...rest };
     mockSetAttributes(element, allAttrs);
 
     // Handle event forwarding
@@ -194,9 +195,9 @@ const DOMCreateModule = {
     }
   },
 
-  withAttributes(attrs: Record<string, any>) {
+  withAttributes(attributes: Record<string, any>) {
     return (element: HTMLElement): HTMLElement => {
-      mockSetAttributes(element, attrs);
+      mockSetAttributes(element, attributes);
       return element;
     };
   },
@@ -319,6 +320,32 @@ describe('DOM Create Utilities', () => {
       // Verify attributes were set on the element
       expect(element.getAttribute('role')).toBe(attrs.role);
       expect(element.getAttribute('tabindex')).toBe(attrs.tabindex);
+    });
+
+    test('should set attributes with attributes property', () => {
+      const attributes = { role: 'button', tabindex: '0' };
+      const element = createElement({ attributes });
+      
+      // Verify mockSetAttributes was called
+      expect(mockSetAttributes).toHaveBeenCalled();
+      
+      // Verify attributes were set on the element
+      expect(element.getAttribute('role')).toBe(attributes.role);
+      expect(element.getAttribute('tabindex')).toBe(attributes.tabindex);
+    });
+
+    test('attributes should take precedence over attrs', () => {
+      const attrs = { role: 'button', tabindex: '0' };
+      const attributes = { role: 'link', ariaLabel: 'Test' };
+      const element = createElement({ attrs, attributes });
+      
+      // Verify mockSetAttributes was called
+      expect(mockSetAttributes).toHaveBeenCalled();
+      
+      // Verify attributes take precedence
+      expect(element.getAttribute('role')).toBe(attributes.role);
+      expect(element.getAttribute('tabindex')).toBe(attrs.tabindex);
+      expect(element.getAttribute('ariaLabel')).toBe(attributes.ariaLabel);
     });
 
     test('should handle rest attributes', () => {

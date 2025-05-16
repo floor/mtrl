@@ -79,6 +79,12 @@ export interface CreateElementOptions {
   /**
    * HTML attributes
    */
+  attributes?: Record<string, any>;
+  
+  /**
+   * HTML attributes
+   * @deprecated Use attributes instead
+   */
   attrs?: Record<string, any>;
   
   /**
@@ -127,6 +133,7 @@ export const createElement = (options: CreateElementOptions = {}): HTMLElement =
     className,
     rawClass,
     attrs = {},
+    attributes = {},
     forwardEvents = {},
     onCreate,
     context,
@@ -159,8 +166,8 @@ export const createElement = (options: CreateElementOptions = {}): HTMLElement =
     element.dataset[key] = data[key];
   }
 
-  // Handle regular attributes
-  const allAttrs = { ...attrs, ...rest };
+  // Handle regular attributes - attributes takes precedence over attrs
+  const allAttrs = { ...attrs, ...attributes, ...rest };
   for (const key in allAttrs) {
     const value = allAttrs[key];
     if (value != null) element.setAttribute(key, String(value));
@@ -230,12 +237,12 @@ export const removeEventHandlers = (element: HTMLElement): void => {
 
 /**
  * Higher-order function to add attributes to an element
- * @param {Record<string, any>} attrs - Attributes to add
+ * @param {Record<string, any>} attributes - Attributes to add
  * @returns {(element: HTMLElement) => HTMLElement} Element transformer
  */
-export const withAttributes = (attrs: Record<string, any>) => 
+export const withAttributes = (attributes: Record<string, any>) => 
   (element: HTMLElement): HTMLElement => {
-    setAttributes(element, attrs);
+    setAttributes(element, attributes);
     return element;
   };
 

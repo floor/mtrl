@@ -291,7 +291,7 @@ const createDatePicker = (config: DatePickerConfig = {}): DatePickerComponent =>
     state.calendarElement = createElement({
       tag: 'div',
       className: calendarConfig.className,
-      attrs: calendarConfig.attrs
+      attributes: calendarConfig.attributes
     });
     
     // Initially hide calendar
