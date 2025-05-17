@@ -1,5 +1,6 @@
 import { ProgressConfig } from './types';
 import { PROGRESS_VARIANTS, PROGRESS_CLASSES } from './constants';
+import { createSVGElement } from '../../core';
 
 /**
  * Creates the base progress structure definition
@@ -24,17 +25,15 @@ export function createProgressSchema(component, config: ProgressConfig) {
   
   // Create base structure for the component
   if (isCircular) {
-    // Circular progress - create SVG-based structure
-    const size = 96; // MD3 spec: circular progress size is 40px
-    const outerRadius = 45; // MD3 spec: track radius
-    const innerRadius = 45; // MD3 spec: indicator radius (4px less than track for the spacing)
-    const centerPoint = size / 2; // Center point of the SVG
-
+    const size = 96;
+    const strokeWidth = 6
+    const radius = size / 2 - strokeWidth / 2;
+    const centerPoint = size / 2;
     return {
       element: {
         options: {
           className: [getClass(PROGRESS_CLASSES.CONTAINER), getClass(PROGRESS_CLASSES.CIRCULAR), config.class].filter(Boolean),
-          attrs: {
+          attributes: {
             role: 'progressbar',
             'aria-valuemin': min.toString(),
             'aria-valuemax': max.toString(),
@@ -44,50 +43,55 @@ export function createProgressSchema(component, config: ProgressConfig) {
         },
         children: {
           svg: {
+            creator: createSVGElement,
             options: {
               tag: 'svg',
               attributes: {
-                Hello: `0 0 ${size} ${size}`,
-                name: 'test'
+                viewBox: `0 0 ${size} ${size}`,
+                width: '100%',
+                height: '100%'
               }
             },
             children: {
               track: {
+                creator: createSVGElement,
                 options: {
                   tag: 'circle',
                   className: `${PROGRESS_CLASSES.CONTAINER}-${PROGRESS_CLASSES.TRACK}`,
                   attributes: {
                     cx: centerPoint.toString(),
                     cy: centerPoint.toString(),
-                    r: outerRadius.toString(),
+                    r: radius.toString(),
                     fill: 'none',
-                    'stroke-width': '6'
+                    'stroke-width': strokeWidth.toString()
                   }
                 }
               },
               remaining: {
+                creator: createSVGElement,
                 options: {
                   tag: 'circle',
                   className: `${PROGRESS_CLASSES.CONTAINER}-${PROGRESS_CLASSES.REMAINING}`,
                   attributes: {
                     cx: centerPoint.toString(),
                     cy: centerPoint.toString(),
-                    r: innerRadius.toString(),
+                    r: radius.toString(),
                     fill: 'none',
-                    'stroke-width': '6'
+                    'stroke-width': strokeWidth.toString()
                   }
                 }
               },
               indicator: {
+                creator: createSVGElement,
                 options: {
                   tag: 'circle',
                   className: `${PROGRESS_CLASSES.CONTAINER}-${PROGRESS_CLASSES.INDICATOR}`,
                   attributes: {
                     cx: centerPoint.toString(),
                     cy: centerPoint.toString(),
-                    r: innerRadius.toString(),
+                    r: radius.toString(),
                     fill: 'none',
-                    'stroke-width': '6'
+                    'stroke-width': strokeWidth.toString()
                   }
                 }
               }
