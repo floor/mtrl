@@ -4,11 +4,40 @@
  * @description DOM manipulation utilities optimized for performance
  */
 
-import { normalizeClasses } from '../utils';
 import { PREFIX } from '../config';
 
 // Constant for prefix with dash for better performance
 const PREFIX_WITH_DASH = `${PREFIX}-`;
+
+
+/**
+ * Normalizes class names input by handling various formats:
+ * - String with space-separated classes
+ * - Array of strings
+ * - Mixed array of strings and space-separated classes
+ * 
+ * @param classes - Classes to normalize
+ * @returns Array of unique, non-empty class names
+ */
+export const normalizeClasses = (...classes: (string | string[])[]): string[] => {
+  // Process the input classes
+  const processedClasses = classes
+    .flat()
+    .reduce((acc: string[], cls) => {
+      if (typeof cls === 'string') {
+        // Split space-separated classes and add them individually
+        acc.push(...cls.split(/\s+/));
+      }
+      return acc;
+    }, [])
+    .filter(Boolean); // Remove empty strings
+  
+  // Create a Set and convert back to array without spread operator
+  const uniqueClasses = new Set<string>();
+  processedClasses.forEach(cls => uniqueClasses.add(cls));
+  
+  return Array.from(uniqueClasses);
+};
 
 /**
  * Adds multiple classes to an element

@@ -55,7 +55,6 @@ export {
 
 // 7. Utility functions
 export { 
-  normalizeClasses, 
   when, 
   classNames as joinClasses, 
   isObject, 

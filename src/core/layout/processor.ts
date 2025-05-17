@@ -31,7 +31,7 @@ export function createComponentInstance(
     const layoutItemConfig = options.layoutItem;
     const styleConfig = options.style;
     const attributesConfig = options.attributes;
-    
+
     // Handle both event and events for flexibility (events is preferred)
     const eventsConfig = options.events || options.event;
     
@@ -51,7 +51,7 @@ export function createComponentInstance(
     // Create the component with clean options
     const component = isClass
       ? new Component(cleanOptions)
-      : Component(cleanOptions);
+      : Component(options);
       
     // Apply configuration to the created component
     if (component) {
@@ -77,7 +77,7 @@ export function createComponentInstance(
         if (attributesConfig && typeof attributesConfig === 'object') {
           for (const [key, value] of Object.entries(attributesConfig)) {
             if (value !== undefined && value !== null) {
-              element.setAttribute(key, value.toString());
+              element.setAttribute( key, value.toString());
             }
           }
         }

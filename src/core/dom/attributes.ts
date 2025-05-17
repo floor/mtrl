@@ -12,6 +12,8 @@
  * @returns {HTMLElement} The element for chaining
  */
 export const setAttributes = (element: HTMLElement, attributes: Record<string, any> = {}): HTMLElement => {
+  const isSvgElement = element instanceof SVGElement;
+  
   Object.entries(attributes).forEach(([key, value]) => {
     // Skip null/undefined values
     if (value === null || value === undefined) return;

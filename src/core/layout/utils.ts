@@ -6,7 +6,7 @@
 
 import { PREFIX } from '../config';
 import { ComponentLike } from './types';
-import { normalizeClasses as normalizeClassesUtil } from '../utils';
+import { normalizeClasses as normalizeClassesUtil } from '../dom';
 
 /**
  * Checks if a value is a component object (has an element property)
