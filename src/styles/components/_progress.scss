@@ -13,6 +13,24 @@ $linear-height: 4px;
 $circular-size: 48px;
 $stroke-width: 6px;
 
+// Keyframes for SVG-based indeterminate linear progress
+@keyframes indeterminate-bar {
+  0% {
+    x2: 0; 
+    transform: translateX(-12%);
+    stroke-width: $linear-height;
+  }
+  50% {
+    x2: 33;
+    stroke-width: $linear-height;
+  }
+  100% {
+    x2: 12;
+    transform: translateX(112%);
+    stroke-width: $linear-height;
+  }
+}
+
 .#{$component} {
   // Base styles
   position: relative;
@@ -29,22 +47,67 @@ $stroke-width: 6px;
   &--linear {
     width: 100%;
     height: $linear-height; // MD3 spec height
+    min-height: $linear-height; // Ensure minimum height
     border-radius: calc($linear-height / 2);
     
+    // For SVG-based linear progress
+    svg {
+      overflow: visible; // Allow portions to extend outside container if needed
+      width: 100%;
+      height: $linear-height; // Match the container height
+      min-height: $linear-height; // Ensure minimum height
+      display: block; // Prevent any inline display issues
+      
+      line, .#{$component}-track, .#{$component}-buffer, .#{$component}-indicator, .#{$component}-remaining {
+        // Ensure all line elements have the proper height
+        stroke-width: $linear-height;
+        // Force visibility
+        vector-effect: non-scaling-stroke;
+      }
+      
+      .#{$component}-track {
+        stroke: t.color('surface-container-highest');
+        stroke-width: $linear-height;
+        stroke-linecap: round;
+      }
+      
+      .#{$component}-buffer {
+        stroke: t.alpha('primary', 0.4);
+        stroke-width: $linear-height;
+        stroke-linecap: round;
+        transition: all 0.3s ease;
+      }
+      
+      .#{$component}-indicator {
+        stroke: t.color('primary');
+        stroke-width: $linear-height;
+        stroke-linecap: round;
+        transition: all 0.3s ease;
+      }
+      
+      .#{$component}-remaining {
+        stroke: t.alpha('primary', 0.24);
+        stroke-width: $linear-height;
+        stroke-linecap: round;
+        transition: all 0.3s ease;
+      }
+    }
+    
+    // Legacy non-SVG styling for backwards compatibility
     // Track - the "remaining" part (lighter color)
-    .#{$component}-track {
+    .#{$component}-track:not(line) {
       position: absolute;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      // background-color: t.color('surface-container-highest');
+      background-color: t.color('surface-container-highest');
       border-radius: calc($linear-height / 2);
       z-index: 0; // Lowest layer
     }
     
     // Buffer element for "buffering" scenarios (video loading, etc.)
-    .#{$component}-buffer {
+    .#{$component}-buffer:not(line) {
       position: absolute;
       top: 0;
       left: 0;
@@ -56,7 +119,7 @@ $stroke-width: 6px;
     }
     
     // Indicator - the "active" part (primary color)
-    .#{$component}-indicator {
+    .#{$component}-indicator:not(line) {
       position: absolute;
       top: 0;
       left: 0;
@@ -66,13 +129,10 @@ $stroke-width: 6px;
       transition: width 0.3s ease;
       border-radius: calc($linear-height / 2);
       z-index: 2; // Higher than remaining and track
-      // animation: 
-      //   linear-indeterminate-translate 2.5s infinite linear,
-      //   linear-indeterminate-width 2.5s infinite ease-in-out;
     }
     
     // Remaining - the space between indicator and 100%
-    .#{$component}-remaining {
+    .#{$component}-remaining:not(line) {
       position: absolute;
       top: 0;
       height: 100%;
@@ -82,16 +142,34 @@ $stroke-width: 6px;
       transition: left 0.3s ease, width 0.3s ease, margin-left 0.3s ease;
       z-index: 1; // Lower than indicator but higher than track
       box-sizing: border-box; // Ensure consistent sizing
-      // display: none; // We're only using a single segment
     }
     
     // Indeterminate animation for linear progress
     &.#{$component}--indeterminate {
-      .#{$component}-buffer {
+      .#{$component}-buffer, .#{$component}-buffer:not(line) {
         display: none;
       }
       
-      .#{$component}-indicator {
+      // For SVG elements
+      svg {
+        .#{$component}-indicator {
+          // Use the same style of animation as the div-based version
+          // but adapted for SVG elements
+          transform-origin: left center;
+          stroke-dasharray: none;
+          stroke-dashoffset: 0;
+          x1: 0;
+          stroke-width: $linear-height !important; // Force stroke width
+          animation: indeterminate-bar 1.7s infinite ease-in-out;
+        }
+        
+        .#{$component}-remaining {
+          display: none;
+        }
+      }
+      
+      // For legacy non-SVG elements
+      .#{$component}-indicator:not(line) {
         width: 0; // Initial width
         animation: 
           linear-indeterminate-translate 1.7s infinite linear,
@@ -100,7 +178,7 @@ $stroke-width: 6px;
         z-index: 2;
       }
       
-      .#{$component}-remaining {
+      .#{$component}-remaining:not(line) {
         display: block;
         width: 100%;
       }
@@ -181,6 +259,7 @@ $stroke-width: 6px;
   }
 }
 
+// For legacy non-SVG linear progress
 @keyframes linear-indeterminate-translate {
   0% {
     left: -12%; 

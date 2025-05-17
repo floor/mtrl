@@ -21,39 +21,89 @@ export const defaultConfig: ProgressConfig = {
 };
 
 /**
- * Sets up indeterminate state for the progress component
+ * Sets up indeterminate state animations and properties
  * 
  * @param component The progress component
- * @param isCircular Whether the component is circular
+ * @param isCircular Whether the component is in circular variant
  */
 export const setupIndeterminateState = (component, isCircular) => {
   try {
-    if (!component.element) {
-      console.warn('Progress component missing element property');
-      return;
+    // Add indeterminate class to container if not already
+    const container = component.element;
+    if (!container.classList.contains(PROGRESS_CLASSES.INDETERMINATE)) {
+      container.classList.add(PROGRESS_CLASSES.INDETERMINATE);
     }
     
-    // We no longer add the class here since it's added in withSetup
-    // This function now only sets up the animations
+    // Remove the aria-valuenow attribute if present
+    container.removeAttribute('aria-valuenow');
     
-    // For linear progress, prepare the elements for animation
-    if (!isCircular) {
+    // Different treatments for circular vs linear indeterminate progress
+    if (isCircular) {
+      // For circular, we'll add animation properties to the SVG elements
+      // Most of this will be handled by CSS
+      
+      // Find the SVG indicator and remaining elements if they exist
+      const indicatorElement = component.indicatorElement;
+      const remainingElement = component.remainingElement;
+      
+      if (indicatorElement) {
+        // Enable rotation animation via CSS
+        // (CSS class should handle this via the .progress--indeterminate class)
+      }
+      
+      // Hide the remaining element if we're in indeterminate state
+      if (remainingElement) {
+        remainingElement.style.display = 'none';
+      }
+    } else {
+      // For linear indeterminate, different animation approach
+      
+      // Schedule a small delay to make sure the DOM is fully constructed
       setTimeout(() => {
         try {
-          // Make sure elements property exists
-          if (!component.elements) {
-            return;
-          }
+          const isSvgLinear = component.indicatorElement instanceof SVGElement;
           
-          // For the indicator, we'll let CSS handle the width and left position animations
-          if (component.elements?.indicator instanceof HTMLElement) {
-            component.elements.indicator.style.width = '';
-            component.elements.indicator.style.left = '';
-          }
-          
-          // Hide the remaining element 
-          if (component.elements?.remaining instanceof HTMLElement) {
-            component.elements.remaining.style.display = 'none';
+          if (isSvgLinear) {
+            // For SVG linear indeterminate progress
+            // Most animation will be handled via CSS with the .progress--indeterminate class
+            
+            // Clear any x2 attribute on the indicator to allow CSS animations
+            if (component.indicatorElement) {
+              component.indicatorElement.removeAttribute('x2');
+              
+              // Make sure x1 is set to 0 for proper animation position
+              component.indicatorElement.setAttribute('x1', '0');
+              
+              // Set initial x2 to 0 to ensure it doesn't show before animation starts
+              component.indicatorElement.setAttribute('x2', '0');
+              
+              // Ensure the stroke-width is properly set
+              // Get it from track element if possible, otherwise use 4px as default
+              const trackElement = component.trackElement;
+              const strokeWidth = trackElement ? trackElement.getAttribute('stroke-width') : '6';
+              component.indicatorElement.setAttribute('stroke-width', strokeWidth);
+              
+              // Force SVG visibility with CSS
+              component.indicatorElement.setAttribute('style', 'vector-effect: non-scaling-stroke;');
+            }
+            
+            // Hide the remaining element
+            if (component.remainingElement) {
+              component.remainingElement.style.display = 'none';
+            }
+          } else {
+            // For traditional DIV-based linear indeterminate
+            
+            // For the indicator, we'll let CSS handle the width and left position animations
+            if (component.elements?.indicator instanceof HTMLElement) {
+              component.elements.indicator.style.width = '';
+              component.elements.indicator.style.left = '';
+            }
+            
+            // Hide the remaining element 
+            if (component.elements?.remaining instanceof HTMLElement) {
+              component.elements.remaining.style.display = 'none';
+            }
           }
         } catch (error) {
           console.error('Error setting up indeterminate animation:', error);
@@ -80,18 +130,46 @@ export const setupComponentReferences = (component, state, isCircular) => {
       console.warn('Progress component missing elements property. withLayout may not have been applied correctly.');
       component.elements = {};
     }
+
+    // Check if we're using SVG-based structure (both circular and linear variants now use SVG)
+    const svgElement = component.elements?.svg;
     
-    // withLayout already created and stored the elements, we just need to expose
-    // them as direct properties on the component for API access
-    component.trackElement = component.elements?.track || null;
-    component.indicatorElement = component.elements?.indicator || null;
-    component.remainingElement = component.elements?.remaining || null;
-    component.bufferElement = component.elements?.buffer || null;
-    
-    // For circular variant, SVG elements may be in a different structure
-    if (isCircular && component.elements?.svg) {
-      // The SVG element might contain the actual indicator, track, etc.
-      // We can access them through the svg's children if needed
+    if (svgElement) {
+      // Get all track, indicator, remaining, and buffer elements from the SVG
+      // For both circular and linear variants
+      if (svgElement.querySelector) {
+        const trackElement = svgElement.querySelector(`.${PROGRESS_CLASSES.CONTAINER}-${PROGRESS_CLASSES.TRACK}`);
+        const indicatorElement = svgElement.querySelector(`.${PROGRESS_CLASSES.CONTAINER}-${PROGRESS_CLASSES.INDICATOR}`);
+        const remainingElement = svgElement.querySelector(`.${PROGRESS_CLASSES.CONTAINER}-${PROGRESS_CLASSES.REMAINING}`);
+        const bufferElement = svgElement.querySelector(`.${PROGRESS_CLASSES.CONTAINER}-${PROGRESS_CLASSES.BUFFER}`);
+        
+        // Store references directly on component for API access
+        component.trackElement = trackElement || null;
+        component.indicatorElement = indicatorElement || null;
+        component.remainingElement = remainingElement || null;
+        component.bufferElement = bufferElement || null;
+        
+        // Also update elements object to keep everything consistent
+        component.elements.track = trackElement || null;
+        component.elements.indicator = indicatorElement || null;
+        component.elements.remaining = remainingElement || null;
+        component.elements.buffer = bufferElement || null;
+      } else {
+        // If querySelector is not available, fall back to direct child references
+        // This might happen if the SVG structure is created differently
+        component.trackElement = component.elements?.track || null;
+        component.indicatorElement = component.elements?.indicator || null;
+        component.remainingElement = component.elements?.remaining || null;
+        component.bufferElement = component.elements?.buffer || null;
+      }
+    } else {
+      // Legacy DIV structure for linear progress
+      // withLayout already created and stored the elements, we just need to expose
+      // them as direct properties on the component for API access
+      component.trackElement = component.elements?.track || null;
+      component.indicatorElement = component.elements?.indicator || null;
+      component.remainingElement = component.elements?.remaining || null;
+      component.bufferElement = component.elements?.buffer || null;
     }
     
     // Store label element in state if it exists

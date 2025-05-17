@@ -101,8 +101,11 @@ export function createProgressSchema(component, config: ProgressConfig) {
       }
     };
   } else {
-    // Linear progress - create div-based structure
-
+    // Linear progress - use SVG structure
+    const width = 100;
+    const height = 4; // Height for the lines
+    const strokeWidth = height * 1.5; // Make stroke slightly larger than height for visibility
+    
     return {
       element: {
         options: {
@@ -112,37 +115,84 @@ export function createProgressSchema(component, config: ProgressConfig) {
             'aria-valuemin': min.toString(),
             'aria-valuemax': max.toString(),
             'aria-valuenow': config.indeterminate ? undefined : value.toString(),
-            'aria-disabled': isDisabled ? 'true' : undefined
+            'aria-disabled': isDisabled ? 'true' : undefined,
+            style: 'min-height: 4px;' // Ensure container has minimum height
           }
         },
         children: {
-          buffer: {
+          svg: {
+            creator: createSVGElement,
             options: {
-              className: `${PROGRESS_CLASSES.CONTAINER}-${PROGRESS_CLASSES.BUFFER}`,
-              style: {
-                width: `${config.buffer || 0}%`
+              tag: 'svg',
+              attributes: {
+                // Set viewBox to match the width and the stroke width
+                viewBox: `0 0 ${width} ${height}`,
+                width: '100%',
+                height: '100%', // Use 100% height of container
+                preserveAspectRatio: 'none',
+                style: 'display: block; overflow: visible;' // Force block display and overflow
               }
-            }
-          },
-          track: {
-            options: {
-              className: `${PROGRESS_CLASSES.CONTAINER}-${PROGRESS_CLASSES.TRACK}`,
-            }
-          },
-          indicator: {
-            options: {
-              className: `${PROGRESS_CLASSES.CONTAINER}-${PROGRESS_CLASSES.INDICATOR}`,
-              style: {
-                width: `${valuePercent}%`
-              }
-            }
-          },
-          remaining: {
-            options: {
-              className: `${PROGRESS_CLASSES.CONTAINER}-${PROGRESS_CLASSES.REMAINING}`,
-              style: {
-                left: `calc(${valuePercent}% + 4px)`,
-                width: `calc(${100 - valuePercent}% - 4px)`
+            },
+            children: {
+              buffer: {
+                creator: createSVGElement,
+                options: {
+                  tag: 'line',
+                  className: `${PROGRESS_CLASSES.CONTAINER}-${PROGRESS_CLASSES.BUFFER}`,
+                  attributes: {
+                    x1: '0',
+                    y1: height / 2,
+                    x2: `${config.buffer || 0}`,
+                    y2: height / 2,
+                    'stroke-width': strokeWidth,
+                    'stroke-linecap': 'round'
+                  }
+                }
+              },
+              track: {
+                creator: createSVGElement,
+                options: {
+                  tag: 'line',
+                  className: `${PROGRESS_CLASSES.CONTAINER}-${PROGRESS_CLASSES.TRACK}`,
+                  attributes: {
+                    x1: '0',
+                    y1: height / 2,
+                    x2: width,
+                    y2: height / 2,
+                    'stroke-width': strokeWidth,
+                    'stroke-linecap': 'round'
+                  }
+                }
+              },
+              indicator: {
+                creator: createSVGElement,
+                options: {
+                  tag: 'line',
+                  className: `${PROGRESS_CLASSES.CONTAINER}-${PROGRESS_CLASSES.INDICATOR}`,
+                  attributes: {
+                    x1: '0',
+                    y1: height / 2,
+                    x2: config.indeterminate ? '0' : `${valuePercent}`,
+                    y2: height / 2,
+                    'stroke-width': strokeWidth,
+                    'stroke-linecap': 'round'
+                  }
+                }
+              },
+              remaining: {
+                creator: createSVGElement,
+                options: {
+                  tag: 'line',
+                  className: `${PROGRESS_CLASSES.CONTAINER}-${PROGRESS_CLASSES.REMAINING}`,
+                  attributes: {
+                    x1: `${valuePercent + 4}`,
+                    y1: height / 2,
+                    x2: width,
+                    y2: height / 2,
+                    'stroke-width': strokeWidth,
+                    'stroke-linecap': 'round'
+                  }
+                }
               }
             }
           }

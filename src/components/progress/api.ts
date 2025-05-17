@@ -54,17 +54,43 @@ export const withAPI = (options: any) => (comp: any): ProgressComponent => {
     
     // Update linear progress elements
     if (!isCircular) {
-      // Update indicator width
-      if (indicatorElement) {
-        indicatorElement.style.width = `${percentage}%`;
-      }
+      // Check if we're using SVG-based linear progress
+      const isSvgLinear = indicatorElement instanceof SVGElement;
       
-      // Update remaining position with 4px gap
-      if (remainingElement) {
-        console.log('[Progress] Updating remaining element:', `left: calc(${percentage}% + 4px), width: calc(${100 - percentage}% - 4px)`);
-        remainingElement.style.left = `calc(${percentage}% + 4px)`;
-        remainingElement.style.width = `calc(${100 - percentage}% - 4px)`;
-        remainingElement.style.display = percentage >= 100 ? 'none' : 'block';
+      if (isSvgLinear) {
+        // Update SVG line elements
+        if (indicatorElement) {
+          // Update indicator line x2 attribute 
+          indicatorElement.setAttribute('x2', `${percentage}`);
+        }
+        
+        // Update remaining position with 4px gap
+        if (remainingElement) {
+          const gap = 4;
+          remainingElement.setAttribute('x1', `${percentage + gap}`);
+          remainingElement.style.display = percentage >= 100 ? 'none' : 'block';
+        }
+        
+        // Update buffer element if present
+        if (bufferElement) {
+          const bufferValue = options.buffer.getBuffer();
+          const bufferPercentage = (bufferValue / max) * 100;
+          bufferElement.setAttribute('x2', `${bufferPercentage}`);
+        }
+      } else {
+        // Legacy div-based progress
+        // Update indicator width
+        if (indicatorElement) {
+          indicatorElement.style.width = `${percentage}%`;
+        }
+        
+        // Update remaining position with 4px gap
+        if (remainingElement) {
+          console.log('[Progress] Updating remaining element:', `left: calc(${percentage}% + 4px), width: calc(${100 - percentage}% - 4px)`);
+          remainingElement.style.left = `calc(${percentage}% + 4px)`;
+          remainingElement.style.width = `calc(${100 - percentage}% - 4px)`;
+          remainingElement.style.display = percentage >= 100 ? 'none' : 'block';
+        }
       }
     } else {
       // Update circular progress
@@ -155,11 +181,17 @@ export const withAPI = (options: any) => (comp: any): ProgressComponent => {
     setBuffer: (value: number) => {
       options.buffer.setBuffer(value);
       
-      // Directly update buffer width for linear variant
+      // Directly update buffer element for linear variant
       if (!isCircular && bufferElement && !options.state.isIndeterminate()) {
         const max = options.value.getMax();
         const bufferPercentage = (options.buffer.getBuffer() / max) * 100;
-        bufferElement.style.width = `${bufferPercentage}%`;
+        
+        // Check if we're using SVG-based linear progress
+        if (bufferElement instanceof SVGElement) {
+          bufferElement.setAttribute('x2', `${bufferPercentage}`);
+        } else {
+          bufferElement.style.width = `${bufferPercentage}%`;
+        }
       }
       
       return api;
@@ -181,15 +213,29 @@ export const withAPI = (options: any) => (comp: any): ProgressComponent => {
           addClass(element, PROGRESS_CLASSES.INDETERMINATE);
           element.removeAttribute('aria-valuenow');
           
-          // For linear progress, let CSS handle the animations
-          if (!isCircular && indicatorElement && indicatorElement instanceof HTMLElement) {
+          // Check if we're using SVG-based linear progress
+          const isSvgLinear = !isCircular && indicatorElement instanceof SVGElement;
+          
+          if (isSvgLinear) {
+            // For SVG linear progress, we'll use CSS animations via the indeterminate class
+            // Clear any attributes that might interfere with the CSS animations
+            if (indicatorElement) {
+              indicatorElement.removeAttribute('x2');
+            }
+            
+            // Hide the remaining element
+            if (remainingElement) {
+              remainingElement.style.display = 'none';
+            }
+          } else if (!isCircular && indicatorElement && indicatorElement instanceof HTMLElement) {
+            // For traditional linear progress, let CSS handle the animations
             // Clear any inline styles that might interfere with the CSS animations
             indicatorElement.style.width = '';
             indicatorElement.style.left = '';
           }
           
           // For linear indeterminate, hide the remaining element
-          if (!isCircular && remainingElement && remainingElement instanceof HTMLElement) {
+          if (!isCircular && remainingElement) {
             remainingElement.style.display = 'none';
           } else if (remainingElement) {
             // For circular, hide the remaining
