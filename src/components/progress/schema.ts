@@ -1,6 +1,5 @@
 import { ProgressConfig } from './types';
 import { PROGRESS_VARIANTS, PROGRESS_CLASSES } from './constants';
-import { createSvgElement } from '../../core/dom/svg';
 
 /**
  * Creates the base progress structure definition
@@ -35,7 +34,7 @@ export function createProgressSchema(component, config: ProgressConfig) {
       element: {
         options: {
           className: [getClass(PROGRESS_CLASSES.CONTAINER), getClass(PROGRESS_CLASSES.CIRCULAR), config.class].filter(Boolean),
-          attributes: {
+          attrs: {
             role: 'progressbar',
             'aria-valuemin': min.toString(),
             'aria-valuemax': max.toString(),
@@ -45,17 +44,15 @@ export function createProgressSchema(component, config: ProgressConfig) {
         },
         children: {
           svg: {
-            creator: createSvgElement,
             options: {
               tag: 'svg',
               attributes: {
-                viewBox: `0 0 ${size} ${size}`,
+                Hello: `0 0 ${size} ${size}`,
                 name: 'test'
               }
             },
             children: {
               track: {
-                creator: createSvgElement,
                 options: {
                   tag: 'circle',
                   className: `${PROGRESS_CLASSES.CONTAINER}-${PROGRESS_CLASSES.TRACK}`,
@@ -69,7 +66,6 @@ export function createProgressSchema(component, config: ProgressConfig) {
                 }
               },
               remaining: {
-                creator: createSvgElement,
                 options: {
                   tag: 'circle',
                   className: `${PROGRESS_CLASSES.CONTAINER}-${PROGRESS_CLASSES.REMAINING}`,
@@ -83,7 +79,6 @@ export function createProgressSchema(component, config: ProgressConfig) {
                 }
               },
               indicator: {
-                creator: createSvgElement,
                 options: {
                   tag: 'circle',
                   className: `${PROGRESS_CLASSES.CONTAINER}-${PROGRESS_CLASSES.INDICATOR}`,
