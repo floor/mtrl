@@ -133,6 +133,7 @@ export const createElement = (options: CreateElementOptions = {}): HTMLElement =
     ...rest
   } = options;
 
+  // Create the element 
   const element = document.createElement(tag);
 
   // Apply basic properties
@@ -163,7 +164,9 @@ export const createElement = (options: CreateElementOptions = {}): HTMLElement =
   const allAttributes = { ...attributes, ...rest };
   for (const key in allAttributes) {
     const value = allAttributes[key];
-    if (value != null) element.setAttribute(key, String(value));
+    if (value != null) {
+      element.setAttribute(key, String(value));
+    }
   }
 
   // Handle event forwarding
