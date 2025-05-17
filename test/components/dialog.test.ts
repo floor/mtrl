@@ -169,8 +169,8 @@ const createMockDialog = (config: DialogConfig = {}): DialogComponent => {
     
     buttonElement.textContent = button.text;
     
-    if (button.attrs) {
-      for (const [key, value] of Object.entries(button.attrs)) {
+    if (button.attributes) {
+      for (const [key, value] of Object.entries(button.attributes)) {
         buttonElement.setAttribute(key, value);
       }
     }
@@ -436,8 +436,8 @@ const createMockDialog = (config: DialogConfig = {}): DialogComponent => {
         
         buttonElement.textContent = button.text;
         
-        if (button.attrs) {
-          for (const [key, value] of Object.entries(button.attrs)) {
+        if (button.attributes) {
+          for (const [key, value] of Object.entries(button.attributes)) {
             buttonElement.setAttribute(key, value);
           }
         }

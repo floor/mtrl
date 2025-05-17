@@ -46,21 +46,21 @@ export const createBaseConfig = (config: ChipConfig = {}): ChipConfig =>
  */
 export const getElementConfig = (config: ChipConfig) => {
   // Create the attributes object
-  const attrs: Record<string, any> = {
+  const attributes: Record<string, any> = {
     role: 'button',
     tabindex: '0'
   };
   
   // Only add aria-disabled attribute if needed
   if (config.disabled === true) {
-    attrs['aria-disabled'] = 'true';
+    attributes['aria-disabled'] = 'true';
   }
   
   // Add aria-selected if specified
   if (config.selected === true) {
-    attrs['aria-selected'] = 'true';
+    attributes['aria-selected'] = 'true';
   } else if (config.selected === false) {
-    attrs['aria-selected'] = 'false';
+    attributes['aria-selected'] = 'false';
   }
 
   // Define additional classes
@@ -71,7 +71,7 @@ export const getElementConfig = (config: ChipConfig) => {
   
   return createElementConfig(config, {
     tag: 'div',
-    attrs,
+    attributes,
     className,
     forwardEvents: {
       click: (component: BaseComponent) => component.element.getAttribute('aria-disabled') !== 'true',

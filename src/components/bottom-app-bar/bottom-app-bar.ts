@@ -46,7 +46,7 @@ export const createBottomAppBar = (config: BottomAppBarConfig = {}): BottomAppBa
       componentConfig.fabPosition === 'center' ? `${component.getClass('bottom-app-bar')}--fab-center` : '',
       componentConfig.class
     ],
-    attrs: {
+    attributes: {
       role: 'toolbar',
       'aria-label': 'Bottom app bar'
     },

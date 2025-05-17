@@ -44,8 +44,8 @@ afterAll(() => {
 });
 
 // Create mock functions for dependencies
-const mockSetAttributes = mock((element: HTMLElement, attrs: Record<string, any> = {}) => {
-  Object.entries(attrs).forEach(([key, value]) => {
+const mockSetAttributes = mock((element: HTMLElement, attributes: Record<string, any> = {}) => {
+  Object.entries(attributes).forEach(([key, value]) => {
     if (value != null) element.setAttribute(key, value.toString());
   });
   return element;
@@ -99,7 +99,7 @@ const DOMCreateModule = {
       class: classOption,
       className,
       rawClass,
-      attrs = {},
+      attributes = {},
       forwardEvents = {},
       onCreate,
       context,
@@ -133,8 +133,8 @@ const DOMCreateModule = {
     }
 
     // Handle regular attributes
-    const allAttrs = { ...attrs, ...rest };
-    mockSetAttributes(element, allAttrs);
+    const allAttributes = { ...attributes, ...rest };
+    mockSetAttributes(element, allAttributes);
 
     // Handle event forwarding
     if (forwardEvents && (context?.emit || context?.on)) {
@@ -194,9 +194,9 @@ const DOMCreateModule = {
     }
   },
 
-  withAttributes(attrs: Record<string, any>) {
+  withAttributes(attributes: Record<string, any>) {
     return (element: HTMLElement): HTMLElement => {
-      mockSetAttributes(element, attrs);
+      mockSetAttributes(element, attributes);
       return element;
     };
   },
@@ -310,15 +310,41 @@ describe('DOM Create Utilities', () => {
     });
 
     test('should set standard attributes', () => {
-      const attrs = { role: 'button', tabindex: '0' };
-      const element = createElement({ attrs });
+      const attributes = { role: 'button', tabindex: '0' };
+      const element = createElement({ attributes });
       
       // Verify mockSetAttributes was called
       expect(mockSetAttributes).toHaveBeenCalled();
       
       // Verify attributes were set on the element
-      expect(element.getAttribute('role')).toBe(attrs.role);
-      expect(element.getAttribute('tabindex')).toBe(attrs.tabindex);
+      expect(element.getAttribute('role')).toBe(attributes.role);
+      expect(element.getAttribute('tabindex')).toBe(attributes.tabindex);
+    });
+
+    test('should set attributes with attributes property', () => {
+      const attributes = { role: 'button', tabindex: '0' };
+      const element = createElement({ attributes });
+      
+      // Verify mockSetAttributes was called
+      expect(mockSetAttributes).toHaveBeenCalled();
+      
+      // Verify attributes were set on the element
+      expect(element.getAttribute('role')).toBe(attributes.role);
+      expect(element.getAttribute('tabindex')).toBe(attributes.tabindex);
+    });
+
+    test('should handle attributes merging correctly', () => {
+      const initialAttributes = { role: 'button', tabindex: '0' };
+      const overrideAttributes = { role: 'link', ariaLabel: 'Test' };
+      const element = createElement({ attributes: { ...initialAttributes, ...overrideAttributes } });
+      
+      // Verify mockSetAttributes was called
+      expect(mockSetAttributes).toHaveBeenCalled();
+      
+      // Verify attributes take precedence
+      expect(element.getAttribute('role')).toBe(overrideAttributes.role);
+      expect(element.getAttribute('tabindex')).toBe(initialAttributes.tabindex);
+      expect(element.getAttribute('ariaLabel')).toBe(overrideAttributes.ariaLabel);
     });
 
     test('should handle rest attributes', () => {
@@ -428,6 +454,20 @@ describe('DOM Create Utilities', () => {
       expect(element.__eventHandlers!.click).toBeDefined();
       
       // We're intentionally not dispatching the event to avoid JSDOM issues
+    });
+
+    test('should handle additional properties as attributes', () => {
+      const initialAttributes = { role: 'button', tabindex: '0' };
+      const overrideAttributes = { role: 'link', ariaLabel: 'Test' };
+      const element = createElement({ attributes: { ...initialAttributes, ...overrideAttributes } });
+      
+      // Verify mockSetAttributes was called
+      expect(mockSetAttributes).toHaveBeenCalled();
+      
+      // Verify attributes take precedence
+      expect(element.getAttribute('role')).toBe(overrideAttributes.role);
+      expect(element.getAttribute('tabindex')).toBe(initialAttributes.tabindex);
+      expect(element.getAttribute('ariaLabel')).toBe(overrideAttributes.ariaLabel);
     });
   });
 

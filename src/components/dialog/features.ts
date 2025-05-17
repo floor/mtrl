@@ -49,8 +49,8 @@ export const withStructure = (config: DialogConfig) => component => {
   overlay.classList.add(component.getClass('dialog-overlay'));
   
   // Set overlay attributes safely
-  if (overlayConfig.attrs && typeof overlayConfig.attrs === 'object') {
-    Object.entries(overlayConfig.attrs).forEach(([key, value]) => {
+  if (overlayConfig.attributes && typeof overlayConfig.attributes === 'object') {
+    Object.entries(overlayConfig.attributes).forEach(([key, value]) => {
       if (key && typeof key === 'string' && value !== undefined) {
         overlay.setAttribute(key, String(value));
       }
@@ -313,13 +313,13 @@ const addButton = (footer: HTMLElement, buttonConfig: DialogButton, component: a
     onClick,
     closeDialog = true,
     autofocus = false,
-    attrs = {}
+    attributes = {}
   } = buttonConfig;
   
   const button = createButton({
     text,
     variant,
-    ...attrs
+    ...attributes
   });
   
   // Button click handler with event-based communication

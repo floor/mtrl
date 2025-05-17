@@ -50,7 +50,7 @@ export interface ElementComponent extends BaseComponent {
 export interface WithElementOptions {
   tag?: string;
   componentName?: string;
-  attrs?: Record<string, any>;
+  attributes?: Record<string, any>;
   className?: string | string[];
   forwardEvents?: Record<string, boolean | ((component: any, event: Event) => boolean)>;
   interactive?: boolean;
@@ -207,7 +207,7 @@ export const withElement = (options: WithElementOptions = {}) =>
         hasTouchSupport() && options.interactive ? base.getClass('interactive') : null,
         ...(Array.isArray(options.className) ? options.className : [options.className])
       ].filter(Boolean),
-      attrs: options.attrs || {},
+      attributes: options.attributes || {},
       forwardEvents: options.forwardEvents || {},
       context: component // Pass component as context for events
     };

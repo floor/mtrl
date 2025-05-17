@@ -128,7 +128,7 @@ export const createElementConfig = (
   config: BaseComponentConfig,
   options: {
     tag: string;
-    attrs?: Record<string, any>;
+    attributes?: Record<string, any>;
     className?: string | string[] | null;
     html?: string;
     text?: string;
@@ -146,10 +146,13 @@ export const createElementConfig = (
     ...(Array.isArray(optionsClasses) ? optionsClasses : [optionsClasses])
   ].filter(Boolean);
   
+  // Set up element attributes
+  const elementAttributes = options.attributes || {};
+  
   return {
     tag: options.tag,
     componentName: config.componentName,
-    attrs: options.attrs || {},
+    attributes: elementAttributes,
     className: combinedClassNames.length > 0 ? combinedClassNames : undefined,
     rawClass: config.rawClass,
     html: options.html,

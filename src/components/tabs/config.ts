@@ -47,7 +47,7 @@ export const createTabConfig = (config: TabConfig = {}): TabConfig =>
 export const getTabsElementConfig = (config) => {
   const elementConfig = {
     tag: 'div',
-    attrs: {
+    attributes: {
       role: 'tablist',
       'aria-orientation': 'horizontal'
     },

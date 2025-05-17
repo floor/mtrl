@@ -61,20 +61,20 @@ export const createBaseConfig = (config: Partial<ListConfig> = {}) => {
  * @returns {Object} Element configuration object for withElement
  */
 export const getElementConfig = (config) => {
-  const attrs = {
+  const attributes = {
     role: 'list',
     tabindex: '0'
   };
   
   // Add ARIA attributes for accessibility
   if (config.ariaLabel) {
-    attrs['aria-label'] = config.ariaLabel;
+    attributes['aria-label'] = config.ariaLabel;
   }
   
   // Create element config
   return coreCreateElementConfig(config, {
     tag: 'div',
-    attrs,
+    attributes,
     className: [
       LIST_CLASSES.CONTAINER,
       config.class

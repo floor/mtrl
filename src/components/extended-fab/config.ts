@@ -53,7 +53,7 @@ export const createBaseConfig = (config: ExtendedFabConfig = {}): ExtendedFabCon
  */
 export const getElementConfig = (config: ExtendedFabConfig) => {
   // Create the attributes object
-  const attrs: Record<string, any> = {
+  const attributes: Record<string, any> = {
     type: config.type || 'button',
     'aria-label': config.ariaLabel || config.text || (config.icon ? 'action' : undefined)
   };
@@ -93,13 +93,13 @@ export const getElementConfig = (config: ExtendedFabConfig) => {
   
   // Only add disabled attribute if it's explicitly true
   if (config.disabled === true) {
-    attrs.disabled = true;
+    attributes.disabled = true;
     classNames.push(`${config.prefix}-extended-fab--disabled`);
   }
   
   return createElementConfig(config, {
     tag: 'button',
-    attrs,
+    attributes,
     className: classNames,
     forwardEvents: {
       click: (component) => !component.element.disabled,

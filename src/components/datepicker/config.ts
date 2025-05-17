@@ -44,7 +44,7 @@ export const createBaseConfig = (config: DatePickerConfig = {}): DatePickerConfi
 export const getContainerConfig = (config: DatePickerConfig) => {
   return createElementConfig(config, {
     tag: 'div',
-    attrs: {
+    attributes: {
       role: 'application',
       'aria-label': 'Date Picker',
       tabindex: '-1'
@@ -68,7 +68,7 @@ export const getContainerConfig = (config: DatePickerConfig) => {
  */
 export const getInputConfig = (config: DatePickerConfig) => {
   // Create the attributes object
-  const attrs: Record<string, any> = {
+  const attributes: Record<string, any> = {
     type: 'text',
     placeholder: config.placeholder || config.dateFormat,
     autocomplete: 'off',
@@ -77,12 +77,12 @@ export const getInputConfig = (config: DatePickerConfig) => {
   
   // Only add disabled attribute if it's explicitly true
   if (config.disabled === true) {
-    attrs.disabled = true;
+    attributes.disabled = true;
   }
   
   return createElementConfig(config, {
     tag: 'input',
-    attrs,
+    attributes,
     className: `${config.prefix}-datepicker-input`,
     forwardEvents: {
       focus: true,
@@ -101,7 +101,7 @@ export const getInputConfig = (config: DatePickerConfig) => {
 export const getCalendarConfig = (config: DatePickerConfig) => {
   return createElementConfig(config, {
     tag: 'div',
-    attrs: {
+    attributes: {
       role: 'dialog',
       'aria-modal': config.variant !== 'docked' ? 'true' : 'false'
     },

@@ -98,7 +98,7 @@ export const withLabel = (config: LabelConfig) => component => {
             tag: 'span',
             className: `${prefix}-${componentName}-label-required`,
             text: '*',
-            attrs: {
+            attributes: {
               'aria-hidden': 'true'
             }
           }
@@ -119,7 +119,7 @@ export const withLabel = (config: LabelConfig) => component => {
           `${prefix}-${componentName}-label`,
           `${prefix}-${componentName}-label--${position}`
         ],
-        attrs: {
+        attributes: {
           'for': config.id // Optional connection to input by ID
         },
         text: labelContent

@@ -1,33 +1,36 @@
 // src/core/dom/attributes.ts
 /**
  * @module core/dom
- * @description DOM manipulation utilities
+ * @description DOM attribute helpers
  */
 
 /**
- * Sets multiple attributes on an element
- * @memberof module:core/dom
- * @function setAttributes
- * @param {HTMLElement} element - Target element
- * @param {Record<string, any>} attrs - Attributes to set
- * @returns {HTMLElement} Modified element
+ * Sets attributes on an HTML element
+ * 
+ * @param {HTMLElement} element - Element to set attributes on
+ * @param {Record<string, any>} attributes - Attributes to set
+ * @returns {HTMLElement} The element for chaining
  */
-export const setAttributes = (element: HTMLElement, attrs: Record<string, any> = {}): HTMLElement => {
-  Object.entries(attrs).forEach(([key, value]) => {
-    if (value != null) element.setAttribute(key, value.toString());
+export const setAttributes = (element: HTMLElement, attributes: Record<string, any> = {}): HTMLElement => {
+  Object.entries(attributes).forEach(([key, value]) => {
+    // Skip null/undefined values
+    if (value === null || value === undefined) return;
+    
+    element.setAttribute(key, String(value));
   });
+  
   return element;
 };
 
 /**
- * Removes multiple attributes from an element
- * @memberof module:core/dom
- * @function removeAttributes
- * @param {HTMLElement} element - Target element
- * @param {string[]} attrs - Attributes to remove
- * @returns {HTMLElement} Modified element
+ * Removes attributes from an HTML element
+ * 
+ * @param {HTMLElement} element - Element to remove attributes from
+ * @param {string[]} attributes - Attributes to remove
+ * @returns {HTMLElement} The element for chaining
  */
-export const removeAttributes = (element: HTMLElement, attrs: string[] = []): HTMLElement => {
-  attrs.forEach(attr => element.removeAttribute(attr));
+export const removeAttributes = (element: HTMLElement, attributes: string[] = []): HTMLElement => {
+  attributes.forEach(attr => element.removeAttribute(attr));
+  
   return element;
 };

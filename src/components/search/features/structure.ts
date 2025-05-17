@@ -19,7 +19,7 @@ export const withStructure = (config: SearchConfig) => component => {
   const getClass = (className) => component.getClass(className);
   
   // Build attributes object for the input
-  const inputAttrs = {
+  const inputAttributes = {
     'type': 'text',
     'placeholder': placeholder,
     'value': value,
@@ -28,7 +28,7 @@ export const withStructure = (config: SearchConfig) => component => {
   
   // Only add disabled attribute if the input should be disabled
   if (isDisabled) {
-    inputAttrs['disabled'] = 'disabled';
+    inputAttributes['disabled'] = 'disabled';
   }
   
   // Create container element
@@ -36,7 +36,7 @@ export const withStructure = (config: SearchConfig) => component => {
     tag: 'div',
     className: getClass('search-container'),
     container: component.element,
-    attrs: {
+    attributes: {
       style: `
         ${config.minWidth ? `min-width: ${config.minWidth}px;` : ''}
         ${config.maxWidth ? `max-width: ${config.maxWidth}px;` : ''}
@@ -51,7 +51,7 @@ export const withStructure = (config: SearchConfig) => component => {
     className: getClass('search-leading-icon'),
     container: container,
     html: config.leadingIcon || '',
-    attrs: {
+    attributes: {
       'role': 'button',
       'tabindex': isDisabled ? '-1' : '0',
       'aria-label': 'Search'
@@ -70,7 +70,7 @@ export const withStructure = (config: SearchConfig) => component => {
     tag: 'input',
     className: getClass('search-input'),
     container: inputWrapper,
-    attrs: inputAttrs
+    attributes: inputAttributes
   });
   
   // Create clear button
@@ -82,7 +82,7 @@ export const withStructure = (config: SearchConfig) => component => {
     ],
     container: container,
     html: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>',
-    attrs: {
+    attributes: {
       'role': 'button',
       'tabindex': isDisabled || !value ? '-1' : '0',
       'aria-label': 'Clear search'
@@ -98,7 +98,7 @@ export const withStructure = (config: SearchConfig) => component => {
       className: getClass('search-trailing-icon'),
       container: container,
       html: config.trailingIcon,
-      attrs: {
+      attributes: {
         'role': 'button',
         'tabindex': isDisabled ? '-1' : '0',
         'aria-label': 'Search option'
@@ -112,7 +112,7 @@ export const withStructure = (config: SearchConfig) => component => {
       className: getClass('search-trailing-icon'),
       container: container,
       html: config.trailingIcon2,
-      attrs: {
+      attributes: {
         'role': 'button',
         'tabindex': isDisabled ? '-1' : '0',
         'aria-label': 'Search option'

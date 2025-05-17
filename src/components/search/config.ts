@@ -42,7 +42,7 @@ export const createBaseConfig = (config: SearchConfig = {}): SearchConfig =>
 export const getElementConfig = (config: SearchConfig) => 
   createElementConfig(config, {
     tag: 'div',
-    attrs: {
+    attributes: {
       role: 'search',
       'aria-disabled': config.disabled === true ? 'true' : 'false'
     },

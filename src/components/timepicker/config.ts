@@ -55,7 +55,7 @@ export const createBaseConfig = (config: TimePickerConfig = {}): TimePickerConfi
 export const getContainerConfig = (config: TimePickerConfig) => {
   return createElementConfig(config, {
     tag: 'div',
-    attrs: {
+    attributes: {
       role: 'dialog',
       'aria-modal': 'true',
       'aria-labelledby': `${config.prefix}-time-picker-title`
@@ -80,7 +80,7 @@ export const getContainerConfig = (config: TimePickerConfig) => {
 export const getModalConfig = (config: TimePickerConfig) => {
   return createElementConfig(config, {
     tag: 'div',
-    attrs: {
+    attributes: {
       role: 'presentation'
     },
     className: `${config.prefix}-time-picker-modal`,

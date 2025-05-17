@@ -52,7 +52,7 @@ export const createBaseConfig = (config: ChipsConfig = {}): ChipsConfig => {
 export const getElementConfig = (config: ChipsConfig) => 
   createElementConfig(config, {
     tag: 'div',
-    attrs: {
+    attributes: {
       role: 'group',
       'aria-multiselectable': config.multiSelect === true ? 'true' : 'false'
       // tabindex: '0' removed

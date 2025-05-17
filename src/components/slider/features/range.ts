@@ -57,7 +57,7 @@ export const withRange = (config: SliderConfig) => component => {
       options: {
         tag: 'div',
         className: getClass('slider-handle'),
-        attrs: {
+        attributes: {
           role: 'slider',
           'aria-valuemin': String(min),
           'aria-valuemax': String(max),
@@ -81,7 +81,7 @@ export const withRange = (config: SliderConfig) => component => {
       options: {
         tag: 'div',
         className: getClass('slider-value'),
-        attrs: {
+        attributes: {
           'aria-hidden': 'true',
           'data-handle-index': '1'
         },
