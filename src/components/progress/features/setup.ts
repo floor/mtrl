@@ -17,7 +17,6 @@ export const withSetup = (config: ProgressConfig) => (component) => {
   // Apply indeterminate class immediately if needed
   // This needs to be done during component creation, not in lifecycle
   if (config.indeterminate && component.element) {
-    console.log('[withSetup] Applying indeterminate class', PROGRESS_CLASSES.INDETERMINATE);
     addClass(component.element, PROGRESS_CLASSES.INDETERMINATE);
   }
   

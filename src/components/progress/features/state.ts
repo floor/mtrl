@@ -28,29 +28,32 @@ export const withState = (config: ProgressConfig) => (component) => {
         return;
       }
       
-      // For determinate progress, set up initial styles
-      if (component.indicatorElement instanceof HTMLElement) {
-        const percentage = (state.value / state.max) * 100;
-        component.indicatorElement.style.width = `${percentage}%`;
-      }
-      
-      if (component.remainingElement instanceof HTMLElement && !isCircular) {
-        const percentage = (state.value / state.max) * 100;
-        
-        // Fix: Use direct percentage values instead of calc() function
-        component.remainingElement.style.left = `${percentage}%`;
-        component.remainingElement.style.marginLeft = '4px'; // Add a 4px gap
-        component.remainingElement.style.width = `${100 - percentage}%`;
-        
-        // Hide remaining element if progress is 100%
-        if (percentage >= 100) {
-          component.remainingElement.style.display = 'none';
+      // Only set styles for linear progress - circular progress is handled by updateProgress
+      if (!isCircular) {
+        // For determinate progress, set up initial styles
+        if (component.indicatorElement instanceof HTMLElement) {
+          const percentage = (state.value / state.max) * 100;
+          component.indicatorElement.style.width = `${percentage}%`;
         }
-      }
-      
-      if (component.bufferElement instanceof HTMLElement && !isCircular) {
-        const bufferPercentage = (state.buffer / state.max) * 100;
-        component.bufferElement.style.width = `${bufferPercentage}%`;
+        
+        if (component.remainingElement instanceof HTMLElement) {
+          const percentage = (state.value / state.max) * 100;
+          
+          // Fix: Use direct percentage values instead of calc() function
+          component.remainingElement.style.left = `${percentage}%`;
+          component.remainingElement.style.marginLeft = '4px'; // Add a 4px gap
+          component.remainingElement.style.width = `${100 - percentage}%`;
+          
+          // Hide remaining element if progress is 100%
+          if (percentage >= 100) {
+            component.remainingElement.style.display = 'none';
+          }
+        }
+        
+        if (component.bufferElement instanceof HTMLElement) {
+          const bufferPercentage = (state.buffer / state.max) * 100;
+          component.bufferElement.style.width = `${bufferPercentage}%`;
+        }
       }
     } catch (error) {
       console.error('Error initializing progress state:', error);

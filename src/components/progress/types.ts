@@ -117,16 +117,16 @@ export interface ProgressComponent {
   element: HTMLElement;
   
   /** The track element (background) */
-  trackElement: HTMLElement | SVGElement;
+  track: HTMLElement | SVGElement;
   
   /** The indicator element (filled part) */
-  indicatorElement: HTMLElement | SVGElement;
+  indicator: HTMLElement | SVGElement;
   
   /** The buffer element for linear variant (pre-loaded state) */
-  bufferElement?: HTMLElement;
+  buffer?: SVGElement;
   
   /** The remaining element (space between indicator and track) */
-  remainingElement?: HTMLElement | SVGElement;
+  remaining?: HTMLElement | SVGElement;
   
   /** The label element if showLabel is enabled */
   labelElement?: HTMLElement;

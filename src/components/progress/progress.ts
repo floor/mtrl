@@ -65,13 +65,12 @@ const createProgress = (config: ProgressConfig = {}): ProgressComponent => {
       withVariant(baseConfig),
       withDisabled(baseConfig),
       withState(baseConfig),
-      // Add API
+      withSetup(baseConfig),
       comp => {
         // Use the component's state or fall back to local state
         const stateObj = comp.state || localState;
         return withAPI(getApiConfig(comp, stateObj))(comp);
       },
-      withSetup(baseConfig),
       withLifecycle()
     )(baseConfig);
 

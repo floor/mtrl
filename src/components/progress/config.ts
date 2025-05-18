@@ -124,60 +124,36 @@ export const setupIndeterminateState = (component, isCircular) => {
  * @returns Enhanced component with references
  */
 export const setupComponentReferences = (component, state, isCircular) => {
+  console.log('setupComponentReferences', component, state, isCircular)
   try {
-    // Make sure component has elements property
-    if (!component.elements) {
-      console.warn('Progress component missing elements property. withLayout may not have been applied correctly.');
-      component.elements = {};
+    // Get components from the component's components property
+    // This is already flattened by withDom
+    const components = component.components;
+    
+    if (!components) {
+      console.warn('Progress component missing components property. withDom may not have been applied correctly.');
+      return component;
     }
 
-    // Check if we're using SVG-based structure (both circular and linear variants now use SVG)
-    const svgElement = component.elements?.svg;
+    // Get all track, indicator, remaining, and buffer elements directly from flattened components
+    // These are available directly because withDom flattens the structure
+    const trackElement = components.track as SVGElement;
+    const indicatorElement = components.indicator as SVGElement;
+    const remainingElement = components.remaining as SVGElement;
+    const bufferElement = components.buffer as SVGElement;
     
-    if (svgElement) {
-      // Get all track, indicator, remaining, and buffer elements from the SVG
-      // For both circular and linear variants
-      if (svgElement.querySelector) {
-        const trackElement = svgElement.querySelector(`.${PROGRESS_CLASSES.CONTAINER}-${PROGRESS_CLASSES.TRACK}`);
-        const indicatorElement = svgElement.querySelector(`.${PROGRESS_CLASSES.CONTAINER}-${PROGRESS_CLASSES.INDICATOR}`);
-        const remainingElement = svgElement.querySelector(`.${PROGRESS_CLASSES.CONTAINER}-${PROGRESS_CLASSES.REMAINING}`);
-        const bufferElement = svgElement.querySelector(`.${PROGRESS_CLASSES.CONTAINER}-${PROGRESS_CLASSES.BUFFER}`);
-        
-        // Store references directly on component for API access
-        component.trackElement = trackElement || null;
-        component.indicatorElement = indicatorElement || null;
-        component.remainingElement = remainingElement || null;
-        component.bufferElement = bufferElement || null;
-        
-        // Also update elements object to keep everything consistent
-        component.elements.track = trackElement || null;
-        component.elements.indicator = indicatorElement || null;
-        component.elements.remaining = remainingElement || null;
-        component.elements.buffer = bufferElement || null;
-      } else {
-        // If querySelector is not available, fall back to direct child references
-        // This might happen if the SVG structure is created differently
-        component.trackElement = component.elements?.track || null;
-        component.indicatorElement = component.elements?.indicator || null;
-        component.remainingElement = component.elements?.remaining || null;
-        component.bufferElement = component.elements?.buffer || null;
-      }
-    } else {
-      // Legacy DIV structure for linear progress
-      // withLayout already created and stored the elements, we just need to expose
-      // them as direct properties on the component for API access
-      component.trackElement = component.elements?.track || null;
-      component.indicatorElement = component.elements?.indicator || null;
-      component.remainingElement = component.elements?.remaining || null;
-      component.bufferElement = component.elements?.buffer || null;
-    }
+    // Store references directly on component for API access
+    component.trackElement = trackElement || null;
+    component.indicatorElement = indicatorElement || null;
+    component.remainingElement = remainingElement || null;
+    component.bufferElement = bufferElement || null;
     
     // Store label element in state if it exists
-    if (component.elements?.label) {
+    if (components.label) {
       if (state) {
-        state.labelElement = component.elements.label;
+        state.labelElement = components.label;
       }
-      component.labelElement = component.elements.label;
+      component.labelElement = components.label;
     }
   } catch (error) {
     console.error('Error setting up progress component references:', error);

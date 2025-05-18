@@ -7,6 +7,9 @@ import { addClass, removeClass } from '../../core/dom';
 // SVG namespace for proper attribute setting
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
+// Constants for circular progress
+export const CIRCULAR_CIRCUMFERENCE = 283; // 2*PI*45 (radius of 45 with stroke width of 6)
+
 interface ApiOptions {
   value: {
     getValue: () => number;
@@ -56,39 +59,50 @@ const setSvgAttribute = (element: SVGElement | HTMLElement, attr: string, value:
 /**
  * Helper to set SVG line properties with proper namespace
  */
-const updateSvgLinePosition = (line: SVGElement | HTMLElement, x1: number | string, x2: number | string): void => {
+const updateSvgLinePosition = (line: SVGElement, x1: number | string, x2: number | string): void => {
   if (!line) return;
-  
-  if (line instanceof SVGElement) {
-    setSvgAttribute(line, 'x1', String(x1));
-    setSvgAttribute(line, 'x2', String(x2));
-  }
+  line.setAttributeNS(null, 'x1', String(x1));
+  line.setAttributeNS(null, 'x2', String(x2));
 };
 
 export const withAPI = (options: any) => (comp: any): ProgressComponent => {
-  // Get references to DOM elements
+  // Get references to DOM elements through components
+  // Type assertion needed here because comp.element could be any type from component creation
   const element = comp.element as HTMLElement;
-  const trackElement = comp.trackElement;
-  const indicatorElement = comp.indicatorElement;
-  const remainingElement = comp.remainingElement;
-  const bufferElement = comp.bufferElement;
-  const labelElement = comp.labelElement as HTMLElement | undefined;
+  const components = comp.components
 
-  console.log('withAPI', options, comp)
+  // Access elements directly from flattened components
+  // No type assertions needed as TypeScript can infer these are SVG elements from the component structure
+  const indicator = components.indicator;
+  const track = components.track;
+  const remaining = components.remaining;
+  const buffer = components.buffer;
+  // Type assertion needed because label is optional and could be undefined
+  const labelElement = components.label as HTMLElement | undefined;
 
   // Configuration
   const isCircular = element.classList.contains(comp.getClass(PROGRESS_CLASSES.CIRCULAR));
   
   // Directly sync the SVG with current value/state on initialization
   const syncInitialState = () => {
+    console.log('[Progress API] syncInitialState', {
+      element: element.outerHTML,
+      isCircular,
+      indicator: indicator?.outerHTML,
+      track: track?.outerHTML,
+      classes: element.className,
+      theme: document.body.getAttribute('data-theme'),
+      themeMode: document.body.getAttribute('data-theme-mode')
+    });
+
     if (options.state.isIndeterminate()) {
       // Ensure indeterminate class is applied
       addClass(element, PROGRESS_CLASSES.INDETERMINATE);
       element.removeAttribute('aria-valuenow');
       
       // Hide remaining element in indeterminate state
-      if (remainingElement) {
-        remainingElement.style.display = 'none';
+      if (remaining) {
+        remaining.style.display = 'none';
       }
     } else {
       // Ensure we have the current value from aria-valuenow attribute or state
@@ -112,48 +126,61 @@ export const withAPI = (options: any) => (comp: any): ProgressComponent => {
   const updateProgress = (value: number, max: number) => {
     if (options.state.isIndeterminate()) return;
     
-    console.log('updateProgress', value, max)
-
-    console.log(indicatorElement, indicatorElement instanceof SVGElement)
+    console.log('[Progress API] updateProgress', {
+      value,
+      max,
+      isCircular,
+      element: element.outerHTML,
+      indicator: indicator?.outerHTML,
+      track: track?.outerHTML,
+      classes: element.className,
+      theme: document.body.getAttribute('data-theme'),
+      themeMode: document.body.getAttribute('data-theme-mode')
+    });
 
     const percentage = (value / max) * 100;
     
     // Update linear progress elements
     if (!isCircular) {
-      // Update indicator line with percentage
-      if (indicatorElement instanceof SVGElement) {
-        setSvgAttribute(indicatorElement, 'x2', `${percentage}`);
+      // Update indicator width
+      if (indicator instanceof HTMLElement) {
+        indicator.style.width = `${percentage}%`;
       }
-      
-      // Update remaining line (starting after indicator with gap)
-      if (remainingElement instanceof SVGElement) {
-        const gap = 4; // 4px gap
-        setSvgAttribute(remainingElement, 'x1', `${percentage + gap}`);
-        remainingElement.style.display = percentage >= 100 ? 'none' : '';
+    
+      // Update remaining element
+      if (remaining instanceof HTMLElement) {
+        remaining.style.left = `${percentage}%`;
+        remaining.style.marginLeft = '4px'; // Add a 4px gap
+        remaining.style.width = `${100 - percentage}%`;
+        remaining.style.display = percentage >= 100 ? 'none' : '';
       }
-      
+    
       // Update buffer if present
-      if (bufferElement instanceof SVGElement) {
+      if (buffer instanceof HTMLElement) {
         const bufferValue = options.buffer.getBuffer();
         const bufferPercentage = (bufferValue / max) * 100;
-        setSvgAttribute(bufferElement, 'x2', `${bufferPercentage}`);
+        buffer.style.width = `${bufferPercentage}%`;
       }
     } else {
       // Update circular progress
-      if (indicatorElement instanceof SVGElement) {
-        // Calculate the circumference and stroke-dashoffset for a circle
-        const radius = parseFloat(indicatorElement.getAttribute('r') || '0');
-        const circumference = 2 * Math.PI * radius;
-        const dashOffset = circumference - (percentage / 100 * circumference);
-        
-        setSvgAttribute(indicatorElement, 'stroke-dasharray', `${circumference}`);
-        setSvgAttribute(indicatorElement, 'stroke-dashoffset', `${dashOffset}`);
-        
-        // Hide remaining circle if progress is 100%
-        if (remainingElement) {
-          remainingElement.style.display = percentage >= 100 ? 'none' : '';
-        }
-      }
+      console.log('[updateProgress] Updating circular progress', {
+        percentage,
+        circumference: CIRCULAR_CIRCUMFERENCE,
+        dashOffset: CIRCULAR_CIRCUMFERENCE * (1 - percentage / 100)
+      });
+      
+      // Calculate dash offset based on percentage
+      const dashOffset = CIRCULAR_CIRCUMFERENCE * (1 - percentage / 100);
+      
+      // Update SVG attributes
+      indicator.setAttributeNS(null, 'stroke-dasharray', `${CIRCULAR_CIRCUMFERENCE}`);
+      indicator.setAttributeNS(null, 'stroke-dashoffset', `${dashOffset}`);
+      
+      console.log('[updateProgress] After update', {
+        dashArray: indicator.getAttribute('stroke-dasharray'),
+        dashOffset: indicator.getAttribute('stroke-dashoffset'),
+        indicatorElement: indicator.outerHTML
+      });
     }
     
     // Update ARIA attributes (synchronize DOM with internal state)
@@ -169,9 +196,11 @@ export const withAPI = (options: any) => (comp: any): ProgressComponent => {
   // API implementation
   const api: ProgressComponent = {
     element,
-    trackElement,
-    indicatorElement,
-    remainingElement,
+    track,
+    indicator,
+    remaining,
+    buffer,
+    labelElement,
     getClass: comp.getClass,
     
     // Value management
@@ -209,10 +238,10 @@ export const withAPI = (options: any) => (comp: any): ProgressComponent => {
       options.buffer.setBuffer(value);
       
       // Update buffer element for linear variant
-      if (!isCircular && bufferElement instanceof SVGElement && !options.state.isIndeterminate()) {
+      if (!isCircular && buffer instanceof SVGElement && !options.state.isIndeterminate()) {
         const max = options.value.getMax();
         const bufferPercentage = (options.buffer.getBuffer() / max) * 100;
-        setSvgAttribute(bufferElement, 'x2', `${bufferPercentage}`);
+        buffer.setAttributeNS(null, 'x2', `${bufferPercentage}`);
       }
       
       return api;
@@ -230,8 +259,8 @@ export const withAPI = (options: any) => (comp: any): ProgressComponent => {
           addClass(element, PROGRESS_CLASSES.INDETERMINATE);
           element.removeAttribute('aria-valuenow');
           
-          if (remainingElement) {
-            remainingElement.style.display = 'none';
+          if (remaining) {
+            remaining.style.display = 'none';
           }
         } else {
           // Exit indeterminate mode
@@ -276,10 +305,12 @@ export const withAPI = (options: any) => (comp: any): ProgressComponent => {
     
     // Event handling
     on: (event, handler) => {
+      // Type assertion needed because addEventListener expects EventListener but our interface uses Function
       element.addEventListener(event, handler as EventListener);
       return api;
     },
     off: (event, handler) => {
+      // Type assertion needed because removeEventListener expects EventListener but our interface uses Function
       element.removeEventListener(event, handler as EventListener);
       return api;
     },

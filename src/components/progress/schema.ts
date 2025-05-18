@@ -1,6 +1,7 @@
 import { ProgressConfig } from './types';
 import { PROGRESS_VARIANTS, PROGRESS_CLASSES } from './constants';
 import { createSVGElement } from '../../core';
+import { CIRCULAR_CIRCUMFERENCE } from './api';
 
 /**
  * Creates the base progress structure definition
@@ -49,7 +50,8 @@ export function createProgressSchema(component, config: ProgressConfig) {
               attributes: {
                 viewBox: `0 0 ${size} ${size}`,
                 width: '100%',
-                height: '100%'
+                height: '100%',
+                style: 'transform: rotate(-90deg);'
               }
             },
             children: {
@@ -57,27 +59,14 @@ export function createProgressSchema(component, config: ProgressConfig) {
                 creator: createSVGElement,
                 options: {
                   tag: 'circle',
-                  className: `${PROGRESS_CLASSES.CONTAINER}-${PROGRESS_CLASSES.TRACK}`,
+                  className: getClass(PROGRESS_CLASSES.TRACK),
                   attributes: {
                     cx: centerPoint.toString(),
                     cy: centerPoint.toString(),
                     r: radius.toString(),
                     fill: 'none',
-                    'stroke-width': strokeWidth.toString()
-                  }
-                }
-              },
-              remaining: {
-                creator: createSVGElement,
-                options: {
-                  tag: 'circle',
-                  className: `${PROGRESS_CLASSES.CONTAINER}-${PROGRESS_CLASSES.REMAINING}`,
-                  attributes: {
-                    cx: centerPoint.toString(),
-                    cy: centerPoint.toString(),
-                    r: radius.toString(),
-                    fill: 'none',
-                    'stroke-width': strokeWidth.toString()
+                    'stroke-width': strokeWidth.toString(),
+                    stroke: 'var(--mtrl-sys-color-surface-container-highest)'
                   }
                 }
               },
@@ -85,13 +74,14 @@ export function createProgressSchema(component, config: ProgressConfig) {
                 creator: createSVGElement,
                 options: {
                   tag: 'circle',
-                  className: `${PROGRESS_CLASSES.CONTAINER}-${PROGRESS_CLASSES.INDICATOR}`,
+                  className: getClass(PROGRESS_CLASSES.INDICATOR),
                   attributes: {
                     cx: centerPoint.toString(),
                     cy: centerPoint.toString(),
                     r: radius.toString(),
                     fill: 'none',
-                    'stroke-width': strokeWidth.toString()
+                    'stroke-width': strokeWidth.toString(),
+                    stroke: 'var(--mtrl-sys-color-primary)'
                   }
                 }
               }
@@ -101,11 +91,7 @@ export function createProgressSchema(component, config: ProgressConfig) {
       }
     };
   } else {
-    // Linear progress - use SVG structure
-    const width = 100;
-    const height = 4; // Height for the lines
-    const strokeWidth = height * 1.5; // Make stroke slightly larger than height for visibility
-    
+    // Linear progress - use div structure for better compatibility
     return {
       element: {
         options: {
@@ -120,77 +106,39 @@ export function createProgressSchema(component, config: ProgressConfig) {
           }
         },
         children: {
-          svg: {
-            creator: createSVGElement,
+          track: {
             options: {
-              tag: 'svg',
+              tag: 'div',
+              className: getClass(PROGRESS_CLASSES.TRACK),
               attributes: {
-                // Set viewBox to match the width and the stroke width
-                viewBox: `0 0 ${width} ${height}`,
-                width: '100%',
-                height: '100%', // Use 100% height of container
-                preserveAspectRatio: 'none',
-                style: 'display: block; overflow: visible;' // Force block display and overflow
+                style: 'position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--mtrl-sys-color-surface-container-highest); border-radius: 2px;'
               }
             },
             children: {
               buffer: {
-                creator: createSVGElement,
                 options: {
-                  tag: 'line',
-                  className: `${PROGRESS_CLASSES.CONTAINER}-${PROGRESS_CLASSES.BUFFER}`,
+                  tag: 'div',
+                  className: getClass(PROGRESS_CLASSES.BUFFER),
                   attributes: {
-                    x1: '0',
-                    y1: height / 2,
-                    x2: `${config.buffer || 0}`,
-                    y2: height / 2,
-                    'stroke-width': strokeWidth,
-                    'stroke-linecap': 'round'
-                  }
-                }
-              },
-              track: {
-                creator: createSVGElement,
-                options: {
-                  tag: 'line',
-                  className: `${PROGRESS_CLASSES.CONTAINER}-${PROGRESS_CLASSES.TRACK}`,
-                  attributes: {
-                    x1: '0',
-                    y1: height / 2,
-                    x2: width,
-                    y2: height / 2,
-                    'stroke-width': strokeWidth,
-                    'stroke-linecap': 'round'
+                    style: 'position: absolute; top: 0; left: 0; height: 100%; width: 0; background-color: var(--mtrl-sys-color-primary); opacity: 0.4; border-radius: 2px; transition: width 0.3s ease;'
                   }
                 }
               },
               indicator: {
-                creator: createSVGElement,
                 options: {
-                  tag: 'line',
-                  className: `${PROGRESS_CLASSES.CONTAINER}-${PROGRESS_CLASSES.INDICATOR}`,
+                  tag: 'div',
+                  className: getClass(PROGRESS_CLASSES.INDICATOR),
                   attributes: {
-                    x1: '0',
-                    y1: height / 2,
-                    x2: config.indeterminate ? '0' : `${valuePercent}`,
-                    y2: height / 2,
-                    'stroke-width': strokeWidth,
-                    'stroke-linecap': 'round'
+                    style: 'position: absolute; top: 0; left: 0; height: 100%; width: 0; background-color: var(--mtrl-sys-color-primary); border-radius: 2px; transition: width 0.3s ease; z-index: 2;'
                   }
                 }
               },
               remaining: {
-                creator: createSVGElement,
                 options: {
-                  tag: 'line',
-                  className: `${PROGRESS_CLASSES.CONTAINER}-${PROGRESS_CLASSES.REMAINING}`,
+                  tag: 'div',
+                  className: getClass(PROGRESS_CLASSES.REMAINING),
                   attributes: {
-                    x1: `${valuePercent + 4}`,
-                    y1: height / 2,
-                    x2: width,
-                    y2: height / 2,
-                    'stroke-width': strokeWidth,
-                    'stroke-linecap': 'round'
+                    style: 'position: absolute; top: 0; height: 100%; background-color: var(--mtrl-sys-color-primary); opacity: 0.24; border-radius: 2px; transition: left 0.3s ease, width 0.3s ease, margin-left 0.3s ease; z-index: 1; box-sizing: border-box;'
                   }
                 }
               }
