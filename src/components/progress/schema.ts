@@ -33,7 +33,7 @@ export function createProgressSchema(component, config: ProgressConfig) {
     return {
       element: {
         options: {
-          className: [getClass(PROGRESS_CLASSES.TEST), getClass(PROGRESS_CLASSES.CONTAINER), getClass(PROGRESS_CLASSES.CIRCULAR), config.class].filter(Boolean),
+          className: [getClass(PROGRESS_CLASSES.CONTAINER), getClass(PROGRESS_CLASSES.CIRCULAR), config.class].filter(Boolean),
           attributes: {
             role: 'progressbar',
             'aria-valuemin': min.toString(),
