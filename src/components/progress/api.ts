@@ -7,8 +7,11 @@ import { addClass, removeClass } from '../../core/dom';
 // SVG namespace for proper attribute setting
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
-// Fixed gap size in pixels
+// Fixed gap size in pixels for linear progress
 const GAP_SIZE_PX = 8;
+
+// Fixed gap size in pixels for circular progress
+const CIRCULAR_GAP_PX = 4;
 
 interface ApiOptions {
   value: {
@@ -74,6 +77,11 @@ export const withAPI = (options: any) => (comp: any): ProgressComponent => {
       if (remaining) {
         remaining.style.display = 'none';
       }
+      
+      // Hide track in indeterminate state for both linear and circular
+      if (track) {
+        track.style.opacity = '0';
+      }
     } else {
       // Ensure we have the current value from aria-valuenow attribute or state
       let currentValue = options.value.getValue();
@@ -124,11 +132,9 @@ export const withAPI = (options: any) => (comp: any): ProgressComponent => {
       // Update indicator with percentage
       setSvgAttribute(indicator, 'x2', `${percentage}`);
       
-      // Calculate the fixed gap of 4px in SVG coordinate system
-      // If viewBoxWidth = 100, and trackWidth = 600px, then 4px = (4/600)*100 = 0.67 in viewBox units
+      // Calculate the fixed gap of 8px in SVG coordinate system
+      // If viewBoxWidth = 100, and trackWidth = 600px, then 8px = (8/600)*100 = 1.33 in viewBox units
       const gapInSvgUnits = (GAP_SIZE_PX / trackWidth) * viewBoxWidth;
-      
-      console.log('gapInSvgUnits', gapInSvgUnits)
 
       // Position remaining element with fixed gap
       if (percentage < 100) {
@@ -150,14 +156,79 @@ export const withAPI = (options: any) => (comp: any): ProgressComponent => {
       // Calculate the circumference and stroke-dashoffset for a circle
       const radius = parseFloat(indicator.getAttribute('r') || '0');
       const circumference = 2 * Math.PI * radius;
-      const dashOffset = circumference - (percentage / 100 * circumference);
       
-      setSvgAttribute(indicator, 'stroke-dasharray', `${circumference}`);
-      setSvgAttribute(indicator, 'stroke-dashoffset', `${dashOffset}`);
+      // Hide track in determinate mode for circular progress
+      if (track) {
+        track.style.opacity = '0';
+      }
       
-      // Hide remaining circle if progress is 100%
-      if (remaining) {
-        remaining.style.display = percentage >= 100 ? 'none' : '';
+      // Calculate the gap in terms of the circle's circumference
+      // For a 48px circle with 4px visual gap, we need to convert to an angular gap
+      const actualSize = element.getBoundingClientRect().width;
+      const gapSizePx = CIRCULAR_GAP_PX; // Fixed 4px gap for circular progress
+      const gapRatio = gapSizePx / actualSize;
+      const gapSize = gapRatio * circumference;
+      
+      // If percentage is 0, show only the remaining path with gaps on both ends
+      if (percentage === 0) {
+        // Hide indicator when at 0%
+        indicator.style.display = 'none';
+        
+        // Show remaining with gaps at both ends
+        if (remaining) {
+          remaining.style.display = '';
+          // Set dash pattern for remaining with gaps at both ends
+          const adjustedCircumference = circumference - (2 * gapSize);
+          setSvgAttribute(remaining, 'stroke-dasharray', `0 ${gapSize} ${adjustedCircumference} ${gapSize}`);
+          setSvgAttribute(remaining, 'stroke-dashoffset', '0');
+          remaining.style.transform = ''; // Reset any transform
+        }
+      } 
+      // If percentage is 100, show only the indicator with gaps on both ends
+      else if (percentage >= 100) {
+        // Show indicator with gaps at both ends
+        indicator.style.display = '';
+        const adjustedCircumference = circumference - (2 * gapSize);
+        setSvgAttribute(indicator, 'stroke-dasharray', `0 ${gapSize} ${adjustedCircumference} ${gapSize}`);
+        setSvgAttribute(indicator, 'stroke-dashoffset', '0');
+        indicator.style.transform = ''; // Reset any transform
+        
+        // Hide remaining when at 100%
+        if (remaining) {
+          remaining.style.display = 'none';
+        }
+      }
+      // For percentages between 0 and 100, show both indicator and remaining with gaps
+      else {
+        // Show both paths
+        indicator.style.display = '';
+        if (remaining) remaining.style.display = '';
+        
+        // Calculate angle for indicator
+        const progressAngle = (percentage / 100) * 360;
+        
+        // Calculate the size of indicator and remaining in terms of the circumference
+        const indicatorLength = (percentage / 100) * circumference;
+        const remainingLength = circumference - indicatorLength;
+        
+        // Calculate gap sizes in terms of angle (degrees)
+        const gapAngle = (gapSize / circumference) * 360;
+        
+        // Set dash pattern for indicator
+        // Start with small gap, then indicator arc, then the rest hidden
+        setSvgAttribute(indicator, 'stroke-dasharray', `0 ${gapSize} ${indicatorLength - (2 * gapSize)} ${remainingLength + gapSize}`);
+        setSvgAttribute(indicator, 'stroke-dashoffset', '0');
+        
+        // Set dash pattern for remaining
+        // Apply rotational offset to position it correctly after the indicator
+        if (remaining) {
+          // Position the remaining arc after indicator + gap
+          remaining.style.transform = `rotate(${progressAngle}deg)`;
+          
+          // Dash pattern: start with gap, then remaining arc, then invisible portion
+          setSvgAttribute(remaining, 'stroke-dasharray', `0 ${gapSize} ${remainingLength - (2 * gapSize)} ${indicatorLength + gapSize}`);
+          setSvgAttribute(remaining, 'stroke-dashoffset', '0');
+        }
       }
     }
     
@@ -173,7 +244,7 @@ export const withAPI = (options: any) => (comp: any): ProgressComponent => {
   
   // Handle window resize to recalculate gap
   const handleResize = () => {
-    if (!isCircular && !options.state.isIndeterminate()) {
+    if (!options.state.isIndeterminate()) {
       updateProgress(options.value.getValue(), options.value.getMax());
     }
   };
@@ -248,9 +319,19 @@ export const withAPI = (options: any) => (comp: any): ProgressComponent => {
           if (remaining) {
             remaining.style.display = 'none';
           }
+          
+          // Show track in indeterminate state
+          if (track) {
+            track.style.opacity = '1';
+          }
         } else {
           // Exit indeterminate mode
           removeClass(element, PROGRESS_CLASSES.INDETERMINATE);
+          
+          // Hide track for circular determinate progress
+          if (isCircular && track) {
+            track.style.opacity = '0';
+          }
           
           // Restore determinate state
           updateProgress(options.value.getValue(), options.value.getMax());

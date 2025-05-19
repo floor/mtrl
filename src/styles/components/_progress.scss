@@ -12,6 +12,8 @@ $component: '#{base.$prefix}-progress';
 $linear-height: 4px;
 $circular-size: 48px;
 $stroke-width: 6px;
+$linear-gap-size: 8px;
+$circular-gap-size: 4px;
 
 // Keyframes for SVG-based indeterminate linear progress
 @keyframes indeterminate-bar {
@@ -42,10 +44,6 @@ $stroke-width: 6px;
     opacity: 0.38;
     pointer-events: none;
   }
-  
-  &--linear {
-    width: 100px !important
-  }
 
   // Linear progress variant - MD3 specs
   &--linear {
@@ -67,6 +65,7 @@ $stroke-width: 6px;
         stroke-width: $linear-height;
         // Force visibility
         vector-effect: non-scaling-stroke;
+        transition: stroke-dasharray 0.3s ease, stroke-dashoffset 0.3s ease, x1 0.3s ease, x2 0.3s ease;
       }
       
       .#{$component}-track {
@@ -156,6 +155,10 @@ $stroke-width: 6px;
       
       // For SVG elements
       svg {
+        .#{$component}-track {
+          opacity: 1 !important; // Force track visibility in indeterminate mode
+        }
+        
         .#{$component}-indicator {
           // Use the same style of animation as the div-based version
           // but adapted for SVG elements
@@ -198,13 +201,13 @@ $stroke-width: 6px;
     }
   }
 
-  // Circular progress variant
+      // Circular progress variant
   &--circular {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 48px;
-    height: 48px;
+    width: $circular-size;
+    height: $circular-size;
     
     svg {
       width: 100%;
@@ -215,21 +218,45 @@ $stroke-width: 6px;
     .#{$component}-track {
       stroke: t.color('surface-container-highest');
       fill: none;
+      stroke-width: $stroke-width;
+      // Track is hidden by default in determinate mode
+      opacity: 0;
+      transition: opacity 0.3s ease;
     }
     
     .#{$component}-indicator {
       stroke: t.color('primary');
       fill: none;
-      stroke-dasharray: 283; // 2*PI*45
-      transition: stroke-dashoffset 0.3s ease;
+      stroke-width: $stroke-width;
+      // Use round stroke-linecap as specified
       stroke-linecap: round;
       transform-origin: center;
+      transition: stroke-dasharray 0.3s ease, stroke-dashoffset 0.3s ease, transform 0.3s ease;
+    }
+    
+    .#{$component}-remaining {
+      stroke: t.alpha('primary', 0.24);
+      fill: none;
+      stroke-width: $stroke-width;
+      // Use round stroke-linecap as specified
+      stroke-linecap: round;
+      transform-origin: center;
+      transition: stroke-dasharray 0.3s ease, stroke-dashoffset 0.3s ease, transform 0.3s ease;
     }
     
     // Indeterminate animation for circular progress
     &.#{$component}--indeterminate {
+      .#{$component}-track {
+        opacity: 1; // Show track in indeterminate mode
+      }
+      
       .#{$component}-indicator {
+        stroke-dasharray: 283; // 2*PI*45 (full circumference)
         animation: circular-indeterminate 1.5s linear infinite;
+      }
+      
+      .#{$component}-remaining {
+        display: none;
       }
     }
     
