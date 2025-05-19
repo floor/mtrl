@@ -46,6 +46,7 @@ export const PROGRESS_CLASSES = {
   CONTAINER: 'progress',
   /** Linear variant class */
   LINEAR: 'progress--linear',
+
   /** Circular variant class */
   CIRCULAR: 'progress--circular',
   /** Track element (background) class */
@@ -61,5 +62,7 @@ export const PROGRESS_CLASSES = {
   /** Indeterminate state class */
   INDETERMINATE: 'progress--indeterminate',
   /** Disabled state class */
-  DISABLED: 'progress--disabled'
+  DISABLED: 'progress--disabled',
+  /** Test state class */
+  TEST: 'progress--test',
 } as const;

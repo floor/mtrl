@@ -34,17 +34,17 @@ export const withState = (config: ProgressConfig) => (component) => {
         component.indicator.style.width = `${percentage}%`;
       }
       
-      if (component.remainingElement instanceof HTMLElement && !isCircular) {
+      if (component.remaining instanceof HTMLElement && !isCircular) {
         const percentage = (state.value / state.max) * 100;
         
         // Fix: Use direct percentage values instead of calc() function
-        component.remainingElement.style.left = `${percentage}%`;
-        component.remainingElement.style.marginLeft = '4px'; // Add a 4px gap
-        component.remainingElement.style.width = `${100 - percentage}%`;
+        component.remaining.style.left = `${percentage}%`;
+        component.remaining.style.marginLeft = '4px'; // Add a 4px gap
+        component.remaining.style.width = `${100 - percentage}%`;
         
         // Hide remaining element if progress is 100%
         if (percentage >= 100) {
-          component.remainingElement.style.display = 'none';
+          component.remaining.style.display = 'none';
         }
       }
       

@@ -43,6 +43,10 @@ $stroke-width: 6px;
     pointer-events: none;
   }
   
+  &--linear {
+    width: 100px !important
+  }
+
   // Linear progress variant - MD3 specs
   &--linear {
     width: 100%;

@@ -44,7 +44,7 @@ export const setupIndeterminateState = (component, isCircular) => {
       
       // Find the SVG indicator and remaining elements if they exist
       const indicator = component.indicator;
-      const remainingElement = component.remainingElement;
+      const remaining = component.remaining;
       
       if (indicator) {
         // Enable rotation animation via CSS
@@ -52,8 +52,8 @@ export const setupIndeterminateState = (component, isCircular) => {
       }
       
       // Hide the remaining element if we're in indeterminate state
-      if (remainingElement) {
-        remainingElement.style.display = 'none';
+      if (remaining) {
+        remaining.style.display = 'none';
       }
     } else {
       // For linear indeterminate, different animation approach
@@ -88,8 +88,8 @@ export const setupIndeterminateState = (component, isCircular) => {
             }
             
             // Hide the remaining element
-            if (component.remainingElement) {
-              component.remainingElement.style.display = 'none';
+            if (component.remaining) {
+              component.remaining.style.display = 'none';
             }
           } else {
             // For traditional DIV-based linear indeterminate
@@ -140,26 +140,26 @@ export const setupComponentReferences = (component, state, isCircular) => {
       if (svgElement.querySelector) {
         const track = svgElement.querySelector(`.${PROGRESS_CLASSES.CONTAINER}-${PROGRESS_CLASSES.TRACK}`);
         const indicator = svgElement.querySelector(`.${PROGRESS_CLASSES.CONTAINER}-${PROGRESS_CLASSES.INDICATOR}`);
-        const remainingElement = svgElement.querySelector(`.${PROGRESS_CLASSES.CONTAINER}-${PROGRESS_CLASSES.REMAINING}`);
+        const remaining = svgElement.querySelector(`.${PROGRESS_CLASSES.CONTAINER}-${PROGRESS_CLASSES.REMAINING}`);
         const buffer = svgElement.querySelector(`.${PROGRESS_CLASSES.CONTAINER}-${PROGRESS_CLASSES.BUFFER}`);
         
         // Store references directly on component for API access
         component.track = track || null;
         component.indicator = indicator || null;
-        component.remainingElement = remainingElement || null;
+        component.remaining = remaining || null;
         component.buffer = buffer || null;
         
         // Also update elements object to keep everything consistent
         component.elements.track = track || null;
         component.elements.indicator = indicator || null;
-        component.elements.remaining = remainingElement || null;
+        component.elements.remaining = remaining || null;
         component.elements.buffer = buffer || null;
       } else {
         // If querySelector is not available, fall back to direct child references
         // This might happen if the SVG structure is created differently
         component.track = component.elements?.track || null;
         component.indicator = component.elements?.indicator || null;
-        component.remainingElement = component.elements?.remaining || null;
+        component.remaining = component.elements?.remaining || null;
         component.buffer = component.elements?.buffer || null;
       }
     } else {
@@ -168,7 +168,7 @@ export const setupComponentReferences = (component, state, isCircular) => {
       // them as direct properties on the component for API access
       component.track = component.elements?.track || null;
       component.indicator = component.elements?.indicator || null;
-      component.remainingElement = component.elements?.remaining || null;
+      component.remaining = component.elements?.remaining || null;
       component.buffer = component.elements?.buffer || null;
     }
     

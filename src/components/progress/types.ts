@@ -126,7 +126,7 @@ export interface ProgressComponent {
   buffer?: HTMLElement;
   
   /** The remaining element (space between indicator and track) */
-  remainingElement?: HTMLElement | SVGElement;
+  remaining?: HTMLElement | SVGElement;
   
   /** The label element if showLabel is enabled */
   label?: HTMLElement;

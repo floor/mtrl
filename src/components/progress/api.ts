@@ -7,6 +7,9 @@ import { addClass, removeClass } from '../../core/dom';
 // SVG namespace for proper attribute setting
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
+// Fixed gap size in pixels
+const GAP_SIZE_PX = 8;
+
 interface ApiOptions {
   value: {
     getValue: () => number;
@@ -41,40 +44,21 @@ interface ApiOptions {
  * Helper function to safely set SVG attributes using the proper namespace
  */
 const setSvgAttribute = (element: SVGElement | HTMLElement, attr: string, value: string): void => {
-  if (element instanceof SVGElement) {
-    try {
-      element.setAttributeNS(null, attr, value);
-    } catch (error) {
-      // Fallback to regular setAttribute if setAttributeNS fails
-      element.setAttribute(attr, value);
-    }
-  } else {
+  try {
     element.setAttribute(attr, value);
-  }
-};
-
-/**
- * Helper to set SVG line properties with proper namespace
- */
-const updateSvgLinePosition = (line: SVGElement | HTMLElement, x1: number | string, x2: number | string): void => {
-  if (!line) return;
-  
-  if (line instanceof SVGElement) {
-    setSvgAttribute(line, 'x1', String(x1));
-    setSvgAttribute(line, 'x2', String(x2));
+  } catch (error) {
+    console.error(`Error setting attribute ${attr} to ${value}:`, error);
   }
 };
 
 export const withAPI = (options: any) => (comp: any): ProgressComponent => {
   // Get references to DOM elements
   const element = comp.element as HTMLElement;
-  const track = comp.components.track as SVGElement;
-  const indicator = comp.components.indicator as SVGElement ;
-  const remainingElement = comp.components.remaining as SVGElement;
-  const buffer = comp.components.buffer as SVGElement;
-  const label = comp.components.label as HTMLElement | undefined;
-
-  console.log('withAPI', options, comp)
+  const track = comp.components?.track || comp.track as SVGElement;
+  const indicator = comp.components?.indicator || comp.indicator as SVGElement;
+  const remaining = comp.components?.remaining || comp.remaining as SVGElement;
+  const buffer = comp.components?.buffer || comp.buffer as SVGElement;
+  const label = comp.components?.label || comp.label as HTMLElement | undefined;
 
   // Configuration
   const isCircular = element.classList.contains(comp.getClass(PROGRESS_CLASSES.CIRCULAR));
@@ -87,8 +71,8 @@ export const withAPI = (options: any) => (comp: any): ProgressComponent => {
       element.removeAttribute('aria-valuenow');
       
       // Hide remaining element in indeterminate state
-      if (remainingElement) {
-        remainingElement.style.display = 'none';
+      if (remaining) {
+        remaining.style.display = 'none';
       }
     } else {
       // Ensure we have the current value from aria-valuenow attribute or state
@@ -108,51 +92,72 @@ export const withAPI = (options: any) => (comp: any): ProgressComponent => {
     }
   };
   
-  // Update progress visuals based on current state - SVG specific implementation
+  // Get the SVG viewbox width (the coordinate system we're using)
+  const getSvgViewBoxWidth = () => {
+    const svg = element.querySelector('svg');
+    if (svg) {
+      const viewBox = svg.getAttribute('viewBox');
+      if (viewBox) {
+        const parts = viewBox.split(' ');
+        if (parts.length >= 3) {
+          return parseFloat(parts[2]);
+        }
+      }
+    }
+    return 100; // Default viewBox width
+  };
+  
+  // Update progress visuals based on current state
   const updateProgress = (value: number, max: number) => {
     if (options.state.isIndeterminate()) return;
     
-    console.log('updateProgress', value, max)
-
-    console.log(indicator, indicator instanceof SVGElement)
-
     const percentage = (value / max) * 100;
     
     // Update linear progress elements
     if (!isCircular) {
-      // Update indicator line with percentage
-      if (indicator instanceof SVGElement) {
-        setSvgAttribute(indicator, 'x2', `${percentage}`);
-      }
+      // Get actual physical width of the element
+      const trackWidth = track?.getBoundingClientRect().width || 100;
       
-      // Update remaining line (starting after indicator with gap)
-      if (remainingElement instanceof SVGElement) {
-        const gap = 4; // 4px gap
-        setSvgAttribute(remainingElement, 'x1', `${percentage + gap}`);
-        remainingElement.style.display = percentage >= 100 ? 'none' : '';
+      // Get the SVG viewBox width for coordinate system
+      const viewBoxWidth = getSvgViewBoxWidth();
+      
+      // Update indicator with percentage
+      setSvgAttribute(indicator, 'x2', `${percentage}`);
+      
+      // Calculate the fixed gap of 4px in SVG coordinate system
+      // If viewBoxWidth = 100, and trackWidth = 600px, then 4px = (4/600)*100 = 0.67 in viewBox units
+      const gapInSvgUnits = (GAP_SIZE_PX / trackWidth) * viewBoxWidth;
+      
+      console.log('gapInSvgUnits', gapInSvgUnits)
+
+      // Position remaining element with fixed gap
+      if (percentage < 100) {
+        setSvgAttribute(remaining, 'x1', `${percentage + gapInSvgUnits}`);
+        remaining.style.display = '';
+      } else {
+        // Hide remaining when at 100%
+        remaining.style.display = 'none';
       }
       
       // Update buffer if present
-      if (buffer instanceof SVGElement) {
+      if (buffer) {
         const bufferValue = options.buffer.getBuffer();
         const bufferPercentage = (bufferValue / max) * 100;
         setSvgAttribute(buffer, 'x2', `${bufferPercentage}`);
       }
     } else {
       // Update circular progress
-      if (indicator instanceof SVGElement) {
-        // Calculate the circumference and stroke-dashoffset for a circle
-        const radius = parseFloat(indicator.getAttribute('r') || '0');
-        const circumference = 2 * Math.PI * radius;
-        const dashOffset = circumference - (percentage / 100 * circumference);
-        
-        setSvgAttribute(indicator, 'stroke-dasharray', `${circumference}`);
-        setSvgAttribute(indicator, 'stroke-dashoffset', `${dashOffset}`);
-        
-        // Hide remaining circle if progress is 100%
-        if (remainingElement) {
-          remainingElement.style.display = percentage >= 100 ? 'none' : '';
-        }
+      // Calculate the circumference and stroke-dashoffset for a circle
+      const radius = parseFloat(indicator.getAttribute('r') || '0');
+      const circumference = 2 * Math.PI * radius;
+      const dashOffset = circumference - (percentage / 100 * circumference);
+      
+      setSvgAttribute(indicator, 'stroke-dasharray', `${circumference}`);
+      setSvgAttribute(indicator, 'stroke-dashoffset', `${dashOffset}`);
+      
+      // Hide remaining circle if progress is 100%
+      if (remaining) {
+        remaining.style.display = percentage >= 100 ? 'none' : '';
       }
     }
     
@@ -166,12 +171,22 @@ export const withAPI = (options: any) => (comp: any): ProgressComponent => {
     }
   };
   
+  // Handle window resize to recalculate gap
+  const handleResize = () => {
+    if (!isCircular && !options.state.isIndeterminate()) {
+      updateProgress(options.value.getValue(), options.value.getMax());
+    }
+  };
+  
+  // Add resize listener to maintain proper gap sizing
+  window.addEventListener('resize', handleResize);
+  
   // API implementation
   const api: ProgressComponent = {
     element,
     track,
     indicator,
-    remainingElement,
+    remaining,
     getClass: comp.getClass,
     
     // Value management
@@ -209,7 +224,7 @@ export const withAPI = (options: any) => (comp: any): ProgressComponent => {
       options.buffer.setBuffer(value);
       
       // Update buffer element for linear variant
-      if (!isCircular && buffer instanceof SVGElement && !options.state.isIndeterminate()) {
+      if (!isCircular && buffer && !options.state.isIndeterminate()) {
         const max = options.value.getMax();
         const bufferPercentage = (options.buffer.getBuffer() / max) * 100;
         setSvgAttribute(buffer, 'x2', `${bufferPercentage}`);
@@ -230,8 +245,8 @@ export const withAPI = (options: any) => (comp: any): ProgressComponent => {
           addClass(element, PROGRESS_CLASSES.INDETERMINATE);
           element.removeAttribute('aria-valuenow');
           
-          if (remainingElement) {
-            remainingElement.style.display = 'none';
+          if (remaining) {
+            remaining.style.display = 'none';
           }
         } else {
           // Exit indeterminate mode
@@ -285,7 +300,13 @@ export const withAPI = (options: any) => (comp: any): ProgressComponent => {
     },
     
     // Cleanup
-    destroy: options.lifecycle.destroy,
+    destroy: () => {
+      // Remove resize listener
+      window.removeEventListener('resize', handleResize);
+      
+      // Call original destroy
+      options.lifecycle.destroy();
+    },
     
     // Extension points
     addClass: (...classes) => {
@@ -301,7 +322,13 @@ export const withAPI = (options: any) => (comp: any): ProgressComponent => {
     },
     
     lifecycle: {
-      destroy: options.lifecycle.destroy
+      destroy: () => {
+        // Remove resize listener
+        window.removeEventListener('resize', handleResize);
+        
+        // Call original destroy
+        options.lifecycle.destroy();
+      }
     }
   };
   

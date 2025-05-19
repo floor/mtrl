@@ -1,3 +1,4 @@
+// src/components/progress/schema.ts
 import { ProgressConfig } from './types';
 import { PROGRESS_VARIANTS, PROGRESS_CLASSES } from './constants';
 import { createSVGElement } from '../../core';
@@ -32,7 +33,7 @@ export function createProgressSchema(component, config: ProgressConfig) {
     return {
       element: {
         options: {
-          className: [getClass(PROGRESS_CLASSES.CONTAINER), getClass(PROGRESS_CLASSES.CIRCULAR), config.class].filter(Boolean),
+          className: [getClass(PROGRESS_CLASSES.TEST), getClass(PROGRESS_CLASSES.CONTAINER), getClass(PROGRESS_CLASSES.CIRCULAR), config.class].filter(Boolean),
           attributes: {
             role: 'progressbar',
             'aria-valuemin': min.toString(),
@@ -102,9 +103,13 @@ export function createProgressSchema(component, config: ProgressConfig) {
     };
   } else {
     // Linear progress - use SVG structure
-    const width = 100;
+    const width = 100; // Use 100 for percentage-based positioning
     const height = 4; // Height for the lines
     const strokeWidth = height * 1.5; // Make stroke slightly larger than height for visibility
+    
+    // For the remaining element, calculate initial position with fixed gap
+    // The gap is represented in viewBox coordinates (0-100)
+    const remainingPosition = valuePercent;
     
     return {
       element: {
@@ -185,7 +190,7 @@ export function createProgressSchema(component, config: ProgressConfig) {
                   tag: 'line',
                   className: `${PROGRESS_CLASSES.CONTAINER}-${PROGRESS_CLASSES.REMAINING}`,
                   attributes: {
-                    x1: `${valuePercent + 4}`,
+                    x1: `${remainingPosition}`,  // Initial position will be recalculated by the API
                     y1: height / 2,
                     x2: width,
                     y2: height / 2,
@@ -200,4 +205,4 @@ export function createProgressSchema(component, config: ProgressConfig) {
       }
     };
   }
-} 
+}
