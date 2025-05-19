@@ -4,7 +4,7 @@
  * @description Processor for object-based layout schemas
  */
 
-import { createElement } from '../dom/create';
+import { createElement, createSVGElement } from '../dom/create';
 import { Schema, LayoutResult, LayoutOptions } from './types';
 import { isComponent, createFragment, processClassNames } from './utils';
 import { createLayoutResult } from './result';
@@ -28,7 +28,7 @@ interface LayoutObject {
  */
 export function processObjectSchema(
   schema: Schema, 
-  parentElement: HTMLElement | DocumentFragment | null = null,
+  parentElement: HTMLElement | SVGElement | DocumentFragment | null = null,
   options: LayoutOptions = {}
 ): LayoutResult {
   const layout: LayoutObject = {};
@@ -59,8 +59,15 @@ export function processObjectSchema(
       const childLayouts = [];
       
       for (const key in elementDef.children) {
+        const childDef = elementDef.children[key];
+        
+        // Simple fix: Store component's key as name if not provided
+        if (childDef && !childDef.name) {
+          childDef.name = key;
+        }
+        
         const childResult = processObjectSchema(
-          { [key]: elementDef.children[key] }, 
+          { [key]: childDef }, 
           fragment,
           options
         );
@@ -77,7 +84,7 @@ export function processObjectSchema(
     
     return createLayoutResult(layout);
   }
-  
+
   // Process normal schema elements
   const fragment = parentElement ? createFragment() : null;
   const childLayouts = [];
@@ -97,7 +104,12 @@ export function processObjectSchema(
     const processedOptions = shouldApplyPrefix ? 
       processClassNames(elementOptions) : 
       { ...elementOptions };
-      
+    
+    // Simple fix: Always set name property to key if not provided
+    if (!def.name && key !== 'element') {
+      def.name = key;
+    }
+    
     // Create element
     const created = createComponentInstance(elementCreator, processedOptions, options);
     
@@ -111,8 +123,17 @@ export function processObjectSchema(
     
     // Process children
     if (def.children) {
+      // Fix: Instead of comparing functions directly, use instanceof to check for SVG elements
+      // or check a specific property in the creator function to identify its type
+      const isSvgElement = element instanceof SVGElement;
+      
       const childResult = processObjectSchema(def.children, element, options);
       childLayouts.push(childResult.layout);
+      
+      // Simple fix: For SVG elements, register all children at this level for easy access
+      if (isSvgElement) {
+        Object.assign(layout, childResult.layout);
+      }
     }
   }
   

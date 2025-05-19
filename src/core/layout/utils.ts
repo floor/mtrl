@@ -1,4 +1,4 @@
-// src/core/layout/utils.ts
+// src/core/layout/utils.ts (minimal fix)
 /**
  * @module core/layout
  * @description Utility functions for layout creation
@@ -135,7 +135,9 @@ export function flattenLayout(layout: Record<string, any>): Record<string, any> 
     // Only include components, elements, and non-functions
     if (value && 
         typeof value !== 'function' && 
-        (value instanceof HTMLElement || isComponent(value))) {
+        (value instanceof HTMLElement || 
+         value instanceof SVGElement || 
+         isComponent(value))) {
       flattened[key] = value;
     }
   }

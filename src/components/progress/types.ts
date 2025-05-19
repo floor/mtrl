@@ -123,13 +123,13 @@ export interface ProgressComponent {
   indicator: HTMLElement | SVGElement;
   
   /** The buffer element for linear variant (pre-loaded state) */
-  buffer?: SVGElement;
+  buffer?: HTMLElement;
   
   /** The remaining element (space between indicator and track) */
-  remaining?: HTMLElement | SVGElement;
+  remainingElement?: HTMLElement | SVGElement;
   
   /** The label element if showLabel is enabled */
-  labelElement?: HTMLElement;
+  label?: HTMLElement;
   
   /**
    * Gets a class name with the component's prefix

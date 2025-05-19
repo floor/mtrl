@@ -53,7 +53,7 @@ const createProgress = (config: ProgressConfig = {}): ProgressComponent => {
       buffer: baseConfig.buffer || 0,
       indeterminate: baseConfig.indeterminate || false,
       labelFormatter: (v: number, m: number) => `${Math.round((v / m) * 100)}%`,
-      labelElement: undefined as HTMLElement | undefined
+      label: undefined as HTMLElement | undefined
     };
     
     // Create the component with the pipe pattern
@@ -65,12 +65,13 @@ const createProgress = (config: ProgressConfig = {}): ProgressComponent => {
       withVariant(baseConfig),
       withDisabled(baseConfig),
       withState(baseConfig),
-      withSetup(baseConfig),
+      // Add API
       comp => {
         // Use the component's state or fall back to local state
         const stateObj = comp.state || localState;
         return withAPI(getApiConfig(comp, stateObj))(comp);
       },
+      withSetup(baseConfig),
       withLifecycle()
     )(baseConfig);
 

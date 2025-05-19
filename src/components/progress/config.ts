@@ -43,10 +43,10 @@ export const setupIndeterminateState = (component, isCircular) => {
       // Most of this will be handled by CSS
       
       // Find the SVG indicator and remaining elements if they exist
-      const indicatorElement = component.indicatorElement;
+      const indicator = component.indicator;
       const remainingElement = component.remainingElement;
       
-      if (indicatorElement) {
+      if (indicator) {
         // Enable rotation animation via CSS
         // (CSS class should handle this via the .progress--indeterminate class)
       }
@@ -61,30 +61,30 @@ export const setupIndeterminateState = (component, isCircular) => {
       // Schedule a small delay to make sure the DOM is fully constructed
       setTimeout(() => {
         try {
-          const isSvgLinear = component.indicatorElement instanceof SVGElement;
+          const isSvgLinear = component.indicator instanceof SVGElement;
           
           if (isSvgLinear) {
             // For SVG linear indeterminate progress
             // Most animation will be handled via CSS with the .progress--indeterminate class
             
             // Clear any x2 attribute on the indicator to allow CSS animations
-            if (component.indicatorElement) {
-              component.indicatorElement.removeAttribute('x2');
+            if (component.indicator) {
+              component.indicator.removeAttribute('x2');
               
               // Make sure x1 is set to 0 for proper animation position
-              component.indicatorElement.setAttribute('x1', '0');
+              component.indicator.setAttribute('x1', '0');
               
               // Set initial x2 to 0 to ensure it doesn't show before animation starts
-              component.indicatorElement.setAttribute('x2', '0');
+              component.indicator.setAttribute('x2', '0');
               
               // Ensure the stroke-width is properly set
               // Get it from track element if possible, otherwise use 4px as default
-              const trackElement = component.trackElement;
-              const strokeWidth = trackElement ? trackElement.getAttribute('stroke-width') : '6';
-              component.indicatorElement.setAttribute('stroke-width', strokeWidth);
+              const track = component.track;
+              const strokeWidth = track ? track.getAttribute('stroke-width') : '6';
+              component.indicator.setAttribute('stroke-width', strokeWidth);
               
               // Force SVG visibility with CSS
-              component.indicatorElement.setAttribute('style', 'vector-effect: non-scaling-stroke;');
+              component.indicator.setAttribute('style', 'vector-effect: non-scaling-stroke;');
             }
             
             // Hide the remaining element
@@ -124,36 +124,60 @@ export const setupIndeterminateState = (component, isCircular) => {
  * @returns Enhanced component with references
  */
 export const setupComponentReferences = (component, state, isCircular) => {
-  console.log('setupComponentReferences', component, state, isCircular)
   try {
-    // Get components from the component's components property
-    // This is already flattened by withDom
-    const components = component.components;
-    
-    if (!components) {
-      console.warn('Progress component missing components property. withDom may not have been applied correctly.');
-      return component;
+    // Make sure component has elements property
+    if (!component.elements) {
+      console.warn('Progress component missing elements property. withLayout may not have been applied correctly.');
+      component.elements = {};
     }
 
-    // Get all track, indicator, remaining, and buffer elements directly from flattened components
-    // These are available directly because withDom flattens the structure
-    const trackElement = components.track as SVGElement;
-    const indicatorElement = components.indicator as SVGElement;
-    const remainingElement = components.remaining as SVGElement;
-    const bufferElement = components.buffer as SVGElement;
+    // Check if we're using SVG-based structure (both circular and linear variants now use SVG)
+    const svgElement = component.elements?.svg;
     
-    // Store references directly on component for API access
-    component.trackElement = trackElement || null;
-    component.indicatorElement = indicatorElement || null;
-    component.remainingElement = remainingElement || null;
-    component.bufferElement = bufferElement || null;
+    if (svgElement) {
+      // Get all track, indicator, remaining, and buffer elements from the SVG
+      // For both circular and linear variants
+      if (svgElement.querySelector) {
+        const track = svgElement.querySelector(`.${PROGRESS_CLASSES.CONTAINER}-${PROGRESS_CLASSES.TRACK}`);
+        const indicator = svgElement.querySelector(`.${PROGRESS_CLASSES.CONTAINER}-${PROGRESS_CLASSES.INDICATOR}`);
+        const remainingElement = svgElement.querySelector(`.${PROGRESS_CLASSES.CONTAINER}-${PROGRESS_CLASSES.REMAINING}`);
+        const buffer = svgElement.querySelector(`.${PROGRESS_CLASSES.CONTAINER}-${PROGRESS_CLASSES.BUFFER}`);
+        
+        // Store references directly on component for API access
+        component.track = track || null;
+        component.indicator = indicator || null;
+        component.remainingElement = remainingElement || null;
+        component.buffer = buffer || null;
+        
+        // Also update elements object to keep everything consistent
+        component.elements.track = track || null;
+        component.elements.indicator = indicator || null;
+        component.elements.remaining = remainingElement || null;
+        component.elements.buffer = buffer || null;
+      } else {
+        // If querySelector is not available, fall back to direct child references
+        // This might happen if the SVG structure is created differently
+        component.track = component.elements?.track || null;
+        component.indicator = component.elements?.indicator || null;
+        component.remainingElement = component.elements?.remaining || null;
+        component.buffer = component.elements?.buffer || null;
+      }
+    } else {
+      // Legacy DIV structure for linear progress
+      // withLayout already created and stored the elements, we just need to expose
+      // them as direct properties on the component for API access
+      component.track = component.elements?.track || null;
+      component.indicator = component.elements?.indicator || null;
+      component.remainingElement = component.elements?.remaining || null;
+      component.buffer = component.elements?.buffer || null;
+    }
     
     // Store label element in state if it exists
-    if (components.label) {
+    if (component.elements?.label) {
       if (state) {
-        state.labelElement = components.label;
+        state.label = component.elements.label;
       }
-      component.labelElement = components.label;
+      component.label = component.elements.label;
     }
   } catch (error) {
     console.error('Error setting up progress component references:', error);
@@ -260,28 +284,28 @@ export const getApiConfig = (comp, state) => {
     },
     label: {
       show: () => {
-        if (!safeState.labelElement) {
-          const labelElement = document.createElement('div');
-          labelElement.className = `${comp.getClass(PROGRESS_CLASSES.LABEL)}`;
-          labelElement.textContent = safeState.labelFormatter(safeState.value, safeState.max);
-          comp.element.appendChild(labelElement);
-          safeState.labelElement = labelElement;
-          comp.labelElement = labelElement;
+        if (!safeState.label) {
+          const label = document.createElement('div');
+          label.className = `${comp.getClass(PROGRESS_CLASSES.LABEL)}`;
+          label.textContent = safeState.labelFormatter(safeState.value, safeState.max);
+          comp.element.appendChild(label);
+          safeState.label = label;
+          comp.label = label;
         }
       },
       hide: () => {
-        if (safeState.labelElement) {
-          safeState.labelElement.remove();
-          safeState.labelElement = undefined;
-          comp.labelElement = undefined;
+        if (safeState.label) {
+          safeState.label.remove();
+          safeState.label = undefined;
+          comp.label = undefined;
         }
       },
       format: (formatter) => { 
         safeState.labelFormatter = formatter; 
       },
       setContent: (content) => {
-        if (safeState.labelElement) {
-          safeState.labelElement.textContent = content;
+        if (safeState.label) {
+          safeState.label.textContent = content;
         }
       }
     },

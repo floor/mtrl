@@ -217,7 +217,6 @@ $stroke-width: 6px;
       stroke: t.color('primary');
       fill: none;
       stroke-dasharray: 283; // 2*PI*45
-      stroke-dashoffset: 283;
       transition: stroke-dashoffset 0.3s ease;
       stroke-linecap: round;
       transform-origin: center;
