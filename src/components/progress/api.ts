@@ -1,18 +1,19 @@
 // src/components/progress/api.ts
 
 import { ProgressComponent } from './types';
-import { PROGRESS_CLASSES } from './constants';
+import { PROGRESS_CLASSES, PROGRESS_EVENTS } from './constants';
 import { addClass, removeClass } from '../../core/dom';
 
-// SVG namespace for proper attribute setting
-const SVG_NS = 'http://www.w3.org/2000/svg';
+/**
+ * SVG attribute dictionary
+ */
+interface SVGAttributes {
+  [key: string]: string | number | undefined;
+}
 
-// Fixed gap size in pixels for linear progress
-const GAP_SIZE_PX = 8;
-
-// Fixed gap size in pixels for circular progress
-const CIRCULAR_GAP_PX = 8;
-
+/**
+ * API configuration options for progress component
+ */
 interface ApiOptions {
   value: {
     getValue: () => number;
@@ -29,10 +30,10 @@ interface ApiOptions {
     isDisabled: () => boolean;
   };
   label: {
-    show: () => void;
-    hide: () => void;
-    format: (formatter: (value: number, max: number) => string) => void;
-    setContent: (content: string) => void;
+    show?: () => void;
+    hide?: () => void;
+    format?: (formatter: (value: number, max: number) => string) => void;
+    formatter?: (value: number, max: number) => string;
   };
   state: {
     setIndeterminate: (indeterminate: boolean) => void;
@@ -44,212 +45,185 @@ interface ApiOptions {
 }
 
 /**
- * Helper function to safely set SVG attributes using the proper namespace
+ * Enhances a progress component with a streamlined API
  */
-const setSvgAttribute = (element: SVGElement | HTMLElement, attr: string, value: string): void => {
-  try {
-    element.setAttribute(attr, value);
-  } catch (error) {
-    console.error(`Error setting attribute ${attr} to ${value}:`, error);
-  }
-};
-
-export const withAPI = (options: any) => (comp: any): ProgressComponent => {
-  // Get references to DOM elements
-  const element = comp.element as HTMLElement;
-  const track = comp.components?.track || comp.track as SVGElement;
-  const indicator = comp.components?.indicator || comp.indicator as SVGElement;
-  const remaining = comp.components?.remaining || comp.remaining as SVGElement;
-  const buffer = comp.components?.buffer || comp.buffer as SVGElement;
-  const label = comp.components?.label || comp.label as HTMLElement | undefined;
-
-  // Configuration
-  const isCircular = element.classList.contains(comp.getClass(PROGRESS_CLASSES.CIRCULAR));
+export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent => {
+  // Get minimal element references directly
+  const { element, getClass } = comp;
+  const track = comp.track || comp.components?.track as SVGElement;
+  const indicator = comp.indicator || comp.components?.indicator as SVGElement;
+  const remaining = comp.remaining || comp.components?.remaining as SVGElement | undefined;
+  const buffer = comp.buffer || comp.components?.buffer as SVGElement | undefined;
   
-  // Directly sync the SVG with current value/state on initialization
-  const syncInitialState = () => {
-    if (options.state.isIndeterminate()) {
-      // Ensure indeterminate class is applied
-      addClass(element, PROGRESS_CLASSES.INDETERMINATE);
-      element.removeAttribute('aria-valuenow');
-      
-      // Hide remaining element in indeterminate state
-      if (remaining) {
+  // Determine variant once
+  const isCircular = element.classList.contains(getClass(PROGRESS_CLASSES.CIRCULAR));
+  
+  // Create event emitter helper - reduces code duplication
+  const emitEvent = (name: string, detail: Record<string, any>): void => {
+    element.dispatchEvent(new CustomEvent(name, { detail }));
+  };
+  
+  // Optimized helper to set attributes on SVG elements
+  const updateElement = (el: SVGElement | undefined, attrs: SVGAttributes): void => {
+    if (!el) return;
+    
+    // Apply style changes through style property
+    if (attrs.style !== undefined) {
+      el.style.cssText = attrs.style as string;
+      delete attrs.style;
+    }
+    
+    // Apply display property
+    if (attrs.display !== undefined) {
+      el.style.display = attrs.display as string;
+      delete attrs.display;
+    }
+    
+    // Apply transform
+    if (attrs.transform !== undefined) {
+      el.style.transform = attrs.transform as string;
+      delete attrs.transform;
+    }
+    
+    // Apply remaining attributes
+    for (const attr in attrs) {
+      if (attrs[attr] !== undefined) {
+        el.setAttribute(attr, attrs[attr]!.toString());
+      }
+    }
+  };
+  
+  // Update progress visuals efficiently - separated by variant type
+  const updateLinearProgress = (percentage: number, max: number): void => {
+    // Calculate gap in percentage units (fixed 8px)
+    const gap = 8 / element.clientWidth * 100;
+    
+    // Update indicator position
+    updateElement(indicator, { x2: percentage });
+    
+    // Update remaining with gap
+    updateElement(remaining, { 
+      x1: percentage + gap,
+      display: percentage >= 100 ? 'none' : ''
+    });
+    
+    // Update buffer if present
+    if (buffer) {
+      const bufferPercentage = (options.buffer.getBuffer() / max) * 100;
+      updateElement(buffer, { x2: bufferPercentage });
+    }
+  };
+  
+  const updateCircularProgress = (percentage: number, max: number): void => {
+    // Get circle dimensions once
+    const radius = parseFloat(indicator.getAttribute('r') || '0');
+    const circumference = 2 * Math.PI * radius;
+    const fillAmount = (percentage / 100) * circumference;
+    
+    // Hide track in determinate mode
+    if (track) track.style.opacity = '0';
+    
+    // Update indicator with dash pattern
+    updateElement(indicator, {
+      'stroke-dasharray': `${fillAmount} ${circumference - fillAmount}`,
+      'stroke-dashoffset': '0'
+    });
+    
+    // Update remaining with gap
+    if (remaining) {
+      if (percentage >= 100) {
         remaining.style.display = 'none';
-      }
-      
-      // Hide track in indeterminate state for both linear and circular
-      if (track) {
-        track.style.opacity = '0';
-      }
-    } else {
-      // Ensure we have the current value from aria-valuenow attribute or state
-      let currentValue = options.value.getValue();
-      
-      // If the element has aria-valuenow attribute, use that value (it might have been set in HTML)
-      const ariaValueNow = element.getAttribute('aria-valuenow');
-      if (ariaValueNow !== null) {
-        currentValue = parseFloat(ariaValueNow);
+      } else {
+        const gapSize = 4 / element.clientWidth * circumference;
+        const remainingLength = circumference - fillAmount - gapSize;
+        const angle = ((fillAmount + gapSize) / circumference * 360) - 15;
         
-        // Update the state to match the DOM
-        options.value.setValue(currentValue);
+        updateElement(remaining, {
+          display: '',
+          'stroke-dasharray': `${remainingLength} ${fillAmount + gapSize}`,
+          'stroke-dashoffset': '0',
+          transform: `rotate(${angle}deg)`
+        });
       }
-      
-      // Update visual representation of the progress
-      updateProgress(currentValue, options.value.getMax());
     }
   };
   
-  // Get the SVG viewbox width (the coordinate system we're using)
-  const getSvgViewBoxWidth = () => {
-    const svg = element.querySelector('svg');
-    if (svg) {
-      const viewBox = svg.getAttribute('viewBox');
-      if (viewBox) {
-        const parts = viewBox.split(' ');
-        if (parts.length >= 3) {
-          return parseFloat(parts[2]);
-        }
-      }
-    }
-    return 100; // Default viewBox width
-  };
-  
-  // Update progress visuals based on current state
-  const updateProgress = (value: number, max: number) => {
+  // Combined update function - delegates to variant-specific implementation
+  const updateProgress = (value: number, max: number): void => {
+    // Skip if in indeterminate state
     if (options.state.isIndeterminate()) return;
     
     const percentage = (value / max) * 100;
     
-    // Update linear progress elements
-    if (!isCircular) {
-      // Get actual physical width of the element
-      const trackWidth = track?.getBoundingClientRect().width || 100;
-      
-      // Get the SVG viewBox width for coordinate system
-      const viewBoxWidth = getSvgViewBoxWidth();
-      
-      // Update indicator with percentage
-      setSvgAttribute(indicator, 'x2', `${percentage}`);
-      
-      // Calculate the fixed gap of 8px in SVG coordinate system
-      // If viewBoxWidth = 100, and trackWidth = 600px, then 8px = (8/600)*100 = 1.33 in viewBox units
-      const gapInSvgUnits = (GAP_SIZE_PX / trackWidth) * viewBoxWidth;
-
-      // Position remaining element with fixed gap
-      if (percentage < 100) {
-        setSvgAttribute(remaining, 'x1', `${percentage + gapInSvgUnits}`);
-        remaining.style.display = '';
-      } else {
-        // Hide remaining when at 100%
-        remaining.style.display = 'none';
-      }
-      
-      // Update buffer if present
-      if (buffer) {
-        const bufferValue = options.buffer.getBuffer();
-        const bufferPercentage = (bufferValue / max) * 100;
-        setSvgAttribute(buffer, 'x2', `${bufferPercentage}`);
-      }
-    } else {
-      // Update circular progress
-      // Calculate the circumference and stroke-dashoffset for a circle
-      const radius = parseFloat(indicator.getAttribute('r') || '0');
-      const circumference = 2 * Math.PI * radius;
-      
-      // Hide track in determinate mode for circular progress
-      if (track) {
-        track.style.opacity = '0';
-      }
-      
-      // Calculate the gap in terms of the circle's circumference
-      // For a 48px circle with 4px visual gap, we need to convert to an angular gap
-      const actualSize = element.getBoundingClientRect().width;
-      const gapSizePx = 4; // Fixed 4px gap for circular progress
-      const gapRatio = gapSizePx / actualSize;
-      const gapSize = gapRatio * circumference;
-      
-      // Calculate dasharray and dashoffset for indicator (filled part)
-      const fillAmount = (percentage / 100) * circumference;
-      
-      // Set the dash pattern for the indicator
-      setSvgAttribute(indicator, 'stroke-dasharray', `${fillAmount} ${circumference - fillAmount}`);
-      setSvgAttribute(indicator, 'stroke-dashoffset', '0');
-      
-      // Handle remaining part (unfilled part with gap)
-      if (remaining) {
-        if (percentage >= 100) {
-          // Hide remaining at 100%
-          remaining.style.display = 'none';
-        } else {
-          // Show the remaining part with a gap
-          remaining.style.display = '';
-          
-          // Calculate start position after the gap
-          const startPosition = (fillAmount + gapSize) / circumference * 360; // Convert to degrees
-          
-          // Rotate the remaining circle to start after the gap
-          remaining.style.transform = `rotate(${startPosition - 15}deg)`;
-          
-          // Set dash pattern for the remaining part (only show what's left after the filled part + gap)
-          const remainingLength = circumference - fillAmount - gapSize;
-          setSvgAttribute(remaining, 'stroke-dasharray', `${remainingLength} ${fillAmount + gapSize}`);
-          setSvgAttribute(remaining, 'stroke-dashoffset', '0');
-        }
-      }
-    }
+    // Delegate to appropriate update method
+    isCircular 
+      ? updateCircularProgress(percentage, max) 
+      : updateLinearProgress(percentage, max);
     
-    // Update ARIA attributes (synchronize DOM with internal state)
+    // Update ARIA attribute
     element.setAttribute('aria-valuenow', value.toString());
     
-    // Update label if available
+    // Update label if present
+    const label = comp.label || comp.components?.label;
     if (label) {
-      const formatter = options.label.formatter || ((v: number, m: number) => `${Math.round((v / m) * 100)}%`);
+      const formatter = options.label.formatter || 
+        ((v: number, m: number) => `${Math.round((v / m) * 100)}%`);
       label.textContent = formatter(value, max);
     }
   };
   
-  // Handle window resize to recalculate gap
-  const handleResize = () => {
-    if (!options.state.isIndeterminate()) {
-      updateProgress(options.value.getValue(), options.value.getMax());
-    }
+  // Handle resize - use debounced version
+  let resizeTimer: number | undefined;
+  const handleResize = (): void => {
+    clearTimeout(resizeTimer);
+    resizeTimer = window.setTimeout(() => {
+      if (!options.state.isIndeterminate()) {
+        updateProgress(options.value.getValue(), options.value.getMax());
+      }
+    }, 100); // 100ms debounce
   };
   
-  // Add resize listener to maintain proper gap sizing
+  // Add resize listener
   window.addEventListener('resize', handleResize);
   
-  // API implementation
+  // Initialize on next frame
+  requestAnimationFrame(() => {
+    if (options.state.isIndeterminate()) {
+      addClass(element, PROGRESS_CLASSES.INDETERMINATE);
+      element.removeAttribute('aria-valuenow');
+    } else {
+      updateProgress(options.value.getValue(), options.value.getMax());
+    }
+  });
+  
+  // Build the API
   const api: ProgressComponent = {
+    // Element references
     element,
     track,
     indicator,
     remaining,
-    getClass: comp.getClass,
+    buffer,
+    getClass,
     
     // Value management
     getValue: options.value.getValue,
-    setValue: (value: number) => {
-      // Update value in state
+    setValue(value: number): ProgressComponent {
+      const prevValue = options.value.getValue();
       options.value.setValue(value);
       
-      // Only update visuals if not in indeterminate state
-      if (!options.state.isIndeterminate()) {
-        updateProgress(options.value.getValue(), options.value.getMax());
-      }
-
-      // Emit change event
-      const event = new CustomEvent('change', { 
-        detail: { value: options.value.getValue(), max: options.value.getMax() }
-      });
-      element.dispatchEvent(event);
-      
-      // Check if completed
-      if (options.value.getValue() >= options.value.getMax()) {
-        const completeEvent = new CustomEvent('complete', { 
-          detail: { value: options.value.getValue(), max: options.value.getMax() }
-        });
-        element.dispatchEvent(completeEvent);
+      // Only update UI and emit events if value actually changed
+      if (prevValue !== value) {
+        if (!options.state.isIndeterminate()) {
+          updateProgress(value, options.value.getMax());
+        }
+        
+        const detail = { value, max: options.value.getMax() };
+        emitEvent(PROGRESS_EVENTS.CHANGE, detail);
+        
+        if (value >= options.value.getMax()) {
+          emitEvent(PROGRESS_EVENTS.COMPLETE, detail);
+        }
       }
       
       return api;
@@ -258,51 +232,30 @@ export const withAPI = (options: any) => (comp: any): ProgressComponent => {
     
     // Buffer management
     getBuffer: options.buffer.getBuffer,
-    setBuffer: (value: number) => {
+    setBuffer(value: number): ProgressComponent {
       options.buffer.setBuffer(value);
-      
-      // Update buffer element for linear variant
       if (!isCircular && buffer && !options.state.isIndeterminate()) {
-        const max = options.value.getMax();
-        const bufferPercentage = (options.buffer.getBuffer() / max) * 100;
-        setSvgAttribute(buffer, 'x2', `${bufferPercentage}`);
+        updateProgress(options.value.getValue(), options.value.getMax());
       }
-      
       return api;
     },
     
     // Indeterminate state
-    setIndeterminate: (indeterminate: boolean) => {
+    setIndeterminate(indeterminate: boolean): ProgressComponent {
       const wasIndeterminate = options.state.isIndeterminate();
+      if (wasIndeterminate === indeterminate) return api;
+      
       options.state.setIndeterminate(indeterminate);
       
-      // Only update if state changed
-      if (wasIndeterminate !== indeterminate) {
-        if (indeterminate) {
-          // Enter indeterminate mode
-          addClass(element, PROGRESS_CLASSES.INDETERMINATE);
-          element.removeAttribute('aria-valuenow');
-          
-          if (remaining) {
-            remaining.style.display = 'none';
-          }
-          
-          // Show track in indeterminate state
-          if (track) {
-            track.style.opacity = '1';
-          }
-        } else {
-          // Exit indeterminate mode
-          removeClass(element, PROGRESS_CLASSES.INDETERMINATE);
-          
-          // Hide track for circular determinate progress
-          if (isCircular && track) {
-            track.style.opacity = '0';
-          }
-          
-          // Restore determinate state
-          updateProgress(options.value.getValue(), options.value.getMax());
-        }
+      if (indeterminate) {
+        addClass(element, PROGRESS_CLASSES.INDETERMINATE);
+        element.removeAttribute('aria-valuenow');
+        if (remaining) remaining.style.display = 'none';
+        if (track) track.style.opacity = '1';
+      } else {
+        removeClass(element, PROGRESS_CLASSES.INDETERMINATE);
+        if (isCircular && track) track.style.opacity = '0';
+        updateProgress(options.value.getValue(), options.value.getMax());
       }
       
       return api;
@@ -310,80 +263,76 @@ export const withAPI = (options: any) => (comp: any): ProgressComponent => {
     isIndeterminate: options.state.isIndeterminate,
     
     // Label management
-    showLabel: () => {
+    showLabel(): ProgressComponent {
       if (options.label.show) options.label.show();
       return api;
     },
-    hideLabel: () => {
+    hideLabel(): ProgressComponent {
       if (options.label.hide) options.label.hide();
       return api;
     },
-    setLabelFormatter: (formatter) => {
+    setLabelFormatter(formatter: (value: number, max: number) => string): ProgressComponent {
       if (options.label.format) options.label.format(formatter);
+      const label = comp.label || comp.components?.label;
       if (label) {
         label.textContent = formatter(options.value.getValue(), options.value.getMax());
       }
       return api;
     },
     
-    // Disabled state
-    enable: () => {
+    // State management
+    enable(): ProgressComponent {
       options.disabled.enable();
       return api;
     },
-    disable: () => {
+    disable(): ProgressComponent {
       options.disabled.disable();
       return api;
     },
     isDisabled: options.disabled.isDisabled,
     
     // Event handling
-    on: (event, handler) => {
+    on(event: string, handler: Function): ProgressComponent {
       element.addEventListener(event, handler as EventListener);
       return api;
     },
-    off: (event, handler) => {
+    off(event: string, handler: Function): ProgressComponent {
       element.removeEventListener(event, handler as EventListener);
       return api;
     },
     
-    // Cleanup
-    destroy: () => {
-      // Remove resize listener
-      window.removeEventListener('resize', handleResize);
-      
-      // Call original destroy
-      options.lifecycle.destroy();
-    },
-    
-    // Extension points
-    addClass: (...classes) => {
+    // Extension methods
+    addClass(...classes: string[]): ProgressComponent {
       classes.forEach(className => element.classList.add(className));
       return api;
     },
     
-    // Required interfaces
+    // Cleanup
+    destroy(): void {
+      window.removeEventListener('resize', handleResize);
+      clearTimeout(resizeTimer);
+      options.lifecycle.destroy();
+    },
+    
+    // Required property objects
     disabled: {
-      enable: options.disabled.enable,
-      disable: options.disabled.disable,
+      enable(): void {
+        options.disabled.enable();
+      },
+      disable(): void {
+        options.disabled.disable();
+      },
       isDisabled: options.disabled.isDisabled
     },
     
     lifecycle: {
-      destroy: () => {
-        // Remove resize listener
+      destroy(): void {
         window.removeEventListener('resize', handleResize);
-        
-        // Call original destroy
+        clearTimeout(resizeTimer);
         options.lifecycle.destroy();
       }
     }
   };
-  
-  // Initialize with current values - run on next tick to ensure DOM is ready
-  setTimeout(() => {
-    syncInitialState();
-  }, 0);
   
   return api;
 };

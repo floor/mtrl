@@ -12,24 +12,6 @@ export type ProgressVariant = 'linear' | 'circular';
  */
 export type ProgressEvent = 'change' | 'complete';
 
-// /**
-//  * Progress variants object for internal reference
-//  * @internal
-//  */
-// export const PROGRESS_VARIANTS: Record<string, ProgressVariant> = {
-//   LINEAR: 'linear',
-//   CIRCULAR: 'circular'
-// };
-
-// /**
-//  * Progress events object for internal reference
-//  * @internal
-//  */
-// export const PROGRESS_EVENTS: Record<string, ProgressEvent> = {
-//   CHANGE: 'change',
-//   COMPLETE: 'complete'
-// };
-
 /**
  * Configuration interface for the Progress component
  * @category Components
@@ -39,7 +21,7 @@ export interface ProgressConfig {
    * Progress variant that determines visual style
    * @default 'linear'
    */
-  variant?: ProgressVariant | string;
+  variant?: ProgressVariant;
   
   /** 
    * Initial progress value (0-100)
@@ -67,7 +49,6 @@ export interface ProgressConfig {
   
   /** 
    * Additional CSS classes to add to the progress component
-   * @example 'page-loader main-progress'
    */
   class?: string;
   
@@ -85,7 +66,6 @@ export interface ProgressConfig {
   
   /** 
    * Custom label formatter function
-   * @example (value, max) => `${Math.round((value/max) * 100)}%`
    */
   labelFormatter?: (value: number, max: number) => string;
   
@@ -116,20 +96,17 @@ export interface ProgressComponent {
   /** The component's root DOM element */
   element: HTMLElement;
   
-  /** The track element (background) */
-  track: HTMLElement | SVGElement;
+  /** The track element (background) - always an SVG element */
+  track: SVGElement;
   
-  /** The indicator element (filled part) */
-  indicator: HTMLElement | SVGElement;
+  /** The indicator element (filled part) - always an SVG element */
+  indicator: SVGElement;
   
-  /** The buffer element for linear variant (pre-loaded state) */
-  buffer?: HTMLElement;
+  /** The buffer element for linear variant (pre-loaded state) - always an SVG element */
+  buffer?: SVGElement;
   
-  /** The remaining element (space between indicator and track) */
-  remaining?: HTMLElement | SVGElement;
-  
-  /** The label element if showLabel is enabled */
-  label?: HTMLElement;
+  /** The remaining element (space between indicator and track) - always an SVG element */
+  remaining?: SVGElement;
   
   /**
    * Gets a class name with the component's prefix

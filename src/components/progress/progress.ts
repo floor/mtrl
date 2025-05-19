@@ -18,7 +18,7 @@ import {
   getApiConfig
 } from './config';
 import { PROGRESS_VARIANTS, PROGRESS_CLASSES } from './constants';
-import { withState, withSetup } from './features';
+import { withState } from './features';
 
 /**
  * Creates a new Progress component
@@ -71,7 +71,6 @@ const createProgress = (config: ProgressConfig = {}): ProgressComponent => {
         const stateObj = comp.state || localState;
         return withAPI(getApiConfig(comp, stateObj))(comp);
       },
-      withSetup(baseConfig),
       withLifecycle()
     )(baseConfig);
 
