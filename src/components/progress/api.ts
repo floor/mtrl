@@ -11,7 +11,7 @@ const SVG_NS = 'http://www.w3.org/2000/svg';
 const GAP_SIZE_PX = 8;
 
 // Fixed gap size in pixels for circular progress
-const CIRCULAR_GAP_PX = 4;
+const CIRCULAR_GAP_PX = 8;
 
 interface ApiOptions {
   value: {
@@ -165,68 +165,35 @@ export const withAPI = (options: any) => (comp: any): ProgressComponent => {
       // Calculate the gap in terms of the circle's circumference
       // For a 48px circle with 4px visual gap, we need to convert to an angular gap
       const actualSize = element.getBoundingClientRect().width;
-      const gapSizePx = CIRCULAR_GAP_PX; // Fixed 4px gap for circular progress
+      const gapSizePx = 4; // Fixed 4px gap for circular progress
       const gapRatio = gapSizePx / actualSize;
       const gapSize = gapRatio * circumference;
       
-      // If percentage is 0, show only the remaining path with gaps on both ends
-      if (percentage === 0) {
-        // Hide indicator when at 0%
-        indicator.style.display = 'none';
-        
-        // Show remaining with gaps at both ends
-        if (remaining) {
-          remaining.style.display = '';
-          // Set dash pattern for remaining with gaps at both ends
-          const adjustedCircumference = circumference - (2 * gapSize);
-          setSvgAttribute(remaining, 'stroke-dasharray', `0 ${gapSize} ${adjustedCircumference} ${gapSize}`);
-          setSvgAttribute(remaining, 'stroke-dashoffset', '0');
-          remaining.style.transform = ''; // Reset any transform
-        }
-      } 
-      // If percentage is 100, show only the indicator with gaps on both ends
-      else if (percentage >= 100) {
-        // Show indicator with gaps at both ends
-        indicator.style.display = '';
-        const adjustedCircumference = circumference - (2 * gapSize);
-        setSvgAttribute(indicator, 'stroke-dasharray', `0 ${gapSize} ${adjustedCircumference} ${gapSize}`);
-        setSvgAttribute(indicator, 'stroke-dashoffset', '0');
-        indicator.style.transform = ''; // Reset any transform
-        
-        // Hide remaining when at 100%
-        if (remaining) {
+      // Calculate dasharray and dashoffset for indicator (filled part)
+      const fillAmount = (percentage / 100) * circumference;
+      
+      // Set the dash pattern for the indicator
+      setSvgAttribute(indicator, 'stroke-dasharray', `${fillAmount} ${circumference - fillAmount}`);
+      setSvgAttribute(indicator, 'stroke-dashoffset', '0');
+      
+      // Handle remaining part (unfilled part with gap)
+      if (remaining) {
+        if (percentage >= 100) {
+          // Hide remaining at 100%
           remaining.style.display = 'none';
-        }
-      }
-      // For percentages between 0 and 100, show both indicator and remaining with gaps
-      else {
-        // Show both paths
-        indicator.style.display = '';
-        if (remaining) remaining.style.display = '';
-        
-        // Calculate angle for indicator
-        const progressAngle = (percentage / 100) * 360;
-        
-        // Calculate the size of indicator and remaining in terms of the circumference
-        const indicatorLength = (percentage / 100) * circumference;
-        const remainingLength = circumference - indicatorLength;
-        
-        // Calculate gap sizes in terms of angle (degrees)
-        const gapAngle = (gapSize / circumference) * 360;
-        
-        // Set dash pattern for indicator
-        // Start with small gap, then indicator arc, then the rest hidden
-        setSvgAttribute(indicator, 'stroke-dasharray', `0 ${gapSize} ${indicatorLength - (2 * gapSize)} ${remainingLength + gapSize}`);
-        setSvgAttribute(indicator, 'stroke-dashoffset', '0');
-        
-        // Set dash pattern for remaining
-        // Apply rotational offset to position it correctly after the indicator
-        if (remaining) {
-          // Position the remaining arc after indicator + gap
-          remaining.style.transform = `rotate(${progressAngle}deg)`;
+        } else {
+          // Show the remaining part with a gap
+          remaining.style.display = '';
           
-          // Dash pattern: start with gap, then remaining arc, then invisible portion
-          setSvgAttribute(remaining, 'stroke-dasharray', `0 ${gapSize} ${remainingLength - (2 * gapSize)} ${indicatorLength + gapSize}`);
+          // Calculate start position after the gap
+          const startPosition = (fillAmount + gapSize) / circumference * 360; // Convert to degrees
+          
+          // Rotate the remaining circle to start after the gap
+          remaining.style.transform = `rotate(${startPosition - 15}deg)`;
+          
+          // Set dash pattern for the remaining part (only show what's left after the filled part + gap)
+          const remainingLength = circumference - fillAmount - gapSize;
+          setSvgAttribute(remaining, 'stroke-dasharray', `${remainingLength} ${fillAmount + gapSize}`);
           setSvgAttribute(remaining, 'stroke-dashoffset', '0');
         }
       }
