@@ -46,15 +46,12 @@ export const PROGRESS_CLASSES = {
   CONTAINER: 'progress',
   /** Linear variant class */
   LINEAR: 'progress--linear',
-
   /** Circular variant class */
   CIRCULAR: 'progress--circular',
-  /** Track element (background) class */
+  /** Track element (unfilled part) class */
   TRACK: 'track',
   /** Indicator element (filled part) class */
   INDICATOR: 'indicator',
-  /** Remaining element (space between filled part and 100%) class */
-  REMAINING: 'remaining',
   /** Buffer element class */
   BUFFER: 'buffer',
   /** Label element class */

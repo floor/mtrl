@@ -27,7 +27,7 @@ export function createProgressSchema(component, config: ProgressConfig) {
         size: 96,
         strokeWidth: 6,
         tag: 'circle',
-        getAttrs: (type, idx) => {
+        getAttrs: (type) => {
           const radius = svgParams.size / 2 - svgParams.strokeWidth / 2;
           const centerPoint = svgParams.size / 2;
           
@@ -36,9 +36,7 @@ export function createProgressSchema(component, config: ProgressConfig) {
             cy: centerPoint,
             r: radius,
             fill: 'none',
-            'stroke-width': svgParams.strokeWidth,
-            // Custom style for remaining element in indeterminate mode
-            ...(type === PROGRESS_CLASSES.REMAINING && isIndeterminate ? { style: 'display: none;' } : {})
+            'stroke-width': svgParams.strokeWidth
           };
         }
       }
@@ -47,54 +45,57 @@ export function createProgressSchema(component, config: ProgressConfig) {
         height: 4,
         strokeWidth: 6,
         tag: 'line',
-        getAttrs: (type, idx) => {
+        getAttrs: (type) => {
           const y = svgParams.height / 2;
           
-          // Attribute map for different element types
+          // Base attributes for all line elements
           const attrs = {
-            [PROGRESS_CLASSES.BUFFER]: { x1: 0, x2: config.buffer ?? 0 },
-            [PROGRESS_CLASSES.TRACK]: { x1: 0, x2: 100 },
-            [PROGRESS_CLASSES.INDICATOR]: { x1: 0, x2: isIndeterminate ? 100 : valuePercent },
-            [PROGRESS_CLASSES.REMAINING]: { 
-              x1: valuePercent, 
-              x2: 100,
-              style: isIndeterminate || valuePercent >= 100 ? 'display: none;' : undefined
-            }
-          };
-          
-          return {
             y1: y,
             y2: y,
             'stroke-width': svgParams.strokeWidth,
-            'stroke-linecap': 'round',
-            ...attrs[type]
+            'stroke-linecap': 'round'
           };
+          
+          // Add specific attributes based on element type
+          if (type === PROGRESS_CLASSES.TRACK) {
+            attrs.x1 = isIndeterminate ? 0 : valuePercent;
+            attrs.x2 = 100;
+          } else if (type === PROGRESS_CLASSES.INDICATOR) {
+            attrs.x1 = 0;
+            attrs.x2 = isIndeterminate ? 40 : valuePercent;
+          } else if (type === PROGRESS_CLASSES.BUFFER) {
+            attrs.x1 = valuePercent;
+            attrs.x2 = ((config.buffer ?? 0) / max) * 100;
+            if ((config.buffer ?? 0) <= value) {
+              attrs.style = 'display: none;';
+            }
+          }
+          
+          return attrs;
         }
       };
   
-  // Define SVG element types to create
+  // Define SVG element types to create - track FIRST, then indicator, then buffer
   const elements = [
-    PROGRESS_CLASSES.BUFFER,
-    PROGRESS_CLASSES.TRACK, 
-    PROGRESS_CLASSES.INDICATOR, 
-    PROGRESS_CLASSES.REMAINING
+    PROGRESS_CLASSES.TRACK,
+    PROGRESS_CLASSES.INDICATOR,
+    PROGRESS_CLASSES.BUFFER
   ];
   
-  // Create children object by mapping through elements
-  const svgChildren = elements.reduce((acc, type, idx) => {
-    // Skip buffer for circular
-    if (isCircular && type === PROGRESS_CLASSES.BUFFER) return acc;
-    
-    acc[type] = {
-      creator: createSVGElement,
-      options: {
-        tag: svgParams.tag,
-        className: `${PROGRESS_CLASSES.CONTAINER}-${type}`,
-        attributes: svgParams.getAttrs(type, idx)
-      }
-    };
-    return acc;
-  }, {});
+  // Generate SVG children, filtering out buffer for circular variant
+  const svgChildren = elements
+    .filter(type => !(isCircular && type === PROGRESS_CLASSES.BUFFER))
+    .reduce((acc, type) => {
+      acc[type] = {
+        creator: createSVGElement,
+        options: {
+          tag: svgParams.tag,
+          className: `${PROGRESS_CLASSES.CONTAINER}-${type}`,
+          attributes: svgParams.getAttrs(type)
+        }
+      };
+      return acc;
+    }, {});
 
   // Return the complete schema
   return {

@@ -50,9 +50,8 @@ interface ApiOptions {
 export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent => {
   // Get minimal element references directly
   const { element, getClass } = comp;
-  const track = comp.track || comp.components?.track as SVGElement;
   const indicator = comp.indicator || comp.components?.indicator as SVGElement;
-  const remaining = comp.remaining || comp.components?.remaining as SVGElement | undefined;
+  const track = comp.track || comp.components?.track as SVGElement; // This is the renamed element (previously 'remaining')
   const buffer = comp.buffer || comp.components?.buffer as SVGElement | undefined;
   
   // Determine variant once
@@ -98,9 +97,8 @@ export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent =
     // Calculate gap in percentage units (fixed 8px)
     const gap = 8 / element.clientWidth * 100;
     
-    // let's be sure the starting indicator point is a dot.
-
-    const x2 = percentage
+    // let's be sure the starting indicator point is a dot
+    let x2 = percentage;
 
     if (percentage === 0) {
       x2 = 2 / element.clientWidth * 100;
@@ -109,16 +107,32 @@ export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent =
     // Update indicator position
     updateElement(indicator, { x2 });
     
-    // Update remaining with gap
-    updateElement(remaining, { 
-      x1: percentage + gap,
+    // Update track with gap
+    const trackStart = percentage + gap;
+    updateElement(track, { 
+      x1: trackStart,
       display: percentage >= 100 ? 'none' : ''
     });
     
     // Update buffer if present
     if (buffer) {
       const bufferPercentage = (options.buffer.getBuffer() / max) * 100;
-      updateElement(buffer, { x2: bufferPercentage });
+      
+      // Buffer should start where track starts, but only if it's greater than the current progress
+      if (bufferPercentage > percentage) {
+        // Buffer starts at the end of indicator + gap
+        const bufferStart = trackStart;
+        
+        // Update buffer - x1 starts at track start, x2 is based on buffer value
+        updateElement(buffer, { 
+          x1: bufferStart,
+          x2: bufferPercentage,
+          display: bufferPercentage > percentage ? '' : 'none'
+        });
+      } else {
+        // Hide buffer if it's not ahead of the current progress
+        updateElement(buffer, { display: 'none' });
+      }
     }
   };
   
@@ -128,27 +142,24 @@ export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent =
     const circumference = 2 * Math.PI * radius;
     const fillAmount = (percentage / 100) * circumference;
     
-    // Hide track in determinate mode
-    if (track) track.style.opacity = '0';
-    
     // Update indicator with dash pattern
     updateElement(indicator, {
       'stroke-dasharray': `${fillAmount} ${circumference - fillAmount}`,
       'stroke-dashoffset': '0'
     });
     
-    // Update remaining with gap
-    if (remaining) {
+    // Update track (previously remaining) with gap
+    if (track) {
       if (percentage >= 100) {
-        remaining.style.display = 'none';
+        track.style.display = 'none';
       } else {
         const gapSize = 4 / element.clientWidth * circumference;
-        const remainingLength = circumference - fillAmount - gapSize;
+        const trackLength = circumference - fillAmount - gapSize;
         const angle = ((fillAmount + gapSize) / circumference * 360) - 15;
         
-        updateElement(remaining, {
+        updateElement(track, {
           display: '',
-          'stroke-dasharray': `${remainingLength} ${fillAmount + gapSize}`,
+          'stroke-dasharray': `${trackLength} ${fillAmount + gapSize}`,
           'stroke-dashoffset': '0',
           transform: `rotate(${angle}deg)`
         });
@@ -180,15 +191,39 @@ export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent =
     }
   };
   
-  // Handle resize - use debounced version
   let resizeTimer: number | undefined;
+  let lastResizeTime = 0;
+  const THROTTLE_DELAY = 50; // Update every 50ms during resize
+  const DEBOUNCE_DELAY = 20; // Final update after resize ends
+
+  /**
+   * Handles window resize events with both throttling (during resize) and debouncing (after resize)
+   */
   const handleResize = (): void => {
-    clearTimeout(resizeTimer);
+    const now = Date.now();
+    
+    // Clear existing debounce timer
+    if (resizeTimer) {
+      clearTimeout(resizeTimer);
+    }
+    
+    // Throttle: Only update if enough time has passed since last update
+    if (now - lastResizeTime >= THROTTLE_DELAY) {
+      lastResizeTime = now;
+      
+      // Only update if not in indeterminate state
+      if (!options.state.isIndeterminate()) {
+        updateProgress(options.value.getValue(), options.value.getMax());
+      }
+    }
+    
+    // Debounce: Always schedule a final update
     resizeTimer = window.setTimeout(() => {
       if (!options.state.isIndeterminate()) {
         updateProgress(options.value.getValue(), options.value.getMax());
       }
-    }, 20); // 20ms debounce
+      resizeTimer = undefined;
+    }, DEBOUNCE_DELAY);
   };
   
   // Add resize listener
@@ -210,7 +245,6 @@ export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent =
     element,
     track,
     indicator,
-    remaining,
     buffer,
     getClass,
     
@@ -258,11 +292,33 @@ export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent =
       if (indeterminate) {
         addClass(element, PROGRESS_CLASSES.INDETERMINATE);
         element.removeAttribute('aria-valuenow');
-        if (remaining) remaining.style.display = 'none';
-        if (track) track.style.opacity = '1';
+        
+        // For linear progress, show track at 100%
+        if (!isCircular && track) {
+          updateElement(track, {
+            display: 'block',
+            x1: 0,
+            x2: 100,
+            stroke: 'var(--mtrl-surface-container-highest)'
+          });
+        }
+        
+        // For circular progress, show track at 100% 
+        if (isCircular && track) {
+          updateElement(track, {
+            display: 'block',
+            opacity: '1',
+            stroke: 'var(--mtrl-surface-container-highest)', 
+            'stroke-dasharray': 'none'
+          });
+        }
+        
+        // Hide buffer in indeterminate mode
+        if (buffer) {
+          updateElement(buffer, { display: 'none' });
+        }
       } else {
         removeClass(element, PROGRESS_CLASSES.INDETERMINATE);
-        if (isCircular && track) track.style.opacity = '0';
         updateProgress(options.value.getValue(), options.value.getMax());
       }
       

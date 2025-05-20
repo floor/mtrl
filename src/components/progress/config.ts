@@ -40,20 +40,14 @@ export const setupIndeterminateState = (component, isCircular) => {
     // Different treatments for circular vs linear indeterminate progress
     if (isCircular) {
       // For circular, we'll add animation properties to the SVG elements
-      // Most of this will be handled by CSS
       
-      // Find the SVG indicator and remaining elements if they exist
+      // Find the SVG indicator and track elements if they exist
       const indicator = component.indicator;
-      const remaining = component.remaining;
+      const track = component.track;
       
-      if (indicator) {
-        // Enable rotation animation via CSS
-        // (CSS class should handle this via the .progress--indeterminate class)
-      }
-      
-      // Hide the remaining element if we're in indeterminate state
-      if (remaining) {
-        remaining.style.display = 'none';
+      // Hide the track element if we're in indeterminate state
+      if (track) {
+        track.style.display = 'none';
       }
     } else {
       // For linear indeterminate, different animation approach
@@ -78,18 +72,15 @@ export const setupIndeterminateState = (component, isCircular) => {
               component.indicator.setAttribute('x2', '0');
               
               // Ensure the stroke-width is properly set
-              // Get it from track element if possible, otherwise use 4px as default
-              const track = component.track;
-              const strokeWidth = track ? track.getAttribute('stroke-width') : '6';
-              component.indicator.setAttribute('stroke-width', strokeWidth);
+              component.indicator.setAttribute('stroke-width', '6');
               
               // Force SVG visibility with CSS
               component.indicator.setAttribute('style', 'vector-effect: non-scaling-stroke;');
             }
             
-            // Hide the remaining element
-            if (component.remaining) {
-              component.remaining.style.display = 'none';
+            // Hide the track element
+            if (component.track) {
+              component.track.style.display = 'none';
             }
           } else {
             // For traditional DIV-based linear indeterminate
@@ -100,9 +91,9 @@ export const setupIndeterminateState = (component, isCircular) => {
               component.elements.indicator.style.left = '';
             }
             
-            // Hide the remaining element 
-            if (component.elements?.remaining instanceof HTMLElement) {
-              component.elements.remaining.style.display = 'none';
+            // Hide the track element 
+            if (component.elements?.track instanceof HTMLElement) {
+              component.elements.track.style.display = 'none';
             }
           }
         } catch (error) {
@@ -131,44 +122,35 @@ export const setupComponentReferences = (component, state, isCircular) => {
       component.elements = {};
     }
 
-    // Check if we're using SVG-based structure (both circular and linear variants now use SVG)
+    // Check if we're using SVG-based structure
     const svgElement = component.elements?.svg;
     
     if (svgElement) {
-      // Get all track, indicator, remaining, and buffer elements from the SVG
-      // For both circular and linear variants
+      // Get indicator, track, and buffer elements from the SVG
       if (svgElement.querySelector) {
-        const track = svgElement.querySelector(`.${PROGRESS_CLASSES.CONTAINER}-${PROGRESS_CLASSES.TRACK}`);
         const indicator = svgElement.querySelector(`.${PROGRESS_CLASSES.CONTAINER}-${PROGRESS_CLASSES.INDICATOR}`);
-        const remaining = svgElement.querySelector(`.${PROGRESS_CLASSES.CONTAINER}-${PROGRESS_CLASSES.REMAINING}`);
+        const track = svgElement.querySelector(`.${PROGRESS_CLASSES.CONTAINER}-${PROGRESS_CLASSES.TRACK}`);
         const buffer = svgElement.querySelector(`.${PROGRESS_CLASSES.CONTAINER}-${PROGRESS_CLASSES.BUFFER}`);
         
         // Store references directly on component for API access
-        component.track = track || null;
         component.indicator = indicator || null;
-        component.remaining = remaining || null;
+        component.track = track || null;
         component.buffer = buffer || null;
         
         // Also update elements object to keep everything consistent
-        component.elements.track = track || null;
         component.elements.indicator = indicator || null;
-        component.elements.remaining = remaining || null;
+        component.elements.track = track || null;
         component.elements.buffer = buffer || null;
       } else {
         // If querySelector is not available, fall back to direct child references
-        // This might happen if the SVG structure is created differently
-        component.track = component.elements?.track || null;
         component.indicator = component.elements?.indicator || null;
-        component.remaining = component.elements?.remaining || null;
+        component.track = component.elements?.track || null;
         component.buffer = component.elements?.buffer || null;
       }
     } else {
       // Legacy DIV structure for linear progress
-      // withLayout already created and stored the elements, we just need to expose
-      // them as direct properties on the component for API access
-      component.track = component.elements?.track || null;
       component.indicator = component.elements?.indicator || null;
-      component.remaining = component.elements?.remaining || null;
+      component.track = component.elements?.track || null;
       component.buffer = component.elements?.buffer || null;
     }
     
@@ -185,6 +167,7 @@ export const setupComponentReferences = (component, state, isCircular) => {
   
   return component;
 };
+
 
 /**
  * Creates the base configuration for the Progress component

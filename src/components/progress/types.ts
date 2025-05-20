@@ -96,7 +96,7 @@ export interface ProgressComponent {
   /** The component's root DOM element */
   element: HTMLElement;
   
-  /** The track element (background) - always an SVG element */
+  /** The track element (unfilled part) - always an SVG element */
   track: SVGElement;
   
   /** The indicator element (filled part) - always an SVG element */
@@ -104,9 +104,6 @@ export interface ProgressComponent {
   
   /** The buffer element for linear variant (pre-loaded state) - always an SVG element */
   buffer?: SVGElement;
-  
-  /** The remaining element (space between indicator and track) - always an SVG element */
-  remaining?: SVGElement;
   
   /**
    * Gets a class name with the component's prefix
