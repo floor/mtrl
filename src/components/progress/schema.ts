@@ -4,33 +4,15 @@ import { PROGRESS_VARIANTS, PROGRESS_CLASSES } from './constants';
 import { createSVGElement } from '../../core';
 
 /**
- * SVG element attribute interface
- */
-interface SVGAttributes {
-  [key: string]: string | number | undefined;
-}
-
-/**
- * SVG element parameters
- */
-interface SVGParams {
-  size: number;
-  strokeWidth: number;
-  height?: number;
-  tag: string;
-  getAttrs: (type: string, idx: number) => SVGAttributes;
-}
-
-/**
  * Creates the base progress structure definition
  * 
  * @param component Component for class name generation
  * @param config Progress configuration
  * @returns Structure schema object
  */
-export function createProgressSchema(component: { getClass: (name: string) => string }, config: ProgressConfig): any {
+export function createProgressSchema(component, config: ProgressConfig) {
   // Get prefixed class names
-  const getClass = (className: string): string => component.getClass(className);
+  const getClass = className => component.getClass(className);
 
   // Set up variant-specific parameters
   const isCircular = config.variant === PROGRESS_VARIANTS.CIRCULAR;
@@ -40,12 +22,12 @@ export function createProgressSchema(component: { getClass: (name: string) => st
   const valuePercent = (value / max) * 100;
   
   // Set up SVG parameters based on variant
-  const svgParams: SVGParams = isCircular 
+  const svgParams = isCircular 
     ? { 
         size: 96,
         strokeWidth: 6,
         tag: 'circle',
-        getAttrs: (type: string): SVGAttributes => {
+        getAttrs: (type, idx) => {
           const radius = svgParams.size / 2 - svgParams.strokeWidth / 2;
           const centerPoint = svgParams.size / 2;
           
@@ -65,14 +47,14 @@ export function createProgressSchema(component: { getClass: (name: string) => st
         height: 4,
         strokeWidth: 6,
         tag: 'line',
-        getAttrs: (type: string): SVGAttributes => {
-          const y = svgParams.height! / 2;
+        getAttrs: (type, idx) => {
+          const y = svgParams.height / 2;
           
           // Attribute map for different element types
-          const attrs: Record<string, SVGAttributes> = {
+          const attrs = {
             [PROGRESS_CLASSES.BUFFER]: { x1: 0, x2: config.buffer ?? 0 },
             [PROGRESS_CLASSES.TRACK]: { x1: 0, x2: 100 },
-            [PROGRESS_CLASSES.INDICATOR]: { x1: 0, x2: isIndeterminate ? 0 : valuePercent },
+            [PROGRESS_CLASSES.INDICATOR]: { x1: 0, x2: isIndeterminate ? 100 : valuePercent },
             [PROGRESS_CLASSES.REMAINING]: { 
               x1: valuePercent, 
               x2: 100,
@@ -91,7 +73,7 @@ export function createProgressSchema(component: { getClass: (name: string) => st
       };
   
   // Define SVG element types to create
-  const elements: string[] = [
+  const elements = [
     PROGRESS_CLASSES.BUFFER,
     PROGRESS_CLASSES.TRACK, 
     PROGRESS_CLASSES.INDICATOR, 
@@ -99,7 +81,7 @@ export function createProgressSchema(component: { getClass: (name: string) => st
   ];
   
   // Create children object by mapping through elements
-  const svgChildren: Record<string, any> = elements.reduce((acc: Record<string, any>, type: string, idx: number) => {
+  const svgChildren = elements.reduce((acc, type, idx) => {
     // Skip buffer for circular
     if (isCircular && type === PROGRESS_CLASSES.BUFFER) return acc;
     

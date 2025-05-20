@@ -98,8 +98,16 @@ export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent =
     // Calculate gap in percentage units (fixed 8px)
     const gap = 8 / element.clientWidth * 100;
     
+    // let's be sure the starting indicator point is a dot.
+
+    const x2 = percentage
+
+    if (percentage === 0) {
+      x2 = 2 / element.clientWidth * 100;
+    }
+
     // Update indicator position
-    updateElement(indicator, { x2: percentage });
+    updateElement(indicator, { x2 });
     
     // Update remaining with gap
     updateElement(remaining, { 
@@ -180,7 +188,7 @@ export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent =
       if (!options.state.isIndeterminate()) {
         updateProgress(options.value.getValue(), options.value.getMax());
       }
-    }, 100); // 100ms debounce
+    }, 20); // 20ms debounce
   };
   
   // Add resize listener

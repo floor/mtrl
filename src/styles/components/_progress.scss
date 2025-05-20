@@ -160,14 +160,13 @@ $circular-gap-size: 4px;
         }
         
         .#{$component}-indicator {
-          // Use the same style of animation as the div-based version
-          // but adapted for SVG elements
-          transform-origin: left center;
-          stroke-dasharray: none;
-          stroke-dashoffset: 0;
+          // Position the SVG line with initial width
           x1: 0;
-          stroke-width: $linear-height !important; // Force stroke width
-          animation: indeterminate-bar 1.7s infinite ease-in-out;
+          x2: 40%; // Initial width is 40% of container
+          // Set transform origin for scaling and translation
+          transform-origin: left center;
+          // Apply combined animation
+          animation: linear-indeterminate 2s infinite linear;
         }
         
         .#{$component}-remaining {
@@ -289,24 +288,20 @@ $circular-gap-size: 4px;
   }
 }
 
-// For legacy non-SVG linear progress
-@keyframes linear-indeterminate-translate {
+@keyframes linear-indeterminate {
   0% {
-    left: -12%; 
+    transform: translateX(-10%) scaleX(0); // Start off-screen left, zero width
+  }
+  25% {
+    transform: translateX(20%) scaleX(0.40); // Near middle, 20% width (0.5 * 40%)
+  }
+  50% {
+    transform: translateX(50%) scaleX(0.50); // Past middle, shrinking
+  }
+  75% {
+    transform: translateX(80%) scaleX(0.25); // Near end, zero width
   }
   100% {
-    left: 112%;
-  }
-}
-
-@keyframes linear-indeterminate-width {
-  0% {
-    width: 12%;
-  }
-  30% {
-    width: 33%;
-  }
-  100% {
-    width: 12%;
+    transform: translateX(110%) scaleX(0); // Off-screen right, zero width
   }
 }
