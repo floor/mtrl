@@ -344,6 +344,35 @@ export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent =
       return api;
     },
     
+    showStopIndicator(): ProgressComponent {
+      if (isCircular) return api; // Only for linear variant
+      
+      if (options.stopIndicator?.show) {
+        options.stopIndicator.show();
+      }
+      
+      // Simply add a CSS class to show/hide the pseudo-element
+      if (options.value.getValue() > 0) {
+        element.classList.add(`${getClass(PROGRESS_CLASSES.CONTAINER)}-show-stop`);
+        // By toggling this class, we can control the display of the :after pseudo-element
+        element.style.setProperty('--stop-indicator', 'block');
+      }
+      
+      return api;
+    },
+
+    hideStopIndicator(): ProgressComponent {
+      if (options.stopIndicator?.hide) {
+        options.stopIndicator.hide();
+      }
+      
+      // Simply remove the CSS class
+      element.classList.remove(`${getClass(PROGRESS_CLASSES.CONTAINER)}-show-stop`);
+      element.style.setProperty('--stop-indicator', 'none');
+      
+      return api;
+    },
+
     // State management
     enable(): ProgressComponent {
       options.disabled.enable();

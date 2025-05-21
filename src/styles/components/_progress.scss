@@ -10,10 +10,11 @@ $component: '#{base.$prefix}-progress';
 
 // Material Design 3 spec constants
 $linear-height: 4px;
-$circular-size: 48px;
-$stroke-width: 6px;
+$circular-size: 50px;
+$stroke-width: 8px;
 $linear-gap-size: 8px;
 $circular-gap-size: 4px;
+$stop-indicator-size: 4px;
 
 // Keyframes for SVG-based indeterminate linear progress
 @keyframes indeterminate-bar {
@@ -90,6 +91,19 @@ $circular-gap-size: 4px;
       }
     }
     
+    // Stop indicator for determinate progress using pseudo-element
+    &:not(.#{$component}--indeterminate):after {
+      content: '';
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: $stop-indicator-size;
+      height: $stop-indicator-size;
+      border-radius: 50%;
+      background-color: t.color('primary');
+    }
+
     // Indeterminate animation for linear progress
     &.#{$component}--indeterminate {
       // Add a solid track for indeterminate state
