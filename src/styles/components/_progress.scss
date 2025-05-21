@@ -97,7 +97,7 @@ $stop-indicator-size: 4px; // PROGRESS_MEASUREMENTS.LINEAR.STOP_INDICATOR
       height: $stop-indicator-size;
       border-radius: 50%;
       background-color: t.color('primary');
-      display: var(--stop-indicator, none); // Controlled via API
+      display: none;
     }
 
     // Indeterminate animation for linear progress
@@ -106,8 +106,6 @@ $stop-indicator-size: 4px; // PROGRESS_MEASUREMENTS.LINEAR.STOP_INDICATOR
       svg {
         .#{$component}-track {
           display: block;
-          x1: 0;
-          x2: 100; // Full width track
           stroke: t.alpha('primary', 0.24);
         }
         
@@ -197,19 +195,6 @@ $stop-indicator-size: 4px; // PROGRESS_MEASUREMENTS.LINEAR.STOP_INDICATOR
   &--disabled {
     opacity: 0.38;
     pointer-events: none;
-  }
-  
-  // Thickness variants - these apply default values that can be overridden by the API
-  &--thin {
-    .#{$component}-indicator, .#{$component}-track, .#{$component}-buffer {
-      stroke-width: $stroke-width-thin;
-    }
-  }
-  
-  &--thick {
-    .#{$component}-indicator, .#{$component}-track, .#{$component}-buffer {
-      stroke-width: $stroke-width-thick;
-    }
   }
 }
 

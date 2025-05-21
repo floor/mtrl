@@ -105,51 +105,86 @@ export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent =
     // Get the stroke width
     const strokeWidth = parseFloat(indicator.getAttribute('stroke-width') || '6');
     
-    // Calculate the base gap in percentage units (8px fixed gap)
+    // Calculate the container width 
+    const containerWidth = element.clientWidth;
+    
+    // Calculate offset needed due to stroke-linecap: round
+    // The cap extends by half the stroke width on each end
+    const capOffset = (strokeWidth / 2) / containerWidth * 100;
+    
+    // Calculate gap in percentage units - use fixed visual gap
     const baseGap = PROGRESS_MEASUREMENTS.LINEAR.GAP;
+    const gap = baseGap / containerWidth * 100;
     
-    // For linear progress, we might want the gap to scale with thickness
-    // Adjust if needed for visual consistency
-    const thicknessRatio = strokeWidth / PROGRESS_THICKNESS.DEFAULT;
-    const scaledGap = baseGap * thicknessRatio;
-    
-    // Convert gap to percentage of element width
-    const gap = scaledGap / element.clientWidth * 100;
-    
-    // let's be sure the starting indicator point is a dot
-    let x2 = percentage;
-
-    if (percentage === 0) {
-      x2 = 2 / element.clientWidth * 100;
+    // Handle special case for 0% - make a perfect circle dot
+    if (percentage === 0 || percentage < (strokeWidth / containerWidth * 100)) {
+      // For zero or very small values, create a circular dot
+      // To create a perfect circle with stroke-linecap: round, we need:
+      // x1 === x2 (same point, creates a dot)
+      const dotPosition = capOffset;
+      
+      // Update indicator to be a dot
+      updateElement(indicator, { 
+        x1: dotPosition, 
+        x2: dotPosition
+      });
+      
+      // Update track - start after the dot + gap
+      // The dot visual width equals the stroke width
+      const dotWidth = (strokeWidth / containerWidth * 100);
+      const trackStart = dotWidth + gap;
+      
+      updateElement(track, { 
+        x1: trackStart + capOffset,
+        x2: 100 - capOffset,
+        display: ''
+      });
+    } else {
+      // Normal case - indicator is a line from start to percentage
+      let x2 = percentage - capOffset; // Adjust endpoint for stroke-linecap
+      
+      // Update indicator position with cap offset
+      updateElement(indicator, { 
+        x1: capOffset,
+        x2: x2
+      });
+      
+      // Update track with gap
+      const trackStart = percentage + gap;
+      
+      // Update track with adjusted offsets
+      updateElement(track, { 
+        x1: trackStart + capOffset,
+        x2: 100 - capOffset,
+        display: percentage >= 100 ? 'none' : ''
+      });
     }
-
-    // Update indicator position
-    updateElement(indicator, { x2 });
-    
-    // Update track with gap
-    const trackStart = percentage + gap;
-    updateElement(track, { 
-      x1: trackStart,
-      display: percentage >= 100 ? 'none' : ''
-    });
     
     // Update buffer if present
     if (buffer) {
       const bufferPercentage = (options.buffer.getBuffer() / max) * 100;
       
-      // Buffer should start where track starts, but only if it's greater than the current progress
+      // Only display buffer if ahead of the current progress
       if (bufferPercentage > percentage) {
-        // Buffer starts at the end of indicator + gap
-        const bufferStart = trackStart;
+        let bufferStart;
         
-        // Update buffer - x1 starts at track start, x2 is based on buffer value
+        if (percentage === 0) {
+          // For zero state, buffer starts after the dot + gap
+          const dotWidth = (strokeWidth / containerWidth * 100);
+          bufferStart = dotWidth + gap + capOffset;
+        } else {
+          // Normal case
+          bufferStart = percentage + gap + capOffset;
+        }
+        
+        // Update buffer
         updateElement(buffer, { 
           x1: bufferStart,
-          x2: bufferPercentage,
-          display: bufferPercentage > percentage ? '' : 'none'
+          x2: bufferPercentage - capOffset,
+          display: ''
         });
       } else {
-        // Hide buffer if it's not ahead of the current progress
+        // Hide buffer
         updateElement(buffer, { display: 'none' });
       }
     }
@@ -176,15 +211,15 @@ export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent =
         const strokeWidth = parseFloat(indicator.getAttribute('stroke-width') || '6');
         
         // Calculate gap angle based on thickness
+        // Base gap angle + adjustment based on stroke width
         const baseGapAngle = PROGRESS_MEASUREMENTS.CIRCULAR.GAP_ANGLE;
+        const gapMultiplier = PROGRESS_MEASUREMENTS.CIRCULAR.GAP_MULTIPLIER;
         
-        // Calculate thickness ratio relative to default
+        // Thickness relative to the default (6px)
         const thicknessRatio = strokeWidth / PROGRESS_THICKNESS.DEFAULT;
         
-        // Scale the gap angle based on thickness ratio
-        // Using square root gives a more balanced visual effect (grows less aggressively)
-        const scaleFactor = Math.sqrt(thicknessRatio);
-        const gapAngle = baseGapAngle * scaleFactor;
+        // Scale the gap angle based on thickness (thicker = bigger gap)
+        const gapAngle = baseGapAngle * (1 + (thicknessRatio - 1) * gapMultiplier);
         
         // Convert percentage to angle
         const filledAngle = (percentage / 100) * 360;

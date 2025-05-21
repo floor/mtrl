@@ -75,7 +75,7 @@ export const PROGRESS_MEASUREMENTS = {
     /** Default height of the linear progress track in pixels */
     HEIGHT: 4,
     /** Gap size between indicator and track in pixels */
-    GAP: 12,
+    GAP: 4,
     /** Size of stop indicator dot in pixels */
     STOP_INDICATOR: 4
   },
@@ -87,7 +87,7 @@ export const PROGRESS_MEASUREMENTS = {
     /** Gap angle in degrees */
     GAP_ANGLE: 55,
     /** Gap multiplier based on thickness (higher means bigger gap for thicker strokes) */
-    GAP_MULTIPLIER: 20
+    GAP_MULTIPLIER: .75
   },
   
   /** Common measurements */
