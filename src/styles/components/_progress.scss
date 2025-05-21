@@ -8,29 +8,27 @@
 
 $component: '#{base.$prefix}-progress';
 
-// Material Design 3 spec constants
-$linear-height: 4px;
-$circular-size: 50px;
-$stroke-width: 8px;
-$linear-gap-size: 8px;
-$circular-gap-size: 4px;
-$stop-indicator-size: 4px;
+// Material Design 3 spec constants - MUST match values in constants.ts
+// If these values change, update PROGRESS_MEASUREMENTS in constants.ts
+$linear-height: 4px; // PROGRESS_MEASUREMENTS.LINEAR.HEIGHT
+$circular-size: 50px; // PROGRESS_MEASUREMENTS.CIRCULAR.SIZE
+$stroke-width-thin: 4px; // PROGRESS_THICKNESS.THIN
+$stroke-width-default: 6px; // PROGRESS_THICKNESS.DEFAULT
+$stroke-width-thick: 8px; // PROGRESS_THICKNESS.THICK
+$stop-indicator-size: 4px; // PROGRESS_MEASUREMENTS.LINEAR.STOP_INDICATOR
 
 // Keyframes for SVG-based indeterminate linear progress
 @keyframes indeterminate-bar {
   0% {
     x2: 0; 
     transform: translateX(-12%);
-    stroke-width: $linear-height;
   }
   50% {
     x2: 33;
-    stroke-width: $linear-height;
   }
   100% {
     x2: 12;
     transform: translateX(112%);
-    stroke-width: $linear-height;
   }
 }
 
@@ -49,7 +47,7 @@ $stop-indicator-size: 4px;
   // Linear progress variant - MD3 specs
   &--linear {
     width: 100%;
-    height: $linear-height; // MD3 spec height
+    // height: $linear-height; // MD3 spec height
     min-height: $linear-height; // Ensure minimum height
     border-radius: calc($linear-height / 2);
     
@@ -57,35 +55,32 @@ $stop-indicator-size: 4px;
     svg {
       overflow: visible; // Allow portions to extend outside container if needed
       width: 100%;
-      height: $linear-height; // Match the container height
+      height: 100%; // Match the container height
       min-height: $linear-height; // Ensure minimum height
       display: block; // Prevent any inline display issues
       
       line, .#{$component}-track, .#{$component}-buffer, .#{$component}-indicator {
-        // Ensure all line elements have the proper height
-        stroke-width: $linear-height;
+        // Support for dynamic stroke-width from API
+        transition: stroke-dasharray 0.3s ease, stroke-dashoffset 0.3s ease, 
+                   x1 0.3s ease, x2 0.3s ease, stroke-width 0.3s ease;
         // Force visibility
         vector-effect: non-scaling-stroke;
-        transition: stroke-dasharray 0.3s ease, stroke-dashoffset 0.3s ease, x1 0.3s ease, x2 0.3s ease;
       }
       
       .#{$component}-track {
         stroke: t.alpha('primary', 0.24);
-        stroke-width: $linear-height;
         stroke-linecap: round;
         transition: all 0.3s ease;
       }
       
       .#{$component}-buffer {
         stroke: t.alpha('primary', 0.4);
-        stroke-width: $linear-height;
         stroke-linecap: round;
         transition: all 0.3s ease;
       }
       
       .#{$component}-indicator {
         stroke: t.color('primary');
-        stroke-width: $linear-height;
         stroke-linecap: round;
         transition: all 0.3s ease;
       }
@@ -102,6 +97,7 @@ $stop-indicator-size: 4px;
       height: $stop-indicator-size;
       border-radius: 50%;
       background-color: t.color('primary');
+      display: var(--stop-indicator, none); // Controlled via API
     }
 
     // Indeterminate animation for linear progress
@@ -158,21 +154,21 @@ $stop-indicator-size: 4px;
     .#{$component}-indicator {
       stroke: t.color('primary');
       fill: none;
-      stroke-width: $stroke-width;
-      // Use round stroke-linecap as specified
+      // Support for dynamic stroke-width from API
       stroke-linecap: round;
       transform-origin: center;
-      transition: stroke-dasharray 0.3s ease, stroke-dashoffset 0.3s ease, transform 0.3s ease;
+      transition: stroke-dasharray 0.3s ease, stroke-dashoffset 0.3s ease, 
+                 transform 0.3s ease, stroke-width 0.3s ease;
     }
     
     .#{$component}-track {
       stroke: t.alpha('primary', 0.24);
       fill: none;
-      stroke-width: $stroke-width;
-      // Use round stroke-linecap as specified
+      // Support for dynamic stroke-width from API
       stroke-linecap: round;
       transform-origin: center;
-      transition: stroke-dasharray 0.3s ease, stroke-dashoffset 0.3s ease, transform 0.3s ease;
+      transition: stroke-dasharray 0.3s ease, stroke-dashoffset 0.3s ease, 
+                 transform 0.3s ease, stroke-width 0.3s ease;
     }
     
     // Indeterminate animation for circular progress
@@ -201,6 +197,19 @@ $stop-indicator-size: 4px;
   &--disabled {
     opacity: 0.38;
     pointer-events: none;
+  }
+  
+  // Thickness variants - these apply default values that can be overridden by the API
+  &--thin {
+    .#{$component}-indicator, .#{$component}-track, .#{$component}-buffer {
+      stroke-width: $stroke-width-thin;
+    }
+  }
+  
+  &--thick {
+    .#{$component}-indicator, .#{$component}-track, .#{$component}-buffer {
+      stroke-width: $stroke-width-thick;
+    }
   }
 }
 

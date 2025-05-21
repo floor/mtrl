@@ -1,7 +1,15 @@
 // src/components/progress/api.ts
 
 import { ProgressComponent } from './types';
-import { PROGRESS_CLASSES, PROGRESS_EVENTS } from './constants';
+import { ProgressComponent, ProgressThickness } from './types';
+import { 
+  PROGRESS_CLASSES, 
+  PROGRESS_EVENTS,
+  PROGRESS_MEASUREMENTS,
+  PROGRESS_THICKNESS
+} from './constants';
+import { addClass, removeClass } from '../../core/dom';
+
 import { addClass, removeClass } from '../../core/dom';
 
 /**
@@ -94,8 +102,19 @@ export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent =
   
   // Update progress visuals efficiently - separated by variant type
   const updateLinearProgress = (percentage: number, max: number): void => {
-    // Calculate gap in percentage units (fixed 8px)
-    const gap = 8 / element.clientWidth * 100;
+    // Get the stroke width
+    const strokeWidth = parseFloat(indicator.getAttribute('stroke-width') || '6');
+    
+    // Calculate the base gap in percentage units (8px fixed gap)
+    const baseGap = PROGRESS_MEASUREMENTS.LINEAR.GAP;
+    
+    // For linear progress, we might want the gap to scale with thickness
+    // Adjust if needed for visual consistency
+    const thicknessRatio = strokeWidth / PROGRESS_THICKNESS.DEFAULT;
+    const scaledGap = baseGap * thicknessRatio;
+    
+    // Convert gap to percentage of element width
+    const gap = scaledGap / element.clientWidth * 100;
     
     // let's be sure the starting indicator point is a dot
     let x2 = percentage;
@@ -137,31 +156,53 @@ export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent =
   };
   
   const updateCircularProgress = (percentage: number, max: number): void => {
-    // Get circle dimensions once
+    // Get circle dimensions
     const radius = parseFloat(indicator.getAttribute('r') || '0');
     const circumference = 2 * Math.PI * radius;
     const fillAmount = (percentage / 100) * circumference;
     
-    // Update indicator with dash pattern
+    // Update indicator
     updateElement(indicator, {
       'stroke-dasharray': `${fillAmount} ${circumference - fillAmount}`,
       'stroke-dashoffset': '0'
     });
     
-    // Update track (previously remaining) with gap
+    // Update track
     if (track) {
       if (percentage >= 100) {
         track.style.display = 'none';
       } else {
-        const gapSize = 4 / element.clientWidth * circumference;
-        const trackLength = circumference - fillAmount - gapSize;
-        const angle = ((fillAmount + gapSize) / circumference * 360) - 15;
+        // Get the stroke width
+        const strokeWidth = parseFloat(indicator.getAttribute('stroke-width') || '6');
+        
+        // Calculate gap angle based on thickness
+        const baseGapAngle = PROGRESS_MEASUREMENTS.CIRCULAR.GAP_ANGLE;
+        
+        // Calculate thickness ratio relative to default
+        const thicknessRatio = strokeWidth / PROGRESS_THICKNESS.DEFAULT;
+        
+        // Scale the gap angle based on thickness ratio
+        // Using square root gives a more balanced visual effect (grows less aggressively)
+        const scaleFactor = Math.sqrt(thicknessRatio);
+        const gapAngle = baseGapAngle * scaleFactor;
+        
+        // Convert percentage to angle
+        const filledAngle = (percentage / 100) * 360;
+        
+        // Position the track after the filled portion plus HALF the gap angle
+        const trackStartAngle = filledAngle + gapAngle / 2;
+        
+        // Convert gap to arc length
+        const gapLength = (gapAngle / 360) * circumference;
+        
+        // Calculate track length
+        const trackLength = circumference - fillAmount - gapLength;
         
         updateElement(track, {
           display: '',
-          'stroke-dasharray': `${trackLength} ${fillAmount + gapSize}`,
+          'stroke-dasharray': `${trackLength} ${circumference}`,
           'stroke-dashoffset': '0',
-          transform: `rotate(${angle}deg)`
+          transform: `rotate(${trackStartAngle}deg)`
         });
       }
     }
@@ -190,6 +231,78 @@ export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent =
       label.textContent = formatter(value, max);
     }
   };
+
+  const getThickness = (): number => {
+    if (options.thickness && typeof options.thickness.getThickness === 'function') {
+      return options.thickness.getThickness();
+    }
+    return PROGRESS_MEASUREMENTS.COMMON.STROKE_WIDTH; // Default fallback
+  };
+
+  const setThickness = (thickness: ProgressThickness): ProgressComponent => {
+    if (options.thickness && typeof options.thickness.setThickness === 'function') {
+      // Update the state
+      options.thickness.setThickness(thickness);
+      
+      // Get the numeric thickness value
+      let thicknessValue: number;
+      
+      if (thickness === 'thin') {
+        thicknessValue = PROGRESS_THICKNESS.THIN;
+      } else if (thickness === 'thick') {
+        thicknessValue = PROGRESS_THICKNESS.THICK;
+      } else if (thickness === 'default') {
+        thicknessValue = PROGRESS_THICKNESS.DEFAULT;
+      } else {
+        thicknessValue = thickness as number;
+      }
+      
+      // Update the DOM elements
+      if (indicator instanceof SVGElement) {
+        indicator.setAttribute('stroke-width', thicknessValue.toString());
+      }
+      
+      if (track instanceof SVGElement) {
+        track.setAttribute('stroke-width', thicknessValue.toString());
+      }
+      
+      if (buffer instanceof SVGElement) {
+        buffer.setAttribute('stroke-width', thicknessValue.toString());
+      }
+      
+      // For circular progress, we need to adjust the radius as well
+      if (isCircular && indicator instanceof SVGElement) {
+        const svgSize = PROGRESS_MEASUREMENTS.CIRCULAR.SIZE;
+        const centerPoint = svgSize / 2;
+        const newRadius = centerPoint - thicknessValue / 2;
+        
+        indicator.setAttribute('r', newRadius.toString());
+        if (track instanceof SVGElement) {
+          track.setAttribute('r', newRadius.toString());
+        }
+        
+        // Recalculate dimensions and update the display
+        if (!options.state.isIndeterminate()) {
+          updateProgress(options.value.getValue(), options.value.getMax());
+        }
+      } else if (!isCircular) {
+        // For linear progress, adjust the height if needed
+        if (!options.state.isIndeterminate()) {
+          const height = PROGRESS_MEASUREMENTS.LINEAR.HEIGHT;
+          element.style.minHeight = `${height}px`;
+          
+          // Update the visual appearance
+          updateProgress(options.value.getValue(), options.value.getMax());
+        } else {
+          // For indeterminate, use the stroke width as the height
+          element.style.minHeight = `${thicknessValue}px`;
+        }
+      }
+    }
+    
+    return api;
+  };
+
   
   let resizeTimer: number | undefined;
   let lastResizeTime = 0;
@@ -247,7 +360,6 @@ export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent =
     indicator,
     buffer,
     getClass,
-    
     // Value management
     getValue: options.value.getValue,
     setValue(value: number): ProgressComponent {
@@ -372,6 +484,9 @@ export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent =
       
       return api;
     },
+
+    getThickness,
+    setThickness,
 
     // State management
     enable(): ProgressComponent {

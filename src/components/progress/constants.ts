@@ -25,7 +25,7 @@ export const PROGRESS_EVENTS = {
  */
 export const PROGRESS_DEFAULTS = {
   /** Default progress variant */
-  VARIANT: PROGRESS_VARIANTS.LINEAR,
+  VARIANT: 'linear',
   /** Initial progress value */
   VALUE: 0,
   /** Maximum progress value */
@@ -62,4 +62,47 @@ export const PROGRESS_CLASSES = {
   DISABLED: 'progress--disabled',
   /** Test state class */
   TEST: 'progress--test',
+} as const;
+
+/**
+ * Measurements for progress component
+ * These values are the authoritative source for dimensions
+ * and are used consistently across both TypeScript and SCSS
+ */
+export const PROGRESS_MEASUREMENTS = {
+  /** Linear progress measurements */
+  LINEAR: {
+    /** Default height of the linear progress track in pixels */
+    HEIGHT: 4,
+    /** Gap size between indicator and track in pixels */
+    GAP: 12,
+    /** Size of stop indicator dot in pixels */
+    STOP_INDICATOR: 4
+  },
+  
+  /** Circular progress measurements */
+  CIRCULAR: {
+    /** Default diameter of circular progress in pixels */
+    SIZE: 50,
+    /** Gap angle in degrees */
+    GAP_ANGLE: 55,
+    /** Gap multiplier based on thickness (higher means bigger gap for thicker strokes) */
+    GAP_MULTIPLIER: 20
+  },
+  
+  /** Common measurements */
+  COMMON: {
+    /** Default stroke width for both variants in pixels */
+    STROKE_WIDTH: 6
+  }
+} as const;
+
+// Add thickness options based on MD3 specs
+export const PROGRESS_THICKNESS = {
+  /** Thin stroke width */
+  THIN: 4,
+  /** Default stroke width */
+  DEFAULT: 6,
+  /** Thick stroke width */
+  THICK: 8
 } as const;

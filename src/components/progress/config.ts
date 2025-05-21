@@ -4,9 +4,15 @@ import {
   createElementConfig
 } from '../../core/config/component';
 import { ProgressConfig } from './types';
-import { PROGRESS_VARIANTS, PROGRESS_DEFAULTS, PROGRESS_CLASSES } from './constants';
+import { 
+  PROGRESS_CLASSES, 
+  PROGRESS_EVENTS,
+  PROGRESS_MEASUREMENTS,
+  PROGRESS_THICKNESS,
+  PROGRESS_DEFAULTS
+} from './constants';
 import { createProgressSchema } from './schema';
-import { addClass } from '../../core/dom';
+import { addClass, removeClass } from '../../core/dom';
 
 /**
  * Default configuration for the Progress component
@@ -16,8 +22,8 @@ export const defaultConfig: ProgressConfig = {
   value: PROGRESS_DEFAULTS.VALUE,
   max: PROGRESS_DEFAULTS.MAX,
   buffer: PROGRESS_DEFAULTS.BUFFER,
-  showLabel: PROGRESS_DEFAULTS.SHOW_LABEL
-  // Don't set disabled: false as default - it should be undefined by default
+  showLabel: PROGRESS_DEFAULTS.SHOW_LABEL,
+  thickness: 'thin' // Add default thickness
 };
 
 /**
@@ -243,9 +249,14 @@ export const getApiConfig = (comp, state) => {
     max: 100,
     buffer: 0,
     indeterminate: false,
+    thickness: PROGRESS_MEASUREMENTS.COMMON.STROKE_WIDTH,
     labelFormatter: (v, m) => `${Math.round((v / m) * 100)}%`
   };
   
+  if (safeState.thickness === undefined) {
+    safeState.thickness = PROGRESS_MEASUREMENTS.COMMON.STROKE_WIDTH;
+  }
+
   return {
     value: {
       getValue: () => safeState.value,
@@ -289,6 +300,21 @@ export const getApiConfig = (comp, state) => {
       setContent: (content) => {
         if (safeState.label) {
           safeState.label.textContent = content;
+        }
+      }
+    },
+    thickness: {
+      getThickness: () => safeState.thickness,
+      setThickness: (thickness: ProgressThickness) => {
+        // Convert named presets to pixel values
+        if (thickness === 'thin') {
+          safeState.thickness = PROGRESS_THICKNESS.THIN;
+        } else if (thickness === 'thick') {
+          safeState.thickness = PROGRESS_THICKNESS.THICK;
+        } else if (thickness === 'default') {
+          safeState.thickness = PROGRESS_THICKNESS.DEFAULT;
+        } else if (typeof thickness === 'number') {
+          safeState.thickness = thickness;
         }
       }
     },

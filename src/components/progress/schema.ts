@@ -1,15 +1,36 @@
 // src/components/progress/schema.ts
-import { ProgressConfig } from './types';
-import { PROGRESS_VARIANTS, PROGRESS_CLASSES } from './constants';
+import { ProgressConfig, ProgressThickness } from './types';
+import { 
+  PROGRESS_VARIANTS, 
+  PROGRESS_CLASSES, 
+  PROGRESS_MEASUREMENTS,
+  PROGRESS_THICKNESS
+} from './constants';
 import { createSVGElement } from '../../core';
 
 /**
- * Creates the base progress structure definition
- * 
- * @param component Component for class name generation
- * @param config Progress configuration
- * @returns Structure schema object
+ * Gets the stroke width value from the thickness config
  */
+const getStrokeWidth = (thickness?: ProgressThickness): number => {
+  if (thickness === undefined || thickness === 'default') {
+    return PROGRESS_MEASUREMENTS.COMMON.STROKE_WIDTH;
+  }
+  
+  if (typeof thickness === 'number') {
+    return thickness;
+  }
+  
+  // Handle named presets
+  switch (thickness) {
+    case 'thin':
+      return PROGRESS_THICKNESS.THIN;
+    case 'thick':
+      return PROGRESS_THICKNESS.THICK;
+    default:
+      return PROGRESS_MEASUREMENTS.COMMON.STROKE_WIDTH;
+  }
+};
+
 export function createProgressSchema(component, config: ProgressConfig) {
   // Get prefixed class names
   const getClass = className => component.getClass(className);
@@ -21,11 +42,14 @@ export function createProgressSchema(component, config: ProgressConfig) {
   const max = config.max ?? 100;
   const valuePercent = (value / max) * 100;
   
+  // Determine stroke width from config
+  const strokeWidth = getStrokeWidth(config.thickness);
+  
   // Set up SVG parameters based on variant
   const svgParams = isCircular 
     ? { 
-        size: 96,
-        strokeWidth: 6,
+        size: PROGRESS_MEASUREMENTS.CIRCULAR.SIZE,
+        strokeWidth: strokeWidth,
         tag: 'circle',
         getAttrs: (type) => {
           const radius = svgParams.size / 2 - svgParams.strokeWidth / 2;
@@ -42,8 +66,8 @@ export function createProgressSchema(component, config: ProgressConfig) {
       }
     : { 
         size: 100,
-        height: 4,
-        strokeWidth: 6,
+        height: isIndeterminate ? strokeWidth : PROGRESS_MEASUREMENTS.LINEAR.HEIGHT,
+        strokeWidth: strokeWidth,
         tag: 'line',
         getAttrs: (type) => {
           const y = svgParams.height / 2;
@@ -74,7 +98,7 @@ export function createProgressSchema(component, config: ProgressConfig) {
           return attrs;
         }
       };
-  
+
   // Define SVG element types to create - track FIRST, then indicator, then buffer
   const elements = [
     PROGRESS_CLASSES.TRACK,
@@ -114,7 +138,7 @@ export function createProgressSchema(component, config: ProgressConfig) {
           'aria-valuemax': max.toString(),
           'aria-valuenow': isIndeterminate ? undefined : value.toString(),
           'aria-disabled': config.disabled ? 'true' : undefined,
-          style: isCircular ? undefined : 'min-height: 4px;'
+          style: isCircular ? undefined : `min-height: ${isIndeterminate ? strokeWidth : PROGRESS_MEASUREMENTS.LINEAR.HEIGHT}px;`
         }
       },
       children: {

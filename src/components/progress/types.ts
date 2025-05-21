@@ -7,6 +7,12 @@
 export type ProgressVariant = 'linear' | 'circular';
 
 /**
+ * Progress thickness options
+ * @category Components
+ */
+export type ProgressThickness = 'thin' | 'default' | 'thick' | number;
+
+/**
  * Progress component event types
  * @category Components
  */
@@ -52,6 +58,13 @@ export interface ProgressConfig {
    */
   class?: string;
   
+  /** 
+   * Thickness of the progress track and indicator
+   * Can be a named preset ('thin', 'default', 'thick') or a specific number in pixels
+   * @default 'default'
+   */
+  thickness?: ProgressThickness;
+
   /** 
    * Whether to show text label with percentage
    * @default false
@@ -180,6 +193,19 @@ export interface ProgressComponent {
    * @returns The progress component for chaining
    */
   setLabelFormatter: (formatter: (value: number, max: number) => string) => ProgressComponent;
+  
+  /**
+   * Sets the thickness of the progress track and indicator
+   * @param thickness - Thickness value ('thin', 'default', 'thick' or number in pixels)
+   * @returns The progress component for chaining
+   */
+  setThickness: (thickness: ProgressThickness) => ProgressComponent;
+  
+  /**
+   * Gets the current thickness value in pixels
+   * @returns Current thickness in pixels
+   */
+  getThickness: () => number;
   
   /**
    * Sets the indeterminate state
