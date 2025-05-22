@@ -135,7 +135,8 @@ import {
   PROGRESS_VARIANTS,
   PROGRESS_EVENTS,
   PROGRESS_DEFAULTS,
-  PROGRESS_CLASSES
+  PROGRESS_CLASSES,
+  PROGRESS_THICKNESS
 } from './components/progress/constants';
 
 import {

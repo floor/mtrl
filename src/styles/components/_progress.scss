@@ -49,6 +49,7 @@ $stop-indicator-size: 4px; // PROGRESS_MEASUREMENTS.LINEAR.STOP_INDICATOR
     width: 100%;
     // height: $linear-height; // MD3 spec height
     min-height: $linear-height; // Ensure minimum height
+    margin: 0 4px;
     border-radius: calc($linear-height / 2);
     
     // For SVG-based linear progress
@@ -82,7 +83,7 @@ $stop-indicator-size: 4px; // PROGRESS_MEASUREMENTS.LINEAR.STOP_INDICATOR
       .#{$component}-indicator {
         stroke: t.color('primary');
         stroke-linecap: round;
-        transition: all 0.3s ease;
+        transition: x1 0.3s ease, x2 0.3s ease;
       }
     }
     
@@ -97,7 +98,7 @@ $stop-indicator-size: 4px; // PROGRESS_MEASUREMENTS.LINEAR.STOP_INDICATOR
       height: $stop-indicator-size;
       border-radius: 50%;
       background-color: t.color('primary');
-      display: none;
+      display: block;
     }
 
     // Indeterminate animation for linear progress

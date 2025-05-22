@@ -194,50 +194,61 @@ export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent =
     // Get circle dimensions
     const radius = parseFloat(indicator.getAttribute('r') || '0');
     const circumference = 2 * Math.PI * radius;
-    const fillAmount = (percentage / 100) * circumference;
     
-    // Update indicator
+    // Define the gap angle
+    const gapAngle = PROGRESS_MEASUREMENTS.CIRCULAR.GAP_ANGLE;
+    
+    // Convert gap angle to arc length
+    const gapLength = (gapAngle / 360) * circumference;
+    
+    console.log('gapLength', gapLength)
+
+    // Calculate the available length after accounting for the gap
+    const availableLength = circumference - gapLength;
+    
+    // Calculate the filled portion based on percentage of available length
+    const adjustedFillAmount = (percentage / 100) * availableLength;
+    
+    // Convert percentage to angle for rotation calculations
+    // This represents the angle subtended by the filled portion
+    const filledPercentageAngle = (adjustedFillAmount / circumference) * 360;
+    
+    // Calculate half the gap angle
+    const halfGapAngle = gapAngle / 2;
+    
+    // Indicator should start at top (0 degrees)
+    // Since SVG is already rotated -90deg by CSS, this puts it at the correct position
+    const indicatorRotation = 0;
+    
+    // Track should be positioned at the end of the indicator plus the gap
+    const trackRotation = filledPercentageAngle + halfGapAngle;
+
+    let indicatorLength = `${adjustedFillAmount} ${circumference - adjustedFillAmount}`
+
+    if (percentage >= 100) {
+      indicatorLength =  `${circumference}`
+    }
+
+    // For the indicator - rotate it clockwise from top
     updateElement(indicator, {
-      'stroke-dasharray': `${fillAmount} ${circumference - fillAmount}`,
-      'stroke-dashoffset': '0'
+      'stroke-dasharray': indicatorLength,
+      'stroke-dashoffset': '0',
+      'transform': `rotate(${indicatorRotation}deg)`
     });
     
     // Update track
     if (track) {
-      if (percentage >= 100) {
+      if (percentage >= 98) {
         track.style.display = 'none';
       } else {
-        // Get the stroke width
-        const strokeWidth = parseFloat(indicator.getAttribute('stroke-width') || '6');
-        
-        // Calculate gap angle based on thickness
-        // Base gap angle + adjustment based on stroke width
-        const baseGapAngle = PROGRESS_MEASUREMENTS.CIRCULAR.GAP_ANGLE;
-        const gapMultiplier = PROGRESS_MEASUREMENTS.CIRCULAR.GAP_MULTIPLIER;
-        
-        // Thickness relative to the default (6px)
-        const thicknessRatio = strokeWidth / PROGRESS_THICKNESS.DEFAULT;
-        
-        // Scale the gap angle based on thickness (thicker = bigger gap)
-        const gapAngle = baseGapAngle * (1 + (thicknessRatio - 1) * gapMultiplier);
-        
-        // Convert percentage to angle
-        const filledAngle = (percentage / 100) * 360;
-        
-        // Position the track after the filled portion plus HALF the gap angle
-        const trackStartAngle = filledAngle + gapAngle / 2;
-        
-        // Convert gap to arc length
-        const gapLength = (gapAngle / 360) * circumference;
-        
-        // Calculate track length
-        const trackLength = circumference - fillAmount - gapLength;
+        // The track should represent the remaining portion after accounting for the gap
+        const trackLength = availableLength - adjustedFillAmount;
         
         updateElement(track, {
           display: '',
           'stroke-dasharray': `${trackLength} ${circumference}`,
           'stroke-dashoffset': '0',
-          transform: `rotate(${trackStartAngle}deg)`
+          'transform': `rotate(${trackRotation}deg)`
         });
       }
     }
