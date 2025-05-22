@@ -39,8 +39,8 @@ export function createComponentInstance(
     const cleanOptions = { ...options };
     delete cleanOptions.layout;
     delete cleanOptions.layoutItem;
-    if (typeof cleanOptions.style === 'object') delete cleanOptions.style;
-    if (typeof cleanOptions.attributes === 'object') delete cleanOptions.attributes;
+    // if (typeof cleanOptions.style === 'object') delete cleanOptions.style;
+    // if (typeof cleanOptions.attributes === 'object') delete cleanOptions.attributes;
     delete cleanOptions.events;
     delete cleanOptions.event;
     
@@ -51,7 +51,7 @@ export function createComponentInstance(
     // Create the component with clean options
     const component = isClass
       ? new Component(cleanOptions)
-      : Component(options);
+      : Component(cleanOptions);
       
     // Apply configuration to the created component
     if (component) {

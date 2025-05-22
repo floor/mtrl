@@ -1,6 +1,5 @@
-// src/components/progress/api.ts
+// src/components/progress/api.ts - Clean API using CSS custom properties
 
-import { ProgressComponent } from './types';
 import { ProgressComponent, ProgressThickness } from './types';
 import { 
   PROGRESS_CLASSES, 
@@ -9,15 +8,6 @@ import {
   PROGRESS_THICKNESS
 } from './constants';
 import { addClass, removeClass } from '../../core/dom';
-
-import { addClass, removeClass } from '../../core/dom';
-
-/**
- * SVG attribute dictionary
- */
-interface SVGAttributes {
-  [key: string]: string | number | undefined;
-}
 
 /**
  * API configuration options for progress component
@@ -43,9 +33,17 @@ interface ApiOptions {
     format?: (formatter: (value: number, max: number) => string) => void;
     formatter?: (value: number, max: number) => string;
   };
+  thickness?: {
+    getThickness: () => number;
+    setThickness: (thickness: ProgressThickness) => void;
+  };
   state: {
     setIndeterminate: (indeterminate: boolean) => void;
     isIndeterminate: () => boolean;
+  };
+  stopIndicator?: {
+    show: () => void;
+    hide: () => void;
   };
   lifecycle: {
     destroy: () => void;
@@ -56,223 +54,87 @@ interface ApiOptions {
  * Enhances a progress component with a streamlined API
  */
 export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent => {
-  // Get minimal element references directly
+  // Get element references
   const { element, getClass } = comp;
-  const indicator = comp.indicator || comp.components?.indicator as SVGElement;
-  const track = comp.track || comp.components?.track as SVGElement; // This is the renamed element (previously 'remaining')
-  const buffer = comp.buffer || comp.components?.buffer as SVGElement | undefined;
+  const indicator = comp.indicator || comp.components?.indicator as HTMLElement;
+  const track = comp.track || comp.components?.track as HTMLElement;
+  const buffer = comp.buffer || comp.components?.buffer as HTMLElement | undefined;
   
   // Determine variant once
   const isCircular = element.classList.contains(getClass(PROGRESS_CLASSES.CIRCULAR));
   
-  // Create event emitter helper - reduces code duplication
+  // Create event emitter helper
   const emitEvent = (name: string, detail: Record<string, any>): void => {
     element.dispatchEvent(new CustomEvent(name, { detail }));
   };
   
-  // Optimized helper to set attributes on SVG elements
-  const updateElement = (el: SVGElement | undefined, attrs: SVGAttributes): void => {
-    if (!el) return;
-    
-    // Apply style changes through style property
-    if (attrs.style !== undefined) {
-      el.style.cssText = attrs.style as string;
-      delete attrs.style;
-    }
-    
-    // Apply display property
-    if (attrs.display !== undefined) {
-      el.style.display = attrs.display as string;
-      delete attrs.display;
-    }
-    
-    // Apply transform
-    if (attrs.transform !== undefined) {
-      el.style.transform = attrs.transform as string;
-      delete attrs.transform;
-    }
-    
-    // Apply remaining attributes
-    for (const attr in attrs) {
-      if (attrs[attr] !== undefined) {
-        el.setAttribute(attr, attrs[attr]!.toString());
-      }
-    }
-  };
-  
-  // Update progress visuals efficiently - separated by variant type
+  // NEW: Clean linear progress update using CSS custom properties
   const updateLinearProgress = (percentage: number, max: number): void => {
-    // Get the stroke width
-    const strokeWidth = parseFloat(indicator.getAttribute('stroke-width') || '6');
+    if (!element) return;
     
-    // Calculate the container width 
-    const containerWidth = element.clientWidth;
+    // Calculate buffer percentage
+    const bufferPercentage = (options.buffer.getBuffer() / max) * 100;
     
-    // Calculate offset needed due to stroke-linecap: round
-    // The cap extends by half the stroke width on each end
-    const capOffset = (strokeWidth / 2) / containerWidth * 100;
+    // Update CSS custom properties - let CSS handle the positioning
+    element.style.setProperty('--progress-value', `${percentage}%`);
+    element.style.setProperty('--progress-track', `100-${percentage}%`);
+    element.style.setProperty('--progress-buffer', `${bufferPercentage}%`);
     
-    // Calculate gap in percentage units - use fixed visual gap
-    const baseGap = PROGRESS_MEASUREMENTS.LINEAR.GAP;
-    const gap = baseGap / containerWidth * 100;
-    
-    // Handle special case for 0% - make a perfect circle dot
-    if (percentage === 0 || percentage < (strokeWidth / containerWidth * 100)) {
-      // For zero or very small values, create a circular dot
-      // To create a perfect circle with stroke-linecap: round, we need:
-      // x1 === x2 (same point, creates a dot)
-      const dotPosition = capOffset;
-      
-      // Update indicator to be a dot
-      updateElement(indicator, { 
-        x1: dotPosition, 
-        x2: dotPosition
-      });
-      
-      // Update track - start after the dot + gap
-      // The dot visual width equals the stroke width
-      const dotWidth = (strokeWidth / containerWidth * 100);
-      const trackStart = dotWidth + gap;
-      
-      updateElement(track, { 
-        x1: trackStart + capOffset,
-        x2: 100 - capOffset,
-        display: ''
-      });
-    } else {
-      // Normal case - indicator is a line from start to percentage
-      let x2 = percentage - capOffset; // Adjust endpoint for stroke-linecap
-      
-      // Update indicator position with cap offset
-      updateElement(indicator, { 
-        x1: capOffset,
-        x2: x2
-      });
-      
-      // Update track with gap
-      const trackStart = percentage + gap;
-      
-      // Update track with adjusted offsets
-      updateElement(track, { 
-        x1: trackStart + capOffset,
-        x2: 100 - capOffset,
-        display: percentage >= 100 ? 'none' : ''
-      });
-    }
-    
-    // Update buffer if present
-    if (buffer) {
-      const bufferPercentage = (options.buffer.getBuffer() / max) * 100;
-      
-      // Only display buffer if ahead of the current progress
-      if (bufferPercentage > percentage) {
-        let bufferStart;
-        
-        if (percentage === 0) {
-          // For zero state, buffer starts after the dot + gap
-          const dotWidth = (strokeWidth / containerWidth * 100);
-          bufferStart = dotWidth + gap + capOffset;
-        } else {
-          // Normal case
-          bufferStart = percentage + gap + capOffset;
-        }
-        
-        // Update buffer
-        updateElement(buffer, { 
-          x1: bufferStart,
-          x2: bufferPercentage - capOffset,
-          display: ''
-        });
-      } else {
-        // Hide buffer
-        updateElement(buffer, { display: 'none' });
-      }
-    }
+    // Add state classes for CSS to handle special cases
+    element.classList.toggle(`${getClass(PROGRESS_CLASSES.CONTAINER)}--zero`, percentage <= 0.1);
+    element.classList.toggle(`${getClass(PROGRESS_CLASSES.CONTAINER)}--complete`, percentage >= 99.9);
+    element.classList.toggle(`${getClass(PROGRESS_CLASSES.CONTAINER)}--has-buffer`, bufferPercentage > percentage);
   };
   
+  // Keep existing circular progress update (SVG-based)
   const updateCircularProgress = (percentage: number, max: number): void => {
+    // Only run if we have SVG elements
+    const svgIndicator = comp.indicator || comp.components?.indicator as SVGElement;
+    const svgTrack = comp.track || comp.components?.track as SVGElement;
+    
+    if (!svgIndicator || !svgTrack) return;
+    
     // Get circle dimensions
-    const radius = parseFloat(indicator.getAttribute('r') || '0');
+    const radius = parseFloat(svgIndicator.getAttribute('r') || '0');
     const circumference = 2 * Math.PI * radius;
     
-    // Define the gap angle
-    // const gapAngle = PROGRESS_MEASUREMENTS.CIRCULAR.GAP_ANGLE;
-    
-    // Convert gap angle to arc length
-    // const gapLength = (gapAngle / 360) * circumference;
-    
-
-
-
     // Calculate gap angle based on thickness
-    // Base gap angle + adjustment based on stroke width
-    const strokeWidth = parseFloat(indicator.getAttribute('stroke-width') || '6');
+    const strokeWidth = parseFloat(svgIndicator.getAttribute('stroke-width') || '6');
     const baseGapAngle = PROGRESS_MEASUREMENTS.CIRCULAR.GAP_ANGLE;
     const gapMultiplier = PROGRESS_MEASUREMENTS.CIRCULAR.GAP_MULTIPLIER;
-
-    // Thickness relative to the default (6px)
     const thicknessRatio = strokeWidth / PROGRESS_THICKNESS.DEFAULT;
-
-    // Scale the gap angle based on thickness (thicker = bigger gap)
     const gapAngle = baseGapAngle * (1 + (thicknessRatio - 1) * gapMultiplier);
-
     const gapLength = (gapAngle / 360) * circumference;
-
-    console.log('gapAngle', gapAngle)
-    console.log('gapLength', gapLength)
-
-    // Calculate the available length after accounting for the gap
     const availableLength = circumference - gapLength;
-    
-    // Calculate the filled portion based on percentage of available length
     const adjustedFillAmount = (percentage / 100) * availableLength;
-    
-    // Convert percentage to angle for rotation calculations
-    // This represents the angle subtended by the filled portion
     const filledPercentageAngle = (adjustedFillAmount / circumference) * 360;
-    
-    // Calculate half the gap angle
     const halfGapAngle = gapAngle / 2;
-    
-    // Indicator should start at top (0 degrees)
-    // Since SVG is already rotated -90deg by CSS, this puts it at the correct position
-    const indicatorRotation = 0;
-    
-    // Track should be positioned at the end of the indicator plus the gap
     const trackRotation = filledPercentageAngle + halfGapAngle;
 
-    let indicatorLength = `${adjustedFillAmount} ${circumference - adjustedFillAmount}`
-
+    let indicatorLength = `${adjustedFillAmount} ${circumference - adjustedFillAmount}`;
     if (percentage >= 100) {
-      indicatorLength =  `${circumference}`
+      indicatorLength = `${circumference}`;
     }
 
-    // For the indicator - rotate it clockwise from top
-    updateElement(indicator, {
-      'stroke-dasharray': indicatorLength,
-      'stroke-dashoffset': '0',
-      'transform': `rotate(${indicatorRotation}deg)`
-    });
+    // Update SVG elements
+    svgIndicator.setAttribute('stroke-dasharray', indicatorLength);
+    svgIndicator.setAttribute('stroke-dashoffset', '0');
+    svgIndicator.style.transform = 'rotate(0deg)';
     
-    // Update track
-    if (track) {
+    if (svgTrack) {
       if (percentage >= 98) {
-        track.style.display = 'none';
+        svgTrack.style.display = 'none';
       } else {
-        // The track should represent the remaining portion after accounting for the gap
         const trackLength = availableLength - adjustedFillAmount;
-        
-        updateElement(track, {
-          display: '',
-          'stroke-dasharray': `${trackLength} ${circumference}`,
-          'stroke-dashoffset': '0',
-          'transform': `rotate(${trackRotation}deg)`
-        });
+        svgTrack.setAttribute('stroke-dasharray', `${trackLength} ${circumference}`);
+        svgTrack.setAttribute('stroke-dashoffset', '0');
+        svgTrack.style.transform = `rotate(${trackRotation}deg)`;
+        svgTrack.style.display = '';
       }
     }
   };
   
-  // Combined update function - delegates to variant-specific implementation
+  // Combined update function
   const updateProgress = (value: number, max: number): void => {
     // Skip if in indeterminate state
     if (options.state.isIndeterminate()) return;
@@ -300,15 +162,13 @@ export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent =
     if (options.thickness && typeof options.thickness.getThickness === 'function') {
       return options.thickness.getThickness();
     }
-    return PROGRESS_MEASUREMENTS.COMMON.STROKE_WIDTH; // Default fallback
+    return PROGRESS_MEASUREMENTS.COMMON.STROKE_WIDTH;
   };
 
   const setThickness = (thickness: ProgressThickness): ProgressComponent => {
     if (options.thickness && typeof options.thickness.setThickness === 'function') {
-      // Update the state
       options.thickness.setThickness(thickness);
       
-      // Get the numeric thickness value
       let thicknessValue: number;
       
       if (thickness === 'thin') {
@@ -321,21 +181,10 @@ export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent =
         thicknessValue = thickness as number;
       }
       
-      // Update the DOM elements
-      if (indicator instanceof SVGElement) {
-        indicator.setAttribute('stroke-width', thicknessValue.toString());
-      }
-      
-      if (track instanceof SVGElement) {
-        track.setAttribute('stroke-width', thicknessValue.toString());
-      }
-      
-      if (buffer instanceof SVGElement) {
-        buffer.setAttribute('stroke-width', thicknessValue.toString());
-      }
-      
-      // For circular progress, we need to adjust the radius as well
       if (isCircular && indicator instanceof SVGElement) {
+
+        
+
         const svgSize = PROGRESS_MEASUREMENTS.CIRCULAR.SIZE;
         const centerPoint = svgSize / 2;
         const newRadius = centerPoint - thicknessValue / 2;
@@ -349,64 +198,53 @@ export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent =
         if (!options.state.isIndeterminate()) {
           updateProgress(options.value.getValue(), options.value.getMax());
         }
-      } else if (!isCircular) {
-        // For linear progress, adjust the height if needed
-        if (!options.state.isIndeterminate()) {
-          const height = PROGRESS_MEASUREMENTS.LINEAR.HEIGHT;
-          element.style.minHeight = `${height}px`;
-          
-          // Update the visual appearance
-          updateProgress(options.value.getValue(), options.value.getMax());
-        } else {
-          // For indeterminate, use the stroke width as the height
-          element.style.minHeight = `${thicknessValue}px`;
+
+          indicator.setAttribute('stroke-width', thicknessValue.toString());    
+          track.setAttribute('stroke-width', thicknessValue.toString());
+
+          if (buffer) {
+            buffer.setAttribute('stroke-width', thicknessValue.toString());
+          }
+        
+
+      } else {
+        // Update CSS custom property for linear progress
+        element.style.setProperty('--progress-height', `${thicknessValue}px`);
+        
+        // Update thickness classes
+        const containerClass = getClass(PROGRESS_CLASSES.CONTAINER);
+        element.classList.remove(`${containerClass}--thin`, `${containerClass}--thick`);
+        
+        if (thickness === 'thin') {
+          element.classList.add(`${containerClass}--thin`);
+        } else if (thickness === 'thick') {
+          element.classList.add(`${containerClass}--thick`);
         }
+      }
+      
+      // Recalculate if not indeterminate
+      if (!options.state.isIndeterminate()) {
+        updateProgress(options.value.getValue(), options.value.getMax());
       }
     }
     
     return api;
   };
 
-  
   let resizeTimer: number | undefined;
-  let lastResizeTime = 0;
-  const THROTTLE_DELAY = 50; // Update every 50ms during resize
-  const DEBOUNCE_DELAY = 20; // Final update after resize ends
-
-  /**
-   * Handles window resize events with both throttling (during resize) and debouncing (after resize)
-   */
   const handleResize = (): void => {
-    const now = Date.now();
-    
-    // Clear existing debounce timer
-    if (resizeTimer) {
-      clearTimeout(resizeTimer);
-    }
-    
-    // Throttle: Only update if enough time has passed since last update
-    if (now - lastResizeTime >= THROTTLE_DELAY) {
-      lastResizeTime = now;
-      
-      // Only update if not in indeterminate state
-      if (!options.state.isIndeterminate()) {
-        updateProgress(options.value.getValue(), options.value.getMax());
-      }
-    }
-    
-    // Debounce: Always schedule a final update
+    if (resizeTimer) clearTimeout(resizeTimer);
     resizeTimer = window.setTimeout(() => {
       if (!options.state.isIndeterminate()) {
         updateProgress(options.value.getValue(), options.value.getMax());
       }
-      resizeTimer = undefined;
-    }, DEBOUNCE_DELAY);
+    }, 100);
   };
   
   // Add resize listener
   window.addEventListener('resize', handleResize);
   
-  // Initialize on next frame
+  // Initialize
   requestAnimationFrame(() => {
     if (options.state.isIndeterminate()) {
       addClass(element, PROGRESS_CLASSES.INDETERMINATE);
@@ -420,17 +258,17 @@ export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent =
   const api: ProgressComponent = {
     // Element references
     element,
-    track,
-    indicator,
-    buffer,
+    track: track as any,
+    indicator: indicator as any,
+    buffer: buffer as any,
     getClass,
+    
     // Value management
     getValue: options.value.getValue,
     setValue(value: number): ProgressComponent {
       const prevValue = options.value.getValue();
       options.value.setValue(value);
       
-      // Only update UI and emit events if value actually changed
       if (prevValue !== value) {
         if (!options.state.isIndeterminate()) {
           updateProgress(value, options.value.getMax());
@@ -452,7 +290,7 @@ export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent =
     getBuffer: options.buffer.getBuffer,
     setBuffer(value: number): ProgressComponent {
       options.buffer.setBuffer(value);
-      if (!isCircular && buffer && !options.state.isIndeterminate()) {
+      if (!isCircular && !options.state.isIndeterminate()) {
         updateProgress(options.value.getValue(), options.value.getMax());
       }
       return api;
@@ -468,31 +306,6 @@ export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent =
       if (indeterminate) {
         addClass(element, PROGRESS_CLASSES.INDETERMINATE);
         element.removeAttribute('aria-valuenow');
-        
-        // For linear progress, show track at 100%
-        if (!isCircular && track) {
-          updateElement(track, {
-            display: 'block',
-            x1: 0,
-            x2: 100,
-            stroke: 'var(--mtrl-surface-container-highest)'
-          });
-        }
-        
-        // For circular progress, show track at 100% 
-        if (isCircular && track) {
-          updateElement(track, {
-            display: 'block',
-            opacity: '1',
-            stroke: 'var(--mtrl-surface-container-highest)', 
-            'stroke-dasharray': 'none'
-          });
-        }
-        
-        // Hide buffer in indeterminate mode
-        if (buffer) {
-          updateElement(buffer, { display: 'none' });
-        }
       } else {
         removeClass(element, PROGRESS_CLASSES.INDETERMINATE);
         updateProgress(options.value.getValue(), options.value.getMax());
@@ -521,17 +334,14 @@ export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent =
     },
     
     showStopIndicator(): ProgressComponent {
-      if (isCircular) return api; // Only for linear variant
+      if (isCircular) return api;
       
       if (options.stopIndicator?.show) {
         options.stopIndicator.show();
       }
       
-      // Simply add a CSS class to show/hide the pseudo-element
       if (options.value.getValue() > 0) {
         element.classList.add(`${getClass(PROGRESS_CLASSES.CONTAINER)}-show-stop`);
-        // By toggling this class, we can control the display of the :after pseudo-element
-        element.style.setProperty('--stop-indicator', 'block');
       }
       
       return api;
@@ -542,9 +352,7 @@ export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent =
         options.stopIndicator.hide();
       }
       
-      // Simply remove the CSS class
       element.classList.remove(`${getClass(PROGRESS_CLASSES.CONTAINER)}-show-stop`);
-      element.style.setProperty('--stop-indicator', 'none');
       
       return api;
     },
@@ -588,12 +396,8 @@ export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent =
     
     // Required property objects
     disabled: {
-      enable(): void {
-        options.disabled.enable();
-      },
-      disable(): void {
-        options.disabled.disable();
-      },
+      enable(): void { options.disabled.enable(); },
+      disable(): void { options.disabled.disable(); },
       isDisabled: options.disabled.isDisabled
     },
     
