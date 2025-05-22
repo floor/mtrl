@@ -196,11 +196,29 @@ export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent =
     const circumference = 2 * Math.PI * radius;
     
     // Define the gap angle
-    const gapAngle = PROGRESS_MEASUREMENTS.CIRCULAR.GAP_ANGLE;
+    // const gapAngle = PROGRESS_MEASUREMENTS.CIRCULAR.GAP_ANGLE;
     
     // Convert gap angle to arc length
-    const gapLength = (gapAngle / 360) * circumference;
+    // const gapLength = (gapAngle / 360) * circumference;
     
+
+
+
+    // Calculate gap angle based on thickness
+    // Base gap angle + adjustment based on stroke width
+    const strokeWidth = parseFloat(indicator.getAttribute('stroke-width') || '6');
+    const baseGapAngle = PROGRESS_MEASUREMENTS.CIRCULAR.GAP_ANGLE;
+    const gapMultiplier = PROGRESS_MEASUREMENTS.CIRCULAR.GAP_MULTIPLIER;
+
+    // Thickness relative to the default (6px)
+    const thicknessRatio = strokeWidth / PROGRESS_THICKNESS.DEFAULT;
+
+    // Scale the gap angle based on thickness (thicker = bigger gap)
+    const gapAngle = baseGapAngle * (1 + (thicknessRatio - 1) * gapMultiplier);
+
+    const gapLength = (gapAngle / 360) * circumference;
+
+    console.log('gapAngle', gapAngle)
     console.log('gapLength', gapLength)
 
     // Calculate the available length after accounting for the gap
