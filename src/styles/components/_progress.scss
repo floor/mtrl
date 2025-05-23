@@ -67,7 +67,7 @@ $linear-gap: 4px; // PROGRESS_MEASUREMENTS.LINEAR.GAP
       background-color: t.alpha('primary', 0.4);
       border-radius: inherit;
       // Buffer starts after indicator + gap
-      left: calc(var(--progress-value) + var(--progress-gap) / var(--progress-height) * 100%);
+      left: calc(var(--progress-value) + var(--progress-gap));
       // Buffer width is the difference between buffer and current value
       width: calc(var(--progress-buffer) - var(--progress-value));
       display: none; // Hidden by default
@@ -88,7 +88,7 @@ $linear-gap: 4px; // PROGRESS_MEASUREMENTS.LINEAR.GAP
       // Smooth animation for progress changes - this is the key improvement!
       transition: width 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
     }
-    
+
     // Special state: Zero progress (show as dot)
     &.#{$component}--zero {
       .#{$component}-indicator {
@@ -248,6 +248,23 @@ $linear-gap: 4px; // PROGRESS_MEASUREMENTS.LINEAR.GAP
     * {
       transition: none !important;
       animation: none !important;
+    }
+  }
+
+
+  &--wavy {
+    overflow: initial;
+    // height: 10px;
+    &.#{$component}--linear {
+      .#{$component}-indicator {
+        position: absolute;
+        left: 2px;
+        top: -3px;
+        height: 10px;
+        background-color: transparent;
+        background-repeat: repeat-x;
+        background-size: auto 100%;
+      }
     }
   }
 }

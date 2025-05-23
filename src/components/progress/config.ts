@@ -3,9 +3,11 @@ import {
   createComponentConfig, 
   createElementConfig
 } from '../../core/config/component';
-import { ProgressConfig } from './types';
+import { ProgressConfig, ProgressThickness, ProgressShape } from './types';
 import { 
   PROGRESS_CLASSES, 
+  PROGRESS_VARIANTS,
+  PROGRESS_SHAPES,
   PROGRESS_EVENTS,
   PROGRESS_MEASUREMENTS,
   PROGRESS_THICKNESS,
@@ -23,7 +25,8 @@ export const defaultConfig: ProgressConfig = {
   max: PROGRESS_DEFAULTS.MAX,
   buffer: PROGRESS_DEFAULTS.BUFFER,
   showLabel: PROGRESS_DEFAULTS.SHOW_LABEL,
-  thickness: 'thin' // Add default thickness
+  thickness: 'thin',
+  shape: PROGRESS_DEFAULTS.SHAPE
 };
 
 /**
@@ -250,11 +253,16 @@ export const getApiConfig = (comp, state) => {
     buffer: 0,
     indeterminate: false,
     thickness: PROGRESS_MEASUREMENTS.COMMON.STROKE_WIDTH,
+    shape: PROGRESS_DEFAULTS.SHAPE,
     labelFormatter: (v, m) => `${Math.round((v / m) * 100)}%`
   };
   
   if (safeState.thickness === undefined) {
     safeState.thickness = PROGRESS_MEASUREMENTS.COMMON.STROKE_WIDTH;
+  }
+
+  if (safeState.shape === undefined) {
+    safeState.shape = PROGRESS_DEFAULTS.SHAPE;
   }
 
   return {
@@ -316,6 +324,12 @@ export const getApiConfig = (comp, state) => {
         } else if (typeof thickness === 'number') {
           safeState.thickness = thickness;
         }
+      }
+    },
+    shape: {
+      getShape: () => safeState.shape,
+      setShape: (shape: ProgressShape) => { 
+        safeState.shape = shape; 
       }
     },
     state: {

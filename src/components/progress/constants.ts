@@ -11,6 +11,16 @@ export const PROGRESS_VARIANTS = {
 } as const;
 
 /**
+ * Progress component shapes (linear only)
+ */
+export const PROGRESS_SHAPES = {
+  /** Standard straight line progress */
+  LINE: 'line',
+  /** Wavy animated progress */
+  WAVY: 'wavy'
+} as const;
+
+/**
  * Progress component events
  */
 export const PROGRESS_EVENTS = {
@@ -32,6 +42,8 @@ export const PROGRESS_DEFAULTS = {
   MAX: 100,
   /** Buffer value for linear progress with buffer */
   BUFFER: 0,
+  /** Default shape for linear indeterminate progress */
+  SHAPE: 'line',
   /** Whether to show percentage label */
   SHOW_LABEL: false,
   /** Whether progress is indeterminate */

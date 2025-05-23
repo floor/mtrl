@@ -1,7 +1,7 @@
 // src/components/progress/features/state.ts
 
-import { ProgressConfig } from './types';
-import { PROGRESS_CLASSES } from './constants';
+import { ProgressConfig, ProgressShape } from './types';
+import { PROGRESS_CLASSES, PROGRESS_SHAPES } from './constants';
 import { addClass } from '../../core/dom';
 
 /**
@@ -12,6 +12,7 @@ interface ProgressState {
   max: number;
   buffer: number;
   indeterminate: boolean;
+  shape: ProgressShape;
   labelFormatter: (value: number, max: number) => string;
   label?: HTMLElement;
 }
@@ -28,6 +29,7 @@ interface ComponentWithLifecycle {
   setIndeterminate?: (state: boolean) => unknown;
   setValue?: (value: number) => unknown;
   setBuffer?: (value: number) => unknown;
+  setShape?: (shape: ProgressShape) => unknown;
   showLabel?: () => unknown;
   getClass?: (name: string) => string;
   [key: string]: any;
@@ -47,6 +49,15 @@ export const withState = (config: ProgressConfig) =>
     addClass(component.element, PROGRESS_CLASSES.INDETERMINATE);
     component.element.removeAttribute('aria-valuenow');
   }
+
+  // Apply shape class immediately if needed (linear only)
+  if (config.shape && config.shape !== PROGRESS_SHAPES.LINE && component.element) {
+    const isCircular = component.element.classList.contains(component.getClass?.(PROGRESS_CLASSES.CIRCULAR) || '');
+    if (!isCircular) {
+      const containerClass = component.getClass?.(PROGRESS_CLASSES.CONTAINER) || '';
+      addClass(component.element, `${containerClass}--${config.shape}`);
+    }
+  }
   
   // Initialize state values
   const state: ProgressState = {
@@ -54,6 +65,7 @@ export const withState = (config: ProgressConfig) =>
     max: config.max ?? 100,
     buffer: config.buffer ?? 0,
     indeterminate: config.indeterminate === true,
+    shape: config.shape ?? PROGRESS_SHAPES.LINE,
     labelFormatter: (v: number, m: number): string => `${Math.round((v / m) * 100)}%`
   };
 
@@ -76,6 +88,11 @@ export const withState = (config: ProgressConfig) =>
             if (config.buffer !== undefined) {
               component.setBuffer?.(state.buffer);
             }
+          }
+
+          // Set initial shape if configured (and not default)
+          if (state.shape !== PROGRESS_SHAPES.LINE && component.setShape) {
+            component.setShape(state.shape);
           }
           
           // Show label if configured

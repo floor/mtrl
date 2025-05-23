@@ -13,6 +13,12 @@ export type ProgressVariant = 'linear' | 'circular';
 export type ProgressThickness = 'thin' | 'default' | 'thick' | number;
 
 /**
+ * Progress shape options (linear only)
+ * @category Components
+ */
+export type ProgressShape = 'line' | 'wavy';
+
+/**
  * Progress component event types
  * @category Components
  */
@@ -64,6 +70,13 @@ export interface ProgressConfig {
    * @default 'default'
    */
   thickness?: ProgressThickness;
+
+  /** 
+   * Shape of the linear indeterminate progress animation
+   * Only affects linear variant in indeterminate state
+   * @default 'line'
+   */
+  shape?: ProgressShape;
 
   /** 
    * Whether to show text label with percentage
@@ -206,6 +219,20 @@ export interface ProgressComponent {
    * @returns Current thickness in pixels
    */
   getThickness: () => number;
+
+  /**
+   * Sets the shape of the linear indeterminate progress animation
+   * Only affects linear variant in indeterminate state
+   * @param shape - Shape value ('line' or 'wavy')
+   * @returns The progress component for chaining
+   */
+  setShape: (shape: ProgressShape) => ProgressComponent;
+  
+  /**
+   * Gets the current shape value
+   * @returns Current shape
+   */
+  getShape: () => ProgressShape;
   
   /**
    * Sets the indeterminate state

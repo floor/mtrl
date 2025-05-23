@@ -1,13 +1,16 @@
 // src/components/progress/api.ts - Clean API using CSS custom properties
 
-import { ProgressComponent, ProgressThickness } from './types';
+import { ProgressComponent, ProgressThickness, ProgressShape } from './types';
 import { 
   PROGRESS_CLASSES, 
   PROGRESS_EVENTS,
   PROGRESS_MEASUREMENTS,
-  PROGRESS_THICKNESS
+  PROGRESS_THICKNESS,
+  PROGRESS_SHAPES
 } from './constants';
 import { addClass, removeClass } from '../../core/dom';
+import wavySvg from './wavy.svg'
+
 
 /**
  * API configuration options for progress component
@@ -36,6 +39,10 @@ interface ApiOptions {
   thickness?: {
     getThickness: () => number;
     setThickness: (thickness: ProgressThickness) => void;
+  };
+  shape?: {
+    getShape: () => ProgressShape;
+    setShape: (shape: ProgressShape) => void;
   };
   state: {
     setIndeterminate: (indeterminate: boolean) => void;
@@ -182,9 +189,6 @@ export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent =
       }
       
       if (isCircular && indicator instanceof SVGElement) {
-
-        
-
         const svgSize = PROGRESS_MEASUREMENTS.CIRCULAR.SIZE;
         const centerPoint = svgSize / 2;
         const newRadius = centerPoint - thicknessValue / 2;
@@ -225,6 +229,48 @@ export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent =
       // Recalculate if not indeterminate
       if (!options.state.isIndeterminate()) {
         updateProgress(options.value.getValue(), options.value.getMax());
+      }
+    }
+    
+    return api;
+  };
+
+  const getShape = (): ProgressShape => {
+    if (options.shape && typeof options.shape.getShape === 'function') {
+      return options.shape.getShape();
+    }
+    return PROGRESS_SHAPES.LINE;
+  };
+
+  const setShape = (shape: ProgressShape): ProgressComponent => {
+    if (isCircular) {
+      // Shape only applies to linear variant
+      return api;
+    }
+    
+    if (options.shape && typeof options.shape.setShape === 'function') {
+      options.shape.setShape(shape);
+      
+      const containerClass = getClass(PROGRESS_CLASSES.CONTAINER);
+      
+      // Remove existing shape classes
+      Object.values(PROGRESS_SHAPES).forEach(shapeValue => {
+        element.classList.remove(`${containerClass}--${shapeValue}`);
+      });
+      
+      // Add new shape class if not the default 'line'
+      if (shape !== PROGRESS_SHAPES.LINE) {
+        element.classList.add(`${containerClass}--${shape}`);
+      }
+
+      // Apply wavy SVG background to indicator element
+      if (shape === 'wavy' && indicator) {
+        console.log('shape wavy', wavySvg)
+        const wavySvgDataUrl = `data:image/svg+xml;base64,${btoa(wavySvg)}`;
+        indicator.style.backgroundImage = `url("${wavySvgDataUrl}")`;
+      } else if (indicator) {
+        // Remove wavy background when not wavy
+        indicator.style.backgroundImage = '';
       }
     }
     
@@ -332,33 +378,12 @@ export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent =
       }
       return api;
     },
-    
-    showStopIndicator(): ProgressComponent {
-      if (isCircular) return api;
-      
-      if (options.stopIndicator?.show) {
-        options.stopIndicator.show();
-      }
-      
-      if (options.value.getValue() > 0) {
-        element.classList.add(`${getClass(PROGRESS_CLASSES.CONTAINER)}-show-stop`);
-      }
-      
-      return api;
-    },
-
-    hideStopIndicator(): ProgressComponent {
-      if (options.stopIndicator?.hide) {
-        options.stopIndicator.hide();
-      }
-      
-      element.classList.remove(`${getClass(PROGRESS_CLASSES.CONTAINER)}-show-stop`);
-      
-      return api;
-    },
-
     getThickness,
     setThickness,
+
+    // Shape management (linear only)
+    getShape,
+    setShape,
 
     // State management
     enable(): ProgressComponent {
