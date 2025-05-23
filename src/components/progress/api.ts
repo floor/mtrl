@@ -55,7 +55,7 @@ interface ApiOptions {
  */
 export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent => {
   // Get element references
-  const { element, getClass, canvas, draw } = comp;
+  const { element, getClass, canvas } = comp;
   
   // Determine variant once
   const isCircular = element.classList.contains(getClass(PROGRESS_CLASSES.CIRCULAR));
@@ -63,18 +63,6 @@ export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent =
   // Create event emitter helper
   const emitEvent = (name: string, detail: Record<string, any>): void => {
     element.dispatchEvent(new CustomEvent(name, { detail }));
-  };
-  
-  // Internal state
-  const state = {
-    value: options.value.getValue(),
-    max: options.value.getMax(),
-    buffer: options.buffer.getBuffer(),
-    indeterminate: options.state.isIndeterminate(),
-    thickness: typeof options.thickness?.getThickness() === 'number' 
-      ? options.thickness.getThickness() 
-      : PROGRESS_THICKNESS.THIN,
-    shape: options.shape?.getShape() ?? PROGRESS_SHAPES.LINE
   };
   
   // Update progress and redraw canvas
@@ -90,19 +78,17 @@ export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent =
       label.textContent = formatter(value, max);
     }
     
-    // Redraw canvas
-    if (draw) {
-      draw();
+    // Redraw canvas using component's draw function
+    if (typeof comp.draw === 'function') {
+      comp.draw();
     }
   };
 
   const getThickness = (): number => {
-    return state.thickness;
+    return options.thickness?.getThickness() || PROGRESS_THICKNESS.THIN;
   };
 
   const setThickness = (thickness: ProgressThickness): ProgressComponent => {
-    console.log('API setThickness called with:', thickness);
-    
     // Convert thickness to number for state
     const numericThickness = typeof thickness === 'number' 
       ? thickness 
@@ -111,7 +97,9 @@ export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent =
         : PROGRESS_THICKNESS.THIN;
     
     // Update internal state
-    state.thickness = numericThickness;
+    if (options.thickness) {
+      options.thickness.setThickness(thickness);
+    }
     
     // Update thickness classes for styling
     const containerClass = getClass(PROGRESS_CLASSES.CONTAINER);
@@ -128,7 +116,7 @@ export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent =
       comp.setThickness(thickness);
     }
     
-    return api;
+    return comp;
   };
 
   const getShape = (): ProgressShape => {
@@ -141,7 +129,7 @@ export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent =
   const setShape = (shape: ProgressShape): ProgressComponent => {
     if (isCircular) {
       // Shape only applies to linear variant
-      return api;
+      return comp;
     }
     
     if (options.shape && typeof options.shape.setShape === 'function') {
@@ -160,12 +148,12 @@ export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent =
       }
       
       // Redraw canvas with new shape
-      if (draw) {
-        draw();
+      if (typeof comp.draw === 'function') {
+        comp.draw();
       }
     }
     
-    return api;
+    return comp;
   };
 
   // Handle indeterminate state by toggling CSS classes and wavy animation
@@ -188,8 +176,8 @@ export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent =
     }
     
     // Always redraw for state change
-    if (draw) {
-      draw();
+    if (typeof comp.draw === 'function') {
+      comp.draw();
     }
   };
   
@@ -208,47 +196,52 @@ export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent =
     getClass,
     
     // Value management
-    getValue: () => state.value,
+    getValue() {
+      return options.value.getValue();
+    },
+    
     setValue(value: number): ProgressComponent {
-      const prevValue = state.value;
-      state.value = Math.max(0, Math.min(state.max, value));
+      const prevValue = options.value.getValue();
+      options.value.setValue(value);
       
       if (prevValue !== value) {
-        updateProgress(state.value, state.max);
+        updateProgress(value, options.value.getMax());
         
-        const detail = { value: state.value, max: state.max };
+        const detail = { value, max: options.value.getMax() };
         emitEvent(PROGRESS_EVENTS.CHANGE, detail);
         
-        if (state.value >= state.max) {
+        if (value >= options.value.getMax()) {
           emitEvent(PROGRESS_EVENTS.COMPLETE, detail);
         }
       }
       
       return api;
     },
-    getMax: () => state.max,
+    getMax() {
+      return options.value.getMax();
+    },
     
     // Buffer management
-    getBuffer: () => state.buffer,
+    getBuffer: () => options.buffer.getBuffer(),
     setBuffer(value: number): ProgressComponent {
-      state.buffer = Math.max(0, Math.min(state.max, value));
-      if (!state.indeterminate && draw) {
-        draw();
+      options.buffer.setBuffer(value);
+      if (!options.state.isIndeterminate() && typeof comp.draw === 'function') {
+        comp.draw();
       }
       return api;
     },
     
     // Indeterminate state
     setIndeterminate(indeterminate: boolean): ProgressComponent {
-      const wasIndeterminate = state.indeterminate;
+      const wasIndeterminate = options.state.isIndeterminate();
       if (wasIndeterminate === indeterminate) return api;
       
-      state.indeterminate = indeterminate;
+      options.state.setIndeterminate(indeterminate);
       handleIndeterminateState(indeterminate);
       
       return api;
     },
-    isIndeterminate: () => state.indeterminate,
+    isIndeterminate: () => options.state.isIndeterminate(),
     
     // Label management
     showLabel(): ProgressComponent {
@@ -263,7 +256,7 @@ export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent =
       if (options.label?.format) options.label.format(formatter);
       const label = comp.label || comp.state?.label;
       if (label) {
-        label.textContent = formatter(state.value, state.max);
+        label.textContent = formatter(options.value.getValue(), options.value.getMax());
       }
       return api;
     },

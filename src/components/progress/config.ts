@@ -88,43 +88,33 @@ export const getElementConfig = (config: ProgressConfig) => {
 
 /**
  * Creates API configuration for the Progress component
- * 
- * @param {Object} comp - Component with state management features
- * @param {Object} state - State object containing component state
- * @returns {Object} API configuration object
  */
 export const getApiConfig = (comp, state) => {
-  // Ensure we have a valid state object
-  const safeState = state || {
-    value: 0,
-    max: 100,
-    buffer: 0,
-    indeterminate: false,
-    thickness: 'thin', // Store original thickness value
-    shape: PROGRESS_DEFAULTS.SHAPE,
-    labelFormatter: (v, m) => `${Math.round((v / m) * 100)}%`
-  };
-  
-  if (safeState.thickness === undefined) {
-    safeState.thickness = 'thin';
-  }
-
-  if (safeState.shape === undefined) {
-    safeState.shape = PROGRESS_DEFAULTS.SHAPE;
+  // Use component's state directly
+  if (!comp.state) {
+    comp.state = {
+      value: 0,
+      max: 100,
+      buffer: 0,
+      indeterminate: false,
+      thickness: 'thin',
+      shape: PROGRESS_DEFAULTS.SHAPE,
+      labelFormatter: (v, m) => `${Math.round((v / m) * 100)}%`
+    };
   }
 
   return {
     value: {
-      getValue: () => safeState.value,
+      getValue: () => comp.state.value,
       setValue: (value: number) => { 
-        safeState.value = Math.max(0, Math.min(safeState.max, value)); 
+        comp.state.value = Math.max(0, Math.min(comp.state.max, value));
       },
-      getMax: () => safeState.max
+      getMax: () => comp.state.max
     },
     buffer: {
-      getBuffer: () => safeState.buffer,
+      getBuffer: () => comp.state.buffer,
       setBuffer: (value: number) => { 
-        safeState.buffer = Math.max(0, Math.min(safeState.max, value)); 
+        comp.state.buffer = Math.max(0, Math.min(comp.state.max, value));
       }
     },
     disabled: {
@@ -134,31 +124,30 @@ export const getApiConfig = (comp, state) => {
     },
     label: {
       show: () => {
-        if (!safeState.label) {
+        if (!comp.state.label) {
           const label = document.createElement('div');
           label.className = `${comp.getClass(PROGRESS_CLASSES.LABEL)}`;
-          label.textContent = safeState.labelFormatter(safeState.value, safeState.max);
+          label.textContent = comp.state.labelFormatter(comp.state.value, comp.state.max);
           comp.element.appendChild(label);
-          safeState.label = label;
+          comp.state.label = label;
           comp.label = label;
         }
       },
       hide: () => {
-        if (safeState.label) {
-          safeState.label.remove();
-          safeState.label = undefined;
+        if (comp.state.label) {
+          comp.state.label.remove();
+          comp.state.label = undefined;
           comp.label = undefined;
         }
       },
       format: (formatter) => { 
-        safeState.labelFormatter = formatter; 
+        comp.state.labelFormatter = formatter; 
       },
-      formatter: safeState.labelFormatter
+      formatter: comp.state.labelFormatter
     },
     thickness: {
       getThickness: () => {
-        // Convert to pixel value only when getting the thickness
-        const thickness = safeState.thickness;
+        const thickness = comp.state.thickness;
         if (thickness === 'thin') {
           return PROGRESS_THICKNESS.THIN;
         } else if (thickness === 'thick') {
@@ -169,26 +158,23 @@ export const getApiConfig = (comp, state) => {
         return PROGRESS_THICKNESS.THIN;
       },
       setThickness: (thickness: ProgressThickness) => {
-        // Store the original thickness value
-        safeState.thickness = thickness;
-
-        // Trigger redraw after thickness change
+        comp.state.thickness = thickness;
         if (comp.draw) {
           comp.draw();
         }
       }
     },
     shape: {
-      getShape: () => safeState.shape,
+      getShape: () => comp.state.shape,
       setShape: (shape: ProgressShape) => { 
-        safeState.shape = shape; 
+        comp.state.shape = shape;
       }
     },
     state: {
       setIndeterminate: (indeterminate: boolean) => { 
-        safeState.indeterminate = indeterminate; 
+        comp.state.indeterminate = indeterminate;
       },
-      isIndeterminate: () => safeState.indeterminate
+      isIndeterminate: () => comp.state.indeterminate
     },
     lifecycle: {
       destroy: () => comp.lifecycle?.destroy?.() || undefined

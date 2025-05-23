@@ -30,7 +30,6 @@ interface ComponentWithLifecycle {
     destroy?: () => void;
   };
   getClass?: (name: string) => string;
-  setThickness?: (thickness: number | string) => void;
   [key: string]: any;
 }
 

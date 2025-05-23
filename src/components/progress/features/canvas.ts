@@ -38,38 +38,28 @@ interface CanvasComponent {
  * Gets the stroke width value from the thickness config
  */
 const getStrokeWidth = (thickness?: string | number): number => {
-  console.log('getStrokeWidth called with thickness:', thickness);
-  
   // Handle numeric values first
   if (typeof thickness === 'number') {
-    const value = Math.max(thickness, PROGRESS_MEASUREMENTS.LINEAR.MIN_HEIGHT);
-    console.log('Numeric thickness value:', value);
-    return value;
+    return Math.max(thickness, PROGRESS_MEASUREMENTS.LINEAR.MIN_HEIGHT);
   }
   
   // Handle string values (named presets)
   if (typeof thickness === 'string') {
-    let value: number;
     switch (thickness) {
       case 'thin':
-        value = PROGRESS_THICKNESS.THIN;
-        break;
+        return PROGRESS_THICKNESS.THIN;
       case 'thick':
-        value = PROGRESS_THICKNESS.THICK;
-        break;
+        return PROGRESS_THICKNESS.THICK;
       default:
         // If it's a string that can be parsed as a number, use that
         const numValue = parseFloat(thickness);
-        value = !isNaN(numValue) 
+        return !isNaN(numValue) 
           ? Math.max(numValue, PROGRESS_MEASUREMENTS.LINEAR.MIN_HEIGHT)
           : PROGRESS_THICKNESS.THIN;
     }
-    console.log('String thickness value:', value, 'from input:', thickness);
-    return value;
   }
   
   // Default to thin if undefined or invalid
-  console.log('Using default thickness:', PROGRESS_THICKNESS.THIN);
   return PROGRESS_THICKNESS.THIN;
 };
 
@@ -82,21 +72,8 @@ const updateCanvasDimensions = (
   isCircular: boolean,
   config?: ProgressConfig
 ): void => {
-  console.log('updateCanvasDimensions called with config:', {
-    thickness: config?.thickness,
-    isCircular,
-    currentCanvasHeight: canvas.style.height,
-    currentCanvasWidth: canvas.style.width
-  });
-
   const pixelRatio = window.devicePixelRatio || 1;
   const strokeWidth = getStrokeWidth(config?.thickness);
-  
-  console.log('Calculated dimensions:', {
-    pixelRatio,
-    strokeWidth,
-    isCircular
-  });
 
   if (isCircular) {
     // For circular progress, maintain square dimensions
@@ -110,10 +87,7 @@ const updateCanvasDimensions = (
   } else {
     // For linear progress, update height based on thickness
     const progressElement = canvas.parentElement;
-    if (!progressElement) {
-      console.warn('No parent element found for canvas');
-      return;
-    }
+    if (!progressElement) return;
     
     const progressWidth = progressElement.getBoundingClientRect().width || progressElement.offsetWidth;
     const width = Math.max(progressWidth, 200); // Ensure minimum width
@@ -124,13 +98,6 @@ const updateCanvasDimensions = (
       // Add extra height for wavy shape to accommodate the wave
       height = Math.max(height + 6, 10);
     }
-    
-    console.log('Setting canvas dimensions:', {
-      width,
-      height,
-      styleHeight: `${height}px`,
-      actualHeight: Math.round(height * pixelRatio)
-    });
     
     // Update canvas dimensions and style
     canvas.style.width = `${width}px`;
@@ -148,15 +115,6 @@ const updateCanvasDimensions = (
     const ctx = context.ctx;
     ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform
     ctx.scale(pixelRatio, pixelRatio);
-
-    console.log('Final canvas dimensions:', {
-      styleWidth: canvas.style.width,
-      styleHeight: canvas.style.height,
-      actualWidth: canvas.width,
-      actualHeight: canvas.height,
-      contextWidth: context.width,
-      contextHeight: context.height
-    });
   }
 };
 
@@ -164,11 +122,6 @@ const updateCanvasDimensions = (
  * Sets up canvas with proper pixel ratio and dimensions
  */
 const setupCanvas = (canvas: HTMLCanvasElement, isCircular: boolean, config?: ProgressConfig): CanvasContext => {
-  console.log('setupCanvas called with config:', {
-    thickness: config?.thickness,
-    isCircular
-  });
-
   const pixelRatio = window.devicePixelRatio || 1;
   const ctx = canvas.getContext('2d')!;
   
@@ -450,11 +403,6 @@ const drawLinearProgress = (
  */
 export const withCanvas = (config: ProgressConfig) => 
   (component: any): CanvasComponent => {
-    console.log('withCanvas called with config:', {
-      thickness: config.thickness,
-      variant: config.variant
-    });
-    
     const isCircular = config.variant === PROGRESS_VARIANTS.CIRCULAR;
     
     // Create canvas element
@@ -479,8 +427,6 @@ export const withCanvas = (config: ProgressConfig) =>
     
     const initializeCanvas = (): boolean => {
       try {
-        console.log('Initializing canvas with thickness:', currentThickness);
-
         // Initialize with the current thickness
         canvasContext = setupCanvas(canvas, isCircular, {
           ...config,
@@ -520,21 +466,40 @@ export const withCanvas = (config: ProgressConfig) =>
     // Drawing function with animation support
     const draw = (animationTime: number = 0): void => {
       // Ensure canvas is initialized
-      if (!canvasContext) return;
+      if (!canvasContext) {
+        return;
+      }
       
-      // Get values from component API
-      const value = component.getValue?.() ?? config.value ?? 0;
-      const max = component.getMax?.() ?? config.max ?? 100;
-      const buffer = component.getBuffer?.() ?? config.buffer ?? 0;
-      const isIndeterminate = component.isIndeterminate?.() ?? config.indeterminate ?? false;
+      // Get values from component state
+      const state = component.state;
+      if (!state) {
+        // Use config values as fallback
+        const value = config.value ?? 0;
+        const max = config.max ?? 100;
+        const buffer = config.buffer ?? 0;
+        const isIndeterminate = config.indeterminate ?? false;
+        
+        // Draw with config values
+        const currentConfig = {
+          ...config,
+          thickness: currentThickness
+        };
+        
+        updateCanvasDimensions(canvas, canvasContext, isCircular, currentConfig);
+        
+        if (isCircular) {
+          drawCircularProgress(canvasContext, currentConfig, value, max, isIndeterminate);
+        } else {
+          drawLinearProgress(canvasContext, currentConfig, value, max, buffer, isIndeterminate, animationTime);
+        }
+        return;
+      }
       
-      console.log('Draw called with:', {
-        thickness: currentThickness,
-        value,
-        max,
-        buffer,
-        isIndeterminate
-      });
+      // Use state values directly
+      const value = state.value;
+      const max = state.max;
+      const buffer = state.buffer;
+      const isIndeterminate = state.indeterminate;
       
       // Create a new config object with the current thickness
       const currentConfig = {
@@ -577,15 +542,6 @@ export const withCanvas = (config: ProgressConfig) =>
       if (!canvasContext) return;
       
       try {
-        // Get current thickness from state or config
-        const currentThickness = component.state?.thickness ?? config.thickness;
-        console.log('Resize called with state:', {
-          stateThickness: component.state?.thickness,
-          configThickness: config.thickness,
-          currentThickness
-        });
-        
-        // Create a new config object with the current thickness
         const currentConfig = {
           ...config,
           thickness: currentThickness
@@ -604,10 +560,6 @@ export const withCanvas = (config: ProgressConfig) =>
     const handleResize = (): void => {
       // Only resize if canvas is actually visible and has dimensions
       if (component.element.offsetWidth > 0 || isCircular) {
-        console.log('Handle resize called with state:', {
-          stateThickness: component.state?.thickness,
-          configThickness: config.thickness
-        });
         resize();
       }
     };
@@ -647,8 +599,6 @@ export const withCanvas = (config: ProgressConfig) =>
     
     // Add setThickness method to component
     component.setThickness = (thickness: ProgressThickness) => {
-      console.log('Canvas setThickness called with:', thickness);
-      
       // Update current thickness
       currentThickness = thickness;
       
