@@ -43,7 +43,6 @@ $linear-gap: 4px;
   // Linear progress variant
   &--linear {
     width: 100%;
-    height: $linear-height;
     min-height: $linear-height;
     margin: 0 4px;
     border-radius: calc(#{$linear-height} / 2);

@@ -10,7 +10,7 @@ export type ProgressVariant = 'linear' | 'circular';
  * Progress thickness options
  * @category Components
  */
-export type ProgressThickness = 'thin' | 'default' | 'thick' | number;
+export type ProgressThickness = 'thin' | 'thick' | number;
 
 /**
  * Progress shape options (linear only)

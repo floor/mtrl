@@ -23,7 +23,7 @@ export const defaultConfig: ProgressConfig = {
   max: PROGRESS_DEFAULTS.MAX,
   buffer: PROGRESS_DEFAULTS.BUFFER,
   showLabel: PROGRESS_DEFAULTS.SHOW_LABEL,
-  thickness: 'default',
+  thickness: 'thin',
   shape: PROGRESS_DEFAULTS.SHAPE
 };
 
@@ -74,13 +74,6 @@ export const getElementConfig = (config: ProgressConfig) => {
     isCircular ? PROGRESS_CLASSES.CIRCULAR : PROGRESS_CLASSES.LINEAR
   ].filter(Boolean);
   
-  // Add thickness class if specified
-  if (config.thickness === 'thin') {
-    classList.push(`${PROGRESS_CLASSES.CONTAINER}--thin`);
-  } else if (config.thickness === 'thick') {
-    classList.push(`${PROGRESS_CLASSES.CONTAINER}--thick`);
-  }
-  
   // Add shape class for linear progress
   if (!isCircular && config.shape && config.shape !== PROGRESS_SHAPES.LINE) {
     classList.push(`${PROGRESS_CLASSES.CONTAINER}--${config.shape}`);
@@ -107,13 +100,13 @@ export const getApiConfig = (comp, state) => {
     max: 100,
     buffer: 0,
     indeterminate: false,
-    thickness: PROGRESS_MEASUREMENTS.COMMON.STROKE_WIDTH,
+    thickness: 'thin', // Store original thickness value
     shape: PROGRESS_DEFAULTS.SHAPE,
     labelFormatter: (v, m) => `${Math.round((v / m) * 100)}%`
   };
   
   if (safeState.thickness === undefined) {
-    safeState.thickness = PROGRESS_MEASUREMENTS.COMMON.STROKE_WIDTH;
+    safeState.thickness = 'thin';
   }
 
   if (safeState.shape === undefined) {
@@ -163,17 +156,25 @@ export const getApiConfig = (comp, state) => {
       formatter: safeState.labelFormatter
     },
     thickness: {
-      getThickness: () => safeState.thickness,
-      setThickness: (thickness: ProgressThickness) => {
-        // Convert named presets to pixel values
+      getThickness: () => {
+        // Convert to pixel value only when getting the thickness
+        const thickness = safeState.thickness;
         if (thickness === 'thin') {
-          safeState.thickness = PROGRESS_THICKNESS.THIN;
+          return PROGRESS_THICKNESS.THIN;
         } else if (thickness === 'thick') {
-          safeState.thickness = PROGRESS_THICKNESS.THICK;
-        } else if (thickness === 'default') {
-          safeState.thickness = PROGRESS_THICKNESS.DEFAULT;
+          return PROGRESS_THICKNESS.THICK;
         } else if (typeof thickness === 'number') {
-          safeState.thickness = thickness;
+          return thickness;
+        }
+        return PROGRESS_THICKNESS.THIN;
+      },
+      setThickness: (thickness: ProgressThickness) => {
+        // Store the original thickness value
+        safeState.thickness = thickness;
+
+        // Trigger redraw after thickness change
+        if (comp.draw) {
+          comp.draw();
         }
       }
     },

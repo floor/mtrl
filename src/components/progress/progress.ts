@@ -52,10 +52,10 @@ const createProgress = (config: ProgressConfig = {}): ProgressComponent => {
       withElement(getElementConfig(baseConfig)), // Simple container element
       withVariant(baseConfig),                   // Add variant classes
       withDisabled(baseConfig),                  // Add disabled state
-      withState(baseConfig),                     // Add state management
-      withCanvas(baseConfig),                    // Add canvas rendering (replaces withLayout + withDom)
-      // Add API after canvas is set up
+      withCanvas(baseConfig),                    // Add canvas rendering first
+      withState(baseConfig),                     // Add state management before API
       comp => {
+        // Add API after state to ensure state is available
         return withAPI(getApiConfig(comp, comp.state))(comp);
       },
       withLifecycle()

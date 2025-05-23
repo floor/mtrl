@@ -65,13 +65,25 @@ export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent =
     element.dispatchEvent(new CustomEvent(name, { detail }));
   };
   
+  // Internal state
+  const state = {
+    value: options.value.getValue(),
+    max: options.value.getMax(),
+    buffer: options.buffer.getBuffer(),
+    indeterminate: options.state.isIndeterminate(),
+    thickness: typeof options.thickness?.getThickness() === 'number' 
+      ? options.thickness.getThickness() 
+      : PROGRESS_THICKNESS.THIN,
+    shape: options.shape?.getShape() ?? PROGRESS_SHAPES.LINE
+  };
+  
   // Update progress and redraw canvas
   const updateProgress = (value: number, max: number): void => {
     // Update ARIA attribute
     element.setAttribute('aria-valuenow', value.toString());
     
     // Update label if present
-    const label = comp.label || comp.state?.label;
+    const label = comp.label;
     if (label) {
       const formatter = options.label?.formatter || 
         ((v: number, m: number) => `${Math.round((v / m) * 100)}%`);
@@ -85,30 +97,35 @@ export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent =
   };
 
   const getThickness = (): number => {
-    if (options.thickness && typeof options.thickness.getThickness === 'function') {
-      return options.thickness.getThickness();
-    }
-    return PROGRESS_THICKNESS.DEFAULT;
+    return state.thickness;
   };
 
   const setThickness = (thickness: ProgressThickness): ProgressComponent => {
-    if (options.thickness && typeof options.thickness.setThickness === 'function') {
-      options.thickness.setThickness(thickness);
-      
-      // Update thickness classes for styling
-      const containerClass = getClass(PROGRESS_CLASSES.CONTAINER);
-      element.classList.remove(`${containerClass}--thin`, `${containerClass}--thick`);
-      
-      if (thickness === 'thin') {
-        element.classList.add(`${containerClass}--thin`);
-      } else if (thickness === 'thick') {
-        element.classList.add(`${containerClass}--thick`);
-      }
-      
-      // Redraw canvas with new thickness
-      if (draw) {
-        draw();
-      }
+    console.log('API setThickness called with:', thickness);
+    
+    // Convert thickness to number for state
+    const numericThickness = typeof thickness === 'number' 
+      ? thickness 
+      : thickness === 'thick' 
+        ? PROGRESS_THICKNESS.THICK 
+        : PROGRESS_THICKNESS.THIN;
+    
+    // Update internal state
+    state.thickness = numericThickness;
+    
+    // Update thickness classes for styling
+    const containerClass = getClass(PROGRESS_CLASSES.CONTAINER);
+    element.classList.remove(`${containerClass}--thin`, `${containerClass}--thick`);
+    
+    if (thickness === 'thin') {
+      element.classList.add(`${containerClass}--thin`);
+    } else if (thickness === 'thick') {
+      element.classList.add(`${containerClass}--thick`);
+    }
+    
+    // Call component's setThickness to update canvas
+    if (comp.setThickness) {
+      comp.setThickness(thickness);
     }
     
     return api;
@@ -185,37 +202,37 @@ export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent =
   const api: ProgressComponent = {
     // Element references
     element,
-    track: canvas as any, // Canvas serves as both track and indicator
+    track: canvas as any,
     indicator: canvas as any,
     buffer: canvas as any,
     getClass,
     
     // Value management
-    getValue: options.value.getValue,
+    getValue: () => state.value,
     setValue(value: number): ProgressComponent {
-      const prevValue = options.value.getValue();
-      options.value.setValue(value);
+      const prevValue = state.value;
+      state.value = Math.max(0, Math.min(state.max, value));
       
       if (prevValue !== value) {
-        updateProgress(value, options.value.getMax());
+        updateProgress(state.value, state.max);
         
-        const detail = { value, max: options.value.getMax() };
+        const detail = { value: state.value, max: state.max };
         emitEvent(PROGRESS_EVENTS.CHANGE, detail);
         
-        if (value >= options.value.getMax()) {
+        if (state.value >= state.max) {
           emitEvent(PROGRESS_EVENTS.COMPLETE, detail);
         }
       }
       
       return api;
     },
-    getMax: options.value.getMax,
+    getMax: () => state.max,
     
     // Buffer management
-    getBuffer: options.buffer.getBuffer,
+    getBuffer: () => state.buffer,
     setBuffer(value: number): ProgressComponent {
-      options.buffer.setBuffer(value);
-      if (!options.state.isIndeterminate() && draw) {
+      state.buffer = Math.max(0, Math.min(state.max, value));
+      if (!state.indeterminate && draw) {
         draw();
       }
       return api;
@@ -223,15 +240,15 @@ export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent =
     
     // Indeterminate state
     setIndeterminate(indeterminate: boolean): ProgressComponent {
-      const wasIndeterminate = options.state.isIndeterminate();
+      const wasIndeterminate = state.indeterminate;
       if (wasIndeterminate === indeterminate) return api;
       
-      options.state.setIndeterminate(indeterminate);
+      state.indeterminate = indeterminate;
       handleIndeterminateState(indeterminate);
       
       return api;
     },
-    isIndeterminate: options.state.isIndeterminate,
+    isIndeterminate: () => state.indeterminate,
     
     // Label management
     showLabel(): ProgressComponent {
@@ -246,7 +263,7 @@ export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent =
       if (options.label?.format) options.label.format(formatter);
       const label = comp.label || comp.state?.label;
       if (label) {
-        label.textContent = formatter(options.value.getValue(), options.value.getMax());
+        label.textContent = formatter(state.value, state.max);
       }
       return api;
     },

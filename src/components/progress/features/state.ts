@@ -1,7 +1,7 @@
 // src/components/progress/features/state.ts - Canvas-compatible state management
 
 import { ProgressConfig, ProgressShape } from '../types';
-import { PROGRESS_CLASSES, PROGRESS_SHAPES } from '../constants';
+import { PROGRESS_CLASSES, PROGRESS_SHAPES, PROGRESS_THICKNESS } from '../constants';
 import { addClass } from '../../../core/dom';
 
 /**
@@ -12,7 +12,7 @@ interface ProgressState {
   max: number;
   buffer: number;
   indeterminate: boolean;
-  thickness: number;
+  thickness: number | string; // Allow both number and string for thickness
   shape: ProgressShape;
   labelFormatter: (value: number, max: number) => string;
   label?: HTMLElement;
@@ -30,6 +30,7 @@ interface ComponentWithLifecycle {
     destroy?: () => void;
   };
   getClass?: (name: string) => string;
+  setThickness?: (thickness: number | string) => void;
   [key: string]: any;
 }
 
@@ -48,6 +49,15 @@ export const withState = (config: ProgressConfig) =>
     component.element.removeAttribute('aria-valuenow');
   }
 
+  // Remove any existing thickness classes - we'll handle thickness via canvas
+  if (component.element) {
+    const containerClass = component.getClass?.(PROGRESS_CLASSES.CONTAINER) || '';
+    component.element.classList.remove(
+      `${containerClass}--thin`,
+      `${containerClass}--thick`
+    );
+  }
+
   // Apply shape class immediately if needed (linear only)
   if (config.shape && config.shape !== PROGRESS_SHAPES.LINE && component.element) {
     const isCircular = component.element.classList.contains(component.getClass?.(PROGRESS_CLASSES.CIRCULAR) || '');
@@ -63,59 +73,43 @@ export const withState = (config: ProgressConfig) =>
     max: config.max ?? 100,
     buffer: config.buffer ?? 0,
     indeterminate: config.indeterminate === true,
-    thickness: typeof config.thickness === 'number' ? config.thickness : 6,
+    // Store thickness as is (string or number) to maintain the original value
+    thickness: config.thickness ?? 'thin',
     shape: config.shape ?? PROGRESS_SHAPES.LINE,
-    labelFormatter: (v: number, m: number): string => `${Math.round((v / m) * 100)}%`
+    labelFormatter: config.labelFormatter ?? ((v: number, m: number): string => `${Math.round((v / m) * 100)}%`)
   };
 
   // Store original lifecycle hooks if they exist
   const originalInit = component.lifecycle?.init;
   const originalDestroy = component.lifecycle?.destroy;
-  
-  // Enhanced lifecycle with canvas initialization
+
+  // Add state to component
+  component.state = state;
+
+  // Add lifecycle hooks
   component.lifecycle = {
-    init: (): void => {
-      // Call original init first
-      if (originalInit) {
-        originalInit();
-      }
+    init: () => {
+      // Initialize with original thickness
+      console.log('State init called with thickness:', state.thickness);
       
-      // Initialize canvas drawing after a frame to ensure all features are ready
-      requestAnimationFrame(() => {
-        try {
-          // Trigger initial canvas draw
-          if (component.draw) {
-            component.draw();
-          }
-          
-          // Show label if configured
-          if (config.showLabel) {
-            // Create label element
-            const label = document.createElement('div');
-            label.className = `${component.getClass?.(PROGRESS_CLASSES.LABEL) || 'progress-label'}`;
-            label.textContent = state.labelFormatter(state.value, state.max);
-            component.element.appendChild(label);
-            state.label = label;
-          }
-        } catch (error) {
-          console.error('Error initializing canvas progress state:', error);
+      // Store original thickness in state
+      if (state.thickness) {
+        // If API is available, use it to set thickness
+        if (component.setThickness) {
+          component.setThickness(state.thickness);
+        } else {
+          // Otherwise, just store it in state and let canvas handle it
+          component.state.thickness = state.thickness;
         }
-      });
-    },
-    
-    destroy: (): void => {
-      // Clean up label
-      if (state.label) {
-        state.label.remove();
       }
       
-      // Call original destroy if it exists
-      if (originalDestroy) {
-        originalDestroy();
-      }
+      if (originalInit) originalInit();
+    },
+    destroy: () => {
+      if (originalDestroy) originalDestroy();
     }
   };
-  
+
   return {
     ...component,
     state
