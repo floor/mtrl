@@ -76,14 +76,26 @@ const updateCanvasDimensions = (
   const strokeWidth = getStrokeWidth(config?.thickness);
 
   if (isCircular) {
-    // For circular progress, maintain square dimensions
+    // For circular progress, use fixed size from measurements
     const size = PROGRESS_MEASUREMENTS.CIRCULAR.SIZE;
+    
+    // Set display size first
     canvas.style.width = `${size}px`;
     canvas.style.height = `${size}px`;
-    canvas.width = Math.round(size * pixelRatio);
-    canvas.height = Math.round(size * pixelRatio);
+    
+    // Set actual canvas dimensions accounting for pixel ratio
+    const canvasSize = Math.round(size * pixelRatio);
+    canvas.width = canvasSize;
+    canvas.height = canvasSize;
+    
+    // Update context dimensions
     context.width = size;
     context.height = size;
+    
+    // Reset transform and scale context to match pixel ratio
+    const ctx = context.ctx;
+    ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform
+    ctx.scale(pixelRatio, pixelRatio);
   } else {
     // For linear progress, update height based on thickness
     const progressElement = canvas.parentElement;
