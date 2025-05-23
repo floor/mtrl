@@ -278,34 +278,31 @@ const drawLinearProgress = (
   max: number,
   buffer: number,
   isIndeterminate: boolean,
-  animationTime: number = 0
+  animationTime: number = 0,
+  showStopIndicator: boolean = true // Optionally show the stop indicator
 ): void => {
   const { ctx, width, height } = context;
   const strokeWidth = getStrokeWidth(config.thickness);
   const centerY = height / 2;
   const isWavy = config.shape === 'wavy';
-  const gap = PROGRESS_MEASUREMENTS.LINEAR.GAP;
-  
+
+  // The gap at the start and end
+  const edgeGap = strokeWidth / 2;
+  // The available width for the indicator and track
+  const availableWidth = width - (edgeGap * 2);
+
   // Clear canvas
   ctx.clearRect(0, 0, width, height);
-  
-  ctx.lineWidth = strokeWidth;
-  ctx.lineCap = 'round';
-  
+
   if (isIndeterminate) {
-    // For indeterminate, draw animated bar
-    const barWidth = width * 0.4;
-    
+    const barWidth = Math.min(availableWidth * 0.4, availableWidth - edgeGap);
     ctx.strokeStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
-    
     if (isWavy) {
-      // Wavy indeterminate animation
       ctx.beginPath();
-      for (let x = 0; x <= barWidth; x += 2) {
+      for (let x = edgeGap; x <= edgeGap + barWidth; x += 2) {
         const ripple = Math.cos((x * 0.1) + (animationTime * 0.05)) * 3;
         const y = centerY + ripple;
-        
-        if (x === 0) {
+        if (x === edgeGap) {
           ctx.moveTo(x, y);
         } else {
           ctx.lineTo(x, y);
@@ -313,100 +310,102 @@ const drawLinearProgress = (
       }
       ctx.stroke();
     } else {
-      // Straight line indeterminate
       ctx.beginPath();
-      ctx.moveTo(0, centerY);
-      ctx.lineTo(barWidth, centerY);
+      ctx.moveTo(edgeGap, centerY);
+      ctx.lineTo(edgeGap + barWidth, centerY);
       ctx.stroke();
+    }
+    return;
+  }
+
+  const percentage = value / max;
+  const bufferPercentage = buffer / max;
+
+  // --- Indicator ---
+  const gapWidth = 4;
+  if (percentage > 0) {
+    ctx.strokeStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
+    ctx.lineWidth = strokeWidth;
+    ctx.lineCap = 'round';
+    // End the indicator before the gap, accounting for round cap
+    const progressEnd = edgeGap + (availableWidth * percentage);
+    const indicatorEnd = Math.max(edgeGap, progressEnd - (gapWidth + strokeWidth) / 2);
+    ctx.beginPath();
+    if (isWavy) {
+      for (let x = edgeGap; x <= indicatorEnd; x += 2) {
+        const ripple = Math.cos(x * 0.15) * 2;
+        const y = centerY + ripple;
+        if (x === edgeGap) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+      }
+    } else {
+      ctx.moveTo(edgeGap, centerY);
+      ctx.lineTo(indicatorEnd, centerY);
+    }
+    ctx.stroke();
+  }
+
+  // --- Stop Indicator (dot) ---
+  if (showStopIndicator) {
+    // Center the dot at the end of the track, regardless of thickness
+    const dotX = width - edgeGap;
+    ctx.beginPath();
+    ctx.arc(dotX, centerY, 2, 0, 2 * Math.PI); // Always radius 2px
+    ctx.fillStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
+    ctx.fill();
+  }
+
+  // --- Track (remaining line) ---
+  ctx.lineWidth = strokeWidth;
+  ctx.lineCap = 'round';
+  ctx.strokeStyle = getThemeColor('sys-color-primary-rgb', { 
+    alpha: 0.12,
+    fallback: 'rgba(103, 80, 164, 0.12)'
+  });
+  const progressEnd = edgeGap + (availableWidth * percentage);
+  const trackStart = Math.min(progressEnd + (gapWidth + strokeWidth) / 2, width - edgeGap);
+  ctx.beginPath();
+  if (isWavy) {
+    for (let x = trackStart; x <= width - edgeGap; x += 2) {
+      const ripple = Math.cos(x * 0.15) * 2;
+      const y = centerY + ripple;
+      if (x === trackStart) {
+        ctx.moveTo(x, y);
+      } else {
+        ctx.lineTo(x, y);
+      }
     }
   } else {
-    const percentage = value / max;
-    const bufferPercentage = buffer / max;
-    
-    // Progress indicator - draw first
-    if (percentage > 0) {
-      ctx.strokeStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
-      
-      const progressWidth = width * percentage;
-      
-      ctx.beginPath();
-      if (isWavy) {
-        // Wavy progress line
-        for (let x = 0; x <= progressWidth; x += 2) {
-          const ripple = Math.cos(x * 0.15) * 2;
-          const y = centerY + ripple;
-          
-          if (x === 0) {
-            ctx.moveTo(x, y);
-          } else {
-            ctx.lineTo(x, y);
-          }
+    ctx.moveTo(trackStart, centerY);
+    ctx.lineTo(width - edgeGap, centerY);
+  }
+  ctx.stroke();
+
+  // --- Buffer ---
+  if (buffer > 0 && bufferPercentage > percentage) {
+    ctx.strokeStyle = getThemeColor('sys-color-secondary-container', { fallback: '#E8DEF8' });
+    ctx.lineWidth = strokeWidth;
+    ctx.lineCap = 'round';
+    const bufferEnd = edgeGap + (availableWidth * bufferPercentage);
+    ctx.beginPath();
+    if (isWavy) {
+      for (let x = progressEnd; x <= bufferEnd; x += 2) {
+        const ripple = Math.cos(x * 0.15) * 2;
+        const y = centerY + ripple;
+        if (x === progressEnd) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
         }
-      } else {
-        ctx.moveTo(0, centerY);
-        ctx.lineTo(progressWidth, centerY);
       }
-      ctx.stroke();
+    } else {
+      ctx.moveTo(progressEnd, centerY);
+      ctx.lineTo(bufferEnd, centerY);
     }
-    
-    // Draw track (remaining part) with gap - draw after indicator
-    if (percentage < 1) {
-      // Use primary color with 12% opacity for track
-      ctx.strokeStyle = getThemeColor('sys-color-primary-rgb', { 
-        alpha: 0.12,
-        fallback: 'rgba(103, 80, 164, 0.12)'
-      });
-      
-      const progressWidth = width * percentage;
-      const trackStartX = progressWidth + gap; // Start track after progress + gap
-      
-      ctx.beginPath();
-      if (isWavy) {
-        // Wavy track
-        for (let x = trackStartX; x <= width; x += 2) {
-          const ripple = Math.cos(x * 0.15) * 2;
-          const y = centerY + ripple;
-          
-          if (x === trackStartX) {
-            ctx.moveTo(x, y);
-          } else {
-            ctx.lineTo(x, y);
-          }
-        }
-      } else {
-        // Straight track
-        ctx.moveTo(trackStartX, centerY);
-        ctx.lineTo(width, centerY);
-      }
-      ctx.stroke();
-    }
-    
-    // Buffer indicator (if applicable) - draw last
-    if (buffer > 0 && bufferPercentage > percentage) {
-      ctx.strokeStyle = getThemeColor('sys-color-secondary-container', { fallback: '#E8DEF8' });
-      
-      const bufferWidth = width * bufferPercentage;
-      const progressWidth = width * percentage;
-      
-      ctx.beginPath();
-      if (isWavy) {
-        // Wavy buffer line
-        for (let x = progressWidth + gap; x <= bufferWidth; x += 2) {
-          const ripple = Math.cos(x * 0.15) * 2;
-          const y = centerY + ripple;
-          
-          if (x === progressWidth + gap) {
-            ctx.moveTo(x, y);
-          } else {
-            ctx.lineTo(x, y);
-          }
-        }
-      } else {
-        ctx.moveTo(progressWidth + gap, centerY);
-        ctx.lineTo(bufferWidth, centerY);
-      }
-      ctx.stroke();
-    }
+    ctx.stroke();
   }
 };
 
