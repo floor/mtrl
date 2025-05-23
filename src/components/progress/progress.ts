@@ -9,7 +9,8 @@ import {
   withDisabled,
   withLifecycle
 } from '../../core/compose/features';
-import { withLayout, withDom } from '../../core/composition/features';
+import { withCanvas } from './features/canvas';
+import { withState } from './features';
 import { withAPI } from './api';
 import { ProgressConfig, ProgressComponent } from './types';
 import { 
@@ -17,11 +18,9 @@ import {
   getElementConfig, 
   getApiConfig
 } from './config';
-import { PROGRESS_VARIANTS, PROGRESS_CLASSES } from './constants';
-import { withState } from './features';
 
 /**
- * Creates a new Progress component
+ * Creates a new Progress component using canvas rendering
  * @param {ProgressConfig} config - Progress configuration object
  * @returns {ProgressComponent} Progress component instance
  * 
@@ -46,30 +45,18 @@ const createProgress = (config: ProgressConfig = {}): ProgressComponent => {
   const baseConfig = createBaseConfig(config);
   
   try {
-    // Create a local state object as a fallback
-    const localState = {
-      value: baseConfig.value || 0,
-      max: baseConfig.max || 100,
-      buffer: baseConfig.buffer || 0,
-      indeterminate: baseConfig.indeterminate || false,
-      labelFormatter: (v: number, m: number) => `${Math.round((v / m) * 100)}%`,
-      label: undefined as HTMLElement | undefined
-    };
-    
-    // Create the component with the pipe pattern
+    // Create the component with the pipe pattern using canvas instead of complex DOM
     const component = pipe(
       createBase,
       withEvents(),
-      withLayout(baseConfig),
-      withDom(),
-      withVariant(baseConfig),
-      withDisabled(baseConfig),
-      withState(baseConfig),
-      // Add API
+      withElement(getElementConfig(baseConfig)), // Simple container element
+      withVariant(baseConfig),                   // Add variant classes
+      withDisabled(baseConfig),                  // Add disabled state
+      withState(baseConfig),                     // Add state management
+      withCanvas(baseConfig),                    // Add canvas rendering (replaces withLayout + withDom)
+      // Add API after canvas is set up
       comp => {
-        // Use the component's state or fall back to local state
-        const stateObj = comp.state || localState;
-        return withAPI(getApiConfig(comp, stateObj))(comp);
+        return withAPI(getApiConfig(comp, comp.state))(comp);
       },
       withLifecycle()
     )(baseConfig);

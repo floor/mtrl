@@ -1,19 +1,16 @@
-// src/components/progress/api.ts - Clean API using CSS custom properties
+// src/components/progress/api.ts - Canvas-based API
 
 import { ProgressComponent, ProgressThickness, ProgressShape } from './types';
 import { 
   PROGRESS_CLASSES, 
   PROGRESS_EVENTS,
-  PROGRESS_MEASUREMENTS,
   PROGRESS_THICKNESS,
   PROGRESS_SHAPES
 } from './constants';
 import { addClass, removeClass } from '../../core/dom';
-import wavySvg from './wavy.svg'
-
 
 /**
- * API configuration options for progress component
+ * API configuration options for canvas-based progress component
  */
 interface ApiOptions {
   value: {
@@ -48,24 +45,17 @@ interface ApiOptions {
     setIndeterminate: (indeterminate: boolean) => void;
     isIndeterminate: () => boolean;
   };
-  stopIndicator?: {
-    show: () => void;
-    hide: () => void;
-  };
   lifecycle: {
     destroy: () => void;
   };
 }
 
 /**
- * Enhances a progress component with a streamlined API
+ * Enhances a canvas-based progress component with a streamlined API
  */
 export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent => {
   // Get element references
-  const { element, getClass } = comp;
-  const indicator = comp.indicator || comp.components?.indicator as HTMLElement;
-  const track = comp.track || comp.components?.track as HTMLElement;
-  const buffer = comp.buffer || comp.components?.buffer as HTMLElement | undefined;
+  const { element, getClass, canvas, draw } = comp;
   
   // Determine variant once
   const isCircular = element.classList.contains(getClass(PROGRESS_CLASSES.CIRCULAR));
@@ -75,93 +65,22 @@ export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent =
     element.dispatchEvent(new CustomEvent(name, { detail }));
   };
   
-  // NEW: Clean linear progress update using CSS custom properties
-  const updateLinearProgress = (percentage: number, max: number): void => {
-    if (!element) return;
-    
-    // Calculate buffer percentage
-    const bufferPercentage = (options.buffer.getBuffer() / max) * 100;
-    
-    // Update CSS custom properties - let CSS handle the positioning
-    element.style.setProperty('--progress-value', `${percentage}%`);
-    element.style.setProperty('--progress-track', `100-${percentage}%`);
-    element.style.setProperty('--progress-buffer', `${bufferPercentage}%`);
-    
-    // Add state classes for CSS to handle special cases
-    element.classList.toggle(`${getClass(PROGRESS_CLASSES.CONTAINER)}--zero`, percentage <= 0.1);
-    element.classList.toggle(`${getClass(PROGRESS_CLASSES.CONTAINER)}--complete`, percentage >= 99.9);
-    element.classList.toggle(`${getClass(PROGRESS_CLASSES.CONTAINER)}--has-buffer`, bufferPercentage > percentage);
-  };
-  
-  // Keep existing circular progress update (SVG-based)
-  const updateCircularProgress = (percentage: number, max: number): void => {
-    // Only run if we have SVG elements
-    const svgIndicator = comp.indicator || comp.components?.indicator as SVGElement;
-    const svgTrack = comp.track || comp.components?.track as SVGElement;
-    
-    if (!svgIndicator || !svgTrack) return;
-    
-    // Get circle dimensions
-    const radius = parseFloat(svgIndicator.getAttribute('r') || '0');
-    const circumference = 2 * Math.PI * radius;
-    
-    // Calculate gap angle based on thickness
-    const strokeWidth = parseFloat(svgIndicator.getAttribute('stroke-width') || '6');
-    const baseGapAngle = PROGRESS_MEASUREMENTS.CIRCULAR.GAP_ANGLE;
-    const gapMultiplier = PROGRESS_MEASUREMENTS.CIRCULAR.GAP_MULTIPLIER;
-    const thicknessRatio = strokeWidth / PROGRESS_THICKNESS.DEFAULT;
-    const gapAngle = baseGapAngle * (1 + (thicknessRatio - 1) * gapMultiplier);
-    const gapLength = (gapAngle / 360) * circumference;
-    const availableLength = circumference - gapLength;
-    const adjustedFillAmount = (percentage / 100) * availableLength;
-    const filledPercentageAngle = (adjustedFillAmount / circumference) * 360;
-    const halfGapAngle = gapAngle / 2;
-    const trackRotation = filledPercentageAngle + halfGapAngle;
-
-    let indicatorLength = `${adjustedFillAmount} ${circumference - adjustedFillAmount}`;
-    if (percentage >= 100) {
-      indicatorLength = `${circumference}`;
-    }
-
-    // Update SVG elements
-    svgIndicator.setAttribute('stroke-dasharray', indicatorLength);
-    svgIndicator.setAttribute('stroke-dashoffset', '0');
-    svgIndicator.style.transform = 'rotate(0deg)';
-    
-    if (svgTrack) {
-      if (percentage >= 98) {
-        svgTrack.style.display = 'none';
-      } else {
-        const trackLength = availableLength - adjustedFillAmount;
-        svgTrack.setAttribute('stroke-dasharray', `${trackLength} ${circumference}`);
-        svgTrack.setAttribute('stroke-dashoffset', '0');
-        svgTrack.style.transform = `rotate(${trackRotation}deg)`;
-        svgTrack.style.display = '';
-      }
-    }
-  };
-  
-  // Combined update function
+  // Update progress and redraw canvas
   const updateProgress = (value: number, max: number): void => {
-    // Skip if in indeterminate state
-    if (options.state.isIndeterminate()) return;
-    
-    const percentage = (value / max) * 100;
-    
-    // Delegate to appropriate update method
-    isCircular 
-      ? updateCircularProgress(percentage, max) 
-      : updateLinearProgress(percentage, max);
-    
     // Update ARIA attribute
     element.setAttribute('aria-valuenow', value.toString());
     
     // Update label if present
-    const label = comp.label || comp.components?.label;
+    const label = comp.label || comp.state?.label;
     if (label) {
-      const formatter = options.label.formatter || 
+      const formatter = options.label?.formatter || 
         ((v: number, m: number) => `${Math.round((v / m) * 100)}%`);
       label.textContent = formatter(value, max);
+    }
+    
+    // Redraw canvas
+    if (draw) {
+      draw();
     }
   };
 
@@ -169,66 +88,26 @@ export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent =
     if (options.thickness && typeof options.thickness.getThickness === 'function') {
       return options.thickness.getThickness();
     }
-    return PROGRESS_MEASUREMENTS.COMMON.STROKE_WIDTH;
+    return PROGRESS_THICKNESS.DEFAULT;
   };
 
   const setThickness = (thickness: ProgressThickness): ProgressComponent => {
     if (options.thickness && typeof options.thickness.setThickness === 'function') {
       options.thickness.setThickness(thickness);
       
-      let thicknessValue: number;
+      // Update thickness classes for styling
+      const containerClass = getClass(PROGRESS_CLASSES.CONTAINER);
+      element.classList.remove(`${containerClass}--thin`, `${containerClass}--thick`);
       
       if (thickness === 'thin') {
-        thicknessValue = PROGRESS_THICKNESS.THIN;
+        element.classList.add(`${containerClass}--thin`);
       } else if (thickness === 'thick') {
-        thicknessValue = PROGRESS_THICKNESS.THICK;
-      } else if (thickness === 'default') {
-        thicknessValue = PROGRESS_THICKNESS.DEFAULT;
-      } else {
-        thicknessValue = thickness as number;
+        element.classList.add(`${containerClass}--thick`);
       }
       
-      if (isCircular && indicator instanceof SVGElement) {
-        const svgSize = PROGRESS_MEASUREMENTS.CIRCULAR.SIZE;
-        const centerPoint = svgSize / 2;
-        const newRadius = centerPoint - thicknessValue / 2;
-        
-        indicator.setAttribute('r', newRadius.toString());
-        if (track instanceof SVGElement) {
-          track.setAttribute('r', newRadius.toString());
-        }
-        
-        // Recalculate dimensions and update the display
-        if (!options.state.isIndeterminate()) {
-          updateProgress(options.value.getValue(), options.value.getMax());
-        }
-
-          indicator.setAttribute('stroke-width', thicknessValue.toString());    
-          track.setAttribute('stroke-width', thicknessValue.toString());
-
-          if (buffer) {
-            buffer.setAttribute('stroke-width', thicknessValue.toString());
-          }
-        
-
-      } else {
-        // Update CSS custom property for linear progress
-        element.style.setProperty('--progress-height', `${thicknessValue}px`);
-        
-        // Update thickness classes
-        const containerClass = getClass(PROGRESS_CLASSES.CONTAINER);
-        element.classList.remove(`${containerClass}--thin`, `${containerClass}--thick`);
-        
-        if (thickness === 'thin') {
-          element.classList.add(`${containerClass}--thin`);
-        } else if (thickness === 'thick') {
-          element.classList.add(`${containerClass}--thick`);
-        }
-      }
-      
-      // Recalculate if not indeterminate
-      if (!options.state.isIndeterminate()) {
-        updateProgress(options.value.getValue(), options.value.getMax());
+      // Redraw canvas with new thickness
+      if (draw) {
+        draw();
       }
     }
     
@@ -262,51 +141,53 @@ export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent =
       if (shape !== PROGRESS_SHAPES.LINE) {
         element.classList.add(`${containerClass}--${shape}`);
       }
-
-      // Apply wavy SVG background to indicator element
-      if (shape === 'wavy' && indicator) {
-        console.log('shape wavy', wavySvg)
-        const wavySvgDataUrl = `data:image/svg+xml;base64,${btoa(wavySvg)}`;
-        indicator.style.backgroundImage = `url("${wavySvgDataUrl}")`;
-      } else if (indicator) {
-        // Remove wavy background when not wavy
-        indicator.style.backgroundImage = '';
+      
+      // Redraw canvas with new shape
+      if (draw) {
+        draw();
       }
     }
     
     return api;
   };
 
-  let resizeTimer: number | undefined;
-  const handleResize = (): void => {
-    if (resizeTimer) clearTimeout(resizeTimer);
-    resizeTimer = window.setTimeout(() => {
-      if (!options.state.isIndeterminate()) {
-        updateProgress(options.value.getValue(), options.value.getMax());
-      }
-    }, 100);
-  };
-  
-  // Add resize listener
-  window.addEventListener('resize', handleResize);
-  
-  // Initialize
-  requestAnimationFrame(() => {
-    if (options.state.isIndeterminate()) {
+  // Handle indeterminate state by toggling CSS classes and wavy animation
+  const handleIndeterminateState = (indeterminate: boolean): void => {
+    if (indeterminate) {
       addClass(element, PROGRESS_CLASSES.INDETERMINATE);
       element.removeAttribute('aria-valuenow');
+      
+      // Start wavy animation if shape is wavy and linear
+      if (!isCircular && options.shape?.getShape() === 'wavy' && comp.startWavyAnimation) {
+        comp.startWavyAnimation();
+      }
     } else {
-      updateProgress(options.value.getValue(), options.value.getMax());
+      removeClass(element, PROGRESS_CLASSES.INDETERMINATE);
+      
+      // Stop wavy animation
+      if (comp.stopWavyAnimation) {
+        comp.stopWavyAnimation();
+      }
     }
-  });
+    
+    // Always redraw for state change
+    if (draw) {
+      draw();
+    }
+  };
+  
+  // Initialize indeterminate state if needed
+  if (options.state.isIndeterminate()) {
+    handleIndeterminateState(true);
+  }
   
   // Build the API
   const api: ProgressComponent = {
     // Element references
     element,
-    track: track as any,
-    indicator: indicator as any,
-    buffer: buffer as any,
+    track: canvas as any, // Canvas serves as both track and indicator
+    indicator: canvas as any,
+    buffer: canvas as any,
     getClass,
     
     // Value management
@@ -316,9 +197,7 @@ export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent =
       options.value.setValue(value);
       
       if (prevValue !== value) {
-        if (!options.state.isIndeterminate()) {
-          updateProgress(value, options.value.getMax());
-        }
+        updateProgress(value, options.value.getMax());
         
         const detail = { value, max: options.value.getMax() };
         emitEvent(PROGRESS_EVENTS.CHANGE, detail);
@@ -336,8 +215,8 @@ export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent =
     getBuffer: options.buffer.getBuffer,
     setBuffer(value: number): ProgressComponent {
       options.buffer.setBuffer(value);
-      if (!isCircular && !options.state.isIndeterminate()) {
-        updateProgress(options.value.getValue(), options.value.getMax());
+      if (!options.state.isIndeterminate() && draw) {
+        draw();
       }
       return api;
     },
@@ -348,14 +227,7 @@ export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent =
       if (wasIndeterminate === indeterminate) return api;
       
       options.state.setIndeterminate(indeterminate);
-      
-      if (indeterminate) {
-        addClass(element, PROGRESS_CLASSES.INDETERMINATE);
-        element.removeAttribute('aria-valuenow');
-      } else {
-        removeClass(element, PROGRESS_CLASSES.INDETERMINATE);
-        updateProgress(options.value.getValue(), options.value.getMax());
-      }
+      handleIndeterminateState(indeterminate);
       
       return api;
     },
@@ -363,25 +235,25 @@ export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent =
     
     // Label management
     showLabel(): ProgressComponent {
-      if (options.label.show) options.label.show();
+      if (options.label?.show) options.label.show();
       return api;
     },
     hideLabel(): ProgressComponent {
-      if (options.label.hide) options.label.hide();
+      if (options.label?.hide) options.label.hide();
       return api;
     },
     setLabelFormatter(formatter: (value: number, max: number) => string): ProgressComponent {
-      if (options.label.format) options.label.format(formatter);
-      const label = comp.label || comp.components?.label;
+      if (options.label?.format) options.label.format(formatter);
+      const label = comp.label || comp.state?.label;
       if (label) {
         label.textContent = formatter(options.value.getValue(), options.value.getMax());
       }
       return api;
     },
+    
+    // Thickness and shape management
     getThickness,
     setThickness,
-
-    // Shape management (linear only)
     getShape,
     setShape,
 
@@ -414,8 +286,6 @@ export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent =
     
     // Cleanup
     destroy(): void {
-      window.removeEventListener('resize', handleResize);
-      clearTimeout(resizeTimer);
       options.lifecycle.destroy();
     },
     
@@ -428,8 +298,6 @@ export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent =
     
     lifecycle: {
       destroy(): void {
-        window.removeEventListener('resize', handleResize);
-        clearTimeout(resizeTimer);
         options.lifecycle.destroy();
       }
     }

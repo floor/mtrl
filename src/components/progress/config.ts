@@ -1,4 +1,5 @@
-// src/components/progress/config.ts
+// src/components/progress/config.ts - Simplified for canvas
+
 import { 
   createComponentConfig, 
   createElementConfig
@@ -8,13 +9,10 @@ import {
   PROGRESS_CLASSES, 
   PROGRESS_VARIANTS,
   PROGRESS_SHAPES,
-  PROGRESS_EVENTS,
   PROGRESS_MEASUREMENTS,
   PROGRESS_THICKNESS,
   PROGRESS_DEFAULTS
 } from './constants';
-import { createProgressSchema } from './schema';
-import { addClass, removeClass } from '../../core/dom';
 
 /**
  * Default configuration for the Progress component
@@ -25,193 +23,32 @@ export const defaultConfig: ProgressConfig = {
   max: PROGRESS_DEFAULTS.MAX,
   buffer: PROGRESS_DEFAULTS.BUFFER,
   showLabel: PROGRESS_DEFAULTS.SHOW_LABEL,
-  thickness: 'thin',
+  thickness: 'default',
   shape: PROGRESS_DEFAULTS.SHAPE
 };
 
 /**
- * Sets up indeterminate state animations and properties
- * 
- * @param component The progress component
- * @param isCircular Whether the component is in circular variant
- */
-export const setupIndeterminateState = (component, isCircular) => {
-  try {
-    // Add indeterminate class to container if not already
-    const container = component.element;
-    if (!container.classList.contains(PROGRESS_CLASSES.INDETERMINATE)) {
-      container.classList.add(PROGRESS_CLASSES.INDETERMINATE);
-    }
-    
-    // Remove the aria-valuenow attribute if present
-    container.removeAttribute('aria-valuenow');
-    
-    // Different treatments for circular vs linear indeterminate progress
-    if (isCircular) {
-      // For circular, we'll add animation properties to the SVG elements
-      
-      // Find the SVG indicator and track elements if they exist
-      const indicator = component.indicator;
-      const track = component.track;
-      
-      // Hide the track element if we're in indeterminate state
-      if (track) {
-        track.style.display = 'none';
-      }
-    } else {
-      // For linear indeterminate, different animation approach
-      
-      // Schedule a small delay to make sure the DOM is fully constructed
-      setTimeout(() => {
-        try {
-          const isSvgLinear = component.indicator instanceof SVGElement;
-          
-          if (isSvgLinear) {
-            // For SVG linear indeterminate progress
-            // Most animation will be handled via CSS with the .progress--indeterminate class
-            
-            // Clear any x2 attribute on the indicator to allow CSS animations
-            if (component.indicator) {
-              component.indicator.removeAttribute('x2');
-              
-              // Make sure x1 is set to 0 for proper animation position
-              component.indicator.setAttribute('x1', '0');
-              
-              // Set initial x2 to 0 to ensure it doesn't show before animation starts
-              component.indicator.setAttribute('x2', '0');
-              
-              // Ensure the stroke-width is properly set
-              component.indicator.setAttribute('stroke-width', '6');
-              
-              // Force SVG visibility with CSS
-              component.indicator.setAttribute('style', 'vector-effect: non-scaling-stroke;');
-            }
-            
-            // Hide the track element
-            if (component.track) {
-              component.track.style.display = 'none';
-            }
-          } else {
-            // For traditional DIV-based linear indeterminate
-            
-            // For the indicator, we'll let CSS handle the width and left position animations
-            if (component.elements?.indicator instanceof HTMLElement) {
-              component.elements.indicator.style.width = '';
-              component.elements.indicator.style.left = '';
-            }
-            
-            // Hide the track element 
-            if (component.elements?.track instanceof HTMLElement) {
-              component.elements.track.style.display = 'none';
-            }
-          }
-        } catch (error) {
-          console.error('Error setting up indeterminate animation:', error);
-        }
-      }, 0);
-    }
-  } catch (error) {
-    console.error('Error setting up indeterminate state:', error);
-  }
-};
-
-/**
- * Sets up component references from the DOM structure
- * 
- * @param component The progress component
- * @param state Component state object
- * @param isCircular Whether the component is circular
- * @returns Enhanced component with references
- */
-export const setupComponentReferences = (component, state, isCircular) => {
-  try {
-    // Make sure component has elements property
-    if (!component.elements) {
-      console.warn('Progress component missing elements property. withLayout may not have been applied correctly.');
-      component.elements = {};
-    }
-
-    // Check if we're using SVG-based structure
-    const svgElement = component.elements?.svg;
-    
-    if (svgElement) {
-      // Get indicator, track, and buffer elements from the SVG
-      if (svgElement.querySelector) {
-        const indicator = svgElement.querySelector(`.${PROGRESS_CLASSES.CONTAINER}-${PROGRESS_CLASSES.INDICATOR}`);
-        const track = svgElement.querySelector(`.${PROGRESS_CLASSES.CONTAINER}-${PROGRESS_CLASSES.TRACK}`);
-        const buffer = svgElement.querySelector(`.${PROGRESS_CLASSES.CONTAINER}-${PROGRESS_CLASSES.BUFFER}`);
-        
-        // Store references directly on component for API access
-        component.indicator = indicator || null;
-        component.track = track || null;
-        component.buffer = buffer || null;
-        
-        // Also update elements object to keep everything consistent
-        component.elements.indicator = indicator || null;
-        component.elements.track = track || null;
-        component.elements.buffer = buffer || null;
-      } else {
-        // If querySelector is not available, fall back to direct child references
-        component.indicator = component.elements?.indicator || null;
-        component.track = component.elements?.track || null;
-        component.buffer = component.elements?.buffer || null;
-      }
-    } else {
-      // Legacy DIV structure for linear progress
-      component.indicator = component.elements?.indicator || null;
-      component.track = component.elements?.track || null;
-      component.buffer = component.elements?.buffer || null;
-    }
-    
-    // Store label element in state if it exists
-    if (component.elements?.label) {
-      if (state) {
-        state.label = component.elements.label;
-      }
-      component.label = component.elements.label;
-    }
-  } catch (error) {
-    console.error('Error setting up progress component references:', error);
-  }
-  
-  return component;
-};
-
-
-/**
  * Creates the base configuration for the Progress component
- * with all defaults applied
+ * with all defaults applied (no complex schema needed for canvas)
  * 
  * @param config User-provided configuration
  * @returns Complete configuration with defaults
  */
 export const createBaseConfig = (config: ProgressConfig = {}): ProgressConfig => {
-  // Create configuration with defaults
-  const baseConfig = createComponentConfig(defaultConfig, config, 'progress') as ProgressConfig;
-  
-  // Create a basic component object for schema generation
-  const baseComponent = {
-    componentName: 'progress',
-    config: baseConfig,
-    getClass: (className) => {
-      const prefix = baseConfig.prefix || 'mtrl';
-      return `${prefix}-${className}`;
-    }
-  };
-  
-  // Add the structure definition to the config
-  baseConfig.schema = createProgressSchema(baseComponent, baseConfig);
-  
-  return baseConfig;
+  // Create configuration with defaults - no schema needed for canvas approach
+  return createComponentConfig(defaultConfig, config, 'progress') as ProgressConfig;
 };
 
 /**
- * Generates element configuration for the Progress component
+ * Generates element configuration for the Progress container
+ * Canvas will be added by withCanvas feature
+ * 
  * @param {ProgressConfig} config - Progress configuration
  * @returns {Object} Element configuration object for withElement
  */
 export const getElementConfig = (config: ProgressConfig) => {
   const isIndeterminate = config.indeterminate === true;
+  const isCircular = config.variant === PROGRESS_VARIANTS.CIRCULAR;
   
   // Create the attributes object
   const attributes: Record<string, any> = {
@@ -230,17 +67,33 @@ export const getElementConfig = (config: ProgressConfig) => {
     attributes['aria-disabled'] = 'true';
   }
   
-  const isCircular = config.variant === PROGRESS_VARIANTS.CIRCULAR;
+  // Build class list
+  const classList = [
+    config.class
+  ].filter(Boolean);
+  
+  // Add thickness class if specified
+  if (config.thickness === 'thin') {
+    classList.push('progress--thin');
+  } else if (config.thickness === 'thick') {
+    classList.push('progress--thick');
+  }
+  
+  // Add shape class for linear progress
+  if (!isCircular && config.shape && config.shape !== PROGRESS_SHAPES.LINE) {
+    classList.push(`progress--${config.shape}`);
+  }
   
   return createElementConfig(config, {
     tag: 'div',
-    attributes,
-    className: config.class
+    attrs: attributes,
+    className: classList
   });
 };
 
 /**
  * Creates API configuration for the Progress component
+ * 
  * @param {Object} comp - Component with state management features
  * @param {Object} state - State object containing component state
  * @returns {Object} API configuration object
@@ -305,11 +158,7 @@ export const getApiConfig = (comp, state) => {
       format: (formatter) => { 
         safeState.labelFormatter = formatter; 
       },
-      setContent: (content) => {
-        if (safeState.label) {
-          safeState.label.textContent = content;
-        }
-      }
+      formatter: safeState.labelFormatter
     },
     thickness: {
       getThickness: () => safeState.thickness,

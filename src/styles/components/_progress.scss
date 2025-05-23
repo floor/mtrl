@@ -1,4 +1,4 @@
-// src/components/progress/_styles.scss - Clean SCSS using CSS custom properties
+// src/components/progress/_progress.scss - Canvas-based progress styles (no SVG dependency)
 @use '../../styles/abstract/base' as base;
 @use '../../styles/abstract/variables' as v;
 @use '../../styles/abstract/functions' as f;
@@ -14,20 +14,13 @@ $circular-size: 50px;
 $stroke-width-thin: 4px;
 $stroke-width-default: 6px;
 $stroke-width-thick: 8px;
-$stop-indicator-size: 4px;
-$linear-gap: 4px; // PROGRESS_MEASUREMENTS.LINEAR.GAP
+$linear-gap: 4px;
 
 .#{$component} {
-  // Base styles
+  // Base container styles
   position: relative;
   display: block;
   overflow: hidden;
-  
-  // CSS custom properties with defaults
-  --progress-value: 0%;
-  --progress-buffer: 0%;
-  --progress-height: #{$linear-height};
-  --progress-gap: #{$linear-gap};
   
   // Common accessibility attributes
   &[aria-disabled="true"] {
@@ -35,207 +28,112 @@ $linear-gap: 4px; // PROGRESS_MEASUREMENTS.LINEAR.GAP
     pointer-events: none;
   }
 
-  // Linear progress variant - Clean CSS-only approach
+  // Canvas element - shared by both variants
+  &-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    max-width: 100%; // Prevent canvas from growing beyond container
+    box-sizing: border-box; // Include borders in width calculation
+    
+    // Smooth transitions for canvas transforms (used in animations)
+    transition: transform 0.3s ease;
+  }
+
+  // Linear progress variant
   &--linear {
     width: 100%;
-    height: var(--progress-height);
-    min-height: var(--progress-height);
+    height: $linear-height;
+    min-height: $linear-height;
     margin: 0 4px;
-    border-radius: calc(var(--progress-height) / 2);
-    position: relative;
+    border-radius: calc(#{$linear-height} / 2);
     
-    // Track (background/remaining part)
-    .#{$component}-track {
-      position: absolute;
-      top: 0;
-      height: 100%;
-      background-color: t.alpha('primary', 0.24);
+    // Canvas fills the container
+    .#{$component}-canvas {
       border-radius: inherit;
-      // Track starts after indicator + gap, using CSS calc()
-      left: calc(var(--progress-value) + var(--progress-gap));
-      right: 0;
-      display: block;
-      // Smooth animation for position changes
-      transition: left 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
-    }
-    
-    // Buffer indicator (pre-loaded state)
-    .#{$component}-buffer {
-      position: absolute;
-      top: 0;
-      height: 100%;
-      background-color: t.alpha('primary', 0.4);
-      border-radius: inherit;
-      // Buffer starts after indicator + gap
-      left: calc(var(--progress-value) + var(--progress-gap));
-      // Buffer width is the difference between buffer and current value
-      width: calc(var(--progress-buffer) - var(--progress-value));
-      display: none; // Hidden by default
-      // Smooth animation for buffer changes
-      transition: left 0.3s cubic-bezier(0.4, 0.0, 0.2, 1),
-                 width 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
-    }
-    
-    // Progress indicator (filled part)
-    .#{$component}-indicator {
-      position: absolute;
-      top: 0;
-      left: 0;
-      height: 100%;
-      background-color: t.color('primary');
-      border-radius: inherit;
-      width: var(--progress-value);
-      // Smooth animation for progress changes - this is the key improvement!
-      transition: width 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
-    }
-
-    // Special state: Zero progress (show as dot)
-    &.#{$component}--zero {
-      .#{$component}-indicator {
-        width: var(--progress-height); // Circular dot
-        border-radius: 50%;
-      }
-      
-      .#{$component}-track {
-        left: calc(var(--progress-height) + var(--progress-gap));
-      }
-      
-      .#{$component}-buffer {
-        left: calc(var(--progress-height) + var(--progress-gap));
-        width: calc(var(--progress-buffer) - var(--progress-height));
-      }
-    }
-    
-    // Special state: Complete progress (hide track)
-    &.#{$component}--complete {
-      .#{$component}-track {
-        display: none;
-      }
-    }
-    
-    // Show buffer when it has content
-    &.#{$component}--has-buffer {
-      .#{$component}-buffer {
-        display: block;
-      }
     }
     
     // Thickness variants
     &.#{$component}--thin {
-      --progress-height: #{$stroke-width-thin};
+      height: $stroke-width-thin;
+      min-height: $stroke-width-thin;
+      border-radius: calc(#{$stroke-width-thin} / 2);
     }
     
     &.#{$component}--thick {
-      --progress-height: #{$stroke-width-thick};
+      height: $stroke-width-thick;
+      min-height: $stroke-width-thick;
+      border-radius: calc(#{$stroke-width-thick} / 2);
     }
     
-    // Stop indicator dot using pseudo-element
-    &:not(.#{$component}--indeterminate):after {
-      content: '';
-      position: absolute;
-      right: calc((var(--progress-height) / 2) - 2px);
-      top: 50%;
-      transform: translateY(-50%);
-      width: $stop-indicator-size;
-      height: $stop-indicator-size;
-      border-radius: 50%;
-      background-color: t.color('primary');
-      display: block;
-      // Smooth transition for stop indicator
-      transition: opacity 0.3s ease;
-    }
-
-    // Indeterminate state - CSS animation for HTML elements
-    &.#{$component}--indeterminate {
-      .#{$component}-track {
-        left: 0 !important;
-        right: 0 !important;
-        display: block !important;
-      }
+    // Indeterminate state - CSS animation for linear (non-wavy)
+    &.#{$component}--indeterminate:not(.#{$component}--wavy) {
       
-      .#{$component}-indicator {
-        width: 40% !important;
-        // Animated position for indeterminate state
-        animation: linear-indeterminate-html 2s infinite cubic-bezier(0.4, 0.0, 0.2, 1);
-      }
-      
-      .#{$component}-buffer {
-        display: none !important;
-      }
-      
-      // Hide stop indicator during indeterminate
-      &:after {
-        opacity: 0;
+      .#{$component}-canvas {
+        // CSS animation for linear indeterminate - moves the canvas content
+        animation: linear-indeterminate-slide 2s infinite cubic-bezier(0.4, 0.0, 0.2, 1);
       }
     }
     
-    // Label positioning
-    .#{$component}-label {
-      position: absolute;
-      right: 0;
-      top: calc(var(--progress-height) + 4px);
-      font-size: 12px;
-      color: t.color('on-surface-variant');
-      transition: opacity 0.3s ease;
+    // Wavy shape variant
+    &.#{$component}--wavy {
+      overflow: visible;
+      height: 10px; // Slightly taller for wavy shape
+      min-height: 10px;
+      border-radius: 5px;
+      
+      // Wavy shapes are drawn entirely in canvas - no CSS animation needed
+      // The wavy animation is handled by JavaScript requestAnimationFrame
+      &.#{$component}--indeterminate {
+        .#{$component}-canvas {
+          // No CSS animation for wavy - handled by canvas drawing
+          animation: none;
+        }
+      }
     }
   }
 
-  // Circular progress variant - keep existing SVG-based styles
+  // Circular progress variant
   &--circular {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     width: $circular-size;
     height: $circular-size;
+    border-radius: 50%;
     
-    svg {
-      width: 100%;
-      height: 100%;
-      transform: rotate(-90deg);
+    // Canvas is square and fills the container
+    .#{$component}-canvas {
+      border-radius: 50%;
     }
     
-    .#{$component}-indicator {
-      stroke: t.color('primary');
-      fill: none;
-      stroke-linecap: round;
-      transform-origin: center;
-      // Smooth transitions for circular progress
-      transition: stroke-dasharray 0.3s cubic-bezier(0.4, 0.0, 0.2, 1),
-                 stroke-dashoffset 0.3s cubic-bezier(0.4, 0.0, 0.2, 1),
-                 transform 0.3s ease,
-                 // stroke-width 0.3s ease;
-    }
-    
-    .#{$component}-track {
-      stroke: t.alpha('primary', 0.24);
-      fill: none;
-      stroke-linecap: round;
-      transform-origin: center;
-      transition: stroke-dasharray 0.3s cubic-bezier(0.4, 0.0, 0.2, 1),
-                 stroke-dashoffset 0.3s cubic-bezier(0.4, 0.0, 0.2, 1),
-                 transform 0.3s ease,
-                 stroke-width 0.3s ease;
-    }
-    
-    // Indeterminate circular animation
+    // Indeterminate state - rotation animation for circular
     &.#{$component}--indeterminate {
-      .#{$component}-indicator {
-        stroke-dasharray: 283;
-        animation: circular-indeterminate 1.5s linear infinite;
-      }
-      
-      .#{$component}-track {
-        display: block;
-        stroke: t.alpha('primary', 0.24);
-        stroke-dasharray: none;
-        opacity: 1;
+      .#{$component}-canvas {
+        animation: circular-rotate 1.4s linear infinite;
       }
     }
+  }
+  
+  // Label element (created dynamically when showLabel is used)
+  &-label {
+    position: absolute;
+    font-size: 12px;
+    color: t.color('on-surface-variant');
+    white-space: nowrap;
+    transition: opacity 0.3s ease;
     
-    .#{$component}-label {
-      position: absolute;
-      font-size: 12px;
-      color: t.color('on-surface-variant');
+    // Position differently based on variant
+    .#{$component}--linear & {
+      right: 0;
+      top: calc(100% + 4px);
+    }
+    
+    .#{$component}--circular & {
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-weight: 500;
     }
   }
   
@@ -245,75 +143,71 @@ $linear-gap: 4px; // PROGRESS_MEASUREMENTS.LINEAR.GAP
     pointer-events: none;
     
     // Disable animations when disabled
-    * {
-      transition: none !important;
+    .#{$component}-canvas {
       animation: none !important;
     }
   }
-
-
-  &--wavy {
-    overflow: initial;
-    // height: 10px;
-    &.#{$component}--linear {
-      .#{$component}-indicator {
-        position: absolute;
-        left: 2px;
-        top: -3px;
-        height: 10px;
-        background-color: transparent;
-        background-repeat: repeat-x;
-        background-size: auto 100%;
-      }
+  
+  // Test mode (for debugging/development)
+  &--test {
+    border: 1px dashed t.alpha('primary', 0.5);
+    
+    .#{$component}-canvas {
+      border: 1px solid t.alpha('secondary', 0.3);
     }
   }
 }
 
 // Keyframe animations
 
-// Circular indeterminate animation - keep existing
-@keyframes circular-indeterminate {
+// Linear indeterminate animation - slides the progress bar (non-wavy only)
+@keyframes linear-indeterminate-slide {
   0% {
-    stroke-dashoffset: 283;
-  }
-  50% {
-    stroke-dashoffset: 70;
+    transform: translateX(-100%);
   }
   100% {
-    stroke-dashoffset: 283;
-    transform: rotate(360deg);
+    transform: translateX(300%);
   }
 }
 
-// HTML-based linear indeterminate animation
-@keyframes linear-indeterminate-html {
+// Circular indeterminate animation - rotates the canvas
+@keyframes circular-rotate {
   0% {
-    left: -40%;
-  }
-  25% {
-    left: -10%;
-    width: 60%;
-  }
-  50% {
-    left: 20%;
-    width: 50%;
-  }
-  75% {
-    left: 60%;
-    width: 30%;
+    transform: rotate(0deg);
   }
   100% {
-    left: 100%;
-    width: 20%;
+    transform: rotate(360deg);
   }
 }
 
 // Reduced motion support
 @media (prefers-reduced-motion: reduce) {
   .#{$component} {
-    * {
-      transition-duration: 0.01ms !important;
+    .#{$component}-canvas {
       animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+// High contrast mode support
+@media (prefers-contrast: high) {
+  .#{$component} {
+    &--linear {
+      border: 1px solid currentColor;
+    }
+    
+    &--circular {
+      border: 1px solid currentColor;
+    }
+  }
+}
+
+// Dark mode adaptations (if using CSS custom properties)
+@media (prefers-color-scheme: dark) {
+  .#{$component} {
+    &--linear {
+      // No background color needed - track drawn in canvas
     }
   }
 }
