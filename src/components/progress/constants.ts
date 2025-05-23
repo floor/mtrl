@@ -1,5 +1,7 @@
 // src/components/progress/constants.ts
 
+import { PREFIX } from '../../core/config';
+
 /**
  * Progress component variants
  */
@@ -61,13 +63,13 @@ export const PROGRESS_CLASSES = {
   /** Circular variant class */
   CIRCULAR: 'progress--circular',
   /** Track element (unfilled part) class */
-  TRACK: 'track',
+  TRACK: 'progress__track',
   /** Indicator element (filled part) class */
-  INDICATOR: 'indicator',
+  INDICATOR: 'progress__indicator',
   /** Buffer element class */
-  BUFFER: 'buffer',
+  BUFFER: 'progress__buffer',
   /** Label element class */
-  LABEL: 'label',
+  LABEL: 'progress__label',
   /** Indeterminate state class */
   INDETERMINATE: 'progress--indeterminate',
   /** Disabled state class */

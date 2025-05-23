@@ -69,24 +69,26 @@ export const getElementConfig = (config: ProgressConfig) => {
   
   // Build class list
   const classList = [
-    config.class
+    config.class,
+    PROGRESS_CLASSES.CONTAINER,
+    isCircular ? PROGRESS_CLASSES.CIRCULAR : PROGRESS_CLASSES.LINEAR
   ].filter(Boolean);
   
   // Add thickness class if specified
   if (config.thickness === 'thin') {
-    classList.push('progress--thin');
+    classList.push(`${PROGRESS_CLASSES.CONTAINER}--thin`);
   } else if (config.thickness === 'thick') {
-    classList.push('progress--thick');
+    classList.push(`${PROGRESS_CLASSES.CONTAINER}--thick`);
   }
   
   // Add shape class for linear progress
   if (!isCircular && config.shape && config.shape !== PROGRESS_SHAPES.LINE) {
-    classList.push(`progress--${config.shape}`);
+    classList.push(`${PROGRESS_CLASSES.CONTAINER}--${config.shape}`);
   }
   
   return createElementConfig(config, {
     tag: 'div',
-    attrs: attributes,
+    attributes,
     className: classList
   });
 };

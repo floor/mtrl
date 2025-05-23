@@ -4,6 +4,7 @@ export { isObject, byString } from './object';
 export { normalizeEvent, hasTouchSupport, TOUCH_CONFIG, PASSIVE_EVENTS } from './mobile';
 export { getInheritedBackground } from './background';
 export { throttle, debounce, once } from './performance';
+export { getThemeColor } from './theme';
 
 /**
  * Creates a transformer that only runs if a condition is met

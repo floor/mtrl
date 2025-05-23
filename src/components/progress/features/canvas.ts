@@ -7,6 +7,8 @@ import {
   PROGRESS_MEASUREMENTS,
   PROGRESS_THICKNESS
 } from '../constants';
+import { getThemeColor } from '../../../core/utils';
+import { PREFIX } from '../../../core/config';
 
 /**
  * Canvas dimensions and drawing context
@@ -201,8 +203,7 @@ const drawCircularProgress = (
   
   if (isIndeterminate) {
     // For indeterminate, draw a partial arc that CSS will rotate
-    ctx.strokeStyle = getComputedStyle(document.documentElement)
-      .getPropertyValue('--mtrl-primary') || '#6200ea';
+    ctx.strokeStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
     
     ctx.beginPath();
     ctx.arc(centerX, centerY, radius, startAngle, startAngle + Math.PI / 1.5);
@@ -214,8 +215,7 @@ const drawCircularProgress = (
     
     // Track (remaining part)
     if (percentage < 1) {
-      ctx.strokeStyle = getComputedStyle(document.documentElement)
-        .getPropertyValue('--mtrl-outline-variant') || 'rgba(0,0,0,0.12)';
+      ctx.strokeStyle = getThemeColor('sys-color-outline-variant', { fallback: 'rgba(0,0,0,0.12)' });
       
       ctx.beginPath();
       ctx.arc(centerX, centerY, radius, startAngle + progressAngle, startAngle + maxAngle);
@@ -224,8 +224,7 @@ const drawCircularProgress = (
     
     // Progress indicator
     if (percentage > 0) {
-      ctx.strokeStyle = getComputedStyle(document.documentElement)
-        .getPropertyValue('--mtrl-primary') || '#6200ea';
+      ctx.strokeStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
       
       ctx.beginPath();
       ctx.arc(centerX, centerY, radius, startAngle, startAngle + progressAngle);
@@ -250,6 +249,7 @@ const drawLinearProgress = (
   const strokeWidth = getStrokeWidth(config.thickness);
   const centerY = height / 2;
   const isWavy = config.shape === 'wavy';
+  const gap = PROGRESS_MEASUREMENTS.LINEAR.GAP;
   
   // Clear canvas
   ctx.clearRect(0, 0, width, height);
@@ -261,8 +261,7 @@ const drawLinearProgress = (
     // For indeterminate, draw animated bar
     const barWidth = width * 0.4;
     
-    ctx.strokeStyle = getComputedStyle(document.documentElement)
-      .getPropertyValue('--mtrl-primary') || '#6200ea';
+    ctx.strokeStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
     
     if (isWavy) {
       // Wavy indeterminate animation
@@ -289,38 +288,9 @@ const drawLinearProgress = (
     const percentage = value / max;
     const bufferPercentage = buffer / max;
     
-    // Buffer indicator (if applicable)
-    if (buffer > 0 && bufferPercentage > percentage) {
-      ctx.strokeStyle = getComputedStyle(document.documentElement)
-        .getPropertyValue('--mtrl-secondary-container') || '#e8f5e8';
-      
-      const bufferWidth = width * bufferPercentage;
-      const progressWidth = width * percentage;
-      
-      ctx.beginPath();
-      if (isWavy) {
-        // Wavy buffer line
-        for (let x = progressWidth + 2; x <= bufferWidth; x += 2) {
-          const ripple = Math.cos(x * 0.15) * 2;
-          const y = centerY + ripple;
-          
-          if (x === progressWidth + 2) {
-            ctx.moveTo(x, y);
-          } else {
-            ctx.lineTo(x, y);
-          }
-        }
-      } else {
-        ctx.moveTo(progressWidth + 2, centerY);
-        ctx.lineTo(bufferWidth, centerY);
-      }
-      ctx.stroke();
-    }
-    
-    // Progress indicator
+    // Progress indicator - draw first
     if (percentage > 0) {
-      ctx.strokeStyle = getComputedStyle(document.documentElement)
-        .getPropertyValue('--mtrl-primary') || '#6200ea';
+      ctx.strokeStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
       
       const progressWidth = width * percentage;
       
@@ -340,6 +310,65 @@ const drawLinearProgress = (
       } else {
         ctx.moveTo(0, centerY);
         ctx.lineTo(progressWidth, centerY);
+      }
+      ctx.stroke();
+    }
+    
+    // Draw track (remaining part) with gap - draw after indicator
+    if (percentage < 1) {
+      // Use primary color with 12% opacity for track
+      ctx.strokeStyle = getThemeColor('sys-color-primary-rgb', { 
+        alpha: 0.12,
+        fallback: 'rgba(103, 80, 164, 0.12)'
+      });
+      
+      const progressWidth = width * percentage;
+      const trackStartX = progressWidth + gap; // Start track after progress + gap
+      
+      ctx.beginPath();
+      if (isWavy) {
+        // Wavy track
+        for (let x = trackStartX; x <= width; x += 2) {
+          const ripple = Math.cos(x * 0.15) * 2;
+          const y = centerY + ripple;
+          
+          if (x === trackStartX) {
+            ctx.moveTo(x, y);
+          } else {
+            ctx.lineTo(x, y);
+          }
+        }
+      } else {
+        // Straight track
+        ctx.moveTo(trackStartX, centerY);
+        ctx.lineTo(width, centerY);
+      }
+      ctx.stroke();
+    }
+    
+    // Buffer indicator (if applicable) - draw last
+    if (buffer > 0 && bufferPercentage > percentage) {
+      ctx.strokeStyle = getThemeColor('sys-color-secondary-container', { fallback: '#E8DEF8' });
+      
+      const bufferWidth = width * bufferPercentage;
+      const progressWidth = width * percentage;
+      
+      ctx.beginPath();
+      if (isWavy) {
+        // Wavy buffer line
+        for (let x = progressWidth + gap; x <= bufferWidth; x += 2) {
+          const ripple = Math.cos(x * 0.15) * 2;
+          const y = centerY + ripple;
+          
+          if (x === progressWidth + gap) {
+            ctx.moveTo(x, y);
+          } else {
+            ctx.lineTo(x, y);
+          }
+        }
+      } else {
+        ctx.moveTo(progressWidth + gap, centerY);
+        ctx.lineTo(bufferWidth, centerY);
       }
       ctx.stroke();
     }
@@ -369,6 +398,7 @@ export const withCanvas = (config: ProgressConfig) =>
     // Setup canvas context - make sure we target the right element
     let canvasContext: CanvasContext | null = null;
     let resizeCleanup: (() => void) | null = null;
+    let themeChangeCleanup: (() => void) | null = null;
     
     const initializeCanvas = (): boolean => {
       try {
@@ -467,6 +497,17 @@ export const withCanvas = (config: ProgressConfig) =>
     // Setup resize observer to watch the PROGRESS COMPONENT, not its parents
     resizeCleanup = observeCanvasResize(component.element, canvas, handleResize);
     
+    // Setup theme change observer
+    const handleThemeChange = (): void => {
+      // Redraw with new theme colors
+      draw();
+    };
+    
+    // Register for theme changes
+    themeChangeCleanup = getThemeColor('sys-color-primary', {
+      onThemeChange: handleThemeChange
+    });
+    
     // Initial draw and setup wavy animation if needed
     // Use a slight delay to ensure the canvas is properly initialized
     const initialDraw = (): void => {
@@ -488,6 +529,7 @@ export const withCanvas = (config: ProgressConfig) =>
       const originalDestroy = component.lifecycle.destroy || (() => {});
       component.lifecycle.destroy = () => {
         if (resizeCleanup) resizeCleanup();
+        if (themeChangeCleanup) themeChangeCleanup();
         stopWavyAnimation();
         originalDestroy();
       };
