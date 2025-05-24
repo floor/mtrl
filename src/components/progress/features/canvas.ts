@@ -310,7 +310,7 @@ const drawLinearProgress = (
   buffer: number,
   isIndeterminate: boolean,
   animationTime: number = 0,
-  showStopIndicator: boolean = true // Optionally show the stop indicator
+  showStopIndicator: boolean = true
 ): void => {
   const { ctx, width, height } = context;
   const strokeWidth = getStrokeWidth(config.thickness);
@@ -326,12 +326,21 @@ const drawLinearProgress = (
   ctx.clearRect(0, 0, width, height);
 
   if (isIndeterminate) {
-    const barWidth = Math.min(availableWidth * 0.4, availableWidth - edgeGap);
-    ctx.strokeStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
+    // Material Design 3 indeterminate animation specs
+    const cycleDuration = 2000; // 2s cycle (matching MD3)
+    const normalizedTime = (animationTime % cycleDuration) / cycleDuration;
+    
+    // Draw the track first
+    ctx.strokeStyle = getThemeColor('sys-color-primary-rgb', { 
+      alpha: 0.12,
+      fallback: 'rgba(103, 80, 164, 0.12)'
+    });
+    ctx.lineWidth = strokeWidth;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
     if (isWavy) {
-      ctx.beginPath();
-      for (let x = edgeGap; x <= edgeGap + barWidth; x += 2) {
-        const ripple = Math.cos((x * 0.1) + (animationTime * 0.05)) * 3;
+      for (let x = edgeGap; x <= width - edgeGap; x += 2) {
+        const ripple = Math.cos(x * 0.15) * 2;
         const y = centerY + ripple;
         if (x === edgeGap) {
           ctx.moveTo(x, y);
@@ -339,13 +348,98 @@ const drawLinearProgress = (
           ctx.lineTo(x, y);
         }
       }
-      ctx.stroke();
     } else {
-      ctx.beginPath();
       ctx.moveTo(edgeGap, centerY);
-      ctx.lineTo(edgeGap + barWidth, centerY);
+      ctx.lineTo(width - edgeGap, centerY);
+    }
+    ctx.stroke();
+
+    // Helper function to calculate scale based on MD3 keyframes
+    const getPrimaryScale = (time: number): number => {
+      if (time <= 0.3665) {
+        // Start growing immediately from 0.08 to 0.661479
+        // Cubic bezier: (0.334731, 0.12482, 0.785844, 1) to (0.06, 0.11, 0.6, 1)
+        const t = time / 0.3665;
+        return 0.08 + (0.661479 - 0.08) * t;
+      } else if (time <= 0.6915) {
+        // Hold at max size
+        return 0.661479;
+      }
+      return 0.08;
+    };
+
+    const getSecondaryScale = (time: number): number => {
+      // Temporarily disabled - always return 0
+      return 0;
+    };
+
+    // Helper function to calculate translate based on MD3 keyframes
+    const getPrimaryTranslate = (time: number): number => {
+      if (time <= 0.2) {
+        // Start much further off-screen on the left (-120%) and move to 0
+        const t = time / 0.2;
+        return -120 + (120 * t);
+      } else if (time <= 0.5915) {
+        // Continue from 0 to 83.6714%
+        const t = (time - 0.2) / (0.5915 - 0.2);
+        return 83.6714 * t;
+      }
+      return 83.6714 + (200.611 - 83.6714) * ((time - 0.5915) / (1 - 0.5915));
+    };
+
+    const getSecondaryTranslate = (time: number): number => {
+      // Start when primary bar goes off-screen
+      if (time < 0.5915) {
+        return -50; // Off-screen
+      }
+      // Adjust time to start from 0 when secondary bar begins
+      const adjustedTime = (time - 0.5915) / (1 - 0.5915);
+      
+      if (adjustedTime <= 0.25) {
+        // Move from off-screen to 37.6519%
+        // Cubic bezier: (0.15, 0, 0.515058, 0.409685) to (0.31033, 0.284058, 0.8, 0.733712)
+        const t = adjustedTime / 0.25;
+        return -50 + (37.6519 + 50) * t;
+      } else if (adjustedTime <= 0.4835) {
+        // Continue moving from 37.6519% to 84.3862%
+        // Cubic bezier: (0.31033, 0.284058, 0.8, 0.733712) to (0.4, 0.627035, 0.6, 0.902026)
+        const t = (adjustedTime - 0.25) / (0.4835 - 0.25);
+        return 37.6519 + (84.3862 - 37.6519) * t;
+      }
+      return 84.3862 + (160.278 - 84.3862) * ((adjustedTime - 0.4835) / (1 - 0.4835));
+    };
+
+    // Draw primary bar
+    const primaryScale = getPrimaryScale(normalizedTime);
+    const primaryTranslate = getPrimaryTranslate(normalizedTime);
+    const primaryWidth = availableWidth * primaryScale;
+    const primaryStart = edgeGap + (availableWidth * primaryTranslate / 100);
+    
+    const visibleStart = Math.max(edgeGap, primaryStart);
+    const visibleEnd = Math.min(width - edgeGap, primaryStart + primaryWidth);
+    if (visibleEnd > visibleStart) {
+      ctx.strokeStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
+      ctx.lineWidth = strokeWidth;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      // if (isWavy) {
+      //   for (let x = visibleStart; x <= visibleEnd; x += 2) {
+      //     const ripple = Math.cos(x * 0.15) * 2;
+      //     const y = centerY + ripple;
+      //     if (x === visibleStart) {
+      //       ctx.moveTo(x, y);
+      //     } else {
+      //       ctx.lineTo(x, y);
+      //     }
+      //   }
+      // } else {
+        ctx.moveTo(visibleStart, centerY);
+        ctx.lineTo(visibleEnd, centerY);
+      // }
       ctx.stroke();
     }
+
+    // Secondary bar is completely removed
     return;
   }
 
@@ -620,6 +714,26 @@ export const withCanvas = (config: ProgressConfig) =>
       }
     };
     
+    // Animation loop for indeterminate progress
+    const startIndeterminateAnimation = (): void => {
+      if (!config.indeterminate || isCircular) return;
+      
+      const animate = (timestamp: number): void => {
+        component.animationTime = timestamp;
+        draw(timestamp);
+        component.animationId = requestAnimationFrame(animate);
+      };
+      
+      component.animationId = requestAnimationFrame(animate);
+    };
+    
+    const stopIndeterminateAnimation = (): void => {
+      if (component.animationId) {
+        cancelAnimationFrame(component.animationId);
+        component.animationId = null;
+      }
+    };
+    
     // Resize function
     const resize = (): void => {
       if (!canvasContext) return;
@@ -665,8 +779,7 @@ export const withCanvas = (config: ProgressConfig) =>
     // Store cleanup function if it's a function
     themeChangeCleanup = typeof cleanup === 'function' ? cleanup : (() => {});
     
-    // Initial draw and setup wavy animation if needed
-    // Use a slight delay to ensure the canvas is properly initialized
+    // Initial draw and setup animation if needed
     const initialDraw = (): void => {
       if (!canvasContext) {
         requestAnimationFrame(initialDraw);
@@ -674,8 +787,12 @@ export const withCanvas = (config: ProgressConfig) =>
       }
       
       draw();
-      if (config.indeterminate && config.shape === 'wavy' && !isCircular) {
-        startWavyAnimation();
+      if (config.indeterminate) {
+        if (config.shape === 'wavy' && !isCircular) {
+          startWavyAnimation();
+        } else if (!isCircular) {
+          startIndeterminateAnimation();
+        }
       }
     };
     
@@ -725,10 +842,15 @@ export const withCanvas = (config: ProgressConfig) =>
         if (resizeCleanup) resizeCleanup();
         if (themeChangeCleanup) themeChangeCleanup();
         stopWavyAnimation();
+        stopIndeterminateAnimation();
         originalDestroy();
       };
     }
     
+    // Add methods to start/stop indeterminate animation
+    component.startIndeterminateAnimation = startIndeterminateAnimation;
+    component.stopIndeterminateAnimation = stopIndeterminateAnimation;
+
     return {
       ...component,
       canvas,
@@ -737,6 +859,8 @@ export const withCanvas = (config: ProgressConfig) =>
       resize,
       setThickness: component.setThickness,
       startWavyAnimation,
-      stopWavyAnimation
+      stopWavyAnimation,
+      startIndeterminateAnimation,
+      stopIndeterminateAnimation
     };
   };
