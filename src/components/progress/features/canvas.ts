@@ -76,22 +76,19 @@ const updateCanvasDimensions = (
   const strokeWidth = getStrokeWidth(config?.thickness);
 
   if (isCircular) {
-    // For circular progress, use fixed size from measurements
-    const size = PROGRESS_MEASUREMENTS.CIRCULAR.SIZE;
-    
+    // Clamp size between 24 and 240
+    const rawSize = config?.size ?? PROGRESS_MEASUREMENTS.CIRCULAR.SIZE;
+    const size = Math.max(24, Math.min(rawSize, 240));
     // Set display size first
     canvas.style.width = `${size}px`;
     canvas.style.height = `${size}px`;
-    
     // Set actual canvas dimensions accounting for pixel ratio
     const canvasSize = Math.round(size * pixelRatio);
     canvas.width = canvasSize;
     canvas.height = canvasSize;
-    
     // Update context dimensions
     context.width = size;
     context.height = size;
-    
     // Reset transform and scale context to match pixel ratio
     const ctx = context.ctx;
     ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform
@@ -146,10 +143,11 @@ const setupCanvas = (canvas: HTMLCanvasElement, isCircular: boolean, config?: Pr
     pixelRatio
   };
   
-  // Set initial dimensions with proper thickness
+  // Set initial dimensions with proper thickness and size
   updateCanvasDimensions(canvas, context, isCircular, {
     ...config,
-    thickness: config?.thickness // Ensure thickness is passed through
+    thickness: config?.thickness, // Ensure thickness is passed through
+    size: config?.size // Pass size through
   });
   
   return context;
@@ -229,12 +227,9 @@ const drawCircularProgress = (
   // Clear canvas
   ctx.clearRect(0, 0, width, height);
   
-  // Calculate gap angle based on thickness (SVG logic)
-  const baseGapAngle = PROGRESS_MEASUREMENTS.CIRCULAR.GAP_ANGLE;
-  const gapMultiplier = PROGRESS_MEASUREMENTS.CIRCULAR.GAP_MULTIPLIER;
-  const defaultStroke = 4; // Use 4 as the default (THIN)
-  const thicknessRatio = strokeWidth / defaultStroke;
-  const gapAngle = baseGapAngle * (1 + (thicknessRatio - 1) * gapMultiplier) * (Math.PI / 180);
+  // Calculate gap angle for a visible gap: 4px plus 2x strokeWidth (for both round caps)
+  const gapPx = 4 + 2 * strokeWidth;
+  const gapAngle = gapPx / radius;
   const startAngle = -Math.PI / 2; // 12 o'clock
   const maxAngle = 2 * Math.PI - gapAngle;
 
@@ -506,19 +501,24 @@ export const withCanvas = (config: ProgressConfig) =>
     // Current thickness value - managed by API
     let currentThickness = config.thickness;
     
+    // In withCanvas, manage currentSize for circular progress
+    let currentSize = config.size ?? PROGRESS_MEASUREMENTS.CIRCULAR.SIZE;
+    
     const initializeCanvas = (): boolean => {
       try {
         // Initialize with the current thickness
         canvasContext = setupCanvas(canvas, isCircular, {
           ...config,
-          thickness: currentThickness
+          thickness: currentThickness,
+          size: currentSize
         });
         component.ctx = canvasContext.ctx;
         
         // Force initial dimensions update
         updateCanvasDimensions(canvas, canvasContext, isCircular, {
           ...config,
-          thickness: currentThickness
+          thickness: currentThickness,
+          size: currentSize
         });
         
         return true;
@@ -563,7 +563,8 @@ export const withCanvas = (config: ProgressConfig) =>
         // Draw with config values
         const currentConfig = {
           ...config,
-          thickness: currentThickness
+          thickness: currentThickness,
+          size: currentSize
         };
         
         updateCanvasDimensions(canvas, canvasContext, isCircular, currentConfig);
@@ -585,7 +586,8 @@ export const withCanvas = (config: ProgressConfig) =>
       // Create a new config object with the current thickness
       const currentConfig = {
         ...config,
-        thickness: currentThickness
+        thickness: currentThickness,
+        size: currentSize
       };
       
       // Always update dimensions to ensure correct thickness
@@ -625,7 +627,8 @@ export const withCanvas = (config: ProgressConfig) =>
       try {
         const currentConfig = {
           ...config,
-          thickness: currentThickness
+          thickness: currentThickness,
+          size: currentSize
         };
         
         const newContext = setupCanvas(canvas, isCircular, currentConfig);
@@ -697,6 +700,23 @@ export const withCanvas = (config: ProgressConfig) =>
         draw();
       }
     };
+    
+    // Add setSize and getSize API to returned component
+    component.setSize = (size: number) => {
+      if (!isCircular) return;
+      // Clamp size
+      currentSize = Math.max(24, Math.min(size, 240));
+      if (canvasContext) {
+        const currentConfig = {
+          ...config,
+          thickness: currentThickness,
+          size: currentSize
+        };
+        updateCanvasDimensions(canvas, canvasContext, isCircular, currentConfig);
+        draw();
+      }
+    };
+    component.getSize = () => isCircular ? currentSize : undefined;
     
     // Cleanup on destroy
     if (component.lifecycle) {

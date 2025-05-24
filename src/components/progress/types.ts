@@ -112,6 +112,13 @@ export interface ProgressConfig {
    * @internal
    */
   schema?: any;
+
+  /**
+   * Size of the circular progress indicator in dp (only for circular variant)
+   * Clamped between 24 and 240
+   * @default 50
+   */
+  size?: number;
 }
 
 /**

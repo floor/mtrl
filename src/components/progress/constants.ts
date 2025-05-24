@@ -89,7 +89,7 @@ export const PROGRESS_MEASUREMENTS = {
     HEIGHT: 4  // Added default height
   },
   CIRCULAR: {
-    SIZE: 50,
+    SIZE: 48,
     GAP_ANGLE: 55,
     GAP_MULTIPLIER: 0.75
   },

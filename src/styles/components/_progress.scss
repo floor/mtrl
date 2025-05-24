@@ -77,7 +77,6 @@ $linear-gap: 4px;
     // Wavy shape variant
     &.#{$component}--wavy {
       overflow: visible;
-      height: 10px; // Slightly taller for wavy shape
       min-height: 10px;
       border-radius: 5px;
       
@@ -97,8 +96,6 @@ $linear-gap: 4px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: $circular-size;
-    height: $circular-size;
     border-radius: 50%;
     
     // Canvas is square and fills the container
