@@ -265,8 +265,14 @@ const drawCircularProgress = (
       ctx.arc(dotX, dotY, strokeWidth / 2, 0, 2 * Math.PI);
       ctx.fillStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
       ctx.fill();
+    } else if (percentage >= 1) {
+      // Draw a full circle (no gap) for 100%
+      ctx.strokeStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+      ctx.stroke();
     } else if (percentage > 0) {
-      // Progress indicator
+      // Progress indicator (with gap)
       ctx.strokeStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
       ctx.beginPath();
       ctx.arc(
@@ -281,7 +287,10 @@ const drawCircularProgress = (
 
     // Track (remaining part)
     if (percentage < 1) {
-      ctx.strokeStyle = getThemeColor('sys-color-outline-variant', { fallback: 'rgba(0,0,0,0.12)' });
+      ctx.strokeStyle = getThemeColor('sys-color-primary-rgb', {
+        alpha: 0.12,
+        fallback: 'rgba(103, 80, 164, 0.12)'
+      });
       ctx.beginPath();
       ctx.arc(
         centerX,
@@ -357,6 +366,28 @@ const drawLinearProgress = (
     ctx.arc(edgeGap, centerY, strokeWidth / 2, 0, 2 * Math.PI);
     ctx.fillStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
     ctx.fill();
+  } else if (percentage >= 1) {
+    // 100%: draw a full-width line, no gap, no stop indicator, no track
+    ctx.strokeStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
+    ctx.lineWidth = strokeWidth;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    if (isWavy) {
+      for (let x = edgeGap; x <= width - edgeGap; x += 2) {
+        const ripple = Math.cos(x * 0.15) * 2;
+        const y = centerY + ripple;
+        if (x === edgeGap) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+      }
+    } else {
+      ctx.moveTo(edgeGap, centerY);
+      ctx.lineTo(width - edgeGap, centerY);
+    }
+    ctx.stroke();
+    return; // Do not draw stop indicator or track
   } else if (percentage > 0) {
     ctx.strokeStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
     ctx.lineWidth = strokeWidth;
@@ -379,16 +410,6 @@ const drawLinearProgress = (
       ctx.lineTo(indicatorEnd, centerY);
     }
     ctx.stroke();
-  }
-
-  // --- Stop Indicator (dot) ---
-  if (showStopIndicator) {
-    // Center the dot at the end of the track, regardless of thickness
-    const dotX = width - edgeGap;
-    ctx.beginPath();
-    ctx.arc(dotX, centerY, 2, 0, 2 * Math.PI); // Always radius 2px
-    ctx.fillStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
-    ctx.fill();
   }
 
   // --- Track (remaining line) ---
@@ -445,6 +466,16 @@ const drawLinearProgress = (
       ctx.lineTo(bufferEnd, centerY);
     }
     ctx.stroke();
+  }
+
+  // --- Stop Indicator (dot) ---
+  if (percentage < 1 && showStopIndicator) {
+    // Center the dot at the end of the track, regardless of thickness
+    const dotX = width - edgeGap;
+    ctx.beginPath();
+    ctx.arc(dotX, centerY, 2, 0, 2 * Math.PI); // Always radius 2px
+    ctx.fillStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
+    ctx.fill();
   }
 };
 
