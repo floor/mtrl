@@ -323,12 +323,18 @@ const drawLinearProgress = (
 
   // --- Indicator ---
   const gapWidth = 4;
-  if (percentage > 0) {
+  const progressEnd = edgeGap + (availableWidth * percentage);
+  if (percentage === 0) {
+    // Special case: value is zero, draw a dot at the start
+    ctx.beginPath();
+    ctx.arc(edgeGap, centerY, strokeWidth / 2, 0, 2 * Math.PI);
+    ctx.fillStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
+    ctx.fill();
+  } else if (percentage > 0) {
     ctx.strokeStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
     ctx.lineWidth = strokeWidth;
     ctx.lineCap = 'round';
     // End the indicator before the gap, accounting for round cap
-    const progressEnd = edgeGap + (availableWidth * percentage);
     const indicatorEnd = Math.max(edgeGap, progressEnd - (gapWidth + strokeWidth) / 2);
     ctx.beginPath();
     if (isWavy) {
@@ -365,8 +371,14 @@ const drawLinearProgress = (
     alpha: 0.12,
     fallback: 'rgba(103, 80, 164, 0.12)'
   });
-  const progressEnd = edgeGap + (availableWidth * percentage);
-  const trackStart = Math.min(progressEnd + (gapWidth + strokeWidth) / 2, width - edgeGap);
+  let trackStart;
+  if (percentage === 0) {
+    // For dot case, start track after the dot and gap
+    trackStart = edgeGap + strokeWidth + gapWidth;
+  } else {
+    // For line case, start track after the indicator and gap
+    trackStart = Math.min(progressEnd + (gapWidth + strokeWidth) / 2, width - edgeGap);
+  }
   ctx.beginPath();
   if (isWavy) {
     for (let x = trackStart; x <= width - edgeGap; x += 2) {
