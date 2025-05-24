@@ -220,6 +220,8 @@ const drawCircularProgress = (
 ): void => {
   const { ctx, width, height } = context;
   const strokeWidth = getStrokeWidth(config.thickness);
+  
+  // Calculate radius accounting for stroke width
   const radius = (Math.min(width, height) / 2) - (strokeWidth / 2);
   const centerX = width / 2;
   const centerY = height / 2;
@@ -227,42 +229,67 @@ const drawCircularProgress = (
   // Clear canvas
   ctx.clearRect(0, 0, width, height);
   
-  // Calculate angles
-  const gapAngle = PROGRESS_MEASUREMENTS.CIRCULAR.GAP_ANGLE * (Math.PI / 180);
-  const startAngle = -Math.PI / 2 + gapAngle / 2;
+  // Calculate gap angle based on thickness (SVG logic)
+  const baseGapAngle = PROGRESS_MEASUREMENTS.CIRCULAR.GAP_ANGLE;
+  const gapMultiplier = PROGRESS_MEASUREMENTS.CIRCULAR.GAP_MULTIPLIER;
+  const defaultStroke = 4; // Use 4 as the default (THIN)
+  const thicknessRatio = strokeWidth / defaultStroke;
+  const gapAngle = baseGapAngle * (1 + (thicknessRatio - 1) * gapMultiplier) * (Math.PI / 180);
+  const startAngle = -Math.PI / 2; // 12 o'clock
   const maxAngle = 2 * Math.PI - gapAngle;
-  
+
   // Set line properties
   ctx.lineWidth = strokeWidth;
   ctx.lineCap = 'round';
-  
+
   if (isIndeterminate) {
     // For indeterminate, draw a partial arc that CSS will rotate
     ctx.strokeStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
-    
     ctx.beginPath();
-    ctx.arc(centerX, centerY, radius, startAngle, startAngle + Math.PI / 1.5);
+    ctx.arc(centerX, centerY, radius, startAngle, startAngle + (Math.PI * 2) / 3);
     ctx.stroke();
   } else {
-    // Draw track (background)
     const percentage = value / max;
-    const progressAngle = maxAngle * percentage;
-    
+    // Arc length available for indicator + track
+    const availableAngle = maxAngle;
+    const indicatorAngle = availableAngle * percentage;
+    const indicatorEnd = startAngle + indicatorAngle;
+    const trackStart = indicatorEnd + gapAngle / 2;
+    const trackEnd = startAngle + maxAngle + gapAngle / 2;
+
+    if (percentage === 0) {
+      // Draw a dot at the start position (12 o'clock)
+      const dotX = centerX + radius * Math.cos(startAngle);
+      const dotY = centerY + radius * Math.sin(startAngle);
+      ctx.beginPath();
+      ctx.arc(dotX, dotY, strokeWidth / 2, 0, 2 * Math.PI);
+      ctx.fillStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
+      ctx.fill();
+    } else if (percentage > 0) {
+      // Progress indicator
+      ctx.strokeStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
+      ctx.beginPath();
+      ctx.arc(
+        centerX,
+        centerY,
+        radius,
+        startAngle,
+        indicatorEnd
+      );
+      ctx.stroke();
+    }
+
     // Track (remaining part)
     if (percentage < 1) {
       ctx.strokeStyle = getThemeColor('sys-color-outline-variant', { fallback: 'rgba(0,0,0,0.12)' });
-      
       ctx.beginPath();
-      ctx.arc(centerX, centerY, radius, startAngle + progressAngle, startAngle + maxAngle);
-      ctx.stroke();
-    }
-    
-    // Progress indicator
-    if (percentage > 0) {
-      ctx.strokeStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
-      
-      ctx.beginPath();
-      ctx.arc(centerX, centerY, radius, startAngle, startAngle + progressAngle);
+      ctx.arc(
+        centerX,
+        centerY,
+        radius,
+        trackStart,
+        trackEnd
+      );
       ctx.stroke();
     }
   }
