@@ -321,6 +321,10 @@ const drawLinearProgress = (
   const edgeGap = strokeWidth / 2;
   // The available width for the indicator and track
   const availableWidth = width - (edgeGap * 2);
+  const gapWidth = 4;
+  const percentage = value / max;
+  const bufferPercentage = buffer / max;
+  const progressEnd = edgeGap + (availableWidth * percentage);
 
   // Clear canvas
   ctx.clearRect(0, 0, width, height);
@@ -443,65 +447,8 @@ const drawLinearProgress = (
     return;
   }
 
-  const percentage = value / max;
-  const bufferPercentage = buffer / max;
-
-  // --- Indicator ---
-  const gapWidth = 4;
-  const progressEnd = edgeGap + (availableWidth * percentage);
-  if (percentage === 0) {
-    // Special case: value is zero, draw a dot at the start
-    ctx.beginPath();
-    ctx.arc(edgeGap, centerY, strokeWidth / 2, 0, 2 * Math.PI);
-    ctx.fillStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
-    ctx.fill();
-  } else if (percentage >= 1) {
-    // 100%: draw a full-width line, no gap, no stop indicator, no track
-    ctx.strokeStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
-    ctx.lineWidth = strokeWidth;
-    ctx.lineCap = 'round';
-    ctx.beginPath();
-    if (isWavy) {
-      for (let x = edgeGap; x <= width - edgeGap; x += 2) {
-        const ripple = Math.cos(x * 0.15) * 2;
-        const y = centerY + ripple;
-        if (x === edgeGap) {
-          ctx.moveTo(x, y);
-        } else {
-          ctx.lineTo(x, y);
-        }
-      }
-    } else {
-      ctx.moveTo(edgeGap, centerY);
-      ctx.lineTo(width - edgeGap, centerY);
-    }
-    ctx.stroke();
-    return; // Do not draw stop indicator or track
-  } else if (percentage > 0) {
-    ctx.strokeStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
-    ctx.lineWidth = strokeWidth;
-    ctx.lineCap = 'round';
-    // End the indicator before the gap, accounting for round cap
-    const indicatorEnd = Math.max(edgeGap, progressEnd - (gapWidth + strokeWidth) / 2);
-    ctx.beginPath();
-    if (isWavy) {
-      for (let x = edgeGap; x <= indicatorEnd; x += 2) {
-        const ripple = Math.cos(x * 0.15) * 2;
-        const y = centerY + ripple;
-        if (x === edgeGap) {
-          ctx.moveTo(x, y);
-        } else {
-          ctx.lineTo(x, y);
-        }
-      }
-    } else {
-      ctx.moveTo(edgeGap, centerY);
-      ctx.lineTo(indicatorEnd, centerY);
-    }
-    ctx.stroke();
-  }
-
   // --- Track (remaining line) ---
+  // Track is always straight, regardless of shape
   ctx.lineWidth = strokeWidth;
   ctx.lineCap = 'round';
   ctx.strokeStyle = getThemeColor('sys-color-primary-rgb', { 
@@ -517,21 +464,76 @@ const drawLinearProgress = (
     trackStart = Math.min(progressEnd + (gapWidth + strokeWidth) / 2, width - edgeGap);
   }
   ctx.beginPath();
-  if (isWavy) {
-    for (let x = trackStart; x <= width - edgeGap; x += 2) {
-      const ripple = Math.cos(x * 0.15) * 2;
-      const y = centerY + ripple;
-      if (x === trackStart) {
-        ctx.moveTo(x, y);
-      } else {
-        ctx.lineTo(x, y);
-      }
-    }
-  } else {
-    ctx.moveTo(trackStart, centerY);
-    ctx.lineTo(width - edgeGap, centerY);
-  }
+  ctx.moveTo(trackStart, centerY);
+  ctx.lineTo(width - edgeGap, centerY);
   ctx.stroke();
+
+  // --- Indicator ---
+  if (percentage === 0) {
+    // Special case: value is zero, draw a dot at the start
+    ctx.beginPath();
+    ctx.arc(edgeGap, centerY, strokeWidth / 2, 0, 2 * Math.PI);
+    ctx.fillStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
+    ctx.fill();
+  } else if (percentage >= 1) {
+    // 100%: draw a full-width line, no gap, no stop indicator
+    ctx.strokeStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
+    ctx.lineWidth = strokeWidth;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    if (isWavy) {
+      // For wavy shape, use a continuous wave animation
+      const waveSpeed = 0.002; // Speed of wave movement
+      const waveAmplitude = 2; // Height of wave
+      const waveFrequency = 0.15; // Frequency of wave
+      
+      for (let x = edgeGap; x <= width - edgeGap; x += 2) {
+        // Calculate wave offset based on animation time
+        const waveOffset = (x * waveFrequency) + (animationTime * waveSpeed);
+        const ripple = Math.sin(waveOffset) * waveAmplitude;
+        const y = centerY + ripple;
+        if (x === edgeGap) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+      }
+    } else {
+      ctx.moveTo(edgeGap, centerY);
+      ctx.lineTo(width - edgeGap, centerY);
+    }
+    ctx.stroke();
+    return; // Do not draw stop indicator
+  } else if (percentage > 0) {
+    ctx.strokeStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
+    ctx.lineWidth = strokeWidth;
+    ctx.lineCap = 'round';
+    // End the indicator before the gap, accounting for round cap
+    const indicatorEnd = Math.max(edgeGap, progressEnd - (gapWidth + strokeWidth) / 2);
+    ctx.beginPath();
+    if (isWavy) {
+      // For wavy shape, use a continuous wave animation
+      const waveSpeed = 0.007; // Speed of wave movement
+      const waveAmplitude = 3; // Height of wave
+      const waveFrequency = 0.15; // Frequency of wave
+      
+      for (let x = edgeGap; x <= indicatorEnd; x += 2) {
+        // Calculate wave offset based on animation time
+        const waveOffset = (x * waveFrequency) + (animationTime * waveSpeed);
+        const ripple = Math.sin(waveOffset) * waveAmplitude;
+        const y = centerY + ripple;
+        if (x === edgeGap) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+      }
+    } else {
+      ctx.moveTo(edgeGap, centerY);
+      ctx.lineTo(indicatorEnd, centerY);
+    }
+    ctx.stroke();
+  }
 
   // --- Buffer ---
   if (buffer > 0 && bufferPercentage > percentage) {
@@ -540,20 +542,9 @@ const drawLinearProgress = (
     ctx.lineCap = 'round';
     const bufferEnd = edgeGap + (availableWidth * bufferPercentage);
     ctx.beginPath();
-    if (isWavy) {
-      for (let x = progressEnd; x <= bufferEnd; x += 2) {
-        const ripple = Math.cos(x * 0.15) * 2;
-        const y = centerY + ripple;
-        if (x === progressEnd) {
-          ctx.moveTo(x, y);
-        } else {
-          ctx.lineTo(x, y);
-        }
-      }
-    } else {
-      ctx.moveTo(progressEnd, centerY);
-      ctx.lineTo(bufferEnd, centerY);
-    }
+    // Buffer is always straight, regardless of shape
+    ctx.moveTo(progressEnd, centerY);
+    ctx.lineTo(bufferEnd, centerY);
     ctx.stroke();
   }
 
@@ -694,9 +685,9 @@ export const withCanvas = (config: ProgressConfig) =>
       }
     };
     
-    // Animation loop for wavy indeterminate progress
+    // Animation loop for wavy progress (works for both determinate and indeterminate)
     const startWavyAnimation = (): void => {
-      if (!config.indeterminate || config.shape !== 'wavy' || isCircular) return;
+      if (config.shape !== 'wavy' || isCircular) return;
       
       const animate = (timestamp: number): void => {
         component.animationTime = timestamp;
@@ -714,7 +705,7 @@ export const withCanvas = (config: ProgressConfig) =>
       }
     };
     
-    // Animation loop for indeterminate progress
+    // Animation loop for indeterminate progress only
     const startIndeterminateAnimation = (): void => {
       if (!config.indeterminate || isCircular) return;
       
@@ -787,12 +778,14 @@ export const withCanvas = (config: ProgressConfig) =>
       }
       
       draw();
-      if (config.indeterminate) {
-        if (config.shape === 'wavy' && !isCircular) {
-          startWavyAnimation();
-        } else if (!isCircular) {
-          startIndeterminateAnimation();
-        }
+      
+      // Start wavy animation if shape is wavy (regardless of indeterminate state)
+      if (config.shape === 'wavy' && !isCircular) {
+        startWavyAnimation();
+      }
+      // Start indeterminate animation if in indeterminate state
+      else if (config.indeterminate && !isCircular) {
+        startIndeterminateAnimation();
       }
     };
     
@@ -841,13 +834,21 @@ export const withCanvas = (config: ProgressConfig) =>
       component.lifecycle.destroy = () => {
         if (resizeCleanup) resizeCleanup();
         if (themeChangeCleanup) themeChangeCleanup();
-        stopWavyAnimation();
-        stopIndeterminateAnimation();
+        // Always stop wavy animation if it's running
+        if (config.shape === 'wavy') {
+          stopWavyAnimation();
+        }
+        // Stop indeterminate animation if it's running
+        if (config.indeterminate) {
+          stopIndeterminateAnimation();
+        }
         originalDestroy();
       };
     }
     
     // Add methods to start/stop indeterminate animation
+    component.startWavyAnimation = startWavyAnimation;
+    component.stopWavyAnimation = stopWavyAnimation;
     component.startIndeterminateAnimation = startIndeterminateAnimation;
     component.stopIndeterminateAnimation = stopIndeterminateAnimation;
 

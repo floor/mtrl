@@ -133,6 +133,7 @@ export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent =
     }
     
     if (options.shape && typeof options.shape.setShape === 'function') {
+      const previousShape = options.shape.getShape();
       options.shape.setShape(shape);
       
       const containerClass = getClass(PROGRESS_CLASSES.CONTAINER);
@@ -147,6 +148,23 @@ export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent =
         element.classList.add(`${containerClass}--${shape}`);
       }
       
+      // Handle wavy animation
+      if (shape === 'wavy') {
+        // Start wavy animation
+        if (comp.startWavyAnimation) {
+          comp.startWavyAnimation();
+        }
+      } else {
+        // Stop wavy animation if it was running
+        if (comp.stopWavyAnimation) {
+          comp.stopWavyAnimation();
+        }
+        // Start indeterminate animation if in indeterminate state
+        if (options.state.isIndeterminate() && comp.startIndeterminateAnimation) {
+          comp.startIndeterminateAnimation();
+        }
+      }
+      
       // Redraw canvas with new shape
       if (typeof comp.draw === 'function') {
         comp.draw();
@@ -156,22 +174,25 @@ export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent =
     return comp;
   };
 
-  // Handle indeterminate state by toggling CSS classes and wavy animation
+  // Handle indeterminate state by toggling CSS classes and animations
   const handleIndeterminateState = (indeterminate: boolean): void => {
     if (indeterminate) {
       addClass(element, PROGRESS_CLASSES.INDETERMINATE);
       element.removeAttribute('aria-valuenow');
       
-      // Start wavy animation if shape is wavy and linear
-      if (!isCircular && options.shape?.getShape() === 'wavy' && comp.startWavyAnimation) {
-        comp.startWavyAnimation();
+      // Start indeterminate animation for linear progress (if not wavy)
+      if (!isCircular) {
+        const currentShape = options.shape?.getShape() || PROGRESS_SHAPES.LINE;
+        if (currentShape !== 'wavy' && comp.startIndeterminateAnimation) {
+          comp.startIndeterminateAnimation();
+        }
       }
     } else {
       removeClass(element, PROGRESS_CLASSES.INDETERMINATE);
       
-      // Stop wavy animation
-      if (comp.stopWavyAnimation) {
-        comp.stopWavyAnimation();
+      // Stop indeterminate animation (but keep wavy animation if shape is wavy)
+      if (comp.stopIndeterminateAnimation) {
+        comp.stopIndeterminateAnimation();
       }
     }
     
