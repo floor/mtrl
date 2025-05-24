@@ -1,6 +1,6 @@
 // src/components/progress/features/canvas.ts
 
-import { ProgressConfig, ProgressVariant, ProgressThickness } from '../types';
+import { ProgressConfig, ProgressVariant, ProgressThickness, ProgressShape } from '../types';
 import { 
   PROGRESS_CLASSES, 
   PROGRESS_VARIANTS,
@@ -310,12 +310,13 @@ const drawLinearProgress = (
   buffer: number,
   isIndeterminate: boolean,
   animationTime: number = 0,
-  showStopIndicator: boolean = true
+  showStopIndicator: boolean = true,
+  currentShape: ProgressShape = 'line'
 ): void => {
   const { ctx, width, height } = context;
   const strokeWidth = getStrokeWidth(config.thickness);
   const centerY = height / 2;
-  const isWavy = config.shape === 'wavy';
+  const isWavy = currentShape === 'wavy';
 
   // The gap at the start and end
   const edgeGap = strokeWidth / 2;
@@ -326,6 +327,10 @@ const drawLinearProgress = (
   const bufferPercentage = buffer / max;
   const progressEnd = edgeGap + (availableWidth * percentage);
 
+  // Transition points for shape changes
+  const startTransitionEnd = 0.03; // Start flat and transition to wavy between 0-3%
+  const endTransitionStart = 0.97; // End wavy and transition to flat between 97-100%
+
   // Clear canvas
   ctx.clearRect(0, 0, width, height);
 
@@ -334,7 +339,7 @@ const drawLinearProgress = (
     const cycleDuration = 2000; // 2s cycle (matching MD3)
     const normalizedTime = (animationTime % cycleDuration) / cycleDuration;
     
-    // Draw the track first
+    // Draw the track first (always straight)
     ctx.strokeStyle = getThemeColor('sys-color-primary-rgb', { 
       alpha: 0.12,
       fallback: 'rgba(103, 80, 164, 0.12)'
@@ -342,75 +347,30 @@ const drawLinearProgress = (
     ctx.lineWidth = strokeWidth;
     ctx.lineCap = 'round';
     ctx.beginPath();
-    if (isWavy) {
-      for (let x = edgeGap; x <= width - edgeGap; x += 2) {
-        const ripple = Math.cos(x * 0.15) * 2;
-        const y = centerY + ripple;
-        if (x === edgeGap) {
-          ctx.moveTo(x, y);
-        } else {
-          ctx.lineTo(x, y);
-        }
-      }
-    } else {
-      ctx.moveTo(edgeGap, centerY);
-      ctx.lineTo(width - edgeGap, centerY);
-    }
+    ctx.moveTo(edgeGap, centerY);
+    ctx.lineTo(width - edgeGap, centerY);
     ctx.stroke();
 
-    // Helper function to calculate scale based on MD3 keyframes
+    // Helper functions for indeterminate animation
     const getPrimaryScale = (time: number): number => {
       if (time <= 0.3665) {
-        // Start growing immediately from 0.08 to 0.661479
-        // Cubic bezier: (0.334731, 0.12482, 0.785844, 1) to (0.06, 0.11, 0.6, 1)
         const t = time / 0.3665;
         return 0.08 + (0.661479 - 0.08) * t;
       } else if (time <= 0.6915) {
-        // Hold at max size
         return 0.661479;
       }
       return 0.08;
     };
 
-    const getSecondaryScale = (time: number): number => {
-      // Temporarily disabled - always return 0
-      return 0;
-    };
-
-    // Helper function to calculate translate based on MD3 keyframes
     const getPrimaryTranslate = (time: number): number => {
       if (time <= 0.2) {
-        // Start much further off-screen on the left (-120%) and move to 0
         const t = time / 0.2;
         return -120 + (120 * t);
       } else if (time <= 0.5915) {
-        // Continue from 0 to 83.6714%
         const t = (time - 0.2) / (0.5915 - 0.2);
         return 83.6714 * t;
       }
       return 83.6714 + (200.611 - 83.6714) * ((time - 0.5915) / (1 - 0.5915));
-    };
-
-    const getSecondaryTranslate = (time: number): number => {
-      // Start when primary bar goes off-screen
-      if (time < 0.5915) {
-        return -50; // Off-screen
-      }
-      // Adjust time to start from 0 when secondary bar begins
-      const adjustedTime = (time - 0.5915) / (1 - 0.5915);
-      
-      if (adjustedTime <= 0.25) {
-        // Move from off-screen to 37.6519%
-        // Cubic bezier: (0.15, 0, 0.515058, 0.409685) to (0.31033, 0.284058, 0.8, 0.733712)
-        const t = adjustedTime / 0.25;
-        return -50 + (37.6519 + 50) * t;
-      } else if (adjustedTime <= 0.4835) {
-        // Continue moving from 37.6519% to 84.3862%
-        // Cubic bezier: (0.31033, 0.284058, 0.8, 0.733712) to (0.4, 0.627035, 0.6, 0.902026)
-        const t = (adjustedTime - 0.25) / (0.4835 - 0.25);
-        return 37.6519 + (84.3862 - 37.6519) * t;
-      }
-      return 84.3862 + (160.278 - 84.3862) * ((adjustedTime - 0.4835) / (1 - 0.4835));
     };
 
     // Draw primary bar
@@ -426,29 +386,29 @@ const drawLinearProgress = (
       ctx.lineWidth = strokeWidth;
       ctx.lineCap = 'round';
       ctx.beginPath();
-      // if (isWavy) {
-      //   for (let x = visibleStart; x <= visibleEnd; x += 2) {
-      //     const ripple = Math.cos(x * 0.15) * 2;
-      //     const y = centerY + ripple;
-      //     if (x === visibleStart) {
-      //       ctx.moveTo(x, y);
-      //     } else {
-      //       ctx.lineTo(x, y);
-      //     }
-      //   }
-      // } else {
-        ctx.moveTo(visibleStart, centerY);
-        ctx.lineTo(visibleEnd, centerY);
-      // }
+
+      // Use wavy mechanism with appropriate amplitude
+      const waveSpeed = 0.003;
+      const waveAmplitude = isWavy ? 2 : 0; // Zero amplitude for line shape
+      const waveFrequency = 0.35;
+      
+      for (let x = visibleStart; x <= visibleEnd; x += 2) {
+        const waveOffset = (x * waveFrequency) + (animationTime * waveSpeed);
+        const ripple = Math.sin(waveOffset) * waveAmplitude;
+        const y = centerY + ripple;
+        if (x === visibleStart) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+      }
       ctx.stroke();
     }
-
-    // Secondary bar is completely removed
     return;
   }
 
   // --- Track (remaining line) ---
-  // Track is always straight, regardless of shape
+  // Track is always straight
   ctx.lineWidth = strokeWidth;
   ctx.lineCap = 'round';
   ctx.strokeStyle = getThemeColor('sys-color-primary-rgb', { 
@@ -457,10 +417,15 @@ const drawLinearProgress = (
   });
   let trackStart;
   if (percentage === 0) {
-    // For dot case, start track after the dot and gap
+    // At 0%, maintain full gap after the dot
     trackStart = edgeGap + strokeWidth + gapWidth;
+  } else if (percentage <= startTransitionEnd) {
+    // During the beginning transition, maintain the gap
+    trackStart = Math.max(
+      edgeGap + strokeWidth + gapWidth, // Minimum gap
+      progressEnd + (gapWidth + strokeWidth) / 2 // Dynamic position
+    );
   } else {
-    // For line case, start track after the indicator and gap
     trackStart = Math.min(progressEnd + (gapWidth + strokeWidth) / 2, width - edgeGap);
   }
   ctx.beginPath();
@@ -470,55 +435,78 @@ const drawLinearProgress = (
 
   // --- Indicator ---
   if (percentage === 0) {
-    // Special case: value is zero, draw a dot at the start
+    // At exactly 0%, draw a dot at the start
     ctx.beginPath();
     ctx.arc(edgeGap, centerY, strokeWidth / 2, 0, 2 * Math.PI);
     ctx.fillStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
     ctx.fill();
   } else if (percentage >= 1) {
-    // 100%: draw a full-width line, no gap, no stop indicator
+    // At 100%, draw a flat line
     ctx.strokeStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
     ctx.lineWidth = strokeWidth;
     ctx.lineCap = 'round';
     ctx.beginPath();
-    if (isWavy) {
-      // For wavy shape, use a continuous wave animation
-      const waveSpeed = 0.002; // Speed of wave movement
-      const waveAmplitude = 2; // Height of wave
-      const waveFrequency = 0.15; // Frequency of wave
-      
-      for (let x = edgeGap; x <= width - edgeGap; x += 2) {
-        // Calculate wave offset based on animation time
-        const waveOffset = (x * waveFrequency) + (animationTime * waveSpeed);
-        const ripple = Math.sin(waveOffset) * waveAmplitude;
-        const y = centerY + ripple;
-        if (x === edgeGap) {
-          ctx.moveTo(x, y);
-        } else {
-          ctx.lineTo(x, y);
-        }
-      }
-    } else {
-      ctx.moveTo(edgeGap, centerY);
-      ctx.lineTo(width - edgeGap, centerY);
-    }
+    ctx.moveTo(edgeGap, centerY);
+    ctx.lineTo(width - edgeGap, centerY);
     ctx.stroke();
     return; // Do not draw stop indicator
-  } else if (percentage > 0) {
+  } else {
+    // For all other cases (including the beginning transition)
     ctx.strokeStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
     ctx.lineWidth = strokeWidth;
     ctx.lineCap = 'round';
-    // End the indicator before the gap, accounting for round cap
-    const indicatorEnd = Math.max(edgeGap, progressEnd - (gapWidth + strokeWidth) / 2);
+    
+    // Calculate indicator end with proper gap
+    let indicatorEnd;
+    if (percentage <= startTransitionEnd) {
+      // During transition, ensure proper gap between indicator and track
+      indicatorEnd = Math.min(
+        progressEnd - (gapWidth + strokeWidth) / 2, // Dynamic position
+        trackStart - (gapWidth + strokeWidth) // Maintain gap from track
+      );
+    } else {
+      indicatorEnd = Math.max(edgeGap, progressEnd - (gapWidth + strokeWidth) / 2);
+    }
+    
     ctx.beginPath();
+
     if (isWavy) {
-      // For wavy shape, use a continuous wave animation
-      const waveSpeed = 0.007; // Speed of wave movement
-      const waveAmplitude = 3; // Height of wave
-      const waveFrequency = 0.15; // Frequency of wave
+      const waveSpeed = 0.004;
+      const baseAmplitude = 3;
+      const waveFrequency = 0.15;
       
+      // Calculate amplitude based on progress
+      let waveAmplitude = baseAmplitude;
+      
+      // For very small percentages, start with a flat line
+      if (percentage <= startTransitionEnd) {
+        // Smoothly increase amplitude from 0% to 3%
+        const transitionProgress = percentage / startTransitionEnd;
+        // Use easeInQuad for smooth transition
+        const easedProgress = transitionProgress * transitionProgress;
+        waveAmplitude = baseAmplitude * easedProgress;
+        
+        // For very small percentages, ensure we start with a visible line
+        const minLength = strokeWidth * 2;
+        const actualLength = indicatorEnd - edgeGap;
+        if (actualLength < minLength) {
+          // Draw a small flat line first, maintaining gap
+          const lineEnd = Math.min(edgeGap + minLength, trackStart - (gapWidth + strokeWidth));
+          ctx.moveTo(edgeGap, centerY);
+          ctx.lineTo(lineEnd, centerY);
+          ctx.stroke();
+          ctx.beginPath();
+        }
+      } else if (percentage >= endTransitionStart) {
+        // Smoothly reduce amplitude from 97% to 100%
+        const transitionProgress = (percentage - endTransitionStart) / (1 - endTransitionStart);
+        // Use easeOutQuad for smooth transition
+        const easedProgress = 1 - (1 - transitionProgress) * (1 - transitionProgress);
+        waveAmplitude = baseAmplitude * (1 - easedProgress);
+      }
+      
+      // Draw the wavy line
       for (let x = edgeGap; x <= indicatorEnd; x += 2) {
-        // Calculate wave offset based on animation time
         const waveOffset = (x * waveFrequency) + (animationTime * waveSpeed);
         const ripple = Math.sin(waveOffset) * waveAmplitude;
         const y = centerY + ripple;
@@ -542,7 +530,6 @@ const drawLinearProgress = (
     ctx.lineCap = 'round';
     const bufferEnd = edgeGap + (availableWidth * bufferPercentage);
     ctx.beginPath();
-    // Buffer is always straight, regardless of shape
     ctx.moveTo(progressEnd, centerY);
     ctx.lineTo(bufferEnd, centerY);
     ctx.stroke();
@@ -550,10 +537,9 @@ const drawLinearProgress = (
 
   // --- Stop Indicator (dot) ---
   if (percentage < 1 && showStopIndicator) {
-    // Center the dot at the end of the track, regardless of thickness
     const dotX = width - edgeGap;
     ctx.beginPath();
-    ctx.arc(dotX, centerY, 2, 0, 2 * Math.PI); // Always radius 2px
+    ctx.arc(dotX, centerY, 2, 0, 2 * Math.PI);
     ctx.fillStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
     ctx.fill();
   }
@@ -585,9 +571,16 @@ export const withCanvas = (config: ProgressConfig) =>
     
     // Current thickness value - managed by API
     let currentThickness = config.thickness;
+    // Current shape value - managed by API
+    let currentShape = config.shape;
     
     // In withCanvas, manage currentSize for circular progress
     let currentSize = config.size ?? PROGRESS_MEASUREMENTS.CIRCULAR.SIZE;
+    
+    // Track animated value for smooth transitions
+    let animatedValue = config.value ?? 0;
+    let targetValue = animatedValue;
+    let animationDuration = 300; // 300ms for value transitions
     
     const initializeCanvas = (): boolean => {
       try {
@@ -628,6 +621,49 @@ export const withCanvas = (config: ProgressConfig) =>
     component.canvas = canvas;
     component.animationTime = 0;
     component.animationId = null;
+    component.isAnimatingValue = false;
+    component.animationStartTime = 0; // Track when the current animation started
+    
+    // Make currentShape accessible to drawLinearProgress
+    component.currentShape = currentShape;
+    
+    // Animation function for value transitions
+    const animateValue = (timestamp: number): void => {
+      if (!component.animationStartTime) {
+        component.animationStartTime = timestamp;
+      }
+      
+      const elapsed = timestamp - component.animationStartTime;
+      
+      if (elapsed < animationDuration) {
+        // Calculate progress of the animation (0 to 1)
+        const progress = elapsed / animationDuration;
+        // Use easeOutQuad for smooth deceleration
+        const easedProgress = 1 - (1 - progress) * (1 - progress);
+        
+        // Update animated value
+        const startValue = component.state?.previousValue ?? animatedValue;
+        const valueDiff = targetValue - startValue;
+        animatedValue = startValue + (valueDiff * easedProgress);
+        
+        // Continue animation
+        component.animationId = requestAnimationFrame(animateValue);
+      } else {
+        // Animation complete
+        animatedValue = targetValue;
+        component.animationId = null;
+        component.isAnimatingValue = false;
+        component.animationStartTime = 0;
+        
+        // Restart wavy animation if needed
+        if (!isCircular && component.state?.indeterminate) {
+          startWavyAnimation();
+        }
+      }
+      
+      // Draw with current animated value
+      draw(timestamp);
+    };
     
     // Drawing function with animation support
     const draw = (animationTime: number = 0): void => {
@@ -649,6 +685,7 @@ export const withCanvas = (config: ProgressConfig) =>
         const currentConfig = {
           ...config,
           thickness: currentThickness,
+          shape: currentShape,
           size: currentSize
         };
         
@@ -657,37 +694,60 @@ export const withCanvas = (config: ProgressConfig) =>
         if (isCircular) {
           drawCircularProgress(canvasContext, currentConfig, value, max, isIndeterminate);
         } else {
-          drawLinearProgress(canvasContext, currentConfig, value, max, buffer, isIndeterminate, animationTime);
+          drawLinearProgress(
+            canvasContext, 
+            currentConfig, 
+            value, 
+            max, 
+            buffer, 
+            isIndeterminate, 
+            animationTime,
+            true,
+            currentShape
+          );
         }
         return;
       }
       
       // Use state values directly
-      const value = state.value;
       const max = state.max;
       const buffer = state.buffer;
       const isIndeterminate = state.indeterminate;
       
-      // Create a new config object with the current thickness
+      // Use animated value for smooth transitions in determinate mode
+      const value = isIndeterminate ? state.value : animatedValue;
+      
+      // Create a new config object with the current thickness and shape
       const currentConfig = {
         ...config,
         thickness: currentThickness,
+        shape: currentShape,
         size: currentSize
       };
       
-      // Always update dimensions to ensure correct thickness
+      // Always update dimensions to ensure correct thickness and shape
       updateCanvasDimensions(canvas, canvasContext, isCircular, currentConfig);
       
       if (isCircular) {
         drawCircularProgress(canvasContext, currentConfig, value, max, isIndeterminate);
       } else {
-        drawLinearProgress(canvasContext, currentConfig, value, max, buffer, isIndeterminate, animationTime);
+        drawLinearProgress(
+          canvasContext, 
+          currentConfig, 
+          value, 
+          max, 
+          buffer, 
+          isIndeterminate, 
+          animationTime,
+          true,
+          currentShape
+        );
       }
     };
     
     // Animation loop for wavy progress (works for both determinate and indeterminate)
     const startWavyAnimation = (): void => {
-      if (config.shape !== 'wavy' || isCircular) return;
+      if (isCircular || component.isAnimatingValue) return;
       
       const animate = (timestamp: number): void => {
         component.animationTime = timestamp;
@@ -695,11 +755,15 @@ export const withCanvas = (config: ProgressConfig) =>
         component.animationId = requestAnimationFrame(animate);
       };
       
+      // Stop any existing animation
+      if (component.animationId) {
+        cancelAnimationFrame(component.animationId);
+      }
       component.animationId = requestAnimationFrame(animate);
     };
     
     const stopWavyAnimation = (): void => {
-      if (component.animationId) {
+      if (component.animationId && !component.isAnimatingValue) {
         cancelAnimationFrame(component.animationId);
         component.animationId = null;
       }
@@ -779,13 +843,9 @@ export const withCanvas = (config: ProgressConfig) =>
       
       draw();
       
-      // Start wavy animation if shape is wavy (regardless of indeterminate state)
-      if (config.shape === 'wavy' && !isCircular) {
+      // Always start wavy animation for linear progress
+      if (!isCircular) {
         startWavyAnimation();
-      }
-      // Start indeterminate animation if in indeterminate state
-      else if (config.indeterminate && !isCircular) {
-        startIndeterminateAnimation();
       }
     };
     
@@ -828,19 +888,101 @@ export const withCanvas = (config: ProgressConfig) =>
     };
     component.getSize = () => isCircular ? currentSize : undefined;
     
+    // Update currentShape in setShape
+    component.setShape = (shape: ProgressShape) => {
+      if (isCircular) return; // Shape only applies to linear variant
+      
+      // Update current shape
+      currentShape = shape;
+      
+      // Update canvas dimensions and redraw
+      if (canvasContext) {
+        const currentConfig = {
+          ...config,
+          shape: currentShape,
+          thickness: currentThickness,
+          size: currentSize
+        };
+        
+        // Update dimensions with new shape
+        updateCanvasDimensions(canvas, canvasContext, isCircular, currentConfig);
+        
+        // Always start wavy animation - it will handle both shapes
+        startWavyAnimation();
+        
+        // Force redraw with new shape
+        draw();
+      }
+    };
+    
+    // Add setValue method to component
+    component.setValue = (value: number) => {
+      if (component.state) {
+        // If we're already animating, update the target value and restart animation
+        if (component.isAnimatingValue) {
+          // Update the target value
+          targetValue = value;
+          // Reset animation start time to create a smooth transition
+          component.animationStartTime = 0;
+          return;
+        }
+        
+        // Stop wavy animation if running
+        if (!isCircular) {
+          stopWavyAnimation();
+        }
+        
+        // Store previous value for animation
+        component.state.previousValue = animatedValue;
+        // Update target value
+        targetValue = value;
+        // Mark that we're animating a value change
+        component.isAnimatingValue = true;
+        // Reset animation start time
+        component.animationStartTime = 0;
+        // Start new animation
+        component.animationId = requestAnimationFrame(animateValue);
+      }
+    };
+    
+    // Add setIndeterminate method to component
+    component.setIndeterminate = (indeterminate: boolean) => {
+      if (component.state) {
+        const wasIndeterminate = component.state.indeterminate;
+        component.state.indeterminate = indeterminate;
+        
+        if (!isCircular) {
+          if (indeterminate && !wasIndeterminate) {
+            // Starting indeterminate mode
+            if (!component.isAnimatingValue) {
+              startWavyAnimation();
+            }
+          } else if (!indeterminate && wasIndeterminate) {
+            // Stopping indeterminate mode
+            stopWavyAnimation();
+            // Force redraw with current value
+            draw();
+          }
+        }
+      }
+    };
+    
     // Cleanup on destroy
     if (component.lifecycle) {
       const originalDestroy = component.lifecycle.destroy || (() => {});
       component.lifecycle.destroy = () => {
         if (resizeCleanup) resizeCleanup();
         if (themeChangeCleanup) themeChangeCleanup();
+        // Stop any running animations
+        if (component.animationId) {
+          cancelAnimationFrame(component.animationId);
+          component.animationId = null;
+        }
+        component.isAnimatingValue = false;
+        component.animationStartTime = 0;
         // Always stop wavy animation if it's running
         if (config.shape === 'wavy') {
           stopWavyAnimation();
-        }
-        // Stop indeterminate animation if it's running
-        if (config.indeterminate) {
-          stopIndeterminateAnimation();
         }
         originalDestroy();
       };
@@ -859,6 +1001,9 @@ export const withCanvas = (config: ProgressConfig) =>
       draw,
       resize,
       setThickness: component.setThickness,
+      setShape: component.setShape,
+      setValue: component.setValue,
+      setIndeterminate: component.setIndeterminate,
       startWavyAnimation,
       stopWavyAnimation,
       startIndeterminateAnimation,

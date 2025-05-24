@@ -106,8 +106,26 @@ export const getApiConfig = (comp, state) => {
   return {
     value: {
       getValue: () => comp.state.value,
-      setValue: (value: number) => { 
-        comp.state.value = Math.max(0, Math.min(comp.state.max, value));
+      setValue: (value: number) => {
+        if (comp.state) {
+          // Clamp value between 0 and max
+          const clampedValue = Math.max(0, Math.min(comp.state.max, value));
+          // Store the previous value for animation
+          comp.state.previousValue = comp.state.value;
+          // Update the state value
+          comp.state.value = clampedValue;
+          // Update label if it exists
+          if (comp.state.label) {
+            comp.state.label.textContent = comp.state.labelFormatter(clampedValue, comp.state.max);
+          }
+          // Trigger animation through canvas component
+          if (typeof comp.setValue === 'function') {
+            comp.setValue(clampedValue);
+          } else if (comp.draw) {
+            // Fallback to immediate redraw if setValue is not available
+            comp.draw();
+          }
+        }
       },
       getMax: () => comp.state.max
     },
@@ -168,11 +186,21 @@ export const getApiConfig = (comp, state) => {
       getShape: () => comp.state.shape,
       setShape: (shape: ProgressShape) => { 
         comp.state.shape = shape;
+        if (comp.setShape) {
+          comp.setShape(shape);
+        }
       }
     },
     state: {
       setIndeterminate: (indeterminate: boolean) => { 
-        comp.state.indeterminate = indeterminate;
+        if (comp.state) {
+          comp.state.indeterminate = indeterminate;
+          if (typeof comp.setIndeterminate === 'function') {
+            comp.setIndeterminate(indeterminate);
+          } else if (comp.draw) {
+            comp.draw();
+          }
+        }
       },
       isIndeterminate: () => comp.state.indeterminate
     },
