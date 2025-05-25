@@ -90,8 +90,7 @@ export const PROGRESS_MEASUREMENTS = {
   },
   CIRCULAR: {
     SIZE: 48,
-    GAP_ANGLE: 55,
-    GAP_MULTIPLIER: 0.75
+    GAP: 8
   },
   COMMON: {    // Added common measurements
     STROKE_WIDTH: 4

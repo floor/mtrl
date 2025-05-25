@@ -214,7 +214,8 @@ const drawCircularProgress = (
   config: ProgressConfig,
   value: number,
   max: number,
-  isIndeterminate: boolean
+  isIndeterminate: boolean,
+  animationTime: number = 0
 ): void => {
   const { ctx, width, height } = context;
   const strokeWidth = getStrokeWidth(config.thickness);
@@ -238,64 +239,113 @@ const drawCircularProgress = (
   ctx.lineCap = 'round';
 
   if (isIndeterminate) {
-    // For indeterminate, draw a partial arc that CSS will rotate
+    // Material Design 3 indeterminate animation specs
+    const cycleDuration = 1333; // ~1.33s cycle (matching MD3)
+    const normalizedTime = (animationTime % cycleDuration) / cycleDuration;
+    
+    // Draw the track first (always present)
+    ctx.strokeStyle = getThemeColor('sys-color-primary-rgb', {
+      alpha: 0.12,
+      fallback: 'rgba(103, 80, 164, 0.12)'
+    });
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+    ctx.stroke();
+
+    // Helper functions for indeterminate animation
+    const getArcLength = (time: number): number => {
+      // Arc length varies between 0.05 and 0.75 of the circle
+      if (time <= 0.5) {
+        // Grow from 0.05 to 0.75 in first half
+        return 0.05 + (0.7 * (time / 0.5));
+      } else {
+        // Shrink from 0.75 to 0.05 in second half
+        return 0.75 - (0.7 * ((time - 0.5) / 0.5));
+      }
+    };
+
+    const getRotation = (time: number): number => {
+      // Full rotation every cycle, with easing
+      const rotation = time * 2 * Math.PI;
+      // Add a slight ease-in-out effect
+      const eased = time < 0.5 
+        ? 2 * time * time 
+        : 1 - Math.pow(-2 * time + 2, 2) / 2;
+      return rotation + (eased * 0.1); // Add a small boost to the rotation
+    };
+
+    // Calculate current arc length and rotation
+    const arcLength = getArcLength(normalizedTime) * 2 * Math.PI;
+    const rotation = getRotation(normalizedTime);
+    
+    // Draw the indeterminate arc
     ctx.strokeStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
     ctx.beginPath();
-    ctx.arc(centerX, centerY, radius, startAngle, startAngle + (Math.PI * 2) / 3);
+    
+    // Start angle is based on rotation
+    const arcStart = startAngle + rotation;
+    // End angle is start angle plus arc length
+    const arcEnd = arcStart + arcLength;
+    
+    // Draw the arc
+    ctx.arc(centerX, centerY, radius, arcStart, arcEnd);
     ctx.stroke();
-  } else {
-    const percentage = value / max;
-    // Arc length available for indicator + track
-    const availableAngle = maxAngle;
-    const indicatorAngle = availableAngle * percentage;
-    const indicatorEnd = startAngle + indicatorAngle;
-    const trackStart = indicatorEnd + gapAngle / 2;
-    const trackEnd = startAngle + maxAngle + gapAngle / 2;
+    
+    return;
+  }
 
-    if (percentage === 0) {
-      // Draw a dot at the start position (12 o'clock)
-      const dotX = centerX + radius * Math.cos(startAngle);
-      const dotY = centerY + radius * Math.sin(startAngle);
-      ctx.beginPath();
-      ctx.arc(dotX, dotY, strokeWidth / 2, 0, 2 * Math.PI);
-      ctx.fillStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
-      ctx.fill();
-    } else if (percentage >= 1) {
-      // Draw a full circle (no gap) for 100%
-      ctx.strokeStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
-      ctx.beginPath();
-      ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
-      ctx.stroke();
-    } else if (percentage > 0) {
-      // Progress indicator (with gap)
-      ctx.strokeStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
-      ctx.beginPath();
-      ctx.arc(
-        centerX,
-        centerY,
-        radius,
-        startAngle,
-        indicatorEnd
-      );
-      ctx.stroke();
-    }
+  // Rest of the determinate drawing code remains the same
+  const percentage = value / max;
+  // Arc length available for indicator + track
+  const availableAngle = maxAngle;
+  const indicatorAngle = availableAngle * percentage;
+  const indicatorEnd = startAngle + indicatorAngle;
+  const trackStart = indicatorEnd + gapAngle / 2;
+  const trackEnd = startAngle + maxAngle + gapAngle / 2;
 
-    // Track (remaining part)
-    if (percentage < 1) {
-      ctx.strokeStyle = getThemeColor('sys-color-primary-rgb', {
-        alpha: 0.12,
-        fallback: 'rgba(103, 80, 164, 0.12)'
-      });
-      ctx.beginPath();
-      ctx.arc(
-        centerX,
-        centerY,
-        radius,
-        trackStart,
-        trackEnd
-      );
-      ctx.stroke();
-    }
+  if (percentage === 0) {
+    // Draw a dot at the start position (12 o'clock)
+    const dotX = centerX + radius * Math.cos(startAngle);
+    const dotY = centerY + radius * Math.sin(startAngle);
+    ctx.beginPath();
+    ctx.arc(dotX, dotY, strokeWidth / 2, 0, 2 * Math.PI);
+    ctx.fillStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
+    ctx.fill();
+  } else if (percentage >= 1) {
+    // Draw a full circle (no gap) for 100%
+    ctx.strokeStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+    ctx.stroke();
+  } else if (percentage > 0) {
+    // Progress indicator (with gap)
+    ctx.strokeStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
+    ctx.beginPath();
+    ctx.arc(
+      centerX,
+      centerY,
+      radius,
+      startAngle,
+      indicatorEnd
+    );
+    ctx.stroke();
+  }
+
+  // Track (remaining part)
+  if (percentage < 1) {
+    ctx.strokeStyle = getThemeColor('sys-color-primary-rgb', {
+      alpha: 0.12,
+      fallback: 'rgba(103, 80, 164, 0.12)'
+    });
+    ctx.beginPath();
+    ctx.arc(
+      centerX,
+      centerY,
+      radius,
+      trackStart,
+      trackEnd
+    );
+    ctx.stroke();
   }
 };
 
@@ -550,7 +600,15 @@ const drawLinearProgress = (
  */
 export const withCanvas = (config: ProgressConfig) => 
   (component: any): CanvasComponent => {
-    const isCircular = config.variant === PROGRESS_VARIANTS.CIRCULAR;
+    // Store variant at initialization to ensure it doesn't change
+    const variant = config.variant;
+    const isCircular = variant === PROGRESS_VARIANTS.CIRCULAR;
+    
+    console.log('[Circular] Initializing canvas', {
+      variant,
+      isCircular,
+      configVariant: config.variant
+    });
     
     // Create canvas element
     const canvas = document.createElement('canvas');
@@ -581,6 +639,10 @@ export const withCanvas = (config: ProgressConfig) =>
     let animatedValue = config.value ?? 0;
     let targetValue = animatedValue;
     let animationDuration = 300; // 300ms for value transitions
+    
+    // Animation state
+    let isAnimating = false;
+    let lastAnimationTime = 0;
     
     const initializeCanvas = (): boolean => {
       try {
@@ -621,50 +683,54 @@ export const withCanvas = (config: ProgressConfig) =>
     component.canvas = canvas;
     component.animationTime = 0;
     component.animationId = null;
-    component.isAnimatingValue = false;
-    component.animationStartTime = 0; // Track when the current animation started
     
     // Make currentShape accessible to drawLinearProgress
     component.currentShape = currentShape;
     
-    // Animation function for value transitions
-    const animateValue = (timestamp: number): void => {
-      if (!component.animationStartTime) {
-        component.animationStartTime = timestamp;
+    // Animation loop for indeterminate progress
+    const startIndeterminateAnimation = (): void => {
+      if (!component.state || component.state.indeterminate !== true) {
+        return;
       }
-      
-      const elapsed = timestamp - component.animationStartTime;
-      
-      if (elapsed < animationDuration) {
-        // Calculate progress of the animation (0 to 1)
-        const progress = elapsed / animationDuration;
-        // Use easeOutQuad for smooth deceleration
-        const easedProgress = 1 - (1 - progress) * (1 - progress);
-        
-        // Update animated value
-        const startValue = component.state?.previousValue ?? animatedValue;
-        const valueDiff = targetValue - startValue;
-        animatedValue = startValue + (valueDiff * easedProgress);
-        
-        // Continue animation
-        component.animationId = requestAnimationFrame(animateValue);
-      } else {
-        // Animation complete
-        animatedValue = targetValue;
+
+      // Stop any existing animation first
+      if (component.animationId) {
+        cancelAnimationFrame(component.animationId);
         component.animationId = null;
-        component.isAnimatingValue = false;
-        component.animationStartTime = 0;
-        
-        // Restart wavy animation if needed
-        if (!isCircular && component.state?.indeterminate) {
-          startWavyAnimation();
-        }
       }
       
-      // Draw with current animated value
-      draw(timestamp);
+      // Reset animation state
+      isAnimating = false;
+      lastAnimationTime = 0;
+      
+      const animate = (timestamp: number): void => {
+        if (!component.state || component.state.indeterminate !== true) {
+          stopIndeterminateAnimation();
+          return;
+        }
+
+        if (lastAnimationTime === 0) {
+          lastAnimationTime = timestamp;
+        }
+        
+        component.animationTime = timestamp;
+        draw(timestamp);
+        component.animationId = requestAnimationFrame(animate);
+      };
+
+      component.animationId = requestAnimationFrame(animate);
+      isAnimating = true;
     };
     
+    const stopIndeterminateAnimation = (): void => {
+      if (component.animationId) {
+        cancelAnimationFrame(component.animationId);
+        component.animationId = null;
+      }
+      isAnimating = false;
+      lastAnimationTime = 0;
+    };
+
     // Drawing function with animation support
     const draw = (animationTime: number = 0): void => {
       // Ensure canvas is initialized
@@ -692,7 +758,7 @@ export const withCanvas = (config: ProgressConfig) =>
         updateCanvasDimensions(canvas, canvasContext, isCircular, currentConfig);
         
         if (isCircular) {
-          drawCircularProgress(canvasContext, currentConfig, value, max, isIndeterminate);
+          drawCircularProgress(canvasContext, currentConfig, value, max, isIndeterminate, animationTime);
         } else {
           drawLinearProgress(
             canvasContext, 
@@ -729,7 +795,7 @@ export const withCanvas = (config: ProgressConfig) =>
       updateCanvasDimensions(canvas, canvasContext, isCircular, currentConfig);
       
       if (isCircular) {
-        drawCircularProgress(canvasContext, currentConfig, value, max, isIndeterminate);
+        drawCircularProgress(canvasContext, currentConfig, value, max, isIndeterminate, animationTime);
       } else {
         drawLinearProgress(
           canvasContext, 
@@ -747,7 +813,7 @@ export const withCanvas = (config: ProgressConfig) =>
     
     // Animation loop for wavy progress (works for both determinate and indeterminate)
     const startWavyAnimation = (): void => {
-      if (isCircular || component.isAnimatingValue) return;
+      if (isCircular) return;
       
       const animate = (timestamp: number): void => {
         component.animationTime = timestamp;
@@ -755,34 +821,10 @@ export const withCanvas = (config: ProgressConfig) =>
         component.animationId = requestAnimationFrame(animate);
       };
       
-      // Stop any existing animation
-      if (component.animationId) {
-        cancelAnimationFrame(component.animationId);
-      }
       component.animationId = requestAnimationFrame(animate);
     };
     
     const stopWavyAnimation = (): void => {
-      if (component.animationId && !component.isAnimatingValue) {
-        cancelAnimationFrame(component.animationId);
-        component.animationId = null;
-      }
-    };
-    
-    // Animation loop for indeterminate progress only
-    const startIndeterminateAnimation = (): void => {
-      if (!config.indeterminate || isCircular) return;
-      
-      const animate = (timestamp: number): void => {
-        component.animationTime = timestamp;
-        draw(timestamp);
-        component.animationId = requestAnimationFrame(animate);
-      };
-      
-      component.animationId = requestAnimationFrame(animate);
-    };
-    
-    const stopIndeterminateAnimation = (): void => {
       if (component.animationId) {
         cancelAnimationFrame(component.animationId);
         component.animationId = null;
@@ -843,8 +885,15 @@ export const withCanvas = (config: ProgressConfig) =>
       
       draw();
       
-      // Always start wavy animation for linear progress
-      if (!isCircular) {
+      // Start appropriate animation based on state
+      if (component.state?.indeterminate) {
+        if (isCircular) {
+          startIndeterminateAnimation();
+        } else {
+          startWavyAnimation();
+        }
+      } else if (!isCircular) {
+        // Always start wavy animation for linear progress
         startWavyAnimation();
       }
     };
@@ -917,52 +966,103 @@ export const withCanvas = (config: ProgressConfig) =>
     
     // Add setValue method to component
     component.setValue = (value: number) => {
-      if (component.state) {
-        // If we're already animating, update the target value and restart animation
-        if (component.isAnimatingValue) {
-          // Update the target value
-          targetValue = value;
-          // Reset animation start time to create a smooth transition
-          component.animationStartTime = 0;
+      if (!component.state) {
+        console.warn('[Circular] No state available for setValue');
+        return;
+      }
+
+      // Store the target value
+      targetValue = Math.max(0, Math.min(component.state.max, value));
+      
+      // If we're in indeterminate mode, exit it first
+      if (component.state.indeterminate) {
+        component.setIndeterminate(false);
+      }
+
+      // Start value animation
+      component.isAnimatingValue = true;
+      component.animationStartTime = performance.now();
+
+      const animateValue = (timestamp: number) => {
+        if (!component.isAnimatingValue) {
           return;
         }
+
+        const elapsed = timestamp - component.animationStartTime;
+        const progress = Math.min(elapsed / animationDuration, 1);
         
-        // Stop wavy animation if running
-        if (!isCircular) {
-          stopWavyAnimation();
+        // Use easeOutQuad for smooth animation
+        const easedProgress = 1 - (1 - progress) * (1 - progress);
+        animatedValue = animatedValue + (targetValue - animatedValue) * easedProgress;
+
+        // Draw with current animated value
+        draw(timestamp);
+
+        if (progress < 1) {
+          component.animationId = requestAnimationFrame(animateValue);
+        } else {
+          // Animation complete
+          animatedValue = targetValue;
+          component.isAnimatingValue = false;
+          component.animationId = null;
+          draw(timestamp);
         }
-        
-        // Store previous value for animation
-        component.state.previousValue = animatedValue;
-        // Update target value
-        targetValue = value;
-        // Mark that we're animating a value change
-        component.isAnimatingValue = true;
-        // Reset animation start time
-        component.animationStartTime = 0;
-        // Start new animation
-        component.animationId = requestAnimationFrame(animateValue);
+      };
+
+      // Start the animation
+      if (component.animationId) {
+        cancelAnimationFrame(component.animationId);
       }
+      component.animationId = requestAnimationFrame(animateValue);
     };
-    
+
     // Add setIndeterminate method to component
     component.setIndeterminate = (indeterminate: boolean) => {
-      if (component.state) {
-        const wasIndeterminate = component.state.indeterminate;
-        component.state.indeterminate = indeterminate;
-        
-        if (!isCircular) {
-          if (indeterminate && !wasIndeterminate) {
-            // Starting indeterminate mode
-            if (!component.isAnimatingValue) {
-              startWavyAnimation();
-            }
-          } else if (!indeterminate && wasIndeterminate) {
-            // Stopping indeterminate mode
-            stopWavyAnimation();
-            // Force redraw with current value
-            draw();
+      if (!component.state) {
+        console.warn('[Circular] No state available for setIndeterminate');
+        return;
+      }
+
+      // Update the state first
+      component.state.indeterminate = indeterminate;
+      
+      // Handle animation state changes
+      if (indeterminate) {
+        // Starting indeterminate mode
+        if (isCircular) {
+          // For circular, always start indeterminate animation
+          stopWavyAnimation(); // Ensure wavy animation is stopped
+          // Reset animation state
+          isAnimating = false;
+          lastAnimationTime = 0;
+          if (component.animationId) {
+            cancelAnimationFrame(component.animationId);
+            component.animationId = null;
           }
+          // Reset value animation state
+          component.isAnimatingValue = false;
+          animatedValue = component.state.value;
+          // Start the animation immediately
+          startIndeterminateAnimation();
+        } else if (!component.isAnimatingValue) {
+          // For linear, start wavy animation if not animating value
+          startWavyAnimation();
+        }
+      } else {
+        // Stopping indeterminate mode
+        if (isCircular) {
+          // For circular, stop indeterminate animation
+          stopIndeterminateAnimation();
+          // Reset value animation state
+          component.isAnimatingValue = false;
+          animatedValue = component.state.value;
+          // Force redraw with current value
+          draw();
+        } else {
+          // For linear, stop wavy animation
+          stopWavyAnimation();
+          // Force redraw with current value
+          draw();
         }
       }
     };
@@ -971,13 +1071,15 @@ export const withCanvas = (config: ProgressConfig) =>
     if (component.lifecycle) {
       const originalDestroy = component.lifecycle.destroy || (() => {});
       component.lifecycle.destroy = () => {
+        console.log('[Circular] Destroying component', {
+          isCircular,
+          isAnimating,
+          hasAnimationId: !!component.animationId
+        });
         if (resizeCleanup) resizeCleanup();
         if (themeChangeCleanup) themeChangeCleanup();
         // Stop any running animations
-        if (component.animationId) {
-          cancelAnimationFrame(component.animationId);
-          component.animationId = null;
-        }
+        stopIndeterminateAnimation();
         component.isAnimatingValue = false;
         component.animationStartTime = 0;
         // Always stop wavy animation if it's running
@@ -1002,8 +1104,6 @@ export const withCanvas = (config: ProgressConfig) =>
       resize,
       setThickness: component.setThickness,
       setShape: component.setShape,
-      setValue: component.setValue,
-      setIndeterminate: component.setIndeterminate,
       startWavyAnimation,
       stopWavyAnimation,
       startIndeterminateAnimation,
