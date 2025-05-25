@@ -294,15 +294,26 @@ const drawCircularProgress = (
     return;
   }
 
-  // Rest of the determinate drawing code remains the same
+  // Rest of the determinate drawing code
   const percentage = value / max;
-  // Arc length available for indicator + track
-  const availableAngle = maxAngle;
-  const indicatorAngle = availableAngle * percentage;
-  const indicatorEnd = startAngle + indicatorAngle;
-  const trackStart = indicatorEnd + gapAngle / 2;
-  const trackEnd = startAngle + maxAngle + gapAngle / 2;
+  
+  // Draw track first (always present except at 100%)
+  if (percentage < 1) {
+    ctx.strokeStyle = getThemeColor('sys-color-primary-rgb', {
+      alpha: 0.12,
+      fallback: 'rgba(103, 80, 164, 0.12)'
+    });
+    ctx.beginPath();
+    
+    // Calculate track angles based on current progress
+    const trackStart = startAngle + (maxAngle * percentage) + gapAngle / 2;
+    const trackEnd = startAngle + maxAngle + gapAngle / 2;
+    
+    ctx.arc(centerX, centerY, radius, trackStart, trackEnd);
+    ctx.stroke();
+  }
 
+  // Draw progress indicator
   if (percentage === 0) {
     // Draw a dot at the start position (12 o'clock)
     const dotX = centerX + radius * Math.cos(startAngle);
@@ -311,40 +322,17 @@ const drawCircularProgress = (
     ctx.arc(dotX, dotY, strokeWidth / 2, 0, 2 * Math.PI);
     ctx.fillStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
     ctx.fill();
-  } else if (percentage >= 1) {
-    // Draw a full circle (no gap) for 100%
+  } else if (percentage >= 0.995) {
+    // Draw complete circle when very close to 100%
     ctx.strokeStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
     ctx.beginPath();
     ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
     ctx.stroke();
-  } else if (percentage > 0) {
-    // Progress indicator (with gap)
+  } else {
+    // Normal progress indicator (with gap)
     ctx.strokeStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
     ctx.beginPath();
-    ctx.arc(
-      centerX,
-      centerY,
-      radius,
-      startAngle,
-      indicatorEnd
-    );
-    ctx.stroke();
-  }
-
-  // Track (remaining part)
-  if (percentage < 1) {
-    ctx.strokeStyle = getThemeColor('sys-color-primary-rgb', {
-      alpha: 0.12,
-      fallback: 'rgba(103, 80, 164, 0.12)'
-    });
-    ctx.beginPath();
-    ctx.arc(
-      centerX,
-      centerY,
-      radius,
-      trackStart,
-      trackEnd
-    );
+    ctx.arc(centerX, centerY, radius, startAngle, startAngle + (maxAngle * percentage));
     ctx.stroke();
   }
 };
@@ -490,8 +478,8 @@ const drawLinearProgress = (
     ctx.arc(edgeGap, centerY, strokeWidth / 2, 0, 2 * Math.PI);
     ctx.fillStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
     ctx.fill();
-  } else if (percentage >= 1) {
-    // At 100%, draw a flat line
+  } else if (percentage >= 0.995) {
+    // Draw complete line when very close to 100%
     ctx.strokeStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
     ctx.lineWidth = strokeWidth;
     ctx.lineCap = 'round';
@@ -499,7 +487,6 @@ const drawLinearProgress = (
     ctx.moveTo(edgeGap, centerY);
     ctx.lineTo(width - edgeGap, centerY);
     ctx.stroke();
-    return; // Do not draw stop indicator
   } else {
     // For all other cases (including the beginning transition)
     ctx.strokeStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
@@ -586,7 +573,7 @@ const drawLinearProgress = (
   }
 
   // --- Stop Indicator (dot) ---
-  if (percentage < 1 && showStopIndicator) {
+  if (percentage < 0.995 && showStopIndicator) {
     const dotX = width - edgeGap;
     ctx.beginPath();
     ctx.arc(dotX, centerY, 2, 0, 2 * Math.PI);
@@ -964,7 +951,7 @@ export const withCanvas = (config: ProgressConfig) =>
       }
     };
     
-    // Add setValue method to component
+    // Update setValue method to handle the final transition better
     component.setValue = (value: number) => {
       if (!component.state) {
         console.warn('[Circular] No state available for setValue');
@@ -979,6 +966,10 @@ export const withCanvas = (config: ProgressConfig) =>
         component.setIndeterminate(false);
       }
 
+      // Adjust animation duration based on the transition
+      const isTransitioningToFull = targetValue === component.state.max && animatedValue < targetValue;
+      const currentDuration = isTransitioningToFull ? animationDuration * 1.2 : animationDuration; // Slightly longer for final transition
+
       // Start value animation
       component.isAnimatingValue = true;
       component.animationStartTime = performance.now();
@@ -989,10 +980,28 @@ export const withCanvas = (config: ProgressConfig) =>
         }
 
         const elapsed = timestamp - component.animationStartTime;
-        const progress = Math.min(elapsed / animationDuration, 1);
+        const progress = Math.min(elapsed / currentDuration, 1);
         
-        // Use easeOutQuad for smooth animation
-        const easedProgress = 1 - (1 - progress) * (1 - progress);
+        // Custom easing function for smoother animation
+        const easedProgress = (() => {
+          if (isTransitioningToFull) {
+            // Special easing for transition to 100%
+            if (progress < 0.7) {
+              // First 70%: accelerate smoothly
+              return (progress / 0.7) * (progress / 0.7) * 0.7;
+            } else {
+              // Last 30%: maintain momentum
+              const t = (progress - 0.7) / 0.3;
+              return 0.7 + (1 - Math.pow(1 - t, 2)) * 0.3;
+            }
+          } else {
+            // Normal easing for other transitions
+            return progress < 0.5
+              ? 4 * progress * progress * progress
+              : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+          }
+        })();
+        
         animatedValue = animatedValue + (targetValue - animatedValue) * easedProgress;
 
         // Draw with current animated value
@@ -1005,6 +1014,16 @@ export const withCanvas = (config: ProgressConfig) =>
           animatedValue = targetValue;
           component.isAnimatingValue = false;
           component.animationId = null;
+          
+          // For wavy shape, restart the wavy animation after value animation completes
+          if (!isCircular && currentShape === 'wavy') {
+            setTimeout(() => {
+              if (!component.isAnimatingValue && !component.state?.indeterminate) {
+                startWavyAnimation();
+              }
+            }, 50);
+          }
+          
           draw(timestamp);
         }
       };
