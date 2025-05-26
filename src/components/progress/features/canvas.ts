@@ -115,6 +115,7 @@ const updateCanvasDimensions = (
     // Set actual canvas dimensions accounting for pixel ratio
     canvas.width = Math.round(width * pixelRatio);
     canvas.height = Math.round(height * pixelRatio);
+    canvas.style.borderRadius = height / 2 + 'px'
     
     // Update context dimensions
     context.width = width;
@@ -229,7 +230,7 @@ const drawCircularProgress = (
   ctx.clearRect(0, 0, width, height);
   
   // Calculate gap angle for a visible gap: 4px plus 2x strokeWidth (for both round caps)
-  const gapPx = 4 + 2 * strokeWidth;
+  const gapPx = PROGRESS_MEASUREMENTS.CIRCULAR.GAP + 2 * strokeWidth;
   const gapAngle = gapPx / radius;
   const startAngle = -Math.PI / 2; // 12 o'clock
   const maxAngle = 2 * Math.PI - gapAngle;
@@ -426,7 +427,7 @@ const drawLinearProgress = (
       ctx.beginPath();
 
       // Use wavy mechanism with appropriate amplitude
-      const waveSpeed = 0.003;
+      const waveSpeed = 0;
       const waveAmplitude = isWavy ? 2 : 0; // Zero amplitude for line shape
       const waveFrequency = 0.35;
       
@@ -472,13 +473,7 @@ const drawLinearProgress = (
   ctx.stroke();
 
   // --- Indicator ---
-  if (percentage === 0) {
-    // At exactly 0%, draw a dot at the start
-    ctx.beginPath();
-    ctx.arc(edgeGap, centerY, strokeWidth / 2, 0, 2 * Math.PI);
-    ctx.fillStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
-    ctx.fill();
-  } else if (percentage >= 0.995) {
+  if (percentage >= 0.995) {
     // Draw complete line when very close to 100%
     ctx.strokeStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
     ctx.lineWidth = strokeWidth;
@@ -508,7 +503,7 @@ const drawLinearProgress = (
     ctx.beginPath();
 
     if (isWavy) {
-      const waveSpeed = 0.004;
+      const waveSpeed = 0.008;
       const baseAmplitude = 3;
       const waveFrequency = 0.15;
       
@@ -590,12 +585,6 @@ export const withCanvas = (config: ProgressConfig) =>
     // Store variant at initialization to ensure it doesn't change
     const variant = config.variant;
     const isCircular = variant === PROGRESS_VARIANTS.CIRCULAR;
-    
-    console.log('[Circular] Initializing canvas', {
-      variant,
-      isCircular,
-      configVariant: config.variant
-    });
     
     // Create canvas element
     const canvas = document.createElement('canvas');
@@ -953,10 +942,6 @@ export const withCanvas = (config: ProgressConfig) =>
     
     // Update setValue method to handle the final transition better
     component.setValue = (value: number) => {
-      if (!component.state) {
-        console.warn('[Circular] No state available for setValue');
-        return;
-      }
 
       // Store the target value
       targetValue = Math.max(0, Math.min(component.state.max, value));

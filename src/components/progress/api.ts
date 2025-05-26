@@ -100,17 +100,7 @@ export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent =
     if (options.thickness) {
       options.thickness.setThickness(thickness);
     }
-    
-    // Update thickness classes for styling
-    const containerClass = getClass(PROGRESS_CLASSES.CONTAINER);
-    element.classList.remove(`${containerClass}--thin`, `${containerClass}--thick`);
-    
-    if (thickness === 'thin') {
-      element.classList.add(`${containerClass}--thin`);
-    } else if (thickness === 'thick') {
-      element.classList.add(`${containerClass}--thick`);
-    }
-    
+
     // Call component's setThickness to update canvas
     if (comp.setThickness) {
       comp.setThickness(thickness);
