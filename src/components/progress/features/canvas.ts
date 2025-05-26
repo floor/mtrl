@@ -940,9 +940,8 @@ export const withCanvas = (config: ProgressConfig) =>
       }
     };
     
-    // Update setValue method to handle the final transition better
+    // Update setValue method to handle rapid updates better
     component.setValue = (value: number) => {
-
       // Store the target value
       targetValue = Math.max(0, Math.min(component.state.max, value));
       
@@ -951,24 +950,31 @@ export const withCanvas = (config: ProgressConfig) =>
         component.setIndeterminate(false);
       }
 
-      // Adjust animation duration based on the transition
-      const isTransitioningToFull = targetValue === component.state.max && animatedValue < targetValue;
-      const currentDuration = isTransitioningToFull ? animationDuration * 1.2 : animationDuration; // Slightly longer for final transition
-
-      // Start value animation
-      component.isAnimatingValue = true;
-      component.animationStartTime = performance.now();
-
+      // Animation function that handles smooth transitions
       const animateValue = (timestamp: number) => {
         if (!component.isAnimatingValue) {
           return;
         }
 
+        // Only update lastUpdateTime if this is a new animation cycle
+        if (!component.lastUpdateTime) {
+          component.lastUpdateTime = timestamp;
+        }
+
+        const timeSinceLastUpdate = timestamp - component.lastUpdateTime;
         const elapsed = timestamp - component.animationStartTime;
-        const progress = Math.min(elapsed / currentDuration, 1);
         
-        // Custom easing function for smoother animation
+        // Adjust animation duration based on update frequency
+        // If updates are coming in rapidly (less than 100ms apart),
+        // use a shorter duration to keep up
+        const dynamicDuration = timeSinceLastUpdate < 100 ? 100 : animationDuration;
+        
+        // Calculate progress based on dynamic duration
+        const progress = Math.min(elapsed / dynamicDuration, 1);
+        
+        // Restore original easing function for smoother transitions
         const easedProgress = (() => {
+          const isTransitioningToFull = targetValue === component.state.max && animatedValue < targetValue;
           if (isTransitioningToFull) {
             // Special easing for transition to 100%
             if (progress < 0.7) {
@@ -987,18 +993,26 @@ export const withCanvas = (config: ProgressConfig) =>
           }
         })();
         
-        animatedValue = animatedValue + (targetValue - animatedValue) * easedProgress;
+        // Update animated value with a smoother transition
+        const previousValue = animatedValue;
+        animatedValue = previousValue + (targetValue - previousValue) * easedProgress;
 
         // Draw with current animated value
         draw(timestamp);
 
-        if (progress < 1) {
+        // Continue animation if we haven't reached the target
+        // or if we're still receiving rapid updates
+        const isCloseToTarget = Math.abs(animatedValue - targetValue) < 0.1;
+        const isReceivingRapidUpdates = timeSinceLastUpdate < 100;
+        
+        if (!isCloseToTarget || isReceivingRapidUpdates) {
           component.animationId = requestAnimationFrame(animateValue);
         } else {
           // Animation complete
           animatedValue = targetValue;
           component.isAnimatingValue = false;
           component.animationId = null;
+          component.lastUpdateTime = null; // Reset for next animation
           
           // For wavy shape, restart the wavy animation after value animation completes
           if (!isCircular && currentShape === 'wavy') {
@@ -1013,11 +1027,17 @@ export const withCanvas = (config: ProgressConfig) =>
         }
       };
 
-      // Start the animation
-      if (component.animationId) {
-        cancelAnimationFrame(component.animationId);
+      // If no animation is running, start one
+      if (!component.isAnimatingValue) {
+        component.isAnimatingValue = true;
+        component.animationStartTime = performance.now();
+        component.lastUpdateTime = null; // Will be set on first animation frame
+        component.animationId = requestAnimationFrame(animateValue);
+      } else {
+        // If animation is running, just update the target
+        // The animation loop will handle the transition
+        // Don't update lastUpdateTime here to maintain smooth transition
       }
-      component.animationId = requestAnimationFrame(animateValue);
     };
 
     // Add setIndeterminate method to component
