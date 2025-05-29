@@ -196,6 +196,24 @@ export interface ProgressComponent {
   isDisabled: () => boolean;
   
   /**
+   * Hides the progress component
+   * @returns The progress component for chaining
+   */
+  hide: () => ProgressComponent;
+  
+  /**
+   * Shows the progress component
+   * @returns The progress component for chaining
+   */
+  show: () => ProgressComponent;
+  
+  /**
+   * Checks if the progress component is visible
+   * @returns Whether the component is visible
+   */
+  isVisible: () => boolean;
+  
+  /**
    * Shows the label element
    * @returns The progress component for chaining
    */

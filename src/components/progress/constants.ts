@@ -76,6 +76,7 @@ export const PROGRESS_CLASSES = {
   DISABLED: 'progress--disabled',
   /** Test state class */
   TEST: 'progress--test',
+  TRANSITION: 'progress--transition'
 } as const;
 
 /**

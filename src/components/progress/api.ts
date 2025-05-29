@@ -228,6 +228,7 @@ export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent =
       
       return api;
     },
+    
     getMax() {
       return options.value.getMax();
     },
@@ -288,6 +289,23 @@ export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent =
       return api;
     },
     isDisabled: options.disabled.isDisabled,
+    
+    // Visibility management
+    hide(): ProgressComponent {
+      if (comp.hide) {
+        comp.hide();
+      }
+      return api;
+    },
+    show(): ProgressComponent {
+      if (comp.show) {
+        comp.show();
+      }
+      return api;
+    },
+    isVisible(): boolean {
+      return comp.isVisible ? comp.isVisible() : element.style.display !== 'none';
+    },
     
     // Event handling
     on(event: string, handler: Function): ProgressComponent {

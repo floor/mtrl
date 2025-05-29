@@ -170,7 +170,7 @@ const observeCanvasResize = (
   const debouncedResize = (): void => {
     if (timeoutId) clearTimeout(timeoutId);
     timeoutId = window.setTimeout(() => {
-      console.log('Progress element resized, updating canvas...');
+      // console.log('Progress element resized, updating canvas...');
       onResize();
     }, 100);
   };
@@ -184,7 +184,7 @@ const observeCanvasResize = (
         
         // Only trigger if the progress element actually changed size significantly
         if (Math.abs(width - currentWidth) > 2) {
-          console.log(`Progress element size changed: ${currentWidth}px -> ${width}px`);
+          // console.log(`Progress element size changed: ${currentWidth}px -> ${width}px`);
           debouncedResize();
         }
       }
@@ -614,7 +614,7 @@ export const withCanvas = (config: ProgressConfig) =>
     // Track animated value for smooth transitions
     let animatedValue = config.value ?? 0;
     let targetValue = animatedValue;
-    let animationDuration = 300; // 300ms for value transitions
+    let animationDuration = 30; // 300ms for value transitions
     
     // Animation state
     let isAnimating = false;
@@ -950,94 +950,46 @@ export const withCanvas = (config: ProgressConfig) =>
         component.setIndeterminate(false);
       }
 
-      // Animation function that handles smooth transitions
-      const animateValue = (timestamp: number) => {
-        if (!component.isAnimatingValue) {
-          return;
-        }
+      // Cancel any existing animation
+      if (component.animationId) {
+        cancelAnimationFrame(component.animationId);
+        component.animationId = null;
+      }
 
-        // Only update lastUpdateTime if this is a new animation cycle
-        if (!component.lastUpdateTime) {
-          component.lastUpdateTime = timestamp;
-        }
+      // Store the start value and time
+      const startValue = animatedValue;
+      const startTime = performance.now();
+      const duration = 300; // Fixed duration for consistent behavior
 
-        const timeSinceLastUpdate = timestamp - component.lastUpdateTime;
-        const elapsed = timestamp - component.animationStartTime;
-        
-        // Adjust animation duration based on update frequency
-        // If updates are coming in rapidly (less than 100ms apart),
-        // use a shorter duration to keep up
-        const dynamicDuration = timeSinceLastUpdate < 100 ? 100 : animationDuration;
-        
-        // Calculate progress based on dynamic duration
-        const progress = Math.min(elapsed / dynamicDuration, 1);
-        
-        // Restore original easing function for smoother transitions
-        const easedProgress = (() => {
-          const isTransitioningToFull = targetValue === component.state.max && animatedValue < targetValue;
-          if (isTransitioningToFull) {
-            // Special easing for transition to 100%
-            if (progress < 0.7) {
-              // First 70%: accelerate smoothly
-              return (progress / 0.7) * (progress / 0.7) * 0.7;
-            } else {
-              // Last 30%: maintain momentum
-              const t = (progress - 0.7) / 0.3;
-              return 0.7 + (1 - Math.pow(1 - t, 2)) * 0.3;
-            }
-          } else {
-            // Normal easing for other transitions
-            return progress < 0.5
-              ? 4 * progress * progress * progress
-              : 1 - Math.pow(-2 * progress + 2, 3) / 2;
-          }
-        })();
-        
-        // Update animated value with a smoother transition
-        const previousValue = animatedValue;
-        animatedValue = previousValue + (targetValue - previousValue) * easedProgress;
+      // Animation function with proper easing
+      const animateValue = (currentTime: number) => {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+
+        // Use cubic-bezier easing for smooth acceleration and deceleration
+        const easedProgress = progress < 0.5
+          ? 4 * progress * progress * progress
+          : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+
+        // Update animated value
+        animatedValue = startValue + (targetValue - startValue) * easedProgress;
 
         // Draw with current animated value
-        draw(timestamp);
+        draw(currentTime);
 
-        // Continue animation if we haven't reached the target
-        // or if we're still receiving rapid updates
-        const isCloseToTarget = Math.abs(animatedValue - targetValue) < 0.1;
-        const isReceivingRapidUpdates = timeSinceLastUpdate < 100;
-        
-        if (!isCloseToTarget || isReceivingRapidUpdates) {
+        // Continue animation if not complete
+        if (progress < 1) {
           component.animationId = requestAnimationFrame(animateValue);
         } else {
           // Animation complete
           animatedValue = targetValue;
-          component.isAnimatingValue = false;
           component.animationId = null;
-          component.lastUpdateTime = null; // Reset for next animation
-          
-          // For wavy shape, restart the wavy animation after value animation completes
-          if (!isCircular && currentShape === 'wavy') {
-            setTimeout(() => {
-              if (!component.isAnimatingValue && !component.state?.indeterminate) {
-                startWavyAnimation();
-              }
-            }, 50);
-          }
-          
-          draw(timestamp);
+          draw(currentTime);
         }
       };
 
-      // If no animation is running, start one
-      if (!component.isAnimatingValue) {
-        component.isAnimatingValue = true;
-        component.animationStartTime = performance.now();
-        component.lastUpdateTime = null; // Will be set on first animation frame
-        component.animationId = requestAnimationFrame(animateValue);
-      } else {
-        // If animation is running, just update the target
-        // The animation loop will handle the transition
-        // Don't update lastUpdateTime here to maintain smooth transition
-      }
+      // Start animation
+      component.animationId = requestAnimationFrame(animateValue);
     };
 
     // Add setIndeterminate method to component
@@ -1091,6 +1043,67 @@ export const withCanvas = (config: ProgressConfig) =>
       }
     };
     
+    // Add hide method to component
+    component.hide = () => {
+      // Add transition class if not already present
+      component.element.classList.add(component.getClass(PROGRESS_CLASSES.TRANSITION));
+      
+      // Set opacity to 0 and wait for transition
+      component.element.style.opacity = '0';
+      
+      // After transition completes, set display to none
+      const onTransitionEnd = () => {
+        component.element.style.display = 'none';
+        component.element.removeEventListener('transitionend', onTransitionEnd);
+      };
+      component.element.addEventListener('transitionend', onTransitionEnd);
+      
+      // Stop any running animations
+      if (component.animationId) {
+        cancelAnimationFrame(component.animationId);
+        component.animationId = null;
+      }
+      
+      // Clean up animation state
+      component.animationStartTime = undefined;
+      component.animationDuration = undefined;
+      component.animationStartValue = undefined;
+      component.animationTargetValue = undefined;
+      
+      return component;
+    };
+
+    // Add show method to component
+    component.show = () => {
+      // Add transition class if not already present
+      component.element.classList.add(component.getClass(PROGRESS_CLASSES.TRANSITION));
+      
+      // Set display to block first (but keep opacity 0)
+      component.element.style.display = '';
+      component.element.style.opacity = '0';
+      
+      // Force a reflow to ensure the transition works
+      component.element.offsetHeight;
+      
+      // Set opacity to 1 to start transition
+      component.element.style.opacity = '1';
+      
+      // Start appropriate animation based on state
+      if (component.state?.indeterminate) {
+        startIndeterminateAnimation();
+      } else if (component.animationTargetValue !== undefined) {
+        // Resume any pending animation
+        component.startAnimation(component.animationStartValue || 0, component.animationTargetValue);
+      }
+      
+      return component;
+    };
+
+    // Add isVisible method to component
+    component.isVisible = () => {
+      return component.element.style.display !== 'none' && component.element.style.opacity !== '0';
+    };
+    
     // Cleanup on destroy
     if (component.lifecycle) {
       const originalDestroy = component.lifecycle.destroy || (() => {});
@@ -1131,6 +1144,9 @@ export const withCanvas = (config: ProgressConfig) =>
       startWavyAnimation,
       stopWavyAnimation,
       startIndeterminateAnimation,
-      stopIndeterminateAnimation
+      stopIndeterminateAnimation,
+      hide: component.hide,
+      show: component.show,
+      isVisible: component.isVisible
     };
   };
