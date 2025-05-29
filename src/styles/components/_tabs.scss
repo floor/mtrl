@@ -291,6 +291,7 @@ $container: '#{base.$prefix}-tabs';
       // Pressed state for inactive tabs - secondary
       &:active, &.#{$component}--pressed {
         background-color: t.alpha('on-surface-variant', 0.12);
+        border-radius: 5px 5px 0 0;
       }
     }
   }

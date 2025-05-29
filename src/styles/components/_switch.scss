@@ -13,7 +13,7 @@ $component: '#{base.$prefix}-switch';
   flex-direction: column;
   position: relative;
   width: 100%;
-  padding: 4px 0;
+  padding: 0;
   user-select: none;
 
   // Container for switch and label
@@ -179,6 +179,12 @@ $component: '#{base.$prefix}-switch';
         opacity: 1;
         transform: scale(1);
       }
+    }
+  }
+
+  &--dense {
+    .#{$component}-container {
+      min-height: initial;
     }
   }
 

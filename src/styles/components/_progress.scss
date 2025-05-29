@@ -13,12 +13,17 @@ $component: '#{base.$prefix}-progress';
   position: relative;
   display: block;
   overflow: hidden;
-  
+  transition: opacity 0.1s ease-in-out;
   // Common accessibility attributes
   &[aria-disabled="true"] {
     opacity: 0.38;
     pointer-events: none;
   }
+
+  .#{$component}[style*="display: none"] {
+    opacity: 0 !important;
+    transition: none !important;
+  } 
 
   // Canvas element - shared by both variants
   &-canvas {
