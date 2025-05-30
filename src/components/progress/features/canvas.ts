@@ -239,6 +239,8 @@ export const withCanvas = (config: ProgressConfig) =>
     component.canvas = canvas;
     component.animationTime = 0;
     component.animationId = null;
+    component.wavyAnimationId = null; // Separate ID for wavy animation
+    component.valueAnimationId = null; // Separate ID for value animation
     
     // Make currentShape accessible to drawLinearProgress
     component.currentShape = currentShape;
@@ -371,19 +373,25 @@ export const withCanvas = (config: ProgressConfig) =>
     const startWavyAnimation = (): void => {
       if (isCircular) return;
       
+      // Stop any existing wavy animation
+      if (component.wavyAnimationId) {
+        cancelAnimationFrame(component.wavyAnimationId);
+        component.wavyAnimationId = null;
+      }
+      
       const animate = (timestamp: number): void => {
         component.animationTime = timestamp;
         draw(timestamp);
-        component.animationId = requestAnimationFrame(animate);
+        component.wavyAnimationId = requestAnimationFrame(animate);
       };
       
-      component.animationId = requestAnimationFrame(animate);
+      component.wavyAnimationId = requestAnimationFrame(animate);
     };
     
     const stopWavyAnimation = (): void => {
-      if (component.animationId) {
-        cancelAnimationFrame(component.animationId);
-        component.animationId = null;
+      if (component.wavyAnimationId) {
+        cancelAnimationFrame(component.wavyAnimationId);
+        component.wavyAnimationId = null;
       }
     };
     
@@ -448,8 +456,8 @@ export const withCanvas = (config: ProgressConfig) =>
         } else {
           startWavyAnimation();
         }
-      } else if (!isCircular) {
-        // Always start wavy animation for linear progress
+      } else if (!isCircular && currentShape === 'wavy') {
+        // Only start wavy animation for linear progress with wavy shape
         startWavyAnimation();
       }
     };
@@ -530,10 +538,10 @@ export const withCanvas = (config: ProgressConfig) =>
         component.setIndeterminate(false);
       }
 
-      // Cancel any existing animation
-      if (component.animationId) {
-        cancelAnimationFrame(component.animationId);
-        component.animationId = null;
+      // Cancel any existing VALUE animation (not wavy animation)
+      if (component.valueAnimationId) {
+        cancelAnimationFrame(component.valueAnimationId);
+        component.valueAnimationId = null;
       }
 
       // Store the start value and time
@@ -559,17 +567,22 @@ export const withCanvas = (config: ProgressConfig) =>
 
         // Continue animation if not complete
         if (progress < 1) {
-          component.animationId = requestAnimationFrame(animateValue);
+          component.valueAnimationId = requestAnimationFrame(animateValue);
         } else {
           // Animation complete
           animatedValue = targetValue;
-          component.animationId = null;
+          component.valueAnimationId = null;
           draw(currentTime);
+          
+          // Restart wavy animation if shape is wavy and not indeterminate
+          if (!isCircular && currentShape === 'wavy' && !component.state.indeterminate) {
+            startWavyAnimation();
+          }
         }
       };
 
       // Start animation
-      component.animationId = requestAnimationFrame(animateValue);
+      component.valueAnimationId = requestAnimationFrame(animateValue);
     };
 
     // Add setIndeterminate method to component
@@ -643,6 +656,14 @@ export const withCanvas = (config: ProgressConfig) =>
         cancelAnimationFrame(component.animationId);
         component.animationId = null;
       }
+      if (component.wavyAnimationId) {
+        cancelAnimationFrame(component.wavyAnimationId);
+        component.wavyAnimationId = null;
+      }
+      if (component.valueAnimationId) {
+        cancelAnimationFrame(component.valueAnimationId);
+        component.valueAnimationId = null;
+      }
       
       // Clean up animation state
       component.animationStartTime = undefined;
@@ -670,7 +691,14 @@ export const withCanvas = (config: ProgressConfig) =>
       
       // Start appropriate animation based on state
       if (component.state?.indeterminate) {
-        startIndeterminateAnimation();
+        if (isCircular) {
+          startIndeterminateAnimation();
+        } else {
+          startWavyAnimation();
+        }
+      } else if (!isCircular && currentShape === 'wavy') {
+        // Restart wavy animation for determinate wavy progress
+        startWavyAnimation();
       } else if (component.animationTargetValue !== undefined) {
         // Resume any pending animation
         component.startAnimation(component.animationStartValue || 0, component.animationTargetValue);
@@ -691,18 +719,21 @@ export const withCanvas = (config: ProgressConfig) =>
         console.log('[Circular] Destroying component', {
           isCircular,
           isAnimating,
-          hasAnimationId: !!component.animationId
+          hasAnimationId: !!component.animationId,
+          hasWavyAnimationId: !!component.wavyAnimationId,
+          hasValueAnimationId: !!component.valueAnimationId
         });
         if (resizeCleanup) resizeCleanup();
         if (themeChangeCleanup) themeChangeCleanup();
         // Stop any running animations
         stopIndeterminateAnimation();
+        stopWavyAnimation();
+        if (component.valueAnimationId) {
+          cancelAnimationFrame(component.valueAnimationId);
+          component.valueAnimationId = null;
+        }
         component.isAnimatingValue = false;
         component.animationStartTime = 0;
-        // Always stop wavy animation if it's running
-        if (config.shape === 'wavy') {
-          stopWavyAnimation();
-        }
         originalDestroy();
       };
     }
