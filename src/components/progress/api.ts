@@ -117,50 +117,7 @@ export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent =
   };
 
   const setShape = (shape: ProgressShape): ProgressComponent => {
-    if (isCircular) {
-      // Shape only applies to linear variant
-      return comp;
-    }
-    
-    if (options.shape && typeof options.shape.setShape === 'function') {
-      const previousShape = options.shape.getShape();
-      options.shape.setShape(shape);
-      
-      const containerClass = getClass(PROGRESS_CLASSES.CONTAINER);
-      
-      // Remove existing shape classes
-      Object.values(PROGRESS_SHAPES).forEach(shapeValue => {
-        element.classList.remove(`${containerClass}--${shapeValue}`);
-      });
-      
-      // Add new shape class if not the default 'line'
-      if (shape !== PROGRESS_SHAPES.LINE) {
-        element.classList.add(`${containerClass}--${shape}`);
-      }
-      
-      // Handle wavy animation
-      if (shape === 'wavy') {
-        // Start wavy animation
-        if (comp.startWavyAnimation) {
-          comp.startWavyAnimation();
-        }
-      } else {
-        // Stop wavy animation if it was running
-        if (comp.stopWavyAnimation) {
-          comp.stopWavyAnimation();
-        }
-        // Start indeterminate animation if in indeterminate state
-        if (options.state.isIndeterminate() && comp.startIndeterminateAnimation) {
-          comp.startIndeterminateAnimation();
-        }
-      }
-      
-      // Redraw canvas with new shape
-      if (typeof comp.draw === 'function') {
-        comp.draw();
-      }
-    }
-    
+    comp.setShape?.(shape);
     return comp;
   };
 

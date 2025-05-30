@@ -82,16 +82,21 @@ const updateCanvasDimensions = (
     // Clamp size between 24 and 240
     const rawSize = config?.size ?? PROGRESS_MEASUREMENTS.CIRCULAR.SIZE;
     const size = Math.max(24, Math.min(rawSize, 240));
+    
+    // Add extra space for wavy shape amplitude
+    const waveAmplitude = config?.shape === 'wavy' ? Math.min(strokeWidth * 0.4, 3) : 0;
+    const adjustedSize = size + (waveAmplitude * 2); // Account for wave on both sides
+    
     // Set display size first
-    canvas.style.width = `${size}px`;
-    canvas.style.height = `${size}px`;
+    canvas.style.width = `${adjustedSize}px`;
+    canvas.style.height = `${adjustedSize}px`;
     // Set actual canvas dimensions accounting for pixel ratio
-    const canvasSize = Math.round(size * pixelRatio);
+    const canvasSize = Math.round(adjustedSize * pixelRatio);
     canvas.width = canvasSize;
     canvas.height = canvasSize;
     // Update context dimensions
-    context.width = size;
-    context.height = size;
+    context.width = adjustedSize;
+    context.height = adjustedSize;
     // Reset transform and scale context to match pixel ratio
     const ctx = context.ctx;
     ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform
@@ -316,7 +321,7 @@ export const withCanvas = (config: ProgressConfig) =>
         updateCanvasDimensions(canvas, canvasContext, isCircular, currentConfig);
         
         if (isCircular) {
-          drawCircularProgress(canvasContext, currentConfig, value, max, isIndeterminate, animationTime);
+          drawCircularProgress(canvasContext, currentConfig, value, max, isIndeterminate, animationTime, currentShape);
         } else {
           drawLinearProgress(
             canvasContext, 
@@ -353,7 +358,7 @@ export const withCanvas = (config: ProgressConfig) =>
       updateCanvasDimensions(canvas, canvasContext, isCircular, currentConfig);
       
       if (isCircular) {
-        drawCircularProgress(canvasContext, currentConfig, value, max, isIndeterminate, animationTime);
+        drawCircularProgress(canvasContext, currentConfig, value, max, isIndeterminate, animationTime, currentShape);
       } else {
         drawLinearProgress(
           canvasContext, 
@@ -371,7 +376,7 @@ export const withCanvas = (config: ProgressConfig) =>
     
     // Animation loop for wavy progress (works for both determinate and indeterminate)
     const startWavyAnimation = (): void => {
-      if (isCircular) return;
+      // Remove the circular check - wavy animation now works for both
       
       // Stop any existing wavy animation
       if (component.wavyAnimationId) {
@@ -403,6 +408,7 @@ export const withCanvas = (config: ProgressConfig) =>
         const currentConfig = {
           ...config,
           thickness: currentThickness,
+          shape: currentShape,
           size: currentSize
         };
         
@@ -451,13 +457,15 @@ export const withCanvas = (config: ProgressConfig) =>
       
       // Start appropriate animation based on state
       if (component.state?.indeterminate) {
-        if (isCircular) {
+        if (isCircular && currentShape === 'wavy') {
+          startWavyAnimation(); // Start wavy animation for circular indeterminate
+        } else if (isCircular) {
           startIndeterminateAnimation();
         } else {
           startWavyAnimation();
         }
-      } else if (!isCircular && currentShape === 'wavy') {
-        // Only start wavy animation for linear progress with wavy shape
+      } else if (currentShape === 'wavy') {
+        // Start wavy animation for both linear and circular progress with wavy shape
         startWavyAnimation();
       }
     };
@@ -473,7 +481,8 @@ export const withCanvas = (config: ProgressConfig) =>
       if (canvasContext) {
         const currentConfig = {
           ...config,
-          thickness
+          thickness,
+          shape: currentShape
         };
         
         // Update dimensions with new thickness
@@ -493,6 +502,7 @@ export const withCanvas = (config: ProgressConfig) =>
         const currentConfig = {
           ...config,
           thickness: currentThickness,
+          shape: currentShape,
           size: currentSize
         };
         updateCanvasDimensions(canvas, canvasContext, isCircular, currentConfig);
@@ -503,9 +513,7 @@ export const withCanvas = (config: ProgressConfig) =>
     
     // Update currentShape in setShape
     component.setShape = (shape: ProgressShape) => {
-      if (isCircular) return; // Shape only applies to linear variant
-      
-      // Update current shape
+      // Update current shape for both linear and circular
       currentShape = shape;
       
       // Update canvas dimensions and redraw
@@ -517,14 +525,43 @@ export const withCanvas = (config: ProgressConfig) =>
           size: currentSize
         };
         
-        // Update dimensions with new shape
-        updateCanvasDimensions(canvas, canvasContext, isCircular, currentConfig);
+        // For circular progress with shape change, we need to completely re-setup the canvas
+        // to ensure proper dimensions accounting for wave amplitude
+        if (isCircular) {
+          // Stop all animations before re-setting up canvas
+          stopWavyAnimation();
+          stopIndeterminateAnimation();
+          
+          const newContext = setupCanvas(canvas, isCircular, currentConfig);
+          component.ctx = newContext.ctx;
+          Object.assign(canvasContext, newContext);
+        } else {
+          // For linear, just update dimensions
+          updateCanvasDimensions(canvas, canvasContext, isCircular, currentConfig);
+        }
         
-        // Always start wavy animation - it will handle both shapes
-        startWavyAnimation();
+        // Handle animation changes based on shape and variant
+        if (shape === 'wavy') {
+          // Stop any regular indeterminate animation for circular
+          if (isCircular && component.state?.indeterminate) {
+            stopIndeterminateAnimation();
+          }
+          startWavyAnimation();
+        } else {
+          stopWavyAnimation();
+          // If circular and indeterminate, restart the regular indeterminate animation
+          if (isCircular && component.state?.indeterminate) {
+            startIndeterminateAnimation();
+          }
+        }
         
         // Force redraw with new shape
-        draw();
+        // If wavy animation is running, use current animation time
+        if (component.wavyAnimationId && component.animationTime) {
+          draw(component.animationTime);
+        } else {
+          draw();
+        }
       }
     };
     
@@ -575,7 +612,7 @@ export const withCanvas = (config: ProgressConfig) =>
           draw(currentTime);
           
           // Restart wavy animation if shape is wavy and not indeterminate
-          if (!isCircular && currentShape === 'wavy' && !component.state.indeterminate) {
+          if (currentShape === 'wavy' && !component.state.indeterminate) {
             startWavyAnimation();
           }
         }
@@ -588,7 +625,7 @@ export const withCanvas = (config: ProgressConfig) =>
     // Add setIndeterminate method to component
     component.setIndeterminate = (indeterminate: boolean) => {
       if (!component.state) {
-        console.warn('[Circular] No state available for setIndeterminate');
+        console.warn('[Progress] No state available for setIndeterminate');
         return;
       }
 
@@ -599,8 +636,11 @@ export const withCanvas = (config: ProgressConfig) =>
       if (indeterminate) {
         // Starting indeterminate mode
         if (isCircular) {
-          // For circular, always start indeterminate animation
-          stopWavyAnimation(); // Ensure wavy animation is stopped
+          // For circular, stop any value animations
+          if (component.valueAnimationId) {
+            cancelAnimationFrame(component.valueAnimationId);
+            component.valueAnimationId = null;
+          }
           // Reset animation state
           isAnimating = false;
           lastAnimationTime = 0;
@@ -611,25 +651,38 @@ export const withCanvas = (config: ProgressConfig) =>
           // Reset value animation state
           component.isAnimatingValue = false;
           animatedValue = component.state.value;
-          // Start the animation immediately
-          startIndeterminateAnimation();
-        } else if (!component.isAnimatingValue) {
-          // For linear, start wavy animation if not animating value
+          
+          // Start appropriate animation based on shape
+          if (currentShape === 'wavy') {
+            startWavyAnimation();
+          } else {
+            startIndeterminateAnimation();
+          }
+        } else {
+          // For linear, start wavy animation
           startWavyAnimation();
         }
       } else {
         // Stopping indeterminate mode
         if (isCircular) {
-          // For circular, stop indeterminate animation
-          stopIndeterminateAnimation();
-          // Reset value animation state
-          component.isAnimatingValue = false;
-          animatedValue = component.state.value;
+          // For circular, stop appropriate animation
+          if (currentShape === 'wavy') {
+            // Keep wavy animation running for determinate mode
+            // Just reset the value
+            animatedValue = component.state.value;
+          } else {
+            stopIndeterminateAnimation();
+            // Reset value animation state
+            component.isAnimatingValue = false;
+            animatedValue = component.state.value;
+          }
           // Force redraw with current value
           draw();
         } else {
-          // For linear, stop wavy animation
-          stopWavyAnimation();
+          // For linear, handle based on shape
+          if (currentShape !== 'wavy') {
+            stopWavyAnimation();
+          }
           // Force redraw with current value
           draw();
         }
@@ -691,13 +744,15 @@ export const withCanvas = (config: ProgressConfig) =>
       
       // Start appropriate animation based on state
       if (component.state?.indeterminate) {
-        if (isCircular) {
+        if (isCircular && currentShape === 'wavy') {
+          startWavyAnimation(); // Use wavy animation for circular indeterminate with wavy shape
+        } else if (isCircular) {
           startIndeterminateAnimation();
         } else {
           startWavyAnimation();
         }
-      } else if (!isCircular && currentShape === 'wavy') {
-        // Restart wavy animation for determinate wavy progress
+      } else if (currentShape === 'wavy') {
+        // Restart wavy animation for determinate wavy progress (both linear and circular)
         startWavyAnimation();
       } else if (component.animationTargetValue !== undefined) {
         // Resume any pending animation

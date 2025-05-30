@@ -2,10 +2,50 @@
  * Circular progress drawing functionality
  */
 
-import { ProgressConfig } from '../types';
+import { ProgressConfig, ProgressShape } from '../types';
 import { PROGRESS_MEASUREMENTS } from '../constants';
 import { getThemeColor } from '../../../core/utils';
 import { getStrokeWidth, CanvasContext } from './canvas';
+
+/**
+ * Draws a wavy arc by modulating the radius with a sine wave
+ */
+const drawWavyArc = (
+  ctx: CanvasRenderingContext2D,
+  centerX: number,
+  centerY: number,
+  baseRadius: number,
+  startAngle: number,
+  endAngle: number,
+  waveAmplitude: number,
+  waveFrequency: number,
+  animationTime: number
+): void => {
+  const steps = Math.max(100, Math.abs(endAngle - startAngle) * 50); // More steps for smoother curves
+  const angleStep = (endAngle - startAngle) / steps;
+  const waveSpeed = 0.002; // Rotation speed of the wave pattern
+  
+  ctx.beginPath();
+  
+  for (let i = 0; i <= steps; i++) {
+    const angle = startAngle + (angleStep * i);
+    // Add wave effect by modulating the radius
+    const waveOffset = (angle * waveFrequency) + (animationTime * waveSpeed);
+    const radiusModulation = Math.sin(waveOffset) * waveAmplitude;
+    const currentRadius = baseRadius + radiusModulation;
+    
+    const x = centerX + currentRadius * Math.cos(angle);
+    const y = centerY + currentRadius * Math.sin(angle);
+    
+    if (i === 0) {
+      ctx.moveTo(x, y);
+    } else {
+      ctx.lineTo(x, y);
+    }
+  }
+  
+  ctx.stroke();
+};
 
 /**
  * Draws circular progress on canvas
@@ -16,13 +56,16 @@ export const drawCircularProgress = (
   value: number,
   max: number,
   isIndeterminate: boolean,
-  animationTime: number = 0
+  animationTime: number = 0,
+  currentShape: ProgressShape = 'line'
 ): void => {
   const { ctx, width, height } = context;
   const strokeWidth = getStrokeWidth(config.thickness);
+  const isWavy = currentShape === 'wavy';
   
-  // Calculate radius accounting for stroke width
-  const radius = (Math.min(width, height) / 2) - (strokeWidth / 2);
+  // Calculate radius accounting for stroke width and wave amplitude
+  const waveAmplitude = isWavy ? Math.min(strokeWidth * 0.4, 3) : 0;
+  const radius = (Math.min(width, height) / 2) - (strokeWidth / 2) - waveAmplitude;
   const centerX = width / 2;
   const centerY = height / 2;
   
@@ -38,13 +81,17 @@ export const drawCircularProgress = (
   // Set line properties
   ctx.lineWidth = strokeWidth;
   ctx.lineCap = 'round';
+  ctx.lineJoin = 'round'; // Smooth joins for wavy paths
+
+  // Wave frequency - number of complete waves around the circle
+  const waveFrequency = 12; // Adjust for visual preference
 
   if (isIndeterminate) {
     // Material Design 3 indeterminate animation specs
     const cycleDuration = 1333; // ~1.33s cycle (matching MD3)
     const normalizedTime = (animationTime % cycleDuration) / cycleDuration;
     
-    // Draw the track first (always present)
+    // Draw the track first (always present) - track is never wavy
     ctx.strokeStyle = getThemeColor('sys-color-primary-rgb', {
       alpha: 0.12,
       fallback: 'rgba(103, 80, 164, 0.12)'
@@ -81,16 +128,19 @@ export const drawCircularProgress = (
     
     // Draw the indeterminate arc
     ctx.strokeStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
-    ctx.beginPath();
     
     // Start angle is based on rotation
     const arcStart = startAngle + rotation;
     // End angle is start angle plus arc length
     const arcEnd = arcStart + arcLength;
     
-    // Draw the arc
-    ctx.arc(centerX, centerY, radius, arcStart, arcEnd);
-    ctx.stroke();
+    if (isWavy) {
+      drawWavyArc(ctx, centerX, centerY, radius, arcStart, arcEnd, waveAmplitude, waveFrequency, animationTime);
+    } else {
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, radius, arcStart, arcEnd);
+      ctx.stroke();
+    }
     
     return;
   }
@@ -98,7 +148,7 @@ export const drawCircularProgress = (
   // Rest of the determinate drawing code
   const percentage = value / max;
   
-  // Draw track first (always present except at 100%)
+  // Draw track first (always present except at 100%) - track is never wavy
   if (percentage < 1) {
     ctx.strokeStyle = getThemeColor('sys-color-primary-rgb', {
       alpha: 0.12,
@@ -126,14 +176,24 @@ export const drawCircularProgress = (
   } else if (percentage >= 0.995) {
     // Draw complete circle when very close to 100%
     ctx.strokeStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
-    ctx.stroke();
+    if (isWavy) {
+      drawWavyArc(ctx, centerX, centerY, radius, 0, 2 * Math.PI, waveAmplitude, waveFrequency, animationTime);
+    } else {
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+      ctx.stroke();
+    }
   } else {
     // Normal progress indicator (with gap)
     ctx.strokeStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, radius, startAngle, startAngle + (maxAngle * percentage));
-    ctx.stroke();
+    const progressEndAngle = startAngle + (maxAngle * percentage);
+    
+    if (isWavy) {
+      drawWavyArc(ctx, centerX, centerY, radius, startAngle, progressEndAngle, waveAmplitude, waveFrequency, animationTime);
+    } else {
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, radius, startAngle, progressEndAngle);
+      ctx.stroke();
+    }
   }
 }; 
