@@ -168,18 +168,41 @@ export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent =
       return options.value.getValue();
     },
     
-    setValue(value: number): ProgressComponent {
+    setValue(value: number, animate: boolean = true): ProgressComponent {
       const prevValue = options.value.getValue();
+      const max = options.value.getMax();
       options.value.setValue(value);
-      
       if (prevValue !== value) {
-        updateProgress(value, options.value.getMax());
+        // Don't call updateProgress here as comp.setValue will handle the drawing
+        // Only update ARIA and label here
+        element.setAttribute('aria-valuenow', value.toString());
         
-        const detail = { value, max: options.value.getMax() };
+        // Update label if present
+        const label = comp.label;
+        if (label) {
+          const formatter = options.label?.formatter || 
+            ((v: number, m: number) => `${Math.round((v / m) * 100)}%`);
+          label.textContent = formatter(value, max);
+        }
+        
+        const detail = { value, max };
         emitEvent(PROGRESS_EVENTS.CHANGE, detail);
         
-        if (value >= options.value.getMax()) {
-          emitEvent(PROGRESS_EVENTS.COMPLETE, detail);
+        // Handle completion event with animation timing
+        if (comp.setValue && typeof comp.setValue === 'function') {
+          // Only emit complete event if we're reaching 100% from below
+          const wasComplete = prevValue >= max;
+          const isComplete = value >= max;
+          const onComplete = (!wasComplete && isComplete)
+            ? () => emitEvent(PROGRESS_EVENTS.COMPLETE, detail)
+            : undefined;
+          comp.setValue(value, onComplete, animate);
+        } else {
+          // Fallback: update progress immediately and emit complete if needed
+          updateProgress(value, max);
+          if (value >= max && prevValue < max) {
+            emitEvent(PROGRESS_EVENTS.COMPLETE, detail);
+          }
         }
       }
       

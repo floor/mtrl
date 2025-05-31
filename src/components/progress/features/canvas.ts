@@ -566,7 +566,7 @@ export const withCanvas = (config: ProgressConfig) =>
     };
     
     // Update setValue method to handle rapid updates better
-    component.setValue = (value: number) => {
+    component.setValue = (value: number, onComplete?: () => void, animate: boolean = true) => {
       // Store the target value
       targetValue = Math.max(0, Math.min(component.state.max, value));
       
@@ -579,6 +579,23 @@ export const withCanvas = (config: ProgressConfig) =>
       if (component.valueAnimationId) {
         cancelAnimationFrame(component.valueAnimationId);
         component.valueAnimationId = null;
+      }
+
+      // If animation is disabled, set value immediately
+      if (!animate) {
+        animatedValue = targetValue;
+        draw();
+        
+        // Restart wavy animation if shape is wavy and not indeterminate
+        if (currentShape === 'wavy' && !component.state.indeterminate) {
+          startWavyAnimation();
+        }
+        
+        // Call the completion callback immediately if value reached max
+        if (onComplete && targetValue >= component.state.max) {
+          onComplete();
+        }
+        return;
       }
 
       // Store the start value and time
@@ -614,6 +631,11 @@ export const withCanvas = (config: ProgressConfig) =>
           // Restart wavy animation if shape is wavy and not indeterminate
           if (currentShape === 'wavy' && !component.state.indeterminate) {
             startWavyAnimation();
+          }
+          
+          // Call the completion callback if the value reached max
+          if (onComplete && targetValue >= component.state.max) {
+            onComplete();
           }
         }
       };

@@ -141,7 +141,7 @@ export const PROGRESS_WAVE = {
     /** Number of complete waves for indeterminate animation */
     INDETERMINATE_FREQUENCY: 32,
     /** Amplitude ratio for indeterminate animation */
-    INDETERMINATE_AMPLITUDE_RATIO: 0.4,
+    INDETERMINATE_AMPLITUDE_RATIO: 0.7,
     /** Maximum amplitude for indeterminate animation */
     INDETERMINATE_AMPLITUDE_MAX: 3,
     /** Wave shape power (lower = rounder peaks, higher = sharper) */

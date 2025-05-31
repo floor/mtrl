@@ -146,11 +146,12 @@ export interface ProgressComponent {
   getClass: (name: string) => string;
   
   /**
-   * Sets the current progress value
-   * @param value - Progress value (between 0 and max)
-   * @returns The progress component for chaining
+   * Sets the progress value
+   * @param value - Progress value between 0 and max
+   * @param animate - Whether to animate the value change (default: true)
+   * @returns The component instance for chaining
    */
-  setValue: (value: number) => ProgressComponent;
+  setValue: (value: number, animate?: boolean) => ProgressComponent;
   
   /**
    * Gets the current progress value
