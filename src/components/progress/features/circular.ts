@@ -169,6 +169,7 @@ export const drawCircularProgress = (
 
   // Rest of the determinate drawing code
   const percentage = value / max;
+  const minArcPercentage = 0.001; // 0,1% minimum arc to show progress is ready
   
   // Draw track first (always present except at 100%) - track is never wavy
   if (percentage < 1) {
@@ -179,7 +180,9 @@ export const drawCircularProgress = (
     ctx.beginPath();
     
     // Calculate track angles based on current progress
-    const trackStart = startAngle + (maxAngle * percentage) + gapAngle / 2;
+    // Account for minimum arc when at 0%
+    const actualPercentage = Math.max(percentage, minArcPercentage);
+    const trackStart = startAngle + (maxAngle * actualPercentage) + gapAngle / 2;
     const trackEnd = startAngle + maxAngle + gapAngle / 2;
     
     ctx.arc(centerX, centerY, radius, trackStart, trackEnd);
@@ -187,17 +190,14 @@ export const drawCircularProgress = (
   }
 
   // Draw progress indicator
-  if (percentage === 0) {
-    // Draw a dot at the start position (12 o'clock)
-    const dotX = centerX + radius * Math.cos(startAngle);
-    const dotY = centerY + radius * Math.sin(startAngle);
-    ctx.beginPath();
-    ctx.arc(dotX, dotY, strokeWidth / 2, 0, 2 * Math.PI);
-    ctx.fillStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
-    ctx.fill();
-  } else if (percentage >= 0.995) {
+  ctx.strokeStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
+  
+  // Calculate the actual progress angle, ensuring a minimum visible arc
+  const actualPercentage = Math.max(percentage, minArcPercentage);
+  const progressEndAngle = startAngle + (maxAngle * actualPercentage);
+  
+  if (percentage >= 0.995) {
     // Draw complete circle when very close to 100%
-    ctx.strokeStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
     if (isWavy) {
       drawWavyArc(ctx, centerX, centerY, radius, 0, 2 * Math.PI, waveAmplitude, waveFrequency, animationTime);
     } else {
@@ -206,10 +206,7 @@ export const drawCircularProgress = (
       ctx.stroke();
     }
   } else {
-    // Normal progress indicator (with gap)
-    ctx.strokeStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
-    const progressEndAngle = startAngle + (maxAngle * percentage);
-    
+    // Draw progress arc (including minimal arc at 0%)
     if (isWavy) {
       drawWavyArc(ctx, centerX, centerY, radius, startAngle, progressEndAngle, waveAmplitude, waveFrequency, animationTime);
     } else {
