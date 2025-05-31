@@ -444,7 +444,8 @@ export const withCanvas = (config: ProgressConfig) =>
       if (!animate) {
         animatedValue = targetValue;
         draw();
-        if (currentShape === 'wavy' && !component.state.indeterminate) {
+        // Don't restart wavy animation if it's already running
+        if (currentShape === 'wavy' && !component.state.indeterminate && !component.wavyAnimationId) {
           startWavyAnimation();
         }
         if (onComplete && targetValue >= component.state.max) {
@@ -452,6 +453,10 @@ export const withCanvas = (config: ProgressConfig) =>
         }
         return;
       }
+
+      // Store current wavy animation time if running
+      const wavyAnimationTime = component.wavyAnimationId ? (component.animationTime || 0) : 0;
+      const wasWavyAnimating = !!component.wavyAnimationId;
 
       const startValue = animatedValue;
       const startTime = performance.now();
@@ -474,8 +479,15 @@ export const withCanvas = (config: ProgressConfig) =>
           component.valueAnimationId = null;
           draw(currentTime);
           
+          // Restart wavy animation with preserved timing if it was running
           if (currentShape === 'wavy' && !component.state.indeterminate) {
-            startWavyAnimation();
+            if (wasWavyAnimating) {
+              // Continue from where we were
+              startWavyAnimation(wavyAnimationTime);
+            } else if (!component.wavyAnimationId) {
+              // Start fresh if not already running
+              startWavyAnimation();
+            }
           }
           if (onComplete && targetValue >= component.state.max) {
             onComplete();
