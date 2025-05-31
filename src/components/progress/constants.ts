@@ -108,3 +108,33 @@ export const PROGRESS_THICKNESS = {
   /** Thick stroke width (8px) */
   THICK: 8
 } as const;
+
+/**
+ * Wave animation parameters for progress components
+ */
+export const PROGRESS_WAVE = {
+  /** Linear progress wave parameters */
+  LINEAR: {
+    /** Base amplitude of the wave in pixels */
+    AMPLITUDE: 3,
+    /** Speed of the wave animation */
+    SPEED: 0.008,
+    /** Frequency of the wave (affects wavelength) */
+    FREQUENCY: 0.15,
+    /** Frequency for indeterminate animation */
+    INDETERMINATE_FREQUENCY: 0.35,
+    /** Amplitude for indeterminate animation */
+    INDETERMINATE_AMPLITUDE: 2
+  },
+  /** Circular progress wave parameters */
+  CIRCULAR: {
+    /** Amplitude as percentage of stroke width */
+    AMPLITUDE_RATIO: 0.6,
+    /** Maximum amplitude in pixels */
+    AMPLITUDE_MAX: 5,
+    /** Speed of the wave rotation */
+    SPEED: 0.008,
+    /** Number of complete waves around the circle */
+    FREQUENCY: 12
+  }
+} as const;

@@ -3,7 +3,7 @@
  */
 
 import { ProgressConfig, ProgressShape } from '../types';
-import { PROGRESS_MEASUREMENTS } from '../constants';
+import { PROGRESS_MEASUREMENTS, PROGRESS_WAVE } from '../constants';
 import { getThemeColor } from '../../../core/utils';
 import { getStrokeWidth, CanvasContext } from './canvas';
 
@@ -23,7 +23,7 @@ const drawWavyArc = (
 ): void => {
   const steps = Math.max(100, Math.abs(endAngle - startAngle) * 50); // More steps for smoother curves
   const angleStep = (endAngle - startAngle) / steps;
-  const waveSpeed = 0.002; // Rotation speed of the wave pattern
+  const waveSpeed = PROGRESS_WAVE.CIRCULAR.SPEED;
   
   ctx.beginPath();
   
@@ -64,7 +64,7 @@ export const drawCircularProgress = (
   const isWavy = currentShape === 'wavy';
   
   // Calculate radius accounting for stroke width and wave amplitude
-  const waveAmplitude = isWavy ? Math.min(strokeWidth * 0.4, 3) : 0;
+  const waveAmplitude = isWavy ? Math.min(strokeWidth * PROGRESS_WAVE.CIRCULAR.AMPLITUDE_RATIO, PROGRESS_WAVE.CIRCULAR.AMPLITUDE_MAX) : 0;
   const radius = (Math.min(width, height) / 2) - (strokeWidth / 2) - waveAmplitude;
   const centerX = width / 2;
   const centerY = height / 2;
@@ -84,7 +84,7 @@ export const drawCircularProgress = (
   ctx.lineJoin = 'round'; // Smooth joins for wavy paths
 
   // Wave frequency - number of complete waves around the circle
-  const waveFrequency = 12; // Adjust for visual preference
+  const waveFrequency = PROGRESS_WAVE.CIRCULAR.FREQUENCY;
 
   if (isIndeterminate) {
     // Material Design 3 indeterminate animation specs

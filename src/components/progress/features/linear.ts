@@ -3,6 +3,7 @@
  */
 
 import { ProgressConfig, ProgressShape } from '../types';
+import { PROGRESS_WAVE } from '../constants';
 import { getThemeColor } from '../../../core/utils';
 import { getStrokeWidth, CanvasContext } from './canvas';
 
@@ -96,8 +97,8 @@ export const drawLinearProgress = (
 
       // Use wavy mechanism with appropriate amplitude
       const waveSpeed = 0;
-      const waveAmplitude = isWavy ? 2 : 0; // Zero amplitude for line shape
-      const waveFrequency = 0.35;
+      const waveAmplitude = isWavy ? PROGRESS_WAVE.LINEAR.INDETERMINATE_AMPLITUDE : 0; // Zero amplitude for line shape
+      const waveFrequency = PROGRESS_WAVE.LINEAR.INDETERMINATE_FREQUENCY;
       
       for (let x = visibleStart; x <= visibleEnd; x += 2) {
         const waveOffset = (x * waveFrequency) + (animationTime * waveSpeed);
@@ -171,9 +172,9 @@ export const drawLinearProgress = (
     ctx.beginPath();
 
     if (isWavy) {
-      const waveSpeed = 0.008;
-      const baseAmplitude = 3;
-      const waveFrequency = 0.15;
+      const waveSpeed = PROGRESS_WAVE.LINEAR.SPEED;
+      const baseAmplitude = PROGRESS_WAVE.LINEAR.AMPLITUDE;
+      const waveFrequency = PROGRESS_WAVE.LINEAR.FREQUENCY;
       
       // Calculate amplitude based on progress
       let waveAmplitude = baseAmplitude;
