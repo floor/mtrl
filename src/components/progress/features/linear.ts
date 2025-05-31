@@ -3,9 +3,81 @@
  */
 
 import { ProgressConfig, ProgressShape } from '../types';
-import { PROGRESS_WAVE } from '../constants';
+import { PROGRESS_WAVE, PROGRESS_MEASUREMENTS } from '../constants';
 import { getThemeColor } from '../../../core/utils';
 import { getStrokeWidth, CanvasContext } from './canvas';
+
+// Helper to set common stroke styles
+const setStrokeStyle = (
+  ctx: CanvasRenderingContext2D, 
+  strokeWidth: number, 
+  color: string
+): void => {
+  ctx.strokeStyle = color;
+  ctx.lineWidth = strokeWidth;
+  ctx.lineCap = 'round';
+};
+
+// Helper to draw a line segment (straight or wavy)
+const drawLine = (
+  ctx: CanvasRenderingContext2D,
+  startX: number,
+  endX: number,
+  centerY: number,
+  isWavy: boolean,
+  animationTime: number,
+  waveConfig: { amplitude: number; frequency: number; speed: number }
+): void => {
+  ctx.beginPath();
+  
+  if (!isWavy || waveConfig.amplitude === 0) {
+    ctx.moveTo(startX, centerY);
+    ctx.lineTo(endX, centerY);
+  } else {
+    for (let x = startX; x <= endX; x += 2) {
+      const phase = (x * waveConfig.frequency) + (animationTime * waveConfig.speed);
+      const sineWave = Math.sin(phase);
+      const smoothedWave = Math.sign(sineWave) * Math.pow(Math.abs(sineWave), PROGRESS_WAVE.LINEAR.POWER);
+      const y = centerY + (smoothedWave * waveConfig.amplitude);
+      
+      if (x === startX) {
+        ctx.moveTo(x, y);
+      } else {
+        ctx.lineTo(x, y);
+      }
+    }
+  }
+  
+  ctx.stroke();
+};
+
+// Helper for indeterminate animation timing
+const getSegmentScale = (time: number, thresholds: number[]): number => {
+  const [t1, t2, t3] = thresholds;
+  if (time <= t1) {
+    return 0.08 + (0.661479 - 0.08) * (time / t1);
+  } else if (time <= t2) {
+    return 0.661479;
+  } else if (t3 && time <= t3) {
+    return 0.661479;
+  }
+  return t3 
+    ? 0.661479 - (0.661479 - 0.08) * ((time - t3) / (1 - t3))
+    : 0.08;
+};
+
+const getSegmentTranslate = (time: number, keyframes: [number, number][]): number => {
+  for (let i = 0; i < keyframes.length - 1; i++) {
+    const [t1, v1] = keyframes[i];
+    const [t2, v2] = keyframes[i + 1];
+    if (time <= t2) {
+      const t = (time - t1) / (t2 - t1);
+      return v1 + (v2 - v1) * t;
+    }
+  }
+  const [lastT, lastV] = keyframes[keyframes.length - 1];
+  return lastV + (220 - lastV) * ((time - lastT) / (1 - lastT));
+};
 
 /**
  * Draws linear progress on canvas with shape support
@@ -25,371 +97,151 @@ export const drawLinearProgress = (
   const strokeWidth = getStrokeWidth(config.thickness);
   const centerY = height / 2;
   const isWavy = currentShape === 'wavy';
-
-  // The gap at the start and end
   const edgeGap = strokeWidth / 2;
-  // The available width for the indicator and track
   const availableWidth = width - (edgeGap * 2);
-  // Adaptive gap based on thickness
-  const gapWidth = Math.max(4, strokeWidth * 0.8); // Minimum 4px, scales with thickness
+  const gapWidth = PROGRESS_MEASUREMENTS.LINEAR.GAP;
   const percentage = value / max;
-  const bufferPercentage = buffer / max;
   const progressEnd = edgeGap + (availableWidth * percentage);
-
-  // Transition points for shape changes
-  const startTransitionEnd = 0.03; // Start flat and transition to wavy between 0-3%
-  const endTransitionStart = 0.97; // End wavy and transition to flat between 97-100%
 
   // Clear canvas
   ctx.clearRect(0, 0, width, height);
-
-  if (isIndeterminate) {
-    // Material Design 3 indeterminate animation specs
-    // Two segments create continuous flow:
-    // - Primary segment: starts immediately, exits around 60-70%
-    // - Secondary segment: enters at 50% as primary exits, maintains visual continuity
-    const cycleDuration = 2000; // 2s cycle (matching MD3)
-    const normalizedTime = (animationTime % cycleDuration) / cycleDuration;
-    
-    // Helper functions for indeterminate animation
-    const getPrimaryScale = (time: number): number => {
-      if (time <= 0.3665) {
-        const t = time / 0.3665;
-        return 0.08 + (0.661479 - 0.08) * t;
-      } else if (time <= 0.6915) {
-        return 0.661479;
-      }
-      return 0.08;
-    };
-
-    const getPrimaryTranslate = (time: number): number => {
-      if (time <= 0.2) {
-        const t = time / 0.2;
-        return -120 + (120 * t);
-      } else if (time <= 0.5915) {
-        const t = (time - 0.2) / (0.5915 - 0.2);
-        return 83.6714 * t;
-      }
-      // Accelerate exit as secondary enters
-      return 83.6714 + (220 - 83.6714) * ((time - 0.5915) / (1 - 0.5915));
-    };
-
-    // Helper functions for secondary segment
-    const getSecondaryScale = (time: number): number => {
-      // Second segment should start around 50% when first is exiting
-      if (time <= 0.5) {
-        return 0;
-      } else if (time <= 0.8335) {
-        const t = (time - 0.5) / (0.8335 - 0.5);
-        return 0.08 + (0.661479 - 0.08) * t;
-      }
-      // Shrink at end
-      const t = (time - 0.8335) / (1 - 0.8335);
-      return 0.661479 - (0.661479 - 0.08) * t;
-    };
-
-    const getSecondaryTranslate = (time: number): number => {
-      // Start off-screen and enter as first segment exits
-      if (time <= 0.5) {
-        return -54.8889;
-      } else if (time <= 0.7) {
-        const t = (time - 0.5) / (0.7 - 0.5);
-        return -54.8889 + (25.0389 + 54.8889) * t;
-      } else if (time <= 0.85) {
-        const t = (time - 0.7) / (0.85 - 0.7);
-        return 25.0389 + (83.6714 - 25.0389) * t;
-      }
-      // Exit to right
-      return 83.6714 + (200.611 - 83.6714) * ((time - 0.85) / (1 - 0.85));
-    };
-
-    // Calculate segment positions
-    const primaryScale = getPrimaryScale(normalizedTime);
-    const primaryTranslate = getPrimaryTranslate(normalizedTime);
-    const primaryWidth = availableWidth * primaryScale;
-    const primaryStart = edgeGap + (availableWidth * primaryTranslate / 100);
-    
-    const primaryVisibleStart = Math.max(edgeGap, primaryStart);
-    const primaryVisibleEnd = Math.min(width - edgeGap, primaryStart + primaryWidth);
-    
-    // Calculate secondary segment positions
-    const secondaryScale = getSecondaryScale(normalizedTime);
-    const secondaryTranslate = getSecondaryTranslate(normalizedTime);
-    const secondaryWidth = availableWidth * secondaryScale;
-    const secondaryStart = edgeGap + (availableWidth * secondaryTranslate / 100);
-    
-    const secondaryVisibleStart = Math.max(edgeGap, secondaryStart);
-    const secondaryVisibleEnd = Math.min(width - edgeGap, secondaryStart + secondaryWidth);
-    
-    // Draw segmented track in the gaps between active segments
-    ctx.strokeStyle = getThemeColor('sys-color-primary-rgb', { 
-      alpha: 0.12,
-      fallback: 'rgba(103, 80, 164, 0.12)'
-    });
-    ctx.lineWidth = strokeWidth;
-    ctx.lineCap = 'round';
-    
-    // Half stroke for gap calculations
-    const halfStroke = strokeWidth / 2;
-    
-    // Double the gap for indeterminate progress for better visual separation
-    const indeterminateGapWidth = gapWidth * 2;
-    
-    // Check which segments are actually visible
-    const hasPrimary = primaryVisibleEnd > primaryVisibleStart;
-    const hasSecondary = secondaryVisibleEnd > secondaryVisibleStart;
-    
-    if (!hasPrimary && !hasSecondary) {
-      // No segments visible - draw full track
-      ctx.beginPath();
-      ctx.moveTo(edgeGap, centerY);
-      ctx.lineTo(width - edgeGap, centerY);
-      ctx.stroke();
-    } else {
-      // Build list of visible segments
-      const visibleSegments = [];
-      
-      if (hasPrimary) {
-        visibleSegments.push({
-          start: primaryVisibleStart,
-          end: primaryVisibleEnd
-        });
-      }
-      
-      if (hasSecondary) {
-        visibleSegments.push({
-          start: secondaryVisibleStart,
-          end: secondaryVisibleEnd
-        });
-      }
-      
-      // Sort by start position
-      visibleSegments.sort((a, b) => a.start - b.start);
-      
-      // Draw track before first visible segment
-      const firstSegment = visibleSegments[0];
-      if (firstSegment.start > edgeGap + indeterminateGapWidth + halfStroke) {
-        ctx.beginPath();
-        ctx.moveTo(edgeGap, centerY);
-        ctx.lineTo(firstSegment.start - indeterminateGapWidth - halfStroke, centerY);
-        ctx.stroke();
-      }
-      
-      // Draw track between visible segments
-      if (visibleSegments.length === 2) {
-        const gap1End = visibleSegments[0].end + indeterminateGapWidth + halfStroke;
-        const gap2Start = visibleSegments[1].start - indeterminateGapWidth - halfStroke;
-        
-        if (gap2Start > gap1End) {
-          ctx.beginPath();
-          ctx.moveTo(gap1End, centerY);
-          ctx.lineTo(gap2Start, centerY);
-          ctx.stroke();
-        }
-      }
-      
-      // Draw track after last visible segment
-      const lastSegment = visibleSegments[visibleSegments.length - 1];
-      if (lastSegment.end < width - edgeGap - indeterminateGapWidth - halfStroke) {
-        ctx.beginPath();
-        ctx.moveTo(lastSegment.end + indeterminateGapWidth + halfStroke, centerY);
-        ctx.lineTo(width - edgeGap, centerY);
-        ctx.stroke();
-      }
-    }
-    
-    // Draw primary segment
-    if (primaryVisibleEnd > primaryVisibleStart) {
-      ctx.strokeStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
-      ctx.lineWidth = strokeWidth;
-      ctx.lineCap = 'round';
-      ctx.beginPath();
-
-      // Use wavy mechanism with appropriate amplitude
-      const waveSpeed = 0;
-      const waveAmplitude = isWavy ? PROGRESS_WAVE.LINEAR.INDETERMINATE_AMPLITUDE : 0;
-      const waveFrequency = PROGRESS_WAVE.LINEAR.INDETERMINATE_FREQUENCY;
-      
-      for (let x = primaryVisibleStart; x <= primaryVisibleEnd; x += 2) {
-        let y = centerY;
-        if (isWavy) {
-          // Generate wave inline
-          const phase = (x * waveFrequency) + (animationTime * waveSpeed);
-          const sineWave = Math.sin(phase);
-          const smoothedWave = Math.sign(sineWave) * Math.pow(Math.abs(sineWave), PROGRESS_WAVE.LINEAR.POWER);
-          y += smoothedWave * waveAmplitude;
-        }
-        if (x === primaryVisibleStart) {
-          ctx.moveTo(x, y);
-        } else {
-          ctx.lineTo(x, y);
-        }
-      }
-      ctx.stroke();
-    }
-    
-    // Draw secondary segment
-    if (secondaryVisibleEnd > secondaryVisibleStart) {
-      ctx.strokeStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
-      ctx.lineWidth = strokeWidth;
-      ctx.lineCap = 'round';
-      ctx.beginPath();
-
-      // Use wavy mechanism with appropriate amplitude
-      const waveSpeed = 0;
-      const waveAmplitude = isWavy ? PROGRESS_WAVE.LINEAR.INDETERMINATE_AMPLITUDE : 0;
-      const waveFrequency = PROGRESS_WAVE.LINEAR.INDETERMINATE_FREQUENCY;
-      
-      for (let x = secondaryVisibleStart; x <= secondaryVisibleEnd; x += 2) {
-        let y = centerY;
-        if (isWavy) {
-          // Generate wave inline
-          const phase = (x * waveFrequency) + (animationTime * waveSpeed);
-          const sineWave = Math.sin(phase);
-          const smoothedWave = Math.sign(sineWave) * Math.pow(Math.abs(sineWave), PROGRESS_WAVE.LINEAR.POWER);
-          y += smoothedWave * waveAmplitude;
-        }
-        if (x === secondaryVisibleStart) {
-          ctx.moveTo(x, y);
-        } else {
-          ctx.lineTo(x, y);
-        }
-      }
-      ctx.stroke();
-    }
-    return;
-  }
-
-  // --- Track (remaining line) ---
-  // Track is always straight
-  ctx.lineWidth = strokeWidth;
-  ctx.lineCap = 'round';
-  ctx.strokeStyle = getThemeColor('sys-color-primary-rgb', { 
+  
+  // Common colors
+  const primaryColor = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
+  const trackColor = getThemeColor('sys-color-primary-rgb', { 
     alpha: 0.12,
     fallback: 'rgba(103, 80, 164, 0.12)'
   });
-  let trackStart;
-  if (percentage === 0) {
-    // At 0%, maintain full gap after the dot
-    trackStart = edgeGap + strokeWidth + gapWidth;
-  } else if (percentage <= startTransitionEnd) {
-    // During the beginning transition, maintain the gap
-    trackStart = Math.max(
-      edgeGap + strokeWidth + gapWidth, // Minimum gap
-      progressEnd + (gapWidth + strokeWidth) / 2 // Dynamic position
-    );
-  } else {
-    trackStart = Math.min(progressEnd + (gapWidth + strokeWidth) / 2, width - edgeGap);
-  }
-  ctx.beginPath();
-  ctx.moveTo(trackStart, centerY);
-  ctx.lineTo(width - edgeGap, centerY);
-  ctx.stroke();
 
-  // --- Indicator ---
+  if (isIndeterminate) {
+    const cycleDuration = 2000;
+    const normalizedTime = (animationTime % cycleDuration) / cycleDuration;
+    
+    // Calculate segment positions using helpers
+    const primaryScale = getSegmentScale(normalizedTime, [0.3665, 0.6915]);
+    const primaryTranslate = getSegmentTranslate(normalizedTime, [
+      [0, -120], [0.2, 0], [0.5915, 83.6714]
+    ]);
+    
+    const secondaryScale = normalizedTime <= 0.5 ? 0 : 
+      getSegmentScale(normalizedTime, [0.8335, null, 0.8335]);
+    const secondaryTranslate = normalizedTime <= 0.5 ? -54.8889 :
+      getSegmentTranslate(normalizedTime, [
+        [0.5, -54.8889], [0.7, 25.0389], [0.85, 83.6714]
+      ]);
+    
+    // Calculate visible bounds
+    const segments = [
+      {
+        scale: primaryScale,
+        translate: primaryTranslate,
+        start: Math.max(edgeGap, edgeGap + (availableWidth * primaryTranslate / 100)),
+        end: Math.min(width - edgeGap, edgeGap + (availableWidth * primaryTranslate / 100) + (availableWidth * primaryScale))
+      },
+      {
+        scale: secondaryScale,
+        translate: secondaryTranslate,
+        start: Math.max(edgeGap, edgeGap + (availableWidth * secondaryTranslate / 100)),
+        end: Math.min(width - edgeGap, edgeGap + (availableWidth * secondaryTranslate / 100) + (availableWidth * secondaryScale))
+      }
+    ].filter(s => s.end > s.start);
+    
+    // Draw track segments
+    setStrokeStyle(ctx, strokeWidth, trackColor);
+    const indeterminateGap = gapWidth * 2 + strokeWidth / 2; // Double the gap constant + stroke adjustment
+    
+    if (segments.length === 0) {
+      drawLine(ctx, edgeGap, width - edgeGap, centerY, false, 0, {amplitude: 0, frequency: 0, speed: 0});
+    } else {
+      // Before first
+      if (segments[0].start > edgeGap + indeterminateGap) {
+        drawLine(ctx, edgeGap, segments[0].start - indeterminateGap, centerY, false, 0, {amplitude: 0, frequency: 0, speed: 0});
+      }
+      
+      // Between segments
+      if (segments.length === 2 && segments[1].start - segments[0].end > 2 * indeterminateGap) {
+        drawLine(ctx, segments[0].end + indeterminateGap, segments[1].start - indeterminateGap, centerY, false, 0, {amplitude: 0, frequency: 0, speed: 0});
+      }
+      
+      // After last
+      const lastEnd = segments[segments.length - 1].end;
+      if (lastEnd < width - edgeGap - indeterminateGap) {
+        drawLine(ctx, lastEnd + indeterminateGap, width - edgeGap, centerY, false, 0, {amplitude: 0, frequency: 0, speed: 0});
+      }
+    }
+    
+    // Draw progress segments
+    setStrokeStyle(ctx, strokeWidth, primaryColor);
+    const waveConfig = {
+      amplitude: isWavy ? PROGRESS_WAVE.LINEAR.INDETERMINATE_AMPLITUDE : 0,
+      frequency: PROGRESS_WAVE.LINEAR.INDETERMINATE_FREQUENCY,
+      speed: 0
+    };
+    
+    segments.forEach(segment => {
+      drawLine(ctx, segment.start, segment.end, centerY, isWavy, animationTime, waveConfig);
+    });
+    
+    return;
+  }
+
+  // Determinate progress
+  const halfStroke = strokeWidth / 2;
+  const startTransitionEnd = 0.03;
+  const endTransitionStart = 0.97;
+  
+  // Calculate the gap offset (half of total gap on each side)
+  const gapOffset = (gapWidth + strokeWidth) / 2;
+  
+  // Draw track
+  setStrokeStyle(ctx, strokeWidth, trackColor);
+  const trackStart = percentage === 0 
+    ? edgeGap + strokeWidth + gapWidth
+    : percentage <= startTransitionEnd
+      ? Math.max(edgeGap + strokeWidth + gapWidth, progressEnd + gapOffset)
+      : Math.min(progressEnd + gapOffset, width - edgeGap);
+  
+  drawLine(ctx, trackStart, width - edgeGap, centerY, false, 0, {amplitude: 0, frequency: 0, speed: 0});
+
+  // Draw progress indicator
+  setStrokeStyle(ctx, strokeWidth, primaryColor);
+  
   if (percentage >= 0.995) {
-    // Draw complete line when very close to 100%
-    ctx.strokeStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
-    ctx.lineWidth = strokeWidth;
-    ctx.lineCap = 'round';
-    ctx.beginPath();
-    ctx.moveTo(edgeGap, centerY);
-    ctx.lineTo(width - edgeGap, centerY);
-    ctx.stroke();
+    drawLine(ctx, edgeGap, width - edgeGap, centerY, false, 0, {amplitude: 0, frequency: 0, speed: 0});
   } else {
-    // For all other cases (including the beginning transition)
-    ctx.strokeStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
-    ctx.lineWidth = strokeWidth;
-    ctx.lineCap = 'round';
+    const indicatorEnd = percentage <= startTransitionEnd
+      ? Math.min(progressEnd - gapOffset, trackStart - (gapWidth + strokeWidth))
+      : Math.max(edgeGap, progressEnd - gapOffset);
     
-    // Calculate indicator end with proper gap
-    let indicatorEnd;
-    if (percentage <= startTransitionEnd) {
-      // During transition, ensure proper gap between indicator and track
-      indicatorEnd = Math.min(
-        progressEnd - (gapWidth + strokeWidth) / 2, // Dynamic position
-        trackStart - (gapWidth + strokeWidth) // Maintain gap from track
-      );
-    } else {
-      indicatorEnd = Math.max(edgeGap, progressEnd - (gapWidth + strokeWidth) / 2);
-    }
-    
-    ctx.beginPath();
-
+    // Calculate wave amplitude for transitions
+    let waveAmplitude = isWavy ? PROGRESS_WAVE.LINEAR.AMPLITUDE : 0;
     if (isWavy) {
-      const waveSpeed = PROGRESS_WAVE.LINEAR.SPEED;
-      const baseAmplitude = PROGRESS_WAVE.LINEAR.AMPLITUDE;
-      const waveFrequency = PROGRESS_WAVE.LINEAR.FREQUENCY;
-      
-      // Calculate amplitude based on progress
-      let waveAmplitude = baseAmplitude;
-      
-      // For very small percentages, start with a flat line
       if (percentage <= startTransitionEnd) {
-        // Smoothly increase amplitude from 0% to 3%
-        const transitionProgress = percentage / startTransitionEnd;
-        // Use easeInQuad for smooth transition
-        const easedProgress = transitionProgress * transitionProgress;
-        waveAmplitude = baseAmplitude * easedProgress;
-        
-        // For very small percentages, ensure we start with a visible line
-        const minLength = strokeWidth * 2;
-        const actualLength = indicatorEnd - edgeGap;
-        if (actualLength < minLength) {
-          // Draw a small flat line first, maintaining gap
-          const lineEnd = Math.min(edgeGap + minLength, trackStart - (gapWidth + strokeWidth));
-          ctx.moveTo(edgeGap, centerY);
-          ctx.lineTo(lineEnd, centerY);
-          ctx.stroke();
-          ctx.beginPath();
-        }
+        waveAmplitude *= Math.pow(percentage / startTransitionEnd, 2);
       } else if (percentage >= endTransitionStart) {
-        // Smoothly reduce amplitude from 97% to 100%
-        const transitionProgress = (percentage - endTransitionStart) / (1 - endTransitionStart);
-        // Use easeOutQuad for smooth transition
-        const easedProgress = 1 - (1 - transitionProgress) * (1 - transitionProgress);
-        waveAmplitude = baseAmplitude * (1 - easedProgress);
+        waveAmplitude *= Math.pow((1 - percentage) / (1 - endTransitionStart), 2);
       }
-      
-      // Draw the wavy line
-      for (let x = edgeGap; x <= indicatorEnd; x += 2) {
-        // Generate wave inline
-        const phase = (x * waveFrequency) + (animationTime * waveSpeed);
-        const sineWave = Math.sin(phase);
-        const smoothedWave = Math.sign(sineWave) * Math.pow(Math.abs(sineWave), PROGRESS_WAVE.LINEAR.POWER);
-        const y = centerY + (smoothedWave * waveAmplitude);
-        
-        if (x === edgeGap) {
-          ctx.moveTo(x, y);
-        } else {
-          ctx.lineTo(x, y);
-        }
-      }
-    } else {
-      ctx.moveTo(edgeGap, centerY);
-      ctx.lineTo(indicatorEnd, centerY);
     }
-    ctx.stroke();
+    
+    drawLine(ctx, edgeGap, indicatorEnd, centerY, isWavy, animationTime, {
+      amplitude: waveAmplitude,
+      frequency: PROGRESS_WAVE.LINEAR.FREQUENCY,
+      speed: PROGRESS_WAVE.LINEAR.SPEED
+    });
   }
 
-  // --- Buffer ---
-  if (buffer > 0 && bufferPercentage > percentage) {
-    ctx.strokeStyle = getThemeColor('sys-color-secondary-container', { fallback: '#E8DEF8' });
-    ctx.lineWidth = strokeWidth;
-    ctx.lineCap = 'round';
-    const bufferEnd = edgeGap + (availableWidth * bufferPercentage);
-    ctx.beginPath();
-    ctx.moveTo(progressEnd, centerY);
-    ctx.lineTo(bufferEnd, centerY);
-    ctx.stroke();
+  // Draw buffer
+  if (buffer > 0 && buffer > value) {
+    setStrokeStyle(ctx, strokeWidth, getThemeColor('sys-color-secondary-container', { fallback: '#E8DEF8' }));
+    const bufferEnd = edgeGap + (availableWidth * (buffer / max));
+    drawLine(ctx, progressEnd, bufferEnd, centerY, false, 0, {amplitude: 0, frequency: 0, speed: 0});
   }
 
-  // --- Stop Indicator (dot) ---
+  // Draw stop indicator
   if (percentage < 0.995 && showStopIndicator) {
-    const dotX = width - edgeGap;
     ctx.beginPath();
-    ctx.arc(dotX, centerY, 2, 0, 2 * Math.PI);
-    ctx.fillStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
+    ctx.arc(width - edgeGap, centerY, 2, 0, 2 * Math.PI);
+    ctx.fillStyle = primaryColor;
     ctx.fill();
   }
 }; 
