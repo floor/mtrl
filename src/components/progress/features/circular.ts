@@ -162,66 +162,42 @@ export const drawCircularProgress = (
       
       return minArc + (maxArc - minArc) * eased;
     };
-
-    const getRotation = (): number => {
-      // Linear rotation - constant speed, continuous
-      // Calculate total rotations including complete cycles
-      const totalRotations = animationTime / linearRotateDuration;
-      return totalRotations * 2 * Math.PI;
-    };
     
-    const getArcRotation = (): number => {
-      // Arc rotates through 1080deg (3 full rotations) per cycle
-      // and continues rotating, not resetting
-      const completeCycles = Math.floor(animationTime / cycleDuration);
-      const currentCycleProgress = (animationTime % cycleDuration) / cycleDuration;
+    const getRotation = (): number => {
+      // Continuous rotation that combines both linear and arc progression
+      // The arc travels forward as it contracts, so we need to account for that
+      const rotationDuration = 1568; // Base rotation duration
+      const baseRotation = (animationTime / rotationDuration) * 2 * Math.PI;
       
-      // Steps within a single cycle
-      const steps = [
-        { time: 0,     rotation: 0 },
-        { time: 0.125, rotation: 0 },
-        { time: 0.25,  rotation: Math.PI * 0.75 },   // 135deg
-        { time: 0.375, rotation: Math.PI * 1.5 },    // 270deg
-        { time: 0.5,   rotation: Math.PI * 2.25 },   // 405deg
-        { time: 0.625, rotation: Math.PI * 3 },      // 540deg
-        { time: 0.75,  rotation: Math.PI * 3.75 },   // 675deg
-        { time: 0.875, rotation: Math.PI * 4.5 },    // 810deg
-        { time: 1,     rotation: Math.PI * 6 }       // 1080deg (3 full rotations)
-      ];
+      // Add the accumulated travel from arc contraction/expansion cycles
+      const cyclesCompleted = Math.floor(animationTime / arcDuration);
+      const currentCycleProgress = (animationTime % arcDuration) / arcDuration;
       
-      // Base rotation from complete cycles
-      const baseRotation = completeCycles * Math.PI * 6;
-      
-      // Find current step and interpolate within current cycle
-      for (let i = 0; i < steps.length - 1; i++) {
-        if (currentCycleProgress >= steps[i].time && currentCycleProgress <= steps[i + 1].time) {
-          const duration = steps[i + 1].time - steps[i].time;
-          const elapsed = currentCycleProgress - steps[i].time;
-          const progress = elapsed / duration;
-          
-          // Use cubic easing for smooth transitions
-          const eased = progress < 0.5
-            ? 4 * progress * progress * progress
-            : 1 - Math.pow(-2 * progress + 2, 3) / 2;
-          
-          const cycleRotation = steps[i].rotation + (steps[i + 1].rotation - steps[i].rotation) * eased;
-          return baseRotation + cycleRotation;
-        }
+      // During each cycle, the arc effectively travels forward by (maxArc - minArc)
+      // But only during the contraction phase (second half)
+      let currentCycleTravel = 0;
+      if (currentCycleProgress > 0.5) {
+        const contractionProgress = (currentCycleProgress - 0.5) * 2;
+        // Apply easing to the travel
+        const eased = contractionProgress < 0.5
+          ? 2 * contractionProgress * contractionProgress
+          : 1 - Math.pow(-2 * contractionProgress + 2, 2) / 2;
+        currentCycleTravel = 0.722 * eased; // maxArc - minArc = 0.722
       }
       
-      return baseRotation + steps[steps.length - 1].rotation;
+      const totalTravel = cyclesCompleted * 0.722 + currentCycleTravel;
+      return baseRotation + (totalTravel * 2 * Math.PI);
     };
 
     // Calculate current arc parameters
     const arcLength = getArcLength(arcTime) * 2 * Math.PI;
-    const linearRotation = getRotation();
-    const arcRotation = getArcRotation();
+    const rotation = getRotation();
     
     // Draw the indeterminate arc
     ctx.strokeStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
     
-    // Combine all rotations for final position
-    const arcStart = startAngle + linearRotation + arcRotation;
+    // Simple: just rotation and arc length
+    const arcStart = startAngle + rotation;
     const arcEnd = arcStart + arcLength;
     
     if (isWavy) {
