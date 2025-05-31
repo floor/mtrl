@@ -129,15 +129,6 @@ export const drawCircularProgress = (
     // Calculate normalized times
     const arcTime = (animationTime % arcDuration) / arcDuration;
     
-    // Draw the track first (always present) - track is never wavy
-    ctx.strokeStyle = getThemeColor('sys-color-primary-rgb', {
-      alpha: 0.12,
-      fallback: 'rgba(103, 80, 164, 0.12)'
-    });
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
-    ctx.stroke();
-
     // Helper functions for indeterminate animation
     const getArcLength = (time: number): number => {
       // Arc expands from ~10deg to 270deg and back
@@ -193,12 +184,27 @@ export const drawCircularProgress = (
     const arcLength = getArcLength(arcTime) * 2 * Math.PI;
     const rotation = getRotation();
     
-    // Draw the indeterminate arc
-    ctx.strokeStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
-    
-    // Simple: just rotation and arc length
+    // Calculate arc positions for track drawing
     const arcStart = startAngle + rotation;
     const arcEnd = arcStart + arcLength;
+    
+    // Draw the track in the remaining portion (gap between arc end and start)
+    // Track is never wavy
+    ctx.strokeStyle = getThemeColor('sys-color-primary-rgb', {
+      alpha: 0.12,
+      fallback: 'rgba(103, 80, 164, 0.12)'
+    });
+    
+    // Draw the track from where the arc ends to where it starts
+    // This creates the visual gap effect
+    ctx.beginPath();
+    // Add a small gap for visual separation (similar to determinate progress)
+    const trackGapAngle = gapAngle / 2;
+    ctx.arc(centerX, centerY, radius, arcEnd + trackGapAngle, arcStart - trackGapAngle + 2 * Math.PI);
+    ctx.stroke();
+    
+    // Draw the indeterminate arc
+    ctx.strokeStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
     
     if (isWavy) {
       drawWavyArc(ctx, centerX, centerY, radius, arcStart, arcEnd, waveAmplitude, waveFrequency, animationTime);
