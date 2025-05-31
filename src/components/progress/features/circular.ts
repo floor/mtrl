@@ -8,7 +8,8 @@ import { getThemeColor } from '../../../core/utils';
 import { getStrokeWidth, CanvasContext } from './canvas';
 
 /**
- * Draws a wavy arc by modulating the radius with a sine wave
+ * Draws a wavy arc by modulating the radius with a smooth wave pattern
+ * Uses a modified sine wave to create rounded peaks similar to Material Design 3
  */
 const drawWavyArc = (
   ctx: CanvasRenderingContext2D,
@@ -29,9 +30,16 @@ const drawWavyArc = (
   
   for (let i = 0; i <= steps; i++) {
     const angle = startAngle + (angleStep * i);
-    // Add wave effect by modulating the radius
-    const waveOffset = (angle * waveFrequency) + (animationTime * waveSpeed);
-    const radiusModulation = Math.sin(waveOffset) * waveAmplitude;
+    
+    // Generate base sine wave
+    const phase = (angle * waveFrequency) + (animationTime * waveSpeed);
+    const sineWave = Math.sin(phase);
+    
+    // Apply smoothing to create rounder peaks (same as linear)
+    const smoothedWave = Math.sign(sineWave) * Math.pow(Math.abs(sineWave), PROGRESS_WAVE.CIRCULAR.POWER);
+    
+    // Apply wave to radius
+    const radiusModulation = smoothedWave * waveAmplitude;
     const currentRadius = baseRadius + radiusModulation;
     
     const x = centerX + currentRadius * Math.cos(angle);
@@ -64,7 +72,14 @@ export const drawCircularProgress = (
   const isWavy = currentShape === 'wavy';
   
   // Calculate radius accounting for stroke width and wave amplitude
-  const waveAmplitude = isWavy ? Math.min(strokeWidth * PROGRESS_WAVE.CIRCULAR.AMPLITUDE_RATIO, PROGRESS_WAVE.CIRCULAR.AMPLITUDE_MAX) : 0;
+  // Use different amplitude values for indeterminate vs determinate
+  const amplitudeRatio = isIndeterminate 
+    ? PROGRESS_WAVE.CIRCULAR.INDETERMINATE_AMPLITUDE_RATIO 
+    : PROGRESS_WAVE.CIRCULAR.AMPLITUDE_RATIO;
+  const amplitudeMax = isIndeterminate 
+    ? PROGRESS_WAVE.CIRCULAR.INDETERMINATE_AMPLITUDE_MAX 
+    : PROGRESS_WAVE.CIRCULAR.AMPLITUDE_MAX;
+  const waveAmplitude = isWavy ? Math.min(strokeWidth * amplitudeRatio, amplitudeMax) : 0;
   const radius = (Math.min(width, height) / 2) - (strokeWidth / 2) - waveAmplitude;
   const centerX = width / 2;
   const centerY = height / 2;
@@ -84,7 +99,10 @@ export const drawCircularProgress = (
   ctx.lineJoin = 'round'; // Smooth joins for wavy paths
 
   // Wave frequency - number of complete waves around the circle
-  const waveFrequency = PROGRESS_WAVE.CIRCULAR.FREQUENCY;
+  // Use different frequency for indeterminate
+  const waveFrequency = isIndeterminate 
+    ? PROGRESS_WAVE.CIRCULAR.INDETERMINATE_FREQUENCY 
+    : PROGRESS_WAVE.CIRCULAR.FREQUENCY;
 
   if (isIndeterminate) {
     // Material Design 3 indeterminate animation specs

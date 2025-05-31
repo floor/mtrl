@@ -124,7 +124,9 @@ export const PROGRESS_WAVE = {
     /** Frequency for indeterminate animation */
     INDETERMINATE_FREQUENCY: 0.35,
     /** Amplitude for indeterminate animation */
-    INDETERMINATE_AMPLITUDE: 2
+    INDETERMINATE_AMPLITUDE: 2,
+    /** Wave shape power (lower = rounder peaks, higher = sharper) */
+    POWER: 0.8
   },
   /** Circular progress wave parameters */
   CIRCULAR: {
@@ -135,6 +137,14 @@ export const PROGRESS_WAVE = {
     /** Speed of the wave rotation */
     SPEED: 0.008,
     /** Number of complete waves around the circle */
-    FREQUENCY: 12
+    FREQUENCY: 12,
+    /** Number of complete waves for indeterminate animation */
+    INDETERMINATE_FREQUENCY: 32,
+    /** Amplitude ratio for indeterminate animation */
+    INDETERMINATE_AMPLITUDE_RATIO: 0.4,
+    /** Maximum amplitude for indeterminate animation */
+    INDETERMINATE_AMPLITUDE_MAX: 3,
+    /** Wave shape power (lower = rounder peaks, higher = sharper) */
+    POWER: 0.8
   }
 } as const;

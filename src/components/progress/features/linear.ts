@@ -101,9 +101,14 @@ export const drawLinearProgress = (
       const waveFrequency = PROGRESS_WAVE.LINEAR.INDETERMINATE_FREQUENCY;
       
       for (let x = visibleStart; x <= visibleEnd; x += 2) {
-        const waveOffset = (x * waveFrequency) + (animationTime * waveSpeed);
-        const ripple = Math.sin(waveOffset) * waveAmplitude;
-        const y = centerY + ripple;
+        let y = centerY;
+        if (isWavy) {
+          // Generate wave inline
+          const phase = (x * waveFrequency) + (animationTime * waveSpeed);
+          const sineWave = Math.sin(phase);
+          const smoothedWave = Math.sign(sineWave) * Math.pow(Math.abs(sineWave), PROGRESS_WAVE.LINEAR.POWER);
+          y += smoothedWave * waveAmplitude;
+        }
         if (x === visibleStart) {
           ctx.moveTo(x, y);
         } else {
@@ -208,9 +213,12 @@ export const drawLinearProgress = (
       
       // Draw the wavy line
       for (let x = edgeGap; x <= indicatorEnd; x += 2) {
-        const waveOffset = (x * waveFrequency) + (animationTime * waveSpeed);
-        const ripple = Math.sin(waveOffset) * waveAmplitude;
-        const y = centerY + ripple;
+        // Generate wave inline
+        const phase = (x * waveFrequency) + (animationTime * waveSpeed);
+        const sineWave = Math.sin(phase);
+        const smoothedWave = Math.sign(sineWave) * Math.pow(Math.abs(sineWave), PROGRESS_WAVE.LINEAR.POWER);
+        const y = centerY + (smoothedWave * waveAmplitude);
+        
         if (x === edgeGap) {
           ctx.moveTo(x, y);
         } else {
