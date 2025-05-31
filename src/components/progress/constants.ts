@@ -131,7 +131,7 @@ export const PROGRESS_WAVE = {
   /** Circular progress wave parameters */
   CIRCULAR: {
     /** Amplitude as percentage of stroke width */
-    AMPLITUDE_RATIO: 0.6,
+    AMPLITUDE_RATIO: 1,
     /** Maximum amplitude in pixels */
     AMPLITUDE_MAX: 5,
     /** Speed of the wave rotation */

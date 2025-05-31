@@ -9,7 +9,7 @@ import { getStrokeWidth, CanvasContext } from './canvas';
 
 /**
  * Draws a wavy arc by modulating the radius with a smooth wave pattern
- * Uses a modified sine wave to create rounded peaks similar to Material Design 3
+ * Uses a modified sine wave to create rounded peaks
  */
 const drawWavyArc = (
   ctx: CanvasRenderingContext2D,
@@ -79,7 +79,11 @@ export const drawCircularProgress = (
   const amplitudeMax = isIndeterminate 
     ? PROGRESS_WAVE.CIRCULAR.INDETERMINATE_AMPLITUDE_MAX 
     : PROGRESS_WAVE.CIRCULAR.AMPLITUDE_MAX;
-  const waveAmplitude = isWavy ? Math.min(strokeWidth * amplitudeRatio, amplitudeMax) : 0;
+  
+  // Enhanced amplitude calculation using square root for more gradual scaling
+  // This ensures thin strokes still have visible waves while thick strokes don't become too wavy
+  const waveAmplitude = isWavy ? Math.min(Math.sqrt(strokeWidth) * amplitudeRatio * 2, amplitudeMax) : 0;
+  
   const radius = (Math.min(width, height) / 2) - (strokeWidth / 2) - waveAmplitude;
   const centerX = width / 2;
   const centerY = height / 2;
