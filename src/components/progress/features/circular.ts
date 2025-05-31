@@ -117,8 +117,17 @@ export const drawCircularProgress = (
 
   if (isIndeterminate) {
     // Material Design 3 indeterminate animation specs
-    const cycleDuration = 1333; // ~1.33s cycle (matching MD3)
-    const normalizedTime = (animationTime % cycleDuration) / cycleDuration;
+    // Based on the official implementation:
+    // ARCTIME = 1333ms (time for arc to expand/contract)
+    // CYCLE = 4 * ARCTIME = 5332ms
+    // LINEAR_ROTATE = ARCTIME * 360 / 306 ≈ 1568ms
+    
+    const arcDuration = 1333; // milliseconds
+    const cycleDuration = 4 * arcDuration; // 5332ms
+    const linearRotateDuration = arcDuration * 360 / 306; // ~1568ms
+    
+    // Calculate normalized times
+    const arcTime = (animationTime % arcDuration) / arcDuration;
     
     // Draw the track first (always present) - track is never wavy
     ctx.strokeStyle = getThemeColor('sys-color-primary-rgb', {
@@ -131,36 +140,88 @@ export const drawCircularProgress = (
 
     // Helper functions for indeterminate animation
     const getArcLength = (time: number): number => {
-      // Arc length varies between 0.05 and 0.75 of the circle
+      // Arc expands from ~10deg to 270deg and back
+      // Matches the expand-arc animation from Material Design
+      let expandFraction;
       if (time <= 0.5) {
-        // Grow from 0.05 to 0.75 in first half
-        return 0.05 + (0.7 * (time / 0.5));
+        // Expand phase (0 to 0.5)
+        expandFraction = time * 2;
       } else {
-        // Shrink from 0.75 to 0.05 in second half
-        return 0.75 - (0.7 * ((time - 0.5) / 0.5));
+        // Contract phase (0.5 to 1)
+        expandFraction = 2 - (time * 2);
       }
+      
+      // Apply easing (cubic-bezier(0.4, 0, 0.2, 1))
+      const eased = expandFraction < 0.5
+        ? 2 * expandFraction * expandFraction
+        : 1 - Math.pow(-2 * expandFraction + 2, 2) / 2;
+      
+      // Arc length from ~10deg (0.028) to 270deg (0.75)
+      const minArc = 0.028; // ~10 degrees
+      const maxArc = 0.75;  // 270 degrees
+      
+      return minArc + (maxArc - minArc) * eased;
     };
 
-    const getRotation = (time: number): number => {
-      // Full rotation every cycle, with easing
-      const rotation = time * 2 * Math.PI;
-      // Add a slight ease-in-out effect
-      const eased = time < 0.5 
-        ? 2 * time * time 
-        : 1 - Math.pow(-2 * time + 2, 2) / 2;
-      return rotation + (eased * 0.1); // Add a small boost to the rotation
+    const getRotation = (): number => {
+      // Linear rotation - constant speed, continuous
+      // Calculate total rotations including complete cycles
+      const totalRotations = animationTime / linearRotateDuration;
+      return totalRotations * 2 * Math.PI;
+    };
+    
+    const getArcRotation = (): number => {
+      // Arc rotates through 1080deg (3 full rotations) per cycle
+      // and continues rotating, not resetting
+      const completeCycles = Math.floor(animationTime / cycleDuration);
+      const currentCycleProgress = (animationTime % cycleDuration) / cycleDuration;
+      
+      // Steps within a single cycle
+      const steps = [
+        { time: 0,     rotation: 0 },
+        { time: 0.125, rotation: 0 },
+        { time: 0.25,  rotation: Math.PI * 0.75 },   // 135deg
+        { time: 0.375, rotation: Math.PI * 1.5 },    // 270deg
+        { time: 0.5,   rotation: Math.PI * 2.25 },   // 405deg
+        { time: 0.625, rotation: Math.PI * 3 },      // 540deg
+        { time: 0.75,  rotation: Math.PI * 3.75 },   // 675deg
+        { time: 0.875, rotation: Math.PI * 4.5 },    // 810deg
+        { time: 1,     rotation: Math.PI * 6 }       // 1080deg (3 full rotations)
+      ];
+      
+      // Base rotation from complete cycles
+      const baseRotation = completeCycles * Math.PI * 6;
+      
+      // Find current step and interpolate within current cycle
+      for (let i = 0; i < steps.length - 1; i++) {
+        if (currentCycleProgress >= steps[i].time && currentCycleProgress <= steps[i + 1].time) {
+          const duration = steps[i + 1].time - steps[i].time;
+          const elapsed = currentCycleProgress - steps[i].time;
+          const progress = elapsed / duration;
+          
+          // Use cubic easing for smooth transitions
+          const eased = progress < 0.5
+            ? 4 * progress * progress * progress
+            : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+          
+          const cycleRotation = steps[i].rotation + (steps[i + 1].rotation - steps[i].rotation) * eased;
+          return baseRotation + cycleRotation;
+        }
+      }
+      
+      return baseRotation + steps[steps.length - 1].rotation;
     };
 
-    // Calculate current arc length and rotation
-    const arcLength = getArcLength(normalizedTime) * 2 * Math.PI;
-    const rotation = getRotation(normalizedTime);
+    // Calculate current arc parameters
+    const arcLength = getArcLength(arcTime) * 2 * Math.PI;
+    const linearRotation = getRotation();
+    const arcRotation = getArcRotation();
     
     // Draw the indeterminate arc
     ctx.strokeStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
     
-    // Start angle is based on rotation
-    const arcStart = startAngle + rotation;
-    // End angle is start angle plus arc length
+    // Combine all rotations for final position
+    const arcStart = startAngle + linearRotation + arcRotation;
     const arcEnd = arcStart + arcLength;
     
     if (isWavy) {
