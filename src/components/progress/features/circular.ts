@@ -203,10 +203,20 @@ export const drawCircularProgress = (
   const actualPercentage = Math.max(percentage, minArcPercentage);
   const progressEndAngle = startAngle + (maxAngle * actualPercentage);
   
+  // Calculate wave amplitude with reduction near 100%
+  let adjustedWaveAmplitude = waveAmplitude;
+  if (isWavy && percentage >= 0.97) {
+    // Smoothly reduce amplitude from 97% to 100%
+    const transitionProgress = (percentage - 0.97) / 0.03;
+    // Use easeOutQuad for smooth transition
+    const easedProgress = 1 - (1 - transitionProgress) * (1 - transitionProgress);
+    adjustedWaveAmplitude = waveAmplitude * (1 - easedProgress);
+  }
+  
   if (percentage >= 0.995) {
     // Draw complete circle when very close to 100%
     if (isWavy) {
-      drawWavyArc(ctx, centerX, centerY, radius, 0, 2 * Math.PI, waveAmplitude, waveFrequency, animationTime);
+      drawWavyArc(ctx, centerX, centerY, radius, 0, 2 * Math.PI, adjustedWaveAmplitude, waveFrequency, animationTime);
     } else {
       ctx.beginPath();
       ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
@@ -215,7 +225,7 @@ export const drawCircularProgress = (
   } else {
     // Draw progress arc (including minimal arc at 0%)
     if (isWavy) {
-      drawWavyArc(ctx, centerX, centerY, radius, startAngle, progressEndAngle, waveAmplitude, waveFrequency, animationTime);
+      drawWavyArc(ctx, centerX, centerY, radius, startAngle, progressEndAngle, adjustedWaveAmplitude, waveFrequency, animationTime);
     } else {
       ctx.beginPath();
       ctx.arc(centerX, centerY, radius, startAngle, progressEndAngle);
