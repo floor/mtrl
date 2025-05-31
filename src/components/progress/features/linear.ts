@@ -44,6 +44,9 @@ export const drawLinearProgress = (
 
   if (isIndeterminate) {
     // Material Design 3 indeterminate animation specs
+    // Two segments create continuous flow:
+    // - Primary segment: starts immediately, exits around 60-70%
+    // - Secondary segment: enters at 50% as primary exits, maintains visual continuity
     const cycleDuration = 2000; // 2s cycle (matching MD3)
     const normalizedTime = (animationTime % cycleDuration) / cycleDuration;
     
@@ -78,7 +81,37 @@ export const drawLinearProgress = (
         const t = (time - 0.2) / (0.5915 - 0.2);
         return 83.6714 * t;
       }
-      return 83.6714 + (200.611 - 83.6714) * ((time - 0.5915) / (1 - 0.5915));
+      // Accelerate exit as secondary enters
+      return 83.6714 + (220 - 83.6714) * ((time - 0.5915) / (1 - 0.5915));
+    };
+
+    // Helper functions for secondary segment
+    const getSecondaryScale = (time: number): number => {
+      // Second segment should start around 50% when first is exiting
+      if (time <= 0.5) {
+        return 0;
+      } else if (time <= 0.8335) {
+        const t = (time - 0.5) / (0.8335 - 0.5);
+        return 0.08 + (0.661479 - 0.08) * t;
+      }
+      // Shrink at end
+      const t = (time - 0.8335) / (1 - 0.8335);
+      return 0.661479 - (0.661479 - 0.08) * t;
+    };
+
+    const getSecondaryTranslate = (time: number): number => {
+      // Start off-screen and enter as first segment exits
+      if (time <= 0.5) {
+        return -54.8889;
+      } else if (time <= 0.7) {
+        const t = (time - 0.5) / (0.7 - 0.5);
+        return -54.8889 + (25.0389 + 54.8889) * t;
+      } else if (time <= 0.85) {
+        const t = (time - 0.7) / (0.85 - 0.7);
+        return 25.0389 + (83.6714 - 25.0389) * t;
+      }
+      // Exit to right
+      return 83.6714 + (200.611 - 83.6714) * ((time - 0.85) / (1 - 0.85));
     };
 
     // Draw primary bar
@@ -87,9 +120,20 @@ export const drawLinearProgress = (
     const primaryWidth = availableWidth * primaryScale;
     const primaryStart = edgeGap + (availableWidth * primaryTranslate / 100);
     
-    const visibleStart = Math.max(edgeGap, primaryStart);
-    const visibleEnd = Math.min(width - edgeGap, primaryStart + primaryWidth);
-    if (visibleEnd > visibleStart) {
+    const primaryVisibleStart = Math.max(edgeGap, primaryStart);
+    const primaryVisibleEnd = Math.min(width - edgeGap, primaryStart + primaryWidth);
+    
+    // Draw secondary bar
+    const secondaryScale = getSecondaryScale(normalizedTime);
+    const secondaryTranslate = getSecondaryTranslate(normalizedTime);
+    const secondaryWidth = availableWidth * secondaryScale;
+    const secondaryStart = edgeGap + (availableWidth * secondaryTranslate / 100);
+    
+    const secondaryVisibleStart = Math.max(edgeGap, secondaryStart);
+    const secondaryVisibleEnd = Math.min(width - edgeGap, secondaryStart + secondaryWidth);
+    
+    // Draw primary segment
+    if (primaryVisibleEnd > primaryVisibleStart) {
       ctx.strokeStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
       ctx.lineWidth = strokeWidth;
       ctx.lineCap = 'round';
@@ -97,10 +141,10 @@ export const drawLinearProgress = (
 
       // Use wavy mechanism with appropriate amplitude
       const waveSpeed = 0;
-      const waveAmplitude = isWavy ? PROGRESS_WAVE.LINEAR.INDETERMINATE_AMPLITUDE : 0; // Zero amplitude for line shape
+      const waveAmplitude = isWavy ? PROGRESS_WAVE.LINEAR.INDETERMINATE_AMPLITUDE : 0;
       const waveFrequency = PROGRESS_WAVE.LINEAR.INDETERMINATE_FREQUENCY;
       
-      for (let x = visibleStart; x <= visibleEnd; x += 2) {
+      for (let x = primaryVisibleStart; x <= primaryVisibleEnd; x += 2) {
         let y = centerY;
         if (isWavy) {
           // Generate wave inline
@@ -109,7 +153,37 @@ export const drawLinearProgress = (
           const smoothedWave = Math.sign(sineWave) * Math.pow(Math.abs(sineWave), PROGRESS_WAVE.LINEAR.POWER);
           y += smoothedWave * waveAmplitude;
         }
-        if (x === visibleStart) {
+        if (x === primaryVisibleStart) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+      }
+      ctx.stroke();
+    }
+    
+    // Draw secondary segment
+    if (secondaryVisibleEnd > secondaryVisibleStart) {
+      ctx.strokeStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
+      ctx.lineWidth = strokeWidth;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+
+      // Use wavy mechanism with appropriate amplitude
+      const waveSpeed = 0;
+      const waveAmplitude = isWavy ? PROGRESS_WAVE.LINEAR.INDETERMINATE_AMPLITUDE : 0;
+      const waveFrequency = PROGRESS_WAVE.LINEAR.INDETERMINATE_FREQUENCY;
+      
+      for (let x = secondaryVisibleStart; x <= secondaryVisibleEnd; x += 2) {
+        let y = centerY;
+        if (isWavy) {
+          // Generate wave inline
+          const phase = (x * waveFrequency) + (animationTime * waveSpeed);
+          const sineWave = Math.sin(phase);
+          const smoothedWave = Math.sign(sineWave) * Math.pow(Math.abs(sineWave), PROGRESS_WAVE.LINEAR.POWER);
+          y += smoothedWave * waveAmplitude;
+        }
+        if (x === secondaryVisibleStart) {
           ctx.moveTo(x, y);
         } else {
           ctx.lineTo(x, y);

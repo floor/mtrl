@@ -377,6 +377,8 @@ export const withCanvas = (config: ProgressConfig) =>
     // Animation loop for wavy progress (works for both determinate and indeterminate)
     const startWavyAnimation = (): void => {
       // Remove the circular check - wavy animation now works for both
+      // Note: Linear indeterminate always uses this animation loop, even with 'line' shape,
+      // because it needs continuous redrawing for the two-segment animation
       
       // Stop any existing wavy animation
       if (component.wavyAnimationId) {
@@ -462,6 +464,7 @@ export const withCanvas = (config: ProgressConfig) =>
         } else if (isCircular) {
           startIndeterminateAnimation();
         } else {
+          // Linear indeterminate always needs animation loop
           startWavyAnimation();
         }
       } else if (currentShape === 'wavy') {
@@ -552,6 +555,9 @@ export const withCanvas = (config: ProgressConfig) =>
           // If circular and indeterminate, restart the regular indeterminate animation
           if (isCircular && component.state?.indeterminate) {
             startIndeterminateAnimation();
+          } else if (!isCircular && component.state?.indeterminate) {
+            // For linear indeterminate with line shape, still need animation loop
+            startWavyAnimation(); // Linear indeterminate always uses wavy animation loop
           }
         }
         
@@ -771,6 +777,7 @@ export const withCanvas = (config: ProgressConfig) =>
         } else if (isCircular) {
           startIndeterminateAnimation();
         } else {
+          // Linear indeterminate always uses wavy animation loop
           startWavyAnimation();
         }
       } else if (currentShape === 'wavy') {
