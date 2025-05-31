@@ -71,6 +71,11 @@ export const drawCircularProgress = (
   const strokeWidth = getStrokeWidth(config.thickness);
   const isWavy = currentShape === 'wavy';
   
+  // Calculate size factor for amplitude scaling
+  // Scale amplitude based on component size (40px min to 240px max)
+  const componentSize = Math.min(width, height);
+  const sizeFactor = Math.min(Math.max((componentSize - 40) / 200, 0), 1); // Normalize between 0-1
+  
   // Calculate radius accounting for stroke width and wave amplitude
   // Use different amplitude values for indeterminate vs determinate
   const amplitudeRatio = isIndeterminate 
@@ -81,8 +86,10 @@ export const drawCircularProgress = (
     : PROGRESS_WAVE.CIRCULAR.AMPLITUDE_MAX;
   
   // Enhanced amplitude calculation using square root for more gradual scaling
-  // This ensures thin strokes still have visible waves while thick strokes don't become too wavy
-  const waveAmplitude = isWavy ? Math.min(Math.sqrt(strokeWidth) * amplitudeRatio * 2, amplitudeMax) : 0;
+  // Now also considers component size to prevent oversized waves on small progress indicators
+  const baseAmplitude = Math.sqrt(strokeWidth) * amplitudeRatio * 2;
+  const scaledAmplitude = baseAmplitude * (0.3 + 0.7 * sizeFactor); // Minimum 30% amplitude at smallest size
+  const waveAmplitude = isWavy ? Math.min(scaledAmplitude, amplitudeMax) : 0;
   
   const radius = (Math.min(width, height) / 2) - (strokeWidth / 2) - waveAmplitude;
   const centerX = width / 2;
