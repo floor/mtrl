@@ -30,7 +30,8 @@ export const drawLinearProgress = (
   const edgeGap = strokeWidth / 2;
   // The available width for the indicator and track
   const availableWidth = width - (edgeGap * 2);
-  const gapWidth = 4;
+  // Adaptive gap based on thickness
+  const gapWidth = Math.max(4, strokeWidth * 0.8); // Minimum 4px, scales with thickness
   const percentage = value / max;
   const bufferPercentage = buffer / max;
   const progressEnd = edgeGap + (availableWidth * percentage);
@@ -50,18 +51,6 @@ export const drawLinearProgress = (
     const cycleDuration = 2000; // 2s cycle (matching MD3)
     const normalizedTime = (animationTime % cycleDuration) / cycleDuration;
     
-    // Draw the track first (always straight)
-    ctx.strokeStyle = getThemeColor('sys-color-primary-rgb', { 
-      alpha: 0.12,
-      fallback: 'rgba(103, 80, 164, 0.12)'
-    });
-    ctx.lineWidth = strokeWidth;
-    ctx.lineCap = 'round';
-    ctx.beginPath();
-    ctx.moveTo(edgeGap, centerY);
-    ctx.lineTo(width - edgeGap, centerY);
-    ctx.stroke();
-
     // Helper functions for indeterminate animation
     const getPrimaryScale = (time: number): number => {
       if (time <= 0.3665) {
@@ -114,7 +103,7 @@ export const drawLinearProgress = (
       return 83.6714 + (200.611 - 83.6714) * ((time - 0.85) / (1 - 0.85));
     };
 
-    // Draw primary bar
+    // Calculate segment positions
     const primaryScale = getPrimaryScale(normalizedTime);
     const primaryTranslate = getPrimaryTranslate(normalizedTime);
     const primaryWidth = availableWidth * primaryScale;
@@ -123,7 +112,7 @@ export const drawLinearProgress = (
     const primaryVisibleStart = Math.max(edgeGap, primaryStart);
     const primaryVisibleEnd = Math.min(width - edgeGap, primaryStart + primaryWidth);
     
-    // Draw secondary bar
+    // Calculate secondary segment positions
     const secondaryScale = getSecondaryScale(normalizedTime);
     const secondaryTranslate = getSecondaryTranslate(normalizedTime);
     const secondaryWidth = availableWidth * secondaryScale;
@@ -131,6 +120,83 @@ export const drawLinearProgress = (
     
     const secondaryVisibleStart = Math.max(edgeGap, secondaryStart);
     const secondaryVisibleEnd = Math.min(width - edgeGap, secondaryStart + secondaryWidth);
+    
+    // Draw segmented track in the gaps between active segments
+    ctx.strokeStyle = getThemeColor('sys-color-primary-rgb', { 
+      alpha: 0.12,
+      fallback: 'rgba(103, 80, 164, 0.12)'
+    });
+    ctx.lineWidth = strokeWidth;
+    ctx.lineCap = 'round';
+    
+    // Half stroke for gap calculations
+    const halfStroke = strokeWidth / 2;
+    
+    // Double the gap for indeterminate progress for better visual separation
+    const indeterminateGapWidth = gapWidth * 2;
+    
+    // Check which segments are actually visible
+    const hasPrimary = primaryVisibleEnd > primaryVisibleStart;
+    const hasSecondary = secondaryVisibleEnd > secondaryVisibleStart;
+    
+    if (!hasPrimary && !hasSecondary) {
+      // No segments visible - draw full track
+      ctx.beginPath();
+      ctx.moveTo(edgeGap, centerY);
+      ctx.lineTo(width - edgeGap, centerY);
+      ctx.stroke();
+    } else {
+      // Build list of visible segments
+      const visibleSegments = [];
+      
+      if (hasPrimary) {
+        visibleSegments.push({
+          start: primaryVisibleStart,
+          end: primaryVisibleEnd
+        });
+      }
+      
+      if (hasSecondary) {
+        visibleSegments.push({
+          start: secondaryVisibleStart,
+          end: secondaryVisibleEnd
+        });
+      }
+      
+      // Sort by start position
+      visibleSegments.sort((a, b) => a.start - b.start);
+      
+      // Draw track before first visible segment
+      const firstSegment = visibleSegments[0];
+      if (firstSegment.start > edgeGap + indeterminateGapWidth + halfStroke) {
+        ctx.beginPath();
+        ctx.moveTo(edgeGap, centerY);
+        ctx.lineTo(firstSegment.start - indeterminateGapWidth - halfStroke, centerY);
+        ctx.stroke();
+      }
+      
+      // Draw track between visible segments
+      if (visibleSegments.length === 2) {
+        const gap1End = visibleSegments[0].end + indeterminateGapWidth + halfStroke;
+        const gap2Start = visibleSegments[1].start - indeterminateGapWidth - halfStroke;
+        
+        if (gap2Start > gap1End) {
+          ctx.beginPath();
+          ctx.moveTo(gap1End, centerY);
+          ctx.lineTo(gap2Start, centerY);
+          ctx.stroke();
+        }
+      }
+      
+      // Draw track after last visible segment
+      const lastSegment = visibleSegments[visibleSegments.length - 1];
+      if (lastSegment.end < width - edgeGap - indeterminateGapWidth - halfStroke) {
+        ctx.beginPath();
+        ctx.moveTo(lastSegment.end + indeterminateGapWidth + halfStroke, centerY);
+        ctx.lineTo(width - edgeGap, centerY);
+        ctx.stroke();
+      }
+    }
     
     // Draw primary segment
     if (primaryVisibleEnd > primaryVisibleStart) {
