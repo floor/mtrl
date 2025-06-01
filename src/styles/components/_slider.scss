@@ -88,6 +88,28 @@ $component: '#{base.$prefix}-slider';
       cursor: not-allowed;
     }
   }
+  
+  // Canvas element for hybrid rendering
+  &-canvas {
+    position: absolute !important;
+    top: 0;
+    left: 0;
+    width: 100% !important;
+    height: 100% !important;
+    pointer-events: none;
+    z-index: 0;
+  }
+  
+  // When canvas is present, hide DOM track elements
+  &:has(.#{$component}-canvas) {
+    .#{$component}-active-track,
+    .#{$component}-start-track,
+    .#{$component}-remaining-track,
+    .#{$component}-dot,
+    .#{$component}-tick {
+      display: none !important;
+    }
+  }
  
   // Handle - updated with T-shape and proper focus styles
   &-handle {

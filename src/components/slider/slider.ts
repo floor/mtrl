@@ -6,7 +6,8 @@ import { withLayout, withIcon, withLabel, withDom  } from '../../core/compositio
 import { 
   withRange,
   withStates,
-  withController
+  withController,
+  withCanvas
 } from './features';
 import { withAPI } from './api';
 import { SliderConfig, SliderComponent, SliderEventType } from './types';
@@ -19,10 +20,11 @@ import { createBaseConfig, getApiConfig } from './config';
  * 1. Structure definition - Describes the DOM structure declaratively
  * 2. Feature enhancement - Adds specific capabilities (range, icons, labels)
  * 3. DOM creation - Turns the structure into actual DOM elements
- * 4. State management - Handles visual states and appearance
- * 5. Controller - Manages behavior, events, and UI rendering
- * 6. Lifecycle - Handles component lifecycle events
- * 7. Public API - Exposes a clean, consistent API
+ * 4. Canvas rendering - Uses canvas for visual elements, keeping handles as DOM
+ * 5. State management - Handles visual states and appearance
+ * 6. Controller - Manages behavior, events, and UI rendering
+ * 7. Lifecycle - Handles component lifecycle events
+ * 8. Public API - Exposes a clean, consistent API
  *
  * @param {SliderConfig} config - Slider configuration object
  * @returns {SliderComponent} Slider component instance
@@ -44,6 +46,9 @@ const createSlider = (config: SliderConfig = {}): SliderComponent => {
       
       // Now create the actual DOM elements from the complete structure
       withDom(),
+      
+      // Add canvas rendering for tracks and ticks
+      withCanvas(baseConfig),
       
       // Add state management and behavior
       withStates(baseConfig),

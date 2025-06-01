@@ -223,6 +223,12 @@ export const withController = (config: SliderConfig) => component => {
    * Handles different rendering for single and range sliders
    */
   const updateTrackSegments = () => {
+    // If using canvas rendering, trigger redraw instead of DOM manipulation
+    if (component.drawCanvas) {
+      return; // Canvas handles track rendering
+    }
+    
+    // Legacy DOM-based rendering (kept for backwards compatibility)
     const components = getComponents();
     const { track, container, handle, startTrack, activeTrack, remainingTrack } = components;
     
@@ -263,20 +269,8 @@ export const withController = (config: SliderConfig) => component => {
       // Check if we're crossing the center (sign change)
       const crossingCenter = isPositive !== wasPositive && !state.dragging;
       
-      // Debug logging
-      console.log('[Centered Slider Debug]', {
-        value: state.value,
-        previousValue: state.previousValue,
-        isPositive,
-        wasPositive,
-        crossingCenter,
-        dragging: state.dragging,
-        isAnimatingThroughCenter: state.isAnimatingThroughCenter
-      });
-      
       // Handle center-crossing animation
       if (crossingCenter && !state.isAnimatingThroughCenter && Math.abs(state.value) > 0.1 && Math.abs(state.previousValue) > 0.1) {
-        console.log('[Animation] Starting center-crossing animation');
         state.isAnimatingThroughCenter = true;
         
         // Step 1: Animate active track to zero width at center
@@ -293,7 +287,6 @@ export const withController = (config: SliderConfig) => component => {
         
         // After the shrink animation completes, expand in new direction
         setTimeout(() => {
-          console.log('[Animation] Expanding in new direction');
           if (isPositive) {
             activeTrack.style.left = `${adjustedZeroPercent + halfCenterGapPercent}%`;
             activeTrack.style.right = `${100 - (adjustedPercent - paddingPercent)}%`;
@@ -305,7 +298,6 @@ export const withController = (config: SliderConfig) => component => {
           // Reset animation flag after expansion
           setTimeout(() => {
             state.isAnimatingThroughCenter = false;
-            console.log('[Animation] Center-crossing animation complete');
           }, 100);
         }, 100);
         
@@ -375,7 +367,6 @@ export const withController = (config: SliderConfig) => component => {
       
       // Skip normal rendering if we're animating
       if (state.isAnimatingThroughCenter) {
-        console.log('[Animation] Skipping normal track update during animation');
         return;
       }
       
@@ -535,6 +526,13 @@ export const withController = (config: SliderConfig) => component => {
    * Creates visual indicators for discrete values
    */
   const generateTicks = () => {
+    // If using canvas rendering, skip DOM tick generation
+    if (component.drawCanvas) {
+      state.ticks = []; // Clear any existing DOM ticks
+      return; // Canvas handles tick rendering
+    }
+    
+    // Legacy DOM-based tick generation (kept for backwards compatibility)
     const components = getComponents();
     const { ticksContainer, container } = components;
     
@@ -606,6 +604,12 @@ export const withController = (config: SliderConfig) => component => {
    * Sets visual state based on current values
    */
   const updateTicks = () => {
+    // If using canvas rendering, skip DOM tick updates
+    if (component.drawCanvas) {
+      return; // Canvas handles tick rendering
+    }
+    
+    // Legacy DOM-based tick updates (kept for backwards compatibility)
     if (!state.ticks || state.ticks.length === 0) return;
     
     const tickClass = state.component.getClass('slider-tick');
@@ -687,6 +691,12 @@ export const withController = (config: SliderConfig) => component => {
       updateTrackSegments();
       updateValueBubbles();
       updateTicks();
+      
+      // Trigger canvas redraw if available
+      if (component.drawCanvas) {
+        // Pass the current state directly to canvas
+        component.drawCanvas(state);
+      }
     } catch (error) {
       console.warn('Error rendering UI:', error);
     }
@@ -784,17 +794,6 @@ export const withController = (config: SliderConfig) => component => {
        */
       setValue(value, triggerEvent = true) {
         const newValue = clamp(value, state.min, state.max);
-        
-        // Debug logging for centered sliders
-        if (config.centered) {
-          console.log('[setValue Debug]', {
-            oldValue: state.value,
-            newValue,
-            previousValue: state.previousValue,
-            willCrossCenter: (state.value >= 0) !== (newValue >= 0),
-            triggerEvent
-          });
-        }
         
         // Track previous value for centered slider animations
         if (config.centered) {

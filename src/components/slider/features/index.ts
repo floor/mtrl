@@ -3,3 +3,4 @@
 export { withRange } from './range';
 export { withStates } from './states';
 export { withController } from './controller';
+export { withCanvas } from './canvas';

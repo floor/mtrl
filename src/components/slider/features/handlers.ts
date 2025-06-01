@@ -169,20 +169,10 @@ export const createHandlers = (config: SliderConfig, state, uiRenderer, eventHel
       } else {
         // Single handle slider - use setValue API for centered sliders to ensure animation
         if (config.centered && state.component.slider && state.component.slider.setValue) {
-          console.log('[Track Click Debug] Using setValue API for centered slider', {
-            oldValue: state.value,
-            newValue,
-            hasSetValue: !!state.component.slider.setValue
-          });
           // Use the API method which handles previousValue tracking and animation
           state.component.slider.setValue(newValue, false); // false to not trigger event yet
         } else {
           // Regular slider - direct update
-          console.log('[Track Click Debug] Direct value update', {
-            oldValue: state.value,
-            newValue,
-            isCentered: config.centered
-          });
           state.value = newValue;
         }
       }
