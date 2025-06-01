@@ -35,19 +35,7 @@ export const withRange = (config: SliderConfig) => component => {
       schema.element.options.className = `${rootClasses} ${getClass('slider--range')}`.trim();
     }
     
-    // Add start track segment to track children
-    const trackChildren = schema.element.children.container.children.track.children;
-    trackChildren.startTrack = {
-      name: 'startTrack',
-      creator: createElement,
-      options: {
-        tag: 'div',
-        className: getClass('slider-start-track'),
-        style: {
-          width: '0%'
-        }
-      }
-    };
+    // Canvas will handle all track rendering, so we don't add any DOM track elements
     
     // Add second handle to container children
     const containerChildren = schema.element.children.container.children;

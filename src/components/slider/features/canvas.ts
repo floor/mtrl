@@ -35,7 +35,14 @@ const setupCanvas = (canvas: HTMLCanvasElement): CanvasContext => {
   
   // Ensure valid dimensions
   if (rect.width === 0 || rect.height === 0) {
-    console.warn('Canvas has zero dimensions:', rect);
+    // This can happen during initialization, not a critical error
+    return {
+      canvas,
+      ctx: canvas.getContext('2d')!,
+      width: 0,
+      height: 0,
+      pixelRatio
+    };
   }
   
   canvas.width = rect.width * pixelRatio;
@@ -375,6 +382,9 @@ const draw = (
 ): void => {
   const { ctx, width, height } = context;
   
+  // Skip drawing if canvas has no dimensions
+  if (width === 0 || height === 0) return;
+  
   // Clear canvas
   ctx.clearRect(0, 0, width, height);
   
@@ -448,14 +458,6 @@ export const withCanvas = (config: SliderConfig) =>
         return;
       }
       
-      // Debug: Check what's available
-      console.log('[Canvas Debug] drawCanvas called', {
-        hasControllerState: !!controllerState,
-        hasSliderAPI: !!component.slider,
-        controllerStateValue: controllerState?.value,
-        configValue: config.value
-      });
-      
       // Get current state - prefer passed state, then slider API, then config
       let state;
       if (controllerState) {
@@ -467,7 +469,6 @@ export const withCanvas = (config: SliderConfig) =>
           max: controllerState.max,
           step: controllerState.step
         };
-        console.log('[Canvas Debug] Using controller state:', state);
       } else if (component.slider) {
         // Fallback to slider API
         state = {
@@ -477,7 +478,6 @@ export const withCanvas = (config: SliderConfig) =>
           max: component.slider.getMax(),
           step: component.slider.getStep()
         };
-        console.log('[Canvas Debug] Using slider API state:', state);
       } else {
         // Use config values as final fallback
         state = {
@@ -487,7 +487,6 @@ export const withCanvas = (config: SliderConfig) =>
           max: config.max || 100,
           step: config.step || 1
         };
-        console.log('[Canvas Debug] Using config fallback state:', state);
       }
       
       draw(canvasContext, config, state);
