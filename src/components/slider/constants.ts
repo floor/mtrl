@@ -45,10 +45,18 @@ export type SliderSize = keyof typeof SLIDER_SIZES | number;
 export const SLIDER_MEASUREMENTS = {
   /** Handle size in pixels */
   HANDLE_SIZE: 20,
+  /** Handle height for XS and S sizes in pixels */
+  SMALL_HANDLE_HEIGHT: 42,
+  /** Handle height offset for M, L, XL sizes (added to track height) */
+  HANDLE_HEIGHT_OFFSET: 12,
   /** Minimum container height in pixels */
   MIN_HEIGHT: 40,
-  /** Track border radius (half of height) */
-  TRACK_RADIUS: 2,
+  /** Track border radius in pixels */
+  TRACK_RADIUS: 4,
+  /** External track radius for XS and S sizes in pixels */
+  SMALL_TRACK_EXTERNAL_RADIUS: 10,
+  /** External track radius ratio for M, L, XL sizes (multiplied by track height) */
+  LARGE_TRACK_RADIUS_RATIO: 0.35,
   /** Tick size in pixels */
   TICK_SIZE: 4,
   /** Dot size in pixels */
@@ -58,7 +66,7 @@ export const SLIDER_MEASUREMENTS = {
   /** Center gap pixels for centered sliders */
   CENTER_GAP: 4,
   /** Edge padding in pixels */
-  EDGE_PADDING: 6
+  EDGE_PADDING: 7
 } as const;
 
 /**

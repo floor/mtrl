@@ -43,6 +43,36 @@ export const getTrackHeight = (size?: SliderSize): number => {
 };
 
 /**
+ * Gets the handle height based on the slider size
+ */
+export const getHandleHeight = (size?: SliderSize): number => {
+  const trackHeight = getTrackHeight(size);
+  
+  // For XS and S sizes, use SMALL_HANDLE_HEIGHT constant
+  if (trackHeight <= SLIDER_SIZES.S) {
+    return SLIDER_MEASUREMENTS.SMALL_HANDLE_HEIGHT;
+  }
+  
+  // For M, L, XL sizes, handle height is larger than track by HANDLE_HEIGHT_OFFSET
+  return trackHeight + SLIDER_MEASUREMENTS.HANDLE_HEIGHT_OFFSET;
+};
+
+/**
+ * Gets the external track radius based on the slider size
+ */
+export const getExternalTrackRadius = (size?: SliderSize): number => {
+  const trackHeight = getTrackHeight(size);
+  
+  // For XS and S sizes, use SMALL_TRACK_EXTERNAL_RADIUS constant
+  if (trackHeight <= SLIDER_SIZES.S) {
+    return SLIDER_MEASUREMENTS.SMALL_TRACK_EXTERNAL_RADIUS;
+  }
+  
+  // For M, L, XL sizes, use track height multiplied by ratio
+  return trackHeight * SLIDER_MEASUREMENTS.LARGE_TRACK_RADIUS_RATIO;
+};
+
+/**
  * Updates canvas dimensions based on current size
  */
 const updateCanvasDimensions = (
@@ -52,13 +82,15 @@ const updateCanvasDimensions = (
 ): void => {
   const pixelRatio = window.devicePixelRatio || 1;
   const trackHeight = getTrackHeight(config?.size);
+  const handleHeight = getHandleHeight(config?.size);
   const { ctx } = context;
   
   const sliderElement = canvas.parentElement;
   if (!sliderElement) return;
   
   const width = Math.max(sliderElement.getBoundingClientRect().width || sliderElement.offsetWidth, 200);
-  const height = Math.max(trackHeight + 32, SLIDER_MEASUREMENTS.MIN_HEIGHT); // Add padding for handle
+  // Use the larger of handle height + padding or minimum height
+  const height = Math.max(handleHeight + 20, trackHeight + 32, SLIDER_MEASUREMENTS.MIN_HEIGHT);
   
   // Update canvas dimensions
   canvas.style.width = `${width}px`;
@@ -119,9 +151,44 @@ const roundRect = (
 };
 
 /**
+ * Helper function for rounded rectangles with different left/right radii
+ */
+const roundRectWithRadii = (
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  leftRadius: number,
+  rightRadius: number
+) => {
+  if (width < 0 || height < 0) return;
+  
+  ctx.beginPath();
+  // Top edge
+  ctx.moveTo(x + leftRadius, y);
+  ctx.lineTo(x + width - rightRadius, y);
+  // Top right corner
+  ctx.quadraticCurveTo(x + width, y, x + width, y + rightRadius);
+  // Right edge
+  ctx.lineTo(x + width, y + height - rightRadius);
+  // Bottom right corner
+  ctx.quadraticCurveTo(x + width, y + height, x + width - rightRadius, y + height);
+  // Bottom edge
+  ctx.lineTo(x + leftRadius, y + height);
+  // Bottom left corner
+  ctx.quadraticCurveTo(x, y + height, x, y + height - leftRadius);
+  // Left edge
+  ctx.lineTo(x, y + leftRadius);
+  // Top left corner
+  ctx.quadraticCurveTo(x, y, x + leftRadius, y);
+  ctx.closePath();
+};
+
+/**
  * Maps value percentage to visual position with edge constraints
  */
-const mapValueToVisualPercent = (valuePercent: number, handleSize: number, trackWidth: number): number => {
+const mapValueToVisualPercent = (valuePercent: number, trackWidth: number): number => {
   const edgeConstraint = SLIDER_MEASUREMENTS.EDGE_PADDING / trackWidth * 100;
   const minEdge = edgeConstraint;
   const maxEdge = 100 - edgeConstraint;
@@ -144,8 +211,8 @@ const drawTracks = (
 ) => {
   const trackY = height / 2;
   const trackHeight = getTrackHeight(config.size);
-  const borderRadius = trackHeight / 2;
-  const handleSize = SLIDER_MEASUREMENTS.HANDLE_SIZE;
+  const fullRadius = getExternalTrackRadius(config.size); // External radius based on size
+  const smallRadius = SLIDER_MEASUREMENTS.TRACK_RADIUS; // 2px for ends near handle
   
   // Get colors directly from theme
   const variant = config.color || 'primary';
@@ -154,7 +221,7 @@ const drawTracks = (
   
   // Get value percentages
   const valuePercent = ((state.value - state.min) / (state.max - state.min)) * 100;
-  const adjustedPercent = mapValueToVisualPercent(valuePercent, handleSize, width);
+  const adjustedPercent = mapValueToVisualPercent(valuePercent, width);
   
   // Fixed pixel gaps
   const handleGapPixels = SLIDER_MEASUREMENTS.HANDLE_GAP;
@@ -165,7 +232,7 @@ const drawTracks = (
   if (config.centered) {
     // Calculate center position
     const zeroPercent = ((0 - state.min) / (state.max - state.min)) * 100;
-    const adjustedZeroPercent = mapValueToVisualPercent(zeroPercent, handleSize, width);
+    const adjustedZeroPercent = mapValueToVisualPercent(zeroPercent, width);
     
     // Check if handle is near center
     const handleNearCenter = Math.abs(adjustedPercent - adjustedZeroPercent) < paddingPercent;
@@ -178,7 +245,7 @@ const drawTracks = (
       ctx.fillStyle = inactiveColor;
       const startWidth = (adjustedPercent - paddingPercent) / 100 * width;
       if (startWidth > 0) {
-        roundRect(ctx, 0, trackY - trackHeight/2, startWidth, trackHeight, borderRadius);
+        roundRectWithRadii(ctx, 0, trackY - trackHeight/2, startWidth, trackHeight, fullRadius, smallRadius);
         ctx.fill();
       }
       
@@ -186,7 +253,7 @@ const drawTracks = (
       const remainingX = (adjustedPercent + paddingPercent) / 100 * width;
       const remainingWidth = width - remainingX;
       if (remainingWidth > 0) {
-        roundRect(ctx, remainingX, trackY - trackHeight/2, remainingWidth, trackHeight, borderRadius);
+        roundRectWithRadii(ctx, remainingX, trackY - trackHeight/2, remainingWidth, trackHeight, smallRadius, fullRadius);
         ctx.fill();
       }
     } else if (isPositive) {
@@ -196,7 +263,7 @@ const drawTracks = (
       ctx.fillStyle = inactiveColor;
       const startWidth = (adjustedZeroPercent - halfCenterGapPercent) / 100 * width;
       if (startWidth > 0) {
-        roundRect(ctx, 0, trackY - trackHeight/2, startWidth, trackHeight, borderRadius);
+        roundRectWithRadii(ctx, 0, trackY - trackHeight/2, startWidth, trackHeight, fullRadius, smallRadius);
         ctx.fill();
       }
       
@@ -205,7 +272,7 @@ const drawTracks = (
       const activeX = (adjustedZeroPercent + halfCenterGapPercent) / 100 * width;
       const activeWidth = (adjustedPercent - paddingPercent) / 100 * width - activeX;
       if (activeWidth > 0) {
-        roundRect(ctx, activeX, trackY - trackHeight/2, activeWidth, trackHeight, borderRadius);
+        roundRectWithRadii(ctx, activeX, trackY - trackHeight/2, activeWidth, trackHeight, smallRadius, smallRadius);
         ctx.fill();
       }
       
@@ -214,7 +281,7 @@ const drawTracks = (
       const remainingX = (adjustedPercent + paddingPercent) / 100 * width;
       const remainingWidth = width - remainingX;
       if (remainingWidth > 0) {
-        roundRect(ctx, remainingX, trackY - trackHeight/2, remainingWidth, trackHeight, borderRadius);
+        roundRectWithRadii(ctx, remainingX, trackY - trackHeight/2, remainingWidth, trackHeight, smallRadius, fullRadius);
         ctx.fill();
       }
     } else {
@@ -224,7 +291,7 @@ const drawTracks = (
       ctx.fillStyle = inactiveColor;
       const startWidth = (adjustedPercent - paddingPercent) / 100 * width;
       if (startWidth > 0) {
-        roundRect(ctx, 0, trackY - trackHeight/2, startWidth, trackHeight, borderRadius);
+        roundRectWithRadii(ctx, 0, trackY - trackHeight/2, startWidth, trackHeight, fullRadius, smallRadius);
         ctx.fill();
       }
       
@@ -233,7 +300,7 @@ const drawTracks = (
       const activeX = (adjustedPercent + paddingPercent) / 100 * width;
       const activeWidth = (adjustedZeroPercent - halfCenterGapPercent) / 100 * width - activeX;
       if (activeWidth > 0) {
-        roundRect(ctx, activeX, trackY - trackHeight/2, activeWidth, trackHeight, borderRadius);
+        roundRectWithRadii(ctx, activeX, trackY - trackHeight/2, activeWidth, trackHeight, smallRadius, smallRadius);
         ctx.fill();
       }
       
@@ -242,14 +309,14 @@ const drawTracks = (
       const remainingX = (adjustedZeroPercent + halfCenterGapPercent) / 100 * width;
       const remainingWidth = width - remainingX;
       if (remainingWidth > 0) {
-        roundRect(ctx, remainingX, trackY - trackHeight/2, remainingWidth, trackHeight, borderRadius);
+        roundRectWithRadii(ctx, remainingX, trackY - trackHeight/2, remainingWidth, trackHeight, smallRadius, fullRadius);
         ctx.fill();
       }
     }
   } else if (config.range && state.secondValue !== null) {
     // Range slider
     const secondPercent = ((state.secondValue - state.min) / (state.max - state.min)) * 100;
-    const adjustedSecondPercent = mapValueToVisualPercent(secondPercent, handleSize, width);
+    const adjustedSecondPercent = mapValueToVisualPercent(secondPercent, width);
     
     const lowerPercent = Math.min(adjustedPercent, adjustedSecondPercent);
     const higherPercent = Math.max(adjustedPercent, adjustedSecondPercent);
@@ -258,7 +325,7 @@ const drawTracks = (
     ctx.fillStyle = inactiveColor;
     const startWidth = (lowerPercent - paddingPercent) / 100 * width;
     if (startWidth > 0) {
-      roundRect(ctx, 0, trackY - trackHeight/2, startWidth, trackHeight, borderRadius);
+      roundRectWithRadii(ctx, 0, trackY - trackHeight/2, startWidth, trackHeight, fullRadius, smallRadius);
       ctx.fill();
     }
     
@@ -268,7 +335,7 @@ const drawTracks = (
     
     if (activeWidth > trackHeight) { // Only show if handles aren't too close
       ctx.fillStyle = primaryColor;
-      roundRect(ctx, activeX, trackY - trackHeight/2, activeWidth, trackHeight, borderRadius);
+      roundRectWithRadii(ctx, activeX, trackY - trackHeight/2, activeWidth, trackHeight, smallRadius, smallRadius);
       ctx.fill();
     }
     
@@ -277,7 +344,7 @@ const drawTracks = (
     const remainingX = (higherPercent + paddingPercent) / 100 * width;
     const remainingWidth = width - remainingX;
     if (remainingWidth > 0) {
-      roundRect(ctx, remainingX, trackY - trackHeight/2, remainingWidth, trackHeight, borderRadius);
+      roundRectWithRadii(ctx, remainingX, trackY - trackHeight/2, remainingWidth, trackHeight, smallRadius, fullRadius);
       ctx.fill();
     }
   } else {
@@ -287,7 +354,7 @@ const drawTracks = (
     ctx.fillStyle = primaryColor;
     const activeWidth = (adjustedPercent - paddingPercent) / 100 * width;
     if (activeWidth > 0) {
-      roundRect(ctx, 0, trackY - trackHeight/2, activeWidth, trackHeight, borderRadius);
+      roundRectWithRadii(ctx, 0, trackY - trackHeight/2, activeWidth, trackHeight, fullRadius, smallRadius);
       ctx.fill();
     }
     
@@ -296,7 +363,7 @@ const drawTracks = (
     const remainingX = (adjustedPercent + paddingPercent) / 100 * width;
     const remainingWidth = width - remainingX;
     if (remainingWidth > 0) {
-      roundRect(ctx, remainingX, trackY - trackHeight/2, remainingWidth, trackHeight, borderRadius);
+      roundRectWithRadii(ctx, remainingX, trackY - trackHeight/2, remainingWidth, trackHeight, smallRadius, fullRadius);
       ctx.fill();
     }
   }
@@ -316,7 +383,6 @@ const drawTicks = (
   
   const tickSize = SLIDER_MEASUREMENTS.TICK_SIZE;
   const y = height / 2;
-  const handleSize = SLIDER_MEASUREMENTS.HANDLE_SIZE;
   
   // Get colors directly from theme
   const variant = config.color || 'primary';
@@ -332,7 +398,7 @@ const drawTicks = (
     
     // Get position with edge constraints
     const percent = ((value - state.min) / (state.max - state.min)) * 100;
-    const adjustedPercent = mapValueToVisualPercent(percent, handleSize, width);
+    const adjustedPercent = mapValueToVisualPercent(percent, width);
     const x = adjustedPercent / 100 * width;
     
     // Skip tick if it's at handle position
@@ -377,23 +443,19 @@ const drawDots = (
   height: number,
   config: SliderConfig
 ) => {
+  // Don't draw dots for discrete sliders (sliders with ticks)
+  if (config.ticks) return;
+  
   const dotSize = SLIDER_MEASUREMENTS.DOT_SIZE;
   const y = height / 2;
   const padding = SLIDER_MEASUREMENTS.EDGE_PADDING;
   
   // Get colors directly from theme
   const variant = config.color || 'primary';
-  const dotStartColor = getThemeColor(`sys-color-on-${variant}`, { fallback: '#ffffff' });
-  const dotEndColor = getThemeColor(`sys-color-${variant}`, { fallback: '#1976d2' });
+  const dotColor = getThemeColor(`sys-color-${variant}`, { fallback: '#1976d2' });
   
-  // Start dot
-  ctx.fillStyle = dotStartColor;
-  ctx.beginPath();
-  ctx.arc(padding, y, dotSize / 2, 0, Math.PI * 2);
-  ctx.fill();
-  
-  // End dot
-  ctx.fillStyle = dotEndColor;
+  // For continuous sliders, only draw end dot
+  ctx.fillStyle = dotColor;
   ctx.beginPath();
   ctx.arc(width - padding, y, dotSize / 2, 0, Math.PI * 2);
   ctx.fill();
@@ -487,6 +549,23 @@ export const withCanvas = (config: SliderConfig) =>
           setTimeout(initializeCanvas, 100);
         }
       });
+    }
+    
+    // Set initial handle sizes
+    const initialHandleHeight = getHandleHeight(currentSize);
+    const components = component.components;
+    if (components) {
+      // Set main handle size
+      if (components.handle) {
+        components.handle.style.width = `${SLIDER_MEASUREMENTS.HANDLE_SIZE}px`; // Keep width constant
+        components.handle.style.height = `${initialHandleHeight}px`;
+      }
+      
+      // Set second handle size for range sliders
+      if (components.secondHandle) {
+        components.secondHandle.style.width = `${SLIDER_MEASUREMENTS.HANDLE_SIZE}px`; // Keep width constant
+        components.secondHandle.style.height = `${initialHandleHeight}px`;
+      }
     }
     
     // Store canvas reference
@@ -584,6 +663,23 @@ export const withCanvas = (config: SliderConfig) =>
           size: currentSize
         });
         drawCanvas();
+      }
+      
+      // Update handle sizes
+      const newHandleHeight = getHandleHeight(currentSize);
+      const components = component.components;
+      if (components) {
+        // Update main handle
+        if (components.handle) {
+          components.handle.style.width = `${SLIDER_MEASUREMENTS.HANDLE_SIZE}px`; // Keep width constant
+          components.handle.style.height = `${newHandleHeight}px`;
+        }
+        
+        // Update second handle for range sliders
+        if (components.secondHandle) {
+          components.secondHandle.style.width = `${SLIDER_MEASUREMENTS.HANDLE_SIZE}px`; // Keep width constant
+          components.secondHandle.style.height = `${newHandleHeight}px`;
+        }
       }
     };
     

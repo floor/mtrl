@@ -141,7 +141,7 @@ $component: '#{base.$prefix}-slider';
       content: '';
       position: absolute;
       width: 4px;
-      height: 40px;
+      height: 100%;
       background-color: t.color('primary');
       border-radius: 2px;
       left: 50%;
@@ -356,7 +356,6 @@ $component: '#{base.$prefix}-slider';
       opacity: 0.38;
     }
   }
-  
   
   // Container for ticks
   &-ticks-container {
