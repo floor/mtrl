@@ -1,6 +1,7 @@
 // src/components/slider/features/controller.ts
 import { SLIDER_EVENTS } from '../types';
 import { SliderConfig } from '../types';
+import { SLIDER_MEASUREMENTS } from '../constants';
 import { createHandlers } from './handlers';
 
 /**
@@ -94,7 +95,8 @@ export const withController = (config: SliderConfig) => component => {
       const handleSize = handleRect.width || 20;
       const trackSize = containerRect.width;
       
-      const edgeConstraint = (handleSize / 2) / trackSize * 100;
+      // Use EDGE_PADDING for consistent edge constraints
+      const edgeConstraint = SLIDER_MEASUREMENTS.EDGE_PADDING / trackSize * 100;
       const paddingPixels = state.activeHandle ? 6 : 8; 
       const paddingPercent = (paddingPixels / trackSize) * 100;
       
@@ -104,7 +106,7 @@ export const withController = (config: SliderConfig) => component => {
       return {
         handleSize: 20,
         trackSize: 200,
-        edgeConstraint: 5,
+        edgeConstraint: 3, // 6px / 200px * 100
         paddingPercent: 4
       };
     }
@@ -114,7 +116,9 @@ export const withController = (config: SliderConfig) => component => {
    * Maps value percentage to visual position with edge constraints
    * Ensures handles stay within the visible track area
    */
-  const mapValueToVisualPercent = (valuePercent, edgeConstraint) => {
+  const mapValueToVisualPercent = (valuePercent, trackSize = 200) => {
+    // Calculate edge constraint using EDGE_PADDING
+    const edgeConstraint = SLIDER_MEASUREMENTS.EDGE_PADDING / trackSize * 100;
     const minEdge = edgeConstraint;
     const maxEdge = 100 - edgeConstraint;
     const visualRange = maxEdge - minEdge;
@@ -137,10 +141,10 @@ export const withController = (config: SliderConfig) => component => {
     try {
       const containerRect = container.getBoundingClientRect();
       const range = state.max - state.min;
-      const handleWidth = handle.getBoundingClientRect().width || 20;
       
-      const leftEdge = containerRect.left + (handleWidth / 2);
-      const rightEdge = containerRect.right - (handleWidth / 2);
+      // Use EDGE_PADDING for consistent edge constraints
+      const leftEdge = containerRect.left + SLIDER_MEASUREMENTS.EDGE_PADDING;
+      const rightEdge = containerRect.right - SLIDER_MEASUREMENTS.EDGE_PADDING;
       const effectiveWidth = rightEdge - leftEdge;
       
       const adjustedPosition = Math.max(leftEdge, Math.min(rightEdge, position));
@@ -184,11 +188,11 @@ export const withController = (config: SliderConfig) => component => {
     const dims = getTrackDimensions();
     if (!dims) return;
     
-    const { edgeConstraint } = dims;
+    const { trackSize } = dims;
     
     // Update main handle position
     const percent = getPercentage(state.value);
-    const adjustedPercent = mapValueToVisualPercent(percent, edgeConstraint);
+    const adjustedPercent = mapValueToVisualPercent(percent, trackSize);
     
     handle.style.left = `${adjustedPercent}%`;
     handle.style.transform = 'translate(-50%, -50%)';
@@ -201,7 +205,7 @@ export const withController = (config: SliderConfig) => component => {
     // Update second handle if range slider
     if (config.range && secondHandle && state.secondValue !== null) {
       const secondPercent = getPercentage(state.secondValue);
-      const adjustedSecondPercent = mapValueToVisualPercent(secondPercent, edgeConstraint);
+      const adjustedSecondPercent = mapValueToVisualPercent(secondPercent, trackSize);
       
       secondHandle.style.left = `${adjustedSecondPercent}%`;
       secondHandle.style.transform = 'translate(-50%, -50%)';
@@ -244,16 +248,15 @@ export const withController = (config: SliderConfig) => component => {
     if (!dims) return;
     
     const { handleSize, trackSize, paddingPercent } = dims;
-    const edgeConstraint = (handleSize / 2) / trackSize * 100;
     
     if (config.centered) {
       // Centered slider setup
       const valuePercent = getPercentage(state.value);
-      const adjustedPercent = mapValueToVisualPercent(valuePercent, edgeConstraint);
+      const adjustedPercent = mapValueToVisualPercent(valuePercent, trackSize);
       
       // Calculate center position (where zero value is)
       const zeroPercent = getPercentage(0);
-      const adjustedZeroPercent = mapValueToVisualPercent(zeroPercent, edgeConstraint);
+      const adjustedZeroPercent = mapValueToVisualPercent(zeroPercent, trackSize);
       
       // Fixed pixel gaps
       const centerGapPixels = 4; // Total gap at center
@@ -435,8 +438,8 @@ export const withController = (config: SliderConfig) => component => {
       const lowerPercent = getPercentage(lowerValue);
       const higherPercent = getPercentage(higherValue);
       
-      const adjustedLower = mapValueToVisualPercent(lowerPercent, edgeConstraint);
-      const adjustedHigher = mapValueToVisualPercent(higherPercent, edgeConstraint);
+      const adjustedLower = mapValueToVisualPercent(lowerPercent, trackSize);
+      const adjustedHigher = mapValueToVisualPercent(higherPercent, trackSize);
       
       // Start track (before first handle)
       if (startTrack) {
@@ -471,7 +474,7 @@ export const withController = (config: SliderConfig) => component => {
     } else {
       // Single handle slider
       const valuePercent = getPercentage(state.value);
-      const adjustedPercent = mapValueToVisualPercent(valuePercent, edgeConstraint);
+      const adjustedPercent = mapValueToVisualPercent(valuePercent, trackSize);
       
       // Hide start track for single slider
       if (startTrack) {
@@ -567,13 +570,14 @@ export const withController = (config: SliderConfig) => component => {
     const hiddenClass = `${tickClass}--hidden`;
     
     // Get track dimensions for edge constraints
-    const { edgeConstraint } = getTrackDimensions();
+    const dims = getTrackDimensions();
+    const trackSize = dims?.trackSize || 200;
     
     // Create tick elements
     tickValues.forEach(value => {
       const percent = getPercentage(value);
       // Map the percentage to account for edge constraints
-      const adjustedPercent = mapValueToVisualPercent(percent, edgeConstraint);
+      const adjustedPercent = mapValueToVisualPercent(percent, trackSize);
       
       const tick = document.createElement('div');
       tick.classList.add(tickClass);

@@ -122,7 +122,7 @@ const roundRect = (
  * Maps value percentage to visual position with edge constraints
  */
 const mapValueToVisualPercent = (valuePercent: number, handleSize: number, trackWidth: number): number => {
-  const edgeConstraint = (handleSize / 2) / trackWidth * 100;
+  const edgeConstraint = SLIDER_MEASUREMENTS.EDGE_PADDING / trackWidth * 100;
   const minEdge = edgeConstraint;
   const maxEdge = 100 - edgeConstraint;
   const visualRange = maxEdge - minEdge;
@@ -457,6 +457,15 @@ export const withCanvas = (config: SliderConfig) =>
     // Current size - managed by API
     let currentSize = config.size || 'XS';
     
+    // Store last known state for theme changes
+    let lastKnownState = {
+      value: config.value || 0,
+      secondValue: config.secondValue || null,
+      min: config.min || 0,
+      max: config.max || 100,
+      step: config.step || 1
+    };
+    
     const initializeCanvas = (): boolean => {
       try {
         canvasContext = setupCanvas(canvas, {
@@ -496,10 +505,10 @@ export const withCanvas = (config: SliderConfig) =>
         size: currentSize
       });
       
-      // Get current state - prefer passed state, then slider API, then config
+      // Get current state - prefer passed state, then slider API, then last known state
       let state;
       if (controllerState) {
-        // Use state passed from controller
+        // Use state passed from controller and update last known state
         state = {
           value: controllerState.value,
           secondValue: controllerState.secondValue,
@@ -507,8 +516,9 @@ export const withCanvas = (config: SliderConfig) =>
           max: controllerState.max,
           step: controllerState.step
         };
+        lastKnownState = { ...state };
       } else if (component.slider) {
-        // Fallback to slider API
+        // Fallback to slider API and update last known state
         state = {
           value: component.slider.getValue(),
           secondValue: component.slider.getSecondValue(),
@@ -516,15 +526,10 @@ export const withCanvas = (config: SliderConfig) =>
           max: component.slider.getMax(),
           step: component.slider.getStep()
         };
+        lastKnownState = { ...state };
       } else {
-        // Use config values as final fallback
-        state = {
-          value: config.value || 0,
-          secondValue: config.secondValue || null,
-          min: config.min || 0,
-          max: config.max || 100,
-          step: config.step || 1
-        };
+        // Use last known state as fallback
+        state = { ...lastKnownState };
       }
       
       draw(canvasContext, {
@@ -591,6 +596,22 @@ export const withCanvas = (config: SliderConfig) =>
       component.appearance.setColor = (color: SliderColor) => {
         originalSetColor(color);
         config.color = color;
+        
+        // Clean up old theme observer
+        if (themeCleanup) {
+          themeCleanup();
+          themeCleanup = null;
+        }
+        
+        // Set up new theme observer for the new color
+        const cleanup = getThemeColor(`sys-color-${color}`, { 
+          onThemeChange: () => {
+            drawCanvas();
+          }
+        });
+        themeCleanup = typeof cleanup === 'function' ? cleanup : null;
+        
+        // Redraw with new color
         drawCanvas();
       };
     }
