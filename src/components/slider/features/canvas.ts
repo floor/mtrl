@@ -15,6 +15,24 @@ export interface CanvasContext {
 }
 
 /**
+ * Animation state for smooth transitions
+ */
+interface AnimationState {
+  // Current animated values
+  animatedValue: number;
+  animatedSecondValue: number | null;
+  
+  // Target values
+  targetValue: number;
+  targetSecondValue: number | null;
+  
+  // Animation timing
+  startTime: number;
+  duration: number;
+  animationFrame: number | null;
+}
+
+/**
  * Component with canvas capabilities
  */
 interface CanvasSliderComponent {
@@ -24,8 +42,16 @@ interface CanvasSliderComponent {
   getClass: (name: string) => string;
   drawCanvas: (state?: any) => void;
   resize: () => void;
+  animationState?: AnimationState;
   [key: string]: any;
 }
+
+/**
+ * Easing function for smooth animations (ease-out cubic)
+ */
+const easeOutCubic = (t: number): number => {
+  return 1 - Math.pow(1 - t, 3);
+};
 
 /**
  * Gets the track height value from the size config
@@ -455,6 +481,19 @@ export const withCanvas = (config: SliderConfig) =>
       step: config.step || 1
     };
     
+    // Initialize animation state
+    const animationState: AnimationState = {
+      animatedValue: config.value || 0,
+      animatedSecondValue: config.secondValue || null,
+      targetValue: config.value || 0,
+      targetSecondValue: config.secondValue || null,
+      startTime: 0,
+      duration: 225, // Material Design standard duration
+      animationFrame: null
+    };
+    
+    component.animationState = animationState;
+    
     const initializeCanvas = (): boolean => {
       try {
         canvasContext = setupCanvas(canvas, {
@@ -498,6 +537,45 @@ export const withCanvas = (config: SliderConfig) =>
     // Store canvas reference
     component.canvas = canvas;
     
+    // Animation loop function
+    const animate = (currentTime?: number): void => {
+      if (!canvasContext) return;
+      
+      // If no currentTime provided, use performance.now()
+      const now = currentTime || performance.now();
+      const elapsed = now - animationState.startTime;
+      const progress = Math.min(elapsed / animationState.duration, 1);
+      const easedProgress = easeOutCubic(progress);
+      
+      // Update animated values
+      animationState.animatedValue = animationState.animatedValue + 
+        (animationState.targetValue - animationState.animatedValue) * easedProgress;
+      
+      if (animationState.targetSecondValue !== null && animationState.animatedSecondValue !== null) {
+        animationState.animatedSecondValue = animationState.animatedSecondValue + 
+          (animationState.targetSecondValue - animationState.animatedSecondValue) * easedProgress;
+      }
+      
+      // Draw with animated values
+      const animatedState = {
+        ...lastKnownState,
+        value: animationState.animatedValue,
+        secondValue: animationState.animatedSecondValue
+      };
+      
+      draw(canvasContext, {
+        ...config,
+        size: currentSize
+      }, animatedState);
+      
+      // Continue animation if not complete
+      if (progress < 1) {
+        animationState.animationFrame = requestAnimationFrame((time) => animate(time));
+      } else {
+        animationState.animationFrame = null;
+      }
+    };
+    
     // Drawing function
     const drawCanvas = (controllerState?: any): void => {
       if (!canvasContext) {
@@ -513,6 +591,8 @@ export const withCanvas = (config: SliderConfig) =>
       
       // Get current state - prefer passed state, then slider API, then last known state
       let state;
+      let isDragging = false;
+      
       if (controllerState) {
         // Use state passed from controller and update last known state
         state = {
@@ -522,6 +602,7 @@ export const withCanvas = (config: SliderConfig) =>
           max: controllerState.max,
           step: controllerState.step
         };
+        isDragging = controllerState.dragging || false;
         lastKnownState = { ...state };
       } else if (component.slider) {
         // Fallback to slider API and update last known state
@@ -538,10 +619,50 @@ export const withCanvas = (config: SliderConfig) =>
         state = { ...lastKnownState };
       }
       
-      draw(canvasContext, {
-        ...config,
-        size: currentSize
-      }, state);
+      // Check if we need to animate (skip animation when dragging)
+      const valueChanged = state.value !== animationState.targetValue;
+      const secondValueChanged = state.secondValue !== animationState.targetSecondValue;
+      
+      if ((valueChanged || secondValueChanged) && !isDragging) {
+        // Update target values
+        animationState.targetValue = state.value;
+        animationState.targetSecondValue = state.secondValue;
+        
+        // Cancel any existing animation
+        if (animationState.animationFrame) {
+          cancelAnimationFrame(animationState.animationFrame);
+        }
+        
+        // Start new animation
+        animationState.startTime = performance.now();
+        
+        // Draw first frame immediately to sync with handle movement
+        animate();
+      } else if (isDragging) {
+        // When dragging, update values immediately without animation
+        animationState.animatedValue = state.value;
+        animationState.animatedSecondValue = state.secondValue;
+        animationState.targetValue = state.value;
+        animationState.targetSecondValue = state.secondValue;
+        
+        // Cancel any ongoing animation
+        if (animationState.animationFrame) {
+          cancelAnimationFrame(animationState.animationFrame);
+          animationState.animationFrame = null;
+        }
+        
+        // Draw immediately
+        draw(canvasContext, {
+          ...config,
+          size: currentSize
+        }, state);
+      } else {
+        // No animation needed, draw current state
+        draw(canvasContext, {
+          ...config,
+          size: currentSize
+        }, state);
+      }
     };
     
     // Resize function
@@ -555,7 +676,17 @@ export const withCanvas = (config: SliderConfig) =>
         });
         component.ctx = newContext.ctx;
         Object.assign(canvasContext, newContext);
-        drawCanvas();
+        
+        // Redraw with current animated values
+        const animatedState = {
+          ...lastKnownState,
+          value: animationState.animatedValue,
+          secondValue: animationState.animatedSecondValue
+        };
+        draw(canvasContext, {
+          ...config,
+          size: currentSize
+        }, animatedState);
       } catch (error) {
         console.warn('Slider canvas resize failed:', error);
       }
@@ -567,7 +698,17 @@ export const withCanvas = (config: SliderConfig) =>
     // Observe theme changes
     const cleanup = getThemeColor(`sys-color-${config.color || 'primary'}`, { 
       onThemeChange: () => {
-        drawCanvas();
+        if (!canvasContext) return;
+        // Redraw with current animated values
+        const animatedState = {
+          ...lastKnownState,
+          value: animationState.animatedValue,
+          secondValue: animationState.animatedSecondValue
+        };
+        draw(canvasContext, {
+          ...config,
+          size: currentSize
+        }, animatedState);
       }
     });
     themeCleanup = typeof cleanup === 'function' ? cleanup : null;
@@ -589,7 +730,16 @@ export const withCanvas = (config: SliderConfig) =>
           ...config,
           size: currentSize
         });
-        drawCanvas();
+        // Redraw with current animated values
+        const animatedState = {
+          ...lastKnownState,
+          value: animationState.animatedValue,
+          secondValue: animationState.animatedSecondValue
+        };
+        draw(canvasContext, {
+          ...config,
+          size: currentSize
+        }, animatedState);
       }
       
       // Update handle sizes
@@ -629,7 +779,17 @@ export const withCanvas = (config: SliderConfig) =>
         // Set up new theme observer for the new color
         const cleanup = getThemeColor(`sys-color-${color}`, { 
           onThemeChange: () => {
-            drawCanvas();
+            if (!canvasContext) return;
+            // Redraw with current animated values
+            const animatedState = {
+              ...lastKnownState,
+              value: animationState.animatedValue,
+              secondValue: animationState.animatedSecondValue
+            };
+            draw(canvasContext, {
+              ...config,
+              size: currentSize
+            }, animatedState);
           }
         });
         themeCleanup = typeof cleanup === 'function' ? cleanup : null;
@@ -645,6 +805,9 @@ export const withCanvas = (config: SliderConfig) =>
       component.lifecycle.destroy = () => {
         if (resizeCleanup) resizeCleanup();
         if (themeCleanup) themeCleanup();
+        if (animationState.animationFrame) {
+          cancelAnimationFrame(animationState.animationFrame);
+        }
         originalDestroy();
       };
     }
