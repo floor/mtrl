@@ -238,7 +238,84 @@ export const withController = (config: SliderConfig) => component => {
     const { handleSize, trackSize, paddingPercent } = dims;
     const edgeConstraint = (handleSize / 2) / trackSize * 100;
     
-    if (config.range && state.secondValue !== null) {
+    if (config.centered) {
+      // Centered slider setup
+      const valuePercent = getPercentage(state.value);
+      const adjustedPercent = mapValueToVisualPercent(valuePercent, edgeConstraint);
+      
+      // Calculate center position (where zero value is)
+      const zeroPercent = getPercentage(0);
+      const adjustedZeroPercent = mapValueToVisualPercent(zeroPercent, edgeConstraint);
+      
+      // Fixed pixel gaps
+      const centerGapPixels = 4; // Total gap at center
+      const halfCenterGapPercent = (centerGapPixels / 2 / trackSize) * 100; // Split in half
+      
+      // Check if handle is very close to center
+      const handleNearCenter = Math.abs(adjustedPercent - adjustedZeroPercent) < paddingPercent;
+      
+      // Determine if value is positive or negative relative to zero
+      const isPositive = state.value >= 0;
+      
+      if (handleNearCenter) {
+        // Handle is at or near center - ensure handle gaps are visible
+        activeTrack.style.display = 'none'; // No active track when at center
+        
+        // Start track ends before handle gap
+        if (startTrack) {
+          startTrack.style.display = 'block';
+          startTrack.style.left = '0';
+          startTrack.style.right = `${100 - (adjustedPercent - paddingPercent)}%`;
+          startTrack.style.width = 'auto';
+        }
+        
+        // Remaining track starts after handle gap
+        remainingTrack.style.display = 'block';
+        remainingTrack.style.left = `${adjustedPercent + paddingPercent}%`;
+        remainingTrack.style.right = '0';
+        remainingTrack.style.width = 'auto';
+      } else if (isPositive) {
+        // Positive value: active track from center to handle
+        activeTrack.style.display = 'block';
+        activeTrack.style.left = `${adjustedZeroPercent + halfCenterGapPercent}%`;
+        activeTrack.style.right = `${100 - (adjustedPercent - paddingPercent)}%`;
+        activeTrack.style.width = 'auto';
+        
+        // Start track from minimum to center (minus half gap)
+        if (startTrack) {
+          startTrack.style.display = 'block';
+          startTrack.style.left = '0';
+          startTrack.style.right = `${100 - (adjustedZeroPercent - halfCenterGapPercent)}%`;
+          startTrack.style.width = 'auto';
+        }
+        
+        // Remaining track from handle to maximum
+        remainingTrack.style.display = 'block';
+        remainingTrack.style.left = `${adjustedPercent + paddingPercent}%`;
+        remainingTrack.style.right = '0';
+        remainingTrack.style.width = 'auto';
+      } else {
+        // Negative value: active track from handle to center
+        activeTrack.style.display = 'block';
+        activeTrack.style.left = `${adjustedPercent + paddingPercent}%`;
+        activeTrack.style.right = `${100 - (adjustedZeroPercent - halfCenterGapPercent)}%`;
+        activeTrack.style.width = 'auto';
+        
+        // Start track from minimum to handle
+        if (startTrack) {
+          startTrack.style.display = 'block';
+          startTrack.style.left = '0';
+          startTrack.style.right = `${100 - (adjustedPercent - paddingPercent)}%`;
+          startTrack.style.width = 'auto';
+        }
+        
+        // Remaining track from center to maximum
+        remainingTrack.style.display = 'block';
+        remainingTrack.style.left = `${adjustedZeroPercent + halfCenterGapPercent}%`;
+        remainingTrack.style.right = '0';
+        remainingTrack.style.width = 'auto';
+      }
+    } else if (config.range && state.secondValue !== null) {
       // Range slider setup
       const lowerValue = Math.min(state.value, state.secondValue);
       const higherValue = Math.max(state.value, state.secondValue);
@@ -424,6 +501,29 @@ export const withController = (config: SliderConfig) => component => {
       
       if (isExactlySelected) {
         tick.classList.add(hiddenClass);
+      } else if (config.centered) {
+        // Centered slider - ticks between zero and value should be active
+        const isPositive = state.value >= 0;
+        
+        if (isPositive) {
+          // Value is positive, ticks between 0 and value are active
+          if (tickValue >= 0 && tickValue <= state.value) {
+            tick.classList.add(activeClass);
+            tick.classList.remove(inactiveClass);
+          } else {
+            tick.classList.remove(activeClass);
+            tick.classList.add(inactiveClass);
+          }
+        } else {
+          // Value is negative, ticks between value and 0 are active
+          if (tickValue >= state.value && tickValue <= 0) {
+            tick.classList.add(activeClass);
+            tick.classList.remove(inactiveClass);
+          } else {
+            tick.classList.remove(activeClass);
+            tick.classList.add(inactiveClass);
+          }
+        }
       } else if (config.range && state.secondValue !== null) {
         // Range slider - ticks between values should be active
         const lowerValue = Math.min(state.value, state.secondValue);

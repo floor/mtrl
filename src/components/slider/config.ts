@@ -22,6 +22,7 @@ export const defaultConfig: SliderConfig = {
   showValue: SLIDER_DEFAULTS.SHOW_VALUE,
   snapToSteps: SLIDER_DEFAULTS.SNAP_TO_STEPS,
   range: SLIDER_DEFAULTS.RANGE,
+  centered: SLIDER_DEFAULTS.CENTERED,
   iconPosition: SLIDER_DEFAULTS.ICON_POSITION,
   labelPosition: SLIDER_DEFAULTS.LABEL_POSITION,
   valueFormatter: (value) => value.toString()
@@ -65,7 +66,8 @@ export const getElementConfig = (config: SliderConfig) => {
     config.size ? `mtrl-${config.size}` : '',
     config.color ? `mtrl-${config.color}` : '',
     config.iconPosition ? `mtrl-${config.iconPosition}` : '',
-    config.labelPosition ? `mtrl-${config.labelPosition}` : ''
+    config.labelPosition ? `mtrl-${config.labelPosition}` : '',
+    config.centered ? 'mtrl-slider--centered' : ''
   ].join(' ');
 
   return createElementConfig(config, {

@@ -93,6 +93,9 @@ export interface SliderConfig {
   /** Whether the slider is a range slider (two handles) */
   range?: boolean;
   
+  /** Whether the slider is a centered slider (with active track from center) */
+  centered?: boolean;
+  
   /** Label text for the slider */
   label?: string;
   

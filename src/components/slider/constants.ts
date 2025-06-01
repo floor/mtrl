@@ -85,6 +85,8 @@ export const SLIDER_DEFAULTS = {
   SNAP_TO_STEPS: true,
   /** Whether slider is a range slider (two handles) */
   RANGE: false,
+  /** Whether slider is a centered slider (active track from center) */
+  CENTERED: false,
   /** Default icon position */
   ICON_POSITION: SLIDER_POSITIONS.START,
   /** Default label position */
