@@ -412,10 +412,9 @@ export const withCanvas = (config: SliderConfig) =>
     // Insert canvas as first child (behind interactive elements)
     const container = component.components?.container;
     if (container) {
-      // Insert after track element if it exists
-      const track = container.querySelector(`.${component.getClass('slider-track')}`);
-      if (track && track.nextSibling) {
-        container.insertBefore(canvas, track.nextSibling);
+      // Insert as first child of container
+      if (container.firstChild) {
+        container.insertBefore(canvas, container.firstChild);
       } else {
         container.appendChild(canvas);
       }

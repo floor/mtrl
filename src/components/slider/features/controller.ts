@@ -84,15 +84,15 @@ export const withController = (config: SliderConfig) => component => {
    */
   const getTrackDimensions = () => {
     const components = getComponents();
-    const { handle, container, track } = components;
+    const { handle, container } = components;
     
-    if (!handle || !container || !track) return null;
+    if (!handle || !container) return null;
     
     try {
       const handleRect = handle.getBoundingClientRect();
-      const trackRect = container.getBoundingClientRect();
+      const containerRect = container.getBoundingClientRect();
       const handleSize = handleRect.width || 20;
-      const trackSize = trackRect.width;
+      const trackSize = containerRect.width;
       
       const edgeConstraint = (handleSize / 2) / trackSize * 100;
       const paddingPixels = state.activeHandle ? 6 : 8; 
@@ -230,9 +230,9 @@ export const withController = (config: SliderConfig) => component => {
     
     // Legacy DOM-based rendering (kept for backwards compatibility)
     const components = getComponents();
-    const { track, container, handle, startTrack, activeTrack, remainingTrack } = components;
+    const { container, handle, startTrack, activeTrack, remainingTrack } = components;
     
-    if (!track || !container || !handle) return;
+    if (!container || !handle) return;
     
     // Safety check for required elements
     if (!activeTrack || !remainingTrack) {

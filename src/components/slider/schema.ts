@@ -38,29 +38,14 @@ export function createSliderSchema(component, config: SliderConfig) {
         // Container with all slider elements
         container: {
           options: {
-            className: getClass('slider-container')
+            className: getClass('slider-container'),
+            style: {
+              position: 'relative' // For canvas absolute positioning
+            }
           },
           children: {
-            // Track element (canvas will be inserted here)
-            track: {
-              options: {
-                className: getClass('slider-track'),
-                style: {
-                  position: 'relative'
-                }
-              }
-              // No children - canvas will render track segments
-            },
-            
-            // Ticks container (kept for backwards compatibility but won't be used with canvas)
-            ticksContainer: {
-              options: {
-                className: getClass('slider-ticks-container'),
-                style: {
-                  display: 'none' // Hidden when using canvas
-                }
-              }
-            },
+            // Canvas will be inserted directly into container
+            // No need for track or ticks elements
             
             // Main handle (kept as DOM for accessibility)
             handle: {

@@ -19,7 +19,6 @@ export const createHandlers = (config: SliderConfig, state, uiRenderer, eventHel
   const {
     container = null,
     handle = null,
-    track = null,
     valueBubble = null, 
     secondHandle = null, 
     secondValueBubble = null
@@ -139,7 +138,7 @@ export const createHandlers = (config: SliderConfig, state, uiRenderer, eventHel
    */
   const handleTrackMouseDown = (e) => {
     // Check if disabled
-    if (!state.component || (state.component.disabled && state.component.disabled.isDisabled()) || !track || !container) {
+    if (!state.component || (state.component.disabled && state.component.disabled.isDisabled()) || !container) {
       return;
     }
     
