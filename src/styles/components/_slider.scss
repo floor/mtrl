@@ -6,7 +6,7 @@
 @use '../../styles/abstract/theme' as t;
 
 // Define the transition properties for smoother animations with absolute positioning
-$track-transition: left 0.2s ease, right 0.2s ease;
+$track-transition: left 0.1s ease, right 0.1s ease;
 $handle-transition: left 0.2s ease, transform 0.2s ease;
 $bubble-transition: left 0.2s ease, opacity 0.2s ease, visibility 0s linear 0.2s;
 $bubble-transition-visible: left 0.2s ease, opacity 0.2s ease, visibility 0s;

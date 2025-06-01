@@ -306,8 +306,8 @@ export const withController = (config: SliderConfig) => component => {
           setTimeout(() => {
             state.isAnimatingThroughCenter = false;
             console.log('[Animation] Center-crossing animation complete');
-          }, 200);
-        }, 200);
+          }, 100);
+        }, 100);
         
         // Update other tracks with proper timing
         if (startTrack) {
@@ -325,7 +325,7 @@ export const withController = (config: SliderConfig) => component => {
             // After active track shrinks, update start track
             setTimeout(() => {
               startTrack.style.right = `${100 - (adjustedPercent - paddingPercent)}%`;
-            }, 200);
+            }, 100);
           }
         }
         
@@ -340,7 +340,7 @@ export const withController = (config: SliderConfig) => component => {
           // After active track shrinks, update remaining track
           setTimeout(() => {
             remainingTrack.style.left = `${adjustedPercent + paddingPercent}%`;
-          }, 200);
+          }, 100);
         } else {
           // Going negative: remaining track stays at center
           remainingTrack.style.left = `${adjustedZeroPercent + halfCenterGapPercent}%`;
