@@ -1,6 +1,6 @@
 import { SliderConfig, SliderColor } from '../types';
 import { getThemeColor } from '../../../core/utils';
-import { observeCanvasResize } from '../../../core/canvas';
+import { observeCanvasResize, clipRoundedRect, fillRoundedRectLR, clearCanvas } from '../../../core/canvas';
 import { SLIDER_SIZES, SLIDER_MEASUREMENTS, SliderSize } from '../constants';
 
 /**
@@ -125,67 +125,6 @@ const setupCanvas = (canvas: HTMLCanvasElement, config?: SliderConfig): CanvasCo
 };
 
 /**
- * Helper function for rounded rectangles
- */
-const roundRect = (
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-  radius: number
-) => {
-  if (width < 0 || height < 0) return;
-  
-  ctx.beginPath();
-  ctx.moveTo(x + radius, y);
-  ctx.lineTo(x + width - radius, y);
-  ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-  ctx.lineTo(x + width, y + height - radius);
-  ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-  ctx.lineTo(x + radius, y + height);
-  ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-  ctx.lineTo(x, y + radius);
-  ctx.quadraticCurveTo(x, y, x + radius, y);
-  ctx.closePath();
-};
-
-/**
- * Helper function for rounded rectangles with different left/right radii
- */
-const roundRectWithRadii = (
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-  leftRadius: number,
-  rightRadius: number
-) => {
-  if (width < 0 || height < 0) return;
-  
-  ctx.beginPath();
-  // Top edge
-  ctx.moveTo(x + leftRadius, y);
-  ctx.lineTo(x + width - rightRadius, y);
-  // Top right corner
-  ctx.quadraticCurveTo(x + width, y, x + width, y + rightRadius);
-  // Right edge
-  ctx.lineTo(x + width, y + height - rightRadius);
-  // Bottom right corner
-  ctx.quadraticCurveTo(x + width, y + height, x + width - rightRadius, y + height);
-  // Bottom edge
-  ctx.lineTo(x + leftRadius, y + height);
-  // Bottom left corner
-  ctx.quadraticCurveTo(x, y + height, x, y + height - leftRadius);
-  // Left edge
-  ctx.lineTo(x, y + leftRadius);
-  // Top left corner
-  ctx.quadraticCurveTo(x, y, x + leftRadius, y);
-  ctx.closePath();
-};
-
-/**
  * Maps value percentage to visual position with edge constraints
  */
 const mapValueToVisualPercent = (valuePercent: number, trackWidth: number): number => {
@@ -211,8 +150,18 @@ const drawTracks = (
 ) => {
   const trackY = height / 2;
   const trackHeight = getTrackHeight(config.size);
-  const fullRadius = getExternalTrackRadius(config.size); // External radius based on size
-  const smallRadius = SLIDER_MEASUREMENTS.TRACK_RADIUS; // 2px for ends near handle
+  const containerRadius = getExternalTrackRadius(config.size); // Container radius for clipping
+  const trackRadius = SLIDER_MEASUREMENTS.TRACK_RADIUS; // Uniform 2px radius for all tracks
+  
+  // Create clipping region with container radius (mimics CSS overflow: hidden with border-radius)
+  const restoreClip = clipRoundedRect(
+    ctx, 
+    0, 
+    trackY - trackHeight/2, 
+    width, 
+    trackHeight, 
+    containerRadius
+  );
   
   // Get colors directly from theme
   const variant = config.color || 'primary';
@@ -242,75 +191,60 @@ const drawTracks = (
       // Handle at center - draw start and remaining tracks only
       
       // Start track (left side)
-      ctx.fillStyle = inactiveColor;
       const startWidth = (adjustedPercent - paddingPercent) / 100 * width;
       if (startWidth > 0) {
-        roundRectWithRadii(ctx, 0, trackY - trackHeight/2, startWidth, trackHeight, fullRadius, smallRadius);
-        ctx.fill();
+        fillRoundedRectLR(ctx, 0, trackY - trackHeight/2, startWidth, trackHeight, trackRadius, trackRadius, inactiveColor);
       }
       
       // Remaining track (right side)
       const remainingX = (adjustedPercent + paddingPercent) / 100 * width;
       const remainingWidth = width - remainingX;
       if (remainingWidth > 0) {
-        roundRectWithRadii(ctx, remainingX, trackY - trackHeight/2, remainingWidth, trackHeight, smallRadius, fullRadius);
-        ctx.fill();
+        fillRoundedRectLR(ctx, remainingX, trackY - trackHeight/2, remainingWidth, trackHeight, trackRadius, trackRadius, inactiveColor);
       }
     } else if (isPositive) {
       // Positive value - active track from center to handle
       
       // Start track (from minimum to center)
-      ctx.fillStyle = inactiveColor;
       const startWidth = (adjustedZeroPercent - halfCenterGapPercent) / 100 * width;
       if (startWidth > 0) {
-        roundRectWithRadii(ctx, 0, trackY - trackHeight/2, startWidth, trackHeight, fullRadius, smallRadius);
-        ctx.fill();
+        fillRoundedRectLR(ctx, 0, trackY - trackHeight/2, startWidth, trackHeight, trackRadius, trackRadius, inactiveColor);
       }
       
       // Active track (from center to handle)
-      ctx.fillStyle = primaryColor;
       const activeX = (adjustedZeroPercent + halfCenterGapPercent) / 100 * width;
       const activeWidth = (adjustedPercent - paddingPercent) / 100 * width - activeX;
       if (activeWidth > 0) {
-        roundRectWithRadii(ctx, activeX, trackY - trackHeight/2, activeWidth, trackHeight, smallRadius, smallRadius);
-        ctx.fill();
+        fillRoundedRectLR(ctx, activeX, trackY - trackHeight/2, activeWidth, trackHeight, trackRadius, trackRadius, primaryColor);
       }
       
       // Remaining track (from handle to maximum)
-      ctx.fillStyle = inactiveColor;
       const remainingX = (adjustedPercent + paddingPercent) / 100 * width;
       const remainingWidth = width - remainingX;
       if (remainingWidth > 0) {
-        roundRectWithRadii(ctx, remainingX, trackY - trackHeight/2, remainingWidth, trackHeight, smallRadius, fullRadius);
-        ctx.fill();
+        fillRoundedRectLR(ctx, remainingX, trackY - trackHeight/2, remainingWidth, trackHeight, trackRadius, trackRadius, inactiveColor);
       }
     } else {
       // Negative value - active track from handle to center
       
       // Start track (from minimum to handle)
-      ctx.fillStyle = inactiveColor;
       const startWidth = (adjustedPercent - paddingPercent) / 100 * width;
       if (startWidth > 0) {
-        roundRectWithRadii(ctx, 0, trackY - trackHeight/2, startWidth, trackHeight, fullRadius, smallRadius);
-        ctx.fill();
+        fillRoundedRectLR(ctx, 0, trackY - trackHeight/2, startWidth, trackHeight, trackRadius, trackRadius, inactiveColor);
       }
       
       // Active track (from handle to center)
-      ctx.fillStyle = primaryColor;
       const activeX = (adjustedPercent + paddingPercent) / 100 * width;
       const activeWidth = (adjustedZeroPercent - halfCenterGapPercent) / 100 * width - activeX;
       if (activeWidth > 0) {
-        roundRectWithRadii(ctx, activeX, trackY - trackHeight/2, activeWidth, trackHeight, smallRadius, smallRadius);
-        ctx.fill();
+        fillRoundedRectLR(ctx, activeX, trackY - trackHeight/2, activeWidth, trackHeight, trackRadius, trackRadius, primaryColor);
       }
       
       // Remaining track (from center to maximum)
-      ctx.fillStyle = inactiveColor;
       const remainingX = (adjustedZeroPercent + halfCenterGapPercent) / 100 * width;
       const remainingWidth = width - remainingX;
       if (remainingWidth > 0) {
-        roundRectWithRadii(ctx, remainingX, trackY - trackHeight/2, remainingWidth, trackHeight, smallRadius, fullRadius);
-        ctx.fill();
+        fillRoundedRectLR(ctx, remainingX, trackY - trackHeight/2, remainingWidth, trackHeight, trackRadius, trackRadius, inactiveColor);
       }
     }
   } else if (config.range && state.secondValue !== null) {
@@ -322,11 +256,9 @@ const drawTracks = (
     const higherPercent = Math.max(adjustedPercent, adjustedSecondPercent);
     
     // Inactive track before first handle
-    ctx.fillStyle = inactiveColor;
     const startWidth = (lowerPercent - paddingPercent) / 100 * width;
     if (startWidth > 0) {
-      roundRectWithRadii(ctx, 0, trackY - trackHeight/2, startWidth, trackHeight, fullRadius, smallRadius);
-      ctx.fill();
+      fillRoundedRectLR(ctx, 0, trackY - trackHeight/2, startWidth, trackHeight, trackRadius, trackRadius, inactiveColor);
     }
     
     // Active track between handles
@@ -334,39 +266,34 @@ const drawTracks = (
     const activeWidth = (higherPercent - paddingPercent) / 100 * width - activeX;
     
     if (activeWidth > trackHeight) { // Only show if handles aren't too close
-      ctx.fillStyle = primaryColor;
-      roundRectWithRadii(ctx, activeX, trackY - trackHeight/2, activeWidth, trackHeight, smallRadius, smallRadius);
-      ctx.fill();
+      fillRoundedRectLR(ctx, activeX, trackY - trackHeight/2, activeWidth, trackHeight, trackRadius, trackRadius, primaryColor);
     }
     
     // Inactive track after second handle
-    ctx.fillStyle = inactiveColor;
     const remainingX = (higherPercent + paddingPercent) / 100 * width;
     const remainingWidth = width - remainingX;
     if (remainingWidth > 0) {
-      roundRectWithRadii(ctx, remainingX, trackY - trackHeight/2, remainingWidth, trackHeight, smallRadius, fullRadius);
-      ctx.fill();
+      fillRoundedRectLR(ctx, remainingX, trackY - trackHeight/2, remainingWidth, trackHeight, trackRadius, trackRadius, inactiveColor);
     }
   } else {
     // Single handle slider
     
     // Active track (from start to handle)
-    ctx.fillStyle = primaryColor;
     const activeWidth = (adjustedPercent - paddingPercent) / 100 * width;
     if (activeWidth > 0) {
-      roundRectWithRadii(ctx, 0, trackY - trackHeight/2, activeWidth, trackHeight, fullRadius, smallRadius);
-      ctx.fill();
+      fillRoundedRectLR(ctx, 0, trackY - trackHeight/2, activeWidth, trackHeight, trackRadius, trackRadius, primaryColor);
     }
     
     // Remaining track (from handle to end)
-    ctx.fillStyle = inactiveColor;
     const remainingX = (adjustedPercent + paddingPercent) / 100 * width;
     const remainingWidth = width - remainingX;
     if (remainingWidth > 0) {
-      roundRectWithRadii(ctx, remainingX, trackY - trackHeight/2, remainingWidth, trackHeight, smallRadius, fullRadius);
-      ctx.fill();
+      fillRoundedRectLR(ctx, remainingX, trackY - trackHeight/2, remainingWidth, trackHeight, trackRadius, trackRadius, inactiveColor);
     }
   }
+  
+  // Restore canvas state (removes clipping)
+  restoreClip();
 };
 
 /**
@@ -475,7 +402,7 @@ const draw = (
   if (width === 0 || height === 0) return;
   
   // Clear canvas
-  ctx.clearRect(0, 0, width, height);
+  clearCanvas(ctx, width, height);
   
   // Draw in order: dots, tracks, ticks
   drawDots(ctx, width, height, config);
