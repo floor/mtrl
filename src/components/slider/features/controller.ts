@@ -29,7 +29,10 @@ export const withController = (config: SliderConfig) => component => {
     activeHandle: null,
     ticks: [],
     valueHideTimer: null,
-    component
+    component,
+    // For centered slider animations
+    previousValue: config.value !== undefined ? config.value : 0,
+    isAnimatingThroughCenter: false
   };
   
   // Create event helpers
@@ -210,9 +213,8 @@ export const withController = (config: SliderConfig) => component => {
     }
     
     // Update ARIA attributes
-    handle.setAttribute('aria-valuenow', String(state.value));
-    if (config.range && secondHandle && state.secondValue !== null) {
-      secondHandle.setAttribute('aria-valuenow', String(state.secondValue));
+    if (handle) {
+      handle.setAttribute('aria-valuenow', String(state.value));
     }
   };
   
@@ -256,6 +258,126 @@ export const withController = (config: SliderConfig) => component => {
       
       // Determine if value is positive or negative relative to zero
       const isPositive = state.value >= 0;
+      const wasPositive = state.previousValue >= 0;
+      
+      // Check if we're crossing the center (sign change)
+      const crossingCenter = isPositive !== wasPositive && !state.dragging;
+      
+      // Debug logging
+      console.log('[Centered Slider Debug]', {
+        value: state.value,
+        previousValue: state.previousValue,
+        isPositive,
+        wasPositive,
+        crossingCenter,
+        dragging: state.dragging,
+        isAnimatingThroughCenter: state.isAnimatingThroughCenter
+      });
+      
+      // Handle center-crossing animation
+      if (crossingCenter && !state.isAnimatingThroughCenter && Math.abs(state.value) > 0.1 && Math.abs(state.previousValue) > 0.1) {
+        console.log('[Animation] Starting center-crossing animation');
+        state.isAnimatingThroughCenter = true;
+        
+        // Step 1: Animate active track to zero width at center
+        activeTrack.style.display = 'block';
+        if (wasPositive) {
+          // Was on right side, shrink from right
+          activeTrack.style.left = `${adjustedZeroPercent + halfCenterGapPercent}%`;
+          activeTrack.style.right = `${100 - (adjustedZeroPercent + halfCenterGapPercent)}%`;
+        } else {
+          // Was on left side, shrink from left
+          activeTrack.style.left = `${adjustedZeroPercent - halfCenterGapPercent}%`;
+          activeTrack.style.right = `${100 - (adjustedZeroPercent - halfCenterGapPercent)}%`;
+        }
+        
+        // After the shrink animation completes, expand in new direction
+        setTimeout(() => {
+          console.log('[Animation] Expanding in new direction');
+          if (isPositive) {
+            activeTrack.style.left = `${adjustedZeroPercent + halfCenterGapPercent}%`;
+            activeTrack.style.right = `${100 - (adjustedPercent - paddingPercent)}%`;
+          } else {
+            activeTrack.style.left = `${adjustedPercent + paddingPercent}%`;
+            activeTrack.style.right = `${100 - (adjustedZeroPercent - halfCenterGapPercent)}%`;
+          }
+          
+          // Reset animation flag after expansion
+          setTimeout(() => {
+            state.isAnimatingThroughCenter = false;
+            console.log('[Animation] Center-crossing animation complete');
+          }, 200);
+        }, 200);
+        
+        // Update other tracks with proper timing
+        if (startTrack) {
+          startTrack.style.display = 'block';
+          startTrack.style.left = '0';
+          
+          if (isPositive) {
+            // Going positive: start track stays at center initially
+            startTrack.style.right = `${100 - (adjustedZeroPercent - halfCenterGapPercent)}%`;
+          } else {
+            // Going negative: start track needs to wait then shrink to handle
+            // Keep it at center initially
+            startTrack.style.right = `${100 - (adjustedZeroPercent - halfCenterGapPercent)}%`;
+            
+            // After active track shrinks, update start track
+            setTimeout(() => {
+              startTrack.style.right = `${100 - (adjustedPercent - paddingPercent)}%`;
+            }, 200);
+          }
+        }
+        
+        remainingTrack.style.display = 'block';
+        remainingTrack.style.right = '0';
+        
+        if (isPositive) {
+          // Going positive: remaining track needs to wait then expand from center
+          // Keep it at center initially
+          remainingTrack.style.left = `${adjustedZeroPercent + halfCenterGapPercent}%`;
+          
+          // After active track shrinks, update remaining track
+          setTimeout(() => {
+            remainingTrack.style.left = `${adjustedPercent + paddingPercent}%`;
+          }, 200);
+        } else {
+          // Going negative: remaining track stays at center
+          remainingTrack.style.left = `${adjustedZeroPercent + halfCenterGapPercent}%`;
+        }
+        
+        // Update handle position immediately
+        const { handle, valueBubble } = getComponents();
+        if (handle) {
+          handle.style.left = `${adjustedPercent}%`;
+          handle.style.transform = 'translate(-50%, -50%)';
+        }
+        
+        if (valueBubble) {
+          valueBubble.style.left = `${adjustedPercent}%`;
+          valueBubble.style.transform = 'translateX(-50%)';
+        }
+        
+        // Update ARIA attributes
+        if (handle) {
+          handle.setAttribute('aria-valuenow', String(state.value));
+        }
+        
+        // Update previous value
+        state.previousValue = state.value;
+        return; // Exit early during animation
+      }
+      
+      // Update previous value for next comparison
+      if (!state.dragging) {
+        state.previousValue = state.value;
+      }
+      
+      // Skip normal rendering if we're animating
+      if (state.isAnimatingThroughCenter) {
+        console.log('[Animation] Skipping normal track update during animation');
+        return;
+      }
       
       if (handleNearCenter) {
         // Handle is at or near center - ensure handle gaps are visible
@@ -656,6 +778,23 @@ export const withController = (config: SliderConfig) => component => {
        */
       setValue(value, triggerEvent = true) {
         const newValue = clamp(value, state.min, state.max);
+        
+        // Debug logging for centered sliders
+        if (config.centered) {
+          console.log('[setValue Debug]', {
+            oldValue: state.value,
+            newValue,
+            previousValue: state.previousValue,
+            willCrossCenter: (state.value >= 0) !== (newValue >= 0),
+            triggerEvent
+          });
+        }
+        
+        // Track previous value for centered slider animations
+        if (config.centered) {
+          state.previousValue = state.value;
+        }
+        
         state.value = newValue;
         render();
         

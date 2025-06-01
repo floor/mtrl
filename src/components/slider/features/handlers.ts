@@ -167,8 +167,24 @@ export const createHandlers = (config: SliderConfig, state, uiRenderer, eventHel
         isSecondHandle = distToSecond < distToFirst;
         isSecondHandle ? (state.secondValue = newValue) : (state.value = newValue);
       } else {
-        // Single handle slider - just update value
-        state.value = newValue;
+        // Single handle slider - use setValue API for centered sliders to ensure animation
+        if (config.centered && state.component.slider && state.component.slider.setValue) {
+          console.log('[Track Click Debug] Using setValue API for centered slider', {
+            oldValue: state.value,
+            newValue,
+            hasSetValue: !!state.component.slider.setValue
+          });
+          // Use the API method which handles previousValue tracking and animation
+          state.component.slider.setValue(newValue, false); // false to not trigger event yet
+        } else {
+          // Regular slider - direct update
+          console.log('[Track Click Debug] Direct value update', {
+            oldValue: state.value,
+            newValue,
+            isCentered: config.centered
+          });
+          state.value = newValue;
+        }
       }
       
       // Update UI and trigger events
@@ -182,9 +198,26 @@ export const createHandlers = (config: SliderConfig, state, uiRenderer, eventHel
     state.activeHandle = isSecondHandle ? secondHandle : handle;
     state.activeBubble = isSecondHandle ? secondValueBubble : valueBubble;
     
-    // Store the initial position and start dragging
+    // Store the initial position
     initialX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
-    handleHandleMouseDown(e, isSecondHandle);
+    
+    // For centered sliders, delay starting drag to allow animation
+    if (config.centered && !config.range) {
+      // Show bubble
+      showActiveBubble(state.activeBubble);
+      
+      // Add event listeners but don't start dragging yet
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      document.addEventListener('touchmove', handleMouseMove, { passive: false });
+      document.addEventListener('touchend', handleMouseUp);
+      
+      // Don't call handleHandleMouseDown which would set dragging state
+      triggerEvent(SLIDER_EVENTS.START, e);
+    } else {
+      // For non-centered sliders, proceed as normal
+      handleHandleMouseDown(e, isSecondHandle);
+    }
   };
   
   /**
@@ -242,7 +275,10 @@ export const createHandlers = (config: SliderConfig, state, uiRenderer, eventHel
           }
         }
       } else {
-        // Regular slider
+        // Regular slider - update previousValue for centered sliders
+        if (config.centered) {
+          state.previousValue = state.value;
+        }
         state.value = newValue;
       }
       
@@ -353,6 +389,10 @@ export const createHandlers = (config: SliderConfig, state, uiRenderer, eventHel
     if (isSecondHandle) {
       state.secondValue = newValue;
     } else {
+      // Track previousValue for centered sliders
+      if (config.centered) {
+        state.previousValue = state.value;
+      }
       state.value = newValue;
     }
     
