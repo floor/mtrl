@@ -568,12 +568,18 @@ export const withController = (config: SliderConfig) => component => {
     const inactiveClass = `${tickClass}--inactive`;
     const hiddenClass = `${tickClass}--hidden`;
     
+    // Get track dimensions for edge constraints
+    const { edgeConstraint } = getTrackDimensions();
+    
     // Create tick elements
     tickValues.forEach(value => {
       const percent = getPercentage(value);
+      // Map the percentage to account for edge constraints
+      const adjustedPercent = mapValueToVisualPercent(percent, edgeConstraint);
+      
       const tick = document.createElement('div');
       tick.classList.add(tickClass);
-      tick.style.left = `${percent}%`;
+      tick.style.left = `${adjustedPercent}%`;
       
       // Determine tick active state
       const isExactlySelected = (value === state.value || 
