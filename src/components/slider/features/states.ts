@@ -1,5 +1,6 @@
 // src/components/slider/features/states.ts
-import { SLIDER_COLORS, SLIDER_SIZES, SliderColor, SliderSize } from '../types';
+import { SLIDER_COLORS, SliderColor } from '../types';
+import { SLIDER_SIZES, SliderSize } from '../constants';
 import { SliderConfig } from '../types';
 
 /**
@@ -71,9 +72,12 @@ export const withStates = (config: SliderConfig) => component => {
    * Gets the active size class
    */
   function getActiveSize() {
-    return Object.values(SLIDER_SIZES).find(sizeName => 
-      component.element.classList.contains(`${component.getClass('slider')}--${sizeName}`)
-    ) || SLIDER_SIZES.MEDIUM;
+    // Check for size class names on the element
+    const sizeKeys = Object.keys(SLIDER_SIZES) as Array<keyof typeof SLIDER_SIZES>;
+    const foundKey = sizeKeys.find(sizeKey => 
+      component.element.classList.contains(`${component.getClass('slider')}--${sizeKey.toLowerCase()}`)
+    );
+    return foundKey || 'XS';  // Default to 'XS' (extra small)
   }
   
   // Return enhanced component
@@ -145,14 +149,25 @@ export const withStates = (config: SliderConfig) => component => {
        */
       setSize(size: SliderSize) {
         // Remove existing size classes
-        Object.values(SLIDER_SIZES).forEach(sizeName => {
-          component.element.classList.remove(`${component.getClass('slider')}--${sizeName}`);
+        const sizeKeys = Object.keys(SLIDER_SIZES) as Array<keyof typeof SLIDER_SIZES>;
+        sizeKeys.forEach(sizeKey => {
+          component.element.classList.remove(`${component.getClass('slider')}--${sizeKey.toLowerCase()}`);
         });
         
-        // Add new size class if not medium (default)
-        if (size !== SLIDER_SIZES.MEDIUM) {
-          component.element.classList.add(`${component.getClass('slider')}--${size}`);
+        // Determine the size key to use
+        let sizeKey: string;
+        if (typeof size === 'string' && size in SLIDER_SIZES) {
+          sizeKey = size;
+        } else if (typeof size === 'number') {
+          // Find the key that matches this value
+          const entry = Object.entries(SLIDER_SIZES).find(([_, value]) => value === size);
+          sizeKey = entry ? entry[0] : 'XS';
+        } else {
+          sizeKey = 'XS'; // Default
         }
+        
+        // Add new size class
+        component.element.classList.add(`${component.getClass('slider')}--${sizeKey.toLowerCase()}`);
         
         return this;
       },

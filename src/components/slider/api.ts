@@ -1,6 +1,7 @@
 // src/components/slider/api.ts
 import { SliderComponent, SliderEvent } from './types';
-import { SLIDER_COLORS, SLIDER_SIZES, SLIDER_EVENTS } from './types';
+import { SLIDER_COLORS, SLIDER_EVENTS } from './types';
+import { SLIDER_SIZES, SliderSize } from './constants';
 
 /**
  * API options interface - structured by feature area
@@ -27,7 +28,7 @@ interface ApiOptions {
   appearance: {
     setColor: (color: string) => void;
     getColor: () => string;
-    setSize: (size: string) => void;
+    setSize: (size: SliderSize) => void;
     getSize: () => string;
     showTicks: (show: boolean) => void;
     showCurrentValue: (show: boolean) => void;
@@ -135,7 +136,7 @@ export const withAPI = (options: ApiOptions) =>
         return options.appearance.getColor();
       },
       
-      setSize(size: keyof typeof SLIDER_SIZES | typeof SLIDER_SIZES[keyof typeof SLIDER_SIZES]) {
+      setSize(size: SliderSize) {
         options.appearance.setSize(size);
         return this;
       },

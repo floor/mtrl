@@ -1,5 +1,7 @@
 // src/components/slider/types.ts
 
+import { SliderSize } from './constants';
+
 /**
  * Available slider color variants
  */
@@ -8,15 +10,6 @@ export const SLIDER_COLORS = {
   SECONDARY: 'secondary',
   TERTIARY: 'tertiary',
   ERROR: 'error'
-} as const;
-
-/**
- * Available slider size variants
- */
-export const SLIDER_SIZES = {
-  SMALL: 'small',
-  MEDIUM: 'medium',
-  LARGE: 'large'
 } as const;
 
 /**
@@ -35,11 +28,6 @@ export const SLIDER_EVENTS = {
  * Available slider color variants
  */
 export type SliderColor = 'primary' | 'secondary' | 'tertiary' | 'error';
-
-/**
- * Available slider size variants
- */
-export type SliderSize = 'small' | 'medium' | 'large';
 
 /**
  * Available slider event types

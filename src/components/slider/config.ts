@@ -123,8 +123,8 @@ export const getApiConfig = (comp) => ({
   appearance: {
     setColor: (c) => comp.appearance?.setColor?.(c),
     getColor: () => comp.appearance?.getColor?.() ?? 'primary',
-    setSize: (s) => comp.appearance?.setSize?.(s),
-    getSize: () => comp.appearance?.getSize?.() ?? 'medium',
+    setSize: (s) => comp.setSize?.(s),
+    getSize: () => comp.getSize?.() ?? 'XS',
     showTicks: (s) => comp.appearance?.showTicks?.(s),
     showCurrentValue: (s) => comp.appearance?.showCurrentValue?.(s)
   },

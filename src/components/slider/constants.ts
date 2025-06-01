@@ -20,12 +20,45 @@ export const SLIDER_COLORS = {
  * @category Components
  */
 export const SLIDER_SIZES = {
-  /** Small size slider */
-  SMALL: 'small',
-  /** Medium size slider */
-  MEDIUM: 'medium',
-  /** Large size slider */
-  LARGE: 'large'
+  /** Extra small size (default) - 16px track height */
+  XS: 16,
+  /** Small size - 24px track height */
+  S: 24,
+  /** Medium size - 40px track height */
+  M: 40,
+  /** Large size - 56px track height */
+  L: 56,
+  /** Extra large size - 96px track height */
+  XL: 96
+} as const;
+
+/**
+ * Slider component size type
+ * @category Components
+ */
+export type SliderSize = keyof typeof SLIDER_SIZES | number;
+
+/**
+ * Slider component measurements
+ * @category Components
+ */
+export const SLIDER_MEASUREMENTS = {
+  /** Handle size in pixels */
+  HANDLE_SIZE: 20,
+  /** Minimum container height in pixels */
+  MIN_HEIGHT: 40,
+  /** Track border radius (half of height) */
+  TRACK_RADIUS: 2,
+  /** Tick size in pixels */
+  TICK_SIZE: 4,
+  /** Dot size in pixels */
+  DOT_SIZE: 4,
+  /** Handle gap pixels */
+  HANDLE_GAP: 8,
+  /** Center gap pixels for centered sliders */
+  CENTER_GAP: 4,
+  /** Edge padding in pixels */
+  EDGE_PADDING: 6
 } as const;
 
 /**
@@ -76,7 +109,7 @@ export const SLIDER_DEFAULTS = {
   /** Default color variant */
   COLOR: SLIDER_COLORS.PRIMARY,
   /** Default size variant */
-  SIZE: SLIDER_SIZES.MEDIUM,
+  SIZE: 'XS',
   /** Whether to show tick marks */
   TICKS: false,
   /** Whether to show value while dragging */

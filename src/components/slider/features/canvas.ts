@@ -1,6 +1,7 @@
 import { SliderConfig, SliderColor } from '../types';
 import { getThemeColor } from '../../../core/utils';
 import { observeCanvasResize } from '../../../core/canvas';
+import { SLIDER_SIZES, SLIDER_MEASUREMENTS, SliderSize } from '../constants';
 
 /**
  * Canvas dimensions and drawing context
@@ -27,42 +28,68 @@ interface CanvasSliderComponent {
 }
 
 /**
- * Sets up canvas with proper pixel ratio and dimensions
+ * Gets the track height value from the size config
  */
-const setupCanvas = (canvas: HTMLCanvasElement): CanvasContext => {
-  const rect = canvas.getBoundingClientRect();
+export const getTrackHeight = (size?: SliderSize): number => {
+  if (typeof size === 'number') {
+    return Math.max(size, SLIDER_SIZES.XS);
+  }
+  
+  if (typeof size === 'string' && size in SLIDER_SIZES) {
+    return SLIDER_SIZES[size as keyof typeof SLIDER_SIZES];
+  }
+  
+  return SLIDER_SIZES.XS; // Default to XS
+};
+
+/**
+ * Updates canvas dimensions based on current size
+ */
+const updateCanvasDimensions = (
+  canvas: HTMLCanvasElement,
+  context: CanvasContext,
+  config?: SliderConfig
+): void => {
   const pixelRatio = window.devicePixelRatio || 1;
+  const trackHeight = getTrackHeight(config?.size);
+  const { ctx } = context;
   
-  // Ensure valid dimensions
-  if (rect.width === 0 || rect.height === 0) {
-    // This can happen during initialization, not a critical error
-    return {
-      canvas,
-      ctx: canvas.getContext('2d')!,
-      width: 0,
-      height: 0,
-      pixelRatio
-    };
-  }
+  const sliderElement = canvas.parentElement;
+  if (!sliderElement) return;
   
-  canvas.width = rect.width * pixelRatio;
-  canvas.height = rect.height * pixelRatio;
+  const width = Math.max(sliderElement.getBoundingClientRect().width || sliderElement.offsetWidth, 200);
+  const height = Math.max(trackHeight + 32, SLIDER_MEASUREMENTS.MIN_HEIGHT); // Add padding for handle
   
-  const ctx = canvas.getContext('2d');
-  if (!ctx) {
-    throw new Error('Failed to get 2D context');
-  }
+  // Update canvas dimensions
+  canvas.style.width = `${width}px`;
+  canvas.style.height = `${height}px`;
+  canvas.width = Math.round(width * pixelRatio);
+  canvas.height = Math.round(height * pixelRatio);
+  
+  // Update container height
+  sliderElement.style.height = `${height}px`;
+  
+  context.width = width;
+  context.height = height;
   
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.scale(pixelRatio, pixelRatio);
-  
-  return {
+};
+
+/**
+ * Sets up canvas with proper pixel ratio and dimensions
+ */
+const setupCanvas = (canvas: HTMLCanvasElement, config?: SliderConfig): CanvasContext => {
+  const context: CanvasContext = {
     canvas,
-    ctx,
-    width: rect.width,
-    height: rect.height,
-    pixelRatio
+    ctx: canvas.getContext('2d')!,
+    width: 0,
+    height: 0,
+    pixelRatio: window.devicePixelRatio || 1
   };
+  
+  updateCanvasDimensions(canvas, context, config);
+  return context;
 };
 
 /**
@@ -116,9 +143,9 @@ const drawTracks = (
   state: any
 ) => {
   const trackY = height / 2;
-  const trackHeight = 4;
-  const borderRadius = 2;
-  const handleSize = 20; // Standard handle size
+  const trackHeight = getTrackHeight(config.size);
+  const borderRadius = trackHeight / 2;
+  const handleSize = SLIDER_MEASUREMENTS.HANDLE_SIZE;
   
   // Get colors directly from theme
   const variant = config.color || 'primary';
@@ -130,8 +157,8 @@ const drawTracks = (
   const adjustedPercent = mapValueToVisualPercent(valuePercent, handleSize, width);
   
   // Fixed pixel gaps
-  const handleGapPixels = 8;
-  const centerGapPixels = 4;
+  const handleGapPixels = SLIDER_MEASUREMENTS.HANDLE_GAP;
+  const centerGapPixels = SLIDER_MEASUREMENTS.CENTER_GAP;
   const halfCenterGapPercent = (centerGapPixels / 2 / width) * 100;
   const paddingPercent = (handleGapPixels / width) * 100;
   
@@ -287,9 +314,9 @@ const drawTicks = (
 ) => {
   if (!config.ticks) return;
   
-  const tickSize = 4;
+  const tickSize = SLIDER_MEASUREMENTS.TICK_SIZE;
   const y = height / 2;
-  const handleSize = 20;
+  const handleSize = SLIDER_MEASUREMENTS.HANDLE_SIZE;
   
   // Get colors directly from theme
   const variant = config.color || 'primary';
@@ -350,9 +377,9 @@ const drawDots = (
   height: number,
   config: SliderConfig
 ) => {
-  const dotSize = 4;
+  const dotSize = SLIDER_MEASUREMENTS.DOT_SIZE;
   const y = height / 2;
-  const padding = 6;
+  const padding = SLIDER_MEASUREMENTS.EDGE_PADDING;
   
   // Get colors directly from theme
   const variant = config.color || 'primary';
@@ -427,9 +454,15 @@ export const withCanvas = (config: SliderConfig) =>
     let resizeCleanup: (() => void) | null = null;
     let themeCleanup: (() => void) | null = null;
     
+    // Current size - managed by API
+    let currentSize = config.size || 'XS';
+    
     const initializeCanvas = (): boolean => {
       try {
-        canvasContext = setupCanvas(canvas);
+        canvasContext = setupCanvas(canvas, {
+          ...config,
+          size: currentSize
+        });
         component.ctx = canvasContext.ctx;
         return true;
       } catch (error) {
@@ -456,6 +489,12 @@ export const withCanvas = (config: SliderConfig) =>
         console.warn('Canvas context not ready');
         return;
       }
+      
+      // Update dimensions in case size changed
+      updateCanvasDimensions(canvas, canvasContext, {
+        ...config,
+        size: currentSize
+      });
       
       // Get current state - prefer passed state, then slider API, then config
       let state;
@@ -488,7 +527,10 @@ export const withCanvas = (config: SliderConfig) =>
         };
       }
       
-      draw(canvasContext, config, state);
+      draw(canvasContext, {
+        ...config,
+        size: currentSize
+      }, state);
     };
     
     // Resize function
@@ -496,7 +538,10 @@ export const withCanvas = (config: SliderConfig) =>
       if (!canvasContext) return;
       
       try {
-        const newContext = setupCanvas(canvas);
+        const newContext = setupCanvas(canvas, {
+          ...config,
+          size: currentSize
+        });
         component.ctx = newContext.ctx;
         Object.assign(canvasContext, newContext);
         drawCanvas();
@@ -524,6 +569,21 @@ export const withCanvas = (config: SliderConfig) =>
     // Extend component with canvas methods
     component.drawCanvas = drawCanvas;
     component.resize = resize;
+    
+    // Add setSize method
+    component.setSize = (size: SliderSize) => {
+      currentSize = size;
+      if (canvasContext) {
+        updateCanvasDimensions(canvas, canvasContext, {
+          ...config,
+          size: currentSize
+        });
+        drawCanvas();
+      }
+    };
+    
+    // Add getSize method
+    component.getSize = () => currentSize;
     
     // Update color method
     const originalSetColor = component.appearance?.setColor;
