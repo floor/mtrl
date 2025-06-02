@@ -55,7 +55,7 @@ export const getElementConfig = (config: ChipsConfig) =>
     attributes: {
       role: 'group',
       'aria-multiselectable': config.multiSelect === true ? 'true' : 'false'
-      // tabindex: '0' removed
+      // tabindex: '0' // removed
     },
     className: [
       config.class

@@ -32,7 +32,7 @@ export function createChipsSchema(component, config: ChipsConfig) {
           config.class
         ].filter(Boolean),
         attributes: {
-          tabindex: '0',
+          // tabindex: '0',
           role: 'group',
           'aria-multiselectable': isMultiSelect ? 'true' : 'false'
         }
