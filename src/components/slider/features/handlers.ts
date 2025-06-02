@@ -116,8 +116,9 @@ export const createHandlers = (config: SliderConfig, state, uiRenderer, eventHel
     
     // Setup drag state
     state.dragging = false;
+    state.pressed = true; // Set pressed state immediately
     hasActualDragStarted = false;
-    state.activeHandle = isSecondHandle ? secondHandle : handle;
+    state.activeHandle = isSecondHandle ? 'second' : 'first'; // Track which handle
     state.activeBubble = isSecondHandle ? secondValueBubble : valueBubble;
     
     // Show bubble immediately
@@ -184,7 +185,7 @@ export const createHandlers = (config: SliderConfig, state, uiRenderer, eventHel
     }
     
     // Set active elements
-    state.activeHandle = isSecondHandle ? secondHandle : handle;
+    state.activeHandle = isSecondHandle ? 'second' : 'first';
     state.activeBubble = isSecondHandle ? secondValueBubble : valueBubble;
     
     // Store the initial position
@@ -201,11 +202,27 @@ export const createHandlers = (config: SliderConfig, state, uiRenderer, eventHel
       document.addEventListener('touchmove', handleMouseMove, { passive: false });
       document.addEventListener('touchend', handleMouseUp);
       
-      // Don't call handleHandleMouseDown which would set dragging state
+      // Don't set pressed state for track clicks
+      state.pressed = false;
+      
       triggerEvent(SLIDER_EVENTS.START, e);
     } else {
-      // For non-centered sliders, proceed as normal
-      handleHandleMouseDown(e, isSecondHandle);
+      // For non-centered sliders, start drag but don't set pressed since it's a track click
+      state.dragging = false;
+      state.pressed = false; // Don't set pressed for track clicks
+      hasActualDragStarted = false;
+      
+      // Show bubble
+      showActiveBubble(state.activeBubble);
+      
+      // Add event listeners
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      document.addEventListener('touchmove', handleMouseMove, { passive: false });
+      document.addEventListener('touchend', handleMouseUp);
+      
+      render();
+      triggerEvent(SLIDER_EVENTS.START, e);
     }
   };
   
@@ -233,7 +250,7 @@ export const createHandlers = (config: SliderConfig, state, uiRenderer, eventHel
       newValue = clamp(newValue, state.min, state.max);
       
       // Handle crossing points and handle swapping for range sliders
-      const isSecondHandle = state.activeHandle === secondHandle;
+      const isSecondHandle = state.activeHandle === 'second';
       
       if (config.range && state.secondValue !== null) {
         if (isSecondHandle) {
@@ -245,7 +262,7 @@ export const createHandlers = (config: SliderConfig, state, uiRenderer, eventHel
             hideActiveBubble(state.activeBubble, 0);
             state.secondValue = state.value;
             state.value = newValue;
-            state.activeHandle = handle;
+            state.activeHandle = 'first';
             state.activeBubble = valueBubble;
             showActiveBubble(state.activeBubble);
           }
@@ -258,7 +275,7 @@ export const createHandlers = (config: SliderConfig, state, uiRenderer, eventHel
             hideActiveBubble(state.activeBubble, 0);
             state.value = state.secondValue;
             state.secondValue = newValue;
-            state.activeHandle = secondHandle;
+            state.activeHandle = 'second';
             state.activeBubble = secondValueBubble;
             showActiveBubble(state.activeBubble);
           }
@@ -287,6 +304,7 @@ export const createHandlers = (config: SliderConfig, state, uiRenderer, eventHel
     
     // Reset drag states
     state.dragging = false;
+    state.pressed = false; // Clear pressed state
     hasActualDragStarted = false;
     state.component.element.classList.remove(`${state.component.getClass('slider')}--dragging`);
     

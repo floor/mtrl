@@ -195,8 +195,9 @@ const drawTracks = (
   const valuePercent = ((state.value - state.min) / (state.max - state.min)) * 100;
   const adjustedPercent = mapValueToVisualPercent(valuePercent, width);
   
-  // Fixed pixel gaps
-  const handleGapPixels = SLIDER_MEASUREMENTS.HANDLE_GAP;
+  // Fixed pixel gaps - instantly reduce by 2px when pressed
+  const gapReduction = state.pressed ? 2 : 0;
+  const handleGapPixels = SLIDER_MEASUREMENTS.HANDLE_GAP - gapReduction;
   const centerGapPixels = SLIDER_MEASUREMENTS.CENTER_GAP;
   const halfCenterGapPercent = (centerGapPixels / 2 / width) * 100;
   const paddingPercent = (handleGapPixels / width) * 100;
@@ -278,22 +279,40 @@ const drawTracks = (
     const lowerPercent = Math.min(adjustedPercent, adjustedSecondPercent);
     const higherPercent = Math.max(adjustedPercent, adjustedSecondPercent);
     
+    // Determine which handle is at lower/higher position
+    const firstHandleIsLower = adjustedPercent <= adjustedSecondPercent;
+    
+    // Apply gap reduction only to the active handle
+    const firstHandleGapReduction = (state.pressed && state.activeHandle === 'first') ? 2 : 0;
+    const secondHandleGapReduction = (state.pressed && state.activeHandle === 'second') ? 2 : 0;
+    
+    const firstHandleGapPixels = SLIDER_MEASUREMENTS.HANDLE_GAP - firstHandleGapReduction;
+    const secondHandleGapPixels = SLIDER_MEASUREMENTS.HANDLE_GAP - secondHandleGapReduction;
+    
+    const lowerHandleGapPercent = firstHandleIsLower 
+      ? (firstHandleGapPixels / width) * 100 
+      : (secondHandleGapPixels / width) * 100;
+      
+    const higherHandleGapPercent = firstHandleIsLower 
+      ? (secondHandleGapPixels / width) * 100 
+      : (firstHandleGapPixels / width) * 100;
+    
     // Inactive track before first handle
-    const startWidth = (lowerPercent - paddingPercent) / 100 * width;
+    const startWidth = (lowerPercent - lowerHandleGapPercent) / 100 * width;
     if (startWidth > 0) {
       fillRoundedRectLR(ctx, 0, trackY - trackHeight/2, startWidth, trackHeight, trackRadius, trackRadius, inactiveColor);
     }
     
     // Active track between handles
-    const activeX = (lowerPercent + paddingPercent) / 100 * width;
-    const activeWidth = (higherPercent - paddingPercent) / 100 * width - activeX;
+    const activeX = (lowerPercent + lowerHandleGapPercent) / 100 * width;
+    const activeWidth = (higherPercent - higherHandleGapPercent) / 100 * width - activeX;
     
     if (activeWidth > trackHeight) { // Only show if handles aren't too close
       fillRoundedRectLR(ctx, activeX, trackY - trackHeight/2, activeWidth, trackHeight, trackRadius, trackRadius, primaryColor);
     }
     
     // Inactive track after second handle
-    const remainingX = (higherPercent + paddingPercent) / 100 * width;
+    const remainingX = (higherPercent + higherHandleGapPercent) / 100 * width;
     const remainingWidth = width - remainingX;
     if (remainingWidth > 0) {
       fillRoundedRectLR(ctx, remainingX, trackY - trackHeight/2, remainingWidth, trackHeight, trackRadius, trackRadius, inactiveColor);
@@ -475,7 +494,9 @@ export const withCanvas = (config: SliderConfig) =>
       secondValue: config.secondValue || null,
       min: config.min || 0,
       max: config.max || 100,
-      step: config.step || 1
+      step: config.step || 1,
+      pressed: false,
+      activeHandle: null
     };
     
     // Initialize animation state
@@ -601,7 +622,9 @@ export const withCanvas = (config: SliderConfig) =>
           secondValue: controllerState.secondValue,
           min: controllerState.min,
           max: controllerState.max,
-          step: controllerState.step
+          step: controllerState.step,
+          pressed: controllerState.pressed || false,
+          activeHandle: controllerState.activeHandle || null
         };
         isDragging = controllerState.dragging || false;
         lastKnownState = { ...state };
@@ -662,13 +685,13 @@ export const withCanvas = (config: SliderConfig) =>
         draw(canvasContext, {
           ...config,
           size: currentSize
-        }, state);
+        }, controllerState || state);
       } else {
         // No animation needed, draw current state
         draw(canvasContext, {
           ...config,
           size: currentSize
-        }, state);
+        }, controllerState || state);
       }
     };
     

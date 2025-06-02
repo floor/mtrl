@@ -18,22 +18,22 @@ export const withController = (config: SliderConfig) => component => {
     return component;
   }
   
-  // Initialize state
+  // Initialize state with current config
   const state = {
+    component,
     value: config.value !== undefined ? config.value : 0,
     secondValue: config.secondValue !== undefined ? config.secondValue : null,
     min: config.min !== undefined ? config.min : 0,
     max: config.max !== undefined ? config.max : 100,
     step: config.step !== undefined ? config.step : 1,
     dragging: false,
+    pressed: false, // Track if handle is pressed (mouse down)
+    activeHandle: null, // Track which handle is active (null, 'first', 'second')
     activeBubble: null,
-    activeHandle: null,
-    ticks: [],
     valueHideTimer: null,
-    component,
-    // For centered slider animations
-    previousValue: config.value !== undefined ? config.value : 0,
-    isAnimatingThroughCenter: false
+    ticks: [],
+    previousValue: config.value !== undefined ? config.value : 0, // For centered slider animation detection
+    isAnimatingThroughCenter: false   // Flag to track center-crossing animation
   };
   
   // Create event helpers
