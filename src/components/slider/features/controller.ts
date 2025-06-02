@@ -92,7 +92,7 @@ export const withController = (config: SliderConfig) => component => {
     try {
       const handleRect = handle.getBoundingClientRect();
       const containerRect = container.getBoundingClientRect();
-      const handleSize = handleRect.width || 20;
+      const handleSize = handleRect.width || SLIDER_MEASUREMENTS.HANDLE_SIZE;
       const trackSize = containerRect.width;
       
       // Use EDGE_PADDING for consistent edge constraints
@@ -104,7 +104,7 @@ export const withController = (config: SliderConfig) => component => {
     } catch (error) {
       console.warn('Error calculating track dimensions:', error);
       return {
-        handleSize: 20,
+        handleSize: SLIDER_MEASUREMENTS.HANDLE_SIZE,
         trackSize: 200,
         edgeConstraint: 3, // 6px / 200px * 100
         paddingPercent: 4

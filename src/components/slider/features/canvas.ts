@@ -205,7 +205,8 @@ const drawTracks = (
   width: number,
   height: number,
   config: SliderConfig,
-  state: any
+  state: any,
+  component?: any
 ) => {
   const trackY = height / 2;
   const trackHeight = getTrackHeight(config.size);
@@ -222,10 +223,26 @@ const drawTracks = (
     containerRadius
   );
   
-  // Get colors directly from theme
-  const variant = config.color || 'primary';
-  const primaryColor = getThemeColor(`sys-color-${variant}`, { fallback: '#1976d2' });
-  const inactiveColor = colorToRGBA(primaryColor, 0.24);
+  // Check if slider is disabled
+  const isDisabled = component?.disabled?.isDisabled?.() || 
+                     component?.element?.classList?.contains?.(`${component?.getClass?.('slider')}--disabled`) ||
+                     false;
+  
+  // Get colors based on state
+  let primaryColor: string;
+  let inactiveColor: string;
+  
+  if (isDisabled) {
+    // Disabled state uses on-surface color
+    const onSurfaceColor = getThemeColor('sys-color-on-surface', { fallback: '#000000' });
+    primaryColor = colorToRGBA(onSurfaceColor, 0.38);
+    inactiveColor = colorToRGBA(onSurfaceColor, 0.12);
+  } else {
+    // Normal state uses theme colors
+    const variant = config.color || 'primary';
+    primaryColor = getThemeColor(`sys-color-${variant}`, { fallback: '#1976d2' });
+    inactiveColor = colorToRGBA(primaryColor, 0.24);
+  }
   
   // Get value percentages
   const valuePercent = ((state.value - state.min) / (state.max - state.min)) * 100;
@@ -382,17 +399,34 @@ const drawTicks = (
   width: number,
   height: number,
   config: SliderConfig,
-  state: any
+  state: any,
+  component?: any
 ) => {
   if (!config.ticks) return;
   
   const tickSize = SLIDER_MEASUREMENTS.TICK_SIZE;
   const y = height / 2;
   
-  // Get colors directly from theme
-  const variant = config.color || 'primary';
-  const tickActiveColor = getThemeColor(`sys-color-on-${variant}`, { fallback: '#ffffff' });
-  const tickInactiveColor = getThemeColor(`sys-color-${variant}`, { fallback: '#1976d2' });
+  // Check if slider is disabled
+  const isDisabled = component?.disabled?.isDisabled?.() || 
+                     component?.element?.classList?.contains?.(`${component?.getClass?.('slider')}--disabled`) ||
+                     false;
+  
+  // Get colors based on state
+  let tickActiveColor: string;
+  let tickInactiveColor: string;
+  
+  if (isDisabled) {
+    // Disabled state uses on-surface color
+    const onSurfaceColor = getThemeColor('sys-color-on-surface', { fallback: '#000000' });
+    tickActiveColor = colorToRGBA(onSurfaceColor, 0.38);
+    tickInactiveColor = colorToRGBA(onSurfaceColor, 0.12);
+  } else {
+    // Normal state uses theme colors
+    const variant = config.color || 'primary';
+    tickActiveColor = getThemeColor(`sys-color-on-${variant}`, { fallback: '#ffffff' });
+    tickInactiveColor = getThemeColor(`sys-color-${variant}`, { fallback: '#1976d2' });
+  }
   
   // Calculate tick values
   const numSteps = Math.floor((state.max - state.min) / state.step);
@@ -446,7 +480,8 @@ const drawDots = (
   ctx: CanvasRenderingContext2D,
   width: number,
   height: number,
-  config: SliderConfig
+  config: SliderConfig,
+  component?: any
 ) => {
   // Don't draw dots for discrete sliders (sliders with ticks)
   if (config.ticks) return;
@@ -455,9 +490,23 @@ const drawDots = (
   const y = height / 2;
   const padding = SLIDER_MEASUREMENTS.EDGE_PADDING;
   
-  // Get colors directly from theme
-  const variant = config.color || 'primary';
-  const dotColor = getThemeColor(`sys-color-${variant}`, { fallback: '#1976d2' });
+  // Check if slider is disabled
+  const isDisabled = component?.disabled?.isDisabled?.() || 
+                     component?.element?.classList?.contains?.(`${component?.getClass?.('slider')}--disabled`) ||
+                     false;
+  
+  // Get colors based on state
+  let dotColor: string;
+  
+  if (isDisabled) {
+    // Disabled state uses on-surface color
+    const onSurfaceColor = getThemeColor('sys-color-on-surface', { fallback: '#000000' });
+    dotColor = colorToRGBA(onSurfaceColor, 0.38);
+  } else {
+    // Normal state uses theme color
+    const variant = config.color || 'primary';
+    dotColor = getThemeColor(`sys-color-${variant}`, { fallback: '#1976d2' });
+  }
   
   // For continuous sliders, only draw end dot
   ctx.fillStyle = dotColor;
@@ -472,7 +521,8 @@ const drawDots = (
 const draw = (
   context: CanvasContext,
   config: SliderConfig,
-  state: any
+  state: any,
+  component?: any
 ): void => {
   const { ctx, width, height } = context;
   
@@ -483,9 +533,9 @@ const draw = (
   clearCanvas(ctx, width, height);
   
   // Draw in order: dots, tracks, ticks
-  drawDots(ctx, width, height, config);
-  drawTracks(ctx, width, height, config, state);
-  drawTicks(ctx, width, height, config, state);
+  drawDots(ctx, width, height, config, component);
+  drawTracks(ctx, width, height, config, state, component);
+  drawTicks(ctx, width, height, config, state, component);
 };
 
 /**
@@ -579,15 +629,18 @@ export const withCanvas = (config: SliderConfig) =>
     if (components) {
       // Set main handle size
       if (components.handle) {
-        components.handle.style.width = `${SLIDER_MEASUREMENTS.HANDLE_SIZE}px`; // Keep width constant
         components.handle.style.height = `${initialHandleHeight}px`;
       }
       
       // Set second handle size for range sliders
       if (components.secondHandle) {
-        components.secondHandle.style.width = `${SLIDER_MEASUREMENTS.HANDLE_SIZE}px`; // Keep width constant
         components.secondHandle.style.height = `${initialHandleHeight}px`;
       }
+    }
+    
+    // Add color class to component element if not primary
+    if (config.color && config.color !== 'primary') {
+      component.element.classList.add(`${component.getClass('slider')}--${config.color}`);
     }
     
     // Store canvas reference
@@ -624,7 +677,7 @@ export const withCanvas = (config: SliderConfig) =>
       draw(canvasContext, {
         ...config,
         size: currentSize
-      }, animatedState);
+      }, animatedState, component);
       
       // Continue animation if not complete
       if (progress < 1) {
@@ -721,13 +774,13 @@ export const withCanvas = (config: SliderConfig) =>
         draw(canvasContext, {
           ...config,
           size: currentSize
-        }, controllerState || state);
+        }, controllerState || state, component);
       } else {
         // No animation needed, draw current state
         draw(canvasContext, {
           ...config,
           size: currentSize
-        }, controllerState || state);
+        }, controllerState || state, component);
       }
     };
     
@@ -752,7 +805,7 @@ export const withCanvas = (config: SliderConfig) =>
         draw(canvasContext, {
           ...config,
           size: currentSize
-        }, animatedState);
+        }, animatedState, component);
       } catch (error) {
         console.warn('Slider canvas resize failed:', error);
       }
@@ -774,7 +827,7 @@ export const withCanvas = (config: SliderConfig) =>
         draw(canvasContext, {
           ...config,
           size: currentSize
-        }, animatedState);
+        }, animatedState, component);
       }
     });
     themeCleanup = typeof cleanup === 'function' ? cleanup : null;
@@ -805,7 +858,7 @@ export const withCanvas = (config: SliderConfig) =>
         draw(canvasContext, {
           ...config,
           size: currentSize
-        }, animatedState);
+        }, animatedState, component);
       }
       
       // Update handle sizes
@@ -814,13 +867,11 @@ export const withCanvas = (config: SliderConfig) =>
       if (components) {
         // Update main handle
         if (components.handle) {
-          components.handle.style.width = `${SLIDER_MEASUREMENTS.HANDLE_SIZE}px`; // Keep width constant
           components.handle.style.height = `${newHandleHeight}px`;
         }
         
         // Update second handle for range sliders
         if (components.secondHandle) {
-          components.secondHandle.style.width = `${SLIDER_MEASUREMENTS.HANDLE_SIZE}px`; // Keep width constant
           components.secondHandle.style.height = `${newHandleHeight}px`;
         }
       }
@@ -834,6 +885,17 @@ export const withCanvas = (config: SliderConfig) =>
     if (originalSetColor) {
       component.appearance.setColor = (color: SliderColor) => {
         originalSetColor(color);
+        
+        // Remove old color class if not primary
+        if (config.color && config.color !== 'primary') {
+          component.element.classList.remove(`${component.getClass('slider')}--${config.color}`);
+        }
+        
+        // Add new color class if not primary
+        if (color && color !== 'primary') {
+          component.element.classList.add(`${component.getClass('slider')}--${color}`);
+        }
+        
         config.color = color;
         
         // Clean up old theme observer
@@ -855,7 +917,7 @@ export const withCanvas = (config: SliderConfig) =>
             draw(canvasContext, {
               ...config,
               size: currentSize
-            }, animatedState);
+            }, animatedState, component);
           }
         });
         themeCleanup = typeof cleanup === 'function' ? cleanup : null;

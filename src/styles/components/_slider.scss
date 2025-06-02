@@ -71,23 +71,6 @@ $component: '#{base.$prefix}-slider';
     align-items: center;
   }
 
-  &-track {
-    position: relative;
-    width: 100%;
-    padding: 0 4px;
-    height: 16px;
-    background-color: transparent;
-    border-radius: 8px;
-    overflow: hidden;
-    cursor: pointer;
-    
-    // Disabled state
-    .#{$component}--disabled & {
-      opacity: 0.38;
-      cursor: not-allowed;
-    }
-  }
-  
   // Canvas element for hybrid rendering
   &-canvas {
     position: absolute !important;
@@ -97,17 +80,6 @@ $component: '#{base.$prefix}-slider';
     height: 100% !important;
     pointer-events: none;
     z-index: 0;
-  }
-  
-  // When canvas is present, hide DOM track elements
-  &:has(.#{$component}-canvas) {
-    .#{$component}-active-track,
-    .#{$component}-start-track,
-    .#{$component}-remaining-track,
-    .#{$component}-dot,
-    .#{$component}-tick {
-      display: none !important;
-    }
   }
  
   // Handle - updated with T-shape and proper focus styles
@@ -119,7 +91,7 @@ $component: '#{base.$prefix}-slider';
     z-index: 4;
     padding: 4px 0;
     transition: $handle-transition;
-    width: 16px;
+    width: 14px;
     height: 50px;
     border-radius: 16px;
     background-color: rgba(red, .0);
@@ -140,7 +112,7 @@ $component: '#{base.$prefix}-slider';
       content: '';
       position: absolute;
       width: 4px;
-      height: 100%;
+      height: calc(100% - 8px);
       background-color: t.color('primary');
       border-radius: 2px;
       left: 50%;
@@ -166,9 +138,9 @@ $component: '#{base.$prefix}-slider';
       }
     }
     
-    // Enable pointer events on the pseudo-element
+    // Disabled pointer events on the pseudo-element
     &::before {
-      pointer-events: auto;
+      pointer-events: none;
     }
     
     // Make handle line slimmer during dragging (feedback)
@@ -217,205 +189,8 @@ $component: '#{base.$prefix}-slider';
         background-color: t.color('error');
       }
     }
-    
-    // Disabled state
-    .#{$component}--disabled & {
-      cursor: not-allowed;
-      
-      &::before {
-        opacity: 0.38;
-        background-color: t.color('on-surface');
-      }
-    }
   }
 
-  // Start track (for range slider)
-  &-start-track {
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 100%;
-    background-color: t.color('primary');
-    transform-origin: left center;
-    transition: $track-transition;
-    border-radius: 2px;
-    opacity: 0.24;
-    z-index: 1;
-    
-    .#{$component}--secondary & {
-      background-color: t.color('secondary');
-    }
-    
-    .#{$component}--tertiary & {
-      background-color: t.color('tertiary');
-    }
-    
-    .#{$component}--error & {
-      background-color: t.color('error');
-    }
-    
-    .#{$component}--disabled & {
-      opacity: 0.12;
-    }
-  }
-  
-  // Active track (filled part)
-  &-active-track {
-    position: absolute;
-    top: 0;
-    height: 100%;
-    background-color: t.color('primary');
-    transform-origin: left center;
-    transition: $track-transition;
-    border-radius: 2px;
-    z-index: 1;
-
-    .#{$component}--secondary & {
-      background-color: t.color('secondary');
-    }
-    
-    .#{$component}--tertiary & {
-      background-color: t.color('tertiary');
-    }
-    
-    .#{$component}--error & {
-      background-color: t.color('error');
-    }
-  }
-  
-  // Remaining track (unfilled part)
-  &-remaining-track {
-    opacity: .24;
-    position: absolute;
-    top: 0;
-    height: 100%;
-    background-color: t.color('primary');
-    transform-origin: left center;
-    transition: $track-transition;
-    border-radius: 2px;
-    z-index: 0;
-    
-    .#{$component}--secondary & {
-      background-color: t.color('secondary');
-    }
-    
-    .#{$component}--tertiary & {
-      background-color: t.color('tertiary');
-    }
-    
-    .#{$component}--error & {
-      background-color: t.color('error');
-    }
-    
-    .#{$component}--disabled & {
-      opacity: 0.12;
-    }
-  }
-  
-  // Dot elements for track ends (visual anchors for accessibility)
-  &-dot {
-    pointer-events: none;
-    position: absolute;
-    width: 4px;
-    height: 4px;
-    border-radius: 50%;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 1;
-    
-    // Start dot
-    &--start {
-      left: 6px;
-      background-color: t.color('on-primary');
-      
-      .#{$component}--secondary & {
-        background-color: t.color('on-secondary');
-      }
-      
-      .#{$component}--tertiary & {
-        background-color: t.color('on-tertiary');
-      }
-    }
-    
-    // End dot
-    &--end {
-      right: 6px;
-      background-color: t.color('primary');
-      
-      .#{$component}--secondary & {
-        background-color: t.color('secondary');
-      }
-      
-      .#{$component}--tertiary & {
-        background-color: t.color('tertiary');
-      }
-    }
-    
-    .#{$component}--disabled & {
-      opacity: 0.38;
-    }
-  }
-  
-  // Container for ticks
-  &-ticks-container {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    left: 0;
-    top: 0;
-    pointer-events: none;
-    z-index: 3;
-  }
-  
-  // Tick marks
-  &-tick {
-    position: absolute;
-    width: 4px;
-    height: 4px;
-    background-color: t.color('outline');
-    border-radius: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    pointer-events: none;
-    opacity: 0.8;
-    
-    &:last-child, &:first-child {
-      display: none
-    }
-
-    // Active tick (filled)
-    &--active {
-      background-color: t.color('on-primary');
-      
-      .#{$component}--secondary & {
-        background-color: t.color('on-secondary');
-      }
-      
-      .#{$component}--tertiary & {
-        background-color: t.color('on-tertiary');
-      }
-    }
-    
-    // Inactive tick (unfilled)
-    &--inactive {
-      background-color: t.color('primary');
-      opacity: 0.5;
-
-      .#{$component}--secondary & {
-        background-color: t.color('secondary');
-      }
-      
-      .#{$component}--tertiary & {
-        background-color: t.color('tertiary');
-      }
-    }
-
-     // Hidden tick
-    &--hidden {
-      opacity: 0
-    }
-  }
-  
   // Range slider styles
   &--range {
     .#{$component}-handle {
@@ -455,6 +230,20 @@ $component: '#{base.$prefix}-slider';
     }
   }
   
+  &--disabled {
+
+    // Disabled state
+    .#{$component}-handle {
+      cursor: default;
+      pointer-events: none;
+      
+      &::before {
+        opacity: 0.38;
+        background-color: t.color('on-surface');
+      }
+    }
+  }
+
   // Discrete slider with steps
   &--discrete {
     .#{$component}-tick {
