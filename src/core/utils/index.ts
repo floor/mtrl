@@ -5,6 +5,7 @@ export { normalizeEvent, hasTouchSupport, TOUCH_CONFIG, PASSIVE_EVENTS } from '.
 export { getInheritedBackground } from './background';
 export { throttle, debounce, once } from './performance';
 export { getThemeColor } from './theme';
+export { colorToRGBA } from './color';
 
 /**
  * Creates a transformer that only runs if a condition is met

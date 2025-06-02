@@ -1,5 +1,5 @@
 import { SliderConfig, SliderColor } from '../types';
-import { getThemeColor } from '../../../core/utils';
+import { getThemeColor, colorToRGBA } from '../../../core/utils';
 import { observeCanvasResize, clipRoundedRect, fillRoundedRectLR, clearCanvas, easeOutCubic, ANIMATION_DURATIONS } from '../../../core/canvas';
 import { SLIDER_SIZES, SLIDER_MEASUREMENTS, SliderSize } from '../constants';
 
@@ -51,39 +51,63 @@ interface CanvasSliderComponent {
 }
 
 /**
- * Converts a color to RGBA with specified opacity
- * Handles hex, rgb, rgba, and named colors
+ * Checks if component is disabled
  */
-const colorToRGBA = (color: string, opacity: number): string => {
-  // Create a temporary canvas to get computed color
-  const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d');
-  if (!ctx) return `rgba(0, 0, 0, ${opacity})`;
+const isDisabled = (component?: any): boolean => 
+  component?.disabled?.isDisabled?.() || 
+  component?.element?.classList?.contains?.(`${component?.getClass?.('slider')}--disabled`) ||
+  false;
+
+/**
+ * Gets colors based on state and element type
+ */
+const getColors = (config: SliderConfig, component?: any, elementType: 'track' | 'tick' | 'dot' = 'track') => {
+  const disabled = isDisabled(component);
+  const variant = config.color || 'primary';
   
-  // Set the color and get computed value
-  ctx.fillStyle = color;
-  const computedColor = ctx.fillStyle;
-  
-  // Handle hex colors
-  if (computedColor.startsWith('#')) {
-    const hex = computedColor.substring(1);
-    const r = parseInt(hex.substring(0, 2), 16);
-    const g = parseInt(hex.substring(2, 4), 16);
-    const b = parseInt(hex.substring(4, 6), 16);
-    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  if (disabled) {
+    const onSurfaceColor = getThemeColor('sys-color-on-surface', { fallback: '#000000' });
+    return {
+      primary: colorToRGBA(onSurfaceColor, 0.38),
+      secondary: colorToRGBA(onSurfaceColor, 0.12)
+    };
   }
   
-  // Handle rgb/rgba colors
-  if (computedColor.startsWith('rgb')) {
-    const match = computedColor.match(/\d+/g);
-    if (match) {
-      const [r, g, b] = match;
-      return `rgba(${r}, ${g}, ${b}, ${opacity})`;
-    }
+  if (elementType === 'tick') {
+    return {
+      primary: getThemeColor(`sys-color-on-${variant}`, { fallback: '#ffffff' }),
+      secondary: getThemeColor(`sys-color-${variant}`, { fallback: '#1976d2' })
+    };
   }
   
-  // Fallback
-  return `rgba(0, 0, 0, ${opacity})`;
+  const primaryColor = getThemeColor(`sys-color-${variant}`, { fallback: '#1976d2' });
+  return {
+    primary: primaryColor,
+    secondary: colorToRGBA(primaryColor, 0.24)
+  };
+};
+
+/**
+ * Calculates value percentage
+ */
+const getValuePercent = (value: number, min: number, max: number): number => 
+  ((value - min) / (max - min)) * 100;
+
+/**
+ * Draws a track segment if width > 0
+ */
+const drawTrackSegment = (
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  radius: number,
+  color: string
+) => {
+  if (width > 0) {
+    fillRoundedRectLR(ctx, x, y, width, height, radius, radius, color);
+  }
 };
 
 /**
@@ -223,29 +247,11 @@ const drawTracks = (
     containerRadius
   );
   
-  // Check if slider is disabled
-  const isDisabled = component?.disabled?.isDisabled?.() || 
-                     component?.element?.classList?.contains?.(`${component?.getClass?.('slider')}--disabled`) ||
-                     false;
-  
   // Get colors based on state
-  let primaryColor: string;
-  let inactiveColor: string;
-  
-  if (isDisabled) {
-    // Disabled state uses on-surface color
-    const onSurfaceColor = getThemeColor('sys-color-on-surface', { fallback: '#000000' });
-    primaryColor = colorToRGBA(onSurfaceColor, 0.38);
-    inactiveColor = colorToRGBA(onSurfaceColor, 0.12);
-  } else {
-    // Normal state uses theme colors
-    const variant = config.color || 'primary';
-    primaryColor = getThemeColor(`sys-color-${variant}`, { fallback: '#1976d2' });
-    inactiveColor = colorToRGBA(primaryColor, 0.24);
-  }
+  const { primary: primaryColor, secondary: inactiveColor } = getColors(config, component);
   
   // Get value percentages
-  const valuePercent = ((state.value - state.min) / (state.max - state.min)) * 100;
+  const valuePercent = getValuePercent(state.value, state.min, state.max);
   const adjustedPercent = mapValueToVisualPercent(valuePercent, width);
   
   // Fixed pixel gaps - instantly reduce by HANDLE_GAP_PRESSED_REDUCTION when pressed
@@ -257,7 +263,7 @@ const drawTracks = (
   
   if (config.centered) {
     // Calculate center position
-    const zeroPercent = ((0 - state.min) / (state.max - state.min)) * 100;
+    const zeroPercent = getValuePercent(0, state.min, state.max);
     const adjustedZeroPercent = mapValueToVisualPercent(zeroPercent, width);
     
     // Check if handle is near center
@@ -270,14 +276,14 @@ const drawTracks = (
       // Start track (left side)
       const startWidth = (adjustedPercent - paddingPercent) / 100 * width;
       if (startWidth > 0) {
-        fillRoundedRectLR(ctx, 0, trackY - trackHeight/2, startWidth, trackHeight, trackRadius, trackRadius, inactiveColor);
+        drawTrackSegment(ctx, 0, trackY - trackHeight/2, startWidth, trackHeight, trackRadius, inactiveColor);
       }
       
       // Remaining track (right side)
       const remainingX = (adjustedPercent + paddingPercent) / 100 * width;
       const remainingWidth = width - remainingX;
       if (remainingWidth > 0) {
-        fillRoundedRectLR(ctx, remainingX, trackY - trackHeight/2, remainingWidth, trackHeight, trackRadius, trackRadius, inactiveColor);
+        drawTrackSegment(ctx, remainingX, trackY - trackHeight/2, remainingWidth, trackHeight, trackRadius, inactiveColor);
       }
     } else if (isPositive) {
       // Positive value - active track from center to handle
@@ -285,21 +291,21 @@ const drawTracks = (
       // Start track (from minimum to center)
       const startWidth = (adjustedZeroPercent - halfCenterGapPercent) / 100 * width;
       if (startWidth > 0) {
-        fillRoundedRectLR(ctx, 0, trackY - trackHeight/2, startWidth, trackHeight, trackRadius, trackRadius, inactiveColor);
+        drawTrackSegment(ctx, 0, trackY - trackHeight/2, startWidth, trackHeight, trackRadius, inactiveColor);
       }
       
       // Active track (from center to handle)
       const activeX = (adjustedZeroPercent + halfCenterGapPercent) / 100 * width;
       const activeWidth = (adjustedPercent - paddingPercent) / 100 * width - activeX;
       if (activeWidth > 0) {
-        fillRoundedRectLR(ctx, activeX, trackY - trackHeight/2, activeWidth, trackHeight, trackRadius, trackRadius, primaryColor);
+        drawTrackSegment(ctx, activeX, trackY - trackHeight/2, activeWidth, trackHeight, trackRadius, primaryColor);
       }
       
       // Remaining track (from handle to maximum)
       const remainingX = (adjustedPercent + paddingPercent) / 100 * width;
       const remainingWidth = width - remainingX;
       if (remainingWidth > 0) {
-        fillRoundedRectLR(ctx, remainingX, trackY - trackHeight/2, remainingWidth, trackHeight, trackRadius, trackRadius, inactiveColor);
+        drawTrackSegment(ctx, remainingX, trackY - trackHeight/2, remainingWidth, trackHeight, trackRadius, inactiveColor);
       }
     } else {
       // Negative value - active track from handle to center
@@ -307,26 +313,26 @@ const drawTracks = (
       // Start track (from minimum to handle)
       const startWidth = (adjustedPercent - paddingPercent) / 100 * width;
       if (startWidth > 0) {
-        fillRoundedRectLR(ctx, 0, trackY - trackHeight/2, startWidth, trackHeight, trackRadius, trackRadius, inactiveColor);
+        drawTrackSegment(ctx, 0, trackY - trackHeight/2, startWidth, trackHeight, trackRadius, inactiveColor);
       }
       
       // Active track (from handle to center)
       const activeX = (adjustedPercent + paddingPercent) / 100 * width;
       const activeWidth = (adjustedZeroPercent - halfCenterGapPercent) / 100 * width - activeX;
       if (activeWidth > 0) {
-        fillRoundedRectLR(ctx, activeX, trackY - trackHeight/2, activeWidth, trackHeight, trackRadius, trackRadius, primaryColor);
+        drawTrackSegment(ctx, activeX, trackY - trackHeight/2, activeWidth, trackHeight, trackRadius, primaryColor);
       }
       
       // Remaining track (from center to maximum)
       const remainingX = (adjustedZeroPercent + halfCenterGapPercent) / 100 * width;
       const remainingWidth = width - remainingX;
       if (remainingWidth > 0) {
-        fillRoundedRectLR(ctx, remainingX, trackY - trackHeight/2, remainingWidth, trackHeight, trackRadius, trackRadius, inactiveColor);
+        drawTrackSegment(ctx, remainingX, trackY - trackHeight/2, remainingWidth, trackHeight, trackRadius, inactiveColor);
       }
     }
   } else if (config.range && state.secondValue !== null) {
     // Range slider
-    const secondPercent = ((state.secondValue - state.min) / (state.max - state.min)) * 100;
+    const secondPercent = getValuePercent(state.secondValue, state.min, state.max);
     const adjustedSecondPercent = mapValueToVisualPercent(secondPercent, width);
     
     const lowerPercent = Math.min(adjustedPercent, adjustedSecondPercent);
@@ -353,7 +359,7 @@ const drawTracks = (
     // Inactive track before first handle
     const startWidth = (lowerPercent - lowerHandleGapPercent) / 100 * width;
     if (startWidth > 0) {
-      fillRoundedRectLR(ctx, 0, trackY - trackHeight/2, startWidth, trackHeight, trackRadius, trackRadius, inactiveColor);
+      drawTrackSegment(ctx, 0, trackY - trackHeight/2, startWidth, trackHeight, trackRadius, inactiveColor);
     }
     
     // Active track between handles
@@ -361,14 +367,14 @@ const drawTracks = (
     const activeWidth = (higherPercent - higherHandleGapPercent) / 100 * width - activeX;
     
     if (activeWidth > trackHeight) { // Only show if handles aren't too close
-      fillRoundedRectLR(ctx, activeX, trackY - trackHeight/2, activeWidth, trackHeight, trackRadius, trackRadius, primaryColor);
+      drawTrackSegment(ctx, activeX, trackY - trackHeight/2, activeWidth, trackHeight, trackRadius, primaryColor);
     }
     
     // Inactive track after second handle
     const remainingX = (higherPercent + higherHandleGapPercent) / 100 * width;
     const remainingWidth = width - remainingX;
     if (remainingWidth > 0) {
-      fillRoundedRectLR(ctx, remainingX, trackY - trackHeight/2, remainingWidth, trackHeight, trackRadius, trackRadius, inactiveColor);
+      drawTrackSegment(ctx, remainingX, trackY - trackHeight/2, remainingWidth, trackHeight, trackRadius, inactiveColor);
     }
   } else {
     // Single handle slider
@@ -376,14 +382,14 @@ const drawTracks = (
     // Active track (from start to handle)
     const activeWidth = (adjustedPercent - paddingPercent) / 100 * width;
     if (activeWidth > 0) {
-      fillRoundedRectLR(ctx, 0, trackY - trackHeight/2, activeWidth, trackHeight, trackRadius, trackRadius, primaryColor);
+      drawTrackSegment(ctx, 0, trackY - trackHeight/2, activeWidth, trackHeight, trackRadius, primaryColor);
     }
     
     // Remaining track (from handle to end)
     const remainingX = (adjustedPercent + paddingPercent) / 100 * width;
     const remainingWidth = width - remainingX;
     if (remainingWidth > 0) {
-      fillRoundedRectLR(ctx, remainingX, trackY - trackHeight/2, remainingWidth, trackHeight, trackRadius, trackRadius, inactiveColor);
+      drawTrackSegment(ctx, remainingX, trackY - trackHeight/2, remainingWidth, trackHeight, trackRadius, inactiveColor);
     }
   }
   
@@ -407,26 +413,8 @@ const drawTicks = (
   const tickSize = SLIDER_MEASUREMENTS.TICK_SIZE;
   const y = height / 2;
   
-  // Check if slider is disabled
-  const isDisabled = component?.disabled?.isDisabled?.() || 
-                     component?.element?.classList?.contains?.(`${component?.getClass?.('slider')}--disabled`) ||
-                     false;
-  
   // Get colors based on state
-  let tickActiveColor: string;
-  let tickInactiveColor: string;
-  
-  if (isDisabled) {
-    // Disabled state uses on-surface color
-    const onSurfaceColor = getThemeColor('sys-color-on-surface', { fallback: '#000000' });
-    tickActiveColor = colorToRGBA(onSurfaceColor, 0.38);
-    tickInactiveColor = colorToRGBA(onSurfaceColor, 0.12);
-  } else {
-    // Normal state uses theme colors
-    const variant = config.color || 'primary';
-    tickActiveColor = getThemeColor(`sys-color-on-${variant}`, { fallback: '#ffffff' });
-    tickInactiveColor = getThemeColor(`sys-color-${variant}`, { fallback: '#1976d2' });
-  }
+  const { primary: tickActiveColor, secondary: tickInactiveColor } = getColors(config, component, 'tick');
   
   // Calculate tick values
   const numSteps = Math.floor((state.max - state.min) / state.step);
@@ -436,7 +424,7 @@ const drawTicks = (
     if (value > state.max) continue;
     
     // Get position with edge constraints
-    const percent = ((value - state.min) / (state.max - state.min)) * 100;
+    const percent = getValuePercent(value, state.min, state.max);
     const adjustedPercent = mapValueToVisualPercent(percent, width);
     const x = adjustedPercent / 100 * width;
     
@@ -490,23 +478,8 @@ const drawDots = (
   const y = height / 2;
   const padding = SLIDER_MEASUREMENTS.EDGE_PADDING;
   
-  // Check if slider is disabled
-  const isDisabled = component?.disabled?.isDisabled?.() || 
-                     component?.element?.classList?.contains?.(`${component?.getClass?.('slider')}--disabled`) ||
-                     false;
-  
   // Get colors based on state
-  let dotColor: string;
-  
-  if (isDisabled) {
-    // Disabled state uses on-surface color
-    const onSurfaceColor = getThemeColor('sys-color-on-surface', { fallback: '#000000' });
-    dotColor = colorToRGBA(onSurfaceColor, 0.38);
-  } else {
-    // Normal state uses theme color
-    const variant = config.color || 'primary';
-    dotColor = getThemeColor(`sys-color-${variant}`, { fallback: '#1976d2' });
-  }
+  const { primary: dotColor } = getColors(config, component, 'dot');
   
   // For continuous sliders, only draw end dot
   ctx.fillStyle = dotColor;
@@ -539,6 +512,69 @@ const draw = (
 };
 
 /**
+ * Updates handle sizes based on slider size
+ */
+const updateHandleSizes = (component: any, size: SliderSize): void => {
+  const handleHeight = getHandleHeight(size);
+  const { handle, secondHandle } = component.components || {};
+  
+  if (handle) handle.style.height = `${handleHeight}px`;
+  if (secondHandle) secondHandle.style.height = `${handleHeight}px`;
+};
+
+/**
+ * Creates state object from various sources
+ */
+const createState = (controllerState?: any, component?: any, lastKnownState?: any): any => {
+  if (controllerState) {
+    return {
+      value: controllerState.value,
+      secondValue: controllerState.secondValue,
+      min: controllerState.min,
+      max: controllerState.max,
+      step: controllerState.step,
+      pressed: controllerState.pressed || false,
+      activeHandle: controllerState.activeHandle || null
+    };
+  }
+  
+  if (component?.slider) {
+    return {
+      value: component.slider.getValue(),
+      secondValue: component.slider.getSecondValue(),
+      min: component.slider.getMin(),
+      max: component.slider.getMax(),
+      step: component.slider.getStep(),
+      pressed: false,
+      activeHandle: null
+    };
+  }
+  
+  return lastKnownState || { 
+    value: 0, 
+    secondValue: null, 
+    min: 0, 
+    max: 100, 
+    step: 1, 
+    pressed: false, 
+    activeHandle: null 
+  };
+};
+
+/**
+ * Creates a theme observer for color changes
+ */
+const createThemeObserver = (
+  color: string, 
+  callback: () => void
+): (() => void) | null => {
+  const cleanup = getThemeColor(`sys-color-${color}`, { 
+    onThemeChange: callback
+  });
+  return typeof cleanup === 'function' ? cleanup : null;
+};
+
+/**
  * Adds canvas functionality for slider visuals
  * Keeps handle and value bubble as DOM elements for accessibility
  */
@@ -547,21 +583,18 @@ export const withCanvas = (config: SliderConfig) =>
     // Create canvas element
     const canvas = document.createElement('canvas');
     canvas.className = `${component.getClass('slider-canvas')}`;
-    canvas.style.position = 'absolute';
-    canvas.style.width = '100%';
-    canvas.style.height = '100%';
-    canvas.style.pointerEvents = 'none'; // Canvas doesn't handle interactions
-    canvas.style.zIndex = '1'; // Ensure canvas is above track but below handle
+    Object.assign(canvas.style, {
+      position: 'absolute',
+      width: '100%',
+      height: '100%',
+      pointerEvents: 'none',
+      zIndex: '1'
+    });
     
     // Insert canvas as first child (behind interactive elements)
     const container = component.components?.container;
     if (container) {
-      // Insert as first child of container
-      if (container.firstChild) {
-        container.insertBefore(canvas, container.firstChild);
-      } else {
-        container.appendChild(canvas);
-      }
+      container.insertBefore(canvas, container.firstChild);
     } else {
       component.element.appendChild(canvas);
     }
@@ -575,7 +608,7 @@ export const withCanvas = (config: SliderConfig) =>
     let currentSize = config.size || 'XS';
     
     // Store last known state for theme changes
-    let lastKnownState = {
+    let lastKnownState = createState(null, component, {
       value: config.value || 0,
       secondValue: config.secondValue || null,
       min: config.min || 0,
@@ -583,18 +616,18 @@ export const withCanvas = (config: SliderConfig) =>
       step: config.step || 1,
       pressed: false,
       activeHandle: null
-    };
+    });
     
     // Initialize animation state
     const animationState: AnimationState = {
-      animatedValue: config.value || 0,
-      animatedSecondValue: config.secondValue || null,
-      targetValue: config.value || 0,
-      targetSecondValue: config.secondValue || null,
-      startValue: config.value || 0,
-      startSecondValue: config.secondValue || null,
+      animatedValue: lastKnownState.value,
+      animatedSecondValue: lastKnownState.secondValue,
+      targetValue: lastKnownState.value,
+      targetSecondValue: lastKnownState.secondValue,
+      startValue: lastKnownState.value,
+      startSecondValue: lastKnownState.secondValue,
       startTime: 0,
-      duration: ANIMATION_DURATIONS.MEDIUM, // Material Design standard duration
+      duration: ANIMATION_DURATIONS.MEDIUM,
       animationFrame: null
     };
     
@@ -624,19 +657,7 @@ export const withCanvas = (config: SliderConfig) =>
     }
     
     // Set initial handle sizes
-    const initialHandleHeight = getHandleHeight(currentSize);
-    const components = component.components;
-    if (components) {
-      // Set main handle size
-      if (components.handle) {
-        components.handle.style.height = `${initialHandleHeight}px`;
-      }
-      
-      // Set second handle size for range sliders
-      if (components.secondHandle) {
-        components.secondHandle.style.height = `${initialHandleHeight}px`;
-      }
-    }
+    updateHandleSizes(component, currentSize);
     
     // Add color class to component element if not primary
     if (config.color && config.color !== 'primary') {
@@ -645,6 +666,19 @@ export const withCanvas = (config: SliderConfig) =>
     
     // Store canvas reference
     component.canvas = canvas;
+    
+    // Helper to draw with current animated state
+    const drawAnimatedState = () => {
+      if (!canvasContext) return;
+      draw(canvasContext, {
+        ...config,
+        size: currentSize
+      }, {
+        ...lastKnownState,
+        value: animationState.animatedValue,
+        secondValue: animationState.animatedSecondValue
+      }, component);
+    };
     
     // Animation loop function
     const animate = (currentTime?: number): void => {
@@ -668,16 +702,7 @@ export const withCanvas = (config: SliderConfig) =>
       }
       
       // Draw with animated values
-      const animatedState = {
-        ...lastKnownState,
-        value: animationState.animatedValue,
-        secondValue: animationState.animatedSecondValue
-      };
-      
-      draw(canvasContext, {
-        ...config,
-        size: currentSize
-      }, animatedState, component);
+      drawAnimatedState();
       
       // Continue animation if not complete
       if (progress < 1) {
@@ -797,15 +822,7 @@ export const withCanvas = (config: SliderConfig) =>
         Object.assign(canvasContext, newContext);
         
         // Redraw with current animated values
-        const animatedState = {
-          ...lastKnownState,
-          value: animationState.animatedValue,
-          secondValue: animationState.animatedSecondValue
-        };
-        draw(canvasContext, {
-          ...config,
-          size: currentSize
-        }, animatedState, component);
+        drawAnimatedState();
       } catch (error) {
         console.warn('Slider canvas resize failed:', error);
       }
@@ -815,22 +832,9 @@ export const withCanvas = (config: SliderConfig) =>
     resizeCleanup = observeCanvasResize(component.element, canvas, resize);
     
     // Observe theme changes
-    const cleanup = getThemeColor(`sys-color-${config.color || 'primary'}`, { 
-      onThemeChange: () => {
-        if (!canvasContext) return;
-        // Redraw with current animated values
-        const animatedState = {
-          ...lastKnownState,
-          value: animationState.animatedValue,
-          secondValue: animationState.animatedSecondValue
-        };
-        draw(canvasContext, {
-          ...config,
-          size: currentSize
-        }, animatedState, component);
-      }
-    });
-    themeCleanup = typeof cleanup === 'function' ? cleanup : null;
+    const onThemeChange = () => drawAnimatedState();
+    
+    themeCleanup = createThemeObserver(config.color || 'primary', onThemeChange);
     
     // Initial draw
     requestAnimationFrame(() => {
@@ -850,31 +854,11 @@ export const withCanvas = (config: SliderConfig) =>
           size: currentSize
         });
         // Redraw with current animated values
-        const animatedState = {
-          ...lastKnownState,
-          value: animationState.animatedValue,
-          secondValue: animationState.animatedSecondValue
-        };
-        draw(canvasContext, {
-          ...config,
-          size: currentSize
-        }, animatedState, component);
+        drawAnimatedState();
       }
       
       // Update handle sizes
-      const newHandleHeight = getHandleHeight(currentSize);
-      const components = component.components;
-      if (components) {
-        // Update main handle
-        if (components.handle) {
-          components.handle.style.height = `${newHandleHeight}px`;
-        }
-        
-        // Update second handle for range sliders
-        if (components.secondHandle) {
-          components.secondHandle.style.height = `${newHandleHeight}px`;
-        }
-      }
+      updateHandleSizes(component, currentSize);
     };
     
     // Add getSize method
@@ -905,22 +889,7 @@ export const withCanvas = (config: SliderConfig) =>
         }
         
         // Set up new theme observer for the new color
-        const cleanup = getThemeColor(`sys-color-${color}`, { 
-          onThemeChange: () => {
-            if (!canvasContext) return;
-            // Redraw with current animated values
-            const animatedState = {
-              ...lastKnownState,
-              value: animationState.animatedValue,
-              secondValue: animationState.animatedSecondValue
-            };
-            draw(canvasContext, {
-              ...config,
-              size: currentSize
-            }, animatedState, component);
-          }
-        });
-        themeCleanup = typeof cleanup === 'function' ? cleanup : null;
+        themeCleanup = createThemeObserver(color, onThemeChange);
         
         // Redraw with new color
         drawCanvas();
