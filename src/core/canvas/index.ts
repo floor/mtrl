@@ -5,4 +5,5 @@
 
 export * from './drawing';
 export * from './resize';
-export * from './animation'; 
+export * from './animation';
+export * from './utils'; 

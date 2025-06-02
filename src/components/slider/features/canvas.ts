@@ -1,18 +1,20 @@
 import { SliderConfig, SliderColor } from '../types';
 import { getThemeColor, colorToRGBA } from '../../../core/utils';
-import { observeCanvasResize, clipRoundedRect, fillRoundedRectLR, clearCanvas, easeOutCubic, ANIMATION_DURATIONS } from '../../../core/canvas';
+import { 
+  observeCanvasResize, 
+  clipRoundedRect, 
+  fillRoundedRectLR, 
+  clearCanvas, 
+  easeOutCubic, 
+  ANIMATION_DURATIONS,
+  CanvasContext,
+  createCanvasContext,
+  updateCanvasDimensions as updateCanvasDims,
+  initializeCanvasWithRetry,
+  createStyledCanvas,
+  createCanvasThemeObserver
+} from '../../../core/canvas';
 import { SLIDER_SIZES, SLIDER_MEASUREMENTS, SliderSize } from '../constants';
-
-/**
- * Canvas dimensions and drawing context
- */
-export interface CanvasContext {
-  canvas: HTMLCanvasElement;
-  ctx: CanvasRenderingContext2D;
-  width: number;
-  height: number;
-  pixelRatio: number;
-}
 
 /**
  * Animation state for smooth transitions
@@ -163,48 +165,41 @@ const updateCanvasDimensions = (
   context: CanvasContext,
   config?: SliderConfig
 ): void => {
-  const pixelRatio = window.devicePixelRatio || 1;
   const trackHeight = getTrackHeight(config?.size);
   const handleHeight = getHandleHeight(config?.size);
-  const { ctx } = context;
   
   const sliderElement = canvas.parentElement;
   if (!sliderElement) return;
   
   const width = Math.max(sliderElement.getBoundingClientRect().width || sliderElement.offsetWidth, 200);
-  // Use the larger of handle height + padding or minimum height
   const height = Math.max(handleHeight + 20, trackHeight + 32, SLIDER_MEASUREMENTS.MIN_HEIGHT);
-  
-  // Update canvas dimensions
-  canvas.style.width = `${width}px`;
-  canvas.style.height = `${height}px`;
-  canvas.width = Math.round(width * pixelRatio);
-  canvas.height = Math.round(height * pixelRatio);
   
   // Update container height
   sliderElement.style.height = `${height}px`;
   
-  context.width = width;
-  context.height = height;
-  
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
-  ctx.scale(pixelRatio, pixelRatio);
+  // Use shared utility to update canvas dimensions
+  updateCanvasDims(context, width, height);
 };
 
 /**
  * Sets up canvas with proper pixel ratio and dimensions
  */
 const setupCanvas = (canvas: HTMLCanvasElement, config?: SliderConfig): CanvasContext => {
-  const context: CanvasContext = {
-    canvas,
-    ctx: canvas.getContext('2d')!,
-    width: 0,
-    height: 0,
-    pixelRatio: window.devicePixelRatio || 1
-  };
+  const sliderElement = canvas.parentElement;
+  if (!sliderElement) {
+    throw new Error('Canvas must have a parent element');
+  }
   
-  updateCanvasDimensions(canvas, context, config);
-  return context;
+  const trackHeight = getTrackHeight(config?.size);
+  const handleHeight = getHandleHeight(config?.size);
+  const width = Math.max(sliderElement.getBoundingClientRect().width || sliderElement.offsetWidth, 200);
+  const height = Math.max(handleHeight + 20, trackHeight + 32, SLIDER_MEASUREMENTS.MIN_HEIGHT);
+  
+  // Update container height
+  sliderElement.style.height = `${height}px`;
+  
+  // Use shared utility to create canvas context
+  return createCanvasContext(canvas, width, height);
 };
 
 /**
@@ -562,34 +557,16 @@ const createState = (controllerState?: any, component?: any, lastKnownState?: an
 };
 
 /**
- * Creates a theme observer for color changes
- */
-const createThemeObserver = (
-  color: string, 
-  callback: () => void
-): (() => void) | null => {
-  const cleanup = getThemeColor(`sys-color-${color}`, { 
-    onThemeChange: callback
-  });
-  return typeof cleanup === 'function' ? cleanup : null;
-};
-
-/**
  * Adds canvas functionality for slider visuals
  * Keeps handle and value bubble as DOM elements for accessibility
  */
 export const withCanvas = (config: SliderConfig) => 
   (component: any): CanvasSliderComponent => {
-    // Create canvas element
-    const canvas = document.createElement('canvas');
-    canvas.className = `${component.getClass('slider-canvas')}`;
-    Object.assign(canvas.style, {
-      position: 'absolute',
-      width: '100%',
-      height: '100%',
-      pointerEvents: 'none',
-      zIndex: '1'
-    });
+    // Create canvas element using shared utility
+    const canvas = createStyledCanvas(
+      `${component.getClass('slider-canvas')}`,
+      { zIndex: '1' } // Ensure canvas is above track but below handle
+    );
     
     // Insert canvas as first child (behind interactive elements)
     const container = component.components?.container;
@@ -633,31 +610,26 @@ export const withCanvas = (config: SliderConfig) =>
     
     component.animationState = animationState;
     
-    const initializeCanvas = (): boolean => {
-      try {
-        canvasContext = setupCanvas(canvas, {
-          ...config,
-          size: currentSize
-        });
-        component.ctx = canvasContext.ctx;
-        return true;
-      } catch (error) {
-        console.warn('Slider canvas initialization failed:', error);
-        return false;
-      }
-    };
-    
-    // Try to initialize immediately
-    if (!initializeCanvas()) {
-      requestAnimationFrame(() => {
-        if (!initializeCanvas()) {
-          setTimeout(initializeCanvas, 100);
+    // Initialize canvas with retry mechanism
+    initializeCanvasWithRetry(
+      () => {
+        try {
+          canvasContext = setupCanvas(canvas, {
+            ...config,
+            size: currentSize
+          });
+          component.ctx = canvasContext.ctx;
+          return true;
+        } catch (error) {
+          console.warn('Slider canvas initialization failed:', error);
+          return false;
         }
-      });
-    }
-    
-    // Set initial handle sizes
-    updateHandleSizes(component, currentSize);
+      },
+      () => {
+        // Set initial handle sizes after successful initialization
+        updateHandleSizes(component, currentSize);
+      }
+    );
     
     // Add color class to component element if not primary
     if (config.color && config.color !== 'primary') {
@@ -834,7 +806,7 @@ export const withCanvas = (config: SliderConfig) =>
     // Observe theme changes
     const onThemeChange = () => drawAnimatedState();
     
-    themeCleanup = createThemeObserver(config.color || 'primary', onThemeChange);
+    themeCleanup = createCanvasThemeObserver(config.color || 'primary', onThemeChange);
     
     // Initial draw
     requestAnimationFrame(() => {
@@ -889,7 +861,7 @@ export const withCanvas = (config: SliderConfig) =>
         }
         
         // Set up new theme observer for the new color
-        themeCleanup = createThemeObserver(color, onThemeChange);
+        themeCleanup = createCanvasThemeObserver(color, onThemeChange);
         
         // Redraw with new color
         drawCanvas();
