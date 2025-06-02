@@ -30,10 +30,7 @@ export const withController = (config: SliderConfig) => component => {
     pressed: false, // Track if handle is pressed (mouse down)
     activeHandle: null, // Track which handle is active (null, 'first', 'second')
     activeBubble: null,
-    valueHideTimer: null,
-    ticks: [],
-    previousValue: config.value !== undefined ? config.value : 0, // For centered slider animation detection
-    isAnimatingThroughCenter: false   // Flag to track center-crossing animation
+    valueHideTimer: null
   };
   
   // Create event helpers
@@ -224,275 +221,10 @@ export const withController = (config: SliderConfig) => component => {
   
   /**
    * Updates all track segments
-   * Handles different rendering for single and range sliders
+   * NOTE: Tracks are now rendered via canvas, so this is no longer needed
    */
   const updateTrackSegments = () => {
-    // If using canvas rendering, trigger redraw instead of DOM manipulation
-    if (component.drawCanvas) {
-      return; // Canvas handles track rendering
-    }
-    
-    // Legacy DOM-based rendering (kept for backwards compatibility)
-    const components = getComponents();
-    const { container, handle, startTrack, activeTrack, remainingTrack } = components;
-    
-    if (!container || !handle) return;
-    
-    // Safety check for required elements
-    if (!activeTrack || !remainingTrack) {
-      console.warn('Missing track segments, cannot update track display');
-      return;
-    }
-    
-    const dims = getTrackDimensions();
-    if (!dims) return;
-    
-    const { handleSize, trackSize, paddingPercent } = dims;
-    
-    if (config.centered) {
-      // Centered slider setup
-      const valuePercent = getPercentage(state.value);
-      const adjustedPercent = mapValueToVisualPercent(valuePercent, trackSize);
-      
-      // Calculate center position (where zero value is)
-      const zeroPercent = getPercentage(0);
-      const adjustedZeroPercent = mapValueToVisualPercent(zeroPercent, trackSize);
-      
-      // Fixed pixel gaps
-      const centerGapPixels = 4; // Total gap at center
-      const halfCenterGapPercent = (centerGapPixels / 2 / trackSize) * 100; // Split in half
-      
-      // Check if handle is very close to center
-      const handleNearCenter = Math.abs(adjustedPercent - adjustedZeroPercent) < paddingPercent;
-      
-      // Determine if value is positive or negative relative to zero
-      const isPositive = state.value >= 0;
-      const wasPositive = state.previousValue >= 0;
-      
-      // Check if we're crossing the center (sign change)
-      const crossingCenter = isPositive !== wasPositive && !state.dragging;
-      
-      // Handle center-crossing animation
-      if (crossingCenter && !state.isAnimatingThroughCenter && Math.abs(state.value) > 0.1 && Math.abs(state.previousValue) > 0.1) {
-        state.isAnimatingThroughCenter = true;
-        
-        // Step 1: Animate active track to zero width at center
-        activeTrack.style.display = 'block';
-        if (wasPositive) {
-          // Was on right side, shrink from right
-          activeTrack.style.left = `${adjustedZeroPercent + halfCenterGapPercent}%`;
-          activeTrack.style.right = `${100 - (adjustedZeroPercent + halfCenterGapPercent)}%`;
-        } else {
-          // Was on left side, shrink from left
-          activeTrack.style.left = `${adjustedZeroPercent - halfCenterGapPercent}%`;
-          activeTrack.style.right = `${100 - (adjustedZeroPercent - halfCenterGapPercent)}%`;
-        }
-        
-        // After the shrink animation completes, expand in new direction
-        setTimeout(() => {
-          if (isPositive) {
-            activeTrack.style.left = `${adjustedZeroPercent + halfCenterGapPercent}%`;
-            activeTrack.style.right = `${100 - (adjustedPercent - paddingPercent)}%`;
-          } else {
-            activeTrack.style.left = `${adjustedPercent + paddingPercent}%`;
-            activeTrack.style.right = `${100 - (adjustedZeroPercent - halfCenterGapPercent)}%`;
-          }
-          
-          // Reset animation flag after expansion
-          setTimeout(() => {
-            state.isAnimatingThroughCenter = false;
-          }, 100);
-        }, 100);
-        
-        // Update other tracks with proper timing
-        if (startTrack) {
-          startTrack.style.display = 'block';
-          startTrack.style.left = '0';
-          
-          if (isPositive) {
-            // Going positive: start track stays at center initially
-            startTrack.style.right = `${100 - (adjustedZeroPercent - halfCenterGapPercent)}%`;
-          } else {
-            // Going negative: start track needs to wait then shrink to handle
-            // Keep it at center initially
-            startTrack.style.right = `${100 - (adjustedZeroPercent - halfCenterGapPercent)}%`;
-            
-            // After active track shrinks, update start track
-            setTimeout(() => {
-              startTrack.style.right = `${100 - (adjustedPercent - paddingPercent)}%`;
-            }, 100);
-          }
-        }
-        
-        remainingTrack.style.display = 'block';
-        remainingTrack.style.right = '0';
-        
-        if (isPositive) {
-          // Going positive: remaining track needs to wait then expand from center
-          // Keep it at center initially
-          remainingTrack.style.left = `${adjustedZeroPercent + halfCenterGapPercent}%`;
-          
-          // After active track shrinks, update remaining track
-          setTimeout(() => {
-            remainingTrack.style.left = `${adjustedPercent + paddingPercent}%`;
-          }, 100);
-        } else {
-          // Going negative: remaining track stays at center
-          remainingTrack.style.left = `${adjustedZeroPercent + halfCenterGapPercent}%`;
-        }
-        
-        // Update handle position immediately
-        const { handle, valueBubble } = getComponents();
-        if (handle) {
-          handle.style.left = `${adjustedPercent}%`;
-          handle.style.transform = 'translate(-50%, -50%)';
-        }
-        
-        if (valueBubble) {
-          valueBubble.style.left = `${adjustedPercent}%`;
-          valueBubble.style.transform = 'translateX(-50%)';
-        }
-        
-        // Update ARIA attributes
-        if (handle) {
-          handle.setAttribute('aria-valuenow', String(state.value));
-        }
-        
-        // Update previous value
-        state.previousValue = state.value;
-        return; // Exit early during animation
-      }
-      
-      // Update previous value for next comparison
-      if (!state.dragging) {
-        state.previousValue = state.value;
-      }
-      
-      // Skip normal rendering if we're animating
-      if (state.isAnimatingThroughCenter) {
-        return;
-      }
-      
-      if (handleNearCenter) {
-        // Handle is at or near center - ensure handle gaps are visible
-        activeTrack.style.display = 'none'; // No active track when at center
-        
-        // Start track ends before handle gap
-        if (startTrack) {
-          startTrack.style.display = 'block';
-          startTrack.style.left = '0';
-          startTrack.style.right = `${100 - (adjustedPercent - paddingPercent)}%`;
-          startTrack.style.width = 'auto';
-        }
-        
-        // Remaining track starts after handle gap
-        remainingTrack.style.display = 'block';
-        remainingTrack.style.left = `${adjustedPercent + paddingPercent}%`;
-        remainingTrack.style.right = '0';
-        remainingTrack.style.width = 'auto';
-      } else if (isPositive) {
-        // Positive value: active track from center to handle
-        activeTrack.style.display = 'block';
-        activeTrack.style.left = `${adjustedZeroPercent + halfCenterGapPercent}%`;
-        activeTrack.style.right = `${100 - (adjustedPercent - paddingPercent)}%`;
-        activeTrack.style.width = 'auto';
-        
-        // Start track from minimum to center (minus half gap)
-        if (startTrack) {
-          startTrack.style.display = 'block';
-          startTrack.style.left = '0';
-          startTrack.style.right = `${100 - (adjustedZeroPercent - halfCenterGapPercent)}%`;
-          startTrack.style.width = 'auto';
-        }
-        
-        // Remaining track from handle to maximum
-        remainingTrack.style.display = 'block';
-        remainingTrack.style.left = `${adjustedPercent + paddingPercent}%`;
-        remainingTrack.style.right = '0';
-        remainingTrack.style.width = 'auto';
-      } else {
-        // Negative value: active track from handle to center
-        activeTrack.style.display = 'block';
-        activeTrack.style.left = `${adjustedPercent + paddingPercent}%`;
-        activeTrack.style.right = `${100 - (adjustedZeroPercent - halfCenterGapPercent)}%`;
-        activeTrack.style.width = 'auto';
-        
-        // Start track from minimum to handle
-        if (startTrack) {
-          startTrack.style.display = 'block';
-          startTrack.style.left = '0';
-          startTrack.style.right = `${100 - (adjustedPercent - paddingPercent)}%`;
-          startTrack.style.width = 'auto';
-        }
-        
-        // Remaining track from center to maximum
-        remainingTrack.style.display = 'block';
-        remainingTrack.style.left = `${adjustedZeroPercent + halfCenterGapPercent}%`;
-        remainingTrack.style.right = '0';
-        remainingTrack.style.width = 'auto';
-      }
-    } else if (config.range && state.secondValue !== null) {
-      // Range slider setup
-      const lowerValue = Math.min(state.value, state.secondValue);
-      const higherValue = Math.max(state.value, state.secondValue);
-      const lowerPercent = getPercentage(lowerValue);
-      const higherPercent = getPercentage(higherValue);
-      
-      const adjustedLower = mapValueToVisualPercent(lowerPercent, trackSize);
-      const adjustedHigher = mapValueToVisualPercent(higherPercent, trackSize);
-      
-      // Start track (before first handle)
-      if (startTrack) {
-        if (lowerPercent > 1) {
-          startTrack.style.display = 'block';
-          startTrack.style.left = '0';
-          startTrack.style.right = `${100 - (adjustedLower - paddingPercent)}%`;
-          startTrack.style.width = 'auto';
-        } else {
-          startTrack.style.display = 'none';
-        }
-      }
-      
-      // Active track (between handles)
-      const valueDiffPercent = Math.abs(higherPercent - lowerPercent);
-      const hideThreshold = (handleSize / trackSize) * 100;
-      
-      if (valueDiffPercent <= hideThreshold) {
-        activeTrack.style.display = 'none';
-      } else {
-        activeTrack.style.display = 'block';
-        activeTrack.style.left = `${adjustedLower + paddingPercent}%`;
-        activeTrack.style.right = `${100 - (adjustedHigher - paddingPercent)}%`;
-        activeTrack.style.width = 'auto';
-      }
-      
-      // Remaining track (after second handle)
-      remainingTrack.style.display = 'block';
-      remainingTrack.style.left = `${adjustedHigher + paddingPercent}%`;
-      remainingTrack.style.right = '0';
-      remainingTrack.style.width = 'auto';
-    } else {
-      // Single handle slider
-      const valuePercent = getPercentage(state.value);
-      const adjustedPercent = mapValueToVisualPercent(valuePercent, trackSize);
-      
-      // Hide start track for single slider
-      if (startTrack) {
-        startTrack.style.display = 'none';
-      }
-      
-      // Active track (filled part)
-      activeTrack.style.display = 'block';
-      activeTrack.style.left = '0';
-      activeTrack.style.right = `${100 - (adjustedPercent - paddingPercent)}%`;
-      activeTrack.style.width = 'auto';
-      
-      // Remaining track (unfilled part)
-      remainingTrack.style.display = 'block';
-      remainingTrack.style.left = `${adjustedPercent + paddingPercent}%`;
-      remainingTrack.style.right = '0';
-      remainingTrack.style.width = 'auto';
-    }
+    // Canvas handles track rendering - no DOM manipulation needed
   };
   
   /**
@@ -526,163 +258,18 @@ export const withController = (config: SliderConfig) => component => {
   
   /**
    * Generates tick marks
-   * Creates visual indicators for discrete values
+   * NOTE: Ticks are now rendered via canvas, this just clears any DOM ticks
    */
   const generateTicks = () => {
-    // If using canvas rendering, skip DOM tick generation
-    if (component.drawCanvas) {
-      state.ticks = []; // Clear any existing DOM ticks
-      return; // Canvas handles tick rendering
-    }
-    
-    // Legacy DOM-based tick generation (kept for backwards compatibility)
-    const components = getComponents();
-    const { ticksContainer, container } = components;
-    
-    if (!ticksContainer || !container) return;
-    
-    // Clear existing ticks
-    while (ticksContainer.firstChild) {
-      ticksContainer.removeChild(ticksContainer.firstChild);
-    }
-    
-    state.ticks = [];
-    if (!config.ticks) return;
-    
-    const numSteps = Math.floor((state.max - state.min) / state.step);
-    const tickValues = [];
-    
-    // Generate tick values
-    for (let i = 0; i <= numSteps; i++) {
-      const value = state.min + (i * state.step);
-      if (value <= state.max) tickValues.push(value);
-    }
-    
-    // Ensure max value is included
-    if (tickValues[tickValues.length - 1] !== state.max) {
-      tickValues.push(state.max);
-    }
-    
-    // CSS classes
-    const tickClass = state.component.getClass('slider-tick');
-    const activeClass = `${tickClass}--active`;
-    const inactiveClass = `${tickClass}--inactive`;
-    const hiddenClass = `${tickClass}--hidden`;
-    
-    // Get track dimensions for edge constraints
-    const dims = getTrackDimensions();
-    const trackSize = dims?.trackSize || 200;
-    
-    // Create tick elements
-    tickValues.forEach(value => {
-      const percent = getPercentage(value);
-      // Map the percentage to account for edge constraints
-      const adjustedPercent = mapValueToVisualPercent(percent, trackSize);
-      
-      const tick = document.createElement('div');
-      tick.classList.add(tickClass);
-      tick.style.left = `${adjustedPercent}%`;
-      
-      // Determine tick active state
-      const isExactlySelected = (value === state.value || 
-                               (config.range && state.secondValue !== null && value === state.secondValue));
-      
-      if (isExactlySelected) {
-        tick.classList.add(hiddenClass);
-      } else if (config.range && state.secondValue !== null) {
-        const lowerValue = Math.min(state.value, state.secondValue);
-        const higherValue = Math.max(state.value, state.secondValue);
-        
-        tick.classList.add(value >= lowerValue && value <= higherValue ? activeClass : inactiveClass);
-      } else {
-        tick.classList.add(value <= state.value ? activeClass : inactiveClass);
-      }
-      
-      ticksContainer.appendChild(tick);
-      state.ticks.push(tick);
-    });
+    // Canvas handles tick rendering - no DOM manipulation needed
   };
   
   /**
    * Updates active state of tick marks
-   * Sets visual state based on current values
+   * NOTE: Ticks are now rendered via canvas, so this is no longer needed
    */
   const updateTicks = () => {
-    // If using canvas rendering, skip DOM tick updates
-    if (component.drawCanvas) {
-      return; // Canvas handles tick rendering
-    }
-    
-    // Legacy DOM-based tick updates (kept for backwards compatibility)
-    if (!state.ticks || state.ticks.length === 0) return;
-    
-    const tickClass = state.component.getClass('slider-tick');
-    const activeClass = `${tickClass}--active`;
-    const inactiveClass = `${tickClass}--inactive`;
-    const hiddenClass = `${tickClass}--hidden`;
-    
-    state.ticks.forEach((tick, index) => {
-      // Safety check for null tick
-      if (!tick) return;
-      
-      // Calculate the value for this tick
-      const tickValue = state.min + (index * state.step);
-      
-      // Reset visibility first
-      tick.classList.remove(hiddenClass);
-      
-      // Check if this tick should be hidden (matches exactly a selected value)
-      const isExactlySelected = (tickValue === state.value || 
-                              (config.range && state.secondValue !== null && tickValue === state.secondValue));
-      
-      if (isExactlySelected) {
-        tick.classList.add(hiddenClass);
-      } else if (config.centered) {
-        // Centered slider - ticks between zero and value should be active
-        const isPositive = state.value >= 0;
-        
-        if (isPositive) {
-          // Value is positive, ticks between 0 and value are active
-          if (tickValue >= 0 && tickValue <= state.value) {
-            tick.classList.add(activeClass);
-            tick.classList.remove(inactiveClass);
-          } else {
-            tick.classList.remove(activeClass);
-            tick.classList.add(inactiveClass);
-          }
-        } else {
-          // Value is negative, ticks between value and 0 are active
-          if (tickValue >= state.value && tickValue <= 0) {
-            tick.classList.add(activeClass);
-            tick.classList.remove(inactiveClass);
-          } else {
-            tick.classList.remove(activeClass);
-            tick.classList.add(inactiveClass);
-          }
-        }
-      } else if (config.range && state.secondValue !== null) {
-        // Range slider - ticks between values should be active
-        const lowerValue = Math.min(state.value, state.secondValue);
-        const higherValue = Math.max(state.value, state.secondValue);
-        
-        if (tickValue >= lowerValue && tickValue <= higherValue) {
-          tick.classList.add(activeClass);
-          tick.classList.remove(inactiveClass);
-        } else {
-          tick.classList.remove(activeClass);
-          tick.classList.add(inactiveClass);
-        }
-      } else {
-        // Single slider - ticks below value should be active
-        if (tickValue <= state.value) {
-          tick.classList.add(activeClass);
-          tick.classList.remove(inactiveClass);
-        } else {
-          tick.classList.remove(activeClass);
-          tick.classList.add(inactiveClass);
-        }
-      }
-    });
+    // Canvas handles tick rendering - no DOM manipulation needed
   };
   
   /**
@@ -692,9 +279,7 @@ export const withController = (config: SliderConfig) => component => {
   const render = () => {
     try {
       updateHandlePositions();
-      updateTrackSegments();
       updateValueBubbles();
-      updateTicks();
       
       // Trigger canvas redraw if available
       if (component.drawCanvas) {
@@ -713,8 +298,6 @@ export const withController = (config: SliderConfig) => component => {
     roundToStep,
     clamp,
     showValueBubble,
-    generateTicks,
-    updateTicks,
     updateUi: render, // For backward compatibility
     render
   };
@@ -754,18 +337,8 @@ export const withController = (config: SliderConfig) => component => {
       // Setup event listeners
       handlers.setupEventListeners();
       
-      // Initially generate ticks if needed
-      if (config.ticks || config.tickLabels) {
-        generateTicks();
-      }
-      
       // Initial UI update
       render();
-      
-      // Force one more UI update after a delay to ensure proper positioning
-      setTimeout(() => {
-        render();
-      }, 50);
     } catch (error) {
       console.error('Error initializing slider controller:', error);
     }
@@ -798,11 +371,6 @@ export const withController = (config: SliderConfig) => component => {
        */
       setValue(value, triggerEvent = true) {
         const newValue = clamp(value, state.min, state.max);
-        
-        // Track previous value for centered slider animations
-        if (config.centered) {
-          state.previousValue = state.value;
-        }
         
         state.value = newValue;
         render();
@@ -964,11 +532,11 @@ export const withController = (config: SliderConfig) => component => {
       
       /**
        * Regenerate tick marks and labels
+       * NOTE: Canvas handles tick rendering, this just triggers a redraw
        * @returns Slider controller for chaining
        */
       regenerateTicks() {
-        generateTicks();
-        updateTicks();
+        render(); // Canvas will redraw ticks based on current state
         return this;
       },
       
