@@ -1,13 +1,8 @@
 /**
- * Canvas utilities module
- * Provides common utilities for working with HTML Canvas elements
+ * Canvas utilities for high-performance rendering
+ * Provides tools for drawing, animation, and resize handling
  */
 
-export { observeCanvasResize } from './resize';
-export { 
-  createRoundedRectPath,
-  fillRoundedRect,
-  clipRoundedRect,
-  fillRoundedRectLR,
-  clearCanvas
-} from './drawing'; 
+export * from './drawing';
+export * from './resize';
+export * from './animation'; 

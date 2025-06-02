@@ -1,6 +1,6 @@
 import { SliderConfig, SliderColor } from '../types';
 import { getThemeColor } from '../../../core/utils';
-import { observeCanvasResize, clipRoundedRect, fillRoundedRectLR, clearCanvas } from '../../../core/canvas';
+import { observeCanvasResize, clipRoundedRect, fillRoundedRectLR, clearCanvas, easeOutCubic, ANIMATION_DURATIONS } from '../../../core/canvas';
 import { SLIDER_SIZES, SLIDER_MEASUREMENTS, SliderSize } from '../constants';
 
 /**
@@ -26,6 +26,10 @@ interface AnimationState {
   targetValue: number;
   targetSecondValue: number | null;
   
+  // Start values for current animation
+  startValue: number;
+  startSecondValue: number | null;
+  
   // Animation timing
   startTime: number;
   duration: number;
@@ -45,13 +49,6 @@ interface CanvasSliderComponent {
   animationState?: AnimationState;
   [key: string]: any;
 }
-
-/**
- * Easing function for smooth animations (ease-out cubic)
- */
-const easeOutCubic = (t: number): number => {
-  return 1 - Math.pow(1 - t, 3);
-};
 
 /**
  * Gets the track height value from the size config
@@ -487,8 +484,10 @@ export const withCanvas = (config: SliderConfig) =>
       animatedSecondValue: config.secondValue || null,
       targetValue: config.value || 0,
       targetSecondValue: config.secondValue || null,
+      startValue: config.value || 0,
+      startSecondValue: config.secondValue || null,
       startTime: 0,
-      duration: 225, // Material Design standard duration
+      duration: ANIMATION_DURATIONS.MEDIUM, // Material Design standard duration
       animationFrame: null
     };
     
@@ -548,12 +547,14 @@ export const withCanvas = (config: SliderConfig) =>
       const easedProgress = easeOutCubic(progress);
       
       // Update animated values
-      animationState.animatedValue = animationState.animatedValue + 
-        (animationState.targetValue - animationState.animatedValue) * easedProgress;
+      const startValue = animationState.startValue;
+      const targetValue = animationState.targetValue;
+      animationState.animatedValue = startValue + (targetValue - startValue) * easedProgress;
       
       if (animationState.targetSecondValue !== null && animationState.animatedSecondValue !== null) {
-        animationState.animatedSecondValue = animationState.animatedSecondValue + 
-          (animationState.targetSecondValue - animationState.animatedSecondValue) * easedProgress;
+        const startSecondValue = animationState.startSecondValue;
+        const targetSecondValue = animationState.targetSecondValue;
+        animationState.animatedSecondValue = startSecondValue + (targetSecondValue - startSecondValue) * easedProgress;
       }
       
       // Draw with animated values
@@ -624,6 +625,10 @@ export const withCanvas = (config: SliderConfig) =>
       const secondValueChanged = state.secondValue !== animationState.targetSecondValue;
       
       if ((valueChanged || secondValueChanged) && !isDragging) {
+        // Capture start values before updating targets
+        animationState.startValue = animationState.animatedValue;
+        animationState.startSecondValue = animationState.animatedSecondValue;
+        
         // Update target values
         animationState.targetValue = state.value;
         animationState.targetSecondValue = state.secondValue;
@@ -644,6 +649,8 @@ export const withCanvas = (config: SliderConfig) =>
         animationState.animatedSecondValue = state.secondValue;
         animationState.targetValue = state.value;
         animationState.targetSecondValue = state.secondValue;
+        animationState.startValue = state.value;
+        animationState.startSecondValue = state.secondValue;
         
         // Cancel any ongoing animation
         if (animationState.animationFrame) {
