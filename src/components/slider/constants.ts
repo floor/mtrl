@@ -52,7 +52,7 @@ export const SLIDER_MEASUREMENTS = {
   /** Minimum container height in pixels */
   MIN_HEIGHT: 40,
   /** Track border radius in pixels */
-  TRACK_RADIUS: 4,
+  TRACK_RADIUS: 3,
   /** External track radius for XS and S sizes in pixels */
   SMALL_TRACK_EXTERNAL_RADIUS: 10,
   /** External track radius ratio for M, L, XL sizes (multiplied by track height) */
@@ -145,8 +145,6 @@ export const SLIDER_CLASSES = {
   ROOT: 'slider',
   /** Container for slider track and handles */
   CONTAINER: 'slider__container',
-  /** Track element class */
-  TRACK: 'slider__track',
   /** Filled track portion class */
   FILL: 'slider__fill',
   /** Handle element class */
@@ -154,12 +152,6 @@ export const SLIDER_CLASSES = {
   /** Second handle element class (for range slider) */
   HANDLE_SECOND: 'slider__handle--second',
   /** Tick marks container class */
-  TICKS: 'slider__ticks',
-  /** Individual tick mark class */
-  TICK: 'slider__tick',
-  /** Active/selected tick mark class */
-  TICK_ACTIVE: 'slider__tick--active',
-  /** Label element class */
   LABEL: 'slider__label',
   /** Value display class */
   VALUE: 'slider__value',
@@ -173,12 +165,6 @@ export const SLIDER_CLASSES = {
   DRAGGING: 'slider--dragging',
   /** Range slider variant class */
   RANGE: 'slider--range',
-  /** Small size variant class */
-  SMALL: 'slider--small',
-  /** Medium size variant class */
-  MEDIUM: 'slider--medium',
-  /** Large size variant class */
-  LARGE: 'slider--large',
   /** Primary color variant class */
   PRIMARY: 'slider--primary',
   /** Secondary color variant class */

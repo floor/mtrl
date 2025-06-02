@@ -38,6 +38,11 @@ export const withStates = (config: SliderConfig) => component => {
       component.structure.secondHandle.tabIndex = -1;
       component.structure.secondHandle.setAttribute('aria-disabled', 'true');
     }
+    
+    // Redraw canvas with disabled colors
+    if (component.drawCanvas) {
+      component.drawCanvas();
+    }
   }
   
   /**
@@ -56,6 +61,11 @@ export const withStates = (config: SliderConfig) => component => {
     if (config.range && component.structure?.secondHandle) {
       component.structure.secondHandle.tabIndex = 0;
       component.structure.secondHandle.setAttribute('aria-disabled', 'false');
+    }
+    
+    // Redraw canvas with enabled colors
+    if (component.drawCanvas) {
+      component.drawCanvas();
     }
   }
   

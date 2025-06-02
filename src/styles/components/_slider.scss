@@ -118,7 +118,7 @@ $component: '#{base.$prefix}-slider';
       left: 50%;
       top: 50%;
       transform: translate(-50%, -50%);
-      transition: background-color 0.15s ease, width 0.15s ease;
+      transition: background-color 0.15s ease, opacity 0.15s ease, width 0.15s ease;
       
       .#{$component}--secondary & {
         background-color: t.color('secondary');
@@ -240,6 +240,7 @@ $component: '#{base.$prefix}-slider';
       &::before {
         opacity: 0.38;
         background-color: t.color('on-surface');
+        transition: background-color 0.15s ease, opacity 0.15s ease, width 0.15s ease;
       }
     }
   }
