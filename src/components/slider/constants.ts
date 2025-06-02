@@ -63,6 +63,8 @@ export const SLIDER_MEASUREMENTS = {
   DOT_SIZE: 4,
   /** Handle gap pixels */
   HANDLE_GAP: 8,
+  /** Handle gap reduction when pressed in pixels */
+  HANDLE_GAP_PRESSED_REDUCTION: 1,
   /** Center gap pixels for centered sliders */
   CENTER_GAP: 4,
   /** Edge padding in pixels */

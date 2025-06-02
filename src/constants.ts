@@ -196,7 +196,8 @@ import {
   SLIDER_EVENTS,
   SLIDER_POSITIONS,
   SLIDER_DEFAULTS,
-  SLIDER_CLASSES
+  SLIDER_CLASSES,
+  SLIDER_ORIENTATIONS
 } from './components/slider/constants';
 
 import {

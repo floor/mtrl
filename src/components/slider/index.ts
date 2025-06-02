@@ -10,7 +10,8 @@ export {
   SLIDER_EVENTS,
   SLIDER_POSITIONS,
   SLIDER_DEFAULTS,
-  SLIDER_CLASSES
+  SLIDER_CLASSES,
+  SLIDER_ORIENTATIONS
 } from './constants';
 
 // Export types 

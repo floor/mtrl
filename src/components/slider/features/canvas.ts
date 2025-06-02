@@ -51,6 +51,42 @@ interface CanvasSliderComponent {
 }
 
 /**
+ * Converts a color to RGBA with specified opacity
+ * Handles hex, rgb, rgba, and named colors
+ */
+const colorToRGBA = (color: string, opacity: number): string => {
+  // Create a temporary canvas to get computed color
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return `rgba(0, 0, 0, ${opacity})`;
+  
+  // Set the color and get computed value
+  ctx.fillStyle = color;
+  const computedColor = ctx.fillStyle;
+  
+  // Handle hex colors
+  if (computedColor.startsWith('#')) {
+    const hex = computedColor.substring(1);
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  }
+  
+  // Handle rgb/rgba colors
+  if (computedColor.startsWith('rgb')) {
+    const match = computedColor.match(/\d+/g);
+    if (match) {
+      const [r, g, b] = match;
+      return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+    }
+  }
+  
+  // Fallback
+  return `rgba(0, 0, 0, ${opacity})`;
+};
+
+/**
  * Gets the track height value from the size config
  */
 export const getTrackHeight = (size?: SliderSize): number => {
@@ -189,14 +225,14 @@ const drawTracks = (
   // Get colors directly from theme
   const variant = config.color || 'primary';
   const primaryColor = getThemeColor(`sys-color-${variant}`, { fallback: '#1976d2' });
-  const inactiveColor = getThemeColor(`sys-color-${variant}-rgb`, { alpha: 0.24, fallback: 'rgba(25, 118, 210, 0.24)' });
+  const inactiveColor = colorToRGBA(primaryColor, 0.24);
   
   // Get value percentages
   const valuePercent = ((state.value - state.min) / (state.max - state.min)) * 100;
   const adjustedPercent = mapValueToVisualPercent(valuePercent, width);
   
-  // Fixed pixel gaps - instantly reduce by 2px when pressed
-  const gapReduction = state.pressed ? 2 : 0;
+  // Fixed pixel gaps - instantly reduce by HANDLE_GAP_PRESSED_REDUCTION when pressed
+  const gapReduction = state.pressed ? SLIDER_MEASUREMENTS.HANDLE_GAP_PRESSED_REDUCTION : 0;
   const handleGapPixels = SLIDER_MEASUREMENTS.HANDLE_GAP - gapReduction;
   const centerGapPixels = SLIDER_MEASUREMENTS.CENTER_GAP;
   const halfCenterGapPercent = (centerGapPixels / 2 / width) * 100;
@@ -283,8 +319,8 @@ const drawTracks = (
     const firstHandleIsLower = adjustedPercent <= adjustedSecondPercent;
     
     // Apply gap reduction only to the active handle
-    const firstHandleGapReduction = (state.pressed && state.activeHandle === 'first') ? 2 : 0;
-    const secondHandleGapReduction = (state.pressed && state.activeHandle === 'second') ? 2 : 0;
+    const firstHandleGapReduction = (state.pressed && state.activeHandle === 'first') ? SLIDER_MEASUREMENTS.HANDLE_GAP_PRESSED_REDUCTION : 0;
+    const secondHandleGapReduction = (state.pressed && state.activeHandle === 'second') ? SLIDER_MEASUREMENTS.HANDLE_GAP_PRESSED_REDUCTION : 0;
     
     const firstHandleGapPixels = SLIDER_MEASUREMENTS.HANDLE_GAP - firstHandleGapReduction;
     const secondHandleGapPixels = SLIDER_MEASUREMENTS.HANDLE_GAP - secondHandleGapReduction;

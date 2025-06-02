@@ -6,7 +6,6 @@
 @use '../../styles/abstract/theme' as t;
 
 // Define the transition properties for smoother animations with absolute positioning
-$track-transition: left 0.1s ease, right 0.1s ease;
 $handle-transition: left 0.225s cubic-bezier(0.4, 0, 0.2, 1), transform 0.225s cubic-bezier(0.4, 0, 0.2, 1);
 $bubble-transition: left 0.225s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.225s cubic-bezier(0.4, 0, 0.2, 1), visibility 0s linear 0.225s;
 $bubble-transition-visible: left 0.225s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.225s cubic-bezier(0.4, 0, 0.2, 1), visibility 0s;
@@ -464,43 +463,9 @@ $component: '#{base.$prefix}-slider';
     }
   }
   
-  // Sizes
-  &--small {
-    .#{$component}-container {
-      height: 32px;
-    }
-    
-    .#{$component}-handle {
-      &::before {
-        height: 34px;
-      }
-    }
-  }
-  
-  &--medium {
-    .#{$component}-container {
-      height: 40px;
-    }
-  }
-  
-  &--large {
-    .#{$component}-container {
-      height: 48px;
-    }
-    
-    .#{$component}-handle {
-      &::before {
-        height: 48px;
-      }
-    }
-  }
-  
   // For dragging state - visual feedback
   &--dragging {
     // No transitions during dragging for responsive feel
-    .#{$component}-start-track, 
-    .#{$component}-active-track, 
-    .#{$component}-remaining-track, 
     .#{$component}-handle,
     .#{$component}-value {
       transition: none;
