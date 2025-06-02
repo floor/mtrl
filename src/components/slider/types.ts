@@ -1,6 +1,7 @@
 // src/components/slider/types.ts
 
 import { SliderSize } from './constants';
+import { BaseComponentConfig } from '../../core/config/component';
 
 /**
  * Available slider color variants
@@ -38,7 +39,7 @@ export type SliderEventType = 'change' | 'input' | 'focus' | 'blur' | 'start' | 
  * Configuration options for the slider component
  * @interface SliderConfig
  */
-export interface SliderConfig {
+export interface SliderConfig extends BaseComponentConfig {
   /** Minimum value of the slider */
   min?: number;
   

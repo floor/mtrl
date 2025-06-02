@@ -31,6 +31,19 @@ export const withDom = () => component => {
     
     // Use the layout's utility functions to get components
     const components = layout.getAll();
+    
+    // Check for parent/container in component config
+    let container = component.config?.parent || component.config?.container;
+    
+    // Handle string selectors
+    if (typeof container === 'string') {
+      container = document.querySelector(container) as HTMLElement | null;
+    }
+    
+    // Append to container if provided
+    if (container && layout.element) {
+      container.appendChild(layout.element);
+    }
 
     // Return enhanced component with DOM layout
     return {

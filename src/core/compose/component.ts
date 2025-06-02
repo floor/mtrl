@@ -54,6 +54,7 @@ export interface WithElementOptions {
   className?: string | string[];
   forwardEvents?: Record<string, boolean | ((component: any, event: Event) => boolean)>;
   interactive?: boolean;
+  container?: HTMLElement;
 }
 
 /**
@@ -199,6 +200,14 @@ export const withElement = (options: WithElementOptions = {}) =>
     // Get the base component for reference
     const base = component;
 
+    // Check for parent/container in component config
+    let container = component.config.parent || component.config.container || options.container;
+    
+    // Handle string selectors
+    if (typeof container === 'string') {
+      container = document.querySelector(container) as HTMLElement | null;
+    }
+
     // Create element options from component options
     const elementOptions: CreateElementOptions = {
       tag: options.tag || 'div',
@@ -209,7 +218,8 @@ export const withElement = (options: WithElementOptions = {}) =>
       ].filter(Boolean),
       attributes: options.attributes || {},
       forwardEvents: options.forwardEvents || {},
-      context: component // Pass component as context for events
+      context: component, // Pass component as context for events
+      container: container // Pass the container option to createElement
     };
 
     // Create the element with appropriate classes
