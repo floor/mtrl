@@ -12,7 +12,6 @@ export interface BaseComponentConfig {
   className?: string | string[];  // Alternative to class
   rawClass?: string | string[];   // Classes that should not be prefixed
   parent?: HTMLElement | string | null;  // Parent element to append to (element or selector)
-  container?: HTMLElement | string | null;  // Alternative name for parent
   [key: string]: any;
 }
 

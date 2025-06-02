@@ -1,5 +1,7 @@
 // src/components/button/types.ts
 
+import { BaseComponentConfig } from '../../core/config/component';
+
 /**
  * Button variant types - controls the visual style of the button
  * @category Components
@@ -16,7 +18,7 @@ export type ButtonVariant = 'filled' | 'tonal' | 'outlined' | 'elevated' | 'text
  * Configuration interface for the Button component
  * @category Components
  */
-export interface ButtonConfig {
+export interface ButtonConfig extends BaseComponentConfig {
   /** 
    * Button variant that determines visual styling
    * @default 'filled'

@@ -44,9 +44,6 @@ export function createSliderSchema(component, config: SliderConfig) {
             }
           },
           children: {
-            // Canvas will be inserted directly into container
-            // No need for track or ticks elements
-            
             // Main handle (kept as DOM for accessibility)
             handle: {
               options: {
