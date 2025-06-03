@@ -17,6 +17,29 @@ export const BUTTON_VARIANTS = {
 } as const;
 
 /**
+ * Available button size variants matching MD3 specifications
+ * @category Components
+ */
+export const BUTTON_SIZES = {
+  /** Extra small size - 32px height */
+  XS: 'xs',
+  /** Small size - 40px height (default) */
+  S: 's',
+  /** Medium size - 56px height */
+  M: 'm',
+  /** Large size - 96px height */
+  L: 'l',
+  /** Extra large size - 136px height */
+  XL: 'xl'
+} as const;
+
+/**
+ * Button size type
+ * @category Components
+ */
+export type ButtonSize = keyof typeof BUTTON_SIZES;
+
+/**
  * Default button types
  */
 export const BUTTON_TYPES = {

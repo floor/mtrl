@@ -1,6 +1,8 @@
 // src/components/button/types.ts
 
 import { BaseComponentConfig } from '../../core/config/component';
+import { ProgressConfig, ProgressComponent } from '../progress/types';
+import { ButtonSize } from './constants';
 
 /**
  * Button variant types - controls the visual style of the button
@@ -24,6 +26,12 @@ export interface ButtonConfig extends BaseComponentConfig {
    * @default 'filled'
    */
   variant?: ButtonVariant | string;
+  
+  /** 
+   * Button size variant
+   * @default 's'
+   */
+  size?: ButtonSize | string;
   
   /** 
    * Whether the button is initially disabled
@@ -100,6 +108,18 @@ export interface ButtonConfig extends BaseComponentConfig {
    * Required for icon-only buttons without text
    */
   ariaLabel?: string;
+  
+  /**
+   * Progress indicator configuration
+   * When provided, integrates a progress component as the button's icon
+   */
+  progress?: ProgressConfig | boolean;
+  
+  /**
+   * Whether to show progress initially
+   * @default false
+   */
+  showProgress?: boolean;
 }
 
 /**
@@ -216,6 +236,19 @@ export interface ButtonComponent {
   setVariant: (variant: ButtonVariant | string) => ButtonComponent;
   
   /**
+   * Gets the button's current size
+   * @returns Current size name ('xs', 's', 'm', 'l', 'xl')
+   */
+  getSize: () => ButtonSize | string;
+
+  /**
+   * Sets the button's size
+   * @param size - New size to apply ('xs', 's', 'm', 'l', 'xl')
+   * @returns The button component for chaining
+   */
+  setSize: (size: ButtonSize | string) => ButtonComponent;
+  
+  /**
    * Enables the button (removes disabled attribute)
    * @returns The button component for chaining
    */
@@ -309,4 +342,77 @@ export interface ButtonComponent {
    * @returns The button component for chaining
    */
   setAriaLabel: (label: string) => ButtonComponent;
+  
+  /**
+   * Progress component instance (if progress is enabled)
+   */
+  progress?: ProgressComponent;
+  
+  /**
+   * Shows the progress indicator (if progress is enabled)
+   * @returns The button component for chaining
+   */
+  showProgress?: () => Promise<ButtonComponent>;
+  
+  /**
+   * Shows the progress indicator synchronously (if progress is enabled)
+   * @returns The button component for chaining
+   */
+  showProgressSync?: () => ButtonComponent;
+  
+  /**
+   * Hides the progress indicator (if progress is enabled)
+   * @returns The button component for chaining
+   */
+  hideProgress?: () => Promise<ButtonComponent>;
+  
+  /**
+   * Hides the progress indicator synchronously (if progress is enabled)
+   * @returns The button component for chaining
+   */
+  hideProgressSync?: () => ButtonComponent;
+  
+  /**
+   * Sets the progress value (0-100) (if progress is enabled)
+   * @param value - Progress value
+   * @returns The button component for chaining
+   */
+  setProgress?: (value: number) => Promise<ButtonComponent>;
+  
+  /**
+   * Sets the progress value synchronously (0-100) (if progress is enabled)
+   * @param value - Progress value
+   * @returns The button component for chaining
+   */
+  setProgressSync?: (value: number) => ButtonComponent;
+  
+  /**
+   * Sets the progress to indeterminate mode (if progress is enabled)
+   * @param indeterminate - Whether progress should be indeterminate
+   * @returns The button component for chaining
+   */
+  setIndeterminate?: (indeterminate: boolean) => Promise<ButtonComponent>;
+  
+  /**
+   * Sets the progress to indeterminate mode synchronously (if progress is enabled)
+   * @param indeterminate - Whether progress should be indeterminate
+   * @returns The button component for chaining
+   */
+  setIndeterminateSync?: (indeterminate: boolean) => ButtonComponent;
+  
+  /**
+   * Updates both button text and progress for loading states (if progress is enabled)
+   * @param loading - Whether to show loading state
+   * @param text - Optional text to display while loading
+   * @returns The button component for chaining
+   */
+  setLoading?: (loading: boolean, text?: string) => Promise<ButtonComponent>;
+  
+  /**
+   * Updates both button text and progress for loading states synchronously (if progress is enabled)
+   * @param loading - Whether to show loading state
+   * @param text - Optional text to display while loading
+   * @returns The button component for chaining
+   */
+  setLoadingSync?: (loading: boolean, text?: string) => ButtonComponent;
 }

@@ -217,6 +217,47 @@ export const withAPI = ({ disabled, lifecycle }: ApiOptions) =>
     },
 
     /**
+     * Gets the button's current size
+     * @returns Current size name ('xs', 's', 'm', 'l', 'xl')
+     */
+    getSize() {
+      const compName = component.componentName || 'button';
+      const buttonClass = component.getClass(compName);
+      const sizes = ['xs', 's', 'm', 'l', 'xl'];
+      
+      // Check which size class is present on the element
+      for (const size of sizes) {
+        if (component.element.classList.contains(`${buttonClass}--${size}`)) {
+          return size;
+        }
+      }
+      
+      // If no size class is found, return the default size
+      return 's';
+    },
+
+    /**
+     * Sets the button's size
+     * @param size - New size to apply ('xs', 's', 'm', 'l', 'xl')
+     * @returns Button component for method chaining
+     */
+    setSize(size: string) {
+      const compName = component.componentName || 'button';
+      const buttonClass = component.getClass(compName);
+      
+      // First remove all existing size classes
+      const sizeClasses = ['xs', 's', 'm', 'l', 'xl']
+        .map(s => `${buttonClass}--${s}`);
+      
+      sizeClasses.forEach(cls => {
+        component.element.classList.remove(cls);
+      });
+      
+      component.element.classList.add(`${buttonClass}--${size}`);
+      return this;
+    },
+
+    /**
      * Sets the active state of the button
      * Used to visually indicate the button's active state, such as when it has a menu open
      * 

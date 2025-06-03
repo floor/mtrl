@@ -228,7 +228,23 @@ $button: (
   'padding-icon': 16px,
   'border-radius': 20px,
   'transition-duration': map.get($motion, 'duration-short2'),
-  'transition-easing': map.get($motion, 'easing-standard')
+  'transition-easing': map.get($motion, 'easing-standard'),
+  // Size-specific configurations based on MD3 specs
+  'height-xs': 32px,
+  'height-s': 40px,
+  'height-m': 56px,
+  'height-l': 96px,
+  'height-xl': 136px,
+  'padding-xs': 12px,
+  'padding-s': 16px,
+  'padding-m': 24px,
+  'padding-l': 48px,
+  'padding-xl': 64px,
+  'icon-size-xs': 18px,
+  'icon-size-s': 22px,
+  'icon-size-m': 24px,
+  'icon-size-l': 32px,
+  'icon-size-xl': 48px
 ) !default;
 
 

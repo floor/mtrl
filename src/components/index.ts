@@ -61,7 +61,19 @@ export * from './fab';
 export * from './extended-fab';
 export * from './menu';
 export * from './navigation';
-export * from './progress';
+
+// Progress - explicit exports to avoid bundler issues with re-exports
+export {
+  PROGRESS_VARIANTS,
+  PROGRESS_SHAPES,
+  PROGRESS_EVENTS,
+  PROGRESS_DEFAULTS,
+  PROGRESS_CLASSES,
+  PROGRESS_MEASUREMENTS,
+  PROGRESS_THICKNESS
+} from './progress/constants';
+export type { ProgressConfig, ProgressComponent, ProgressShape } from './progress/types';
+
 export * from './radios';
 export * from './search';
 export * from './segmented-button';

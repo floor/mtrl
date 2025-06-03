@@ -7,10 +7,12 @@ import {
   withText,
   withIcon,
   withVariant,
+  withSize,
   withRipple,
   withDisabled,
   withLifecycle
 } from '../../core/compose/features';
+import { withProgress } from './features/progress';
 import { withAPI } from './api';
 import { ButtonConfig } from './types';
 import { createBaseConfig, getElementConfig, getApiConfig } from './config';
@@ -35,6 +37,38 @@ import { createBaseConfig, getElementConfig, getApiConfig } from './config';
  * 
  * @throws {Error} Throws an error if button creation fails for any reason
  * 
+ * @example
+ * ```ts
+ * // Create a button with integrated progress
+ * const submitButton = createButton({
+ *   text: 'Submit',
+ *   variant: 'filled',
+ *   progress: {
+ *     variant: 'circular',
+ *     size: 18,
+ *     indeterminate: true
+ *   }
+ * });
+ * 
+ * // Synchronous usage (common for UI interactions)
+ * submitButton.on('click', () => {
+ *   submitButton.setLoadingSync(true, 'Submitting...');
+ *   
+ *   // Simulate async work
+ *   setTimeout(() => {
+ *     submitButton.setLoadingSync(false, 'Submit');
+ *   }, 2000);
+ * });
+ * 
+ * // Asynchronous usage (when you need to ensure progress is loaded)
+ * submitButton.on('click', async () => {
+ *   await submitButton.setLoading(true, 'Processing...');
+ *   await submitButton.setProgress(50);
+ *   // ... more async operations
+ *   await submitButton.setLoading(false, 'Done');
+ * });
+ * ```
+ * 
  * @category Components
  */
 const createButton = (config: ButtonConfig = {}) => {
@@ -45,9 +79,11 @@ const createButton = (config: ButtonConfig = {}) => {
       withEvents(),
       withElement(getElementConfig(baseConfig)),
       withVariant(baseConfig),
+      withSize(baseConfig),
       withText(baseConfig),
       withIcon(baseConfig),
       withDisabled(baseConfig),
+      withProgress(baseConfig),
       withRipple(baseConfig),
       withLifecycle(),
       comp => withAPI(getApiConfig(comp))(comp)
