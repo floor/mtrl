@@ -9,7 +9,7 @@ import {
 } from '../constants';
 import { getThemeColor } from '../../../core/utils';
 import { PREFIX } from '../../../core/config';
-import { observeCanvasResize } from '../../../core/canvas';
+import { observeCanvasResize } from '../../../core/canvas/resize';
 import { drawCircularProgress } from './circular';
 import { drawLinearProgress } from './linear';
 
@@ -42,13 +42,15 @@ interface CanvasComponent {
  */
 export const getStrokeWidth = (thickness?: string | number): number => {
   if (typeof thickness === 'number') {
-    return Math.max(thickness, PROGRESS_MEASUREMENTS.LINEAR.MIN_HEIGHT);
+    // Return the exact value provided - don't enforce a minimum
+    // This allows small progress indicators (like in buttons) to use thin strokes
+    return thickness;
   }
   
   if (typeof thickness === 'string') {
     const numValue = parseFloat(thickness);
     if (!isNaN(numValue)) {
-      return Math.max(numValue, PROGRESS_MEASUREMENTS.LINEAR.MIN_HEIGHT);
+      return numValue;
     }
     return thickness === 'thick' ? PROGRESS_THICKNESS.THICK : PROGRESS_THICKNESS.THIN;
   }
