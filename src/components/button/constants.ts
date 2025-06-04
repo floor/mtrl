@@ -17,6 +17,46 @@ export const BUTTON_VARIANTS = {
 } as const;
 
 /**
+ * Available button size variants matching MD3 specifications
+ * @category Components
+ */
+export const BUTTON_SIZES = {
+  /** Extra small size - 32px height */
+  XS: 'xs',
+  /** Small size - 40px height (default) */
+  S: 's',
+  /** Medium size - 56px height */
+  M: 'm',
+  /** Large size - 96px height */
+  L: 'l',
+  /** Extra large size - 136px height */
+  XL: 'xl'
+} as const;
+
+/**
+ * Button size type
+ * @category Components
+ */
+export type ButtonSize = keyof typeof BUTTON_SIZES;
+
+/**
+ * Available button shape variants
+ * @category Components
+ */
+export const BUTTON_SHAPES = {
+  /** Round shape - pill-shaped buttons (default) */
+  ROUND: 'round',
+  /** Square shape - buttons with size-specific corner radius */
+  SQUARE: 'square'
+} as const;
+
+/**
+ * Button shape type
+ * @category Components
+ */
+export type ButtonShape = keyof typeof BUTTON_SHAPES;
+
+/**
  * Default button types
  */
 export const BUTTON_TYPES = {

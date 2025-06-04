@@ -42,7 +42,10 @@ export * from './layout';
 // 5. Collection
 export * from './collection';
 
-// 6. Config and constants
+// 6. Canvas utilities
+export * from './canvas';
+
+// 7. Config and constants
 export { 
   PREFIX, 
   COMPONENTS, 
@@ -76,7 +79,7 @@ export {
   getInheritedBackground
 } from './utils';
 
-// 8. Gesture system
+// 9. Gesture system
 export { createGestureManager } from './gestures';
 export type {
   GestureManager,

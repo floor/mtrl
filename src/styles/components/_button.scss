@@ -7,6 +7,19 @@
 
 $component: '#{base.$prefix}-button';
 
+// =============================================================================
+// BUTTON COMPONENT STYLES
+// =============================================================================
+// Supports:
+// - Multiple variants (filled, elevated, tonal, outlined, text)
+// - Icon integration
+// - Progress indicator integration
+// - Circular/icon-only buttons
+// - Ripple effects
+// - State layers
+// - Accessibility focus indicators
+// =============================================================================
+
 .#{$component} {
   // Base styles
   position: relative;
@@ -31,6 +44,9 @@ $component: '#{base.$prefix}-button';
   
   // Typography
   @include m.typography('label-large');
+  
+  // Default to round shape (pill-shaped)
+  border-radius: v.button('border-radius');
   
   // Explicitly apply fast transition to border-radius
   transition: 
@@ -80,16 +96,47 @@ $component: '#{base.$prefix}-button';
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 18px;
-    height: 18px;
+    width: 22px;
+    height: 22px;
     
     svg {
-      width: 18px;
-      height: 18px;
+      width: 22px;
+      height: 22px;
     }
     
     + .#{$component}-text {
       margin-left: 8px;
+    }
+  }
+
+  // Progress element styling
+  &-progress {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-inline-end: 8px;
+    width: 20px;
+    height: 20px;
+    
+    // When it's the mtrl-progress element itself
+    &.#{base.$prefix}-progress {
+      // Reset progress default size since we're setting it here
+      width: 20px;
+      height: 20px;
+      
+      &-canvas {
+        color: currentColor;
+      }
+    }
+    
+    // In text-only buttons (no icon), progress acts like an icon
+    &:first-child {
+      margin-inline-start: 0;
+    }
+    
+    // When following a visible icon, add left margin too
+    .#{$component}-icon:not([style*="display: none"]) + & {
+      margin-inline-start: 4px;
     }
   }
   
@@ -112,19 +159,327 @@ $component: '#{base.$prefix}-button';
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    
+    // Material Design 3 Accessibility Requirement:
+    // Icon buttons must have a minimum touch target of 48x48dp
+    // even when their visual size appears smaller
+    
+    // Circular buttons should always remain circular when pressed
+    &:active,
+    &.#{$component}--active {
+      border-radius: 50% !important;
+    }
+    
+    // Size-specific circular button dimensions
+    &.#{$component}--xs {
+      // Ensure minimum 48dp touch target for accessibility
+      width: 48px;
+      height: 48px;
+      padding: 8px;
+      
+      // Adjust icon size to maintain visual proportions
+      .#{$component}-icon {
+        width: v.button('icon-size-xs');
+        height: v.button('icon-size-xs');
+        
+        svg {
+          width: v.button('icon-size-xs');
+          height: v.button('icon-size-xs');
+        }
+      }
+    }
+    
+    &.#{$component}--s {
+      // Ensure minimum 48dp touch target for accessibility
+      width: 48px;
+      height: 48px;
+      padding: 8px;
+      
+      // Standard icon size for S
+      .#{$component}-icon {
+        width: v.button('icon-size-s');
+        height: v.button('icon-size-s');
+        
+        svg {
+          width: v.button('icon-size-s');
+          height: v.button('icon-size-s');
+        }
+      }
+    }
+    
+    &.#{$component}--m {
+      width: v.button('height-m');
+      height: v.button('height-m');
+      padding: 12px;
+    }
+    
+    &.#{$component}--l {
+      width: v.button('height-l');
+      height: v.button('height-l');
+      padding: 20px;
+    }
+    
+    &.#{$component}--xl {
+      width: v.button('height-xl');
+      height: v.button('height-xl');
+      padding: 32px;
+    }
 
     .#{$component}-icon {
       margin: 0;
     }
+    
+    // Hide text in circular buttons
     .#{$component}-text {
       display: none;
     }
     
-    // Allow the border-radius transition to work naturally
+    // Progress in circular buttons
+    .#{$component}-progress {
+      margin: 0;
+      
+      &.#{base.$prefix}-progress {
+        width: 24px;
+        height: 24px;
+      }
+    }
+    
+    // Override padding adjustments for circular buttons
+    &.#{$component}--progress {
+      padding: 8px;
+    }
   }
   
   &--icon {
     padding: 0 v.button('padding-horizontal') 0 calc(v.button('padding-horizontal') / 2 + 4px);
+  }
+  
+  // Shape variants
+  &--round {
+    // Default round shape - already applied in base styles
+    // Sizes M, L, XL get special pill-shaped radius
+    &.#{$component}--m {
+      border-radius: calc(v.button('height-m') / 2);
+    }
+    
+    &.#{$component}--l {
+      border-radius: calc(v.button('height-l') / 2);
+    }
+    
+    &.#{$component}--xl {
+      border-radius: calc(v.button('height-xl') / 2);
+    }
+  }
+  
+  &--square {
+    // Square shape with size-specific border radius
+    &.#{$component}--xs,
+    &.#{$component}--s {
+      border-radius: f.get-shape('medium'); // 12dp
+    }
+    
+    &.#{$component}--m {
+      border-radius: f.get-shape('large'); // 16dp
+    }
+    
+    &.#{$component}--l,
+    &.#{$component}--xl {
+      border-radius: f.get-shape('extra-large'); // 28dp
+    }
+    
+    // Pressed state for square buttons - no morphing needed
+    &:active,
+    &.#{$component}--active {
+      // Square buttons maintain their border radius when pressed
+    }
+  }
+  
+  // Size variants
+  &--xs {
+    height: v.button('height-xs');
+    padding: 0 v.button('padding-xs');
+    min-width: 48px;
+    
+    &.#{$component}--icon {
+      padding: 0 v.button('padding-xs') 0 calc(v.button('padding-xs') / 2 + 4px);
+    }
+    
+    &.#{$component}--progress {
+      padding: 0 v.button('padding-xs') 0 calc(v.button('padding-xs') / 2 + 4px);
+    }
+    
+    &.#{$component}--text {
+      padding: 0 calc(v.button('padding-xs') - 4px);
+    }
+    
+    .#{$component}-icon {
+      width: v.button('icon-size-xs');
+      height: v.button('icon-size-xs');
+      
+      svg {
+        width: v.button('icon-size-xs');
+        height: v.button('icon-size-xs');
+      }
+    }
+    
+    .#{$component}-progress {
+      width: v.button('icon-size-xs');
+      height: v.button('icon-size-xs');
+      
+      &.#{base.$prefix}-progress {
+        width: v.button('icon-size-xs');
+        height: v.button('icon-size-xs');
+      }
+    }
+  }
+
+  &--s {
+    // S is the default size, already defined in base styles
+    // Explicitly setting them here for clarity
+    height: v.button('height-s');
+    padding: 0 v.button('padding-s');
+    
+    &.#{$component}--icon {
+      padding: 0 v.button('padding-s') 0 calc(v.button('padding-s') / 2 + 4px);
+    }
+    
+    &.#{$component}--progress {
+      padding: 0 v.button('padding-s') 0 calc(v.button('padding-s') / 2 + 4px);
+    }
+    
+    &.#{$component}--text {
+      padding: 0 v.button('padding-horizontal-small');
+    }
+  }
+
+  &--m {
+    height: v.button('height-m');
+    padding: 0 v.button('padding-m');
+    min-width: 80px;
+    
+    &.#{$component}--icon {
+      padding: 0 v.button('padding-m') 0 calc(v.button('padding-m') / 2 + 8px);
+    }
+    
+    &.#{$component}--progress {
+      padding: 0 v.button('padding-m') 0 calc(v.button('padding-m') / 2 + 8px);
+    }
+    
+    &.#{$component}--text {
+      padding: 0 calc(v.button('padding-m') - 4px);
+    }
+    
+    .#{$component}-icon {
+      width: v.button('icon-size-m');
+      height: v.button('icon-size-m');
+      
+      svg {
+        width: v.button('icon-size-m');
+        height: v.button('icon-size-m');
+      }
+    }
+    
+    .#{$component}-progress {
+      width: v.button('icon-size-m');
+      height: v.button('icon-size-m');
+      
+      &.#{base.$prefix}-progress {
+        width: v.button('icon-size-m');
+        height: v.button('icon-size-m');
+      }
+    }
+  }
+
+  &--l {
+    height: v.button('height-l');
+    padding: 0 v.button('padding-l');
+    min-width: 120px;
+    
+    // Use larger typography for L and XL sizes
+    @include m.typography('title-large');
+    
+    &.#{$component}--icon {
+      padding: 0 v.button('padding-l') 0 calc(v.button('padding-l') / 2 + 12px);
+    }
+    
+    &.#{$component}--progress {
+      padding: 0 v.button('padding-l') 0 calc(v.button('padding-l') / 2 + 12px);
+    }
+    
+    &.#{$component}--text {
+      padding: 0 calc(v.button('padding-l') - 8px);
+    }
+    
+    .#{$component}-icon {
+      width: v.button('icon-size-l');
+      height: v.button('icon-size-l');
+      
+      svg {
+        width: v.button('icon-size-l');
+        height: v.button('icon-size-l');
+      }
+      
+      + .#{$component}-text {
+        margin-left: 16px;
+      }
+    }
+    
+    .#{$component}-progress {
+      width: v.button('icon-size-l');
+      height: v.button('icon-size-l');
+      margin-inline-end: 16px;
+      
+      &.#{base.$prefix}-progress {
+        width: v.button('icon-size-l');
+        height: v.button('icon-size-l');
+      }
+    }
+  }
+
+  &--xl {
+    height: v.button('height-xl');
+    padding: 0 v.button('padding-xl');
+    min-width: 160px;
+    
+    // Use larger typography for L and XL sizes
+    @include m.typography('headline-medium');
+    
+    &.#{$component}--icon {
+      padding: 0 v.button('padding-xl') 0 calc(v.button('padding-xl') / 2 + 16px);
+    }
+    
+    &.#{$component}--progress {
+      padding: 0 v.button('padding-xl') 0 calc(v.button('padding-xl') / 2 + 16px);
+    }
+    
+    &.#{$component}--text {
+      padding: 0 calc(v.button('padding-xl') - 12px);
+    }
+    
+    .#{$component}-icon {
+      width: v.button('icon-size-xl');
+      height: v.button('icon-size-xl');
+      
+      svg {
+        width: v.button('icon-size-xl');
+        height: v.button('icon-size-xl');
+      }
+      
+      + .#{$component}-text {
+        margin-left: 24px;
+      }
+    }
+    
+    .#{$component}-progress {
+      width: v.button('icon-size-xl');
+      height: v.button('icon-size-xl');
+      margin-inline-end: 24px;
+      
+      &.#{base.$prefix}-progress {
+        width: v.button('icon-size-xl');
+        height: v.button('icon-size-xl');
+      }
+    }
   }
   
   &--active {
@@ -132,6 +487,7 @@ $component: '#{base.$prefix}-button';
     box-shadow: none;
     
     // Per MD3, buttons have a significantly more rectangular appearance when pressed
+    // Default to small shape
     border-radius: f.get-shape('small');
     
     // ARIA attribute to indicate active state for accessibility
@@ -140,10 +496,45 @@ $component: '#{base.$prefix}-button';
     }
   }
 
+  // Size-specific active state border radius based on MD3 specs
+  // Only applies to round shape buttons - square buttons maintain their radius
+  &--round {
+    &.#{$component}--xs,
+    &.#{$component}--s {
+      &:active,
+      &.#{$component}--active {
+        // XS and S sizes use 12dp radius when pressed
+        border-radius: f.get-shape('medium');
+      }
+    }
+    
+    &.#{$component}--m {
+      &:active,
+      &.#{$component}--active {
+        // M size uses 16dp radius when pressed
+        border-radius: f.get-shape('large');
+      }
+    }
+    
+    &.#{$component}--l,
+    &.#{$component}--xl {
+      &:active,
+      &.#{$component}--active {
+        // L and XL sizes use 28dp radius when pressed
+        border-radius: f.get-shape('extra-large');
+      }
+    }
+  }
+
   // FILLED BUTTON
   &--filled {
     background-color: t.color('primary');
     color: t.color('on-primary');
+    
+    // Progress inherits the on-primary color
+    .#{base.$prefix}-progress-canvas {
+      color: t.color('on-primary');
+    }
     
     &:hover {
       @include m.state-layer(t.color('on-primary'), 'hover');
@@ -156,8 +547,6 @@ $component: '#{base.$prefix}-button';
       @include m.state-layer(t.color('on-primary'), 'pressed');
       // MD3 reduces elevation on press
       @include m.elevation(0);
-      // MD3 uses a much more rectangular shape when pressed
-      border-radius: f.get-shape('small');
     }
     &:disabled {
       @include m.elevation(0);
@@ -170,6 +559,11 @@ $component: '#{base.$prefix}-button';
     color: t.color('primary');
     @include m.elevation(1);
     
+    // Progress uses primary color
+    .#{base.$prefix}-progress-canvas {
+      color: t.color('primary');
+    }
+    
     &:hover {
       @include m.state-layer(t.color('primary'), 'hover');
       // MD3 increases elevation on hover
@@ -181,8 +575,6 @@ $component: '#{base.$prefix}-button';
       @include m.state-layer(t.color('primary'), 'pressed');
       // MD3 reduces elevation on press, but not completely removed
       @include m.elevation(1);
-      // MD3 uses a much more rectangular shape when pressed
-      border-radius: f.get-shape('small');
     }
     
     &:disabled {
@@ -203,6 +595,11 @@ $component: '#{base.$prefix}-button';
     // MD3 tonal buttons have a subtle initial elevation
     @include m.elevation(0);
     
+    // Progress uses on-secondary-container color
+    .#{base.$prefix}-progress-canvas {
+      color: t.color('on-secondary-container');
+    }
+    
     &:hover {
       @include m.state-layer(t.color('on-secondary-container'), 'hover');
       // MD3 tonal buttons have elevation on hover
@@ -214,8 +611,6 @@ $component: '#{base.$prefix}-button';
       @include m.state-layer(t.color('on-secondary-container'), 'pressed');
       // MD3 reduces elevation on press
       @include m.elevation(0);
-      // MD3 uses a much more rectangular shape when pressed
-      border-radius: f.get-shape('small');
     }
     
     &:disabled {
@@ -225,8 +620,13 @@ $component: '#{base.$prefix}-button';
   
   // OUTLINED BUTTON
   &--outlined {
-    border: 1px solid t.color('outline');
+    border: 1px solid rgba(var(--mtrl-sys-color-outline-rgb), 0.38);
     color: t.color('primary');
+    
+    // Progress uses primary color
+    .#{base.$prefix}-progress-canvas {
+      color: t.color('primary');
+    }
     
     &:hover {
       @include m.state-layer(t.color('primary'), 'hover');
@@ -235,8 +635,6 @@ $component: '#{base.$prefix}-button';
     &:active,
     &.#{$component}--active {
       @include m.state-layer(t.color('primary'), 'pressed');
-      // MD3 uses a much more rectangular shape when pressed
-      border-radius: f.get-shape('small');
     }
     
     &:disabled {
@@ -250,6 +648,11 @@ $component: '#{base.$prefix}-button';
     padding: 0 v.button('padding-horizontal-small');
     color: t.color('primary');
     
+    // Progress uses primary color
+    .#{base.$prefix}-progress-canvas {
+      color: t.color('primary');
+    }
+    
     &:hover {
       @include m.state-layer(t.color('primary'), 'hover');
     }
@@ -257,8 +660,6 @@ $component: '#{base.$prefix}-button';
     &:active,
     &.#{$component}--active {
       @include m.state-layer(t.color('primary'), 'pressed');
-      // MD3 uses a much more rectangular shape when pressed
-      border-radius: f.get-shape('small');
     }
     
     &:disabled {
@@ -272,6 +673,35 @@ $component: '#{base.$prefix}-button';
     width: v.button('height');
     padding: 0;
     border-radius: 50%;
+  }
+
+  // When button has progress showing
+  &--progress {
+    // Reduce left padding when progress is showing, similar to icon buttons
+    padding: 0 v.button('padding-horizontal') 0 calc(v.button('padding-horizontal') / 2 + 4px);
+    
+    // Per MD3, round buttons have a significantly more rectangular appearance when progress (active) is showing
+    // Square buttons maintain their standard border radius
+    &.#{$component}--round {
+      &.#{$component}--xs,
+      &.#{$component}--s {
+        border-radius: f.get-shape('medium') !important;
+      }
+      
+      &.#{$component}--m {
+        border-radius: f.get-shape('large') !important;
+      }
+      
+      &.#{$component}--l,
+      &.#{$component}--xl {
+        border-radius: f.get-shape('extra-large') !important;
+      }
+    }
+
+    // If button also has an icon, use even less left padding
+    &.#{$component}--icon {
+      padding: 0 v.button('padding-horizontal') 0 calc(v.button('padding-horizontal') / 2);
+    }
   }
 }
 
@@ -290,6 +720,26 @@ body[data-theme-mode=dark] {
         opacity: 0.38;
         color: t.alpha('on-surface-dim', 0.12);
       }
+    }
+  }
+}
+
+// Add loading state styles
+.#{$component} {
+  // Loading state animations
+  &[disabled] {
+    &.#{$component}--progress {
+      .#{$component}-progress {
+        // Ensure progress is visible in disabled state
+        opacity: 0.7;
+      }
+    }
+  }
+  
+  // Smooth transitions when showing/hiding progress
+  .#{$component}-progress {
+    &.#{base.$prefix}-progress {
+      transition: opacity v.motion('duration-short2') v.motion('easing-standard');
     }
   }
 }

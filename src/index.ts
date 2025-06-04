@@ -48,6 +48,8 @@ export {
   BUTTON_VARIANTS,
   BUTTON_TYPES,
   BUTTON_CLASSES,
+  BUTTON_SIZES,
+  BUTTON_SHAPES,
   DEFAULT_RIPPLE_CONFIG,
   
   // Card related constants
