@@ -12,7 +12,11 @@ export * from './core';
 import { 
   addClass, removeClass, hasClass, toggleClass,
   throttle, debounce, once, 
-  PREFIX
+  PREFIX,
+  setComponentDefaults,
+  getComponentDefaults,
+  setGlobalDefaults,
+  clearGlobalDefaults
 } from './core';
 
 import { createLayout } from './core/layout';
@@ -22,7 +26,12 @@ export {
   addClass, removeClass, hasClass, toggleClass,
   throttle, debounce, once,
   createLayout,
-  PREFIX
+  PREFIX,
+  // Global configuration functions
+  setComponentDefaults,
+  getComponentDefaults,
+  setGlobalDefaults,
+  clearGlobalDefaults
 };
 
 import { createJsxLayout, h, Fragment } from './core/layout/jsx';

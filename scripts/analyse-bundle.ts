@@ -24,7 +24,7 @@ const SRC_DIR = './src';
 const ANALYSIS_DIR = './analysis';
 const TEMP_DIR = join(ANALYSIS_DIR, 'temp');
 const COMPONENTS_DIR = join(SRC_DIR, 'components');
-const CORE_MODULES = ['compose', 'dom', 'state', 'config', 'utils', 'build'];
+const CORE_MODULES = ['compose', 'dom', 'state', 'utils'];
 
 // CLI options
 const DETAILED_ANALYSIS = process.argv.includes('--detailed');
@@ -35,8 +35,16 @@ const COMPONENT_METADATA = {
   button: { name: 'Button', description: 'Basic interactive button component' },
   checkbox: { name: 'Checkbox', description: 'Form checkbox component' },
   slider: { name: 'Slider', description: 'Range slider input component' },
-  menu: { name: 'Menu', description: 'Dropdown menu component' }
-  // Add other components here
+  menu: { name: 'Menu', description: 'Dropdown menu component' },
+  textfield: { name: 'Text Field', description: 'Input field component' },
+  switch: { name: 'Switch', description: 'Toggle switch component' },
+  radios: { name: 'Radio', description: 'Radio button component' },
+  fab: { name: 'FAB', description: 'Floating action button' },
+  card: { name: 'Card', description: 'Material card component' },
+  dialog: { name: 'Dialog', description: 'Modal dialog component' },
+  snackbar: { name: 'Snackbar', description: 'Notification component' },
+  tooltip: { name: 'Tooltip', description: 'Contextual tooltip component' },
+  badge: { name: 'Badge', description: 'Notification badge component' }
 };
 
 // Helper function to ensure a directory exists
@@ -255,37 +263,50 @@ async function analyzeCoreModules() {
   return modules;
 }
 
-// Generate a visual bar in markdown
+// Generate a visual bar in markdown with proper bounds checking
 function generateMarkdownBar(percentage, width = 20) {
-  const filledChars = Math.round((percentage / 100) * width);
-  const emptyChars = width - filledChars;
+  // Ensure percentage is a valid number and within bounds
+  const validPercentage = Math.max(0, Math.min(100, parseFloat(percentage) || 0));
+  const filledChars = Math.round((validPercentage / 100) * width);
+  const emptyChars = Math.max(0, width - filledChars);
   
   return '█'.repeat(filledChars) + '░'.repeat(emptyChars);
+}
+
+// Calculate safe percentage with bounds checking
+function calculatePercentage(value, total) {
+  if (!total || total === 0 || !value || isNaN(value) || isNaN(total)) {
+    return '0.0';
+  }
+  return ((value / total) * 100).toFixed(1);
 }
 
 // Generate a detailed Markdown report
 async function generateMarkdownReport(data) {
   console.log('Generating Markdown report...');
   
+  // Get total size safely
+  const totalSize = data.main.total.raw || 1; // Avoid division by zero
+  
   // Sort components by size for reporting
   const sortedComponents = Object.entries(data.components || {})
+    .filter(([_, comp]) => comp.raw > 0) // Filter out empty components
     .sort((a, b) => b[1].raw - a[1].raw)
-    .map(([id, comp]) => ({ id, ...comp }));
+    .map(([id, comp]) => ({
+      id,
+      ...comp,
+      percentage: calculatePercentage(comp.raw, totalSize)
+    }));
   
   // Sort core modules by size for reporting
   const sortedModules = Object.entries(data.core || {})
+    .filter(([_, mod]) => mod.raw > 0) // Filter out empty modules
     .sort((a, b) => b[1].raw - a[1].raw)
-    .map(([id, mod]) => ({ id, ...mod }));
-  
-  // Calculate percentages for visualization
-  const totalSize = data.main.total.raw || 1; // Avoid division by zero
-  sortedComponents.forEach(comp => {
-    comp.percentage = ((comp.raw / totalSize) * 100).toFixed(1);
-  });
-  
-  sortedModules.forEach(mod => {
-    mod.percentage = ((mod.raw / totalSize) * 100).toFixed(1);
-  });
+    .map(([id, mod]) => ({
+      id,
+      ...mod,
+      percentage: calculatePercentage(mod.raw, totalSize)
+    }));
   
   // Generate Markdown content
   let markdown = `# mtrl Bundle Analysis Report
@@ -319,7 +340,7 @@ Individual component sizes and their contribution to the total bundle.
 `;
 
     sortedComponents.forEach(comp => {
-      markdown += `| **${comp.name}** | ${comp.description || ''} | ${formatBytes(comp.raw)} | ${formatBytes(comp.gzipped)} | ${comp.percentage}% | ${generateMarkdownBar(parseFloat(comp.percentage))} |\n`;
+      markdown += `| **${comp.name}** | ${comp.description || 'Component'} | ${formatBytes(comp.raw)} | ${formatBytes(comp.gzipped)} | ${comp.percentage}% | ${generateMarkdownBar(comp.percentage)} |\n`;
     });
   }
 
@@ -334,7 +355,7 @@ Size of core utility modules used across components.
 `;
 
     sortedModules.forEach(mod => {
-      markdown += `| **${mod.name}** | ${formatBytes(mod.raw)} | ${formatBytes(mod.gzipped)} | ${mod.percentage}% | ${generateMarkdownBar(parseFloat(mod.percentage))} |\n`;
+      markdown += `| **${mod.name}** | ${formatBytes(mod.raw)} | ${formatBytes(mod.gzipped)} | ${mod.percentage}% | ${generateMarkdownBar(mod.percentage)} |\n`;
     });
   } else if (!DETAILED_ANALYSIS) {
     markdown += `

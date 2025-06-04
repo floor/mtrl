@@ -27,7 +27,8 @@ export const defaultConfig: ButtonConfig = {
 
 /**
  * Creates the base configuration for Button component by merging user-provided
- * config with default values.
+ * config with default values. Global configuration is automatically applied
+ * by createComponentConfig.
  * 
  * @param {ButtonConfig} config - User provided configuration
  * @returns {ButtonConfig} Complete configuration with defaults applied

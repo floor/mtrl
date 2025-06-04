@@ -53,7 +53,16 @@ export {
   getElementClass
 } from './config';
 
-// 7. Utility functions
+// Export global configuration system
+export {
+  setComponentDefaults,
+  getComponentDefaults,
+  setGlobalDefaults,
+  clearGlobalDefaults,
+  type ComponentConfigMap
+} from './config/global';
+
+// 8. Utility functions
 export { 
   when, 
   classNames as joinClasses, 
@@ -93,3 +102,5 @@ export type {
 } from './config';
 
 export type { NormalizedEvent } from './utils/mobile';
+
+// Re-export useful TypeScript types

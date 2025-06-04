@@ -1,5 +1,6 @@
 // src/core/config/component-config.ts
 import { PREFIX } from '../config';
+import { getComponentDefaults } from './global';
 
 /**
  * Base component configuration interface
@@ -17,6 +18,7 @@ export interface BaseComponentConfig {
 
 /**
  * Creates a base configuration for any component
+ * Automatically merges global defaults if available
  * 
  * @param {BaseComponentConfig} defaults - Default configuration for the component
  * @param {BaseComponentConfig} userConfig - User provided configuration
@@ -33,13 +35,20 @@ export const createComponentConfig = (
   userConfig: BaseComponentConfig = {}, 
   componentName: string
 ): BaseComponentConfig => {
+  // Get global defaults for this component (if any)
+  const globalDefaults = getComponentDefaults(componentName as any);
+  
   // First check for className, fall back to class
   const userClassName = userConfig.className !== undefined ? userConfig.className : userConfig.class;
   const defaultClassName = defaults.className !== undefined ? defaults.className : defaults.class;
   
-  // Create a new object with defaults and user config
+  // Create a new object with proper precedence:
+  // 1. Component defaults (lowest priority)
+  // 2. Global defaults (medium priority)
+  // 3. User config (highest priority)
   const config = {
     ...defaults,
+    ...globalDefaults,
     ...userConfig,
     // Force these values to ensure consistency
     componentName,
