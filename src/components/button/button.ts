@@ -50,6 +50,14 @@ import { createBaseConfig, getElementConfig, getApiConfig } from './config';
  *   }
  * });
  * 
+ * // Create a square button with different sizes
+ * const squareButton = createButton({
+ *   text: 'Square Button',
+ *   variant: 'tonal',
+ *   shape: 'square',
+ *   size: 'm'  // Square buttons have size-specific corner radius
+ * });
+ * 
  * // Synchronous usage (common for UI interactions)
  * submitButton.on('click', () => {
  *   submitButton.setLoadingSync(true, 'Submitting...');
@@ -86,6 +94,13 @@ const createButton = (config: ButtonConfig = {}) => {
       withProgress(baseConfig),
       withRipple(baseConfig),
       withLifecycle(),
+      (component) => {
+        if (baseConfig.shape && component.element) {
+          const className = `${baseConfig.prefix}-${baseConfig.componentName}--${baseConfig.shape}`;
+          component.element.classList.add(className);
+        }
+        return component;
+      },
       comp => withAPI(getApiConfig(comp))(comp)
     )(baseConfig);
     return button;

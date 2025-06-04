@@ -40,6 +40,23 @@ export const BUTTON_SIZES = {
 export type ButtonSize = keyof typeof BUTTON_SIZES;
 
 /**
+ * Available button shape variants
+ * @category Components
+ */
+export const BUTTON_SHAPES = {
+  /** Round shape - pill-shaped buttons (default) */
+  ROUND: 'round',
+  /** Square shape - buttons with size-specific corner radius */
+  SQUARE: 'square'
+} as const;
+
+/**
+ * Button shape type
+ * @category Components
+ */
+export type ButtonShape = keyof typeof BUTTON_SHAPES;
+
+/**
  * Default button types
  */
 export const BUTTON_TYPES = {

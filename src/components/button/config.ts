@@ -5,7 +5,7 @@ import {
   BaseComponentConfig 
 } from '../../core/config/component';
 import { ButtonConfig } from './types';
-import { BUTTON_VARIANTS, BUTTON_TYPES, DEFAULT_RIPPLE_CONFIG, BUTTON_SIZES } from './constants';
+import { BUTTON_VARIANTS, BUTTON_TYPES, DEFAULT_RIPPLE_CONFIG, BUTTON_SIZES, BUTTON_SHAPES } from './constants';
 
 /**
  * Default configuration for the Button component.
@@ -16,6 +16,7 @@ import { BUTTON_VARIANTS, BUTTON_TYPES, DEFAULT_RIPPLE_CONFIG, BUTTON_SIZES } fr
 export const defaultConfig: ButtonConfig = {
   variant: BUTTON_VARIANTS.FILLED,
   size: BUTTON_SIZES.S,
+  shape: BUTTON_SHAPES.ROUND,
   disabled: false,
   type: BUTTON_TYPES.BUTTON,
   ripple: true,  // Explicitly enable ripple effects by default

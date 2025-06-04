@@ -45,6 +45,9 @@ $component: '#{base.$prefix}-button';
   // Typography
   @include m.typography('label-large');
   
+  // Default to round shape (pill-shaped)
+  border-radius: v.button('border-radius');
+  
   // Explicitly apply fast transition to border-radius
   transition: 
     background-color v.motion('duration-short2') v.motion('easing-standard'),
@@ -251,6 +254,46 @@ $component: '#{base.$prefix}-button';
     padding: 0 v.button('padding-horizontal') 0 calc(v.button('padding-horizontal') / 2 + 4px);
   }
   
+  // Shape variants
+  &--round {
+    // Default round shape - already applied in base styles
+    // Sizes M, L, XL get special pill-shaped radius
+    &.#{$component}--m {
+      border-radius: calc(v.button('height-m') / 2);
+    }
+    
+    &.#{$component}--l {
+      border-radius: calc(v.button('height-l') / 2);
+    }
+    
+    &.#{$component}--xl {
+      border-radius: calc(v.button('height-xl') / 2);
+    }
+  }
+  
+  &--square {
+    // Square shape with size-specific border radius
+    &.#{$component}--xs,
+    &.#{$component}--s {
+      border-radius: f.get-shape('medium'); // 12dp
+    }
+    
+    &.#{$component}--m {
+      border-radius: f.get-shape('large'); // 16dp
+    }
+    
+    &.#{$component}--l,
+    &.#{$component}--xl {
+      border-radius: f.get-shape('extra-large'); // 28dp
+    }
+    
+    // Pressed state for square buttons - no morphing needed
+    &:active,
+    &.#{$component}--active {
+      // Square buttons maintain their border radius when pressed
+    }
+  }
+  
   // Size variants
   &--xs {
     height: v.button('height-xs');
@@ -313,7 +356,6 @@ $component: '#{base.$prefix}-button';
     height: v.button('height-m');
     padding: 0 v.button('padding-m');
     min-width: 80px;
-    border-radius: calc(v.button('height-m') / 2);
     
     &.#{$component}--icon {
       padding: 0 v.button('padding-m') 0 calc(v.button('padding-m') / 2 + 8px);
@@ -352,7 +394,6 @@ $component: '#{base.$prefix}-button';
     height: v.button('height-l');
     padding: 0 v.button('padding-l');
     min-width: 120px;
-    border-radius: calc(v.button('height-l') / 2);
     
     // Use larger typography for L and XL sizes
     @include m.typography('title-large');
@@ -399,7 +440,6 @@ $component: '#{base.$prefix}-button';
     height: v.button('height-xl');
     padding: 0 v.button('padding-xl');
     min-width: 160px;
-    border-radius: calc(v.button('height-xl') / 2);
     
     // Use larger typography for L and XL sizes
     @include m.typography('headline-medium');
@@ -457,29 +497,32 @@ $component: '#{base.$prefix}-button';
   }
 
   // Size-specific active state border radius based on MD3 specs
-  &--xs,
-  &--s {
-    &:active,
-    &.#{$component}--active {
-      // XS and S sizes use 12dp radius when pressed
-      border-radius: f.get-shape('medium');
+  // Only applies to round shape buttons - square buttons maintain their radius
+  &--round {
+    &.#{$component}--xs,
+    &.#{$component}--s {
+      &:active,
+      &.#{$component}--active {
+        // XS and S sizes use 12dp radius when pressed
+        border-radius: f.get-shape('medium');
+      }
     }
-  }
-  
-  &--m {
-    &:active,
-    &.#{$component}--active {
-      // M size uses 16dp radius when pressed
-      border-radius: f.get-shape('large');
+    
+    &.#{$component}--m {
+      &:active,
+      &.#{$component}--active {
+        // M size uses 16dp radius when pressed
+        border-radius: f.get-shape('large');
+      }
     }
-  }
-  
-  &--l,
-  &--xl {
-    &:active,
-    &.#{$component}--active {
-      // L and XL sizes use 28dp radius when pressed
-      border-radius: f.get-shape('extra-large');
+    
+    &.#{$component}--l,
+    &.#{$component}--xl {
+      &:active,
+      &.#{$component}--active {
+        // L and XL sizes use 28dp radius when pressed
+        border-radius: f.get-shape('extra-large');
+      }
     }
   }
 
@@ -637,20 +680,22 @@ $component: '#{base.$prefix}-button';
     // Reduce left padding when progress is showing, similar to icon buttons
     padding: 0 v.button('padding-horizontal') 0 calc(v.button('padding-horizontal') / 2 + 4px);
     
-    // Per MD3, buttons have a significantly more rectangular appearance when progress (active) is showing
-    // Use the same size-specific border radius as active state
-    &.#{$component}--xs,
-    &.#{$component}--s {
-      border-radius: f.get-shape('medium') !important;
-    }
-    
-    &.#{$component}--m {
-      border-radius: f.get-shape('large') !important;
-    }
-    
-    &.#{$component}--l,
-    &.#{$component}--xl {
-      border-radius: f.get-shape('extra-large') !important;
+    // Per MD3, round buttons have a significantly more rectangular appearance when progress (active) is showing
+    // Square buttons maintain their standard border radius
+    &.#{$component}--round {
+      &.#{$component}--xs,
+      &.#{$component}--s {
+        border-radius: f.get-shape('medium') !important;
+      }
+      
+      &.#{$component}--m {
+        border-radius: f.get-shape('large') !important;
+      }
+      
+      &.#{$component}--l,
+      &.#{$component}--xl {
+        border-radius: f.get-shape('extra-large') !important;
+      }
     }
 
     // If button also has an icon, use even less left padding

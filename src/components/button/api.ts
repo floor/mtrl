@@ -258,6 +258,47 @@ export const withAPI = ({ disabled, lifecycle }: ApiOptions) =>
     },
 
     /**
+     * Gets the button's current shape
+     * @returns Current shape name ('round', 'square')
+     */
+    getShape() {
+      const compName = component.componentName || 'button';
+      const buttonClass = component.getClass(compName);
+      const shapes = ['round', 'square'];
+      
+      // Check which shape class is present on the element
+      for (const shape of shapes) {
+        if (component.element.classList.contains(`${buttonClass}--${shape}`)) {
+          return shape;
+        }
+      }
+      
+      // If no shape class is found, return the default shape
+      return 'round';
+    },
+
+    /**
+     * Sets the button's shape
+     * @param shape - New shape to apply ('round', 'square')
+     * @returns Button component for method chaining
+     */
+    setShape(shape: string) {
+      const compName = component.componentName || 'button';
+      const buttonClass = component.getClass(compName);
+      
+      // First remove all existing shape classes
+      const shapeClasses = ['round', 'square']
+        .map(s => `${buttonClass}--${s}`);
+      
+      shapeClasses.forEach(cls => {
+        component.element.classList.remove(cls);
+      });
+      
+      component.element.classList.add(`${buttonClass}--${shape}`);
+      return this;
+    },
+
+    /**
      * Sets the active state of the button
      * Used to visually indicate the button's active state, such as when it has a menu open
      * 

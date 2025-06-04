@@ -19,6 +19,7 @@ import {
   BUTTON_TYPES,
   BUTTON_CLASSES,
   BUTTON_SIZES,
+  BUTTON_SHAPES,
   DEFAULT_RIPPLE_CONFIG
 } from './components/button/constants';
 
@@ -284,6 +285,7 @@ export {
   BUTTON_TYPES,
   BUTTON_CLASSES,
   BUTTON_SIZES,
+  BUTTON_SHAPES,
   DEFAULT_RIPPLE_CONFIG,
   
   // Card

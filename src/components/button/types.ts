@@ -2,7 +2,7 @@
 
 import { BaseComponentConfig } from '../../core/config/component';
 import { ProgressConfig, ProgressComponent } from '../progress/types';
-import { ButtonSize } from './constants';
+import { ButtonSize, ButtonShape } from './constants';
 
 /**
  * Button variant types - controls the visual style of the button
@@ -32,6 +32,12 @@ export interface ButtonConfig extends BaseComponentConfig {
    * @default 's'
    */
   size?: ButtonSize | string;
+  
+  /** 
+   * Button shape variant
+   * @default 'round'
+   */
+  shape?: ButtonShape | string;
   
   /** 
    * Whether the button is initially disabled
@@ -247,6 +253,19 @@ export interface ButtonComponent {
    * @returns The button component for chaining
    */
   setSize: (size: ButtonSize | string) => ButtonComponent;
+  
+  /**
+   * Gets the button's current shape
+   * @returns Current shape name ('round', 'square')
+   */
+  getShape: () => ButtonShape | string;
+
+  /**
+   * Sets the button's shape
+   * @param shape - New shape to apply ('round', 'square')
+   * @returns The button component for chaining
+   */
+  setShape: (shape: ButtonShape | string) => ButtonComponent;
   
   /**
    * Enables the button (removes disabled attribute)
