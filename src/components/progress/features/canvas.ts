@@ -165,6 +165,8 @@ export const withCanvas = (config: ProgressConfig) =>
     // Track animated value for smooth transitions
     let animatedValue = config.value ?? 0;
     let targetValue = animatedValue;
+    let lastSetValueTime = 0;
+    let pendingOnComplete: (() => void) | null = null;
     
     const initializeCanvas = (): boolean => {
       try {
@@ -398,27 +400,7 @@ export const withCanvas = (config: ProgressConfig) =>
       currentShape = shape;
       component.currentShape = currentShape;
       
-      if (!canvasContext) return;
-      
-      // Update dimensions if wave amplitude changes
-      const needsDimensionUpdate = (previousShape === 'wavy') !== (shape === 'wavy');
-      
-      if (needsDimensionUpdate) {
-        const currentConfig = {
-          ...config,
-          thickness: currentThickness,
-          shape: currentShape,
-          size: currentSize
-        };
-        
-        if (isCircular) {
-          const newContext = setupCanvas(canvas, isCircular, currentConfig);
-          component.ctx = newContext.ctx;
-          Object.assign(canvasContext, newContext);
-        } else {
-          updateCanvasDimensions(canvas, canvasContext, isCircular, currentConfig);
-        }
-      }
+      updateConfigAndDraw({ shape });
       
       // For indeterminate mode, we need to switch animation types
       // but preserve the current animation time
@@ -453,8 +435,19 @@ export const withCanvas = (config: ProgressConfig) =>
     component.setValue = (value: number, onComplete?: () => void, animate: boolean = true) => {
       targetValue = Math.max(0, Math.min(component.state.max, value));
       
+      // Store the latest onComplete callback
+      if (onComplete) {
+        pendingOnComplete = onComplete;
+      }
+      
       if (component.state.indeterminate) {
         component.setIndeterminate(false);
+      }
+
+      // If animation is already running and we want to animate, just update the target
+      if (component.valueAnimationId && animate) {
+        // Update target, existing animation will handle it and call the new onComplete
+        return;
       }
 
       if (component.valueAnimationId) {
@@ -469,15 +462,32 @@ export const withCanvas = (config: ProgressConfig) =>
         if (currentShape === 'wavy' && !component.state.indeterminate && !component.wavyAnimationId) {
           startWavyAnimation();
         }
-        if (onComplete && targetValue >= component.state.max) {
-          onComplete();
+        // Call onComplete if reached max
+        if (pendingOnComplete && targetValue >= component.state.max) {
+          const callback = pendingOnComplete;
+          pendingOnComplete = null;
+          callback();
+        }
+        // Also emit complete event
+        if (targetValue >= component.state.max && component.emit) {
+          component.emit('complete');
         }
         return;
       }
 
       const startValue = animatedValue;
       const startTime = performance.now();
-      const duration = 300;
+      
+      // Calculate adaptive duration based on update frequency
+      const timeSinceLastCall = startTime - lastSetValueTime;
+      let duration = 300; // Default duration
+      
+      if (timeSinceLastCall < 300 && lastSetValueTime > 0) {
+        // If updates are coming faster than our animation, speed it up
+        duration = Math.max(100, timeSinceLastCall * 0.9); // 90% of update interval, min 100ms
+      }
+      
+      lastSetValueTime = startTime;
 
       const animateValue = (currentTime: number) => {
         const elapsed = currentTime - startTime;
@@ -504,8 +514,14 @@ export const withCanvas = (config: ProgressConfig) =>
             startWavyAnimation();
           }
           
-          if (onComplete && targetValue >= component.state.max) {
-            onComplete();
+          if (pendingOnComplete && targetValue >= component.state.max) {
+            const callback = pendingOnComplete;
+            pendingOnComplete = null;
+            callback();
+          }
+          // Also emit complete event
+          if (targetValue >= component.state.max && component.emit) {
+            component.emit('complete');
           }
         }
       };
