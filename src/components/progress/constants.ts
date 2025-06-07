@@ -128,9 +128,9 @@ export const PROGRESS_WAVE = {
     /** Wave shape power (lower = rounder peaks, higher = sharper) */
     POWER: 0.8,
     /** Percentage at which wave amplitude reaches full strength from start */
-    START_TRANSITION_END: 0.05,
+    START_TRANSITION_END: 0.07,
     /** Percentage at which wave amplitude begins to decrease near end */
-    END_TRANSITION_START: 0.95
+    END_TRANSITION_START: 0.92
   },
   /** Circular progress wave parameters */
   CIRCULAR: {
@@ -149,6 +149,10 @@ export const PROGRESS_WAVE = {
     /** Maximum amplitude for indeterminate animation */
     INDETERMINATE_AMPLITUDE_MAX: 3,
     /** Wave shape power (lower = rounder peaks, higher = sharper) */
-    POWER: 0.8
+    POWER: 0.8,
+    /** Percentage at which wave amplitude reaches full strength from start */
+    START_TRANSITION_END: 0.07,
+    /** Percentage at which wave amplitude begins to decrease near end */
+    END_TRANSITION_START: 0.92
   }
 } as const;

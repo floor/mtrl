@@ -200,12 +200,25 @@ export const drawCircularProgress = (
   // Draw progress indicator
   ctx.strokeStyle = getThemeColor('sys-color-primary', { fallback: '#6750A4' });
   
-  // Calculate wave amplitude with reduction near 100%
+  // Calculate wave amplitude with transitions at start and end
   let adjustedWaveAmplitude = waveAmplitude;
-  if (isWavy && percentage >= 0.97) {
-    const transitionProgress = (percentage - 0.97) / 0.03;
-    const easedProgress = 1 - (1 - transitionProgress) * (1 - transitionProgress);
-    adjustedWaveAmplitude = waveAmplitude * (1 - easedProgress);
+  if (isWavy) {
+    const startTransitionEnd = PROGRESS_WAVE.CIRCULAR.START_TRANSITION_END;
+    const endTransitionStart = PROGRESS_WAVE.CIRCULAR.END_TRANSITION_START;
+    
+    // No amplitude at zero if there's a start transition
+    if (percentage === 0 && startTransitionEnd > 0) {
+      adjustedWaveAmplitude = 0;
+    } else if (percentage > 0 && percentage <= startTransitionEnd) {
+      // Apply amplitude transition at start (use percentage, not actualPercentage)
+      const transitionProgress = percentage / startTransitionEnd;
+      adjustedWaveAmplitude = waveAmplitude * Math.pow(transitionProgress, 2);
+    } else if (percentage >= endTransitionStart) {
+      // Apply amplitude transition at end
+      const transitionProgress = (percentage - endTransitionStart) / (1 - endTransitionStart);
+      const easedProgress = 1 - Math.pow(1 - transitionProgress, 2);
+      adjustedWaveAmplitude = waveAmplitude * (1 - easedProgress);
+    }
   }
   
   // Draw progress arc
