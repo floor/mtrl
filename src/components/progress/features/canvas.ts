@@ -90,7 +90,6 @@ const updateCanvasDimensions = (
     canvas.style.height = `${height}px`;
     canvas.width = Math.round(width * pixelRatio);
     canvas.height = Math.round(height * pixelRatio);
-    canvas.style.borderRadius = height / 2 + 'px';
     
     context.width = width;
     context.height = height;

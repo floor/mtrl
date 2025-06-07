@@ -34,7 +34,8 @@ const drawLine = (
     ctx.moveTo(startX, centerY);
     ctx.lineTo(endX, centerY);
   } else {
-    for (let x = startX; x <= endX; x += 2) {
+    let lastX = startX;
+    for (let x = startX; x <= endX; x += 1) {
       const phase = (x * waveConfig.frequency) + (animationTime * waveConfig.speed);
       const sineWave = Math.sin(phase);
       const smoothedWave = Math.sign(sineWave) * Math.pow(Math.abs(sineWave), PROGRESS_WAVE.LINEAR.POWER);
@@ -45,6 +46,16 @@ const drawLine = (
       } else {
         ctx.lineTo(x, y);
       }
+      lastX = x;
+    }
+    
+    // Ensure we always draw to the end point
+    if (lastX < endX) {
+      const phase = (endX * waveConfig.frequency) + (animationTime * waveConfig.speed);
+      const sineWave = Math.sin(phase);
+      const smoothedWave = Math.sign(sineWave) * Math.pow(Math.abs(sineWave), PROGRESS_WAVE.LINEAR.POWER);
+      const y = centerY + (smoothedWave * waveConfig.amplitude);
+      ctx.lineTo(endX, y);
     }
   }
   
@@ -101,7 +112,12 @@ export const drawLinearProgress = (
   const availableWidth = width - (edgeGap * 2);
   const gapWidth = PROGRESS_MEASUREMENTS.LINEAR.GAP;
   const percentage = value / max;
-  const progressEnd = edgeGap + (availableWidth * percentage);
+  
+  // Apply minimum percentage to ensure visibility (same as circular progress)
+  const minProgressPercentage = 0.001; // 0.1% minimum to show progress is ready
+  const actualPercentage = Math.max(percentage, minProgressPercentage);
+  
+  const progressEnd = edgeGap + (availableWidth * actualPercentage);
 
   // Clear canvas
   ctx.clearRect(0, 0, width, height);
@@ -187,7 +203,7 @@ export const drawLinearProgress = (
 
   // Determinate progress
   const halfStroke = strokeWidth / 2;
-  const startTransitionEnd = 0.03;
+  const startTransitionEnd = 0.0;
   const endTransitionStart = 0.97;
   
   // Calculate the gap offset (half of total gap on each side)
@@ -197,7 +213,7 @@ export const drawLinearProgress = (
   setStrokeStyle(ctx, strokeWidth, trackColor);
   const trackStart = percentage === 0 
     ? edgeGap + strokeWidth + gapWidth
-    : percentage <= startTransitionEnd
+    : actualPercentage <= startTransitionEnd
       ? Math.max(edgeGap + strokeWidth + gapWidth, progressEnd + gapOffset)
       : Math.min(progressEnd + gapOffset, width - edgeGap);
   
@@ -206,29 +222,37 @@ export const drawLinearProgress = (
   // Draw progress indicator
   setStrokeStyle(ctx, strokeWidth, primaryColor);
   
-  if (percentage >= 0.995) {
-    drawLine(ctx, edgeGap, width - edgeGap, centerY, false, 0, {amplitude: 0, frequency: 0, speed: 0});
-  } else {
-    const indicatorEnd = percentage <= startTransitionEnd
-      ? Math.min(progressEnd - gapOffset, trackStart - (gapWidth + strokeWidth))
+  const indicatorEnd = actualPercentage <= startTransitionEnd
+    ? Math.max(progressEnd, Math.min(progressEnd - gapOffset, trackStart - (gapWidth + strokeWidth)))
+    : percentage >= 1
+      ? width - edgeGap  // Full width at 100%
       : Math.max(edgeGap, progressEnd - gapOffset);
-    
-    // Calculate wave amplitude for transitions
-    let waveAmplitude = isWavy ? PROGRESS_WAVE.LINEAR.AMPLITUDE : 0;
-    if (isWavy) {
-      if (percentage <= startTransitionEnd) {
-        waveAmplitude *= Math.pow(percentage / startTransitionEnd, 2);
-      } else if (percentage >= endTransitionStart) {
-        waveAmplitude *= Math.pow((1 - percentage) / (1 - endTransitionStart), 2);
-      }
-    }
-    
-    drawLine(ctx, edgeGap, indicatorEnd, centerY, isWavy, animationTime, {
-      amplitude: waveAmplitude,
-      frequency: PROGRESS_WAVE.LINEAR.FREQUENCY,
-      speed: PROGRESS_WAVE.LINEAR.SPEED
-    });
+  
+  // Special handling for zero percentage to ensure minimal dot
+  let finalIndicatorEnd: number;
+  if (percentage === 0) {
+    // Fixed minimal size for zero progress
+    finalIndicatorEnd = edgeGap + (isWavy ? 0.1 : 0);
+  } else {
+    // Ensure minimum visible length for non-zero progress
+    const minNonZeroLength = strokeWidth / 2;
+    finalIndicatorEnd = Math.max(edgeGap + minNonZeroLength, indicatorEnd);
   }
+  
+  // Calculate wave amplitude for transitions
+  let waveAmplitude = isWavy ? PROGRESS_WAVE.LINEAR.AMPLITUDE : 0;
+  if (isWavy) {
+    // Only reduce amplitude near the end, not at the start
+    if (actualPercentage >= endTransitionStart) {
+      waveAmplitude *= Math.pow((1 - actualPercentage) / (1 - endTransitionStart), 2);
+    }
+  }
+  
+  drawLine(ctx, edgeGap, finalIndicatorEnd, centerY, isWavy, animationTime, {
+    amplitude: waveAmplitude,
+    frequency: PROGRESS_WAVE.LINEAR.FREQUENCY,
+    speed: PROGRESS_WAVE.LINEAR.SPEED
+  });
 
   // Draw buffer
   if (buffer > 0 && buffer > value) {
@@ -238,7 +262,7 @@ export const drawLinearProgress = (
   }
 
   // Draw stop indicator
-  if (percentage < 0.995 && showStopIndicator) {
+  if (percentage < 1 && showStopIndicator) {
     ctx.beginPath();
     ctx.arc(width - edgeGap, centerY, 2, 0, 2 * Math.PI);
     ctx.fillStyle = primaryColor;
