@@ -265,8 +265,10 @@ export const drawLinearProgress = (
 
   // Draw stop indicator
   if (percentage < 1 && showStopIndicator) {
+    // Scale indicator radius with stroke width, max 2px
+    const indicatorRadius = Math.min(strokeWidth * 0.5, 2);
     ctx.beginPath();
-    ctx.arc(width - edgeGap, centerY, 2, 0, 2 * Math.PI);
+    ctx.arc(width - edgeGap, centerY, indicatorRadius, 0, 2 * Math.PI);
     ctx.fillStyle = primaryColor;
     ctx.fill();
   }

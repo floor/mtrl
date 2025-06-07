@@ -5,7 +5,8 @@ import {
   PROGRESS_CLASSES, 
   PROGRESS_VARIANTS,
   PROGRESS_MEASUREMENTS,
-  PROGRESS_THICKNESS
+  PROGRESS_THICKNESS,
+  PROGRESS_WAVE
 } from '../constants';
 import { getThemeColor } from '../../../core/utils';
 import { PREFIX } from '../../../core/config';
@@ -94,7 +95,16 @@ const updateCanvasDimensions = (
     if (!progressElement) return;
     
     const width = Math.max(progressElement.getBoundingClientRect().width || progressElement.offsetWidth, 200);
-    const height = config?.shape === 'wavy' ? Math.max(strokeWidth + 6, 10) : strokeWidth;
+    
+    // Calculate extra height needed for waves based on actual amplitude
+    let extraHeight = 0;
+    if (config?.shape === 'wavy') {
+      const baseAmplitude = PROGRESS_WAVE.LINEAR.AMPLITUDE;
+      const waveAmplitude = getWaveAmplitude(strokeWidth, baseAmplitude);
+      extraHeight = Math.ceil(waveAmplitude * 2); // Space for wave peaks above and below
+    }
+    
+    const height = strokeWidth + extraHeight;
     
     canvas.style.width = `${width}px`;
     canvas.style.height = `${height}px`;
