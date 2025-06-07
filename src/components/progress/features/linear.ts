@@ -5,7 +5,7 @@
 import { ProgressConfig, ProgressShape } from '../types';
 import { PROGRESS_WAVE, PROGRESS_MEASUREMENTS } from '../constants';
 import { getThemeColor } from '../../../core/utils';
-import { getStrokeWidth, CanvasContext } from './canvas';
+import { getStrokeWidth, getWaveAmplitude, CanvasContext } from './canvas';
 
 // Helper to set common stroke styles
 const setStrokeStyle = (
@@ -189,7 +189,7 @@ export const drawLinearProgress = (
     // Draw progress segments
     setStrokeStyle(ctx, strokeWidth, primaryColor);
     const waveConfig = {
-      amplitude: isWavy ? PROGRESS_WAVE.LINEAR.INDETERMINATE_AMPLITUDE : 0,
+      amplitude: isWavy ? getWaveAmplitude(strokeWidth, PROGRESS_WAVE.LINEAR.INDETERMINATE_AMPLITUDE) : 0,
       frequency: PROGRESS_WAVE.LINEAR.INDETERMINATE_FREQUENCY,
       speed: 0
     };
@@ -236,16 +236,16 @@ export const drawLinearProgress = (
   }
   
   // Calculate wave amplitude for transitions
-  let waveAmplitude = isWavy ? PROGRESS_WAVE.LINEAR.AMPLITUDE : 0;
+  let waveAmplitude = isWavy ? getWaveAmplitude(strokeWidth, PROGRESS_WAVE.LINEAR.AMPLITUDE) : 0;
   if (isWavy) {
     // No amplitude at zero if there's a start transition
     if (percentage === 0 && startTransitionEnd > 0) {
       waveAmplitude = 0;
     } else if (actualPercentage <= startTransitionEnd) {
-      // Apply amplitude transitions at start
+      // Apply amplitude transition at start
       waveAmplitude *= Math.pow(actualPercentage / startTransitionEnd, 2);
     } else if (actualPercentage >= endTransitionStart) {
-      // Apply amplitude transitions at end
+      // Apply amplitude transition at end
       waveAmplitude *= Math.pow((1 - actualPercentage) / (1 - endTransitionStart), 2);
     }
   }

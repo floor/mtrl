@@ -5,7 +5,7 @@
 import { ProgressConfig, ProgressShape } from '../types';
 import { PROGRESS_MEASUREMENTS, PROGRESS_WAVE } from '../constants';
 import { getThemeColor } from '../../../core/utils';
-import { getStrokeWidth, CanvasContext } from './canvas';
+import { getStrokeWidth, getWaveAmplitude, CanvasContext } from './canvas';
 
 /**
  * Draws a wavy arc by modulating the radius with a smooth wave pattern
@@ -82,9 +82,10 @@ export const drawCircularProgress = (
     ? PROGRESS_WAVE.CIRCULAR.INDETERMINATE_AMPLITUDE_MAX 
     : PROGRESS_WAVE.CIRCULAR.AMPLITUDE_MAX;
   
-  const baseAmplitude = Math.sqrt(strokeWidth) * amplitudeRatio * 2;
-  const scaledAmplitude = baseAmplitude * (0.3 + 0.7 * sizeFactor);
-  const waveAmplitude = isWavy ? Math.min(scaledAmplitude, amplitudeMax) : 0;
+  // Use consistent amplitude scaling based on stroke width
+  const baseAmplitude = amplitudeRatio * 3; // Use same base as linear (3px)
+  const scaledAmplitude = getWaveAmplitude(strokeWidth, baseAmplitude, amplitudeMax);
+  const waveAmplitude = isWavy ? scaledAmplitude * (0.3 + 0.7 * sizeFactor) : 0;
   
   const radius = (componentSize / 2) - (strokeWidth / 2) - waveAmplitude;
   const centerX = width / 2;
@@ -104,7 +105,7 @@ export const drawCircularProgress = (
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
 
-  // Wave frequency
+  // Wave frequency - use constant frequency for all sizes
   const waveFrequency = isIndeterminate 
     ? PROGRESS_WAVE.CIRCULAR.INDETERMINATE_FREQUENCY 
     : PROGRESS_WAVE.CIRCULAR.FREQUENCY;

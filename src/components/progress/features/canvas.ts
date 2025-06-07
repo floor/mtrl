@@ -38,24 +38,34 @@ interface CanvasComponent {
 }
 
 /**
- * Gets the stroke width value from the thickness config
+ * Gets the stroke width for a given thickness preset or custom value
  */
-export const getStrokeWidth = (thickness?: string | number): number => {
+export const getStrokeWidth = (thickness: ProgressThickness = 'thin'): number => {
   if (typeof thickness === 'number') {
-    // Return the exact value provided - don't enforce a minimum
-    // This allows small progress indicators (like in buttons) to use thin strokes
     return thickness;
   }
   
-  if (typeof thickness === 'string') {
-    const numValue = parseFloat(thickness);
-    if (!isNaN(numValue)) {
-      return numValue;
-    }
-    return thickness === 'thick' ? PROGRESS_THICKNESS.THICK : PROGRESS_THICKNESS.THIN;
-  }
+  return thickness === 'thick' ? PROGRESS_THICKNESS.THICK : PROGRESS_THICKNESS.THIN;
+};
+
+/**
+ * Calculates wave amplitude based on stroke width
+ * Uses thickness 4 as the baseline (where amplitude is perfect)
+ */
+export const getWaveAmplitude = (
+  strokeWidth: number, 
+  baseAmplitude: number,
+  maxAmplitude?: number
+): number => {
+  // Use thickness 4 as baseline (perfect amplitude)
+  const baselineThickness = 4;
   
-  return PROGRESS_THICKNESS.THIN;
+  // Formula with dampening factor for gentler scaling
+  // The 0.3 factor makes the scaling very subtle
+  const scaleFactor = 1 + (0.3 * (baselineThickness - strokeWidth)) / (strokeWidth + baselineThickness);
+  
+  const amplitude = baseAmplitude * scaleFactor;
+  return maxAmplitude ? Math.min(amplitude, maxAmplitude) : amplitude;
 };
 
 /**
@@ -527,9 +537,16 @@ export const withCanvas = (config: ProgressConfig) =>
         // Stopping indeterminate mode
         animatedValue = component.state.value;
         
-        if (!isCircular || currentShape !== 'wavy') {
+        // Stop indeterminate animation
+        stopIndeterminateAnimation();
+        
+        // For wavy shape, keep or start wavy animation
+        if (currentShape === 'wavy') {
+          if (!component.wavyAnimationId) {
+            startWavyAnimation();
+          }
+        } else {
           stopWavyAnimation();
-          stopIndeterminateAnimation();
         }
         
         draw();
