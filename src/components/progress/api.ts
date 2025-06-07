@@ -188,21 +188,12 @@ export const withAPI = (options: ApiOptions) => (comp: any): ProgressComponent =
         const detail = { value, max };
         emitEvent(PROGRESS_EVENTS.CHANGE, detail);
         
-        // Handle completion event with animation timing
+        // Call the component's setValue to handle animation and completion
         if (comp.setValue && typeof comp.setValue === 'function') {
-          // Only emit complete event if we're reaching 100% from below
-          const wasComplete = prevValue >= max;
-          const isComplete = value >= max;
-          const onComplete = (!wasComplete && isComplete)
-            ? () => emitEvent(PROGRESS_EVENTS.COMPLETE, detail)
-            : undefined;
-          comp.setValue(value, onComplete, animate);
+          comp.setValue(value, animate);
         } else {
-          // Fallback: update progress immediately and emit complete if needed
+          // Fallback: update progress immediately
           updateProgress(value, max);
-          if (value >= max && prevValue < max) {
-            emitEvent(PROGRESS_EVENTS.COMPLETE, detail);
-          }
         }
       }
       

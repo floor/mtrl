@@ -166,7 +166,6 @@ export const withCanvas = (config: ProgressConfig) =>
     let animatedValue = config.value ?? 0;
     let targetValue = animatedValue;
     let lastSetValueTime = 0;
-    let pendingOnComplete: (() => void) | null = null;
     
     const initializeCanvas = (): boolean => {
       try {
@@ -432,13 +431,8 @@ export const withCanvas = (config: ProgressConfig) =>
     };
     
     // Update setValue method to handle rapid updates better
-    component.setValue = (value: number, onComplete?: () => void, animate: boolean = true) => {
+    component.setValue = (value: number, animate: boolean = true) => {
       targetValue = Math.max(0, Math.min(component.state.max, value));
-      
-      // Store the latest onComplete callback
-      if (onComplete) {
-        pendingOnComplete = onComplete;
-      }
       
       if (component.state.indeterminate) {
         component.setIndeterminate(false);
@@ -446,7 +440,7 @@ export const withCanvas = (config: ProgressConfig) =>
 
       // If animation is already running and we want to animate, just update the target
       if (component.valueAnimationId && animate) {
-        // Update target, existing animation will handle it and call the new onComplete
+        // Update target, existing animation will handle it
         return;
       }
 
@@ -462,15 +456,11 @@ export const withCanvas = (config: ProgressConfig) =>
         if (currentShape === 'wavy' && !component.state.indeterminate && !component.wavyAnimationId) {
           startWavyAnimation();
         }
-        // Call onComplete if reached max
-        if (pendingOnComplete && targetValue >= component.state.max) {
-          const callback = pendingOnComplete;
-          pendingOnComplete = null;
-          callback();
-        }
-        // Also emit complete event
-        if (targetValue >= component.state.max && component.emit) {
-          component.emit('complete');
+        // Emit complete event if reached max
+        if (targetValue >= component.state.max) {
+          component.element.dispatchEvent(new CustomEvent('complete', {
+            detail: { value: targetValue, max: component.state.max }
+          }));
         }
         return;
       }
@@ -513,15 +503,12 @@ export const withCanvas = (config: ProgressConfig) =>
           if (currentShape === 'wavy' && !component.state.indeterminate && !component.wavyAnimationId) {
             startWavyAnimation();
           }
-          
-          if (pendingOnComplete && targetValue >= component.state.max) {
-            const callback = pendingOnComplete;
-            pendingOnComplete = null;
-            callback();
-          }
-          // Also emit complete event
-          if (targetValue >= component.state.max && component.emit) {
-            component.emit('complete');
+
+          // Emit complete event if reached max
+          if (targetValue >= component.state.max) {
+            component.element.dispatchEvent(new CustomEvent('complete', {
+              detail: { value: targetValue, max: component.state.max }
+            }));
           }
         }
       };
