@@ -203,8 +203,8 @@ export const drawLinearProgress = (
 
   // Determinate progress
   const halfStroke = strokeWidth / 2;
-  const startTransitionEnd = 0.0;
-  const endTransitionStart = 0.97;
+  const startTransitionEnd = PROGRESS_WAVE.LINEAR.START_TRANSITION_END;
+  const endTransitionStart = PROGRESS_WAVE.LINEAR.END_TRANSITION_START;
   
   // Calculate the gap offset (half of total gap on each side)
   const gapOffset = (gapWidth + strokeWidth) / 2;
@@ -213,20 +213,16 @@ export const drawLinearProgress = (
   setStrokeStyle(ctx, strokeWidth, trackColor);
   const trackStart = percentage === 0 
     ? edgeGap + strokeWidth + gapWidth
-    : actualPercentage <= startTransitionEnd
-      ? Math.max(edgeGap + strokeWidth + gapWidth, progressEnd + gapOffset)
-      : Math.min(progressEnd + gapOffset, width - edgeGap);
+    : Math.min(progressEnd + gapOffset, width - edgeGap);
   
   drawLine(ctx, trackStart, width - edgeGap, centerY, false, 0, {amplitude: 0, frequency: 0, speed: 0});
 
   // Draw progress indicator
   setStrokeStyle(ctx, strokeWidth, primaryColor);
   
-  const indicatorEnd = actualPercentage <= startTransitionEnd
-    ? Math.max(progressEnd, Math.min(progressEnd - gapOffset, trackStart - (gapWidth + strokeWidth)))
-    : percentage >= 1
-      ? width - edgeGap  // Full width at 100%
-      : Math.max(edgeGap, progressEnd - gapOffset);
+  const indicatorEnd = percentage >= 1
+    ? width - edgeGap  // Full width at 100%
+    : Math.max(edgeGap, progressEnd - gapOffset);
   
   // Special handling for zero percentage to ensure minimal dot
   let finalIndicatorEnd: number;
@@ -242,8 +238,14 @@ export const drawLinearProgress = (
   // Calculate wave amplitude for transitions
   let waveAmplitude = isWavy ? PROGRESS_WAVE.LINEAR.AMPLITUDE : 0;
   if (isWavy) {
-    // Only reduce amplitude near the end, not at the start
-    if (actualPercentage >= endTransitionStart) {
+    // No amplitude at zero if there's a start transition
+    if (percentage === 0 && startTransitionEnd > 0) {
+      waveAmplitude = 0;
+    } else if (actualPercentage <= startTransitionEnd) {
+      // Apply amplitude transitions at start
+      waveAmplitude *= Math.pow(actualPercentage / startTransitionEnd, 2);
+    } else if (actualPercentage >= endTransitionStart) {
+      // Apply amplitude transitions at end
       waveAmplitude *= Math.pow((1 - actualPercentage) / (1 - endTransitionStart), 2);
     }
   }
