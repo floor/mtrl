@@ -25,6 +25,29 @@ interface SwipeableConfig {
   threshold?: number;
 }
 
+// Common type aliases to replace any
+export type JSONValue =
+  | string
+  | number
+  | boolean
+  | null
+  | JSONObject
+  | JSONArray;
+export type JSONObject = { [key: string]: JSONValue };
+export type JSONArray = JSONValue[];
+
+// For when you truly need flexibility
+export type UnknownObject = Record<string, unknown>;
+export type UnknownArray = unknown[];
+export type UnknownFunction = (...args: unknown[]) => unknown;
+
+// For API responses
+export type APIResponse<T = unknown> = {
+  data: T;
+  meta?: Record<string, unknown>;
+  error?: string;
+};
+
 /**
  * Higher-order function to add loading state to a card.
  * Adds a loading overlay with spinner and proper ARIA attributes
