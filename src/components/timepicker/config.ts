@@ -1,25 +1,16 @@
 // src/components/timepicker/config.ts
 
-import { 
+import {
   createComponentConfig,
   createElementConfig,
-  BaseComponentConfig 
-} from '../../core/config/component';
-import { TimePickerConfig } from './types';
-import { 
-  TIME_PICKER_TYPE, 
-  TIME_PICKER_ORIENTATION, 
-  TIME_FORMAT
-} from './types';
+} from "../../core/config/component";
+import { TimePickerConfig } from "./types";
 import {
-  TIMEPICKER_DEFAULTS,
-  TIMEPICKER_DIAL,
-  TIMEPICKER_VALUES,
-  TIMEPICKER_EVENTS,
-  TIMEPICKER_SELECTORS,
-  TIMEPICKER_Z_INDEX,
-  TIMEPICKER_ICONS
-} from './constants';
+  TIME_PICKER_TYPE,
+  TIME_PICKER_ORIENTATION,
+  TIME_FORMAT,
+} from "./types";
+import { TIMEPICKER_DEFAULTS, TIMEPICKER_ICONS } from "./constants";
 
 /**
  * Default configuration for the TimePicker component
@@ -36,7 +27,7 @@ export const defaultConfig: TimePickerConfig = {
   confirmText: TIMEPICKER_DEFAULTS.CONFIRM_TEXT,
   isOpen: TIMEPICKER_DEFAULTS.IS_OPEN,
   clockIcon: TIMEPICKER_ICONS.CLOCK,
-  keyboardIcon: TIMEPICKER_ICONS.KEYBOARD
+  keyboardIcon: TIMEPICKER_ICONS.KEYBOARD,
 };
 
 /**
@@ -44,8 +35,14 @@ export const defaultConfig: TimePickerConfig = {
  * @param {TimePickerConfig} config - User provided configuration
  * @returns {TimePickerConfig} Complete configuration with defaults applied
  */
-export const createBaseConfig = (config: TimePickerConfig = {}): TimePickerConfig => 
-  createComponentConfig(defaultConfig, config, 'time-picker') as TimePickerConfig;
+export const createBaseConfig = (
+  config: TimePickerConfig = {}
+): TimePickerConfig =>
+  createComponentConfig(
+    defaultConfig,
+    config,
+    "time-picker"
+  ) as TimePickerConfig;
 
 /**
  * Generates element configuration for the TimePicker container
@@ -54,21 +51,21 @@ export const createBaseConfig = (config: TimePickerConfig = {}): TimePickerConfi
  */
 export const getContainerConfig = (config: TimePickerConfig) => {
   return createElementConfig(config, {
-    tag: 'div',
+    tag: "div",
     attributes: {
-      role: 'dialog',
-      'aria-modal': 'true',
-      'aria-labelledby': `${config.prefix}-time-picker-title`
+      role: "dialog",
+      "aria-modal": "true",
+      "aria-labelledby": `${config.prefix}-time-picker-title`,
     },
     className: [
       config.class,
-      config.isOpen ? `${config.prefix}-time-picker--open` : ''
+      config.isOpen ? `${config.prefix}-time-picker--open` : "",
     ],
     forwardEvents: {
       click: true,
-      keydown: true
+      keydown: true,
     },
-    interactive: true
+    interactive: true,
   });
 };
 
@@ -79,9 +76,9 @@ export const getContainerConfig = (config: TimePickerConfig) => {
  */
 export const getModalConfig = (config: TimePickerConfig) => {
   return createElementConfig(config, {
-    tag: 'div',
+    tag: "div",
     attributes: {
-      role: 'presentation'
+      role: "presentation",
     },
     className: `${config.prefix}-time-picker-modal`,
     forwardEvents: {
@@ -91,9 +88,9 @@ export const getModalConfig = (config: TimePickerConfig) => {
           return true;
         }
         return false;
-      }
+      },
     },
-    interactive: true
+    interactive: true,
   });
 };
 
@@ -104,17 +101,17 @@ export const getModalConfig = (config: TimePickerConfig) => {
  */
 export const getDialogConfig = (config: TimePickerConfig) => {
   return createElementConfig(config, {
-    tag: 'div',
+    tag: "div",
     className: [
       `${config.prefix}-time-picker-dialog`,
       `${config.prefix}-time-picker-dialog--${config.type}`,
       `${config.prefix}-time-picker-dialog--${config.orientation}`,
-      `${config.prefix}-time-picker-dialog--${config.format}`
+      `${config.prefix}-time-picker-dialog--${config.format}`,
     ],
     forwardEvents: {
-      click: true
+      click: true,
     },
-    interactive: true
+    interactive: true,
   });
 };
 
@@ -130,8 +127,8 @@ export const getApiConfig = (comp: any) => ({
     emit: (event: string, data?: any) => comp.emit(event, data),
   },
   lifecycle: {
-    destroy: () => comp.lifecycle.destroy()
-  }
+    destroy: () => comp.lifecycle.destroy(),
+  },
 });
 
 export default defaultConfig;

@@ -1,11 +1,10 @@
 // src/components/carousel/config.ts
-import { 
-  createComponentConfig, 
+import {
+  createComponentConfig,
   createElementConfig,
-  BaseComponentConfig 
-} from '../../core/config/component';
-import { CarouselConfig } from './types';
-import { CAROUSEL_DEFAULTS, CAROUSEL_TRANSITIONS } from './constants';
+} from "../../core/config/component";
+import { CarouselConfig } from "./types";
+import { CAROUSEL_DEFAULTS, CAROUSEL_TRANSITIONS } from "./constants";
 
 /**
  * Default configuration for the Carousel component
@@ -13,12 +12,12 @@ import { CAROUSEL_DEFAULTS, CAROUSEL_TRANSITIONS } from './constants';
 export const defaultConfig: CarouselConfig = {
   initialSlide: CAROUSEL_DEFAULTS.INITIAL_SLIDE,
   loop: CAROUSEL_DEFAULTS.LOOP,
-  transition: CAROUSEL_TRANSITIONS.SLIDE as 'slide' | 'fade' | 'none',
+  transition: CAROUSEL_TRANSITIONS.SLIDE as "slide" | "fade" | "none",
   transitionDuration: CAROUSEL_DEFAULTS.TRANSITION_DURATION,
   borderRadius: CAROUSEL_DEFAULTS.BORDER_RADIUS,
   gap: CAROUSEL_DEFAULTS.GAP,
-  prefix: 'carousel',
-  showAllLink: true // Show "Show all" button by default
+  prefix: "carousel",
+  showAllLink: true, // Show "Show all" button by default
 };
 
 /**
@@ -26,8 +25,8 @@ export const defaultConfig: CarouselConfig = {
  * @param {CarouselConfig} config - User provided configuration
  * @returns {CarouselConfig} Complete configuration with defaults applied
  */
-export const createBaseConfig = (config: CarouselConfig = {}): CarouselConfig => 
-  createComponentConfig(defaultConfig, config, 'carousel') as CarouselConfig;
+export const createBaseConfig = (config: CarouselConfig = {}): CarouselConfig =>
+  createComponentConfig(defaultConfig, config, "carousel") as CarouselConfig;
 
 /**
  * Generates element configuration for the Carousel component
@@ -37,26 +36,26 @@ export const createBaseConfig = (config: CarouselConfig = {}): CarouselConfig =>
 export const getElementConfig = (config: CarouselConfig) => {
   // Create the attributes object
   const attributes: Record<string, any> = {
-    role: 'region',
-    'aria-roledescription': 'carousel',
-    'aria-live': 'polite'
+    role: "region",
+    "aria-roledescription": "carousel",
+    "aria-live": "polite",
   };
-  
+
   // Create data attributes for configuration
   const dataAttributes = {
-    'data-transition': config.transition,
-    'data-loop': config.loop ? 'true' : 'false'
+    "data-transition": config.transition,
+    "data-loop": config.loop ? "true" : "false",
   };
-  
+
   return createElementConfig(config, {
-    tag: 'div',
+    tag: "div",
     attributes: { ...attributes, ...dataAttributes },
     className: config.class,
     forwardEvents: {
       keydown: true,
       focus: true,
-      blur: true
-    }
+      blur: true,
+    },
   });
 };
 
@@ -72,11 +71,11 @@ export const getApiConfig = (comp) => ({
     removeSlide: comp.slides.removeSlide,
     updateSlide: comp.slides.updateSlide,
     getCount: comp.slides.getCount,
-    getElements: comp.slides.getElements
+    getElements: comp.slides.getElements,
   },
   lifecycle: {
-    destroy: comp.lifecycle.destroy
-  }
+    destroy: comp.lifecycle.destroy,
+  },
 });
 
 export default defaultConfig;

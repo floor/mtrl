@@ -1,23 +1,19 @@
 // src/components/datepicker/config.ts
-import { 
-  createComponentConfig, 
+import {
+  createComponentConfig,
   createElementConfig,
-  BaseComponentConfig 
-} from '../../core/config/component';
-import { 
-  DatePickerConfig, 
-  DEFAULT_DATE_FORMAT 
-} from './types';
+} from "../../core/config/component";
+import { DatePickerConfig, DEFAULT_DATE_FORMAT } from "./types";
 
 /**
  * Default configuration for the DatePicker component
  */
 export const defaultConfig: DatePickerConfig = {
-  variant: 'docked',
-  initialView: 'day',
-  selectionMode: 'single',
+  variant: "docked",
+  initialView: "day",
+  selectionMode: "single",
   dateFormat: DEFAULT_DATE_FORMAT,
-  animate: true
+  animate: true,
 };
 
 /**
@@ -25,14 +21,20 @@ export const defaultConfig: DatePickerConfig = {
  * @param {DatePickerConfig} config - User provided configuration
  * @returns {DatePickerConfig} Complete configuration with defaults applied
  */
-export const createBaseConfig = (config: DatePickerConfig = {}): DatePickerConfig => {
-  const baseConfig = createComponentConfig(defaultConfig, config, 'datepicker') as DatePickerConfig;
-  
+export const createBaseConfig = (
+  config: DatePickerConfig = {}
+): DatePickerConfig => {
+  const baseConfig = createComponentConfig(
+    defaultConfig,
+    config,
+    "datepicker"
+  ) as DatePickerConfig;
+
   // Set closeOnSelect default based on variant
   if (baseConfig.closeOnSelect === undefined) {
-    baseConfig.closeOnSelect = baseConfig.variant !== 'docked';
+    baseConfig.closeOnSelect = baseConfig.variant !== "docked";
   }
-  
+
   return baseConfig;
 };
 
@@ -43,21 +45,18 @@ export const createBaseConfig = (config: DatePickerConfig = {}): DatePickerConfi
  */
 export const getContainerConfig = (config: DatePickerConfig) => {
   return createElementConfig(config, {
-    tag: 'div',
+    tag: "div",
     attributes: {
-      role: 'application',
-      'aria-label': 'Date Picker',
-      tabindex: '-1'
+      role: "application",
+      "aria-label": "Date Picker",
+      tabindex: "-1",
     },
-    className: [
-      `${config.prefix}-datepicker-container`,
-      config.class
-    ],
+    className: [`${config.prefix}-datepicker-container`, config.class],
     forwardEvents: {
       keydown: true,
-      click: true
+      click: true,
     },
-    interactive: true
+    interactive: true,
   });
 };
 
@@ -69,27 +68,27 @@ export const getContainerConfig = (config: DatePickerConfig) => {
 export const getInputConfig = (config: DatePickerConfig) => {
   // Create the attributes object
   const attributes: Record<string, any> = {
-    type: 'text',
+    type: "text",
     placeholder: config.placeholder || config.dateFormat,
-    autocomplete: 'off',
-    readonly: true
+    autocomplete: "off",
+    readonly: true,
   };
-  
+
   // Only add disabled attribute if it's explicitly true
   if (config.disabled === true) {
     attributes.disabled = true;
   }
-  
+
   return createElementConfig(config, {
-    tag: 'input',
+    tag: "input",
     attributes,
     className: `${config.prefix}-datepicker-input`,
     forwardEvents: {
       focus: true,
       blur: true,
-      click: true
+      click: true,
     },
-    interactive: true
+    interactive: true,
   });
 };
 
@@ -100,21 +99,22 @@ export const getInputConfig = (config: DatePickerConfig) => {
  */
 export const getCalendarConfig = (config: DatePickerConfig) => {
   return createElementConfig(config, {
-    tag: 'div',
+    tag: "div",
     attributes: {
-      role: 'dialog',
-      'aria-modal': config.variant !== 'docked' ? 'true' : 'false'
+      role: "dialog",
+      "aria-modal": config.variant !== "docked" ? "true" : "false",
     },
     className: [
       `${config.prefix}-datepicker-calendar`,
       `${config.prefix}-datepicker-${config.variant}`,
-      config.selectionMode === 'range' ? 
-        `${config.prefix}-datepicker-range` : ''
+      config.selectionMode === "range"
+        ? `${config.prefix}-datepicker-range`
+        : "",
     ],
     forwardEvents: {
       keydown: true,
-      click: true
-    }
+      click: true,
+    },
   });
 };
 
@@ -126,16 +126,16 @@ export const getCalendarConfig = (config: DatePickerConfig) => {
 export const getApiConfig = (comp: any) => ({
   disabled: {
     enable: () => comp.disabled.enable(),
-    disable: () => comp.disabled.disable()
+    disable: () => comp.disabled.disable(),
   },
   lifecycle: {
-    destroy: () => comp.lifecycle.destroy()
+    destroy: () => comp.lifecycle.destroy(),
   },
   events: {
     on: comp.on,
     off: comp.off,
-    emit: comp.emit
-  }
+    emit: comp.emit,
+  },
 });
 
 export default defaultConfig;

@@ -1,11 +1,10 @@
 // src/components/sheet/config.ts
-import { 
-  createComponentConfig, 
+import {
+  createComponentConfig,
   createElementConfig,
-  BaseComponentConfig 
-} from '../../core/config/component';
-import { SheetConfig } from './types';
-import { SHEET_VARIANTS, SHEET_POSITIONS, SHEET_DEFAULTS } from './constants';
+} from "../../core/config/component";
+import { SheetConfig } from "./types";
+import { SHEET_VARIANTS, SHEET_POSITIONS, SHEET_DEFAULTS } from "./constants";
 
 /**
  * Default configuration for the Sheet component
@@ -17,7 +16,7 @@ export const defaultConfig: SheetConfig = {
   dismissible: SHEET_DEFAULTS.DISMISSIBLE,
   dragHandle: SHEET_DEFAULTS.DRAG_HANDLE,
   elevation: SHEET_DEFAULTS.ELEVATION,
-  enableGestures: SHEET_DEFAULTS.ENABLE_GESTURES
+  enableGestures: SHEET_DEFAULTS.ENABLE_GESTURES,
 };
 
 /**
@@ -25,8 +24,8 @@ export const defaultConfig: SheetConfig = {
  * @param {SheetConfig} config - User provided configuration
  * @returns {SheetConfig} Complete configuration with defaults applied
  */
-export const createBaseConfig = (config: SheetConfig = {}): SheetConfig => 
-  createComponentConfig(defaultConfig, config, 'sheet') as SheetConfig;
+export const createBaseConfig = (config: SheetConfig = {}): SheetConfig =>
+  createComponentConfig(defaultConfig, config, "sheet") as SheetConfig;
 
 /**
  * Generates element configuration for the Sheet component
@@ -35,16 +34,16 @@ export const createBaseConfig = (config: SheetConfig = {}): SheetConfig =>
  */
 export const getElementConfig = (config: SheetConfig) => {
   return createElementConfig(config, {
-    tag: 'div',
+    tag: "div",
     attributes: {
-      role: 'dialog',
-      'aria-modal': config.variant === SHEET_VARIANTS.MODAL ? 'true' : 'false'
+      role: "dialog",
+      "aria-modal": config.variant === SHEET_VARIANTS.MODAL ? "true" : "false",
     },
     className: config.class,
     forwardEvents: {
       click: true,
-      keydown: true
-    }
+      keydown: true,
+    },
   });
 };
 
@@ -56,11 +55,11 @@ export const getElementConfig = (config: SheetConfig) => {
 export const getApiConfig = (comp) => ({
   state: {
     open: () => comp.state.open(),
-    close: () => comp.state.close()
+    close: () => comp.state.close(),
   },
   lifecycle: {
-    destroy: () => comp.lifecycle.destroy()
-  }
+    destroy: () => comp.lifecycle.destroy(),
+  },
 });
 
 export default defaultConfig;

@@ -1,17 +1,16 @@
 // src/components/checkbox/config.ts
-import { 
-  createComponentConfig, 
+import {
+  createComponentConfig,
   createElementConfig,
-  BaseComponentConfig 
-} from '../../core/config/component';
-import { CheckboxConfig, BaseComponent, ApiOptions } from './types';
+} from "../../core/config/component";
+import { CheckboxConfig, BaseComponent, ApiOptions } from "./types";
 
 /**
  * Default configuration for the Checkbox component
  */
 export const defaultConfig: CheckboxConfig = {
-  variant: 'filled',
-  labelPosition: 'end'
+  variant: "filled",
+  labelPosition: "end",
 };
 
 /**
@@ -19,50 +18,54 @@ export const defaultConfig: CheckboxConfig = {
  * @param {CheckboxConfig} config - User provided configuration
  * @returns {CheckboxConfig} Complete configuration with defaults applied
  */
-export const createBaseConfig = (config: CheckboxConfig = {}): CheckboxConfig => 
-  createComponentConfig(defaultConfig, config, 'checkbox') as CheckboxConfig;
+export const createBaseConfig = (config: CheckboxConfig = {}): CheckboxConfig =>
+  createComponentConfig(defaultConfig, config, "checkbox") as CheckboxConfig;
 
 /**
  * Generates element configuration for the Checkbox component
  * @param {CheckboxConfig} config - Checkbox configuration
  * @returns {Object} Element configuration object for withElement
  */
-export const getElementConfig = (config: CheckboxConfig) => 
+export const getElementConfig = (config: CheckboxConfig) =>
   createElementConfig(config, {
-    tag: 'div',
+    tag: "div",
     className: config.class,
-    interactive: true
+    interactive: true,
   });
 
 /**
  * Adds check icon to checkbox
  * @param {CheckboxConfig} config - Component configuration
  */
-export const withCheckIcon = (config: CheckboxConfig) => (component: BaseComponent): BaseComponent => {
-  const icon = document.createElement('span');
-  icon.className = `${config.prefix}-checkbox-icon`;
-  icon.innerHTML = `
+export const withCheckIcon =
+  (config: CheckboxConfig) =>
+  (component: BaseComponent): BaseComponent => {
+    const icon = document.createElement("span");
+    icon.className = `${config.prefix}-checkbox-icon`;
+    icon.innerHTML = `
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
       <path d="M9.55 14.6L6.35 11.4l-1.9 1.9L9.55 18.4l10.9-10.9-1.9-1.9z"/>
     </svg>
   `;
 
-  component.element.appendChild(icon);
-  return component;
-};
+    component.element.appendChild(icon);
+    return component;
+  };
 
 /**
  * Applies label position class to the component
  * @param {CheckboxConfig} config - Component configuration
  */
-export const withLabelPosition = (config: CheckboxConfig) => (component: BaseComponent): BaseComponent => {
-  const position = config.labelPosition || 'end';
-  const positionClass = `${config.prefix}-checkbox--label-${position}`;
+export const withLabelPosition =
+  (config: CheckboxConfig) =>
+  (component: BaseComponent): BaseComponent => {
+    const position = config.labelPosition || "end";
+    const positionClass = `${config.prefix}-checkbox--label-${position}`;
 
-  component.element.classList.add(positionClass);
+    component.element.classList.add(positionClass);
 
-  return component;
-};
+    return component;
+  };
 
 /**
  * Creates API configuration for the Checkbox component
@@ -72,17 +75,17 @@ export const withLabelPosition = (config: CheckboxConfig) => (component: BaseCom
 export const getApiConfig = (comp: BaseComponent): ApiOptions => ({
   disabled: {
     enable: comp.disabled?.enable,
-    disable: comp.disabled?.disable
+    disable: comp.disabled?.disable,
   },
   lifecycle: {
-    destroy: comp.lifecycle?.destroy
+    destroy: comp.lifecycle?.destroy,
   },
   checkable: {
     check: comp.checkable?.check,
     uncheck: comp.checkable?.uncheck,
     toggle: comp.checkable?.toggle,
-    isChecked: comp.checkable?.isChecked
-  }
+    isChecked: comp.checkable?.isChecked,
+  },
 });
 
 export default defaultConfig;

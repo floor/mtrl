@@ -1,12 +1,7 @@
 // src/core/compose/features/textinput.ts
 
-import { BaseComponent, ElementComponent } from '../component';
-import { 
-  hasLifecycle, 
-  hasEmit, 
-  ComponentWithLifecycle, 
-  ComponentWithEmit 
-} from '../utils/type-guards';
+import { ElementComponent } from "../component";
+import { hasLifecycle, hasEmit } from "../utils/type-guards";
 
 /**
  * Configuration for text input feature
@@ -16,47 +11,47 @@ export interface TextInputConfig {
    * Input type (text, password, etc.)
    */
   type?: string;
-  
+
   /**
    * Whether to use textarea instead of input
    */
   multiline?: boolean;
-  
+
   /**
    * Input name attribute
    */
   name?: string;
-  
+
   /**
    * Whether input is required
    */
   required?: boolean;
-  
+
   /**
    * Whether input is disabled
    */
   disabled?: boolean;
-  
+
   /**
    * Maximum allowed length
    */
   maxLength?: number;
-  
+
   /**
    * Input validation pattern
    */
   pattern?: string;
-  
+
   /**
    * Autocomplete setting
    */
   autocomplete?: string;
-  
+
   /**
    * Initial input value
    */
   value?: string;
-  
+
   [key: string]: any;
 }
 
@@ -68,20 +63,20 @@ export interface TextInputComponent extends ElementComponent {
    * Input element
    */
   input: HTMLInputElement | HTMLTextAreaElement;
-  
+
   /**
    * Sets the input value
    * @param value - Value to set
    * @returns Component instance for chaining
    */
   setValue: (value: string) => TextInputComponent;
-  
+
   /**
    * Gets the current input value
    * @returns Current value
    */
   getValue: () => string;
-  
+
   /**
    * Sets an attribute on the input
    * @param name - Attribute name
@@ -89,21 +84,21 @@ export interface TextInputComponent extends ElementComponent {
    * @returns Component instance for chaining
    */
   setAttribute: (name: string, value: string) => TextInputComponent;
-  
+
   /**
    * Gets an attribute from the input
    * @param name - Attribute name
    * @returns Attribute value
    */
   getAttribute: (name: string) => string | null;
-  
+
   /**
    * Removes an attribute from the input
    * @param name - Attribute name
    * @returns Component instance for chaining
    */
   removeAttribute: (name: string) => TextInputComponent;
-  
+
   /**
    * Event emission method if available
    */
@@ -112,17 +107,19 @@ export interface TextInputComponent extends ElementComponent {
 
 /**
  * Enhances a component with text input functionality
- * 
+ *
  * @param config - Text input configuration
  * @returns Function that enhances a component with text input capabilities
  */
-export const withTextInput = <T extends TextInputConfig>(config: T = {} as T) => 
+export const withTextInput =
+  <T extends TextInputConfig>(config: T = {} as T) =>
   <C extends ElementComponent>(component: C): C & TextInputComponent => {
-    const isMultiline = config.multiline || config.type === 'multiline';
-    const input = document.createElement(isMultiline ? 'textarea' : 'input') as 
-      HTMLInputElement | HTMLTextAreaElement;
-    
-    input.className = `${component.getClass('textfield')}-input`;
+    const isMultiline = config.multiline || config.type === "multiline";
+    const input = document.createElement(isMultiline ? "textarea" : "input") as
+      | HTMLInputElement
+      | HTMLTextAreaElement;
+
+    input.className = `${component.getClass("textfield")}-input`;
 
     // Set input attributes
     const attributes: Record<string, string | number | boolean | undefined> = {
@@ -132,22 +129,22 @@ export const withTextInput = <T extends TextInputConfig>(config: T = {} as T) =>
       maxLength: config.maxLength,
       pattern: config.pattern,
       autocomplete: config.autocomplete,
-      value: config.value || ''
+      value: config.value || "",
     };
 
     // Only set type attribute for input elements, not for textarea
     if (!isMultiline) {
-      attributes.type = config.type || 'text';
+      attributes.type = config.type || "text";
     } else {
       // For textarea, add a data attribute to identify it as multiline
-      attributes['data-type'] = 'multiline';
+      attributes["data-type"] = "multiline";
     }
 
     Object.entries(attributes).forEach(([key, value]) => {
       if (value !== null && value !== undefined) {
-        if (typeof value === 'boolean') {
+        if (typeof value === "boolean") {
           if (value) {
-            input.setAttribute(key, '');
+            input.setAttribute(key, "");
           }
         } else {
           input.setAttribute(key, String(value));
@@ -158,7 +155,10 @@ export const withTextInput = <T extends TextInputConfig>(config: T = {} as T) =>
     // Handle input state changes
     const updateInputState = (): boolean => {
       const isEmpty = !input.value;
-      component.element.classList.toggle(`${component.getClass('textfield')}--empty`, isEmpty);
+      component.element.classList.toggle(
+        `${component.getClass("textfield")}--empty`,
+        isEmpty
+      );
       return isEmpty;
     };
 
@@ -167,42 +167,53 @@ export const withTextInput = <T extends TextInputConfig>(config: T = {} as T) =>
     const handleAutofill = (): void => {
       // Check for webkit autofill background
       const isAutofilled =
-        input.matches(':-webkit-autofill') ||
+        input.matches(":-webkit-autofill") ||
         // For Firefox and other browsers
-        (window.getComputedStyle(input).backgroundColor === 'rgb(250, 255, 189)' ||
-         window.getComputedStyle(input).backgroundColor === 'rgb(232, 240, 254)');
+        window.getComputedStyle(input).backgroundColor ===
+          "rgb(250, 255, 189)" ||
+        window.getComputedStyle(input).backgroundColor === "rgb(232, 240, 254)";
 
       if (isAutofilled) {
-        component.element.classList.remove(`${component.getClass('textfield')}--empty`);
+        component.element.classList.remove(
+          `${component.getClass("textfield")}--empty`
+        );
         if (hasEmit(component)) {
-          component.emit('input', { value: input.value, isEmpty: false, isAutofilled: true });
+          component.emit("input", {
+            value: input.value,
+            isEmpty: false,
+            isAutofilled: true,
+          });
         }
       }
     };
 
     // Event listeners
-    input.addEventListener('focus', () => {
-      component.element.classList.add(`${component.getClass('textfield')}--focused`);
+    input.addEventListener("focus", () => {
+      component.element.classList.add(
+        `${component.getClass("textfield")}--focused`
+      );
       if (hasEmit(component)) {
-        component.emit('focus', { isEmpty: updateInputState() });
+        component.emit("focus", { isEmpty: updateInputState() });
       }
       // Also check for autofill on focus
       setTimeout(handleAutofill, 100);
     });
 
-    input.addEventListener('blur', () => {
-      component.element.classList.remove(`${component.getClass('textfield')}--focused`);
+    input.addEventListener("blur", () => {
+      component.element.classList.remove(
+        `${component.getClass("textfield")}--focused`
+      );
       if (hasEmit(component)) {
-        component.emit('blur', { isEmpty: updateInputState() });
+        component.emit("blur", { isEmpty: updateInputState() });
       }
     });
 
-    input.addEventListener('input', () => {
+    input.addEventListener("input", () => {
       if (hasEmit(component)) {
-        component.emit('input', {
+        component.emit("input", {
           value: input.value,
           isEmpty: updateInputState(),
-          isAutofilled: false
+          isAutofilled: false,
         });
       } else {
         updateInputState();
@@ -214,7 +225,9 @@ export const withTextInput = <T extends TextInputConfig>(config: T = {} as T) =>
 
     // Add multiline class to the component if it's a textarea
     if (isMultiline) {
-      component.element.classList.add(`${component.getClass('textfield')}--multiline`);
+      component.element.classList.add(
+        `${component.getClass("textfield")}--multiline`
+      );
     }
 
     component.element.appendChild(input);
@@ -232,7 +245,7 @@ export const withTextInput = <T extends TextInputConfig>(config: T = {} as T) =>
       ...component,
       input,
       setValue(value: string) {
-        input.value = value || '';
+        input.value = value || "";
         updateInputState();
         return this;
       },
@@ -249,6 +262,6 @@ export const withTextInput = <T extends TextInputConfig>(config: T = {} as T) =>
       removeAttribute(name: string) {
         input.removeAttribute(name);
         return this;
-      }
+      },
     };
   };

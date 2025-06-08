@@ -1,21 +1,19 @@
 // src/components/radios/config.ts
-import { 
-  createComponentConfig, 
+import {
+  createComponentConfig,
   createElementConfig,
-  BaseComponentConfig 
-} from '../../core/config/component';
-import { RadiosConfig } from './types';
-import { RADIO_DIRECTIONS } from './constants';
+} from "../../core/config/component";
+import { RadiosConfig } from "./types";
 
 /**
  * Default configuration for the Radios component
  */
 export const defaultConfig: RadiosConfig = {
-  name: '',
-  direction: 'vertical',
+  name: "",
+  direction: "vertical",
   disabled: false,
   ripple: true,
-  options: []
+  options: [],
 };
 
 /**
@@ -23,8 +21,8 @@ export const defaultConfig: RadiosConfig = {
  * @param {RadiosConfig} config - User provided configuration
  * @returns {RadiosConfig} Complete configuration with defaults applied
  */
-export const createBaseConfig = (config: RadiosConfig): RadiosConfig => 
-  createComponentConfig(defaultConfig, config, 'radios') as RadiosConfig;
+export const createBaseConfig = (config: RadiosConfig): RadiosConfig =>
+  createComponentConfig(defaultConfig, config, "radios") as RadiosConfig;
 
 /**
  * Generates element configuration for the Radios container
@@ -33,11 +31,11 @@ export const createBaseConfig = (config: RadiosConfig): RadiosConfig =>
  */
 export const getElementConfig = (config: RadiosConfig) => {
   return createElementConfig(config, {
-    tag: 'div',
+    tag: "div",
     attributes: {
-      role: 'radiogroup'
+      role: "radiogroup",
     },
-    className: config.class
+    className: config.class,
   });
 };
 
@@ -49,11 +47,11 @@ export const getElementConfig = (config: RadiosConfig) => {
 export const getApiConfig = (comp) => ({
   disabled: {
     enable: () => comp.disabled.enable(),
-    disable: () => comp.disabled.disable()
+    disable: () => comp.disabled.disable(),
   },
   lifecycle: {
-    destroy: () => comp.lifecycle.destroy()
-  }
+    destroy: () => comp.lifecycle.destroy(),
+  },
 });
 
 export default defaultConfig;

@@ -1,11 +1,10 @@
 // src/components/navigation/system/events.ts
 
-import { NavigationSystemState } from './types';
-import { NavigationItem, NavigationSection } from './types';
+import { NavigationSystemState } from "./types";
 
 /**
  * Registers rail navigation event handlers
- * 
+ *
  * @param state - System state
  * @param config - System configuration
  * @param updateDrawerContent - Function to update drawer content
@@ -25,47 +24,49 @@ export const registerRailEvents = (
   if (!rail) return;
 
   // Register for change events - will listen for when rail items are clicked
-  rail.on('change', (event: any) => {
+  rail.on("change", (event: any) => {
     // Extract ID from event data
     const id = event?.id;
-    
+
     if (!id || state.processingChange) {
       return;
     }
-    
+
     // Check if this is a user action
-    const isUserAction = event?.source === 'userAction';
-    
+    const isUserAction = event?.source === "userAction";
+
     // Set processing flag to prevent loops
     state.processingChange = true;
-    
+
     // Update active section
     state.activeSection = id;
-    
+
     // Handle internally first - update drawer content
     updateDrawerContent(id);
-    
+
     // Then notify external handlers
     if (systemApi.onSectionChange && isUserAction) {
-      systemApi.onSectionChange(id, { source: isUserAction ? 'userClick' : 'programmatic' });
+      systemApi.onSectionChange(id, {
+        source: isUserAction ? "userClick" : "programmatic",
+      });
     }
-    
+
     // Clear the processing flag after a delay
     setTimeout(() => {
       state.processingChange = false;
     }, 50);
   });
 
-  rail.on('mouseover', (event: any) => {
+  rail.on("mouseover", (event: any) => {
     const id = event?.id;
-    
+
     // Set rail mouse state
     state.mouseInRail = true;
-    
+
     // Clear any existing hover timer
     clearTimeout(state.hoverTimer as number);
     state.hoverTimer = null;
-    
+
     // Only schedule drawer operations if there's an ID
     if (id) {
       // Check if this section has items
@@ -86,21 +87,21 @@ export const registerRailEvents = (
     }
   });
 
-  rail.on('mouseenter', () => {
+  rail.on("mouseenter", () => {
     state.mouseInRail = true;
-    
+
     // Clear any pending drawer close timer when entering rail
     clearTimeout(state.closeTimer as number);
     state.closeTimer = null;
   });
 
-  rail.on('mouseleave', () => {
+  rail.on("mouseleave", () => {
     state.mouseInRail = false;
-    
+
     // Clear any existing hover timer
     clearTimeout(state.hoverTimer as number);
     state.hoverTimer = null;
-    
+
     // Only set timer to hide drawer if we're not in drawer either
     if (!state.mouseInDrawer) {
       state.closeTimer = window.setTimeout(() => {
@@ -115,7 +116,7 @@ export const registerRailEvents = (
 
 /**
  * Registers drawer navigation event handlers
- * 
+ *
  * @param state - System state
  * @param config - System configuration
  * @param hideDrawer - Function to hide the drawer
@@ -131,38 +132,38 @@ export const registerDrawerEvents = (
   if (!drawer) return;
 
   // Use the component's native event system
-  if (typeof drawer.on === 'function') {
+  if (typeof drawer.on === "function") {
     // Handle item selection
-    drawer.on('change', (event: any) => {
+    drawer.on("change", (event: any) => {
       const id = event.id;
-      
+
       state.activeSubsection = id;
-      
+
       // If configuration specifies to hide drawer on click, do so
       if (config.hideDrawerOnClick) {
         hideDrawer();
       }
-      
+
       // Emit item selection event
       if (systemApi.onItemSelect) {
         systemApi.onItemSelect(event);
       }
     });
-    
+
     // Handle mouseenter/mouseleave for drawer
-    drawer.on('mouseenter', () => {
+    drawer.on("mouseenter", () => {
       state.mouseInDrawer = true;
-      
+
       // Clear any hover and close timers
       clearTimeout(state.hoverTimer as number);
       clearTimeout(state.closeTimer as number);
       state.hoverTimer = null;
       state.closeTimer = null;
     });
-    
-    drawer.on('mouseleave', () => {
+
+    drawer.on("mouseleave", () => {
       state.mouseInDrawer = false;
-      
+
       // Only set timer to hide drawer if we're not in rail
       if (!state.mouseInRail) {
         state.closeTimer = window.setTimeout(() => {
@@ -178,8 +179,8 @@ export const registerDrawerEvents = (
 
 /**
  * Sets up window resize and orientation change handling
- * 
- * @param state - System state 
+ *
+ * @param state - System state
  * @param checkMobileState - Function to check and update mobile state
  */
 export const setupResponsiveHandling = (
@@ -195,11 +196,11 @@ export const setupResponsiveHandling = (
     state.resizeObserver.observe(document.body);
   } else {
     // Fallback to window resize event
-    window.addEventListener('resize', checkMobileState);
+    window.addEventListener("resize", checkMobileState);
   }
-  
+
   // Listen for orientation changes on mobile
-  window.addEventListener('orientationchange', () => {
+  window.addEventListener("orientationchange", () => {
     // Small delay to ensure dimensions have updated
     setTimeout(checkMobileState, 100);
   });
@@ -207,7 +208,7 @@ export const setupResponsiveHandling = (
 
 /**
  * Cleans up all event handlers and resources
- * 
+ *
  * @param state - System state
  * @param checkMobileState - Function reference to remove event handlers
  */
@@ -220,18 +221,18 @@ export const cleanupEvents = (
     state.resizeObserver.disconnect();
     state.resizeObserver = null;
   } else {
-    window.removeEventListener('resize', checkMobileState);
+    window.removeEventListener("resize", checkMobileState);
   }
-  
+
   // Remove orientation change listener
-  window.removeEventListener('orientationchange', checkMobileState);
-  
+  window.removeEventListener("orientationchange", checkMobileState);
+
   // Remove outside click handler
   if (state.outsideClickHandler) {
-    const eventType = ('ontouchend' in window) ? 'touchend' : 'click';
+    const eventType = "ontouchend" in window ? "touchend" : "click";
     document.removeEventListener(eventType, state.outsideClickHandler);
   }
-  
+
   // Clear timers
   clearTimeout(state.hoverTimer as number);
   clearTimeout(state.closeTimer as number);

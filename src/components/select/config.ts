@@ -1,11 +1,8 @@
 // src/components/select/config.ts
 
-import { 
-  createComponentConfig, 
-  createElementConfig
-} from '../../core/config/component';
-import { SelectConfig, BaseComponent, ApiOptions } from './types';
-import { SELECT_VARIANTS, SELECT_PLACEMENT, SELECT_DEFAULTS } from './constants';
+import { createComponentConfig } from "../../core/config/component";
+import { SelectConfig, BaseComponent, ApiOptions } from "./types";
+import { SELECT_DEFAULTS } from "./constants";
 
 /**
  * Default configuration for the Select component
@@ -13,7 +10,7 @@ import { SELECT_VARIANTS, SELECT_PLACEMENT, SELECT_DEFAULTS } from './constants'
 export const defaultConfig: SelectConfig = {
   options: [],
   variant: SELECT_DEFAULTS.VARIANT,
-  placement: SELECT_DEFAULTS.PLACEMENT
+  placement: SELECT_DEFAULTS.PLACEMENT,
 };
 
 /**
@@ -21,8 +18,10 @@ export const defaultConfig: SelectConfig = {
  * @param {SelectConfig} config - User provided configuration
  * @returns {SelectConfig} Complete configuration with defaults applied
  */
-export const createBaseConfig = (config: SelectConfig = { options: [] }): SelectConfig => 
-  createComponentConfig(defaultConfig, config, 'select') as SelectConfig;
+export const createBaseConfig = (
+  config: SelectConfig = { options: [] }
+): SelectConfig =>
+  createComponentConfig(defaultConfig, config, "select") as SelectConfig;
 
 /**
  * Creates API configuration for the Select component
@@ -33,17 +32,17 @@ export const getApiConfig = (comp: BaseComponent): ApiOptions => ({
   select: {
     getValue: comp.select?.getValue || (() => null),
     setValue: comp.select?.setValue || (() => comp),
-    getText: comp.select?.getText || (() => ''),
+    getText: comp.select?.getText || (() => ""),
     getSelectedOption: comp.select?.getSelectedOption || (() => null),
     getOptions: comp.select?.getOptions || (() => []),
     setOptions: comp.select?.setOptions || (() => comp),
     open: comp.select?.open || (() => comp),
     close: comp.select?.close || (() => comp),
-    isOpen: comp.select?.isOpen || (() => false)
+    isOpen: comp.select?.isOpen || (() => false),
   },
   events: {
     on: comp.on || (() => comp),
-    off: comp.off || (() => comp)
+    off: comp.off || (() => comp),
   },
   disabled: {
     enable: () => {
@@ -57,7 +56,7 @@ export const getApiConfig = (comp: BaseComponent): ApiOptions => ({
         comp.textfield.disable();
       }
       return comp;
-    }
+    },
   },
   lifecycle: {
     destroy: () => {
@@ -70,8 +69,8 @@ export const getApiConfig = (comp: BaseComponent): ApiOptions => ({
       if (comp.lifecycle?.destroy) {
         comp.lifecycle.destroy();
       }
-    }
-  }
+    },
+  },
 });
 
 export default defaultConfig;

@@ -1,6 +1,6 @@
 // src/components/menu/api.ts
 
-import { MenuComponent, MenuContent, MenuPosition, MenuEvent, MenuSelectEvent } from './types';
+import { MenuComponent, MenuContent, MenuPosition } from "./types";
 
 /**
  * API configuration options for menu component
@@ -9,9 +9,13 @@ import { MenuComponent, MenuContent, MenuPosition, MenuEvent, MenuSelectEvent } 
  */
 interface ApiOptions {
   menu: {
-    open: (event?: Event, interactionType?: 'mouse' | 'keyboard') => any;
-    close: (event?: Event, restoreFocus?: boolean, skipAnimation?: boolean) => any;
-    toggle: (event?: Event, interactionType?: 'mouse' | 'keyboard') => any;
+    open: (event?: Event, interactionType?: "mouse" | "keyboard") => any;
+    close: (
+      event?: Event,
+      restoreFocus?: boolean,
+      skipAnimation?: boolean
+    ) => any;
+    toggle: (event?: Event, interactionType?: "mouse" | "keyboard") => any;
     isOpen: () => boolean;
     setItems: (items: MenuContent[]) => any;
     getItems: () => MenuContent[];
@@ -53,17 +57,17 @@ interface ComponentWithElements {
  * Enhances a menu component with API methods.
  * This follows the higher-order function pattern to add public API methods
  * to the component, making them available to the end user.
- * 
+ *
  * @param {ApiOptions} options - API configuration options
  * @returns {Function} Higher-order function that adds API methods to component
  * @category Components
  * @internal This is an internal utility for the Menu component
  */
-const withAPI = ({ menu, opener, events, lifecycle, submenu }: ApiOptions) => 
+const withAPI =
+  ({ menu, opener, events, lifecycle, submenu }: ApiOptions) =>
   (component: ComponentWithElements): MenuComponent => ({
-    ...component as any,
+    ...(component as any),
     element: component.element,
-    
 
     /**
      * Opens the menu
@@ -71,48 +75,52 @@ const withAPI = ({ menu, opener, events, lifecycle, submenu }: ApiOptions) =>
      * @param interactionType - The type of interaction that triggered the open ('mouse' or 'keyboard')
      * @returns Menu component for chaining
      */
-    open(event?: Event, interactionType: 'mouse' | 'keyboard' = 'mouse') {
+    open(event?: Event, interactionType: "mouse" | "keyboard" = "mouse") {
       // Determine interaction type from event if not explicitly provided
       if (event && !interactionType) {
         if (event instanceof KeyboardEvent) {
-          interactionType = 'keyboard';
+          interactionType = "keyboard";
         }
       }
-      
+
       menu.open(event, interactionType);
       return this;
     },
-    
+
     /**
      * Closes the menu
      * @param event - Optional event that triggered the close
      * @returns Menu component for chaining
      */
-    close(event?: Event, restoreFocus: boolean = true, skipAnimation: boolean = false) {
+    close(
+      event?: Event,
+      restoreFocus: boolean = true,
+      skipAnimation: boolean = false
+    ) {
       menu.close(event, restoreFocus, skipAnimation);
       return this;
     },
-    
+
     /**
      * Toggles the menu's open state
      * @param event - Optional event that triggered the toggle
      * @param interactionType - The type of interaction that triggered the toggle
      * @returns Menu component for chaining
      */
-    toggle(event?: Event, interactionType?: 'mouse' | 'keyboard') {
+    toggle(event?: Event, interactionType?: "mouse" | "keyboard") {
       // Determine interaction type from event if not explicitly provided
       if (event && !interactionType) {
         if (event instanceof KeyboardEvent) {
-          interactionType = 'keyboard';
+          interactionType = "keyboard";
         } else if (event instanceof MouseEvent) {
-          interactionType = 'mouse';
+          interactionType = "mouse";
         }
       }
-      
+
       menu.toggle(event, interactionType);
       return this;
     },
-    
+
     /**
      * Checks if the menu is currently open
      * @returns True if the menu is open
@@ -120,7 +128,7 @@ const withAPI = ({ menu, opener, events, lifecycle, submenu }: ApiOptions) =>
     isOpen() {
       return menu.isOpen();
     },
-    
+
     /**
      * Updates the menu items
      * @param items - New array of menu items and dividers
@@ -130,7 +138,7 @@ const withAPI = ({ menu, opener, events, lifecycle, submenu }: ApiOptions) =>
       menu.setItems(items);
       return this;
     },
-    
+
     /**
      * Gets the current menu items
      * @returns Array of current menu items and dividers
@@ -138,7 +146,7 @@ const withAPI = ({ menu, opener, events, lifecycle, submenu }: ApiOptions) =>
     getItems() {
       return menu.getItems();
     },
-    
+
     /**
      * Updates the menu's opener element
      * @param openerElement - New opener element or selector
@@ -148,7 +156,7 @@ const withAPI = ({ menu, opener, events, lifecycle, submenu }: ApiOptions) =>
       opener.setOpener(openerElement);
       return this;
     },
-    
+
     /**
      * Gets the current opener element
      * @returns Current opener element
@@ -156,11 +164,11 @@ const withAPI = ({ menu, opener, events, lifecycle, submenu }: ApiOptions) =>
     getOpener() {
       return opener.getOpener();
     },
-    
+
     hasOpenSubmenu() {
       return submenu?.hasOpenSubmenu() || false;
     },
-    
+
     closeSubmenus() {
       if (submenu) {
         submenu.closeAllSubmenus();
@@ -177,7 +185,7 @@ const withAPI = ({ menu, opener, events, lifecycle, submenu }: ApiOptions) =>
       menu.setPosition(position);
       return this;
     },
-    
+
     /**
      * Gets the current menu position
      * @returns Current position
@@ -185,7 +193,7 @@ const withAPI = ({ menu, opener, events, lifecycle, submenu }: ApiOptions) =>
     getPosition() {
       return menu.getPosition();
     },
-    
+
     /**
      * Sets the selected menu item
      * @param itemId - ID of the menu item to mark as selected
@@ -195,7 +203,7 @@ const withAPI = ({ menu, opener, events, lifecycle, submenu }: ApiOptions) =>
       menu.setSelected(itemId);
       return this;
     },
-    
+
     /**
      * Gets the currently selected menu item's ID
      * @returns ID of the selected menu item or null if none is selected
@@ -203,7 +211,7 @@ const withAPI = ({ menu, opener, events, lifecycle, submenu }: ApiOptions) =>
     getSelected() {
       return menu.getSelected();
     },
-    
+
     /**
      * Adds an event listener to the menu
      * @param event - Event name ('open', 'close', 'select')
@@ -218,7 +226,7 @@ const withAPI = ({ menu, opener, events, lifecycle, submenu }: ApiOptions) =>
       }
       return this;
     },
-    
+
     /**
      * Removes an event listener from the menu
      * @param event - Event name
@@ -233,13 +241,13 @@ const withAPI = ({ menu, opener, events, lifecycle, submenu }: ApiOptions) =>
       }
       return this;
     },
-    
+
     /**
      * Destroys the menu component and cleans up resources
      */
     destroy() {
       lifecycle.destroy();
-    }
+    },
   });
 
 export { withAPI };

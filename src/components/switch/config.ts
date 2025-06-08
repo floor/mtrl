@@ -1,17 +1,16 @@
 // src/components/switch/config.ts
-import { 
-  createComponentConfig, 
+import {
+  createComponentConfig,
   createElementConfig,
-  BaseComponentConfig 
-} from '../../core/config/component';
-import { SwitchConfig, BaseComponent, ApiOptions } from './types';
+} from "../../core/config/component";
+import { SwitchConfig, BaseComponent, ApiOptions } from "./types";
 
 /**
  * Default configuration for the Switch component
  */
 export const defaultConfig: SwitchConfig = {
-  prefix: 'mtrl',
-  componentName: 'switch'
+  prefix: "mtrl",
+  componentName: "switch",
 };
 
 /**
@@ -19,19 +18,19 @@ export const defaultConfig: SwitchConfig = {
  * @param {SwitchConfig} config - User provided configuration
  * @returns {SwitchConfig} Complete configuration with defaults applied
  */
-export const createBaseConfig = (config: SwitchConfig = {}): SwitchConfig => 
-  createComponentConfig(defaultConfig, config, 'switch') as SwitchConfig;
+export const createBaseConfig = (config: SwitchConfig = {}): SwitchConfig =>
+  createComponentConfig(defaultConfig, config, "switch") as SwitchConfig;
 
 /**
  * Generates element configuration for the Switch component
  * @param {SwitchConfig} config - Switch configuration
  * @returns {Object} Element configuration object for withElement
  */
-export const getElementConfig = (config: SwitchConfig) => 
+export const getElementConfig = (config: SwitchConfig) =>
   createElementConfig(config, {
-    tag: 'div',
+    tag: "div",
     className: config.class,
-    interactive: true
+    interactive: true,
   });
 
 /**
@@ -42,17 +41,17 @@ export const getElementConfig = (config: SwitchConfig) =>
 export const getApiConfig = (comp: BaseComponent): ApiOptions => ({
   disabled: {
     enable: comp.disabled?.enable,
-    disable: comp.disabled?.disable
+    disable: comp.disabled?.disable,
   },
   lifecycle: {
-    destroy: comp.lifecycle?.destroy
+    destroy: comp.lifecycle?.destroy,
   },
   checkable: {
     check: comp.checkable?.check,
     uncheck: comp.checkable?.uncheck,
     toggle: comp.checkable?.toggle,
-    isChecked: comp.checkable?.isChecked
-  }
+    isChecked: comp.checkable?.isChecked,
+  },
 });
 
 export default defaultConfig;

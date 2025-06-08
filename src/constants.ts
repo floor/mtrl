@@ -5,14 +5,14 @@ import {
   BADGE_VARIANTS,
   BADGE_COLORS,
   BADGE_POSITIONS,
-  BADGE_MAX_CHARACTERS
-} from './components/badge/constants';
+  BADGE_MAX_CHARACTERS,
+} from "./components/badge/constants";
 
 import {
-  FAB_POSITIONS as BOTTOM_APP_BAR_FAB_POSITIONS, 
-  BOTTOM_APP_BAR_CLASSES, 
-  DEFAULT_TRANSITION_DURATION
-} from './components/bottom-app-bar/constants';
+  FAB_POSITIONS as BOTTOM_APP_BAR_FAB_POSITIONS,
+  BOTTOM_APP_BAR_CLASSES,
+  DEFAULT_TRANSITION_DURATION,
+} from "./components/bottom-app-bar/constants";
 
 import {
   BUTTON_VARIANTS,
@@ -20,8 +20,8 @@ import {
   BUTTON_CLASSES,
   BUTTON_SIZES,
   BUTTON_SHAPES,
-  DEFAULT_RIPPLE_CONFIG
-} from './components/button/constants';
+  DEFAULT_RIPPLE_CONFIG,
+} from "./components/button/constants";
 
 import {
   CARD_VARIANTS,
@@ -31,26 +31,23 @@ import {
   CARD_ASPECT_RATIOS,
   CARD_ACTION_ALIGNMENT,
   CARD_MEDIA_POSITION,
-  CARD_CLASSES
-} from './components/card/constants';
+  CARD_CLASSES,
+} from "./components/card/constants";
 
 import {
   CHECKBOX_VARIANTS,
   CHECKBOX_LABEL_POSITION,
   CHECKBOX_STATES,
-  CHECKBOX_CLASSES
-} from './components/checkbox/constants';
+  CHECKBOX_CLASSES,
+} from "./components/checkbox/constants";
 
 import {
   CHIP_VARIANTS,
   CHIP_EVENTS,
-  CHIPS_EVENTS
-} from './components/chips/constants';
+  CHIPS_EVENTS,
+} from "./components/chips/constants";
 
-import {
-  CHIP_CLASSES,
-  CHIP_STATES
-} from './components/chips/chip/constants';
+import { CHIP_CLASSES, CHIP_STATES } from "./components/chips/chip/constants";
 
 import {
   DATEPICKER_VARIANTS,
@@ -61,8 +58,8 @@ import {
   MONTH_NAMES_SHORT,
   DEFAULT_DATE_FORMAT,
   DATEPICKER_CLASSES,
-  DATEPICKER_EVENTS
-} from './components/datepicker/constants';
+  DATEPICKER_EVENTS,
+} from "./components/datepicker/constants";
 
 import {
   DIALOG_SIZES,
@@ -74,16 +71,16 @@ import {
   DEFAULT_Z_INDEX,
   DIALOG_BUTTON_VARIANTS,
   DEFAULT_CONFIRM_BUTTON_TEXT,
-  DEFAULT_CANCEL_BUTTON_TEXT
-} from './components/dialog/constants';
+  DEFAULT_CANCEL_BUTTON_TEXT,
+} from "./components/dialog/constants";
 
 import {
   DIVIDER_ORIENTATIONS,
   DIVIDER_VARIANTS,
   DEFAULT_DIVIDER_THICKNESS,
   DEFAULT_INSET_VALUE,
-  DIVIDER_CLASSES
-} from './components/divider/constants';
+  DIVIDER_CLASSES,
+} from "./components/divider/constants";
 
 import {
   EXTENDED_FAB_VARIANTS,
@@ -92,8 +89,8 @@ import {
   EXTENDED_FAB_ICON_POSITIONS,
   EXTENDED_FAB_CLASSES,
   EXTENDED_FAB_TYPES,
-  EXTENDED_FAB_ANIMATIONS
-} from './components/extended-fab/constants';
+  EXTENDED_FAB_ANIMATIONS,
+} from "./components/extended-fab/constants";
 
 import {
   FAB_VARIANTS,
@@ -102,8 +99,8 @@ import {
   FAB_CLASSES,
   FAB_TYPES,
   FAB_ICON_SIZES,
-  FAB_ANIMATIONS
-} from './components/fab/constants';
+  FAB_ANIMATIONS,
+} from "./components/fab/constants";
 
 import {
   LIST_DEFAULTS,
@@ -111,8 +108,8 @@ import {
   LIST_SELECTION_MODES,
   LIST_EVENTS,
   LIST_SCROLL_POSITIONS,
-  LIST_CLASSES
-} from './components/list/constants';
+  LIST_CLASSES,
+} from "./components/list/constants";
 
 import {
   MENU_POSITION,
@@ -120,8 +117,8 @@ import {
   MENU_INTERACTION_TYPES,
   MENU_ITEM_TYPES,
   MENU_EVENTS,
-  MENU_CLASSES
-} from './components/menu/constants';
+  MENU_CLASSES,
+} from "./components/menu/constants";
 
 import {
   NAV_VARIANTS,
@@ -130,17 +127,15 @@ import {
   NAV_ITEM_STATES,
   NAV_EVENTS,
   NAV_DEFAULTS,
-  NAV_CLASSES
-} from './components/navigation/constants';
+  NAV_CLASSES,
+} from "./components/navigation/constants";
 
 import {
   PROGRESS_VARIANTS,
   PROGRESS_EVENTS,
   PROGRESS_DEFAULTS,
   PROGRESS_CLASSES,
-  PROGRESS_THICKNESS,
-  PROGRESS_SHAPES
-} from './components/progress/constants';
+} from "./components/progress/constants";
 
 import {
   RADIO_STATES,
@@ -150,8 +145,8 @@ import {
   RADIO_SIZES,
   RADIO_EVENTS,
   RADIO_DEFAULTS,
-  RADIO_CLASSES
-} from './components/radios/constants';
+  RADIO_CLASSES,
+} from "./components/radios/constants";
 
 import {
   SEARCH_VARIANTS,
@@ -159,8 +154,8 @@ import {
   SEARCH_EVENTS,
   SEARCH_ICONS,
   SEARCH_DEFAULTS,
-  SEARCH_CLASSES
-} from './components/search/constants';
+  SEARCH_CLASSES,
+} from "./components/search/constants";
 
 import {
   SEGMENTED_BUTTON_MODES,
@@ -168,8 +163,8 @@ import {
   SEGMENTED_BUTTON_EVENTS,
   SEGMENTED_BUTTON_DEFAULTS,
   SEGMENTED_BUTTON_ICONS,
-  SEGMENTED_BUTTON_CLASSES
-} from './components/segmented-button/constants';
+  SEGMENTED_BUTTON_CLASSES,
+} from "./components/segmented-button/constants";
 
 import {
   SELECT_VARIANTS,
@@ -178,8 +173,8 @@ import {
   SELECT_EVENTS,
   SELECT_ICONS,
   SELECT_DEFAULTS,
-  SELECT_CLASSES
-} from './components/select/constants';
+  SELECT_CLASSES,
+} from "./components/select/constants";
 
 import {
   SHEET_VARIANTS,
@@ -189,8 +184,8 @@ import {
   SHEET_DEFAULTS,
   SHEET_ANIMATION,
   SHEET_GESTURE,
-  SHEET_CLASSES
-} from './components/sheet/constants';
+  SHEET_CLASSES,
+} from "./components/sheet/constants";
 
 import {
   SLIDER_COLORS,
@@ -198,8 +193,8 @@ import {
   SLIDER_EVENTS,
   SLIDER_POSITIONS,
   SLIDER_DEFAULTS,
-  SLIDER_CLASSES
-} from './components/slider/constants';
+  SLIDER_CLASSES,
+} from "./components/slider/constants";
 
 import {
   SNACKBAR_VARIANTS,
@@ -207,16 +202,16 @@ import {
   SNACKBAR_STATES,
   SNACKBAR_EVENTS,
   SNACKBAR_DEFAULTS,
-  SNACKBAR_CLASSES
-} from './components/snackbar/constants';
+  SNACKBAR_CLASSES,
+} from "./components/snackbar/constants";
 
 import {
   SWITCH_LABEL_POSITIONS,
   SWITCH_STATES,
   SWITCH_EVENTS,
   SWITCH_DEFAULTS,
-  SWITCH_CLASSES
-} from './components/switch/constants';
+  SWITCH_CLASSES,
+} from "./components/switch/constants";
 
 import {
   TAB_VARIANTS,
@@ -226,8 +221,8 @@ import {
   TABS_EVENTS,
   TABS_DEFAULTS,
   TABS_CLASSES,
-  TAB_CLASSES
-} from './components/tabs/constants';
+  TAB_CLASSES,
+} from "./components/tabs/constants";
 
 import {
   TEXTFIELD_VARIANTS,
@@ -236,8 +231,8 @@ import {
   TEXTFIELD_TYPES,
   TEXTFIELD_EVENTS,
   TEXTFIELD_DEFAULTS,
-  TEXTFIELD_CLASSES
-} from './components/textfield/constants';
+  TEXTFIELD_CLASSES,
+} from "./components/textfield/constants";
 
 import {
   TIMEPICKER_TYPES,
@@ -249,23 +244,23 @@ import {
   TIMEPICKER_VALUES,
   TIMEPICKER_Z_INDEX,
   TIMEPICKER_DEFAULTS,
-  TIMEPICKER_CLASSES
-} from './components/timepicker/constants';
+  TIMEPICKER_CLASSES,
+} from "./components/timepicker/constants";
 
 import {
   TOOLTIP_POSITIONS,
   TOOLTIP_VARIANTS,
   TOOLTIP_EVENTS,
   TOOLTIP_DEFAULTS,
-  TOOLTIP_CLASSES
-} from './components/tooltip/constants';
+  TOOLTIP_CLASSES,
+} from "./components/tooltip/constants";
 
 import {
   TOP_APP_BAR_TYPES,
   TOP_APP_BAR_STATES,
   TOP_APP_BAR_DEFAULTS,
-  TOP_APP_BAR_CLASSES
-} from './components/top-app-bar/constants';
+  TOP_APP_BAR_CLASSES,
+} from "./components/top-app-bar/constants";
 
 // Re-export all constants
 export {
@@ -276,8 +271,8 @@ export {
   BADGE_MAX_CHARACTERS,
 
   // Bottom App Bar
-  BOTTOM_APP_BAR_FAB_POSITIONS, 
-  BOTTOM_APP_BAR_CLASSES, 
+  BOTTOM_APP_BAR_FAB_POSITIONS,
+  BOTTOM_APP_BAR_CLASSES,
   DEFAULT_TRANSITION_DURATION,
 
   // Button
@@ -287,7 +282,7 @@ export {
   BUTTON_SIZES,
   BUTTON_SHAPES,
   DEFAULT_RIPPLE_CONFIG,
-  
+
   // Card
   CARD_VARIANTS,
   CARD_ELEVATIONS,
@@ -297,20 +292,20 @@ export {
   CARD_ACTION_ALIGNMENT,
   CARD_MEDIA_POSITION,
   CARD_CLASSES,
-  
+
   // Checkbox
   CHECKBOX_VARIANTS,
   CHECKBOX_LABEL_POSITION,
   CHECKBOX_STATES,
   CHECKBOX_CLASSES,
-  
+
   // Chips
   CHIP_VARIANTS,
   CHIP_EVENTS,
   CHIPS_EVENTS,
   CHIP_CLASSES,
   CHIP_STATES,
-  
+
   // DatePicker
   DATEPICKER_VARIANTS,
   DATEPICKER_VIEWS,
@@ -321,7 +316,7 @@ export {
   DEFAULT_DATE_FORMAT,
   DATEPICKER_CLASSES,
   DATEPICKER_EVENTS,
-  
+
   // Dialog
   DIALOG_SIZES,
   DIALOG_ANIMATIONS,
@@ -333,14 +328,14 @@ export {
   DIALOG_BUTTON_VARIANTS,
   DEFAULT_CONFIRM_BUTTON_TEXT,
   DEFAULT_CANCEL_BUTTON_TEXT,
-  
+
   // Divider
   DIVIDER_ORIENTATIONS,
   DIVIDER_VARIANTS,
   DEFAULT_DIVIDER_THICKNESS,
   DEFAULT_INSET_VALUE,
   DIVIDER_CLASSES,
-  
+
   // Extended FAB
   EXTENDED_FAB_VARIANTS,
   EXTENDED_FAB_WIDTH,
@@ -349,7 +344,7 @@ export {
   EXTENDED_FAB_CLASSES,
   EXTENDED_FAB_TYPES,
   EXTENDED_FAB_ANIMATIONS,
-  
+
   // FAB
   FAB_VARIANTS,
   FAB_SIZES,
@@ -358,7 +353,7 @@ export {
   FAB_TYPES,
   FAB_ICON_SIZES,
   FAB_ANIMATIONS,
-  
+
   // List
   LIST_DEFAULTS,
   LIST_TYPES,
@@ -366,7 +361,7 @@ export {
   LIST_EVENTS,
   LIST_SCROLL_POSITIONS,
   LIST_CLASSES,
-  
+
   // Menu
   MENU_POSITION,
   MENU_DEFAULTS,
@@ -374,7 +369,7 @@ export {
   MENU_ITEM_TYPES,
   MENU_EVENTS,
   MENU_CLASSES,
-  
+
   // Navigation
   NAV_VARIANTS,
   NAV_POSITIONS,
@@ -383,13 +378,13 @@ export {
   NAV_EVENTS,
   NAV_DEFAULTS,
   NAV_CLASSES,
-  
+
   // Progress
   PROGRESS_VARIANTS,
   PROGRESS_EVENTS,
   PROGRESS_DEFAULTS,
   PROGRESS_CLASSES,
-  
+
   // Radio
   RADIO_STATES,
   RADIO_DIRECTIONS,
@@ -399,7 +394,7 @@ export {
   RADIO_EVENTS,
   RADIO_DEFAULTS,
   RADIO_CLASSES,
-  
+
   // Search
   SEARCH_VARIANTS,
   SEARCH_STATES,
@@ -407,7 +402,7 @@ export {
   SEARCH_ICONS,
   SEARCH_DEFAULTS,
   SEARCH_CLASSES,
-  
+
   // Segmented Button
   SEGMENTED_BUTTON_MODES,
   SEGMENTED_BUTTON_DENSITY,
@@ -415,7 +410,7 @@ export {
   SEGMENTED_BUTTON_DEFAULTS,
   SEGMENTED_BUTTON_ICONS,
   SEGMENTED_BUTTON_CLASSES,
-  
+
   // Select
   SELECT_VARIANTS,
   SELECT_PLACEMENT,
@@ -424,7 +419,7 @@ export {
   SELECT_ICONS,
   SELECT_DEFAULTS,
   SELECT_CLASSES,
-  
+
   // Sheet
   SHEET_VARIANTS,
   SHEET_POSITIONS,
@@ -434,7 +429,7 @@ export {
   SHEET_ANIMATION,
   SHEET_GESTURE,
   SHEET_CLASSES,
-  
+
   // Slider
   SLIDER_COLORS,
   SLIDER_SIZES,
@@ -442,7 +437,7 @@ export {
   SLIDER_POSITIONS,
   SLIDER_DEFAULTS,
   SLIDER_CLASSES,
-  
+
   // Snackbar
   SNACKBAR_VARIANTS,
   SNACKBAR_POSITIONS,
@@ -450,14 +445,14 @@ export {
   SNACKBAR_EVENTS,
   SNACKBAR_DEFAULTS,
   SNACKBAR_CLASSES,
-  
+
   // Switch
   SWITCH_LABEL_POSITIONS,
   SWITCH_STATES,
   SWITCH_EVENTS,
   SWITCH_DEFAULTS,
   SWITCH_CLASSES,
-  
+
   // Tabs
   TAB_VARIANTS,
   TAB_STATES,
@@ -467,7 +462,7 @@ export {
   TABS_DEFAULTS,
   TABS_CLASSES,
   TAB_CLASSES,
-  
+
   // Textfield
   TEXTFIELD_VARIANTS,
   TEXTFIELD_SIZES,
@@ -476,7 +471,7 @@ export {
   TEXTFIELD_EVENTS,
   TEXTFIELD_DEFAULTS,
   TEXTFIELD_CLASSES,
-  
+
   // Timepicker
   TIMEPICKER_TYPES,
   TIMEPICKER_ORIENTATIONS,
@@ -488,17 +483,17 @@ export {
   TIMEPICKER_Z_INDEX,
   TIMEPICKER_DEFAULTS,
   TIMEPICKER_CLASSES,
-  
+
   // Tooltip
   TOOLTIP_POSITIONS,
   TOOLTIP_VARIANTS,
   TOOLTIP_EVENTS,
   TOOLTIP_DEFAULTS,
   TOOLTIP_CLASSES,
-  
+
   // Top App Bar
   TOP_APP_BAR_TYPES,
   TOP_APP_BAR_STATES,
   TOP_APP_BAR_DEFAULTS,
-  TOP_APP_BAR_CLASSES
+  TOP_APP_BAR_CLASSES,
 };

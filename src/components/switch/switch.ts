@@ -1,22 +1,18 @@
 // src/components/switch/switch.ts
-import { pipe } from '../../core/compose';
-import { createBase, withElement } from '../../core/compose/component';
+import { pipe } from "../../core/compose";
+import { createBase, withElement } from "../../core/compose/component";
 import {
   withEvents,
   withTextLabel,
   withDisabled,
   withLifecycle,
   withInput,
-  withCheckable
-} from '../../core/compose/features';
-import { withAPI } from './api';
-import { withSupportingText, withTrack } from './features';
-import { SwitchConfig, SwitchComponent, BaseComponent } from './types';
-import { 
-  createBaseConfig, 
-  getElementConfig, 
-  getApiConfig
-} from './config';
+  withCheckable,
+} from "../../core/compose/features";
+import { withAPI } from "./api";
+import { withSupportingText, withTrack } from "./features";
+import { SwitchConfig, SwitchComponent } from "./types";
+import { createBaseConfig, getElementConfig, getApiConfig } from "./config";
 
 /**
  * Creates a new Switch component
@@ -38,13 +34,20 @@ const createSwitch = (config: SwitchConfig = {}): SwitchComponent => {
       withCheckable(baseConfig),
       withDisabled(baseConfig),
       withLifecycle(),
-      comp => withAPI(getApiConfig(comp))(comp)
+      (comp) => withAPI(getApiConfig(comp))(comp)
     )(baseConfig);
 
     return switchComponent as SwitchComponent;
   } catch (error) {
-    console.error('Switch creation error:', error instanceof Error ? error.message : String(error));
-    throw new Error(`Failed to create switch: ${error instanceof Error ? error.message : String(error)}`);
+    console.error(
+      "Switch creation error:",
+      error instanceof Error ? error.message : String(error)
+    );
+    throw new Error(
+      `Failed to create switch: ${
+        error instanceof Error ? error.message : String(error)
+      }`
+    );
   }
 };
 

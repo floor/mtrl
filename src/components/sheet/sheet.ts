@@ -1,23 +1,21 @@
 // src/components/sheet/sheet.ts
-import { PREFIX } from '../../core/config';
-import { pipe } from '../../core/compose';
-import { createBase, withElement } from '../../core/compose/component';
+import { pipe } from "../../core/compose";
+import { createBase, withElement } from "../../core/compose/component";
 import {
   withEvents,
   withVariant,
   withLifecycle,
-  withGestures
-} from '../../core/compose/features';
+} from "../../core/compose/features";
 import {
   withContent,
   withTitle,
   withPosition,
   withState,
-  withGestures as sheetWithGestures
-} from './features';
-import { withAPI } from './api';
-import { SheetConfig, SHEET_VARIANTS, SHEET_POSITIONS } from './types';
-import { createBaseConfig, getElementConfig, getApiConfig } from './config';
+  withGestures as sheetWithGestures,
+} from "./features";
+import { withAPI } from "./api";
+import { SheetConfig } from "./types";
+import { createBaseConfig, getElementConfig, getApiConfig } from "./config";
 
 /**
  * Creates a new Sheet component
@@ -39,7 +37,7 @@ const createSheet = (config: SheetConfig = {}) => {
       withState(baseConfig),
       sheetWithGestures(baseConfig),
       withLifecycle(),
-      comp => withAPI(getApiConfig(comp))(comp)
+      (comp) => withAPI(getApiConfig(comp))(comp)
     )(baseConfig);
 
     // Initialize the sheet (create DOM structure, add event listeners)
@@ -47,7 +45,7 @@ const createSheet = (config: SheetConfig = {}) => {
 
     return sheet;
   } catch (error) {
-    console.error('Sheet creation error:', error);
+    console.error("Sheet creation error:", error);
     throw new Error(`Failed to create sheet: ${(error as Error).message}`);
   }
 };

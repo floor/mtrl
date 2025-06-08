@@ -1,6 +1,11 @@
 // src/components/badge/api.ts
-import { BadgeComponent, BadgeColor, BadgeVariant, BadgePosition } from './types';
-import { formatBadgeLabel } from './config';
+import {
+  BadgeComponent,
+  BadgeColor,
+  BadgeVariant,
+  BadgePosition,
+} from "./types";
+import { formatBadgeLabel } from "./config";
 
 /**
  * API configuration options for badge component
@@ -33,40 +38,50 @@ interface ComponentWithElements {
     variant?: string;
   };
   getClass: (name: string) => string;
-  addClass: (...classes: string[]) => any;
-  removeClass: (...classes: string[]) => any;
-  on: (event: string, handler: Function) => any;
-  off: (event: string, handler: Function) => any;
+  addClass: (...classes: string[]) => ComponentWithElements;
+  removeClass: (...classes: string[]) => ComponentWithElements;
+  on: (event: string, handler: Function) => ComponentWithElements;
+  off: (event: string, handler: Function) => ComponentWithElements;
 }
 
 // Common variant constants for internal use
-const VARIANT_SMALL = 'small';
+const VARIANT_SMALL = "small";
 
 // Map of all badge colors for class removal
 const ALL_COLORS = [
-  'error', 'primary', 'secondary', 'tertiary', 'success', 'warning', 'info'
+  "error",
+  "primary",
+  "secondary",
+  "tertiary",
+  "success",
+  "warning",
+  "info",
 ];
 
 // Map of all badge variants for class removal
-const ALL_VARIANTS = ['small', 'large'];
+const ALL_VARIANTS = ["small", "large"];
 
 // Map of all badge positions for class removal
-const ALL_POSITIONS = ['top-right', 'top-left', 'bottom-right', 'bottom-left'];
+const ALL_POSITIONS = ["top-right", "top-left", "bottom-right", "bottom-left"];
 
 /**
  * Enhances a badge component with API methods.
  * This follows the higher-order function pattern to add public API methods
  * to the component, making them available to the end user.
- * 
+ *
  * @param {ApiOptions} options - API configuration options
  * @returns {Function} Higher-order function that adds API methods to component
  * @category Components
  * @internal This is an internal utility for the Badge component
  */
-export const withAPI = ({ visibility, lifecycle }: ApiOptions) => 
-  (component: ComponentWithElements): BadgeComponent => ({
-    ...component as any,
+export const withAPI =
+  ({ visibility, lifecycle }: ApiOptions) =>
+  (component: ComponentWithElements): BadgeComponent => {
+    const { addClass, removeClass, on, off, ...baseComponent } = component;
     
+    return {
+    ...baseComponent,
+
     /**
      * Sets the badge label
      * @param {string|number} label - Label to display in the badge
@@ -74,43 +89,49 @@ export const withAPI = ({ visibility, lifecycle }: ApiOptions) =>
      */
     setLabel(label: string | number) {
       component.config.label = label;
-      
+
       // Small badges (dot variant) don't have text
       if (component.config.variant === VARIANT_SMALL) {
-        component.element.textContent = '';
+        component.element.textContent = "";
         return this;
       }
-      
+
       // Format the label
       const formattedLabel = formatBadgeLabel(label, component.config.max);
       component.element.textContent = formattedLabel;
-      
+
       // Add overflow class if label was truncated
-      component.element.classList.remove(`${component.getClass('badge')}--overflow`);
-      if (typeof label === 'number' && 
-          component.config.max !== undefined && 
-          label > component.config.max) {
-        component.element.classList.add(`${component.getClass('badge')}--overflow`);
+      component.element.classList.remove(
+        `${component.getClass("badge")}--overflow`
+      );
+      if (
+        typeof label === "number" &&
+        component.config.max !== undefined &&
+        label > component.config.max
+      ) {
+        component.element.classList.add(
+          `${component.getClass("badge")}--overflow`
+        );
       }
-      
+
       // Toggle visibility based on whether label is empty
-      if (formattedLabel === '' || formattedLabel === '0') {
+      if (formattedLabel === "" || formattedLabel === "0") {
         this.hide();
       } else {
         this.show();
       }
-      
+
       return this;
     },
-    
+
     /**
      * Gets the badge label
      * @returns {string} Current badge label
      */
     getLabel() {
-      return component.element.textContent || '';
+      return component.element.textContent || "";
     },
-    
+
     /**
      * Shows the badge
      * @returns {BadgeComponent} Badge component instance for chaining
@@ -119,7 +140,7 @@ export const withAPI = ({ visibility, lifecycle }: ApiOptions) =>
       visibility.show();
       return this;
     },
-    
+
     /**
      * Hides the badge
      * @returns {BadgeComponent} Badge component instance for chaining
@@ -128,7 +149,7 @@ export const withAPI = ({ visibility, lifecycle }: ApiOptions) =>
       visibility.hide();
       return this;
     },
-    
+
     /**
      * Toggles badge visibility
      * @param {boolean} [visible] - Optional flag to force visibility state
@@ -138,7 +159,7 @@ export const withAPI = ({ visibility, lifecycle }: ApiOptions) =>
       visibility.toggle(visible);
       return this;
     },
-    
+
     /**
      * Checks if the badge is visible
      * @returns {boolean} True if badge is visible
@@ -146,24 +167,24 @@ export const withAPI = ({ visibility, lifecycle }: ApiOptions) =>
     isVisible() {
       return visibility.isVisible();
     },
-    
+
     /**
      * Sets maximum value (after which badge shows max+)
-     * 
+     *
      * @param {number} max - Maximum value to display
      * @returns {BadgeComponent} Badge component instance for chaining
      */
     setMax(max: number) {
       component.config.max = max;
-      
+
       // Apply max formatting if current label exceeds max
       if (component.config.label !== undefined) {
         this.setLabel(component.config.label);
       }
-      
+
       return this;
     },
-    
+
     /**
      * Sets badge color
      * @param {string} color - Color variant to apply
@@ -171,15 +192,19 @@ export const withAPI = ({ visibility, lifecycle }: ApiOptions) =>
      */
     setColor(color: BadgeColor | string) {
       // Remove existing color classes
-      ALL_COLORS.forEach(colorName => {
-        component.element.classList.remove(`${component.getClass('badge')}--${colorName}`);
+      ALL_COLORS.forEach((colorName) => {
+        component.element.classList.remove(
+          `${component.getClass("badge")}--${colorName}`
+        );
       });
-      
+
       // Add new color class
-      component.element.classList.add(`${component.getClass('badge')}--${color}`);
+      component.element.classList.add(
+        `${component.getClass("badge")}--${color}`
+      );
       return this;
     },
-    
+
     /**
      * Sets badge variant
      * @param {string} variant - Variant to apply (small or large)
@@ -187,32 +212,36 @@ export const withAPI = ({ visibility, lifecycle }: ApiOptions) =>
      */
     setVariant(variant: BadgeVariant | string) {
       // Remove existing variant classes
-      ALL_VARIANTS.forEach(variantName => {
-        component.element.classList.remove(`${component.getClass('badge')}--${variantName}`);
+      ALL_VARIANTS.forEach((variantName) => {
+        component.element.classList.remove(
+          `${component.getClass("badge")}--${variantName}`
+        );
       });
-      
+
       // Add new variant class
-      component.element.classList.add(`${component.getClass('badge')}--${variant}`);
-      
+      component.element.classList.add(
+        `${component.getClass("badge")}--${variant}`
+      );
+
       // Update component config
       component.config.variant = variant;
-      
+
       // Update accessibility attributes
       if (variant === VARIANT_SMALL) {
-        component.element.textContent = '';
-        component.element.setAttribute('aria-hidden', 'true');
+        component.element.textContent = "";
+        component.element.setAttribute("aria-hidden", "true");
       } else {
-        component.element.setAttribute('role', 'status');
-        
+        component.element.setAttribute("role", "status");
+
         // Restore label for large badges
         if (component.config.label !== undefined) {
           this.setLabel(component.config.label);
         }
       }
-      
+
       return this;
     },
-    
+
     /**
      * Sets badge position
      * @param {string} position - Position variant to apply
@@ -220,16 +249,20 @@ export const withAPI = ({ visibility, lifecycle }: ApiOptions) =>
      */
     setPosition(position: BadgePosition | string) {
       // Remove existing position classes
-      ALL_POSITIONS.forEach(posName => {
-        component.element.classList.remove(`${component.getClass('badge')}--${posName}`);
+      ALL_POSITIONS.forEach((posName) => {
+        component.element.classList.remove(
+          `${component.getClass("badge")}--${posName}`
+        );
       });
-      
+
       // Add new position class
-      component.element.classList.add(`${component.getClass('badge')}--${position}`);
-      
+      component.element.classList.add(
+        `${component.getClass("badge")}--${position}`
+      );
+
       return this;
     },
-    
+
     /**
      * Attaches badge to a target element
      * @param {HTMLElement} target - Element to attach badge to
@@ -240,29 +273,31 @@ export const withAPI = ({ visibility, lifecycle }: ApiOptions) =>
       if (component.wrapper && component.wrapper.contains(component.element)) {
         component.wrapper.removeChild(component.element);
       }
-      
+
       // Create a new wrapper to hold the target and badge
-      const wrapper = document.createElement('div');
-      wrapper.classList.add(component.getClass('badge-wrapper'));
-      wrapper.style.position = 'relative';
-      
+      const wrapper = document.createElement("div");
+      wrapper.classList.add(component.getClass("badge-wrapper"));
+      wrapper.style.position = "relative";
+
       // Replace the target with the wrapper
       const parent = target.parentNode;
       if (parent) {
         parent.replaceChild(wrapper, target);
         wrapper.appendChild(target);
         wrapper.appendChild(component.element);
-        
+
         // Make sure the badge is positioned
-        component.element.classList.add(`${component.getClass('badge')}--positioned`);
-        
+        component.element.classList.add(
+          `${component.getClass("badge")}--positioned`
+        );
+
         // Save the wrapper reference
         component.wrapper = wrapper;
       }
-      
+
       return this;
     },
-    
+
     /**
      * Makes badge standalone (removes from wrapper)
      * @returns {BadgeComponent} Badge component instance for chaining
@@ -271,37 +306,39 @@ export const withAPI = ({ visibility, lifecycle }: ApiOptions) =>
       if (component.wrapper && component.wrapper.contains(component.element)) {
         // Remove the badge from the wrapper
         component.wrapper.removeChild(component.element);
-        
+
         // Remove the positioned class
-        component.element.classList.remove(`${component.getClass('badge')}--positioned`);
-        
+        component.element.classList.remove(
+          `${component.getClass("badge")}--positioned`
+        );
+
         // Add the badge to the document body or another container
         document.body.appendChild(component.element);
-        
+
         // Clear the wrapper reference
         component.wrapper = undefined;
       }
-      
+
       return this;
     },
-    
+
     /**
      * Destroys the badge component and cleans up resources
      */
     destroy() {
       lifecycle.destroy();
-      
+
       // If badge is in a wrapper, restore the original DOM structure
       if (component.wrapper) {
         const target = component.wrapper.firstChild as HTMLElement;
         const parent = component.wrapper.parentNode;
-        
+
         if (parent && target) {
           parent.replaceChild(target, component.wrapper);
         }
       }
     },
-    
+
     // Forward basic component methods for API consistency
     getClass: component.getClass,
     addClass: component.addClass,
@@ -309,5 +346,5 @@ export const withAPI = ({ visibility, lifecycle }: ApiOptions) =>
     on: component.on,
     off: component.off,
     element: component.element,
-    wrapper: component.wrapper
+    wrapper: component.wrapper,
   });

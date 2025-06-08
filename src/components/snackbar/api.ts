@@ -1,15 +1,23 @@
 // src/components/snackbar/api.ts
-import { BaseComponent, SnackbarComponent, ApiOptions, QueuedSnackbar, SnackbarPosition, SnackbarState } from './types';
+import {
+  BaseComponent,
+  SnackbarComponent,
+  ApiOptions,
+  QueuedSnackbar,
+  SnackbarPosition,
+  SnackbarState,
+} from "./types";
 
 /**
  * Enhances snackbar component with API methods
  * @param {ApiOptions} options - API configuration
  * @returns {Function} Higher-order function that adds API methods to component
  */
-export const withAPI = ({ lifecycle, queue }: ApiOptions) => 
+export const withAPI =
+  ({ lifecycle, queue }: ApiOptions) =>
   (component: BaseComponent): SnackbarComponent => {
     if (!queue) {
-      throw new Error('Snackbar queue is required');
+      throw new Error("Snackbar queue is required");
     }
 
     let isVisible = false;
@@ -19,7 +27,9 @@ export const withAPI = ({ lifecycle, queue }: ApiOptions) =>
       actionButton: component.actionButton,
       timer: component.timer,
       position: component.position,
-      state: isVisible ? 'visible' as SnackbarState : 'hidden' as SnackbarState,
+      state: isVisible
+        ? ("visible" as SnackbarState)
+        : ("hidden" as SnackbarState),
 
       /**
        * Shows the snackbar with animation
@@ -28,7 +38,7 @@ export const withAPI = ({ lifecycle, queue }: ApiOptions) =>
       show(): SnackbarComponent {
         if (isVisible) return this;
         isVisible = true;
-        this.state = 'visible';
+        this.state = "visible";
 
         queue.add({
           ...this,
@@ -39,14 +49,16 @@ export const withAPI = ({ lifecycle, queue }: ApiOptions) =>
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const _ = component.element.offsetHeight;
 
-            component.element.classList.add(`${component.getClass?.('snackbar')}--visible`);
+            component.element.classList.add(
+              `${component.getClass?.("snackbar")}--visible`
+            );
 
             if (component.timer) {
               component.timer.start();
             }
 
             return this;
-          }
+          },
         } as QueuedSnackbar);
 
         return this;
@@ -59,23 +71,31 @@ export const withAPI = ({ lifecycle, queue }: ApiOptions) =>
       hide(): SnackbarComponent {
         if (!isVisible) return this;
         isVisible = false;
-        this.state = 'hidden';
+        this.state = "hidden";
 
         if (component.timer) {
           component.timer.stop();
         }
 
         const handleTransitionEnd = (event: TransitionEvent): void => {
-          if (event.propertyName !== 'opacity') return;
+          if (event.propertyName !== "opacity") return;
 
-          component.element.removeEventListener('transitionend', handleTransitionEnd);
+          component.element.removeEventListener(
+            "transitionend",
+            handleTransitionEnd
+          );
           if (component.element.parentNode) {
             component.element.remove();
           }
         };
 
-        component.element.addEventListener('transitionend', handleTransitionEnd);
-        component.element.classList.remove(`${component.getClass?.('snackbar')}--visible`);
+        component.element.addEventListener(
+          "transitionend",
+          handleTransitionEnd
+        );
+        component.element.classList.remove(
+          `${component.getClass?.("snackbar")}--visible`
+        );
 
         return this;
       },
@@ -95,7 +115,7 @@ export const withAPI = ({ lifecycle, queue }: ApiOptions) =>
        * @returns {string} Current message text
        */
       getMessage(): string {
-        return component.text?.getText() || '';
+        return component.text?.getText() || "";
       },
 
       /**
@@ -115,15 +135,17 @@ export const withAPI = ({ lifecycle, queue }: ApiOptions) =>
        * @returns {string} Current action text
        */
       getAction(): string {
-        return component.actionButton ? component.actionButton.textContent || '' : '';
+        return component.actionButton
+          ? component.actionButton.textContent || ""
+          : "";
       },
-     
+
       /**
        * Sets the display duration
        * @param {number} duration - New duration in milliseconds
        * @returns {SnackbarComponent} Component instance for chaining
        */
-      setDuration(duration: number): SnackbarComponent {
+      setDuration(): SnackbarComponent {
         // Implementation would depend on how the timer is configured
         // This is a placeholder implementation
         return this;
@@ -156,7 +178,7 @@ export const withAPI = ({ lifecycle, queue }: ApiOptions) =>
        * @returns {SnackbarPosition} Current position
        */
       getPosition(): SnackbarPosition {
-        return component.position?.getPosition?.() || 'center';
+        return component.position?.getPosition?.() || "center";
       },
 
       /**
@@ -192,14 +214,14 @@ export const withAPI = ({ lifecycle, queue }: ApiOptions) =>
           component.timer.stop();
         }
         lifecycle.destroy();
-      }
+      },
     };
 
     // Set up action button handler
     if (component.actionButton) {
-      component.actionButton.addEventListener('click', () => {
-        component.emit?.('action');
-        component.emit?.('dismiss'); // Emit dismiss to handle queue cleanup
+      component.actionButton.addEventListener("click", () => {
+        component.emit?.("action");
+        component.emit?.("dismiss"); // Emit dismiss to handle queue cleanup
       });
     }
 
@@ -212,12 +234,12 @@ export const withAPI = ({ lifecycle, queue }: ApiOptions) =>
         }
       };
 
-      component.on('dismiss', dismissHandler);
+      component.on("dismiss", dismissHandler);
 
       // Add cleanup to lifecycle
       const originalDestroy = lifecycle.destroy;
       lifecycle.destroy = () => {
-        component.off?.('dismiss', dismissHandler);
+        component.off?.("dismiss", dismissHandler);
         originalDestroy?.call(lifecycle);
       };
     }

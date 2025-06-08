@@ -1,6 +1,6 @@
 // src/components/timepicker/utils.ts
 
-import { TimeValue, TIME_PERIOD, TIME_FORMAT } from './types';
+import { TimeValue, TIME_PERIOD, TIME_FORMAT } from "./types";
 
 /**
  * Pads a number with leading zeros to ensure two-digit format
@@ -8,7 +8,7 @@ import { TimeValue, TIME_PERIOD, TIME_FORMAT } from './types';
  * @returns {string} Padded number string
  */
 export const padZero = (num: number): string => {
-  return num.toString().padStart(2, '0');
+  return num.toString().padStart(2, "0");
 };
 
 /**
@@ -17,36 +17,50 @@ export const padZero = (num: number): string => {
  * @param {TIME_FORMAT} format - Time format (12h or 24h)
  * @returns {TimeValue} Parsed time value
  */
-export const parseTime = (timeString: string, format: TIME_FORMAT): TimeValue => {
+export const parseTime = (
+  timeString: string,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _format: TIME_FORMAT
+): TimeValue => {
+  // Note: format parameter is kept for API compatibility but not used in parsing
   try {
-    const parts = timeString.split(':');
+    const parts = timeString.split(":");
     const hours = parseInt(parts[0], 10);
     const minutes = parseInt(parts[1], 10);
     const seconds = parts[2] ? parseInt(parts[2], 10) : 0;
-    
+
     // Validate time components
     if (
-      isNaN(hours) || hours < 0 || hours > 23 ||
-      isNaN(minutes) || minutes < 0 || minutes > 59 ||
-      isNaN(seconds) || seconds < 0 || seconds > 59
+      isNaN(hours) ||
+      hours < 0 ||
+      hours > 23 ||
+      isNaN(minutes) ||
+      minutes < 0 ||
+      minutes > 59 ||
+      isNaN(seconds) ||
+      seconds < 0 ||
+      seconds > 59
     ) {
-      throw new Error('Invalid time format');
+      throw new Error("Invalid time format");
     }
-    
-    // Determine period for 12-hour format
+
+    // Determine period based on hours (format is kept for API compatibility)
     const period = hours >= 12 ? TIME_PERIOD.PM : TIME_PERIOD.AM;
-    
+
+    // Note: format parameter is kept for API compatibility but not used in parsing
+    // as we always parse the standard 24-hour format string
+
     return { hours, minutes, seconds, period };
   } catch (error) {
-    console.error('Error parsing time:', error);
-    
+    console.error("Error parsing time:", error);
+
     // Return current time as fallback
     const now = new Date();
     const hours = now.getHours();
     const minutes = now.getMinutes();
     const seconds = now.getSeconds();
     const period = hours >= 12 ? TIME_PERIOD.PM : TIME_PERIOD.AM;
-    
+
     return { hours, minutes, seconds, period };
   }
 };
@@ -57,9 +71,12 @@ export const parseTime = (timeString: string, format: TIME_FORMAT): TimeValue =>
  * @param {boolean} use24HourFormat - Whether to use 24-hour format
  * @returns {string} Formatted time string
  */
-export const formatTime = (timeValue: TimeValue, use24HourFormat: boolean): string => {
+export const formatTime = (
+  timeValue: TimeValue,
+  use24HourFormat: boolean
+): string => {
   const { hours, minutes, seconds } = timeValue;
-  
+
   if (use24HourFormat) {
     if (seconds !== undefined) {
       return `${padZero(hours)}:${padZero(minutes)}:${padZero(seconds)}`;
@@ -71,9 +88,11 @@ export const formatTime = (timeValue: TimeValue, use24HourFormat: boolean): stri
     if (displayHours === 0) {
       displayHours = 12;
     }
-    
+
     if (seconds !== undefined) {
-      return `${padZero(displayHours)}:${padZero(minutes)}:${padZero(seconds)} ${timeValue.period}`;
+      return `${padZero(displayHours)}:${padZero(minutes)}:${padZero(
+        seconds
+      )} ${timeValue.period}`;
     }
     return `${padZero(displayHours)}:${padZero(minutes)} ${timeValue.period}`;
   }
@@ -98,13 +117,15 @@ export const convertTo24Hour = (hours: number, period: TIME_PERIOD): number => {
  * @param {number} hours24 - Hours in 24-hour format (0-23)
  * @returns {object} Object with hours in 12-hour format and period
  */
-export const convertTo12Hour = (hours24: number): { hours: number; period: TIME_PERIOD } => {
+export const convertTo12Hour = (
+  hours24: number
+): { hours: number; period: TIME_PERIOD } => {
   const period = hours24 >= 12 ? TIME_PERIOD.PM : TIME_PERIOD.AM;
   let hours12 = hours24 % 12;
   if (hours12 === 0) {
     hours12 = 12;
   }
-  
+
   return { hours: hours12, period };
 };
 
@@ -124,14 +145,17 @@ export const getAngle = (value: number, max: number): number => {
  * @param {number} angle - Angle in degrees
  * @returns {object} Coordinates { x, y }
  */
-export const getCoordinates = (radius: number, angle: number): { x: number; y: number } => {
+export const getCoordinates = (
+  radius: number,
+  angle: number
+): { x: number; y: number } => {
   // Convert angle to radians and adjust to start from top (subtract 90 degrees)
   // In CSS, 0 degrees is at 3 o'clock position, so we subtract 90 to start from 12 o'clock
   const radians = ((angle - 90) * Math.PI) / 180;
-  
+
   return {
     x: radius * Math.cos(radians),
-    y: radius * Math.sin(radians)
+    y: radius * Math.sin(radians),
   };
 };
 
@@ -158,40 +182,40 @@ export const getTimeFromPosition = (
   // Calculate angle from center to click position
   const deltaX = clickX - centerX;
   const deltaY = clickY - centerY;
-  
+
   // Calculate angle in degrees (0 at top, clockwise)
   let angle = Math.atan2(deltaY, deltaX) * (180 / Math.PI) + 90;
   if (angle < 0) {
     angle += 360;
   }
-  
+
   // Calculate distance from center
   const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-  
+
   // For 24h clock, check if click is in inner or outer ring
   if (max === 24 && innerRadius && outerRadius) {
     const isInnerRing = distance < (innerRadius + outerRadius) / 2;
-    
+
     // Calculate value based on angle
     let value = Math.round((angle / 360) * 12);
     if (value === 0) {
       value = 12;
     }
-    
+
     // Adjust for inner ring (add 12 hours)
     if (isInnerRing) {
       value = value === 12 ? 0 : value + 12;
     }
-    
+
     return value;
   }
-  
+
   // For standard 12h clock or minutes/seconds
   let value = Math.round((angle / 360) * max);
   if (value === max) {
     value = 0;
   }
-  
+
   return value;
 };
 
@@ -210,32 +234,33 @@ export const isTimeWithinConstraints = (
   if (!minTime && !maxTime) {
     return true;
   }
-  
-  const timeToCheck = time.hours * 3600 + time.minutes * 60 + (time.seconds || 0);
-  
+
+  const timeToCheck =
+    time.hours * 3600 + time.minutes * 60 + (time.seconds || 0);
+
   if (minTime) {
-    const minParts = minTime.split(':');
+    const minParts = minTime.split(":");
     const minHours = parseInt(minParts[0], 10);
     const minMinutes = parseInt(minParts[1], 10);
     const minSeconds = minParts[2] ? parseInt(minParts[2], 10) : 0;
     const minValue = minHours * 3600 + minMinutes * 60 + minSeconds;
-    
+
     if (timeToCheck < minValue) {
       return false;
     }
   }
-  
+
   if (maxTime) {
-    const maxParts = maxTime.split(':');
+    const maxParts = maxTime.split(":");
     const maxHours = parseInt(maxParts[0], 10);
     const maxMinutes = parseInt(maxParts[1], 10);
     const maxSeconds = maxParts[2] ? parseInt(maxParts[2], 10) : 0;
     const maxValue = maxHours * 3600 + maxMinutes * 60 + maxSeconds;
-    
+
     if (timeToCheck > maxValue) {
       return false;
     }
   }
-  
+
   return true;
 };

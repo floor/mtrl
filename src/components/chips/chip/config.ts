@@ -1,11 +1,10 @@
 // src/components/chips/chip/config.ts
-import { 
-  createComponentConfig, 
+import {
+  createComponentConfig,
   createElementConfig,
-  BaseComponentConfig 
-} from '../../../core/config/component';
+} from "../../../core/config/component";
 
-import { ChipConfig } from '../types';
+import { ChipConfig } from "../types";
 
 /**
  * Component with required elements and methods
@@ -27,8 +26,8 @@ interface BaseComponent {
  * Default configuration for the Chip component
  */
 export const defaultConfig: ChipConfig = {
-  variant: 'filled',
-  ripple: true
+  variant: "filled",
+  ripple: true,
 };
 
 /**
@@ -36,8 +35,8 @@ export const defaultConfig: ChipConfig = {
  * @param {ChipConfig} config - User provided configuration
  * @returns {ChipConfig} Complete configuration with defaults applied
  */
-export const createBaseConfig = (config: ChipConfig = {}): ChipConfig => 
-  createComponentConfig(defaultConfig, config, 'chip') as ChipConfig;
+export const createBaseConfig = (config: ChipConfig = {}): ChipConfig =>
+  createComponentConfig(defaultConfig, config, "chip") as ChipConfig;
 
 /**
  * Generates element configuration for the Chip component
@@ -47,37 +46,38 @@ export const createBaseConfig = (config: ChipConfig = {}): ChipConfig =>
 export const getElementConfig = (config: ChipConfig) => {
   // Create the attributes object
   const attributes: Record<string, any> = {
-    role: 'button',
-    tabindex: '0'
+    role: "button",
+    tabindex: "0",
   };
-  
+
   // Only add aria-disabled attribute if needed
   if (config.disabled === true) {
-    attributes['aria-disabled'] = 'true';
+    attributes["aria-disabled"] = "true";
   }
-  
+
   // Add aria-selected if specified
   if (config.selected === true) {
-    attributes['aria-selected'] = 'true';
+    attributes["aria-selected"] = "true";
   } else if (config.selected === false) {
-    attributes['aria-selected'] = 'false';
+    attributes["aria-selected"] = "false";
   }
 
   // Define additional classes
   const className = [
     config.class,
-    config.selected ? `${config.prefix}-chip--selected` : null
+    config.selected ? `${config.prefix}-chip--selected` : null,
   ];
-  
+
   return createElementConfig(config, {
-    tag: 'div',
+    tag: "div",
     attributes,
     className,
     forwardEvents: {
-      click: (component: BaseComponent) => component.element.getAttribute('aria-disabled') !== 'true',
+      click: (component: BaseComponent) =>
+        component.element.getAttribute("aria-disabled") !== "true",
       keydown: (component: BaseComponent, event: KeyboardEvent) => {
         // Handle space and enter key for accessibility
-        if (event.key === ' ' || event.key === 'Enter') {
+        if (event.key === " " || event.key === "Enter") {
           event.preventDefault();
           component.element.click();
           return true;
@@ -85,8 +85,8 @@ export const getElementConfig = (config: ChipConfig) => {
         return false;
       },
       focus: true,
-      blur: true
-    }
+      blur: true,
+    },
   });
 };
 
@@ -98,11 +98,11 @@ export const getElementConfig = (config: ChipConfig) => {
 export const getApiConfig = (comp: BaseComponent) => ({
   disabled: {
     enable: () => comp.disabled?.enable(),
-    disable: () => comp.disabled?.disable()
+    disable: () => comp.disabled?.disable(),
   },
   lifecycle: {
-    destroy: () => comp.lifecycle?.destroy?.()
-  }
+    destroy: () => comp.lifecycle?.destroy?.(),
+  },
 });
 
 export default defaultConfig;

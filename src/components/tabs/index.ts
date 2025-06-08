@@ -1,11 +1,10 @@
 // src/components/tabs/index.ts
-import createTabs from './tabs';
-import { createTab } from './tab';
-import { addScrollIndicators } from './scroll-indicators';
-import { setupResponsiveBehavior } from './responsive';
-import { createTabsState } from './state';
-import { createTabIndicator } from './indicator';
-import { updateTabPanels, setupKeyboardNavigation } from './utils';
+import createTabs from "./tabs";
+import { addScrollIndicators } from "./scroll-indicators";
+import { setupResponsiveBehavior } from "./responsive";
+import { createTabsState } from "./state";
+import { createTabIndicator } from "./indicator";
+import { updateTabPanels, setupKeyboardNavigation } from "./utils";
 
 // Export constants
 export {
@@ -16,27 +15,27 @@ export {
   TABS_EVENTS,
   TABS_DEFAULTS,
   TABS_CLASSES,
-  TAB_CLASSES
-} from './constants';
+  TAB_CLASSES,
+} from "./constants";
 
-export { 
+export {
   // Types
-  TabsConfig, 
-  TabsComponent, 
-  TabComponent, 
-  TabConfig, 
+  TabsConfig,
+  TabsComponent,
+  TabComponent,
+  TabConfig,
   TabChangeEventData,
-  IndicatorConfig
-} from './types';
+  IndicatorConfig,
+} from "./types";
 
 // Export enhancers and utilities
-export { 
+export {
   addScrollIndicators,
   setupResponsiveBehavior,
   createTabsState,
   createTabIndicator,
   updateTabPanels,
-  setupKeyboardNavigation
+  setupKeyboardNavigation,
 };
 
 // Export features
@@ -51,8 +50,8 @@ export {
   ScrollableComponent,
   DividerConfig,
   IndicatorFeatureConfig,
-  IndicatorComponent
-} from './features';
+  IndicatorComponent,
+} from "./features";
 
 // Default export
 export default createTabs;

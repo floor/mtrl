@@ -1,11 +1,11 @@
 // src/components/slider/config.ts
-import { 
-  createComponentConfig, 
-  createElementConfig
-} from '../../core/config/component';
-import { SliderConfig } from './types';
-import { SLIDER_COLORS, SLIDER_SIZES, SLIDER_DEFAULTS, SLIDER_POSITIONS } from './constants';
-import { createSliderSchema } from './schema';
+import {
+  createComponentConfig,
+  createElementConfig,
+} from "../../core/config/component";
+import { SliderConfig } from "./types";
+import { SLIDER_DEFAULTS } from "./constants";
+import { createSliderSchema } from "./schema";
 
 /**
  * Default configuration for the Slider component
@@ -25,7 +25,7 @@ export const defaultConfig: SliderConfig = {
   centered: SLIDER_DEFAULTS.CENTERED,
   iconPosition: SLIDER_DEFAULTS.ICON_POSITION,
   labelPosition: SLIDER_DEFAULTS.LABEL_POSITION,
-  valueFormatter: (value) => value.toString()
+  valueFormatter: (value) => value.toString(),
 };
 
 /**
@@ -35,21 +35,25 @@ export const defaultConfig: SliderConfig = {
  */
 export const createBaseConfig = (config: SliderConfig = {}): SliderConfig => {
   // Create the base config with defaults applied
-  const baseConfig = createComponentConfig(defaultConfig, config, 'slider') as SliderConfig;
-  
+  const baseConfig = createComponentConfig(
+    defaultConfig,
+    config,
+    "slider"
+  ) as SliderConfig;
+
   // Create a basic component object for structure generation
   const baseComponent = {
-    componentName: 'slider',
+    componentName: "slider",
     config: baseConfig,
     getClass: (className) => {
-      const prefix = baseConfig.prefix || 'mtrl';
+      const prefix = baseConfig.prefix || "mtrl";
       return `${prefix}-${className}`;
-    }
+    },
   };
-  
+
   // Add the structure definition to the config
   baseConfig.schema = createSliderSchema(baseComponent, baseConfig);
-  
+
   return baseConfig;
 };
 
@@ -60,26 +64,26 @@ export const createBaseConfig = (config: SliderConfig = {}): SliderConfig => {
  */
 export const getElementConfig = (config: SliderConfig) => {
   const classes = [
-    'mtrl-slider',
+    "mtrl-slider",
     config.class,
-    config.disabled ? 'mtrl-disabled' : '',
-    config.size ? `mtrl-${config.size}` : '',
-    config.color ? `mtrl-${config.color}` : '',
-    config.iconPosition ? `mtrl-${config.iconPosition}` : '',
-    config.labelPosition ? `mtrl-${config.labelPosition}` : '',
-    config.centered ? 'mtrl-slider--centered' : ''
-  ].join(' ');
+    config.disabled ? "mtrl-disabled" : "",
+    config.size ? `mtrl-${config.size}` : "",
+    config.color ? `mtrl-${config.color}` : "",
+    config.iconPosition ? `mtrl-${config.iconPosition}` : "",
+    config.labelPosition ? `mtrl-${config.labelPosition}` : "",
+    config.centered ? "mtrl-slider--centered" : "",
+  ].join(" ");
 
   return createElementConfig(config, {
-    tag: 'div',
+    tag: "div",
     attributes: {
-      role: 'slider',
-      'aria-valuemin': String(config.min),
-      'aria-valuemax': String(config.max),
-      'aria-valuenow': String(config.value),
-      'aria-orientation': 'horizontal',
-      'tabindex': '0',
-      'aria-disabled': config.disabled ? 'true' : 'false'
+      role: "slider",
+      "aria-valuemin": String(config.min),
+      "aria-valuemax": String(config.max),
+      "aria-valuenow": String(config.value),
+      "aria-orientation": "horizontal",
+      tabindex: "0",
+      "aria-disabled": config.disabled ? "true" : "false",
     },
     className: classes,
     forwardEvents: {
@@ -90,9 +94,9 @@ export const getElementConfig = (config: SliderConfig) => {
       touchend: true,
       mousedown: true,
       mousemove: true,
-      mouseup: true
+      mouseup: true,
     },
-    interactive: true
+    interactive: true,
   });
 };
 
@@ -113,34 +117,34 @@ export const getApiConfig = (comp) => ({
     getMax: () => comp.slider?.getMax() ?? 100,
     setStep: (s) => comp.slider?.setStep(s),
     getStep: () => comp.slider?.getStep() ?? 1,
-    regenerateTicks: () => comp.slider?.regenerateTicks?.()
+    regenerateTicks: () => comp.slider?.regenerateTicks?.(),
   },
   disabled: {
     enable: () => comp.disabled?.enable?.(),
     disable: () => comp.disabled?.disable?.(),
-    isDisabled: () => comp.disabled?.isDisabled?.() ?? false
+    isDisabled: () => comp.disabled?.isDisabled?.() ?? false,
   },
   appearance: {
     setColor: (c) => comp.appearance?.setColor?.(c),
-    getColor: () => comp.appearance?.getColor?.() ?? 'primary',
+    getColor: () => comp.appearance?.getColor?.() ?? "primary",
     setSize: (s) => comp.setSize?.(s),
-    getSize: () => comp.getSize?.() ?? 'XS',
+    getSize: () => comp.getSize?.() ?? "XS",
     showTicks: (s) => comp.appearance?.showTicks?.(s),
-    showCurrentValue: (s) => comp.appearance?.showCurrentValue?.(s)
+    showCurrentValue: (s) => comp.appearance?.showCurrentValue?.(s),
   },
   text: {
     setText: (t) => comp.label?.setText?.(t),
-    getText: () => comp.label?.getText?.() ?? ''
+    getText: () => comp.label?.getText?.() ?? "",
   },
   icon: {
     setIcon: (h) => comp.icon?.setIcon?.(h),
-    getIcon: () => comp.icon?.getIcon?.() ?? ''
+    getIcon: () => comp.icon?.getIcon?.() ?? "",
   },
   events: {
     on: (e, h) => comp.on?.(e, h),
-    off: (e, h) => comp.off?.(e, h)
+    off: (e, h) => comp.off?.(e, h),
   },
   lifecycle: {
-    destroy: () => comp.lifecycle?.destroy?.()
-  }
+    destroy: () => comp.lifecycle?.destroy?.(),
+  },
 });

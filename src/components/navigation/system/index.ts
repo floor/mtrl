@@ -1,17 +1,8 @@
 // src/components/navigation/system/index.ts
 
-import { 
-  NavigationSystemConfig, 
-  NavigationSystemState, 
-  NavigationSystem,
-  ViewChangeEvent
-} from './types';
+import { NavigationSystemConfig, NavigationSystem } from "./types";
 
-import { 
-  createInitialState, 
-  createConfig, 
-  createMobileConfig 
-} from './state';
+import { createInitialState, createConfig, createMobileConfig } from "./state";
 
 import {
   createRailNavigation,
@@ -22,28 +13,30 @@ import {
   isDrawerVisible as isDrawerVisibleCore,
   checkMobileState as checkMobileStateCore,
   cleanupResources,
-  navigateTo as navigateToCore
-} from './core';
+  navigateTo as navigateToCore,
+} from "./core";
 
 import {
   registerRailEvents,
   registerDrawerEvents,
   setupResponsiveHandling,
-  cleanupEvents
-} from './events';
+  cleanupEvents,
+} from "./events";
 
 import {
   setupMobileMode as setupMobileModeCore,
-  teardownMobileMode
-} from './mobile';
+  teardownMobileMode,
+} from "./mobile";
 
 /**
  * Creates a complete navigation system with synchronized rail and drawer components
- * 
+ *
  * @param options - System configuration options
  * @returns Navigation system API
  */
-export const createNavigationSystem = (options: NavigationSystemConfig = {}): NavigationSystem => {
+export const createNavigationSystem = (
+  options: NavigationSystemConfig = {}
+): NavigationSystem => {
   // Initialize state and configuration
   const state = createInitialState(options);
   const config = createConfig(options);
@@ -68,38 +61,37 @@ export const createNavigationSystem = (options: NavigationSystemConfig = {}): Na
     checkMobileState: () => {},
     onSectionChange: undefined,
     onItemSelect: undefined,
-    onViewChange: undefined
+    onViewChange: undefined,
   };
 
   // Implementation functions that use the state
   const showDrawer = () => showDrawerCore(state, mobileConfig);
   const hideDrawer = () => hideDrawerCore(state, mobileConfig);
   const isDrawerVisible = () => isDrawerVisibleCore(state);
-  
+
   const updateDrawerContentWrapper = (sectionId: string) => {
     updateDrawerContent(state, sectionId, showDrawer, hideDrawer);
   };
 
   const setupMobileMode = () => {
-    setupMobileModeCore(
-      state, 
-      mobileConfig, 
-      hideDrawer, 
-      isDrawerVisible
-    );
+    setupMobileModeCore(state, mobileConfig, hideDrawer, isDrawerVisible);
   };
 
   const checkMobileState = () => {
     checkMobileStateCore(
-      state, 
-      mobileConfig, 
-      setupMobileMode, 
-      () => teardownMobileMode(state, mobileConfig), 
+      state,
+      mobileConfig,
+      setupMobileMode,
+      () => teardownMobileMode(state, mobileConfig),
       system
     );
   };
 
-  const navigateTo = (section: string, subsection?: string, silent?: boolean) => {
+  const navigateTo = (
+    section: string,
+    subsection?: string,
+    silent?: boolean
+  ) => {
     navigateToCore(state, section, subsection, silent);
   };
 
@@ -107,28 +99,35 @@ export const createNavigationSystem = (options: NavigationSystemConfig = {}): Na
   const initialize = (): NavigationSystem => {
     // Create rail component
     state.rail = createRailNavigation(state, config);
-    
+
     // Create drawer component
     state.drawer = createDrawerNavigation(state, config);
-    
+
     // Register event handlers
-    registerRailEvents(state, config, updateDrawerContentWrapper, showDrawer, hideDrawer, system);
+    registerRailEvents(
+      state,
+      config,
+      updateDrawerContentWrapper,
+      showDrawer,
+      hideDrawer,
+      system
+    );
     registerDrawerEvents(state, config, hideDrawer, system);
-    
+
     // Set up responsive behavior
     setupResponsiveHandling(state, checkMobileState);
-    
+
     // Set active section if specified
     if (options.activeSection && state.items[options.activeSection]) {
       state.activeSection = options.activeSection;
-      
+
       if (state.rail) {
         state.rail.setActive(options.activeSection);
       }
-      
+
       // Update drawer content without showing it
       updateDrawerContentWrapper(options.activeSection);
-      
+
       // Only show drawer if expanded is explicitly true
       if (options.expanded === true) {
         showDrawer();
@@ -137,10 +136,10 @@ export const createNavigationSystem = (options: NavigationSystemConfig = {}): Na
         hideDrawer();
       }
     }
-    
+
     // Check initial mobile state
     checkMobileState();
-    
+
     return system;
   };
 
@@ -151,10 +150,15 @@ export const createNavigationSystem = (options: NavigationSystemConfig = {}): Na
   };
 
   // Configure method implementation
-  const configure = (newConfig: Partial<NavigationSystemConfig>): NavigationSystem => {
+  const configure = (
+    newConfig: Partial<NavigationSystemConfig>
+  ): NavigationSystem => {
     Object.assign(options, newConfig);
-    Object.assign(config, createConfig({...options, ...newConfig}));
-    Object.assign(mobileConfig, createMobileConfig({...options, ...newConfig}));
+    Object.assign(config, createConfig({ ...options, ...newConfig }));
+    Object.assign(
+      mobileConfig,
+      createMobileConfig({ ...options, ...newConfig })
+    );
     return system;
   };
 
@@ -180,4 +184,4 @@ export const createNavigationSystem = (options: NavigationSystemConfig = {}): Na
 export default createNavigationSystem;
 
 // Re-export types for external use
-export * from './types';
+export * from "./types";

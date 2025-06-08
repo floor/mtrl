@@ -1,11 +1,11 @@
 // src/components/snackbar/config.ts
-import { 
-  createComponentConfig, 
+import {
+  createComponentConfig,
   createElementConfig,
-  BaseComponentConfig 
-} from '../../core/config/component';
-import { SnackbarConfig, BaseComponent, ApiOptions } from './types';
-import { SNACKBAR_VARIANTS, SNACKBAR_POSITIONS, SNACKBAR_DEFAULTS } from './constants';
+  BaseComponentConfig,
+} from "../../core/config/component";
+import { SnackbarConfig, BaseComponent, ApiOptions } from "./types";
+import { SNACKBAR_DEFAULTS } from "./constants";
 
 /**
  * Default configuration for the Snackbar component
@@ -13,7 +13,7 @@ import { SNACKBAR_VARIANTS, SNACKBAR_POSITIONS, SNACKBAR_DEFAULTS } from './cons
 export const defaultConfig: Partial<SnackbarConfig> = {
   variant: SNACKBAR_DEFAULTS.VARIANT,
   position: SNACKBAR_DEFAULTS.POSITION,
-  duration: SNACKBAR_DEFAULTS.DURATION
+  duration: SNACKBAR_DEFAULTS.DURATION,
 };
 
 /**
@@ -21,18 +21,22 @@ export const defaultConfig: Partial<SnackbarConfig> = {
  * @param {SnackbarConfig} config - User provided configuration
  * @returns {SnackbarConfig} Complete configuration with defaults applied
  */
-export const createBaseConfig = (config: SnackbarConfig): SnackbarConfig => 
-  createComponentConfig(defaultConfig as BaseComponentConfig, config, 'snackbar') as SnackbarConfig;
+export const createBaseConfig = (config: SnackbarConfig): SnackbarConfig =>
+  createComponentConfig(
+    defaultConfig as BaseComponentConfig,
+    config,
+    "snackbar"
+  ) as SnackbarConfig;
 
 /**
  * Generates element configuration for the Snackbar component
  * @param {SnackbarConfig} config - Snackbar configuration
  * @returns {Object} Element configuration object for withElement
  */
-export const getElementConfig = (config: SnackbarConfig) => 
+export const getElementConfig = (config: SnackbarConfig) =>
   createElementConfig(config, {
-    tag: 'div',
-    className: config.class
+    tag: "div",
+    className: config.class,
   });
 
 /**
@@ -42,7 +46,7 @@ export const getElementConfig = (config: SnackbarConfig) =>
  */
 export const getTextConfig = (config: SnackbarConfig) => ({
   ...config,
-  text: config.message
+  text: config.message,
 });
 
 /**
@@ -53,9 +57,9 @@ export const getTextConfig = (config: SnackbarConfig) => ({
  */
 export const getApiConfig = (comp: BaseComponent, queue: any): ApiOptions => ({
   lifecycle: {
-    destroy: comp.lifecycle?.destroy || (() => {})
+    destroy: comp.lifecycle?.destroy || (() => {}),
   },
-  queue
+  queue,
 });
 
 export default defaultConfig;

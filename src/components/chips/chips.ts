@@ -1,25 +1,20 @@
 // src/components/chips/chips.ts
-import { pipe } from '../../core/compose/pipe';
-import { createBase } from '../../core/compose/component';
-import { withEvents, withLifecycle } from '../../core/compose/features';
-import { 
-  withLayout, 
-  withIcon, 
-  withLabel as withCompositionLabel, 
-  withDom
-} from '../../core/composition/features';
-import { 
-  withContainer,
-  withChipItems,
-  withController
-} from './features';
-import { withAPI } from './api';
-import { ChipsConfig, ChipsComponent } from './types';
-import { createBaseConfig, getApiConfig } from './config';
+import { pipe } from "../../core/compose/pipe";
+import { createBase } from "../../core/compose/component";
+import { withEvents, withLifecycle } from "../../core/compose/features";
+import {
+  withLayout,
+  withLabel as withCompositionLabel,
+  withDom,
+} from "../../core/composition/features";
+import { withContainer, withChipItems, withController } from "./features";
+import { withAPI } from "./api";
+import { ChipsConfig, ChipsComponent } from "./types";
+import { createBaseConfig, getApiConfig } from "./config";
 
 /**
  * Creates a chips container for grouping related chips
- * 
+ *
  * Chips follows a clear architectural pattern:
  * 1. Structure definition - Describes the DOM structure declaratively
  * 2. Feature enhancement - Adds specific capabilities (container, items, etc.)
@@ -45,25 +40,25 @@ const createChips = (config: ChipsConfig = {}): ChipsComponent => {
       withContainer(baseConfig),
       withCompositionLabel(baseConfig),
       withChipItems(baseConfig),
-      
+
       // Now create the actual DOM elements from the complete structure
       withDom(),
-      
+
       // Add state management and behavior
       withController(baseConfig),
       withLifecycle()
     )(baseConfig);
-    
+
     // Generate the API configuration based on the enhanced component
     const apiOptions = getApiConfig(component);
-    
+
     // Apply the public API layer
     const chips = withAPI(apiOptions)(component);
 
     // Register event handlers from config for convenience
-    if (baseConfig.on && typeof chips.on === 'function') {
+    if (baseConfig.on && typeof chips.on === "function") {
       Object.entries(baseConfig.on).forEach(([event, handler]) => {
-        if (typeof handler === 'function') {
+        if (typeof handler === "function") {
           chips.on(event, handler);
         }
       });
@@ -71,7 +66,7 @@ const createChips = (config: ChipsConfig = {}): ChipsComponent => {
 
     return chips;
   } catch (error) {
-    console.error('Chips creation error:', error);
+    console.error("Chips creation error:", error);
     throw new Error(`Failed to create chip: ${(error as Error).message}`);
   }
 };

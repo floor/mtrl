@@ -1,15 +1,13 @@
 // src/components/progress/constants.ts
 
-import { PREFIX } from '../../core/config';
-
 /**
  * Progress component variants
  */
 export const PROGRESS_VARIANTS = {
   /** Standard horizontal progress bar */
-  LINEAR: 'linear',
+  LINEAR: "linear",
   /** Circular spinner progress indicator */
-  CIRCULAR: 'circular'
+  CIRCULAR: "circular",
 } as const;
 
 /**
@@ -17,9 +15,9 @@ export const PROGRESS_VARIANTS = {
  */
 export const PROGRESS_SHAPES = {
   /** Standard straight line progress */
-  LINE: 'line',
+  LINE: "line",
   /** Wavy animated progress */
-  WAVY: 'wavy'
+  WAVY: "wavy",
 } as const;
 
 /**
@@ -27,9 +25,9 @@ export const PROGRESS_SHAPES = {
  */
 export const PROGRESS_EVENTS = {
   /** Fired when progress value changes */
-  CHANGE: 'change',
+  CHANGE: "change",
   /** Fired when progress reaches 100% */
-  COMPLETE: 'complete'
+  COMPLETE: "complete",
 } as const;
 
 /**
@@ -37,7 +35,7 @@ export const PROGRESS_EVENTS = {
  */
 export const PROGRESS_DEFAULTS = {
   /** Default progress variant */
-  VARIANT: 'linear',
+  VARIANT: "linear",
   /** Initial progress value */
   VALUE: 0,
   /** Maximum progress value */
@@ -45,11 +43,11 @@ export const PROGRESS_DEFAULTS = {
   /** Buffer value for linear progress with buffer */
   BUFFER: 0,
   /** Default shape for linear indeterminate progress */
-  SHAPE: 'line',
+  SHAPE: "line",
   /** Whether to show percentage label */
   SHOW_LABEL: false,
   /** Whether progress is indeterminate */
-  INDETERMINATE: false
+  INDETERMINATE: false,
 } as const;
 
 /**
@@ -57,26 +55,26 @@ export const PROGRESS_DEFAULTS = {
  */
 export const PROGRESS_CLASSES = {
   /** Container element class */
-  CONTAINER: 'progress',
+  CONTAINER: "progress",
   /** Linear variant class */
-  LINEAR: 'progress--linear',
+  LINEAR: "progress--linear",
   /** Circular variant class */
-  CIRCULAR: 'progress--circular',
+  CIRCULAR: "progress--circular",
   /** Track element (unfilled part) class */
-  TRACK: 'progress__track',
+  TRACK: "progress__track",
   /** Indicator element (filled part) class */
-  INDICATOR: 'progress__indicator',
+  INDICATOR: "progress__indicator",
   /** Buffer element class */
-  BUFFER: 'progress__buffer',
+  BUFFER: "progress__buffer",
   /** Label element class */
-  LABEL: 'progress__label',
+  LABEL: "progress__label",
   /** Indeterminate state class */
-  INDETERMINATE: 'progress--indeterminate',
+  INDETERMINATE: "progress--indeterminate",
   /** Disabled state class */
-  DISABLED: 'progress--disabled',
+  DISABLED: "progress--disabled",
   /** Test state class */
-  TEST: 'progress--test',
-  TRANSITION: 'progress--transition'
+  TEST: "progress--test",
+  TRANSITION: "progress--transition",
 } as const;
 
 /**
@@ -87,15 +85,16 @@ export const PROGRESS_MEASUREMENTS = {
     MIN_HEIGHT: 4,
     GAP: 4,
     STOP_INDICATOR: 4,
-    HEIGHT: 4  // Added default height
+    HEIGHT: 4, // Added default height
   },
   CIRCULAR: {
     SIZE: 48,
-    GAP: 8
+    GAP: 8,
   },
-  COMMON: {    // Added common measurements
-    STROKE_WIDTH: 4
-  }
+  COMMON: {
+    // Added common measurements
+    STROKE_WIDTH: 4,
+  },
 } as const;
 
 /**
@@ -106,7 +105,7 @@ export const PROGRESS_THICKNESS = {
   /** Thin stroke width (4px) - default */
   THIN: 4,
   /** Thick stroke width (8px) */
-  THICK: 8
+  THICK: 8,
 } as const;
 
 /**
@@ -130,12 +129,12 @@ export const PROGRESS_WAVE = {
     /** Percentage at which wave amplitude reaches full strength from start */
     START_TRANSITION_END: 0,
     /** Percentage at which wave amplitude begins to decrease near end */
-    END_TRANSITION_START: 0.92
+    END_TRANSITION_START: 0.92,
   },
   /** Circular progress wave parameters */
   CIRCULAR: {
     /** Amplitude as percentage of stroke width */
-    AMPLITUDE_RATIO: 1.8,    /** Maximum amplitude in pixels */
+    AMPLITUDE_RATIO: 1.8 /** Maximum amplitude in pixels */,
     AMPLITUDE_MAX: 5,
     /** Speed of the wave rotation */
     SPEED: 0.008,
@@ -152,6 +151,6 @@ export const PROGRESS_WAVE = {
     /** Percentage at which wave amplitude reaches full strength from start */
     START_TRANSITION_END: 0,
     /** Percentage at which wave amplitude begins to decrease near end */
-    END_TRANSITION_START: 0.92
-  }
+    END_TRANSITION_START: 0.92,
+  },
 } as const;

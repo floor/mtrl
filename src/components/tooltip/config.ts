@@ -1,14 +1,10 @@
 // src/components/tooltip/config.ts
-import { 
-  createComponentConfig, 
-  createElementConfig
-} from '../../core/config/component';
-import { TooltipConfig } from './types';
-import { 
-  TOOLTIP_POSITIONS,
-  TOOLTIP_VARIANTS,
-  TOOLTIP_DEFAULTS
-} from './constants';
+import {
+  createComponentConfig,
+  createElementConfig,
+} from "../../core/config/component";
+import { TooltipConfig } from "./types";
+import { TOOLTIP_DEFAULTS } from "./constants";
 
 /**
  * Default configuration for the Tooltip component
@@ -21,7 +17,7 @@ export const defaultConfig: TooltipConfig = {
   hideDelay: TOOLTIP_DEFAULTS.HIDE_DELAY,
   showOnFocus: TOOLTIP_DEFAULTS.SHOW_ON_FOCUS,
   showOnHover: TOOLTIP_DEFAULTS.SHOW_ON_HOVER,
-  rich: TOOLTIP_DEFAULTS.RICH
+  rich: TOOLTIP_DEFAULTS.RICH,
 };
 
 /**
@@ -29,8 +25,8 @@ export const defaultConfig: TooltipConfig = {
  * @param {TooltipConfig} config - User provided configuration
  * @returns {TooltipConfig} Complete configuration with defaults applied
  */
-export const createBaseConfig = (config: TooltipConfig = {}): TooltipConfig => 
-  createComponentConfig(defaultConfig, config, 'tooltip') as TooltipConfig;
+export const createBaseConfig = (config: TooltipConfig = {}): TooltipConfig =>
+  createComponentConfig(defaultConfig, config, "tooltip") as TooltipConfig;
 
 /**
  * Generates element configuration for the Tooltip component
@@ -40,24 +36,24 @@ export const createBaseConfig = (config: TooltipConfig = {}): TooltipConfig =>
 export const getElementConfig = (config: TooltipConfig) => {
   // Create the attributes object
   const attributes: Record<string, any> = {
-    role: 'tooltip',
-    'aria-hidden': 'true'
+    role: "tooltip",
+    "aria-hidden": "true",
   };
-  
+
   // Add z-index if provided
   if (config.zIndex !== undefined) {
-    attributes['style'] = `z-index: ${config.zIndex};`;
+    attributes["style"] = `z-index: ${config.zIndex};`;
   }
-  
+
   return createElementConfig(config, {
-    tag: 'div',
+    tag: "div",
     attributes,
     className: [
-      config.class, 
+      config.class,
       `${config.prefix}-tooltip--${config.position}`,
-      `${config.prefix}-tooltip--${config.variant}`
+      `${config.prefix}-tooltip--${config.variant}`,
     ],
-    text: config.text || ''
+    text: config.text || "",
   });
 };
 
@@ -68,8 +64,8 @@ export const getElementConfig = (config: TooltipConfig) => {
  */
 export const getApiConfig = (comp) => ({
   lifecycle: {
-    destroy: () => comp.lifecycle.destroy()
-  }
+    destroy: () => comp.lifecycle.destroy(),
+  },
 });
 
 export default defaultConfig;

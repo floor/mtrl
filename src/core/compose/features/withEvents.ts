@@ -1,11 +1,8 @@
 // src/core/compose/features/withEvents.ts
 
-import { createEventManager } from '../../state/events';
-import { BaseComponent, ElementComponent } from '../component';
-import { 
-  hasLifecycle, 
-  ComponentWithLifecycle 
-} from '../utils/type-guards';
+import { createEventManager } from "../../state/events";
+import { BaseComponent, ElementComponent } from "../component";
+import { hasLifecycle } from "../utils/type-guards";
 
 /**
  * Event manager interface
@@ -15,27 +12,29 @@ export interface EnhancedEventManager {
    * Add an event listener
    */
   on: (event: string, handler: Function) => EnhancedEventManager;
-  
+
   /**
    * Remove an event listener
    */
   off: (event: string, handler: Function) => EnhancedEventManager;
-  
+
   /**
    * Add multiple event listeners at once
    */
   addListeners: (listeners: Record<string, Function>) => EnhancedEventManager;
-  
+
   /**
    * Remove multiple event listeners at once
    */
-  removeListeners: (listeners: Record<string, Function>) => EnhancedEventManager;
-  
+  removeListeners: (
+    listeners: Record<string, Function>
+  ) => EnhancedEventManager;
+
   /**
    * One-time event handler
    */
   once: (event: string, handler: Function) => EnhancedEventManager;
-  
+
   /**
    * Clean up all event listeners
    */
@@ -53,11 +52,12 @@ export interface EnhancedEventComponent extends BaseComponent {
 
 /**
  * Adds enhanced event handling capabilities to a component
- * 
+ *
  * @param target - Optional custom event target
  * @returns Function that enhances a component with event capabilities
  */
-export const withEvents = (target?: HTMLElement) => 
+export const withEvents =
+  (target?: HTMLElement) =>
   <C extends ElementComponent>(component: C): C & EnhancedEventComponent => {
     const events = createEventManager(target || component.element);
 
@@ -120,7 +120,7 @@ export const withEvents = (target?: HTMLElement) =>
        */
       destroy() {
         events.destroy();
-      }
+      },
     };
 
     // Add lifecycle integration
@@ -136,6 +136,6 @@ export const withEvents = (target?: HTMLElement) =>
       ...component,
       events: enhancedEvents,
       on: enhancedEvents.on.bind(enhancedEvents),
-      off: enhancedEvents.off.bind(enhancedEvents)
+      off: enhancedEvents.off.bind(enhancedEvents),
     };
   };
