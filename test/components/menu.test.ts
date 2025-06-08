@@ -140,7 +140,7 @@ const createMenu = (config: MenuConfig) => {
   let visible = config.visible || false;
   let items = [...config.items];
   let placement = config.placement || 'bottom-start';
-  let activeSubmenu: HTMLElement | null = null;
+  const activeSubmenu: HTMLElement | null = null;
   
   // Create menu items
   const renderItems = () => {

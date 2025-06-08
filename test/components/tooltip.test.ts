@@ -84,10 +84,10 @@ const createMockTooltip = (config: TooltipConfig = {}): TooltipComponent => {
   let targetElement: HTMLElement | null = config.target || null;
   let positionValue = config.position || TOOLTIP_POSITIONS.BOTTOM;
   let isVisible = !!config.visible;
-  let showDelay = config.showDelay || 300;
-  let hideDelay = config.hideDelay || 100;
-  let showOnFocus = config.showOnFocus !== undefined ? config.showOnFocus : true;
-  let showOnHover = config.showOnHover !== undefined ? config.showOnHover : true;
+  const showDelay = config.showDelay || 300;
+  const hideDelay = config.hideDelay || 100;
+  const showOnFocus = config.showOnFocus !== undefined ? config.showOnFocus : true;
+  const showOnHover = config.showOnHover !== undefined ? config.showOnHover : true;
   
   // Set initial visibility
   if (isVisible) {

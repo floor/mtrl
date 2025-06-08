@@ -1,5 +1,4 @@
 // src/components/snackbar/api.ts
-  // @ts-ignore: Fix later - Module '"./types"' has no exported member 'ApiOptions'.
 import { BaseComponent, SnackbarComponent, ApiOptions, QueuedSnackbar, SnackbarPosition, SnackbarState } from './types';
 
 /**

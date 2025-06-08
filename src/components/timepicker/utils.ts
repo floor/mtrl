@@ -20,7 +20,7 @@ export const padZero = (num: number): string => {
 export const parseTime = (timeString: string, format: TIME_FORMAT): TimeValue => {
   try {
     const parts = timeString.split(':');
-    let hours = parseInt(parts[0], 10);
+    const hours = parseInt(parts[0], 10);
     const minutes = parseInt(parts[1], 10);
     const seconds = parts[2] ? parseInt(parts[2], 10) : 0;
     

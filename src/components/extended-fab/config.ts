@@ -59,7 +59,7 @@ export const getElementConfig = (config: ExtendedFabConfig) => {
   };
   
   // Build class list
-  let classNames = [`${config.prefix}-extended-fab`];
+  const classNames = [`${config.prefix}-extended-fab`];
   
   // Add variant class
   if (config.variant) {

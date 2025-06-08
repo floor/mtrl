@@ -32,10 +32,10 @@ export const withAPI = ({ lifecycle }: ApiOptions) =>
     let isVisible = false;
     let showTimer: number | null = null;
     let hideTimer: number | null = null;
-    let showDelay = 300;
-    let hideDelay = 100;
-    let showOnFocus = true;
-    let showOnHover = true;
+    const showDelay = 300;
+    const hideDelay = 100;
+    const showOnFocus = true;
+    const showOnHover = true;
     
     // Create arrow element
     const arrowElement = document.createElement('div');

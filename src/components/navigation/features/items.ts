@@ -331,10 +331,9 @@ export const withNavItems = (config: NavigationConfig) => (component: BaseCompon
           const parentButton = parentItem.element;
           const container = parentButton.closest(`.${prefix}-${NAV_CLASSES.ITEM_CONTAINER}`);
           if (container) {
-            const nestedContainer = container.querySelector(`.${prefix}-${NAV_CLASSES.NESTED_CONTAINER}`);
+            const nestedContainer = container.querySelector(`.${prefix}-${NAV_CLASSES.NESTED_CONTAINER}`) as HTMLElement;
             if (nestedContainer) {
               parentButton.setAttribute('aria-expanded', 'true');
-  // @ts-ignore: Fix later - Property 'hidden' does not exist on type 'Element'.
               nestedContainer.hidden = false;
             }
           }

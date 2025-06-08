@@ -36,7 +36,6 @@ export const withAPI = ({ disabled, lifecycle }: ApiOptions) =>
     },
 
     // Variant management
-  // @ts-ignore: Fix later - Cannot find name 'TextfieldVariant'.
     setVariant(variant: TextfieldVariant): TextfieldComponent {
       const PREFIX = component.config?.prefix || 'mtrl';
       const COMPONENT = component.config?.componentName || 'textfield';

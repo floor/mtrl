@@ -15,7 +15,7 @@ export const withGestures = (config) => (component) => {
   const position = config.position || SHEET_POSITIONS.BOTTOM;
   let startY = 0;
   let startX = 0;
-  let startTransform = 0;
+  const startTransform = 0;
   let isDragging = false;
   
   // Find drag handle if exists

@@ -30,8 +30,6 @@ export const createBaseConfig = (config: CheckboxConfig = {}): CheckboxConfig =>
 export const getElementConfig = (config: CheckboxConfig) => 
   createElementConfig(config, {
     tag: 'div',
-  // @ts-ignore: Fix later - Object literal may only specify known properties, and 'componentName' does not exist in type '{ tag: string; attributes?: Record<string, any>; className?: string | string[]; html?: string; text?: string; forwardEvents?: Record<string, boolean | ((component: any, event: Event) => boolean)>; interactive?: boolean; }'.
-    componentName: 'checkbox',
     className: config.class,
     interactive: true
   });

@@ -27,9 +27,8 @@ export const withAPI = (options: ApiOptions) =>
     
     getOptions: options.select.getOptions,
     
-    setOptions(options: SelectOption[]): SelectComponent {
-  // @ts-ignore: Fix later - Property 'select' does not exist on type 'SelectOption[]'.
-      options.select.setOptions(options);
+    setOptions(newOptions: SelectOption[]): SelectComponent {
+      options.select.setOptions(newOptions);
       return this;
     },
     

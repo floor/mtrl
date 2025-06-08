@@ -334,7 +334,7 @@ export const createHandlers = (config: SliderConfig, state, uiRenderer, eventHel
     
     const step = state.step || 1;
     let newValue = isSecondHandle ? state.secondValue : state.value;
-    let stepSize = e.shiftKey ? step * 10 : step;
+    const stepSize = e.shiftKey ? step * 10 : step;
     
     // Handle tab key separately
     if (e.key === 'Tab') return;

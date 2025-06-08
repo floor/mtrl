@@ -10,8 +10,7 @@ import { SNACKBAR_VARIANTS, SNACKBAR_POSITIONS, SNACKBAR_DEFAULTS } from './cons
 /**
  * Default configuration for the Snackbar component
  */
-  // @ts-ignore: Fix later - Property 'message' is missing in type '{ variant: "basic"; position: "center"; duration: 4000; }' but required in type 'SnackbarConfig'.
-export const defaultConfig: SnackbarConfig = {
+export const defaultConfig: Partial<SnackbarConfig> = {
   variant: SNACKBAR_DEFAULTS.VARIANT,
   position: SNACKBAR_DEFAULTS.POSITION,
   duration: SNACKBAR_DEFAULTS.DURATION
@@ -23,7 +22,7 @@ export const defaultConfig: SnackbarConfig = {
  * @returns {SnackbarConfig} Complete configuration with defaults applied
  */
 export const createBaseConfig = (config: SnackbarConfig): SnackbarConfig => 
-  createComponentConfig(defaultConfig, config, 'snackbar') as SnackbarConfig;
+  createComponentConfig(defaultConfig as BaseComponentConfig, config, 'snackbar') as SnackbarConfig;
 
 /**
  * Generates element configuration for the Snackbar component
