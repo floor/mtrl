@@ -37,16 +37,25 @@ export const withProgress = (config: ButtonConfig) =>
       return component;
     }
     
+    // Extract event handlers if present
+    let progressEventHandlers: Record<string, Function> = {};
+    
     // Determine progress configuration
     const progressConfig: ProgressConfig = typeof config.progress === 'boolean' 
       ? { variant: 'circular', size: 20, thickness: 2, indeterminate: true }
-      : {
-          variant: 'circular',
-          size: 20,
-          thickness: 2,
-          indeterminate: true,
-          ...config.progress
-        };
+      : (() => {
+          const { on, ...restConfig } = config.progress as any;
+          if (on) {
+            progressEventHandlers = on;
+          }
+          return {
+            variant: 'circular',
+            size: 20,
+            thickness: 2,
+            indeterminate: true,
+            ...restConfig
+          };
+        })();
     
     // Progress will be created lazily
     let progress: ProgressComponent | null = null;
@@ -67,6 +76,11 @@ export const withProgress = (config: ButtonConfig) =>
           
           // Initially hide progress
           progress.element.style.display = 'none';
+          
+          // Attach event handlers if any were provided
+          Object.entries(progressEventHandlers).forEach(([event, handler]) => {
+            progress!.on(event, handler);
+          });
           
           // Store progress reference
           component.progress = progress;

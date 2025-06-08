@@ -169,14 +169,16 @@ $component: '#{base.$prefix}-button';
     &.#{$component}--active {
       border-radius: 50% !important;
     }
-    
+
+
     // Size-specific circular button dimensions
     &.#{$component}--xs {
       // Ensure minimum 48dp touch target for accessibility
-      width: 48px;
-      height: 48px;
+      width: v.button('height-xs');
+      height: v.button('height-xs');
       padding: 8px;
-      
+  
+
       // Adjust icon size to maintain visual proportions
       .#{$component}-icon {
         width: v.button('icon-size-xs');
@@ -187,12 +189,14 @@ $component: '#{base.$prefix}-button';
           height: v.button('icon-size-xs');
         }
       }
+
+
     }
     
     &.#{$component}--s {
       // Ensure minimum 48dp touch target for accessibility
-      width: 48px;
-      height: 48px;
+      width: v.button('height-s');
+      height: v.button('height-s');
       padding: 8px;
       
       // Standard icon size for S
@@ -246,7 +250,7 @@ $component: '#{base.$prefix}-button';
     
     // Override padding adjustments for circular buttons
     &.#{$component}--progress {
-      padding: 8px;
+      padding: 0 !important;
     }
   }
   

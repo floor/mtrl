@@ -13,7 +13,7 @@ $component: '#{base.$prefix}-switch';
   flex-direction: column;
   position: relative;
   width: 100%;
-  padding: 0;
+  padding: 4px 0;
   user-select: none;
 
   // Container for switch and label
@@ -37,6 +37,7 @@ $component: '#{base.$prefix}-switch';
   // Label
   &-label {
     @include m.typography('title-medium');
+    font-size: 18px;
     color: t.color('on-surface');
   }
 

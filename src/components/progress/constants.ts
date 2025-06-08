@@ -120,7 +120,7 @@ export const PROGRESS_WAVE = {
     /** Speed of the wave animation */
     SPEED: 0.008,
     /** Frequency of the wave (affects wavelength) */
-    FREQUENCY: 0.15,
+    FREQUENCY: 0.16,
     /** Frequency for indeterminate animation */
     INDETERMINATE_FREQUENCY: 0.25,
     /** Amplitude for indeterminate animation */
@@ -128,30 +128,30 @@ export const PROGRESS_WAVE = {
     /** Wave shape power (lower = rounder peaks, higher = sharper) */
     POWER: 0.8,
     /** Percentage at which wave amplitude reaches full strength from start */
-    START_TRANSITION_END: 0.07,
+    START_TRANSITION_END: 0,
     /** Percentage at which wave amplitude begins to decrease near end */
     END_TRANSITION_START: 0.92
   },
   /** Circular progress wave parameters */
   CIRCULAR: {
     /** Amplitude as percentage of stroke width */
-    AMPLITUDE_RATIO: 2,    /** Maximum amplitude in pixels */
+    AMPLITUDE_RATIO: 1.8,    /** Maximum amplitude in pixels */
     AMPLITUDE_MAX: 5,
     /** Speed of the wave rotation */
     SPEED: 0.008,
     /** Number of complete waves around the circle */
-    FREQUENCY: 8,
+    FREQUENCY: 10,
     /** Number of complete waves for indeterminate animation */
-    INDETERMINATE_FREQUENCY: 24,
+    INDETERMINATE_FREQUENCY: 16,
     /** Amplitude ratio for indeterminate animation */
-    INDETERMINATE_AMPLITUDE_RATIO: 0.7,
+    INDETERMINATE_AMPLITUDE_RATIO: 1.7,
     /** Maximum amplitude for indeterminate animation */
     INDETERMINATE_AMPLITUDE_MAX: 3,
     /** Wave shape power (lower = rounder peaks, higher = sharper) */
     POWER: 0.8,
     /** Percentage at which wave amplitude reaches full strength from start */
-    START_TRANSITION_END: 0.05,
+    START_TRANSITION_END: 0,
     /** Percentage at which wave amplitude begins to decrease near end */
-    END_TRANSITION_START: 0.97
+    END_TRANSITION_START: 0.92
   }
 } as const;
