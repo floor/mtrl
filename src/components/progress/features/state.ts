@@ -63,7 +63,7 @@ export const withState =
     // Apply shape class immediately if needed (linear only)
     if (
       config.shape &&
-      config.shape !== PROGRESS_SHAPES.LINE &&
+      config.shape !== PROGRESS_SHAPES.FLAT &&
       component.element
     ) {
       const isCircular = component.element.classList.contains(
@@ -84,7 +84,7 @@ export const withState =
       indeterminate: config.indeterminate === true,
       // Store thickness as is (string or number) to maintain the original value
       thickness: config.thickness ?? "thin",
-      shape: config.shape ?? PROGRESS_SHAPES.LINE,
+      shape: config.shape ?? PROGRESS_SHAPES.FLAT,
       labelFormatter:
         config.labelFormatter ??
         ((v: number, m: number): string => `${Math.round((v / m) * 100)}%`),

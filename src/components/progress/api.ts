@@ -111,7 +111,7 @@ export const withAPI =
       if (options.shape && typeof options.shape.getShape === "function") {
         return options.shape.getShape();
       }
-      return PROGRESS_SHAPES.LINE;
+      return PROGRESS_SHAPES.FLAT;
     };
 
     const setShape = (shape: ProgressShape): ProgressComponent => {
@@ -128,7 +128,7 @@ export const withAPI =
         // Start indeterminate animation for linear progress (if not wavy)
         if (!isCircular) {
           const currentShape =
-            options.shape?.getShape() || PROGRESS_SHAPES.LINE;
+            options.shape?.getShape() || PROGRESS_SHAPES.FLAT;
           if (currentShape !== "wavy" && comp.startIndeterminateAnimation) {
             comp.startIndeterminateAnimation();
           }

@@ -108,7 +108,7 @@ export const drawLinearProgress = (
   isIndeterminate: boolean,
   animationTime: number = 0,
   showStopIndicator: boolean = true,
-  currentShape: ProgressShape = "line"
+  currentShape: ProgressShape = "flat"
 ): void => {
   const { ctx, width, height } = context;
   const strokeWidth = getStrokeWidth(config.thickness);

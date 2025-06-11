@@ -69,7 +69,7 @@ export const drawCircularProgress = (
   max: number,
   isIndeterminate: boolean,
   animationTime: number = 0,
-  currentShape: ProgressShape = "line"
+  currentShape: ProgressShape = "flat"
 ): void => {
   const { ctx, width, height } = context;
   const strokeWidth = getStrokeWidth(config.thickness);

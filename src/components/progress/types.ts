@@ -16,7 +16,7 @@ export type ProgressThickness = "thin" | "thick" | number;
  * Progress shape options (linear only)
  * @category Components
  */
-export type ProgressShape = "line" | "wavy";
+export type ProgressShape = "flat" | "wavy";
 
 /**
  * Progress component event types
@@ -74,7 +74,7 @@ export interface ProgressConfig {
   /**
    * Shape of the linear indeterminate progress animation
    * Only affects linear variant in indeterminate state
-   * @default 'line'
+   * @default 'flat'
    */
   shape?: ProgressShape;
 
@@ -251,7 +251,7 @@ export interface ProgressComponent {
   /**
    * Sets the shape of the linear indeterminate progress animation
    * Only affects linear variant in indeterminate state
-   * @param shape - Shape value ('line' or 'wavy')
+   * @param shape - Shape value ('flat' or 'wavy')
    * @returns The progress component for chaining
    */
   setShape: (shape: ProgressShape) => ProgressComponent;

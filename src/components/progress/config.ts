@@ -80,7 +80,7 @@ export const getElementConfig = (config: ProgressConfig) => {
   ].filter(Boolean);
 
   // Add shape class for linear progress
-  if (!isCircular && config.shape && config.shape !== PROGRESS_SHAPES.LINE) {
+  if (!isCircular && config.shape && config.shape !== PROGRESS_SHAPES.FLAT) {
     classList.push(`${PROGRESS_CLASSES.CONTAINER}--${config.shape}`);
   }
 
