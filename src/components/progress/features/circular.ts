@@ -24,7 +24,9 @@ const drawWavyArc = (
 ): void => {
   const steps = Math.max(100, Math.abs(endAngle - startAngle) * 50); // More steps for smoother curves
   const angleStep = (endAngle - startAngle) / steps;
-  const waveSpeed = PROGRESS_WAVE.CIRCULAR.SPEED;
+
+  // Convert rotations per second to radians per millisecond
+  const waveSpeed = (PROGRESS_WAVE.CIRCULAR.SPEED * 2 * Math.PI) / 1000;
 
   ctx.beginPath();
 
@@ -73,27 +75,26 @@ export const drawCircularProgress = (
   const strokeWidth = getStrokeWidth(config.thickness);
   const isWavy = currentShape === "wavy";
 
-  // Calculate size factor and wave amplitude
+  // Calculate size and radius
   const componentSize = Math.min(width, height);
-  const sizeFactor = Math.min(Math.max((componentSize - 40) / 200, 0), 1);
 
-  const amplitudeRatio = isIndeterminate
-    ? PROGRESS_WAVE.CIRCULAR.INDETERMINATE_AMPLITUDE_RATIO
-    : PROGRESS_WAVE.CIRCULAR.AMPLITUDE_RATIO;
-  const amplitudeMax = isIndeterminate
-    ? PROGRESS_WAVE.CIRCULAR.INDETERMINATE_AMPLITUDE_MAX
-    : PROGRESS_WAVE.CIRCULAR.AMPLITUDE_MAX;
+  const amplitudePercent = isIndeterminate
+    ? PROGRESS_WAVE.CIRCULAR.INDETERMINATE_AMPLITUDE
+    : PROGRESS_WAVE.CIRCULAR.AMPLITUDE;
 
-  // Use consistent amplitude scaling based on stroke width
-  const baseAmplitude = amplitudeRatio * 3; // Use same base as linear (3px)
-  const scaledAmplitude = getWaveAmplitude(
-    strokeWidth,
-    baseAmplitude,
-    amplitudeMax
-  );
-  const waveAmplitude = isWavy ? scaledAmplitude * (0.3 + 0.7 * sizeFactor) : 0;
+  // Calculate wave amplitude proportional to the radius
+  // This ensures consistent visual appearance across all sizes
+  const baseRadius = componentSize / 2 - strokeWidth / 2;
 
-  const radius = componentSize / 2 - strokeWidth / 2 - waveAmplitude;
+  // Apply the percentage to get base amplitude (divide by 100 to convert to decimal)
+  const baseAmplitude = baseRadius * (amplitudePercent / 100);
+
+  // Apply subtle stroke width scaling
+  const waveAmplitude = isWavy
+    ? getWaveAmplitude(strokeWidth, baseAmplitude)
+    : 0;
+
+  const radius = baseRadius - waveAmplitude;
   const centerX = width / 2;
   const centerY = height / 2;
 

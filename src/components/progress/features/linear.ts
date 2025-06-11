@@ -258,7 +258,8 @@ export const drawLinearProgress = (
             PROGRESS_WAVE.LINEAR.INDETERMINATE_AMPLITUDE
           )
         : 0,
-      frequency: PROGRESS_WAVE.LINEAR.INDETERMINATE_FREQUENCY,
+      frequency:
+        (PROGRESS_WAVE.LINEAR.INDETERMINATE_FREQUENCY * 2 * Math.PI) / 100,
       speed: 0,
     };
 
@@ -338,8 +339,8 @@ export const drawLinearProgress = (
 
   drawLine(ctx, edgeGap, finalIndicatorEnd, centerY, isWavy, animationTime, {
     amplitude: waveAmplitude,
-    frequency: PROGRESS_WAVE.LINEAR.FREQUENCY,
-    speed: PROGRESS_WAVE.LINEAR.SPEED,
+    frequency: (PROGRESS_WAVE.LINEAR.FREQUENCY * 2 * Math.PI) / 100,
+    speed: (PROGRESS_WAVE.LINEAR.SPEED * 2 * Math.PI) / 1000,
   });
 
   // Draw buffer

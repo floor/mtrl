@@ -116,12 +116,12 @@ export const PROGRESS_WAVE = {
   LINEAR: {
     /** Base amplitude of the wave in pixels */
     AMPLITUDE: 3,
-    /** Speed of the wave animation */
-    SPEED: 0.008,
-    /** Frequency of the wave (affects wavelength) */
-    FREQUENCY: 0.16,
-    /** Frequency for indeterminate animation */
-    INDETERMINATE_FREQUENCY: 0.25,
+    /** Speed of wave animation in waves per second (Hz) */
+    SPEED: 0.88,
+    /** Number of complete waves per 100 pixels */
+    FREQUENCY: 2,
+    /** Number of complete waves per 100 pixels for indeterminate */
+    INDETERMINATE_FREQUENCY: 4,
     /** Amplitude for indeterminate animation */
     INDETERMINATE_AMPLITUDE: 2,
     /** Wave shape power (lower = rounder peaks, higher = sharper) */
@@ -133,19 +133,16 @@ export const PROGRESS_WAVE = {
   },
   /** Circular progress wave parameters */
   CIRCULAR: {
-    /** Amplitude as percentage of stroke width */
-    AMPLITUDE_RATIO: 1.8 /** Maximum amplitude in pixels */,
-    AMPLITUDE_MAX: 5,
-    /** Speed of the wave rotation */
-    SPEED: 0.008,
+    /** Amplitude as percentage of radius (7 = 7%) */
+    AMPLITUDE: 6,
+    /** Amplitude as percentage of radius for indeterminate (4 = 4%) */
+    INDETERMINATE_AMPLITUDE: 4,
+    /** Speed of wave rotation in rotations per second (Hz), negative value means clockwise */
+    SPEED: 1.1,
     /** Number of complete waves around the circle */
     FREQUENCY: 10,
     /** Number of complete waves for indeterminate animation */
     INDETERMINATE_FREQUENCY: 16,
-    /** Amplitude ratio for indeterminate animation */
-    INDETERMINATE_AMPLITUDE_RATIO: 1.7,
-    /** Maximum amplitude for indeterminate animation */
-    INDETERMINATE_AMPLITUDE_MAX: 3,
     /** Wave shape power (lower = rounder peaks, higher = sharper) */
     POWER: 0.8,
     /** Percentage at which wave amplitude reaches full strength from start */

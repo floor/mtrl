@@ -93,8 +93,18 @@ const updateCanvasDimensions = (
       24,
       Math.min(config?.size ?? PROGRESS_MEASUREMENTS.CIRCULAR.SIZE, 240)
     );
-    const waveAmplitude =
-      config?.shape === "wavy" ? Math.min(strokeWidth * 0.4, 3) : 0;
+
+    // Calculate wave amplitude using the same logic as in drawCircularProgress
+    let waveAmplitude = 0;
+    if (config?.shape === "wavy") {
+      const baseRadius = size / 2 - strokeWidth / 2;
+      const amplitudePercent = config?.indeterminate
+        ? PROGRESS_WAVE.CIRCULAR.INDETERMINATE_AMPLITUDE
+        : PROGRESS_WAVE.CIRCULAR.AMPLITUDE;
+      const baseAmplitude = baseRadius * (amplitudePercent / 100);
+      waveAmplitude = getWaveAmplitude(strokeWidth, baseAmplitude);
+    }
+
     const adjustedSize = size + waveAmplitude * 2;
 
     canvas.style.width = canvas.style.height = `${adjustedSize}px`;
