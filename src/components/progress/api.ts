@@ -10,6 +10,28 @@ import {
 import { addClass, removeClass } from "../../core/dom";
 
 /**
+ * Canvas component interface for API
+ */
+interface CanvasComponent {
+  element: HTMLElement;
+  canvas: HTMLCanvasElement;
+  getClass: (name: string) => string;
+  label?: HTMLElement;
+  state?: { label?: HTMLElement };
+  draw?: () => void;
+  setThickness?: (thickness: ProgressThickness) => void;
+  setShape?: (shape: ProgressShape) => void;
+  setValue?: (value: number, animate: boolean) => void;
+  setSize?: (size: number) => void;
+  getSize?: () => number | undefined;
+  hide?: () => void;
+  show?: () => void;
+  isVisible?: () => boolean;
+  startIndeterminateAnimation?: () => void;
+  stopIndeterminateAnimation?: () => void;
+}
+
+/**
  * API configuration options for canvas-based progress component
  */
 interface ApiOptions {
@@ -55,7 +77,7 @@ interface ApiOptions {
  */
 export const withAPI =
   (options: ApiOptions) =>
-  (comp: any): ProgressComponent => {
+  (comp: CanvasComponent): ProgressComponent => {
     // Get element references
     const { element, getClass, canvas } = comp;
 
@@ -65,7 +87,7 @@ export const withAPI =
     );
 
     // Create event emitter helper
-    const emitEvent = (name: string, detail: Record<string, any>): void => {
+    const emitEvent = (name: string, detail: Record<string, unknown>): void => {
       element.dispatchEvent(new CustomEvent(name, { detail }));
     };
 
@@ -87,36 +109,6 @@ export const withAPI =
       if (typeof comp.draw === "function") {
         comp.draw();
       }
-    };
-
-    const getThickness = (): number => {
-      return options.thickness?.getThickness() || PROGRESS_THICKNESS.THIN;
-    };
-
-    const setThickness = (thickness: ProgressThickness): ProgressComponent => {
-      // Update internal state
-      if (options.thickness) {
-        options.thickness.setThickness(thickness);
-      }
-
-      // Call component's setThickness to update canvas
-      if (comp.setThickness) {
-        comp.setThickness(thickness);
-      }
-
-      return comp;
-    };
-
-    const getShape = (): ProgressShape => {
-      if (options.shape && typeof options.shape.getShape === "function") {
-        return options.shape.getShape();
-      }
-      return PROGRESS_SHAPES.FLAT;
-    };
-
-    const setShape = (shape: ProgressShape): ProgressComponent => {
-      comp.setShape?.(shape);
-      return comp;
     };
 
     // Handle indeterminate state by toggling CSS classes and animations
@@ -157,9 +149,9 @@ export const withAPI =
     const api: ProgressComponent = {
       // Element references
       element,
-      track: canvas as any,
-      indicator: canvas as any,
-      buffer: canvas as any,
+      track: canvas as unknown as SVGElement,
+      indicator: canvas as unknown as SVGElement,
+      buffer: canvas as unknown as SVGElement,
       getClass,
 
       // Value management
@@ -253,10 +245,32 @@ export const withAPI =
       },
 
       // Thickness and shape management
-      getThickness,
-      setThickness,
-      getShape,
-      setShape,
+      getThickness(): number {
+        return options.thickness?.getThickness() || PROGRESS_THICKNESS.THIN;
+      },
+      setThickness(thickness: ProgressThickness): ProgressComponent {
+        // Update internal state
+        if (options.thickness) {
+          options.thickness.setThickness(thickness);
+        }
+
+        // Call component's setThickness to update canvas
+        if (comp.setThickness) {
+          comp.setThickness(thickness);
+        }
+
+        return api;
+      },
+      getShape(): ProgressShape {
+        if (options.shape && typeof options.shape.getShape === "function") {
+          return options.shape.getShape();
+        }
+        return PROGRESS_SHAPES.FLAT;
+      },
+      setShape(shape: ProgressShape): ProgressComponent {
+        comp.setShape?.(shape);
+        return api;
+      },
 
       // Size management (circular only)
       setSize(size: number): ProgressComponent {

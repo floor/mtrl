@@ -34,7 +34,33 @@ interface CanvasComponent {
   getClass: (name: string) => string;
   draw: () => void;
   resize: () => void;
-  [key: string]: any;
+  [key: string]: unknown;
+}
+
+/**
+ * Base component interface for withCanvas
+ */
+interface BaseComponent {
+  element: HTMLElement;
+  getClass: (name: string) => string;
+  lifecycle?: {
+    init?: () => void;
+    destroy?: () => void;
+  };
+  state?: {
+    value?: number;
+    max?: number;
+    buffer?: number;
+    indeterminate?: boolean;
+    [key: string]: unknown;
+  };
+  // Animation properties that will be added
+  animationId?: number | null;
+  wavyAnimationId?: number | null;
+  valueAnimationId?: number | null;
+  animationTime?: number;
+  setIndeterminate?: (indeterminate: boolean) => void;
+  [key: string]: unknown;
 }
 
 /**
@@ -168,7 +194,7 @@ const setupCanvas = (
  */
 export const withCanvas =
   (config: ProgressConfig) =>
-  (component: any): CanvasComponent => {
+  (component: BaseComponent): CanvasComponent => {
     const variant = config.variant;
     const isCircular = variant === PROGRESS_VARIANTS.CIRCULAR;
 
@@ -631,7 +657,7 @@ export const withCanvas =
         component.wavyAnimationId,
         component.valueAnimationId,
       ].forEach((id) => {
-        if (id) cancelAnimationFrame(id);
+        if (id) cancelAnimationFrame(id as number);
       });
       component.animationId =
         component.wavyAnimationId =
@@ -683,7 +709,7 @@ export const withCanvas =
           component.wavyAnimationId,
           component.valueAnimationId,
         ].forEach((id) => {
-          if (id) cancelAnimationFrame(id);
+          if (id) cancelAnimationFrame(id as number);
         });
 
         originalDestroy();
