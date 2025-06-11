@@ -258,6 +258,17 @@ export const withAPI =
       getShape,
       setShape,
 
+      // Size management (circular only)
+      setSize(size: number): ProgressComponent {
+        if (comp.setSize) {
+          comp.setSize(size);
+        }
+        return api;
+      },
+      getSize(): number | undefined {
+        return comp.getSize ? comp.getSize() : undefined;
+      },
+
       // State management
       enable(): ProgressComponent {
         options.disabled.enable();
