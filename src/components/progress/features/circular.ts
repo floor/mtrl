@@ -102,10 +102,10 @@ export const drawCircularProgress = (
   ctx.clearRect(0, 0, width, height);
 
   // Calculate gap angle
-  const gapPx = PROGRESS_MEASUREMENTS.CIRCULAR.GAP + 2 * strokeWidth;
-  const gapAngle = gapPx / radius;
+  const topGapPx = PROGRESS_MEASUREMENTS.CIRCULAR.GAP + 2 * strokeWidth;
+  const topGapAngle = topGapPx / radius; // Gap at 12 o'clock
   const startAngle = -Math.PI / 2; // 12 o'clock
-  const maxAngle = 2 * Math.PI - gapAngle;
+  const maxAngle = 2 * Math.PI - topGapAngle;
 
   // Set line properties
   ctx.lineWidth = strokeWidth;
@@ -173,7 +173,7 @@ export const drawCircularProgress = (
     // This creates the visual gap effect
     ctx.beginPath();
     // Add a small gap for visual separation (similar to determinate progress)
-    const trackGapAngle = gapAngle / 2;
+    const trackGapAngle = topGapAngle / 2;
     ctx.arc(
       centerX,
       centerY,
@@ -214,17 +214,37 @@ export const drawCircularProgress = (
   const minArcPercentage = 0.001; // 0.1% minimum arc to show progress is ready
   const actualPercentage = Math.max(percentage, minArcPercentage);
 
-  // Draw track first (always present except at 100%) - track is never wavy
-  if (percentage < 1) {
-    ctx.strokeStyle = getThemeColor("sys-color-primary-rgb", {
-      alpha: 0.12,
-      fallback: "rgba(103, 80, 164, 0.12)",
-    });
-    ctx.beginPath();
-    const trackStart = startAngle + maxAngle * actualPercentage + gapAngle / 2;
-    const trackEnd = startAngle + maxAngle + gapAngle / 2;
-    ctx.arc(centerX, centerY, radius, trackStart, trackEnd);
-    ctx.stroke();
+  // Calculate effective max angle for gap transition
+  const gapTransitionStart = 0.95; // Start closing gap at 95%
+  let effectiveMaxAngle = maxAngle;
+
+  if (percentage >= gapTransitionStart) {
+    // Smoothly transition from gap to no gap between 95% and 100%
+    const transitionProgress =
+      (percentage - gapTransitionStart) / (1 - gapTransitionStart);
+    const easedProgress = transitionProgress * transitionProgress; // Quadratic easing
+    effectiveMaxAngle = maxAngle + topGapAngle * easedProgress;
+  }
+
+  // Draw track first (always present except at 99%) - track is never wavy
+  if (percentage < 0.99) {
+    // Track always starts after progress with a consistent gap
+    const progressEnd = startAngle + effectiveMaxAngle * actualPercentage;
+    const trackStart = progressEnd + topGapAngle / 2;
+
+    // Track end always stays at the same position (maintaining top gap)
+    const trackEnd = startAngle + maxAngle + topGapAngle / 2;
+
+    // Only draw if track is visible (not too small)
+    if (trackStart < trackEnd) {
+      ctx.strokeStyle = getThemeColor("sys-color-primary-rgb", {
+        alpha: 0.12,
+        fallback: "rgba(103, 80, 164, 0.12)",
+      });
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, radius, trackStart, trackEnd);
+      ctx.stroke();
+    }
   }
 
   // Draw progress indicator
@@ -250,14 +270,16 @@ export const drawCircularProgress = (
       const easedProgress = 1 - Math.pow(1 - transitionProgress, 2);
       adjustedWaveAmplitude = waveAmplitude * (1 - easedProgress);
     }
+
+    // Ensure wave amplitude is zero at 100% for seamless closure
+    if (percentage >= 1) {
+      adjustedWaveAmplitude = 0;
+    }
   }
 
   // Draw progress arc
-  const isNearComplete = percentage >= 0.995;
-  const progressStart = isNearComplete ? 0 : startAngle;
-  const progressEnd = isNearComplete
-    ? 2 * Math.PI
-    : startAngle + maxAngle * actualPercentage;
+  const progressStart = startAngle;
+  const progressEnd = startAngle + effectiveMaxAngle * actualPercentage;
 
   if (isWavy) {
     drawWavyArc(
