@@ -17,7 +17,17 @@ interface CanvasComponent {
   canvas: HTMLCanvasElement;
   getClass: (name: string) => string;
   label?: HTMLElement;
-  state?: { label?: HTMLElement };
+  state?: {
+    label?: HTMLElement;
+    showLabel?: boolean;
+    value?: number;
+    max?: number;
+    buffer?: number;
+    indeterminate?: boolean;
+    thickness?: number | string;
+    shape?: ProgressShape;
+    labelFormatter?: (value: number, max: number) => string;
+  };
   draw?: () => void;
   setThickness?: (thickness: ProgressThickness) => void;
   setShape?: (shape: ProgressShape) => void;
@@ -351,6 +361,14 @@ export const withAPI =
         },
       },
     };
+
+    // Initialize label if showLabel is true in config
+    if (comp.state?.showLabel === true) {
+      // Call the show method to create and display the label
+      if (options.label?.show) {
+        options.label.show();
+      }
+    }
 
     return api;
   };

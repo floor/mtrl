@@ -16,6 +16,7 @@ interface ProgressState {
   shape: ProgressShape;
   labelFormatter: (value: number, max: number) => string;
   label?: HTMLElement;
+  showLabel?: boolean;
 }
 
 /**
@@ -30,6 +31,14 @@ interface ComponentWithLifecycle {
     destroy?: () => void;
   };
   getClass?: (name: string) => string;
+  // API methods that may be available after full composition
+  setIndeterminate?: (indeterminate: boolean) => unknown;
+  setValue?: (value: number) => unknown;
+  setBuffer?: (buffer: number) => unknown;
+  setShape?: (shape: ProgressShape) => unknown;
+  showLabel?: () => unknown;
+  setThickness?: (thickness: number | string) => unknown;
+  state?: ProgressState;
   [key: string]: any;
 }
 
@@ -88,6 +97,7 @@ export const withState =
       labelFormatter:
         config.labelFormatter ??
         ((v: number, m: number): string => `${Math.round((v / m) * 100)}%`),
+      showLabel: config.showLabel,
     };
 
     // Store original lifecycle hooks if they exist
@@ -100,19 +110,39 @@ export const withState =
     // Add lifecycle hooks
     component.lifecycle = {
       init: () => {
-        // Initialize with original thickness
-        console.log("State init called with thickness:", state.thickness);
+        // Schedule API initialization for next frame
+        // This ensures all features and API methods are properly attached
+        requestAnimationFrame(() => {
+          try {
+            // Initialize API state based on configuration
+            if (state.indeterminate) {
+              component.setIndeterminate?.(true);
+            } else {
+              component.setValue?.(state.value);
+              if (config.buffer !== undefined) {
+                component.setBuffer?.(state.buffer);
+              }
+            }
 
-        // Store original thickness in state
-        if (state.thickness) {
-          // If API is available, use it to set thickness
-          if (component.setThickness) {
-            component.setThickness(state.thickness);
-          } else {
-            // Otherwise, just store it in state and let canvas handle it
-            component.state.thickness = state.thickness;
+            // Set initial shape if configured (and not default)
+            if (state.shape !== PROGRESS_SHAPES.FLAT && component.setShape) {
+              component.setShape(state.shape);
+            }
+
+            // Initialize thickness
+            if (state.thickness) {
+              // If API is available, use it to set thickness
+              if (component.setThickness) {
+                component.setThickness(state.thickness);
+              } else {
+                // Otherwise, just store it in state and let canvas handle it
+                component.state.thickness = state.thickness;
+              }
+            }
+          } catch (error) {
+            console.error("Error initializing progress state:", error);
           }
-        }
+        });
 
         if (originalInit) originalInit();
       },

@@ -9,7 +9,7 @@ import {
   withLifecycle,
 } from "../../core/compose/features";
 import { withCanvas } from "./features/canvas";
-import { withState } from "./features";
+import { withState } from "./features/state";
 import { withAPI } from "./api";
 import { ProgressConfig, ProgressComponent } from "./types";
 import { createBaseConfig, getElementConfig, getApiConfig } from "./config";
@@ -55,6 +55,11 @@ const createProgress = (config: ProgressConfig = {}): ProgressComponent => {
       },
       withLifecycle()
     )(baseConfig);
+
+    // Initialize the component lifecycle if it has an init method
+    if (component.lifecycle?.init) {
+      component.lifecycle.init();
+    }
 
     return component;
   } catch (error) {

@@ -1,67 +1,66 @@
 // src/styles/main.scss
 
 // Import Sass modules
-@use 'sass:map';
-@use 'sass:list' as sasslist;
-@use 'sass:math';
+@use "sass:map";
+@use "sass:list" as sasslist;
+@use "sass:math";
 
 // Abstract layer
-@use 'abstract/base';
-@use 'abstract/variables' as v;
-@use 'abstract/functions' as f;
-@use 'abstract/mixins' as m;
-@use 'abstract/theme' as t;
+@use "abstract/base";
+@use "abstract/variables" as v;
+@use "abstract/functions" as f;
+@use "abstract/mixins" as m;
+@use "abstract/theme" as t;
 
 // Utilities
-@use 'utilities/spacing';
-@use 'utilities/visibility';
-@use 'utilities/colors';
-@use 'utilities/flexbox';
-@use 'utilities/typography' as typo;
+@use "utilities/spacing";
+@use "utilities/visibility";
+@use "utilities/colors";
+@use "utilities/flexbox";
+@use "utilities/typography" as typo;
 
 // Themes
-@use 'themes/index';
+@use "themes/index";
 
 // Reset
-@use 'base/reset';
-@use 'base/typography';
+@use "base/reset";
+@use "base/typography";
 
 // Components
-@use './components/textfield' as textfield;
-@use './components/badge' as badge;
-@use './components/bottom-app-bar' as bottom-app-bar;
-@use './components/menu' as menu;
-@use './components/slider' as slider;
-@use './components/switch' as switch;
-@use './components/select' as select;
-@use './components/tabs' as tabs;
-@use './components/top-app-bar' as top-app-bar;
+@use "./components/textfield" as textfield;
+@use "./components/badge" as badge;
+@use "./components/bottom-app-bar" as bottom-app-bar;
+@use "./components/menu" as menu;
+@use "./components/slider" as slider;
+@use "./components/switch" as switch;
+@use "./components/select" as select;
+@use "./components/tabs" as tabs;
+@use "./components/top-app-bar" as top-app-bar;
 
-@use './components/button' as button;
-@use './components/fab' as fab;
-@use './components/extended-fab' as extended-fab;
-@use './components/segmented-button' as segmented-button;
-@use './components/card' as card;
-@use './components/carousel' as carousel;
-@use './components/checkbox' as checkbox;
-@use './components/chips' as chips;
-@use './components/datepicker' as datepicker;
-@use './components/dialog' as dialog;
-@use './components/divider' as divider;
+@use "./components/button" as button;
+@use "./components/fab" as fab;
+@use "./components/extended-fab" as extended-fab;
+@use "./components/segmented-button" as segmented-button;
+@use "./components/card" as card;
+@use "./components/carousel" as carousel;
+@use "./components/checkbox" as checkbox;
+@use "./components/chips" as chips;
+@use "./components/datepicker" as datepicker;
+@use "./components/dialog" as dialog;
+@use "./components/divider" as divider;
 
-@use './components/progress' as progress;
+@use "./components/progress" as progress;
 
-@use './components/radios' as radios;
-@use './components/timepicker' as timepicker;
-@use './components/search' as search;
+@use "./components/radios" as radios;
+@use "./components/timepicker" as timepicker;
+@use "./components/search" as search;
 
-@use './components/snackbar' as snackbar;
-@use './components/navigation' as navigation;
-@use './components/list' as list;
+@use "./components/snackbar" as snackbar;
+@use "./components/navigation" as navigation;
+@use "./components/list" as list;
 
-@use './utilities/ripple' as ripple;
-@use './utilities/layout' as layout;
-
+@use "./utilities/ripple" as ripple;
+@use "./utilities/layout" as layout;
 
 // // Dark mode support
 // @media (prefers-color-scheme: dark) {
@@ -76,13 +75,19 @@ body {
   padding: 0;
   background-color: var(--#{base.$prefix}-sys-color-surface);
   color: var(--#{base.$prefix}-sys-color-on-surface);
-  font-family: var(--#{base.$prefix}-sys-typescale-body-medium-font-family-name, 'Roboto'), 
-               var(--#{base.$prefix}-sys-typescale-body-medium-font-family-fallback, sans-serif);
+  font-family: var(
+      --#{base.$prefix}-sys-typescale-body-medium-font-family-name,
+      "Roboto"
+    ),
+    var(
+      --#{base.$prefix}-sys-typescale-body-medium-font-family-fallback,
+      sans-serif
+    );
   font-size: var(--#{base.$prefix}-sys-typescale-body-medium-font-size);
   line-height: var(--#{base.$prefix}-sys-typescale-body-medium-line-height);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  
+
   @include m.motion-transition(background-color, color);
 }
 
@@ -90,11 +95,11 @@ body {
 // a {
 //   color: var(--#{base.$prefix}-sys-color-primary);
 //   text-decoration: none;
-  
+
 //   &:hover {
 //     text-decoration: underline;
 //   }
-  
+
 //   // &:focus-visible {
 //   //   outline: 2px solid var(--#{base.$prefix}-sys-color-primary);
 //   //   outline-offset: 2px;
@@ -110,13 +115,15 @@ body {
 // // Use smooth scrolling for the page
 html {
   scroll-behavior: smooth;
-  
+
   @include m.reduced-motion {
     scroll-behavior: auto;
   }
 }
 
 // Set box-sizing for all elements
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
