@@ -1,6 +1,6 @@
 // src/core/compose/features/checkable.ts
 
-import { BaseComponent } from '../component';
+import { BaseComponent } from "../component";
 
 /**
  * Configuration for checkable feature
@@ -16,7 +16,7 @@ export interface CheckableConfig {
 export interface InputComponent extends BaseComponent {
   element: HTMLElement;
   input: HTMLInputElement;
-  emit?: (event: string, data: any) => InputComponent;
+  emit?: (event: string, data: unknown) => InputComponent;
   on?: (event: string, handler: Function) => InputComponent;
 }
 
@@ -30,21 +30,21 @@ export interface CheckableManager {
    * @returns CheckableManager instance for chaining
    */
   check: () => CheckableManager;
-  
+
   /**
    * Sets the checked state to false
    * Emits change event if state changes
    * @returns CheckableManager instance for chaining
    */
   uncheck: () => CheckableManager;
-  
+
   /**
    * Toggles the current checked state
    * Always emits change event
    * @returns CheckableManager instance for chaining
    */
   toggle: () => CheckableManager;
-  
+
   /**
    * Gets the current checked state
    * @returns Whether component is checked
@@ -66,29 +66,35 @@ export interface CheckableComponent extends BaseComponent {
  * @param config - Checkable configuration
  * @returns Function that enhances a component with checkable functionality
  */
-export const withCheckable = <T extends CheckableConfig>(config: T = {} as T) => 
+export const withCheckable =
+  <T extends CheckableConfig>(config: T = {} as T) =>
   <C extends InputComponent>(component: C): C & CheckableComponent => {
     if (!component.input) return component as C & CheckableComponent;
+
+    // Get the component name from config or component
+    const componentName = component.componentName || "component";
 
     /**
      * Updates component classes to reflect checked state
      */
     const updateStateClasses = (): void => {
       component.element.classList.toggle(
-        `${component.getClass('switch')}--checked`,
+        `${component.getClass(componentName)}--checked`,
         component.input.checked
       );
     };
 
-    // Set initial state
-    if (config.checked) {
-      component.input.checked = true;
-      updateStateClasses();
+    // Set initial state - handle both true and false explicitly
+    if (config.checked !== undefined) {
+      component.input.checked = config.checked;
     }
+
+    // Always update classes to ensure visual state matches input state
+    updateStateClasses();
 
     // Update classes whenever checked state changes
     if (component.emit) {
-      component.on?.('change', updateStateClasses);
+      component.on?.("change", updateStateClasses);
     }
 
     const checkable: CheckableManager = {
@@ -101,9 +107,9 @@ export const withCheckable = <T extends CheckableConfig>(config: T = {} as T) =>
         if (!component.input.checked) {
           component.input.checked = true;
           updateStateClasses();
-          component.emit?.('change', {
+          component.emit?.("change", {
             checked: true,
-            value: component.input.value
+            value: component.input.value,
           });
         }
         return this;
@@ -118,9 +124,9 @@ export const withCheckable = <T extends CheckableConfig>(config: T = {} as T) =>
         if (component.input.checked) {
           component.input.checked = false;
           updateStateClasses();
-          component.emit?.('change', {
+          component.emit?.("change", {
             checked: false,
-            value: component.input.value
+            value: component.input.value,
           });
         }
         return this;
@@ -134,9 +140,9 @@ export const withCheckable = <T extends CheckableConfig>(config: T = {} as T) =>
       toggle() {
         component.input.checked = !component.input.checked;
         updateStateClasses();
-        component.emit?.('change', {
+        component.emit?.("change", {
           checked: component.input.checked,
-          value: component.input.value
+          value: component.input.value,
         });
         return this;
       },
@@ -147,11 +153,11 @@ export const withCheckable = <T extends CheckableConfig>(config: T = {} as T) =>
        */
       isChecked() {
         return component.input.checked;
-      }
+      },
     };
 
     return {
       ...component,
-      checkable
+      checkable,
     };
   };
