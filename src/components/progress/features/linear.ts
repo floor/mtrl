@@ -141,6 +141,9 @@ export const drawLinearProgress = (
     const cycleDuration = 2000;
     const normalizedTime = (animationTime % cycleDuration) / cycleDuration;
 
+    // Define gap size early
+    const indeterminateGap = gapWidth * 2 + strokeWidth / 2; // Double the gap constant + stroke adjustment
+
     // Calculate segment positions using helpers
     const primaryScale = getSegmentScale(normalizedTime, [0.3665, 0.6915]);
     const primaryTranslate = getSegmentTranslate(normalizedTime, [
@@ -163,7 +166,7 @@ export const drawLinearProgress = (
           ]);
 
     // Calculate visible bounds
-    const segments = [
+    const rawSegments = [
       {
         scale: primaryScale,
         translate: primaryTranslate,
@@ -194,23 +197,51 @@ export const drawLinearProgress = (
       },
     ].filter((s) => s.end > s.start);
 
+    // Sort segments by start position
+    const segments = rawSegments.sort((a, b) => a.start - b.start);
+
+    // Check for overlapping segments and merge if needed
+    const mergedSegments = [];
+    for (let i = 0; i < segments.length; i++) {
+      const segment = segments[i];
+
+      if (mergedSegments.length === 0) {
+        mergedSegments.push({ ...segment });
+      } else {
+        const lastMerged = mergedSegments[mergedSegments.length - 1];
+
+        // Check if current segment overlaps with the last merged segment
+        if (segment.start <= lastMerged.end + indeterminateGap) {
+          // Merge segments by extending the end
+          lastMerged.end = Math.max(lastMerged.end, segment.end);
+        } else {
+          // No overlap, add as new segment
+          mergedSegments.push({ ...segment });
+        }
+      }
+    }
+
     // Draw track segments
     setStrokeStyle(ctx, strokeWidth, trackColor);
-    const indeterminateGap = gapWidth * 2 + strokeWidth / 2; // Double the gap constant + stroke adjustment
 
-    if (segments.length === 0) {
+    // Minimum visible segment length to avoid artifacts
+    const minSegmentLength = strokeWidth;
+
+    if (mergedSegments.length === 0) {
+      // No active segments, draw full track
       drawLine(ctx, edgeGap, width - edgeGap, centerY, false, 0, {
         amplitude: 0,
         frequency: 0,
         speed: 0,
       });
     } else {
-      // Before first
-      if (segments[0].start > edgeGap + indeterminateGap) {
+      // Draw track before first segment
+      const firstStart = mergedSegments[0].start;
+      if (firstStart - edgeGap > indeterminateGap + minSegmentLength) {
         drawLine(
           ctx,
           edgeGap,
-          segments[0].start - indeterminateGap,
+          firstStart - indeterminateGap,
           centerY,
           false,
           0,
@@ -218,25 +249,26 @@ export const drawLinearProgress = (
         );
       }
 
-      // Between segments
-      if (
-        segments.length === 2 &&
-        segments[1].start - segments[0].end > 2 * indeterminateGap
-      ) {
-        drawLine(
-          ctx,
-          segments[0].end + indeterminateGap,
-          segments[1].start - indeterminateGap,
-          centerY,
-          false,
-          0,
-          { amplitude: 0, frequency: 0, speed: 0 }
-        );
+      // Draw track between segments (only if we have 2 segments)
+      if (mergedSegments.length === 2) {
+        const gap = mergedSegments[1].start - mergedSegments[0].end;
+        if (gap > 2 * indeterminateGap + minSegmentLength) {
+          drawLine(
+            ctx,
+            mergedSegments[0].end + indeterminateGap,
+            mergedSegments[1].start - indeterminateGap,
+            centerY,
+            false,
+            0,
+            { amplitude: 0, frequency: 0, speed: 0 }
+          );
+        }
       }
 
-      // After last
-      const lastEnd = segments[segments.length - 1].end;
-      if (lastEnd < width - edgeGap - indeterminateGap) {
+      // Draw track after last segment
+      const lastSegment = mergedSegments[mergedSegments.length - 1];
+      const lastEnd = lastSegment.end;
+      if (width - edgeGap - lastEnd > indeterminateGap + minSegmentLength) {
         drawLine(
           ctx,
           lastEnd + indeterminateGap,
@@ -263,7 +295,7 @@ export const drawLinearProgress = (
       speed: 0,
     };
 
-    segments.forEach((segment) => {
+    mergedSegments.forEach((segment) => {
       drawLine(
         ctx,
         segment.start,
