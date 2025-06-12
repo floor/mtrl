@@ -1,19 +1,20 @@
 // src/components/switch/api.ts
-import { BaseComponent, SwitchComponent, ApiOptions } from './types';
+import { BaseComponent, SwitchComponent, ApiOptions } from "./types";
 
 /**
  * Enhances switch component with API methods
  * @param {ApiOptions} options - API configuration
  * @returns {Function} Higher-order function that adds API methods to component
  */
-export const withAPI = ({ disabled, lifecycle, checkable }: ApiOptions) => 
+export const withAPI =
+  ({ disabled, lifecycle, checkable }: ApiOptions) =>
   (component: BaseComponent): SwitchComponent => ({
-    ...component as any,
+    ...component,
     element: component.element,
     input: component.input as HTMLInputElement,
 
     // Value management
-    getValue: component.getValue || (() => ''),
+    getValue: component.getValue || (() => ""),
     setValue(value: string): SwitchComponent {
       component.setValue?.(value);
       return this;
@@ -24,17 +25,17 @@ export const withAPI = ({ disabled, lifecycle, checkable }: ApiOptions) =>
       checkable.check();
       return this;
     },
-    
+
     uncheck(): SwitchComponent {
       checkable.uncheck();
       return this;
     },
-    
+
     toggle(): SwitchComponent {
       checkable.toggle();
       return this;
     },
-    
+
     isChecked(): boolean {
       return checkable.isChecked();
     },
@@ -44,11 +45,11 @@ export const withAPI = ({ disabled, lifecycle, checkable }: ApiOptions) =>
       component.text?.setText(text);
       return this;
     },
-    
+
     getLabel(): string {
-      return component.text?.getText() || '';
+      return component.text?.getText() || "";
     },
-    
+
     // Supporting text management (if present)
     supportingTextElement: component.supportingTextElement || null,
     setSupportingText(text: string, isError?: boolean): SwitchComponent {
@@ -57,7 +58,7 @@ export const withAPI = ({ disabled, lifecycle, checkable }: ApiOptions) =>
       }
       return this;
     },
-    
+
     removeSupportingText(): SwitchComponent {
       if (component.removeSupportingText) {
         component.removeSupportingText();
@@ -70,7 +71,7 @@ export const withAPI = ({ disabled, lifecycle, checkable }: ApiOptions) =>
       component.on?.(event, handler);
       return this;
     },
-    
+
     off(event: string, handler: Function): SwitchComponent {
       component.off?.(event, handler);
       return this;
@@ -81,13 +82,13 @@ export const withAPI = ({ disabled, lifecycle, checkable }: ApiOptions) =>
       disabled.enable();
       return this;
     },
-    
+
     disable(): SwitchComponent {
       disabled.disable();
       return this;
     },
-    
+
     destroy(): void {
       lifecycle.destroy();
-    }
+    },
   });

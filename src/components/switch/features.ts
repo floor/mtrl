@@ -30,7 +30,7 @@ export interface SupportingTextConfig {
    */
   componentName?: string;
 
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 /**
