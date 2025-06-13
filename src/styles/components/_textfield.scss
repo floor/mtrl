@@ -1,12 +1,12 @@
 // src/styles/components/_textfield.scss
-@use '../../styles/abstract/base' as base;
-@use '../../styles/abstract/variables' as v;
-@use '../../styles/abstract/functions' as f;
-@use '../../styles/abstract/mixins' as m;
-@use '../../styles/abstract/theme' as t;
+@use "../../styles/abstract/base" as base;
+@use "../../styles/abstract/variables" as v;
+@use "../../styles/abstract/functions" as f;
+@use "../../styles/abstract/mixins" as m;
+@use "../../styles/abstract/theme" as t;
 
 // Define the component once
-$component: '#{base.$prefix}-textfield';
+$component: "#{base.$prefix}-textfield";
 
 // ===== BASE STYLES =====
 .#{$component} {
@@ -18,7 +18,7 @@ $component: '#{base.$prefix}-textfield';
   flex: 0 0 auto; // Don't grow or shrink; keep natural size
   // Label
   &-label {
-    @include m.typography('body-large');
+    @include m.typography("body-large");
     user-select: none;
     position: absolute;
     left: 16px;
@@ -27,84 +27,85 @@ $component: '#{base.$prefix}-textfield';
     transform-origin: left top;
     pointer-events: none;
     border-radius: 2px;
-    color: t.color('on-surface-variant');
-    transition: transform v.motion('duration-short4') v.motion('easing-emphasized'),
-                color v.motion('duration-short2') v.motion('easing-standard'),
-                left v.motion('duration-short4') v.motion('easing-emphasized');
+    color: t.color("on-surface-variant");
+    transition: transform v.motion("duration-short4")
+        v.motion("easing-emphasized"),
+      color v.motion("duration-short2") v.motion("easing-standard"),
+      left v.motion("duration-short4") v.motion("easing-emphasized");
   }
-  
+
   // Input element
   &-input {
-    @include m.typography('body-large');
-    @include m.shape('extra-small');
+    @include m.typography("body-large");
+    @include m.shape("extra-small");
     padding: 13px 16px;
     width: 100%;
     height: 56px;
-    color: t.color('on-surface');
+    color: t.color("on-surface");
     border: 0;
     appearance: none;
     outline: none;
-    
+
     &::placeholder {
       color: transparent;
     }
 
     // Autofill styles
     &:-webkit-autofill {
-      -webkit-text-fill-color: t.color('on-surface');
+      -webkit-text-fill-color: t.color("on-surface");
       transition: background-color 5000s ease-in-out 0s; // Long transition to keep the background
-      
+
       & ~ .#{$component}-label {
         transform: translateY(-95%) scale(0.75);
-        background-color: t.color('surface');
+        background-color: t.color("surface");
       }
     }
 
     // Firefox autofill
     &:autofill {
-      color: t.color('on-surface');
-      
+      color: t.color("on-surface");
+
       & ~ .#{$component}-label {
         transform: translateY(-95%) scale(0.75);
-        background-color: t.color('surface');
+        background-color: t.color("surface");
       }
     }
   }
-  
+
   // Prefix text
   &-prefix {
-    @include m.typography('body-large');
+    @include m.typography("body-large");
     position: absolute;
     left: 12px;
     top: 50%;
     transform: translateY(-50%);
-    color: t.color('on-surface');
+    color: t.color("on-surface");
     pointer-events: none;
     z-index: 2; // Increased to ensure it stays above input
     white-space: nowrap; // Prevent text wrapping
     max-width: 40%; // Prevent extreme overflow
     overflow: hidden;
     text-overflow: ellipsis;
-    transition: top v.motion('duration-short4') v.motion('easing-emphasized'); // Add transition for top position
+    transition: top v.motion("duration-short4") v.motion("easing-emphasized"); // Add transition for top position
   }
-  
+
   // Suffix text
   &-suffix {
-    @include m.typography('body-large');
+    @include m.typography("body-large");
     position: absolute;
     right: 16px;
     top: 50%;
     transform: translateY(-50%);
-    color: t.color('on-surface');
+    color: t.color("on-surface");
     pointer-events: none;
     z-index: 2; // Increased to ensure it stays above input
     white-space: nowrap; // Prevent text wrapping
     max-width: 40%; // Prevent extreme overflow
     overflow: hidden;
     text-overflow: ellipsis;
-    transition: top v.motion('duration-short4') v.motion('easing-emphasized'); // Add transition for top position
+    transition: top v.motion("duration-short4") v.motion("easing-emphasized"); // Add transition for top position
   }
-  
+
   // Leading icon
   &-leading-icon {
     position: absolute;
@@ -117,16 +118,16 @@ $component: '#{base.$prefix}-textfield';
     width: 24px;
     height: 24px;
     pointer-events: none;
-    color: t.color('on-surface-variant');
+    color: t.color("on-surface-variant");
     z-index: 1;
-    transition: top v.motion('duration-short4') v.motion('easing-emphasized'); // Add transition for top position
-    
+    transition: top v.motion("duration-short4") v.motion("easing-emphasized"); // Add transition for top position
+
     svg {
       width: 20px;
       height: 20px;
     }
   }
-  
+
   // Trailing icon
   &-trailing-icon {
     position: absolute;
@@ -138,17 +139,17 @@ $component: '#{base.$prefix}-textfield';
     justify-content: center;
     width: 24px;
     height: 24px;
-    color: t.color('on-surface-variant');
+    color: t.color("on-surface-variant");
     z-index: 1;
     cursor: pointer;
-    transition: top v.motion('duration-short4') v.motion('easing-emphasized'); // Add transition for top position
-    
+    transition: top v.motion("duration-short4") v.motion("easing-emphasized"); // Add transition for top position
+
     svg {
       width: 20px;
       height: 20px;
     }
   }
-  
+
   // Adjustments when prefix/suffix are present - base case styling
   // JavaScript will handle dynamic sizing, these are fallbacks
   &--with-prefix {
@@ -156,59 +157,59 @@ $component: '#{base.$prefix}-textfield';
       // Default value - will be overridden by JS for precise positioning
       left: 48px;
     }
-    
+
     .#{$component}-input {
       // Default value - will be overridden by JS for precise padding
       padding-left: 48px;
     }
   }
-  
+
   &--with-suffix {
     .#{$component}-input {
       // Default value - will be overridden by JS for precise padding
       padding-right: 48px;
     }
   }
-  
+
   // Adjustments when icons are present
   &--with-leading-icon {
     .#{$component}-label {
       left: 44px;
     }
-    
+
     .#{$component}-input {
       padding-left: 44px;
     }
-    
+
     // If there's also a prefix, adjust positions
     &.#{$component}--with-prefix {
       .#{$component}-prefix {
         left: 44px;
       }
-      
+
       .#{$component}-label {
         // Default value - will be overridden by JS for precise positioning
         left: 76px;
       }
-      
+
       .#{$component}-input {
         // Default value - will be overridden by JS for precise padding
         padding-left: 76px;
       }
     }
   }
-  
+
   &--with-trailing-icon {
     .#{$component}-input {
       padding-right: 44px;
     }
-    
+
     // If there's also a suffix, adjust positions
     &.#{$component}--with-suffix {
       .#{$component}-suffix {
         right: 44px;
       }
-      
+
       .#{$component}-input {
         // Default value - will be overridden by JS for precise padding
         padding-right: 76px;
@@ -218,86 +219,86 @@ $component: '#{base.$prefix}-textfield';
 
   // Error state
   &--error {
-    border-color: t.color('error');
-    
+    border-color: t.color("error");
+
     .#{$component}-label {
-      color: t.color('error');
+      color: t.color("error");
     }
-    
+
     .#{$component}-leading-icon,
     .#{$component}-trailing-icon,
     .#{$component}-prefix,
     .#{$component}-suffix {
-      color: t.color('error');
+      color: t.color("error");
     }
   }
-  
+
   // Disabled state
   &--disabled {
     .#{$component}-input {
       opacity: 0.38;
-      border-color: t.color('on-surface');
-      background-color: t.alpha('on-surface', 0.04);
+      border-color: t.color("on-surface");
+      background-color: t.alpha("on-surface", 0.04);
       pointer-events: none;
     }
-    
+
     .#{$component}-label {
-      color: t.color('on-surface');
+      color: t.color("on-surface");
       opacity: 0.38;
     }
-    
+
     .#{$component}-leading-icon,
     .#{$component}-trailing-icon,
     .#{$component}-prefix,
     .#{$component}-suffix {
-      color: t.color('on-surface');
+      color: t.color("on-surface");
       opacity: 0.38;
     }
   }
-  
+
   // Disabled state - legacy support for direct input disabled
   &-input:disabled {
     opacity: 0.38;
-    border-color: t.color('on-surface');
-    background-color: t.alpha('on-surface', 0.04);
+    border-color: t.color("on-surface");
+    background-color: t.alpha("on-surface", 0.04);
     pointer-events: none;
-    
+
     & ~ .#{$component}-label,
     & ~ .#{$component}-leading-icon,
     & ~ .#{$component}-trailing-icon,
     & ~ .#{$component}-prefix,
     & ~ .#{$component}-suffix {
-      color: t.color('on-surface');
+      color: t.color("on-surface");
       opacity: 0.38;
     }
   }
-  
+
   // Helper text / Supporting text
   &-helper {
-    @include m.typography('body-small');
+    @include m.typography("body-small");
     position: absolute;
     bottom: -18px;
     left: 16px;
     margin-top: 4px;
-    color: t.color('on-surface-variant');
-    
+    color: t.color("on-surface-variant");
+
     &--error {
-      color: t.color('error');
+      color: t.color("error");
     }
   }
-  
+
   // Required indicator
   &-required {
-    color: t.color('error');
+    color: t.color("error");
     margin-left: 4px;
   }
-  
+
   // Accessibility
   @include m.reduced-motion {
     &-label {
       transition: none;
     }
-    
+
     &-prefix,
     &-suffix,
     &-leading-icon,
@@ -305,7 +306,7 @@ $component: '#{base.$prefix}-textfield';
       transition: none;
     }
   }
-  
+
   // RTL support
   @include m.rtl {
     &-label {
@@ -313,46 +314,46 @@ $component: '#{base.$prefix}-textfield';
       right: 16px;
       transform-origin: right top;
     }
-    
+
     &-required {
       margin-left: 0;
       margin-right: 4px;
     }
-    
+
     &-prefix {
       left: auto;
       right: 16px;
     }
-    
+
     &-suffix {
       right: auto;
       left: 16px;
     }
-    
+
     &-leading-icon {
       left: auto;
       right: 12px;
     }
-    
+
     &-trailing-icon {
       right: auto;
       left: 12px;
     }
-    
+
     &--with-prefix {
       .#{$component}-label {
         left: auto;
         // Default value - will be overridden by JS for precise positioning
         right: 48px;
       }
-      
+
       .#{$component}-input {
         padding-left: 16px;
         // Default value - will be overridden by JS for precise padding
         padding-right: 48px;
       }
     }
-    
+
     &--with-suffix {
       .#{$component}-input {
         padding-right: 16px;
@@ -360,30 +361,30 @@ $component: '#{base.$prefix}-textfield';
         padding-left: 48px;
       }
     }
-    
+
     &--with-leading-icon {
       .#{$component}-label {
         left: auto;
         right: 44px;
       }
-      
+
       .#{$component}-input {
         padding-left: 16px;
         padding-right: 44px;
       }
-      
+
       &.#{$component}--with-prefix {
         .#{$component}-prefix {
           left: auto;
           right: 44px;
         }
-        
+
         .#{$component}-label {
           left: auto;
           // Default value - will be overridden by JS for precise positioning
           right: 76px;
         }
-        
+
         .#{$component}-input {
           padding-left: 16px;
           // Default value - will be overridden by JS for precise padding
@@ -391,19 +392,19 @@ $component: '#{base.$prefix}-textfield';
         }
       }
     }
-    
+
     &--with-trailing-icon {
       .#{$component}-input {
         padding-right: 16px;
         padding-left: 44px;
       }
-      
+
       &.#{$component}--with-suffix {
         .#{$component}-suffix {
           right: auto;
           left: 44px;
         }
-        
+
         .#{$component}-input {
           padding-right: 16px;
           // Default value - will be overridden by JS for precise padding
@@ -412,43 +413,42 @@ $component: '#{base.$prefix}-textfield';
       }
     }
   }
-  
+
   // ===== FILLED VARIANT =====
   &--filled {
     .#{$component}-input {
-      background-color: t.color('surface-container-highest');
+      background-color: t.color("surface-container-highest");
       padding: 20px 16px 7px;
-      border-bottom: 1px solid t.color('outline');
-      border-radius: f.get-shape('extra-small') f.get-shape('extra-small') 0 0;
+      border-bottom: 1px solid t.color("outline");
+      border-radius: f.get-shape("extra-small") f.get-shape("extra-small") 0 0;
       @include m.motion-transition(background-color, border-color);
-
 
       // Autofill styles for filled variant
       &:-webkit-autofill {
-        border-radius: f.get-shape('extra-small') f.get-shape('extra-small') 0 0;
-        
+        border-radius: f.get-shape("extra-small") f.get-shape("extra-small") 0 0;
+
         & ~ .#{$component}-label {
           transform: translateY(-95%) scale(0.75);
-          color: t.color('on-surface-variant');
+          color: t.color("on-surface-variant");
         }
       }
 
       &:autofill {
         & ~ .#{$component}-label {
           transform: translateY(-95%) scale(0.75);
-          color: t.color('on-surface-variant');
+          color: t.color("on-surface-variant");
         }
       }
     }
 
     &::before {
-      content: '';
+      content: "";
       position: absolute;
       opacity: 0;
       bottom: 0;
       width: 100%;
       height: 2px;
-      background-color: t.color('primary');
+      background-color: t.color("primary");
       border-radius: 0;
       pointer-events: none;
       transition: 0.2s opacity ease;
@@ -460,7 +460,7 @@ $component: '#{base.$prefix}-textfield';
       transform: translateY(-95%) scale(0.75);
       // Don't specify left position here - let JS handle it
     }
-    
+
     // Position adjustments for prefix/suffix when in filled focused/populated state
     &.mtrl-textfield--with-prefix,
     &.mtrl-textfield--with-suffix {
@@ -473,67 +473,66 @@ $component: '#{base.$prefix}-textfield';
       }
     }
     // Focus state
-    &.#{$component}--focused {    
+    &.#{$component}--focused {
       .#{$component}-label {
-        color: t.color('primary');
+        color: t.color("primary");
       }
-      
-      &::before {
-        opacity: 1
-      }
-    }
-    
-    // Error state
-    &.#{$component}--error {    
+
       &::before {
         opacity: 1;
-        background-color: t.color('error');
+      }
+    }
+
+    // Error state
+    &.#{$component}--error {
+      &::before {
+        opacity: 1;
+        background-color: t.color("error");
       }
 
       .#{$component}-label {
-        color: t.color('error');
+        color: t.color("error");
       }
     }
-    
+
     // Disabled state
     &.#{$component}--disabled {
-      border-bottom-color: t.alpha('on-surface', 0.38);
+      border-bottom-color: t.alpha("on-surface", 0.38);
       pointer-events: none;
-      
+
       .#{$component}-input {
-        background-color: t.alpha('on-surface', 0.04);
+        background-color: t.alpha("on-surface", 0.04);
       }
     }
-    
+
     // Prefix/suffix adjustments for filled variant
     &.#{$component}--with-prefix {
       .#{$component}-prefix {
         top: 28px; // Align with input text in filled variant - default state
       }
     }
-    
+
     &.#{$component}--with-suffix {
       .#{$component}-suffix {
         top: 28px; // Align with input text in filled variant - default state
       }
     }
-    
+
     // Icon adjustments for filled variant
     &.#{$component}--with-leading-icon {
       .#{$component}-input {
         padding: 20px 16px 7px 44px;
       }
-      
+
       .#{$component}-label {
         left: 44px;
       }
-      
+
       .#{$component}-leading-icon {
         top: 28px;
       }
-    
     }
-    
+
     // Populated field (not empty) or focused field label position
     &:not(.#{$component}--empty) .#{$component}-label,
     &.#{$component}--focused .#{$component}-label {
@@ -544,35 +543,34 @@ $component: '#{base.$prefix}-textfield';
       left: 16px;
     }
 
-
     &.#{$component}--with-trailing-icon {
       .#{$component}-input {
         padding-right: 44px;
       }
-      
+
       .#{$component}-trailing-icon {
         top: 28px;
       }
     }
-    
+
     // RTL support
     @include m.rtl {
       .#{$component}-label {
         left: auto;
         right: 16px;
       }
-      
+
       &.#{$component}--with-leading-icon {
         .#{$component}-input {
           padding: 20px 44px 7px 16px;
         }
-        
+
         .#{$component}-label {
           left: auto;
           right: 44px;
         }
       }
-      
+
       &.#{$component}--with-trailing-icon {
         .#{$component}-input {
           padding-right: 16px;
@@ -581,32 +579,32 @@ $component: '#{base.$prefix}-textfield';
       }
     }
   }
-  
+
   // ===== OUTLINED VARIANT =====
   &--outlined {
     background-color: inherit;
-    border-radius: f.get-shape('extra-small');
+    border-radius: f.get-shape("extra-small");
     @include m.motion-transition(border-color);
-    
+
     .#{$component}-input {
       background-color: transparent;
       padding: 12px 15px 13px;
-      border: 1px solid t.color('outline');
+      border: 1px solid t.color("outline");
       @include m.motion-transition(padding);
 
       // Autofill styles for outlined variant
       &:-webkit-autofill {
-        border-radius: f.get-shape('extra-small');
-        
+        border-radius: f.get-shape("extra-small");
+
         & ~ .#{$component}-label {
-          background-color: t.color('surface');
+          background-color: t.color("surface");
           transform: translateY(-145%) scale(0.75);
         }
       }
 
       &:autofill {
         & ~ .#{$component}-label {
-          background-color: t.color('surface');
+          background-color: t.color("surface");
           transform: translateY(-145%) scale(0.75);
         }
       }
@@ -620,13 +618,13 @@ $component: '#{base.$prefix}-textfield';
     }
 
     &::before {
-      content: '';
+      content: "";
       position: absolute;
       opacity: 0;
       width: 100%;
       height: 100%;
-      border: 1.5px solid t.color('primary');
-      border-radius: f.get-shape('extra-small');
+      border: 1.5px solid t.color("primary");
+      border-radius: f.get-shape("extra-small");
       pointer-events: none;
       transition: 0.1s opacity ease;
     }
@@ -651,59 +649,59 @@ $component: '#{base.$prefix}-textfield';
       }
       // &:hover {
       //   &::before {
-          
+
       //   }
       // }
 
       .#{$component}-label {
-        color: t.color('primary');
+        color: t.color("primary");
       }
     }
-    
+
     // Error state
-    &.#{$component}--error {    
+    &.#{$component}--error {
       &::before {
         opacity: 1;
-        border: 2px solid t.color('error');
+        border: 2px solid t.color("error");
       }
 
       .#{$component}-label {
-        color: t.color('error');
+        color: t.color("error");
       }
     }
-    
+
     // Disabled state
     &.#{$component}--disabled {
       pointer-events: none;
       &::before {
         opacity: 1;
-        border: 1px solid t.alpha('on-surface', 0.38);
+        border: 1px solid t.alpha("on-surface", 0.38);
       }
     }
-    
+
     // Prefix/suffix vertical alignment for outlined variant
     &.#{$component}--with-prefix {
       .#{$component}-prefix {
         top: 50%; // Centered vertically in outlined variant
       }
     }
-    
+
     &.#{$component}--with-suffix {
       .#{$component}-suffix {
         top: 50%; // Centered vertically in outlined variant
       }
     }
-    
+
     // Icon adjustments for outlined variant
     &.#{$component}--with-leading-icon {
       .#{$component}-input {
         padding-left: 44px;
       }
-      
+
       .#{$component}-label {
         left: 44px;
       }
-      
+
       // Important change: For outlined variant, when focused/populated
       // we still reset to 12px position (default)
       &:not(.#{$component}--empty) .#{$component}-label,
@@ -711,13 +709,13 @@ $component: '#{base.$prefix}-textfield';
         left: 14px;
       }
     }
-    
+
     &.#{$component}--with-trailing-icon {
       .#{$component}-input {
         padding-right: 44px;
       }
     }
-    
+
     // RTL support
     @include m.rtl {
       &:not(.#{$component}--empty) .#{$component}-label,
@@ -725,26 +723,26 @@ $component: '#{base.$prefix}-textfield';
         left: auto;
         right: 12px;
       }
-      
+
       &.#{$component}--focused .#{$component}-label {
         right: 12px;
       }
-      
+
       &.#{$component}--error .#{$component}-label {
         right: 12px;
       }
-      
+
       &.#{$component}--with-leading-icon {
         .#{$component}-input {
           padding-left: 16px;
           padding-right: 44px;
         }
-        
+
         .#{$component}-label {
           left: auto;
           right: 44px;
         }
-        
+
         &:not(.#{$component}--empty) .#{$component}-label,
         &.#{$component}--focused .#{$component}-label {
           // Reset to default value for focused state
@@ -752,7 +750,7 @@ $component: '#{base.$prefix}-textfield';
           left: auto;
         }
       }
-      
+
       &.#{$component}--with-trailing-icon {
         .#{$component}-input {
           padding-right: 16px;
@@ -761,8 +759,8 @@ $component: '#{base.$prefix}-textfield';
       }
     }
   }
-  
-   // Multiline styles
+
+  // Multiline styles
   &--multiline {
     .#{$component}-input {
       min-height: 100px;
@@ -770,12 +768,12 @@ $component: '#{base.$prefix}-textfield';
       resize: vertical;
       padding-top: 12px;
     }
-    
+
     .#{$component}-prefix,
     .#{$component}-suffix {
       top: 28px;
     }
-    
+
     .#{$component}-label {
       top: 24px;
     }
@@ -787,13 +785,190 @@ $component: '#{base.$prefix}-textfield';
     height: auto; // Allow height to adjust based on content
     max-height: none; // Remove max-height constraint from regular inputs
     flex-shrink: 1; // Allow some shrinking for multiline
-    
+
     & ~ .#{$component}-leading-icon,
     & ~ .#{$component}-trailing-icon,
     & ~ .#{$component}-prefix,
     & ~ .#{$component}-suffix {
       top: 20px;
       transform: none;
+    }
+  }
+
+  // ===== DENSITY VARIANTS =====
+  // Compact density (40px height)
+  &--density-compact {
+    .#{$component}-input {
+      height: 40px;
+      padding: 8px 16px;
+      @include m.typography("body-medium"); // Slightly smaller text
+    }
+
+    // Adjust label position for compact
+    .#{$component}-label {
+      @include m.typography("body-medium");
+    }
+
+    // Adjust icon positions for compact height
+    .#{$component}-leading-icon,
+    .#{$component}-trailing-icon {
+      width: 20px;
+      height: 20px;
+
+      svg {
+        width: 16px;
+        height: 16px;
+      }
+    }
+
+    // Adjust prefix/suffix position for compact
+    .#{$component}-prefix,
+    .#{$component}-suffix {
+      @include m.typography("body-medium");
+    }
+
+    // Filled variant with compact density
+    &.#{$component}--filled {
+      .#{$component}-input {
+        padding: 12px 16px 4px; // Adjusted for filled variant
+      }
+
+      // Populated/focused label position
+      &:not(.#{$component}--empty) .#{$component}-label,
+      &.#{$component}--focused .#{$component}-label {
+        transform: translateY(-90%) scale(0.75); // Adjusted for compact height
+      }
+
+      // Adjust prefix/suffix position when focused/populated
+      &.mtrl-textfield--with-prefix,
+      &.mtrl-textfield--with-suffix {
+        &:not(.#{$component}--empty),
+        &.#{$component}--focused {
+          .#{$component}-prefix,
+          .#{$component}-suffix {
+            top: 22px; // Adjusted for compact filled variant
+          }
+        }
+      }
+
+      // Adjust icons for filled compact
+      .#{$component}-leading-icon,
+      .#{$component}-trailing-icon {
+        top: 20px; // Adjusted for compact filled
+      }
+    }
+
+    // Outlined variant with compact density
+    &.#{$component}--outlined {
+      .#{$component}-input {
+        padding: 8px 15px 9px;
+      }
+
+      // Focused/populated position
+      &:not(.#{$component}--empty) .#{$component}-label,
+      &.#{$component}--focused .#{$component}-label {
+        transform: translateY(-145%) scale(0.75); // Same as default, scale is important
+      }
+    }
+
+    // Multiline with compact density
+    &.#{$component}--multiline {
+      .#{$component}-input {
+        min-height: 40px;
+        padding: 8px 16px;
+      }
+    }
+
+    // Adjust element positions for compact with icons
+    &.#{$component}--with-leading-icon {
+      .#{$component}-label {
+        left: 40px; // Reduced from 44px
+      }
+
+      .#{$component}-input {
+        padding-left: 40px;
+      }
+
+      &.#{$component}--with-prefix {
+        .#{$component}-prefix {
+          left: 40px;
+        }
+
+        .#{$component}-label {
+          left: 68px; // Adjusted for compact
+        }
+
+        .#{$component}-input {
+          padding-left: 68px;
+        }
+      }
+    }
+
+    &.#{$component}--with-trailing-icon {
+      .#{$component}-input {
+        padding-right: 40px;
+      }
+
+      &.#{$component}--with-suffix {
+        .#{$component}-suffix {
+          right: 40px;
+        }
+
+        .#{$component}-input {
+          padding-right: 68px;
+        }
+      }
+    }
+
+    // RTL adjustments for compact density
+    @include m.rtl {
+      &.#{$component}--with-leading-icon {
+        .#{$component}-label {
+          left: auto;
+          right: 40px;
+        }
+
+        .#{$component}-input {
+          padding-left: 16px;
+          padding-right: 40px;
+        }
+
+        &.#{$component}--with-prefix {
+          .#{$component}-prefix {
+            left: auto;
+            right: 40px;
+          }
+
+          .#{$component}-label {
+            left: auto;
+            right: 68px;
+          }
+
+          .#{$component}-input {
+            padding-left: 16px;
+            padding-right: 68px;
+          }
+        }
+      }
+
+      &.#{$component}--with-trailing-icon {
+        .#{$component}-input {
+          padding-right: 16px;
+          padding-left: 40px;
+        }
+
+        &.#{$component}--with-suffix {
+          .#{$component}-suffix {
+            right: auto;
+            left: 40px;
+          }
+
+          .#{$component}-input {
+            padding-right: 16px;
+            padding-left: 68px;
+          }
+        }
+      }
     }
   }
 }

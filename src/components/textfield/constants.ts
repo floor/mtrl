@@ -6,22 +6,9 @@
  */
 export const TEXTFIELD_VARIANTS = {
   /** Filled variant with background and animated label */
-  FILLED: 'filled',
+  FILLED: "filled",
   /** Outlined variant with border and animated label */
-  OUTLINED: 'outlined'
-} as const;
-
-/**
- * Textfield size constants
- * @category Components
- */
-export const TEXTFIELD_SIZES = {
-  /** Small textfield */
-  SMALL: 'small',
-  /** Medium textfield (default) */
-  MEDIUM: 'medium',
-  /** Large textfield */
-  LARGE: 'large'
+  OUTLINED: "outlined",
 } as const;
 
 /**
@@ -30,11 +17,11 @@ export const TEXTFIELD_SIZES = {
  */
 export const TEXTFIELD_STATES = {
   /** Textfield is active (focused) */
-  ACTIVE: 'active',
+  ACTIVE: "active",
   /** Textfield is inactive (not focused) */
-  INACTIVE: 'inactive',
+  INACTIVE: "inactive",
   /** Textfield is disabled */
-  DISABLED: 'disabled'
+  DISABLED: "disabled",
 } as const;
 
 /**
@@ -43,21 +30,21 @@ export const TEXTFIELD_STATES = {
  */
 export const TEXTFIELD_TYPES = {
   /** Standard text input */
-  TEXT: 'text',
+  TEXT: "text",
   /** Password input with obscured characters */
-  PASSWORD: 'password',
+  PASSWORD: "password",
   /** Email input with email validation */
-  EMAIL: 'email',
+  EMAIL: "email",
   /** Numeric input */
-  NUMBER: 'number',
+  NUMBER: "number",
   /** Telephone number input */
-  TEL: 'tel',
+  TEL: "tel",
   /** URL input with URL validation */
-  URL: 'url',
+  URL: "url",
   /** Search input */
-  SEARCH: 'search',
+  SEARCH: "search",
   /** Multiline text input (textarea) */
-  MULTILINE: 'multiline'
+  MULTILINE: "multiline",
 } as const;
 
 /**
@@ -66,19 +53,30 @@ export const TEXTFIELD_TYPES = {
  */
 export const TEXTFIELD_EVENTS = {
   /** Fired when textfield value changes */
-  CHANGE: 'change',
+  CHANGE: "change",
   /** Fired during input */
-  INPUT: 'input',
+  INPUT: "input",
   /** Fired when textfield receives focus */
-  FOCUS: 'focus',
+  FOCUS: "focus",
   /** Fired when textfield loses focus */
-  BLUR: 'blur',
+  BLUR: "blur",
   /** Fired when enter key is pressed */
-  ENTER: 'enter',
+  ENTER: "enter",
   /** Fired when a key is pressed down */
-  KEYDOWN: 'keydown',
+  KEYDOWN: "keydown",
   /** Fired when a key is released */
-  KEYUP: 'keyup'
+  KEYUP: "keyup",
+} as const;
+
+/**
+ * Textfield density constants
+ * @category Components
+ */
+export const TEXTFIELD_DENSITY = {
+  /** Default density (56px height) */
+  DEFAULT: "default",
+  /** Compact density (40px height) */
+  COMPACT: "compact",
 } as const;
 
 /**
@@ -90,8 +88,8 @@ export const TEXTFIELD_DEFAULTS = {
   TYPE: TEXTFIELD_TYPES.TEXT,
   /** Default visual variant */
   VARIANT: TEXTFIELD_VARIANTS.FILLED,
-  /** Default textfield size */
-  SIZE: TEXTFIELD_SIZES.MEDIUM,
+  /** Default density level */
+  DENSITY: TEXTFIELD_DENSITY.DEFAULT,
   /** Default disabled state */
   DISABLED: false,
   /** Default required state */
@@ -101,7 +99,7 @@ export const TEXTFIELD_DEFAULTS = {
   /** Default label floating behavior (always floats on focus) */
   FLOAT_LABEL: true,
   /** Default animation duration in milliseconds */
-  ANIMATION_DURATION: 150
+  ANIMATION_DURATION: 150,
 } as const;
 
 /**
@@ -110,47 +108,41 @@ export const TEXTFIELD_DEFAULTS = {
  */
 export const TEXTFIELD_CLASSES = {
   /** Root element class */
-  ROOT: 'textfield',
+  ROOT: "textfield",
   /** Input element class */
-  INPUT: 'textfield-input',
+  INPUT: "textfield-input",
   /** Label element class */
-  LABEL: 'textfield-label',
+  LABEL: "textfield-label",
   /** Container element class */
-  CONTAINER: 'textfield-container',
+  CONTAINER: "textfield-container",
   /** Filled variant class */
-  FILLED: 'textfield--filled',
+  FILLED: "textfield--filled",
   /** Outlined variant class */
-  OUTLINED: 'textfield--outlined',
-  /** Small size class */
-  SMALL: 'textfield--small',
-  /** Medium size class */
-  MEDIUM: 'textfield--medium',
-  /** Large size class */
-  LARGE: 'textfield--large',
+  OUTLINED: "textfield--outlined",
   /** Focused state class */
-  FOCUSED: 'textfield--focused',
+  FOCUSED: "textfield--focused",
   /** Disabled state class */
-  DISABLED: 'textfield--disabled',
+  DISABLED: "textfield--disabled",
   /** Error state class */
-  ERROR: 'textfield--error',
+  ERROR: "textfield--error",
   /** Required indicator class */
-  REQUIRED: 'textfield--required',
+  REQUIRED: "textfield--required",
   /** Floating label class */
-  LABEL_FLOATING: 'textfield-label--floating',
+  LABEL_FLOATING: "textfield-label--floating",
   /** Supporting text class */
-  SUPPORTING_TEXT: 'textfield-supporting-text',
+  SUPPORTING_TEXT: "textfield-supporting-text",
   /** Supporting text error class */
-  SUPPORTING_TEXT_ERROR: 'textfield-supporting-text--error',
+  SUPPORTING_TEXT_ERROR: "textfield-supporting-text--error",
   /** Leading icon class */
-  LEADING_ICON: 'textfield-leading-icon',
+  LEADING_ICON: "textfield-leading-icon",
   /** Trailing icon class */
-  TRAILING_ICON: 'textfield-trailing-icon',
+  TRAILING_ICON: "textfield-trailing-icon",
   /** Prefix text class */
-  PREFIX_TEXT: 'textfield-prefix-text',
+  PREFIX_TEXT: "textfield-prefix-text",
   /** Suffix text class */
-  SUFFIX_TEXT: 'textfield-suffix-text',
+  SUFFIX_TEXT: "textfield-suffix-text",
   /** Outline element class (for outlined variant) */
-  OUTLINE: 'textfield-outline',
+  OUTLINE: "textfield-outline",
   /** Multiline class */
-  MULTILINE: 'textfield--multiline'
+  MULTILINE: "textfield--multiline",
 } as const;

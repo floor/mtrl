@@ -75,7 +75,6 @@ $component: "#{base.$prefix}-progress";
       position: absolute;
       right: 0;
       top: initial;
-      margin-top: 4px;
       // Remove transform and background for below positioning
       font-size: 11px;
       color: t.color("on-surface-variant");

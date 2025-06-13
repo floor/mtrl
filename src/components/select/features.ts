@@ -31,6 +31,7 @@ export const withTextfield =
     const textfield = createTextfield({
       label: config.label,
       variant: config.variant || "filled",
+      density: config.density || "default",
       value: initialText,
       name: config.name,
       disabled: config.disabled,

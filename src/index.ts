@@ -110,7 +110,6 @@ export {
 
   // Textfield related constants
   TEXTFIELD_VARIANTS,
-  TEXTFIELD_SIZES,
 } from "./constants";
 
 export const jsx = h;

@@ -1,20 +1,38 @@
 // src/components/textfield/api.ts
-import { BaseComponent, TextfieldComponent, ApiOptions, TextfieldVariant } from './types';
-import { PlacementComponent } from './features/placement';
+import {
+  BaseComponent,
+  TextfieldComponent,
+  ApiOptions,
+  TextfieldVariant,
+} from "./types";
+import { PlacementComponent } from "./features/placement";
+
+/**
+ * Component interface with density feature
+ */
+interface ComponentWithDensity
+  extends BaseComponent,
+    Partial<PlacementComponent> {
+  density?: {
+    current: string;
+    set: (density: string) => void;
+  };
+}
 
 /**
  * Enhances textfield component with API methods
  * @param {ApiOptions} options - API configuration
  * @returns {Function} Higher-order function that adds API methods to component
  */
-export const withAPI = ({ disabled, lifecycle }: ApiOptions) => 
-  (component: BaseComponent & Partial<PlacementComponent>): TextfieldComponent => ({
-    ...component as any,
+export const withAPI =
+  ({ disabled, lifecycle }: ApiOptions) =>
+  (component: ComponentWithDensity): TextfieldComponent => ({
+    ...(component as any),
     element: component.element,
     input: component.input as HTMLInputElement | HTMLTextAreaElement,
 
     // Value management
-    getValue: component.getValue || (() => ''),
+    getValue: component.getValue || (() => ""),
     setValue(value: string): TextfieldComponent {
       component.setValue?.(value);
       return this;
@@ -25,11 +43,11 @@ export const withAPI = ({ disabled, lifecycle }: ApiOptions) =>
       component.setAttribute?.(name, value);
       return this;
     },
-    
+
     getAttribute(name: string): string | null {
       return component.getAttribute?.(name) || null;
     },
-    
+
     removeAttribute(name: string): TextfieldComponent {
       component.removeAttribute?.(name);
       return this;
@@ -37,35 +55,37 @@ export const withAPI = ({ disabled, lifecycle }: ApiOptions) =>
 
     // Variant management
     setVariant(variant: TextfieldVariant): TextfieldComponent {
-      const PREFIX = component.config?.prefix || 'mtrl';
-      const COMPONENT = component.config?.componentName || 'textfield';
-      
+      const PREFIX = component.config?.prefix || "mtrl";
+      const COMPONENT = component.config?.componentName || "textfield";
+
       // Remove existing variant classes
       component.element.classList.remove(
         `${PREFIX}-${COMPONENT}--filled`,
         `${PREFIX}-${COMPONENT}--outlined`
       );
-      
+
       // Add the new variant class
       component.element.classList.add(`${PREFIX}-${COMPONENT}--${variant}`);
-      
+
       // Update positioning after variant change
       if (component.updateElementPositions) {
         setTimeout(() => component.updateElementPositions(), 10);
       }
-      
+
       return this;
     },
-    
+
     getVariant(): TextfieldVariant {
-      const PREFIX = component.config?.prefix || 'mtrl';
-      const COMPONENT = component.config?.componentName || 'textfield';
-      
-      if (component.element.classList.contains(`${PREFIX}-${COMPONENT}--outlined`)) {
-        return 'outlined';
+      const PREFIX = component.config?.prefix || "mtrl";
+      const COMPONENT = component.config?.componentName || "textfield";
+
+      if (
+        component.element.classList.contains(`${PREFIX}-${COMPONENT}--outlined`)
+      ) {
+        return "outlined";
       }
-      
-      return 'filled'; // Default to filled if no class found
+
+      return "filled"; // Default to filled if no class found
     },
 
     // Label management
@@ -77,11 +97,11 @@ export const withAPI = ({ disabled, lifecycle }: ApiOptions) =>
       }
       return this;
     },
-    
+
     getLabel(): string {
-      return component.label?.getText() || '';
+      return component.label?.getText() || "";
     },
-    
+
     // Leading icon management (if present)
     leadingIcon: component.leadingIcon || null,
     setLeadingIcon(html: string): TextfieldComponent {
@@ -94,7 +114,7 @@ export const withAPI = ({ disabled, lifecycle }: ApiOptions) =>
       }
       return this;
     },
-    
+
     removeLeadingIcon(): TextfieldComponent {
       if (component.removeLeadingIcon) {
         component.removeLeadingIcon();
@@ -105,7 +125,7 @@ export const withAPI = ({ disabled, lifecycle }: ApiOptions) =>
       }
       return this;
     },
-    
+
     // Trailing icon management (if present)
     trailingIcon: component.trailingIcon || null,
     setTrailingIcon(html: string): TextfieldComponent {
@@ -118,7 +138,7 @@ export const withAPI = ({ disabled, lifecycle }: ApiOptions) =>
       }
       return this;
     },
-    
+
     removeTrailingIcon(): TextfieldComponent {
       if (component.removeTrailingIcon) {
         component.removeTrailingIcon();
@@ -129,7 +149,7 @@ export const withAPI = ({ disabled, lifecycle }: ApiOptions) =>
       }
       return this;
     },
-    
+
     // Supporting text management (if present)
     supportingTextElement: component.supportingTextElement || null,
     setSupportingText(text: string, isError?: boolean): TextfieldComponent {
@@ -138,14 +158,14 @@ export const withAPI = ({ disabled, lifecycle }: ApiOptions) =>
       }
       return this;
     },
-    
+
     removeSupportingText(): TextfieldComponent {
       if (component.removeSupportingText) {
         component.removeSupportingText();
       }
       return this;
     },
-    
+
     // Prefix text management (if present)
     prefixTextElement: component.prefixTextElement || null,
     setPrefixText(text: string): TextfieldComponent {
@@ -158,7 +178,7 @@ export const withAPI = ({ disabled, lifecycle }: ApiOptions) =>
       }
       return this;
     },
-    
+
     removePrefixText(): TextfieldComponent {
       if (component.removePrefixText) {
         component.removePrefixText();
@@ -169,7 +189,7 @@ export const withAPI = ({ disabled, lifecycle }: ApiOptions) =>
       }
       return this;
     },
-    
+
     // Suffix text management (if present)
     suffixTextElement: component.suffixTextElement || null,
     setSuffixText(text: string): TextfieldComponent {
@@ -182,7 +202,7 @@ export const withAPI = ({ disabled, lifecycle }: ApiOptions) =>
       }
       return this;
     },
-    
+
     removeSuffixText(): TextfieldComponent {
       if (component.removeSuffixText) {
         component.removeSuffixText();
@@ -202,12 +222,24 @@ export const withAPI = ({ disabled, lifecycle }: ApiOptions) =>
       return this;
     },
 
+    // Density management
+    setDensity(density: string): TextfieldComponent {
+      if (component.density?.set) {
+        component.density.set(density);
+      }
+      return this;
+    },
+
+    getDensity(): string {
+      return component.density?.current || "default";
+    },
+
     // Event handling
     on(event: string, handler: Function): TextfieldComponent {
       component.on?.(event, handler);
       return this;
     },
-    
+
     off(event: string, handler: Function): TextfieldComponent {
       component.off?.(event, handler);
       return this;
@@ -218,13 +250,13 @@ export const withAPI = ({ disabled, lifecycle }: ApiOptions) =>
       disabled.enable();
       return this;
     },
-    
+
     disable(): TextfieldComponent {
       disabled.disable();
       return this;
     },
-    
+
     destroy(): void {
       lifecycle.destroy();
-    }
+    },
   });
