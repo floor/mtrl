@@ -80,6 +80,9 @@ export interface TextfieldConfig {
   /** Initial value */
   value?: string;
 
+  /** Placeholder text */
+  placeholder?: string;
+
   /** Whether input is required */
   required?: boolean;
 
@@ -238,8 +241,8 @@ export interface TextfieldComponent {
  */
 export interface ApiOptions {
   disabled: {
-    enable: () => any;
-    disable: () => any;
+    enable: () => void;
+    disable: () => void;
   };
   lifecycle: {
     destroy: () => void;
@@ -255,41 +258,41 @@ export interface BaseComponent {
   config?: {
     prefix?: string;
     componentName?: string;
-    [key: string]: any;
+    [key: string]: string | number | boolean | undefined;
   };
   getValue?: () => string;
-  setValue?: (value: string) => any;
-  setAttribute?: (name: string, value: string) => any;
+  setValue?: (value: string) => void;
+  setAttribute?: (name: string, value: string) => void;
   getAttribute?: (name: string) => string | null;
-  removeAttribute?: (name: string) => any;
+  removeAttribute?: (name: string) => void;
   label?: {
-    setText: (content: string) => any;
+    setText: (content: string) => void;
     getText: () => string;
   };
   leadingIcon?: HTMLElement | null;
-  setLeadingIcon?: (html: string) => any;
-  removeLeadingIcon?: () => any;
+  setLeadingIcon?: (html: string) => void;
+  removeLeadingIcon?: () => void;
   trailingIcon?: HTMLElement | null;
-  setTrailingIcon?: (html: string) => any;
-  removeTrailingIcon?: () => any;
+  setTrailingIcon?: (html: string) => void;
+  removeTrailingIcon?: () => void;
   supportingTextElement?: HTMLElement | null;
-  setSupportingText?: (text: string, isError?: boolean) => any;
-  removeSupportingText?: () => any;
+  setSupportingText?: (text: string, isError?: boolean) => void;
+  removeSupportingText?: () => void;
   prefixTextElement?: HTMLElement | null;
-  setPrefixText?: (text: string) => any;
-  removePrefixText?: () => any;
+  setPrefixText?: (text: string) => void;
+  removePrefixText?: () => void;
   suffixTextElement?: HTMLElement | null;
-  setSuffixText?: (text: string) => any;
-  removeSuffixText?: () => any;
-  updateElementPositions?: () => any;
-  on?: (event: string, handler: Function) => any;
-  off?: (event: string, handler: Function) => any;
+  setSuffixText?: (text: string) => void;
+  removeSuffixText?: () => void;
+  updateElementPositions?: () => void;
+  on?: (event: string, handler: Function) => void;
+  off?: (event: string, handler: Function) => void;
   disabled?: {
-    enable: () => any;
-    disable: () => any;
+    enable: () => void;
+    disable: () => void;
   };
   lifecycle?: {
     destroy: () => void;
   };
-  [key: string]: any;
+  [key: string]: unknown;
 }

@@ -5,7 +5,7 @@ import { JSDOM } from "jsdom";
 // Set up JSDOM
 const dom = new JSDOM(`<!DOCTYPE html><html><body></body></html>`);
 global.document = dom.window.document;
-global.window = dom.window;
+global.window = dom.window as any as Window & typeof globalThis;
 global.Element = dom.window.Element;
 global.HTMLElement = dom.window.HTMLElement;
 global.HTMLInputElement = dom.window.HTMLInputElement;
@@ -85,7 +85,6 @@ const createTextfield = (config: TextfieldConfig = {}): TextfieldComponent => {
   const textfield: TextfieldComponent = {
     element,
     input,
-    config,
 
     getValue: () => input.value,
 
@@ -93,15 +92,6 @@ const createTextfield = (config: TextfieldConfig = {}): TextfieldComponent => {
       input.value = value || "";
       return textfield;
     },
-
-    setLabel: (text: string) => {
-      if (label) {
-        label.textContent = text;
-      }
-      return textfield;
-    },
-
-    getLabel: () => label?.textContent || "",
 
     setAttribute: (name: string, value: string) => {
       input.setAttribute(name, value);
@@ -114,6 +104,55 @@ const createTextfield = (config: TextfieldConfig = {}): TextfieldComponent => {
       input.removeAttribute(name);
       return textfield;
     },
+
+    setVariant: (variant: TextfieldVariant) => {
+      element.classList.remove(
+        "mtrl-textfield--filled",
+        "mtrl-textfield--outlined"
+      );
+      element.classList.add(`mtrl-textfield--${variant}`);
+      return textfield;
+    },
+
+    getVariant: () => {
+      if (element.classList.contains("mtrl-textfield--outlined"))
+        return "outlined";
+      return "filled";
+    },
+
+    setLabel: (text: string) => {
+      if (label) {
+        label.textContent = text;
+      }
+      return textfield;
+    },
+
+    getLabel: () => label?.textContent || "",
+
+    leadingIcon: null,
+    setLeadingIcon: () => textfield,
+    removeLeadingIcon: () => textfield,
+
+    trailingIcon: null,
+    setTrailingIcon: () => textfield,
+    removeTrailingIcon: () => textfield,
+
+    supportingTextElement: null,
+    setSupportingText: () => textfield,
+    removeSupportingText: () => textfield,
+
+    prefixTextElement: null,
+    setPrefixText: () => textfield,
+    removePrefixText: () => textfield,
+
+    suffixTextElement: null,
+    setSuffixText: () => textfield,
+    removeSuffixText: () => textfield,
+
+    updatePositions: () => textfield,
+
+    setDensity: () => textfield,
+    getDensity: () => "default",
 
     on: (event: string, handler: Function) => {
       const listener = handler as EventListener;

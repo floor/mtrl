@@ -57,7 +57,7 @@ export const createBaseConfig = (config: ButtonConfig = {}): ButtonConfig =>
  */
 export const getElementConfig = (config: ButtonConfig) => {
   // Create the attributes object
-  const attributes: Record<string, any> = {
+  const attributes: Record<string, string | boolean | undefined> = {
     type: config.type || "button",
   };
 
@@ -81,7 +81,8 @@ export const getElementConfig = (config: ButtonConfig) => {
     attributes,
     className: config.class,
     forwardEvents: {
-      click: (component: any) => !component.element.disabled,
+      click: (component: { element: HTMLButtonElement }) =>
+        !component.element.disabled,
       focus: true,
       blur: true,
     },
@@ -98,10 +99,18 @@ export const getElementConfig = (config: ButtonConfig) => {
  * @category Components
  * @internal
  */
-export const getApiConfig = (comp) => ({
+export const getApiConfig = (comp: {
+  disabled: {
+    enable: () => void;
+    disable: () => void;
+    isDisabled: () => boolean;
+  };
+  lifecycle: { destroy: () => void };
+}) => ({
   disabled: {
     enable: () => comp.disabled.enable(),
     disable: () => comp.disabled.disable(),
+    isDisabled: () => comp.disabled.isDisabled(),
   },
   lifecycle: {
     destroy: () => comp.lifecycle.destroy(),

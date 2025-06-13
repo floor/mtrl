@@ -5,19 +5,17 @@ import {
   ApiOptions,
   TextfieldVariant,
 } from "./types";
-import { PlacementComponent } from "./features/placement";
 
 /**
  * Component interface with density feature
  */
-interface ComponentWithDensity
-  extends BaseComponent,
-    Partial<PlacementComponent> {
+type ComponentWithDensity = BaseComponent & {
   density?: {
     current: string;
     set: (density: string) => void;
   };
-}
+  updateElementPositions?: () => void;
+};
 
 /**
  * Enhances textfield component with API methods
@@ -27,7 +25,6 @@ interface ComponentWithDensity
 export const withAPI =
   ({ disabled, lifecycle }: ApiOptions) =>
   (component: ComponentWithDensity): TextfieldComponent => ({
-    ...(component as any),
     element: component.element,
     input: component.input as HTMLInputElement | HTMLTextAreaElement,
 

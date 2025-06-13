@@ -21,9 +21,9 @@ export type CollectionEvent =
 /**
  * Observer callback type for collection events
  */
-export type CollectionObserver = (payload: {
+export type CollectionObserver<T = unknown> = (payload: {
   event: CollectionEvent;
-  data: any;
+  data: T | readonly T[] | readonly string[] | boolean | Error | null;
 }) => void;
 
 /**
@@ -48,7 +48,7 @@ export const OPERATORS = {
  */
 export interface CollectionItem {
   id: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 /**
@@ -58,12 +58,12 @@ export interface CollectionConfig<T extends CollectionItem> {
   /**
    * Transform function for items
    */
-  transform?: (item: any) => T;
+  transform?: (item: unknown) => T;
 
   /**
    * Validation function for items
    */
-  validate?: (item: any) => boolean;
+  validate?: (item: unknown) => boolean;
 
   /**
    * Initial capacity for collection
@@ -173,15 +173,18 @@ export const createCollection = <T extends CollectionItem>(
   const handlers: CollectionObserver<T>[] = [];
   const eventObj = {
     event: COLLECTION_EVENTS.CHANGE as CollectionEvent,
-    data: null as any,
+    data: null as T | readonly T[] | readonly string[] | boolean | Error | null,
   };
 
   // Initialize functions with fallbacks
-  const transform = config.transform || ((item: any) => item as T);
+  const transform = config.transform || ((item: unknown) => item as T);
   const validate = config.validate || (() => true);
 
   // Use a function to share notification logic
-  function notifyObservers(eventType: CollectionEvent, eventData: any): void {
+  function notifyObservers(
+    eventType: CollectionEvent,
+    eventData: T | readonly T[] | readonly string[] | boolean | Error | null
+  ): void {
     if (observers.size === 0) return;
 
     eventObj.event = eventType;

@@ -1,6 +1,7 @@
 // src/components/button/api.ts
 import { ButtonComponent } from "./types";
 import { addClass, removeClass } from "../../core";
+import { ProgressComponent } from "../progress/types";
 
 /**
  * API configuration options for button component
@@ -11,6 +12,7 @@ interface ApiOptions {
   disabled: {
     enable: () => void;
     disable: () => void;
+    isDisabled: () => boolean;
   };
   lifecycle: {
     destroy: () => void;
@@ -36,22 +38,25 @@ interface ComponentWithElements {
   };
   getClass: (name: string) => string;
   componentName?: string;
-  on?: (event: string, handler: Function) => any;
-  off?: (event: string, handler: Function) => any;
-  addClass?: (...classes: string[]) => any;
+  on?: (event: string, handler: Function) => ComponentWithElements;
+  off?: (event: string, handler: Function) => ComponentWithElements;
+  addClass?: (...classes: string[]) => ComponentWithElements;
 
   // Progress methods (if withProgress was applied)
-  progress?: any;
-  showProgress?: () => Promise<any>;
-  showProgressSync?: () => any;
-  hideProgress?: () => Promise<any>;
-  hideProgressSync?: () => any;
-  setProgress?: (value: number) => Promise<any>;
-  setProgressSync?: (value: number) => any;
-  setIndeterminate?: (indeterminate: boolean) => Promise<any>;
-  setIndeterminateSync?: (indeterminate: boolean) => any;
-  setLoading?: (loading: boolean, text?: string) => Promise<any>;
-  setLoadingSync?: (loading: boolean, text?: string) => any;
+  progress?: ProgressComponent;
+  showProgress?: () => Promise<ComponentWithElements>;
+  showProgressSync?: () => ComponentWithElements;
+  hideProgress?: () => Promise<ComponentWithElements>;
+  hideProgressSync?: () => ComponentWithElements;
+  setProgress?: (value: number) => Promise<ComponentWithElements>;
+  setProgressSync?: (value: number) => ComponentWithElements;
+  setIndeterminate?: (indeterminate: boolean) => Promise<ComponentWithElements>;
+  setIndeterminateSync?: (indeterminate: boolean) => ComponentWithElements;
+  setLoading?: (
+    loading: boolean,
+    text?: string
+  ) => Promise<ComponentWithElements>;
+  setLoadingSync?: (loading: boolean, text?: string) => ComponentWithElements;
 }
 
 /**
@@ -67,10 +72,29 @@ interface ComponentWithElements {
 export const withAPI =
   ({ disabled, lifecycle }: ApiOptions) =>
   (component: ComponentWithElements): ButtonComponent => {
+    // Create wrapper objects that match the expected API interfaces
+    const textAPI = {
+      setText: (content: string) => {
+        component.text.setText(content);
+        return textAPI;
+      },
+      getText: () => component.text.getText(),
+      getElement: () => component.text.getElement(),
+    };
+
+    const iconAPI = {
+      setIcon: (html: string) => {
+        component.icon.setIcon(html);
+        return iconAPI;
+      },
+      getIcon: () => component.icon.getIcon(),
+      getElement: () => component.icon.getElement(),
+    };
+
     const buttonComponent: ButtonComponent = {
       element: component.element as HTMLButtonElement,
-      text: component.text,
-      icon: component.icon,
+      text: textAPI,
+      icon: iconAPI,
       disabled,
       lifecycle,
       getClass: component.getClass,

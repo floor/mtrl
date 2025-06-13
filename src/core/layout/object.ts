@@ -11,11 +11,23 @@ import { createLayoutResult } from "./result";
 import { createComponentInstance } from "./processor";
 
 /**
+ * Type for component or element
+ */
+type ComponentOrElement =
+  | HTMLElement
+  | SVGElement
+  | DocumentFragment
+  | {
+      element: HTMLElement | SVGElement;
+      [key: string]: unknown;
+    };
+
+/**
  * Interface for the layout object
  */
 interface LayoutObject {
-  element?: any;
-  [key: string]: any;
+  element?: ComponentOrElement;
+  [key: string]: ComponentOrElement;
 }
 
 /**
@@ -50,8 +62,7 @@ export function processObjectSchema(
 
     const rootComponent = createComponentInstance(
       createElementFn,
-      processedOptions,
-      options
+      processedOptions
     );
     const rootElement = isComponent(rootComponent)
       ? rootComponent.element
@@ -120,11 +131,7 @@ export function processObjectSchema(
     }
 
     // Create element
-    const created = createComponentInstance(
-      elementCreator,
-      processedOptions,
-      options
-    );
+    const created = createComponentInstance(elementCreator, processedOptions);
 
     // Store in layout
     layout[key] = created;

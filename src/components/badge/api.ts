@@ -81,7 +81,6 @@ export const withAPI =
       // Spread component properties
       element: component.element,
       wrapper: component.wrapper,
-      config: component.config,
       getClass: component.getClass,
 
       /**
@@ -132,6 +131,23 @@ export const withAPI =
        */
       getLabel() {
         return component.element.textContent || "";
+      },
+
+      /**
+       * Sets the badge content (alias for setLabel)
+       * @param {string|number} content - Content to display in the badge
+       * @returns {BadgeComponent} Badge component instance for chaining
+       */
+      setContent(content: string | number) {
+        return badgeComponent.setLabel(content);
+      },
+
+      /**
+       * Gets the badge content (alias for getLabel)
+       * @returns {string} Current badge content
+       */
+      getContent() {
+        return badgeComponent.getLabel();
       },
 
       /**
