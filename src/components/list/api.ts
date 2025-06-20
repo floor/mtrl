@@ -6,7 +6,7 @@
 interface ApiOptions {
   list: {
     refresh: () => Promise<void>;
-    loadMore: () => Promise<{ hasNext: boolean; items: any[] }>;
+    loadNext: () => Promise<{ hasNext: boolean; items: any[] }>;
     loadPage: (
       pageNumber: number,
       options?: { preservePrevious?: boolean }
@@ -22,6 +22,13 @@ interface ApiOptions {
     getAllItems: () => any[];
     isLoading: () => boolean;
     hasNextPage: () => boolean;
+    onCollectionChange: (
+      callback: (event: { type: string; data: any }) => void
+    ) => () => void;
+    onPageChange: (callback: (event: any, data: any) => void) => () => void;
+    getCurrentPage: () => number;
+    getCollection: () => any;
+    isApiMode: () => boolean;
   };
   events: {
     on: (event: string, handler: Function) => any;
@@ -70,11 +77,11 @@ export const withAPI =
     },
 
     /**
-     * Loads more items
+     * Loads next items
      * @returns {Promise<Object>} Promise with load result
      */
-    loadMore: async () => {
-      const result = await list.loadMore();
+    loadNext: async () => {
+      const result = await list.loadNext();
       return result;
     },
 
@@ -156,6 +163,38 @@ export const withAPI =
      * @returns {boolean} True if has more items
      */
     hasNextPage: () => list.hasNextPage(),
+
+    /**
+     * Subscribe to collection change events
+     * @param {Function} callback - Event callback function
+     * @returns {Function} Unsubscribe function
+     */
+    onCollectionChange: (callback) => list.onCollectionChange(callback),
+
+    /**
+     * Subscribe to page change events
+     * @param {Function} callback - Event callback function
+     * @returns {Function} Unsubscribe function
+     */
+    onPageChange: (callback) => list.onPageChange(callback),
+
+    /**
+     * Get current page number based on scroll position
+     * @returns {number} Current page number
+     */
+    getCurrentPage: () => list.getCurrentPage(),
+
+    /**
+     * Get the underlying collection
+     * @returns {Object} Collection instance
+     */
+    getCollection: () => list.getCollection(),
+
+    /**
+     * Check if list is in API mode
+     * @returns {boolean} True if using API mode
+     */
+    isApiMode: () => list.isApiMode(),
 
     /**
      * Adds an event listener to the list

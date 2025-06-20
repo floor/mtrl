@@ -208,6 +208,13 @@ export interface ListManager {
   ) => () => void;
 
   /**
+   * Subscribe to collection change events
+   */
+  onCollectionChange: (
+    callback: (event: { type: string; data: any }) => void
+  ) => () => void;
+
+  /**
    * Get current page number based on scroll position
    */
   getCurrentPage: () => number;

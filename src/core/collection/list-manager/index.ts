@@ -1650,6 +1650,13 @@ export const createListManager = (
     onPageChange,
     getCurrentPage: () => calculateCurrentPage(state.scrollTop),
 
+    // Collection change events
+    onCollectionChange: (callback) => {
+      return itemsCollection.subscribe(({ event, data }) => {
+        callback({ type: event, data });
+      });
+    },
+
     // Collection access
     getCollection: () => itemsCollection,
 

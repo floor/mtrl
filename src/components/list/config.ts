@@ -94,7 +94,7 @@ export const getElementConfig = (config) => {
 export const getApiConfig = (component) => ({
   list: {
     refresh: component.list?.refresh,
-    loadMore: component.list?.loadMore,
+    loadNext: component.list?.loadNext,
     loadPage: component.list?.loadPage,
     loadPreviousPage: component.list?.loadPreviousPage,
     scrollNext: component.list?.scrollNext,
@@ -104,6 +104,11 @@ export const getApiConfig = (component) => ({
     getAllItems: component.list?.getAllItems,
     isLoading: component.list?.isLoading,
     hasNextPage: component.list?.hasNextPage,
+    onCollectionChange: component.list?.onCollectionChange,
+    onPageChange: component.list?.onPageChange,
+    getCurrentPage: component.list?.getCurrentPage,
+    getCollection: component.list?.getCollection,
+    isApiMode: component.list?.isApiMode,
   },
   events: {
     on: component.on,
