@@ -8,6 +8,25 @@
 // Define the component once
 $component: "#{base.$prefix}-textfield";
 
+// Autofill detection animations
+@keyframes onAutoFillStart {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes onAutoFillCancel {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 // ===== BASE STYLES =====
 .#{$component} {
   position: relative;
@@ -46,12 +65,21 @@ $component: "#{base.$prefix}-textfield";
     appearance: none;
     outline: none;
 
+    // Animation to detect autofill
+    animation-name: onAutoFillCancel;
+    animation-duration: 10ms;
+
+    // Transition to help detect autofill changes
+    transition: background-color 0s ease-out 50000000s;
+
     &::placeholder {
       color: transparent;
     }
 
     // Autofill styles
     &:-webkit-autofill {
+      animation-name: onAutoFillStart;
+      animation-duration: 10ms;
       -webkit-text-fill-color: t.color("on-surface");
       transition: background-color 5000s ease-in-out 0s; // Long transition to keep the background
 
@@ -68,6 +96,13 @@ $component: "#{base.$prefix}-textfield";
       & ~ .#{$component}-label {
         transform: translateY(-95%) scale(0.75);
         background-color: t.color("surface");
+      }
+    }
+
+    // Non-empty input should also float the label
+    &:not(:placeholder-shown) {
+      & ~ .#{$component}-label {
+        transform: translateY(-95%) scale(0.75);
       }
     }
   }
@@ -461,6 +496,11 @@ $component: "#{base.$prefix}-textfield";
       // Don't specify left position here - let JS handle it
     }
 
+    // CSS-only fallback for when input has value (works without JS)
+    .#{$component}-input:not(:placeholder-shown) ~ .#{$component}-label {
+      transform: translateY(-95%) scale(0.75);
+    }
+
     // Position adjustments for prefix/suffix when in filled focused/populated state
     &.mtrl-textfield--with-prefix,
     &.mtrl-textfield--with-suffix {
@@ -639,6 +679,14 @@ $component: "#{base.$prefix}-textfield";
       // to handle the label moving up above the field
       // The JS will handle special positioning depending on if it's prefixed
       left: 14px;
+    }
+
+    // CSS-only fallback for when input has value (works without JS)
+    .#{$component}-input:not(:placeholder-shown) ~ .#{$component}-label {
+      padding: 0 4px;
+      transform: translateY(-147%) scale(0.75);
+      left: 14px;
+      background-color: t.color("surface");
     }
 
     // Focus state
@@ -867,7 +915,7 @@ $component: "#{base.$prefix}-textfield";
       // Focused/populated position
       &:not(.#{$component}--empty) .#{$component}-label,
       &.#{$component}--focused .#{$component}-label {
-        transform: translateY(-145%) scale(0.75); // Same as default, scale is important
+        transform: translateY(-130%) scale(0.75); // Same as default, scale is important
       }
     }
 

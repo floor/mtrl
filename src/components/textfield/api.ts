@@ -213,6 +213,25 @@ export const withAPI =
 
     // Update positioning manually (useful after DOM updates)
     updatePositions(): TextfieldComponent {
+      // Check for autofill before updating positions
+      if (component.input && component.element) {
+        const hasValue =
+          component.input.value && component.input.value.length > 0;
+        const isAutofilled =
+          component.input.matches?.(":-webkit-autofill") || false;
+
+        // Update empty state based on value or autofill
+        if (hasValue || isAutofilled) {
+          component.element.classList.remove(
+            `${component.config?.prefix || "mtrl"}-textfield--empty`
+          );
+        } else {
+          component.element.classList.add(
+            `${component.config?.prefix || "mtrl"}-textfield--empty`
+          );
+        }
+      }
+
       if (component.updateElementPositions) {
         component.updateElementPositions();
       }

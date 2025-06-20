@@ -52,6 +52,11 @@ export interface TextInputConfig {
    */
   value?: string;
 
+  /**
+   * Placeholder attribute
+   */
+  placeholder?: string;
+
   [key: string]: any;
 }
 
@@ -130,6 +135,7 @@ export const withTextInput =
       pattern: config.pattern,
       autocomplete: config.autocomplete,
       value: config.value || "",
+      placeholder: config.placeholder || " ", // Always set placeholder (space if empty) for CSS detection
     };
 
     // Only set type attribute for input elements, not for textarea
@@ -162,22 +168,39 @@ export const withTextInput =
       return isEmpty;
     };
 
-    // Detect autofill using input events instead of animation
-    // This is more compatible with our testing environment
-    const handleAutofill = (): void => {
-      // Check for webkit autofill background
-      const isAutofilled =
-        input.matches(":-webkit-autofill") ||
-        // For Firefox and other browsers
-        window.getComputedStyle(input).backgroundColor ===
-          "rgb(250, 255, 189)" ||
-        window.getComputedStyle(input).backgroundColor === "rgb(232, 240, 254)";
+    // Enhanced autofill detection function
+    const checkForAutofill = (shouldEmit: boolean = true): void => {
+      console.log("checkForAutofill");
+      // Multiple detection methods for better browser compatibility
 
-      if (isAutofilled) {
+      // Method 1: Check for non-empty value (most reliable)
+      // This catches cases where autofill happened before our listeners
+      const hasValue = input.value && input.value.length > 0;
+
+      // Method 2: Check webkit autofill pseudo-class
+      const hasWebkitAutofill = input.matches(":-webkit-autofill");
+
+      // Method 3: Check computed styles for autofill background colors
+      const computedStyle = window.getComputedStyle(input);
+      const bgColor = computedStyle.backgroundColor;
+      const isAutofillBackground =
+        bgColor === "rgb(250, 255, 189)" || // Chrome/Edge
+        bgColor === "rgb(232, 240, 254)" || // Firefox
+        bgColor === "rgb(250, 255, 0)" || // Safari
+        bgColor === "rgba(255, 255, 0, 0.1)"; // Some browsers
+
+      // If any detection method indicates autofill or value present
+      if (hasValue || hasWebkitAutofill || isAutofillBackground) {
         component.element.classList.remove(
           `${component.getClass("textfield")}--empty`
         );
-        if (hasEmit(component)) {
+
+        // Emit event if value was autofilled (not just has value) and shouldEmit is true
+        if (
+          shouldEmit &&
+          hasEmit(component) &&
+          (hasWebkitAutofill || isAutofillBackground)
+        ) {
           component.emit("input", {
             value: input.value,
             isEmpty: false,
@@ -187,6 +210,30 @@ export const withTextInput =
       }
     };
 
+    // Set up MutationObserver to detect attribute changes (some browsers set attributes on autofill)
+    let autofillObserver: MutationObserver | null = null;
+
+    // Only set up MutationObserver if it's available (not in all test environments)
+    if (typeof MutationObserver !== "undefined") {
+      autofillObserver = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (
+            mutation.type === "attributes" &&
+            (mutation.attributeName === "value" ||
+              mutation.attributeName === "data-autofilled")
+          ) {
+            checkForAutofill(true);
+          }
+        });
+      });
+
+      // Observe the input for attribute changes
+      autofillObserver.observe(input, {
+        attributes: true,
+        attributeFilter: ["value", "data-autofilled", "autocomplete"],
+      });
+    }
+
     // Event listeners
     input.addEventListener("focus", () => {
       component.element.classList.add(
@@ -195,8 +242,8 @@ export const withTextInput =
       if (hasEmit(component)) {
         component.emit("focus", { isEmpty: updateInputState() });
       }
-      // Also check for autofill on focus
-      setTimeout(handleAutofill, 100);
+      // Check for autofill on focus, but don't emit during focus
+      checkForAutofill(false);
     });
 
     input.addEventListener("blur", () => {
@@ -206,6 +253,8 @@ export const withTextInput =
       if (hasEmit(component)) {
         component.emit("blur", { isEmpty: updateInputState() });
       }
+      // Final check on blur, but don't emit
+      checkForAutofill(false);
     });
 
     input.addEventListener("input", () => {
@@ -220,8 +269,37 @@ export const withTextInput =
       }
     });
 
-    // Initial state
+    // Listen for change events (some browsers fire this on autofill)
+    input.addEventListener("change", () => {
+      const isEmpty = updateInputState();
+      checkForAutofill(false);
+      if (hasEmit(component)) {
+        component.emit("change", {
+          value: input.value,
+          isEmpty,
+          isAutofilled: input.matches?.(":-webkit-autofill") || false,
+        });
+      }
+    });
+
+    // Listen for animation events that indicate autofill (webkit browsers)
+    input.addEventListener("animationstart", (e: AnimationEvent) => {
+      if (
+        e.animationName === "onAutoFillStart" ||
+        e.animationName?.includes("autofill")
+      ) {
+        checkForAutofill();
+      }
+    });
+
+    // Initial state setup
     updateInputState();
+
+    // Check for autofill immediately (handles pre-filled values)
+    // This catches autofill that happens before component initialization
+    setTimeout(() => {
+      checkForAutofill(false);
+    }, 0);
 
     // Add multiline class to the component if it's a textarea
     if (isMultiline) {
@@ -236,6 +314,10 @@ export const withTextInput =
     if (hasLifecycle(component)) {
       const originalDestroy = component.lifecycle.destroy;
       component.lifecycle.destroy = () => {
+        // Clean up observer
+        if (autofillObserver) {
+          autofillObserver.disconnect();
+        }
         input.remove();
         originalDestroy.call(component.lifecycle);
       };
