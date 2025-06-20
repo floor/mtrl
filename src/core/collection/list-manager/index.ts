@@ -208,18 +208,35 @@ export const createListManager = (
   const loadItems = async (
     params: LoadParams = {}
   ): Promise<{ items: any[]; meta: PaginationMeta }> => {
+    console.log(`🔄 [LoadItems] Called with params:`, {
+      page: params.page,
+      requestedPage: params.page,
+      currentStatePage: state.page,
+      isPageJumpLoad,
+      callStack: new Error().stack?.split("\n").slice(1, 4).join(" -> "),
+    });
+
+    // PROTECTION: Prevent unwanted page loads that could corrupt state
+    if (params.page && params.page !== state.page && !isPageJumpLoad) {
+      console.warn(
+        `🚨 [LoadItems] BLOCKING unexpected page load: requested page ${params.page}, current page ${state.page}, isPageJumpLoad: ${isPageJumpLoad}`
+      );
+      // Don't load a different page unless it's explicitly a page jump
+      return {
+        items: state.items,
+        meta: { hasNext: state.hasNext, cursor: null },
+      };
+    }
+
     try {
       // Update loading state
       Object.assign(state, updateLoadingState(state, true));
 
-      // For static data, simulate loading by returning available items
+      // If using static data, return the static items
       if (state.useStatic) {
         return {
-          items: [...state.items],
-          meta: {
-            cursor: null,
-            hasNext: false, // Static data has no "next" page
-          },
+          items: state.items,
+          meta: { hasNext: false, cursor: null },
         };
       }
 
@@ -604,6 +621,28 @@ export const createListManager = (
     pageNumber: number,
     options: { preservePrevious?: boolean } = {}
   ): Promise<{ hasNext: boolean; items: any[] }> => {
+    console.log(`🔄 [LoadPage] Starting loadPage(${pageNumber})`, {
+      currentPage: state.page,
+      currentItemsLength: state.items.length,
+      isAlreadyOnSamePage: state.page === pageNumber,
+      preservePrevious: options.preservePrevious,
+      callStack: new Error().stack?.split("\n").slice(1, 5).join(" -> "),
+    });
+
+    // CRITICAL: Track unexpected calls to loadPage
+    if (
+      pageNumber !== state.page &&
+      !options.preservePrevious &&
+      pageNumber > state.page
+    ) {
+      console.warn(
+        `🚨 [LoadPage] SUSPICIOUS: Auto-loading higher page ${pageNumber} when current page is ${state.page}`,
+        {
+          callStack: new Error().stack?.split("\n").slice(1, 8),
+        }
+      );
+    }
+
     // Validate page number
     if (!Number.isInteger(pageNumber) || pageNumber < 1) {
       throw new Error("Page number must be a positive integer");
@@ -622,9 +661,53 @@ export const createListManager = (
       return { hasNext: false, items: state.items };
     }
 
+    // CRITICAL: If we're already on the same page and have items,
+    // just ensure they're rendered instead of reloading
+    if (
+      state.page === pageNumber &&
+      state.items.length > 0 &&
+      !options.preservePrevious
+    ) {
+      console.log(
+        `⚡ [LoadPage] Already on page ${pageNumber} with ${state.items.length} items - ensuring render`
+      );
+
+      // Force a re-render to ensure items are visible
+      state.visibleRange = { start: -1, end: -1 };
+      renderer.resetVisibleRange();
+
+      // Ensure proper scroll position for page 1
+      if (pageNumber === 1) {
+        container.scrollTop = 0;
+        state.scrollTop = 0;
+      }
+
+      // Force immediate render
+      requestAnimationFrame(() => {
+        updateVisibleItems(state.scrollTop);
+
+        // Double-check after render
+        setTimeout(() => {
+          if (state.visibleItems.length === 0) {
+            console.warn(
+              `⚠️ [LoadPage] Force-rendering page ${pageNumber} items`
+            );
+            updateVisibleItems(0);
+          }
+        }, 50);
+      });
+
+      return { hasNext: state.hasNext, items: state.items };
+    }
+
     // Set the page number in state
     state.page = pageNumber;
     state.paginationStrategy = paginationStrategy;
+
+    console.log(`📌 [LoadPage] Page state set to ${pageNumber}`, {
+      statePage: state.page,
+      requestedPage: pageNumber,
+    });
 
     // Clear any existing page jump timeout
     if (pageJumpTimeout !== null) {
@@ -797,7 +880,49 @@ export const createListManager = (
 
       // Preload adjacent pages after a short delay
       setTimeout(async () => {
+        // TEMPORARILY DISABLED: Preloading is causing page state corruption
+        // Re-enable after basic navigation is working correctly
+        console.log(
+          `🔄 [LoadPage] Preloading DISABLED to prevent page state corruption`
+        );
+        return;
+
         if (!state.mounted || state.loading) return;
+
+        // CRITICAL: Store the current page number before preloading
+        // Preloading should NOT change the current page state
+        const originalPageNumber = pageNumber;
+
+        console.log(
+          `🔄 [LoadPage] Starting preload for page ${originalPageNumber}`,
+          {
+            currentStatePage: state.page,
+            originalPage: originalPageNumber,
+          }
+        );
+
+        // LOCK the page state during preloading - create a getter/setter trap
+        let lockedPageState = originalPageNumber;
+        const originalPageDescriptor = Object.getOwnPropertyDescriptor(
+          state,
+          "page"
+        );
+
+        // Temporarily override the page property to prevent corruption
+        Object.defineProperty(state, "page", {
+          get: () => lockedPageState,
+          set: (value) => {
+            if (value !== originalPageNumber) {
+              console.warn(
+                `🚨 [LoadPage] BLOCKED page state change from ${lockedPageState} to ${value} during preload`
+              );
+              // Don't allow the change
+              return;
+            }
+            lockedPageState = value;
+          },
+          configurable: true,
+        });
 
         // Set a flag to prevent visual updates during preload
         isPreloadingPages = true;
@@ -814,9 +939,12 @@ export const createListManager = (
         let prependedCount = 0;
 
         // Preload previous page if it exists
-        if (pageNumber > 1) {
+        if (originalPageNumber > 1) {
           try {
-            const prevPageParams = { ...loadParams, page: pageNumber - 1 };
+            const prevPageParams = {
+              ...loadParams,
+              page: originalPageNumber - 1,
+            };
             const prevResponse = await adapter.read(prevPageParams);
 
             if (prevResponse.items && prevResponse.items.length > 0) {
@@ -840,7 +968,10 @@ export const createListManager = (
         // Preload next page if it exists
         if (state.hasNext) {
           try {
-            const nextPageParams = { ...loadParams, page: pageNumber + 1 };
+            const nextPageParams = {
+              ...loadParams,
+              page: originalPageNumber + 1,
+            };
             const nextResponse = await adapter.read(nextPageParams);
 
             if (nextResponse.items && nextResponse.items.length > 0) {
@@ -862,6 +993,27 @@ export const createListManager = (
             console.error(`Error preloading next page:`, error);
           }
         }
+
+        // CRITICAL: Restore the original page number after preloading
+        // The preloading process should NEVER change which page we're on
+        state.page = originalPageNumber;
+
+        // UNLOCK the page state - restore original property descriptor
+        if (originalPageDescriptor) {
+          Object.defineProperty(state, "page", originalPageDescriptor);
+        } else {
+          // If no original descriptor, just set it as a normal property
+          delete state.page;
+          state.page = originalPageNumber;
+        }
+
+        console.log(
+          `✅ [LoadPage] Preload complete for page ${originalPageNumber}`,
+          {
+            restoredStatePage: state.page,
+            totalItemsAfterPreload: state.items.length,
+          }
+        );
 
         // If we prepended items, adjust scroll and visible range
         if (prependedCount > 0) {
@@ -917,7 +1069,95 @@ export const createListManager = (
     pageJumpTimeout = window.setTimeout(() => {
       justJumpedToPage = false;
       pageJumpTimeout = null;
-    }, 500); // Shorter timeout - operations should complete faster
+
+      // CRITICAL FALLBACK: Ensure items are rendered if they weren't already
+      // This fixes the issue where repeated navigation to same page shows empty list
+      console.log("🔄 [LoadPage] Fallback check: ensuring items are rendered", {
+        stateItemsLength: state.items.length,
+        visibleItemsLength: state.visibleItems.length,
+        domElementsCount: elements.content?.children.length || 0,
+        currentPage: pageNumber,
+      });
+
+      if (state.items.length > 0 && state.visibleItems.length === 0) {
+        console.warn(
+          `⚠️ [LoadPage] Items loaded but not visible on page ${pageNumber} - forcing render`
+        );
+
+        // Force a complete re-render
+        state.visibleRange = { start: -1, end: -1 };
+        renderer.resetVisibleRange();
+
+        // Ensure container scroll position is correct
+        if (pageNumber === 1) {
+          container.scrollTop = 0;
+          state.scrollTop = 0;
+        }
+
+        // Force update visible items
+        updateVisibleItems(state.scrollTop);
+
+        // If still no visible items, something is wrong - try one more time with more aggressive approach
+        setTimeout(() => {
+          if (state.items.length > 0 && state.visibleItems.length === 0) {
+            console.error(
+              `🚨 [LoadPage] CRITICAL: Page ${pageNumber} items still not rendering - final aggressive attempt`
+            );
+
+            // Most aggressive approach - clear everything and start fresh
+            state.visibleRange = { start: -1, end: -1 };
+            state.totalHeightDirty = true;
+
+            // Force container height recalculation
+            state.containerHeight = container.clientHeight || 400; // Fallback height
+
+            // Try multiple scroll positions
+            updateVisibleItems(0);
+            requestAnimationFrame(() => {
+              updateVisibleItems(state.scrollTop);
+            });
+          }
+        }, 200);
+      } else if (
+        state.items.length > 0 &&
+        (elements.content?.children.length || 0) === 0
+      ) {
+        // NEW: Handle case where items exist and visible items are calculated, but no DOM elements
+        console.warn(
+          `⚠️ [LoadPage] Items exist but no DOM elements on page ${pageNumber} - forcing DOM render`
+        );
+
+        // This is a DOM rendering issue, not a visibility calculation issue
+        state.visibleRange = { start: -1, end: -1 };
+        renderer.resetVisibleRange();
+
+        // Force immediate render with current scroll position
+        updateVisibleItems(state.scrollTop);
+
+        // Double check DOM creation
+        setTimeout(() => {
+          const domCount = elements.content?.children.length || 0;
+          if (domCount === 0 && state.items.length > 0) {
+            console.error(
+              `🚨 [LoadPage] CRITICAL: Still no DOM elements created for page ${pageNumber} - clearing and rerendering`
+            );
+
+            // Clear everything and force from scratch
+            if (elements.content) {
+              elements.content.innerHTML = "";
+            }
+
+            // Reset all state
+            state.visibleRange = { start: -1, end: -1 };
+            state.totalHeightDirty = true;
+            renderer.resetVisibleRange();
+
+            // Force render from top
+            updateVisibleItems(0);
+          }
+        }, 100);
+      }
+    }, 600); // Slightly longer timeout to account for complex rendering
 
     // Emit page change event for navigation
     emitPageChange(PAGE_EVENTS.PAGE_CHANGE, {
@@ -929,6 +1169,20 @@ export const createListManager = (
 
     // Update last emitted page
     lastEmittedPage = pageNumber;
+
+    // FINAL VERIFICATION: Ensure page state is correct
+    if (state.page !== pageNumber) {
+      console.error(
+        `🚨 [LoadPage] CRITICAL: Page state corrupted! Expected ${pageNumber}, got ${state.page} - fixing`
+      );
+      state.page = pageNumber;
+    }
+
+    console.log(`✅ [LoadPage] Completed successfully for page ${pageNumber}`, {
+      finalStatePage: state.page,
+      requestedPage: pageNumber,
+      itemsLength: result.items.length,
+    });
 
     return {
       hasNext: state.hasNext,
@@ -1278,8 +1532,47 @@ export const createListManager = (
     hasPrev: boolean;
     items: any[];
   }> => {
-    // Check if we can go back
-    if (state.loading || !state.page || state.page <= 1) {
+    console.log(`🔄 [ScrollPrevious] Entry state check:`, {
+      currentPage: state.page,
+      itemsLength: state.items.length,
+      canGoBack: state.page && state.page > 1,
+    });
+
+    // CRITICAL: Calculate actual current page from visible items instead of relying on state.page
+    // state.page might be corrupted, but the visible items tell us the truth
+    const pageSize = validatedConfig.pageSize || 20;
+    const visibleItems = state.visibleItems || [];
+
+    let actualCurrentPage = state.page; // Fallback to state.page
+
+    if (visibleItems.length > 0 && visibleItems[0]?.id) {
+      // Calculate page from first visible item ID
+      const firstVisibleId = parseInt(visibleItems[0].id);
+      if (!isNaN(firstVisibleId)) {
+        actualCurrentPage = Math.ceil(firstVisibleId / pageSize);
+        console.log(
+          `🔍 [ScrollPrevious] Calculated actual page from visible items:`,
+          {
+            firstVisibleId,
+            calculatedPage: actualCurrentPage,
+            statePage: state.page,
+            pageSize,
+          }
+        );
+      }
+    }
+
+    console.log(
+      `🔄 [ScrollPrevious] Using actual current page: ${actualCurrentPage} (state.page was ${state.page})`
+    );
+
+    // Check if we can go back using the ACTUAL current page
+    if (state.loading || actualCurrentPage <= 1) {
+      console.log(`❌ [ScrollPrevious] Cannot go back:`, {
+        loading: state.loading,
+        actualCurrentPage,
+        canGoBack: actualCurrentPage > 1,
+      });
       return { hasPrev: false, items: [] };
     }
 
@@ -1288,56 +1581,46 @@ export const createListManager = (
       return { hasPrev: false, items: [] };
     }
 
-    const previousPage = state.page - 1;
-    const pageSize = validatedConfig.pageSize || 20;
+    console.log(
+      `🔄 [ScrollPrevious] Starting from page ${actualCurrentPage}, state.items.length: ${state.items.length}`
+    );
+
+    const previousPage = actualCurrentPage - 1;
     const itemHeight = validatedConfig.itemHeight || 48;
 
-    // Check if we have multiple pages loaded (previous page might already be in memory)
-    const totalPages = Math.ceil(state.items.length / pageSize);
+    console.log(`📊 [ScrollPrevious] Analysis:`, {
+      actualCurrentPage,
+      previousPage,
+      pageSize,
+      stateItemsLength: state.items.length,
+    });
 
-    if (totalPages > 1) {
-      // We have multiple pages, just scroll to show the previous page
-      state.page = previousPage;
+    // For consistency with scrollNext, always use loadPage
+    // This ensures the same data is loaded regardless of navigation method
+    console.log(
+      `🔄 [ScrollPrevious] Loading page ${previousPage} via loadPage for consistency`
+    );
 
-      // Calculate scroll position for the previous page
-      const scrollToPosition = Math.max(
-        0,
-        (previousPage - 1) * pageSize * itemHeight
-      );
+    const result = await loadPage(previousPage);
 
-      requestAnimationFrame(() => {
-        container.scrollTop = scrollToPosition;
-        state.scrollTop = scrollToPosition;
-        updateVisibleItems(scrollToPosition);
-      });
+    console.log(`📦 [ScrollPrevious] LoadPage result:`, {
+      itemsLength: result.items.length,
+      firstItemId: result.items[0]?.id,
+      lastItemId: result.items[result.items.length - 1]?.id,
+      newStatePage: state.page,
+    });
 
-      return {
-        hasPrev: previousPage > 1,
-        items: state.items.slice(
-          (previousPage - 1) * pageSize,
-          previousPage * pageSize
-        ),
-      };
-    } else {
-      // Only one page loaded, need to load the previous page
-      // Load the previous page and clear current data
-      await loadPage(previousPage, { preservePrevious: false });
+    // Calculate scroll position for the page (at the top of the page)
+    const scrollToPosition = (previousPage - 1) * pageSize * itemHeight;
 
-      // Scroll to bottom to show the end of the previous page
-      const totalHeight = state.items.length * itemHeight;
-      const scrollToPosition = Math.max(0, totalHeight - state.containerHeight);
+    container.scrollTop = scrollToPosition;
+    state.scrollTop = scrollToPosition;
+    updateVisibleItems(scrollToPosition);
 
-      requestAnimationFrame(() => {
-        container.scrollTop = scrollToPosition;
-        state.scrollTop = scrollToPosition;
-        updateVisibleItems(scrollToPosition);
-      });
-
-      return {
-        hasPrev: previousPage > 1,
-        items: state.items,
-      };
-    }
+    return {
+      hasPrev: previousPage > 1,
+      items: result.items,
+    };
   };
 
   // Return public API

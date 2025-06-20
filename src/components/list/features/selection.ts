@@ -34,6 +34,39 @@ export const withSelection = (config) => (component) => {
   }
 
   /**
+   * Manually reapply selection visual state to all visible elements
+   * This is critical after page jumps when DOM gets recreated
+   */
+  const reapplySelectionVisualState = () => {
+    if (selectedItems.size > 0) {
+      console.log("🔄 REAPPLYING SELECTION VISUAL STATE:", {
+        selectedItemsCount: selectedItems.size,
+        selectedItemIds: Array.from(selectedItems),
+        visibleElements:
+          component.element?.querySelectorAll("[data-id]").length || 0,
+      });
+    }
+
+    // Get all visible item elements
+    const itemElements = component.element?.querySelectorAll("[data-id]") || [];
+
+    // Update each element based on selection state
+    itemElements.forEach((el) => {
+      const itemId = el.getAttribute("data-id");
+      const isSelected = selectedItems.has(itemId);
+
+      if (isSelected && !hasClass(el as HTMLElement, LIST_CLASSES.SELECTED)) {
+        addClass(el as HTMLElement, LIST_CLASSES.SELECTED);
+      } else if (
+        !isSelected &&
+        hasClass(el as HTMLElement, LIST_CLASSES.SELECTED)
+      ) {
+        removeClass(el as HTMLElement, LIST_CLASSES.SELECTED);
+      }
+    });
+  };
+
+  /**
    * Hook into the list manager's rendering process
    * This ensures selection state is applied when items are created or recycled
    */
@@ -56,11 +89,33 @@ export const withSelection = (config) => (component) => {
           removeClass(element, LIST_CLASSES.SELECTED);
         }
       });
+      console.log("✅ Selection render hook installed");
+
+      // Immediately reapply selection visual state
+      // This is critical after page jumps when elements are recreated
+      setTimeout(() => {
+        reapplySelectionVisualState();
+      }, 100);
+    } else {
+      console.warn("❌ setRenderHook not available on component.list");
     }
   };
 
   // Start hooking process
   hookIntoRendering();
+
+  /**
+   * Listen for load events to reapply selection state after page jumps
+   * This is a critical fix for multiselect working on pages after navigation
+   */
+  if (component.on) {
+    component.on(LIST_EVENTS.LOAD, () => {
+      // Small delay to ensure DOM is fully updated
+      setTimeout(() => {
+        reapplySelectionVisualState();
+      }, 50);
+    });
+  }
 
   /**
    * Performance Optimization: Use event delegation with caching
