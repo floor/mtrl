@@ -126,6 +126,24 @@ export interface ListManagerConfig {
 export type ScrollStrategy = "scroll" | "intersection" | "hybrid";
 
 /**
+ * Page change events
+ */
+export const PAGE_EVENTS = {
+  PAGE_CHANGE: "page-change",
+  SCROLL_PAGE_CHANGE: "scroll-page-change",
+} as const;
+
+export type PageEvent = (typeof PAGE_EVENTS)[keyof typeof PAGE_EVENTS];
+
+export interface PageChangeEventData {
+  page: number;
+  previousPage?: number;
+  scrollPosition: number;
+  totalPages?: number;
+  trigger: "navigation" | "scroll";
+}
+
+/**
  * List manager interface
  */
 export interface ListManager {
@@ -181,6 +199,18 @@ export interface ListManager {
    * Sets custom heights for items
    */
   setItemHeights: (heightsMap: Record<string, number>) => boolean;
+
+  /**
+   * Subscribe to page change events
+   */
+  onPageChange: (
+    callback: (event: PageEvent, data: PageChangeEventData) => void
+  ) => () => void;
+
+  /**
+   * Get current page number based on scroll position
+   */
+  getCurrentPage: () => number;
 
   /**
    * Gets the underlying collection

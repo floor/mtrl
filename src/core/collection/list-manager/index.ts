@@ -7,6 +7,9 @@ import {
   PaginationMeta,
   LoadStatus,
   ScrollToPosition,
+  PAGE_EVENTS,
+  PageEvent,
+  PageChangeEventData,
 } from "./types";
 import { validateConfig, determineApiMode, getStaticItems } from "./config";
 import {
@@ -117,11 +120,84 @@ export const createListManager = (
   // Track cleanup functions
   const cleanupFunctions: (() => void)[] = [];
 
-  // Track if we just jumped to a page
+  // Flags for managing UI state during operations
   let justJumpedToPage = false;
-
-  // Track if we're preloading adjacent pages
+  let pageJumpTimeout: number | null = null;
   let isPreloadingPages = false;
+
+  // Page change event handling
+  const pageEventObservers = new Set<
+    (event: PageEvent, data: PageChangeEventData) => void
+  >();
+  let lastEmittedPage: number | null = null;
+
+  /**
+   * Subscribe to page change events
+   * @param callback Function to call when page changes
+   * @returns Unsubscribe function
+   */
+  const onPageChange = (
+    callback: (event: PageEvent, data: PageChangeEventData) => void
+  ) => {
+    pageEventObservers.add(callback);
+    return () => {
+      pageEventObservers.delete(callback);
+    };
+  };
+
+  /**
+   * Emit page change event
+   * @param event Event type
+   * @param data Event data
+   */
+  const emitPageChange = (event: PageEvent, data: PageChangeEventData) => {
+    console.log(`📢 [PageEvent] Emitting ${event}:`, data);
+    pageEventObservers.forEach((callback) => {
+      try {
+        callback(event, data);
+      } catch (error) {
+        console.error("Error in page change event handler:", error);
+      }
+    });
+  };
+
+  /**
+   * Calculate current page based on scroll position
+   * @param scrollTop Current scroll position
+   * @returns Current page number
+   */
+  const calculateCurrentPage = (scrollTop: number): number => {
+    if (state.paginationStrategy !== "page") return 1;
+
+    const pageSize = validatedConfig.pageSize || 20;
+    const itemHeight = validatedConfig.itemHeight || 48;
+    const pageHeight = pageSize * itemHeight;
+
+    // Calculate which page we're currently viewing
+    const currentPage = Math.floor(scrollTop / pageHeight) + 1;
+    return Math.max(1, currentPage);
+  };
+
+  /**
+   * Check if current page has changed during scroll and emit event
+   * @param scrollTop Current scroll position
+   */
+  const checkPageChange = (scrollTop: number): void => {
+    if (state.paginationStrategy !== "page") return;
+
+    const currentPage = calculateCurrentPage(scrollTop);
+
+    if (lastEmittedPage !== null && lastEmittedPage !== currentPage) {
+      emitPageChange(PAGE_EVENTS.SCROLL_PAGE_CHANGE, {
+        page: currentPage,
+        previousPage: lastEmittedPage,
+        scrollPosition: scrollTop,
+        trigger: "scroll",
+      });
+    }
+
+    lastEmittedPage = currentPage;
+  };
 
   /**
    * Load items with cursor pagination or from static data
@@ -132,13 +208,6 @@ export const createListManager = (
     params: LoadParams = {}
   ): Promise<{ items: any[]; meta: PaginationMeta }> => {
     try {
-      console.log(`🔍 [LoadItems] Starting load for page ${params.page}:`, {
-        page: params.page,
-        currentStateItems: state.items.length,
-        paginationStrategy: state.paginationStrategy,
-        collectionSize: itemsCollection.getSize(),
-      });
-
       // Update loading state
       Object.assign(state, updateLoadingState(state, true));
 
@@ -158,7 +227,6 @@ export const createListManager = (
         throw new Error("Cannot load items: API adapter not initialized");
       }
 
-      console.log(`📡 [LoadItems] Making API call for page ${params.page}...`);
       const response = await adapter.read(params);
 
       // Process items
@@ -166,25 +234,8 @@ export const createListManager = (
         ? response.items.map(validatedConfig.transform!)
         : [];
 
-      console.log(
-        `📦 [LoadItems] Fetched ${items.length} items for page ${params.page}:`,
-        {
-          itemIds: items.slice(0, 3).map((item) => item.id),
-          hasMore: items.length > 3,
-        }
-      );
-
       // Store current state.items.length before updating state
       const currentStateItemsLength = state.items.length;
-
-      console.log(
-        `🔄 [LoadItems] Collection operations for page ${params.page}:`,
-        {
-          paginationStrategy: state.paginationStrategy,
-          currentStateItemsLength,
-          collectionSizeBefore: itemsCollection.getSize(),
-        }
-      );
 
       // For page-based pagination, handle the collection update appropriately
       if (
@@ -194,48 +245,23 @@ export const createListManager = (
       ) {
         // If we're loading a specific page and the collection is empty,
         // replace the collection (this handles jumping to any page)
-        console.log(
-          `🆕 [LoadItems] Page ${params.page}: Replacing collection (empty state)`
-        );
         await itemsCollection.clear();
-        console.log(
-          `🧹 [LoadItems] Collection cleared, size: ${itemsCollection.getSize()}`
-        );
         if (items.length > 0) {
           await itemsCollection.add(items);
-          console.log(
-            `➕ [LoadItems] Added ${
-              items.length
-            } items to collection, new size: ${itemsCollection.getSize()}`
-          );
         }
       } else if (state.paginationStrategy === "page") {
         // For page-based pagination with existing items, always add without deduplication
         // This handles the case where we're loading adjacent pages
-        console.log(
-          `📄 [LoadItems] Page ${params.page}: Adding page items without deduplication`
-        );
         if (items.length > 0) {
           await itemsCollection.add(items);
-          console.log(
-            `➕ [LoadItems] Added ${
-              items.length
-            } items to collection, new size: ${itemsCollection.getSize()}`
-          );
         }
       } else {
         // For cursor/offset pagination, use deduplication
-        console.log(
-          `🔀 [LoadItems] Using cursor/offset pagination with deduplication`
-        );
         if (validatedConfig.dedupeItems) {
           const existingIds = new Set(
             state.items.map((item) => item.id).filter(Boolean)
           );
           const newItems = items.filter((item) => !existingIds.has(item.id));
-          console.log(
-            `🎯 [LoadItems] Deduplication: ${items.length} -> ${newItems.length} items`
-          );
           if (newItems.length > 0) {
             await itemsCollection.add(newItems);
           }
@@ -244,14 +270,6 @@ export const createListManager = (
           await itemsCollection.add(items);
         }
       }
-
-      console.log(
-        `📊 [LoadItems] Before state update for page ${params.page}:`,
-        {
-          stateItemsLength: state.items.length,
-          collectionSize: itemsCollection.getSize(),
-        }
-      );
 
       // Update state with new items AFTER collection operations
       Object.assign(
@@ -262,16 +280,6 @@ export const createListManager = (
           response.meta,
           validatedConfig.dedupeItems
         )
-      );
-
-      console.log(
-        `✅ [LoadItems] After state update for page ${params.page}:`,
-        {
-          stateItemsLength: state.items.length,
-          hasNext: state.hasNext,
-          collectionSize: itemsCollection.getSize(),
-          visibleItemsLength: state.visibleItems.length,
-        }
       );
 
       // Set totalHeight as dirty to trigger recalculation
@@ -329,19 +337,8 @@ export const createListManager = (
 
     // Skip updates if we're in the middle of a page jump or preloading
     if (justJumpedToPage || isPreloadingPages) {
-      console.log(
-        `🚫 [UpdateVisibleItems] Skipping update - justJumpedToPage: ${justJumpedToPage}, isPreloadingPages: ${isPreloadingPages}`
-      );
       return;
     }
-
-    console.log(`👀 [UpdateVisibleItems] Starting update:`, {
-      scrollTop,
-      stateItemsLength: state.items.length,
-      visibleItemsLength: state.visibleItems.length,
-      collectionSize: itemsCollection.getSize(),
-      containerHeight: state.containerHeight,
-    });
 
     // Get current container dimensions if not available
     if (state.containerHeight === 0) {
@@ -359,6 +356,9 @@ export const createListManager = (
     // Update scroll position
     state.scrollTop = scrollTop;
 
+    // Check for page changes during scroll
+    checkPageChange(scrollTop);
+
     // Check if we need to load previous pages (for page-based pagination)
     // But skip if we just jumped to a page
     if (!justJumpedToPage) {
@@ -374,18 +374,11 @@ export const createListManager = (
       validatedConfig
     );
 
-    console.log(`📐 [UpdateVisibleItems] Calculated visible range:`, {
-      range: visibleRange,
-      itemsInRange: state.items.slice(visibleRange.start, visibleRange.end)
-        .length,
-    });
-
     // Early return if range hasn't changed
     if (
       visibleRange.start === state.visibleRange.start &&
       visibleRange.end === state.visibleRange.end
     ) {
-      console.log(`⏭️ [UpdateVisibleItems] Range unchanged, early return`);
       return;
     }
 
@@ -398,11 +391,6 @@ export const createListManager = (
         visibleRange
       )
     );
-
-    console.log(`📊 [UpdateVisibleItems] Updated state:`, {
-      visibleItemsLength: state.visibleItems.length,
-      visibleRange: state.visibleRange,
-    });
 
     // Ensure offsets are cached for efficient access
     if (typeof itemMeasurement.calculateOffsets === "function") {
@@ -419,15 +407,7 @@ export const createListManager = (
     }
 
     // Render visible items
-    console.log(`🎨 [UpdateVisibleItems] Calling renderer with:`, {
-      itemsCount: state.items.length,
-      visibleRange: visibleRange,
-      rendererMethod: typeof renderer.renderVisibleItems,
-    });
-
     renderer.renderVisibleItems(state.items, visibleRange);
-
-    console.log(`✨ [UpdateVisibleItems] Renderer completed`);
 
     // Now measure elements that needed measurement
     const heightsChanged = itemMeasurement.measureMarkedElements(
@@ -605,7 +585,13 @@ export const createListManager = (
     state.page = pageNumber;
     state.paginationStrategy = paginationStrategy;
 
-    // Set flag early to prevent updateVisibleItems from running during clear
+    // Clear any existing page jump timeout
+    if (pageJumpTimeout !== null) {
+      clearTimeout(pageJumpTimeout);
+      pageJumpTimeout = null;
+    }
+
+    // Set flag early to prevent updateVisibleItems from running during operations
     justJumpedToPage = true;
 
     // Only clear the collection if we're not preserving previous pages
@@ -671,7 +657,8 @@ export const createListManager = (
     // Wait a tick to ensure collection updates are processed
     await new Promise((resolve) => setTimeout(resolve, 0));
 
-    // Update visible items after loading
+    // CRITICAL: Update visible items immediately after loading
+    // This ensures items are rendered even though justJumpedToPage is true
     if (!options.preservePrevious) {
       // Force container to top before updating
       container.scrollTop = 0;
@@ -695,40 +682,70 @@ export const createListManager = (
             return;
           }
 
-          // When jumping to a page, we need to set proper height
+          // When jumping to a page, we need to set proper height and scroll position
           const pageSize = validatedConfig.pageSize || 20;
           const itemHeight = validatedConfig.itemHeight || 48;
 
-          // When jumping to a page, we only have that page's items
-          // Set the total height based on loaded items
-          const totalHeight = state.items.length * itemHeight;
+          // Calculate the virtual scroll position for this page in the full dataset
+          const itemsBeforeThisPage = (pageNumber - 1) * pageSize;
+          const virtualScrollPosition = itemsBeforeThisPage * itemHeight;
 
-          // Update the spacer to reflect the actual height
+          // When jumping to a page, we only have that page's items locally (indices 0-19)
+          // But we need to simulate being at the correct position in the full dataset
+          const localItemHeight = state.items.length * itemHeight;
+
+          // Set total height to represent the full dataset
+          // We'll get the actual total from the API meta, but use a reasonable estimate
+          const estimatedTotalItems = Math.max(
+            itemsBeforeThisPage + state.items.length,
+            pageNumber * pageSize * 2 // Conservative estimate
+          );
+          const totalHeight = estimatedTotalItems * itemHeight;
+
+          // Update the spacer to reflect the estimated total height
           updateSpacerHeight(elements, totalHeight);
 
           // Mark height as calculated
           state.totalHeight = totalHeight;
           state.totalHeightDirty = false;
 
-          // Calculate and set the initial visible range
+          // Set the scroll position to where this page should be
+          container.scrollTop = virtualScrollPosition;
+          state.scrollTop = virtualScrollPosition;
+
+          // Calculate visible range based on the virtual scroll position
           const visibleCount = Math.ceil(state.containerHeight / itemHeight);
+          const startIndex = Math.floor(virtualScrollPosition / itemHeight);
+          const endIndex = startIndex + visibleCount + 5; // Add buffer
+
+          // Since our items are at local indices 0-19 but represent virtual indices,
+          // we need to map the visible range to our local indices
+          const localStartIndex = Math.max(0, startIndex - itemsBeforeThisPage);
+          const localEndIndex = Math.min(
+            state.items.length,
+            endIndex - itemsBeforeThisPage
+          );
+
           state.visibleRange = {
-            start: 0,
-            end: Math.min(visibleCount + 5, state.items.length), // Add some buffer
+            start: localStartIndex,
+            end: localEndIndex,
           };
 
           // Ensure renderer's cached range is reset
           renderer.resetVisibleRange();
 
-          updateVisibleItems(0); // Reset scroll to top when jumping to a page
+          // EXPLICITLY call updateVisibleItems to render the items
+          // This bypasses the justJumpedToPage check
+          // Temporarily allow updates
+          const wasJumpedToPage = justJumpedToPage;
+          justJumpedToPage = false;
 
-          // Allow scroll updates after a brief delay to ensure DOM has settled
-          setTimeout(() => {
-            // Only clear the flag if we're not preloading
-            if (!isPreloadingPages) {
-              justJumpedToPage = false;
-            }
-          }, 100);
+          updateVisibleItems(virtualScrollPosition); // Use the correct virtual scroll position
+
+          // Restore the flag
+          justJumpedToPage = wasJumpedToPage;
+
+          // Flag will be cleared by the main timeout below
         };
 
         measureContainer();
@@ -839,14 +856,35 @@ export const createListManager = (
         // Scroll to the beginning of the loaded page
         container.scrollTop = scrollToPosition;
         state.scrollTop = scrollToPosition;
+
+        // EXPLICITLY call updateVisibleItems to render the items
+        // Temporarily allow updates
+        const wasJumpedToPage = justJumpedToPage;
+        justJumpedToPage = false;
+
         updateVisibleItems(scrollToPosition);
+
+        // Restore the flag
+        justJumpedToPage = wasJumpedToPage;
       });
     }
 
-    // Clear the flag after a longer delay to cover all operations
-    setTimeout(() => {
+    // Clear the flag after DOM operations complete
+    pageJumpTimeout = window.setTimeout(() => {
       justJumpedToPage = false;
-    }, 1500); // Extended to 1500ms to ensure all operations complete
+      pageJumpTimeout = null;
+    }, 500); // Shorter timeout - operations should complete faster
+
+    // Emit page change event for navigation
+    emitPageChange(PAGE_EVENTS.PAGE_CHANGE, {
+      page: pageNumber,
+      previousPage: state.page !== pageNumber ? state.page : undefined,
+      scrollPosition: container.scrollTop,
+      trigger: "navigation",
+    });
+
+    // Update last emitted page
+    lastEmittedPage = pageNumber;
 
     return {
       hasNext: state.hasNext,
@@ -1114,6 +1152,12 @@ export const createListManager = (
 
     // Return cleanup function
     return () => {
+      // Clear any pending page jump timeout
+      if (pageJumpTimeout !== null) {
+        clearTimeout(pageJumpTimeout);
+        pageJumpTimeout = null;
+      }
+
       // Run all cleanup functions
       cleanupFunctions.forEach((fn) => fn());
       cleanupFunctions.length = 0;
@@ -1278,6 +1322,10 @@ export const createListManager = (
       return updated; // Return whether heights were updated
     },
 
+    // Page change events
+    onPageChange,
+    getCurrentPage: () => calculateCurrentPage(state.scrollTop),
+
     // Collection access
     getCollection: () => itemsCollection,
 
@@ -1297,6 +1345,12 @@ export const createListManager = (
 
     // Cleanup method
     destroy: () => {
+      // Clear any pending timeouts first
+      if (pageJumpTimeout !== null) {
+        clearTimeout(pageJumpTimeout);
+        pageJumpTimeout = null;
+      }
+
       cleanup();
 
       // Clear all data
