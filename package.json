@@ -1,6 +1,6 @@
 {
   "name": "mtrl",
-  "version": "0.4.4",
+  "version": "0.4.5",
   "description": "A functional TypeScript/JavaScript component library with composable architecture based on Material Design 3",
   "author": "floor",
   "license": "MIT License",
@@ -46,7 +46,7 @@
     "build:lib": "bun run build.ts",
     "prepublishOnly": "bun run build:lib",
     "lint": "bunx eslint src --ext .ts,.tsx",
-    "lint:fix": "bunx eslint src --ext .ts,.tsx --fix", 
+    "lint:fix": "bunx eslint src --ext .ts,.tsx --fix",
     "format": "bunx prettier --write .",
     "format:check": "bunx prettier --check .",
     "test": "bun test",
