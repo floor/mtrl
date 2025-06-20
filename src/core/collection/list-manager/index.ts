@@ -124,6 +124,7 @@ export const createListManager = (
   let justJumpedToPage = false;
   let pageJumpTimeout: number | null = null;
   let isPreloadingPages = false;
+  let isPageJumpLoad = false; // Track when we're loading due to a page jump
 
   // Page change event handling
   const pageEventObservers = new Set<
@@ -241,17 +242,25 @@ export const createListManager = (
       if (
         state.paginationStrategy === "page" &&
         params.page &&
-        currentStateItemsLength === 0
+        (currentStateItemsLength === 0 || isPageJumpLoad)
       ) {
-        // If we're loading a specific page and the collection is empty,
+        // If we're loading a specific page and either the collection is empty OR this is a page jump,
         // replace the collection (this handles jumping to any page)
+        console.log(
+          `🔄 [LoadItems] Page ${params.page}: Replacing collection (${
+            isPageJumpLoad ? "page jump" : "empty state"
+          })`
+        );
         await itemsCollection.clear();
         if (items.length > 0) {
           await itemsCollection.add(items);
         }
       } else if (state.paginationStrategy === "page") {
-        // For page-based pagination with existing items, always add without deduplication
-        // This handles the case where we're loading adjacent pages
+        // For page-based pagination with existing items, add without deduplication
+        // This handles the case where we're loading adjacent pages via scrolling
+        console.log(
+          `📄 [LoadItems] Page ${params.page}: Appending to existing collection (scroll-based loading)`
+        );
         if (items.length > 0) {
           await itemsCollection.add(items);
         }
@@ -272,15 +281,43 @@ export const createListManager = (
       }
 
       // Update state with new items AFTER collection operations
-      Object.assign(
-        state,
-        updateStateAfterLoad(
+      if (isPageJumpLoad && state.paginationStrategy === "page") {
+        // For page jumps, always replace the state items (don't append)
+        Object.assign(state, {
+          items: [...items],
+          cursor: response.meta.cursor ?? null,
+          page: response.meta.page ?? params.page,
+          hasNext: response.meta.hasNext ?? false,
+          totalHeightDirty: true,
+          itemCount: response.meta.total ?? items.length,
+        });
+        console.log(
+          `🔄 [LoadItems] Page jump state update: replaced with ${items.length} items`
+        );
+      } else {
+        // Use normal state update logic for regular loads
+        Object.assign(
           state,
-          items,
-          response.meta,
-          validatedConfig.dedupeItems
-        )
-      );
+          updateStateAfterLoad(
+            state,
+            items,
+            response.meta,
+            validatedConfig.dedupeItems
+          )
+        );
+        console.log(
+          `📄 [LoadItems] Regular state update: appended/deduped items`
+        );
+      }
+
+      // Reset the page jump flag
+      isPageJumpLoad = false;
+
+      console.log(`✅ [LoadItems] Page ${params.page} complete:`, {
+        stateItemsLength: state.items.length,
+        collectionSize: itemsCollection.getSize(),
+        isPageJump: isPageJumpLoad,
+      });
 
       // Set totalHeight as dirty to trigger recalculation
       state.totalHeightDirty = true;
@@ -593,6 +630,9 @@ export const createListManager = (
 
     // Set flag early to prevent updateVisibleItems from running during operations
     justJumpedToPage = true;
+
+    // Mark this as a page jump load operation
+    isPageJumpLoad = true;
 
     // Only clear the collection if we're not preserving previous pages
     if (!options.preservePrevious) {
