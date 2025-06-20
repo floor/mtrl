@@ -1234,74 +1234,35 @@ export const createListManager = (
       const pageSize = validatedConfig.pageSize || 20;
       const itemHeight = validatedConfig.itemHeight || 48;
 
-      // Check if next page is already loaded
-      const totalPages = Math.ceil(state.items.length / pageSize);
-      const currentPageInMemory = Math.ceil(
-        (state.scrollTop + state.containerHeight) / (pageSize * itemHeight)
-      );
-
       console.log(`📊 [ScrollNext] Analysis:`, {
         currentPage: state.page,
         nextPage,
-        totalPages,
-        stateItemsLength: state.items.length,
         pageSize,
-        currentPageInMemory,
+        stateItemsLength: state.items.length,
       });
 
-      if (totalPages >= nextPage) {
-        // Next page is already loaded, just scroll to it
-        console.log(
-          `✅ [ScrollNext] Page ${nextPage} already in memory, just scrolling`
-        );
-        state.page = nextPage;
+      // For consistency with direct page navigation, always use loadPage
+      // This ensures the same data is loaded regardless of navigation method
+      console.log(
+        `🔄 [ScrollNext] Loading page ${nextPage} via loadPage for consistency`
+      );
 
-        // Calculate scroll position for the next page
-        const scrollToPosition = (nextPage - 1) * pageSize * itemHeight;
+      const result = await loadPage(nextPage);
 
-        container.scrollTop = scrollToPosition;
-        state.scrollTop = scrollToPosition;
-        updateVisibleItems(scrollToPosition);
+      console.log(`📦 [ScrollNext] LoadPage result:`, {
+        itemsLength: result.items.length,
+        firstItemId: result.items[0]?.id,
+        lastItemId: result.items[result.items.length - 1]?.id,
+      });
 
-        const items = state.items.slice(
-          (nextPage - 1) * pageSize,
-          nextPage * pageSize
-        );
+      // Calculate scroll position for the page (at the top of the page)
+      const scrollToPosition = (nextPage - 1) * pageSize * itemHeight;
 
-        console.log(`📄 [ScrollNext] Returning existing items:`, {
-          itemsLength: items.length,
-          firstItemId: items[0]?.id,
-          lastItemId: items[items.length - 1]?.id,
-        });
+      container.scrollTop = scrollToPosition;
+      state.scrollTop = scrollToPosition;
+      updateVisibleItems(scrollToPosition);
 
-        return {
-          hasNext: totalPages > nextPage || state.hasNext,
-          items,
-        };
-      } else {
-        // Need to load the next page
-        console.log(
-          `🔄 [ScrollNext] Page ${nextPage} not in memory, loading via loadNext`
-        );
-
-        const result = await loadNext();
-
-        console.log(`📦 [ScrollNext] LoadNext result:`, {
-          itemsLength: result.items.length,
-          firstItemId: result.items[0]?.id,
-          lastItemId: result.items[result.items.length - 1]?.id,
-          stateItemsLength: state.items.length,
-        });
-
-        // Scroll to show the new items
-        const scrollToPosition = (state.items.length - pageSize) * itemHeight;
-
-        container.scrollTop = scrollToPosition;
-        state.scrollTop = scrollToPosition;
-        updateVisibleItems(scrollToPosition);
-
-        return result;
-      }
+      return result;
     }
 
     // For other strategies, just load more
