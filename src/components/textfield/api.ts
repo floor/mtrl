@@ -15,6 +15,8 @@ type ComponentWithDensity = BaseComponent & {
     set: (density: string) => void;
   };
   updateElementPositions?: () => void;
+  setError?: (error: boolean, message?: string) => any;
+  isError?: () => boolean;
 };
 
 /**
@@ -236,6 +238,18 @@ export const withAPI =
         component.updateElementPositions();
       }
       return this;
+    },
+
+    // Error state management
+    setError(error: boolean, message?: string): TextfieldComponent {
+      if (component.setError) {
+        component.setError(error, message);
+      }
+      return this;
+    },
+
+    isError(): boolean {
+      return component.isError?.() || false;
     },
 
     // Density management

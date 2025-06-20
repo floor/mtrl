@@ -8,6 +8,7 @@ export { withSuffixText } from "./suffix-text";
 export { withSupportingText } from "./supporting-text";
 export { withPlacement } from "./placement";
 export { withDensity } from "./density";
+export { withError } from "./error";
 
 // Export interfaces
 export type { LeadingIconComponent, LeadingIconConfig } from "./leading-icon";

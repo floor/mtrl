@@ -214,6 +214,12 @@ export interface TextfieldComponent {
   /** Manually update element positions (useful after DOM changes) */
   updatePositions: () => TextfieldComponent;
 
+  /** Sets the error state of the textfield */
+  setError: (error: boolean, message?: string) => TextfieldComponent;
+
+  /** Gets the current error state */
+  isError: () => boolean;
+
   /** Sets the density of the textfield */
   setDensity: (density: TextfieldDensity | string) => TextfieldComponent;
 
@@ -294,5 +300,8 @@ export interface BaseComponent {
   lifecycle?: {
     destroy: () => void;
   };
+  errorState?: boolean;
+  setError?: (error: boolean, message?: string) => void;
+  isError?: () => boolean;
   [key: string]: unknown;
 }

@@ -143,6 +143,7 @@ $component: "#{base.$prefix}-textfield";
 
   // Leading icon
   &-leading-icon {
+    opacity: 0.85;
     position: absolute;
     left: 12px;
     top: 50%;
@@ -165,6 +166,7 @@ $component: "#{base.$prefix}-textfield";
 
   // Trailing icon
   &-trailing-icon {
+    opacity: 0.85;
     position: absolute;
     right: 12px;
     top: 50%;

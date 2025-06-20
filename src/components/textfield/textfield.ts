@@ -18,6 +18,7 @@ import {
   withSuffixText,
   withPlacement,
   withDensity,
+  withError,
 } from "./features";
 import { TextfieldConfig, TextfieldComponent } from "./types";
 import { createBaseConfig, getElementConfig, getApiConfig } from "./config";
@@ -74,6 +75,7 @@ const createTextfield = (config: TextfieldConfig = {}): TextfieldComponent => {
       withPrefixText(baseConfig), // Add prefix text (if specified)
       withSuffixText(baseConfig), // Add suffix text (if specified)
       withSupportingText(baseConfig), // Add supporting/helper text (if specified)
+      withError(baseConfig), // Add error state management
       withDisabled(baseConfig), // Add disabled state management
       withLifecycle(), // Add lifecycle management
       withPlacement(), // Add dynamic positioning for elements

@@ -170,7 +170,6 @@ export const withTextInput =
 
     // Enhanced autofill detection function
     const checkForAutofill = (shouldEmit: boolean = true): void => {
-      console.log("checkForAutofill");
       // Multiple detection methods for better browser compatibility
 
       // Method 1: Check for non-empty value (most reliable)
