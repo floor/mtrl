@@ -478,7 +478,7 @@ export const createListManager = (
     );
 
     if (shouldLoadMore) {
-      loadMore();
+      loadNext();
     }
   };
 
@@ -503,7 +503,8 @@ export const createListManager = (
    * Loads more items using appropriate pagination strategy
    * @returns {Promise<Object>} Load result
    */
-  const loadMore = async (): Promise<{ hasNext: boolean; items: any[] }> => {
+  const loadNext = async (): Promise<{ hasNext: boolean; items: any[] }> => {
+    // If we're already at the bottom or loading, do nothing
     if (state.loading || !state.hasNext) {
       return { hasNext: state.hasNext, items: [] };
     }
@@ -519,8 +520,11 @@ export const createListManager = (
     // Store the pagination strategy in state for future use
     state.paginationStrategy = paginationStrategy;
 
-    // For page-based pagination, we need to increment the page number
+    // For page-based pagination, treat each page as a jump operation for consistency
     if (paginationStrategy === "page") {
+      // Mark this as a page jump load to ensure consistent behavior
+      isPageJumpLoad = true;
+
       // If we have a numeric cursor, use that to determine the next page
       if (state.cursor && /^\d+$/.test(state.cursor)) {
         state.page = parseInt(state.cursor, 10);
@@ -529,9 +533,9 @@ export const createListManager = (
       else if (state.page !== undefined) {
         state.page += 1;
       }
-      // If no page set yet, start with page 1
+      // If no page set yet, start with page 2 (since we're loading "next")
       else {
-        state.page = 1;
+        state.page = 2;
       }
     }
 
@@ -1067,7 +1071,7 @@ export const createListManager = (
       validatedConfig,
       {
         onScroll: updateVisibleItems,
-        onLoadMore: loadMore,
+        onLoadMore: loadNext,
       }
     );
 
@@ -1220,6 +1224,10 @@ export const createListManager = (
       return { hasNext: state.hasNext, items: [] };
     }
 
+    console.log(
+      `🔄 [ScrollNext] Starting from page ${state.page}, state.items.length: ${state.items.length}`
+    );
+
     // For page-based pagination, increment the page
     if (state.paginationStrategy === "page" && state.page) {
       const nextPage = state.page + 1;
@@ -1232,8 +1240,20 @@ export const createListManager = (
         (state.scrollTop + state.containerHeight) / (pageSize * itemHeight)
       );
 
+      console.log(`📊 [ScrollNext] Analysis:`, {
+        currentPage: state.page,
+        nextPage,
+        totalPages,
+        stateItemsLength: state.items.length,
+        pageSize,
+        currentPageInMemory,
+      });
+
       if (totalPages >= nextPage) {
         // Next page is already loaded, just scroll to it
+        console.log(
+          `✅ [ScrollNext] Page ${nextPage} already in memory, just scrolling`
+        );
         state.page = nextPage;
 
         // Calculate scroll position for the next page
@@ -1243,16 +1263,35 @@ export const createListManager = (
         state.scrollTop = scrollToPosition;
         updateVisibleItems(scrollToPosition);
 
+        const items = state.items.slice(
+          (nextPage - 1) * pageSize,
+          nextPage * pageSize
+        );
+
+        console.log(`📄 [ScrollNext] Returning existing items:`, {
+          itemsLength: items.length,
+          firstItemId: items[0]?.id,
+          lastItemId: items[items.length - 1]?.id,
+        });
+
         return {
           hasNext: totalPages > nextPage || state.hasNext,
-          items: state.items.slice(
-            (nextPage - 1) * pageSize,
-            nextPage * pageSize
-          ),
+          items,
         };
       } else {
         // Need to load the next page
-        const result = await loadMore();
+        console.log(
+          `🔄 [ScrollNext] Page ${nextPage} not in memory, loading via loadNext`
+        );
+
+        const result = await loadNext();
+
+        console.log(`📦 [ScrollNext] LoadNext result:`, {
+          itemsLength: result.items.length,
+          firstItemId: result.items[0]?.id,
+          lastItemId: result.items[result.items.length - 1]?.id,
+          stateItemsLength: state.items.length,
+        });
 
         // Scroll to show the new items
         const scrollToPosition = (state.items.length - pageSize) * itemHeight;
@@ -1266,7 +1305,8 @@ export const createListManager = (
     }
 
     // For other strategies, just load more
-    return loadMore();
+    console.log(`🔄 [ScrollNext] Using loadNext for non-page strategy`);
+    return loadNext();
   };
 
   /**
@@ -1343,7 +1383,7 @@ export const createListManager = (
   return {
     // Data loading methods
     loadItems,
-    loadMore,
+    loadNext,
     refresh,
     loadPage,
     loadPreviousPage,

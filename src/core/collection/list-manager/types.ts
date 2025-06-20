@@ -153,9 +153,9 @@ export interface ListManager {
   loadItems: (params?: any) => Promise<{ items: any[]; meta: PaginationMeta }>;
 
   /**
-   * Loads more items (next page)
+   * Loads next page/items
    */
-  loadMore: () => Promise<{ hasNext: boolean; items: any[] }>;
+  loadNext: () => Promise<{ hasNext: boolean; items: any[] }>;
 
   /**
    * Refreshes the list
