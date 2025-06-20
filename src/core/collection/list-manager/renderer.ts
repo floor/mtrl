@@ -313,6 +313,13 @@ export const createRenderer = (
     getItemElements: (): Map<string, HTMLElement> => {
       return new Map(itemElements);
     },
+
+    /**
+     * Resets the visible range to force a full re-render on next call
+     */
+    resetVisibleRange: (): void => {
+      lastVisibleRange = { start: -1, end: -1 };
+    },
   };
 };
 
