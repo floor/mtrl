@@ -34,23 +34,10 @@ export const withSelection = (config) => (component) => {
   }
 
   /**
-   * Manually reapply selection visual state to all visible elements
-   * This is critical after page jumps when DOM gets recreated
+   * Apply selection state to visible elements
    */
-  const reapplySelectionVisualState = () => {
-    if (selectedItems.size > 0) {
-      console.log("🔄 REAPPLYING SELECTION VISUAL STATE:", {
-        selectedItemsCount: selectedItems.size,
-        selectedItemIds: Array.from(selectedItems),
-        visibleElements:
-          component.element?.querySelectorAll("[data-id]").length || 0,
-      });
-    }
-
-    // Get all visible item elements
+  const applySelectionState = () => {
     const itemElements = component.element?.querySelectorAll("[data-id]") || [];
-
-    // Update each element based on selection state
     itemElements.forEach((el) => {
       const itemId = el.getAttribute("data-id");
       const isSelected = selectedItems.has(itemId);
@@ -67,73 +54,96 @@ export const withSelection = (config) => (component) => {
   };
 
   /**
-   * Hook into the list manager's rendering process
-   * This ensures selection state is applied when items are created or recycled
+   * The render hook function that applies selection state to newly rendered items
    */
-  const hookIntoRendering = () => {
-    // Wait for list manager to be initialized
+  const selectionRenderHook = (item, element) => {
+    if (selectedItems.has(item.id)) {
+      if (!hasClass(element, LIST_CLASSES.SELECTED)) {
+        addClass(element, LIST_CLASSES.SELECTED);
+      }
+    } else if (hasClass(element, LIST_CLASSES.SELECTED)) {
+      removeClass(element, LIST_CLASSES.SELECTED);
+    }
+  };
+
+  /**
+   * Set up the render hook with proper timing
+   */
+  const setupRenderHook = () => {
     if (!component.list) {
-      setTimeout(hookIntoRendering, 0);
+      // Retry until list manager is ready
+      setTimeout(setupRenderHook, 10);
       return;
     }
 
-    // Set the render hook if available
     if (typeof component.list.setRenderHook === "function") {
-      component.list.setRenderHook((item, element) => {
-        // Apply selection state only if needed (avoid unnecessary DOM ops)
-        if (selectedItems.has(item.id)) {
-          if (!hasClass(element, LIST_CLASSES.SELECTED)) {
-            addClass(element, LIST_CLASSES.SELECTED);
-          }
-        } else if (hasClass(element, LIST_CLASSES.SELECTED)) {
-          removeClass(element, LIST_CLASSES.SELECTED);
-        }
-      });
+      component.list.setRenderHook(selectionRenderHook);
       console.log("✅ Selection render hook installed");
-
-      // Immediately reapply selection visual state
-      // This is critical after page jumps when elements are recreated
-      setTimeout(() => {
-        reapplySelectionVisualState();
-      }, 100);
     } else {
       console.warn("❌ setRenderHook not available on component.list");
     }
   };
 
-  // Start hooking process
-  hookIntoRendering();
+  // Set up render hook
+  setupRenderHook();
 
   /**
-   * Listen for load events to reapply selection state after page jumps
-   * This is a critical fix for multiselect working on pages after navigation
+   * Listen for load events to reapply selection state after page navigation
    */
   if (component.on) {
     component.on(LIST_EVENTS.LOAD, () => {
-      // Small delay to ensure DOM is fully updated
-      setTimeout(() => {
-        reapplySelectionVisualState();
-      }, 50);
+      // Apply selection state after page loads
+      setTimeout(applySelectionState, 50);
     });
   }
 
   /**
-   * Performance Optimization: Use event delegation with caching
-   * This avoids attaching listeners to each item element
+   * Handle item clicks for selection
    */
   const handleItemClick = (e) => {
-    // Skip if not clicking on or inside an item element
-    if (!e.target.closest("[data-id]")) return;
+    console.log("🎯 HANDLE ITEM CLICK CALLED:", e.target);
+
+    if (!e.target.closest("[data-id]")) {
+      console.log("❌ No data-id element found");
+      return;
+    }
 
     const itemElement = e.target.closest("[data-id]");
     const itemId = itemElement.getAttribute("data-id");
 
-    // Exit if we can't find this ID
-    if (!itemId) return;
+    console.log("🎯 Found item element:", { itemId, element: itemElement });
+
+    if (!itemId) {
+      console.log("❌ No item ID found");
+      return;
+    }
 
     // Find the item data
-    const item = component.list?.getAllItems().find((i) => i.id === itemId);
-    if (!item) return;
+    const allItems = component.list?.getAllItems();
+    const visibleItems = component.list?.getVisibleItems();
+    console.log("🎯 All items:", allItems?.length);
+    console.log("🎯 Visible items:", visibleItems?.length);
+
+    // Try visible items first (what's actually displayed), then all items
+    let item = visibleItems?.find((i) => i.id === itemId);
+    if (!item) {
+      item = allItems?.find((i) => i.id === itemId);
+    }
+
+    console.log("🎯 Found item data:", item);
+    console.log(
+      "🎯 Found in:",
+      item
+        ? visibleItems?.find((i) => i.id === itemId)
+          ? "visible"
+          : "all"
+        : "neither"
+    );
+
+    if (!item) {
+      console.log("❌ Item not found in list data:", itemId);
+      return;
+    }
 
     // Create selection event data
     const selectionEvent = {
@@ -147,26 +157,37 @@ export const withSelection = (config) => (component) => {
       defaultPrevented: false,
     };
 
+    console.log("🎯 About to emit selection event:", selectionEvent);
+
     // Emit event before modifying selection
     component.emit(LIST_EVENTS.SELECT, selectionEvent);
 
     // Exit if default was prevented
-    if (selectionEvent.defaultPrevented) return;
+    if (selectionEvent.defaultPrevented) {
+      console.log("❌ Selection event was prevented");
+      return;
+    }
+
+    console.log("🎯 Processing selection toggle:", {
+      multiSelect: config.multiSelect,
+      currentlySelected: selectedItems.has(itemId),
+    });
 
     // Toggle selection based on mode
     if (config.multiSelect) {
       if (selectedItems.has(itemId)) {
         selectedItems.delete(itemId);
         removeClass(itemElement, LIST_CLASSES.SELECTED);
+        console.log("🎯 Deselected item:", itemId);
       } else {
         selectedItems.add(itemId);
         addClass(itemElement, LIST_CLASSES.SELECTED);
+        console.log("🎯 Selected item:", itemId);
       }
     } else {
-      // For single-select, use classList method to determine current state
+      // For single-select mode
       const isCurrentlySelected = hasClass(itemElement, LIST_CLASSES.SELECTED);
 
-      // If already selected, just deselect
       if (isCurrentlySelected) {
         selectedItems.clear();
         removeClass(itemElement, LIST_CLASSES.SELECTED);
@@ -186,20 +207,21 @@ export const withSelection = (config) => (component) => {
         addClass(itemElement, LIST_CLASSES.SELECTED);
       }
     }
+
+    console.log("🎯 Final selection state:", {
+      selectedCount: selectedItems.size,
+      selectedIds: Array.from(selectedItems),
+    });
   };
 
   // Add event listener
   component.element.addEventListener("click", handleItemClick);
 
   /**
-   * Batch DOM updates for better performance
-   * Update visible elements in a single pass
+   * Update visible elements based on selection state
    */
   const updateVisibleElements = () => {
-    // Get all visible item elements
     const itemElements = component.element.querySelectorAll("[data-id]");
-
-    // Update each element based on selection state
     itemElements.forEach((el) => {
       const itemId = el.getAttribute("data-id");
       const isSelected = selectedItems.has(itemId);
@@ -213,20 +235,16 @@ export const withSelection = (config) => (component) => {
   };
 
   /**
-   * Updates item selection state
-   * Optimized to minimize DOM operations
-   * @param {string} itemId - Item ID
-   * @param {boolean} selected - Whether the item is selected
+   * Update item selection state
    */
   const updateItemState = (itemId, selected) => {
-    // Update selection state
     if (selected) {
       selectedItems.add(itemId);
     } else {
       selectedItems.delete(itemId);
     }
 
-    // Find the element only if it's in the visible viewport
+    // Update DOM if element is visible
     const itemElement = component.element.querySelector(
       `[data-id="${itemId}"]`
     );
@@ -237,7 +255,6 @@ export const withSelection = (config) => (component) => {
         removeClass(itemElement, LIST_CLASSES.SELECTED);
       }
     }
-    // Non-visible elements will be updated when they're rendered via the hook
   };
 
   // Clean up on destruction
@@ -253,7 +270,6 @@ export const withSelection = (config) => (component) => {
   return {
     ...component,
     getSelectedItems: () => {
-      // Lazy evaluation for selected items - only fetch complete items when needed
       const allItems = component.list?.getAllItems() || [];
       return allItems.filter((item) => selectedItems.has(item.id));
     },
@@ -268,40 +284,24 @@ export const withSelection = (config) => (component) => {
       return component;
     },
     clearSelection: () => {
-      // Fast clearing for bulk operations
-      const hadSelection = selectedItems.size > 0;
-
-      if (hadSelection) {
-        // Clear the Set first (fast operation)
+      if (selectedItems.size > 0) {
         selectedItems.clear();
-
-        // Then update the visible DOM elements
         component.element
           .querySelectorAll(`.${PREFIX}-${LIST_CLASSES.SELECTED}`)
           .forEach((el) => removeClass(el, LIST_CLASSES.SELECTED));
       }
-
       return component;
     },
     setSelection: (itemIds) => {
-      // Efficient bulk updates
-
-      // Don't do anything if the new selection is empty and we're already empty
       if (!itemIds?.length && selectedItems.size === 0) {
         return component;
       }
 
-      // Clear current selection
       selectedItems.clear();
-
-      // Set new selection in memory
       if (Array.isArray(itemIds)) {
         itemIds.forEach((itemId) => selectedItems.add(itemId));
       }
-
-      // Update DOM in a single batch operation
       updateVisibleElements();
-
       return component;
     },
   };
