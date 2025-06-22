@@ -57,6 +57,9 @@ export const createListManager = (
   container: HTMLElement,
   config: ListManagerConfig
 ): ListManager => {
+  // Version tracking for debugging
+  console.log("🔧 [ListManager] Version: 2024.1.15-consistent-init");
+
   // Add collection name to config
   config.collection = collection;
 
@@ -434,7 +437,19 @@ export const createListManager = (
     }
 
     // Calculate which items should be visible
-    // Calculate which items should be visible
+    // DETAILED LOGGING FOR PAGE NAVIGATION DEBUGGING
+    console.log("📐 [UpdateVisibleItems] Before calculateVisibleRange:", {
+      scrollTop,
+      itemsLength: state.items.length,
+      containerHeight: state.containerHeight,
+      currentVisibleRange: state.visibleRange,
+      firstItemId: state.items[0]?.id || "N/A",
+      lastItemId: state.items[state.items.length - 1]?.id || "N/A",
+      itemHeight: validatedConfig.itemHeight,
+      totalHeight: state.totalHeight,
+      currentPage: state.page,
+    });
+
     const visibleRange = calculateVisibleRange(
       scrollTop,
       state.items,
@@ -442,6 +457,18 @@ export const createListManager = (
       itemMeasurement,
       validatedConfig
     );
+
+    console.log("📐 [UpdateVisibleItems] After calculateVisibleRange:", {
+      visibleRange,
+      expectedVisibleItemIds: state.items
+        .slice(visibleRange.start, visibleRange.end)
+        .map((item) => item?.id)
+        .join(", "),
+      firstVisibleItem: state.items[visibleRange.start]?.id || "N/A",
+      lastVisibleItem:
+        state.items[Math.min(visibleRange.end - 1, state.items.length - 1)]
+          ?.id || "N/A",
+    });
 
     // Early return if range hasn't changed
     if (
@@ -490,6 +517,86 @@ export const createListManager = (
 
     // Render visible items
     renderer.renderVisibleItems(state.items, visibleRange);
+
+    // DETAILED LOGGING FOR DOM RENDERING DEBUGGING
+    console.log("🎨 [DOM Render] After renderVisibleItems:", {
+      visibleRangeStart: visibleRange.start,
+      visibleRangeEnd: visibleRange.end,
+      actualItemsSliced: state.items
+        .slice(visibleRange.start, visibleRange.end)
+        .map((item) => item?.id)
+        .join(", "),
+      scrollTop: state.scrollTop,
+      containerScrollTop: container.scrollTop,
+      totalHeight: state.totalHeight,
+      containerHeight: state.containerHeight,
+      domElementsCount: elements.content.children.length,
+      firstDomElementId:
+        elements.content.children[0]?.getAttribute("data-id") || "N/A",
+      lastDomElementId:
+        elements.content.children[
+          elements.content.children.length - 1
+        ]?.getAttribute("data-id") || "N/A",
+    });
+
+    // Check actual DOM positioning
+    const domItems = Array.from(elements.content.children);
+    if (domItems.length > 0) {
+      const currentScrollTop = state.scrollTop;
+      const domPositions = domItems.slice(0, 10).map((elem, idx) => ({
+        index: idx,
+        dataId: elem.getAttribute("data-id"),
+        offsetTop: (elem as HTMLElement).offsetTop,
+        offsetHeight: (elem as HTMLElement).offsetHeight,
+        isVisible:
+          (elem as HTMLElement).offsetTop <
+            currentScrollTop + state.containerHeight &&
+          (elem as HTMLElement).offsetTop + (elem as HTMLElement).offsetHeight >
+            currentScrollTop,
+      }));
+      console.log(
+        "🎨 [DOM Positions] First 10 DOM elements positioning:",
+        domPositions
+      );
+
+      // Show which items should be visible based on scroll position
+      const expectedVisibleItems = domPositions.filter(
+        (item) => item.isVisible
+      );
+      console.log(
+        "🎯 [Expected Visible] Items that should be visible based on scroll position:",
+        {
+          scrollTop: currentScrollTop,
+          containerHeight: state.containerHeight,
+          viewportRange: `${currentScrollTop} - ${
+            currentScrollTop + state.containerHeight
+          }`,
+          expectedVisibleIds: expectedVisibleItems
+            .map((item) => item.dataId)
+            .join(", "),
+          firstVisibleId: expectedVisibleItems[0]?.dataId || "N/A",
+          lastVisibleId:
+            expectedVisibleItems[expectedVisibleItems.length - 1]?.dataId ||
+            "N/A",
+        }
+      );
+
+      // CRITICAL: Check if container scroll position matches our state
+      const actualContainerScrollTop = container.scrollTop;
+      if (Math.abs(actualContainerScrollTop - currentScrollTop) > 5) {
+        console.warn(
+          "⚠️ [SCROLL MISMATCH] Container scroll position differs from state:",
+          {
+            stateScrollTop: currentScrollTop,
+            containerScrollTop: actualContainerScrollTop,
+            difference: actualContainerScrollTop - currentScrollTop,
+            containerElement:
+              container.tagName +
+              (container.className ? "." + container.className : ""),
+          }
+        );
+      }
+    }
 
     // Now measure elements that needed measurement
     const heightsChanged = itemMeasurement.measureMarkedElements(
@@ -687,35 +794,17 @@ export const createListManager = (
   /**
    * Loads a specific page (only works with page-based pagination)
    * @param {number} pageNumber - The page number to load (1-indexed)
-   * @param {Object} options - Load options
-   * @param {boolean} options.preservePrevious - Whether to keep previous pages in memory for scrolling
    * @returns {Promise<Object>} Load result
    */
   const loadPage = async (
-    pageNumber: number,
-    options: { preservePrevious?: boolean } = {}
+    pageNumber: number
   ): Promise<{ hasNext: boolean; items: any[] }> => {
     console.log(`🔄 [LoadPage] Starting loadPage(${pageNumber})`, {
       currentPage: state.page,
       currentItemsLength: state.items.length,
       isAlreadyOnSamePage: state.page === pageNumber,
-      preservePrevious: options.preservePrevious,
       callStack: new Error().stack?.split("\n").slice(1, 5).join(" -> "),
     });
-
-    // CRITICAL: Track unexpected calls to loadPage
-    if (
-      pageNumber !== state.page &&
-      !options.preservePrevious &&
-      pageNumber > state.page
-    ) {
-      console.warn(
-        `🚨 [LoadPage] SUSPICIOUS: Auto-loading higher page ${pageNumber} when current page is ${state.page}`,
-        {
-          callStack: new Error().stack?.split("\n").slice(1, 8),
-        }
-      );
-    }
 
     // Validate page number
     if (!Number.isInteger(pageNumber) || pageNumber < 1) {
@@ -791,621 +880,161 @@ export const createListManager = (
     // Mark this as a page jump load operation
     isPageJumpLoad = true;
 
-    // Only clear the collection if we're not preserving previous pages
-    if (!options.preservePrevious) {
-      await itemsCollection.clear();
-      state.items = [];
+    // Don't clear collection - just load the page if not already present
+    // Check if we already have the page data
+    const pageSize = validatedConfig.pageSize || 20;
+    const pageStartId = (pageNumber - 1) * pageSize + 1;
+    const pageEndId = pageNumber * pageSize;
 
-      // Also clear the recycling pool to ensure fresh rendering
-      recyclePool.clear();
+    const hasPageData = state.items.some((item) => {
+      const itemId = parseInt(item?.id);
+      return itemId >= pageStartId && itemId <= pageEndId;
+    });
 
-      // Clear the content DOM
-      if (elements.content) {
-        elements.content.innerHTML = "";
-      }
+    console.log(`📋 [LoadPage] Page data check:`, {
+      pageNumber,
+      pageStartId,
+      pageEndId,
+      hasPageData,
+      currentItemsLength: state.items.length,
+    });
 
-      // Reset renderer state to force re-render
-      renderer.resetVisibleRange();
+    let result;
+
+    if (!hasPageData) {
+      // Only load if we don't already have the page data
+      console.log(`📥 [LoadPage] Loading page ${pageNumber} data from API`);
+
+      const loadParams = createLoadParams(state, paginationStrategy);
+      loadParams.page = pageNumber;
+
+      const perPageParam =
+        validatedConfig.pagination?.perPageParamName || "per_page";
+      loadParams[perPageParam] = validatedConfig.pageSize || 20;
+
+      result = await loadItems(loadParams);
+
+      // CRITICAL: When new data is loaded, give time for collection/renderer to sync
+      console.log(`⏳ [LoadPage] Waiting for new data to be processed...`);
+      await new Promise((resolve) => setTimeout(resolve, 100));
     } else {
-      // When preserving previous pages, always respect the user's preference
-      // Clear collection only if starting fresh or no existing items
-      if (state.items.length === 0) {
-        await itemsCollection.clear();
-        state.items = [];
-        recyclePool.clear();
+      // We already have the data, just create a result object
+      console.log(`📋 [LoadPage] Page ${pageNumber} data already in memory`);
 
-        // Clear the content DOM
-        if (elements.content) {
-          elements.content.innerHTML = "";
-        }
-
-        // Reset renderer state to force re-render
-        renderer.resetVisibleRange();
-      }
-    }
-
-    // Create load params for the specific page
-    const loadParams = createLoadParams(state, paginationStrategy);
-
-    // Ensure page parameter is set correctly
-    loadParams.page = pageNumber;
-
-    // Add pageSize parameter
-    const perPageParam =
-      validatedConfig.pagination?.perPageParamName || "per_page";
-    loadParams[perPageParam] = validatedConfig.pageSize || 20;
-
-    // Load the specific page
-    const result = await loadItems(loadParams);
-
-    // Wait a tick to ensure collection updates are processed
-    await new Promise((resolve) => setTimeout(resolve, 0));
-
-    // CRITICAL: Update visible items immediately after loading
-    // This ensures items are rendered even though justJumpedToPage is true
-    if (!options.preservePrevious) {
-      // Force container to top before updating
-      container.scrollTop = 0;
-      state.scrollTop = 0;
-
-      // Force a complete re-render by clearing the visible range first
-      state.visibleRange = { start: -1, end: -1 };
-
-      // Ensure container height is set correctly
-      state.containerHeight = container.clientHeight;
-
-      // Use requestAnimationFrame to ensure DOM updates
-      requestAnimationFrame(() => {
-        // Ensure container has dimensions
-        const measureContainer = () => {
-          state.containerHeight = container.clientHeight;
-
-          if (state.containerHeight === 0) {
-            console.warn("[LoadPage] Container height is 0, retrying...");
-            setTimeout(measureContainer, 50);
-            return;
-          }
-
-          // When jumping to a page, we need to set proper height and scroll position
-          const pageSize = validatedConfig.pageSize || 20;
-          const itemHeight = validatedConfig.itemHeight || 48;
-
-          // Calculate the virtual scroll position for this page in the full dataset
-          const itemsBeforeThisPage = (pageNumber - 1) * pageSize;
-          const virtualScrollPosition = itemsBeforeThisPage * itemHeight;
-
-          // Set the virtual offset for this page - this will be used by the renderer
-          // to position items at their correct virtual positions
-          state.virtualOffset = virtualScrollPosition;
-
-          console.log(`📊 [LoadPage] Virtual scroll calculation:`, {
-            pageNumber,
-            pageSize,
-            itemHeight,
-            itemsBeforeThisPage,
-            virtualScrollPosition: virtualScrollPosition.toLocaleString(),
-            virtualOffset: state.virtualOffset,
-          });
-
-          // Get actual total from the most recent API response if available
-          let totalItems = state.items.length; // Fallback to current items
-
-          // Try to get total from state.itemCount (set from API meta.total)
-          if (
-            state.itemCount &&
-            typeof state.itemCount === "number" &&
-            state.itemCount > 0
-          ) {
-            totalItems = state.itemCount;
-            console.log(
-              `📈 [LoadPage] Using API total from state: ${totalItems.toLocaleString()} items`
-            );
-          } else if (
-            result.meta?.total &&
-            typeof result.meta.total === "number"
-          ) {
-            totalItems = result.meta.total;
-            console.log(
-              `📈 [LoadPage] Using API total from response: ${totalItems.toLocaleString()} items`
-            );
-          } else {
-            // Conservative estimate based on current page
-            totalItems = Math.max(
-              itemsBeforeThisPage + state.items.length,
-              pageNumber * pageSize * 2 // Conservative fallback
-            );
-            console.log(
-              `📈 [LoadPage] Using estimated total: ${totalItems.toLocaleString()} items`
-            );
-          }
-
-          const totalHeight = totalItems * itemHeight;
-
-          console.log(`📏 [LoadPage] Total height calculation:`, {
-            totalItems: totalItems.toLocaleString(),
-            itemHeight,
-            totalHeight: totalHeight.toLocaleString(),
-            targetScrollPosition: virtualScrollPosition.toLocaleString(),
-          });
-
-          // Update the spacer to reflect the total height
-          updateSpacerHeight(elements, totalHeight);
-
-          // Mark height as calculated
-          state.totalHeight = totalHeight;
-          state.totalHeightDirty = false;
-
-          // CRITICAL: When jumping to a page without preserving previous pages,
-          // position user at the BEGINNING of the loaded page, not the virtual position
-          // This shows the start of page 2, not the end of page 2
-          const actualScrollPosition = 0; // Always start at the beginning of the loaded page
-          container.scrollTop = actualScrollPosition;
-          state.scrollTop = actualScrollPosition;
-
-          console.log(`📍 [LoadPage] Setting scroll position:`, {
-            containerScrollTop: container.scrollTop,
-            stateScrollTop: state.scrollTop,
-            containerHeight: state.containerHeight,
-            actualPosition: actualScrollPosition,
-            virtualPosition: virtualScrollPosition.toLocaleString(),
-            scrollFraction: (
-              (actualScrollPosition + state.containerHeight) /
-              (state.items.length * itemHeight)
-            ).toFixed(4),
-          });
-
-          // Calculate visible range based on the ACTUAL scroll position (0)
-          // Since we're at the top of the loaded page, start from the beginning
-          const visibleCount = Math.ceil(state.containerHeight / itemHeight);
-          const localStartIndex = 0; // Always start from beginning of loaded page
-          const localEndIndex = Math.min(state.items.length, visibleCount + 5); // Add buffer
-
-          state.visibleRange = {
-            start: localStartIndex,
-            end: localEndIndex,
-          };
-
-          console.log(`👁️ [LoadPage] Visible range calculation:`, {
-            actualScrollPosition,
-            virtualScrollPosition: virtualScrollPosition.toLocaleString(),
-            localStartIndex,
-            localEndIndex,
-            itemsLength: state.items.length,
-            pageNumber,
-          });
-
-          // Ensure renderer's cached range is reset
-          renderer.resetVisibleRange();
-
-          // EXPLICITLY call updateVisibleItems to render the items
-          // This bypasses the justJumpedToPage check
-          // Temporarily allow updates
-          const wasJumpedToPage = justJumpedToPage;
-          justJumpedToPage = false;
-
-          updateVisibleItems(actualScrollPosition); // Use the actual scroll position (0)
-
-          // Restore the flag
-          justJumpedToPage = wasJumpedToPage;
-
-          // Prevent auto-loading immediately after page jump
-          if (pageJumpTimeout) {
-            clearTimeout(pageJumpTimeout);
-          }
-
-          // Reset the page jump flag after a delay to allow adjacent page loading
-          pageJumpTimeout = window.setTimeout(() => {
-            console.log(
-              `⏰ [PageJump] Resetting page jump flag for page ${pageNumber}`
-            );
-            justJumpedToPage = false;
-
-            // CRITICAL: Only reset virtual offset for page 1
-            // For other pages, keep the virtual offset to maintain positioning
-            if (pageNumber === 1) {
-              console.log(
-                `🔄 [PageJump] Resetting virtual offset to 0 for page 1`
-              );
-              state.virtualOffset = 0;
-            } else {
-              console.log(
-                `🔄 [PageJump] Keeping virtual offset ${state.virtualOffset} for page ${pageNumber}`
-              );
-            }
-
-            pageJumpTimeout = null;
-          }, 1000); // 1 second delay
-        };
-
-        measureContainer();
+      const pageItems = state.items.filter((item) => {
+        const itemId = parseInt(item?.id);
+        return itemId >= pageStartId && itemId <= pageEndId;
       });
 
-      // Preload adjacent pages after a longer delay to avoid interfering with navigation
-      setTimeout(async () => {
-        // CRITICAL: Only preload if user has been idle on this page for a while
-        // This prevents visual glitches during rapid navigation
-        console.log(
-          `🔄 [LoadPage] Considering adjacent page preloading for page ${pageNumber}`
-        );
+      result = {
+        items: pageItems,
+        meta: { total: state.itemCount, hasNext: state.hasNext },
+      };
+    }
 
-        // Check if user has navigated away from this page
-        if (state.page !== pageNumber) {
-          console.log(
-            `🚫 [LoadPage] Preload cancelled: user navigated to page ${state.page}`
-          );
-          return;
-        }
+    // CRITICAL: Clear item measurement cache to ensure fresh calculations
+    // This is the root cause - stale cached offsets from previous state
+    if (typeof itemMeasurement.clear === "function") {
+      itemMeasurement.clear();
+    }
 
-        if (
-          !state.mounted ||
-          state.loading ||
-          isPageJumpLoad ||
-          justJumpedToPage
-        ) {
-          console.log(
-            `🚫 [LoadPage] Preload cancelled: mounted=${state.mounted}, loading=${state.loading}, pageJumpInProgress=${isPageJumpLoad}, recentPageJump=${justJumpedToPage}`
-          );
-          return;
-        }
+    // Force recalculation of all item offsets with new data
+    if (typeof itemMeasurement.calculateOffsets === "function") {
+      itemMeasurement.calculateOffsets(state.items);
+    }
 
-        // Additional check: Don't preload if we already have adjacent pages in memory
-        const pageSize = validatedConfig.pageSize || 20;
-        const currentPageStartIndex = (pageNumber - 1) * pageSize;
-        const currentPageEndIndex = currentPageStartIndex + pageSize - 1;
+    // SIMPLIFIED: Position to show the requested page
+    console.log(`📍 [LoadPage] Positioning to show page ${pageNumber}`);
 
-        // Check if we already have enough context around current page
-        if (state.items.length > pageSize * 2) {
-          console.log(
-            `🚫 [LoadPage] Preload skipped: already have ${state.items.length} items in memory`
-          );
-          return;
-        }
+    // Find where this page starts in our collection
+    let targetScrollPosition = 0;
+    const defaultItemHeight = validatedConfig.itemHeight || 48;
 
-        // Temporarily disable auto-loading to prevent interference during preload
-        const originalJustJumpedFlag = justJumpedToPage;
-        justJumpedToPage = true;
+    // Find the first item of the target page
+    const targetPageFirstItemIndex = state.items.findIndex((item) => {
+      const itemId = parseInt(item?.id);
+      return itemId === pageStartId;
+    });
 
-        // Store current state to restore after preloading
-        const originalPageNumber = pageNumber;
-        const originalItems = [...state.items];
-        const originalItemsLength = state.items.length;
-
-        console.log(`📦 [LoadPage] Preload starting:`, {
-          targetPage: originalPageNumber,
-          currentItems: originalItemsLength,
-          hasNext: state.hasNext,
-          canLoadPrev: originalPageNumber > 1,
-        });
-
-        try {
-          // Load both adjacent pages in parallel for better UX
-          const preloadPromises: Promise<any>[] = [];
-
-          // Preload previous page (page 999 if we're on 1000)
-          if (originalPageNumber > 1) {
-            const prevPageParams = {
-              ...loadParams,
-              page: originalPageNumber - 1,
-            };
-            console.log(
-              `⬅️ [LoadPage] Preloading previous page ${originalPageNumber - 1}`
-            );
-            preloadPromises.push(
-              adapter.read(prevPageParams).then((response) => ({
-                type: "previous",
-                page: originalPageNumber - 1,
-                items: response.items?.map(validatedConfig.transform!) || [],
-                meta: response.meta,
-              }))
-            );
-          }
-
-          // Preload next page (page 1001 if we're on 1000)
-          if (state.hasNext) {
-            const nextPageParams = {
-              ...loadParams,
-              page: originalPageNumber + 1,
-            };
-            console.log(
-              `➡️ [LoadPage] Preloading next page ${originalPageNumber + 1}`
-            );
-            preloadPromises.push(
-              adapter.read(nextPageParams).then((response) => ({
-                type: "next",
-                page: originalPageNumber + 1,
-                items: response.items?.map(validatedConfig.transform!) || [],
-                meta: response.meta,
-              }))
-            );
-          }
-
-          // Wait for all preload requests to complete
-          const preloadResults = await Promise.allSettled(preloadPromises);
-
-          let prependedCount = 0;
-          let appendedCount = 0;
-          let newItems = [...originalItems];
-
-          // Process results
-          preloadResults.forEach((result, index) => {
-            if (result.status === "fulfilled") {
-              const data = result.value;
-
-              // Skip if preload was aborted (empty items array)
-              if (!data || !data.items || data.items.length === 0) {
-                console.log(
-                  `🚫 [LoadPage] Preload ${
-                    data?.type || "unknown"
-                  } page skipped (aborted or empty)`
-                );
-                return;
-              }
-
-              console.log(
-                `✅ [LoadPage] Preloaded ${data.type} page ${data.page}: ${data.items.length} items`
-              );
-
-              if (data.type === "previous" && data.items.length > 0) {
-                // Prepend previous page items
-                newItems = [...data.items, ...newItems];
-                prependedCount = data.items.length;
-              } else if (data.type === "next" && data.items.length > 0) {
-                // Append next page items
-                newItems = [...newItems, ...data.items];
-                appendedCount = data.items.length;
-
-                // Update hasNext based on next page response
-                state.hasNext = data.meta?.hasNext ?? false;
-              }
-            } else {
-              // Don't log errors for aborted requests (common during page navigation)
-              const errorMessage =
-                result.reason?.message || String(result.reason);
-              if (
-                errorMessage.includes("AbortError") ||
-                errorMessage.includes("aborted")
-              ) {
-                console.log(
-                  `🚫 [LoadPage] Preload aborted (page navigation in progress)`
-                );
-              } else {
-                console.warn(`❌ [LoadPage] Preload failed:`, result.reason);
-              }
-            }
-          });
-
-          // Update the state with preloaded items
-          if (prependedCount > 0 || appendedCount > 0) {
-            state.items = newItems;
-
-            // Update collection
-            await itemsCollection.clear();
-            await itemsCollection.add(state.items);
-
-            console.log(`📦 [LoadPage] Preload complete:`, {
-              originalItems: originalItemsLength,
-              prependedItems: prependedCount,
-              appendedItems: appendedCount,
-              totalItems: state.items.length,
-              targetPage: originalPageNumber,
-            });
-
-            // Adjust scroll position if we prepended items
-            if (prependedCount > 0) {
-              const itemHeight = validatedConfig.itemHeight || 48;
-              const addedHeight = prependedCount * itemHeight;
-
-              // Maintain current visual position by adjusting scroll
-              const newScrollTop = container.scrollTop + addedHeight;
-              container.scrollTop = newScrollTop;
-              state.scrollTop = newScrollTop;
-
-              console.log(
-                `📍 [LoadPage] Adjusted scroll position by ${addedHeight}px for prepended items`
-              );
-            }
-
-            // Update total height
-            state.totalHeightDirty = true;
-            const totalHeight = itemMeasurement.calculateTotalHeight(
-              state.items
-            );
-            Object.assign(state, updateTotalHeight(state, totalHeight));
-            updateSpacerHeight(elements, totalHeight);
-          }
-        } catch (error) {
-          console.error(`🚨 [LoadPage] Preload error:`, error);
-        } finally {
-          // Restore auto-loading after a short delay
-          setTimeout(() => {
-            justJumpedToPage = originalJustJumpedFlag;
-            console.log(`🔓 [LoadPage] Auto-loading re-enabled after preload`);
-          }, 500);
-
-          // Ensure we're still on the correct page
-          if (state.page !== originalPageNumber) {
-            console.warn(
-              `🔧 [LoadPage] Fixing page state after preload: ${state.page} → ${originalPageNumber}`
-            );
-            state.page = originalPageNumber;
-          }
-        }
-
-        console.log(
-          `✅ [LoadPage] Starting conservative preload for page ${pageNumber} after user idle period`
-        );
-      }, 2000); // Wait 2 seconds to ensure user is settled on this page
-    } else {
-      // SIMPLIFIED: For preservePrevious, always use simple collection positioning
+    if (targetPageFirstItemIndex >= 0) {
+      targetScrollPosition = targetPageFirstItemIndex * defaultItemHeight;
       console.log(
-        `📍 [LoadPage] PreservePrevious page jump - using simple collection positioning`
+        `📍 [LoadPage] Found page ${pageNumber} at index ${targetPageFirstItemIndex}, scrolling to ${targetScrollPosition}px`
       );
+    } else {
+      console.log(
+        `📍 [LoadPage] Page ${pageNumber} not found in collection, staying at top`
+      );
+    }
 
+    // IMPORTANT: Don't set scroll position here - it's too early!
+    // The DOM hasn't been updated with new items yet, so the scroll will fail
+    // We'll set it after DOM rendering in the requestAnimationFrame below
+    console.log(
+      `📍 [LoadPage] Preparing scroll to ${targetScrollPosition}px (will be set after DOM update)`
+    );
+
+    // Force a complete re-render by clearing the visible range first
+    state.visibleRange = { start: -1, end: -1 };
+    state.containerHeight = container.clientHeight;
+
+    // For page-based navigation, total height should be based on local items only
+    // This ensures visible range calculation works correctly
+    state.totalHeight = state.items.length * defaultItemHeight;
+    updateSpacerHeight(elements, state.totalHeight);
+    state.totalHeightDirty = false;
+
+    // Reset renderer and render immediately with DOM updates
+    renderer.resetVisibleRange();
+
+    requestAnimationFrame(() => {
+      // Temporarily allow updates
+      const wasJumpedToPage = justJumpedToPage;
+      justJumpedToPage = false;
+      updateVisibleItems(targetScrollPosition);
+      justJumpedToPage = wasJumpedToPage;
+
+      // CRITICAL FIX: Set scroll position AFTER DOM rendering is complete
+      // The previous issue was setting scroll before DOM had the new items rendered
       requestAnimationFrame(() => {
-        const pageSize = validatedConfig.pageSize || 20;
-        const itemHeight = validatedConfig.itemHeight || 48;
-
-        // Update total height for preserved items only
-        const preservedItemsHeight = state.items.length * itemHeight;
-        state.totalHeight = preservedItemsHeight;
-        state.totalHeightDirty = false;
-        updateSpacerHeight(elements, preservedItemsHeight);
-
-        // Find the target page items in the collection by ID
-        const targetPageStartId = (pageNumber - 1) * pageSize + 1;
-        let targetPageStartIndex = -1;
-
-        for (let i = 0; i < state.items.length; i++) {
-          if (parseInt(state.items[i]?.id) === targetPageStartId) {
-            targetPageStartIndex = i;
-            break;
-          }
-        }
-
-        // Calculate scroll position to show target page
-        const scrollPosition =
-          targetPageStartIndex >= 0 ? targetPageStartIndex * itemHeight : 0;
-
-        container.scrollTop = scrollPosition;
-        state.scrollTop = scrollPosition;
-
-        console.log(`📍 [LoadPage] Simple preservePrevious positioning:`, {
-          pageNumber,
-          targetPageStartId,
-          targetPageStartIndex,
-          scrollPosition,
-          totalItems: state.items.length,
-          totalHeight: preservedItemsHeight,
+        console.log(`🔧 [LoadPage] Post-render scroll positioning:`, {
+          beforeScroll: container.scrollTop,
+          targetScroll: targetScrollPosition,
+          totalHeight: state.totalHeight,
+          itemsLength: state.items.length,
         });
 
-        // Update items with simple logic
-        const wasJumpedToPage = justJumpedToPage;
+        container.scrollTop = targetScrollPosition;
+        state.scrollTop = targetScrollPosition;
+
+        // Force another update with the correct scroll position
+        setTimeout(() => {
+          const finalScrollTop = container.scrollTop;
+          console.log(`✅ [LoadPage] Final scroll verification:`, {
+            requested: targetScrollPosition,
+            actual: finalScrollTop,
+            success: Math.abs(finalScrollTop - targetScrollPosition) < 10,
+            difference: finalScrollTop - targetScrollPosition,
+          });
+
+          // If scroll still doesn't match, force update visible items with actual position
+          if (Math.abs(finalScrollTop - targetScrollPosition) > 10) {
+            console.log(
+              `🔄 [LoadPage] Correcting visible items with actual scroll position`
+            );
+            state.scrollTop = finalScrollTop;
+            updateVisibleItems(finalScrollTop);
+          }
+        }, 50);
+      });
+
+      // Reset page jump flag after short delay
+      setTimeout(() => {
         justJumpedToPage = false;
-        updateVisibleItems(scrollPosition);
-        justJumpedToPage = wasJumpedToPage;
-      });
-    }
-
-    // Clear the flag after DOM operations complete
-    pageJumpTimeout = window.setTimeout(() => {
-      justJumpedToPage = false;
-      pageJumpTimeout = null;
-
-      // CRITICAL FALLBACK: Ensure items are rendered if they weren't already
-      // This fixes the issue where repeated navigation to same page shows empty list
-      console.log("🔄 [LoadPage] Fallback check: ensuring items are rendered", {
-        stateItemsLength: state.items.length,
-        visibleItemsLength: state.visibleItems.length,
-        domElementsCount: elements.content?.children.length || 0,
-        currentPage: pageNumber,
-      });
-
-      if (state.items.length > 0 && state.visibleItems.length === 0) {
-        console.warn(
-          `⚠️ [LoadPage] Items loaded but not visible on page ${pageNumber} - forcing render`
-        );
-
-        // Force a complete re-render
-        state.visibleRange = { start: -1, end: -1 };
-        renderer.resetVisibleRange();
-
-        // Ensure container scroll position is correct
-        if (pageNumber === 1) {
-          container.scrollTop = 0;
-          state.scrollTop = 0;
-          state.virtualOffset = 0; // Ensure virtual offset is 0 for page 1
-        }
-
-        // Force update visible items with correct scroll position
-        updateVisibleItems(state.scrollTop);
-
-        // If still no visible items, something is wrong - try one more time with more aggressive approach
-        setTimeout(() => {
-          if (state.items.length > 0 && state.visibleItems.length === 0) {
-            console.error(
-              `🚨 [LoadPage] CRITICAL: Page ${pageNumber} items still not rendering - final aggressive attempt`
-            );
-
-            // Most aggressive approach - clear everything and start fresh
-            state.visibleRange = { start: -1, end: -1 };
-            state.totalHeightDirty = true;
-
-            // Force container height recalculation
-            state.containerHeight = container.clientHeight || 400; // Fallback height
-
-            // Try multiple scroll positions
-            updateVisibleItems(0);
-            requestAnimationFrame(() => {
-              updateVisibleItems(state.scrollTop);
-            });
-          }
-        }, 200);
-      } else if (
-        state.items.length > 0 &&
-        (elements.content?.children.length || 0) === 0
-      ) {
-        // NEW: Handle case where items exist and visible items are calculated, but no DOM elements
-        console.warn(
-          `⚠️ [LoadPage] Items exist but no DOM elements on page ${pageNumber} - forcing DOM render`
-        );
-
-        // This is a DOM rendering issue, not a visibility calculation issue
-        state.visibleRange = { start: -1, end: -1 };
-        renderer.resetVisibleRange();
-
-        // Force immediate render with current scroll position
-        updateVisibleItems(state.scrollTop);
-
-        // Double check DOM creation
-        setTimeout(() => {
-          const domCount = elements.content?.children.length || 0;
-          if (domCount === 0 && state.items.length > 0) {
-            console.error(
-              `🚨 [LoadPage] CRITICAL: Still no DOM elements created for page ${pageNumber} - clearing and rerendering`
-            );
-
-            // Clear everything and force from scratch
-            if (elements.content) {
-              elements.content.innerHTML = "";
-            }
-
-            // Reset all state
-            state.visibleRange = { start: -1, end: -1 };
-            state.totalHeightDirty = true;
-            renderer.resetVisibleRange();
-
-            // Force render from top
-            updateVisibleItems(0);
-          }
-        }, 100);
-      }
-    }, 600); // Slightly longer timeout to account for complex rendering
-
-    // Emit page change event for navigation
-    emitPageChange(PAGE_EVENTS.PAGE_CHANGE, {
-      page: pageNumber,
-      previousPage: state.page !== pageNumber ? state.page : undefined,
-      scrollPosition: container.scrollTop,
-      trigger: "navigation",
+      }, 500);
     });
 
-    // Update last emitted page
-    lastEmittedPage = pageNumber;
-
-    // FINAL VERIFICATION: Ensure page state is correct
-    if (state.page !== pageNumber) {
-      console.error(
-        `🚨 [LoadPage] CRITICAL: Page state corrupted! Expected ${pageNumber}, got ${state.page} - fixing`
-      );
-      state.page = pageNumber;
-    }
-
-    console.log(`✅ [LoadPage] Completed successfully for page ${pageNumber}`, {
-      finalStatePage: state.page,
-      requestedPage: pageNumber,
-      itemsLength: result.items.length,
-    });
-
+    // Return result
     return {
       hasNext: state.hasNext,
       items: result.items,
@@ -1477,8 +1106,8 @@ export const createListManager = (
       state.totalHeightDirty = true;
 
       // Calculate the height of the new items to adjust scroll position
-      const itemHeight = validatedConfig.itemHeight || 48; // Default item height
-      const addedHeight = items.length * itemHeight;
+      const defaultItemHeight = validatedConfig.itemHeight || 48; // Default item height
+      const addedHeight = items.length * defaultItemHeight;
 
       // Adjust scroll position to maintain visual position
       const newScrollTop = state.scrollTop + addedHeight;
@@ -1588,15 +1217,16 @@ export const createListManager = (
           console.error("Error adding static items to collection:", err);
         });
     } else if (!state.useStatic) {
-      // Initial load for API data
-      loadItems()
+      // Initial load for API data - use loadPage(1) for consistent initialization
+      console.log(
+        "🚀 [Initialize] Using loadPage(1) for consistent initialization"
+      );
+      loadPage(1)
         .then(() => {
-          requestAnimationFrame(() => {
-            updateVisibleItems(state.scrollTop);
-          });
+          console.log("✅ [Initialize] Initial page load complete");
         })
         .catch((err) => {
-          console.error("Error loading items:", err);
+          console.error("Error loading initial page:", err);
         });
     }
 
@@ -1723,7 +1353,7 @@ export const createListManager = (
         `🔄 [ScrollNext] Loading page ${nextPage} via loadPage for consistency`
       );
 
-      const result = await loadPage(nextPage, { preservePrevious: true });
+      const result = await loadPage(nextPage);
 
       console.log(`📦 [ScrollNext] LoadPage result:`, {
         itemsLength: result.items.length,
@@ -1731,12 +1361,8 @@ export const createListManager = (
         lastItemId: result.items[result.items.length - 1]?.id,
       });
 
-      // Calculate scroll position for the page (at the top of the page)
-      const scrollToPosition = (nextPage - 1) * pageSize * itemHeight;
-
-      container.scrollTop = scrollToPosition;
-      state.scrollTop = scrollToPosition;
-      updateVisibleItems(scrollToPosition);
+      // Since loadPage shows the page at the top, no need to calculate virtual positions
+      // The loadPage function already handles positioning
 
       return result;
     }
@@ -1782,7 +1408,7 @@ export const createListManager = (
     );
 
     const previousPage = state.page - 1;
-    const itemHeight = validatedConfig.itemHeight || 48;
+    const defaultItemHeight = validatedConfig.itemHeight || 48;
 
     console.log(`📊 [ScrollPrevious] Analysis:`, {
       currentPage: state.page,
@@ -1797,7 +1423,7 @@ export const createListManager = (
       `🔄 [ScrollPrevious] Loading page ${previousPage} via loadPage for consistency`
     );
 
-    const result = await loadPage(previousPage, { preservePrevious: true });
+    const result = await loadPage(previousPage);
 
     console.log(`📦 [ScrollPrevious] LoadPage result:`, {
       itemsLength: result.items.length,
@@ -1806,12 +1432,8 @@ export const createListManager = (
       newStatePage: state.page,
     });
 
-    // Calculate scroll position for the page (at the top of the page)
-    const scrollToPosition = (previousPage - 1) * pageSize * itemHeight;
-
-    container.scrollTop = scrollToPosition;
-    state.scrollTop = scrollToPosition;
-    updateVisibleItems(scrollToPosition);
+    // Since loadPage shows the page at the top, no need to calculate virtual positions
+    // The loadPage function already handles positioning
 
     return {
       hasPrev: previousPage > 1,
