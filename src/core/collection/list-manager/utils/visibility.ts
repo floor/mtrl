@@ -212,13 +212,20 @@ export function calculateVisibleRange(
   // CRITICAL: For page-based navigation, always use the simple, reliable calculation
   // This bypasses complex height caching issues that cause wrong visible ranges
   if (items.length < 500) {
-    return calculateVisibleRangeOptimized(
+    const result = calculateVisibleRangeOptimized(
       scrollTop,
       itemHeight,
       containerHeight,
       items.length,
       config
     );
+
+    // IMPORTANT: For sparse data, ensure we don't try to access indexes that don't exist
+    // The optimized calculation uses virtual positioning but our collection might be sparse
+    result.start = Math.max(0, Math.min(result.start, items.length));
+    result.end = Math.max(result.start, Math.min(result.end, items.length));
+
+    return result;
   }
 
   // For very large variable height lists, use binary search approach

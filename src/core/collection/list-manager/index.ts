@@ -141,6 +141,7 @@ export const createListManager = (
   let pageJumpTimeout: number | null = null;
   let isPreloadingPages = false;
   let isPageJumpLoad = false; // Track when we're loading due to a page jump
+  let scrollStopTimeout: NodeJS.Timeout | null = null; // Track scroll stop debouncing
 
   // Page change event handling
   const pageEventObservers = new Set<
@@ -233,15 +234,28 @@ export const createListManager = (
     });
 
     // PROTECTION: Prevent unwanted page loads that could corrupt state
-    if (params.page && params.page !== state.page && !isPageJumpLoad) {
+    // Allow page jumps and adjacent page boundary loads (previous/next page)
+    const isAdjacentPage =
+      params.page && state.page && Math.abs(params.page - state.page) === 1;
+    const shouldBlock =
+      params.page &&
+      params.page !== state.page &&
+      !isPageJumpLoad &&
+      !isAdjacentPage;
+
+    if (shouldBlock) {
       console.warn(
-        `🚨 [LoadItems] BLOCKING unexpected page load: requested page ${params.page}, current page ${state.page}, isPageJumpLoad: ${isPageJumpLoad}`
+        `🚨 [LoadItems] BLOCKING unexpected page load: requested page ${params.page}, current page ${state.page}, isPageJumpLoad: ${isPageJumpLoad}, isAdjacentPage: ${isAdjacentPage}`
       );
-      // Don't load a different page unless it's explicitly a page jump
+      // Don't load a different page unless it's explicitly a page jump or adjacent boundary load
       return {
         items: state.items,
         meta: { hasNext: state.hasNext, cursor: null },
       };
+    } else if (isAdjacentPage && !isPageJumpLoad) {
+      console.log(
+        `✅ [LoadItems] Allowing adjacent page boundary load: requested page ${params.page}, current page ${state.page}`
+      );
     }
 
     try {
@@ -419,6 +433,29 @@ export const createListManager = (
   };
 
   /**
+   * Schedule a page load when scrolling stops (debounced)
+   * @param {number} targetPage - Page to load when scrolling stops
+   */
+  const scheduleScrollStopPageLoad = (targetPage: number): void => {
+    // Clear any existing timeout
+    if (scrollStopTimeout !== null) {
+      clearTimeout(scrollStopTimeout);
+    }
+
+    // Set new timeout to load page when scrolling stops
+    scrollStopTimeout = setTimeout(() => {
+      console.log(
+        `⏰ [ScrollStop] Scrolling stopped - loading page ${targetPage}`
+      );
+
+      // Use the existing loadPage functionality which works perfectly
+      loadPage(targetPage);
+
+      scrollStopTimeout = null;
+    }, 300); // 300ms debounce delay
+  };
+
+  /**
    * Pre-bound update visible items function to avoid recreation
    * @param {number} scrollTop Current scroll position
    */
@@ -430,6 +467,12 @@ export const createListManager = (
 
     // Skip updates if we're in the middle of a page jump or preloading
     if (justJumpedToPage || isPreloadingPages) {
+      console.log(`🚫 [UpdateVisible] Skipping update:`, {
+        justJumpedToPage,
+        isPreloadingPages,
+        scrollTop,
+        reason: "Page jump or preloading in progress",
+      });
       return;
     }
 
@@ -449,6 +492,39 @@ export const createListManager = (
     // Update scroll position
     state.scrollTop = scrollTop;
 
+    // For page-based pagination, update the current page based on scroll position
+    if (state.paginationStrategy === "page" && !isPageJump) {
+      const itemHeight = validatedConfig.itemHeight || 84;
+      const pageSize = validatedConfig.pageSize || 20;
+      const virtualItemIndex = Math.floor(scrollTop / itemHeight);
+      const calculatedPage = Math.floor(virtualItemIndex / pageSize) + 1;
+
+      if (calculatedPage !== state.page && calculatedPage >= 1) {
+        const pageDifference = Math.abs(calculatedPage - state.page);
+
+        console.log(`📍 [ScrollSync] Updating page based on scroll position:`, {
+          scrollTop,
+          virtualItemIndex,
+          calculatedPage,
+          previousPage: state.page,
+          pageDifference,
+          calculation: `floor(${scrollTop}/${itemHeight}) = ${virtualItemIndex}, page = floor(${virtualItemIndex}/${pageSize}) + 1 = ${calculatedPage}`,
+        });
+
+        // Detect large scroll jumps (scrollbar dragging) - use debounced loading
+        if (pageDifference > 5) {
+          console.log(
+            `🚀 [ScrollJump] Large scroll jump detected (${pageDifference} pages) - will debounce and load when scrolling stops`
+          );
+
+          // Set up debounced page loading for when scrolling stops
+          scheduleScrollStopPageLoad(calculatedPage);
+        }
+
+        state.page = calculatedPage;
+      }
+    }
+
     // Check for page changes during scroll
     checkPageChange(scrollTop);
 
@@ -462,19 +538,24 @@ export const createListManager = (
     // CRITICAL FIX: For page-based navigation with sparse data, we need custom visibility calculation
     let visibleRange: VisibleRange;
 
-    if (state.paginationStrategy === "page" && isPageJump) {
-      // For page jumps, show all items in the current collection
-      // since they're positioned at their absolute virtual positions
+    if (state.paginationStrategy === "page") {
+      // For page-based pagination, always show all items since they use absolute virtual positioning
       visibleRange = { start: 0, end: state.items.length };
 
-      console.log(`📍 [PageJump] Custom visibility for sparse data:`, {
+      console.log(`📍 [SparseData] Custom visibility for sparse page data:`, {
         scrollTop,
         totalItems: state.items.length,
         visibleRange,
-        itemIds: state.items.map((item) => item?.id).join(", "),
+        itemIds:
+          state.items
+            .map((item) => item?.id)
+            .slice(0, 5)
+            .join(", ") + (state.items.length > 5 ? "..." : ""),
+        isPageJump,
+        note: "Always render all items with virtual positioning for page-based pagination",
       });
     } else {
-      // Use standard calculation for non-page-based or normal scrolling
+      // Use standard calculation for non-page-based pagination
       visibleRange = calculateVisibleRange(
         scrollTop,
         state.items,
@@ -484,23 +565,38 @@ export const createListManager = (
       );
     }
 
-    // Early return if range hasn't changed
-    if (
-      visibleRange.start === state.visibleRange.start &&
-      visibleRange.end === state.visibleRange.end
-    ) {
+    // Early return if range hasn't changed (except for sparse data where we need boundary detection)
+    const hasRangeChanged =
+      visibleRange.start !== state.visibleRange.start ||
+      visibleRange.end !== state.visibleRange.end;
+    const needsBoundaryDetection = state.paginationStrategy === "page";
+
+    if (!hasRangeChanged && !needsBoundaryDetection) {
+      console.log(
+        `🚫 [UpdateVisible] Early return - range unchanged and no boundary detection needed`
+      );
       return;
     }
 
-    // Update state with new visible range
-    Object.assign(
-      state,
-      updateStateVisibleItems(
+    if (!hasRangeChanged && needsBoundaryDetection) {
+      console.log(
+        `🎯 [UpdateVisible] Range unchanged but continuing for boundary detection`
+      );
+    }
+
+    // Update state with new visible range (only if range changed)
+    if (hasRangeChanged) {
+      Object.assign(
         state,
-        state.items.slice(visibleRange.start, visibleRange.end).filter(Boolean),
-        visibleRange
-      )
-    );
+        updateStateVisibleItems(
+          state,
+          state.items
+            .slice(visibleRange.start, visibleRange.end)
+            .filter(Boolean),
+          visibleRange
+        )
+      );
+    }
 
     // Ensure offsets are cached for efficient access
     if (typeof itemMeasurement.calculateOffsets === "function") {
@@ -552,43 +648,47 @@ export const createListManager = (
       );
     }
 
-    // Render visible items
-    if (state.paginationStrategy === "page" && isPageJump) {
-      // CRITICAL FIX: For page jumps, position items at their absolute virtual positions
-      console.log(
-        `🎨 [VirtualRender] Rendering with absolute positioning for page jump`
-      );
+    // Render visible items (only if range changed or it's a page jump)
+    if (hasRangeChanged || isPageJump) {
+      if (state.paginationStrategy === "page") {
+        // CRITICAL FIX: For page-based pagination, always use absolute virtual positioning
+        console.log(
+          `🎨 [VirtualRender] Rendering with absolute positioning for page-based pagination`
+        );
 
-      const itemHeight = validatedConfig.itemHeight || 84;
-      const positions = state.items
-        .slice(visibleRange.start, visibleRange.end)
-        .map((item, localIndex) => {
-          if (!item || !item.id) return null;
+        const itemHeight = validatedConfig.itemHeight || 84;
+        const positions = state.items
+          .slice(visibleRange.start, visibleRange.end)
+          .map((item, localIndex) => {
+            if (!item || !item.id) return null;
 
-          const itemId = parseInt(item.id);
-          const virtualIndex = itemId - 1; // Convert to 0-based
-          const absoluteOffset = virtualIndex * itemHeight;
+            const itemId = parseInt(item.id);
+            const virtualIndex = itemId - 1; // Convert to 0-based
+            const absoluteOffset = virtualIndex * itemHeight;
 
-          return {
-            index: visibleRange.start + localIndex,
-            item,
-            offset: absoluteOffset,
-          };
-        })
-        .filter(Boolean);
+            return {
+              index: visibleRange.start + localIndex,
+              item,
+              offset: absoluteOffset,
+            };
+          })
+          .filter(Boolean);
 
-      console.log(`🎨 [VirtualRender] Absolute positions:`, {
-        totalPositions: positions.length,
-        firstItemId: positions[0]?.item.id,
-        firstItemOffset: positions[0]?.offset,
-        lastItemId: positions[positions.length - 1]?.item.id,
-        lastItemOffset: positions[positions.length - 1]?.offset,
-      });
+        console.log(`🎨 [VirtualRender] Absolute positions:`, {
+          totalPositions: positions.length,
+          firstItemId: positions[0]?.item.id,
+          firstItemOffset: positions[0]?.offset,
+          lastItemId: positions[positions.length - 1]?.item.id,
+          lastItemOffset: positions[positions.length - 1]?.offset,
+        });
 
-      renderItemsWithVirtualPositions(positions);
+        renderItemsWithVirtualPositions(positions);
+      } else {
+        // Standard rendering for cursor-based pagination
+        renderer.renderVisibleItems(state.items, visibleRange);
+      }
     } else {
-      // Standard rendering for normal scrolling
-      renderer.renderVisibleItems(state.items, visibleRange);
+      console.log(`⏩ [VirtualRender] Skipping render - range unchanged`);
     }
 
     // Now measure elements that needed measurement
@@ -623,18 +723,34 @@ export const createListManager = (
     }
 
     // Check if we need to load more data
+    console.log(`🔍 [UpdateVisible] About to call checkLoadMore:`, {
+      scrollTop,
+      justJumpedToPage,
+      isPreloadingPages,
+      paginationStrategy: state.paginationStrategy,
+      currentPage: state.page,
+      itemsLength: state.items.length,
+    });
     checkLoadMore(scrollTop);
   };
 
   /**
-   * Checks if we need to load more data based on scroll position
+   * Check if we need to load more data based on scroll position
+   * For sparse page data, we use page boundary detection instead of percentage thresholds
    * @param {number} scrollTop - Current scroll position
    */
   const checkLoadMore = (scrollTop: number): void => {
-    if (state.loading || !state.hasNext) {
-      console.log(
-        `🚫 [CheckLoadMore] Skipped: loading=${state.loading}, hasNext=${state.hasNext}`
-      );
+    console.log(`🔍 [CheckLoadMore] Called with:`, {
+      scrollTop,
+      loading: state.loading,
+      justJumpedToPage,
+      paginationStrategy: state.paginationStrategy,
+      currentPage: state.page,
+    });
+
+    // Skip if loading
+    if (state.loading) {
+      console.log(`🚫 [CheckLoadMore] Skipped: loading=${state.loading}`);
       return;
     }
 
@@ -643,6 +759,20 @@ export const createListManager = (
       console.log(
         `🚫 [CheckLoadMore] Skipped: just jumped to page, letting it settle`
       );
+      return;
+    }
+
+    // For page-based pagination with sparse data, use page boundary detection
+    if (state.paginationStrategy === "page") {
+      console.log(
+        `🎯 [CheckLoadMore] Using page boundary detection for page-based pagination`
+      );
+      checkPageBoundaries(scrollTop);
+      return;
+    }
+
+    // Original logic for continuous data (cursor-based pagination)
+    if (!state.hasNext) {
       return;
     }
 
@@ -669,7 +799,6 @@ export const createListManager = (
     });
 
     // Additional safeguard: don't auto-load if scroll position seems unrealistic
-    // This can happen with virtual scrolling miscalculations
     if (scrollFraction > 2.0) {
       console.warn(
         `🚫 [CheckLoadMore] Suspicious scroll fraction (${scrollFraction.toFixed(
@@ -684,6 +813,155 @@ export const createListManager = (
         `🔄 [CheckLoadMore] Triggering loadNext() for scroll-based loading`
       );
       loadNext();
+    }
+  };
+
+  /**
+   * Check if user has scrolled beyond current page boundaries and load adjacent pages
+   * This replaces percentage-based thresholds for sparse page data
+   * @param {number} scrollTop - Current scroll position
+   */
+  const checkPageBoundaries = (scrollTop: number): void => {
+    if (!state.page || state.items.length === 0) return;
+
+    const itemHeight = validatedConfig.itemHeight || 84;
+    const pageSize = validatedConfig.pageSize || 20;
+
+    // Calculate current page boundaries in terms of virtual positions
+    const currentPageStart = (state.page - 1) * pageSize + 1;
+    const currentPageEnd = state.page * pageSize;
+
+    // Convert to pixel positions
+    const currentPageStartPx = (currentPageStart - 1) * itemHeight;
+    const currentPageEndPx = currentPageEnd * itemHeight;
+
+    // Define boundary thresholds (load when within 2 item heights of boundary)
+    const boundaryThreshold = itemHeight * 2;
+    const viewportBottom = scrollTop + state.containerHeight;
+
+    console.log(`🎯 [PageBoundary] Checking boundaries:`, {
+      scrollTop,
+      viewportBottom,
+      currentPage: state.page,
+      currentPageStart,
+      currentPageEnd,
+      currentPageStartPx,
+      currentPageEndPx,
+      boundaryThreshold,
+      itemsInCollection: state.items.length,
+      hasNext: state.hasNext,
+      hasPrev: state.page > 1,
+    });
+
+    // Check if we should load next page (scrolled near bottom of current page)
+    if (
+      state.hasNext &&
+      viewportBottom > currentPageEndPx - boundaryThreshold
+    ) {
+      const nextPage = state.page + 1;
+      const nextPageStart = (nextPage - 1) * pageSize + 1;
+      const nextPageEnd = nextPage * pageSize;
+
+      // Check if we already have next page data
+      const hasNextPageData = state.items.some((item) => {
+        const itemId = parseInt(item?.id);
+        return itemId >= nextPageStart && itemId <= nextPageEnd;
+      });
+
+      if (!hasNextPageData) {
+        console.log(
+          `📥 [PageBoundary] Loading next page ${nextPage} (scrolled near bottom)`
+        );
+        loadNextPageFromBoundary(nextPage);
+      }
+    }
+
+    // Check if we should load previous page (scrolled near top of current page)
+    if (state.page > 1 && scrollTop < currentPageStartPx + boundaryThreshold) {
+      const prevPage = state.page - 1;
+      const prevPageStart = (prevPage - 1) * pageSize + 1;
+      const prevPageEnd = prevPage * pageSize;
+
+      // Check if we already have previous page data
+      const hasPrevPageData = state.items.some((item) => {
+        const itemId = parseInt(item?.id);
+        return itemId >= prevPageStart && itemId <= prevPageEnd;
+      });
+
+      if (!hasPrevPageData) {
+        console.log(
+          `📥 [PageBoundary] Loading previous page ${prevPage} (scrolled near top)`
+        );
+        loadPreviousPageFromBoundary(prevPage);
+      }
+    }
+  };
+
+  /**
+   * Load next page from boundary detection (preserves existing items)
+   * @param {number} pageNumber - Page number to load
+   */
+  const loadNextPageFromBoundary = async (
+    pageNumber: number
+  ): Promise<void> => {
+    if (state.loading) return;
+
+    console.log(
+      `🔄 [BoundaryLoad] Loading next page ${pageNumber} from boundary detection`
+    );
+
+    const loadParams = createLoadParams(state, "page");
+    loadParams.page = pageNumber;
+
+    const perPageParam =
+      validatedConfig.pagination?.perPageParamName || "per_page";
+    loadParams[perPageParam] = validatedConfig.pageSize || 20;
+
+    try {
+      const result = await loadItems(loadParams);
+      console.log(`✅ [BoundaryLoad] Next page ${pageNumber} loaded:`, {
+        newItemsCount: result.items.length,
+        totalItemsNow: state.items.length,
+      });
+    } catch (error) {
+      console.error(
+        `❌ [BoundaryLoad] Failed to load next page ${pageNumber}:`,
+        error
+      );
+    }
+  };
+
+  /**
+   * Load previous page from boundary detection (preserves existing items)
+   * @param {number} pageNumber - Page number to load
+   */
+  const loadPreviousPageFromBoundary = async (
+    pageNumber: number
+  ): Promise<void> => {
+    if (state.loading) return;
+
+    console.log(
+      `🔄 [BoundaryLoad] Loading previous page ${pageNumber} from boundary detection`
+    );
+
+    const loadParams = createLoadParams(state, "page");
+    loadParams.page = pageNumber;
+
+    const perPageParam =
+      validatedConfig.pagination?.perPageParamName || "per_page";
+    loadParams[perPageParam] = validatedConfig.pageSize || 20;
+
+    try {
+      const result = await loadItems(loadParams);
+      console.log(`✅ [BoundaryLoad] Previous page ${pageNumber} loaded:`, {
+        newItemsCount: result.items.length,
+        totalItemsNow: state.items.length,
+      });
+    } catch (error) {
+      console.error(
+        `❌ [BoundaryLoad] Failed to load previous page ${pageNumber}:`,
+        error
+      );
     }
   };
 
@@ -1027,6 +1305,9 @@ export const createListManager = (
 
       // Reset page jump flag after short delay
       setTimeout(() => {
+        console.log(
+          `🔄 [LoadPage] Resetting justJumpedToPage flag after delay`
+        );
         justJumpedToPage = false;
       }, 500);
     });
@@ -1299,10 +1580,14 @@ export const createListManager = (
 
     // Return cleanup function
     return () => {
-      // Clear any pending page jump timeout
+      // Clear any pending timeouts
       if (pageJumpTimeout !== null) {
         clearTimeout(pageJumpTimeout);
         pageJumpTimeout = null;
+      }
+      if (scrollStopTimeout !== null) {
+        clearTimeout(scrollStopTimeout);
+        scrollStopTimeout = null;
       }
 
       // Run all cleanup functions
