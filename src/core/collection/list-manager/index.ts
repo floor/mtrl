@@ -356,6 +356,25 @@ export const createListManager = (
       // Set totalHeight as dirty to trigger recalculation
       state.totalHeightDirty = true;
 
+      // CRITICAL: If we got a total count from API, immediately set the definitive total height
+      if (response.meta.total && !state.useStatic) {
+        const definitiveHeight =
+          response.meta.total * (validatedConfig.itemHeight || 84);
+        state.totalHeight = definitiveHeight;
+        state.totalHeightDirty = false; // Mark as clean since we have the definitive height
+        updateSpacerHeight(elements, definitiveHeight);
+
+        console.log(
+          `🎯 [TotalHeight] Locked in definitive height from API total:`,
+          {
+            apiTotal: response.meta.total.toLocaleString(),
+            itemHeight: validatedConfig.itemHeight || 84,
+            definitiveHeight: definitiveHeight.toLocaleString(),
+            note: "This height will remain consistent across all pages",
+          }
+        );
+      }
+
       // Call afterLoad callback if provided
       if (validatedConfig.afterLoad) {
         // Create a read-only copy of the items array to prevent mutation
@@ -403,7 +422,10 @@ export const createListManager = (
    * Pre-bound update visible items function to avoid recreation
    * @param {number} scrollTop Current scroll position
    */
-  const updateVisibleItems = (scrollTop = state.scrollTop): void => {
+  const updateVisibleItems = (
+    scrollTop = state.scrollTop,
+    isPageJump = false
+  ): void => {
     if (!state.mounted) return;
 
     // Skip updates if we're in the middle of a page jump or preloading
@@ -437,38 +459,30 @@ export const createListManager = (
     }
 
     // Calculate which items should be visible
-    // DETAILED LOGGING FOR PAGE NAVIGATION DEBUGGING
-    console.log("📐 [UpdateVisibleItems] Before calculateVisibleRange:", {
-      scrollTop,
-      itemsLength: state.items.length,
-      containerHeight: state.containerHeight,
-      currentVisibleRange: state.visibleRange,
-      firstItemId: state.items[0]?.id || "N/A",
-      lastItemId: state.items[state.items.length - 1]?.id || "N/A",
-      itemHeight: validatedConfig.itemHeight,
-      totalHeight: state.totalHeight,
-      currentPage: state.page,
-    });
+    // CRITICAL FIX: For page-based navigation with sparse data, we need custom visibility calculation
+    let visibleRange: VisibleRange;
 
-    const visibleRange = calculateVisibleRange(
-      scrollTop,
-      state.items,
-      state.containerHeight,
-      itemMeasurement,
-      validatedConfig
-    );
+    if (state.paginationStrategy === "page" && isPageJump) {
+      // For page jumps, show all items in the current collection
+      // since they're positioned at their absolute virtual positions
+      visibleRange = { start: 0, end: state.items.length };
 
-    console.log("📐 [UpdateVisibleItems] After calculateVisibleRange:", {
-      visibleRange,
-      expectedVisibleItemIds: state.items
-        .slice(visibleRange.start, visibleRange.end)
-        .map((item) => item?.id)
-        .join(", "),
-      firstVisibleItem: state.items[visibleRange.start]?.id || "N/A",
-      lastVisibleItem:
-        state.items[Math.min(visibleRange.end - 1, state.items.length - 1)]
-          ?.id || "N/A",
-    });
+      console.log(`📍 [PageJump] Custom visibility for sparse data:`, {
+        scrollTop,
+        totalItems: state.items.length,
+        visibleRange,
+        itemIds: state.items.map((item) => item?.id).join(", "),
+      });
+    } else {
+      // Use standard calculation for non-page-based or normal scrolling
+      visibleRange = calculateVisibleRange(
+        scrollTop,
+        state.items,
+        state.containerHeight,
+        itemMeasurement,
+        validatedConfig
+      );
+    }
 
     // Early return if range hasn't changed
     if (
@@ -494,108 +508,87 @@ export const createListManager = (
     }
 
     // Calculate total height if needed
-    if (state.totalHeightDirty) {
-      // For virtual scrolling with API, use the API total count
-      const totalHeight = state.useStatic
-        ? itemMeasurement.calculateTotalHeight(state.items)
-        : (state.itemCount || state.items.length) *
-          (validatedConfig.itemHeight || 48);
+    // CRITICAL FIX: Always use API total count for virtual scrolling, never local collection size
+    if (state.totalHeightDirty && !isPageJump) {
+      let totalHeight: number;
 
-      console.log(`📐 [TotalHeight] Calculated total height:`, {
-        useStatic: state.useStatic,
-        itemCount: state.itemCount,
-        localItemsLength: state.items.length,
-        itemHeight: validatedConfig.itemHeight,
-        calculatedHeight: totalHeight.toLocaleString(),
-      });
+      if (state.useStatic) {
+        // For static data, calculate from actual items
+        totalHeight = itemMeasurement.calculateTotalHeight(state.items);
+      } else if (state.itemCount) {
+        // CRITICAL: Always use API total count when available for consistent virtual scrolling
+        totalHeight = state.itemCount * (validatedConfig.itemHeight || 84);
+        console.log(
+          `📐 [TotalHeight] Using API total count for consistent virtual scrolling:`,
+          {
+            apiTotalCount: state.itemCount.toLocaleString(),
+            localItemsLength: state.items.length,
+            itemHeight: validatedConfig.itemHeight || 84,
+            calculatedHeight: totalHeight.toLocaleString(),
+            note: "Height based on full dataset, not local collection",
+          }
+        );
+      } else {
+        // Fallback to local collection size only if no API total available
+        totalHeight = state.items.length * (validatedConfig.itemHeight || 84);
+        console.log(`📐 [TotalHeight] Fallback to local collection size:`, {
+          localItemsLength: state.items.length,
+          itemHeight: validatedConfig.itemHeight || 84,
+          calculatedHeight: totalHeight.toLocaleString(),
+        });
+      }
 
       Object.assign(state, updateTotalHeight(state, totalHeight));
 
       // Update DOM elements with new height
       updateSpacerHeight(elements, totalHeight);
+    } else if (isPageJump) {
+      console.log(
+        `📐 [TotalHeight] Skipping recalculation during page jump - using existing:`,
+        {
+          existingTotalHeight: state.totalHeight.toLocaleString(),
+          isPageJump: true,
+        }
+      );
     }
 
     // Render visible items
-    renderer.renderVisibleItems(state.items, visibleRange);
+    if (state.paginationStrategy === "page" && isPageJump) {
+      // CRITICAL FIX: For page jumps, position items at their absolute virtual positions
+      console.log(
+        `🎨 [VirtualRender] Rendering with absolute positioning for page jump`
+      );
 
-    // DETAILED LOGGING FOR DOM RENDERING DEBUGGING
-    console.log("🎨 [DOM Render] After renderVisibleItems:", {
-      visibleRangeStart: visibleRange.start,
-      visibleRangeEnd: visibleRange.end,
-      actualItemsSliced: state.items
+      const itemHeight = validatedConfig.itemHeight || 84;
+      const positions = state.items
         .slice(visibleRange.start, visibleRange.end)
-        .map((item) => item?.id)
-        .join(", "),
-      scrollTop: state.scrollTop,
-      containerScrollTop: container.scrollTop,
-      totalHeight: state.totalHeight,
-      containerHeight: state.containerHeight,
-      domElementsCount: elements.content.children.length,
-      firstDomElementId:
-        elements.content.children[0]?.getAttribute("data-id") || "N/A",
-      lastDomElementId:
-        elements.content.children[
-          elements.content.children.length - 1
-        ]?.getAttribute("data-id") || "N/A",
-    });
+        .map((item, localIndex) => {
+          if (!item || !item.id) return null;
 
-    // Check actual DOM positioning
-    const domItems = Array.from(elements.content.children);
-    if (domItems.length > 0) {
-      const currentScrollTop = state.scrollTop;
-      const domPositions = domItems.slice(0, 10).map((elem, idx) => ({
-        index: idx,
-        dataId: elem.getAttribute("data-id"),
-        offsetTop: (elem as HTMLElement).offsetTop,
-        offsetHeight: (elem as HTMLElement).offsetHeight,
-        isVisible:
-          (elem as HTMLElement).offsetTop <
-            currentScrollTop + state.containerHeight &&
-          (elem as HTMLElement).offsetTop + (elem as HTMLElement).offsetHeight >
-            currentScrollTop,
-      }));
-      console.log(
-        "🎨 [DOM Positions] First 10 DOM elements positioning:",
-        domPositions
-      );
+          const itemId = parseInt(item.id);
+          const virtualIndex = itemId - 1; // Convert to 0-based
+          const absoluteOffset = virtualIndex * itemHeight;
 
-      // Show which items should be visible based on scroll position
-      const expectedVisibleItems = domPositions.filter(
-        (item) => item.isVisible
-      );
-      console.log(
-        "🎯 [Expected Visible] Items that should be visible based on scroll position:",
-        {
-          scrollTop: currentScrollTop,
-          containerHeight: state.containerHeight,
-          viewportRange: `${currentScrollTop} - ${
-            currentScrollTop + state.containerHeight
-          }`,
-          expectedVisibleIds: expectedVisibleItems
-            .map((item) => item.dataId)
-            .join(", "),
-          firstVisibleId: expectedVisibleItems[0]?.dataId || "N/A",
-          lastVisibleId:
-            expectedVisibleItems[expectedVisibleItems.length - 1]?.dataId ||
-            "N/A",
-        }
-      );
+          return {
+            index: visibleRange.start + localIndex,
+            item,
+            offset: absoluteOffset,
+          };
+        })
+        .filter(Boolean);
 
-      // CRITICAL: Check if container scroll position matches our state
-      const actualContainerScrollTop = container.scrollTop;
-      if (Math.abs(actualContainerScrollTop - currentScrollTop) > 5) {
-        console.warn(
-          "⚠️ [SCROLL MISMATCH] Container scroll position differs from state:",
-          {
-            stateScrollTop: currentScrollTop,
-            containerScrollTop: actualContainerScrollTop,
-            difference: actualContainerScrollTop - currentScrollTop,
-            containerElement:
-              container.tagName +
-              (container.className ? "." + container.className : ""),
-          }
-        );
-      }
+      console.log(`🎨 [VirtualRender] Absolute positions:`, {
+        totalPositions: positions.length,
+        firstItemId: positions[0]?.item.id,
+        firstItemOffset: positions[0]?.offset,
+        lastItemId: positions[positions.length - 1]?.item.id,
+        lastItemOffset: positions[positions.length - 1]?.offset,
+      });
+
+      renderItemsWithVirtualPositions(positions);
+    } else {
+      // Standard rendering for normal scrolling
+      renderer.renderVisibleItems(state.items, visibleRange);
     }
 
     // Now measure elements that needed measurement
@@ -605,10 +598,28 @@ export const createListManager = (
     );
 
     // Recalculate total height after measurements if needed
-    if (heightsChanged) {
+    // CRITICAL: Only recalculate if we don't have API total count (preserves consistent virtual scrolling)
+    if (heightsChanged && (!state.itemCount || state.useStatic)) {
       const totalHeight = itemMeasurement.calculateTotalHeight(state.items);
       Object.assign(state, updateTotalHeight(state, totalHeight));
       updateSpacerHeight(elements, totalHeight);
+
+      console.log(`📐 [TotalHeight] Recalculated after height measurement:`, {
+        reason: "Item height measurements changed",
+        useStatic: state.useStatic,
+        hasApiTotal: !!state.itemCount,
+        newHeight: totalHeight.toLocaleString(),
+      });
+    } else if (heightsChanged && state.itemCount) {
+      console.log(
+        `📐 [TotalHeight] Skipping recalculation after measurement:`,
+        {
+          reason:
+            "API total count available - preserving consistent virtual height",
+          lockedHeight: state.totalHeight.toLocaleString(),
+          apiTotal: state.itemCount.toLocaleString(),
+        }
+      );
     }
 
     // Check if we need to load more data
@@ -946,26 +957,19 @@ export const createListManager = (
     // SIMPLIFIED: Position to show the requested page
     console.log(`📍 [LoadPage] Positioning to show page ${pageNumber}`);
 
-    // Find where this page starts in our collection
-    let targetScrollPosition = 0;
+    // Calculate the absolute scroll position for this page
     const defaultItemHeight = validatedConfig.itemHeight || 48;
 
-    // Find the first item of the target page
-    const targetPageFirstItemIndex = state.items.findIndex((item) => {
-      const itemId = parseInt(item?.id);
-      return itemId === pageStartId;
-    });
+    // CRITICAL FIX: Use absolute item position, not local collection index
+    // For page 10 (items 181-200), we want to scroll to position (181-1) * itemHeight
+    const targetScrollPosition = (pageStartId - 1) * defaultItemHeight;
 
-    if (targetPageFirstItemIndex >= 0) {
-      targetScrollPosition = targetPageFirstItemIndex * defaultItemHeight;
-      console.log(
-        `📍 [LoadPage] Found page ${pageNumber} at index ${targetPageFirstItemIndex}, scrolling to ${targetScrollPosition}px`
-      );
-    } else {
-      console.log(
-        `📍 [LoadPage] Page ${pageNumber} not found in collection, staying at top`
-      );
-    }
+    console.log(`📍 [LoadPage] Page ${pageNumber} absolute positioning:`, {
+      pageStartId,
+      itemHeight: defaultItemHeight,
+      targetScrollPosition,
+      calculation: `(${pageStartId} - 1) × ${defaultItemHeight} = ${targetScrollPosition}px`,
+    });
 
     // IMPORTANT: Don't set scroll position here - it's too early!
     // The DOM hasn't been updated with new items yet, so the scroll will fail
@@ -978,11 +982,31 @@ export const createListManager = (
     state.visibleRange = { start: -1, end: -1 };
     state.containerHeight = container.clientHeight;
 
-    // For page-based navigation, total height should be based on local items only
-    // This ensures visible range calculation works correctly
-    state.totalHeight = state.items.length * defaultItemHeight;
-    updateSpacerHeight(elements, state.totalHeight);
-    state.totalHeightDirty = false;
+    // CRITICAL FIX: Only set total height in loadPage if not already set from API
+    if (!state.itemCount) {
+      // Fallback calculation if no API total available
+      const fallbackTotal = 1000000; // Default fallback
+      state.totalHeight = fallbackTotal * defaultItemHeight;
+
+      console.log(`📐 [LoadPage] Fallback total height calculation:`, {
+        fallbackTotal: fallbackTotal.toLocaleString(),
+        localCollectionSize: state.items.length,
+        itemHeight: defaultItemHeight,
+        calculatedTotalHeight: state.totalHeight.toLocaleString(),
+        note: "Using fallback - API total not available",
+      });
+
+      updateSpacerHeight(elements, state.totalHeight);
+      state.totalHeightDirty = false;
+    } else {
+      // API total already set - preserve the locked-in height
+      console.log(`📐 [LoadPage] Preserving locked-in total height:`, {
+        apiTotal: state.itemCount.toLocaleString(),
+        lockedHeight: state.totalHeight.toLocaleString(),
+        localCollectionSize: state.items.length,
+        note: "Height locked in from API total",
+      });
+    }
 
     // Reset renderer and render immediately with DOM updates
     renderer.resetVisibleRange();
@@ -991,41 +1015,14 @@ export const createListManager = (
       // Temporarily allow updates
       const wasJumpedToPage = justJumpedToPage;
       justJumpedToPage = false;
-      updateVisibleItems(targetScrollPosition);
+      updateVisibleItems(targetScrollPosition, true);
       justJumpedToPage = wasJumpedToPage;
 
       // CRITICAL FIX: Set scroll position AFTER DOM rendering is complete
       // The previous issue was setting scroll before DOM had the new items rendered
       requestAnimationFrame(() => {
-        console.log(`🔧 [LoadPage] Post-render scroll positioning:`, {
-          beforeScroll: container.scrollTop,
-          targetScroll: targetScrollPosition,
-          totalHeight: state.totalHeight,
-          itemsLength: state.items.length,
-        });
-
         container.scrollTop = targetScrollPosition;
         state.scrollTop = targetScrollPosition;
-
-        // Force another update with the correct scroll position
-        setTimeout(() => {
-          const finalScrollTop = container.scrollTop;
-          console.log(`✅ [LoadPage] Final scroll verification:`, {
-            requested: targetScrollPosition,
-            actual: finalScrollTop,
-            success: Math.abs(finalScrollTop - targetScrollPosition) < 10,
-            difference: finalScrollTop - targetScrollPosition,
-          });
-
-          // If scroll still doesn't match, force update visible items with actual position
-          if (Math.abs(finalScrollTop - targetScrollPosition) > 10) {
-            console.log(
-              `🔄 [LoadPage] Correcting visible items with actual scroll position`
-            );
-            state.scrollTop = finalScrollTop;
-            updateVisibleItems(finalScrollTop);
-          }
-        }, 50);
       });
 
       // Reset page jump flag after short delay
