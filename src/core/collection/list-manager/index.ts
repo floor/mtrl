@@ -187,7 +187,7 @@ export const createListManager = (
     const itemHeight = validatedConfig.itemHeight || 48;
     const pageHeight = pageSize * itemHeight;
 
-    // Calculate which page we're currently viewing
+    // Calculate which page we're currently viewing based on scroll position
     const currentPage = Math.floor(scrollTop / pageHeight) + 1;
     return Math.max(1, currentPage);
   };
@@ -272,14 +272,11 @@ export const createListManager = (
       if (
         state.paginationStrategy === "page" &&
         params.page &&
-        (currentStateItemsLength === 0 || isPageJumpLoad)
+        currentStateItemsLength === 0
       ) {
-        // If we're loading a specific page and either the collection is empty OR this is a page jump,
-        // replace the collection (this handles jumping to any page)
+        // Only replace the collection if it's truly empty (not for page jumps with existing items)
         console.log(
-          `🔄 [LoadItems] Page ${params.page}: Replacing collection (${
-            isPageJumpLoad ? "page jump" : "empty state"
-          })`
+          `🔄 [LoadItems] Page ${params.page}: Replacing collection (empty state)`
         );
         await itemsCollection.clear();
         if (items.length > 0) {
@@ -311,8 +308,12 @@ export const createListManager = (
       }
 
       // Update state with new items AFTER collection operations
-      if (isPageJumpLoad && state.paginationStrategy === "page") {
-        // For page jumps, always replace the state items (don't append)
+      if (
+        isPageJumpLoad &&
+        state.paginationStrategy === "page" &&
+        currentStateItemsLength === 0
+      ) {
+        // Only replace state when collection was truly empty (not for preservePrevious scenarios)
         Object.assign(state, {
           items: [...items],
           cursor: response.meta.cursor ?? null,
@@ -325,7 +326,7 @@ export const createListManager = (
           `🔄 [LoadItems] Page jump state update: replaced with ${items.length} items`
         );
       } else {
-        // Use normal state update logic for regular loads
+        // Use normal state update logic for regular loads and preservePrevious scenarios
         Object.assign(
           state,
           updateStateAfterLoad(
@@ -407,14 +408,6 @@ export const createListManager = (
       return;
     }
 
-    // Reset virtual offset during normal scrolling (not page jumps)
-    if (state.virtualOffset > 0 && !justJumpedToPage) {
-      console.log(
-        `🔄 [ScrollNormal] Resetting virtual offset from ${state.virtualOffset} to 0`
-      );
-      state.virtualOffset = 0;
-    }
-
     // Get current container dimensions if not available
     if (state.containerHeight === 0) {
       state.containerHeight = container.clientHeight;
@@ -440,6 +433,7 @@ export const createListManager = (
       checkLoadPrevious(scrollTop);
     }
 
+    // Calculate which items should be visible
     // Calculate which items should be visible
     const visibleRange = calculateVisibleRange(
       scrollTop,
@@ -494,21 +488,8 @@ export const createListManager = (
       updateSpacerHeight(elements, totalHeight);
     }
 
-    // Render visible items with virtual positioning if needed
-    if (state.virtualOffset > 0) {
-      // Use custom virtual positioning for page jumps
-      const virtualPositions = calculateItemPositionsWithVirtualOffset(
-        state.items,
-        visibleRange,
-        state.virtualOffset
-      );
-
-      // Render items with custom positions
-      renderItemsWithVirtualPositions(virtualPositions);
-    } else {
-      // Use default rendering for normal scrolling
-      renderer.renderVisibleItems(state.items, visibleRange);
-    }
+    // Render visible items
+    renderer.renderVisibleItems(state.items, visibleRange);
 
     // Now measure elements that needed measurement
     const heightsChanged = itemMeasurement.measureMarkedElements(
@@ -571,11 +552,11 @@ export const createListManager = (
 
     // Additional safeguard: don't auto-load if scroll position seems unrealistic
     // This can happen with virtual scrolling miscalculations
-    if (scrollFraction > 10) {
+    if (scrollFraction > 2.0) {
       console.warn(
         `🚫 [CheckLoadMore] Suspicious scroll fraction (${scrollFraction.toFixed(
           2
-        )}), skipping auto-load`
+        )}), skipping auto-load. This suggests virtual scrolling issues.`
       );
       return;
     }
@@ -756,11 +737,7 @@ export const createListManager = (
 
     // CRITICAL: If we're already on the same page and have items,
     // just ensure they're rendered instead of reloading
-    if (
-      state.page === pageNumber &&
-      state.items.length > 0 &&
-      !options.preservePrevious
-    ) {
+    if (state.page === pageNumber && state.items.length > 0) {
       console.log(
         `⚡ [LoadPage] Already on page ${pageNumber} with ${state.items.length} items - ensuring render`
       );
@@ -830,13 +807,9 @@ export const createListManager = (
       // Reset renderer state to force re-render
       renderer.resetVisibleRange();
     } else {
-      // When preserving previous pages, check if we're jumping to a different page
-      const pageSize = validatedConfig.pageSize || 20;
-      const currentPage = Math.ceil(state.items.length / pageSize);
-
-      if (currentPage !== pageNumber - 1 && currentPage !== pageNumber) {
-        // We're jumping to a non-adjacent page, start fresh
-
+      // When preserving previous pages, always respect the user's preference
+      // Clear collection only if starting fresh or no existing items
+      if (state.items.length === 0) {
         await itemsCollection.clear();
         state.items = [];
         recyclePool.clear();
@@ -848,16 +821,7 @@ export const createListManager = (
 
         // Reset renderer state to force re-render
         renderer.resetVisibleRange();
-
-        // Reset state but keep the page number we're jumping to
-        Object.assign(state, resetState(state, []));
-        state.page = pageNumber;
-        state.paginationStrategy = paginationStrategy;
-
-        // Don't preserve previous for this load
-        options.preservePrevious = false;
       }
-      // If it's an adjacent page, let normal loading handle it
     }
 
     // Create load params for the specific page
@@ -971,32 +935,30 @@ export const createListManager = (
           state.totalHeight = totalHeight;
           state.totalHeightDirty = false;
 
-          // Set the scroll position to where this page should be
-          container.scrollTop = virtualScrollPosition;
-          state.scrollTop = virtualScrollPosition;
+          // CRITICAL: When jumping to a page without preserving previous pages,
+          // position user at the BEGINNING of the loaded page, not the virtual position
+          // This shows the start of page 2, not the end of page 2
+          const actualScrollPosition = 0; // Always start at the beginning of the loaded page
+          container.scrollTop = actualScrollPosition;
+          state.scrollTop = actualScrollPosition;
 
           console.log(`📍 [LoadPage] Setting scroll position:`, {
             containerScrollTop: container.scrollTop,
             stateScrollTop: state.scrollTop,
             containerHeight: state.containerHeight,
+            actualPosition: actualScrollPosition,
+            virtualPosition: virtualScrollPosition.toLocaleString(),
             scrollFraction: (
-              (virtualScrollPosition + state.containerHeight) /
-              totalHeight
+              (actualScrollPosition + state.containerHeight) /
+              (state.items.length * itemHeight)
             ).toFixed(4),
           });
 
-          // Calculate visible range based on the virtual scroll position
+          // Calculate visible range based on the ACTUAL scroll position (0)
+          // Since we're at the top of the loaded page, start from the beginning
           const visibleCount = Math.ceil(state.containerHeight / itemHeight);
-          const startIndex = Math.floor(virtualScrollPosition / itemHeight);
-          const endIndex = startIndex + visibleCount + 5; // Add buffer
-
-          // Since our items are at local indices 0-19 but represent virtual indices,
-          // we need to map the visible range to our local indices
-          const localStartIndex = Math.max(0, startIndex - itemsBeforeThisPage);
-          const localEndIndex = Math.min(
-            state.items.length,
-            endIndex - itemsBeforeThisPage
-          );
+          const localStartIndex = 0; // Always start from beginning of loaded page
+          const localEndIndex = Math.min(state.items.length, visibleCount + 5); // Add buffer
 
           state.visibleRange = {
             start: localStartIndex,
@@ -1004,11 +966,12 @@ export const createListManager = (
           };
 
           console.log(`👁️ [LoadPage] Visible range calculation:`, {
-            virtualStartIndex: startIndex,
-            virtualEndIndex: endIndex,
+            actualScrollPosition,
+            virtualScrollPosition: virtualScrollPosition.toLocaleString(),
             localStartIndex,
             localEndIndex,
             itemsLength: state.items.length,
+            pageNumber,
           });
 
           // Ensure renderer's cached range is reset
@@ -1020,7 +983,7 @@ export const createListManager = (
           const wasJumpedToPage = justJumpedToPage;
           justJumpedToPage = false;
 
-          updateVisibleItems(virtualScrollPosition); // Use the correct virtual scroll position
+          updateVisibleItems(actualScrollPosition); // Use the actual scroll position (0)
 
           // Restore the flag
           justJumpedToPage = wasJumpedToPage;
@@ -1033,12 +996,22 @@ export const createListManager = (
           // Reset the page jump flag after a delay to allow adjacent page loading
           pageJumpTimeout = window.setTimeout(() => {
             console.log(
-              `⏰ [PageJump] Resetting page jump flag and virtual offset`
+              `⏰ [PageJump] Resetting page jump flag for page ${pageNumber}`
             );
             justJumpedToPage = false;
 
-            // Reset virtual offset so normal scrolling works
-            state.virtualOffset = 0;
+            // CRITICAL: Only reset virtual offset for page 1
+            // For other pages, keep the virtual offset to maintain positioning
+            if (pageNumber === 1) {
+              console.log(
+                `🔄 [PageJump] Resetting virtual offset to 0 for page 1`
+              );
+              state.virtualOffset = 0;
+            } else {
+              console.log(
+                `🔄 [PageJump] Keeping virtual offset ${state.virtualOffset} for page ${pageNumber}`
+              );
+            }
 
             pageJumpTimeout = null;
           }, 1000); // 1 second delay
@@ -1047,16 +1020,43 @@ export const createListManager = (
         measureContainer();
       });
 
-      // Preload adjacent pages after a short delay
+      // Preload adjacent pages after a longer delay to avoid interfering with navigation
       setTimeout(async () => {
-        // Re-enabled: Load both adjacent pages for smooth bidirectional scrolling
+        // CRITICAL: Only preload if user has been idle on this page for a while
+        // This prevents visual glitches during rapid navigation
         console.log(
-          `🔄 [LoadPage] Starting adjacent page preloading for page ${pageNumber}`
+          `🔄 [LoadPage] Considering adjacent page preloading for page ${pageNumber}`
         );
 
-        if (!state.mounted || state.loading) {
+        // Check if user has navigated away from this page
+        if (state.page !== pageNumber) {
           console.log(
-            `🚫 [LoadPage] Preload cancelled: mounted=${state.mounted}, loading=${state.loading}`
+            `🚫 [LoadPage] Preload cancelled: user navigated to page ${state.page}`
+          );
+          return;
+        }
+
+        if (
+          !state.mounted ||
+          state.loading ||
+          isPageJumpLoad ||
+          justJumpedToPage
+        ) {
+          console.log(
+            `🚫 [LoadPage] Preload cancelled: mounted=${state.mounted}, loading=${state.loading}, pageJumpInProgress=${isPageJumpLoad}, recentPageJump=${justJumpedToPage}`
+          );
+          return;
+        }
+
+        // Additional check: Don't preload if we already have adjacent pages in memory
+        const pageSize = validatedConfig.pageSize || 20;
+        const currentPageStartIndex = (pageNumber - 1) * pageSize;
+        const currentPageEndIndex = currentPageStartIndex + pageSize - 1;
+
+        // Check if we already have enough context around current page
+        if (state.items.length > pageSize * 2) {
+          console.log(
+            `🚫 [LoadPage] Preload skipped: already have ${state.items.length} items in memory`
           );
           return;
         }
@@ -1130,6 +1130,17 @@ export const createListManager = (
           preloadResults.forEach((result, index) => {
             if (result.status === "fulfilled") {
               const data = result.value;
+
+              // Skip if preload was aborted (empty items array)
+              if (!data || !data.items || data.items.length === 0) {
+                console.log(
+                  `🚫 [LoadPage] Preload ${
+                    data?.type || "unknown"
+                  } page skipped (aborted or empty)`
+                );
+                return;
+              }
+
               console.log(
                 `✅ [LoadPage] Preloaded ${data.type} page ${data.page}: ${data.items.length} items`
               );
@@ -1147,7 +1158,19 @@ export const createListManager = (
                 state.hasNext = data.meta?.hasNext ?? false;
               }
             } else {
-              console.warn(`❌ [LoadPage] Preload failed:`, result.reason);
+              // Don't log errors for aborted requests (common during page navigation)
+              const errorMessage =
+                result.reason?.message || String(result.reason);
+              if (
+                errorMessage.includes("AbortError") ||
+                errorMessage.includes("aborted")
+              ) {
+                console.log(
+                  `🚫 [LoadPage] Preload aborted (page navigation in progress)`
+                );
+              } else {
+                console.warn(`❌ [LoadPage] Preload failed:`, result.reason);
+              }
             }
           });
 
@@ -1207,28 +1230,58 @@ export const createListManager = (
             state.page = originalPageNumber;
           }
         }
-      }, 300); // Start preloading 300ms after main page loads
+
+        console.log(
+          `✅ [LoadPage] Starting conservative preload for page ${pageNumber} after user idle period`
+        );
+      }, 2000); // Wait 2 seconds to ensure user is settled on this page
     } else {
-      // When preserving previous pages, we need to scroll to where the new page starts
-      // Calculate the position of the first item of the loaded page
-      const pageSize = validatedConfig.pageSize || 20;
-      const itemsBeforeThisPage = (pageNumber - 1) * pageSize;
-      const itemHeight = validatedConfig.itemHeight || 48;
-      const scrollToPosition = itemsBeforeThisPage * itemHeight;
+      // SIMPLIFIED: For preservePrevious, always use simple collection positioning
+      console.log(
+        `📍 [LoadPage] PreservePrevious page jump - using simple collection positioning`
+      );
 
       requestAnimationFrame(() => {
-        // Scroll to the beginning of the loaded page
-        container.scrollTop = scrollToPosition;
-        state.scrollTop = scrollToPosition;
+        const pageSize = validatedConfig.pageSize || 20;
+        const itemHeight = validatedConfig.itemHeight || 48;
 
-        // EXPLICITLY call updateVisibleItems to render the items
-        // Temporarily allow updates
+        // Update total height for preserved items only
+        const preservedItemsHeight = state.items.length * itemHeight;
+        state.totalHeight = preservedItemsHeight;
+        state.totalHeightDirty = false;
+        updateSpacerHeight(elements, preservedItemsHeight);
+
+        // Find the target page items in the collection by ID
+        const targetPageStartId = (pageNumber - 1) * pageSize + 1;
+        let targetPageStartIndex = -1;
+
+        for (let i = 0; i < state.items.length; i++) {
+          if (parseInt(state.items[i]?.id) === targetPageStartId) {
+            targetPageStartIndex = i;
+            break;
+          }
+        }
+
+        // Calculate scroll position to show target page
+        const scrollPosition =
+          targetPageStartIndex >= 0 ? targetPageStartIndex * itemHeight : 0;
+
+        container.scrollTop = scrollPosition;
+        state.scrollTop = scrollPosition;
+
+        console.log(`📍 [LoadPage] Simple preservePrevious positioning:`, {
+          pageNumber,
+          targetPageStartId,
+          targetPageStartIndex,
+          scrollPosition,
+          totalItems: state.items.length,
+          totalHeight: preservedItemsHeight,
+        });
+
+        // Update items with simple logic
         const wasJumpedToPage = justJumpedToPage;
         justJumpedToPage = false;
-
-        updateVisibleItems(scrollToPosition);
-
-        // Restore the flag
+        updateVisibleItems(scrollPosition);
         justJumpedToPage = wasJumpedToPage;
       });
     }
@@ -1260,9 +1313,10 @@ export const createListManager = (
         if (pageNumber === 1) {
           container.scrollTop = 0;
           state.scrollTop = 0;
+          state.virtualOffset = 0; // Ensure virtual offset is 0 for page 1
         }
 
-        // Force update visible items
+        // Force update visible items with correct scroll position
         updateVisibleItems(state.scrollTop);
 
         // If still no visible items, something is wrong - try one more time with more aggressive approach
@@ -1805,10 +1859,11 @@ export const createListManager = (
   ): Array<{ index: number; item: any; offset: number }> => {
     const positions: Array<{ index: number; item: any; offset: number }> = [];
 
-    // Start from the virtual offset (e.g., 959040px for page 1000)
-    let currentOffset = virtualOffset;
+    // CRITICAL: For page jumps, position items at the top of viewport (0px) so they're visible
+    // The virtualOffset is used for context but items should be positioned where user can see them
+    let currentOffset = 0; // Start at top of viewport, not at virtual offset
 
-    // Calculate positions for visible items starting from the virtual offset
+    // Calculate positions for visible items starting from the top of viewport
     for (let i = visibleRange.start; i < visibleRange.end; i++) {
       if (items[i]) {
         positions.push({
@@ -1831,6 +1886,7 @@ export const createListManager = (
         firstItemOffset: positions[0]?.offset,
         lastItemOffset: positions[positions.length - 1]?.offset,
         itemCount: positions.length,
+        note: "Items positioned at viewport top for visibility",
       }
     );
 
