@@ -1717,13 +1717,13 @@ export const createListManager = (
         stateItemsLength: state.items.length,
       });
 
-      // For consistency with direct page navigation, always use loadPage
+      // For consistency with direct page navigation, always use loadPage with preservePrevious
       // This ensures the same data is loaded regardless of navigation method
       console.log(
         `🔄 [ScrollNext] Loading page ${nextPage} via loadPage for consistency`
       );
 
-      const result = await loadPage(nextPage);
+      const result = await loadPage(nextPage, { preservePrevious: true });
 
       console.log(`📦 [ScrollNext] LoadPage result:`, {
         itemsLength: result.items.length,
@@ -1760,40 +1760,12 @@ export const createListManager = (
       canGoBack: state.page && state.page > 1,
     });
 
-    // CRITICAL: Calculate actual current page from visible items instead of relying on state.page
-    // state.page might be corrupted, but the visible items tell us the truth
-    const pageSize = validatedConfig.pageSize || 20;
-    const visibleItems = state.visibleItems || [];
-
-    let actualCurrentPage = state.page; // Fallback to state.page
-
-    if (visibleItems.length > 0 && visibleItems[0]?.id) {
-      // Calculate page from first visible item ID
-      const firstVisibleId = parseInt(visibleItems[0].id);
-      if (!isNaN(firstVisibleId)) {
-        actualCurrentPage = Math.ceil(firstVisibleId / pageSize);
-        console.log(
-          `🔍 [ScrollPrevious] Calculated actual page from visible items:`,
-          {
-            firstVisibleId,
-            calculatedPage: actualCurrentPage,
-            statePage: state.page,
-            pageSize,
-          }
-        );
-      }
-    }
-
-    console.log(
-      `🔄 [ScrollPrevious] Using actual current page: ${actualCurrentPage} (state.page was ${state.page})`
-    );
-
-    // Check if we can go back using the ACTUAL current page
-    if (state.loading || actualCurrentPage <= 1) {
+    // Check if we can go back using state.page
+    if (state.loading || !state.page || state.page <= 1) {
       console.log(`❌ [ScrollPrevious] Cannot go back:`, {
         loading: state.loading,
-        actualCurrentPage,
-        canGoBack: actualCurrentPage > 1,
+        currentPage: state.page,
+        canGoBack: state.page && state.page > 1,
       });
       return { hasPrev: false, items: [] };
     }
@@ -1803,27 +1775,29 @@ export const createListManager = (
       return { hasPrev: false, items: [] };
     }
 
+    const pageSize = validatedConfig.pageSize || 20;
+
     console.log(
-      `🔄 [ScrollPrevious] Starting from page ${actualCurrentPage}, state.items.length: ${state.items.length}`
+      `🔄 [ScrollPrevious] Starting from page ${state.page}, state.items.length: ${state.items.length}`
     );
 
-    const previousPage = actualCurrentPage - 1;
+    const previousPage = state.page - 1;
     const itemHeight = validatedConfig.itemHeight || 48;
 
     console.log(`📊 [ScrollPrevious] Analysis:`, {
-      actualCurrentPage,
+      currentPage: state.page,
       previousPage,
       pageSize,
       stateItemsLength: state.items.length,
     });
 
-    // For consistency with scrollNext, always use loadPage
+    // For consistency with scrollNext, always use loadPage with preservePrevious
     // This ensures the same data is loaded regardless of navigation method
     console.log(
       `🔄 [ScrollPrevious] Loading page ${previousPage} via loadPage for consistency`
     );
 
-    const result = await loadPage(previousPage);
+    const result = await loadPage(previousPage, { preservePrevious: true });
 
     console.log(`📦 [ScrollPrevious] LoadPage result:`, {
       itemsLength: result.items.length,
