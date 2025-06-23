@@ -361,12 +361,16 @@ export const createVisibilityManager = (deps: VisibilityDependencies) => {
 
   /**
    * Check if we need to load more data based on scroll position
+   * For sparse page data, we use page boundary detection instead of percentage thresholds
    * @param scrollTop Current scroll position
    */
   const checkLoadMore = (scrollTop: number): void => {
+    const { justJumpedToPage } = paginationManager.getPaginationFlags();
+
     console.log(`🔍 [CheckLoadMore] Called with:`, {
       scrollTop,
       loading: state.loading,
+      justJumpedToPage,
       paginationStrategy: state.paginationStrategy,
       currentPage: state.page,
     });
@@ -377,14 +381,34 @@ export const createVisibilityManager = (deps: VisibilityDependencies) => {
       return;
     }
 
+    // Don't auto-load immediately after page jumps - let the page settle first
+    if (justJumpedToPage) {
+      console.log(
+        `🚫 [CheckLoadMore] Skipped: just jumped to page, letting it settle`
+      );
+      return;
+    }
+
+    // For page-based pagination with sparse data, use page boundary detection
+    if (state.paginationStrategy === "page") {
+      console.log(
+        `🎯 [CheckLoadMore] Using page boundary detection for page-based pagination`
+      );
+      paginationManager.checkPageBoundaries(scrollTop);
+      return;
+    }
+
     // Original logic for continuous data (cursor-based pagination)
     if (!state.hasNext) {
       return;
     }
 
-    const shouldLoadMore =
-      (scrollTop + state.containerHeight) / state.totalHeight >
-      (config.loadThreshold || 0.8);
+    const shouldLoadMore = isLoadThresholdReached(
+      scrollTop,
+      state.containerHeight,
+      state.totalHeight,
+      config.loadThreshold!
+    );
 
     const scrollFraction =
       (scrollTop + state.containerHeight) / state.totalHeight;
@@ -398,6 +422,7 @@ export const createVisibilityManager = (deps: VisibilityDependencies) => {
       shouldLoadMore,
       currentPage: state.page,
       itemsLength: state.items.length,
+      justJumpedToPage,
     });
 
     // Additional safeguard: don't auto-load if scroll position seems unrealistic
@@ -408,6 +433,13 @@ export const createVisibilityManager = (deps: VisibilityDependencies) => {
         )}), skipping auto-load. This suggests virtual scrolling issues.`
       );
       return;
+    }
+
+    if (shouldLoadMore) {
+      console.log(
+        `🔄 [CheckLoadMore] Triggering loadNext() for scroll-based loading`
+      );
+      paginationManager.loadNext();
     }
   };
 
