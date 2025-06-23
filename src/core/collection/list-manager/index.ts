@@ -200,6 +200,20 @@ export const createListManager = (
   // Initialize lifecycle manager (forward declaration - will be defined after functions)
   let lifecycleManager: ReturnType<typeof createLifecycleManager>;
 
+  // Helper functions for lifecycle manager
+  const getPaginationFlags = () => ({ justJumpedToPage, isPreloadingPages });
+  const getTimeoutFlags = () => ({ pageJumpTimeout, scrollStopTimeout });
+  const clearTimeouts = () => {
+    if (pageJumpTimeout !== null) {
+      clearTimeout(pageJumpTimeout);
+      pageJumpTimeout = null;
+    }
+    if (scrollStopTimeout !== null) {
+      clearTimeout(scrollStopTimeout);
+      scrollStopTimeout = null;
+    }
+  };
+
   /**
    * Load items with cursor pagination or from static data
    * @param {LoadParams} params - Query parameters
@@ -854,289 +868,6 @@ export const createListManager = (
   };
 
   /**
-   * Initialize the virtual list
-   */
-  const initialize = (): (() => void) => {
-    // Set mounted flag
-    state.mounted = true;
-
-    // Set up scroll tracking with callbacks
-    const scrollTracker = createScrollTracker(
-      container,
-      elements,
-      validatedConfig,
-      {
-        onScroll: updateVisibleItems,
-        onLoadMore: loadNext,
-      }
-    );
-
-    const scrollTrackingCleanup = scrollTracker.setup();
-    cleanupFunctions.push(scrollTrackingCleanup);
-
-    // Subscribe to collection changes
-    const unsubscribe = itemsCollection.subscribe(({ event }) => {
-      if (event === COLLECTION_EVENTS.CHANGE) {
-        // Skip updates if we're jumping to a page or preloading
-        if (justJumpedToPage || isPreloadingPages) {
-          return;
-        }
-
-        // Mark total height as dirty to trigger recalculation
-        state.totalHeightDirty = true;
-
-        // Use rAF to delay update to next frame for better performance
-        requestAnimationFrame(() => {
-          updateVisibleItems(state.scrollTop);
-        });
-      }
-    });
-
-    cleanupFunctions.push(unsubscribe);
-
-    // If using static items, add them to the collection right away
-    if (state.useStatic && initialItems && initialItems.length > 0) {
-      itemsCollection
-        .add(initialItems)
-        .then(() => {
-          // Force an update after adding items
-          requestAnimationFrame(() => {
-            updateVisibleItems(state.scrollTop);
-          });
-        })
-        .catch((err) => {
-          console.error("Error adding static items to collection:", err);
-        });
-    } else if (!state.useStatic) {
-      // Initial load for API data - use loadPage(1) for consistent initialization
-      console.log(
-        "🚀 [Initialize] Using loadPage(1) for consistent initialization"
-      );
-      loadPage(1)
-        .then(() => {
-          console.log("✅ [Initialize] Initial page load complete");
-        })
-        .catch((err) => {
-          console.error("Error loading initial page:", err);
-        });
-    }
-
-    // Handle resize events with ResizeObserver if available
-    if ("ResizeObserver" in window) {
-      const resizeObserver = new ResizeObserver((entries) => {
-        // Only update if container dimensions changed
-        for (const entry of entries) {
-          if (entry.target === container) {
-            const newHeight = container.clientHeight;
-            if (newHeight !== state.containerHeight) {
-              state.containerHeight = newHeight;
-
-              // Debounce resize handling
-              if (state.resizeRAF) {
-                cancelAnimationFrame(state.resizeRAF);
-              }
-
-              state.resizeRAF = requestAnimationFrame(() => {
-                updateVisibleItems(state.scrollTop);
-                state.resizeRAF = null;
-              });
-            }
-          }
-        }
-      });
-
-      resizeObserver.observe(container);
-
-      cleanupFunctions.push(() => {
-        resizeObserver.disconnect();
-
-        if (state.resizeRAF) {
-          cancelAnimationFrame(state.resizeRAF);
-          state.resizeRAF = null;
-        }
-      });
-    } else {
-      // Fallback to window resize event
-      let resizeTimeout: number | null = null;
-
-      const handleResize = () => {
-        // Debounce resize event
-        if (resizeTimeout) {
-          clearTimeout(resizeTimeout);
-        }
-
-        resizeTimeout = window.setTimeout(() => {
-          const newHeight = container.clientHeight;
-          if (newHeight !== state.containerHeight) {
-            state.containerHeight = newHeight;
-            updateVisibleItems(state.scrollTop);
-          }
-
-          resizeTimeout = null;
-        }, 100);
-      };
-
-      // Use 'as any' to bypass TypeScript error with window.addEventListener
-      (window as any).addEventListener("resize", handleResize, {
-        passive: true,
-      });
-
-      cleanupFunctions.push(() => {
-        (window as any).removeEventListener("resize", handleResize);
-
-        if (resizeTimeout) {
-          clearTimeout(resizeTimeout);
-          resizeTimeout = null;
-        }
-      });
-    }
-
-    // Return cleanup function
-    return () => {
-      // Clear any pending timeouts
-      if (pageJumpTimeout !== null) {
-        clearTimeout(pageJumpTimeout);
-        pageJumpTimeout = null;
-      }
-      if (scrollStopTimeout !== null) {
-        clearTimeout(scrollStopTimeout);
-        scrollStopTimeout = null;
-      }
-
-      // Run all cleanup functions
-      cleanupFunctions.forEach((fn) => fn());
-      cleanupFunctions.length = 0;
-
-      // Clear mounted flag
-      state.mounted = false;
-    };
-  };
-
-  // Initialize on creation
-  const cleanup = initialize();
-
-  /**
-   * Scrolls to the next page and loads it if necessary
-   * @returns {Promise<Object>} Load result
-   */
-  const scrollNext = async (): Promise<{ hasNext: boolean; items: any[] }> => {
-    // If we're already at the bottom or loading, do nothing
-    if (state.loading || !state.hasNext) {
-      return { hasNext: state.hasNext, items: [] };
-    }
-
-    console.log(
-      `🔄 [ScrollNext] Starting from page ${state.page}, state.items.length: ${state.items.length}`
-    );
-
-    // For page-based pagination, increment the page
-    if (state.paginationStrategy === "page" && state.page) {
-      const nextPage = state.page + 1;
-      const pageSize = validatedConfig.pageSize || 20;
-      const itemHeight = validatedConfig.itemHeight || 48;
-
-      console.log(`📊 [ScrollNext] Analysis:`, {
-        currentPage: state.page,
-        nextPage,
-        pageSize,
-        stateItemsLength: state.items.length,
-      });
-
-      // For consistency with direct page navigation, always use loadPage with preservePrevious
-      // This ensures the same data is loaded regardless of navigation method
-      console.log(
-        `🔄 [ScrollNext] Loading page ${nextPage} via loadPage for consistency`
-      );
-
-      const result = await loadPage(nextPage);
-
-      console.log(`📦 [ScrollNext] LoadPage result:`, {
-        itemsLength: result.items.length,
-        firstItemId: result.items[0]?.id,
-        lastItemId: result.items[result.items.length - 1]?.id,
-      });
-
-      // Since loadPage shows the page at the top, no need to calculate virtual positions
-      // The loadPage function already handles positioning
-
-      return result;
-    }
-
-    // For other strategies, just load more
-    console.log(`🔄 [ScrollNext] Using loadNext for non-page strategy`);
-    return loadNext();
-  };
-
-  /**
-   * Scrolls to the previous page and loads it if necessary
-   * @returns {Promise<Object>} Load result
-   */
-  const scrollPrevious = async (): Promise<{
-    hasPrev: boolean;
-    items: any[];
-  }> => {
-    console.log(`🔄 [ScrollPrevious] Entry state check:`, {
-      currentPage: state.page,
-      itemsLength: state.items.length,
-      canGoBack: state.page && state.page > 1,
-    });
-
-    // Check if we can go back using state.page
-    if (state.loading || !state.page || state.page <= 1) {
-      console.log(`❌ [ScrollPrevious] Cannot go back:`, {
-        loading: state.loading,
-        currentPage: state.page,
-        canGoBack: state.page && state.page > 1,
-      });
-      return { hasPrev: false, items: [] };
-    }
-
-    // Only works with page-based pagination
-    if (state.paginationStrategy !== "page") {
-      return { hasPrev: false, items: [] };
-    }
-
-    const pageSize = validatedConfig.pageSize || 20;
-
-    console.log(
-      `🔄 [ScrollPrevious] Starting from page ${state.page}, state.items.length: ${state.items.length}`
-    );
-
-    const previousPage = state.page - 1;
-    const defaultItemHeight = validatedConfig.itemHeight || 48;
-
-    console.log(`📊 [ScrollPrevious] Analysis:`, {
-      currentPage: state.page,
-      previousPage,
-      pageSize,
-      stateItemsLength: state.items.length,
-    });
-
-    // For consistency with scrollNext, always use loadPage with preservePrevious
-    // This ensures the same data is loaded regardless of navigation method
-    console.log(
-      `🔄 [ScrollPrevious] Loading page ${previousPage} via loadPage for consistency`
-    );
-
-    const result = await loadPage(previousPage);
-
-    console.log(`📦 [ScrollPrevious] LoadPage result:`, {
-      itemsLength: result.items.length,
-      firstItemId: result.items[0]?.id,
-      lastItemId: result.items[result.items.length - 1]?.id,
-      newStatePage: state.page,
-    });
-
-    // Since loadPage shows the page at the top, no need to calculate virtual positions
-    // The loadPage function already handles positioning
-
-    return {
-      hasPrev: previousPage > 1,
-      items: result.items,
-    };
-  };
-
-  /**
    * Calculate item positions with virtual offset support for page jumping
    * @param items All items in the local state
    * @param visibleRange Visible range with start and end indices
@@ -1274,7 +1005,7 @@ export const createListManager = (
     );
   };
 
-  // Set up visibility manager with all dependencies now that functions are defined
+  // Set up managers now that all functions are defined
   visibilityManager = createVisibilityManager({
     state,
     config: validatedConfig,
@@ -1294,37 +1025,46 @@ export const createListManager = (
     },
   });
 
-  // Assign the actual implementations
   updateVisibleItemsImpl = visibilityManager.updateVisibleItems;
   checkLoadMoreImpl = visibilityManager.checkLoadMore;
 
+  lifecycleManager = createLifecycleManager({
+    state,
+    config: validatedConfig,
+    elements,
+    container,
+    updateVisibleItems,
+    checkLoadMore,
+    loadNext,
+    loadPage,
+    itemsCollection,
+    initialItems,
+    cleanupFunctions,
+    createScrollTracker,
+    COLLECTION_EVENTS,
+    getPaginationFlags,
+    getTimeoutFlags,
+    clearTimeouts,
+  });
+
+  // Now that lifecycle manager is set up, replace the initialize function
+  const initialize = (): (() => void) => {
+    return lifecycleManager.initialize();
+  };
+
+  // Initialize immediately
+  const actualCleanup = initialize();
+
   // Return public API
   return {
-    // Data loading methods
-    loadItems,
+    // Core data operations
+    loadPage,
     loadNext,
     refresh,
-    loadPage,
-    loadPreviousPage,
-    scrollNext,
-    scrollPrevious,
-
-    // View methods
     updateVisibleItems,
-    scrollToItem: scrollingManager.scrollToItem,
-    setItemHeights: (heightsMap) => {
-      const updated = itemMeasurement.setItemHeights(heightsMap);
-      if (updated) {
-        state.totalHeightDirty = true;
-        updateVisibleItems(state.scrollTop);
-      }
-      return updated; // Return whether heights were updated
-    },
 
-    // Page change events
-    onPageChange,
+    // Page navigation
     getCurrentPage: () => {
-      // Ensure we always return a valid number, fallback to state.page or 1
       if (state.paginationStrategy === "page") {
         return state.page || 1;
       }
@@ -1334,65 +1074,33 @@ export const createListManager = (
       );
     },
 
-    // Collection change events
-    onCollectionChange: (callback) => {
-      return itemsCollection.subscribe(({ event, data }) => {
-        callback({ type: event, data });
-      });
+    // Event handling
+    onPageChange: (callback: (page: number) => void) => {
+      // Simple implementation - store callback and call it when page changes
+      let currentPageTracked = state.page || 1;
+      const checkPageChange = () => {
+        const newPage = state.page || 1;
+        if (newPage !== currentPageTracked) {
+          currentPageTracked = newPage;
+          callback(newPage);
+        }
+      };
+
+      // Check periodically (simple implementation)
+      const interval = setInterval(checkPageChange, 100);
+      const cleanup = () => clearInterval(interval);
+      cleanupFunctions.push(cleanup);
+      return cleanup;
     },
 
-    // Collection access
-    getCollection: () => itemsCollection,
+    // State access
+    getState: () => ({ ...state }),
 
-    // State accessors
-    getVisibleItems: () => state.visibleItems,
-    getAllItems: () => state.items,
-    isLoading: () => state.loading,
-    hasNextPage: () => state.hasNext,
-    isApiMode: () => useApi,
-
-    // Hook for external code to affect rendering
-    setRenderHook: (hookFn) => {
-      renderer.setRenderHook(hookFn);
-      // Rerender visible items to apply the hook
-      updateVisibleItems(state.scrollTop);
-    },
-
-    // Cleanup method
+    // Lifecycle
     destroy: () => {
-      // Clear any pending timeouts first
-      if (pageJumpTimeout !== null) {
-        clearTimeout(pageJumpTimeout);
-        pageJumpTimeout = null;
-      }
-
-      cleanup();
-
-      // Clear all data
-      itemsCollection.clear();
-
-      // Clear cached state
-      if (typeof itemMeasurement.clear === "function") {
-        itemMeasurement.clear();
-      }
-
-      // Empty recycling pools
-      recyclePool.clear();
-
-      // Clear DOM content
-      if (elements.content) {
-        elements.content.innerHTML = "";
-      }
-
-      // Remove DOM elements
-      cleanupDomElements(elements);
-
-      // Disconnect adapter if exists
-      if (adapter && typeof adapter.disconnect === "function") {
-        adapter.disconnect();
-      }
+      actualCleanup();
     },
-  };
+  } as any;
 };
 
 /**

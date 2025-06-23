@@ -121,7 +121,33 @@ export const createVisibilityManager = (deps: VisibilityDependencies) => {
     if (state.paginationStrategy === "page" && !isPageJump) {
       const itemHeight = config.itemHeight || 84;
       const pageSize = config.pageSize || 20;
-      const virtualItemIndex = Math.floor(scrollTop / itemHeight);
+
+      // BROWSER COMPATIBILITY: Adjust scroll position for capped virtual height
+      let adjustedScrollTop = scrollTop;
+      if (state.itemCount) {
+        const fullVirtualHeight = state.itemCount * itemHeight;
+        const actualVirtualHeight = state.totalHeight;
+
+        // If height was capped, we need to scale the scroll position
+        if (fullVirtualHeight > actualVirtualHeight) {
+          const scrollRatio = fullVirtualHeight / actualVirtualHeight;
+          adjustedScrollTop = scrollTop * scrollRatio;
+
+          console.log(
+            `📍 [ScrollSync] Adjusting scroll position for capped height:`,
+            {
+              originalScrollTop: scrollTop,
+              adjustedScrollTop: adjustedScrollTop.toFixed(0),
+              scrollRatio: scrollRatio.toFixed(2),
+              fullVirtualHeight: fullVirtualHeight.toLocaleString(),
+              cappedVirtualHeight: actualVirtualHeight.toLocaleString(),
+              note: "Compensating for browser height limits",
+            }
+          );
+        }
+      }
+
+      const virtualItemIndex = Math.floor(adjustedScrollTop / itemHeight);
       const calculatedPage = Math.floor(virtualItemIndex / pageSize) + 1;
 
       if (calculatedPage !== state.page && calculatedPage >= 1) {
@@ -129,11 +155,14 @@ export const createVisibilityManager = (deps: VisibilityDependencies) => {
 
         console.log(`📍 [ScrollSync] Updating page based on scroll position:`, {
           scrollTop,
+          adjustedScrollTop: adjustedScrollTop.toFixed(0),
           virtualItemIndex,
           calculatedPage,
           previousPage: state.page,
           pageDifference,
-          calculation: `floor(${scrollTop}/${itemHeight}) = ${virtualItemIndex}, page = floor(${virtualItemIndex}/${pageSize}) + 1 = ${calculatedPage}`,
+          calculation: `floor(${adjustedScrollTop.toFixed(
+            0
+          )}/${itemHeight}) = ${virtualItemIndex}, page = floor(${virtualItemIndex}/${pageSize}) + 1 = ${calculatedPage}`,
         });
 
         // Detect large scroll jumps (scrollbar dragging) - use debounced loading
@@ -238,19 +267,63 @@ export const createVisibilityManager = (deps: VisibilityDependencies) => {
         totalHeight = itemMeasurement.calculateTotalHeight(state.items);
       } else if (state.itemCount) {
         // CRITICAL: Always use API total count when available for consistent virtual scrolling
-        totalHeight = state.itemCount * (config.itemHeight || 84);
-        console.log(
-          `📐 [TotalHeight] Using API total count for consistent virtual scrolling:`,
-          {
-            apiTotalCount: state.itemCount.toLocaleString(),
-            localItemsLength: state.items.length,
-            itemHeight: config.itemHeight || 84,
-            calculatedHeight: totalHeight.toLocaleString(),
-            note: "Height based on full dataset, not local collection",
-          }
-        );
+        const calculatedHeight = state.itemCount * (config.itemHeight || 84);
+
+        // BROWSER COMPATIBILITY FIX: Cap virtual height to prevent browser issues
+        // 84M pixels causes problems in Chrome/Firefox - cap to 10M pixels
+        const MAX_VIRTUAL_HEIGHT = 10_000_000; // 10 million pixels (safe for all browsers)
+
+        if (calculatedHeight > MAX_VIRTUAL_HEIGHT) {
+          totalHeight = MAX_VIRTUAL_HEIGHT;
+          console.log(
+            `📐 [TotalHeight] Capping virtual height for browser compatibility:`,
+            {
+              apiTotalCount: state.itemCount.toLocaleString(),
+              calculatedHeight: calculatedHeight.toLocaleString(),
+              cappedHeight: totalHeight.toLocaleString(),
+              itemHeight: config.itemHeight || 84,
+              note: "Capped to prevent browser scroll limits (Chrome/Firefox issues)",
+              maxAllowed: MAX_VIRTUAL_HEIGHT.toLocaleString(),
+            }
+          );
+        } else {
+          totalHeight = calculatedHeight;
+          console.log(
+            `📐 [TotalHeight] Using API total count for consistent virtual scrolling:`,
+            {
+              apiTotalCount: state.itemCount.toLocaleString(),
+              localItemsLength: state.items.length,
+              itemHeight: config.itemHeight || 84,
+              calculatedHeight: totalHeight.toLocaleString(),
+              note: "Height based on full dataset, not local collection",
+            }
+          );
+        }
       } else {
-        // Fallback to local collection size only if no API total available
+        // CRITICAL: Never override definitive height with local collection size
+        // Check if we already have a reasonable total height (likely from API)
+        const hasDefinitiveHeight =
+          state.totalHeight >
+          state.items.length * (config.itemHeight || 84) * 10;
+
+        if (hasDefinitiveHeight) {
+          console.log(
+            `📐 [TotalHeight] Preserving existing definitive height:`,
+            {
+              existingHeight: state.totalHeight.toLocaleString(),
+              localCollectionWouldBe: (
+                state.items.length * (config.itemHeight || 84)
+              ).toLocaleString(),
+              reason:
+                "Existing height is much larger than local collection - likely from API total",
+            }
+          );
+          // Don't recalculate - keep existing definitive height
+          state.totalHeightDirty = false;
+          return;
+        }
+
+        // Fallback to local collection size only if no API total available and no definitive height
         totalHeight = state.items.length * (config.itemHeight || 84);
         console.log(`📐 [TotalHeight] Fallback to local collection size:`, {
           localItemsLength: state.items.length,
@@ -367,8 +440,26 @@ export const createVisibilityManager = (deps: VisibilityDependencies) => {
   const checkLoadMore = (scrollTop: number): void => {
     const { justJumpedToPage } = paginationManager.getPaginationFlags();
 
+    // BROWSER COMPATIBILITY: Adjust scroll position for capped virtual height
+    let adjustedScrollTop = scrollTop;
+    if (state.itemCount && state.paginationStrategy === "page") {
+      const itemHeight = config.itemHeight || 84;
+      const fullVirtualHeight = state.itemCount * itemHeight;
+      const actualVirtualHeight = state.totalHeight;
+
+      // If height was capped, we need to scale the scroll position
+      if (fullVirtualHeight > actualVirtualHeight) {
+        const scrollRatio = fullVirtualHeight / actualVirtualHeight;
+        adjustedScrollTop = scrollTop * scrollRatio;
+      }
+    }
+
     console.log(`🔍 [CheckLoadMore] Called with:`, {
       scrollTop,
+      adjustedScrollTop:
+        scrollTop !== adjustedScrollTop
+          ? adjustedScrollTop.toFixed(0)
+          : "no adjustment",
       loading: state.loading,
       justJumpedToPage,
       paginationStrategy: state.paginationStrategy,
@@ -394,7 +485,8 @@ export const createVisibilityManager = (deps: VisibilityDependencies) => {
       console.log(
         `🎯 [CheckLoadMore] Using page boundary detection for page-based pagination`
       );
-      paginationManager.checkPageBoundaries(scrollTop);
+      // Use adjusted scroll position for boundary detection
+      paginationManager.checkPageBoundaries(adjustedScrollTop);
       return;
     }
 

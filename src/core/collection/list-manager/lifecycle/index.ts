@@ -14,6 +14,22 @@ export interface LifecycleDependencies {
   container: HTMLElement;
   updateVisibleItems: (scrollTop?: number, isPageJump?: boolean) => void;
   checkLoadMore: (scrollTop: number) => void;
+  loadNext: () => Promise<{ hasNext: boolean; items: any[] }>;
+  loadPage: (pageNumber: number) => Promise<{ hasNext: boolean; items: any[] }>;
+  itemsCollection: any;
+  initialItems: any[];
+  cleanupFunctions: (() => void)[];
+  createScrollTracker: any;
+  COLLECTION_EVENTS: any;
+  getPaginationFlags: () => {
+    justJumpedToPage: boolean;
+    isPreloadingPages: boolean;
+  };
+  getTimeoutFlags: () => {
+    pageJumpTimeout: number | null;
+    scrollStopTimeout: NodeJS.Timeout | null;
+  };
+  clearTimeouts: () => void;
 }
 
 /**
@@ -29,8 +45,17 @@ export const createLifecycleManager = (deps: LifecycleDependencies) => {
     container,
     updateVisibleItems,
     checkLoadMore,
+    loadNext,
+    loadPage,
+    itemsCollection,
+    initialItems,
+    cleanupFunctions,
+    createScrollTracker,
+    COLLECTION_EVENTS,
+    getPaginationFlags,
+    getTimeoutFlags,
+    clearTimeouts,
   } = deps;
-  let resizeObserver: ResizeObserver | null = null;
 
   /**
    * Initialize the list manager and set up event listeners
@@ -39,43 +64,138 @@ export const createLifecycleManager = (deps: LifecycleDependencies) => {
   const initialize = (): (() => void) => {
     console.log(`🚀 [Initialize] Starting list manager initialization`);
 
-    // Mark as mounted
+    // Set mounted flag
     state.mounted = true;
 
     // Store container dimensions
     state.containerHeight = container.clientHeight;
 
-    // Create scroll event handler
-    const scrollHandler = () => {
-      if (!state.mounted) return;
+    // Set up scroll tracking with callbacks
+    const scrollTracker = createScrollTracker(container, elements, config, {
+      onScroll: updateVisibleItems,
+      onLoadMore: loadNext,
+    });
 
-      const scrollTop = container.scrollTop;
-      updateVisibleItems(scrollTop);
-    };
+    const scrollTrackingCleanup = scrollTracker.setup();
+    cleanupFunctions.push(scrollTrackingCleanup);
 
-    // Create resize handler
-    const handleResize = () => {
-      if (!state.mounted) return;
+    // Subscribe to collection changes
+    const unsubscribe = itemsCollection.subscribe(({ event }) => {
+      if (event === COLLECTION_EVENTS.CHANGE) {
+        const { justJumpedToPage, isPreloadingPages } = getPaginationFlags();
 
-      console.log(`📐 [Resize] Container resized`);
+        // Skip updates if we're jumping to a page or preloading
+        if (justJumpedToPage || isPreloadingPages) {
+          return;
+        }
 
-      // Update container dimensions
-      state.containerHeight = container.clientHeight;
+        // Mark total height as dirty to trigger recalculation
+        state.totalHeightDirty = true;
 
-      // Recalculate visible items
-      updateVisibleItems(state.scrollTop);
-    };
+        // Use rAF to delay update to next frame for better performance
+        requestAnimationFrame(() => {
+          updateVisibleItems(state.scrollTop);
+        });
+      }
+    });
 
-    // Set up scroll listener
-    container.addEventListener("scroll", scrollHandler, { passive: true });
+    cleanupFunctions.push(unsubscribe);
 
-    // Set up resize observer if available
-    if (typeof ResizeObserver !== "undefined") {
-      resizeObserver = new ResizeObserver(handleResize);
+    // If using static items, add them to the collection right away
+    if (state.useStatic && initialItems && initialItems.length > 0) {
+      itemsCollection
+        .add(initialItems)
+        .then(() => {
+          // Force an update after adding items
+          requestAnimationFrame(() => {
+            updateVisibleItems(state.scrollTop);
+          });
+        })
+        .catch((err) => {
+          console.error("Error adding static items to collection:", err);
+        });
+    } else if (!state.useStatic) {
+      // Initial load for API data - use loadPage(1) for consistent initialization
+      console.log(
+        "🚀 [Initialize] Using loadPage(1) for consistent initialization"
+      );
+      loadPage(1)
+        .then(() => {
+          console.log("✅ [Initialize] Initial page load complete");
+        })
+        .catch((err) => {
+          console.error("Error loading initial page:", err);
+        });
+    }
+
+    // Handle resize events with ResizeObserver if available
+    if ("ResizeObserver" in window) {
+      const resizeObserver = new ResizeObserver((entries) => {
+        // Only update if container dimensions changed
+        for (const entry of entries) {
+          if (entry.target === container) {
+            const newHeight = container.clientHeight;
+            if (newHeight !== state.containerHeight) {
+              state.containerHeight = newHeight;
+
+              // Debounce resize handling
+              if (state.resizeRAF) {
+                cancelAnimationFrame(state.resizeRAF);
+              }
+
+              state.resizeRAF = requestAnimationFrame(() => {
+                updateVisibleItems(state.scrollTop);
+                state.resizeRAF = null;
+              });
+            }
+          }
+        }
+      });
+
       resizeObserver.observe(container);
+
+      cleanupFunctions.push(() => {
+        resizeObserver.disconnect();
+
+        if (state.resizeRAF) {
+          cancelAnimationFrame(state.resizeRAF);
+          state.resizeRAF = null;
+        }
+      });
     } else {
-      // Fallback to window resize
-      window.addEventListener("resize", handleResize);
+      // Fallback to window resize event
+      let resizeTimeout: number | null = null;
+
+      const handleResize = () => {
+        // Debounce resize event
+        if (resizeTimeout) {
+          clearTimeout(resizeTimeout);
+        }
+
+        resizeTimeout = window.setTimeout(() => {
+          const newHeight = container.clientHeight;
+          if (newHeight !== state.containerHeight) {
+            state.containerHeight = newHeight;
+            updateVisibleItems(state.scrollTop);
+          }
+
+          resizeTimeout = null;
+        }, 100);
+      };
+
+      // Use 'as any' to bypass TypeScript error with window.addEventListener
+      (window as any).addEventListener("resize", handleResize, {
+        passive: true,
+      });
+
+      cleanupFunctions.push(() => {
+        (window as any).removeEventListener("resize", handleResize);
+
+        if (resizeTimeout) {
+          clearTimeout(resizeTimeout);
+          resizeTimeout = null;
+        }
+      });
     }
 
     console.log(`✅ [Initialize] List manager initialized successfully`);
@@ -87,16 +207,12 @@ export const createLifecycleManager = (deps: LifecycleDependencies) => {
       // Mark as unmounted
       state.mounted = false;
 
-      // Remove scroll listener
-      container.removeEventListener("scroll", scrollHandler);
+      // Clear any pending timeouts
+      clearTimeouts();
 
-      // Clean up resize observer or window listener
-      if (resizeObserver) {
-        resizeObserver.disconnect();
-        resizeObserver = null;
-      } else {
-        window.removeEventListener("resize", handleResize);
-      }
+      // Run all cleanup functions
+      cleanupFunctions.forEach((fn) => fn());
+      cleanupFunctions.length = 0;
 
       console.log(`✅ [Cleanup] List manager cleanup complete`);
     };

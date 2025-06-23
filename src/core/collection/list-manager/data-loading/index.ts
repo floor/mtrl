@@ -193,21 +193,43 @@ export const createDataLoadingManager = (deps: DataLoadingDependencies) => {
 
       // CRITICAL: If we got a total count from API, immediately set the definitive total height
       if (response.meta.total && !state.useStatic) {
-        const definitiveHeight =
+        const calculatedHeight =
           response.meta.total * (config.itemHeight || 84);
+
+        // BROWSER COMPATIBILITY FIX: Cap virtual height to prevent browser issues
+        // 84M pixels causes problems in Chrome/Firefox - cap to 10M pixels
+        const MAX_VIRTUAL_HEIGHT = 10_000_000; // 10 million pixels (safe for all browsers)
+
+        let definitiveHeight: number;
+        if (calculatedHeight > MAX_VIRTUAL_HEIGHT) {
+          definitiveHeight = MAX_VIRTUAL_HEIGHT;
+          console.log(
+            `🎯 [TotalHeight] Capping virtual height for browser compatibility:`,
+            {
+              apiTotal: response.meta.total.toLocaleString(),
+              calculatedHeight: calculatedHeight.toLocaleString(),
+              cappedHeight: definitiveHeight.toLocaleString(),
+              itemHeight: config.itemHeight || 84,
+              note: "Capped to prevent browser scroll limits (Chrome/Firefox issues)",
+              maxAllowed: MAX_VIRTUAL_HEIGHT.toLocaleString(),
+            }
+          );
+        } else {
+          definitiveHeight = calculatedHeight;
+          console.log(
+            `🎯 [TotalHeight] Locked in definitive height from API total:`,
+            {
+              apiTotal: response.meta.total.toLocaleString(),
+              itemHeight: config.itemHeight || 84,
+              definitiveHeight: definitiveHeight.toLocaleString(),
+              note: "This height will remain consistent across all pages",
+            }
+          );
+        }
+
         state.totalHeight = definitiveHeight;
         state.totalHeightDirty = false; // Mark as clean since we have the definitive height
         updateSpacerHeight(elements, definitiveHeight);
-
-        console.log(
-          `🎯 [TotalHeight] Locked in definitive height from API total:`,
-          {
-            apiTotal: response.meta.total.toLocaleString(),
-            itemHeight: config.itemHeight || 84,
-            definitiveHeight: definitiveHeight.toLocaleString(),
-            note: "This height will remain consistent across all pages",
-          }
-        );
       }
 
       // Call afterLoad callback if provided
