@@ -11,7 +11,12 @@ import {
   PageEvent,
   PageChangeEventData,
   VisibleRange,
+  LoadParams,
 } from "./types";
+import { createPageEventManager } from "./events";
+import { createPaginationManager } from "./pagination";
+import { createScrollingManager } from "./scrolling";
+import { createRenderingManager } from "./rendering";
 import { validateConfig, determineApiMode, getStaticItems } from "./config";
 import {
   createDomElements,
@@ -35,15 +40,6 @@ import {
   resetState,
   createLoadParams,
 } from "./state";
-
-// Params types
-interface LoadParams {
-  page?: number;
-  cursor?: string;
-  limit?: number;
-  offset?: number;
-  [key: string]: any;
-}
 
 /**
  * Creates a list manager for a specific collection
@@ -143,79 +139,27 @@ export const createListManager = (
   let isPageJumpLoad = false; // Track when we're loading due to a page jump
   let scrollStopTimeout: NodeJS.Timeout | null = null; // Track scroll stop debouncing
 
-  // Page change event handling
-  const pageEventObservers = new Set<
-    (event: PageEvent, data: PageChangeEventData) => void
-  >();
-  let lastEmittedPage: number | null = null;
+  // Initialize page event manager
+  const pageEventManager = createPageEventManager(validatedConfig);
+  const {
+    onPageChange,
+    emitPageChange,
+    calculateCurrentPage,
+    checkPageChange,
+  } = pageEventManager;
 
-  /**
-   * Subscribe to page change events
-   * @param callback Function to call when page changes
-   * @returns Unsubscribe function
-   */
-  const onPageChange = (
-    callback: (event: PageEvent, data: PageChangeEventData) => void
-  ) => {
-    pageEventObservers.add(callback);
-    return () => {
-      pageEventObservers.delete(callback);
-    };
-  };
+  // Initialize rendering manager
+  const renderingManager = createRenderingManager({
+    config: validatedConfig,
+    elements,
+  });
 
-  /**
-   * Emit page change event
-   * @param event Event type
-   * @param data Event data
-   */
-  const emitPageChange = (event: PageEvent, data: PageChangeEventData) => {
-    console.log(`📢 [PageEvent] Emitting ${event}:`, data);
-    pageEventObservers.forEach((callback) => {
-      try {
-        callback(event, data);
-      } catch (error) {
-        console.error("Error in page change event handler:", error);
-      }
-    });
-  };
-
-  /**
-   * Calculate current page based on scroll position
-   * @param scrollTop Current scroll position
-   * @returns Current page number
-   */
-  const calculateCurrentPage = (scrollTop: number): number => {
-    if (state.paginationStrategy !== "page") return 1;
-
-    const pageSize = validatedConfig.pageSize || 20;
-    const itemHeight = validatedConfig.itemHeight || 48;
-    const pageHeight = pageSize * itemHeight;
-
-    // Calculate which page we're currently viewing based on scroll position
-    const currentPage = Math.floor(scrollTop / pageHeight) + 1;
-    return Math.max(1, currentPage);
-  };
-
-  /**
-   * Check if current page has changed during scroll and emit event
-   * @param scrollTop Current scroll position
-   */
-  const checkPageChange = (scrollTop: number): void => {
-    if (state.paginationStrategy !== "page") return;
-
-    const currentPage = calculateCurrentPage(scrollTop);
-
-    if (lastEmittedPage !== null && lastEmittedPage !== currentPage) {
-      emitPageChange(PAGE_EVENTS.SCROLL_PAGE_CHANGE, {
-        page: currentPage,
-        previousPage: lastEmittedPage,
-        scrollPosition: scrollTop,
-        trigger: "scroll",
-      });
-    }
-
-    lastEmittedPage = currentPage;
-  };
+  // Initialize scrolling manager (with minimal dependencies for now)
+  const scrollingManager = createScrollingManager({
+    state,
+    config: validatedConfig,
+    container,
+  });
 
   /**
    * Load items with cursor pagination or from static data
@@ -526,7 +470,7 @@ export const createListManager = (
     }
 
     // Check for page changes during scroll
-    checkPageChange(scrollTop);
+    checkPageChange(scrollTop, state.paginationStrategy);
 
     // Check if we need to load previous pages (for page-based pagination)
     // But skip if we just jumped to a page
@@ -1874,7 +1818,7 @@ export const createListManager = (
 
     // View methods
     updateVisibleItems,
-    scrollToItem,
+    scrollToItem: scrollingManager.scrollToItem,
     setItemHeights: (heightsMap) => {
       const updated = itemMeasurement.setItemHeights(heightsMap);
       if (updated) {
@@ -1886,7 +1830,16 @@ export const createListManager = (
 
     // Page change events
     onPageChange,
-    getCurrentPage: () => calculateCurrentPage(state.scrollTop),
+    getCurrentPage: () => {
+      // Ensure we always return a valid number, fallback to state.page or 1
+      if (state.paginationStrategy === "page") {
+        return state.page || 1;
+      }
+      return (
+        calculateCurrentPage(state.scrollTop || 0, state.paginationStrategy) ||
+        1
+      );
+    },
 
     // Collection change events
     onCollectionChange: (callback) => {

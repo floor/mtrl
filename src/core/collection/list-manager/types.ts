@@ -2,6 +2,17 @@
 import { Collection } from "../collection";
 
 /**
+ * Load parameters for API requests
+ */
+export interface LoadParams {
+  page?: number;
+  cursor?: string;
+  limit?: number;
+  offset?: number;
+  [key: string]: any;
+}
+
+/**
  * Configuration for list manager
  */
 export interface ListManagerConfig {

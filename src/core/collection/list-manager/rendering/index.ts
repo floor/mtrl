@@ -1,0 +1,142 @@
+import { ListManagerConfig, ListManagerElements, VisibleRange } from "../types";
+
+/**
+ * Rendering manager dependencies
+ */
+export interface RenderingDependencies {
+  config: ListManagerConfig;
+  elements: ListManagerElements;
+}
+
+/**
+ * Creates a rendering manager for handling virtual positioning and rendering
+ * @param deps Dependencies from the main list manager
+ * @returns Rendering management functions
+ */
+export const createRenderingManager = (deps: RenderingDependencies) => {
+  const { config, elements } = deps;
+
+  /**
+   * Calculate item positions with virtual offset support for page jumping
+   * @param items All items in the local state
+   * @param visibleRange Visible range with start and end indices
+   * @param virtualOffset Virtual offset for positioning items (used when jumping to pages)
+   * @returns Array of positions with index, item, and offset
+   */
+  const calculateItemPositionsWithVirtualOffset = (
+    items: any[],
+    visibleRange: VisibleRange,
+    virtualOffset: number = 0
+  ): Array<{ index: number; item: any; offset: number }> => {
+    const positions: Array<{ index: number; item: any; offset: number }> = [];
+
+    // CRITICAL: For page jumps, position items at the top of viewport (0px) so they're visible
+    // The virtualOffset is used for context but items should be positioned where user can see them
+    let currentOffset = 0; // Start at top of viewport, not at virtual offset
+
+    // Calculate positions for visible items starting from the top of viewport
+    for (let i = visibleRange.start; i < visibleRange.end; i++) {
+      if (items[i]) {
+        positions.push({
+          index: i,
+          item: items[i],
+          offset: currentOffset,
+        });
+
+        // Add this item's height to get the next position
+        const itemHeight = config.itemHeight || 48;
+        currentOffset += itemHeight;
+      }
+    }
+
+    console.log(
+      `🎯 [VirtualPositioning] Calculated positions with virtual offset:`,
+      {
+        virtualOffset,
+        visibleRangeStart: visibleRange.start,
+        visibleRangeEnd: visibleRange.end,
+        firstItemOffset: positions[0]?.offset,
+        lastItemOffset: positions[positions.length - 1]?.offset,
+        itemCount: positions.length,
+        note: "Items positioned at viewport top for visibility",
+      }
+    );
+
+    return positions;
+  };
+
+  /**
+   * Render items with custom virtual positions
+   * @param positions Array of item positions with virtual offsets
+   */
+  const renderItemsWithVirtualPositions = (
+    positions: Array<{ index: number; item: any; offset: number }>
+  ): void => {
+    if (!elements.content) {
+      console.warn("Cannot render items: content element missing");
+      return;
+    }
+
+    // Clear existing items (except sentinels)
+    const existingItems = Array.from(elements.content.children).filter(
+      (child) =>
+        child !== elements.topSentinel &&
+        child !== elements.bottomSentinel &&
+        (child as HTMLElement).classList.contains("mtrl-list-item")
+    );
+    existingItems.forEach((item) => item.remove());
+
+    // Create document fragment for batch DOM updates
+    const fragment = document.createDocumentFragment();
+
+    // Render each item at its virtual position
+    positions.forEach(({ index, item, offset }) => {
+      if (!item) return;
+
+      // Create the item element
+      const element = config.renderItem(item, index);
+      if (!element) return;
+
+      // Add CSS classes
+      if (!element.classList.contains("mtrl-list-item")) {
+        element.classList.add("mtrl-list-item");
+      }
+
+      // Set data attributes
+      if (item.id && !element.hasAttribute("data-id")) {
+        element.setAttribute("data-id", item.id);
+      }
+
+      // Position the element at its virtual offset
+      element.style.position = "absolute";
+      element.style.top = `${offset}px`;
+      element.style.left = "0";
+      element.style.width = "100%";
+
+      fragment.appendChild(element);
+    });
+
+    // Add the fragment to the content
+    elements.content.appendChild(fragment);
+
+    // Re-add sentinel elements if they exist
+    if (elements.topSentinel && !elements.topSentinel.parentNode) {
+      elements.content.insertBefore(
+        elements.topSentinel,
+        elements.content.firstChild
+      );
+    }
+    if (elements.bottomSentinel && !elements.bottomSentinel.parentNode) {
+      elements.content.appendChild(elements.bottomSentinel);
+    }
+
+    console.log(
+      `🎯 [VirtualRender] Rendered ${positions.length} items with virtual positioning`
+    );
+  };
+
+  return {
+    calculateItemPositionsWithVirtualOffset,
+    renderItemsWithVirtualPositions,
+  };
+};
