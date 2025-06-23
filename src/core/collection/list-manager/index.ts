@@ -17,6 +17,18 @@ import { createPageEventManager } from "./events";
 import { createPaginationManager } from "./pagination";
 import { createScrollingManager } from "./scrolling";
 import { createRenderingManager } from "./rendering";
+import {
+  createDataLoadingManager,
+  type DataLoadingDependencies,
+} from "./data-loading";
+import {
+  createVisibilityManager,
+  type VisibilityDependencies,
+} from "./visibility";
+import {
+  createLifecycleManager,
+  type LifecycleDependencies,
+} from "./lifecycle";
 import { validateConfig, determineApiMode, getStaticItems } from "./config";
 import {
   createDomElements,
@@ -161,220 +173,32 @@ export const createListManager = (
     container,
   });
 
+  // Initialize data loading manager
+  const dataLoadingManager = createDataLoadingManager({
+    state,
+    config: validatedConfig,
+    elements,
+    collection,
+    adapter,
+    itemsCollection,
+    getPaginationFlags: () => ({ isPageJumpLoad }),
+    setPaginationFlags: (flags) => {
+      isPageJumpLoad = flags.isPageJumpLoad;
+    },
+  });
+
+  // Initialize visibility manager (forward declaration - will be defined after functions)
+  let visibilityManager: ReturnType<typeof createVisibilityManager>;
+
+  // Initialize lifecycle manager (forward declaration - will be defined after functions)
+  let lifecycleManager: ReturnType<typeof createLifecycleManager>;
+
   /**
    * Load items with cursor pagination or from static data
    * @param {LoadParams} params - Query parameters
    * @returns {Promise<Object>} Response with items and pagination metadata
    */
-  const loadItems = async (
-    params: LoadParams = {}
-  ): Promise<{ items: any[]; meta: PaginationMeta }> => {
-    console.log(`🔄 [LoadItems] Called with params:`, {
-      page: params.page,
-      requestedPage: params.page,
-      currentStatePage: state.page,
-      isPageJumpLoad,
-      callStack: new Error().stack?.split("\n").slice(1, 4).join(" -> "),
-    });
-
-    // PROTECTION: Prevent unwanted page loads that could corrupt state
-    // Allow page jumps and adjacent page boundary loads (previous/next page)
-    const isAdjacentPage =
-      params.page && state.page && Math.abs(params.page - state.page) === 1;
-    const shouldBlock =
-      params.page &&
-      params.page !== state.page &&
-      !isPageJumpLoad &&
-      !isAdjacentPage;
-
-    if (shouldBlock) {
-      console.warn(
-        `🚨 [LoadItems] BLOCKING unexpected page load: requested page ${params.page}, current page ${state.page}, isPageJumpLoad: ${isPageJumpLoad}, isAdjacentPage: ${isAdjacentPage}`
-      );
-      // Don't load a different page unless it's explicitly a page jump or adjacent boundary load
-      return {
-        items: state.items,
-        meta: { hasNext: state.hasNext, cursor: null },
-      };
-    } else if (isAdjacentPage && !isPageJumpLoad) {
-      console.log(
-        `✅ [LoadItems] Allowing adjacent page boundary load: requested page ${params.page}, current page ${state.page}`
-      );
-    }
-
-    try {
-      // Update loading state
-      Object.assign(state, updateLoadingState(state, true));
-
-      // If using static data, return the static items
-      if (state.useStatic) {
-        return {
-          items: state.items,
-          meta: { hasNext: false, cursor: null },
-        };
-      }
-
-      // For API-connected lists, use the adapter
-      if (!adapter) {
-        throw new Error("Cannot load items: API adapter not initialized");
-      }
-
-      const response = await adapter.read(params);
-
-      // Process items
-      const items = Array.isArray(response.items)
-        ? response.items.map(validatedConfig.transform!)
-        : [];
-
-      // Store current state.items.length before updating state
-      const currentStateItemsLength = state.items.length;
-
-      // For page-based pagination, handle the collection update appropriately
-      if (
-        state.paginationStrategy === "page" &&
-        params.page &&
-        currentStateItemsLength === 0
-      ) {
-        // Only replace the collection if it's truly empty (not for page jumps with existing items)
-        console.log(
-          `🔄 [LoadItems] Page ${params.page}: Replacing collection (empty state)`
-        );
-        await itemsCollection.clear();
-        if (items.length > 0) {
-          await itemsCollection.add(items);
-        }
-      } else if (state.paginationStrategy === "page") {
-        // For page-based pagination with existing items, add without deduplication
-        // This handles the case where we're loading adjacent pages via scrolling
-        console.log(
-          `📄 [LoadItems] Page ${params.page}: Appending to existing collection (scroll-based loading)`
-        );
-        if (items.length > 0) {
-          await itemsCollection.add(items);
-        }
-      } else {
-        // For cursor/offset pagination, use deduplication
-        if (validatedConfig.dedupeItems) {
-          const existingIds = new Set(
-            state.items.map((item) => item.id).filter(Boolean)
-          );
-          const newItems = items.filter((item) => !existingIds.has(item.id));
-          if (newItems.length > 0) {
-            await itemsCollection.add(newItems);
-          }
-        } else {
-          // Add all items regardless of duplication
-          await itemsCollection.add(items);
-        }
-      }
-
-      // Update state with new items AFTER collection operations
-      if (
-        isPageJumpLoad &&
-        state.paginationStrategy === "page" &&
-        currentStateItemsLength === 0
-      ) {
-        // Only replace state when collection was truly empty (not for preservePrevious scenarios)
-        Object.assign(state, {
-          items: [...items],
-          cursor: response.meta.cursor ?? null,
-          page: response.meta.page ?? params.page,
-          hasNext: response.meta.hasNext ?? false,
-          totalHeightDirty: true,
-          itemCount: response.meta.total ?? items.length,
-        });
-        console.log(
-          `🔄 [LoadItems] Page jump state update: replaced with ${items.length} items`
-        );
-      } else {
-        // Use normal state update logic for regular loads and preservePrevious scenarios
-        Object.assign(
-          state,
-          updateStateAfterLoad(
-            state,
-            items,
-            response.meta,
-            validatedConfig.dedupeItems
-          )
-        );
-        console.log(
-          `📄 [LoadItems] Regular state update: appended/deduped items`
-        );
-      }
-
-      // Reset the page jump flag
-      isPageJumpLoad = false;
-
-      console.log(`✅ [LoadItems] Page ${params.page} complete:`, {
-        stateItemsLength: state.items.length,
-        collectionSize: itemsCollection.getSize(),
-        isPageJump: isPageJumpLoad,
-      });
-
-      // Set totalHeight as dirty to trigger recalculation
-      state.totalHeightDirty = true;
-
-      // CRITICAL: If we got a total count from API, immediately set the definitive total height
-      if (response.meta.total && !state.useStatic) {
-        const definitiveHeight =
-          response.meta.total * (validatedConfig.itemHeight || 84);
-        state.totalHeight = definitiveHeight;
-        state.totalHeightDirty = false; // Mark as clean since we have the definitive height
-        updateSpacerHeight(elements, definitiveHeight);
-
-        console.log(
-          `🎯 [TotalHeight] Locked in definitive height from API total:`,
-          {
-            apiTotal: response.meta.total.toLocaleString(),
-            itemHeight: validatedConfig.itemHeight || 84,
-            definitiveHeight: definitiveHeight.toLocaleString(),
-            note: "This height will remain consistent across all pages",
-          }
-        );
-      }
-
-      // Call afterLoad callback if provided
-      if (validatedConfig.afterLoad) {
-        // Create a read-only copy of the items array to prevent mutation
-        const itemsCopy = [...state.items] as any[];
-
-        const loadData: LoadStatus = {
-          loading: false,
-          hasNext: state.hasNext,
-          hasPrev: !!params.cursor || (params.page && params.page > 1),
-          items: [...items] as any[], // Use type assertion to satisfy the mutable array requirement
-          allItems: itemsCopy,
-        };
-
-        validatedConfig.afterLoad(loadData);
-      }
-
-      // For cursor-based pagination, we need to track cursor
-      if (state.paginationStrategy === "cursor" && response.meta?.cursor) {
-        state.cursor = response.meta.cursor;
-      } else if (state.paginationStrategy === "page" && params.page) {
-        state.page = params.page;
-      }
-
-      return {
-        items,
-        meta: response.meta,
-      };
-    } catch (error) {
-      console.error(`Error loading ${collection}:`, error);
-      // Return empty result on error
-      return {
-        items: [],
-        meta: {
-          cursor: null,
-          hasNext: false,
-        },
-      };
-    } finally {
-      // Reset loading state
-      Object.assign(state, updateLoadingState(state, false));
-    }
-  };
+  const loadItems = dataLoadingManager.loadItems;
 
   /**
    * Schedule a page load when scrolling stops (debounced)
@@ -1001,28 +825,7 @@ export const createListManager = (
    * Refresh the list with the latest data
    * @returns {Promise<void>}
    */
-  const refresh = async (): Promise<void> => {
-    // Reset state
-    Object.assign(state, resetState(state, initialItems));
-
-    // Clear recycling pools
-    recyclePool.clear();
-
-    // Clear collection
-    itemsCollection.clear();
-
-    // For static data, re-add the original items
-    if (state.useStatic && initialItems && initialItems.length > 0) {
-      state.items = [...initialItems];
-      await itemsCollection.add(initialItems);
-    } else {
-      // Load initial data from API
-      await loadItems();
-    }
-
-    // Update view
-    updateVisibleItems(0); // Reset scroll position to top
-  };
+  const refresh = dataLoadingManager.refresh;
 
   /**
    * Loads a specific page (only works with page-based pagination)
