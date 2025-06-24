@@ -279,7 +279,7 @@ export const createListManager = (
     const currentPageStart = (state.page - 1) * pageSize + 1;
     const currentPageEnd = state.page * pageSize;
 
-    // Convert to pixel positions
+    // Use natural positioning - no complex coordinate conversions needed
     const currentPageStartPx = (currentPageStart - 1) * itemHeight;
     const currentPageEndPx = currentPageEnd * itemHeight;
 
@@ -287,14 +287,14 @@ export const createListManager = (
     const boundaryThreshold = itemHeight * 2;
     const viewportBottom = scrollTop + state.containerHeight;
 
-    console.log(`🎯 [PageBoundary] Checking boundaries:`, {
+    console.log(`🎯 [PageBoundary] Natural boundary detection:`, {
       scrollTop,
       viewportBottom,
       currentPage: state.page,
       currentPageStart,
       currentPageEnd,
-      currentPageStartPx,
-      currentPageEndPx,
+      currentPageStartPx: currentPageStartPx.toLocaleString(),
+      currentPageEndPx: currentPageEndPx.toLocaleString(),
       boundaryThreshold,
       itemsInCollection: state.items.length,
       hasNext: state.hasNext,

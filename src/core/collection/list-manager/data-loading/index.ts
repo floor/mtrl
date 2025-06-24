@@ -179,58 +179,35 @@ export const createDataLoadingManager = (deps: DataLoadingDependencies) => {
         );
       }
 
+      // CRITICAL: Set total height immediately after state update to fix scrollbar behavior
+      // The scrollbar needs to know the correct total height as soon as we get the API total
+      if (response.meta.total && !state.useStatic) {
+        const naturalHeight = response.meta.total * (config.itemHeight || 84);
+
+        console.log(
+          `🎯 [TotalHeight] Setting immediate height for proper scrollbar:`,
+          {
+            apiTotal: response.meta.total.toLocaleString(),
+            itemHeight: config.itemHeight || 84,
+            naturalHeight: naturalHeight.toLocaleString(),
+            note: "Scrollbar will immediately reflect correct size",
+          }
+        );
+
+        state.totalHeight = naturalHeight;
+        state.totalHeightDirty = false; // Mark as clean since we have the definitive height
+        updateSpacerHeight(elements, naturalHeight);
+      }
+
       // Reset the page jump flag
       setPaginationFlags({ isPageJumpLoad: false });
 
       console.log(`✅ [LoadItems] Page ${params.page} complete:`, {
         stateItemsLength: state.items.length,
         collectionSize: itemsCollection.getSize(),
+        totalHeight: state.totalHeight.toLocaleString(),
         isPageJump: isPageJumpLoad,
       });
-
-      // Set totalHeight as dirty to trigger recalculation
-      state.totalHeightDirty = true;
-
-      // CRITICAL: If we got a total count from API, immediately set the definitive total height
-      if (response.meta.total && !state.useStatic) {
-        const calculatedHeight =
-          response.meta.total * (config.itemHeight || 84);
-
-        // BROWSER COMPATIBILITY FIX: Cap virtual height to prevent browser issues
-        // 84M pixels causes problems in Chrome/Firefox - cap to 10M pixels
-        const MAX_VIRTUAL_HEIGHT = 10_000_000; // 10 million pixels (safe for all browsers)
-
-        let definitiveHeight: number;
-        if (calculatedHeight > MAX_VIRTUAL_HEIGHT) {
-          definitiveHeight = MAX_VIRTUAL_HEIGHT;
-          console.log(
-            `🎯 [TotalHeight] Capping virtual height for browser compatibility:`,
-            {
-              apiTotal: response.meta.total.toLocaleString(),
-              calculatedHeight: calculatedHeight.toLocaleString(),
-              cappedHeight: definitiveHeight.toLocaleString(),
-              itemHeight: config.itemHeight || 84,
-              note: "Capped to prevent browser scroll limits (Chrome/Firefox issues)",
-              maxAllowed: MAX_VIRTUAL_HEIGHT.toLocaleString(),
-            }
-          );
-        } else {
-          definitiveHeight = calculatedHeight;
-          console.log(
-            `🎯 [TotalHeight] Locked in definitive height from API total:`,
-            {
-              apiTotal: response.meta.total.toLocaleString(),
-              itemHeight: config.itemHeight || 84,
-              definitiveHeight: definitiveHeight.toLocaleString(),
-              note: "This height will remain consistent across all pages",
-            }
-          );
-        }
-
-        state.totalHeight = definitiveHeight;
-        state.totalHeightDirty = false; // Mark as clean since we have the definitive height
-        updateSpacerHeight(elements, definitiveHeight);
-      }
 
       // Call afterLoad callback if provided
       if (config.afterLoad) {

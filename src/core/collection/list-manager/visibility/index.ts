@@ -42,6 +42,48 @@ export interface VisibilityDependencies {
 }
 
 /**
+ * Simple positioning system for virtual scrolling
+ * Always uses natural coordinates - no complex scaling needed
+ */
+class UnifiedPositioning {
+  private readonly itemHeight: number;
+
+  constructor(totalItems: number, itemHeight: number) {
+    this.itemHeight = itemHeight;
+    const fullVirtualHeight = totalItems * itemHeight;
+
+    console.log(`🎯 [UnifiedPositioning] Natural positioning:`, {
+      totalItems: totalItems.toLocaleString(),
+      itemHeight,
+      fullVirtualHeight: fullVirtualHeight.toLocaleString(),
+      strategy: "Natural spacing - no scaling complexity",
+    });
+  }
+
+  /**
+   * Get the virtual position for an item ID (1-based)
+   */
+  getItemPosition(itemId: number): number {
+    const virtualIndex = itemId - 1; // Convert to 0-based
+    return virtualIndex * this.itemHeight;
+  }
+
+  /**
+   * Get the virtual item index from scroll position
+   */
+  getVirtualItemIndex(scrollTop: number): number {
+    return Math.floor(scrollTop / this.itemHeight);
+  }
+
+  /**
+   * Get total height for the virtual space
+   */
+  getTotalHeight(itemCount: number): number {
+    return itemCount * this.itemHeight;
+  }
+}
+
+/**
  * Creates a visibility management for handling scroll and visibility calculations
  * @param deps Dependencies from the main list manager
  * @returns Visibility management functions
@@ -58,6 +100,16 @@ export const createVisibilityManager = (deps: VisibilityDependencies) => {
     paginationManager,
     renderingManager,
   } = deps;
+
+  // Initialize unified positioning system
+  let positioning: UnifiedPositioning | null = null;
+
+  const initializePositioning = () => {
+    if (!positioning && state.itemCount) {
+      const itemHeight = config.itemHeight || 84;
+      positioning = new UnifiedPositioning(state.itemCount, itemHeight);
+    }
+  };
 
   /**
    * Check if we need to load previous pages
@@ -86,6 +138,9 @@ export const createVisibilityManager = (deps: VisibilityDependencies) => {
     isPageJump = false
   ): void => {
     if (!state.mounted) return;
+
+    // Initialize positioning system if needed
+    initializePositioning();
 
     const { justJumpedToPage, isPreloadingPages } =
       paginationManager.getPaginationFlags();
@@ -117,59 +172,23 @@ export const createVisibilityManager = (deps: VisibilityDependencies) => {
     // Update scroll position
     state.scrollTop = scrollTop;
 
-    // BROWSER COMPATIBILITY: Calculate adjusted scroll position for capped virtual height
-    let adjustedScrollTop = scrollTop;
-    if (state.paginationStrategy === "page" && state.itemCount) {
-      const itemHeight = config.itemHeight || 84;
-      const fullVirtualHeight = state.itemCount * itemHeight;
-      const actualVirtualHeight = state.totalHeight;
-
-      // If height was capped, we need to scale the scroll position
-      if (fullVirtualHeight > actualVirtualHeight) {
-        const scrollRatio = fullVirtualHeight / actualVirtualHeight;
-        adjustedScrollTop = scrollTop * scrollRatio;
-      }
-    }
-
     // For page-based pagination, update the current page based on scroll position
-    if (state.paginationStrategy === "page" && !isPageJump) {
-      const itemHeight = config.itemHeight || 84;
+    if (state.paginationStrategy === "page" && !isPageJump && positioning) {
       const pageSize = config.pageSize || 20;
 
-      if (adjustedScrollTop !== scrollTop) {
-        console.log(
-          `📍 [ScrollSync] Adjusting scroll position for capped height:`,
-          {
-            originalScrollTop: scrollTop,
-            adjustedScrollTop: adjustedScrollTop.toFixed(0),
-            scrollRatio: (adjustedScrollTop / scrollTop).toFixed(2),
-            fullVirtualHeight: state.itemCount
-              ? (state.itemCount * itemHeight).toLocaleString()
-              : "unknown",
-            cappedVirtualHeight: state.totalHeight.toLocaleString(),
-            note: "Compensating for browser height limits",
-          }
-        );
-      }
-
-      // CRITICAL FIX: Use real scroll position for page calculation, not adjusted
-      // The adjusted scroll position is only for virtual space calculations, not page logic
-      const virtualItemIndex = Math.floor(scrollTop / itemHeight);
+      // Use unified positioning system to get virtual item index
+      const virtualItemIndex = positioning.getVirtualItemIndex(scrollTop);
       const calculatedPage = Math.floor(virtualItemIndex / pageSize) + 1;
 
       if (calculatedPage !== state.page && calculatedPage >= 1) {
         const pageDifference = Math.abs(calculatedPage - state.page);
 
-        console.log(`📍 [ScrollSync] Updating page based on scroll position:`, {
+        console.log(`📍 [ScrollSync] Unified page calculation:`, {
           scrollTop,
-          adjustedScrollTop: adjustedScrollTop.toFixed(0),
           virtualItemIndex,
           calculatedPage,
           previousPage: state.page,
           pageDifference,
-          calculation: `floor(${scrollTop.toFixed(
-            0
-          )}/${itemHeight}) = ${virtualItemIndex}, page = floor(${virtualItemIndex}/${pageSize}) + 1 = ${calculatedPage}`,
         });
 
         // Detect large scroll jumps (scrollbar dragging) - use debounced loading
@@ -196,16 +215,13 @@ export const createVisibilityManager = (deps: VisibilityDependencies) => {
     }
 
     // Calculate which items should be visible
-    // CRITICAL FIX: For page-based navigation with sparse data, calculate which items are actually visible
     let visibleRange: VisibleRange;
 
-    if (state.paginationStrategy === "page") {
-      // For page-based pagination with sparse data, calculate which loaded items are actually visible
-      // CRITICAL: Use real scroll position for visibility, not adjusted scroll position
-      // The adjusted scroll position is only for page boundary detection
-      const itemHeight = config.itemHeight || 84;
-      const viewportTop = scrollTop; // Use real scroll position
+    if (state.paginationStrategy === "page" && positioning) {
+      // Unified visibility calculation for page-based pagination
+      const viewportTop = scrollTop;
       const viewportBottom = viewportTop + state.containerHeight;
+      const itemHeight = config.itemHeight || 84;
 
       // Find which items in our collection would be visible at this scroll position
       const visibleItems: number[] = [];
@@ -214,7 +230,7 @@ export const createVisibilityManager = (deps: VisibilityDependencies) => {
         if (!item || !item.id) return;
 
         const itemId = parseInt(item.id);
-        const virtualOffset = (itemId - 1) * itemHeight;
+        const virtualOffset = positioning.getItemPosition(itemId);
         const itemBottom = virtualOffset + itemHeight;
 
         // Check if this item would be visible in the viewport
@@ -233,9 +249,8 @@ export const createVisibilityManager = (deps: VisibilityDependencies) => {
         visibleRange = { start: 0, end: 0 };
       }
 
-      console.log(`📍 [SparseData] Custom visibility for sparse page data:`, {
+      console.log(`📍 [UnifiedVisibility] Simplified visibility calculation:`, {
         scrollTop,
-        adjustedScrollTop: adjustedScrollTop?.toFixed(0) || "none",
         viewportTop: viewportTop.toFixed(0),
         viewportBottom: viewportBottom.toFixed(0),
         totalItems: state.items.length,
@@ -248,8 +263,6 @@ export const createVisibilityManager = (deps: VisibilityDependencies) => {
                 .map((item) => item?.id)
                 .join(", ")
             : "none visible",
-        isPageJump,
-        note: "Using real scroll position for visibility, adjusted scroll position only for page boundaries",
       });
     } else {
       // Use standard calculation for non-page-based pagination
@@ -301,47 +314,23 @@ export const createVisibilityManager = (deps: VisibilityDependencies) => {
     }
 
     // Calculate total height if needed
-    // CRITICAL FIX: Always use API total count for virtual scrolling, never local collection size
     if (state.totalHeightDirty && !isPageJump) {
       let totalHeight: number;
 
       if (state.useStatic) {
         // For static data, calculate from actual items
         totalHeight = itemMeasurement.calculateTotalHeight(state.items);
-      } else if (state.itemCount) {
-        // CRITICAL: Always use API total count when available for consistent virtual scrolling
-        const calculatedHeight = state.itemCount * (config.itemHeight || 84);
+      } else if (state.itemCount && positioning) {
+        // Use unified positioning system for total height
+        totalHeight = positioning.getTotalHeight(state.itemCount);
 
-        // BROWSER COMPATIBILITY FIX: Cap virtual height to prevent browser issues
-        // 84M pixels causes problems in Chrome/Firefox - cap to 10M pixels
-        const MAX_VIRTUAL_HEIGHT = 10_000_000; // 10 million pixels (safe for all browsers)
-
-        if (calculatedHeight > MAX_VIRTUAL_HEIGHT) {
-          totalHeight = MAX_VIRTUAL_HEIGHT;
-          console.log(
-            `📐 [TotalHeight] Capping virtual height for browser compatibility:`,
-            {
-              apiTotalCount: state.itemCount.toLocaleString(),
-              calculatedHeight: calculatedHeight.toLocaleString(),
-              cappedHeight: totalHeight.toLocaleString(),
-              itemHeight: config.itemHeight || 84,
-              note: "Capped to prevent browser scroll limits (Chrome/Firefox issues)",
-              maxAllowed: MAX_VIRTUAL_HEIGHT.toLocaleString(),
-            }
-          );
-        } else {
-          totalHeight = calculatedHeight;
-          console.log(
-            `📐 [TotalHeight] Using API total count for consistent virtual scrolling:`,
-            {
-              apiTotalCount: state.itemCount.toLocaleString(),
-              localItemsLength: state.items.length,
-              itemHeight: config.itemHeight || 84,
-              calculatedHeight: totalHeight.toLocaleString(),
-              note: "Height based on full dataset, not local collection",
-            }
-          );
-        }
+        console.log(
+          `📐 [UnifiedHeight] Using unified positioning for total height:`,
+          {
+            apiTotalCount: state.itemCount.toLocaleString(),
+            totalHeight: totalHeight.toLocaleString(),
+          }
+        );
       } else {
         // CRITICAL: Never override definitive height with local collection size
         // Check if we already have a reasonable total height (likely from API)
@@ -391,21 +380,19 @@ export const createVisibilityManager = (deps: VisibilityDependencies) => {
 
     // Render visible items (only if range changed or it's a page jump)
     if (hasRangeChanged || isPageJump) {
-      if (state.paginationStrategy === "page") {
-        // CRITICAL FIX: For page-based pagination, always use absolute virtual positioning
+      if (state.paginationStrategy === "page" && positioning) {
+        // Unified rendering for page-based pagination
         console.log(
-          `🎨 [VirtualRender] Rendering with absolute positioning for page-based pagination`
+          `🎨 [UnifiedRender] Rendering with unified positioning system`
         );
 
-        const itemHeight = config.itemHeight || 84;
         const positions = state.items
           .slice(visibleRange.start, visibleRange.end)
           .map((item, localIndex) => {
             if (!item || !item.id) return null;
 
             const itemId = parseInt(item.id);
-            const virtualIndex = itemId - 1; // Convert to 0-based
-            const absoluteOffset = virtualIndex * itemHeight;
+            const absoluteOffset = positioning.getItemPosition(itemId);
 
             return {
               index: visibleRange.start + localIndex,
@@ -415,7 +402,7 @@ export const createVisibilityManager = (deps: VisibilityDependencies) => {
           })
           .filter(Boolean);
 
-        console.log(`🎨 [VirtualRender] Absolute positions:`, {
+        console.log(`🎨 [UnifiedRender] Unified positions:`, {
           totalPositions: positions.length,
           firstItemId: positions[0]?.item.id,
           firstItemOffset: positions[0]?.offset,
@@ -483,26 +470,8 @@ export const createVisibilityManager = (deps: VisibilityDependencies) => {
   const checkLoadMore = (scrollTop: number): void => {
     const { justJumpedToPage } = paginationManager.getPaginationFlags();
 
-    // BROWSER COMPATIBILITY: Calculate adjusted scroll position (same logic as in updateVisibleItems)
-    let adjustedScrollTop = scrollTop;
-    if (state.paginationStrategy === "page" && state.itemCount) {
-      const itemHeight = config.itemHeight || 84;
-      const fullVirtualHeight = state.itemCount * itemHeight;
-      const actualVirtualHeight = state.totalHeight;
-
-      // If height was capped, we need to scale the scroll position
-      if (fullVirtualHeight > actualVirtualHeight) {
-        const scrollRatio = fullVirtualHeight / actualVirtualHeight;
-        adjustedScrollTop = scrollTop * scrollRatio;
-      }
-    }
-
-    console.log(`🔍 [CheckLoadMore] Called with:`, {
+    console.log(`🔍 [CheckLoadMore] Unified approach:`, {
       scrollTop,
-      adjustedScrollTop:
-        scrollTop !== adjustedScrollTop
-          ? adjustedScrollTop.toFixed(0)
-          : "no adjustment",
       loading: state.loading,
       justJumpedToPage,
       paginationStrategy: state.paginationStrategy,
@@ -525,11 +494,8 @@ export const createVisibilityManager = (deps: VisibilityDependencies) => {
 
     // For page-based pagination with sparse data, use page boundary detection
     if (state.paginationStrategy === "page") {
-      console.log(
-        `🎯 [CheckLoadMore] Using page boundary detection for page-based pagination`
-      );
-      // CRITICAL FIX: Use real scroll position for boundary detection, not adjusted
-      // Items are positioned using real coordinates, so boundary detection must match
+      console.log(`🎯 [CheckLoadMore] Using unified page boundary detection`);
+      // Use consistent scroll position (no adjustment needed with unified system)
       paginationManager.checkPageBoundaries(scrollTop);
       return;
     }
