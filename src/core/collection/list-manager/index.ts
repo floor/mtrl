@@ -301,6 +301,21 @@ export const createListManager = (
       hasPrev: state.page > 1,
     });
 
+    // CRITICAL FIX: First check if we have data for the current page
+    // If not, load it before checking adjacent pages
+    const hasCurrentPageData = state.items.some((item) => {
+      const itemId = parseInt(item?.id);
+      return itemId >= currentPageStart && itemId <= currentPageEnd;
+    });
+
+    if (!hasCurrentPageData) {
+      console.log(
+        `📥 [PageBoundary] Loading current page ${state.page} (missing data for current page)`
+      );
+      loadCurrentPageFromBoundary(state.page);
+      return; // Don't check adjacent pages until current page is loaded
+    }
+
     // Check if we should load next page (scrolled near bottom of current page)
     if (
       state.hasNext &&
@@ -408,6 +423,40 @@ export const createListManager = (
     } catch (error) {
       console.error(
         `❌ [BoundaryLoad] Failed to load previous page ${pageNumber}:`,
+        error
+      );
+    }
+  };
+
+  /**
+   * Load current page from boundary detection (when current page data is missing)
+   * @param {number} pageNumber - Page number to load
+   */
+  const loadCurrentPageFromBoundary = async (
+    pageNumber: number
+  ): Promise<void> => {
+    if (state.loading) return;
+
+    console.log(
+      `🔄 [BoundaryLoad] Loading current page ${pageNumber} from boundary detection (missing data)`
+    );
+
+    const loadParams = createLoadParams(state, "page");
+    loadParams.page = pageNumber;
+
+    const perPageParam =
+      validatedConfig.pagination?.perPageParamName || "per_page";
+    loadParams[perPageParam] = validatedConfig.pageSize || 20;
+
+    try {
+      const result = await loadItems(loadParams);
+      console.log(`✅ [BoundaryLoad] Current page ${pageNumber} loaded:`, {
+        newItemsCount: result.items.length,
+        totalItemsNow: state.items.length,
+      });
+    } catch (error) {
+      console.error(
+        `❌ [BoundaryLoad] Failed to load current page ${pageNumber}:`,
         error
       );
     }
@@ -665,15 +714,48 @@ export const createListManager = (
     // Calculate the absolute scroll position for this page
     const defaultItemHeight = validatedConfig.itemHeight || 48;
 
-    // CRITICAL FIX: Use absolute item position, not local collection index
-    // For page 10 (items 181-200), we want to scroll to position (181-1) * itemHeight
-    const targetScrollPosition = (pageStartId - 1) * defaultItemHeight;
+    // Calculate target scroll position for page positioning
+    const idealTargetScrollPosition = (pageStartId - 1) * defaultItemHeight;
+
+    // Get the current total height for the virtual scroller
+    // Use state.itemCount (from API) or fallback to current items length
+    const totalItems = state.itemCount || state.items.length;
+    const maxVirtualHeight = 10_000_000; // 10M pixels - browser compatibility limit
+    const currentTotalHeight = Math.min(
+      totalItems * defaultItemHeight,
+      maxVirtualHeight
+    );
+
+    // If the ideal position exceeds the actual scrollable height, use proportional positioning
+    let targetScrollPosition = idealTargetScrollPosition;
+    if (idealTargetScrollPosition > currentTotalHeight) {
+      // Calculate the proportional position within the capped height
+      const fullVirtualHeight = totalItems * defaultItemHeight;
+      const scrollRatio = currentTotalHeight / fullVirtualHeight;
+      targetScrollPosition = idealTargetScrollPosition * scrollRatio;
+
+      console.log(
+        `📍 [LoadPage] High page number - using proportional positioning:`,
+        {
+          pageNumber: pageNumber,
+          pageStartId: pageStartId,
+          idealPosition: idealTargetScrollPosition.toLocaleString(),
+          actualTotalHeight: currentTotalHeight.toLocaleString(),
+          scrollRatio: scrollRatio.toFixed(4),
+          proportionalPosition: targetScrollPosition.toLocaleString(),
+        }
+      );
+    }
 
     console.log(`📍 [LoadPage] Page ${pageNumber} absolute positioning:`, {
-      pageStartId,
+      pageStartId: pageStartId,
       itemHeight: defaultItemHeight,
-      targetScrollPosition,
-      calculation: `(${pageStartId} - 1) × ${defaultItemHeight} = ${targetScrollPosition}px`,
+      targetScrollPosition: targetScrollPosition,
+      calculation: `(${pageStartId} - 1) × ${defaultItemHeight} = ${idealTargetScrollPosition}px${
+        targetScrollPosition !== idealTargetScrollPosition
+          ? ` → ${targetScrollPosition}px (proportional)`
+          : ""
+      }`,
     });
 
     // IMPORTANT: Don't set scroll position here - it's too early!
@@ -1095,6 +1177,10 @@ export const createListManager = (
 
     // State access
     getState: () => ({ ...state }),
+    getAllItems: () => state.items,
+    getVisibleItems: () => state.visibleItems,
+    isLoading: () => state.loading,
+    hasNextPage: () => state.hasNext,
 
     // Lifecycle
     destroy: () => {

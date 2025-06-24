@@ -323,15 +323,48 @@ export const createPaginationManager = (deps: PaginationDependencies) => {
     // Calculate the absolute scroll position for this page
     const defaultItemHeight = config.itemHeight || 48;
 
-    // CRITICAL FIX: Use absolute item position, not local collection index
-    // For page 10 (items 181-200), we want to scroll to position (181-1) * itemHeight
-    const targetScrollPosition = (pageStartId - 1) * defaultItemHeight;
+    // Calculate target scroll position for page positioning
+    const idealTargetScrollPosition = (pageStartId - 1) * defaultItemHeight;
+
+    // Get the current total height for the virtual scroller
+    // Use state.itemCount (from API) or fallback to current items length
+    const totalItems = state.itemCount || state.items.length;
+    const maxVirtualHeight = 10_000_000; // 10M pixels - browser compatibility limit
+    const currentTotalHeight = Math.min(
+      totalItems * defaultItemHeight,
+      maxVirtualHeight
+    );
+
+    // If the ideal position exceeds the actual scrollable height, use proportional positioning
+    let targetScrollPosition = idealTargetScrollPosition;
+    if (idealTargetScrollPosition > currentTotalHeight) {
+      // Calculate the proportional position within the capped height
+      const fullVirtualHeight = totalItems * defaultItemHeight;
+      const scrollRatio = currentTotalHeight / fullVirtualHeight;
+      targetScrollPosition = idealTargetScrollPosition * scrollRatio;
+
+      console.log(
+        `📍 [LoadPage] High page number - using proportional positioning:`,
+        {
+          pageNumber: pageNumber,
+          pageStartId: pageStartId,
+          idealPosition: idealTargetScrollPosition.toLocaleString(),
+          actualTotalHeight: currentTotalHeight.toLocaleString(),
+          scrollRatio: scrollRatio.toFixed(4),
+          proportionalPosition: targetScrollPosition.toLocaleString(),
+        }
+      );
+    }
 
     console.log(`📍 [LoadPage] Page ${pageNumber} absolute positioning:`, {
-      pageStartId,
+      pageStartId: pageStartId,
       itemHeight: defaultItemHeight,
-      targetScrollPosition,
-      calculation: `(${pageStartId} - 1) × ${defaultItemHeight} = ${targetScrollPosition}px`,
+      targetScrollPosition: targetScrollPosition,
+      calculation: `(${pageStartId} - 1) × ${defaultItemHeight} = ${idealTargetScrollPosition}px${
+        targetScrollPosition !== idealTargetScrollPosition
+          ? ` → ${targetScrollPosition}px (proportional)`
+          : ""
+      }`,
     });
 
     // IMPORTANT: Don't set scroll position here - it's too early!

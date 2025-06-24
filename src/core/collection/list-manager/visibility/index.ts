@@ -117,37 +117,44 @@ export const createVisibilityManager = (deps: VisibilityDependencies) => {
     // Update scroll position
     state.scrollTop = scrollTop;
 
+    // BROWSER COMPATIBILITY: Calculate adjusted scroll position for capped virtual height
+    let adjustedScrollTop = scrollTop;
+    if (state.paginationStrategy === "page" && state.itemCount) {
+      const itemHeight = config.itemHeight || 84;
+      const fullVirtualHeight = state.itemCount * itemHeight;
+      const actualVirtualHeight = state.totalHeight;
+
+      // If height was capped, we need to scale the scroll position
+      if (fullVirtualHeight > actualVirtualHeight) {
+        const scrollRatio = fullVirtualHeight / actualVirtualHeight;
+        adjustedScrollTop = scrollTop * scrollRatio;
+      }
+    }
+
     // For page-based pagination, update the current page based on scroll position
     if (state.paginationStrategy === "page" && !isPageJump) {
       const itemHeight = config.itemHeight || 84;
       const pageSize = config.pageSize || 20;
 
-      // BROWSER COMPATIBILITY: Adjust scroll position for capped virtual height
-      let adjustedScrollTop = scrollTop;
-      if (state.itemCount) {
-        const fullVirtualHeight = state.itemCount * itemHeight;
-        const actualVirtualHeight = state.totalHeight;
-
-        // If height was capped, we need to scale the scroll position
-        if (fullVirtualHeight > actualVirtualHeight) {
-          const scrollRatio = fullVirtualHeight / actualVirtualHeight;
-          adjustedScrollTop = scrollTop * scrollRatio;
-
-          console.log(
-            `📍 [ScrollSync] Adjusting scroll position for capped height:`,
-            {
-              originalScrollTop: scrollTop,
-              adjustedScrollTop: adjustedScrollTop.toFixed(0),
-              scrollRatio: scrollRatio.toFixed(2),
-              fullVirtualHeight: fullVirtualHeight.toLocaleString(),
-              cappedVirtualHeight: actualVirtualHeight.toLocaleString(),
-              note: "Compensating for browser height limits",
-            }
-          );
-        }
+      if (adjustedScrollTop !== scrollTop) {
+        console.log(
+          `📍 [ScrollSync] Adjusting scroll position for capped height:`,
+          {
+            originalScrollTop: scrollTop,
+            adjustedScrollTop: adjustedScrollTop.toFixed(0),
+            scrollRatio: (adjustedScrollTop / scrollTop).toFixed(2),
+            fullVirtualHeight: state.itemCount
+              ? (state.itemCount * itemHeight).toLocaleString()
+              : "unknown",
+            cappedVirtualHeight: state.totalHeight.toLocaleString(),
+            note: "Compensating for browser height limits",
+          }
+        );
       }
 
-      const virtualItemIndex = Math.floor(adjustedScrollTop / itemHeight);
+      // CRITICAL FIX: Use real scroll position for page calculation, not adjusted
+      // The adjusted scroll position is only for virtual space calculations, not page logic
+      const virtualItemIndex = Math.floor(scrollTop / itemHeight);
       const calculatedPage = Math.floor(virtualItemIndex / pageSize) + 1;
 
       if (calculatedPage !== state.page && calculatedPage >= 1) {
@@ -160,7 +167,7 @@ export const createVisibilityManager = (deps: VisibilityDependencies) => {
           calculatedPage,
           previousPage: state.page,
           pageDifference,
-          calculation: `floor(${adjustedScrollTop.toFixed(
+          calculation: `floor(${scrollTop.toFixed(
             0
           )}/${itemHeight}) = ${virtualItemIndex}, page = floor(${virtualItemIndex}/${pageSize}) + 1 = ${calculatedPage}`,
         });
@@ -189,24 +196,60 @@ export const createVisibilityManager = (deps: VisibilityDependencies) => {
     }
 
     // Calculate which items should be visible
-    // CRITICAL FIX: For page-based navigation with sparse data, we need custom visibility calculation
+    // CRITICAL FIX: For page-based navigation with sparse data, calculate which items are actually visible
     let visibleRange: VisibleRange;
 
     if (state.paginationStrategy === "page") {
-      // For page-based pagination, always show all items since they use absolute virtual positioning
-      visibleRange = { start: 0, end: state.items.length };
+      // For page-based pagination with sparse data, calculate which loaded items are actually visible
+      // CRITICAL: Use real scroll position for visibility, not adjusted scroll position
+      // The adjusted scroll position is only for page boundary detection
+      const itemHeight = config.itemHeight || 84;
+      const viewportTop = scrollTop; // Use real scroll position
+      const viewportBottom = viewportTop + state.containerHeight;
+
+      // Find which items in our collection would be visible at this scroll position
+      const visibleItems: number[] = [];
+
+      state.items.forEach((item, index) => {
+        if (!item || !item.id) return;
+
+        const itemId = parseInt(item.id);
+        const virtualOffset = (itemId - 1) * itemHeight;
+        const itemBottom = virtualOffset + itemHeight;
+
+        // Check if this item would be visible in the viewport
+        if (virtualOffset <= viewportBottom && itemBottom >= viewportTop) {
+          visibleItems.push(index);
+        }
+      });
+
+      if (visibleItems.length > 0) {
+        visibleRange = {
+          start: Math.min(...visibleItems),
+          end: Math.max(...visibleItems) + 1, // +1 because end is exclusive
+        };
+      } else {
+        // No items are visible at this scroll position - render nothing
+        visibleRange = { start: 0, end: 0 };
+      }
 
       console.log(`📍 [SparseData] Custom visibility for sparse page data:`, {
         scrollTop,
+        adjustedScrollTop: adjustedScrollTop?.toFixed(0) || "none",
+        viewportTop: viewportTop.toFixed(0),
+        viewportBottom: viewportBottom.toFixed(0),
         totalItems: state.items.length,
         visibleRange,
+        visibleItemCount: visibleRange.end - visibleRange.start,
         itemIds:
-          state.items
-            .map((item) => item?.id)
-            .slice(0, 5)
-            .join(", ") + (state.items.length > 5 ? "..." : ""),
+          visibleItems.length > 0
+            ? state.items
+                .slice(visibleRange.start, visibleRange.end)
+                .map((item) => item?.id)
+                .join(", ")
+            : "none visible",
         isPageJump,
-        note: "Always render all items with virtual positioning for page-based pagination",
+        note: "Using real scroll position for visibility, adjusted scroll position only for page boundaries",
       });
     } else {
       // Use standard calculation for non-page-based pagination
@@ -440,9 +483,9 @@ export const createVisibilityManager = (deps: VisibilityDependencies) => {
   const checkLoadMore = (scrollTop: number): void => {
     const { justJumpedToPage } = paginationManager.getPaginationFlags();
 
-    // BROWSER COMPATIBILITY: Adjust scroll position for capped virtual height
+    // BROWSER COMPATIBILITY: Calculate adjusted scroll position (same logic as in updateVisibleItems)
     let adjustedScrollTop = scrollTop;
-    if (state.itemCount && state.paginationStrategy === "page") {
+    if (state.paginationStrategy === "page" && state.itemCount) {
       const itemHeight = config.itemHeight || 84;
       const fullVirtualHeight = state.itemCount * itemHeight;
       const actualVirtualHeight = state.totalHeight;
@@ -485,8 +528,9 @@ export const createVisibilityManager = (deps: VisibilityDependencies) => {
       console.log(
         `🎯 [CheckLoadMore] Using page boundary detection for page-based pagination`
       );
-      // Use adjusted scroll position for boundary detection
-      paginationManager.checkPageBoundaries(adjustedScrollTop);
+      // CRITICAL FIX: Use real scroll position for boundary detection, not adjusted
+      // Items are positioned using real coordinates, so boundary detection must match
+      paginationManager.checkPageBoundaries(scrollTop);
       return;
     }
 
