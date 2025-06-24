@@ -186,6 +186,32 @@ export const createPaginationManager = (deps: PaginationDependencies) => {
       throw new Error("Page number must be a positive integer");
     }
 
+    // BOUNDS CHECKING: Validate that requested page is within data range
+    if (state.itemCount && state.itemCount > 0) {
+      const pageSize = config.pageSize || 20;
+      const maxPage = Math.ceil(state.itemCount / pageSize);
+
+      if (pageNumber > maxPage) {
+        console.warn(
+          `⚠️ [LoadPage] Page ${pageNumber} is beyond data range (max: ${maxPage})`
+        );
+        console.log(`📊 [LoadPage] Bounds info:`, {
+          requestedPage: pageNumber,
+          maxPage,
+          totalItems: state.itemCount.toLocaleString(),
+          pageSize,
+          calculation: `${state.itemCount} ÷ ${pageSize} = ${maxPage} pages`,
+        });
+
+        // Return empty result for pages beyond data range
+        return { hasNext: false, items: [] };
+      }
+
+      console.log(
+        `✅ [LoadPage] Page ${pageNumber} is valid (within range 1-${maxPage})`
+      );
+    }
+
     // Check if we're using page-based pagination
     const paginationStrategy = config.pagination?.strategy || "cursor";
     if (paginationStrategy !== "page") {
@@ -321,50 +347,16 @@ export const createPaginationManager = (deps: PaginationDependencies) => {
     console.log(`📍 [LoadPage] Positioning to show page ${pageNumber}`);
 
     // Calculate the absolute scroll position for this page
-    const defaultItemHeight = config.itemHeight || 48;
+    const defaultItemHeight = config.itemHeight || 84;
 
-    // Calculate target scroll position for page positioning
-    const idealTargetScrollPosition = (pageStartId - 1) * defaultItemHeight;
+    // Calculate natural scroll position for page positioning
+    const targetScrollPosition = (pageStartId - 1) * defaultItemHeight;
 
-    // Get the current total height for the virtual scroller
-    // Use state.itemCount (from API) or fallback to current items length
-    const totalItems = state.itemCount || state.items.length;
-    const maxVirtualHeight = 10_000_000; // 10M pixels - browser compatibility limit
-    const currentTotalHeight = Math.min(
-      totalItems * defaultItemHeight,
-      maxVirtualHeight
-    );
-
-    // If the ideal position exceeds the actual scrollable height, use proportional positioning
-    let targetScrollPosition = idealTargetScrollPosition;
-    if (idealTargetScrollPosition > currentTotalHeight) {
-      // Calculate the proportional position within the capped height
-      const fullVirtualHeight = totalItems * defaultItemHeight;
-      const scrollRatio = currentTotalHeight / fullVirtualHeight;
-      targetScrollPosition = idealTargetScrollPosition * scrollRatio;
-
-      console.log(
-        `📍 [LoadPage] High page number - using proportional positioning:`,
-        {
-          pageNumber: pageNumber,
-          pageStartId: pageStartId,
-          idealPosition: idealTargetScrollPosition.toLocaleString(),
-          actualTotalHeight: currentTotalHeight.toLocaleString(),
-          scrollRatio: scrollRatio.toFixed(4),
-          proportionalPosition: targetScrollPosition.toLocaleString(),
-        }
-      );
-    }
-
-    console.log(`📍 [LoadPage] Page ${pageNumber} absolute positioning:`, {
+    console.log(`📍 [LoadPage] Page ${pageNumber} natural positioning:`, {
       pageStartId: pageStartId,
       itemHeight: defaultItemHeight,
       targetScrollPosition: targetScrollPosition,
-      calculation: `(${pageStartId} - 1) × ${defaultItemHeight} = ${idealTargetScrollPosition}px${
-        targetScrollPosition !== idealTargetScrollPosition
-          ? ` → ${targetScrollPosition}px (proportional)`
-          : ""
-      }`,
+      calculation: `(${pageStartId} - 1) × ${defaultItemHeight} = ${targetScrollPosition}px`,
     });
 
     // IMPORTANT: Don't set scroll position here - it's too early!
@@ -501,7 +493,7 @@ export const createPaginationManager = (deps: PaginationDependencies) => {
       state.totalHeightDirty = true;
 
       // Calculate the height of the new items to adjust scroll position
-      const defaultItemHeight = config.itemHeight || 48;
+      const defaultItemHeight = config.itemHeight || 84;
       const addedHeight = items.length * defaultItemHeight;
 
       // Adjust scroll position to maintain visual position

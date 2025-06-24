@@ -272,6 +272,15 @@ export const createListManager = (
   const checkPageBoundaries = (scrollTop: number): void => {
     if (!state.page || state.items.length === 0) return;
 
+    // CRITICAL FIX: Don't run boundary detection immediately after page jumps
+    // This prevents loading adjacent pages when we just jumped to a specific page
+    if (justJumpedToPage) {
+      console.log(
+        `🚫 [PageBoundary] Skipping boundary detection - just jumped to page ${state.page}`
+      );
+      return;
+    }
+
     const itemHeight = validatedConfig.itemHeight || 84;
     const pageSize = validatedConfig.pageSize || 20;
 
@@ -712,50 +721,16 @@ export const createListManager = (
     console.log(`📍 [LoadPage] Positioning to show page ${pageNumber}`);
 
     // Calculate the absolute scroll position for this page
-    const defaultItemHeight = validatedConfig.itemHeight || 48;
+    const defaultItemHeight = validatedConfig.itemHeight || 84;
 
-    // Calculate target scroll position for page positioning
-    const idealTargetScrollPosition = (pageStartId - 1) * defaultItemHeight;
+    // Calculate natural scroll position for page positioning
+    const targetScrollPosition = (pageStartId - 1) * defaultItemHeight;
 
-    // Get the current total height for the virtual scroller
-    // Use state.itemCount (from API) or fallback to current items length
-    const totalItems = state.itemCount || state.items.length;
-    const maxVirtualHeight = 10_000_000; // 10M pixels - browser compatibility limit
-    const currentTotalHeight = Math.min(
-      totalItems * defaultItemHeight,
-      maxVirtualHeight
-    );
-
-    // If the ideal position exceeds the actual scrollable height, use proportional positioning
-    let targetScrollPosition = idealTargetScrollPosition;
-    if (idealTargetScrollPosition > currentTotalHeight) {
-      // Calculate the proportional position within the capped height
-      const fullVirtualHeight = totalItems * defaultItemHeight;
-      const scrollRatio = currentTotalHeight / fullVirtualHeight;
-      targetScrollPosition = idealTargetScrollPosition * scrollRatio;
-
-      console.log(
-        `📍 [LoadPage] High page number - using proportional positioning:`,
-        {
-          pageNumber: pageNumber,
-          pageStartId: pageStartId,
-          idealPosition: idealTargetScrollPosition.toLocaleString(),
-          actualTotalHeight: currentTotalHeight.toLocaleString(),
-          scrollRatio: scrollRatio.toFixed(4),
-          proportionalPosition: targetScrollPosition.toLocaleString(),
-        }
-      );
-    }
-
-    console.log(`📍 [LoadPage] Page ${pageNumber} absolute positioning:`, {
+    console.log(`📍 [LoadPage] Page ${pageNumber} natural positioning:`, {
       pageStartId: pageStartId,
       itemHeight: defaultItemHeight,
       targetScrollPosition: targetScrollPosition,
-      calculation: `(${pageStartId} - 1) × ${defaultItemHeight} = ${idealTargetScrollPosition}px${
-        targetScrollPosition !== idealTargetScrollPosition
-          ? ` → ${targetScrollPosition}px (proportional)`
-          : ""
-      }`,
+      calculation: `(${pageStartId} - 1) × ${defaultItemHeight} = ${targetScrollPosition}px`,
     });
 
     // IMPORTANT: Don't set scroll position here - it's too early!
@@ -893,7 +868,7 @@ export const createListManager = (
       state.totalHeightDirty = true;
 
       // Calculate the height of the new items to adjust scroll position
-      const defaultItemHeight = validatedConfig.itemHeight || 48; // Default item height
+      const defaultItemHeight = validatedConfig.itemHeight || 84; // Default item height
       const addedHeight = items.length * defaultItemHeight;
 
       // Adjust scroll position to maintain visual position

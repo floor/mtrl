@@ -111,25 +111,24 @@ export const createDataLoadingManager = (deps: DataLoadingDependencies) => {
       // Store current state.items.length before updating state
       const currentStateItemsLength = state.items.length;
 
-      // For page-based pagination, handle the collection update appropriately
+      // CRITICAL FIX: For page jumps, always replace collection regardless of existing items
+      // This fixes the issue where high page numbers (like 100,000) would append instead of replace
       if (
+        isPageJumpLoad &&
         state.paginationStrategy === "page" &&
-        params.page &&
-        currentStateItemsLength === 0
+        params.page
       ) {
-        // Only replace the collection if it's truly empty (not for page jumps with existing items)
         console.log(
-          `🔄 [LoadItems] Page ${params.page}: Replacing collection (empty state)`
+          `🔄 [LoadItems] Page ${params.page}: Replacing collection (page jump load)`
         );
         await itemsCollection.clear();
         if (items.length > 0) {
           await itemsCollection.add(items);
         }
       } else if (state.paginationStrategy === "page") {
-        // For page-based pagination with existing items, add without deduplication
-        // This handles the case where we're loading adjacent pages via scrolling
+        // For boundary loads (adjacent pages), append to existing collection
         console.log(
-          `📄 [LoadItems] Page ${params.page}: Appending to existing collection (scroll-based loading)`
+          `📄 [LoadItems] Page ${params.page}: Appending to existing collection (boundary load)`
         );
         if (items.length > 0) {
           await itemsCollection.add(items);
@@ -154,9 +153,9 @@ export const createDataLoadingManager = (deps: DataLoadingDependencies) => {
       if (
         isPageJumpLoad &&
         state.paginationStrategy === "page" &&
-        currentStateItemsLength === 0
+        params.page
       ) {
-        // Only replace state when collection was truly empty (not for preservePrevious scenarios)
+        // For page jumps, always replace state items (fixed for high page numbers)
         Object.assign(state, {
           items: [...items],
           cursor: response.meta.cursor ?? null,
@@ -169,13 +168,13 @@ export const createDataLoadingManager = (deps: DataLoadingDependencies) => {
           `🔄 [LoadItems] Page jump state update: replaced with ${items.length} items`
         );
       } else {
-        // Use normal state update logic for regular loads and preservePrevious scenarios
+        // Use normal state update logic for boundary loads and other scenarios
         Object.assign(
           state,
           updateStateAfterLoad(state, items, response.meta, config.dedupeItems)
         );
         console.log(
-          `📄 [LoadItems] Regular state update: appended/deduped items`
+          `📄 [LoadItems] Boundary load state update: appended/deduped items`
         );
       }
 
