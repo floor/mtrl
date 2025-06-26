@@ -614,11 +614,8 @@ export const createListManager = (
       state.visibleRange = { start: -1, end: -1 };
       renderer.resetVisibleRange();
 
-      // Ensure proper scroll position for page 1
-      if (pageNumber === 1) {
-        container.scrollTop = 0;
-        state.scrollTop = 0;
-      }
+      // REMOVED: Don't force scroll position - respect user's scrollbar position
+      // Let the user scroll to exactly where they want, even on page 1
 
       // Force immediate render
       requestAnimationFrame(() => {
@@ -629,7 +626,7 @@ export const createListManager = (
           console.warn(
             `⚠️ [LoadPage] Force-rendering page ${pageNumber} items`
           );
-          updateVisibleItems(0);
+          updateVisibleItems(state.scrollTop); // Use actual scroll position, not 0
         }
       });
 
@@ -719,27 +716,15 @@ export const createListManager = (
       itemMeasurement.calculateOffsets(state.items);
     }
 
-    // SIMPLIFIED: Position to show the requested page
-    console.log(`📍 [LoadPage] Positioning to show page ${pageNumber}`);
-
-    // Calculate the absolute scroll position for this page
-    const defaultItemHeight = validatedConfig.itemHeight || 84;
-
-    // Calculate natural scroll position for page positioning
-    const targetScrollPosition = (pageStartId - 1) * defaultItemHeight;
-
-    console.log(`📍 [LoadPage] Page ${pageNumber} natural positioning:`, {
-      pageStartId: pageStartId,
-      itemHeight: defaultItemHeight,
-      targetScrollPosition: targetScrollPosition,
-      calculation: `(${pageStartId} - 1) × ${defaultItemHeight} = ${targetScrollPosition}px`,
-    });
-
-    // IMPORTANT: Don't set scroll position here - it's too early!
-    // The DOM hasn't been updated with new items yet, so the scroll will fail
-    // We'll set it after DOM rendering in the requestAnimationFrame below
+    // RESPECT SCROLLBAR: Don't calculate artificial scroll positions
     console.log(
-      `📍 [LoadPage] Preparing scroll to ${targetScrollPosition}px (will be set after DOM update)`
+      `📍 [LoadPage] Loading page ${pageNumber} at user's scroll position`
+    );
+
+    // RESPECT SCROLLBAR: Don't override user's scroll position
+    // Items will render at their correct virtual positions based on current scroll
+    console.log(
+      `📍 [LoadPage] Respecting user scroll position: ${container.scrollTop}px`
     );
 
     // Force a complete re-render by clearing the visible range first
@@ -750,12 +735,13 @@ export const createListManager = (
     if (!state.itemCount) {
       // Fallback calculation if no API total available
       const fallbackTotal = PAGINATION.FALLBACK_TOTAL_COUNT; // Default fallback
-      state.totalHeight = fallbackTotal * defaultItemHeight;
+      const itemHeight = validatedConfig.itemHeight || 84; // Get item height for calculation
+      state.totalHeight = fallbackTotal * itemHeight;
 
       console.log(`📐 [LoadPage] Fallback total height calculation:`, {
         fallbackTotal: fallbackTotal.toLocaleString(),
         localCollectionSize: state.items.length,
-        itemHeight: defaultItemHeight,
+        itemHeight: itemHeight,
         calculatedTotalHeight: state.totalHeight.toLocaleString(),
         note: "Using fallback - API total not available",
       });
@@ -779,15 +765,12 @@ export const createListManager = (
       // Temporarily allow updates
       const wasJumpedToPage = justJumpedToPage;
       justJumpedToPage = false;
-      updateVisibleItems(targetScrollPosition, true);
+      updateVisibleItems(container.scrollTop, true); // Use actual scrollbar position
       justJumpedToPage = wasJumpedToPage;
 
-      // CRITICAL FIX: Set scroll position AFTER DOM rendering is complete
-      // The previous issue was setting scroll before DOM had the new items rendered
-      requestAnimationFrame(() => {
-        container.scrollTop = targetScrollPosition;
-        state.scrollTop = targetScrollPosition;
-      });
+      // RESPECT USER'S SCROLL POSITION: Only snap to page start for explicit navigation
+      // Don't interfere with natural scrollbar behavior
+      // The scroll position should remain exactly where the user placed it
 
       // Reset page jump flag immediately after rendering
       console.log(`🔄 [LoadPage] Resetting justJumpedToPage flag immediately`);
@@ -865,18 +848,12 @@ export const createListManager = (
       // Mark height as dirty for recalculation
       state.totalHeightDirty = true;
 
-      // Calculate the height of the new items to adjust scroll position
-      const defaultItemHeight =
-        validatedConfig.itemHeight || DEFAULTS.itemHeight; // Default item height
-      const addedHeight = items.length * defaultItemHeight;
+      // REMOVED: Don't adjust scroll position artificially
+      // Respect the user's exact scrollbar position
+      // The natural virtual positioning will handle item placement correctly
 
-      // Adjust scroll position to maintain visual position
-      const newScrollTop = state.scrollTop + addedHeight;
-      container.scrollTop = newScrollTop;
-      state.scrollTop = newScrollTop;
-
-      // Update visible items
-      updateVisibleItems(newScrollTop);
+      // Update visible items using current scroll position
+      updateVisibleItems(state.scrollTop);
     }
 
     return {
