@@ -153,6 +153,35 @@ export const API = {
 } as const;
 
 /**
+ * Fake Data Generation Constants
+ */
+export const FAKE_DATA = {
+  /** Enable/disable fake item generation for seamless infinite scroll */
+  ENABLED: true,
+
+  /** Number of real items to analyze for pattern detection */
+  PATTERN_ANALYSIS_SAMPLE_SIZE: 10,
+
+  /** Number of generated fake items to cache for performance */
+  CACHE_SIZE: 50,
+
+  /** Enable automatic pattern detection from real data */
+  ENABLE_PATTERN_DETECTION: true,
+
+  /** Simple fallback names when pattern detection fails */
+  FALLBACK_NAMES: ["User", "Person", "Member", "Account", "Contact"],
+
+  /** Fallback email domains for generating realistic emails */
+  FALLBACK_DOMAINS: ["example.com", "demo.org", "test.net"],
+
+  /** Prefix for fake item IDs to distinguish from real items */
+  ID_PREFIX: "fake_",
+
+  /** Mark fake items with this flag for identification */
+  FAKE_FLAG: "__isFake",
+} as const;
+
+/**
  * Combined defaults for easy access
  */
 export const DEFAULTS = {

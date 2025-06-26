@@ -19,11 +19,22 @@ import {
   BOUNDARIES,
   SCROLL,
   DEFAULTS,
+  FAKE_DATA,
 } from "../constants";
+import { fakeDataGenerator } from "../fake-data-generator";
 
 /**
  * Visibility management dependencies
  */
+/**
+ * Return type for visibility manager including fake item replacement
+ */
+export interface VisibilityManager {
+  updateVisibleItems: (scrollTop?: number, isPageJump?: boolean) => void;
+  checkLoadMore: (scrollTop: number) => void;
+  replaceFakeItemsWithReal: (newRealItems: any[]) => void;
+}
+
 export interface VisibilityDependencies {
   state: ListManagerState;
   config: ListManagerConfig;
@@ -49,8 +60,8 @@ export interface VisibilityDependencies {
 }
 
 /**
- * Simple mechanical visibility calculation
- * Works with current collection regardless of scroll position
+ * Enhanced mechanical visibility calculation with fake data support
+ * Provides seamless infinite content by generating fake items when needed
  */
 const calculateMechanicalVisibility = (
   scrollTop: number,
@@ -59,7 +70,13 @@ const calculateMechanicalVisibility = (
   itemHeight: number,
   overscan: number = 3
 ): VisibleRange => {
-  if (items.length === 0) {
+  // Initialize fake data patterns if we have real items
+  if (items.length > 0 && FAKE_DATA.ENABLED) {
+    fakeDataGenerator.analyzePatterns(items);
+  }
+
+  // If no items and fake data disabled, return empty
+  if (items.length === 0 && !FAKE_DATA.ENABLED) {
     return { start: 0, end: 0 };
   }
 
@@ -160,7 +177,9 @@ const calculateMechanicalVisibility = (
  * @param deps Dependencies from the main list manager
  * @returns Visibility management functions
  */
-export const createVisibilityManager = (deps: VisibilityDependencies) => {
+export const createVisibilityManager = (
+  deps: VisibilityDependencies
+): VisibilityManager => {
   const {
     state,
     config,
@@ -231,7 +250,7 @@ export const createVisibilityManager = (deps: VisibilityDependencies) => {
 
     // Removed excessive logging
 
-    const visibleRange = calculateMechanicalVisibility(
+    let visibleRange = calculateMechanicalVisibility(
       scrollTop,
       state.containerHeight,
       state.items,
@@ -326,15 +345,57 @@ export const createVisibilityManager = (deps: VisibilityDependencies) => {
 
     // Update state with new visible range
     if (hasRangeChanged) {
+      let visibleItems = state.items
+        .slice(visibleRange.start, visibleRange.end)
+        .filter(Boolean);
+
+      // SEAMLESS INFINITE CONTENT: Generate fake items if no real items visible
+      if (visibleItems.length === 0 && FAKE_DATA.ENABLED && !justJumpedToPage) {
+        // Calculate which virtual items should be visible
+        const viewportTop = Math.max(
+          0,
+          scrollTop - (config.overscan || 3) * itemHeight
+        );
+        const viewportBottom =
+          scrollTop +
+          state.containerHeight +
+          (config.overscan || 3) * itemHeight;
+        const firstVirtualIndex = Math.floor(viewportTop / itemHeight);
+        const lastVirtualIndex = Math.floor(viewportBottom / itemHeight);
+        const itemsNeeded = Math.min(
+          lastVirtualIndex - firstVirtualIndex + 1,
+          10
+        ); // Reasonable limit
+
+        // Generate fake items for the viewport
+        visibleItems = [];
+        for (let i = 0; i < itemsNeeded; i++) {
+          const virtualIndex = firstVirtualIndex + i;
+          const fakeItem = fakeDataGenerator.generateFakeItem(
+            virtualIndex,
+            state.items
+          );
+          if (fakeItem) {
+            visibleItems.push(fakeItem);
+          }
+        }
+
+        console.log(
+          `🎭 [FakeData] Generated ${visibleItems.length} fake items for seamless scrolling:`,
+          {
+            scrollTop: scrollTop.toLocaleString(),
+            virtualRange: `${firstVirtualIndex} - ${lastVirtualIndex}`,
+            fakeItemIds: visibleItems.map((item) => item.id),
+          }
+        );
+
+        // Update visible range to match fake items
+        visibleRange = { start: 0, end: visibleItems.length };
+      }
+
       Object.assign(
         state,
-        updateStateVisibleItems(
-          state,
-          state.items
-            .slice(visibleRange.start, visibleRange.end)
-            .filter(Boolean),
-          visibleRange
-        )
+        updateStateVisibleItems(state, visibleItems, visibleRange)
       );
     }
 
@@ -343,47 +404,62 @@ export const createVisibilityManager = (deps: VisibilityDependencies) => {
       itemMeasurement.calculateOffsets(state.items);
     }
 
-    // RENDER visible items - this was missing!
+    // RENDER visible items with fake data support
     if (hasRangeChanged || isPageJump) {
       if (state.paginationStrategy === "page") {
+        // Get items to render (could be real or fake)
+        const itemsToRender = state.visibleItems || [];
+
         // Calculate positions for virtual rendering
-        const positions = state.items
-          .slice(visibleRange.start, visibleRange.end)
+        const positions = itemsToRender
           .map((item, localIndex) => {
             if (!item?.id) return null;
 
-            const itemId = parseInt(item.id);
-            let offset = (itemId - 1) * itemHeight; // Natural calculation
+            let offset: number;
 
-            // CRITICAL FIX: When in empty virtual space, position items within current viewport
-            // instead of at their natural coordinates that are far below the viewport
-            const lastItemId = state.items[state.items.length - 1]
-              ? parseInt(state.items[state.items.length - 1].id)
-              : 1;
-            const collectionEndPx = lastItemId * itemHeight;
-            const isEmptyVirtualSpace = scrollTop > collectionEndPx * 2;
-
-            if (isEmptyVirtualSpace) {
-              // Position items at the current scroll position so they're visible
-              // Place them starting at the top of the viewport
-              offset = scrollTop + localIndex * itemHeight;
-
-              console.log(
-                `🎯 [EmptyVirtualSpaceRender] Repositioning item for visibility:`,
-                {
-                  itemId,
-                  naturalOffset: (itemId - 1) * itemHeight,
-                  viewportScrollTop: scrollTop.toLocaleString(),
-                  newOffset: offset.toLocaleString(),
-                  localIndex,
-                  reason:
-                    "Item natural position is far below viewport - repositioning within viewport",
-                }
+            // Handle fake items differently than real items
+            if (fakeDataGenerator.isFakeItem(item)) {
+              // For fake items, calculate position based on the virtual index
+              const fakeIdNumber = parseInt(
+                item.id.replace(FAKE_DATA.ID_PREFIX, "")
               );
+              offset = fakeIdNumber * itemHeight;
+
+              console.log(`🎭 [FakeRender] Positioning fake item:`, {
+                itemId: item.id,
+                virtualIndex: fakeIdNumber,
+                offset: offset.toLocaleString(),
+                scrollTop: scrollTop.toLocaleString(),
+              });
+            } else {
+              // Real items use their natural position or empty virtual space fix
+              const itemId = parseInt(item.id);
+              offset = (itemId - 1) * itemHeight; // Natural calculation
+
+              // CRITICAL FIX: When in empty virtual space, position items within current viewport
+              const lastItemId = state.items[state.items.length - 1]
+                ? parseInt(state.items[state.items.length - 1].id)
+                : 1;
+              const collectionEndPx = lastItemId * itemHeight;
+              const isEmptyVirtualSpace = scrollTop > collectionEndPx * 2;
+
+              if (isEmptyVirtualSpace) {
+                offset = scrollTop + localIndex * itemHeight;
+
+                console.log(
+                  `🎯 [EmptyVirtualSpaceRender] Repositioning real item for visibility:`,
+                  {
+                    itemId,
+                    naturalOffset: (itemId - 1) * itemHeight,
+                    newOffset: offset.toLocaleString(),
+                    localIndex,
+                  }
+                );
+              }
             }
 
             return {
-              index: visibleRange.start + localIndex,
+              index: localIndex,
               item,
               offset,
             };
@@ -453,8 +529,54 @@ export const createVisibilityManager = (deps: VisibilityDependencies) => {
     }
   };
 
+  /**
+   * Replace fake items with real items when they load
+   * This provides seamless transition from fake to real content
+   */
+  const replaceFakeItemsWithReal = (newRealItems: any[]): void => {
+    if (!FAKE_DATA.ENABLED || !state.visibleItems) return;
+
+    let hasReplacements = false;
+    const updatedVisibleItems = state.visibleItems.map((item) => {
+      if (fakeDataGenerator.isFakeItem(item)) {
+        // Try to find a matching real item
+        const fakeIdNumber = parseInt(item.id.replace(FAKE_DATA.ID_PREFIX, ""));
+        const matchingRealItem = newRealItems.find(
+          (realItem) => parseInt(realItem.id) === fakeIdNumber + 1 // Adjust for 1-based real IDs
+        );
+
+        if (matchingRealItem) {
+          hasReplacements = true;
+          console.log(
+            `🔄 [FakeReplace] Replacing fake item ${item.id} with real item ${matchingRealItem.id}`
+          );
+          return matchingRealItem;
+        }
+      }
+      return item;
+    });
+
+    if (hasReplacements) {
+      // Update state with replaced items
+      state.visibleItems = updatedVisibleItems;
+
+      // Trigger re-render with the real items
+      if (state.paginationStrategy === "page") {
+        const itemHeight = config.itemHeight || DEFAULTS.itemHeight;
+        const positions = updatedVisibleItems.map((item, localIndex) => ({
+          index: localIndex,
+          item,
+          offset: (parseInt(item.id) - 1) * itemHeight,
+        }));
+
+        renderingManager.renderItemsWithVirtualPositions(positions);
+      }
+    }
+  };
+
   return {
     updateVisibleItems,
     checkLoadMore,
+    replaceFakeItemsWithReal,
   };
 };

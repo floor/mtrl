@@ -185,8 +185,8 @@ export const createListManager = (
     container,
   });
 
-  // Initialize data loading manager
-  const dataLoadingManager = createDataLoadingManager({
+  // Initialize data loading manager (will be updated with fake item replacement after visibility manager is created)
+  let dataLoadingManager = createDataLoadingManager({
     state,
     config: validatedConfig,
     elements,
@@ -237,7 +237,7 @@ export const createListManager = (
    * @param {LoadParams} params - Query parameters
    * @returns {Promise<Object>} Response with items and pagination metadata
    */
-  const loadItems = dataLoadingManager.loadItems;
+  let loadItems = dataLoadingManager.loadItems;
 
   /**
    * Load target page immediately, then load additional ranges in background
@@ -1150,6 +1150,27 @@ export const createListManager = (
 
   updateVisibleItemsImpl = visibilityManager.updateVisibleItems;
   checkLoadMoreImpl = visibilityManager.checkLoadMore;
+
+  // Get fake item replacement function for seamless transitions
+  const replaceFakeItemsWithReal = visibilityManager.replaceFakeItemsWithReal;
+
+  // Recreate data loading manager with fake item replacement support
+  dataLoadingManager = createDataLoadingManager({
+    state,
+    config: validatedConfig,
+    elements,
+    collection,
+    adapter,
+    itemsCollection,
+    getPaginationFlags: () => ({ isPageJumpLoad }),
+    setPaginationFlags: (flags) => {
+      isPageJumpLoad = flags.isPageJumpLoad;
+    },
+    replaceFakeItemsWithReal,
+  });
+
+  // Update loadItems reference
+  loadItems = dataLoadingManager.loadItems;
 
   lifecycleManager = createLifecycleManager({
     state,

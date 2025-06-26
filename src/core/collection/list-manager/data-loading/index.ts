@@ -22,6 +22,7 @@ export interface DataLoadingDependencies {
   itemsCollection: Collection<any>;
   getPaginationFlags: () => { isPageJumpLoad: boolean };
   setPaginationFlags: (flags: { isPageJumpLoad: boolean }) => void;
+  replaceFakeItemsWithReal?: (newRealItems: any[]) => void;
 }
 
 /**
@@ -39,6 +40,7 @@ export const createDataLoadingManager = (deps: DataLoadingDependencies) => {
     itemsCollection,
     getPaginationFlags,
     setPaginationFlags,
+    replaceFakeItemsWithReal,
   } = deps;
 
   /**
@@ -196,6 +198,11 @@ export const createDataLoadingManager = (deps: DataLoadingDependencies) => {
 
       // Reset the page jump flag
       setPaginationFlags({ isPageJumpLoad: false });
+
+      // SEAMLESS INFINITE CONTENT: Replace fake items with real items when they arrive
+      if (replaceFakeItemsWithReal && items.length > 0) {
+        replaceFakeItemsWithReal(items);
+      }
 
       // Call afterLoad callback if provided
       if (config.afterLoad) {
