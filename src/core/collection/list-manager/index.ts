@@ -265,15 +265,35 @@ export const createListManager = (
 
     const additionalPages: number[] = [];
 
-    // Add pages after target
+    // Calculate total pages from state (if available from API response)
+    const pageSize = validatedConfig.pageSize || 20;
+    const totalPages = state.itemCount
+      ? Math.ceil(state.itemCount / pageSize)
+      : null;
+
+    // Add pages after target (but only if they exist)
     for (let i = 1; i < rangesToFetch; i++) {
-      additionalPages.push(targetPage + i);
+      const nextPage = targetPage + i;
+      // Only add next page if we know it exists OR if we don't have total page info yet
+      if (!totalPages || nextPage <= totalPages) {
+        additionalPages.push(nextPage);
+        console.log(
+          `📄 [BackgroundRange] Adding next page ${nextPage} (${
+            totalPages ? `valid: ${nextPage} <= ${totalPages}` : "total unknown"
+          })`
+        );
+      } else {
+        console.log(
+          `🚫 [BackgroundRange] Skipping page ${nextPage} - beyond total pages (${totalPages})`
+        );
+      }
     }
 
     // If we have room for a previous page and target page > 1, replace the last "next" page with a "previous" page
     if (rangesToFetch >= 3 && targetPage > 1) {
       additionalPages.pop(); // Remove the last "next" page
       additionalPages.unshift(targetPage - 1); // Add previous page at the beginning
+      console.log(`📄 [BackgroundRange] Added previous page ${targetPage - 1}`);
     }
 
     // 3. Load additional ranges in background (don't await - fire and forget)
@@ -381,6 +401,22 @@ export const createListManager = (
     scrollTop = state.scrollTop,
     isPageJump = false
   ): void => {
+    // Strategic logging for bottom scroll debugging
+    if (scrollTop > 1000000) {
+      // Only log for very high scroll positions
+      console.log(
+        `🚨 [ScrollDebug] Very high scroll position in updateVisibleItems:`,
+        {
+          scrollTop: scrollTop.toLocaleString(),
+          containerScrollTop: container.scrollTop.toLocaleString(),
+          stateScrollTop: state.scrollTop.toLocaleString(),
+          totalItems: state.items.length,
+          totalHeight: state.totalHeight.toLocaleString(),
+          isPageJump,
+          source: "updateVisibleItems",
+        }
+      );
+    }
     updateVisibleItemsImpl?.(scrollTop, isPageJump);
   };
 

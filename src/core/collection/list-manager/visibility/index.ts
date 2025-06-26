@@ -78,6 +78,51 @@ const calculateMechanicalVisibility = (
 
   // Check if viewport intersects with current collection at all
   if (viewportTop >= collectionEndPx || viewportBottom <= collectionStartPx) {
+    // SPECIAL CASE: If viewport is way beyond our data (empty virtual space)
+    // and we're at a very high scroll position, show the end of our actual data
+    if (scrollTop > collectionEndPx * 2 && items.length > 0) {
+      // Show the last few items instead of empty space
+      const endBuffer = Math.min(overscan, items.length);
+      const result = {
+        start: Math.max(0, items.length - endBuffer),
+        end: items.length,
+      };
+
+      // Debug log for empty virtual space fix
+      console.log(
+        `🔧 [EmptyVirtualSpaceFix] Applied fix for high scroll position:`,
+        {
+          scrollTop: scrollTop.toLocaleString(),
+          collectionEndPx: collectionEndPx.toLocaleString(),
+          itemsLength: items.length,
+          endBuffer,
+          resultRange: result,
+          itemsToShow: items
+            .slice(result.start, result.end)
+            .map((item) => ({ id: item?.id, headline: item?.headline })),
+        }
+      );
+
+      return result;
+    }
+
+    // Debug log for when viewport is outside collection
+    if (scrollTop > 1000000) {
+      // Only log for high scroll positions
+      console.log(
+        `❌ [ViewportOutside] Viewport completely outside collection:`,
+        {
+          scrollTop: scrollTop.toLocaleString(),
+          viewportRange: `${viewportTop.toLocaleString()} - ${viewportBottom.toLocaleString()}`,
+          collectionRange: `${collectionStartPx.toLocaleString()} - ${collectionEndPx.toLocaleString()}`,
+          itemsLength: items.length,
+          shouldApplyFix: scrollTop > collectionEndPx * 2,
+          fixNotAppliedBecause:
+            items.length === 0 ? "No items" : "Scroll not high enough",
+        }
+      );
+    }
+
     // Viewport is completely outside current collection - show nothing
     return { start: 0, end: 0 };
   }
@@ -194,6 +239,65 @@ export const createVisibilityManager = (deps: VisibilityDependencies) => {
       overscan
     );
 
+    // Strategic logging for bottom scroll debugging
+    if (scrollTop > 1000000) {
+      // Only log for very high scroll positions
+      const firstItemId = state.items[0] ? parseInt(state.items[0].id) : null;
+      const lastItemId = state.items[state.items.length - 1]
+        ? parseInt(state.items[state.items.length - 1].id)
+        : null;
+      const collectionStartPx = firstItemId
+        ? (firstItemId - 1) * itemHeight
+        : 0;
+      const collectionEndPx = lastItemId ? lastItemId * itemHeight : 0;
+      const viewportTop = Math.max(0, scrollTop - overscan * itemHeight);
+      const viewportBottom =
+        scrollTop + state.containerHeight + overscan * itemHeight;
+
+      console.log(`🔍 [VisibilityDebug] High scroll position detected:`, {
+        scrollTop: scrollTop.toLocaleString(),
+        containerHeight: state.containerHeight,
+        itemHeight,
+        totalItems: state.items.length,
+        firstItemId,
+        lastItemId,
+        collectionStartPx: collectionStartPx.toLocaleString(),
+        collectionEndPx: collectionEndPx.toLocaleString(),
+        viewportTop: viewportTop.toLocaleString(),
+        viewportBottom: viewportBottom.toLocaleString(),
+        calculatedVisibleRange: visibleRange,
+        viewportOutsideCollection:
+          viewportTop >= collectionEndPx || viewportBottom <= collectionStartPx,
+        isEmptyVirtualSpace: scrollTop > collectionEndPx * 2,
+        emptyVirtualSpaceFix:
+          scrollTop > collectionEndPx * 2 &&
+          visibleRange.start !== visibleRange.end
+            ? "Applied"
+            : "Not needed",
+      });
+
+      // DETAILED COLLECTION DEBUG - Show what's actually in the collection
+      console.log(`📋 [CollectionDebug] State items analysis:`, {
+        stateItemsLength: state.items.length,
+        firstFewItems: state.items
+          .slice(0, 3)
+          .map((item) => ({ id: item?.id, headline: item?.headline })),
+        lastFewItems: state.items
+          .slice(-3)
+          .map((item) => ({ id: item?.id, headline: item?.headline })),
+        allItemIds: state.items.map((item) => item?.id),
+        itemsWithMissingIds: state.items.filter((item) => !item?.id).length,
+        calculationDetails: {
+          collectionRange: `${firstItemId} - ${lastItemId}`,
+          collectionPixelRange: `${collectionStartPx} - ${collectionEndPx}`,
+          viewportPixelRange: `${viewportTop} - ${viewportBottom}`,
+          scrollTooHigh: scrollTop > collectionEndPx * 2,
+          shouldShowEmptyVirtualSpaceFix:
+            scrollTop > collectionEndPx * 2 && state.items.length > 0,
+        },
+      });
+    }
+
     if (visibleRange.end - visibleRange.start === 0) {
       // Log details when no items are visible to debug the issue
       const firstItemId = state.items[0] ? parseInt(state.items[0].id) : null;
@@ -249,7 +353,34 @@ export const createVisibilityManager = (deps: VisibilityDependencies) => {
             if (!item?.id) return null;
 
             const itemId = parseInt(item.id);
-            const offset = (itemId - 1) * itemHeight; // Simple calculation
+            let offset = (itemId - 1) * itemHeight; // Natural calculation
+
+            // CRITICAL FIX: When in empty virtual space, position items within current viewport
+            // instead of at their natural coordinates that are far below the viewport
+            const lastItemId = state.items[state.items.length - 1]
+              ? parseInt(state.items[state.items.length - 1].id)
+              : 1;
+            const collectionEndPx = lastItemId * itemHeight;
+            const isEmptyVirtualSpace = scrollTop > collectionEndPx * 2;
+
+            if (isEmptyVirtualSpace) {
+              // Position items at the current scroll position so they're visible
+              // Place them starting at the top of the viewport
+              offset = scrollTop + localIndex * itemHeight;
+
+              console.log(
+                `🎯 [EmptyVirtualSpaceRender] Repositioning item for visibility:`,
+                {
+                  itemId,
+                  naturalOffset: (itemId - 1) * itemHeight,
+                  viewportScrollTop: scrollTop.toLocaleString(),
+                  newOffset: offset.toLocaleString(),
+                  localIndex,
+                  reason:
+                    "Item natural position is far below viewport - repositioning within viewport",
+                }
+              );
+            }
 
             return {
               index: visibleRange.start + localIndex,
