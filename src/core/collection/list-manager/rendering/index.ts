@@ -29,38 +29,32 @@ export const createRenderingManager = (deps: RenderingDependencies) => {
     virtualOffset: number = 0
   ): Array<{ index: number; item: any; offset: number }> => {
     const positions: Array<{ index: number; item: any; offset: number }> = [];
+    const itemHeight = config.itemHeight || 84;
 
-    // CRITICAL: For page jumps, position items at the top of viewport (0px) so they're visible
-    // The virtualOffset is used for context but items should be positioned where user can see them
-    let currentOffset = 0; // Start at top of viewport, not at virtual offset
-
-    // Calculate positions for visible items starting from the top of viewport
+    // Calculate proper virtual positions based on item IDs
     for (let i = visibleRange.start; i < visibleRange.end; i++) {
       if (items[i]) {
+        const item = items[i];
+        const itemId = parseInt(item.id);
+        const naturalOffset = (itemId - 1) * itemHeight;
+
         positions.push({
           index: i,
-          item: items[i],
-          offset: currentOffset,
+          item: item,
+          offset: naturalOffset,
         });
-
-        // Add this item's height to get the next position
-        const itemHeight = config.itemHeight || 48;
-        currentOffset += itemHeight;
       }
     }
 
-    console.log(
-      `🎯 [VirtualPositioning] Calculated positions with virtual offset:`,
-      {
-        virtualOffset,
-        visibleRangeStart: visibleRange.start,
-        visibleRangeEnd: visibleRange.end,
-        firstItemOffset: positions[0]?.offset,
-        lastItemOffset: positions[positions.length - 1]?.offset,
-        itemCount: positions.length,
-        note: "Items positioned at viewport top for visibility",
-      }
-    );
+    console.log(`🎯 [VirtualPositioning] Natural positioning:`, {
+      visibleRangeStart: visibleRange.start,
+      visibleRangeEnd: visibleRange.end,
+      firstItemId: items[visibleRange.start]?.id,
+      lastItemId: items[visibleRange.end - 1]?.id,
+      firstItemOffset: positions[0]?.offset,
+      lastItemOffset: positions[positions.length - 1]?.offset,
+      itemCount: positions.length,
+    });
 
     return positions;
   };
@@ -130,9 +124,7 @@ export const createRenderingManager = (deps: RenderingDependencies) => {
       elements.content.appendChild(elements.bottomSentinel);
     }
 
-    console.log(
-      `🎯 [VirtualRender] Rendered ${positions.length} items with virtual positioning`
-    );
+    // Removed excessive logging
   };
 
   return {

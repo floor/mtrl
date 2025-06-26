@@ -52,6 +52,15 @@ import {
   resetState,
   createLoadParams,
 } from "./state";
+import {
+  RENDERING,
+  PAGINATION,
+  BOUNDARIES,
+  SCROLL,
+  COLLECTION,
+  TIMING,
+  DEFAULTS,
+} from "./constants";
 
 /**
  * Creates a list manager for a specific collection
@@ -115,9 +124,11 @@ export const createListManager = (
   );
 
   // Initialize collection for data management
+  // NOTE: No transform function needed - items are already transformed in loadItems()
   const itemsCollection = createCollection({
-    transform: validatedConfig.transform,
-    initialCapacity: useStatic ? initialItems.length : 50, // Optimize initial capacity
+    initialCapacity: useStatic
+      ? initialItems.length
+      : COLLECTION.DEFAULT_INITIAL_CAPACITY, // Optimize initial capacity
   });
 
   // Initialize route adapter (only if in API mode)
@@ -231,17 +242,12 @@ export const createListManager = (
       clearTimeout(scrollStopTimeout);
     }
 
-    // Set new timeout to load page when scrolling stops
-    scrollStopTimeout = setTimeout(() => {
-      console.log(
-        `⏰ [ScrollStop] Scrolling stopped - loading page ${targetPage}`
-      );
+    // Load page immediately - no need to wait for scroll stop
+    console.log(`⏰ [ScrollImmediate] Loading page ${targetPage} immediately`);
 
-      // Use the existing loadPage functionality which works perfectly
-      loadPage(targetPage);
-
-      scrollStopTimeout = null;
-    }, 300); // 300ms debounce delay
+    // Use the existing loadPage functionality which works perfectly
+    loadPage(targetPage);
+    scrollStopTimeout = null;
   };
 
   /**
@@ -281,8 +287,16 @@ export const createListManager = (
       return;
     }
 
-    const itemHeight = validatedConfig.itemHeight || 84;
-    const pageSize = validatedConfig.pageSize || 20;
+    // CRITICAL FIX: Prevent concurrent boundary loads to avoid infinite loops
+    if (state.loading) {
+      console.log(
+        `🚫 [PageBoundary] Skipping boundary detection - already loading`
+      );
+      return;
+    }
+
+    const itemHeight = validatedConfig.itemHeight || DEFAULTS.itemHeight;
+    const pageSize = validatedConfig.pageSize || DEFAULTS.pageSize;
 
     // Calculate current page boundaries in terms of virtual positions
     const currentPageStart = (state.page - 1) * pageSize + 1;
@@ -292,23 +306,12 @@ export const createListManager = (
     const currentPageStartPx = (currentPageStart - 1) * itemHeight;
     const currentPageEndPx = currentPageEnd * itemHeight;
 
-    // Define boundary thresholds (load when within 2 item heights of boundary)
-    const boundaryThreshold = itemHeight * 2;
+    // Define boundary thresholds (load when within N item heights of boundary)
+    const boundaryThreshold =
+      itemHeight * BOUNDARIES.BOUNDARY_THRESHOLD_MULTIPLIER;
     const viewportBottom = scrollTop + state.containerHeight;
 
-    console.log(`🎯 [PageBoundary] Natural boundary detection:`, {
-      scrollTop,
-      viewportBottom,
-      currentPage: state.page,
-      currentPageStart,
-      currentPageEnd,
-      currentPageStartPx: currentPageStartPx.toLocaleString(),
-      currentPageEndPx: currentPageEndPx.toLocaleString(),
-      boundaryThreshold,
-      itemsInCollection: state.items.length,
-      hasNext: state.hasNext,
-      hasPrev: state.page > 1,
-    });
+    // Removed excessive logging
 
     // CRITICAL FIX: First check if we have data for the current page
     // If not, load it before checking adjacent pages
@@ -316,6 +319,8 @@ export const createListManager = (
       const itemId = parseInt(item?.id);
       return itemId >= currentPageStart && itemId <= currentPageEnd;
     });
+
+    // Removed excessive logging
 
     if (!hasCurrentPageData) {
       console.log(
@@ -482,7 +487,7 @@ export const createListManager = (
     }
 
     // If user is near the top, load previous page
-    const threshold = 200; // Load when within 200px of top
+    const threshold = PAGINATION.LOAD_PREVIOUS_THRESHOLD; // Load when within threshold px of top
     if (scrollTop < threshold && !state.loading) {
       loadPreviousPage();
     }
@@ -619,15 +624,13 @@ export const createListManager = (
       requestAnimationFrame(() => {
         updateVisibleItems(state.scrollTop);
 
-        // Double-check after render
-        setTimeout(() => {
-          if (state.visibleItems.length === 0) {
-            console.warn(
-              `⚠️ [LoadPage] Force-rendering page ${pageNumber} items`
-            );
-            updateVisibleItems(0);
-          }
-        }, 50);
+        // Immediate double-check - no delay needed
+        if (state.visibleItems.length === 0) {
+          console.warn(
+            `⚠️ [LoadPage] Force-rendering page ${pageNumber} items`
+          );
+          updateVisibleItems(0);
+        }
       });
 
       return { hasNext: state.hasNext, items: state.items };
@@ -688,9 +691,8 @@ export const createListManager = (
 
       result = await loadItems(loadParams);
 
-      // CRITICAL: When new data is loaded, give time for collection/renderer to sync
-      console.log(`⏳ [LoadPage] Waiting for new data to be processed...`);
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      // Data is loaded - no need to wait for processing
+      console.log(`⏳ [LoadPage] Data loaded - proceeding immediately...`);
     } else {
       // We already have the data, just create a result object
       console.log(`📋 [LoadPage] Page ${pageNumber} data already in memory`);
@@ -747,7 +749,7 @@ export const createListManager = (
     // CRITICAL FIX: Only set total height in loadPage if not already set from API
     if (!state.itemCount) {
       // Fallback calculation if no API total available
-      const fallbackTotal = 1000000; // Default fallback
+      const fallbackTotal = PAGINATION.FALLBACK_TOTAL_COUNT; // Default fallback
       state.totalHeight = fallbackTotal * defaultItemHeight;
 
       console.log(`📐 [LoadPage] Fallback total height calculation:`, {
@@ -787,13 +789,9 @@ export const createListManager = (
         state.scrollTop = targetScrollPosition;
       });
 
-      // Reset page jump flag after short delay
-      setTimeout(() => {
-        console.log(
-          `🔄 [LoadPage] Resetting justJumpedToPage flag after delay`
-        );
-        justJumpedToPage = false;
-      }, 500);
+      // Reset page jump flag immediately after rendering
+      console.log(`🔄 [LoadPage] Resetting justJumpedToPage flag immediately`);
+      justJumpedToPage = false;
     });
 
     // Return result
@@ -868,7 +866,8 @@ export const createListManager = (
       state.totalHeightDirty = true;
 
       // Calculate the height of the new items to adjust scroll position
-      const defaultItemHeight = validatedConfig.itemHeight || 84; // Default item height
+      const defaultItemHeight =
+        validatedConfig.itemHeight || DEFAULTS.itemHeight; // Default item height
       const addedHeight = items.length * defaultItemHeight;
 
       // Adjust scroll position to maintain visual position
@@ -937,37 +936,32 @@ export const createListManager = (
     virtualOffset: number = 0
   ): Array<{ index: number; item: any; offset: number }> => {
     const positions: Array<{ index: number; item: any; offset: number }> = [];
+    const itemHeight = validatedConfig.itemHeight || DEFAULTS.itemHeight;
 
-    // CRITICAL: For page jumps, position items at the top of viewport (0px) so they're visible
-    // The virtualOffset is used for context but items should be positioned where user can see them
-    let currentOffset = 0; // Start at top of viewport, not at virtual offset
-
-    // Calculate positions for visible items starting from the top of viewport
+    // Calculate proper virtual positions based on item IDs
     for (let i = visibleRange.start; i < visibleRange.end; i++) {
       if (items[i]) {
+        const item = items[i];
+        const itemId = parseInt(item.id);
+        const naturalOffset = (itemId - 1) * itemHeight;
+
         positions.push({
           index: i,
-          item: items[i],
-          offset: currentOffset,
+          item: item,
+          offset: naturalOffset,
         });
-
-        // Add this item's height to get the next position
-        currentOffset += itemMeasurement.getItemHeight(items[i]);
       }
     }
 
-    console.log(
-      `🎯 [VirtualPositioning] Calculated positions with virtual offset:`,
-      {
-        virtualOffset,
-        visibleRangeStart: visibleRange.start,
-        visibleRangeEnd: visibleRange.end,
-        firstItemOffset: positions[0]?.offset,
-        lastItemOffset: positions[positions.length - 1]?.offset,
-        itemCount: positions.length,
-        note: "Items positioned at viewport top for visibility",
-      }
-    );
+    console.log(`🎯 [VirtualPositioning] Natural positioning:`, {
+      visibleRangeStart: visibleRange.start,
+      visibleRangeEnd: visibleRange.end,
+      firstItemId: items[visibleRange.start]?.id,
+      lastItemId: items[visibleRange.end - 1]?.id,
+      firstItemOffset: positions[0]?.offset,
+      lastItemOffset: positions[positions.length - 1]?.offset,
+      itemCount: positions.length,
+    });
 
     return positions;
   };
@@ -1057,9 +1051,7 @@ export const createListManager = (
       elements.content.appendChild(elements.bottomSentinel);
     }
 
-    console.log(
-      `🎯 [VirtualRender] Rendered ${positions.length} items with virtual positioning`
-    );
+    // Removed excessive logging
   };
 
   // Set up managers now that all functions are defined
@@ -1144,7 +1136,10 @@ export const createListManager = (
       };
 
       // Check periodically (simple implementation)
-      const interval = setInterval(checkPageChange, 100);
+      const interval = setInterval(
+        checkPageChange,
+        TIMING.PAGE_CHANGE_INTERVAL
+      );
       const cleanup = () => clearInterval(interval);
       cleanupFunctions.push(cleanup);
       return cleanup;
@@ -1183,7 +1178,7 @@ export const createPageLoader = (
 
   // Use a throttle to prevent rapid load calls
   let loadThrottleTimer: number | null = null;
-  const throttleMs = 200; // Minimum time between load operations
+  const throttleMs = SCROLL.LOAD_THROTTLE_MS; // Minimum time between load operations
 
   const load = async (cursor = null, addToHistory = true) => {
     // Prevent concurrent load operations

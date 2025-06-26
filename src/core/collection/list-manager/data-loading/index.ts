@@ -168,14 +168,26 @@ export const createDataLoadingManager = (deps: DataLoadingDependencies) => {
           `🔄 [LoadItems] Page jump state update: replaced with ${items.length} items`
         );
       } else {
-        // Use normal state update logic for boundary loads and other scenarios
+        // For boundary loads, update state with the FULL collection, not just new items
+        const existingCollection = [...itemsCollection.getItems()];
+
+        // Removed excessive boundary debug logs
+
+        // Add items to collection
+        if (items.length > 0) {
+          await itemsCollection.add(items);
+        }
+
         Object.assign(
           state,
-          updateStateAfterLoad(state, items, response.meta, config.dedupeItems)
+          updateStateAfterLoad(
+            state,
+            [...itemsCollection.getItems()],
+            response.meta,
+            config.dedupeItems
+          )
         );
-        console.log(
-          `📄 [LoadItems] Boundary load state update: appended/deduped items`
-        );
+        // Removed excessive boundary load logging
       }
 
       // CRITICAL: Set total height immediately after state update to fix scrollbar behavior
@@ -277,7 +289,9 @@ export const createDataLoadingManager = (deps: DataLoadingDependencies) => {
 
     // For static lists, add items back to collection
     if (state.useStatic && initialItems.length > 0) {
-      await itemsCollection.add(initialItems);
+      // Transform static items before adding to collection (same as API items)
+      const transformedItems = initialItems.map(config.transform!);
+      await itemsCollection.add(transformedItems);
     }
 
     console.log(`✅ [Refresh] List refreshed`);

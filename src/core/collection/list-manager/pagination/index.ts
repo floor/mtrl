@@ -63,17 +63,12 @@ export const createPaginationManager = (deps: PaginationDependencies) => {
       clearTimeout(scrollStopTimeout);
     }
 
-    // Set new timeout to load page when scrolling stops
-    scrollStopTimeout = setTimeout(() => {
-      console.log(
-        `⏰ [ScrollStop] Scrolling stopped - loading page ${targetPage}`
-      );
+    // Load page immediately - no need to wait for scroll stop
+    console.log(`⏰ [ScrollImmediate] Loading page ${targetPage} immediately`);
 
-      // Use the existing loadPage functionality which works perfectly
-      loadPage(targetPage);
-
-      scrollStopTimeout = null;
-    }, 300); // 300ms debounce delay
+    // Use the existing loadPage functionality which works perfectly
+    loadPage(targetPage);
+    scrollStopTimeout = null;
   };
 
   /**
@@ -246,15 +241,13 @@ export const createPaginationManager = (deps: PaginationDependencies) => {
       requestAnimationFrame(() => {
         updateVisibleItems(state.scrollTop);
 
-        // Double-check after render
-        setTimeout(() => {
-          if (state.visibleItems.length === 0) {
-            console.warn(
-              `⚠️ [LoadPage] Force-rendering page ${pageNumber} items`
-            );
-            updateVisibleItems(0);
-          }
-        }, 50);
+        // Immediate double-check - no delay needed
+        if (state.visibleItems.length === 0) {
+          console.warn(
+            `⚠️ [LoadPage] Force-rendering page ${pageNumber} items`
+          );
+          updateVisibleItems(0);
+        }
       });
 
       return { hasNext: state.hasNext, items: state.items };
@@ -314,9 +307,8 @@ export const createPaginationManager = (deps: PaginationDependencies) => {
 
       result = await loadItems(loadParams);
 
-      // CRITICAL: When new data is loaded, give time for collection/renderer to sync
-      console.log(`⏳ [LoadPage] Waiting for new data to be processed...`);
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      // Data is loaded - no need to wait for processing
+      console.log(`⏳ [LoadPage] Data loaded - proceeding immediately...`);
     } else {
       // We already have the data, just create a result object
       console.log(`📋 [LoadPage] Page ${pageNumber} data already in memory`);
@@ -413,13 +405,9 @@ export const createPaginationManager = (deps: PaginationDependencies) => {
         state.scrollTop = targetScrollPosition;
       });
 
-      // Reset page jump flag after short delay
-      setTimeout(() => {
-        console.log(
-          `🔄 [LoadPage] Resetting justJumpedToPage flag after delay`
-        );
-        justJumpedToPage = false;
-      }, 500);
+      // Reset page jump flag immediately after rendering
+      console.log(`🔄 [LoadPage] Resetting justJumpedToPage flag immediately`);
+      justJumpedToPage = false;
     });
 
     // Return result

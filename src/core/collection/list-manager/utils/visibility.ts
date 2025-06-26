@@ -1,6 +1,7 @@
 // src/core/collection/list-manager/utils/visibility.ts
 import { ItemMeasurement } from "../item-measurement";
 import { VisibleRange, ListManagerConfig } from "../types";
+import { RENDERING, COLLECTION, DEFAULTS } from "../constants";
 
 /**
  * Optimized visible range calculation for fixed height items
@@ -20,7 +21,13 @@ export function calculateVisibleRangeOptimized(
   totalItems: number,
   config: ListManagerConfig
 ): VisibleRange {
-  const { renderBufferSize = 5, overscanCount = 3 } = config;
+  const {
+    renderBufferSize = RENDERING.DEFAULT_RENDER_BUFFER_SIZE,
+    overscanCount = RENDERING.DEFAULT_OVERSCAN_COUNT,
+    overscan,
+  } = config;
+  // Use overscan if provided, otherwise fallback to overscanCount
+  const effectiveOverscan = overscan ?? overscanCount;
 
   // Calculate visible range with simple math
   const startIndex = Math.floor(scrollTop / itemHeight);
@@ -30,11 +37,11 @@ export function calculateVisibleRangeOptimized(
   // Add buffer and overscan
   const adjustedStart = Math.max(
     0,
-    startIndex - renderBufferSize - overscanCount
+    startIndex - renderBufferSize - effectiveOverscan
   );
   const adjustedEnd = Math.min(
     totalItems,
-    endIndex + renderBufferSize + overscanCount
+    endIndex + renderBufferSize + effectiveOverscan
   );
 
   // DETAILED LOGGING FOR DEBUGGING PAGE NAVIGATION ISSUES
@@ -48,6 +55,7 @@ export function calculateVisibleRangeOptimized(
     endIndex,
     renderBufferSize,
     overscanCount,
+    effectiveOverscan,
     adjustedStart,
     adjustedEnd,
     expectedVisibleItems: `${adjustedStart + 1}-${Math.min(
@@ -55,7 +63,7 @@ export function calculateVisibleRangeOptimized(
       totalItems
     )}`,
     calculation: `floor(${scrollTop}/${itemHeight}) = ${startIndex}`,
-    buffer: `${startIndex} - ${renderBufferSize} - ${overscanCount} = ${adjustedStart}`,
+    buffer: `${startIndex} - ${renderBufferSize} - ${effectiveOverscan} = ${adjustedStart}`,
   });
 
   return { start: adjustedStart, end: adjustedEnd };
@@ -198,20 +206,27 @@ export function calculateVisibleRange(
   itemMeasurement: ItemMeasurement,
   config: ListManagerConfig
 ): VisibleRange {
-  const { renderBufferSize = 5, overscanCount = 3, itemHeight = 48 } = config;
+  const {
+    renderBufferSize = RENDERING.DEFAULT_RENDER_BUFFER_SIZE,
+    overscanCount = RENDERING.DEFAULT_OVERSCAN_COUNT,
+    itemHeight = RENDERING.LEGACY_ITEM_HEIGHT,
+    overscan,
+  } = config;
+  // Use overscan if provided, otherwise fallback to overscanCount
+  const effectiveOverscan = overscan ?? overscanCount;
 
   // Fast path for empty or very small lists
   if (items.length === 0) {
     return { start: 0, end: 0 };
   }
 
-  if (items.length < 10) {
+  if (items.length < COLLECTION.SMALL_LIST_THRESHOLD) {
     return { start: 0, end: items.length };
   }
 
   // CRITICAL: For page-based navigation, always use the simple, reliable calculation
   // This bypasses complex height caching issues that cause wrong visible ranges
-  if (items.length < 500) {
+  if (items.length < COLLECTION.BINARY_SEARCH_THRESHOLD) {
     const result = calculateVisibleRangeOptimized(
       scrollTop,
       itemHeight,
@@ -229,14 +244,14 @@ export function calculateVisibleRange(
   }
 
   // For very large variable height lists, use binary search approach
-  if (items.length > 500) {
+  if (items.length > COLLECTION.BINARY_SEARCH_THRESHOLD) {
     return binarySearchVisibleRange(
       scrollTop,
       items,
       containerHeight,
       itemMeasurement,
       renderBufferSize,
-      overscanCount,
+      effectiveOverscan,
       itemHeight
     );
   }
@@ -259,7 +274,7 @@ export function calculateVisibleRange(
       currentOffset + itemHeight >
       scrollTop - renderBufferSize * config.itemHeight
     ) {
-      startIndex = Math.max(0, i - overscanCount);
+      startIndex = Math.max(0, i - effectiveOverscan);
       break;
     }
 
@@ -278,7 +293,7 @@ export function calculateVisibleRange(
       currentOffset >
       scrollTop + containerHeight + renderBufferSize * config.itemHeight
     ) {
-      endIndex = Math.min(items.length, i + overscanCount);
+      endIndex = Math.min(items.length, i + effectiveOverscan);
       break;
     }
   }

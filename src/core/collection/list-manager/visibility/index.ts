@@ -13,6 +13,13 @@ import {
   calculateVisibleRange,
   isLoadThresholdReached,
 } from "../utils/visibility";
+import {
+  RENDERING,
+  PAGINATION,
+  BOUNDARIES,
+  SCROLL,
+  DEFAULTS,
+} from "../constants";
 
 /**
  * Visibility management dependencies
@@ -42,46 +49,66 @@ export interface VisibilityDependencies {
 }
 
 /**
- * Simple positioning system for virtual scrolling
- * Always uses natural coordinates - no complex scaling needed
+ * Simple mechanical visibility calculation
+ * Works with current collection regardless of scroll position
  */
-class UnifiedPositioning {
-  private readonly itemHeight: number;
-
-  constructor(totalItems: number, itemHeight: number) {
-    this.itemHeight = itemHeight;
-    const fullVirtualHeight = totalItems * itemHeight;
-
-    console.log(`🎯 [UnifiedPositioning] Natural positioning:`, {
-      totalItems: totalItems.toLocaleString(),
-      itemHeight,
-      fullVirtualHeight: fullVirtualHeight.toLocaleString(),
-      strategy: "Natural spacing - no scaling complexity",
-    });
+const calculateMechanicalVisibility = (
+  scrollTop: number,
+  containerHeight: number,
+  items: any[],
+  itemHeight: number,
+  overscan: number = 3
+): VisibleRange => {
+  if (items.length === 0) {
+    return { start: 0, end: 0 };
   }
 
-  /**
-   * Get the virtual position for an item ID (1-based)
-   */
-  getItemPosition(itemId: number): number {
-    const virtualIndex = itemId - 1; // Convert to 0-based
-    return virtualIndex * this.itemHeight;
+  // Calculate viewport boundaries with buffer
+  const bufferHeight = overscan * itemHeight;
+  const viewportTop = Math.max(0, scrollTop - bufferHeight);
+  const viewportBottom = scrollTop + containerHeight + bufferHeight;
+
+  // Find the first and last item IDs to determine collection range
+  const firstItemId = parseInt(items[0]?.id || "1");
+  const lastItemId = parseInt(items[items.length - 1]?.id || "1");
+
+  // Calculate where this collection starts and ends in virtual space
+  const collectionStartPx = (firstItemId - 1) * itemHeight;
+  const collectionEndPx = lastItemId * itemHeight;
+
+  // Check if viewport intersects with current collection at all
+  if (viewportTop >= collectionEndPx || viewportBottom <= collectionStartPx) {
+    // Viewport is completely outside current collection - show nothing
+    return { start: 0, end: 0 };
   }
 
-  /**
-   * Get the virtual item index from scroll position
-   */
-  getVirtualItemIndex(scrollTop: number): number {
-    return Math.floor(scrollTop / this.itemHeight);
+  // Find visible items within the current collection
+  const visibleIndices: number[] = [];
+
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
+    if (!item?.id) continue;
+
+    // Calculate item position based on its ID
+    const itemId = parseInt(item.id);
+    const itemTop = (itemId - 1) * itemHeight;
+    const itemBottom = itemTop + itemHeight;
+
+    // Check if item intersects with viewport
+    if (itemTop < viewportBottom && itemBottom > viewportTop) {
+      visibleIndices.push(i);
+    }
   }
 
-  /**
-   * Get total height for the virtual space
-   */
-  getTotalHeight(itemCount: number): number {
-    return itemCount * this.itemHeight;
+  if (visibleIndices.length === 0) {
+    return { start: 0, end: 0 };
   }
-}
+
+  return {
+    start: Math.min(...visibleIndices),
+    end: Math.max(...visibleIndices) + 1, // +1 because end is exclusive
+  };
+};
 
 /**
  * Creates a visibility management for handling scroll and visibility calculations
@@ -101,35 +128,8 @@ export const createVisibilityManager = (deps: VisibilityDependencies) => {
     renderingManager,
   } = deps;
 
-  // Initialize unified positioning system
-  let positioning: UnifiedPositioning | null = null;
-
-  const initializePositioning = () => {
-    if (!positioning && state.itemCount) {
-      const itemHeight = config.itemHeight || 84;
-      positioning = new UnifiedPositioning(state.itemCount, itemHeight);
-    }
-  };
-
   /**
-   * Check if we need to load previous pages
-   * @param scrollTop Current scroll position
-   */
-  const checkLoadPrevious = (scrollTop: number): void => {
-    // Only for page-based pagination
-    if (state.paginationStrategy !== "page") return;
-
-    // Check if we're at the top and need to load previous data
-    if (scrollTop <= 100 && state.page && state.page > 1) {
-      console.log(
-        `⬆️ [CheckLoadPrevious] Near top, considering previous page load`
-      );
-      // This would trigger loading of previous pages
-    }
-  };
-
-  /**
-   * Pre-bound update visible items function to avoid recreation
+   * Simple mechanical update visible items - no complexity, just math
    * @param scrollTop Current scroll position
    * @param isPageJump Whether this is a page jump operation
    */
@@ -137,67 +137,39 @@ export const createVisibilityManager = (deps: VisibilityDependencies) => {
     scrollTop = state.scrollTop,
     isPageJump = false
   ): void => {
-    if (!state.mounted) return;
+    // Removed excessive logging
 
-    // Initialize positioning system if needed
-    initializePositioning();
+    if (!state.mounted) return;
 
     const { justJumpedToPage, isPreloadingPages } =
       paginationManager.getPaginationFlags();
 
     // Skip updates if we're in the middle of a page jump or preloading
     if (justJumpedToPage || isPreloadingPages) {
-      console.log(`🚫 [UpdateVisible] Skipping update:`, {
-        justJumpedToPage,
-        isPreloadingPages,
-        scrollTop,
-        reason: "Page jump or preloading in progress",
-      });
       return;
     }
 
-    // Get current container dimensions if not available
+    // Get container height
     if (state.containerHeight === 0) {
-      state.containerHeight = container.clientHeight;
-
-      // If still 0, use a sensible default to avoid division by zero
-      if (state.containerHeight === 0) {
-        console.warn(
-          "[UpdateVisibleItems] Container height is 0, using default of 400px"
-        );
-        state.containerHeight = 400;
-      }
+      state.containerHeight =
+        container.clientHeight || DEFAULTS.containerHeight;
     }
 
     // Update scroll position
     state.scrollTop = scrollTop;
 
-    // For page-based pagination, update the current page based on scroll position
-    if (state.paginationStrategy === "page" && !isPageJump && positioning) {
+    // Update page for page-based pagination
+    if (state.paginationStrategy === "page" && !isPageJump) {
       const pageSize = config.pageSize || 20;
-
-      // Use unified positioning system to get virtual item index
-      const virtualItemIndex = positioning.getVirtualItemIndex(scrollTop);
+      const itemHeight = config.itemHeight || DEFAULTS.itemHeight;
+      const virtualItemIndex = Math.floor(scrollTop / itemHeight);
       const calculatedPage = Math.floor(virtualItemIndex / pageSize) + 1;
 
       if (calculatedPage !== state.page && calculatedPage >= 1) {
         const pageDifference = Math.abs(calculatedPage - state.page);
 
-        console.log(`📍 [ScrollSync] Unified page calculation:`, {
-          scrollTop,
-          virtualItemIndex,
-          calculatedPage,
-          previousPage: state.page,
-          pageDifference,
-        });
-
-        // Detect large scroll jumps (scrollbar dragging) - use debounced loading
-        if (pageDifference > 5) {
-          console.log(
-            `🚀 [ScrollJump] Large scroll jump detected (${pageDifference} pages) - will debounce and load when scrolling stops`
-          );
-
-          // Set up debounced page loading for when scrolling stops
+        // Handle large scroll jumps
+        if (pageDifference > PAGINATION.LARGE_SCROLL_JUMP_THRESHOLD) {
           paginationManager.scheduleScrollStopPageLoad(calculatedPage);
         }
 
@@ -205,96 +177,60 @@ export const createVisibilityManager = (deps: VisibilityDependencies) => {
       }
     }
 
-    // Check for page changes during scroll
+    // Check for page changes
     checkPageChange(scrollTop, state.paginationStrategy);
 
-    // Check if we need to load previous pages (for page-based pagination)
-    // But skip if we just jumped to a page
-    if (!justJumpedToPage) {
-      checkLoadPrevious(scrollTop);
+    // Calculate visible range - pure mechanical calculation
+    const itemHeight = config.itemHeight || DEFAULTS.itemHeight;
+    const overscan = config.overscan || RENDERING.DEFAULT_OVERSCAN_COUNT;
+
+    // Removed excessive logging
+
+    const visibleRange = calculateMechanicalVisibility(
+      scrollTop,
+      state.containerHeight,
+      state.items,
+      itemHeight,
+      overscan
+    );
+
+    if (visibleRange.end - visibleRange.start === 0) {
+      // Log details when no items are visible to debug the issue
+      const firstItemId = state.items[0] ? parseInt(state.items[0].id) : null;
+      const lastItemId = state.items[state.items.length - 1]
+        ? parseInt(state.items[state.items.length - 1].id)
+        : null;
+      const viewportTop = Math.max(0, scrollTop - overscan * itemHeight);
+      const viewportBottom =
+        scrollTop + state.containerHeight + overscan * itemHeight;
+
+      console.log(`🚨 [MechanicalVisibility] Found 0 items - Debug info:`, {
+        scrollTop,
+        viewportTop,
+        viewportBottom,
+        firstItemId,
+        lastItemId,
+        collectionStartPx: firstItemId ? (firstItemId - 1) * itemHeight : null,
+        collectionEndPx: lastItemId ? lastItemId * itemHeight : null,
+        itemsInCollection: state.items.length,
+        reason: "Viewport and collection don't intersect",
+      });
     }
 
-    // Calculate which items should be visible
-    let visibleRange: VisibleRange;
+    // Removed excessive logging
 
-    if (state.paginationStrategy === "page" && positioning) {
-      // Unified visibility calculation for page-based pagination
-      const viewportTop = scrollTop;
-      const viewportBottom = viewportTop + state.containerHeight;
-      const itemHeight = config.itemHeight || 84;
-
-      // Find which items in our collection would be visible at this scroll position
-      const visibleItems: number[] = [];
-
-      state.items.forEach((item, index) => {
-        if (!item || !item.id) return;
-
-        const itemId = parseInt(item.id);
-        const virtualOffset = positioning.getItemPosition(itemId);
-        const itemBottom = virtualOffset + itemHeight;
-
-        // Check if this item would be visible in the viewport
-        if (virtualOffset <= viewportBottom && itemBottom >= viewportTop) {
-          visibleItems.push(index);
-        }
-      });
-
-      if (visibleItems.length > 0) {
-        visibleRange = {
-          start: Math.min(...visibleItems),
-          end: Math.max(...visibleItems) + 1, // +1 because end is exclusive
-        };
-      } else {
-        // No items are visible at this scroll position - render nothing
-        visibleRange = { start: 0, end: 0 };
-      }
-
-      console.log(`📍 [UnifiedVisibility] Simplified visibility calculation:`, {
-        scrollTop,
-        viewportTop: viewportTop.toFixed(0),
-        viewportBottom: viewportBottom.toFixed(0),
-        totalItems: state.items.length,
-        visibleRange,
-        visibleItemCount: visibleRange.end - visibleRange.start,
-        itemIds:
-          visibleItems.length > 0
-            ? state.items
-                .slice(visibleRange.start, visibleRange.end)
-                .map((item) => item?.id)
-                .join(", ")
-            : "none visible",
-      });
-    } else {
-      // Use standard calculation for non-page-based pagination
-      visibleRange = calculateVisibleRange(
-        scrollTop,
-        state.items,
-        state.containerHeight,
-        itemMeasurement,
-        config
-      );
-    }
-
-    // Early return if range hasn't changed (except for sparse data where we need boundary detection)
+    // Check if range changed
     const hasRangeChanged =
       visibleRange.start !== state.visibleRange.start ||
       visibleRange.end !== state.visibleRange.end;
+
     const needsBoundaryDetection = state.paginationStrategy === "page";
 
     if (!hasRangeChanged && !needsBoundaryDetection) {
-      console.log(
-        `🚫 [UpdateVisible] Early return - range unchanged and no boundary detection needed`
-      );
       return;
     }
 
-    if (!hasRangeChanged && needsBoundaryDetection) {
-      console.log(
-        `🎯 [UpdateVisible] Range unchanged but continuing for boundary detection`
-      );
-    }
-
-    // Update state with new visible range (only if range changed)
+    // Update state with new visible range
     if (hasRangeChanged) {
       Object.assign(
         state,
@@ -308,246 +244,96 @@ export const createVisibilityManager = (deps: VisibilityDependencies) => {
       );
     }
 
-    // Ensure offsets are cached for efficient access
+    // Calculate offsets
     if (typeof itemMeasurement.calculateOffsets === "function") {
       itemMeasurement.calculateOffsets(state.items);
     }
 
-    // Calculate total height if needed
-    if (state.totalHeightDirty && !isPageJump) {
-      let totalHeight: number;
-
-      if (state.useStatic) {
-        // For static data, calculate from actual items
-        totalHeight = itemMeasurement.calculateTotalHeight(state.items);
-      } else if (state.itemCount && positioning) {
-        // Use unified positioning system for total height
-        totalHeight = positioning.getTotalHeight(state.itemCount);
-
-        console.log(
-          `📐 [UnifiedHeight] Using unified positioning for total height:`,
-          {
-            apiTotalCount: state.itemCount.toLocaleString(),
-            totalHeight: totalHeight.toLocaleString(),
-          }
-        );
-      } else {
-        // CRITICAL: Never override definitive height with local collection size
-        // Check if we already have a reasonable total height (likely from API)
-        const hasDefinitiveHeight =
-          state.totalHeight >
-          state.items.length * (config.itemHeight || 84) * 10;
-
-        if (hasDefinitiveHeight) {
-          console.log(
-            `📐 [TotalHeight] Preserving existing definitive height:`,
-            {
-              existingHeight: state.totalHeight.toLocaleString(),
-              localCollectionWouldBe: (
-                state.items.length * (config.itemHeight || 84)
-              ).toLocaleString(),
-              reason:
-                "Existing height is much larger than local collection - likely from API total",
-            }
-          );
-          // Don't recalculate - keep existing definitive height
-          state.totalHeightDirty = false;
-          return;
-        }
-
-        // Fallback to local collection size only if no API total available and no definitive height
-        totalHeight = state.items.length * (config.itemHeight || 84);
-        console.log(`📐 [TotalHeight] Fallback to local collection size:`, {
-          localItemsLength: state.items.length,
-          itemHeight: config.itemHeight || 84,
-          calculatedHeight: totalHeight.toLocaleString(),
-        });
-      }
-
-      Object.assign(state, updateTotalHeight(state, totalHeight));
-
-      // Update DOM elements with new height
-      updateSpacerHeight(elements, totalHeight);
-    } else if (isPageJump) {
-      console.log(
-        `📐 [TotalHeight] Skipping recalculation during page jump - using existing:`,
-        {
-          existingTotalHeight: state.totalHeight.toLocaleString(),
-          isPageJump: true,
-        }
-      );
-    }
-
-    // Render visible items (only if range changed or it's a page jump)
+    // RENDER visible items - this was missing!
     if (hasRangeChanged || isPageJump) {
-      if (state.paginationStrategy === "page" && positioning) {
-        // Unified rendering for page-based pagination
-        console.log(
-          `🎨 [UnifiedRender] Rendering with unified positioning system`
-        );
-
+      if (state.paginationStrategy === "page") {
+        // Calculate positions for virtual rendering
         const positions = state.items
           .slice(visibleRange.start, visibleRange.end)
           .map((item, localIndex) => {
-            if (!item || !item.id) return null;
+            if (!item?.id) return null;
 
             const itemId = parseInt(item.id);
-            const absoluteOffset = positioning.getItemPosition(itemId);
+            const offset = (itemId - 1) * itemHeight; // Simple calculation
 
             return {
               index: visibleRange.start + localIndex,
               item,
-              offset: absoluteOffset,
+              offset,
             };
           })
           .filter(Boolean);
-
-        console.log(`🎨 [UnifiedRender] Unified positions:`, {
-          totalPositions: positions.length,
-          firstItemId: positions[0]?.item.id,
-          firstItemOffset: positions[0]?.offset,
-          lastItemId: positions[positions.length - 1]?.item.id,
-          lastItemOffset: positions[positions.length - 1]?.offset,
-        });
 
         renderingManager.renderItemsWithVirtualPositions(positions);
       } else {
         // Standard rendering for cursor-based pagination
         renderer.renderVisibleItems(state.items, visibleRange);
       }
-    } else {
-      console.log(`⏩ [VirtualRender] Skipping render - range unchanged`);
     }
 
-    // Now measure elements that needed measurement
-    const heightsChanged = itemMeasurement.measureMarkedElements(
-      elements.content,
-      state.items
-    );
+    // Calculate total height
+    if (state.totalHeightDirty && !isPageJump) {
+      let totalHeight: number;
 
-    // Recalculate total height after measurements if needed
-    // CRITICAL: Only recalculate if we don't have API total count (preserves consistent virtual scrolling)
-    if (heightsChanged && (!state.itemCount || state.useStatic)) {
-      const totalHeight = itemMeasurement.calculateTotalHeight(state.items);
+      if (state.useStatic) {
+        totalHeight = itemMeasurement.calculateTotalHeight(state.items);
+      } else if (state.itemCount) {
+        // Simple calculation - no complex positioning system
+        totalHeight = state.itemCount * itemHeight;
+      } else {
+        // Keep existing height if we have one
+        if (state.totalHeight > 0) {
+          state.totalHeightDirty = false;
+          return;
+        }
+        totalHeight = itemMeasurement.calculateTotalHeight(state.items);
+      }
+
       Object.assign(state, updateTotalHeight(state, totalHeight));
       updateSpacerHeight(elements, totalHeight);
-
-      console.log(`📐 [TotalHeight] Recalculated after height measurement:`, {
-        reason: "Item height measurements changed",
-        useStatic: state.useStatic,
-        hasApiTotal: !!state.itemCount,
-        newHeight: totalHeight.toLocaleString(),
-      });
-    } else if (heightsChanged && state.itemCount) {
-      console.log(
-        `📐 [TotalHeight] Skipping recalculation after measurement:`,
-        {
-          reason:
-            "API total count available - preserving consistent virtual height",
-          lockedHeight: state.totalHeight.toLocaleString(),
-          apiTotal: state.itemCount.toLocaleString(),
-        }
-      );
+      state.totalHeightDirty = false;
     }
 
-    // Check if we need to load more data
-    console.log(`🔍 [UpdateVisible] About to call checkLoadMore:`, {
-      scrollTop,
-      justJumpedToPage,
-      isPreloadingPages,
-      paginationStrategy: state.paginationStrategy,
-      currentPage: state.page,
-      itemsLength: state.items.length,
-    });
+    // Handle loading more data
     checkLoadMore(scrollTop);
   };
 
   /**
-   * Check if we need to load more data based on scroll position
-   * For sparse page data, we use page boundary detection instead of percentage thresholds
-   * @param scrollTop Current scroll position
+   * Check if we need to load more data
    */
   const checkLoadMore = (scrollTop: number): void => {
-    const { justJumpedToPage } = paginationManager.getPaginationFlags();
+    const { justJumpedToPage, isPreloadingPages } =
+      paginationManager.getPaginationFlags();
 
-    console.log(`🔍 [CheckLoadMore] Unified approach:`, {
-      scrollTop,
-      loading: state.loading,
-      justJumpedToPage,
-      paginationStrategy: state.paginationStrategy,
-      currentPage: state.page,
-    });
-
-    // Skip if loading
-    if (state.loading) {
-      console.log(`🚫 [CheckLoadMore] Skipped: loading=${state.loading}`);
+    if (state.loading || justJumpedToPage || isPreloadingPages) {
       return;
     }
 
-    // Don't auto-load immediately after page jumps - let the page settle first
-    if (justJumpedToPage) {
-      console.log(
-        `🚫 [CheckLoadMore] Skipped: just jumped to page, letting it settle`
-      );
-      return;
-    }
-
-    // For page-based pagination with sparse data, use page boundary detection
     if (state.paginationStrategy === "page") {
-      console.log(`🎯 [CheckLoadMore] Using unified page boundary detection`);
-      // Use consistent scroll position (no adjustment needed with unified system)
+      // Let page boundaries handle loading for page-based pagination
       paginationManager.checkPageBoundaries(scrollTop);
-      return;
-    }
-
-    // Original logic for continuous data (cursor-based pagination)
-    if (!state.hasNext) {
-      return;
-    }
-
-    const shouldLoadMore = isLoadThresholdReached(
-      scrollTop,
-      state.containerHeight,
-      state.totalHeight,
-      config.loadThreshold!
-    );
-
-    const scrollFraction =
-      (scrollTop + state.containerHeight) / state.totalHeight;
-
-    console.log(`📏 [CheckLoadMore] Threshold check:`, {
-      scrollTop,
-      containerHeight: state.containerHeight,
-      totalHeight: state.totalHeight,
-      loadThreshold: config.loadThreshold,
-      scrollFraction: scrollFraction.toFixed(4),
-      shouldLoadMore,
-      currentPage: state.page,
-      itemsLength: state.items.length,
-      justJumpedToPage,
-    });
-
-    // Additional safeguard: don't auto-load if scroll position seems unrealistic
-    if (scrollFraction > 2.0) {
-      console.warn(
-        `🚫 [CheckLoadMore] Suspicious scroll fraction (${scrollFraction.toFixed(
-          2
-        )}), skipping auto-load. This suggests virtual scrolling issues.`
+    } else {
+      // Handle traditional infinite scroll
+      const shouldLoadMore = isLoadThresholdReached(
+        scrollTop,
+        state.containerHeight,
+        state.totalHeight,
+        config.loadThreshold || 0.8
       );
-      return;
-    }
 
-    if (shouldLoadMore) {
-      console.log(
-        `🔄 [CheckLoadMore] Triggering loadNext() for scroll-based loading`
-      );
-      paginationManager.loadNext();
+      if (shouldLoadMore) {
+        paginationManager.loadNext();
+      }
     }
   };
 
   return {
     updateVisibleItems,
     checkLoadMore,
-    checkLoadPrevious,
   };
 };

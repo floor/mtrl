@@ -56,6 +56,12 @@ export interface ListManagerConfig {
   overscanCount?: number;
 
   /**
+   * Number of items to render outside viewport for smooth scrolling
+   * @default 3
+   */
+  overscan?: number;
+
+  /**
    * Default height for items
    */
   itemHeight?: number;
