@@ -196,7 +196,11 @@ export interface ListManager {
    */
   loadPage: (
     pageNumber: number,
-    options?: { preservePrevious?: boolean }
+    options?: {
+      preservePrevious?: boolean;
+      setScrollPosition?: boolean;
+      replaceCollection?: boolean;
+    }
   ) => Promise<{ hasNext: boolean; items: any[] }>;
 
   /**

@@ -113,17 +113,22 @@ export const createDataLoadingManager = (deps: DataLoadingDependencies) => {
 
       // CRITICAL FIX: For page jumps, always replace collection regardless of existing items
       // This fixes the issue where high page numbers (like 100,000) would append instead of replace
+      // DEFENSIVE FIX: Don't clear collection if API returns 0 items to prevent data loss
       if (
         isPageJumpLoad &&
         state.paginationStrategy === "page" &&
         params.page
       ) {
-        console.log(
-          `🔄 [LoadItems] Page ${params.page}: Replacing collection (page jump load)`
-        );
-        await itemsCollection.clear();
         if (items.length > 0) {
+          console.log(
+            `🔄 [LoadItems] Page ${params.page}: Replacing collection (page jump load)`
+          );
+          await itemsCollection.clear();
           await itemsCollection.add(items);
+        } else {
+          console.log(
+            `⚠️ [LoadItems] Page ${params.page}: Skipping collection replacement - API returned 0 items (defensive fix)`
+          );
         }
       } else if (state.paginationStrategy === "page") {
         // For boundary loads (adjacent pages), append to existing collection

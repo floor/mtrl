@@ -16,7 +16,10 @@ export interface LifecycleDependencies {
   updateVisibleItems: (scrollTop?: number, isPageJump?: boolean) => void;
   checkLoadMore: (scrollTop: number) => void;
   loadNext: () => Promise<{ hasNext: boolean; items: any[] }>;
-  loadPage: (pageNumber: number) => Promise<{ hasNext: boolean; items: any[] }>;
+  loadPage: (
+    pageNumber: number,
+    options?: { setScrollPosition?: boolean; replaceCollection?: boolean }
+  ) => Promise<{ hasNext: boolean; items: any[] }>;
   itemsCollection: any;
   initialItems: any[];
   cleanupFunctions: (() => void)[];
@@ -74,11 +77,19 @@ export const createLifecycleManager = (deps: LifecycleDependencies) => {
     for (let i = 1; i <= rangesToFetch; i++) {
       try {
         console.log(`📥 [InitialRanges] Loading range ${i}/${rangesToFetch}`);
-        const result = await loadPage(i);
+        // Only set scroll position and replace collection for the first page (page 1)
+        const shouldSetScrollPosition = i === 1;
+        const shouldReplaceCollection = i === 1;
+        const result = await loadPage(i, {
+          setScrollPosition: shouldSetScrollPosition,
+          replaceCollection: shouldReplaceCollection,
+        });
         console.log(`✅ [InitialRanges] Range ${i} loaded:`, {
           itemsLoaded: result.items.length,
           hasNext: result.hasNext,
           totalItemsNow: state.items.length,
+          scrollPositionSet: shouldSetScrollPosition,
+          collectionReplaced: shouldReplaceCollection,
         });
 
         // Small delay between requests to avoid overwhelming the API

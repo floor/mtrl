@@ -327,11 +327,16 @@ export const createListManager = (
               pages.length
             })`
           );
-          const result = await loadPage(page);
+          const result = await loadPage(page, {
+            setScrollPosition: false,
+            replaceCollection: false,
+          });
           console.log(`✅ [BackgroundLoad] Additional page ${page} loaded:`, {
             itemsLoaded: result.items.length,
             hasNext: result.hasNext,
             totalItemsNow: state.items.length,
+            scrollPositionSet: false,
+            collectionReplaced: false,
           });
 
           // Small delay between background requests to avoid overwhelming the API
@@ -732,11 +737,16 @@ export const createListManager = (
   /**
    * Loads a specific page (only works with page-based pagination)
    * @param {number} pageNumber - The page number to load (1-indexed)
+   * @param {Object} options - Loading options
+   * @param {boolean} options.setScrollPosition - Whether to set scroll position (default: true)
+   * @param {boolean} options.replaceCollection - Whether to replace collection or append (default: true)
    * @returns {Promise<Object>} Load result
    */
   const loadPage = async (
-    pageNumber: number
+    pageNumber: number,
+    options: { setScrollPosition?: boolean; replaceCollection?: boolean } = {}
   ): Promise<{ hasNext: boolean; items: any[] }> => {
+    const { setScrollPosition = true, replaceCollection = true } = options;
     console.log(`🔄 [LoadPage] Starting loadPage(${pageNumber})`, {
       currentPage: state.page,
       currentItemsLength: state.items.length,
@@ -810,8 +820,8 @@ export const createListManager = (
     // Set flag early to prevent updateVisibleItems from running during operations
     justJumpedToPage = true;
 
-    // Mark this as a page jump load operation
-    isPageJumpLoad = true;
+    // Mark this as a page jump load operation only if we're replacing the collection
+    isPageJumpLoad = replaceCollection;
 
     // Don't clear collection - just load the page if not already present
     // Check if we already have the page data
@@ -875,15 +885,19 @@ export const createListManager = (
       itemMeasurement.calculateOffsets(state.items);
     }
 
-    // RESPECT SCROLLBAR: Don't calculate artificial scroll positions
-    console.log(
-      `📍 [LoadPage] Loading page ${pageNumber} at user's scroll position`
-    );
+    // Calculate the natural scroll position for this page using existing variables
+    const itemHeight = validatedConfig.itemHeight || DEFAULTS.itemHeight;
+    const naturalScrollPosition = (pageStartId - 1) * itemHeight;
 
-    // RESPECT SCROLLBAR: Don't override user's scroll position
-    // Items will render at their correct virtual positions based on current scroll
     console.log(
-      `📍 [LoadPage] Respecting user scroll position: ${container.scrollTop}px`
+      `📍 [LoadPage] Calculating scroll position for page ${pageNumber}:`,
+      {
+        pageNumber,
+        pageStartId,
+        itemHeight,
+        naturalScrollPosition,
+        calculation: `(${pageStartId} - 1) × ${itemHeight} = ${naturalScrollPosition}px`,
+      }
     );
 
     // Force a complete re-render by clearing the visible range first
@@ -894,7 +908,7 @@ export const createListManager = (
     if (!state.itemCount) {
       // Fallback calculation if no API total available
       const fallbackTotal = PAGINATION.FALLBACK_TOTAL_COUNT; // Default fallback
-      const itemHeight = validatedConfig.itemHeight || 84; // Get item height for calculation
+      // Reuse existing itemHeight variable
       state.totalHeight = fallbackTotal * itemHeight;
 
       console.log(`📐 [LoadPage] Fallback total height calculation:`, {
@@ -921,15 +935,30 @@ export const createListManager = (
     renderer.resetVisibleRange();
 
     requestAnimationFrame(() => {
+      // Only set scroll position for explicit user navigation
+      let scrollPositionToUse = container.scrollTop; // Default to current position
+
+      if (setScrollPosition) {
+        // Set scroll position to natural position for this page (explicit navigation)
+        container.scrollTop = naturalScrollPosition;
+        state.scrollTop = naturalScrollPosition;
+        scrollPositionToUse = naturalScrollPosition;
+
+        console.log(
+          `📍 [LoadPage] Set scroll position to ${naturalScrollPosition}px for page ${pageNumber} (explicit navigation)`
+        );
+      } else {
+        // Don't change scroll position (initial/background loading)
+        console.log(
+          `📍 [LoadPage] Preserving current scroll position ${container.scrollTop}px for page ${pageNumber} (background/initial loading)`
+        );
+      }
+
       // Temporarily allow updates
       const wasJumpedToPage = justJumpedToPage;
       justJumpedToPage = false;
-      updateVisibleItems(container.scrollTop, true); // Use actual scrollbar position
+      updateVisibleItems(scrollPositionToUse, true); // Use appropriate scroll position
       justJumpedToPage = wasJumpedToPage;
-
-      // RESPECT USER'S SCROLL POSITION: Only snap to page start for explicit navigation
-      // Don't interfere with natural scrollbar behavior
-      // The scroll position should remain exactly where the user placed it
 
       // Reset page jump flag immediately after rendering
       console.log(`🔄 [LoadPage] Resetting justJumpedToPage flag immediately`);
