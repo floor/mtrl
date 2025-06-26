@@ -42,6 +42,9 @@ export const PAGINATION = {
   /** Number of initial ranges/pages to fetch during list creation for smoother scrolling */
   INITIAL_RANGES_TO_FETCH: 2,
 
+  /** Number of ranges/pages to fetch around target page during scroll jumps for smoother scrolling */
+  SCROLL_JUMP_RANGES_TO_FETCH: 2,
+
   /** Threshold in pixels for loading previous page when near top */
   LOAD_PREVIOUS_THRESHOLD: 200,
 
@@ -69,7 +72,7 @@ export const SCROLL = {
   DEFAULT_THROTTLE_MS: 16,
 
   /** Minimum time between load operations in milliseconds */
-  LOAD_THROTTLE_MS: 200,
+  LOAD_THROTTLE_MS: 100,
 
   /** Default load threshold as fraction (0-1) of total height */
   DEFAULT_LOAD_THRESHOLD: 0.8,
@@ -156,6 +159,7 @@ export const DEFAULTS = {
   itemHeight: RENDERING.DEFAULT_ITEM_HEIGHT,
   pageSize: PAGINATION.DEFAULT_PAGE_SIZE,
   initialRangesToFetch: PAGINATION.INITIAL_RANGES_TO_FETCH,
+  scrollJumpRangesToFetch: PAGINATION.SCROLL_JUMP_RANGES_TO_FETCH,
   renderBufferSize: RENDERING.DEFAULT_RENDER_BUFFER_SIZE,
   overscanCount: RENDERING.DEFAULT_OVERSCAN_COUNT,
   loadThreshold: SCROLL.DEFAULT_LOAD_THRESHOLD,

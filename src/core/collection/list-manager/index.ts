@@ -243,6 +243,117 @@ export const createListManager = (
   const loadItems = dataLoadingManager.loadItems;
 
   /**
+   * Load target page immediately, then load additional ranges in background
+   * to provide immediate UI response with smooth scrolling preparation
+   * @param targetPage Target page number to jump to
+   * @returns Promise that resolves when target page is loaded (additional ranges load in background)
+   */
+  const loadScrollJumpWithBackgroundRanges = async (
+    targetPage: number
+  ): Promise<void> => {
+    const rangesToFetch =
+      validatedConfig.scrollJumpRangesToFetch ||
+      PAGINATION.SCROLL_JUMP_RANGES_TO_FETCH;
+    console.log(
+      `🎯 [ScrollJump] Loading target page ${targetPage} immediately, then ${
+        rangesToFetch - 1
+      } additional ranges in background`
+    );
+
+    // 1. Load target page FIRST and return immediately for UI responsiveness
+    try {
+      console.log(
+        `⚡ [ScrollJump] Loading target page ${targetPage} immediately`
+      );
+      const result = await loadPage(targetPage);
+      console.log(
+        `✅ [ScrollJump] Target page ${targetPage} loaded immediately:`,
+        {
+          itemsLoaded: result.items.length,
+          hasNext: result.hasNext,
+          totalItemsNow: state.items.length,
+        }
+      );
+    } catch (error) {
+      console.error(
+        `❌ [ScrollJump] Failed to load target page ${targetPage}:`,
+        error
+      );
+      throw error; // If target page fails, the jump is not functional
+    }
+
+    // 2. Calculate additional pages to load in background (exclude target page)
+    if (rangesToFetch <= 1) {
+      console.log(
+        `📋 [ScrollJump] No additional ranges to load (rangesToFetch=${rangesToFetch})`
+      );
+      return; // No additional ranges needed
+    }
+
+    const additionalPages: number[] = [];
+
+    // Add pages after target
+    for (let i = 1; i < rangesToFetch; i++) {
+      additionalPages.push(targetPage + i);
+    }
+
+    // If we have room for a previous page and target page > 1, replace the last "next" page with a "previous" page
+    if (rangesToFetch >= 3 && targetPage > 1) {
+      additionalPages.pop(); // Remove the last "next" page
+      additionalPages.unshift(targetPage - 1); // Add previous page at the beginning
+    }
+
+    console.log(
+      `🔄 [ScrollJump] Loading ${additionalPages.length} additional pages in background:`,
+      additionalPages
+    );
+
+    // 3. Load additional ranges in background (don't await - fire and forget)
+    loadAdditionalRangesInBackground(additionalPages);
+  };
+
+  /**
+   * Load additional ranges in background without blocking the UI
+   * @param pages Array of page numbers to load
+   */
+  const loadAdditionalRangesInBackground = (pages: number[]): void => {
+    // Use setTimeout to ensure this runs after the current execution context
+    setTimeout(async () => {
+      for (let i = 0; i < pages.length; i++) {
+        const page = pages[i];
+        try {
+          console.log(
+            `📥 [BackgroundLoad] Loading additional page ${page} (${i + 1}/${
+              pages.length
+            })`
+          );
+          const result = await loadPage(page);
+          console.log(`✅ [BackgroundLoad] Additional page ${page} loaded:`, {
+            itemsLoaded: result.items.length,
+            hasNext: result.hasNext,
+            totalItemsNow: state.items.length,
+          });
+
+          // Small delay between background requests to avoid overwhelming the API
+          if (i < pages.length - 1) {
+            await new Promise((resolve) => setTimeout(resolve, 100)); // Slightly longer delay for background loads
+          }
+        } catch (error) {
+          console.error(
+            `❌ [BackgroundLoad] Failed to load additional page ${page}:`,
+            error
+          );
+          // Continue loading other pages even if one fails
+        }
+      }
+
+      console.log(
+        `🎉 [BackgroundLoad] All additional ranges loaded in background! Total items: ${state.items.length}`
+      );
+    }, 10); // Small delay to ensure target page renders first
+  };
+
+  /**
    * Schedule a page load when scrolling stops (debounced)
    * @param {number} targetPage - Page to load when scrolling stops
    */
@@ -263,11 +374,29 @@ export const createListManager = (
     // Debounce large scroll jumps to avoid rapid API calls during scrollbar dragging
     scrollJumpDebounceTimer = setTimeout(() => {
       console.log(
-        `🚀 [ScrollJump] Executing debounced load for page ${targetPage}`
+        `🚀 [ScrollJump] Executing debounced immediate load for page ${targetPage}`
       );
-      loadPage(targetPage);
-      scrollJumpDebounceTimer = null;
-      isScrollJumpInProgress = false; // Reset the flag when debounce completes
+      loadScrollJumpWithBackgroundRanges(targetPage)
+        .then(() => {
+          console.log(
+            `✅ [ScrollJump] Target page loaded immediately for page ${targetPage} (additional ranges loading in background)`
+          );
+        })
+        .catch((error) => {
+          console.error(
+            `❌ [ScrollJump] Failed to load target page ${targetPage}:`,
+            error
+          );
+          // Fallback to single page load if target page fails
+          console.log(
+            `🔄 [ScrollJump] Falling back to single page load for page ${targetPage}`
+          );
+          loadPage(targetPage);
+        })
+        .finally(() => {
+          scrollJumpDebounceTimer = null;
+          isScrollJumpInProgress = false; // Reset the flag when debounce completes
+        });
     }, BOUNDARIES.SCROLL_JUMP_LOAD_DEBOUNCE);
   };
 

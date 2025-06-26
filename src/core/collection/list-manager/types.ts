@@ -90,6 +90,12 @@ export interface ListManagerConfig {
   initialRangesToFetch?: number;
 
   /**
+   * Number of ranges/pages to fetch around target page during scroll jumps for smoother scrolling
+   * @default 2
+   */
+  scrollJumpRangesToFetch?: number;
+
+  /**
    * Threshold for loading more (0.0-1.0)
    */
   loadThreshold?: number;
