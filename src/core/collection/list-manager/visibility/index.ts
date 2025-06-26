@@ -204,17 +204,7 @@ export const createVisibilityManager = (deps: VisibilityDependencies) => {
       const viewportBottom =
         scrollTop + state.containerHeight + overscan * itemHeight;
 
-      console.log(`🚨 [MechanicalVisibility] Found 0 items - Debug info:`, {
-        scrollTop,
-        viewportTop,
-        viewportBottom,
-        firstItemId,
-        lastItemId,
-        collectionStartPx: firstItemId ? (firstItemId - 1) * itemHeight : null,
-        collectionEndPx: lastItemId ? lastItemId * itemHeight : null,
-        itemsInCollection: state.items.length,
-        reason: "Viewport and collection don't intersect",
-      });
+      // Debug: viewport and collection don't intersect
     }
 
     // Removed excessive logging

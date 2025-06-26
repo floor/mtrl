@@ -51,13 +51,7 @@ export const createDataLoadingManager = (deps: DataLoadingDependencies) => {
   ): Promise<{ items: any[]; meta: PaginationMeta }> => {
     const { isPageJumpLoad } = getPaginationFlags();
 
-    console.log(`🔄 [LoadItems] Called with params:`, {
-      page: params.page,
-      requestedPage: params.page,
-      currentStatePage: state.page,
-      isPageJumpLoad,
-      callStack: new Error().stack?.split("\n").slice(1, 4).join(" -> "),
-    });
+    // Loading items with page jump detection
 
     // PROTECTION: Prevent unwanted page loads that could corrupt state
     // Allow page jumps and adjacent page boundary loads (previous/next page)
@@ -70,18 +64,15 @@ export const createDataLoadingManager = (deps: DataLoadingDependencies) => {
       !isAdjacentPage;
 
     if (shouldBlock) {
-      console.warn(
-        `🚨 [LoadItems] BLOCKING unexpected page load: requested page ${params.page}, current page ${state.page}, isPageJumpLoad: ${isPageJumpLoad}, isAdjacentPage: ${isAdjacentPage}`
-      );
       // Don't load a different page unless it's explicitly a page jump or adjacent boundary load
       return {
         items: state.items,
         meta: { hasNext: state.hasNext, cursor: null },
       };
     } else if (isAdjacentPage && !isPageJumpLoad) {
-      console.log(
-        `✅ [LoadItems] Allowing adjacent page boundary load: requested page ${params.page}, current page ${state.page}`
-      );
+      // console.log(
+      //   `✅ [LoadItems] Allowing adjacent page boundary load: requested page ${params.page}, current page ${state.page}`
+      // );
     }
 
     try {
@@ -120,21 +111,12 @@ export const createDataLoadingManager = (deps: DataLoadingDependencies) => {
         params.page
       ) {
         if (items.length > 0) {
-          console.log(
-            `🔄 [LoadItems] Page ${params.page}: Replacing collection (page jump load)`
-          );
           await itemsCollection.clear();
           await itemsCollection.add(items);
         } else {
-          console.log(
-            `⚠️ [LoadItems] Page ${params.page}: Skipping collection replacement - API returned 0 items (defensive fix)`
-          );
         }
       } else if (state.paginationStrategy === "page") {
         // For boundary loads (adjacent pages), append to existing collection
-        console.log(
-          `📄 [LoadItems] Page ${params.page}: Appending to existing collection (boundary load)`
-        );
         if (items.length > 0) {
           await itemsCollection.add(items);
         }
@@ -160,18 +142,25 @@ export const createDataLoadingManager = (deps: DataLoadingDependencies) => {
         state.paginationStrategy === "page" &&
         params.page
       ) {
-        // For page jumps, always replace state items (fixed for high page numbers)
-        Object.assign(state, {
-          items: [...items],
-          cursor: response.meta.cursor ?? null,
-          page: response.meta.page ?? params.page,
-          hasNext: response.meta.hasNext ?? false,
-          totalHeightDirty: true,
-          itemCount: response.meta.total ?? items.length,
-        });
-        console.log(
-          `🔄 [LoadItems] Page jump state update: replaced with ${items.length} items`
-        );
+        if (items.length > 0) {
+          // For page jumps with data, replace state items (fixed for high page numbers)
+          Object.assign(state, {
+            items: [...items],
+            cursor: response.meta.cursor ?? null,
+            page: response.meta.page ?? params.page,
+            hasNext: response.meta.hasNext ?? false,
+            totalHeightDirty: true,
+            itemCount: response.meta.total ?? items.length,
+          });
+        } else {
+          // For page jumps with 0 items, only update metadata, preserve existing items
+          Object.assign(state, {
+            cursor: response.meta.cursor ?? null,
+            hasNext: response.meta.hasNext ?? false,
+            // Keep existing items and itemCount
+            totalHeightDirty: true,
+          });
+        }
       } else {
         // For boundary loads, update state with the FULL collection, not just new items
         const existingCollection = [...itemsCollection.getItems()];
@@ -200,16 +189,6 @@ export const createDataLoadingManager = (deps: DataLoadingDependencies) => {
       if (response.meta.total && !state.useStatic) {
         const naturalHeight = response.meta.total * (config.itemHeight || 84);
 
-        console.log(
-          `🎯 [TotalHeight] Setting immediate height for proper scrollbar:`,
-          {
-            apiTotal: response.meta.total.toLocaleString(),
-            itemHeight: config.itemHeight || 84,
-            naturalHeight: naturalHeight.toLocaleString(),
-            note: "Scrollbar will immediately reflect correct size",
-          }
-        );
-
         state.totalHeight = naturalHeight;
         state.totalHeightDirty = false; // Mark as clean since we have the definitive height
         updateSpacerHeight(elements, naturalHeight);
@@ -217,13 +196,6 @@ export const createDataLoadingManager = (deps: DataLoadingDependencies) => {
 
       // Reset the page jump flag
       setPaginationFlags({ isPageJumpLoad: false });
-
-      console.log(`✅ [LoadItems] Page ${params.page} complete:`, {
-        stateItemsLength: state.items.length,
-        collectionSize: itemsCollection.getSize(),
-        totalHeight: state.totalHeight.toLocaleString(),
-        isPageJump: isPageJumpLoad,
-      });
 
       // Call afterLoad callback if provided
       if (config.afterLoad) {
@@ -273,8 +245,6 @@ export const createDataLoadingManager = (deps: DataLoadingDependencies) => {
    * @returns Promise that resolves when refresh is complete
    */
   const refresh = async (): Promise<void> => {
-    console.log(`🔄 [Refresh] Refreshing list data`);
-
     // Clear collection first
     await itemsCollection.clear();
 
@@ -298,8 +268,6 @@ export const createDataLoadingManager = (deps: DataLoadingDependencies) => {
       const transformedItems = initialItems.map(config.transform!);
       await itemsCollection.add(transformedItems);
     }
-
-    console.log(`✅ [Refresh] List refreshed`);
   };
 
   return {

@@ -40,7 +40,6 @@ export const createPageEventManager = (config: ListManagerConfig) => {
    * @param data Event data
    */
   const emitPageChange = (event: PageEvent, data: PageChangeEventData) => {
-    console.log(`📢 [PageEvent] Emitting ${event}:`, data);
     pageEventObservers.forEach((callback) => {
       try {
         callback(event, data);

@@ -44,27 +44,7 @@ export function calculateVisibleRangeOptimized(
     endIndex + renderBufferSize + effectiveOverscan
   );
 
-  // DETAILED LOGGING FOR DEBUGGING PAGE NAVIGATION ISSUES
-  console.log("🔍 [VisibilityCalc] Optimized calculation:", {
-    scrollTop,
-    itemHeight,
-    containerHeight,
-    totalItems,
-    startIndex,
-    visibleCount,
-    endIndex,
-    renderBufferSize,
-    overscanCount,
-    effectiveOverscan,
-    adjustedStart,
-    adjustedEnd,
-    expectedVisibleItems: `${adjustedStart + 1}-${Math.min(
-      adjustedEnd,
-      totalItems
-    )}`,
-    calculation: `floor(${scrollTop}/${itemHeight}) = ${startIndex}`,
-    buffer: `${startIndex} - ${renderBufferSize} - ${effectiveOverscan} = ${adjustedStart}`,
-  });
+  // Optimized visibility calculation complete
 
   return { start: adjustedStart, end: adjustedEnd };
 }

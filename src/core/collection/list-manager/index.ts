@@ -74,9 +74,6 @@ export const createListManager = (
   container: HTMLElement,
   config: ListManagerConfig
 ): ListManager => {
-  // Version tracking for debugging
-  console.log("🔧 [ListManager] Version: 2024.1.15-consistent-init");
-
   // Add collection name to config
   config.collection = collection;
 
@@ -254,39 +251,15 @@ export const createListManager = (
     const rangesToFetch =
       validatedConfig.scrollJumpRangesToFetch ||
       PAGINATION.SCROLL_JUMP_RANGES_TO_FETCH;
-    console.log(
-      `🎯 [ScrollJump] Loading target page ${targetPage} immediately, then ${
-        rangesToFetch - 1
-      } additional ranges in background`
-    );
-
     // 1. Load target page FIRST and return immediately for UI responsiveness
     try {
-      console.log(
-        `⚡ [ScrollJump] Loading target page ${targetPage} immediately`
-      );
       const result = await loadPage(targetPage);
-      console.log(
-        `✅ [ScrollJump] Target page ${targetPage} loaded immediately:`,
-        {
-          itemsLoaded: result.items.length,
-          hasNext: result.hasNext,
-          totalItemsNow: state.items.length,
-        }
-      );
     } catch (error) {
-      console.error(
-        `❌ [ScrollJump] Failed to load target page ${targetPage}:`,
-        error
-      );
       throw error; // If target page fails, the jump is not functional
     }
 
     // 2. Calculate additional pages to load in background (exclude target page)
     if (rangesToFetch <= 1) {
-      console.log(
-        `📋 [ScrollJump] No additional ranges to load (rangesToFetch=${rangesToFetch})`
-      );
       return; // No additional ranges needed
     }
 
@@ -302,11 +275,6 @@ export const createListManager = (
       additionalPages.pop(); // Remove the last "next" page
       additionalPages.unshift(targetPage - 1); // Add previous page at the beginning
     }
-
-    console.log(
-      `🔄 [ScrollJump] Loading ${additionalPages.length} additional pages in background:`,
-      additionalPages
-    );
 
     // 3. Load additional ranges in background (don't await - fire and forget)
     loadAdditionalRangesInBackground(additionalPages);
@@ -487,9 +455,6 @@ export const createListManager = (
     // Removed excessive logging
 
     if (!hasCurrentPageData) {
-      console.log(
-        `📥 [PageBoundary] Loading current page ${state.page} (missing data for current page)`
-      );
       loadCurrentPageFromBoundary(state.page);
       return; // Don't check adjacent pages until current page is loaded
     }
@@ -510,9 +475,6 @@ export const createListManager = (
       });
 
       if (!hasNextPageData) {
-        console.log(
-          `📥 [PageBoundary] Loading next page ${nextPage} (scrolled near bottom)`
-        );
         loadNextPageFromBoundary(nextPage);
       }
     }
@@ -530,9 +492,6 @@ export const createListManager = (
       });
 
       if (!hasPrevPageData) {
-        console.log(
-          `📥 [PageBoundary] Loading previous page ${prevPage} (scrolled near top)`
-        );
         loadPreviousPageFromBoundary(prevPage);
       }
     }
@@ -547,10 +506,6 @@ export const createListManager = (
   ): Promise<void> => {
     if (state.loading) return;
 
-    console.log(
-      `🔄 [BoundaryLoad] Loading next page ${pageNumber} immediately (natural scroll)`
-    );
-
     const loadParams = createLoadParams(state, "page");
     loadParams.page = pageNumber;
 
@@ -560,10 +515,6 @@ export const createListManager = (
 
     try {
       const result = await loadItems(loadParams);
-      console.log(`✅ [BoundaryLoad] Next page ${pageNumber} loaded:`, {
-        newItemsCount: result.items.length,
-        totalItemsNow: state.items.length,
-      });
     } catch (error) {
       console.error(
         `❌ [BoundaryLoad] Failed to load next page ${pageNumber}:`,
@@ -581,10 +532,6 @@ export const createListManager = (
   ): Promise<void> => {
     if (state.loading) return;
 
-    console.log(
-      `🔄 [BoundaryLoad] Loading previous page ${pageNumber} immediately (natural scroll)`
-    );
-
     const loadParams = createLoadParams(state, "page");
     loadParams.page = pageNumber;
 
@@ -594,10 +541,6 @@ export const createListManager = (
 
     try {
       const result = await loadItems(loadParams);
-      console.log(`✅ [BoundaryLoad] Previous page ${pageNumber} loaded:`, {
-        newItemsCount: result.items.length,
-        totalItemsNow: state.items.length,
-      });
     } catch (error) {
       console.error(
         `❌ [BoundaryLoad] Failed to load previous page ${pageNumber}:`,
@@ -615,10 +558,6 @@ export const createListManager = (
   ): Promise<void> => {
     if (state.loading) return;
 
-    console.log(
-      `🔄 [BoundaryLoad] Loading current page ${pageNumber} immediately (missing data)`
-    );
-
     const loadParams = createLoadParams(state, "page");
     loadParams.page = pageNumber;
 
@@ -628,10 +567,6 @@ export const createListManager = (
 
     try {
       const result = await loadItems(loadParams);
-      console.log(`✅ [BoundaryLoad] Current page ${pageNumber} loaded:`, {
-        newItemsCount: result.items.length,
-        totalItemsNow: state.items.length,
-      });
     } catch (error) {
       console.error(
         `❌ [BoundaryLoad] Failed to load current page ${pageNumber}:`,
@@ -695,10 +630,6 @@ export const createListManager = (
       else {
         state.page = 2;
       }
-
-      console.log(
-        `📄 [LoadNext] Loading next page ${state.page} via normal scroll`
-      );
     }
 
     // Create load params for pagination
@@ -747,12 +678,6 @@ export const createListManager = (
     options: { setScrollPosition?: boolean; replaceCollection?: boolean } = {}
   ): Promise<{ hasNext: boolean; items: any[] }> => {
     const { setScrollPosition = true, replaceCollection = true } = options;
-    console.log(`🔄 [LoadPage] Starting loadPage(${pageNumber})`, {
-      currentPage: state.page,
-      currentItemsLength: state.items.length,
-      isAlreadyOnSamePage: state.page === pageNumber,
-      callStack: new Error().stack?.split("\n").slice(1, 5).join(" -> "),
-    });
 
     // Validate page number
     if (!Number.isInteger(pageNumber) || pageNumber < 1) {
@@ -775,10 +700,6 @@ export const createListManager = (
     // CRITICAL: If we're already on the same page and have items,
     // just ensure they're rendered instead of reloading
     if (state.page === pageNumber && state.items.length > 0) {
-      console.log(
-        `⚡ [LoadPage] Already on page ${pageNumber} with ${state.items.length} items - ensuring render`
-      );
-
       // Force a re-render to ensure items are visible
       state.visibleRange = { start: -1, end: -1 };
       renderer.resetVisibleRange();
@@ -806,11 +727,6 @@ export const createListManager = (
     state.page = pageNumber;
     state.paginationStrategy = paginationStrategy;
 
-    console.log(`📌 [LoadPage] Page state set to ${pageNumber}`, {
-      statePage: state.page,
-      requestedPage: pageNumber,
-    });
-
     // Clear any existing page jump timeout
     if (pageJumpTimeout !== null) {
       clearTimeout(pageJumpTimeout);
@@ -834,19 +750,10 @@ export const createListManager = (
       return itemId >= pageStartId && itemId <= pageEndId;
     });
 
-    console.log(`📋 [LoadPage] Page data check:`, {
-      pageNumber,
-      pageStartId,
-      pageEndId,
-      hasPageData,
-      currentItemsLength: state.items.length,
-    });
-
     let result;
 
     if (!hasPageData) {
       // Only load if we don't already have the page data
-      console.log(`📥 [LoadPage] Loading page ${pageNumber} data from API`);
 
       const loadParams = createLoadParams(state, paginationStrategy);
       loadParams.page = pageNumber;
@@ -858,10 +765,8 @@ export const createListManager = (
       result = await loadItems(loadParams);
 
       // Data is loaded - no need to wait for processing
-      console.log(`⏳ [LoadPage] Data loaded - proceeding immediately...`);
     } else {
       // We already have the data, just create a result object
-      console.log(`📋 [LoadPage] Page ${pageNumber} data already in memory`);
 
       const pageItems = state.items.filter((item) => {
         const itemId = parseInt(item?.id);
@@ -889,17 +794,6 @@ export const createListManager = (
     const itemHeight = validatedConfig.itemHeight || DEFAULTS.itemHeight;
     const naturalScrollPosition = (pageStartId - 1) * itemHeight;
 
-    console.log(
-      `📍 [LoadPage] Calculating scroll position for page ${pageNumber}:`,
-      {
-        pageNumber,
-        pageStartId,
-        itemHeight,
-        naturalScrollPosition,
-        calculation: `(${pageStartId} - 1) × ${itemHeight} = ${naturalScrollPosition}px`,
-      }
-    );
-
     // Force a complete re-render by clearing the visible range first
     state.visibleRange = { start: -1, end: -1 };
     state.containerHeight = container.clientHeight;
@@ -911,24 +805,10 @@ export const createListManager = (
       // Reuse existing itemHeight variable
       state.totalHeight = fallbackTotal * itemHeight;
 
-      console.log(`📐 [LoadPage] Fallback total height calculation:`, {
-        fallbackTotal: fallbackTotal.toLocaleString(),
-        localCollectionSize: state.items.length,
-        itemHeight: itemHeight,
-        calculatedTotalHeight: state.totalHeight.toLocaleString(),
-        note: "Using fallback - API total not available",
-      });
-
       updateSpacerHeight(elements, state.totalHeight);
       state.totalHeightDirty = false;
     } else {
       // API total already set - preserve the locked-in height
-      console.log(`📐 [LoadPage] Preserving locked-in total height:`, {
-        apiTotal: state.itemCount.toLocaleString(),
-        lockedHeight: state.totalHeight.toLocaleString(),
-        localCollectionSize: state.items.length,
-        note: "Height locked in from API total",
-      });
     }
 
     // Reset renderer and render immediately with DOM updates
@@ -938,20 +818,14 @@ export const createListManager = (
       // Only set scroll position for explicit user navigation
       let scrollPositionToUse = container.scrollTop; // Default to current position
 
-      if (setScrollPosition) {
+      if (setScrollPosition && result.items.length > 0) {
         // Set scroll position to natural position for this page (explicit navigation)
+        // Only if we actually got data from the API
         container.scrollTop = naturalScrollPosition;
         state.scrollTop = naturalScrollPosition;
         scrollPositionToUse = naturalScrollPosition;
-
-        console.log(
-          `📍 [LoadPage] Set scroll position to ${naturalScrollPosition}px for page ${pageNumber} (explicit navigation)`
-        );
       } else {
-        // Don't change scroll position (initial/background loading)
-        console.log(
-          `📍 [LoadPage] Preserving current scroll position ${container.scrollTop}px for page ${pageNumber} (background/initial loading)`
-        );
+        // Don't change scroll position (initial/background loading or no data)
       }
 
       // Temporarily allow updates
@@ -961,7 +835,6 @@ export const createListManager = (
       justJumpedToPage = wasJumpedToPage;
 
       // Reset page jump flag immediately after rendering
-      console.log(`🔄 [LoadPage] Resetting justJumpedToPage flag immediately`);
       justJumpedToPage = false;
     });
 

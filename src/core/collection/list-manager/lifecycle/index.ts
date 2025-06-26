@@ -70,26 +70,14 @@ export const createLifecycleManager = (deps: LifecycleDependencies) => {
   const loadInitialRangesSequentially = async (
     rangesToFetch: number
   ): Promise<void> => {
-    console.log(
-      `🔄 [InitialRanges] Starting sequential load of ${rangesToFetch} ranges`
-    );
-
     for (let i = 1; i <= rangesToFetch; i++) {
       try {
-        console.log(`📥 [InitialRanges] Loading range ${i}/${rangesToFetch}`);
         // Only set scroll position and replace collection for the first page (page 1)
         const shouldSetScrollPosition = i === 1;
         const shouldReplaceCollection = i === 1;
         const result = await loadPage(i, {
           setScrollPosition: shouldSetScrollPosition,
           replaceCollection: shouldReplaceCollection,
-        });
-        console.log(`✅ [InitialRanges] Range ${i} loaded:`, {
-          itemsLoaded: result.items.length,
-          hasNext: result.hasNext,
-          totalItemsNow: state.items.length,
-          scrollPositionSet: shouldSetScrollPosition,
-          collectionReplaced: shouldReplaceCollection,
         });
 
         // Small delay between requests to avoid overwhelming the API
@@ -105,10 +93,6 @@ export const createLifecycleManager = (deps: LifecycleDependencies) => {
         }
       }
     }
-
-    console.log(
-      `🎉 [InitialRanges] Sequential loading complete! Total items: ${state.items.length}`
-    );
   };
 
   /**
@@ -116,8 +100,6 @@ export const createLifecycleManager = (deps: LifecycleDependencies) => {
    * @returns Cleanup function
    */
   const initialize = (): (() => void) => {
-    console.log(`🚀 [Initialize] Starting list manager initialization`);
-
     // Set mounted flag
     state.mounted = true;
 
@@ -172,19 +154,10 @@ export const createLifecycleManager = (deps: LifecycleDependencies) => {
       // Initial load for API data - sequentially load multiple ranges for smoother scrolling
       const rangesToFetch =
         config.initialRangesToFetch || PAGINATION.INITIAL_RANGES_TO_FETCH;
-      console.log(
-        `🚀 [Initialize] Loading ${rangesToFetch} initial ranges sequentially for smoother scrolling`
-      );
 
-      loadInitialRangesSequentially(rangesToFetch)
-        .then(() => {
-          console.log(
-            `✅ [Initialize] All ${rangesToFetch} initial ranges loaded successfully`
-          );
-        })
-        .catch((err) => {
-          console.error("Error loading initial ranges:", err);
-        });
+      loadInitialRangesSequentially(rangesToFetch).catch((err) => {
+        console.error("Error loading initial ranges:", err);
+      });
     }
 
     // Handle resize events with ResizeObserver if available
@@ -257,12 +230,8 @@ export const createLifecycleManager = (deps: LifecycleDependencies) => {
       });
     }
 
-    console.log(`✅ [Initialize] List manager initialized successfully`);
-
     // Return cleanup function
     return () => {
-      console.log(`🧹 [Cleanup] Cleaning up list manager`);
-
       // Mark as unmounted
       state.mounted = false;
 
@@ -272,8 +241,6 @@ export const createLifecycleManager = (deps: LifecycleDependencies) => {
       // Run all cleanup functions
       cleanupFunctions.forEach((fn) => fn());
       cleanupFunctions.length = 0;
-
-      console.log(`✅ [Cleanup] List manager cleanup complete`);
     };
   };
 
