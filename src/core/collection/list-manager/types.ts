@@ -84,6 +84,12 @@ export interface ListManagerConfig {
   pageSize?: number;
 
   /**
+   * Number of initial ranges/pages to fetch at initialization for smoother scrolling
+   * @default 2
+   */
+  initialRangesToFetch?: number;
+
+  /**
    * Threshold for loading more (0.0-1.0)
    */
   loadThreshold?: number;

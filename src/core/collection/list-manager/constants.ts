@@ -39,6 +39,9 @@ export const PAGINATION = {
   /** Second page number for next loads */
   SECOND_PAGE: 2,
 
+  /** Number of initial ranges/pages to fetch during list creation for smoother scrolling */
+  INITIAL_RANGES_TO_FETCH: 2,
+
   /** Threshold in pixels for loading previous page when near top */
   LOAD_PREVIOUS_THRESHOLD: 200,
 
@@ -90,6 +93,15 @@ export const BOUNDARIES = {
 
   /** Delay in milliseconds for data processing after page load */
   DATA_PROCESSING_DELAY: 100,
+
+  /** Debounce delay for boundary page loads in milliseconds */
+  BOUNDARY_LOAD_DEBOUNCE: 150,
+
+  /** Debounce delay for large scroll jump page loads in milliseconds */
+  SCROLL_JUMP_LOAD_DEBOUNCE: 200,
+
+  /** Debounce delay for adjacent page loads in milliseconds */
+  ADJACENT_PAGE_DEBOUNCE: 100,
 } as const;
 
 /**
@@ -143,6 +155,7 @@ export const API = {
 export const DEFAULTS = {
   itemHeight: RENDERING.DEFAULT_ITEM_HEIGHT,
   pageSize: PAGINATION.DEFAULT_PAGE_SIZE,
+  initialRangesToFetch: PAGINATION.INITIAL_RANGES_TO_FETCH,
   renderBufferSize: RENDERING.DEFAULT_RENDER_BUFFER_SIZE,
   overscanCount: RENDERING.DEFAULT_OVERSCAN_COUNT,
   loadThreshold: SCROLL.DEFAULT_LOAD_THRESHOLD,

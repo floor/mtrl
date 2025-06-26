@@ -3,6 +3,7 @@ import {
   ListManagerConfig,
   ListManagerElements,
 } from "../types";
+import { PAGINATION } from "../constants";
 
 /**
  * Lifecycle management dependencies
@@ -56,6 +57,48 @@ export const createLifecycleManager = (deps: LifecycleDependencies) => {
     getTimeoutFlags,
     clearTimeouts,
   } = deps;
+
+  /**
+   * Sequentially load multiple ranges/pages during initialization to avoid concurrent requests
+   * and provide smoother scrolling experience
+   * @param rangesToFetch Number of ranges/pages to load
+   * @returns Promise that resolves when all ranges are loaded
+   */
+  const loadInitialRangesSequentially = async (
+    rangesToFetch: number
+  ): Promise<void> => {
+    console.log(
+      `🔄 [InitialRanges] Starting sequential load of ${rangesToFetch} ranges`
+    );
+
+    for (let i = 1; i <= rangesToFetch; i++) {
+      try {
+        console.log(`📥 [InitialRanges] Loading range ${i}/${rangesToFetch}`);
+        const result = await loadPage(i);
+        console.log(`✅ [InitialRanges] Range ${i} loaded:`, {
+          itemsLoaded: result.items.length,
+          hasNext: result.hasNext,
+          totalItemsNow: state.items.length,
+        });
+
+        // Small delay between requests to avoid overwhelming the API
+        if (i < rangesToFetch) {
+          await new Promise((resolve) => setTimeout(resolve, 50));
+        }
+      } catch (error) {
+        console.error(`❌ [InitialRanges] Failed to load range ${i}:`, error);
+        // Continue loading other ranges even if one fails
+        if (i === 1) {
+          // If first range fails, we should stop as the list won't be functional
+          throw error;
+        }
+      }
+    }
+
+    console.log(
+      `🎉 [InitialRanges] Sequential loading complete! Total items: ${state.items.length}`
+    );
+  };
 
   /**
    * Initialize the list manager and set up event listeners
@@ -115,16 +158,21 @@ export const createLifecycleManager = (deps: LifecycleDependencies) => {
           console.error("Error adding static items to collection:", err);
         });
     } else if (!state.useStatic) {
-      // Initial load for API data - use loadPage(1) for consistent initialization
+      // Initial load for API data - sequentially load multiple ranges for smoother scrolling
+      const rangesToFetch =
+        config.initialRangesToFetch || PAGINATION.INITIAL_RANGES_TO_FETCH;
       console.log(
-        "🚀 [Initialize] Using loadPage(1) for consistent initialization"
+        `🚀 [Initialize] Loading ${rangesToFetch} initial ranges sequentially for smoother scrolling`
       );
-      loadPage(1)
+
+      loadInitialRangesSequentially(rangesToFetch)
         .then(() => {
-          console.log("✅ [Initialize] Initial page load complete");
+          console.log(
+            `✅ [Initialize] All ${rangesToFetch} initial ranges loaded successfully`
+          );
         })
         .catch((err) => {
-          console.error("Error loading initial page:", err);
+          console.error("Error loading initial ranges:", err);
         });
     }
 

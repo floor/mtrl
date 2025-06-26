@@ -162,6 +162,10 @@ export const createListManager = (
   let isPageJumpLoad = false; // Track when we're loading due to a page jump
   let scrollStopTimeout: NodeJS.Timeout | null = null; // Track scroll stop debouncing
 
+  // Debounce timer for large scroll jumps only
+  let scrollJumpDebounceTimer: NodeJS.Timeout | null = null;
+  let isScrollJumpInProgress = false; // Track if we're in the middle of a debounced scroll jump
+
   // Initialize page event manager
   const pageEventManager = createPageEventManager(validatedConfig);
   const {
@@ -223,6 +227,12 @@ export const createListManager = (
       clearTimeout(scrollStopTimeout);
       scrollStopTimeout = null;
     }
+    // Clear scroll jump debounce timer and reset flag
+    if (scrollJumpDebounceTimer !== null) {
+      clearTimeout(scrollJumpDebounceTimer);
+      scrollJumpDebounceTimer = null;
+    }
+    isScrollJumpInProgress = false;
   };
 
   /**
@@ -237,17 +247,28 @@ export const createListManager = (
    * @param {number} targetPage - Page to load when scrolling stops
    */
   const scheduleScrollStopPageLoad = (targetPage: number): void => {
-    // Clear any existing timeout
-    if (scrollStopTimeout !== null) {
-      clearTimeout(scrollStopTimeout);
+    // If we're already debouncing a scroll jump, only reset if it's a significantly different page
+    if (isScrollJumpInProgress && scrollJumpDebounceTimer !== null) {
+      console.log(
+        `⏳ [ScrollJump] Scroll jump already in progress, updating target to page ${targetPage}`
+      );
+      clearTimeout(scrollJumpDebounceTimer);
+    } else if (!isScrollJumpInProgress) {
+      console.log(
+        `⏰ [ScrollJump] Starting debounce for large scroll jump to page ${targetPage}`
+      );
+      isScrollJumpInProgress = true;
     }
 
-    // Load page immediately - no need to wait for scroll stop
-    console.log(`⏰ [ScrollImmediate] Loading page ${targetPage} immediately`);
-
-    // Use the existing loadPage functionality which works perfectly
-    loadPage(targetPage);
-    scrollStopTimeout = null;
+    // Debounce large scroll jumps to avoid rapid API calls during scrollbar dragging
+    scrollJumpDebounceTimer = setTimeout(() => {
+      console.log(
+        `🚀 [ScrollJump] Executing debounced load for page ${targetPage}`
+      );
+      loadPage(targetPage);
+      scrollJumpDebounceTimer = null;
+      isScrollJumpInProgress = false; // Reset the flag when debounce completes
+    }, BOUNDARIES.SCROLL_JUMP_LOAD_DEBOUNCE);
   };
 
   /**
@@ -291,6 +312,15 @@ export const createListManager = (
     if (state.loading) {
       console.log(
         `🚫 [PageBoundary] Skipping boundary detection - already loading`
+      );
+      return;
+    }
+
+    // DEBOUNCE FIX: Don't run boundary detection during scroll jump debounce
+    // This prevents immediate loads from bypassing the debounce mechanism
+    if (isScrollJumpInProgress) {
+      console.log(
+        `🚫 [PageBoundary] Skipping boundary detection - scroll jump in progress (debouncing)`
       );
       return;
     }
@@ -384,7 +414,7 @@ export const createListManager = (
     if (state.loading) return;
 
     console.log(
-      `🔄 [BoundaryLoad] Loading next page ${pageNumber} from boundary detection`
+      `🔄 [BoundaryLoad] Loading next page ${pageNumber} immediately (natural scroll)`
     );
 
     const loadParams = createLoadParams(state, "page");
@@ -418,7 +448,7 @@ export const createListManager = (
     if (state.loading) return;
 
     console.log(
-      `🔄 [BoundaryLoad] Loading previous page ${pageNumber} from boundary detection`
+      `🔄 [BoundaryLoad] Loading previous page ${pageNumber} immediately (natural scroll)`
     );
 
     const loadParams = createLoadParams(state, "page");
@@ -452,7 +482,7 @@ export const createListManager = (
     if (state.loading) return;
 
     console.log(
-      `🔄 [BoundaryLoad] Loading current page ${pageNumber} from boundary detection (missing data)`
+      `🔄 [BoundaryLoad] Loading current page ${pageNumber} immediately (missing data)`
     );
 
     const loadParams = createLoadParams(state, "page");
