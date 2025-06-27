@@ -95,49 +95,27 @@ const calculateMechanicalVisibility = (
 
   // Check if viewport intersects with current collection at all
   if (viewportTop >= collectionEndPx || viewportBottom <= collectionStartPx) {
-    // SPECIAL CASE: If viewport is way beyond our data (empty virtual space)
-    // and we're at a very high scroll position, show the end of our actual data
+    // CRITICAL: With fake data enabled, let fake data system handle empty virtual space
+    // instead of the old EmptyVirtualSpaceFix
+    if (FAKE_DATA.ENABLED) {
+      // Let fake data system take over - return empty to trigger fake item generation
+      if (FAKE_DATA.DEBUG_LOGGING && scrollTop > 1000000) {
+        console.log(
+          `🎭 Empty virtual space - delegating to fake data at scroll ${Math.round(
+            scrollTop / 1000
+          )}k`
+        );
+      }
+      return { start: 0, end: 0 };
+    }
+
+    // Legacy EmptyVirtualSpaceFix (only when fake data is disabled)
     if (scrollTop > collectionEndPx * 2 && items.length > 0) {
-      // Show the last few items instead of empty space
       const endBuffer = Math.min(overscan, items.length);
-      const result = {
+      return {
         start: Math.max(0, items.length - endBuffer),
         end: items.length,
       };
-
-      // Debug log for empty virtual space fix
-      console.log(
-        `🔧 [EmptyVirtualSpaceFix] Applied fix for high scroll position:`,
-        {
-          scrollTop: scrollTop.toLocaleString(),
-          collectionEndPx: collectionEndPx.toLocaleString(),
-          itemsLength: items.length,
-          endBuffer,
-          resultRange: result,
-          itemsToShow: items
-            .slice(result.start, result.end)
-            .map((item) => ({ id: item?.id, headline: item?.headline })),
-        }
-      );
-
-      return result;
-    }
-
-    // Debug log for when viewport is outside collection
-    if (scrollTop > 1000000) {
-      // Only log for high scroll positions
-      console.log(
-        `❌ [ViewportOutside] Viewport completely outside collection:`,
-        {
-          scrollTop: scrollTop.toLocaleString(),
-          viewportRange: `${viewportTop.toLocaleString()} - ${viewportBottom.toLocaleString()}`,
-          collectionRange: `${collectionStartPx.toLocaleString()} - ${collectionEndPx.toLocaleString()}`,
-          itemsLength: items.length,
-          shouldApplyFix: scrollTop > collectionEndPx * 2,
-          fixNotAppliedBecause:
-            items.length === 0 ? "No items" : "Scroll not high enough",
-        }
-      );
     }
 
     // Viewport is completely outside current collection - show nothing
@@ -258,63 +236,18 @@ export const createVisibilityManager = (
       overscan
     );
 
-    // Strategic logging for bottom scroll debugging
-    if (scrollTop > 1000000) {
-      // Only log for very high scroll positions
+    // Lightweight debugging for critical scroll positions
+    if (scrollTop > 2000000 && FAKE_DATA.DEBUG_LOGGING) {
       const firstItemId = state.items[0] ? parseInt(state.items[0].id) : null;
       const lastItemId = state.items[state.items.length - 1]
         ? parseInt(state.items[state.items.length - 1].id)
         : null;
-      const collectionStartPx = firstItemId
-        ? (firstItemId - 1) * itemHeight
-        : 0;
-      const collectionEndPx = lastItemId ? lastItemId * itemHeight : 0;
-      const viewportTop = Math.max(0, scrollTop - overscan * itemHeight);
-      const viewportBottom =
-        scrollTop + state.containerHeight + overscan * itemHeight;
 
-      console.log(`🔍 [VisibilityDebug] High scroll position detected:`, {
-        scrollTop: scrollTop.toLocaleString(),
-        containerHeight: state.containerHeight,
-        itemHeight,
-        totalItems: state.items.length,
-        firstItemId,
-        lastItemId,
-        collectionStartPx: collectionStartPx.toLocaleString(),
-        collectionEndPx: collectionEndPx.toLocaleString(),
-        viewportTop: viewportTop.toLocaleString(),
-        viewportBottom: viewportBottom.toLocaleString(),
-        calculatedVisibleRange: visibleRange,
-        viewportOutsideCollection:
-          viewportTop >= collectionEndPx || viewportBottom <= collectionStartPx,
-        isEmptyVirtualSpace: scrollTop > collectionEndPx * 2,
-        emptyVirtualSpaceFix:
-          scrollTop > collectionEndPx * 2 &&
-          visibleRange.start !== visibleRange.end
-            ? "Applied"
-            : "Not needed",
-      });
-
-      // DETAILED COLLECTION DEBUG - Show what's actually in the collection
-      console.log(`📋 [CollectionDebug] State items analysis:`, {
-        stateItemsLength: state.items.length,
-        firstFewItems: state.items
-          .slice(0, 3)
-          .map((item) => ({ id: item?.id, headline: item?.headline })),
-        lastFewItems: state.items
-          .slice(-3)
-          .map((item) => ({ id: item?.id, headline: item?.headline })),
-        allItemIds: state.items.map((item) => item?.id),
-        itemsWithMissingIds: state.items.filter((item) => !item?.id).length,
-        calculationDetails: {
-          collectionRange: `${firstItemId} - ${lastItemId}`,
-          collectionPixelRange: `${collectionStartPx} - ${collectionEndPx}`,
-          viewportPixelRange: `${viewportTop} - ${viewportBottom}`,
-          scrollTooHigh: scrollTop > collectionEndPx * 2,
-          shouldShowEmptyVirtualSpaceFix:
-            scrollTop > collectionEndPx * 2 && state.items.length > 0,
-        },
-      });
+      console.log(
+        `🔍 High scroll: ${Math.round(
+          scrollTop / 1000
+        )}k, items ${firstItemId}-${lastItemId} (${state.items.length})`
+      );
     }
 
     if (visibleRange.end - visibleRange.start === 0) {
@@ -380,14 +313,14 @@ export const createVisibilityManager = (
           }
         }
 
-        console.log(
-          `🎭 [FakeData] Generated ${visibleItems.length} fake items for seamless scrolling:`,
-          {
-            scrollTop: scrollTop.toLocaleString(),
-            virtualRange: `${firstVirtualIndex} - ${lastVirtualIndex}`,
-            fakeItemIds: visibleItems.map((item) => item.id),
-          }
-        );
+        // Lightweight fake data logging
+        if (FAKE_DATA.DEBUG_LOGGING) {
+          console.log(
+            `🎭 Generated ${visibleItems.length} ${
+              FAKE_DATA.PLACEHOLDER_MODE
+            } placeholders at scroll ${Math.round(scrollTop / 1000)}k`
+          );
+        }
 
         // Update visible range to match fake items
         visibleRange = { start: 0, end: visibleItems.length };
@@ -419,18 +352,16 @@ export const createVisibilityManager = (
 
             // Handle fake items differently than real items
             if (fakeDataGenerator.isFakeItem(item)) {
-              // For fake items, calculate position based on the virtual index
-              const fakeIdNumber = parseInt(
-                item.id.replace(FAKE_DATA.ID_PREFIX, "")
-              );
-              offset = fakeIdNumber * itemHeight;
+              // For fake items, use the same positioning as real items (they now have real IDs)
+              const itemId = parseInt(item.id);
+              offset = (itemId - 1) * itemHeight; // Standard positioning
 
-              console.log(`🎭 [FakeRender] Positioning fake item:`, {
-                itemId: item.id,
-                virtualIndex: fakeIdNumber,
-                offset: offset.toLocaleString(),
-                scrollTop: scrollTop.toLocaleString(),
-              });
+              // Light debug logging for first fake item only
+              if (FAKE_DATA.DEBUG_LOGGING && localIndex === 0) {
+                console.log(
+                  `🎭 Fake item ${itemId} at ${Math.round(offset / 1000)}k`
+                );
+              }
             } else {
               // Real items use their natural position or empty virtual space fix
               const itemId = parseInt(item.id);
@@ -446,15 +377,12 @@ export const createVisibilityManager = (
               if (isEmptyVirtualSpace) {
                 offset = scrollTop + localIndex * itemHeight;
 
-                console.log(
-                  `🎯 [EmptyVirtualSpaceRender] Repositioning real item for visibility:`,
-                  {
-                    itemId,
-                    naturalOffset: (itemId - 1) * itemHeight,
-                    newOffset: offset.toLocaleString(),
-                    localIndex,
-                  }
-                );
+                // Light debug logging for empty virtual space repositioning
+                if (FAKE_DATA.DEBUG_LOGGING && localIndex === 0) {
+                  console.log(
+                    `🎯 Repositioning item ${itemId} to scroll position`
+                  );
+                }
               }
             }
 
@@ -539,17 +467,17 @@ export const createVisibilityManager = (
     let hasReplacements = false;
     const updatedVisibleItems = state.visibleItems.map((item) => {
       if (fakeDataGenerator.isFakeItem(item)) {
-        // Try to find a matching real item
-        const fakeIdNumber = parseInt(item.id.replace(FAKE_DATA.ID_PREFIX, ""));
+        // Try to find a matching real item (direct ID matching since fake items now use real IDs)
+        const fakeItemId = parseInt(item.id);
         const matchingRealItem = newRealItems.find(
-          (realItem) => parseInt(realItem.id) === fakeIdNumber + 1 // Adjust for 1-based real IDs
+          (realItem) => parseInt(realItem.id) === fakeItemId
         );
 
         if (matchingRealItem) {
           hasReplacements = true;
-          console.log(
-            `🔄 [FakeReplace] Replacing fake item ${item.id} with real item ${matchingRealItem.id}`
-          );
+          if (FAKE_DATA.DEBUG_LOGGING) {
+            console.log(`🔄 Replaced fake ${fakeItemId} with real`);
+          }
           return matchingRealItem;
         }
       }

@@ -1,4 +1,5 @@
 import { ListManagerConfig, ListManagerElements, VisibleRange } from "../types";
+import { placeholderRenderHook } from "../fake-data-generator";
 
 /**
  * Rendering manager dependencies
@@ -87,14 +88,37 @@ export const createRenderingManager = (deps: RenderingDependencies) => {
     positions.forEach(({ index, item, offset }) => {
       if (!item) return;
 
+      console.log(
+        "🎨 [RenderingManager] Rendering item directly (BYPASSING HOOK!)",
+        {
+          item: { id: item.id, _isFake: item._isFake },
+          index,
+        }
+      );
+
       // Create the item element
       const element = config.renderItem(item, index);
       if (!element) return;
+
+      console.log(
+        "🔍 [RenderingManager] Item rendered by config.renderItem, classes from user code:",
+        {
+          element,
+          itemId: item.id,
+          isFake: item._isFake,
+          classesFromUserRenderItem: Array.from(element.classList),
+        }
+      );
 
       // Add CSS classes
       if (!element.classList.contains("mtrl-list-item")) {
         element.classList.add("mtrl-list-item");
       }
+
+      // Apply placeholder render hook (this was missing!)
+      console.log("🔧 [RenderingManager] Applying placeholder hook...");
+      placeholderRenderHook(item, element);
+      console.log("✅ [RenderingManager] Placeholder hook applied");
 
       // Set data attributes
       if (item.id && !element.hasAttribute("data-id")) {

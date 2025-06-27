@@ -179,6 +179,54 @@ export const FAKE_DATA = {
 
   /** Mark fake items with this flag for identification */
   FAKE_FLAG: "__isFake",
+
+  /** Enable debug logging for fake data (lightweight) */
+  DEBUG_LOGGING: false,
+
+  /**
+   * Placeholder rendering mode options:
+   * - 'masked': Realistic structure with masked characters (█████ ████) - recommended default
+   * - 'skeleton': Loading bars (▁▁▁▁▁) - modern, shows loading state
+   * - 'blank': Empty spaces - minimal, preserves layout
+   * - 'dots': Dotted pattern (• • •) - subtle indication of content
+   * - 'realistic': Actual fake names - confusing, not recommended for UX
+   */
+  PLACEHOLDER_MODE: "masked" as
+    | "masked"
+    | "skeleton"
+    | "blank"
+    | "dots"
+    | "realistic",
+
+  /** Character used to mask alphanumeric content in 'masked' mode */
+  MASK_CHARACTER: "▪",
+
+  /** Opacity for placeholder items (0.0 to 1.0) */
+  PLACEHOLDER_OPACITY: 0.5,
+
+  /** Skeleton placeholder characters for different text lengths */
+  SKELETON_CHARS: {
+    SHORT: "▁▁▁▁▁", // 5 chars for short text
+    MEDIUM: "▁▁▁▁▁▁▁▁", // 8 chars for medium text
+    LONG: "▁▁▁▁▁▁▁▁▁▁▁", // 11 chars for long text
+    EMAIL: "▁▁▁▁▁@▁▁▁▁▁", // Email pattern
+  },
+
+  /** Blank placeholder characters */
+  BLANK_CHARS: {
+    SHORT: "     ", // Spaces for dimensions
+    MEDIUM: "        ",
+    LONG: "           ",
+    EMAIL: "     @     ",
+  },
+
+  /** Dot placeholder characters */
+  DOT_CHARS: {
+    SHORT: "• • • • •",
+    MEDIUM: "• • • • • • • •",
+    LONG: "• • • • • • • • • • •",
+    EMAIL: "• • • @ • • •",
+  },
 } as const;
 
 /**

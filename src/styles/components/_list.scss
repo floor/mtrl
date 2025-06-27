@@ -1,12 +1,12 @@
 // src/components/list/_list.scss
-@use '../../styles/abstract/base' as base;
-@use '../../styles/abstract/variables' as v;
-@use '../../styles/abstract/functions' as f;
-@use '../../styles/abstract/mixins' as m;
-@use '../../styles/abstract/theme' as t;
+@use "../../styles/abstract/base" as base;
+@use "../../styles/abstract/variables" as v;
+@use "../../styles/abstract/functions" as f;
+@use "../../styles/abstract/mixins" as m;
+@use "../../styles/abstract/theme" as t;
 
 // Component variables
-$component: '#{base.$prefix}-list';
+$component: "#{base.$prefix}-list";
 $list-item-height: 48px !default;
 $list-item-dense-height: 40px !default;
 $list-padding: 8px !default;
@@ -15,19 +15,21 @@ $list-section-padding: 16px !default;
 $list-container-min-height: 200px !default;
 
 // Transition variables
-$state-transition-duration: v.motion('duration-medium1') !default;
-$state-transition-easing: v.motion('easing-standard') !default;
-$quick-transition: v.motion('duration-short4') v.motion('easing-standard-accelerate');
+$state-transition-duration: v.motion("duration-medium1") !default;
+$state-transition-easing: v.motion("easing-standard") !default;
+$quick-transition: v.motion("duration-short4")
+  v.motion("easing-standard-accelerate");
 
 // Reusable transitions
 $color-transition: color $state-transition-duration $state-transition-easing;
-$bg-transition: background-color $state-transition-duration $state-transition-easing;
+$bg-transition: background-color $state-transition-duration
+  $state-transition-easing;
 $opacity-transition: opacity $state-transition-duration $state-transition-easing;
 
 // Component-specific mixins
-@mixin list-item-state-layer($state: 'hover', $color: 'on-surface') {
+@mixin list-item-state-layer($state: "hover", $color: "on-surface") {
   &::before {
-    content: '';
+    content: "";
     position: absolute;
     inset: 0;
     background-color: t.color($color);
@@ -39,8 +41,8 @@ $opacity-transition: opacity $state-transition-duration $state-transition-easing
 }
 
 @mixin list-section-title {
-  @include m.typography('label-large');
-  color: t.color('primary');
+  @include m.typography("label-large");
+  color: t.color("primary");
   padding: $list-section-padding $list-item-padding 8px;
 }
 
@@ -51,36 +53,45 @@ $opacity-transition: opacity $state-transition-duration $state-transition-easing
   overflow-x: hidden;
   height: 100%;
   min-height: $list-container-min-height;
-  background-color: t.color('surface');
+  background-color: t.color("surface");
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
   transition: $bg-transition;
-  
+
   // Scrollbar styling
   &::-webkit-scrollbar {
     width: 8px;
-    
-    &-track { background: transparent; }
-    
+
+    &-track {
+      background: transparent;
+    }
+
     &-thumb {
-      background-color: t.color('outline-variant');
+      background-color: t.color("outline-variant");
       border-radius: 4px;
       transition: $bg-transition;
-      
-      &:hover { background-color: t.alpha('outline', 0.38); }
+
+      &:hover {
+        background-color: t.alpha("outline", 0.38);
+      }
     }
   }
 
   // Loading state
   &--loading::after {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
     height: 3px;
-    background: linear-gradient(to right, transparent, t.color('primary'), transparent);
-    animation: loading-shimmer 1.5s infinite v.motion('easing-standard');
+    background: linear-gradient(
+      to right,
+      transparent,
+      t.color("primary"),
+      transparent
+    );
+    animation: loading-shimmer 1.5s infinite v.motion("easing-standard");
   }
 }
 
@@ -91,10 +102,9 @@ $opacity-transition: opacity $state-transition-duration $state-transition-easing
   padding: $list-padding 0;
   width: 100%;
   position: relative;
-  transition: 
-    padding $state-transition-duration $state-transition-easing,
+  transition: padding $state-transition-duration $state-transition-easing,
     $opacity-transition;
-  
+
   // Inner containers
   &-content {
     position: relative;
@@ -106,9 +116,12 @@ $opacity-transition: opacity $state-transition-duration $state-transition-easing
     display: flex;
     flex-direction: column;
     width: 100%;
-    transition: margin-bottom $state-transition-duration $state-transition-easing;
+    transition: margin-bottom $state-transition-duration
+      $state-transition-easing;
 
-    &:not(:last-child) { margin-bottom: $list-padding; }
+    &:not(:last-child) {
+      margin-bottom: $list-padding;
+    }
   }
 
   &-section-title {
@@ -120,7 +133,7 @@ $opacity-transition: opacity $state-transition-duration $state-transition-easing
   &-divider {
     height: 1px;
     margin: $list-padding 0;
-    background-color: t.color('outline-variant');
+    background-color: t.color("outline-variant");
     transition: $bg-transition;
   }
 
@@ -142,21 +155,21 @@ $opacity-transition: opacity $state-transition-duration $state-transition-easing
     justify-content: center;
     padding: 32px 16px;
     text-align: center;
-    color: t.color('on-surface-variant');
+    color: t.color("on-surface-variant");
     transition: $color-transition, $opacity-transition;
-    
+
     &-icon {
       font-size: 48px;
       margin-bottom: 16px;
       opacity: 0.6;
       transition: $opacity-transition;
     }
-    
+
     &-text {
-      @include m.typography('body-large');
+      @include m.typography("body-large");
       transition: $color-transition;
     }
-    
+
     &-action {
       margin-top: 16px;
       transition: $opacity-transition;
@@ -170,11 +183,11 @@ $opacity-transition: opacity $state-transition-duration $state-transition-easing
     justify-content: center;
     height: 48px;
     width: 100%;
-    color: t.color('on-surface-variant');
+    color: t.color("on-surface-variant");
     transition: $color-transition;
-    
+
     &::after {
-      content: '';
+      content: "";
       width: 24px;
       height: 24px;
       border: 2px solid currentColor;
@@ -199,13 +212,13 @@ $opacity-transition: opacity $state-transition-duration $state-transition-easing
   // High contrast mode
   @include m.high-contrast {
     border: 1px solid currentColor;
-    
+
     &-divider {
       border-top: 1px solid currentColor;
       background: none;
     }
   }
-  
+
   // LIST ITEMS
   &-item {
     display: flex;
@@ -217,7 +230,7 @@ $opacity-transition: opacity $state-transition-duration $state-transition-easing
     left: 0;
     width: 100%;
     gap: 16px;
-    color: t.color('on-surface');
+    color: t.color("on-surface");
     cursor: pointer;
     box-sizing: border-box;
     position: relative; // For state layers
@@ -226,10 +239,10 @@ $opacity-transition: opacity $state-transition-duration $state-transition-easing
 
     // State layer base
     &::before {
-      content: '';
+      content: "";
       position: absolute;
       inset: 0;
-      background-color: t.color('on-surface');
+      background-color: t.color("on-surface");
       opacity: 0;
       pointer-events: none;
       border-radius: inherit;
@@ -237,26 +250,31 @@ $opacity-transition: opacity $state-transition-duration $state-transition-easing
     }
 
     // State interactions
-    &:hover::before { opacity: f.get-state-opacity('hover'); }
-    
+    &:hover::before {
+      opacity: f.get-state-opacity("hover");
+    }
+
     &:focus-visible {
       outline: none;
-      
-      &::before { opacity: f.get-state-opacity('focus'); }
-      
+
+      &::before {
+        opacity: f.get-state-opacity("focus");
+      }
+
       &::after {
-        content: '';
+        content: "";
         position: absolute;
         inset: 0;
         border-radius: inherit;
-        box-shadow: inset 0 0 0 2px t.color('primary');
+        box-shadow: inset 0 0 0 2px t.color("primary");
         pointer-events: none;
-        transition: box-shadow $state-transition-duration $state-transition-easing;
+        transition: box-shadow $state-transition-duration
+          $state-transition-easing;
       }
     }
 
     &:active::before {
-      opacity: f.get-state-opacity('pressed');
+      opacity: f.get-state-opacity("pressed");
       transition: opacity $quick-transition;
     }
 
@@ -280,17 +298,17 @@ $opacity-transition: opacity $state-transition-duration $state-transition-easing
     &-overline,
     &-supporting,
     &-meta {
-      color: t.color('on-surface-variant');
+      color: t.color("on-surface-variant");
       transition: $color-transition;
     }
 
     &-overline {
-      @include m.typography('label-small');
+      @include m.typography("label-small");
     }
 
     &-headline {
-      @include m.typography('body-large');
-      color: t.color('on-surface');
+      @include m.typography("body-large");
+      color: t.color("on-surface");
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -298,14 +316,14 @@ $opacity-transition: opacity $state-transition-duration $state-transition-easing
     }
 
     &-supporting {
-      @include m.typography('body-medium');
+      @include m.typography("body-medium");
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
 
     &-meta {
-      @include m.typography('label-small');
+      @include m.typography("label-small");
       margin-top: 4px;
     }
 
@@ -316,7 +334,7 @@ $opacity-transition: opacity $state-transition-duration $state-transition-easing
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-      color: t.color('on-surface-variant');
+      color: t.color("on-surface-variant");
       transition: $color-transition, $opacity-transition;
     }
 
@@ -327,8 +345,7 @@ $opacity-transition: opacity $state-transition-duration $state-transition-easing
       svg {
         width: 100%;
         height: 100%;
-        transition: 
-          fill $state-transition-duration $state-transition-easing,
+        transition: fill $state-transition-duration $state-transition-easing,
           stroke $state-transition-duration $state-transition-easing;
       }
     }
@@ -339,20 +356,25 @@ $opacity-transition: opacity $state-transition-duration $state-transition-easing
       padding: 12px $list-item-padding;
 
       .#{$component}-item {
-        &-content { flex-direction: column; gap: 4px; }
-        &-meta { margin-top: $list-padding; }
+        &-content {
+          flex-direction: column;
+          gap: 4px;
+        }
+        &-meta {
+          margin-top: $list-padding;
+        }
       }
     }
 
     // Selected state
     &--selected {
-      background-color: t.color('secondary-container');
-      color: t.color('on-secondary-container');
+      background-color: t.color("secondary-container");
+      color: t.color("on-secondary-container");
       transition: $bg-transition, $color-transition;
 
       // Update state layer color for selected state
       &::before {
-        background-color: t.color('on-secondary-container');
+        background-color: t.color("on-secondary-container");
       }
 
       // Update text and icon colors for selected state
@@ -362,7 +384,7 @@ $opacity-transition: opacity $state-transition-duration $state-transition-easing
         &-supporting,
         &-overline,
         &-meta {
-          color: t.color('on-secondary-container');
+          color: t.color("on-secondary-container");
           transition: $color-transition;
         }
       }
@@ -378,24 +400,88 @@ $opacity-transition: opacity $state-transition-duration $state-transition-easing
     // Skeleton loading state
     &--skeleton {
       pointer-events: none;
-      
+
       .#{$component}-item-headline,
       .#{$component}-item-supporting,
       .#{$component}-item-leading {
-        background-color: t.color('surface-variant');
+        background-color: t.color("surface-variant");
         border-radius: 4px;
         color: transparent;
         animation: skeleton-pulse 1.5s infinite;
       }
-      
+
       .#{$component}-item-headline {
         width: 70%;
         height: 16px;
       }
-      
+
       .#{$component}-item-supporting {
         width: 50%;
         height: 14px;
+      }
+    }
+
+    // Placeholder loading state (configurable opacity)
+    &.#{base.$prefix}-item-placeholder {
+      opacity: var(--placeholder-opacity, 0.2);
+      pointer-events: none;
+      position: relative;
+      transition: opacity 0.3s ease-in-out,
+        background-color $state-transition-duration $state-transition-easing;
+
+      // Slight background tint for better visibility
+      background-color: t.alpha("surface-variant", 0.3);
+
+      // Optional subtle loading shimmer
+      &::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          t.alpha("primary", 0.12),
+          transparent
+        );
+        animation: placeholder-shimmer 2s infinite v.motion("easing-standard");
+        transform-origin: left center;
+      }
+
+      // Accessibility indicator
+      &[aria-busy="true"] {
+        .#{$component}-item-content {
+          opacity: 0.8;
+          transition: opacity 0.3s ease-in-out;
+        }
+      }
+
+      // Enhanced text styling for better placeholder visibility
+      .#{$component}-item-headline,
+      .#{$component}-item-supporting,
+      .#{$component}-item-meta {
+        transition: color 0.3s ease-in-out, opacity 0.3s ease-in-out;
+      }
+
+      // Reduce motion support
+      @media (prefers-reduced-motion: reduce) {
+        &::after {
+          animation: none;
+          background: t.alpha("primary", 0.06);
+        }
+      }
+
+      // High contrast mode
+      @include m.high-contrast {
+        outline: 1px dashed currentColor;
+        outline-offset: -1px;
+
+        &::after {
+          background: currentColor;
+          opacity: 0.3;
+        }
       }
     }
   }
@@ -415,9 +501,9 @@ $opacity-transition: opacity $state-transition-duration $state-transition-easing
   // [dir='rtl'] & {
   //   @content;
   // }
-  
+
   // With this correct approach:
-  [dir='rtl'] {
+  [dir="rtl"] {
     @content;
   }
 }
@@ -432,11 +518,40 @@ $opacity-transition: opacity $state-transition-duration $state-transition-easing
 
 // ANIMATIONS
 @keyframes loading-shimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
 }
 
 @keyframes rotation {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes placeholder-shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes skeleton-pulse {
+  0% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0.6;
+  }
 }

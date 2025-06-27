@@ -60,7 +60,12 @@ import {
   COLLECTION,
   TIMING,
   DEFAULTS,
+  FAKE_DATA,
 } from "./constants";
+import {
+  installPlaceholderHook,
+  placeholderRenderHook,
+} from "./fake-data-generator";
 
 /**
  * Creates a list manager for a specific collection
@@ -119,6 +124,15 @@ export const createListManager = (
     itemMeasurement,
     recyclePool
   );
+
+  // Install placeholder render hook for automatic styling
+  console.log("🔧 [ListManager] About to install placeholder hook...", {
+    renderer,
+    setRenderHook: renderer.setRenderHook,
+    installPlaceholderHook,
+  });
+  installPlaceholderHook(renderer.setRenderHook);
+  console.log("✅ [ListManager] Placeholder hook installation completed");
 
   // Initialize collection for data management
   // NOTE: No transform function needed - items are already transformed in loadItems()
@@ -353,42 +367,32 @@ export const createListManager = (
   const scheduleScrollStopPageLoad = (targetPage: number): void => {
     // If we're already debouncing a scroll jump, only reset if it's a significantly different page
     if (isScrollJumpInProgress && scrollJumpDebounceTimer !== null) {
-      console.log(
-        `⏳ [ScrollJump] Scroll jump already in progress, updating target to page ${targetPage}`
-      );
       clearTimeout(scrollJumpDebounceTimer);
     } else if (!isScrollJumpInProgress) {
-      console.log(
-        `⏰ [ScrollJump] Starting debounce for large scroll jump to page ${targetPage}`
-      );
+      if (FAKE_DATA.DEBUG_LOGGING) {
+        console.log(`⏰ Scroll jump to page ${targetPage}`);
+      }
       isScrollJumpInProgress = true;
     }
 
     // Debounce large scroll jumps to avoid rapid API calls during scrollbar dragging
     scrollJumpDebounceTimer = setTimeout(() => {
-      console.log(
-        `🚀 [ScrollJump] Executing debounced immediate load for page ${targetPage}`
-      );
+      if (FAKE_DATA.DEBUG_LOGGING) {
+        console.log(`🚀 Loading page ${targetPage}`);
+      }
       loadScrollJumpWithBackgroundRanges(targetPage)
         .then(() => {
-          console.log(
-            `✅ [ScrollJump] Target page loaded immediately for page ${targetPage} (additional ranges loading in background)`
-          );
+          if (FAKE_DATA.DEBUG_LOGGING) {
+            console.log(`✅ Page ${targetPage} loaded`);
+          }
         })
         .catch((error) => {
-          console.error(
-            `❌ [ScrollJump] Failed to load target page ${targetPage}:`,
-            error
-          );
-          // Fallback to single page load if target page fails
-          console.log(
-            `🔄 [ScrollJump] Falling back to single page load for page ${targetPage}`
-          );
+          console.error(`❌ Failed to load page ${targetPage}:`, error);
           loadPage(targetPage);
         })
         .finally(() => {
           scrollJumpDebounceTimer = null;
-          isScrollJumpInProgress = false; // Reset the flag when debounce completes
+          isScrollJumpInProgress = false;
         });
     }, BOUNDARIES.SCROLL_JUMP_LOAD_DEBOUNCE);
   };
@@ -401,22 +405,6 @@ export const createListManager = (
     scrollTop = state.scrollTop,
     isPageJump = false
   ): void => {
-    // Strategic logging for bottom scroll debugging
-    if (scrollTop > 1000000) {
-      // Only log for very high scroll positions
-      console.log(
-        `🚨 [ScrollDebug] Very high scroll position in updateVisibleItems:`,
-        {
-          scrollTop: scrollTop.toLocaleString(),
-          containerScrollTop: container.scrollTop.toLocaleString(),
-          stateScrollTop: state.scrollTop.toLocaleString(),
-          totalItems: state.items.length,
-          totalHeight: state.totalHeight.toLocaleString(),
-          isPageJump,
-          source: "updateVisibleItems",
-        }
-      );
-    }
     updateVisibleItemsImpl?.(scrollTop, isPageJump);
   };
 
@@ -440,26 +428,26 @@ export const createListManager = (
     // CRITICAL FIX: Don't run boundary detection immediately after page jumps
     // This prevents loading adjacent pages when we just jumped to a specific page
     if (justJumpedToPage) {
-      console.log(
-        `🚫 [PageBoundary] Skipping boundary detection - just jumped to page ${state.page}`
-      );
+      if (FAKE_DATA.DEBUG_LOGGING) {
+        console.log(`🚫 Skip boundary - just jumped to page ${state.page}`);
+      }
       return;
     }
 
     // CRITICAL FIX: Prevent concurrent boundary loads to avoid infinite loops
     if (state.loading) {
-      console.log(
-        `🚫 [PageBoundary] Skipping boundary detection - already loading`
-      );
+      if (FAKE_DATA.DEBUG_LOGGING) {
+        console.log(`🚫 Skip boundary - already loading`);
+      }
       return;
     }
 
     // DEBOUNCE FIX: Don't run boundary detection during scroll jump debounce
     // This prevents immediate loads from bypassing the debounce mechanism
     if (isScrollJumpInProgress) {
-      console.log(
-        `🚫 [PageBoundary] Skipping boundary detection - scroll jump in progress (debouncing)`
-      );
+      if (FAKE_DATA.DEBUG_LOGGING) {
+        console.log(`🚫 Skip boundary - scroll jump in progress`);
+      }
       return;
     }
 
@@ -1072,10 +1060,27 @@ export const createListManager = (
       const element = validatedConfig.renderItem(item, index);
       if (!element) return;
 
+      console.log(
+        "🔍 [MainRenderFunction] Item rendered by validatedConfig.renderItem, classes from user code:",
+        {
+          itemId: item.id,
+          isFake: item._isFake,
+          classesFromUserRenderItem: Array.from(element.classList),
+        }
+      );
+
       // Add CSS classes
       if (!element.classList.contains("mtrl-list-item")) {
         element.classList.add("mtrl-list-item");
+        console.log("🔧 [MainRenderFunction] Added mtrl-list-item class");
       }
+
+      console.log(
+        "🔍 [MainRenderFunction] Classes after adding mtrl-list-item:",
+        {
+          classList: Array.from(element.classList),
+        }
+      );
 
       // Set data attributes
       if (item.id && !element.hasAttribute("data-id")) {
@@ -1088,25 +1093,22 @@ export const createListManager = (
       element.style.left = "0";
       element.style.width = "100%";
 
-      // Apply render hook if available
-      if (renderer.setRenderHook) {
-        // Get the current render hook by temporarily setting a new one
-        let currentRenderHook:
-          | ((item: any, element: HTMLElement) => void)
-          | null = null;
-        const originalSetRenderHook = renderer.setRenderHook;
-        renderer.setRenderHook = (hook) => {
-          currentRenderHook = hook;
-        };
-
-        // Try to call the hook if it exists
-        if (currentRenderHook) {
-          currentRenderHook(item, element);
+      // Apply placeholder render hook (was using broken hook retrieval logic before)
+      console.log(
+        "🔧 [MainRenderFunction] About to apply placeholder hook...",
+        {
+          item: { id: item.id, _isFake: item._isFake },
+          element,
+          classesBeforeHook: Array.from(element.classList),
         }
-
-        // Restore the original setRenderHook function
-        renderer.setRenderHook = originalSetRenderHook;
-      }
+      );
+      placeholderRenderHook(item, element);
+      console.log(
+        "✅ [MainRenderFunction] Placeholder hook applied, final classes:",
+        {
+          classList: Array.from(element.classList),
+        }
+      );
 
       fragment.appendChild(element);
     });
