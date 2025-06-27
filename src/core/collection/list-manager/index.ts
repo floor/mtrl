@@ -126,13 +126,7 @@ export const createListManager = (
   );
 
   // Install placeholder render hook for automatic styling
-  console.log("🔧 [ListManager] About to install placeholder hook...", {
-    renderer,
-    setRenderHook: renderer.setRenderHook,
-    installPlaceholderHook,
-  });
   installPlaceholderHook(renderer.setRenderHook);
-  console.log("✅ [ListManager] Placeholder hook installation completed");
 
   // Initialize collection for data management
   // NOTE: No transform function needed - items are already transformed in loadItems()
@@ -291,15 +285,7 @@ export const createListManager = (
       // Only add next page if we know it exists OR if we don't have total page info yet
       if (!totalPages || nextPage <= totalPages) {
         additionalPages.push(nextPage);
-        console.log(
-          `📄 [BackgroundRange] Adding next page ${nextPage} (${
-            totalPages ? `valid: ${nextPage} <= ${totalPages}` : "total unknown"
-          })`
-        );
       } else {
-        console.log(
-          `🚫 [BackgroundRange] Skipping page ${nextPage} - beyond total pages (${totalPages})`
-        );
       }
     }
 
@@ -307,7 +293,6 @@ export const createListManager = (
     if (rangesToFetch >= 3 && targetPage > 1) {
       additionalPages.pop(); // Remove the last "next" page
       additionalPages.unshift(targetPage - 1); // Add previous page at the beginning
-      console.log(`📄 [BackgroundRange] Added previous page ${targetPage - 1}`);
     }
 
     // 3. Load additional ranges in background (don't await - fire and forget)
@@ -324,21 +309,9 @@ export const createListManager = (
       for (let i = 0; i < pages.length; i++) {
         const page = pages[i];
         try {
-          console.log(
-            `📥 [BackgroundLoad] Loading additional page ${page} (${i + 1}/${
-              pages.length
-            })`
-          );
           const result = await loadPage(page, {
             setScrollPosition: false,
             replaceCollection: false,
-          });
-          console.log(`✅ [BackgroundLoad] Additional page ${page} loaded:`, {
-            itemsLoaded: result.items.length,
-            hasNext: result.hasNext,
-            totalItemsNow: state.items.length,
-            scrollPositionSet: false,
-            collectionReplaced: false,
           });
 
           // Small delay between background requests to avoid overwhelming the API
@@ -353,10 +326,6 @@ export const createListManager = (
           // Continue loading other pages even if one fails
         }
       }
-
-      console.log(
-        `🎉 [BackgroundLoad] All additional ranges loaded in background! Total items: ${state.items.length}`
-      );
     }, 10); // Small delay to ensure target page renders first
   };
 
@@ -1015,16 +984,6 @@ export const createListManager = (
       }
     }
 
-    console.log(`🎯 [VirtualPositioning] Natural positioning:`, {
-      visibleRangeStart: visibleRange.start,
-      visibleRangeEnd: visibleRange.end,
-      firstItemId: items[visibleRange.start]?.id,
-      lastItemId: items[visibleRange.end - 1]?.id,
-      firstItemOffset: positions[0]?.offset,
-      lastItemOffset: positions[positions.length - 1]?.offset,
-      itemCount: positions.length,
-    });
-
     return positions;
   };
 
@@ -1060,27 +1019,10 @@ export const createListManager = (
       const element = validatedConfig.renderItem(item, index);
       if (!element) return;
 
-      console.log(
-        "🔍 [MainRenderFunction] Item rendered by validatedConfig.renderItem, classes from user code:",
-        {
-          itemId: item.id,
-          isFake: item._isFake,
-          classesFromUserRenderItem: Array.from(element.classList),
-        }
-      );
-
       // Add CSS classes
       if (!element.classList.contains("mtrl-list-item")) {
         element.classList.add("mtrl-list-item");
-        console.log("🔧 [MainRenderFunction] Added mtrl-list-item class");
       }
-
-      console.log(
-        "🔍 [MainRenderFunction] Classes after adding mtrl-list-item:",
-        {
-          classList: Array.from(element.classList),
-        }
-      );
 
       // Set data attributes
       if (item.id && !element.hasAttribute("data-id")) {
@@ -1094,21 +1036,7 @@ export const createListManager = (
       element.style.width = "100%";
 
       // Apply placeholder render hook (was using broken hook retrieval logic before)
-      console.log(
-        "🔧 [MainRenderFunction] About to apply placeholder hook...",
-        {
-          item: { id: item.id, _isFake: item._isFake },
-          element,
-          classesBeforeHook: Array.from(element.classList),
-        }
-      );
       placeholderRenderHook(item, element);
-      console.log(
-        "✅ [MainRenderFunction] Placeholder hook applied, final classes:",
-        {
-          classList: Array.from(element.classList),
-        }
-      );
 
       fragment.appendChild(element);
     });
@@ -1126,8 +1054,6 @@ export const createListManager = (
     if (elements.bottomSentinel && !elements.bottomSentinel.parentNode) {
       elements.content.appendChild(elements.bottomSentinel);
     }
-
-    // Removed excessive logging
   };
 
   // Set up managers now that all functions are defined

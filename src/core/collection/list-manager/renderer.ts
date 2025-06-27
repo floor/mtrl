@@ -35,12 +35,6 @@ export const createRenderer = (
    * @returns DOM element
    */
   const createItemElement = (item: any, index: number): HTMLElement => {
-    console.log("🏗️ [Renderer] createItemElement called", {
-      item: item ? { id: item.id, _isFake: item._isFake } : null,
-      index,
-      hasRenderHook: !!renderHook,
-    });
-
     // Skip invalid items
     if (!item) {
       console.warn("Attempted to render undefined item at index", index);
@@ -88,15 +82,7 @@ export const createRenderer = (
 
     // Apply any post-render hooks if available
     if (renderHook) {
-      console.log("🪝 [Renderer] Calling render hook", {
-        item: item ? { id: item.id } : null,
-        element,
-        renderHook,
-      });
       renderHook(item, element);
-      console.log("✅ [Renderer] Render hook completed");
-    } else {
-      console.log("⚠️ [Renderer] No render hook available", { renderHook });
     }
 
     return element;
@@ -146,12 +132,7 @@ export const createRenderer = (
     setRenderHook: (
       hookFn: (item: any, element: HTMLElement) => void
     ): void => {
-      console.log("🎯 [Renderer] Setting render hook", {
-        hookFn,
-        previousHook: renderHook,
-      });
       renderHook = hookFn;
-      console.log("✅ [Renderer] Render hook set successfully", { renderHook });
     },
 
     /**

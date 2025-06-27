@@ -421,23 +421,23 @@ $placeholder-animation-speed: 1.5s !default;
       );
 
       // Loading shimmer effect
-      &::after {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 3px;
-        background: linear-gradient(
-          90deg,
-          transparent,
-          t.alpha("primary", $placeholder-shimmer-alpha),
-          transparent
-        );
-        animation: placeholder-shimmer $placeholder-animation-speed infinite
-          v.motion("easing-standard");
-        transform-origin: left center;
-      }
+      // &::after {
+      //   content: "";
+      //   position: absolute;
+      //   top: 0;
+      //   left: 0;
+      //   right: 0;
+      //   height: 3px;
+      //   background: linear-gradient(
+      //     90deg,
+      //     transparent,
+      //     t.alpha("primary", $placeholder-shimmer-alpha),
+      //     transparent
+      //   );
+      //   animation: placeholder-shimmer $placeholder-animation-speed infinite
+      //     v.motion("easing-standard");
+      //   transform-origin: left center;
+      // }
 
       // Accessibility indicator
       &[aria-busy="true"] {
@@ -480,20 +480,20 @@ $placeholder-animation-speed: 1.5s !default;
         }
       }
 
-      // Reduce motion support
-      @media (prefers-reduced-motion: reduce) {
-        &::after {
-          animation: none;
-          background: t.alpha("primary", calc($placeholder-shimmer-alpha / 2));
-        }
+      // // Reduce motion support
+      // @media (prefers-reduced-motion: reduce) {
+      //   &::after {
+      //     animation: none;
+      //     background: t.alpha("primary", calc($placeholder-shimmer-alpha / 2));
+      //   }
 
-        &--skeleton {
-          .#{$component}-item-headline,
-          .#{$component}-item-supporting {
-            animation: none;
-          }
-        }
-      }
+      //   &--skeleton {
+      //     .#{$component}-item-headline,
+      //     .#{$component}-item-supporting {
+      //       animation: none;
+      //     }
+      //   }
+      // }
 
       // High contrast mode
       @include m.high-contrast {

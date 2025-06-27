@@ -238,7 +238,12 @@ export const createCollection = <T extends CollectionItem>(
     if (!Array.isArray(items)) {
       // Single item case
       if (!validate(items)) return [];
-      return [transform(items)];
+      const transformed = transform(items);
+      if (transformed.id) {
+        return [transformed];
+      } else {
+        throw new Error("Items must have an id property");
+      }
     }
 
     // Empty array check

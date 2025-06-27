@@ -409,7 +409,6 @@ export const setPlaceholderMode = (
   mode: "masked" | "skeleton" | "blank" | "dots" | "realistic"
 ) => {
   fakeDataGenerator.setPlaceholderMode(mode);
-  console.log(`🎭 Placeholder mode changed to: ${mode}`);
 };
 
 export const getPlaceholderMode = () => FAKE_DATA.PLACEHOLDER_MODE;
@@ -417,14 +416,10 @@ export const getPlaceholderMode = () => FAKE_DATA.PLACEHOLDER_MODE;
 // Debug utilities for placeholder styling
 export const enablePlaceholderLogging = () => {
   (window as any).MTRL_PLACEHOLDER_DEBUG = true;
-  console.log(
-    "🔍 Placeholder logging enabled - you'll see class add/remove operations"
-  );
 };
 
 export const disablePlaceholderLogging = () => {
   (window as any).MTRL_PLACEHOLDER_DEBUG = false;
-  console.log("🔇 Placeholder logging disabled");
 };
 
 // Wrapper functions with logging for placeholder class management
@@ -440,11 +435,6 @@ export const addPlaceholderClass = (element: HTMLElement, item: any) => {
   }
 
   if (item._isFake || item[FAKE_DATA.FAKE_FLAG]) {
-    console.log("🔍 [PlaceholderClass] Classes BEFORE adding placeholder:", {
-      classList: Array.from(element.classList),
-      innerHTML: element.innerHTML.substring(0, 100),
-    });
-
     // Add the base placeholder class
     baseAddClass(element, "item-placeholder");
 
@@ -453,16 +443,6 @@ export const addPlaceholderClass = (element: HTMLElement, item: any) => {
     if (mode && mode !== "realistic") {
       baseAddClass(element, `item-placeholder--${mode}`);
     }
-
-    console.log("🔍 [PlaceholderClass] Classes AFTER adding placeholder:", {
-      classList: Array.from(element.classList),
-      baseClass: "mtrl-item-placeholder",
-      modeClass: `mtrl-item-placeholder--${mode}`,
-      hasBaseClass: element.classList.contains("mtrl-item-placeholder"),
-      hasModeClass: element.classList.contains(
-        `mtrl-item-placeholder--${mode}`
-      ),
-    });
 
     // Clean up classes - keep mtrl-list-item and placeholder classes
     const currentClasses = Array.from(element.classList);
@@ -475,31 +455,12 @@ export const addPlaceholderClass = (element: HTMLElement, item: any) => {
     currentClasses.forEach((className) => {
       if (!classesToKeep.includes(className)) {
         element.classList.remove(className);
-        console.log(
-          `🧹 [PlaceholderClass] Removed unwanted class: ${className}`
-        );
       }
-    });
-
-    console.log("🔍 [PlaceholderClass] Classes AFTER cleanup:", {
-      classList: Array.from(element.classList),
-      shouldOnlyHave: classesToKeep.filter((c) => c.includes("mtrl-")),
     });
 
     // Add accessibility attributes
     element.setAttribute("aria-busy", "true");
     element.setAttribute("aria-label", "Loading content...");
-
-    // Log the operation
-    console.log(`🎭 Added placeholder class: mtrl-item-placeholder--${mode}`, {
-      element,
-      mode: mode,
-      allClasses: Array.from(element.classList),
-      hasBaseClass: element.classList.contains("mtrl-item-placeholder"),
-      hasModeClass: element.classList.contains(
-        `mtrl-item-placeholder--${mode}`
-      ),
-    });
   }
 };
 
@@ -511,10 +472,6 @@ export const removePlaceholderClass = (
     console.warn("⚠️  removePlaceholderClass: No element provided");
     return;
   }
-
-  console.log("🔍 [RemovePlaceholder] Classes BEFORE removing placeholder:", {
-    classList: Array.from(element.classList),
-  });
 
   // Remove the base placeholder class
   baseRemoveClass(element, className);
@@ -528,19 +485,6 @@ export const removePlaceholderClass = (
   // Remove accessibility attributes
   element.removeAttribute("aria-busy");
   element.removeAttribute("aria-label");
-
-  console.log("🔍 [RemovePlaceholder] Classes AFTER removing placeholder:", {
-    classList: Array.from(element.classList),
-    removedBaseClass: `mtrl-${className}`,
-    removedModeClasses: modes.map((m) => `mtrl-${className}--${m}`),
-  });
-
-  // Log the operation
-  console.log(`✨ Removed placeholder classes: mtrl-${className} + variants`, {
-    element,
-    hadBaseClass: !element.classList.contains(`mtrl-${className}`),
-    remainingClasses: Array.from(element.classList),
-  });
 };
 
 /**
@@ -548,18 +492,6 @@ export const removePlaceholderClass = (
  * This function is called automatically for each rendered item
  */
 export const placeholderRenderHook = (item: any, element: HTMLElement) => {
-  console.log("🎭 [PlaceholderHook] Render hook called!", {
-    item: item
-      ? {
-          id: item.id,
-          _isFake: item._isFake,
-          [FAKE_DATA.FAKE_FLAG]: item[FAKE_DATA.FAKE_FLAG],
-        }
-      : null,
-    element,
-    elementClasses: element ? Array.from(element.classList) : null,
-  });
-
   if (!item || !element) {
     console.warn("⚠️ [PlaceholderHook] Missing item or element", {
       item,
@@ -570,32 +502,14 @@ export const placeholderRenderHook = (item: any, element: HTMLElement) => {
 
   // Check if this is a fake/placeholder item
   const isFake = item._isFake || item[FAKE_DATA.FAKE_FLAG];
-  console.log("🔍 [PlaceholderHook] Item analysis:", {
-    itemId: item.id,
-    isFake,
-    _isFake: item._isFake,
-    flagValue: item[FAKE_DATA.FAKE_FLAG],
-    flagKey: FAKE_DATA.FAKE_FLAG,
-  });
 
   if (isFake) {
-    console.log("🎭 [PlaceholderHook] Applying placeholder styling...");
     // Apply placeholder styling
     addPlaceholderClass(element, item);
   } else {
-    console.log(
-      "✨ [PlaceholderHook] Checking for existing placeholder class..."
-    );
     // Remove placeholder styling if it exists
     if (element.classList.contains("mtrl-item-placeholder")) {
-      console.log(
-        "🧹 [PlaceholderHook] Found existing placeholder class, removing..."
-      );
       removePlaceholderClass(element);
-    } else {
-      console.log(
-        "ℹ️ [PlaceholderHook] No placeholder class found, nothing to remove"
-      );
     }
   }
 };
@@ -607,10 +521,6 @@ export const placeholderRenderHook = (item: any, element: HTMLElement) => {
 export const installPlaceholderHook = (
   setRenderHookFn: (hook: (item: any, element: HTMLElement) => void) => void
 ) => {
-  console.log("🔧 [PlaceholderHook] Starting installation...", {
-    setRenderHookFn,
-  });
-
   if (!setRenderHookFn || typeof setRenderHookFn !== "function") {
     console.error("❌ [PlaceholderHook] setRenderHookFn is not a function!", {
       setRenderHookFn,
@@ -618,11 +528,7 @@ export const installPlaceholderHook = (
     return;
   }
 
-  console.log("🔧 [PlaceholderHook] Installing placeholder render hook...");
   setRenderHookFn(placeholderRenderHook);
-  console.log(
-    "✅ [PlaceholderHook] Placeholder render hook installed successfully!"
-  );
 };
 
 export const testPlaceholderOpacity = (element?: HTMLElement) => {
@@ -649,11 +555,6 @@ export const testPlaceholderOpacity = (element?: HTMLElement) => {
 
   setTimeout(() => {
     element.style.setProperty("--placeholder-opacity", "0.8");
-    console.log("🔄 Changed opacity to 0.8", {
-      element,
-      computedOpacity: window.getComputedStyle(element).opacity,
-      hasClass: element.classList.contains("mtrl-item-placeholder"),
-    });
   }, 1000);
 
   setTimeout(() => {
