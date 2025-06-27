@@ -170,7 +170,7 @@ export const FAKE_DATA = {
     | "realistic",
 
   // Content generation
-  MASK_CHARACTER: "▪",
+  MASK_CHARACTER: "▒",
 
   // Skeleton characters for different content lengths
   SKELETON_CHARS: {

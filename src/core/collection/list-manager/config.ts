@@ -189,6 +189,7 @@ function validateCollection(collection: any): string {
 
 /**
  * Validates base URL for API mode
+ * Automatically converts relative URLs to absolute URLs using current origin
  */
 function validateBaseUrl(baseUrl: any): string | undefined {
   if (!baseUrl) return undefined;
@@ -197,16 +198,29 @@ function validateBaseUrl(baseUrl: any): string | undefined {
     throw new ConfigValidationError("baseUrl must be a string", "baseUrl");
   }
 
+  let fullUrl = baseUrl;
+
+  // If it's a relative URL (starts with /), convert to absolute URL
+  if (baseUrl.startsWith("/")) {
+    // Check if we're in a browser environment
+    if (typeof window !== "undefined" && window.location) {
+      fullUrl = `${window.location.origin}${baseUrl}`;
+    } else {
+      // Fallback for server-side or test environments
+      fullUrl = `http://localhost:4000${baseUrl}`;
+    }
+  }
+
   try {
-    new URL(baseUrl);
+    new URL(fullUrl);
   } catch {
     throw new ConfigValidationError(
-      `baseUrl must be a valid URL, got: ${baseUrl}`,
+      `baseUrl must be a valid URL or relative path, got: ${baseUrl}`,
       "baseUrl"
     );
   }
 
-  return baseUrl;
+  return fullUrl;
 }
 
 /**
