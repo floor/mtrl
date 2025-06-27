@@ -1,5 +1,5 @@
 import { ListManagerConfig, ListManagerElements, VisibleRange } from "../types";
-import { placeholderRenderHook } from "../fake-data-generator";
+import { placeholderRenderHook } from "../data-generator";
 
 /**
  * Rendering manager dependencies

@@ -65,7 +65,7 @@ import {
 import {
   installPlaceholderHook,
   placeholderRenderHook,
-} from "./fake-data-generator";
+} from "./data-generator";
 
 /**
  * Creates a list manager for a specific collection

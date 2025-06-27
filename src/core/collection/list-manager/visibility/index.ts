@@ -21,7 +21,7 @@ import {
   DEFAULTS,
   FAKE_DATA,
 } from "../constants";
-import { fakeDataGenerator } from "../fake-data-generator";
+import { fakeDataGenerator } from "../data-generator";
 
 /**
  * Visibility management dependencies
@@ -282,9 +282,10 @@ export const createVisibilityManager = (
         .slice(visibleRange.start, visibleRange.end)
         .filter(Boolean);
 
-      // SEAMLESS INFINITE CONTENT: Generate fake items if no real items visible
-      if (visibleItems.length === 0 && FAKE_DATA.ENABLED && !justJumpedToPage) {
-        // Calculate which virtual items should be visible
+      // 🚀 CRITICAL FIX: ALWAYS generate placeholders immediately when visible range changes
+      // This ensures no empty space during fast scrolling - placeholders are completely decoupled from data loading
+      if (FAKE_DATA.ENABLED && !justJumpedToPage) {
+        // Calculate which virtual items should be visible based on scroll position
         const viewportTop = Math.max(
           0,
           scrollTop - (config.overscan || 3) * itemHeight
@@ -297,33 +298,55 @@ export const createVisibilityManager = (
         const lastVirtualIndex = Math.floor(viewportBottom / itemHeight);
         const itemsNeeded = Math.min(
           lastVirtualIndex - firstVirtualIndex + 1,
-          10
-        ); // Reasonable limit
+          20 // Reasonable limit for fast scrolling
+        );
 
-        // Generate fake items for the viewport
-        visibleItems = [];
+        // Generate immediate placeholders for the entire visible range
+        const placeholderItems = [];
         for (let i = 0; i < itemsNeeded; i++) {
           const virtualIndex = firstVirtualIndex + i;
-          const fakeItem = fakeDataGenerator.generateFakeItem(
-            virtualIndex,
-            state.items
+          const virtualItemId = virtualIndex + 1; // Convert to 1-based ID
+
+          // Check if we already have real data for this item
+          const existingRealItem = state.items.find(
+            (item) => parseInt(item.id) === virtualItemId
           );
-          if (fakeItem) {
-            visibleItems.push(fakeItem);
+
+          if (existingRealItem) {
+            // Use real data if available
+            placeholderItems.push(existingRealItem);
+          } else {
+            // Generate placeholder for missing data
+            const placeholderItem = fakeDataGenerator.generateFakeItem(
+              virtualIndex,
+              state.items
+            );
+            if (placeholderItem) {
+              placeholderItems.push(placeholderItem);
+            }
           }
         }
 
-        // Lightweight fake data logging
+        // Use placeholder items as the visible items
+        visibleItems = placeholderItems;
+
+        // Update visible range to match placeholder items
+        visibleRange = { start: 0, end: visibleItems.length };
+
+        // Lightweight logging for immediate placeholder generation
         if (FAKE_DATA.DEBUG_LOGGING) {
+          const realCount = visibleItems.filter(
+            (item) => !fakeDataGenerator.isFakeItem(item)
+          ).length;
+          const placeholderCount = visibleItems.filter((item) =>
+            fakeDataGenerator.isFakeItem(item)
+          ).length;
           console.log(
-            `🎭 Generated ${visibleItems.length} ${
-              FAKE_DATA.PLACEHOLDER_MODE
-            } placeholders at scroll ${Math.round(scrollTop / 1000)}k`
+            `⚡ Immediate render: ${realCount} real + ${placeholderCount} placeholders at scroll ${Math.round(
+              scrollTop / 1000
+            )}k`
           );
         }
-
-        // Update visible range to match fake items
-        visibleRange = { start: 0, end: visibleItems.length };
       }
 
       Object.assign(

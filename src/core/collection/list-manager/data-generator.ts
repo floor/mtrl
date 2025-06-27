@@ -1,58 +1,55 @@
 /**
- * Lightweight Fake Data Generator with Placeholder Modes
- * Generates placeholder items for seamless infinite scrolling
- * Uses minimal bundle size with maximum performance
+ * MTRL List Manager - Data Generation & Placeholder System
  *
- * PLACEHOLDER MODES:
- * - 'masked': Real structure with masked text (▪▪▪▪▪ ▪▪▪▪) - RECOMMENDED for most UIs
- * - 'skeleton': Loading bars (▁▁▁▁▁) - Modern loading state, clean appearance
- * - 'blank': Empty spaces - Minimal, preserves dimensions without visual distraction
- * - 'dots': Dotted pattern (• • •) - Subtle content indication
- * - 'realistic': Actual fake names - Original behavior, NOT recommended for UX
+ * Provides immediate placeholder generation and data creation capabilities
+ * for the list manager.
  *
- * USAGE:
- * // Change mode globally
- * import { setPlaceholderMode } from './fake-data-generator';
- * setPlaceholderMode('masked'); // Switch to masked mode (recommended)
+ * KEY CONCEPTS:
+ * 1. PLACEHOLDER MODE: Controls how placeholders appear (opacity, skeleton, content)
+ *    Usage: import { setPlaceholderMode } from './data-generator';
+ *           setPlaceholderMode('opacity'); // 'skeleton', 'content', or false
  *
- * // Configure opacity (0.0 to 1.0)
- * import { setPlaceholderOpacity } from './fake-data-generator';
- * setPlaceholderOpacity(0.5); // 50% opacity for subtle placeholders
+ * 2. PLACEHOLDER OPACITY: When using opacity mode, controls the transparency level
+ *    Usage: import { setPlaceholderOpacity } from './data-generator';
+ *           setPlaceholderOpacity(0.3); // 0.0 (invisible) to 1.0 (fully visible)
  *
- * // CSS styling (add to your stylesheets):
- * // .mtrl-item-placeholder {
- * //   opacity: var(--placeholder-opacity, 0.5);
- * //   transition: opacity 0.2s ease;
- * // }
+ * 3. AUTOMATIC DETECTION: Placeholders are automatically detected and styled
+ *    - Items with id: 'placeholder-{index}' are treated as placeholders
+ *    - Automatic opacity styling is applied during rendering
+ *    - No manual class management needed in most cases
  *
- * // Or change in browser console for testing:
- * // window.setPlaceholderMode('skeleton');
- * // window.setPlaceholderOpacity(0.3);
+ * 4. MANUAL STYLING CONTROL (advanced):
+ *    For cases where you need manual control over placeholder classes:
+ *    - Use addPlaceholderClass(element) to mark an element as placeholder
+ *    - Use removePlaceholderClass(element) to remove placeholder styling
+ *    - Element will automatically get opacity styling based on current mode
  *
- * The system automatically:
- * 1. Analyzes real data patterns for appropriate sizing
- * 2. Generates placeholders that match expected content dimensions
- * 3. Adds opacity and styling metadata for visual distinction
- * 4. Replaces placeholders with real data when it loads
- * 5. Maintains perfect coordinate alignment for smooth scrolling
+ * EXAMPLE USAGE:
  *
- * STYLING PLACEHOLDER ITEMS:
+ * Basic setup:
+ * ```js
+ * import { setPlaceholderMode, setPlaceholderOpacity } from './data-generator';
  *
- * ✨ AUTOMATIC STYLING (No code needed!)
- * The list manager automatically installs a render hook that applies placeholder styling.
- * You should see console logs like:
- * 🔧 Placeholder render hook installed - will automatically apply styling to fake items
- * 🎭 Added placeholder class: mtrl-item-placeholder {...}
- * ✨ Removed placeholder class: mtrl-item-placeholder {...}
+ * // Configure placeholder appearance
+ * setPlaceholderMode('opacity');
+ * setPlaceholderOpacity(0.3);
  *
- * 🛠️ MANUAL STYLING (if needed):
- * import { addPlaceholderClass, removePlaceholderClass } from './fake-data-generator';
+ * // Placeholders are now automatically styled when rendered
+ * ```
  *
- * if (item._isFake) {
- *   addPlaceholderClass(element, item); // Adds class + opacity + logging
- * } else {
- *   removePlaceholderClass(element); // Removes class + logging
- * }
+ * Manual styling (advanced):
+ * ```js
+ * import { addPlaceholderClass, removePlaceholderClass } from './data-generator';
+ *
+ * // Manually mark element as placeholder
+ * addPlaceholderClass(element);
+ *
+ * // Remove placeholder styling when real data loads
+ * removePlaceholderClass(element);
+ * ```
+ *
+ * The system handles all styling automatically - just generate placeholders
+ * with id: 'placeholder-{index}' and they'll be styled correctly.
  */
 
 import { FAKE_DATA } from "./constants";
