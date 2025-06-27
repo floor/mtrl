@@ -85,7 +85,7 @@ export const createLifecycleManager = (deps: LifecycleDependencies) => {
           await new Promise((resolve) => setTimeout(resolve, 50));
         }
       } catch (error) {
-        console.error(`❌ [InitialRanges] Failed to load range ${i}:`, error);
+        // Silently handle range loading errors
         // Continue loading other ranges even if one fails
         if (i === 1) {
           // If first range fails, we should stop as the list won't be functional
@@ -148,7 +148,7 @@ export const createLifecycleManager = (deps: LifecycleDependencies) => {
           });
         })
         .catch((err) => {
-          console.error("Error adding static items to collection:", err);
+          // Silently handle static items collection errors
         });
     } else if (!state.useStatic) {
       // Initial load for API data - sequentially load multiple ranges for smoother scrolling
@@ -156,7 +156,7 @@ export const createLifecycleManager = (deps: LifecycleDependencies) => {
         config.initialRangesToFetch || PAGINATION.INITIAL_RANGES_TO_FETCH;
 
       loadInitialRangesSequentially(rangesToFetch).catch((err) => {
-        console.error("Error loading initial ranges:", err);
+        // Silently handle initial range loading errors
       });
     }
 

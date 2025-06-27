@@ -85,30 +85,17 @@ export const createPaginationManager = (deps: PaginationDependencies) => {
     // Calculate current virtual page based on scroll position
     const virtualPage = Math.floor(scrollTop / pageHeight) + 1;
 
-    console.log(`🎯 [PageBoundary] Checking boundaries:`, {
-      scrollTop,
-      virtualPage,
-      statePage: state.page,
-      itemHeight,
-      pageSize,
-      pageHeight,
-    });
-
     // Check if we need to load the next page
     const nextPage = virtualPage + 1;
     const prevPage = virtualPage - 1;
 
     // Load next page if we're close to the boundary
     if (nextPage !== state.page && virtualPage > state.page) {
-      console.log(`⬇️ [PageBoundary] Triggering next page load: ${nextPage}`);
       loadNextPageFromBoundary(nextPage);
     }
 
     // Load previous page if we're scrolling up and close to boundary
     if (prevPage !== state.page && virtualPage < state.page && prevPage >= 1) {
-      console.log(
-        `⬆️ [PageBoundary] Triggering previous page load: ${prevPage}`
-      );
       loadPreviousPageFromBoundary(prevPage);
     }
   };
@@ -123,7 +110,6 @@ export const createPaginationManager = (deps: PaginationDependencies) => {
     if (isPreloadingPages) return;
 
     isPreloadingPages = true;
-    console.log(`📥 [Boundary] Loading next page ${pageNumber}`);
 
     try {
       const loadParams = createLoadParams(state);
@@ -131,7 +117,7 @@ export const createPaginationManager = (deps: PaginationDependencies) => {
 
       await loadItems(loadParams);
     } catch (error) {
-      console.error(`Error loading next page ${pageNumber}:`, error);
+      // Silently handle errors for boundary loading
     } finally {
       isPreloadingPages = false;
     }
@@ -147,7 +133,6 @@ export const createPaginationManager = (deps: PaginationDependencies) => {
     if (isPreloadingPages || pageNumber < 1) return;
 
     isPreloadingPages = true;
-    console.log(`📥 [Boundary] Loading previous page ${pageNumber}`);
 
     try {
       const loadParams = createLoadParams(state);
@@ -155,7 +140,7 @@ export const createPaginationManager = (deps: PaginationDependencies) => {
 
       await loadItems(loadParams);
     } catch (error) {
-      console.error(`Error loading previous page ${pageNumber}:`, error);
+      // Silently handle errors for boundary loading
     } finally {
       isPreloadingPages = false;
     }
@@ -169,13 +154,6 @@ export const createPaginationManager = (deps: PaginationDependencies) => {
   const loadPage = async (
     pageNumber: number
   ): Promise<{ hasNext: boolean; items: any[] }> => {
-    console.log(`🔄 [LoadPage] Starting loadPage(${pageNumber})`, {
-      currentPage: state.page,
-      currentItemsLength: state.items.length,
-      isAlreadyOnSamePage: state.page === pageNumber,
-      callStack: new Error().stack?.split("\n").slice(1, 5).join(" -> "),
-    });
-
     // Validate page number
     if (!Number.isInteger(pageNumber) || pageNumber < 1) {
       throw new Error("Page number must be a positive integer");
@@ -187,24 +165,9 @@ export const createPaginationManager = (deps: PaginationDependencies) => {
       const maxPage = Math.ceil(state.itemCount / pageSize);
 
       if (pageNumber > maxPage) {
-        console.warn(
-          `⚠️ [LoadPage] Page ${pageNumber} is beyond data range (max: ${maxPage})`
-        );
-        console.log(`📊 [LoadPage] Bounds info:`, {
-          requestedPage: pageNumber,
-          maxPage,
-          totalItems: state.itemCount.toLocaleString(),
-          pageSize,
-          calculation: `${state.itemCount} ÷ ${pageSize} = ${maxPage} pages`,
-        });
-
         // Return empty result for pages beyond data range
         return { hasNext: false, items: [] };
       }
-
-      console.log(
-        `✅ [LoadPage] Page ${pageNumber} is valid (within range 1-${maxPage})`
-      );
     }
 
     // Check if we're using page-based pagination
@@ -223,10 +186,6 @@ export const createPaginationManager = (deps: PaginationDependencies) => {
     // CRITICAL: If we're already on the same page and have items,
     // just ensure they're rendered instead of reloading
     if (state.page === pageNumber && state.items.length > 0) {
-      console.log(
-        `⚡ [LoadPage] Already on page ${pageNumber} with ${state.items.length} items - ensuring render`
-      );
-
       // Force a re-render to ensure items are visible
       state.visibleRange = { start: -1, end: -1 };
       renderer.resetVisibleRange();
@@ -243,9 +202,6 @@ export const createPaginationManager = (deps: PaginationDependencies) => {
 
         // Immediate double-check - no delay needed
         if (state.visibleItems.length === 0) {
-          console.warn(
-            `⚠️ [LoadPage] Force-rendering page ${pageNumber} items`
-          );
           updateVisibleItems(0);
         }
       });
@@ -256,11 +212,6 @@ export const createPaginationManager = (deps: PaginationDependencies) => {
     // Set the page number in state
     state.page = pageNumber;
     state.paginationStrategy = paginationStrategy;
-
-    console.log(`📌 [LoadPage] Page state set to ${pageNumber}`, {
-      statePage: state.page,
-      requestedPage: pageNumber,
-    });
 
     // Clear any existing page jump timeout
     if (pageJumpTimeout !== null) {
@@ -285,20 +236,10 @@ export const createPaginationManager = (deps: PaginationDependencies) => {
       return itemId >= pageStartId && itemId <= pageEndId;
     });
 
-    console.log(`📋 [LoadPage] Page data check:`, {
-      pageNumber,
-      pageStartId,
-      pageEndId,
-      hasPageData,
-      currentItemsLength: state.items.length,
-    });
-
     let result;
 
     if (!hasPageData) {
       // Only load if we don't already have the page data
-      console.log(`📥 [LoadPage] Loading page ${pageNumber} data from API`);
-
       const loadParams = createLoadParams(state, paginationStrategy);
       loadParams.page = pageNumber;
 
@@ -306,13 +247,8 @@ export const createPaginationManager = (deps: PaginationDependencies) => {
       loadParams[perPageParam] = config.pageSize || 20;
 
       result = await loadItems(loadParams);
-
-      // Data is loaded - no need to wait for processing
-      console.log(`⏳ [LoadPage] Data loaded - proceeding immediately...`);
     } else {
       // We already have the data, just create a result object
-      console.log(`📋 [LoadPage] Page ${pageNumber} data already in memory`);
-
       const pageItems = state.items.filter((item) => {
         const itemId = parseInt(item?.id);
         return itemId >= pageStartId && itemId <= pageEndId;
@@ -335,28 +271,11 @@ export const createPaginationManager = (deps: PaginationDependencies) => {
       itemMeasurement.calculateOffsets(state.items);
     }
 
-    // SIMPLIFIED: Position to show the requested page
-    console.log(`📍 [LoadPage] Positioning to show page ${pageNumber}`);
-
     // Calculate the absolute scroll position for this page
     const defaultItemHeight = config.itemHeight || 84;
 
     // Calculate natural scroll position for page positioning
     const targetScrollPosition = (pageStartId - 1) * defaultItemHeight;
-
-    console.log(`📍 [LoadPage] Page ${pageNumber} natural positioning:`, {
-      pageStartId: pageStartId,
-      itemHeight: defaultItemHeight,
-      targetScrollPosition: targetScrollPosition,
-      calculation: `(${pageStartId} - 1) × ${defaultItemHeight} = ${targetScrollPosition}px`,
-    });
-
-    // IMPORTANT: Don't set scroll position here - it's too early!
-    // The DOM hasn't been updated with new items yet, so the scroll will fail
-    // We'll set it after DOM rendering in the requestAnimationFrame below
-    console.log(
-      `📍 [LoadPage] Preparing scroll to ${targetScrollPosition}px (will be set after DOM update)`
-    );
 
     // Force a complete re-render by clearing the visible range first
     state.visibleRange = { start: -1, end: -1 };
@@ -368,24 +287,8 @@ export const createPaginationManager = (deps: PaginationDependencies) => {
       const fallbackTotal = 1000000; // Default fallback
       state.totalHeight = fallbackTotal * defaultItemHeight;
 
-      console.log(`📐 [LoadPage] Fallback total height calculation:`, {
-        fallbackTotal: fallbackTotal.toLocaleString(),
-        localCollectionSize: state.items.length,
-        itemHeight: defaultItemHeight,
-        calculatedTotalHeight: state.totalHeight.toLocaleString(),
-        note: "Using fallback - API total not available",
-      });
-
       updateSpacerHeight(elements, state.totalHeight);
       state.totalHeightDirty = false;
-    } else {
-      // API total already set - preserve the locked-in height
-      console.log(`📐 [LoadPage] Preserving locked-in total height:`, {
-        apiTotal: state.itemCount.toLocaleString(),
-        lockedHeight: state.totalHeight.toLocaleString(),
-        localCollectionSize: state.items.length,
-        note: "Height locked in from API total",
-      });
     }
 
     // Reset renderer and render immediately with DOM updates
@@ -406,7 +309,6 @@ export const createPaginationManager = (deps: PaginationDependencies) => {
       });
 
       // Reset page jump flag immediately after rendering
-      console.log(`🔄 [LoadPage] Resetting justJumpedToPage flag immediately`);
       justJumpedToPage = false;
     });
 
@@ -508,8 +410,6 @@ export const createPaginationManager = (deps: PaginationDependencies) => {
       return { hasNext: state.hasNext, items: [] };
     }
 
-    console.log(`🔄 [LoadNext] Starting load operation`);
-
     // Create the parameters for the next page/cursor
     const loadParams = createLoadParams(state);
 
@@ -520,29 +420,16 @@ export const createPaginationManager = (deps: PaginationDependencies) => {
       // Add pageSize parameter
       const perPageParam = config.pagination?.perPageParamName || "per_page";
       loadParams[perPageParam] = config.pageSize || 20;
-
-      console.log(`📄 [LoadNext] Loading page ${loadParams.page}`, {
-        currentPage: state.page,
-        requestedPage: loadParams.page,
-        pageSize: config.pageSize,
-      });
     }
 
     try {
       const result = await loadItems(loadParams);
-
-      console.log(`✅ [LoadNext] Load complete:`, {
-        itemsLoaded: result.items.length,
-        hasNext: result.meta.hasNext,
-        totalItemsNow: state.items.length,
-      });
 
       return {
         hasNext: result.meta.hasNext ?? false,
         items: result.items,
       };
     } catch (error) {
-      console.error("Error in loadNext:", error);
       return { hasNext: false, items: [] };
     }
   };

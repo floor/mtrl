@@ -53,6 +53,10 @@
  */
 
 import { FAKE_DATA } from "./constants";
+import {
+  addClass as baseAddClass,
+  removeClass as baseRemoveClass,
+} from "../../dom/classes";
 
 interface FakeDataPattern {
   namePattern?: string[];
@@ -113,10 +117,6 @@ export class FakeDataGenerator {
     };
 
     this.cache.lastAnalyzed = Date.now();
-
-    if (FAKE_DATA.DEBUG_LOGGING) {
-      console.log("🔍 Pattern analysis complete:", this.cache.pattern);
-    }
   }
 
   /**
@@ -395,16 +395,15 @@ export class FakeDataGenerator {
   setPlaceholderMode(
     mode: "masked" | "skeleton" | "blank" | "dots" | "realistic"
   ) {
-    // Note: This modifies the constant, but it's useful for runtime switching
     (FAKE_DATA as any).PLACEHOLDER_MODE = mode;
-    this.clearCache(); // Clear cache to regenerate with new mode
+    this.clearCache();
   }
 }
 
 // Singleton instance for performance
 export const fakeDataGenerator = new FakeDataGenerator();
 
-// Utility functions for easy mode switching (useful for testing/debugging)
+// Utility functions for mode switching
 export const setPlaceholderMode = (
   mode: "masked" | "skeleton" | "blank" | "dots" | "realistic"
 ) => {
@@ -413,38 +412,17 @@ export const setPlaceholderMode = (
 
 export const getPlaceholderMode = () => FAKE_DATA.PLACEHOLDER_MODE;
 
-// Debug utilities for placeholder styling
-export const enablePlaceholderLogging = () => {
-  (window as any).MTRL_PLACEHOLDER_DEBUG = true;
-};
-
-export const disablePlaceholderLogging = () => {
-  (window as any).MTRL_PLACEHOLDER_DEBUG = false;
-};
-
-// Wrapper functions with logging for placeholder class management
-import {
-  addClass as baseAddClass,
-  removeClass as baseRemoveClass,
-} from "../../dom/classes";
-
 export const addPlaceholderClass = (element: HTMLElement, item: any) => {
-  if (!element) {
-    console.warn("⚠️  addPlaceholderClass: No element provided");
-    return;
-  }
+  if (!element) return;
 
   if (item._isFake || item[FAKE_DATA.FAKE_FLAG]) {
-    // Add the base placeholder class
     baseAddClass(element, "item-placeholder");
 
-    // Add mode-specific modifier class
     const mode = item._placeholderMode || FAKE_DATA.PLACEHOLDER_MODE;
     if (mode && mode !== "realistic") {
       baseAddClass(element, `item-placeholder--${mode}`);
     }
 
-    // Clean up classes - keep mtrl-list-item and placeholder classes
     const currentClasses = Array.from(element.classList);
     const classesToKeep = [
       "mtrl-list-item",
@@ -458,7 +436,6 @@ export const addPlaceholderClass = (element: HTMLElement, item: any) => {
       }
     });
 
-    // Add accessibility attributes
     element.setAttribute("aria-busy", "true");
     element.setAttribute("aria-label", "Loading content...");
   }
@@ -468,46 +445,30 @@ export const removePlaceholderClass = (
   element: HTMLElement,
   className = "item-placeholder"
 ) => {
-  if (!element) {
-    console.warn("⚠️  removePlaceholderClass: No element provided");
-    return;
-  }
+  if (!element) return;
 
-  // Remove the base placeholder class
   baseRemoveClass(element, className);
 
-  // Remove all mode-specific modifier classes
   const modes = ["skeleton", "masked", "blank", "dots", "realistic"];
   modes.forEach((mode) => {
     baseRemoveClass(element, `${className}--${mode}`);
   });
 
-  // Remove accessibility attributes
   element.removeAttribute("aria-busy");
   element.removeAttribute("aria-label");
 };
 
 /**
  * Automatic render hook for applying placeholder styling
- * This function is called automatically for each rendered item
  */
 export const placeholderRenderHook = (item: any, element: HTMLElement) => {
-  if (!item || !element) {
-    console.warn("⚠️ [PlaceholderHook] Missing item or element", {
-      item,
-      element,
-    });
-    return;
-  }
+  if (!item || !element) return;
 
-  // Check if this is a fake/placeholder item
   const isFake = item._isFake || item[FAKE_DATA.FAKE_FLAG];
 
   if (isFake) {
-    // Apply placeholder styling
     addPlaceholderClass(element, item);
   } else {
-    // Remove placeholder styling if it exists
     if (element.classList.contains("mtrl-item-placeholder")) {
       removePlaceholderClass(element);
     }
@@ -516,110 +477,13 @@ export const placeholderRenderHook = (item: any, element: HTMLElement) => {
 
 /**
  * Install the placeholder render hook into a list manager renderer
- * This should be called when setting up the list manager
  */
 export const installPlaceholderHook = (
   setRenderHookFn: (hook: (item: any, element: HTMLElement) => void) => void
 ) => {
   if (!setRenderHookFn || typeof setRenderHookFn !== "function") {
-    console.error("❌ [PlaceholderHook] setRenderHookFn is not a function!", {
-      setRenderHookFn,
-    });
     return;
   }
 
   setRenderHookFn(placeholderRenderHook);
 };
-
-export const testPlaceholderOpacity = (element?: HTMLElement) => {
-  if (!element) {
-    console.log(
-      "⚠️  Please provide an element: testPlaceholderOpacity(element)"
-    );
-    return;
-  }
-
-  console.log("🧪 Testing placeholder opacity transitions...");
-
-  // Create a fake item for testing
-  const testItem = {
-    _isFake: true,
-    _placeholderClass: "item-placeholder",
-    _placeholderOpacity: 0.3,
-    _placeholderMode: "masked",
-    [FAKE_DATA.FAKE_FLAG]: true,
-  };
-
-  // Test sequence: add placeholder → change opacity → remove placeholder
-  addPlaceholderClass(element, testItem);
-
-  setTimeout(() => {
-    element.style.setProperty("--placeholder-opacity", "0.8");
-  }, 1000);
-
-  setTimeout(() => {
-    removePlaceholderClass(element);
-  }, 2000);
-};
-
-// Expose to window for easy console testing (development only)
-if (typeof window !== "undefined") {
-  (window as any).setPlaceholderMode = setPlaceholderMode;
-  (window as any).getPlaceholderMode = getPlaceholderMode;
-  (window as any).enablePlaceholderLogging = enablePlaceholderLogging;
-  (window as any).disablePlaceholderLogging = disablePlaceholderLogging;
-  (window as any).testPlaceholderOpacity = testPlaceholderOpacity;
-  (window as any).addPlaceholderClass = addPlaceholderClass;
-  (window as any).removePlaceholderClass = removePlaceholderClass;
-  (window as any).placeholderRenderHook = placeholderRenderHook;
-
-  // Add helper function to show available modes
-  (window as any).showPlaceholderModes = () => {
-    console.log(`
-🎭 Available Placeholder Modes:
-
-🎨 Mode Control:
-setPlaceholderMode('masked')    // ▪▪▪▪▪ ▪▪▪▪ Real structure, masked text (recommended)
-setPlaceholderMode('skeleton')  // ▁▁▁▁▁ Loading bars (modern)
-setPlaceholderMode('blank')     // Empty spaces (minimal)  
-setPlaceholderMode('dots')      // • • • Dotted pattern
-setPlaceholderMode('realistic') // Fake names (avoid)
-
-💡 Styling is now controlled via SCSS variables:
-$placeholder-opacity: 0.6
-$placeholder-opacity-skeleton: 0.8  
-$placeholder-opacity-masked: 0.7
-$placeholder-opacity-subtle: 0.4
-
-🔍 Debug Tools:
-enablePlaceholderLogging()      // Enable console logging
-addPlaceholderClass(element, item) // Add placeholder class with logging
-removePlaceholderClass(element) // Remove placeholder class with logging
-testPlaceholderOpacity(element) // Test transitions on element
-disablePlaceholderLogging()     // Disable console logging
-
-💡 CSS Implementation:
-.mtrl-item-placeholder {
-  opacity: $placeholder-opacity;
-  transition: opacity 0.3s ease-in-out;
-}
-
-📝 Debug logging shows:
-🎭 Added placeholder class: mtrl-item-placeholder--masked
-✨ Removed placeholder class: mtrl-item-placeholder + variants
-
-📋 Example output: "▪▪▪▪▪▪ ▪▪▪▪▪▪▪▪" (subtle masking, close to text size)
-
-Current mode: ${getPlaceholderMode()}
-Mask character: ${FAKE_DATA.MASK_CHARACTER}
-    `);
-  };
-
-  // Auto-show on first load for discoverability
-  console.log(
-    `🎭 Placeholder API loaded! Type 'showPlaceholderModes()' for help.`
-  );
-  console.log(
-    `🔍 Debug tools: addPlaceholderClass(element, item), removePlaceholderClass(element)`
-  );
-}

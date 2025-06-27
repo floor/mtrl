@@ -232,7 +232,7 @@ export const createDataLoadingManager = (deps: DataLoadingDependencies) => {
         meta: response.meta,
       };
     } catch (error) {
-      console.error(`Error loading ${collection}:`, error);
+      // Silently handle errors for data loading
       // Return empty result on error
       return {
         items: [],
