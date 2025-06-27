@@ -78,62 +78,71 @@ export class FakeDataGenerator {
   };
 
   /**
-   * Analyze patterns from real data (lightweight analysis)
+   * Analyze real items to detect patterns for generating believable fake items
+   * @param realItems Array of real items to analyze
    */
   analyzePatterns(realItems: any[]): void {
-    if (!FAKE_DATA.ENABLED || !FAKE_DATA.ENABLE_PATTERN_DETECTION) return;
-    if (realItems.length === 0) return;
+    if (!realItems?.length) return;
 
-    const sampleSize = Math.min(
-      FAKE_DATA.PATTERN_ANALYSIS_SAMPLE_SIZE,
-      realItems.length
-    );
-    const sample = realItems.slice(0, sampleSize);
+    // Use first 10 items for pattern analysis
+    const sampleItems = realItems.slice(0, 10);
 
-    // Extract simple patterns
-    const names = sample
-      .map((item) => item.headline || item.name)
+    // Extract patterns from real data
+    const namePattern = sampleItems
+      .map((item) => item.headline || item.name || item.title)
+      .filter(Boolean)
+      .map((name) => String(name).split(" ")[0]) // Extract first names
+      .filter((name) => name.length > 1);
+
+    const rolePattern = sampleItems
+      .map((item) => item.meta || item.role || item.subtitle)
       .filter(Boolean);
-    const emails = sample
+
+    const emailDomain = sampleItems
       .map((item) => item.supportingText || item.email)
-      .filter(Boolean);
-    const roles = sample.map((item) => item.meta || item.role).filter(Boolean);
+      .filter(Boolean)
+      .map((email) => this.extractEmailDomain(String(email)))
+      .filter(Boolean)[0];
 
-    // Simple pattern detection
+    // Update cache with detected patterns
     this.cache.pattern = {
-      namePattern: names.length > 0 ? names : [...FAKE_DATA.FALLBACK_NAMES],
-      emailDomain:
-        this.extractEmailDomain(emails[0]) || FAKE_DATA.FALLBACK_DOMAINS[0],
-      rolePattern: roles.length > 0 ? roles : ["Team Member"],
-      idSequence: this.extractIdSequence(sample),
+      namePattern: namePattern.length > 0 ? namePattern : undefined,
+      rolePattern: rolePattern.length > 0 ? rolePattern : undefined,
+      emailDomain: emailDomain || undefined,
+      idSequence: this.extractIdSequence(sampleItems),
     };
 
     this.cache.lastAnalyzed = Date.now();
+
+    if (FAKE_DATA.DEBUG_LOGGING) {
+      console.log("🔍 Pattern analysis complete:", this.cache.pattern);
+    }
   }
 
   /**
-   * Generate a fake item at specific index (minimal logic)
+   * Generate a fake item for the given virtual index
    */
   generateFakeItem(index: number, realItems: any[] = []): any {
-    if (!FAKE_DATA.ENABLED) return null;
-
     // Check cache first
     if (this.cache.items.has(index)) {
       return this.cache.items.get(index);
     }
 
-    // Analyze patterns if needed
-    if (realItems.length > 0 && !this.cache.pattern.namePattern) {
+    // Analyze patterns if we have real items and haven't analyzed recently
+    if (realItems.length > 0) {
       this.analyzePatterns(realItems);
     }
 
-    // Generate fake item using patterns
+    // Generate new fake item
     const fakeItem = this.createFakeItem(index);
 
-    // Cache it (with size limit)
-    if (this.cache.items.size < FAKE_DATA.CACHE_SIZE) {
-      this.cache.items.set(index, fakeItem);
+    // Cache with size limit (50 items max)
+    if (this.cache.items.size >= 50) {
+      // Remove oldest entry
+      const firstKey = this.cache.items.keys().next().value;
+      this.cache.items.delete(firstKey);
     }
+    this.cache.items.set(index, fakeItem);
 
     return fakeItem;
   }
@@ -142,11 +151,11 @@ export class FakeDataGenerator {
    * Create fake item using detected patterns (fast generation)
    */
   private createFakeItem(index: number): any {
-    const pattern = this.cache.pattern;
+    // Use global virtual ID to ensure proper sequence
+    const virtualItemId = index + 1;
 
-    // CRITICAL: Use the virtual index as the actual item ID for coordinate consistency
-    // This ensures fake items align perfectly with real item positioning
-    const virtualItemId = index + 1; // Convert 0-based index to 1-based ID
+    // Get sample patterns
+    const pattern = this.cache.pattern;
 
     // Generate placeholder content based on mode
     const placeholderContent = this.generatePlaceholderContent(pattern, index);
@@ -159,9 +168,7 @@ export class FakeDataGenerator {
       avatar: placeholderContent.avatar,
       [FAKE_DATA.FAKE_FLAG]: true, // Mark as fake
       _fakeIndex: index, // Keep original index for debugging
-      _placeholderMode: FAKE_DATA.PLACEHOLDER_MODE, // Track placeholder mode
-      _placeholderOpacity: FAKE_DATA.PLACEHOLDER_OPACITY, // Opacity value for CSS variable or fallback
-      _placeholderClass: "item-placeholder", // CSS class (prefix added automatically by addClass)
+      _placeholderMode: FAKE_DATA.PLACEHOLDER_MODE, // Track placeholder mode for CSS class
     };
   }
 
@@ -392,16 +399,6 @@ export class FakeDataGenerator {
     (FAKE_DATA as any).PLACEHOLDER_MODE = mode;
     this.clearCache(); // Clear cache to regenerate with new mode
   }
-
-  /**
-   * Set placeholder opacity dynamically
-   */
-  setPlaceholderOpacity(opacity: number) {
-    // Clamp opacity between 0 and 1
-    const clampedOpacity = Math.max(0, Math.min(1, opacity));
-    (FAKE_DATA as any).PLACEHOLDER_OPACITY = clampedOpacity;
-    this.clearCache(); // Clear cache to regenerate with new opacity
-  }
 }
 
 // Singleton instance for performance
@@ -416,14 +413,6 @@ export const setPlaceholderMode = (
 };
 
 export const getPlaceholderMode = () => FAKE_DATA.PLACEHOLDER_MODE;
-
-// Utility functions for opacity management
-export const setPlaceholderOpacity = (opacity: number) => {
-  fakeDataGenerator.setPlaceholderOpacity(opacity);
-  console.log(`👻 Placeholder opacity changed to: ${opacity}`);
-};
-
-export const getPlaceholderOpacity = () => FAKE_DATA.PLACEHOLDER_OPACITY;
 
 // Debug utilities for placeholder styling
 export const enablePlaceholderLogging = () => {
@@ -456,22 +445,31 @@ export const addPlaceholderClass = (element: HTMLElement, item: any) => {
       innerHTML: element.innerHTML.substring(0, 100),
     });
 
-    // Add the placeholder class using the DOM utility
-    baseAddClass(element, item._placeholderClass || "item-placeholder");
+    // Add the base placeholder class
+    baseAddClass(element, "item-placeholder");
+
+    // Add mode-specific modifier class
+    const mode = item._placeholderMode || FAKE_DATA.PLACEHOLDER_MODE;
+    if (mode && mode !== "realistic") {
+      baseAddClass(element, `item-placeholder--${mode}`);
+    }
 
     console.log("🔍 [PlaceholderClass] Classes AFTER adding placeholder:", {
       classList: Array.from(element.classList),
-      expectedClass: `mtrl-${item._placeholderClass || "item-placeholder"}`,
-      hasExpectedClass: element.classList.contains(
-        `mtrl-${item._placeholderClass || "item-placeholder"}`
+      baseClass: "mtrl-item-placeholder",
+      modeClass: `mtrl-item-placeholder--${mode}`,
+      hasBaseClass: element.classList.contains("mtrl-item-placeholder"),
+      hasModeClass: element.classList.contains(
+        `mtrl-item-placeholder--${mode}`
       ),
     });
 
-    // Clean up classes - for placeholders, only keep mtrl-list-item and mtrl-item-placeholder
+    // Clean up classes - keep mtrl-list-item and placeholder classes
     const currentClasses = Array.from(element.classList);
     const classesToKeep = [
       "mtrl-list-item",
-      `mtrl-${item._placeholderClass || "item-placeholder"}`,
+      "mtrl-item-placeholder",
+      `mtrl-item-placeholder--${mode}`,
     ];
 
     currentClasses.forEach((className) => {
@@ -485,36 +483,23 @@ export const addPlaceholderClass = (element: HTMLElement, item: any) => {
 
     console.log("🔍 [PlaceholderClass] Classes AFTER cleanup:", {
       classList: Array.from(element.classList),
-      shouldOnlyHave: classesToKeep,
+      shouldOnlyHave: classesToKeep.filter((c) => c.includes("mtrl-")),
     });
-
-    // Set CSS custom property for opacity
-    if (item._placeholderOpacity !== undefined) {
-      element.style.setProperty(
-        "--placeholder-opacity",
-        item._placeholderOpacity.toString()
-      );
-    }
 
     // Add accessibility attributes
     element.setAttribute("aria-busy", "true");
     element.setAttribute("aria-label", "Loading content...");
 
     // Log the operation
-    console.log(
-      `🎭 Added placeholder class: mtrl-${
-        item._placeholderClass || "item-placeholder"
-      }`,
-      {
-        element,
-        opacity: item._placeholderOpacity,
-        mode: item._placeholderMode,
-        allClasses: Array.from(element.classList),
-        hasClass: element.classList.contains(
-          `mtrl-${item._placeholderClass || "item-placeholder"}`
-        ),
-      }
-    );
+    console.log(`🎭 Added placeholder class: mtrl-item-placeholder--${mode}`, {
+      element,
+      mode: mode,
+      allClasses: Array.from(element.classList),
+      hasBaseClass: element.classList.contains("mtrl-item-placeholder"),
+      hasModeClass: element.classList.contains(
+        `mtrl-item-placeholder--${mode}`
+      ),
+    });
   }
 };
 
@@ -531,11 +516,14 @@ export const removePlaceholderClass = (
     classList: Array.from(element.classList),
   });
 
-  // Remove the placeholder class
+  // Remove the base placeholder class
   baseRemoveClass(element, className);
 
-  // Remove CSS custom property
-  element.style.removeProperty("--placeholder-opacity");
+  // Remove all mode-specific modifier classes
+  const modes = ["skeleton", "masked", "blank", "dots", "realistic"];
+  modes.forEach((mode) => {
+    baseRemoveClass(element, `${className}--${mode}`);
+  });
 
   // Remove accessibility attributes
   element.removeAttribute("aria-busy");
@@ -543,13 +531,14 @@ export const removePlaceholderClass = (
 
   console.log("🔍 [RemovePlaceholder] Classes AFTER removing placeholder:", {
     classList: Array.from(element.classList),
-    removedClass: `mtrl-${className}`,
+    removedBaseClass: `mtrl-${className}`,
+    removedModeClasses: modes.map((m) => `mtrl-${className}--${m}`),
   });
 
   // Log the operation
-  console.log(`✨ Removed placeholder class: mtrl-${className}`, {
+  console.log(`✨ Removed placeholder classes: mtrl-${className} + variants`, {
     element,
-    hadClass: !element.classList.contains(`mtrl-${className}`),
+    hadBaseClass: !element.classList.contains(`mtrl-${className}`),
     remainingClasses: Array.from(element.classList),
   });
 };
@@ -676,8 +665,6 @@ export const testPlaceholderOpacity = (element?: HTMLElement) => {
 if (typeof window !== "undefined") {
   (window as any).setPlaceholderMode = setPlaceholderMode;
   (window as any).getPlaceholderMode = getPlaceholderMode;
-  (window as any).setPlaceholderOpacity = setPlaceholderOpacity;
-  (window as any).getPlaceholderOpacity = getPlaceholderOpacity;
   (window as any).enablePlaceholderLogging = enablePlaceholderLogging;
   (window as any).disablePlaceholderLogging = disablePlaceholderLogging;
   (window as any).testPlaceholderOpacity = testPlaceholderOpacity;
@@ -690,16 +677,18 @@ if (typeof window !== "undefined") {
     console.log(`
 🎭 Available Placeholder Modes:
 
+🎨 Mode Control:
 setPlaceholderMode('masked')    // ▪▪▪▪▪ ▪▪▪▪ Real structure, masked text (recommended)
 setPlaceholderMode('skeleton')  // ▁▁▁▁▁ Loading bars (modern)
 setPlaceholderMode('blank')     // Empty spaces (minimal)  
 setPlaceholderMode('dots')      // • • • Dotted pattern
 setPlaceholderMode('realistic') // Fake names (avoid)
 
-🎨 Opacity Control:
-setPlaceholderOpacity(0.5)      // 50% opacity (default)
-setPlaceholderOpacity(0.3)      // 30% opacity (very subtle)
-setPlaceholderOpacity(1.0)      // 100% opacity (fully visible)
+💡 Styling is now controlled via SCSS variables:
+$placeholder-opacity: 0.6
+$placeholder-opacity-skeleton: 0.8  
+$placeholder-opacity-masked: 0.7
+$placeholder-opacity-subtle: 0.4
 
 🔍 Debug Tools:
 enablePlaceholderLogging()      // Enable console logging
@@ -710,19 +699,18 @@ disablePlaceholderLogging()     // Disable console logging
 
 💡 CSS Implementation:
 .mtrl-item-placeholder {
-  opacity: var(--placeholder-opacity, 0.5);
+  opacity: $placeholder-opacity;
   transition: opacity 0.3s ease-in-out;
 }
 
 📝 Debug logging shows:
-🎭 Added placeholder class: mtrl-item-placeholder, opacity: 0.5
-✨ Removed placeholder class: mtrl-item-placeholder
+🎭 Added placeholder class: mtrl-item-placeholder--masked
+✨ Removed placeholder class: mtrl-item-placeholder + variants
 
 📋 Example output: "▪▪▪▪▪▪ ▪▪▪▪▪▪▪▪" (subtle masking, close to text size)
 
 Current mode: ${getPlaceholderMode()}
 Mask character: ${FAKE_DATA.MASK_CHARACTER}
-Placeholder opacity: ${FAKE_DATA.PLACEHOLDER_OPACITY}
     `);
   };
 

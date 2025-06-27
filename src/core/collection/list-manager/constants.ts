@@ -153,44 +153,15 @@ export const API = {
 } as const;
 
 /**
- * Fake Data Generation Constants
+ * Fake Data / Placeholder Configuration
  */
 export const FAKE_DATA = {
-  /** Enable/disable fake item generation for seamless infinite scroll */
+  // Core functionality
   ENABLED: true,
-
-  /** Number of real items to analyze for pattern detection */
-  PATTERN_ANALYSIS_SAMPLE_SIZE: 10,
-
-  /** Number of generated fake items to cache for performance */
-  CACHE_SIZE: 50,
-
-  /** Enable automatic pattern detection from real data */
-  ENABLE_PATTERN_DETECTION: true,
-
-  /** Simple fallback names when pattern detection fails */
-  FALLBACK_NAMES: ["User", "Person", "Member", "Account", "Contact"],
-
-  /** Fallback email domains for generating realistic emails */
-  FALLBACK_DOMAINS: ["example.com", "demo.org", "test.net"],
-
-  /** Prefix for fake item IDs to distinguish from real items */
-  ID_PREFIX: "fake_",
-
-  /** Mark fake items with this flag for identification */
+  DEBUG_LOGGING: true,
   FAKE_FLAG: "__isFake",
 
-  /** Enable debug logging for fake data (lightweight) */
-  DEBUG_LOGGING: false,
-
-  /**
-   * Placeholder rendering mode options:
-   * - 'masked': Realistic structure with masked characters (█████ ████) - recommended default
-   * - 'skeleton': Loading bars (▁▁▁▁▁) - modern, shows loading state
-   * - 'blank': Empty spaces - minimal, preserves layout
-   * - 'dots': Dotted pattern (• • •) - subtle indication of content
-   * - 'realistic': Actual fake names - confusing, not recommended for UX
-   */
+  // Visual appearance
   PLACEHOLDER_MODE: "masked" as
     | "masked"
     | "skeleton"
@@ -198,35 +169,36 @@ export const FAKE_DATA = {
     | "dots"
     | "realistic",
 
-  /** Character used to mask alphanumeric content in 'masked' mode */
+  // Content generation
   MASK_CHARACTER: "▪",
 
-  /** Opacity for placeholder items (0.0 to 1.0) */
-  PLACEHOLDER_OPACITY: 0.5,
-
-  /** Skeleton placeholder characters for different text lengths */
+  // Skeleton characters for different content lengths
   SKELETON_CHARS: {
-    SHORT: "▁▁▁▁▁", // 5 chars for short text
-    MEDIUM: "▁▁▁▁▁▁▁▁", // 8 chars for medium text
-    LONG: "▁▁▁▁▁▁▁▁▁▁▁", // 11 chars for long text
-    EMAIL: "▁▁▁▁▁@▁▁▁▁▁", // Email pattern
+    SHORT: "▁▁▁▁▁",
+    MEDIUM: "▁▁▁▁▁▁▁▁",
+    LONG: "▁▁▁▁▁▁▁▁▁▁▁▁",
+    EMAIL: "▁▁▁▁@▁▁▁.▁▁▁",
   },
 
-  /** Blank placeholder characters */
+  // Blank characters (invisible placeholders)
   BLANK_CHARS: {
-    SHORT: "     ", // Spaces for dimensions
-    MEDIUM: "        ",
-    LONG: "           ",
-    EMAIL: "     @     ",
+    SHORT: "     ", // 5 spaces
+    MEDIUM: "        ", // 8 spaces
+    LONG: "            ", // 12 spaces
+    EMAIL: "     @   .   ", // Spaced email pattern
   },
 
-  /** Dot placeholder characters */
+  // Dot characters for subtle indication
   DOT_CHARS: {
-    SHORT: "• • • • •",
-    MEDIUM: "• • • • • • • •",
-    LONG: "• • • • • • • • • • •",
+    SHORT: "• • •",
+    MEDIUM: "• • • • •",
+    LONG: "• • • • • • •",
     EMAIL: "• • • @ • • •",
   },
+
+  // Fallback data when no patterns can be analyzed
+  FALLBACK_NAMES: ["Alex", "Jordan", "Taylor", "Casey", "Riley", "Morgan"],
+  FALLBACK_DOMAINS: ["example.com", "company.com", "service.org"],
 } as const;
 
 /**
