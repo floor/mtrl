@@ -65,9 +65,18 @@ function createTraditionalScrollTracker(
      * @returns Cleanup function
      */
     setup: (): (() => void) => {
-      // Create optimized handler function
+      // Create optimized handler function with boundary checking
       const scrollHandler = (e: Event): void => {
-        const currentScrollTop = (e.target as HTMLElement).scrollTop;
+        let currentScrollTop = (e.target as HTMLElement).scrollTop;
+
+        // 🛡️ BOUNDARY CHECK: Prevent scrolling beyond data limits
+        // This requires access to state which we don't have here directly,
+        // so we'll rely on the visibility manager to handle clamping
+        // But we can add a basic sanity check for negative values
+        if (currentScrollTop < 0) {
+          currentScrollTop = 0;
+          container.scrollTop = 0;
+        }
 
         // Skip processing if scroll amount is too small
         if (Math.abs(currentScrollTop - lastScrollTop) < scrollThreshold) {

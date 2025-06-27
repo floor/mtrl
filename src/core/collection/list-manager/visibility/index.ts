@@ -285,6 +285,32 @@ export const createVisibilityManager = (
       // 🚀 CRITICAL FIX: ALWAYS generate placeholders immediately when visible range changes
       // This ensures no empty space during fast scrolling - placeholders are completely decoupled from data loading
       if (FAKE_DATA.ENABLED && !justJumpedToPage) {
+        // 🛡️ BOUNDARY CHECK: Determine the actual data boundaries
+        const actualItemCount = state.itemCount || state.items.length;
+        const maxScrollableHeight = actualItemCount * itemHeight;
+
+        // Don't generate placeholders if we're beyond the actual data
+        if (scrollTop >= maxScrollableHeight) {
+          // Force scroll position to the end of actual data
+          const maxScrollPosition = Math.max(
+            0,
+            maxScrollableHeight - state.containerHeight
+          );
+          if (scrollTop > maxScrollPosition) {
+            container.scrollTop = maxScrollPosition;
+            state.scrollTop = maxScrollPosition;
+            scrollTop = maxScrollPosition;
+
+            if (FAKE_DATA.DEBUG_LOGGING) {
+              console.log(
+                `🛑 Scroll clamped to data boundary: ${Math.round(
+                  maxScrollPosition / 1000
+                )}k (max: ${Math.round(maxScrollableHeight / 1000)}k)`
+              );
+            }
+          }
+        }
+
         // Calculate which virtual items should be visible based on scroll position
         const viewportTop = Math.max(
           0,
@@ -296,16 +322,38 @@ export const createVisibilityManager = (
           (config.overscan || 3) * itemHeight;
         const firstVirtualIndex = Math.floor(viewportTop / itemHeight);
         const lastVirtualIndex = Math.floor(viewportBottom / itemHeight);
+
+        // 🛡️ BOUNDARY CHECK: Constrain virtual indices to actual data range
+        const maxVirtualIndex = actualItemCount - 1; // 0-based index
+        const constrainedFirstIndex = Math.max(
+          0,
+          Math.min(firstVirtualIndex, maxVirtualIndex)
+        );
+        const constrainedLastIndex = Math.max(
+          0,
+          Math.min(lastVirtualIndex, maxVirtualIndex)
+        );
+
         const itemsNeeded = Math.min(
-          lastVirtualIndex - firstVirtualIndex + 1,
+          constrainedLastIndex - constrainedFirstIndex + 1,
           20 // Reasonable limit for fast scrolling
         );
 
         // Generate immediate placeholders for the entire visible range
         const placeholderItems = [];
         for (let i = 0; i < itemsNeeded; i++) {
-          const virtualIndex = firstVirtualIndex + i;
+          const virtualIndex = constrainedFirstIndex + i;
           const virtualItemId = virtualIndex + 1; // Convert to 1-based ID
+
+          // 🛡️ FINAL BOUNDARY CHECK: Don't create items beyond the dataset
+          if (virtualItemId > actualItemCount) {
+            if (FAKE_DATA.DEBUG_LOGGING) {
+              console.log(
+                `🛑 Stopping at boundary: item ${virtualItemId} > ${actualItemCount}`
+              );
+            }
+            break;
+          }
 
           // Check if we already have real data for this item
           const existingRealItem = state.items.find(
@@ -316,7 +364,7 @@ export const createVisibilityManager = (
             // Use real data if available
             placeholderItems.push(existingRealItem);
           } else {
-            // Generate placeholder for missing data
+            // Generate placeholder for missing data (only within bounds)
             const placeholderItem = fakeDataGenerator.generateFakeItem(
               virtualIndex,
               state.items
@@ -342,9 +390,9 @@ export const createVisibilityManager = (
             fakeDataGenerator.isFakeItem(item)
           ).length;
           console.log(
-            `⚡ Immediate render: ${realCount} real + ${placeholderCount} placeholders at scroll ${Math.round(
+            `⚡ Bounded render: ${realCount} real + ${placeholderCount} placeholders at scroll ${Math.round(
               scrollTop / 1000
-            )}k`
+            )}k (max: ${Math.round(maxScrollableHeight / 1000)}k)`
           );
         }
       }
@@ -424,22 +472,45 @@ export const createVisibilityManager = (
       }
     }
 
-    // Calculate total height
+    // Calculate total height with proper boundary constraints
     if (state.totalHeightDirty && !isPageJump) {
       let totalHeight: number;
 
       if (state.useStatic) {
         totalHeight = itemMeasurement.calculateTotalHeight(state.items);
       } else if (state.itemCount) {
-        // Simple calculation - no complex positioning system
+        // 🛡️ BOUNDARY FIX: Use actual item count for total height calculation
         totalHeight = state.itemCount * itemHeight;
-      } else {
-        // Keep existing height if we have one
-        if (state.totalHeight > 0) {
-          state.totalHeightDirty = false;
-          return;
+
+        if (FAKE_DATA.DEBUG_LOGGING) {
+          console.log(
+            `📐 Total height calculated: ${Math.round(
+              totalHeight / 1000
+            )}k for ${state.itemCount} items`
+          );
         }
-        totalHeight = itemMeasurement.calculateTotalHeight(state.items);
+      } else {
+        // Keep existing height if we have one and it's reasonable
+        if (state.totalHeight > 0) {
+          // 🛡️ SANITY CHECK: If existing height is unreasonably large compared to actual data, recalculate
+          const actualItemCount = state.items.length;
+          const expectedHeight = actualItemCount * itemHeight;
+
+          if (state.totalHeight > expectedHeight * 10) {
+            // More than 10x expected
+            console.warn(
+              `⚠️ Total height too large (${Math.round(
+                state.totalHeight / 1000
+              )}k), recalculating from actual items`
+            );
+            totalHeight = expectedHeight;
+          } else {
+            state.totalHeightDirty = false;
+            return;
+          }
+        } else {
+          totalHeight = itemMeasurement.calculateTotalHeight(state.items);
+        }
       }
 
       Object.assign(state, updateTotalHeight(state, totalHeight));
