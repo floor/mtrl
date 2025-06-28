@@ -3,7 +3,7 @@ import {
   ListManagerConfig,
   ListManagerElements,
 } from "./types";
-import { PAGINATION } from "./constants";
+import { PAGINATION, PLACEHOLDER } from "./constants";
 
 /**
  * Lifecycle management dependencies
@@ -62,46 +62,20 @@ export const createLifecycleManager = (deps: LifecycleDependencies) => {
   } = deps;
 
   /**
-   * Sequentially load multiple ranges/pages during initialization to avoid concurrent requests
-   * and provide smoother scrolling experience
-   * @param rangesToFetch Number of ranges/pages to load
-   * @returns Promise that resolves when all ranges are loaded
-   */
-  const loadInitialRangesSequentially = async (
-    rangesToFetch: number
-  ): Promise<void> => {
-    for (let i = 1; i <= rangesToFetch; i++) {
-      try {
-        // Only set scroll position and replace collection for the first page (page 1)
-        const shouldSetScrollPosition = i === 1;
-        const shouldReplaceCollection = i === 1;
-        const result = await loadPage(i, {
-          setScrollPosition: shouldSetScrollPosition,
-          replaceCollection: shouldReplaceCollection,
-        });
-
-        // Small delay between requests to avoid overwhelming the API
-        if (i < rangesToFetch) {
-          await new Promise((resolve) => setTimeout(resolve, 50));
-        }
-      } catch (error) {
-        // Silently handle range loading errors
-        // Continue loading other ranges even if one fails
-        if (i === 1) {
-          // If first range fails, we should stop as the list won't be functional
-          throw error;
-        }
-      }
-    }
-  };
-
-  /**
    * Initialize the list manager and set up event listeners
    * @returns Cleanup function
    */
   const initialize = (): (() => void) => {
     // Set mounted flag
     state.mounted = true;
+
+    // Flag to track initial load to prevent double rendering
+    let isInitialLoad = true;
+
+    // Safety timeout to ensure flag is cleared even in edge cases
+    setTimeout(() => {
+      isInitialLoad = false;
+    }, 1000);
 
     // Store container dimensions
     state.containerHeight = container.clientHeight;
@@ -121,7 +95,13 @@ export const createLifecycleManager = (deps: LifecycleDependencies) => {
         const { justJumpedToPage, isPreloadingPages } = getPaginationFlags();
 
         // Skip updates if we're jumping to a page or preloading
-        if (justJumpedToPage || isPreloadingPages) {
+        // Also skip during initial load to prevent double rendering
+        if (
+          justJumpedToPage ||
+          isPreloadingPages ||
+          state.loading ||
+          isInitialLoad
+        ) {
           return;
         }
 
@@ -142,22 +122,88 @@ export const createLifecycleManager = (deps: LifecycleDependencies) => {
       itemsCollection
         .add(initialItems)
         .then(() => {
+          // Clear initial load flag for static data
+          isInitialLoad = false;
           // Force an update after adding items
           requestAnimationFrame(() => {
             updateVisibleItems(state.scrollTop);
           });
         })
         .catch((err) => {
+          // Clear initial load flag even if there's an error
+          isInitialLoad = false;
           // Silently handle static items collection errors
         });
     } else if (!state.useStatic) {
-      // Initial load for API data - sequentially load multiple ranges for smoother scrolling
-      const rangesToFetch =
-        config.initialRangesToFetch || PAGINATION.INITIAL_RANGES_TO_FETCH;
+      // Initial load for API data - load page 1 first, then preload additional pages in background
+      loadPage(1, {
+        setScrollPosition: true,
+        replaceCollection: true,
+      })
+        .then(() => {
+          // Clear initial load flag after first page is loaded
+          isInitialLoad = false;
 
-      loadInitialRangesSequentially(rangesToFetch).catch((err) => {
-        // Silently handle initial range loading errors
-      });
+          // Background preloading for smoother scrolling (for slow connections)
+          const rangesToFetch =
+            config.initialRangesToFetch || PAGINATION.INITIAL_RANGES_TO_FETCH;
+
+          if (rangesToFetch > 1) {
+            if (PLACEHOLDER.DEBUG_LOGGING) {
+              console.log(
+                `🔄 [InitialLoad] Preloading pages 2-${rangesToFetch} in background`
+              );
+            }
+
+            // Load additional pages in background without affecting page state
+            setTimeout(async () => {
+              for (let i = 2; i <= rangesToFetch; i++) {
+                try {
+                  // Load additional pages in background (don't update page state or scroll position)
+                  await loadPage(i, {
+                    setScrollPosition: false, // Don't change scroll position
+                    replaceCollection: false, // Don't clear existing items
+                  });
+
+                  if (PLACEHOLDER.DEBUG_LOGGING) {
+                    console.log(`✅ [InitialLoad] Page ${i} preloaded`);
+                  }
+
+                  // Small delay between requests to avoid overwhelming the API
+                  if (i < rangesToFetch) {
+                    await new Promise((resolve) => setTimeout(resolve, 50));
+                  }
+                } catch (error) {
+                  // Silently handle background loading errors
+                  // Don't block the UI if background loading fails
+                  console.error(
+                    `❌ [InitialLoad] Failed to preload page ${i}:`,
+                    error
+                  );
+                  break; // Stop preloading on first error to avoid cascade failures
+                }
+              }
+
+              if (PLACEHOLDER.DEBUG_LOGGING) {
+                console.log(`✅ [InitialLoad] Background preloading completed`);
+              }
+            }, 100); // Small delay to ensure main page renders first
+          } else {
+            if (PLACEHOLDER.DEBUG_LOGGING) {
+              console.log(
+                `🔄 [InitialLoad] No background preloading (initialRangesToFetch: ${rangesToFetch})`
+              );
+            }
+          }
+        })
+        .catch((err) => {
+          // Clear initial load flag even if there's an error
+          isInitialLoad = false;
+          // Silently handle initial page loading errors
+        });
+    } else {
+      // No static data and no API data - clear flag immediately
+      isInitialLoad = false;
     }
 
     // Handle resize events with ResizeObserver if available

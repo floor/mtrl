@@ -84,7 +84,8 @@ export interface ListManagerConfig {
   pageSize?: number;
 
   /**
-   * Number of initial ranges/pages to fetch at initialization for smoother scrolling
+   * Number of initial ranges/pages to fetch at initialization for smoother scrolling (background preloading)
+   * This loads additional pages in the background without affecting the primary page state
    * @default 2
    */
   initialRangesToFetch?: number;

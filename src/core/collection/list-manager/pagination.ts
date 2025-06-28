@@ -71,80 +71,8 @@ export const createPaginationManager = (deps: PaginationDependencies) => {
     scrollStopTimeout = null;
   };
 
-  /**
-   * Check for page boundaries and trigger loading if needed
-   * @param scrollTop Current scroll position
-   */
-  const checkPageBoundaries = (scrollTop: number): void => {
-    if (state.paginationStrategy !== "page") return;
-
-    const itemHeight = config.itemHeight || 84;
-    const pageSize = config.pageSize || 20;
-    const pageHeight = pageSize * itemHeight;
-
-    // Calculate current virtual page based on scroll position
-    const virtualPage = Math.floor(scrollTop / pageHeight) + 1;
-
-    // Check if we need to load the next page
-    const nextPage = virtualPage + 1;
-    const prevPage = virtualPage - 1;
-
-    // Load next page if we're close to the boundary
-    if (nextPage !== state.page && virtualPage > state.page) {
-      loadNextPageFromBoundary(nextPage);
-    }
-
-    // Load previous page if we're scrolling up and close to boundary
-    if (prevPage !== state.page && virtualPage < state.page && prevPage >= 1) {
-      loadPreviousPageFromBoundary(prevPage);
-    }
-  };
-
-  /**
-   * Load next page from boundary detection
-   * @param pageNumber Page number to load
-   */
-  const loadNextPageFromBoundary = async (
-    pageNumber: number
-  ): Promise<void> => {
-    if (isPreloadingPages) return;
-
-    isPreloadingPages = true;
-
-    try {
-      const loadParams = createLoadParams(state);
-      loadParams.page = pageNumber;
-
-      await loadItems(loadParams);
-    } catch (error) {
-      // Silently handle errors for boundary loading
-    } finally {
-      isPreloadingPages = false;
-    }
-  };
-
-  /**
-   * Load previous page from boundary detection
-   * @param pageNumber Page number to load
-   */
-  const loadPreviousPageFromBoundary = async (
-    pageNumber: number
-  ): Promise<void> => {
-    if (isPreloadingPages || pageNumber < 1) return;
-
-    isPreloadingPages = true;
-
-    try {
-      const loadParams = createLoadParams(state);
-      loadParams.page = pageNumber;
-
-      await loadItems(loadParams);
-    } catch (error) {
-      // Silently handle errors for boundary loading
-    } finally {
-      isPreloadingPages = false;
-    }
-  };
+  // Note: Boundary detection functions have been moved to boundary-manager.ts
+  // to avoid code duplication and centralize boundary logic
 
   /**
    * Load a specific page (only works with page-based pagination)
@@ -481,11 +409,6 @@ export const createPaginationManager = (deps: PaginationDependencies) => {
     loadPage,
     loadPreviousPage,
     loadNext,
-
-    // Boundary detection
-    checkPageBoundaries,
-    loadNextPageFromBoundary,
-    loadPreviousPageFromBoundary,
 
     // Scroll stop handling
     scheduleScrollStopPageLoad,

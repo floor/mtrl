@@ -6,9 +6,10 @@ import {
   LoadParams,
   PaginationMeta,
   LoadStatus,
-} from "../types";
+} from "./types";
 import { updateStateAfterLoad, updateLoadingState } from "./state";
 import { updateSpacerHeight } from "./dom-elements";
+import { PLACEHOLDER } from "./constants";
 
 /**
  * Data loading manager dependencies
@@ -22,7 +23,7 @@ export interface DataLoadingDependencies {
   itemsCollection: Collection<any>;
   getPaginationFlags: () => { isPageJumpLoad: boolean };
   setPaginationFlags: (flags: { isPageJumpLoad: boolean }) => void;
-  replaceFakeItemsWithReal?: (newRealItems: any[]) => void;
+  replacePlaceholdersWithReal?: (newRealItems: any[]) => void;
 }
 
 /**
@@ -40,7 +41,7 @@ export const createDataLoadingManager = (deps: DataLoadingDependencies) => {
     itemsCollection,
     getPaginationFlags,
     setPaginationFlags,
-    replaceFakeItemsWithReal,
+    replacePlaceholdersWithReal,
   } = deps;
 
   /**
@@ -71,10 +72,6 @@ export const createDataLoadingManager = (deps: DataLoadingDependencies) => {
         items: state.items,
         meta: { hasNext: state.hasNext, cursor: null },
       };
-    } else if (isAdjacentPage && !isPageJumpLoad) {
-      // console.log(
-      //   `✅ [LoadItems] Allowing adjacent page boundary load: requested page ${params.page}, current page ${state.page}`
-      // );
     }
 
     try {
@@ -115,7 +112,6 @@ export const createDataLoadingManager = (deps: DataLoadingDependencies) => {
         if (items.length > 0) {
           await itemsCollection.clear();
           await itemsCollection.add(items);
-        } else {
         }
       } else if (state.paginationStrategy === "page") {
         // For boundary loads (adjacent pages), append to existing collection
@@ -167,23 +163,25 @@ export const createDataLoadingManager = (deps: DataLoadingDependencies) => {
         // For boundary loads, update state with the FULL collection, not just new items
         const existingCollection = [...itemsCollection.getItems()];
 
-        // Removed excessive boundary debug logs
-
         // Add items to collection
         if (items.length > 0) {
           await itemsCollection.add(items);
         }
 
-        Object.assign(
+        // Get updated state but preserve page during initial range loading
+        const stateUpdates = updateStateAfterLoad(
           state,
-          updateStateAfterLoad(
-            state,
-            [...itemsCollection.getItems()],
-            response.meta,
-            config.dedupeItems
-          )
+          [...itemsCollection.getItems()],
+          response.meta,
+          config.dedupeItems
         );
-        // Removed excessive boundary load logging
+
+        // Preserve page state during initial range loading (non-page-jump loads)
+        if (!isPageJumpLoad && state.page === 1 && stateUpdates.page !== 1) {
+          stateUpdates.page = 1; // Keep page at 1 during initial range loading
+        }
+
+        Object.assign(state, stateUpdates);
       }
 
       // CRITICAL: Set total height immediately after state update to fix scrollbar behavior
@@ -199,9 +197,22 @@ export const createDataLoadingManager = (deps: DataLoadingDependencies) => {
       // Reset the page jump flag
       setPaginationFlags({ isPageJumpLoad: false });
 
-      // SEAMLESS INFINITE CONTENT: Replace fake items with real items when they arrive
-      if (replaceFakeItemsWithReal && items.length > 0) {
-        replaceFakeItemsWithReal(items);
+      // SEAMLESS INFINITE CONTENT: Replace placeholder items with real items when they arrive
+      if (replacePlaceholdersWithReal && items.length > 0) {
+        if (PLACEHOLDER.DEBUG_LOGGING) {
+          console.log(
+            `🔗 [DataLoad] Calling replacePlaceholdersWithReal with ${items.length} items`
+          );
+        }
+        replacePlaceholdersWithReal(items);
+      } else {
+        if (PLACEHOLDER.DEBUG_LOGGING) {
+          console.log(
+            `🚫 [DataLoad] Skipping placeholder replacement - replacePlaceholdersWithReal: ${!!replacePlaceholdersWithReal}, items.length: ${
+              items.length
+            }`
+          );
+        }
       }
 
       // Call afterLoad callback if provided
@@ -224,7 +235,11 @@ export const createDataLoadingManager = (deps: DataLoadingDependencies) => {
       if (state.paginationStrategy === "cursor" && response.meta?.cursor) {
         state.cursor = response.meta.cursor;
       } else if (state.paginationStrategy === "page" && params.page) {
-        state.page = params.page;
+        // Only update page state for explicit page jumps, not during initial range loading
+        if (isPageJumpLoad) {
+          state.page = params.page;
+        }
+        // For initial range loading, keep page at 1 to maintain stable state
       }
 
       return {

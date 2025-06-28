@@ -52,37 +52,37 @@
  * with id: 'placeholder-{index}' and they'll be styled correctly.
  */
 
-import { FAKE_DATA } from "./constants";
+import { PLACEHOLDER } from "./constants";
 import {
   addClass as baseAddClass,
   removeClass as baseRemoveClass,
 } from "../../dom/classes";
 
-interface FakeDataPattern {
+interface PlaceholderDataPattern {
   namePattern?: string[];
   emailDomain?: string;
   rolePattern?: string[];
   idSequence?: number;
 }
 
-interface FakeDataCache {
+interface PlaceholderDataCache {
   items: Map<number, any>;
-  pattern: FakeDataPattern;
+  pattern: PlaceholderDataPattern;
   lastAnalyzed: number;
 }
 
 /**
- * Minimal fake data generator with pattern analysis
+ * Minimal placeholder data generator with pattern analysis
  */
-export class FakeDataGenerator {
-  private cache: FakeDataCache = {
+export class PlaceholderDataGenerator {
+  private cache: PlaceholderDataCache = {
     items: new Map(),
     pattern: {},
     lastAnalyzed: 0,
   };
 
   /**
-   * Analyze real items to detect patterns for generating believable fake items
+   * Analyze real items to detect patterns for generating believable placeholder items
    * @param realItems Array of real items to analyze
    */
   analyzePatterns(realItems: any[]): void {
@@ -120,9 +120,9 @@ export class FakeDataGenerator {
   }
 
   /**
-   * Generate a fake item for the given virtual index
+   * Generate a placeholder item for the given virtual index
    */
-  generateFakeItem(index: number, realItems: any[] = []): any {
+  generatePlaceholderItem(index: number, realItems: any[] = []): any {
     // Check cache first
     if (this.cache.items.has(index)) {
       return this.cache.items.get(index);
@@ -133,8 +133,8 @@ export class FakeDataGenerator {
       this.analyzePatterns(realItems);
     }
 
-    // Generate new fake item
-    const fakeItem = this.createFakeItem(index);
+    // Generate new placeholder item
+    const placeholderItem = this.createPlaceholderItem(index);
 
     // Cache with size limit (50 items max)
     if (this.cache.items.size >= 50) {
@@ -142,15 +142,15 @@ export class FakeDataGenerator {
       const firstKey = this.cache.items.keys().next().value;
       this.cache.items.delete(firstKey);
     }
-    this.cache.items.set(index, fakeItem);
+    this.cache.items.set(index, placeholderItem);
 
-    return fakeItem;
+    return placeholderItem;
   }
 
   /**
-   * Create fake item using detected patterns (fast generation)
+   * Create placeholder item using detected patterns (fast generation)
    */
-  private createFakeItem(index: number): any {
+  private createPlaceholderItem(index: number): any {
     // Use global virtual ID to ensure proper sequence
     const virtualItemId = index + 1;
 
@@ -166,9 +166,9 @@ export class FakeDataGenerator {
       supportingText: placeholderContent.supportingText,
       meta: placeholderContent.meta,
       avatar: placeholderContent.avatar,
-      [FAKE_DATA.FAKE_FLAG]: true, // Mark as fake
-      _fakeIndex: index, // Keep original index for debugging
-      _placeholderMode: FAKE_DATA.PLACEHOLDER_MODE, // Track placeholder mode for CSS class
+      [PLACEHOLDER.PLACEHOLDER_FLAG]: true, // Mark as placeholder
+      _placeholderIndex: index, // Keep original index for debugging
+      _placeholderMode: PLACEHOLDER.PLACEHOLDER_MODE, // Track placeholder mode for CSS class
     };
   }
 
@@ -176,7 +176,7 @@ export class FakeDataGenerator {
    * Generate placeholder content based on configured mode
    */
   private generatePlaceholderContent(pattern: any, index: number) {
-    const mode = FAKE_DATA.PLACEHOLDER_MODE;
+    const mode = PLACEHOLDER.PLACEHOLDER_MODE;
 
     switch (mode) {
       case "masked":
@@ -201,7 +201,7 @@ export class FakeDataGenerator {
     const realisticContent = this.generateRealisticContent(pattern, index);
 
     // Then mask all alphanumeric characters
-    const maskChar = FAKE_DATA.MASK_CHARACTER;
+    const maskChar = PLACEHOLDER.MASK_CHARACTER;
 
     return {
       headline: this.maskText(realisticContent.headline, maskChar),
@@ -225,7 +225,7 @@ export class FakeDataGenerator {
     const virtualItemId = index + 1;
 
     // Use pattern lengths to determine skeleton size
-    const names = pattern.namePattern || FAKE_DATA.FALLBACK_NAMES;
+    const names = pattern.namePattern || PLACEHOLDER.FALLBACK_NAMES;
     const roles = pattern.rolePattern || ["Team Member"];
 
     const nameLength = names[index % names.length]?.length || 8;
@@ -234,19 +234,19 @@ export class FakeDataGenerator {
     // Choose skeleton size based on content length
     const headlineSkeleton =
       nameLength > 10
-        ? FAKE_DATA.SKELETON_CHARS.LONG
+        ? PLACEHOLDER.SKELETON_CHARS.LONG
         : nameLength > 6
-        ? FAKE_DATA.SKELETON_CHARS.MEDIUM
-        : FAKE_DATA.SKELETON_CHARS.SHORT;
+        ? PLACEHOLDER.SKELETON_CHARS.MEDIUM
+        : PLACEHOLDER.SKELETON_CHARS.SHORT;
 
     const metaSkeleton =
       roleLength > 8
-        ? FAKE_DATA.SKELETON_CHARS.MEDIUM
-        : FAKE_DATA.SKELETON_CHARS.SHORT;
+        ? PLACEHOLDER.SKELETON_CHARS.MEDIUM
+        : PLACEHOLDER.SKELETON_CHARS.SHORT;
 
     return {
       headline: headlineSkeleton,
-      supportingText: FAKE_DATA.SKELETON_CHARS.EMAIL,
+      supportingText: PLACEHOLDER.SKELETON_CHARS.EMAIL,
       meta: metaSkeleton,
       avatar: "▁", // Skeleton avatar
     };
@@ -256,7 +256,7 @@ export class FakeDataGenerator {
    * Generate blank placeholder content
    */
   private generateBlankContent(pattern: any, index: number) {
-    const names = pattern.namePattern || FAKE_DATA.FALLBACK_NAMES;
+    const names = pattern.namePattern || PLACEHOLDER.FALLBACK_NAMES;
     const roles = pattern.rolePattern || ["Team Member"];
 
     const nameLength = names[index % names.length]?.length || 8;
@@ -264,19 +264,19 @@ export class FakeDataGenerator {
 
     const headlineBlank =
       nameLength > 10
-        ? FAKE_DATA.BLANK_CHARS.LONG
+        ? PLACEHOLDER.BLANK_CHARS.LONG
         : nameLength > 6
-        ? FAKE_DATA.BLANK_CHARS.MEDIUM
-        : FAKE_DATA.BLANK_CHARS.SHORT;
+        ? PLACEHOLDER.BLANK_CHARS.MEDIUM
+        : PLACEHOLDER.BLANK_CHARS.SHORT;
 
     const metaBlank =
       roleLength > 8
-        ? FAKE_DATA.BLANK_CHARS.MEDIUM
-        : FAKE_DATA.BLANK_CHARS.SHORT;
+        ? PLACEHOLDER.BLANK_CHARS.MEDIUM
+        : PLACEHOLDER.BLANK_CHARS.SHORT;
 
     return {
       headline: headlineBlank,
-      supportingText: FAKE_DATA.BLANK_CHARS.EMAIL,
+      supportingText: PLACEHOLDER.BLANK_CHARS.EMAIL,
       meta: metaBlank,
       avatar: " ", // Blank avatar
     };
@@ -286,7 +286,7 @@ export class FakeDataGenerator {
    * Generate dot placeholder content
    */
   private generateDotContent(pattern: any, index: number) {
-    const names = pattern.namePattern || FAKE_DATA.FALLBACK_NAMES;
+    const names = pattern.namePattern || PLACEHOLDER.FALLBACK_NAMES;
     const roles = pattern.rolePattern || ["Team Member"];
 
     const nameLength = names[index % names.length]?.length || 8;
@@ -294,17 +294,19 @@ export class FakeDataGenerator {
 
     const headlineDots =
       nameLength > 10
-        ? FAKE_DATA.DOT_CHARS.LONG
+        ? PLACEHOLDER.DOT_CHARS.LONG
         : nameLength > 6
-        ? FAKE_DATA.DOT_CHARS.MEDIUM
-        : FAKE_DATA.DOT_CHARS.SHORT;
+        ? PLACEHOLDER.DOT_CHARS.MEDIUM
+        : PLACEHOLDER.DOT_CHARS.SHORT;
 
     const metaDots =
-      roleLength > 8 ? FAKE_DATA.DOT_CHARS.MEDIUM : FAKE_DATA.DOT_CHARS.SHORT;
+      roleLength > 8
+        ? PLACEHOLDER.DOT_CHARS.MEDIUM
+        : PLACEHOLDER.DOT_CHARS.SHORT;
 
     return {
       headline: headlineDots,
-      supportingText: FAKE_DATA.DOT_CHARS.EMAIL,
+      supportingText: PLACEHOLDER.DOT_CHARS.EMAIL,
       meta: metaDots,
       avatar: "•", // Dot avatar
     };
@@ -317,9 +319,9 @@ export class FakeDataGenerator {
     const virtualItemId = index + 1;
 
     // Use patterns or fallbacks
-    const names = pattern.namePattern || FAKE_DATA.FALLBACK_NAMES;
+    const names = pattern.namePattern || PLACEHOLDER.FALLBACK_NAMES;
     const roles = pattern.rolePattern || ["Team Member"];
-    const domain = pattern.emailDomain || FAKE_DATA.FALLBACK_DOMAINS[0];
+    const domain = pattern.emailDomain || PLACEHOLDER.FALLBACK_DOMAINS[0];
 
     // Simple cycling through patterns
     const nameIndex = index % names.length;
@@ -363,10 +365,10 @@ export class FakeDataGenerator {
   }
 
   /**
-   * Check if an item is fake
+   * Check if an item is a placeholder
    */
-  isFakeItem(item: any): boolean {
-    return item && item[FAKE_DATA.FAKE_FLAG] === true;
+  isPlaceholderItem(item: any): boolean {
+    return item && item[PLACEHOLDER.PLACEHOLDER_FLAG] === true;
   }
 
   /**
@@ -385,7 +387,7 @@ export class FakeDataGenerator {
       cachedItems: this.cache.items.size,
       hasPattern: !!this.cache.pattern.namePattern,
       lastAnalyzed: this.cache.lastAnalyzed,
-      placeholderMode: FAKE_DATA.PLACEHOLDER_MODE,
+      placeholderMode: PLACEHOLDER.PLACEHOLDER_MODE,
     };
   }
 
@@ -395,30 +397,30 @@ export class FakeDataGenerator {
   setPlaceholderMode(
     mode: "masked" | "skeleton" | "blank" | "dots" | "realistic"
   ) {
-    (FAKE_DATA as any).PLACEHOLDER_MODE = mode;
+    (PLACEHOLDER as any).PLACEHOLDER_MODE = mode;
     this.clearCache();
   }
 }
 
 // Singleton instance for performance
-export const fakeDataGenerator = new FakeDataGenerator();
+export const placeholderDataGenerator = new PlaceholderDataGenerator();
 
 // Utility functions for mode switching
 export const setPlaceholderMode = (
   mode: "masked" | "skeleton" | "blank" | "dots" | "realistic"
 ) => {
-  fakeDataGenerator.setPlaceholderMode(mode);
+  placeholderDataGenerator.setPlaceholderMode(mode);
 };
 
-export const getPlaceholderMode = () => FAKE_DATA.PLACEHOLDER_MODE;
+export const getPlaceholderMode = () => PLACEHOLDER.PLACEHOLDER_MODE;
 
 export const addPlaceholderClass = (element: HTMLElement, item: any) => {
   if (!element) return;
 
-  if (item._isFake || item[FAKE_DATA.FAKE_FLAG]) {
+  if (item._isPlaceholder || item[PLACEHOLDER.PLACEHOLDER_FLAG]) {
     baseAddClass(element, "item-placeholder");
 
-    const mode = item._placeholderMode || FAKE_DATA.PLACEHOLDER_MODE;
+    const mode = item._placeholderMode || PLACEHOLDER.PLACEHOLDER_MODE;
     if (mode && mode !== "realistic") {
       baseAddClass(element, `item-placeholder--${mode}`);
     }
@@ -464,7 +466,7 @@ export const removePlaceholderClass = (
 export const placeholderRenderHook = (item: any, element: HTMLElement) => {
   if (!item || !element) return;
 
-  const isFake = item._isFake || item[FAKE_DATA.FAKE_FLAG];
+  const isFake = item._isPlaceholder || item[PLACEHOLDER.PLACEHOLDER_FLAG];
 
   if (isFake) {
     addPlaceholderClass(element, item);

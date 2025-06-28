@@ -67,6 +67,13 @@ $placeholder-animation-speed: 1.5s !default;
   scrollbar-width: thin;
   transition: $bg-transition;
 
+  // Performance optimizations
+  contain: layout style paint;
+  content-visibility: auto;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  will-change: scroll-position;
+
   // Scrollbar styling
   &::-webkit-scrollbar {
     width: 8px;
@@ -154,6 +161,30 @@ $placeholder-animation-speed: 1.5s !default;
     width: 1px;
     visibility: hidden;
     pointer-events: none;
+
+    // Performance optimizations for spacer
+    contain: strict;
+    will-change: height;
+    transform: translateZ(0);
+    overflow: hidden;
+  }
+
+  // Sentinel elements for intersection observer
+  &-sentinel {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+    contain: layout;
+
+    &--top {
+      top: 0;
+    }
+
+    &--bottom {
+      bottom: 0;
+    }
   }
 
   // Empty state
@@ -234,17 +265,24 @@ $placeholder-animation-speed: 1.5s !default;
     align-items: center;
     min-height: $list-item-height;
     padding: $list-padding $list-item-padding;
-    position: absolute; // For virtual list
-    top: 0;
+
+    // Performance-optimized positioning
+    position: absolute;
     left: 0;
+    right: 0;
     width: 100%;
+
+    // Use transforms for positioning (GPU-accelerated)
+    will-change: transform;
+    transform: translateZ(0);
+    contain: layout style;
+
     gap: 16px;
     color: t.color("on-surface");
     cursor: pointer;
     box-sizing: border-box;
-    position: relative; // For state layers
     overflow: hidden;
-    transition: $bg-transition, $color-transition;
+    transition: $bg-transition, $color-transition, opacity 0.2s ease-in-out;
 
     // State layer base
     &::before {
@@ -411,14 +449,41 @@ $placeholder-animation-speed: 1.5s !default;
       opacity: $placeholder-opacity;
       pointer-events: none;
       position: relative;
+      height: 84px;
       transition: opacity 0.3s ease-in-out,
         background-color $state-transition-duration $state-transition-easing;
+
+      // Performance optimizations for placeholders
+      contain: strict;
+      will-change: contents;
 
       // Background tint for visibility
       background-color: t.alpha(
         "surface-variant",
         $placeholder-background-alpha
       );
+
+      // Enhanced shimmer effect for loading indication
+      // &::before {
+      //   content: "";
+      //   position: absolute;
+      //   top: 0;
+      //   left: -100%;
+      //   width: 100%;
+      //   height: 100%;
+      //   background: linear-gradient(
+      //     90deg,
+      //     transparent,
+      //     rgba(255, 255, 255, 0.1),
+      //     transparent
+      //   );
+      //   animation: shimmer 1.5s infinite;
+      //   will-change: transform;
+
+      //   @media (prefers-reduced-motion: reduce) {
+      //     animation: none;
+      //   }
+      // }
 
       // Loading shimmer effect
       // &::after {
@@ -506,6 +571,11 @@ $placeholder-animation-speed: 1.5s !default;
         }
       }
     }
+
+    // Recycled element optimizations
+    &.#{base.$prefix}-item-recycled {
+      will-change: contents;
+    }
   }
 }
 
@@ -584,5 +654,120 @@ $placeholder-animation-speed: 1.5s !default;
   }
   100% {
     opacity: 1;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(200%);
+  }
+}
+
+// PERFORMANCE UTILITIES
+.#{$component}-container {
+  // Performance mode for slower devices
+  &--performance-mode {
+    .#{$component}-item {
+      will-change: auto;
+      transform: none;
+      contain: none; // Reduce containment on slower devices
+
+      &.#{base.$prefix}-item-placeholder::before {
+        animation: none;
+      }
+    }
+  }
+
+  // Debug mode for development
+  &--debug {
+    .#{$component}-item {
+      outline: 1px solid rgba(255, 0, 0, 0.3);
+
+      &.#{base.$prefix}-item-placeholder {
+        outline-color: rgba(0, 255, 0, 0.3);
+      }
+
+      &.#{base.$prefix}-item-recycled {
+        outline-color: rgba(0, 0, 255, 0.3);
+      }
+    }
+  }
+
+  // High-performance scroll optimization
+  &.#{$component}-performance-scroll {
+    scroll-behavior: auto;
+    will-change: scroll-position;
+
+    &::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background-color: t.alpha("outline", 0.2);
+      border-radius: 4px;
+
+      &:hover {
+        background-color: t.alpha("outline", 0.3);
+      }
+    }
+  }
+}
+
+// Dark mode optimizations
+@media (prefers-color-scheme: dark) {
+  .#{$component}-item.#{base.$prefix}-item-placeholder::before {
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.05),
+      transparent
+    );
+  }
+}
+
+// Responsive performance optimizations
+@media (max-width: 768px) {
+  .#{$component}-container {
+    .#{$component}-item {
+      // Optimize for touch on mobile
+      touch-action: pan-y;
+      will-change: transform;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .#{$component}-container {
+    .#{$component}-item.#{base.$prefix}-item-placeholder::before {
+      animation-duration: 2s; // Slower animation on small screens
+    }
+  }
+}
+
+// High-density display optimizations
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .#{$component}-item {
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+// Print optimizations
+@media print {
+  .#{$component}-container {
+    .#{$component}-item {
+      will-change: auto !important;
+      transform: none !important;
+      animation: none !important;
+      transition: none !important;
+    }
   }
 }

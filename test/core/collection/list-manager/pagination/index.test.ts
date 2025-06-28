@@ -170,7 +170,7 @@ describe("Pagination Manager", () => {
       expect(typeof manager.loadPage).toBe("function");
       expect(typeof manager.loadPreviousPage).toBe("function");
       expect(typeof manager.loadNext).toBe("function");
-      expect(typeof manager.checkPageBoundaries).toBe("function");
+      expect(typeof manager.scheduleScrollStopPageLoad).toBe("function");
       expect(typeof manager.getPaginationFlags).toBe("function");
       expect(typeof manager.setPaginationFlags).toBe("function");
       expect(typeof manager.cleanup).toBe("function");
@@ -391,78 +391,6 @@ describe("Pagination Manager", () => {
     });
   });
 
-  describe("checkPageBoundaries", () => {
-    let manager: any;
-
-    beforeEach(() => {
-      manager = createPaginationManager({
-        state: mockState,
-        config: mockConfig,
-        elements: mockElements,
-        container: mockContainer,
-        itemsCollection: mockCollection,
-        adapter: mockAdapter,
-        itemMeasurement: mockItemMeasurement,
-        renderer: mockRenderer,
-        loadItems: mockLoadItems,
-        updateVisibleItems: mockUpdateVisibleItems,
-      });
-    });
-
-    test("triggers next page load when scrolling down", async () => {
-      mockState.page = 2;
-      // Need to be in page 3 territory (3360+ px) to trigger loading of page 4
-      // Page 3 starts at (3-1) * 1680 = 3360px
-      const scrollTop = 3360 + 100; // Well into page 3 territory
-
-      await manager.checkPageBoundaries(scrollTop);
-
-      // Should trigger loading of page 4 (nextPage = virtualPage + 1 = 3 + 1 = 4)
-      expect(mockLoadItems).toHaveBeenCalledWith({ page: 4 });
-    });
-
-    test("triggers previous page load when scrolling up", async () => {
-      mockState.page = 3;
-      // Need to be in page 1 territory (0-1679 px) to trigger loading of previous page
-      // Page 1 range: 0 to 1679px (virtualPage = 1, prevPage = 0 which fails >= 1 check)
-      // So we need to be in page 2 territory when state.page = 3
-      // Page 2: 1680 to 3359px (virtualPage = 2, prevPage = 1 which passes >= 1 check)
-      const scrollTop = 1680 + 100; // In page 2 territory
-
-      await manager.checkPageBoundaries(scrollTop);
-
-      // Should trigger loading of page 1 (prevPage = virtualPage - 1 = 2 - 1 = 1)
-      expect(mockLoadItems).toHaveBeenCalledWith({ page: 1 });
-    });
-
-    test("does not trigger load for same page", async () => {
-      mockState.page = 2;
-      const scrollTop = 1680 + 50; // Still within page 2
-
-      await manager.checkPageBoundaries(scrollTop);
-
-      expect(mockLoadItems).not.toHaveBeenCalled();
-    });
-
-    test("does not trigger previous page load for page 1", async () => {
-      mockState.page = 1;
-      const scrollTop = 0;
-
-      await manager.checkPageBoundaries(scrollTop);
-
-      expect(mockLoadItems).not.toHaveBeenCalled();
-    });
-
-    test("ignores boundaries for non-page pagination", async () => {
-      mockState.paginationStrategy = "cursor";
-      const scrollTop = 2000;
-
-      await manager.checkPageBoundaries(scrollTop);
-
-      expect(mockLoadItems).not.toHaveBeenCalled();
-    });
-  });
-
   describe("getPaginationFlags", () => {
     test("returns current pagination flags", () => {
       const manager = createPaginationManager({
@@ -562,12 +490,13 @@ describe("Pagination Manager", () => {
       expect(result.items[0].id).toBe("41");
 
       // 3. Load previous page
-      result = await manager.loadPreviousPage();
-      expect(result.hasPrev).toBe(true);
+      const prevResult = await manager.loadPreviousPage();
+      expect(prevResult.hasPrev).toBe(true);
       expect(mockState.page).toBe(2);
 
-      // 4. Check boundaries
-      await manager.checkPageBoundaries(1800); // Should trigger page 3 load
+      // 4. Load next page
+      const nextResult = await manager.loadNext();
+      expect(nextResult.hasNext).toBe(true);
 
       // Verify all operations worked
       expect(mockLoadItems).toHaveBeenCalled();

@@ -39,7 +39,7 @@ export const PAGINATION = {
   /** Second page number for next loads */
   SECOND_PAGE: 2,
 
-  /** Number of initial ranges/pages to fetch during list creation for smoother scrolling */
+  /** Number of initial ranges/pages to fetch during list creation for smoother scrolling (background preloading) */
   INITIAL_RANGES_TO_FETCH: 2,
 
   /** Number of ranges/pages to fetch around target page during scroll jumps for smoother scrolling */
@@ -153,13 +153,13 @@ export const API = {
 } as const;
 
 /**
- * Fake Data / Placeholder Configuration
+ * Placeholder Data Configuration
  */
-export const FAKE_DATA = {
+export const PLACEHOLDER = {
   // Core functionality
   ENABLED: true,
   DEBUG_LOGGING: true,
-  FAKE_FLAG: "__isFake",
+  PLACEHOLDER_FLAG: "__isPlaceholder",
 
   // Visual appearance
   PLACEHOLDER_MODE: "masked" as

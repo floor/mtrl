@@ -145,7 +145,7 @@ export const createRenderingManager = (deps: RenderingDependencies) => {
 
         // Create a simplified HTML structure for fast insertion
         const itemId = item.id || `item-${index}`;
-        const isPlaceholder = item._isFake ? " mtrl-item-placeholder" : "";
+        const isPlaceholder = item._isPlaceholder ? " mtrl-item-placeholder" : "";
 
         htmlStrings.push(`
           <div class="mtrl-list-item${isPlaceholder}" 
@@ -191,7 +191,7 @@ export const createRenderingManager = (deps: RenderingDependencies) => {
 
         // Optimize CSS classes
         const requiredClasses = ["mtrl-list-item"];
-        if (item._isFake) {
+        if (item._isPlaceholder) {
           requiredClasses.push("mtrl-item-placeholder");
         }
         optimizeClassList(element, requiredClasses);

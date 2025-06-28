@@ -60,12 +60,17 @@ import {
   COLLECTION,
   TIMING,
   DEFAULTS,
-  FAKE_DATA,
+  PLACEHOLDER,
 } from "./constants";
 import {
   installPlaceholderHook,
   placeholderRenderHook,
 } from "./data-generator";
+
+// Import new manager modules
+import { createTimeoutManager } from "./timeout-manager";
+import { createBoundaryManager } from "./boundary-manager";
+import { createScrollJumpManager } from "./scroll-jump-manager";
 
 /**
  * Creates a list manager for a specific collection
@@ -129,11 +134,10 @@ export const createListManager = (
   installPlaceholderHook(renderer.setRenderHook);
 
   // Initialize collection for data management
-  // NOTE: No transform function needed - items are already transformed in loadItems()
   const itemsCollection = createCollection({
     initialCapacity: useStatic
       ? initialItems.length
-      : COLLECTION.DEFAULT_INITIAL_CAPACITY, // Optimize initial capacity
+      : COLLECTION.DEFAULT_INITIAL_CAPACITY,
   });
 
   // Initialize route adapter (only if in API mode)
@@ -146,8 +150,7 @@ export const createListManager = (
         headers: {
           "Content-Type": "application/json",
         },
-        cache: true, // Enable caching for API requests
-        // Pass the pagination configuration if provided
+        cache: true,
         pagination: validatedConfig.pagination
           ? {
               strategy: validatedConfig.pagination.strategy || "cursor",
@@ -160,16 +163,8 @@ export const createListManager = (
   // Track cleanup functions
   const cleanupFunctions: (() => void)[] = [];
 
-  // Flags for managing UI state during operations
-  let justJumpedToPage = false;
-  let pageJumpTimeout: number | null = null;
-  let isPreloadingPages = false;
-  let isPageJumpLoad = false; // Track when we're loading due to a page jump
-  let scrollStopTimeout: NodeJS.Timeout | null = null; // Track scroll stop debouncing
-
-  // Debounce timer for large scroll jumps only
-  let scrollJumpDebounceTimer: NodeJS.Timeout | null = null;
-  let isScrollJumpInProgress = false; // Track if we're in the middle of a debounced scroll jump
+  // Create timeout manager to centralize timeout and state flag management
+  const timeoutManager = createTimeoutManager();
 
   // Initialize page event manager
   const pageEventManager = createPageEventManager(validatedConfig);
@@ -186,14 +181,14 @@ export const createListManager = (
     elements,
   });
 
-  // Initialize scrolling manager (with minimal dependencies for now)
+  // Initialize scrolling manager
   const scrollingManager = createScrollingManager({
     state,
     config: validatedConfig,
     container,
   });
 
-  // Initialize data loading manager (will be updated with fake item replacement after visibility manager is created)
+  // Initialize data loading manager
   let dataLoadingManager = createDataLoadingManager({
     state,
     config: validatedConfig,
@@ -201,13 +196,11 @@ export const createListManager = (
     collection,
     adapter,
     itemsCollection,
-    getPaginationFlags: () => ({ isPageJumpLoad }),
-    setPaginationFlags: (flags) => {
-      isPageJumpLoad = flags.isPageJumpLoad;
-    },
+    getPaginationFlags: () => timeoutManager.getState(),
+    setPaginationFlags: (flags) => timeoutManager.updateState(flags),
   });
 
-  // Initialize visibility manager (forward declaration - will be defined after functions)
+  // Initialize visibility manager (forward declaration)
   let visibilityManager: ReturnType<typeof createVisibilityManager>;
 
   // Forward declarations for functions used by managers
@@ -217,158 +210,16 @@ export const createListManager = (
   ) => void;
   let checkLoadMoreImpl: (scrollTop: number) => void;
 
-  // Initialize lifecycle manager (forward declaration - will be defined after functions)
+  // Initialize lifecycle manager (forward declaration)
   let lifecycleManager: ReturnType<typeof createLifecycleManager>;
-
-  // Helper functions for lifecycle manager
-  const getPaginationFlags = () => ({ justJumpedToPage, isPreloadingPages });
-  const getTimeoutFlags = () => ({ pageJumpTimeout, scrollStopTimeout });
-  const clearTimeouts = () => {
-    if (pageJumpTimeout !== null) {
-      clearTimeout(pageJumpTimeout);
-      pageJumpTimeout = null;
-    }
-    if (scrollStopTimeout !== null) {
-      clearTimeout(scrollStopTimeout);
-      scrollStopTimeout = null;
-    }
-    // Clear scroll jump debounce timer and reset flag
-    if (scrollJumpDebounceTimer !== null) {
-      clearTimeout(scrollJumpDebounceTimer);
-      scrollJumpDebounceTimer = null;
-    }
-    isScrollJumpInProgress = false;
-  };
 
   /**
    * Load items with cursor pagination or from static data
-   * @param {LoadParams} params - Query parameters
-   * @returns {Promise<Object>} Response with items and pagination metadata
    */
   let loadItems = dataLoadingManager.loadItems;
 
   /**
-   * Load target page immediately, then load additional ranges in background
-   * to provide immediate UI response with smooth scrolling preparation
-   * @param targetPage Target page number to jump to
-   * @returns Promise that resolves when target page is loaded (additional ranges load in background)
-   */
-  const loadScrollJumpWithBackgroundRanges = async (
-    targetPage: number
-  ): Promise<void> => {
-    const rangesToFetch =
-      validatedConfig.scrollJumpRangesToFetch ||
-      PAGINATION.SCROLL_JUMP_RANGES_TO_FETCH;
-    // 1. Load target page FIRST and return immediately for UI responsiveness
-    try {
-      const result = await loadPage(targetPage);
-    } catch (error) {
-      throw error; // If target page fails, the jump is not functional
-    }
-
-    // 2. Calculate additional pages to load in background (exclude target page)
-    if (rangesToFetch <= 1) {
-      return; // No additional ranges needed
-    }
-
-    const additionalPages: number[] = [];
-
-    // Calculate total pages from state (if available from API response)
-    const pageSize = validatedConfig.pageSize || 20;
-    const totalPages = state.itemCount
-      ? Math.ceil(state.itemCount / pageSize)
-      : null;
-
-    // Add pages after target (but only if they exist)
-    for (let i = 1; i < rangesToFetch; i++) {
-      const nextPage = targetPage + i;
-      // Only add next page if we know it exists OR if we don't have total page info yet
-      if (!totalPages || nextPage <= totalPages) {
-        additionalPages.push(nextPage);
-      } else {
-      }
-    }
-
-    // If we have room for a previous page and target page > 1, replace the last "next" page with a "previous" page
-    if (rangesToFetch >= 3 && targetPage > 1) {
-      additionalPages.pop(); // Remove the last "next" page
-      additionalPages.unshift(targetPage - 1); // Add previous page at the beginning
-    }
-
-    // 3. Load additional ranges in background (don't await - fire and forget)
-    loadAdditionalRangesInBackground(additionalPages);
-  };
-
-  /**
-   * Load additional ranges in background without blocking the UI
-   * @param pages Array of page numbers to load
-   */
-  const loadAdditionalRangesInBackground = (pages: number[]): void => {
-    // Use setTimeout to ensure this runs after the current execution context
-    setTimeout(async () => {
-      for (let i = 0; i < pages.length; i++) {
-        const page = pages[i];
-        try {
-          const result = await loadPage(page, {
-            setScrollPosition: false,
-            replaceCollection: false,
-          });
-
-          // Small delay between background requests to avoid overwhelming the API
-          if (i < pages.length - 1) {
-            await new Promise((resolve) => setTimeout(resolve, 100)); // Slightly longer delay for background loads
-          }
-        } catch (error) {
-          console.error(
-            `❌ [BackgroundLoad] Failed to load additional page ${page}:`,
-            error
-          );
-          // Continue loading other pages even if one fails
-        }
-      }
-    }, 10); // Small delay to ensure target page renders first
-  };
-
-  /**
-   * Schedule a page load when scrolling stops (debounced)
-   * @param {number} targetPage - Page to load when scrolling stops
-   */
-  const scheduleScrollStopPageLoad = (targetPage: number): void => {
-    // If we're already debouncing a scroll jump, only reset if it's a significantly different page
-    if (isScrollJumpInProgress && scrollJumpDebounceTimer !== null) {
-      clearTimeout(scrollJumpDebounceTimer);
-    } else if (!isScrollJumpInProgress) {
-      if (FAKE_DATA.DEBUG_LOGGING) {
-        console.log(`⏰ Scroll jump to page ${targetPage}`);
-      }
-      isScrollJumpInProgress = true;
-    }
-
-    // Debounce large scroll jumps to avoid rapid API calls during scrollbar dragging
-    scrollJumpDebounceTimer = setTimeout(() => {
-      if (FAKE_DATA.DEBUG_LOGGING) {
-        console.log(`🚀 Loading page ${targetPage}`);
-      }
-      loadScrollJumpWithBackgroundRanges(targetPage)
-        .then(() => {
-          if (FAKE_DATA.DEBUG_LOGGING) {
-            console.log(`✅ Page ${targetPage} loaded`);
-          }
-        })
-        .catch((error) => {
-          console.error(`❌ Failed to load page ${targetPage}:`, error);
-          loadPage(targetPage);
-        })
-        .finally(() => {
-          scrollJumpDebounceTimer = null;
-          isScrollJumpInProgress = false;
-        });
-    }, BOUNDARIES.SCROLL_JUMP_LOAD_DEBOUNCE);
-  };
-
-  /**
    * Pre-bound update visible items function to avoid recreation
-   * @param {number} scrollTop Current scroll position
    */
   const updateVisibleItems = (
     scrollTop = state.scrollTop,
@@ -379,215 +230,13 @@ export const createListManager = (
 
   /**
    * Check if we need to load more data based on scroll position
-   * For sparse page data, we use page boundary detection instead of percentage thresholds
-   * @param {number} scrollTop - Current scroll position
    */
   const checkLoadMore = (scrollTop: number): void => {
     checkLoadMoreImpl?.(scrollTop);
   };
 
   /**
-   * Check if user has scrolled beyond current page boundaries and load adjacent pages
-   * This replaces percentage-based thresholds for sparse page data
-   * @param {number} scrollTop - Current scroll position
-   */
-  const checkPageBoundaries = (scrollTop: number): void => {
-    if (!state.page || state.items.length === 0) return;
-
-    // CRITICAL FIX: Don't run boundary detection immediately after page jumps
-    // This prevents loading adjacent pages when we just jumped to a specific page
-    if (justJumpedToPage) {
-      if (FAKE_DATA.DEBUG_LOGGING) {
-        console.log(`🚫 Skip boundary - just jumped to page ${state.page}`);
-      }
-      return;
-    }
-
-    // CRITICAL FIX: Prevent concurrent boundary loads to avoid infinite loops
-    if (state.loading) {
-      if (FAKE_DATA.DEBUG_LOGGING) {
-        console.log(`🚫 Skip boundary - already loading`);
-      }
-      return;
-    }
-
-    // DEBOUNCE FIX: Don't run boundary detection during scroll jump debounce
-    // This prevents immediate loads from bypassing the debounce mechanism
-    if (isScrollJumpInProgress) {
-      if (FAKE_DATA.DEBUG_LOGGING) {
-        console.log(`🚫 Skip boundary - scroll jump in progress`);
-      }
-      return;
-    }
-
-    const itemHeight = validatedConfig.itemHeight || DEFAULTS.itemHeight;
-    const pageSize = validatedConfig.pageSize || DEFAULTS.pageSize;
-
-    // Calculate current page boundaries in terms of virtual positions
-    const currentPageStart = (state.page - 1) * pageSize + 1;
-    const currentPageEnd = state.page * pageSize;
-
-    // Use natural positioning - no complex coordinate conversions needed
-    const currentPageStartPx = (currentPageStart - 1) * itemHeight;
-    const currentPageEndPx = currentPageEnd * itemHeight;
-
-    // Define boundary thresholds (load when within N item heights of boundary)
-    const boundaryThreshold =
-      itemHeight * BOUNDARIES.BOUNDARY_THRESHOLD_MULTIPLIER;
-    const viewportBottom = scrollTop + state.containerHeight;
-
-    // Removed excessive logging
-
-    // CRITICAL FIX: First check if we have data for the current page
-    // If not, load it before checking adjacent pages
-    const hasCurrentPageData = state.items.some((item) => {
-      const itemId = parseInt(item?.id);
-      return itemId >= currentPageStart && itemId <= currentPageEnd;
-    });
-
-    // Removed excessive logging
-
-    if (!hasCurrentPageData) {
-      loadCurrentPageFromBoundary(state.page);
-      return; // Don't check adjacent pages until current page is loaded
-    }
-
-    // Check if we should load next page (scrolled near bottom of current page)
-    if (
-      state.hasNext &&
-      viewportBottom > currentPageEndPx - boundaryThreshold
-    ) {
-      const nextPage = state.page + 1;
-      const nextPageStart = (nextPage - 1) * pageSize + 1;
-      const nextPageEnd = nextPage * pageSize;
-
-      // Check if we already have next page data
-      const hasNextPageData = state.items.some((item) => {
-        const itemId = parseInt(item?.id);
-        return itemId >= nextPageStart && itemId <= nextPageEnd;
-      });
-
-      if (!hasNextPageData) {
-        loadNextPageFromBoundary(nextPage);
-      }
-    }
-
-    // Check if we should load previous page (scrolled near top of current page)
-    if (state.page > 1 && scrollTop < currentPageStartPx + boundaryThreshold) {
-      const prevPage = state.page - 1;
-      const prevPageStart = (prevPage - 1) * pageSize + 1;
-      const prevPageEnd = prevPage * pageSize;
-
-      // Check if we already have previous page data
-      const hasPrevPageData = state.items.some((item) => {
-        const itemId = parseInt(item?.id);
-        return itemId >= prevPageStart && itemId <= prevPageEnd;
-      });
-
-      if (!hasPrevPageData) {
-        loadPreviousPageFromBoundary(prevPage);
-      }
-    }
-  };
-
-  /**
-   * Load next page from boundary detection (preserves existing items)
-   * @param {number} pageNumber - Page number to load
-   */
-  const loadNextPageFromBoundary = async (
-    pageNumber: number
-  ): Promise<void> => {
-    if (state.loading) return;
-
-    const loadParams = createLoadParams(state, "page");
-    loadParams.page = pageNumber;
-
-    const perPageParam =
-      validatedConfig.pagination?.perPageParamName || "per_page";
-    loadParams[perPageParam] = validatedConfig.pageSize || 20;
-
-    try {
-      const result = await loadItems(loadParams);
-    } catch (error) {
-      console.error(
-        `❌ [BoundaryLoad] Failed to load next page ${pageNumber}:`,
-        error
-      );
-    }
-  };
-
-  /**
-   * Load previous page from boundary detection (preserves existing items)
-   * @param {number} pageNumber - Page number to load
-   */
-  const loadPreviousPageFromBoundary = async (
-    pageNumber: number
-  ): Promise<void> => {
-    if (state.loading) return;
-
-    const loadParams = createLoadParams(state, "page");
-    loadParams.page = pageNumber;
-
-    const perPageParam =
-      validatedConfig.pagination?.perPageParamName || "per_page";
-    loadParams[perPageParam] = validatedConfig.pageSize || 20;
-
-    try {
-      const result = await loadItems(loadParams);
-    } catch (error) {
-      console.error(
-        `❌ [BoundaryLoad] Failed to load previous page ${pageNumber}:`,
-        error
-      );
-    }
-  };
-
-  /**
-   * Load current page from boundary detection (when current page data is missing)
-   * @param {number} pageNumber - Page number to load
-   */
-  const loadCurrentPageFromBoundary = async (
-    pageNumber: number
-  ): Promise<void> => {
-    if (state.loading) return;
-
-    const loadParams = createLoadParams(state, "page");
-    loadParams.page = pageNumber;
-
-    const perPageParam =
-      validatedConfig.pagination?.perPageParamName || "per_page";
-    loadParams[perPageParam] = validatedConfig.pageSize || 20;
-
-    try {
-      const result = await loadItems(loadParams);
-    } catch (error) {
-      console.error(
-        `❌ [BoundaryLoad] Failed to load current page ${pageNumber}:`,
-        error
-      );
-    }
-  };
-
-  /**
-   * Checks if we need to load previous data based on scroll position
-   * @param {number} scrollTop - Current scroll position
-   */
-  const checkLoadPrevious = (scrollTop: number): void => {
-    // Only check for previous pages in page-based pagination
-    if (state.paginationStrategy !== "page" || !state.page || state.page <= 1) {
-      return;
-    }
-
-    // If user is near the top, load previous page
-    const threshold = PAGINATION.LOAD_PREVIOUS_THRESHOLD; // Load when within threshold px of top
-    if (scrollTop < threshold && !state.loading) {
-      loadPreviousPage();
-    }
-  };
-
-  /**
    * Loads more items using appropriate pagination strategy
-   * @returns {Promise<Object>} Load result
    */
   const loadNext = async (): Promise<{ hasNext: boolean; items: any[] }> => {
     // If we're already at the bottom or loading, do nothing
@@ -608,9 +257,6 @@ export const createListManager = (
 
     // For page-based pagination, increment the page number for next load
     if (paginationStrategy === "page") {
-      // DO NOT mark as page jump - this is normal scroll-based loading
-      // isPageJumpLoad should only be true for explicit loadPage() calls
-
       // If we have a numeric cursor, use that to determine the next page
       if (state.cursor && /^\d+$/.test(state.cursor)) {
         state.page = parseInt(state.cursor, 10);
@@ -631,12 +277,10 @@ export const createListManager = (
     // Add pageSize/limit regardless of strategy
     if (!loadParams.limit && !loadParams.per_page) {
       if (paginationStrategy === "page") {
-        // For page-based, use perPage parameter
         const perPageParam =
           validatedConfig.pagination?.perPageParamName || "per_page";
         loadParams[perPageParam] = validatedConfig.pageSize || 20;
       } else {
-        // For other strategies, use limit parameter
         const limitParam =
           validatedConfig.pagination?.limitParamName || "limit";
         loadParams[limitParam] = validatedConfig.pageSize || 20;
@@ -654,17 +298,11 @@ export const createListManager = (
 
   /**
    * Refresh the list with the latest data
-   * @returns {Promise<void>}
    */
   const refresh = dataLoadingManager.refresh;
 
   /**
    * Loads a specific page (only works with page-based pagination)
-   * @param {number} pageNumber - The page number to load (1-indexed)
-   * @param {Object} options - Loading options
-   * @param {boolean} options.setScrollPosition - Whether to set scroll position (default: true)
-   * @param {boolean} options.replaceCollection - Whether to replace collection or append (default: true)
-   * @returns {Promise<Object>} Load result
    */
   const loadPage = async (
     pageNumber: number,
@@ -690,15 +328,71 @@ export const createListManager = (
       return { hasNext: false, items: state.items };
     }
 
-    // CRITICAL: If we're already on the same page and have items,
-    // just ensure they're rendered instead of reloading
+    // For background loading (replaceCollection: false), handle differently
+    if (!replaceCollection) {
+      // Check if we already have this page's data
+      const pageSize = validatedConfig.pageSize || 20;
+      const pageStartId = (pageNumber - 1) * pageSize + 1;
+      const pageEndId = pageNumber * pageSize;
+
+      const hasPageData = state.items.some((item) => {
+        const itemId = parseInt(item?.id);
+        return itemId >= pageStartId && itemId <= pageEndId;
+      });
+
+      if (hasPageData) {
+        // Already have this page, no need to load
+        return { hasNext: state.hasNext, items: [] };
+      }
+
+      // Load page data without affecting current page state
+      const loadParams = createLoadParams(state, paginationStrategy);
+      loadParams.page = pageNumber;
+
+      const perPageParam =
+        validatedConfig.pagination?.perPageParamName || "per_page";
+      loadParams[perPageParam] = validatedConfig.pageSize || 20;
+
+      try {
+        const response = await adapter.read(loadParams);
+        const items = Array.isArray(response.items)
+          ? response.items.map(validatedConfig.transform!)
+          : [];
+
+        if (items.length > 0) {
+          // Add items to collection without clearing existing items
+          await itemsCollection.add(items);
+
+          // Update state items array (sorted by ID to maintain order)
+          const allItems = [...state.items, ...items];
+          allItems.sort((a, b) => parseInt(a.id) - parseInt(b.id));
+          state.items = allItems;
+
+          // Update item count if API provides total
+          if (response.meta?.total) {
+            state.itemCount = response.meta.total;
+          }
+        }
+
+        return {
+          hasNext: response.meta?.hasNext ?? false,
+          items,
+        };
+      } catch (error) {
+        console.error(
+          `❌ [BackgroundLoad] Failed to load page ${pageNumber}:`,
+          error
+        );
+        return { hasNext: false, items: [] };
+      }
+    }
+
+    // Regular loading (replaceCollection: true) - existing logic
+    // If we're already on the same page and have items, just ensure they're rendered
     if (state.page === pageNumber && state.items.length > 0) {
       // Force a re-render to ensure items are visible
       state.visibleRange = { start: -1, end: -1 };
       renderer.resetVisibleRange();
-
-      // REMOVED: Don't force scroll position - respect user's scrollbar position
-      // Let the user scroll to exactly where they want, even on page 1
 
       // Force immediate render
       requestAnimationFrame(() => {
@@ -709,7 +403,7 @@ export const createListManager = (
           console.warn(
             `⚠️ [LoadPage] Force-rendering page ${pageNumber} items`
           );
-          updateVisibleItems(state.scrollTop); // Use actual scroll position, not 0
+          updateVisibleItems(state.scrollTop);
         }
       });
 
@@ -720,17 +414,8 @@ export const createListManager = (
     state.page = pageNumber;
     state.paginationStrategy = paginationStrategy;
 
-    // Clear any existing page jump timeout
-    if (pageJumpTimeout !== null) {
-      clearTimeout(pageJumpTimeout);
-      pageJumpTimeout = null;
-    }
-
-    // Set flag early to prevent updateVisibleItems from running during operations
-    justJumpedToPage = true;
-
-    // Mark this as a page jump load operation only if we're replacing the collection
-    isPageJumpLoad = replaceCollection;
+    // Set page jump state using timeout manager
+    timeoutManager.setPageJumpState();
 
     // Don't clear collection - just load the page if not already present
     // Check if we already have the page data
@@ -746,8 +431,6 @@ export const createListManager = (
     let result;
 
     if (!hasPageData) {
-      // Only load if we don't already have the page data
-
       const loadParams = createLoadParams(state, paginationStrategy);
       loadParams.page = pageNumber;
 
@@ -756,11 +439,7 @@ export const createListManager = (
       loadParams[perPageParam] = validatedConfig.pageSize || 20;
 
       result = await loadItems(loadParams);
-
-      // Data is loaded - no need to wait for processing
     } else {
-      // We already have the data, just create a result object
-
       const pageItems = state.items.filter((item) => {
         const itemId = parseInt(item?.id);
         return itemId >= pageStartId && itemId <= pageEndId;
@@ -772,8 +451,7 @@ export const createListManager = (
       };
     }
 
-    // CRITICAL: Clear item measurement cache to ensure fresh calculations
-    // This is the root cause - stale cached offsets from previous state
+    // Clear item measurement cache to ensure fresh calculations
     if (typeof itemMeasurement.clear === "function") {
       itemMeasurement.clear();
     }
@@ -783,7 +461,7 @@ export const createListManager = (
       itemMeasurement.calculateOffsets(state.items);
     }
 
-    // Calculate the natural scroll position for this page using existing variables
+    // Calculate the natural scroll position for this page
     const itemHeight = validatedConfig.itemHeight || DEFAULTS.itemHeight;
     const naturalScrollPosition = (pageStartId - 1) * itemHeight;
 
@@ -791,17 +469,12 @@ export const createListManager = (
     state.visibleRange = { start: -1, end: -1 };
     state.containerHeight = container.clientHeight;
 
-    // CRITICAL FIX: Only set total height in loadPage if not already set from API
+    // Only set total height if not already set from API
     if (!state.itemCount) {
-      // Fallback calculation if no API total available
-      const fallbackTotal = PAGINATION.FALLBACK_TOTAL_COUNT; // Default fallback
-      // Reuse existing itemHeight variable
+      const fallbackTotal = PAGINATION.FALLBACK_TOTAL_COUNT;
       state.totalHeight = fallbackTotal * itemHeight;
-
       updateSpacerHeight(elements, state.totalHeight);
       state.totalHeightDirty = false;
-    } else {
-      // API total already set - preserve the locked-in height
     }
 
     // Reset renderer and render immediately with DOM updates
@@ -809,29 +482,25 @@ export const createListManager = (
 
     requestAnimationFrame(() => {
       // Only set scroll position for explicit user navigation
-      let scrollPositionToUse = container.scrollTop; // Default to current position
+      let scrollPositionToUse = container.scrollTop;
 
       if (setScrollPosition && result.items.length > 0) {
-        // Set scroll position to natural position for this page (explicit navigation)
-        // Only if we actually got data from the API
         container.scrollTop = naturalScrollPosition;
         state.scrollTop = naturalScrollPosition;
         scrollPositionToUse = naturalScrollPosition;
-      } else {
-        // Don't change scroll position (initial/background loading or no data)
       }
 
       // Temporarily allow updates
-      const wasJumpedToPage = justJumpedToPage;
-      justJumpedToPage = false;
-      updateVisibleItems(scrollPositionToUse, true); // Use appropriate scroll position
-      justJumpedToPage = wasJumpedToPage;
+      const timeoutState = timeoutManager.getState();
+      const wasJumpedToPage = timeoutState.justJumpedToPage;
+      timeoutManager.updateState({ justJumpedToPage: false });
+      updateVisibleItems(scrollPositionToUse, true);
+      timeoutManager.updateState({ justJumpedToPage: wasJumpedToPage });
 
       // Reset page jump flag immediately after rendering
-      justJumpedToPage = false;
+      timeoutManager.updateState({ justJumpedToPage: false });
     });
 
-    // Return result
     return {
       hasNext: state.hasNext,
       items: result.items,
@@ -840,7 +509,6 @@ export const createListManager = (
 
   /**
    * Loads the previous page (only works with page-based pagination)
-   * @returns {Promise<Object>} Load result
    */
   const loadPreviousPage = async (): Promise<{
     hasPrev: boolean;
@@ -902,10 +570,6 @@ export const createListManager = (
       // Mark height as dirty for recalculation
       state.totalHeightDirty = true;
 
-      // REMOVED: Don't adjust scroll position artificially
-      // Respect the user's exact scrollbar position
-      // The natural virtual positioning will handle item placement correctly
-
       // Update visible items using current scroll position
       updateVisibleItems(state.scrollTop);
     }
@@ -918,8 +582,6 @@ export const createListManager = (
 
   /**
    * Scroll to a specific item by ID
-   * @param {string} itemId - Item ID to scroll to
-   * @param {string} position - Position ('start', 'center', 'end')
    */
   const scrollToItem = (
     itemId: string,
@@ -955,41 +617,7 @@ export const createListManager = (
   };
 
   /**
-   * Calculate item positions with virtual offset support for page jumping
-   * @param items All items in the local state
-   * @param visibleRange Visible range with start and end indices
-   * @param virtualOffset Virtual offset for positioning items (used when jumping to pages)
-   * @returns Array of positions with index, item, and offset
-   */
-  const calculateItemPositionsWithVirtualOffset = (
-    items: any[],
-    visibleRange: VisibleRange,
-    virtualOffset: number = 0
-  ): Array<{ index: number; item: any; offset: number }> => {
-    const positions: Array<{ index: number; item: any; offset: number }> = [];
-    const itemHeight = validatedConfig.itemHeight || DEFAULTS.itemHeight;
-
-    // Calculate proper virtual positions based on item IDs
-    for (let i = visibleRange.start; i < visibleRange.end; i++) {
-      if (items[i]) {
-        const item = items[i];
-        const itemId = parseInt(item.id);
-        const naturalOffset = (itemId - 1) * itemHeight;
-
-        positions.push({
-          index: i,
-          item: item,
-          offset: naturalOffset,
-        });
-      }
-    }
-
-    return positions;
-  };
-
-  /**
    * Render items with custom virtual positions
-   * @param positions Array of item positions with virtual offsets
    */
   const renderItemsWithVirtualPositions = (
     positions: Array<{ index: number; item: any; offset: number }>
@@ -1037,7 +665,7 @@ export const createListManager = (
       element.style.right = "0";
       element.style.width = "100%";
 
-      // Apply placeholder render hook (was using broken hook retrieval logic before)
+      // Apply placeholder render hook
       placeholderRenderHook(item, element);
 
       fragment.appendChild(element);
@@ -1058,6 +686,14 @@ export const createListManager = (
     }
   };
 
+  // Create scroll jump manager for complex scroll operations
+  const scrollJumpManager = createScrollJumpManager({
+    state,
+    config: validatedConfig,
+    loadPage,
+    timeoutManager,
+  });
+
   // Set up managers now that all functions are defined
   visibilityManager = createVisibilityManager({
     state,
@@ -1068,10 +704,10 @@ export const createListManager = (
     renderer,
     checkPageChange,
     paginationManager: {
-      scheduleScrollStopPageLoad,
-      checkPageBoundaries,
+      scheduleScrollStopPageLoad: scrollJumpManager.scheduleScrollStopPageLoad,
+      checkPageBoundaries: () => {}, // Temporary placeholder, will be updated below
       loadNext,
-      getPaginationFlags: () => ({ justJumpedToPage, isPreloadingPages }),
+      getPaginationFlags: () => timeoutManager.getState(),
     },
     renderingManager: {
       renderItemsWithVirtualPositions,
@@ -1082,7 +718,15 @@ export const createListManager = (
   checkLoadMoreImpl = visibilityManager.checkLoadMore;
 
   // Get fake item replacement function for seamless transitions
-  const replaceFakeItemsWithReal = visibilityManager.replaceFakeItemsWithReal;
+  const replacePlaceholdersWithReal =
+    visibilityManager.replacePlaceholdersWithReal;
+
+  // Debug: Check if the function is properly available
+  if (PLACEHOLDER.DEBUG_LOGGING) {
+    console.log(
+      `🔗 [ListManager] replacePlaceholdersWithReal function available: ${typeof replacePlaceholdersWithReal}`
+    );
+  }
 
   // Recreate data loading manager with fake item replacement support
   dataLoadingManager = createDataLoadingManager({
@@ -1092,15 +736,45 @@ export const createListManager = (
     collection,
     adapter,
     itemsCollection,
-    getPaginationFlags: () => ({ isPageJumpLoad }),
-    setPaginationFlags: (flags) => {
-      isPageJumpLoad = flags.isPageJumpLoad;
-    },
-    replaceFakeItemsWithReal,
+    getPaginationFlags: () => timeoutManager.getState(),
+    setPaginationFlags: (flags) => timeoutManager.updateState(flags),
+    replacePlaceholdersWithReal,
   });
 
   // Update loadItems reference
   loadItems = dataLoadingManager.loadItems;
+
+  // NOW create boundary manager with the updated loadItems that has replacePlaceholdersWithReal
+  const boundaryManager = createBoundaryManager({
+    state,
+    config: validatedConfig,
+    loadItems, // This now has the replacePlaceholdersWithReal function
+    timeoutManager,
+  });
+
+  // Update the visibility manager's pagination manager with the real boundary manager
+  visibilityManager = createVisibilityManager({
+    state,
+    config: validatedConfig,
+    elements,
+    container,
+    itemMeasurement,
+    renderer,
+    checkPageChange,
+    paginationManager: {
+      scheduleScrollStopPageLoad: scrollJumpManager.scheduleScrollStopPageLoad,
+      checkPageBoundaries: boundaryManager.checkPageBoundaries, // Now properly wired
+      loadNext,
+      getPaginationFlags: () => timeoutManager.getState(),
+    },
+    renderingManager: {
+      renderItemsWithVirtualPositions,
+    },
+  });
+
+  // Update the function references again
+  updateVisibleItemsImpl = visibilityManager.updateVisibleItems;
+  checkLoadMoreImpl = visibilityManager.checkLoadMore;
 
   lifecycleManager = createLifecycleManager({
     state,
@@ -1116,18 +790,16 @@ export const createListManager = (
     cleanupFunctions,
     createScrollTracker: createScrollTracker,
     COLLECTION_EVENTS,
-    getPaginationFlags,
-    getTimeoutFlags,
-    clearTimeouts,
+    getPaginationFlags: () => timeoutManager.getState(),
+    getTimeoutFlags: () => timeoutManager.getTimeouts(),
+    clearTimeouts: () => timeoutManager.clearAllTimeouts(),
   });
 
-  // Now that lifecycle manager is set up, replace the initialize function
-  const initialize = (): (() => void) => {
-    return lifecycleManager.initialize();
-  };
-
   // Initialize immediately
-  const actualCleanup = initialize();
+  const actualCleanup = lifecycleManager.initialize();
+
+  // Add timeout manager cleanup to the main cleanup
+  cleanupFunctions.push(() => timeoutManager.cleanup());
 
   // Return public API
   return {
@@ -1150,7 +822,6 @@ export const createListManager = (
 
     // Event handling
     onPageChange: (callback: (page: number) => void) => {
-      // Simple implementation - store callback and call it when page changes
       let currentPageTracked = state.page || 1;
       const checkPageChange = () => {
         const newPage = state.page || 1;
@@ -1160,7 +831,6 @@ export const createListManager = (
         }
       };
 
-      // Check periodically (simple implementation)
       const interval = setInterval(
         checkPageChange,
         TIMING.PAGE_CHANGE_INTERVAL

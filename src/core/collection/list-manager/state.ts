@@ -145,15 +145,6 @@ export function updateStateAfterLoad(
     page = state.page;
   }
 
-  // Log for debugging
-  // console.log('Updated state after load:', {
-  //   page,
-  //   cursor,
-  //   hasNext,
-  //   strategy: state.paginationStrategy,
-  //   newItemsCount: newItems.length
-  // });
-
   // Determine if we should replace or append items based on pagination strategy
   let updatedItems: any[];
 

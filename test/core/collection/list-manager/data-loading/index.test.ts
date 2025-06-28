@@ -58,7 +58,7 @@ describe("Data Loading Manager", () => {
   let mockAdapter: any;
   let mockGetPaginationFlags: any;
   let mockSetPaginationFlags: any;
-  let mockReplaceFakeItemsWithReal: any;
+  let mockReplacePlaceholdersWithReal: any;
 
   beforeEach(() => {
     // Reset DOM
@@ -116,7 +116,7 @@ describe("Data Loading Manager", () => {
 
     mockGetPaginationFlags = mock(() => ({ isPageJumpLoad: false }));
     mockSetPaginationFlags = mock(() => {});
-    mockReplaceFakeItemsWithReal = mock(() => {});
+    mockReplacePlaceholdersWithReal = mock(() => {});
   });
 
   describe("createDataLoadingManager", () => {
@@ -130,7 +130,6 @@ describe("Data Loading Manager", () => {
         itemsCollection: mockCollection,
         getPaginationFlags: mockGetPaginationFlags,
         setPaginationFlags: mockSetPaginationFlags,
-        replaceFakeItemsWithReal: mockReplaceFakeItemsWithReal,
       });
 
       expect(typeof manager.loadItems).toBe("function");
@@ -151,7 +150,6 @@ describe("Data Loading Manager", () => {
         itemsCollection: mockCollection,
         getPaginationFlags: mockGetPaginationFlags,
         setPaginationFlags: mockSetPaginationFlags,
-        replaceFakeItemsWithReal: mockReplaceFakeItemsWithReal,
       });
     });
 
@@ -259,16 +257,6 @@ describe("Data Loading Manager", () => {
         items: expect.any(Array),
         allItems: expect.any(Array),
       });
-    });
-
-    test("calls replaceFakeItemsWithReal when provided", async () => {
-      await manager.loadItems({ page: 1 });
-
-      expect(mockReplaceFakeItemsWithReal).toHaveBeenCalledWith(
-        expect.arrayContaining([
-          expect.objectContaining({ id: "1", transformed: true }),
-        ])
-      );
     });
 
     test("handles API errors gracefully", async () => {
@@ -473,7 +461,6 @@ describe("Data Loading Manager", () => {
         itemsCollection: mockCollection,
         getPaginationFlags: mockGetPaginationFlags,
         setPaginationFlags: mockSetPaginationFlags,
-        replaceFakeItemsWithReal: mockReplaceFakeItemsWithReal,
       });
 
       // 1. Load first page
