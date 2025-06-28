@@ -1,5 +1,5 @@
 // src/core/collection/list-manager/utils/visibility.ts
-import { ItemMeasurement } from "../item-measurement";
+import { ItemMeasurement } from "../dom/measurement";
 import { VisibleRange, ListManagerConfig } from "../types";
 import { RENDERING, COLLECTION, DEFAULTS } from "../constants";
 

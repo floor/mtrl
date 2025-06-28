@@ -1,4 +1,4 @@
-import { Collection } from "../collection";
+import { Collection } from "../../collection";
 import {
   ListManagerState,
   ListManagerConfig,
@@ -6,10 +6,10 @@ import {
   LoadParams,
   PaginationMeta,
   LoadStatus,
-} from "./types";
-import { updateStateAfterLoad, updateLoadingState } from "./state";
-import { updateSpacerHeight } from "./dom-elements";
-import { PLACEHOLDER } from "./constants";
+} from "../types";
+import { updateStateAfterLoad, updateLoadingState } from "../state";
+import { updateSpacerHeight } from "../dom/elements";
+import { PLACEHOLDER } from "../constants";
 
 /**
  * Data loading manager dependencies

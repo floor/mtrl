@@ -3,9 +3,9 @@
  * Handles page boundary detection and loading logic
  */
 
-import { ListManagerState, ListManagerConfig, LoadParams } from "./types";
-import { createLoadParams } from "./state";
-import { BOUNDARIES, DEFAULTS, PLACEHOLDER } from "./constants";
+import { ListManagerState, ListManagerConfig, LoadParams } from "../types";
+import { createLoadParams } from "../state";
+import { BOUNDARIES, DEFAULTS, PLACEHOLDER } from "../constants";
 
 export interface BoundaryManagerDependencies {
   state: ListManagerState;

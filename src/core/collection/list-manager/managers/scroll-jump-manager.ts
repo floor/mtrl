@@ -3,8 +3,8 @@
  * Handles complex scroll jump operations and background range loading
  */
 
-import { ListManagerState, ListManagerConfig } from "./types";
-import { PAGINATION, PLACEHOLDER, BOUNDARIES } from "./constants";
+import { ListManagerState, ListManagerConfig } from "../types";
+import { PAGINATION, PLACEHOLDER, BOUNDARIES } from "../constants";
 
 export interface ScrollJumpManagerDependencies {
   state: ListManagerState;

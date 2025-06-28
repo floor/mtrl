@@ -1,8 +1,8 @@
 // src/core/collection/list-manager/renderer.ts
-import { ListManagerConfig, ListManagerElements, VisibleRange } from "./types";
-import { RecyclingPool } from "./utils/recycling";
-import { ItemMeasurement } from "./item-measurement";
-import { calculateItemPositions } from "./utils/visibility";
+import { ListManagerConfig, ListManagerElements, VisibleRange } from "../types";
+import { RecyclingPool } from "../utils/recycling";
+import { ItemMeasurement } from "../dom/measurement";
+import { calculateItemPositions } from "../utils/visibility";
 
 /**
  * Creates a renderer for list items

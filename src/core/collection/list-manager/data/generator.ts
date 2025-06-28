@@ -52,11 +52,11 @@
  * with id: 'placeholder-{index}' and they'll be styled correctly.
  */
 
-import { PLACEHOLDER } from "./constants";
+import { PLACEHOLDER } from "../constants";
 import {
   addClass as baseAddClass,
   removeClass as baseRemoveClass,
-} from "../../dom/classes";
+} from "../../../dom/classes";
 
 interface PlaceholderDataPattern {
   namePattern?: string[];

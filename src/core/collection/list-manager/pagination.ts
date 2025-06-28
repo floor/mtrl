@@ -7,7 +7,7 @@ import {
   PaginationMeta,
 } from "./types";
 import { createLoadParams } from "./state";
-import { updateSpacerHeight } from "./dom-elements";
+import { updateSpacerHeight } from "./dom/elements";
 
 /**
  * Pagination manager dependencies

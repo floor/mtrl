@@ -1,6 +1,6 @@
 // src/core/collection/list-manager/scroll-tracker.ts
-import { ListManagerElements, ListManagerConfig } from "./types";
-import { createSentinels } from "./dom-elements";
+import { ListManagerElements, ListManagerConfig } from "../types";
+import { createSentinels } from "../dom/elements";
 
 /**
  * Common interface for scroll tracking strategies

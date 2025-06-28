@@ -45,7 +45,7 @@ afterAll(() => {
 });
 
 // Import modules after DOM setup
-import { createItemMeasurement } from "../../../../src/core/collection/list-manager/item-measurement";
+import { createItemMeasurement } from "../../../../src/core/collection/list-manager/dom/measurement";
 import { ListManagerConfig } from "../../../../src/core/collection/list-manager/types";
 
 describe("Item Measurement", () => {

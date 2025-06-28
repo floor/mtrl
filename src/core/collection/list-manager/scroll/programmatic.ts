@@ -2,7 +2,7 @@ import {
   ListManagerState,
   ListManagerConfig,
   ScrollToPosition,
-} from "./types";
+} from "../types";
 
 /**
  * Scrolling manager dependencies

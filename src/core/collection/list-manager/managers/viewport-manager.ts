@@ -3,16 +3,16 @@ import {
   ListManagerConfig,
   ListManagerElements,
   VisibleRange,
-} from "./types";
+} from "../types";
 import {
   updateVisibleItems as updateStateVisibleItems,
   updateTotalHeight,
-} from "./state";
-import { updateSpacerHeight } from "./dom-elements";
+} from "../state";
+import { updateSpacerHeight } from "../dom/elements";
 import {
   calculateVisibleRange,
   isLoadThresholdReached,
-} from "./utils/visibility";
+} from "../utils/visibility";
 import {
   RENDERING,
   PAGINATION,
@@ -20,22 +20,22 @@ import {
   SCROLL,
   DEFAULTS,
   PLACEHOLDER,
-} from "./constants";
-import { placeholderDataGenerator } from "./data-generator";
+} from "../constants";
+import { placeholderDataGenerator } from "../data/generator";
 
 /**
  * Visibility management dependencies
  */
 /**
- * Return type for visibility manager including fake item replacement
+ * Return type for viewport manager including placeholder replacement
  */
-export interface VisibilityManager {
+export interface ViewportManager {
   updateVisibleItems: (scrollTop?: number, isPageJump?: boolean) => void;
   checkLoadMore: (scrollTop: number) => void;
   replacePlaceholdersWithReal: (newRealItems: any[]) => void;
 }
 
-export interface VisibilityDependencies {
+export interface ViewportDependencies {
   state: ListManagerState;
   config: ListManagerConfig;
   elements: ListManagerElements;
@@ -60,10 +60,10 @@ export interface VisibilityDependencies {
 }
 
 /**
- * Enhanced mechanical visibility calculation with placeholder data support
+ * Enhanced mechanical viewport calculation with placeholder data support
  * Provides seamless infinite content by generating placeholder items when needed
  */
-const calculateMechanicalVisibility = (
+const calculateMechanicalViewport = (
   scrollTop: number,
   containerHeight: number,
   items: any[],
@@ -151,13 +151,13 @@ const calculateMechanicalVisibility = (
 };
 
 /**
- * Creates a visibility management for handling scroll and visibility calculations
+ * Creates a viewport manager for handling scroll and viewport calculations
  * @param deps Dependencies from the main list manager
- * @returns Visibility management functions
+ * @returns Viewport management functions
  */
-export const createVisibilityManager = (
-  deps: VisibilityDependencies
-): VisibilityManager => {
+export const createViewportManager = (
+  deps: ViewportDependencies
+): ViewportManager => {
   const {
     state,
     config,
@@ -243,7 +243,7 @@ export const createVisibilityManager = (
 
     // Removed excessive logging
 
-    let visibleRange = calculateMechanicalVisibility(
+    let visibleRange = calculateMechanicalViewport(
       scrollTop,
       state.containerHeight,
       state.items,

@@ -1,5 +1,5 @@
-import { ListManagerConfig, ListManagerElements, VisibleRange } from "./types";
-import { placeholderRenderHook } from "./data-generator";
+import { ListManagerConfig, ListManagerElements, VisibleRange } from "../types";
+import { placeholderRenderHook } from "../data/generator";
 
 /**
  * Rendering manager dependencies
@@ -145,7 +145,9 @@ export const createRenderingManager = (deps: RenderingDependencies) => {
 
         // Create a simplified HTML structure for fast insertion
         const itemId = item.id || `item-${index}`;
-        const isPlaceholder = item._isPlaceholder ? " mtrl-item-placeholder" : "";
+        const isPlaceholder = item._isPlaceholder
+          ? " mtrl-item-placeholder"
+          : "";
 
         htmlStrings.push(`
           <div class="mtrl-list-item${isPlaceholder}" 
