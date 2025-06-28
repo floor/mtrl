@@ -7,12 +7,12 @@ import {
 import {
   updateVisibleItems as updateStateVisibleItems,
   updateTotalHeight,
-} from "../state";
+} from "../utils/state";
 import { updateSpacerHeight } from "../dom/elements";
 import {
   calculateVisibleRange,
   isLoadThresholdReached,
-} from "../utils/visibility";
+} from "../utils/viewport";
 import {
   RENDERING,
   PAGINATION,

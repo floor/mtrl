@@ -1,5 +1,5 @@
-// src/core/collection/list-manager/state.ts
-import { ListManagerState, ListManagerConfig } from "./types";
+// src/core/collection/list-manager/utils/state.ts
+import { ListManagerState, ListManagerConfig } from "../types";
 
 /**
  * Efficiently insert new items into a sorted array, maintaining sort order

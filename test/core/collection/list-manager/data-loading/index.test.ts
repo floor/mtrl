@@ -44,7 +44,7 @@ afterAll(() => {
 
 // Import modules after DOM setup
 import { createDataLoadingManager } from "../../../../../src/core/collection/list-manager/data/loading";
-import { createInitialState } from "../../../../../src/core/collection/list-manager/state";
+import { createInitialState } from "../../../../../src/core/collection/list-manager/utils/state";
 import {
   ListManagerConfig,
   ListManagerState,

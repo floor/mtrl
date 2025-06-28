@@ -42,8 +42,11 @@ import {
   updateLoadingState,
   resetState,
   createLoadParams,
-} from "../../../../src/core/collection/list-manager/state";
-import { ListManagerConfig, ListManagerState } from "../../../../src/core/collection/list-manager/types";
+} from "../../../../src/core/collection/list-manager/utils/state";
+import {
+  ListManagerConfig,
+  ListManagerState,
+} from "../../../../src/core/collection/list-manager/types";
 
 describe("State Management", () => {
   let mockConfig: ListManagerConfig;
@@ -134,11 +137,16 @@ describe("State Management", () => {
         { id: "3", name: "Item 3" },
       ];
       const stateWithItems = { ...baseState, items: existingItems };
-      
+
       const newItems = [{ id: "2", name: "Item 2" }];
       const meta = { hasNext: false };
 
-      const updates = updateStateAfterLoad(stateWithItems, newItems, meta, false);
+      const updates = updateStateAfterLoad(
+        stateWithItems,
+        newItems,
+        meta,
+        false
+      );
 
       expect(updates.items).toEqual([
         { id: "1", name: "Item 1" },
@@ -150,19 +158,26 @@ describe("State Management", () => {
     test("deduplicates items by default", () => {
       const existingItems = [{ id: "1", name: "Item 1" }];
       const stateWithItems = { ...baseState, items: existingItems };
-      
+
       const newItems = [
         { id: "1", name: "Item 1 Updated" },
         { id: "2", name: "Item 2" },
       ];
       const meta = { hasNext: false };
 
-      const updates = updateStateAfterLoad(stateWithItems, newItems, meta, true);
+      const updates = updateStateAfterLoad(
+        stateWithItems,
+        newItems,
+        meta,
+        true
+      );
 
       // Should filter out duplicate id="1"
       expect(updates.items).toHaveLength(2);
-      expect(updates.items?.find(item => item.id === "1")?.name).toBe("Item 1"); // Original kept
-      expect(updates.items?.find(item => item.id === "2")).toBeDefined();
+      expect(updates.items?.find((item) => item.id === "1")?.name).toBe(
+        "Item 1"
+      ); // Original kept
+      expect(updates.items?.find((item) => item.id === "2")).toBeDefined();
     });
   });
 

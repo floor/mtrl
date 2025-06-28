@@ -2,8 +2,8 @@ import {
   ListManagerState,
   ListManagerConfig,
   ListManagerElements,
-} from "./types";
-import { PAGINATION, PLACEHOLDER } from "./constants";
+} from "../types";
+import { PAGINATION, PLACEHOLDER } from "../constants";
 
 /**
  * Lifecycle management dependencies

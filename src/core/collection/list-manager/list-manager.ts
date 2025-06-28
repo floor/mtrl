@@ -14,7 +14,7 @@ import {
   LoadParams,
 } from "./types";
 import { createPageEventManager } from "./events";
-import { createPaginationManager } from "./pagination";
+import { createPaginationManager } from "./managers/pagination";
 import { createScrollingManager } from "./scroll/programmatic";
 import { createRenderingManager } from "./render/virtual";
 import {
@@ -24,11 +24,11 @@ import {
 import {
   createViewportManager,
   type ViewportDependencies,
-} from "./managers/viewport-manager";
+} from "./managers/viewport";
 import {
   createLifecycleManager,
   type LifecycleDependencies,
-} from "./lifecycle";
+} from "./managers/lifecycle";
 import { validateConfig, determineApiMode, getStaticItems } from "./config";
 import {
   createDomElements,
@@ -42,7 +42,7 @@ import { createRecyclingPool } from "./utils/recycling";
 import {
   calculateVisibleRange,
   isLoadThresholdReached,
-} from "./utils/visibility";
+} from "./utils/viewport";
 import {
   createInitialState,
   updateStateAfterLoad,
@@ -51,7 +51,7 @@ import {
   updateLoadingState,
   resetState,
   createLoadParams,
-} from "./state";
+} from "./utils/state";
 import {
   RENDERING,
   PAGINATION,
@@ -68,9 +68,9 @@ import {
 } from "./data/generator";
 
 // Import new manager modules
-import { createTimeoutManager } from "./managers/timeout-manager";
-import { createBoundaryManager } from "./managers/boundary-manager";
-import { createScrollJumpManager } from "./managers/scroll-jump-manager";
+import { createTimeoutManager } from "./managers/timeout";
+import { createBoundaryManager } from "./managers/boundary";
+import { createScrollJumpManager } from "./managers/scroll-jump";
 
 /**
  * Creates a list manager for a specific collection

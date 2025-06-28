@@ -50,8 +50,8 @@ afterAll(() => {
 });
 
 // Import modules after DOM setup
-import { createPaginationManager } from "../../../../../src/core/collection/list-manager/pagination";
-import { createInitialState } from "../../../../../src/core/collection/list-manager/state";
+import { createPaginationManager } from "../../../../../src/core/collection/list-manager/managers/pagination";
+import { createInitialState } from "../../../../../src/core/collection/list-manager/utils/state";
 import {
   ListManagerConfig,
   ListManagerState,

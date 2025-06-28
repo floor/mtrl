@@ -39,11 +39,11 @@ import {
   calculateVisibleRange,
   calculateItemPositions,
   isLoadThresholdReached,
-} from "../../../../../src/core/collection/list-manager/utils/visibility";
+} from "../../../../../src/core/collection/list-manager/utils/viewport";
 import { createItemMeasurement } from "../../../../../src/core/collection/list-manager/dom/measurement";
 import { ListManagerConfig } from "../../../../../src/core/collection/list-manager/types";
 
-describe("Visibility Utils", () => {
+describe("Viewport Utils", () => {
   let mockConfig: ListManagerConfig;
   let mockItemMeasurement: any;
 

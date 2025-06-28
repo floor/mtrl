@@ -2,7 +2,7 @@
 import { ListManagerConfig, ListManagerElements, VisibleRange } from "../types";
 import { RecyclingPool } from "../utils/recycling";
 import { ItemMeasurement } from "../dom/measurement";
-import { calculateItemPositions } from "../utils/visibility";
+import { calculateItemPositions } from "../utils/viewport";
 
 /**
  * Creates a renderer for list items

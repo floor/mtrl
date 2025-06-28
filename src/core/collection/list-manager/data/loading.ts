@@ -7,7 +7,7 @@ import {
   PaginationMeta,
   LoadStatus,
 } from "../types";
-import { updateStateAfterLoad, updateLoadingState } from "../state";
+import { updateStateAfterLoad, updateLoadingState } from "../utils/state";
 import { updateSpacerHeight } from "../dom/elements";
 import { PLACEHOLDER } from "../constants";
 

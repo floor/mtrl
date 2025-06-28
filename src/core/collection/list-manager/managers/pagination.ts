@@ -1,13 +1,13 @@
-import { Collection } from "../collection";
+import { Collection } from "../../collection";
 import {
   ListManagerState,
   ListManagerConfig,
   ListManagerElements,
   LoadParams,
   PaginationMeta,
-} from "./types";
-import { createLoadParams } from "./state";
-import { updateSpacerHeight } from "./dom/elements";
+} from "../types";
+import { createLoadParams } from "../utils/state";
+import { updateSpacerHeight } from "../dom/elements";
 
 /**
  * Pagination manager dependencies

@@ -1,4 +1,4 @@
-// src/core/collection/list-manager/utils/visibility.ts
+// src/core/collection/list-manager/utils/viewport.ts
 import { ItemMeasurement } from "../dom/measurement";
 import { VisibleRange, ListManagerConfig } from "../types";
 import { RENDERING, COLLECTION, DEFAULTS } from "../constants";

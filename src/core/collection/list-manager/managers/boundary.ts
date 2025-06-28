@@ -4,7 +4,7 @@
  */
 
 import { ListManagerState, ListManagerConfig, LoadParams } from "../types";
-import { createLoadParams } from "../state";
+import { createLoadParams } from "../utils/state";
 import { BOUNDARIES, DEFAULTS, PLACEHOLDER } from "../constants";
 
 export interface BoundaryManagerDependencies {
