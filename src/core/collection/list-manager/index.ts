@@ -1029,10 +1029,12 @@ export const createListManager = (
         element.setAttribute("data-id", item.id);
       }
 
-      // Position the element at its virtual offset
+      // Position the element using GPU-accelerated transforms
       element.style.position = "absolute";
-      element.style.top = `${offset}px`;
+      element.style.transform = `translateY(${offset}px)`;
+      element.style.willChange = "transform";
       element.style.left = "0";
+      element.style.right = "0";
       element.style.width = "100%";
 
       // Apply placeholder render hook (was using broken hook retrieval logic before)
@@ -1112,7 +1114,7 @@ export const createListManager = (
     itemsCollection,
     initialItems,
     cleanupFunctions,
-    createScrollTracker,
+    createScrollTracker: createScrollTracker,
     COLLECTION_EVENTS,
     getPaginationFlags,
     getTimeoutFlags,

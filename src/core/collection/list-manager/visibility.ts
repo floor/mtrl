@@ -3,16 +3,16 @@ import {
   ListManagerConfig,
   ListManagerElements,
   VisibleRange,
-} from "../types";
+} from "./types";
 import {
   updateVisibleItems as updateStateVisibleItems,
   updateTotalHeight,
-} from "../state";
-import { updateSpacerHeight } from "../dom-elements";
+} from "./state";
+import { updateSpacerHeight } from "./dom-elements";
 import {
   calculateVisibleRange,
   isLoadThresholdReached,
-} from "../utils/visibility";
+} from "./utils/visibility";
 import {
   RENDERING,
   PAGINATION,
@@ -20,8 +20,8 @@ import {
   SCROLL,
   DEFAULTS,
   FAKE_DATA,
-} from "../constants";
-import { fakeDataGenerator } from "../data-generator";
+} from "./constants";
+import { fakeDataGenerator } from "./data-generator";
 
 /**
  * Visibility management dependencies
@@ -556,6 +556,8 @@ export const createVisibilityManager = (
    * This provides seamless transition from fake to real content
    */
   const replaceFakeItemsWithReal = (newRealItems: any[]): void => {
+    console.log("replaceFakeItemsWithReal");
+    return;
     if (!FAKE_DATA.ENABLED || !state.visibleItems) return;
 
     let hasReplacements = false;

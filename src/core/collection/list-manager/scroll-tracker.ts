@@ -8,6 +8,270 @@ import { createSentinels } from "./dom-elements";
 export interface ScrollTracker {
   setup(): () => void;
   getScrollTop(): number;
+  getScrollVelocity?(): number;
+  getMetrics?(): ScrollMetrics;
+}
+
+/**
+ * Scroll performance metrics
+ */
+interface ScrollMetrics {
+  eventCount: number;
+  processedCount: number;
+  averageProcessTime: number;
+  maxVelocity: number;
+  throttleHits: number;
+  rafHits: number;
+}
+
+/**
+ * Scroll velocity tracker for adaptive performance
+ */
+class ScrollVelocityTracker {
+  private positions: Array<{ timestamp: number; position: number }> = [];
+  private maxHistory = 5;
+  private currentVelocity = 0;
+
+  update(position: number): number {
+    const timestamp = performance.now();
+    this.positions.push({ timestamp, position });
+
+    // Keep only recent positions
+    if (this.positions.length > this.maxHistory) {
+      this.positions.shift();
+    }
+
+    // Calculate velocity if we have enough data points
+    if (this.positions.length >= 2) {
+      const first = this.positions[0];
+      const last = this.positions[this.positions.length - 1];
+      const timeDiff = last.timestamp - first.timestamp;
+      const positionDiff = last.position - first.position;
+
+      this.currentVelocity = timeDiff > 0 ? positionDiff / timeDiff : 0;
+    }
+
+    return this.currentVelocity;
+  }
+
+  getVelocity(): number {
+    return this.currentVelocity;
+  }
+
+  reset(): void {
+    this.positions = [];
+    this.currentVelocity = 0;
+  }
+}
+
+/**
+ * Advanced scroll manager with adaptive performance optimization
+ */
+class AdvancedScrollManager {
+  private container: HTMLElement;
+  private callbacks: {
+    onScroll: (scrollTop: number) => void;
+    onLoadMore: () => void;
+  };
+  private config: ListManagerConfig;
+
+  // Performance tracking
+  private metrics: ScrollMetrics = {
+    eventCount: 0,
+    processedCount: 0,
+    averageProcessTime: 0,
+    maxVelocity: 0,
+    throttleHits: 0,
+    rafHits: 0,
+  };
+
+  // Scroll state
+  private rafId: number | null = null;
+  private lastScrollTop = 0;
+  private lastProcessTime = 0;
+  private isRunning = false;
+
+  // Velocity and adaptive throttling
+  private velocityTracker = new ScrollVelocityTracker();
+  private baseThrottleMs: number;
+  private adaptiveThrottleMs: number;
+
+  // Scroll threshold for filtering micro-scrolls
+  private scrollThreshold = 1; // More sensitive threshold
+
+  constructor(
+    container: HTMLElement,
+    config: ListManagerConfig,
+    callbacks: { onScroll: (scrollTop: number) => void; onLoadMore: () => void }
+  ) {
+    this.container = container;
+    this.config = config;
+    this.callbacks = callbacks;
+    this.baseThrottleMs = config.throttleMs || 16;
+    this.adaptiveThrottleMs = this.baseThrottleMs;
+  }
+
+  /**
+   * Adaptive throttle calculation based on scroll velocity
+   * Higher velocity = lower throttle for smoother scrolling
+   * Lower velocity = higher throttle for better performance
+   */
+  private calculateAdaptiveThrottle(velocity: number): number {
+    const absVelocity = Math.abs(velocity);
+
+    // For high-speed scrolling (> 2 pixels/ms), use minimal throttling
+    if (absVelocity > 2) {
+      return Math.max(8, this.baseThrottleMs / 2);
+    }
+
+    // For medium-speed scrolling (0.5-2 pixels/ms), use base throttling
+    if (absVelocity > 0.5) {
+      return this.baseThrottleMs;
+    }
+
+    // For slow scrolling (< 0.5 pixels/ms), use higher throttling for efficiency
+    return Math.min(32, this.baseThrottleMs * 1.5);
+  }
+
+  /**
+   * Optimized scroll handler with intelligent processing
+   */
+  private handleScroll = (e: Event): void => {
+    this.metrics.eventCount++;
+
+    let currentScrollTop = (e.target as HTMLElement).scrollTop;
+
+    // Boundary check for negative scroll values
+    if (currentScrollTop < 0) {
+      currentScrollTop = 0;
+      this.container.scrollTop = 0;
+    }
+
+    // Skip processing if scroll amount is too small
+    if (
+      Math.abs(currentScrollTop - this.lastScrollTop) < this.scrollThreshold
+    ) {
+      return;
+    }
+
+    // Update velocity and adaptive throttling
+    const velocity = this.velocityTracker.update(currentScrollTop);
+    this.adaptiveThrottleMs = this.calculateAdaptiveThrottle(velocity);
+
+    // Track max velocity for metrics
+    if (Math.abs(velocity) > this.metrics.maxVelocity) {
+      this.metrics.maxVelocity = Math.abs(velocity);
+    }
+
+    const now = performance.now();
+    const timeSinceLastProcess = now - this.lastProcessTime;
+
+    // Smart throttling based on velocity and time
+    if (timeSinceLastProcess < this.adaptiveThrottleMs) {
+      this.metrics.throttleHits++;
+
+      // Only use RAF if we're not already waiting and it's high-velocity scrolling
+      if (!this.isRunning && Math.abs(velocity) > 1) {
+        this.scheduleRAFUpdate(currentScrollTop, now);
+      }
+      return;
+    }
+
+    // Process immediately for low-latency updates
+    this.processScrollUpdate(currentScrollTop, now);
+  };
+
+  /**
+   * Schedule update using requestAnimationFrame for smooth high-velocity scrolling
+   */
+  private scheduleRAFUpdate(scrollTop: number, timestamp: number): void {
+    if (this.isRunning) return;
+
+    this.isRunning = true;
+    this.metrics.rafHits++;
+
+    this.rafId = requestAnimationFrame(() => {
+      // Use the current scroll position, not the captured one, for accuracy
+      const currentScrollTop = this.container.scrollTop;
+      this.processScrollUpdate(currentScrollTop, performance.now());
+      this.isRunning = false;
+      this.rafId = null;
+    });
+  }
+
+  /**
+   * Process scroll update with performance tracking
+   */
+  private processScrollUpdate(scrollTop: number, timestamp: number): void {
+    const processStartTime = performance.now();
+
+    this.lastScrollTop = scrollTop;
+    this.lastProcessTime = timestamp;
+    this.metrics.processedCount++;
+
+    // Execute callback
+    this.callbacks.onScroll(scrollTop);
+
+    // Update metrics
+    const processTime = performance.now() - processStartTime;
+    this.metrics.averageProcessTime =
+      (this.metrics.averageProcessTime * (this.metrics.processedCount - 1) +
+        processTime) /
+      this.metrics.processedCount;
+
+    // Warn about slow processing in development
+    if (process.env.NODE_ENV === "development" && processTime > 8) {
+      console.warn(
+        `[AdvancedScrollManager] Slow scroll processing: ${processTime.toFixed(
+          2
+        )}ms`
+      );
+    }
+  }
+
+  /**
+   * Set up scroll tracking with advanced optimizations
+   */
+  setup(): () => void {
+    // Use passive listeners for better performance
+    this.container.addEventListener("scroll", this.handleScroll, {
+      passive: true,
+      capture: false,
+    });
+
+    return () => {
+      this.container.removeEventListener("scroll", this.handleScroll);
+
+      if (this.rafId) {
+        cancelAnimationFrame(this.rafId);
+        this.rafId = null;
+      }
+
+      this.velocityTracker.reset();
+      this.isRunning = false;
+    };
+  }
+
+  /**
+   * Get current scroll position
+   */
+  getScrollTop(): number {
+    return this.container.scrollTop;
+  }
+
+  /**
+   * Get current scroll velocity
+   */
+  getScrollVelocity(): number {
+    return this.velocityTracker.getVelocity();
+  }
+
+  /**
+   * Get performance metrics
+   */
+  getMetrics(): ScrollMetrics {
+    return { ...this.metrics };
+  }
 }
 
 /**
@@ -31,305 +295,353 @@ export function createScrollTracker(
 
   switch (scrollStrategy) {
     case "intersection":
-      return createIntersectionScrollTracker(container, elements, callbacks);
+      return createOptimizedIntersectionScrollTracker(
+        container,
+        elements,
+        callbacks
+      );
 
     case "hybrid":
-      return createHybridScrollTracker(container, elements, callbacks);
+      return createOptimizedHybridScrollTracker(container, elements, callbacks);
 
     case "scroll":
     default:
-      return createTraditionalScrollTracker(container, config, callbacks);
+      return createOptimizedTraditionalScrollTracker(
+        container,
+        config,
+        callbacks
+      );
   }
 }
 
 /**
- * Creates a scroll tracker using traditional scroll events
+ * Creates an optimized scroll tracker using traditional scroll events with advanced performance optimizations
  */
-function createTraditionalScrollTracker(
+function createOptimizedTraditionalScrollTracker(
   container: HTMLElement,
   config: ListManagerConfig,
   callbacks: { onScroll: (scrollTop: number) => void; onLoadMore: () => void }
 ): ScrollTracker {
-  let scrollRAF: number | null = null;
-  let lastScrollTop = 0;
-  const scrollThreshold = 5; // Only process changes larger than this
-  const throttleMs = config.throttleMs || 16; // Default to 16ms (~60fps)
-
-  // Calculate how often we need to process scroll events
-  // based on the configured throttle value
-  let lastProcessTime = 0;
+  const scrollManager = new AdvancedScrollManager(container, config, callbacks);
 
   return {
-    /**
-     * Set up scroll tracking
-     * @returns Cleanup function
-     */
-    setup: (): (() => void) => {
-      // Create optimized handler function with boundary checking
-      const scrollHandler = (e: Event): void => {
-        let currentScrollTop = (e.target as HTMLElement).scrollTop;
-
-        // 🛡️ BOUNDARY CHECK: Prevent scrolling beyond data limits
-        // This requires access to state which we don't have here directly,
-        // so we'll rely on the visibility manager to handle clamping
-        // But we can add a basic sanity check for negative values
-        if (currentScrollTop < 0) {
-          currentScrollTop = 0;
-          container.scrollTop = 0;
-        }
-
-        // Skip processing if scroll amount is too small
-        if (Math.abs(currentScrollTop - lastScrollTop) < scrollThreshold) {
-          return;
-        }
-
-        // Apply throttling based on time
-        const now = Date.now();
-        if (now - lastProcessTime < throttleMs) {
-          // If we're already waiting for a frame, don't schedule another one
-          if (scrollRAF) return;
-
-          // Schedule processing on next frame
-          scrollRAF = requestAnimationFrame(() => {
-            lastScrollTop = currentScrollTop;
-            lastProcessTime = Date.now();
-            callbacks.onScroll(currentScrollTop);
-            scrollRAF = null;
-          });
-
-          return;
-        }
-
-        // Process immediately if enough time has passed
-        lastScrollTop = currentScrollTop;
-        lastProcessTime = now;
-        callbacks.onScroll(currentScrollTop);
-      };
-
-      // Add listener with passive option for better performance
-      container.addEventListener("scroll", scrollHandler, { passive: true });
-
-      // Return cleanup function
-      return () => {
-        container.removeEventListener("scroll", scrollHandler);
-
-        if (scrollRAF) {
-          cancelAnimationFrame(scrollRAF);
-          scrollRAF = null;
-        }
-      };
-    },
-
-    /**
-     * Gets current scroll position
-     */
-    getScrollTop: (): number => {
-      return container.scrollTop;
-    },
+    setup: () => scrollManager.setup(),
+    getScrollTop: () => scrollManager.getScrollTop(),
+    getScrollVelocity: () => scrollManager.getScrollVelocity(),
+    getMetrics: () => scrollManager.getMetrics(),
   };
 }
 
 /**
- * Creates a scroll tracker using IntersectionObserver
+ * Creates an optimized intersection observer-based scroll tracker with adaptive performance
  */
-function createIntersectionScrollTracker(
+function createOptimizedIntersectionScrollTracker(
   container: HTMLElement,
   elements: ListManagerElements,
   callbacks: { onScroll: (scrollTop: number) => void; onLoadMore: () => void }
 ): ScrollTracker {
   let intersectionObserver: IntersectionObserver | null = null;
-  let throttledScrollHandler: ((e: Event) => void) | null = null;
-  let scrollTimeout: number | null = null;
-  let isIntersecting = false;
+  let velocityTracker = new ScrollVelocityTracker();
+  let scrollManager: AdvancedScrollManager | null = null;
+  let lastIntersectionTime = 0;
+  let observerMargin = "400px";
+
+  // Performance metrics
+  const metrics: ScrollMetrics = {
+    eventCount: 0,
+    processedCount: 0,
+    averageProcessTime: 0,
+    maxVelocity: 0,
+    throttleHits: 0,
+    rafHits: 0,
+  };
+
+  /**
+   * Adaptive margin calculation based on scroll velocity
+   */
+  const calculateAdaptiveMargin = (velocity: number): string => {
+    const absVelocity = Math.abs(velocity);
+
+    // For high-speed scrolling, increase the margin for better prefetching
+    if (absVelocity > 3) {
+      return "800px";
+    }
+
+    // For medium-speed scrolling, use standard margin
+    if (absVelocity > 1) {
+      return "600px";
+    }
+
+    // For slow scrolling, use smaller margin for efficiency
+    return "300px";
+  };
 
   return {
-    /**
-     * Set up intersection observer for scroll tracking
-     * @returns Cleanup function
-     */
     setup: (): (() => void) => {
-      // Fall back to scroll events if IntersectionObserver not supported
+      // Fallback for browsers without IntersectionObserver
       if (!("IntersectionObserver" in window)) {
         console.warn(
-          "IntersectionObserver not supported, falling back to scroll events"
+          "IntersectionObserver not supported, falling back to optimized scroll tracker"
         );
-        // Create a minimal config with the required renderItem property
-        const minimalConfig: ListManagerConfig = {
+        const config: ListManagerConfig = {
           renderItem: () => document.createElement("div"),
+          throttleMs: 16,
         };
-        const tracker = createTraditionalScrollTracker(
+        const fallbackTracker = createOptimizedTraditionalScrollTracker(
           container,
-          minimalConfig,
+          config,
           callbacks
         );
-        return tracker.setup();
+        return fallbackTracker.setup();
       }
 
-      // Add sentinel elements if not already present
+      // Ensure sentinel elements exist
       if (!elements.topSentinel || !elements.bottomSentinel) {
         Object.assign(elements, createSentinels(elements));
       }
 
-      // Create intersection observer
+      // Create enhanced intersection observer
       intersectionObserver = new IntersectionObserver(
         (entries) => {
-          // Early exit if we're already handling an intersection
-          if (isIntersecting) return;
-
-          isIntersecting = true;
+          const processStartTime = performance.now();
+          metrics.eventCount++;
 
           let needsUpdate = false;
-          let bottomVisible = false;
+          let shouldLoadMore = false;
 
           entries.forEach((entry) => {
-            // Top sentinel handles scrolling up
             if (entry.target === elements.topSentinel && entry.isIntersecting) {
               needsUpdate = true;
             }
 
-            // Bottom sentinel handles loading more content
             if (
               entry.target === elements.bottomSentinel &&
               entry.isIntersecting
             ) {
-              bottomVisible = true;
+              shouldLoadMore = true;
               needsUpdate = true;
             }
           });
 
-          // Load more content if bottom is visible
-          if (bottomVisible) {
-            // Debounce load more operations
-            if (scrollTimeout !== null) {
-              clearTimeout(scrollTimeout);
-            }
-
-            scrollTimeout = window.setTimeout(() => {
-              callbacks.onLoadMore();
-              scrollTimeout = null;
-            }, 100);
-          }
-
-          // Update visible items if needed
+          // Execute callbacks if needed
           if (needsUpdate) {
             callbacks.onScroll(container.scrollTop);
           }
 
-          // Reset flag after a short delay
-          setTimeout(() => {
-            isIntersecting = false;
-          }, 100);
+          if (shouldLoadMore) {
+            // Debounced load more with velocity awareness
+            const now = Date.now();
+            if (now - lastIntersectionTime > 150) {
+              callbacks.onLoadMore();
+              lastIntersectionTime = now;
+            }
+          }
+
+          // Update metrics
+          const processTime = performance.now() - processStartTime;
+          metrics.processedCount++;
+          metrics.averageProcessTime =
+            (metrics.averageProcessTime * (metrics.processedCount - 1) +
+              processTime) /
+            metrics.processedCount;
         },
         {
           root: container,
-          // Use a large margin to trigger earlier
-          rootMargin: "400px 0px 400px 0px",
+          rootMargin: observerMargin,
           threshold: 0,
         }
       );
 
-      // Start observing
+      // Start observing sentinels
       if (elements.topSentinel) {
         intersectionObserver.observe(elements.topSentinel);
       }
-
       if (elements.bottomSentinel) {
         intersectionObserver.observe(elements.bottomSentinel);
       }
 
-      // We still need minimal scroll handling for position updates
-      // but much less frequent than full scroll handler
-      const lightScrollHandler = () => {
-        // Only update if we're not already handling an intersection
-        if (!isIntersecting) {
-          callbacks.onScroll(container.scrollTop);
-        }
+      // Create auxiliary scroll manager for velocity tracking and fine position updates
+      const config: ListManagerConfig = {
+        renderItem: () => document.createElement("div"),
+        throttleMs: 32, // Lower frequency for intersection mode
       };
 
-      // Use a throttled scroll event for position updates
-      let lastTime = 0;
-      throttledScrollHandler = () => {
-        const now = Date.now();
-        if (now - lastTime < 200) return; // 5fps for background updates
+      scrollManager = new AdvancedScrollManager(container, config, {
+        onScroll: (scrollTop) => {
+          // Update velocity tracking
+          const velocity = velocityTracker.update(scrollTop);
 
-        lastTime = now;
-        lightScrollHandler();
-      };
+          // Track max velocity
+          if (Math.abs(velocity) > metrics.maxVelocity) {
+            metrics.maxVelocity = Math.abs(velocity);
+          }
 
-      container.addEventListener("scroll", throttledScrollHandler, {
-        passive: true,
+          // Dynamically adjust intersection observer margin based on velocity
+          const newMargin = calculateAdaptiveMargin(velocity);
+          if (newMargin !== observerMargin && intersectionObserver) {
+            observerMargin = newMargin;
+
+            // Recreate observer with new margin
+            intersectionObserver.disconnect();
+            // Recreate with same callback function
+            intersectionObserver = new IntersectionObserver(
+              (entries) => {
+                const processStartTime = performance.now();
+                metrics.eventCount++;
+
+                let needsUpdate = false;
+                let shouldLoadMore = false;
+
+                entries.forEach((entry) => {
+                  if (
+                    entry.target === elements.topSentinel &&
+                    entry.isIntersecting
+                  ) {
+                    needsUpdate = true;
+                  }
+
+                  if (
+                    entry.target === elements.bottomSentinel &&
+                    entry.isIntersecting
+                  ) {
+                    shouldLoadMore = true;
+                    needsUpdate = true;
+                  }
+                });
+
+                if (needsUpdate) {
+                  callbacks.onScroll(container.scrollTop);
+                }
+
+                if (shouldLoadMore) {
+                  const now = Date.now();
+                  if (now - lastIntersectionTime > 150) {
+                    callbacks.onLoadMore();
+                    lastIntersectionTime = now;
+                  }
+                }
+
+                const processTime = performance.now() - processStartTime;
+                metrics.processedCount++;
+                metrics.averageProcessTime =
+                  (metrics.averageProcessTime * (metrics.processedCount - 1) +
+                    processTime) /
+                  metrics.processedCount;
+              },
+              {
+                root: container,
+                rootMargin: observerMargin,
+                threshold: 0,
+              }
+            );
+
+            // Restart observation
+            if (elements.topSentinel) {
+              intersectionObserver.observe(elements.topSentinel);
+            }
+            if (elements.bottomSentinel) {
+              intersectionObserver.observe(elements.bottomSentinel);
+            }
+          }
+
+          // Light position updates only
+          callbacks.onScroll(scrollTop);
+        },
+        onLoadMore: () => {}, // Handled by intersection observer
       });
 
-      // Return cleanup function
+      const scrollCleanup = scrollManager.setup();
+
       return () => {
         if (intersectionObserver) {
           intersectionObserver.disconnect();
           intersectionObserver = null;
         }
 
-        if (throttledScrollHandler) {
-          container.removeEventListener("scroll", throttledScrollHandler);
-          throttledScrollHandler = null;
+        if (scrollManager) {
+          scrollCleanup();
+          scrollManager = null;
         }
 
-        if (scrollTimeout !== null) {
-          clearTimeout(scrollTimeout);
-          scrollTimeout = null;
-        }
+        velocityTracker.reset();
       };
     },
 
-    /**
-     * Gets current scroll position
-     */
     getScrollTop: (): number => {
       return container.scrollTop;
+    },
+
+    getScrollVelocity: (): number => {
+      return velocityTracker.getVelocity();
+    },
+
+    getMetrics: (): ScrollMetrics => {
+      const scrollMetrics = scrollManager?.getMetrics() || {
+        eventCount: 0,
+        processedCount: 0,
+        averageProcessTime: 0,
+        maxVelocity: 0,
+        throttleHits: 0,
+        rafHits: 0,
+      };
+
+      return {
+        eventCount: metrics.eventCount + scrollMetrics.eventCount,
+        processedCount: metrics.processedCount + scrollMetrics.processedCount,
+        averageProcessTime:
+          (metrics.averageProcessTime + scrollMetrics.averageProcessTime) / 2,
+        maxVelocity: Math.max(metrics.maxVelocity, scrollMetrics.maxVelocity),
+        throttleHits: metrics.throttleHits + scrollMetrics.throttleHits,
+        rafHits: metrics.rafHits + scrollMetrics.rafHits,
+      };
     },
   };
 }
 
 /**
- * Creates a hybrid scroll tracker using both traditional and intersection approaches
- * This approach is optimized to use the best of both worlds:
- * - Intersection observer for detecting when to load more and large scroll changes
- * - Regular scroll events (at low frequency) for smooth position updates
+ * Creates an optimized hybrid scroll tracker combining advanced scroll and intersection observers
+ * This approach uses the best of both worlds with enhanced performance optimizations
  */
-function createHybridScrollTracker(
+function createOptimizedHybridScrollTracker(
   container: HTMLElement,
   elements: ListManagerElements,
   callbacks: { onScroll: (scrollTop: number) => void; onLoadMore: () => void }
 ): ScrollTracker {
-  // Configure a highly optimized scroll tracker for regular updates
+  // Configure optimized scroll tracker for smooth updates
   const scrollConfig: ListManagerConfig = {
-    throttleMs: 32, // ~30fps for regular scroll updates
-    renderItem: () => document.createElement("div"), // Required field
+    throttleMs: 24, // Balanced for hybrid mode
+    renderItem: () => document.createElement("div"),
   };
 
-  const scrollTracker = createTraditionalScrollTracker(
+  const scrollTracker = createOptimizedTraditionalScrollTracker(
     container,
     scrollConfig,
     {
-      // Smooth scroll updates from the traditional tracker
+      // Primary scroll updates with velocity awareness
       onScroll: callbacks.onScroll,
-      // Never trigger load more from scroll events in hybrid mode
+      // Load more handled by intersection observer
       onLoadMore: () => {},
     }
   );
 
-  // Configure intersection observer for load-more detection only
-  const intersectionTracker = createIntersectionScrollTracker(
+  // Configure optimized intersection observer for load-more detection
+  const intersectionTracker = createOptimizedIntersectionScrollTracker(
     container,
     elements,
     {
-      // Minimal scroll updates from intersection events
+      // Smart position updates based on major changes
       onScroll: (scrollTop) => {
-        // Only update on major position changes
         const currentScrollTop = container.scrollTop;
-        if (Math.abs(currentScrollTop - scrollTop) > 50) {
+        const scrollVelocity = scrollTracker.getScrollVelocity?.() || 0;
+
+        // Adaptive threshold based on velocity
+        const threshold = Math.abs(scrollVelocity) > 2 ? 30 : 60;
+
+        if (Math.abs(currentScrollTop - scrollTop) > threshold) {
           callbacks.onScroll(currentScrollTop);
         }
       },
-      // Always use intersection observer for load more
+      // Primary load more detection
       onLoadMore: callbacks.onLoadMore,
     }
   );
@@ -337,12 +649,8 @@ function createHybridScrollTracker(
   let cleanupFunctions: (() => void)[] = [];
 
   return {
-    /**
-     * Set up both scroll tracking mechanisms
-     * @returns Cleanup function
-     */
     setup: (): (() => void) => {
-      // Use both methods simultaneously
+      // Initialize both tracking mechanisms
       cleanupFunctions.push(scrollTracker.setup());
       cleanupFunctions.push(intersectionTracker.setup());
 
@@ -352,11 +660,49 @@ function createHybridScrollTracker(
       };
     },
 
-    /**
-     * Gets current scroll position
-     */
     getScrollTop: (): number => {
       return scrollTracker.getScrollTop();
+    },
+
+    getScrollVelocity: (): number => {
+      return scrollTracker.getScrollVelocity?.() || 0;
+    },
+
+    getMetrics: (): ScrollMetrics => {
+      const scrollMetrics = scrollTracker.getMetrics?.() || {
+        eventCount: 0,
+        processedCount: 0,
+        averageProcessTime: 0,
+        maxVelocity: 0,
+        throttleHits: 0,
+        rafHits: 0,
+      };
+
+      const intersectionMetrics = intersectionTracker.getMetrics?.() || {
+        eventCount: 0,
+        processedCount: 0,
+        averageProcessTime: 0,
+        maxVelocity: 0,
+        throttleHits: 0,
+        rafHits: 0,
+      };
+
+      return {
+        eventCount: scrollMetrics.eventCount + intersectionMetrics.eventCount,
+        processedCount:
+          scrollMetrics.processedCount + intersectionMetrics.processedCount,
+        averageProcessTime:
+          (scrollMetrics.averageProcessTime +
+            intersectionMetrics.averageProcessTime) /
+          2,
+        maxVelocity: Math.max(
+          scrollMetrics.maxVelocity,
+          intersectionMetrics.maxVelocity
+        ),
+        throttleHits:
+          scrollMetrics.throttleHits + intersectionMetrics.throttleHits,
+        rafHits: scrollMetrics.rafHits + intersectionMetrics.rafHits,
+      };
     },
   };
 }
