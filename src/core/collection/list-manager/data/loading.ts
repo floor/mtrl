@@ -203,6 +203,17 @@ export const createDataLoadingManager = (deps: DataLoadingDependencies) => {
           console.log(
             `🔗 [DataLoad] Calling replacePlaceholdersWithReal with ${items.length} items`
           );
+          console.log(
+            `🔗 [DataLoad] Items IDs: [${items
+              .map((item) => item.id)
+              .slice(0, 5)
+              .join(", ")}${items.length > 5 ? "..." : ""}]`
+          );
+          console.log(
+            `🔗 [DataLoad] Current state items: ${
+              state.items.length
+            }, visible items: ${state.visibleItems?.length || 0}`
+          );
         }
         replacePlaceholdersWithReal(items);
       } else {

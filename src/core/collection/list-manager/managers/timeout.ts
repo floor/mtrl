@@ -8,6 +8,7 @@ export interface TimeoutManagerState {
   isPreloadingPages: boolean;
   isPageJumpLoad: boolean;
   isScrollJumpInProgress: boolean;
+  isBoundaryLoading: boolean;
 }
 
 export interface TimeoutManagerTimeouts {
@@ -27,6 +28,7 @@ export const createTimeoutManager = () => {
     isPreloadingPages: false,
     isPageJumpLoad: false,
     isScrollJumpInProgress: false,
+    isBoundaryLoading: false,
   };
 
   // Timeout references
@@ -138,6 +140,7 @@ export const createTimeoutManager = () => {
       isPreloadingPages: false,
       isPageJumpLoad: false,
       isScrollJumpInProgress: false,
+      isBoundaryLoading: false,
     });
   };
 

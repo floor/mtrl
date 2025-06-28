@@ -80,6 +80,14 @@ export const createRenderer = (
       element.dataset.needsMeasurement = "true";
     }
 
+    // Explicitly set height for consistency between placeholders and real items
+    if (config.itemHeight && !config.dynamicItemSize) {
+      element.style.height = `${config.itemHeight}px`;
+      element.style.minHeight = `${config.itemHeight}px`;
+      // Store configured height for placeholder hook to preserve
+      element.dataset.configuredItemHeight = config.itemHeight.toString();
+    }
+
     // Apply any post-render hooks if available
     if (renderHook) {
       renderHook(item, element);
@@ -210,9 +218,18 @@ export const createRenderer = (
             const element = createItemElement(item, index);
 
             element.style.position = "absolute";
-            element.style.top = `${offset}px`;
+            element.style.transform = `translateY(${offset}px)`;
+            element.style.willChange = "transform";
             element.style.left = "0";
             element.style.width = "100%";
+
+            // Explicitly set height for consistency
+            if (config.itemHeight) {
+              element.style.height = `${config.itemHeight}px`;
+              element.style.minHeight = `${config.itemHeight}px`;
+              element.dataset.configuredItemHeight =
+                config.itemHeight.toString();
+            }
 
             fragment.appendChild(element);
             itemElements.set(item.id, element);
@@ -225,8 +242,21 @@ export const createRenderer = (
         positions.forEach(({ item, offset }) => {
           if (itemElements.has(item.id)) {
             const element = itemElements.get(item.id)!;
-            if (parseInt(element.style.top, 10) !== offset) {
-              element.style.top = `${offset}px`;
+            // Extract current transform offset for comparison
+            const currentTransform = element.style.transform;
+            const currentOffset = currentTransform.match(
+              /translateY\((\d+)px\)/
+            )?.[1];
+            if (parseInt(currentOffset || "0", 10) !== offset) {
+              element.style.transform = `translateY(${offset}px)`;
+            }
+
+            // Ensure height consistency during partial updates
+            if (config.itemHeight) {
+              element.style.height = `${config.itemHeight}px`;
+              element.style.minHeight = `${config.itemHeight}px`;
+              element.dataset.configuredItemHeight =
+                config.itemHeight.toString();
             }
           }
         });
@@ -260,8 +290,17 @@ export const createRenderer = (
             element = existingElements.get(item.id)!;
             existingElements.delete(item.id);
 
-            // Update position
-            element.style.top = `${offset}px`;
+            // Update position using GPU-accelerated transforms
+            element.style.transform = `translateY(${offset}px)`;
+            element.style.willChange = "transform";
+
+            // Ensure height consistency for reused elements
+            if (config.itemHeight) {
+              element.style.height = `${config.itemHeight}px`;
+              element.style.minHeight = `${config.itemHeight}px`;
+              element.dataset.configuredItemHeight =
+                config.itemHeight.toString();
+            }
 
             // Check if it needs measurement (first item or dynamic sizing)
             if (config.dynamicItemSize === true || itemElements.size === 0) {
@@ -270,11 +309,20 @@ export const createRenderer = (
           } else {
             element = createItemElement(item, index);
 
-            // Position the element absolutely
+            // Position the element using GPU-accelerated transforms
             element.style.position = "absolute";
-            element.style.top = `${offset}px`;
+            element.style.transform = `translateY(${offset}px)`;
+            element.style.willChange = "transform";
             element.style.left = "0";
             element.style.width = "100%";
+
+            // Explicitly set height if configured to ensure consistency
+            if (config.itemHeight) {
+              element.style.height = `${config.itemHeight}px`;
+              element.style.minHeight = `${config.itemHeight}px`;
+              element.dataset.configuredItemHeight =
+                config.itemHeight.toString();
+            }
           }
 
           // Add to fragment

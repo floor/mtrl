@@ -41,6 +41,9 @@ export const createBoundaryManager = (deps: BoundaryManagerDependencies) => {
   ): Promise<void> => {
     if (state.loading) return;
 
+    // Set boundary loading flag to prevent viewport shifts
+    timeoutManager.updateState({ isBoundaryLoading: true });
+
     const pageSize = config.pageSize || DEFAULTS.pageSize;
     const pageStartId = (pageNumber - 1) * pageSize + 1;
     const pageEndId = pageNumber * pageSize;
@@ -83,6 +86,9 @@ export const createBoundaryManager = (deps: BoundaryManagerDependencies) => {
         `❌ [BoundaryLoad] Failed to load ${pageType} page ${pageNumber}:`,
         error
       );
+    } finally {
+      // Clear boundary loading flag
+      timeoutManager.updateState({ isBoundaryLoading: false });
     }
   };
 
@@ -106,10 +112,13 @@ export const createBoundaryManager = (deps: BoundaryManagerDependencies) => {
 
     const timeoutState = timeoutManager.getState();
 
-    // Don't run boundary detection immediately after page jumps
-    if (timeoutState.justJumpedToPage) {
+    // 🚫 CRITICAL: Completely prevent boundary detection during any scroll jump activity
+    // This prevents race conditions between boundary manager and scroll jump manager
+    if (timeoutState.justJumpedToPage || timeoutState.isScrollJumpInProgress) {
       if (PLACEHOLDER.DEBUG_LOGGING) {
-        console.log(`🚫 Skip boundary - just jumped to page ${state.page}`);
+        console.log(
+          `🚫 Skip boundary - scroll jump activity (jumped: ${timeoutState.justJumpedToPage}, in progress: ${timeoutState.isScrollJumpInProgress})`
+        );
       }
       return;
     }
@@ -118,14 +127,6 @@ export const createBoundaryManager = (deps: BoundaryManagerDependencies) => {
     if (state.loading) {
       if (PLACEHOLDER.DEBUG_LOGGING) {
         console.log(`🚫 Skip boundary - already loading`);
-      }
-      return;
-    }
-
-    // Don't run boundary detection during scroll jump debounce
-    if (timeoutState.isScrollJumpInProgress) {
-      if (PLACEHOLDER.DEBUG_LOGGING) {
-        console.log(`🚫 Skip boundary - scroll jump in progress`);
       }
       return;
     }

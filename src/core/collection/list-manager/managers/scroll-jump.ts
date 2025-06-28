@@ -392,7 +392,17 @@ export const createScrollJumpManager = (
       loadScrollJumpWithBackgroundRanges(targetPage)
         .then(() => {
           if (PLACEHOLDER.DEBUG_LOGGING) {
-            console.log(`✅ Page ${targetPage} loaded`);
+            console.log(
+              `✅ [SCROLL_JUMP] Page ${targetPage} loaded successfully`
+            );
+            console.log(
+              `📊 [SCROLL_JUMP] POST-LOAD: Scroll position: ${state.scrollTop}, Page: ${state.page}`
+            );
+            console.log(
+              `📊 [SCROLL_JUMP] POST-LOAD: Items in state: ${
+                state.items.length
+              }, Visible items: ${state.visibleItems?.length || 0}`
+            );
           }
         })
         .catch((error) => {

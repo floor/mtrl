@@ -440,6 +440,22 @@ export const addPlaceholderClass = (element: HTMLElement, item: any) => {
 
     element.setAttribute("aria-busy", "true");
     element.setAttribute("aria-label", "Loading content...");
+
+    // 🔧 CRITICAL FIX: Always set height to prevent shift
+    // This ensures placeholders maintain the same height as real items
+    const configuredHeight = element.dataset.configuredItemHeight;
+    const itemHeight = configuredHeight || "84"; // Fallback to standard item height
+
+    if (itemHeight) {
+      element.style.height = `${itemHeight}px`;
+      element.style.minHeight = `${itemHeight}px`;
+      // Use !important to ensure CSS doesn't override
+      element.style.setProperty("height", `${itemHeight}px`, "important");
+      element.style.setProperty("min-height", `${itemHeight}px`, "important");
+
+      // Ensure the dataset is set for consistency
+      element.dataset.configuredItemHeight = itemHeight;
+    }
   }
 };
 
@@ -458,6 +474,21 @@ export const removePlaceholderClass = (
 
   element.removeAttribute("aria-busy");
   element.removeAttribute("aria-label");
+
+  // 🔧 CRITICAL FIX: Always preserve height to prevent shift
+  // This ensures no height shift when transitioning from placeholder to real item
+  const configuredHeight = element.dataset.configuredItemHeight;
+  const itemHeight = configuredHeight || "84"; // Fallback to standard item height
+
+  if (itemHeight) {
+    element.style.height = `${itemHeight}px`;
+    element.style.minHeight = `${itemHeight}px`;
+    element.style.setProperty("height", `${itemHeight}px`, "important");
+    element.style.setProperty("min-height", `${itemHeight}px`, "important");
+
+    // Also ensure the dataset is set for consistency
+    element.dataset.configuredItemHeight = itemHeight;
+  }
 };
 
 /**
