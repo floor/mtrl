@@ -120,9 +120,6 @@ export const createRenderingManager = (deps: RenderingDependencies) => {
     // Use absolute positioning but without changing top/left frequently
     if (!element.style.position) {
       element.style.position = "absolute";
-      element.style.left = "0";
-      element.style.right = "0";
-      element.style.width = "100%";
     }
   };
 

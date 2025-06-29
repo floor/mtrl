@@ -660,18 +660,6 @@ export const createListManager = (
       // Position the element using GPU-accelerated transforms
       element.style.position = "absolute";
       element.style.transform = `translateY(${offset}px)`;
-      element.style.willChange = "transform";
-      element.style.left = "0";
-      element.style.right = "0";
-      element.style.width = "100%";
-
-      // Explicitly set height for consistency between placeholders and real items
-      if (validatedConfig.itemHeight) {
-        element.style.height = `${validatedConfig.itemHeight}px`;
-        element.style.minHeight = `${validatedConfig.itemHeight}px`;
-        element.dataset.configuredItemHeight =
-          validatedConfig.itemHeight.toString();
-      }
 
       // Apply placeholder render hook
       placeholderRenderHook(item, element);
