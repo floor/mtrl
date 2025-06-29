@@ -42,8 +42,14 @@ export const PAGINATION = {
   /** Number of initial ranges/pages to fetch during list creation for smoother scrolling (background preloading) */
   INITIAL_RANGES_TO_FETCH: 2,
 
-  /** Number of ranges/pages to fetch around target page during scroll jumps for smoother scrolling */
-  SCROLL_JUMP_RANGES_TO_FETCH: 2,
+  /** Number of pages to preload BEFORE the viewport for smooth backward navigation */
+  ADJACENT_PAGES_PRELOAD_BEFORE: 1,
+
+  /** Number of pages to preload AFTER the viewport for smooth forward navigation */
+  ADJACENT_PAGES_PRELOAD_AFTER: 1,
+
+  /** @deprecated Use ADJACENT_PAGES_PRELOAD_BEFORE and ADJACENT_PAGES_PRELOAD_AFTER instead */
+  ADJACENT_PAGES_PRELOAD: 2,
 
   /** Threshold in pixels for loading previous page when near top */
   LOAD_PREVIOUS_THRESHOLD: 200,
@@ -208,7 +214,9 @@ export const DEFAULTS = {
   itemHeight: RENDERING.DEFAULT_ITEM_HEIGHT,
   pageSize: PAGINATION.DEFAULT_PAGE_SIZE,
   initialRangesToFetch: PAGINATION.INITIAL_RANGES_TO_FETCH,
-  scrollJumpRangesToFetch: PAGINATION.SCROLL_JUMP_RANGES_TO_FETCH,
+  adjacentPagesPreloadBefore: PAGINATION.ADJACENT_PAGES_PRELOAD_BEFORE,
+  adjacentPagesPreloadAfter: PAGINATION.ADJACENT_PAGES_PRELOAD_AFTER,
+  adjacentPagesPreload: PAGINATION.ADJACENT_PAGES_PRELOAD,
   renderBufferSize: RENDERING.DEFAULT_RENDER_BUFFER_SIZE,
   overscanCount: RENDERING.DEFAULT_OVERSCAN_COUNT,
   loadThreshold: SCROLL.DEFAULT_LOAD_THRESHOLD,

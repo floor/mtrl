@@ -16,6 +16,7 @@ export interface ScrollJumpManagerDependencies {
   timeoutManager: {
     setScrollJumpState: (callback: () => void, delay?: number) => void;
     getState: () => { isScrollJumpInProgress: boolean };
+    updateState: (updates: any) => void;
   };
 }
 
@@ -25,6 +26,7 @@ export interface ScrollJumpManagerDependencies {
  * @param viewportHeight Height of the viewport in pixels
  * @param itemHeight Height of each item in pixels
  * @param pageSize Number of items per page
+ * @param actualScrollPosition The actual current scroll position in pixels
  * @param totalItems Total number of items (optional, for bounds checking)
  * @returns Object with target page and all pages needed for viewport
  */
@@ -33,6 +35,7 @@ export const calculatePreciseViewportPages = (
   viewportHeight: number,
   itemHeight: number,
   pageSize: number,
+  actualScrollPosition: number,
   totalItems?: number
 ): {
   targetPage: number;
@@ -46,17 +49,21 @@ export const calculatePreciseViewportPages = (
   const targetPage = Math.floor(targetIndex / pageSize) + 1;
   const targetIndexInPage = targetIndex % pageSize;
 
-  // Calculate exact scroll position for the target index
-  const scrollPosition = targetIndex * itemHeight;
+  // Use actual scroll position instead of calculated position
+  const scrollPosition = actualScrollPosition;
 
   // Calculate how many items fit in the viewport
   const itemsInViewport = Math.ceil(viewportHeight / itemHeight);
 
-  // Calculate viewport boundaries
-  const viewportStartPixel = scrollPosition;
-  const viewportEndPixel = scrollPosition + viewportHeight;
+  // Calculate viewport boundaries with a small buffer for precision
+  // The buffer accounts for partial items and scroll position variations
+  const bufferItems = 1; // Add 1 item buffer on each side
+  const bufferPixels = bufferItems * itemHeight;
 
-  // Calculate which items are visible in this viewport
+  const viewportStartPixel = Math.max(0, scrollPosition - bufferPixels);
+  const viewportEndPixel = scrollPosition + viewportHeight + bufferPixels;
+
+  // Calculate which items are visible in this expanded viewport
   const viewportStartIndex = Math.floor(viewportStartPixel / itemHeight);
   const viewportEndIndex = Math.floor(viewportEndPixel / itemHeight);
 
@@ -76,6 +83,30 @@ export const calculatePreciseViewportPages = (
   }
 
   const pagesInViewport = viewportPages.length;
+
+  // Debug logging
+  if (PLACEHOLDER.DEBUG_LOGGING) {
+    console.log(
+      `🧮 [ViewportCalc] Detailed calculation (with ${bufferItems} item buffer):`
+    );
+    console.log(`  Target index: ${targetIndex}, Target page: ${targetPage}`);
+    console.log(
+      `  Actual scroll position: ${scrollPosition}px (was: ${
+        targetIndex * itemHeight
+      }px calculated)`
+    );
+    console.log(
+      `  Buffered viewport: ${viewportStartPixel}px - ${viewportEndPixel}px (${viewportHeight}px + ${
+        bufferPixels * 2
+      }px buffer)`
+    );
+    console.log(
+      `  Visible items: ${viewportStartIndex} - ${viewportEndIndex} (${itemsInViewport} items + buffer)`
+    );
+    console.log(
+      `  Page range: ${startPage} - ${endPage} = [${viewportPages.join(", ")}]`
+    );
+  }
 
   return {
     targetPage,
@@ -155,207 +186,225 @@ export const createScrollJumpManager = (
   const loadScrollToIndexWithBackgroundRanges = async (
     targetIndex: number
   ): Promise<void> => {
-    const pageSize = config.pageSize || 20;
-    const itemHeight = config.itemHeight || 84;
-    const containerHeight = state.containerHeight || 400;
-
-    if (PLACEHOLDER.DEBUG_LOGGING) {
-      console.log(`🚀 [ScrollToIndex] Starting scroll to index ${targetIndex}`);
-      console.log(
-        `📏 [ScrollToIndex] Config: pageSize=${pageSize}, itemHeight=${itemHeight}, containerHeight=${containerHeight}`
-      );
-    }
-
-    // Use precise viewport calculation with exact target index
-    const viewportCalc = calculatePreciseViewportPages(
-      targetIndex,
-      containerHeight,
-      itemHeight,
-      pageSize,
-      state.itemCount
-    );
-
-    if (PLACEHOLDER.DEBUG_LOGGING) {
-      console.log(
-        `📊 [ScrollToIndex] Precise calculation for index ${targetIndex}:`
-      );
-      console.log(`  Target page: ${viewportCalc.targetPage}`);
-      console.log(
-        `  Index position in page: ${viewportCalc.targetIndexInPage}`
-      );
-      console.log(`  Scroll position: ${viewportCalc.scrollPosition}px`);
-      console.log(`  Items in viewport: ${viewportCalc.itemsInViewport}`);
-      console.log(`  Pages in viewport: ${viewportCalc.pagesInViewport}`);
-      console.log(
-        `  Viewport pages needed: [${viewportCalc.viewportPages.join(", ")}]`
-      );
-    }
-
-    // Load ALL viewport pages in parallel (target page + additional viewport pages)
-    // This avoids the glitch of seeing target page first, then additional pages
-    const allViewportPages = viewportCalc.viewportPages;
-
-    if (PLACEHOLDER.DEBUG_LOGGING) {
-      console.log(
-        `⚡ [VIEWPORT] Loading ALL ${
-          allViewportPages.length
-        } viewport pages in PARALLEL: [${allViewportPages.join(", ")}]`
-      );
-    }
+    // Set scroll jump flag to prevent boundary detection interference
+    timeoutManager.updateState({ isScrollJumpInProgress: true });
 
     try {
-      const startTime = performance.now();
+      // Clear console for cleaner debugging
+      if (PLACEHOLDER.DEBUG_LOGGING) {
+        console.clear();
+        console.log(`🧹 [ScrollToIndex] Console cleared for clean debugging`);
+        console.log(`🔒 [ScrollToIndex] Scroll jump protection ENABLED`);
+      }
 
-      // Load all viewport pages in parallel
-      const viewportPromises = allViewportPages.map((page, index) => {
+      const pageSize = config.pageSize || 20;
+      const itemHeight = config.itemHeight || 84;
+      const containerHeight = state.containerHeight || 400;
+
+      if (PLACEHOLDER.DEBUG_LOGGING) {
+        console.log(
+          `🚀 [ScrollToIndex] Starting scroll to index ${targetIndex}`
+        );
+        console.log(
+          `📏 [ScrollToIndex] Config: pageSize=${pageSize}, itemHeight=${itemHeight}, containerHeight=${containerHeight}`
+        );
+      }
+
+      // Use precise viewport calculation with exact target index
+      const viewportCalc = calculatePreciseViewportPages(
+        targetIndex,
+        containerHeight,
+        itemHeight,
+        pageSize,
+        state.scrollTop || 0,
+        state.itemCount
+      );
+
+      if (PLACEHOLDER.DEBUG_LOGGING) {
+        console.log(
+          `📊 [ScrollToIndex] Precise calculation for index ${targetIndex}:`
+        );
+        console.log(`  Target page: ${viewportCalc.targetPage}`);
+        console.log(
+          `  Index position in page: ${viewportCalc.targetIndexInPage}`
+        );
+        console.log(`  Scroll position: ${viewportCalc.scrollPosition}px`);
+        console.log(`  Items in viewport: ${viewportCalc.itemsInViewport}`);
+        console.log(`  Pages in viewport: ${viewportCalc.pagesInViewport}`);
+        console.log(
+          `  Viewport pages needed: [${viewportCalc.viewportPages.join(", ")}]`
+        );
+      }
+
+      // Load ALL viewport pages in parallel based on actual position
+      const allViewportPages = viewportCalc.viewportPages;
+
+      // Note: We don't force-add the target page since the precise calculation
+      // already determines which pages are actually needed for the viewport
+      if (PLACEHOLDER.DEBUG_LOGGING) {
+        console.log(
+          `⚡ [VIEWPORT] Loading ALL ${
+            allViewportPages.length
+          } viewport pages in PARALLEL: [${allViewportPages.join(", ")}]`
+        );
+      }
+
+      try {
+        const startTime = performance.now();
+
+        // Load all viewport pages in parallel
+        const viewportPromises = allViewportPages.map((page, index) => {
+          if (PLACEHOLDER.DEBUG_LOGGING) {
+            console.log(
+              `⚡ [VIEWPORT] Starting parallel load of page ${page} (${
+                index + 1
+              }/${allViewportPages.length})`
+            );
+          }
+
+          // Only the target page should set scroll position, others just load data
+          return loadPage(page, {
+            setScrollPosition: page === viewportCalc.targetPage,
+            replaceCollection: false,
+          });
+        });
+
+        // Wait for ALL viewport pages to load before proceeding
+        await Promise.all(viewportPromises);
+
+        const endTime = performance.now();
+
         if (PLACEHOLDER.DEBUG_LOGGING) {
           console.log(
-            `⚡ [VIEWPORT] Starting parallel load of page ${page} (${
-              index + 1
-            }/${allViewportPages.length})`
+            `✅ [VIEWPORT] All ${
+              allViewportPages.length
+            } viewport pages loaded in parallel (${Math.round(
+              endTime - startTime
+            )}ms)`
+          );
+          console.log(
+            `🎯 [VIEWPORT] Viewport is now complete - no visual glitches!`
           );
         }
+      } catch (error) {
+        console.error(`❌ [VIEWPORT] Failed to load viewport pages:`, error);
+        return;
+      }
 
-        // Only the target page should set scroll position, others just load data
-        return loadPage(page, {
-          setScrollPosition: page === viewportCalc.targetPage,
-          replaceCollection: false,
-        });
-      });
+      // Step 3: Background preloading based on adjacentPagesPreload configuration
+      // Support both new separate config and legacy single config for backward compatibility
+      let preloadBefore: number;
+      let preloadAfter: number;
 
-      // Wait for ALL viewport pages to load before proceeding
-      await Promise.all(viewportPromises);
+      if (
+        config.adjacentPagesPreloadBefore !== undefined ||
+        config.adjacentPagesPreloadAfter !== undefined
+      ) {
+        // Use new separate configuration
+        preloadBefore =
+          config.adjacentPagesPreloadBefore ??
+          PAGINATION.ADJACENT_PAGES_PRELOAD_BEFORE;
+        preloadAfter =
+          config.adjacentPagesPreloadAfter ??
+          PAGINATION.ADJACENT_PAGES_PRELOAD_AFTER;
+      } else {
+        // Fall back to legacy configuration (split evenly)
+        const legacyTotal =
+          config.adjacentPagesPreload ?? PAGINATION.ADJACENT_PAGES_PRELOAD;
+        preloadBefore = Math.floor(legacyTotal / 2);
+        preloadAfter = Math.ceil(legacyTotal / 2);
+      }
 
-      const endTime = performance.now();
+      if (preloadBefore <= 0 && preloadAfter <= 0) {
+        if (PLACEHOLDER.DEBUG_LOGGING) {
+          console.log(
+            `🔄 [PRELOAD] No additional preloading (before: ${preloadBefore}, after: ${preloadAfter})`
+          );
+        }
+        return;
+      }
+
+      // Calculate additional pages to preload (exclude already loaded pages)
+      const totalPages = state.itemCount
+        ? Math.ceil(state.itemCount / pageSize)
+        : null;
+      const additionalPages: number[] = [];
+      const allLoadedPages = [...allViewportPages]; // All viewport pages are already loaded
 
       if (PLACEHOLDER.DEBUG_LOGGING) {
         console.log(
-          `✅ [VIEWPORT] All ${
-            allViewportPages.length
-          } viewport pages loaded in parallel (${Math.round(
-            endTime - startTime
-          )}ms)`
+          `🔄 [PRELOAD] Calculating pages to preload: ${preloadBefore} before + ${preloadAfter} after (excluding already loaded pages: [${allLoadedPages.join(
+            ", "
+          )}])`
         );
+      }
+
+      // Smart adjacent page calculation for preloading
+      const firstViewportPage = Math.min(...viewportCalc.viewportPages); // First page in viewport
+      const lastViewportPage = Math.max(...viewportCalc.viewportPages); // Last page in viewport
+
+      if (PLACEHOLDER.DEBUG_LOGGING) {
+        console.log(`🔄 [PRELOAD] Preload calculation details:`);
+        console.log(`  First viewport page: ${firstViewportPage}`);
+        console.log(`  Last viewport page: ${lastViewportPage}`);
+        console.log(`  Preload before: ${preloadBefore} pages`);
+        console.log(`  Preload after: ${preloadAfter} pages`);
+      }
+
+      // Add BEFORE pages (start from FIRST page of viewport, not target page)
+      for (let i = 1; i <= preloadBefore; i++) {
+        const prevPage = firstViewportPage - i;
+        if (prevPage >= 1 && !allLoadedPages.includes(prevPage)) {
+          if (PLACEHOLDER.DEBUG_LOGGING) {
+            console.log(
+              `  ⬅️ Adding BEFORE page: ${prevPage} (${firstViewportPage} - ${i})`
+            );
+          }
+          additionalPages.push(prevPage);
+        }
+      }
+
+      // Add AFTER pages (start from LAST page of viewport, not first)
+      for (let i = 1; i <= preloadAfter; i++) {
+        const nextPage = lastViewportPage + i;
+        if (
+          (!totalPages || nextPage <= totalPages) &&
+          !allLoadedPages.includes(nextPage)
+        ) {
+          if (PLACEHOLDER.DEBUG_LOGGING) {
+            console.log(
+              `  ➡️ Adding AFTER page: ${nextPage} (${lastViewportPage} + ${i})`
+            );
+          }
+          additionalPages.push(nextPage);
+        }
+      }
+
+      if (PLACEHOLDER.DEBUG_LOGGING) {
         console.log(
-          `🎯 [VIEWPORT] Viewport is now complete - no visual glitches!`
+          `🔄 [PRELOAD] Additional pages to preload: [${additionalPages.join(
+            ", "
+          )}] (before: ${preloadBefore}, after: ${preloadAfter})`
         );
+      }
+
+      // Load additional pages in background (fire and forget)
+      if (additionalPages.length > 0) {
+        loadAdditionalRangesInBackground(additionalPages, "PRELOAD");
+      } else {
+        if (PLACEHOLDER.DEBUG_LOGGING) {
+          console.log(
+            `ℹ️ [PRELOAD] No additional pages to preload (all adjacent pages already loaded)`
+          );
+        }
       }
     } catch (error) {
-      console.error(`❌ [VIEWPORT] Failed to load viewport pages:`, error);
-      return;
-    }
-
-    // Phase 3: Background preloading based on scrollJumpRangesToFetch
-    const rangesToFetch =
-      config.scrollJumpRangesToFetch || PAGINATION.SCROLL_JUMP_RANGES_TO_FETCH;
-
-    if (rangesToFetch <= 0) {
+      console.error(`❌ [ScrollToIndex] Scroll jump failed:`, error);
+    } finally {
+      // Always clear the scroll jump flag when done
+      timeoutManager.updateState({ isScrollJumpInProgress: false });
       if (PLACEHOLDER.DEBUG_LOGGING) {
-        console.log(
-          `🔄 [PRELOAD] No additional preloading (scrollJumpRangesToFetch: ${rangesToFetch})`
-        );
-      }
-      return;
-    }
-
-    // Calculate additional pages to preload (exclude already loaded pages)
-    const totalPages = state.itemCount
-      ? Math.ceil(state.itemCount / pageSize)
-      : null;
-    const additionalPages: number[] = [];
-    const allLoadedPages = [...allViewportPages]; // All viewport pages are already loaded
-
-    if (PLACEHOLDER.DEBUG_LOGGING) {
-      console.log(
-        `🔄 [PRELOAD] Calculating ${rangesToFetch} additional pages to preload (excluding already loaded pages: [${allLoadedPages.join(
-          ", "
-        )}])`
-      );
-    }
-
-    // Smart adjacent page calculation for preloading
-    const targetPage = viewportCalc.targetPage;
-    if (totalPages && targetPage >= totalPages) {
-      // We're on the last page, load previous pages only
-      for (let i = 1; i <= rangesToFetch && targetPage - i >= 1; i++) {
-        const prevPage = targetPage - i;
-        if (!allLoadedPages.includes(prevPage)) {
-          additionalPages.push(prevPage);
-        }
-      }
-    } else if (totalPages && targetPage > totalPages - 2) {
-      // We're near the end, prioritize previous pages
-      const prevPagesCount = Math.min(rangesToFetch, targetPage - 1);
-      for (let i = 1; i <= prevPagesCount; i++) {
-        const prevPage = targetPage - i;
-        if (!allLoadedPages.includes(prevPage)) {
-          additionalPages.push(prevPage);
-        }
-      }
-      // Add any remaining as next pages (if they exist)
-      const remainingSlots = rangesToFetch - additionalPages.length;
-      for (
-        let i = 1;
-        i <= remainingSlots && targetPage + i <= totalPages;
-        i++
-      ) {
-        const nextPage = targetPage + i;
-        if (!allLoadedPages.includes(nextPage)) {
-          additionalPages.push(nextPage);
-        }
-      }
-    } else if (targetPage === 1) {
-      // We're on first page, load next pages only
-      for (let i = 1; i <= rangesToFetch; i++) {
-        const nextPage = targetPage + i;
-        if (
-          !allLoadedPages.includes(nextPage) &&
-          (!totalPages || nextPage <= totalPages)
-        ) {
-          additionalPages.push(nextPage);
-        }
-      }
-    } else {
-      // We're in the middle, balance previous and next pages
-      const prevPagesCount = Math.floor(rangesToFetch / 2);
-      const nextPagesCount = Math.ceil(rangesToFetch / 2);
-
-      // Add previous pages
-      for (let i = 1; i <= prevPagesCount && targetPage - i >= 1; i++) {
-        const prevPage = targetPage - i;
-        if (!allLoadedPages.includes(prevPage)) {
-          additionalPages.push(prevPage);
-        }
-      }
-
-      // Add next pages
-      for (let i = 1; i <= nextPagesCount; i++) {
-        const nextPage = targetPage + i;
-        if (
-          !allLoadedPages.includes(nextPage) &&
-          (!totalPages || nextPage <= totalPages)
-        ) {
-          additionalPages.push(nextPage);
-        }
-      }
-    }
-
-    if (PLACEHOLDER.DEBUG_LOGGING) {
-      console.log(
-        `🔄 [PRELOAD] Additional pages to preload: [${additionalPages.join(
-          ", "
-        )}] (scrollJumpRangesToFetch: ${rangesToFetch})`
-      );
-    }
-
-    // Load additional pages in background (fire and forget)
-    if (additionalPages.length > 0) {
-      loadAdditionalRangesInBackground(additionalPages, "PRELOAD");
-    } else {
-      if (PLACEHOLDER.DEBUG_LOGGING) {
-        console.log(
-          `ℹ️ [PRELOAD] No additional pages to preload (all adjacent pages already loaded)`
-        );
+        console.log(`🔓 [ScrollToIndex] Scroll jump protection DISABLED`);
       }
     }
   };
@@ -368,239 +417,253 @@ export const createScrollJumpManager = (
   const loadScrollJumpWithBackgroundRanges = async (
     targetPage: number
   ): Promise<void> => {
-    const pageSize = config.pageSize || 20;
-    const itemHeight = config.itemHeight || 84;
-    const containerHeight = state.containerHeight || 400;
-
-    if (PLACEHOLDER.DEBUG_LOGGING) {
-      console.log(`🚀 [ScrollJump] Starting jump to page ${targetPage}`);
-      console.log(
-        `📏 [ScrollJump] Config: pageSize=${pageSize}, itemHeight=${itemHeight}, containerHeight=${containerHeight}`
-      );
-    }
-
-    // Use ACTUAL current scroll position instead of page start
-    // This ensures we calculate viewport pages based on where the user actually is
-    const actualScrollPosition = state.scrollTop || 0;
-    const actualIndex = Math.floor(actualScrollPosition / itemHeight);
-
-    if (PLACEHOLDER.DEBUG_LOGGING) {
-      console.log(
-        `📍 [ScrollJump] Using ACTUAL scroll position: ${actualScrollPosition}px (index ${actualIndex})`
-      );
-    }
-
-    // Use precise viewport calculation with actual current position
-    const viewportCalc = calculatePreciseViewportPages(
-      actualIndex,
-      containerHeight,
-      itemHeight,
-      pageSize,
-      state.itemCount
-    );
-
-    if (PLACEHOLDER.DEBUG_LOGGING) {
-      console.log(
-        `📊 [ScrollJump] Precise calculation for ACTUAL index ${actualIndex}:`
-      );
-      console.log(`  Target page (from scroll): ${targetPage}`);
-      console.log(
-        `  Calculated page (from position): ${viewportCalc.targetPage}`
-      );
-      console.log(`  Scroll position: ${viewportCalc.scrollPosition}px`);
-      console.log(`  Items in viewport: ${viewportCalc.itemsInViewport}`);
-      console.log(`  Pages in viewport: ${viewportCalc.pagesInViewport}`);
-      console.log(
-        `  Viewport pages needed: [${viewportCalc.viewportPages.join(", ")}]`
-      );
-    }
-
-    // Load ALL viewport pages in parallel based on actual position
-    const allViewportPages = viewportCalc.viewportPages;
-
-    // Ensure target page is included even if not in calculated viewport
-    if (!allViewportPages.includes(targetPage)) {
-      allViewportPages.push(targetPage);
-      allViewportPages.sort((a, b) => a - b);
-
-      if (PLACEHOLDER.DEBUG_LOGGING) {
-        console.log(
-          `🔧 [ScrollJump] Added target page ${targetPage} to viewport pages: [${allViewportPages.join(
-            ", "
-          )}]`
-        );
-      }
-    }
-
-    if (PLACEHOLDER.DEBUG_LOGGING) {
-      console.log(
-        `⚡ [VIEWPORT] Loading ALL ${
-          allViewportPages.length
-        } viewport pages in PARALLEL: [${allViewportPages.join(", ")}]`
-      );
-    }
+    // Set scroll jump flag to prevent boundary detection interference
+    timeoutManager.updateState({ isScrollJumpInProgress: true });
 
     try {
-      const startTime = performance.now();
+      // Clear console for cleaner debugging
+      if (PLACEHOLDER.DEBUG_LOGGING) {
+        console.clear();
+        console.log(`🧹 [ScrollJump] Console cleared for clean debugging`);
+        console.log(`🔒 [ScrollJump] Scroll jump protection ENABLED`);
+      }
 
-      // Load all viewport pages in parallel
-      const viewportPromises = allViewportPages.map((page, index) => {
-        if (PLACEHOLDER.DEBUG_LOGGING) {
+      const pageSize = config.pageSize || 20;
+      const itemHeight = config.itemHeight || 84;
+      const containerHeight = state.containerHeight || 400;
+
+      if (PLACEHOLDER.DEBUG_LOGGING) {
+        console.log(`🚀 [ScrollJump] Starting jump to page ${targetPage}`);
+        console.log(
+          `📏 [ScrollJump] Config: pageSize=${pageSize}, itemHeight=${itemHeight}, containerHeight=${containerHeight}`
+        );
+      }
+
+      // Use ACTUAL current scroll position instead of page start
+      // This ensures we calculate viewport pages based on where the user actually is
+      const actualScrollPosition = state.scrollTop || 0;
+      const actualIndex = Math.floor(actualScrollPosition / itemHeight);
+
+      if (PLACEHOLDER.DEBUG_LOGGING) {
+        console.log(
+          `📍 [ScrollJump] Using ACTUAL scroll position: ${actualScrollPosition}px (index ${actualIndex})`
+        );
+      }
+
+      // Use precise viewport calculation with actual current position
+      const viewportCalc = calculatePreciseViewportPages(
+        actualIndex,
+        containerHeight,
+        itemHeight,
+        pageSize,
+        actualScrollPosition,
+        state.itemCount
+      );
+
+      if (PLACEHOLDER.DEBUG_LOGGING) {
+        console.log(
+          `📊 [ScrollJump] Precise calculation for ACTUAL index ${actualIndex}:`
+        );
+        console.log(`  Target page (from scroll): ${targetPage}`);
+        console.log(
+          `  Calculated page (from position): ${viewportCalc.targetPage}`
+        );
+        console.log(`  Scroll position: ${viewportCalc.scrollPosition}px`);
+        console.log(`  Items in viewport: ${viewportCalc.itemsInViewport}`);
+        console.log(`  Pages in viewport: ${viewportCalc.pagesInViewport}`);
+        console.log(
+          `  Viewport pages needed: [${viewportCalc.viewportPages.join(", ")}]`
+        );
+        console.log(
+          `  First viewport page: ${Math.min(...viewportCalc.viewportPages)}`
+        );
+        console.log(
+          `  Last viewport page: ${Math.max(...viewportCalc.viewportPages)}`
+        );
+
+        if (targetPage !== viewportCalc.targetPage) {
           console.log(
-            `⚡ [VIEWPORT] Starting parallel load of page ${page} (${
-              index + 1
-            }/${allViewportPages.length})`
+            `⚠️ [ScrollJump] Target page mismatch! Input: ${targetPage}, Calculated: ${
+              viewportCalc.targetPage
+            } (${Math.abs(
+              targetPage - viewportCalc.targetPage
+            )} pages difference)`
+          );
+          console.log(
+            `⚠️ [ScrollJump] This suggests scroll jump was triggered with stale information or user scrolled during debounce`
           );
         }
+      }
 
-        // Only the target page should set scroll position
-        return loadPage(page, {
-          setScrollPosition: page === targetPage,
-          replaceCollection: false,
+      // Load ALL viewport pages in parallel based on actual position
+      const allViewportPages = viewportCalc.viewportPages;
+
+      // Note: We don't force-add the target page since the precise calculation
+      // already determines which pages are actually needed for the viewport
+      if (PLACEHOLDER.DEBUG_LOGGING) {
+        console.log(
+          `⚡ [VIEWPORT] Loading ALL ${
+            allViewportPages.length
+          } viewport pages in PARALLEL: [${allViewportPages.join(", ")}]`
+        );
+      }
+
+      try {
+        const startTime = performance.now();
+
+        // Load all viewport pages in parallel
+        const viewportPromises = allViewportPages.map((page, index) => {
+          if (PLACEHOLDER.DEBUG_LOGGING) {
+            console.log(
+              `⚡ [VIEWPORT] Starting parallel load of page ${page} (${
+                index + 1
+              }/${allViewportPages.length})`
+            );
+          }
+
+          // Only the target page should set scroll position, others just load data
+          return loadPage(page, {
+            setScrollPosition: page === viewportCalc.targetPage,
+            replaceCollection: false,
+          });
         });
-      });
 
-      // Wait for ALL viewport pages to load before proceeding
-      await Promise.all(viewportPromises);
+        // Wait for ALL viewport pages to load before proceeding
+        await Promise.all(viewportPromises);
 
-      const endTime = performance.now();
+        const endTime = performance.now();
+
+        if (PLACEHOLDER.DEBUG_LOGGING) {
+          console.log(
+            `✅ [VIEWPORT] All ${
+              allViewportPages.length
+            } viewport pages loaded in parallel (${Math.round(
+              endTime - startTime
+            )}ms)`
+          );
+          console.log(
+            `🎯 [VIEWPORT] Viewport is now complete - no visual glitches!`
+          );
+        }
+      } catch (error) {
+        console.error(`❌ [VIEWPORT] Failed to load viewport pages:`, error);
+        return;
+      }
+
+      // Step 3: Background preloading based on adjacentPagesPreload configuration
+      // Support both new separate config and legacy single config for backward compatibility
+      let preloadBefore: number;
+      let preloadAfter: number;
+
+      if (
+        config.adjacentPagesPreloadBefore !== undefined ||
+        config.adjacentPagesPreloadAfter !== undefined
+      ) {
+        // Use new separate configuration
+        preloadBefore =
+          config.adjacentPagesPreloadBefore ??
+          PAGINATION.ADJACENT_PAGES_PRELOAD_BEFORE;
+        preloadAfter =
+          config.adjacentPagesPreloadAfter ??
+          PAGINATION.ADJACENT_PAGES_PRELOAD_AFTER;
+      } else {
+        // Fall back to legacy configuration (split evenly)
+        const legacyTotal =
+          config.adjacentPagesPreload ?? PAGINATION.ADJACENT_PAGES_PRELOAD;
+        preloadBefore = Math.floor(legacyTotal / 2);
+        preloadAfter = Math.ceil(legacyTotal / 2);
+      }
+
+      if (preloadBefore <= 0 && preloadAfter <= 0) {
+        if (PLACEHOLDER.DEBUG_LOGGING) {
+          console.log(
+            `🔄 [PRELOAD] No additional preloading (before: ${preloadBefore}, after: ${preloadAfter})`
+          );
+        }
+        return;
+      }
+
+      // Calculate additional pages to preload (exclude already loaded pages)
+      const totalPages = state.itemCount
+        ? Math.ceil(state.itemCount / pageSize)
+        : null;
+      const additionalPages: number[] = [];
+      const allLoadedPages = [...allViewportPages]; // All viewport pages are already loaded
 
       if (PLACEHOLDER.DEBUG_LOGGING) {
         console.log(
-          `✅ [VIEWPORT] All ${
-            allViewportPages.length
-          } viewport pages loaded in parallel (${Math.round(
-            endTime - startTime
-          )}ms)`
+          `🔄 [PRELOAD] Calculating pages to preload: ${preloadBefore} before + ${preloadAfter} after (excluding already loaded pages: [${allLoadedPages.join(
+            ", "
+          )}])`
         );
+      }
+
+      // Smart adjacent page calculation for preloading
+      const firstViewportPage = Math.min(...viewportCalc.viewportPages); // First page in viewport
+      const lastViewportPage = Math.max(...viewportCalc.viewportPages); // Last page in viewport
+
+      if (PLACEHOLDER.DEBUG_LOGGING) {
+        console.log(`🔄 [PRELOAD] Preload calculation details:`);
+        console.log(`  First viewport page: ${firstViewportPage}`);
+        console.log(`  Last viewport page: ${lastViewportPage}`);
+        console.log(`  Preload before: ${preloadBefore} pages`);
+        console.log(`  Preload after: ${preloadAfter} pages`);
+      }
+
+      // Add BEFORE pages (start from FIRST page of viewport, not target page)
+      for (let i = 1; i <= preloadBefore; i++) {
+        const prevPage = firstViewportPage - i;
+        if (prevPage >= 1 && !allLoadedPages.includes(prevPage)) {
+          if (PLACEHOLDER.DEBUG_LOGGING) {
+            console.log(
+              `  ⬅️ Adding BEFORE page: ${prevPage} (${firstViewportPage} - ${i})`
+            );
+          }
+          additionalPages.push(prevPage);
+        }
+      }
+
+      // Add AFTER pages (start from LAST page of viewport, not first)
+      for (let i = 1; i <= preloadAfter; i++) {
+        const nextPage = lastViewportPage + i;
+        if (
+          (!totalPages || nextPage <= totalPages) &&
+          !allLoadedPages.includes(nextPage)
+        ) {
+          if (PLACEHOLDER.DEBUG_LOGGING) {
+            console.log(
+              `  ➡️ Adding AFTER page: ${nextPage} (${lastViewportPage} + ${i})`
+            );
+          }
+          additionalPages.push(nextPage);
+        }
+      }
+
+      if (PLACEHOLDER.DEBUG_LOGGING) {
         console.log(
-          `🎯 [VIEWPORT] Viewport is now complete - no visual glitches!`
+          `🔄 [PRELOAD] Additional pages to preload: [${additionalPages.join(
+            ", "
+          )}] (before: ${preloadBefore}, after: ${preloadAfter})`
         );
+      }
+
+      // Load additional pages in background (fire and forget)
+      if (additionalPages.length > 0) {
+        loadAdditionalRangesInBackground(additionalPages, "PRELOAD");
+      } else {
+        if (PLACEHOLDER.DEBUG_LOGGING) {
+          console.log(
+            `ℹ️ [PRELOAD] No additional pages to preload (all adjacent pages already loaded)`
+          );
+        }
       }
     } catch (error) {
-      console.error(`❌ [VIEWPORT] Failed to load viewport pages:`, error);
-      return;
-    }
-
-    // Step 3: Background preloading based on scrollJumpRangesToFetch
-    const rangesToFetch =
-      config.scrollJumpRangesToFetch || PAGINATION.SCROLL_JUMP_RANGES_TO_FETCH;
-
-    if (rangesToFetch <= 0) {
+      console.error(`❌ [ScrollJump] Scroll jump failed:`, error);
+    } finally {
+      // Always clear the scroll jump flag when done
+      timeoutManager.updateState({ isScrollJumpInProgress: false });
       if (PLACEHOLDER.DEBUG_LOGGING) {
-        console.log(
-          `🔄 [PRELOAD] No additional preloading (scrollJumpRangesToFetch: ${rangesToFetch})`
-        );
-      }
-      return;
-    }
-
-    // Calculate additional pages to preload (exclude already loaded pages)
-    const totalPages = state.itemCount
-      ? Math.ceil(state.itemCount / pageSize)
-      : null;
-    const additionalPages: number[] = [];
-    const allLoadedPages = [...allViewportPages]; // All viewport pages are already loaded
-
-    if (PLACEHOLDER.DEBUG_LOGGING) {
-      console.log(
-        `🔄 [PRELOAD] Calculating ${rangesToFetch} additional pages to preload (excluding already loaded pages: [${allLoadedPages.join(
-          ", "
-        )}])`
-      );
-    }
-
-    // Smart adjacent page calculation for preloading (use calculated target page, not input target page)
-    const calculatedTargetPage = viewportCalc.targetPage;
-    if (totalPages && calculatedTargetPage >= totalPages) {
-      // We're on the last page, load previous pages only
-      for (
-        let i = 1;
-        i <= rangesToFetch && calculatedTargetPage - i >= 1;
-        i++
-      ) {
-        const prevPage = calculatedTargetPage - i;
-        if (!allLoadedPages.includes(prevPage)) {
-          additionalPages.push(prevPage);
-        }
-      }
-    } else if (totalPages && calculatedTargetPage > totalPages - 2) {
-      // We're near the end, prioritize previous pages
-      const prevPagesCount = Math.min(rangesToFetch, calculatedTargetPage - 1);
-      for (let i = 1; i <= prevPagesCount; i++) {
-        const prevPage = calculatedTargetPage - i;
-        if (!allLoadedPages.includes(prevPage)) {
-          additionalPages.push(prevPage);
-        }
-      }
-      // Add any remaining as next pages (if they exist)
-      const remainingSlots = rangesToFetch - additionalPages.length;
-      for (
-        let i = 1;
-        i <= remainingSlots && calculatedTargetPage + i <= totalPages;
-        i++
-      ) {
-        const nextPage = calculatedTargetPage + i;
-        if (!allLoadedPages.includes(nextPage)) {
-          additionalPages.push(nextPage);
-        }
-      }
-    } else if (calculatedTargetPage === 1) {
-      // We're on first page, load next pages only
-      for (let i = 1; i <= rangesToFetch; i++) {
-        const nextPage = calculatedTargetPage + i;
-        if (
-          !allLoadedPages.includes(nextPage) &&
-          (!totalPages || nextPage <= totalPages)
-        ) {
-          additionalPages.push(nextPage);
-        }
-      }
-    } else {
-      // We're in the middle, balance previous and next pages
-      const prevPagesCount = Math.floor(rangesToFetch / 2);
-      const nextPagesCount = Math.ceil(rangesToFetch / 2);
-
-      // Add previous pages
-      for (
-        let i = 1;
-        i <= prevPagesCount && calculatedTargetPage - i >= 1;
-        i++
-      ) {
-        const prevPage = calculatedTargetPage - i;
-        if (!allLoadedPages.includes(prevPage)) {
-          additionalPages.push(prevPage);
-        }
-      }
-
-      // Add next pages
-      for (let i = 1; i <= nextPagesCount; i++) {
-        const nextPage = calculatedTargetPage + i;
-        if (
-          !allLoadedPages.includes(nextPage) &&
-          (!totalPages || nextPage <= totalPages)
-        ) {
-          additionalPages.push(nextPage);
-        }
-      }
-    }
-
-    if (PLACEHOLDER.DEBUG_LOGGING) {
-      console.log(
-        `🔄 [PRELOAD] Additional pages to preload: [${additionalPages.join(
-          ", "
-        )}] (scrollJumpRangesToFetch: ${rangesToFetch})`
-      );
-    }
-
-    // Load additional pages in background (fire and forget)
-    if (additionalPages.length > 0) {
-      loadAdditionalRangesInBackground(additionalPages, "PRELOAD");
-    } else {
-      if (PLACEHOLDER.DEBUG_LOGGING) {
-        console.log(
-          `ℹ️ [PRELOAD] No additional pages to preload (all adjacent pages already loaded)`
-        );
+        console.log(`🔓 [ScrollJump] Scroll jump protection DISABLED`);
       }
     }
   };

@@ -91,10 +91,23 @@ export interface ListManagerConfig {
   initialRangesToFetch?: number;
 
   /**
-   * Number of ranges/pages to fetch around target page during scroll jumps for smoother scrolling
+   * Number of pages to preload BEFORE the viewport for smooth backward navigation
+   * @default 1
+   */
+  adjacentPagesPreloadBefore?: number;
+
+  /**
+   * Number of pages to preload AFTER the viewport for smooth forward navigation
+   * @default 1
+   */
+  adjacentPagesPreloadAfter?: number;
+
+  /**
+   * @deprecated Use adjacentPagesPreloadBefore and adjacentPagesPreloadAfter instead
+   * Number of additional pages to preload adjacent to the viewport for smooth navigation
    * @default 2
    */
-  scrollJumpRangesToFetch?: number;
+  adjacentPagesPreload?: number;
 
   /**
    * Threshold for loading more (0.0-1.0)

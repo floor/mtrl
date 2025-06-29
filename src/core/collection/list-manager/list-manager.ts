@@ -651,7 +651,11 @@ export const createListManager = (
     state,
     config: validatedConfig,
     loadPage,
-    timeoutManager,
+    timeoutManager: {
+      setScrollJumpState: timeoutManager.setScrollJumpState,
+      getState: timeoutManager.getState,
+      updateState: timeoutManager.updateState,
+    },
   });
 
   // Update scrolling manager with loadPage dependency
