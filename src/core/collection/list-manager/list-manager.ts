@@ -181,8 +181,8 @@ export const createListManager = (
     elements,
   });
 
-  // Initialize scrolling manager
-  const scrollingManager = createScrollingManager({
+  // Initialize scrolling manager (will be updated later with loadPage)
+  let scrollingManager = createScrollingManager({
     state,
     config: validatedConfig,
     container,
@@ -581,42 +581,6 @@ export const createListManager = (
   };
 
   /**
-   * Scroll to a specific item by ID
-   */
-  const scrollToItem = (
-    itemId: string,
-    position: ScrollToPosition = "start"
-  ): void => {
-    // Ensure offsets are cached
-    if (typeof itemMeasurement.calculateOffsets === "function") {
-      itemMeasurement.calculateOffsets(state.items);
-    }
-
-    const offset = itemMeasurement.getItemOffset(state.items, itemId);
-    if (offset === -1) return;
-
-    let scrollPosition = offset;
-
-    // Adjust position based on requested alignment
-    if (position === "center") {
-      scrollPosition = offset - state.containerHeight / 2;
-    } else if (position === "end") {
-      const itemIndex = state.items.findIndex(
-        (item) => item && item.id === itemId
-      );
-      if (itemIndex === -1) return;
-
-      const itemHeight = itemMeasurement.getItemHeight(state.items[itemIndex]);
-      scrollPosition = offset - state.containerHeight + itemHeight;
-    }
-
-    container.scrollTo({
-      top: Math.max(0, scrollPosition),
-      behavior: "smooth",
-    });
-  };
-
-  /**
    * Render items with custom virtual positions
    */
   const renderItemsWithVirtualPositions = (
@@ -689,6 +653,20 @@ export const createListManager = (
     loadPage,
     timeoutManager,
   });
+
+  // Update scrolling manager with loadPage dependency
+  scrollingManager = createScrollingManager({
+    state,
+    config: validatedConfig,
+    container,
+    loadPage,
+    itemMeasurement,
+    collection,
+    scrollJumpManager,
+  });
+
+  // Extract functions from scrolling manager
+  const { scrollToItem, scrollToIndex, scrollToItemById } = scrollingManager;
 
   // Set up managers now that all functions are defined
   viewportManager = createViewportManager({
@@ -804,6 +782,11 @@ export const createListManager = (
     loadNext,
     refresh,
     updateVisibleItems,
+
+    // Navigation and scrolling
+    scrollToItem,
+    scrollToIndex,
+    scrollToItemById,
 
     // Page navigation
     getCurrentPage: () => {

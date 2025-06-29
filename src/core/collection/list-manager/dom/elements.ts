@@ -16,7 +16,6 @@ export function createDomElements(container: HTMLElement): ListManagerElements {
   const content = document.createElement("div");
   content.style.position = "relative";
   content.style.width = "100%";
-  content.style.willChange = "transform";
 
   // Create spacer element for scroll height
   const spacer = document.createElement("div");

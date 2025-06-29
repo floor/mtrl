@@ -261,12 +261,40 @@ export interface ListComponent {
    * Scrolls to a specific item by ID
    * @param {string} itemId - Item ID to scroll to
    * @param {string} position - Position ('start', 'center', 'end')
+   * @param {boolean} animate - Whether to animate the scroll
    * @returns {VirtualListComponent} Component instance for chaining
    */
   scrollToItem: (
     itemId: string,
-    position?: "start" | "center" | "end"
+    position?: "start" | "center" | "end",
+    animate?: boolean
   ) => VirtualListComponent;
+
+  /**
+   * Scroll to a specific index in the list
+   * @param {number} index - Index to scroll to (0-based)
+   * @param {string} position - Position ('start', 'center', 'end')
+   * @param {boolean} animate - Whether to animate the scroll
+   * @returns {Promise<VirtualListComponent>} Promise that resolves when scroll is complete
+   */
+  scrollToIndex: (
+    index: number,
+    position?: "start" | "center" | "end",
+    animate?: boolean
+  ) => Promise<VirtualListComponent>;
+
+  /**
+   * Scroll to a specific item by ID using backend lookup
+   * @param {string} itemId - Item ID to scroll to
+   * @param {string} position - Position ('start', 'center', 'end')
+   * @param {boolean} animate - Whether to animate the scroll
+   * @returns {Promise<VirtualListComponent>} Promise that resolves when scroll is complete
+   */
+  scrollToItemById: (
+    itemId: string,
+    position?: "start" | "center" | "end",
+    animate?: boolean
+  ) => Promise<VirtualListComponent>;
 
   /**
    * Gets all currently visible items

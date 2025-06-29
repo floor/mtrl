@@ -13,11 +13,22 @@ interface ApiOptions {
     ) => Promise<{ hasNext: boolean; items: any[] }>;
     loadPreviousPage: () => Promise<{ hasPrev: boolean; items: any[] }>;
     scrollNext: () => Promise<{ hasNext: boolean; items: any[] }>;
-    scrollPrevious: () => Promise<{ hasPrev: boolean; items: any[] }>;
+    scrollPrevious: () => Promise<{ hasNext: boolean; items: any[] }>;
     scrollToItem: (
       itemId: string,
-      position?: "start" | "center" | "end"
+      position?: "start" | "center" | "end",
+      animate?: boolean
     ) => void;
+    scrollToIndex: (
+      index: number,
+      position?: "start" | "center" | "end",
+      animate?: boolean
+    ) => Promise<void>;
+    scrollToItemById: (
+      itemId: string,
+      position?: "start" | "center" | "end",
+      animate?: boolean
+    ) => Promise<void>;
     getVisibleItems: () => any[];
     getAllItems: () => any[];
     isLoading: () => boolean;
@@ -130,13 +141,47 @@ export const withAPI =
      * Scrolls to a specific item by ID
      * @param {string} itemId - Item ID to scroll to
      * @param {string} position - Position ('start', 'center', 'end')
+     * @param {boolean} animate - Whether to animate the scroll
      * @returns {Object} Component instance for chaining
      */
     scrollToItem: (
       itemId: string,
-      position: "start" | "center" | "end" = "start"
+      position?: "start" | "center" | "end",
+      animate?: boolean
     ) => {
-      list.scrollToItem(itemId, position);
+      list.scrollToItem(itemId, position, animate);
+      return component;
+    },
+
+    /**
+     * Scrolls to a specific index
+     * @param {number} index - Index to scroll to
+     * @param {string} position - Position ('start', 'center', 'end')
+     * @param {boolean} animate - Whether to animate the scroll
+     * @returns {Promise<void>} Promise that resolves when scroll is complete
+     */
+    scrollToIndex: async (
+      index: number,
+      position?: "start" | "center" | "end",
+      animate?: boolean
+    ) => {
+      await list.scrollToIndex(index, position, animate);
+      return component;
+    },
+
+    /**
+     * Scrolls to a specific item by ID using backend lookup
+     * @param {string} itemId - Item ID to scroll to
+     * @param {string} position - Position ('start', 'center', 'end')
+     * @param {boolean} animate - Whether to animate the scroll
+     * @returns {Promise<void>} Promise that resolves when scroll is complete
+     */
+    scrollToItemById: async (
+      itemId: string,
+      position?: "start" | "center" | "end",
+      animate?: boolean
+    ) => {
+      await list.scrollToItemById(itemId, position, animate);
       return component;
     },
 

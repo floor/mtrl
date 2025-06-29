@@ -227,7 +227,29 @@ export interface ListManager {
   /**
    * Scrolls to a specific item by ID
    */
-  scrollToItem: (itemId: string, position?: ScrollToPosition) => void;
+  scrollToItem: (
+    itemId: string,
+    position?: ScrollToPosition,
+    animate?: boolean
+  ) => void;
+
+  /**
+   * Scroll to a specific index in the list
+   */
+  scrollToIndex: (
+    index: number,
+    position?: ScrollToPosition,
+    animate?: boolean
+  ) => Promise<void>;
+
+  /**
+   * Scroll to a specific item by ID using backend lookup
+   */
+  scrollToItemById: (
+    itemId: string,
+    position?: ScrollToPosition,
+    animate?: boolean
+  ) => Promise<void>;
 
   /**
    * Sets custom heights for items
