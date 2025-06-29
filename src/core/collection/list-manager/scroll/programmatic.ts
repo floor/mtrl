@@ -25,6 +25,7 @@ export interface ScrollingDependencies {
   scrollJumpManager?: {
     loadScrollJumpWithBackgroundRanges: (targetPage: number) => Promise<void>;
     loadAdditionalRangesInBackground: (pages: number[], phase?: string) => void;
+    loadScrollToIndexWithBackgroundRanges: (index: number) => Promise<void>;
   };
 }
 
@@ -111,8 +112,13 @@ export const createScrollingManager = (deps: ScrollingDependencies) => {
     }
 
     try {
-      // Use scroll jump manager's sophisticated loading logic
-      if (scrollJumpManager?.loadScrollJumpWithBackgroundRanges) {
+      // Use specialized scroll-to-index function with precise viewport calculation
+      if (scrollJumpManager?.loadScrollToIndexWithBackgroundRanges) {
+        console.log(
+          `🚀 [ScrollToIndex] Using specialized scroll-to-index manager for index ${index}`
+        );
+        await scrollJumpManager.loadScrollToIndexWithBackgroundRanges(index);
+      } else if (scrollJumpManager?.loadScrollJumpWithBackgroundRanges) {
         console.log(
           `🚀 [ScrollToIndex] Using scroll jump manager for index ${index}`
         );

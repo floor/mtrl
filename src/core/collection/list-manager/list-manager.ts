@@ -662,7 +662,14 @@ export const createListManager = (
     loadPage,
     itemMeasurement,
     collection,
-    scrollJumpManager,
+    scrollJumpManager: {
+      loadScrollJumpWithBackgroundRanges:
+        scrollJumpManager.loadScrollJumpWithBackgroundRanges,
+      loadAdditionalRangesInBackground:
+        scrollJumpManager.loadAdditionalRangesInBackground,
+      loadScrollToIndexWithBackgroundRanges:
+        scrollJumpManager.loadScrollToIndexWithBackgroundRanges,
+    },
   });
 
   // Extract functions from scrolling manager
