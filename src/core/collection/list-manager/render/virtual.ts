@@ -1,6 +1,5 @@
 import { ListManagerConfig, ListManagerElements, VisibleRange } from "../types";
 import { placeholderRenderHook } from "../data/generator";
-import { PLACEHOLDER } from "../constants";
 
 /**
  * Rendering manager dependencies
@@ -277,29 +276,6 @@ export const createRenderingManager = (deps: RenderingDependencies) => {
     if (!elements.content) {
       console.warn("Cannot render items: content element missing");
       return;
-    }
-
-    // Add detailed logging for debugging shift issues
-    if (PLACEHOLDER.DEBUG_LOGGING) {
-      console.log(
-        `🔧 [VIRTUAL_RENDER] Starting render of ${positions.length} items`
-      );
-      if (positions.length > 0) {
-        console.log(
-          `🔧 [VIRTUAL_RENDER] Position range: ${Math.round(
-            positions[0].offset / 1000
-          )}k - ${Math.round(positions[positions.length - 1].offset / 1000)}k`
-        );
-
-        // Log first few positions to debug positioning
-        positions.slice(0, 2).forEach((pos, i) => {
-          console.log(
-            `🔧 [VIRTUAL_RENDER] Position ${i + 1}: Item ${
-              pos.item.id
-            } → transform: translateY(${pos.offset}px)`
-          );
-        });
-      }
     }
 
     // Get existing items for recycling

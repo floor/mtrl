@@ -102,10 +102,6 @@ export const createScrollingManager = (deps: ScrollingDependencies) => {
     const pageSize = config.pageSize || 20;
     const targetPage = Math.floor(index / pageSize) + 1; // Pages are 1-based
 
-    console.log(
-      `🎯 [ScrollToIndex] Scrolling to index ${index} (page ${targetPage})`
-    );
-
     if (!loadPage) {
       console.error("❌ [ScrollToIndex] loadPage function not available");
       return;
@@ -114,14 +110,8 @@ export const createScrollingManager = (deps: ScrollingDependencies) => {
     try {
       // Use specialized scroll-to-index function with precise viewport calculation
       if (scrollJumpManager?.loadScrollToIndexWithBackgroundRanges) {
-        console.log(
-          `🚀 [ScrollToIndex] Using specialized scroll-to-index manager for index ${index}`
-        );
         await scrollJumpManager.loadScrollToIndexWithBackgroundRanges(index);
       } else if (scrollJumpManager?.loadScrollJumpWithBackgroundRanges) {
-        console.log(
-          `🚀 [ScrollToIndex] Using scroll jump manager for index ${index}`
-        );
         await scrollJumpManager.loadScrollJumpWithBackgroundRanges(targetPage);
       } else {
         // Fallback to simple page loading
@@ -152,10 +142,6 @@ export const createScrollingManager = (deps: ScrollingDependencies) => {
         } else {
           container.scrollTop = scrollPosition;
         }
-
-        console.log(
-          `✅ [ScrollToIndex] Scrolled to index ${index} at position ${scrollPosition}px`
-        );
       }, 100); // Small delay to ensure page is loaded and rendered
     } catch (error) {
       console.error(
@@ -200,10 +186,6 @@ export const createScrollingManager = (deps: ScrollingDependencies) => {
         console.warn(`⚠️ [ScrollToItemById] Item ${itemId} not found`);
         return;
       }
-
-      console.log(
-        `🎯 [ScrollToItemById] Found item ${itemId} at index ${result.index}`
-      );
 
       // Use scrollToIndex to navigate to the item
       await scrollToIndex(result.index, position, animate);

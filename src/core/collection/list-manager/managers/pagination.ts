@@ -64,7 +64,6 @@ export const createPaginationManager = (deps: PaginationDependencies) => {
     }
 
     // Load page immediately - no need to wait for scroll stop
-    console.log(`⏰ [ScrollImmediate] Loading page ${targetPage} immediately`);
 
     // Use the existing loadPage functionality which works perfectly
     loadPage(targetPage);

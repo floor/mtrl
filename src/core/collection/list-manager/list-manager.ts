@@ -706,13 +706,6 @@ export const createListManager = (
   const replacePlaceholdersWithReal =
     viewportManager.replacePlaceholdersWithReal;
 
-  // Debug: Check if the function is properly available
-  if (PLACEHOLDER.DEBUG_LOGGING) {
-    console.log(
-      `🔗 [ListManager] replacePlaceholdersWithReal function available: ${typeof replacePlaceholdersWithReal}`
-    );
-  }
-
   // Recreate data loading manager with fake item replacement support
   dataLoadingManager = createDataLoadingManager({
     state,
@@ -735,6 +728,10 @@ export const createListManager = (
     config: validatedConfig,
     loadItems, // This now has the replacePlaceholdersWithReal function
     timeoutManager,
+    scrollJumpManager: {
+      loadScrollToIndexWithBackgroundRanges:
+        scrollJumpManager.loadScrollToIndexWithBackgroundRanges,
+    },
   });
 
   // Update the viewport manager's pagination manager with the real boundary manager
@@ -778,6 +775,10 @@ export const createListManager = (
     getPaginationFlags: () => timeoutManager.getState(),
     getTimeoutFlags: () => timeoutManager.getTimeouts(),
     clearTimeouts: () => timeoutManager.clearAllTimeouts(),
+    scrollJumpManager: {
+      loadScrollToIndexWithBackgroundRanges:
+        scrollJumpManager.loadScrollToIndexWithBackgroundRanges,
+    },
   });
 
   // Initialize immediately

@@ -123,13 +123,6 @@ const calculateMechanicalViewport = (
   if (visibleIndices.length === 0) {
     if (PLACEHOLDER.ENABLED) {
       // Let placeholder data system handle empty virtual space
-      if (PLACEHOLDER.DEBUG_LOGGING && scrollTop > 1000000) {
-        console.log(
-          `🎭 Empty virtual space - delegating to placeholder data at scroll ${Math.round(
-            scrollTop / 1000
-          )}k`
-        );
-      }
       return { start: 0, end: 0 };
     }
 
@@ -183,8 +176,6 @@ export const createViewportManager = (
     isPageJump = false,
     isPlaceholderReplacement = false
   ): void => {
-    // Removed excessive logging
-
     if (!state.mounted) return;
 
     const paginationFlags = paginationManager.getPaginationFlags();
@@ -197,25 +188,7 @@ export const createViewportManager = (
       !isPlaceholderReplacement &&
       (justJumpedToPage || isPreloadingPages || isBoundaryLoading)
     ) {
-      if (PLACEHOLDER.DEBUG_LOGGING) {
-        if (isBoundaryLoading) {
-          console.log(
-            `🚫 [VIEWPORT] Skip update - boundary loading in progress`
-          );
-        }
-      }
       return;
-    }
-
-    // Log when placeholder replacement bypasses loading blocks
-    if (
-      PLACEHOLDER.DEBUG_LOGGING &&
-      isPlaceholderReplacement &&
-      (justJumpedToPage || isPreloadingPages || isBoundaryLoading)
-    ) {
-      console.log(
-        `✅ [VIEWPORT] Allowing placeholder replacement during loading operations`
-      );
     }
 
     // Get container height
@@ -228,20 +201,6 @@ export const createViewportManager = (
     const previousScrollTop = state.scrollTop;
     state.scrollTop = scrollTop;
 
-    // Log significant scroll position changes for debugging
-    if (
-      PLACEHOLDER.DEBUG_LOGGING &&
-      Math.abs(scrollTop - previousScrollTop) > 100000
-    ) {
-      console.log(
-        `📍 [SCROLL_CHANGE] Scroll: ${Math.round(
-          previousScrollTop / 1000
-        )}k → ${Math.round(scrollTop / 1000)}k (Δ${Math.round(
-          (scrollTop - previousScrollTop) / 1000
-        )}k)`
-      );
-    }
-
     // Update page for page-based pagination
     if (state.paginationStrategy === "page" && !isPageJump) {
       const pageSize = config.pageSize || 20;
@@ -253,11 +212,6 @@ export const createViewportManager = (
       if (calculatedPage !== state.page && calculatedPage >= 1) {
         // Don't update page during initial load phase
         if (scrollTop <= 10 && state.page === 1) {
-          if (PLACEHOLDER.DEBUG_LOGGING) {
-            console.log(
-              `🚫 Skip page update - initial load (staying on page ${state.page})`
-            );
-          }
           return;
         }
 
@@ -268,11 +222,6 @@ export const createViewportManager = (
           paginationManager.scheduleScrollStopPageLoad(calculatedPage);
         }
 
-        if (PLACEHOLDER.DEBUG_LOGGING) {
-          console.log(
-            `📄 Page change: ${state.page} → ${calculatedPage} (scroll: ${scrollTop})`
-          );
-        }
         state.page = calculatedPage;
       }
     }
@@ -284,8 +233,6 @@ export const createViewportManager = (
     const itemHeight = config.itemHeight || DEFAULTS.itemHeight;
     const overscan = config.overscan || RENDERING.DEFAULT_OVERSCAN_COUNT;
 
-    // Removed excessive logging
-
     let visibleRange = calculateMechanicalViewport(
       scrollTop,
       state.containerHeight,
@@ -293,20 +240,6 @@ export const createViewportManager = (
       itemHeight,
       overscan
     );
-
-    // Lightweight debugging for critical scroll positions
-    if (scrollTop > 2000000 && PLACEHOLDER.DEBUG_LOGGING) {
-      const firstItemId = state.items[0] ? parseInt(state.items[0].id) : null;
-      const lastItemId = state.items[state.items.length - 1]
-        ? parseInt(state.items[state.items.length - 1].id)
-        : null;
-
-      console.log(
-        `🔍 High scroll: ${Math.round(
-          scrollTop / 1000
-        )}k, items ${firstItemId}-${lastItemId} (${state.items.length})`
-      );
-    }
 
     if (visibleRange.end - visibleRange.start === 0) {
       // Log details when no items are visible to debug the issue
@@ -320,8 +253,6 @@ export const createViewportManager = (
 
       // Debug: viewport and collection don't intersect
     }
-
-    // Removed excessive logging
 
     // Check if range changed
     const hasRangeChanged =
@@ -343,14 +274,7 @@ export const createViewportManager = (
       // If we have all the real items we need, use them directly
       // Only generate placeholders when we have missing data
       if (visibleItems.length > 0) {
-        // We have real items - use them and log what we're showing
-        if (PLACEHOLDER.DEBUG_LOGGING) {
-          console.log(
-            `✅ Using ${visibleItems.length} real items at scroll ${Math.round(
-              scrollTop / 1000
-            )}k`
-          );
-        }
+        // We have real items - use them
       } else if (PLACEHOLDER.ENABLED && !justJumpedToPage) {
         // We don't have real items for this range - generate placeholders only as a fallback
         const actualItemCount = state.itemCount || state.items.length;
@@ -358,9 +282,6 @@ export const createViewportManager = (
         if (scrollTop === 0 && state.items.length > 0) {
           // Special case: if we're at the top and have items, don't generate placeholders
           // This prevents the initial replacement issue
-          if (PLACEHOLDER.DEBUG_LOGGING) {
-            console.log(`🚫 Skipping placeholders - have real items at top`);
-          }
         } else {
           // Calculate which virtual items should be visible based on scroll position
           const viewportTop = Math.max(
@@ -428,20 +349,6 @@ export const createViewportManager = (
           if (placeholderItems.length > 0) {
             visibleItems = placeholderItems;
             visibleRange = { start: 0, end: visibleItems.length };
-
-            if (PLACEHOLDER.DEBUG_LOGGING) {
-              const realCount = visibleItems.filter(
-                (item) => !placeholderDataGenerator.isPlaceholderItem(item)
-              ).length;
-              const placeholderCount = visibleItems.filter((item) =>
-                placeholderDataGenerator.isPlaceholderItem(item)
-              ).length;
-              console.log(
-                `⚡ Fallback render: ${realCount} real + ${placeholderCount} placeholders at scroll ${Math.round(
-                  scrollTop / 1000
-                )}k`
-              );
-            }
           }
         }
       }
@@ -475,15 +382,6 @@ export const createViewportManager = (
               // For placeholder items, use the same positioning as real items (they now have real IDs)
               const itemId = parseInt(item.id);
               offset = Math.round((itemId - 1) * itemHeight); // 🔧 FIX: Round to prevent floating point precision issues
-
-              // Light debug logging for first fake item only
-              if (PLACEHOLDER.DEBUG_LOGGING && localIndex === 0) {
-                console.log(
-                  `🎭 Placeholder item ${itemId} at ${Math.round(
-                    offset / 1000
-                  )}k`
-                );
-              }
             } else {
               // Real items always use their precise natural position
               const itemId = parseInt(item.id);
@@ -497,52 +395,6 @@ export const createViewportManager = (
             };
           })
           .filter(Boolean);
-
-        // Add detailed logging for rendering analysis
-        if (PLACEHOLDER.DEBUG_LOGGING) {
-          const realItems = positions.filter(
-            (pos) => !placeholderDataGenerator.isPlaceholderItem(pos.item)
-          );
-          const placeholderItems = positions.filter((pos) =>
-            placeholderDataGenerator.isPlaceholderItem(pos.item)
-          );
-
-          console.log(
-            `🎨 [RENDER_VIEWPORT] Rendering ${positions.length} items: ${realItems.length} real + ${placeholderItems.length} placeholders`
-          );
-          if (positions.length > 0) {
-            console.log(
-              `🎨 [RENDER_VIEWPORT] First item: ${
-                positions[0]?.item?.id || "none"
-              } at ${Math.round((positions[0]?.offset || 0) / 1000)}k`
-            );
-            console.log(
-              `🎨 [RENDER_VIEWPORT] Last item: ${
-                positions[positions.length - 1]?.item?.id || "none"
-              } at ${Math.round(
-                (positions[positions.length - 1]?.offset || 0) / 1000
-              )}k`
-            );
-          }
-
-          // Log specific positioning details for debugging shift issues
-          positions.slice(0, 3).forEach((pos, i) => {
-            const isPlaceholder = placeholderDataGenerator.isPlaceholderItem(
-              pos.item
-            );
-            console.log(
-              `🎨 [RENDER_VIEWPORT] Item ${i + 1}: ID=${pos.item.id}, offset=${
-                pos.offset
-              }px (${Math.round(pos.offset / 1000)}k), type=${
-                isPlaceholder ? "placeholder" : "real"
-              }`
-            );
-          });
-
-          console.log(
-            `🎨 [RENDER_VIEWPORT] Using: Virtual positioning (transform: translateY)`
-          );
-        }
 
         renderingManager.renderItemsWithVirtualPositions(positions);
       } else {
@@ -560,14 +412,6 @@ export const createViewportManager = (
       } else if (state.itemCount) {
         // 🛡️ BOUNDARY FIX: Use actual item count for total height calculation
         totalHeight = Math.round(state.itemCount * itemHeight); // 🔧 FIX: Round to prevent floating point precision issues
-
-        if (PLACEHOLDER.DEBUG_LOGGING) {
-          console.log(
-            `📐 Total height calculated: ${Math.round(
-              totalHeight / 1000
-            )}k for ${state.itemCount} items`
-          );
-        }
       } else {
         // Keep existing height if we have one and it's reasonable
         if (state.totalHeight > 0) {
@@ -621,11 +465,6 @@ export const createViewportManager = (
     // Don't run load checks during the initial phase (scroll near 0, low page numbers)
     // This prevents boundary detection from corrupting the initial load
     if (scrollTop <= 10 && state.page <= 2) {
-      if (PLACEHOLDER.DEBUG_LOGGING) {
-        console.log(
-          `🚫 Skip load check - initial phase (scroll: ${scrollTop}, page: ${state.page})`
-        );
-      }
       return;
     }
 
@@ -652,44 +491,13 @@ export const createViewportManager = (
    * This provides seamless transition from fake to real content
    */
   const replacePlaceholdersWithReal = (newRealItems: any[]): void => {
-    if (PLACEHOLDER.DEBUG_LOGGING) {
-      console.log(
-        `🔄 [PlaceholderReplace] Processing ${newRealItems.length} new real items`
-      );
-      console.log(
-        `🔄 [PlaceholderReplace] BEFORE - Scroll: ${
-          state.scrollTop
-        }px, Visible: ${state.visibleItems?.length || 0} items`
-      );
-      if (state.visibleItems && state.visibleItems.length > 0) {
-        console.log(
-          `🔄 [PlaceholderReplace] BEFORE - First visible: ${
-            state.visibleItems[0]?.id
-          }, Last visible: ${
-            state.visibleItems[state.visibleItems.length - 1]?.id
-          }`
-        );
-      }
-    }
-
     if (!PLACEHOLDER.ENABLED || !state.visibleItems) {
-      if (PLACEHOLDER.DEBUG_LOGGING) {
-        console.log(
-          `🚫 [PlaceholderReplace] Skipped - placeholders disabled or no visible items`
-        );
-      }
       return;
     }
 
     const visiblePlaceholders = state.visibleItems.filter((item) =>
       placeholderDataGenerator.isPlaceholderItem(item)
     );
-
-    if (PLACEHOLDER.DEBUG_LOGGING) {
-      console.log(
-        `🔍 [PlaceholderReplace] Found ${visiblePlaceholders.length} placeholder(s) in ${state.visibleItems.length} visible items`
-      );
-    }
 
     let hasReplacements = false;
     let replacementCount = 0;
@@ -705,48 +513,18 @@ export const createViewportManager = (
         if (matchingRealItem) {
           hasReplacements = true;
           replacementCount++;
-          if (PLACEHOLDER.DEBUG_LOGGING) {
-            console.log(
-              `✅ [PlaceholderReplace] Replaced placeholder ${fakeItemId} with real item`
-            );
-          }
           return matchingRealItem;
-        } else {
-          if (PLACEHOLDER.DEBUG_LOGGING) {
-            console.log(
-              `⏭️ [PlaceholderReplace] No matching real item found for placeholder ${fakeItemId}`
-            );
-          }
         }
       }
       return item;
     });
 
     if (hasReplacements) {
-      if (PLACEHOLDER.DEBUG_LOGGING) {
-        console.log(
-          `🎉 [PlaceholderReplace] Successfully replaced ${replacementCount} placeholder(s), triggering re-render`
-        );
-        console.log(
-          `🔧 [PlaceholderReplace] AFTER - First visible: ${
-            updatedVisibleItems[0]?.id
-          }, Last visible: ${
-            updatedVisibleItems[updatedVisibleItems.length - 1]?.id
-          }`
-        );
-      }
-
       // Update state with replaced items
       state.visibleItems = updatedVisibleItems;
 
       // Trigger re-render with the real items using placeholder replacement flag
       updateVisibleItems(state.scrollTop, false, true);
-    } else {
-      if (PLACEHOLDER.DEBUG_LOGGING) {
-        console.log(
-          `ℹ️ [PlaceholderReplace] No replacements made - no matching items found`
-        );
-      }
     }
   };
 

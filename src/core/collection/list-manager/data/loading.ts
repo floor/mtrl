@@ -9,7 +9,6 @@ import {
 } from "../types";
 import { updateStateAfterLoad, updateLoadingState } from "../utils/state";
 import { updateSpacerHeight } from "../dom/elements";
-import { PLACEHOLDER } from "../constants";
 
 /**
  * Data loading manager dependencies
@@ -199,31 +198,7 @@ export const createDataLoadingManager = (deps: DataLoadingDependencies) => {
 
       // SEAMLESS INFINITE CONTENT: Replace placeholder items with real items when they arrive
       if (replacePlaceholdersWithReal && items.length > 0) {
-        if (PLACEHOLDER.DEBUG_LOGGING) {
-          console.log(
-            `🔗 [DataLoad] Calling replacePlaceholdersWithReal with ${items.length} items`
-          );
-          console.log(
-            `🔗 [DataLoad] Items IDs: [${items
-              .map((item) => item.id)
-              .slice(0, 5)
-              .join(", ")}${items.length > 5 ? "..." : ""}]`
-          );
-          console.log(
-            `🔗 [DataLoad] Current state items: ${
-              state.items.length
-            }, visible items: ${state.visibleItems?.length || 0}`
-          );
-        }
         replacePlaceholdersWithReal(items);
-      } else {
-        if (PLACEHOLDER.DEBUG_LOGGING) {
-          console.log(
-            `🚫 [DataLoad] Skipping placeholder replacement - replacePlaceholdersWithReal: ${!!replacePlaceholdersWithReal}, items.length: ${
-              items.length
-            }`
-          );
-        }
       }
 
       // Call afterLoad callback if provided

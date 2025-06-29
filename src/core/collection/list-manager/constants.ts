@@ -40,6 +40,7 @@ export const PAGINATION = {
   SECOND_PAGE: 2,
 
   /** Number of initial ranges/pages to fetch during list creation for smoother scrolling (background preloading) */
+  /** @deprecated Use viewport-based calculation instead of arbitrary page count */
   INITIAL_RANGES_TO_FETCH: 2,
 
   /** Number of pages to preload BEFORE the viewport for smooth backward navigation */
@@ -164,7 +165,6 @@ export const API = {
 export const PLACEHOLDER = {
   // Core functionality
   ENABLED: true,
-  DEBUG_LOGGING: true,
   PLACEHOLDER_FLAG: "__isPlaceholder",
 
   // Visual appearance

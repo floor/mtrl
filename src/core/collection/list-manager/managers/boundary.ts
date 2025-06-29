@@ -5,7 +5,7 @@
 
 import { ListManagerState, ListManagerConfig, LoadParams } from "../types";
 import { createLoadParams } from "../utils/state";
-import { BOUNDARIES, DEFAULTS, PLACEHOLDER } from "../constants";
+import { BOUNDARIES, DEFAULTS, PAGINATION } from "../constants";
 
 export interface BoundaryManagerDependencies {
   state: ListManagerState;
@@ -15,8 +15,14 @@ export interface BoundaryManagerDependencies {
     getState: () => {
       justJumpedToPage: boolean;
       isScrollJumpInProgress: boolean;
+      isBoundaryLoading: boolean;
     };
     updateState: (updates: any) => void;
+  };
+  scrollJumpManager: {
+    loadScrollToIndexWithBackgroundRanges: (
+      targetIndex: number
+    ) => Promise<void>;
   };
 }
 
@@ -26,7 +32,7 @@ export interface BoundaryManagerDependencies {
  * @returns Boundary detection functions
  */
 export const createBoundaryManager = (deps: BoundaryManagerDependencies) => {
-  const { state, config, loadItems, timeoutManager } = deps;
+  const { state, config, loadItems, timeoutManager, scrollJumpManager } = deps;
 
   /**
    * Generic page loader for boundary detection
@@ -55,16 +61,7 @@ export const createBoundaryManager = (deps: BoundaryManagerDependencies) => {
     });
 
     if (hasPageData) {
-      if (PLACEHOLDER.DEBUG_LOGGING) {
-        console.log(
-          `📦 [BoundaryLoad] Page ${pageNumber} (${pageType}) already loaded`
-        );
-      }
       return;
-    }
-
-    if (PLACEHOLDER.DEBUG_LOGGING) {
-      console.log(`🔄 [BoundaryLoad] Loading page ${pageNumber} (${pageType})`);
     }
 
     try {
@@ -75,12 +72,6 @@ export const createBoundaryManager = (deps: BoundaryManagerDependencies) => {
       loadParams[perPageParam] = pageSize;
 
       await loadItems(loadParams);
-
-      if (PLACEHOLDER.DEBUG_LOGGING) {
-        console.log(
-          `✅ [BoundaryLoad] Page ${pageNumber} (${pageType}) loaded successfully`
-        );
-      }
     } catch (error) {
       console.error(
         `❌ [BoundaryLoad] Failed to load ${pageType} page ${pageNumber}:`,
@@ -102,11 +93,6 @@ export const createBoundaryManager = (deps: BoundaryManagerDependencies) => {
     // Don't run boundary detection during initial loads
     // This prevents inappropriate boundary loads when the list is just being set up
     if (scrollTop <= 10 && state.page <= 2) {
-      if (PLACEHOLDER.DEBUG_LOGGING) {
-        console.log(
-          `🚫 Skip boundary - initial load (scroll: ${scrollTop}, page: ${state.page})`
-        );
-      }
       return;
     }
 
@@ -115,80 +101,66 @@ export const createBoundaryManager = (deps: BoundaryManagerDependencies) => {
     // 🚫 CRITICAL: Completely prevent boundary detection during any scroll jump activity
     // This prevents race conditions between boundary manager and scroll jump manager
     if (timeoutState.justJumpedToPage || timeoutState.isScrollJumpInProgress) {
-      if (PLACEHOLDER.DEBUG_LOGGING) {
-        console.log(
-          `🚫 Skip boundary - scroll jump activity (jumped: ${timeoutState.justJumpedToPage}, in progress: ${timeoutState.isScrollJumpInProgress})`
-        );
-      }
       return;
     }
 
     // Prevent concurrent boundary loads
-    if (state.loading) {
-      if (PLACEHOLDER.DEBUG_LOGGING) {
-        console.log(`🚫 Skip boundary - already loading`);
-      }
+    if (state.loading || timeoutState.isBoundaryLoading) {
       return;
     }
 
     const itemHeight = config.itemHeight || DEFAULTS.itemHeight;
+    const containerHeight = state.containerHeight || 400;
     const pageSize = config.pageSize || DEFAULTS.pageSize;
 
-    // Calculate current page boundaries
-    const currentPageStart = (state.page - 1) * pageSize + 1;
-    const currentPageEnd = state.page * pageSize;
+    // Calculate dynamic buffer based on viewport and page size
+    const itemsInViewport = Math.ceil(containerHeight / itemHeight);
+    const bufferPages = Math.max(1, Math.ceil(itemsInViewport / pageSize));
+    const bufferItems = bufferPages * pageSize;
+    const loadThreshold = bufferItems * itemHeight;
 
-    const currentPageStartPx = (currentPageStart - 1) * itemHeight;
-    const currentPageEndPx = currentPageEnd * itemHeight;
+    // Calculate current index from scroll position
+    const currentIndex = Math.floor(scrollTop / itemHeight);
+    const viewportBottom = scrollTop + containerHeight;
 
-    const boundaryThreshold =
-      itemHeight * BOUNDARIES.BOUNDARY_THRESHOLD_MULTIPLIER;
-    const viewportBottom = scrollTop + state.containerHeight;
+    // Calculate which items should be visible in the current viewport + buffer
+    const viewportStartItemId = Math.floor(scrollTop / itemHeight) + 1;
+    const viewportEndItemId = Math.floor(viewportBottom / itemHeight) + 1;
+    const bufferStartItemId = Math.max(1, viewportStartItemId - bufferItems);
+    const bufferEndItemId = viewportEndItemId + bufferItems;
 
-    // Check if we have data for the current page
-    const hasCurrentPageData = state.items.some((item) => {
-      const itemId = parseInt(item?.id);
-      return itemId >= currentPageStart && itemId <= currentPageEnd;
-    });
+    // Check which items in the buffer range are actually loaded
+    const loadedItemIds = new Set(
+      state.items.map((item) => parseInt(item?.id))
+    );
+    const missingItemIds = [];
 
-    if (!hasCurrentPageData) {
-      loadPageFromBoundary(state.page, "current");
-      return;
-    }
-
-    // Check if we should load next page
-    if (
-      state.hasNext &&
-      viewportBottom > currentPageEndPx - boundaryThreshold
-    ) {
-      const nextPage = state.page + 1;
-      const nextPageStart = (nextPage - 1) * pageSize + 1;
-      const nextPageEnd = nextPage * pageSize;
-
-      const hasNextPageData = state.items.some((item) => {
-        const itemId = parseInt(item?.id);
-        return itemId >= nextPageStart && itemId <= nextPageEnd;
-      });
-
-      if (!hasNextPageData) {
-        loadPageFromBoundary(nextPage, "next");
+    for (let itemId = bufferStartItemId; itemId <= bufferEndItemId; itemId++) {
+      if (!loadedItemIds.has(itemId)) {
+        missingItemIds.push(itemId);
       }
     }
 
-    // Check if we should load previous page
-    if (state.page > 1 && scrollTop < currentPageStartPx + boundaryThreshold) {
-      const prevPage = state.page - 1;
-      const prevPageStart = (prevPage - 1) * pageSize + 1;
-      const prevPageEnd = prevPage * pageSize;
+    // If we're missing items in the buffer range, we need to load
+    const needsLoading = missingItemIds.length > 0;
 
-      const hasPrevPageData = state.items.some((item) => {
-        const itemId = parseInt(item?.id);
-        return itemId >= prevPageStart && itemId <= prevPageEnd;
-      });
+    // Load data if we're missing items in the buffer range
+    if (needsLoading) {
+      // Set boundary loading flag to prevent concurrent boundary loads
+      timeoutManager.updateState({ isBoundaryLoading: true });
 
-      if (!hasPrevPageData) {
-        loadPageFromBoundary(prevPage, "previous");
-      }
+      scrollJumpManager
+        .loadScrollToIndexWithBackgroundRanges(currentIndex)
+        .catch((error) => {
+          console.error(
+            `❌ [BoundaryLoad] Viewport-based loading failed:`,
+            error
+          );
+        })
+        .finally(() => {
+          // Clear boundary loading flag
+          timeoutManager.updateState({ isBoundaryLoading: false });
+        });
     }
   };
 

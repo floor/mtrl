@@ -3,7 +3,7 @@ import {
   ListManagerConfig,
   ListManagerElements,
 } from "../types";
-import { PAGINATION, PLACEHOLDER } from "../constants";
+import { PAGINATION } from "../constants";
 
 /**
  * Lifecycle management dependencies
@@ -34,6 +34,11 @@ export interface LifecycleDependencies {
     scrollStopTimeout: NodeJS.Timeout | null;
   };
   clearTimeouts: () => void;
+  scrollJumpManager: {
+    loadScrollToIndexWithBackgroundRanges: (
+      targetIndex: number
+    ) => Promise<void>;
+  };
 }
 
 /**
@@ -59,6 +64,7 @@ export const createLifecycleManager = (deps: LifecycleDependencies) => {
     getPaginationFlags,
     getTimeoutFlags,
     clearTimeouts,
+    scrollJumpManager,
   } = deps;
 
   /**
@@ -135,71 +141,32 @@ export const createLifecycleManager = (deps: LifecycleDependencies) => {
           // Silently handle static items collection errors
         });
     } else if (!state.useStatic) {
-      // Initial load for API data - load page 1 first, then preload additional pages in background
-      loadPage(1, {
-        setScrollPosition: true,
-        replaceCollection: true,
-      })
+      // Initial load for API data - use intelligent viewport filling like scroll jumps
+      // Use scroll jump logic to intelligently load exactly what's needed for viewport at position 0
+      scrollJumpManager
+        .loadScrollToIndexWithBackgroundRanges(0)
         .then(() => {
-          // Clear initial load flag after first page is loaded
+          // Clear initial load flag after viewport is loaded
           isInitialLoad = false;
-
-          // Background preloading for smoother scrolling (for slow connections)
-          const rangesToFetch =
-            config.initialRangesToFetch || PAGINATION.INITIAL_RANGES_TO_FETCH;
-
-          if (rangesToFetch > 1) {
-            if (PLACEHOLDER.DEBUG_LOGGING) {
-              console.log(
-                `🔄 [InitialLoad] Preloading pages 2-${rangesToFetch} in background`
-              );
-            }
-
-            // Load additional pages in background without affecting page state
-            setTimeout(async () => {
-              for (let i = 2; i <= rangesToFetch; i++) {
-                try {
-                  // Load additional pages in background (don't update page state or scroll position)
-                  await loadPage(i, {
-                    setScrollPosition: false, // Don't change scroll position
-                    replaceCollection: false, // Don't clear existing items
-                  });
-
-                  if (PLACEHOLDER.DEBUG_LOGGING) {
-                    console.log(`✅ [InitialLoad] Page ${i} preloaded`);
-                  }
-
-                  // Small delay between requests to avoid overwhelming the API
-                  if (i < rangesToFetch) {
-                    await new Promise((resolve) => setTimeout(resolve, 50));
-                  }
-                } catch (error) {
-                  // Silently handle background loading errors
-                  // Don't block the UI if background loading fails
-                  console.error(
-                    `❌ [InitialLoad] Failed to preload page ${i}:`,
-                    error
-                  );
-                  break; // Stop preloading on first error to avoid cascade failures
-                }
-              }
-
-              if (PLACEHOLDER.DEBUG_LOGGING) {
-                console.log(`✅ [InitialLoad] Background preloading completed`);
-              }
-            }, 100); // Small delay to ensure main page renders first
-          } else {
-            if (PLACEHOLDER.DEBUG_LOGGING) {
-              console.log(
-                `🔄 [InitialLoad] No background preloading (initialRangesToFetch: ${rangesToFetch})`
-              );
-            }
-          }
         })
-        .catch((err) => {
+        .catch((error) => {
           // Clear initial load flag even if there's an error
           isInitialLoad = false;
-          // Silently handle initial page loading errors
+          console.error(
+            `❌ [InitialLoad] Failed to load initial viewport:`,
+            error
+          );
+
+          // Fallback to simple page 1 load
+          loadPage(1, {
+            setScrollPosition: true,
+            replaceCollection: true,
+          }).catch((fallbackError) => {
+            console.error(
+              `❌ [InitialLoad] Fallback loading also failed:`,
+              fallbackError
+            );
+          });
         });
     } else {
       // No static data and no API data - clear flag immediately
