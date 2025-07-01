@@ -103,6 +103,7 @@ export const getApiConfig = (component, config) => ({
     scrollPrevious: component.list?.scrollPrevious,
     scrollToItem: component.list?.scrollToItem,
     scrollToIndex: component.list?.scrollToIndex,
+    scrollToPage: component.list?.scrollToPage,
     scrollToItemById: component.list?.scrollToItemById,
     getVisibleItems: component.list?.getVisibleItems,
     getAllItems: component.list?.getAllItems,

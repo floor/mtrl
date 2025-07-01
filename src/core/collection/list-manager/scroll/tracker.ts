@@ -112,6 +112,23 @@ class AdvancedScrollManager {
   }
 
   /**
+   * Get current scroll jump state from timeout manager if available
+   * This detects when scroll events occur during active scroll jumps
+   */
+  private getCurrentScrollJumpState(): any {
+    try {
+      // Access through the container's attached manager if available
+      const listManager = (this.container as any).__listManager;
+      if (listManager && listManager.timeoutManager) {
+        return listManager.timeoutManager.getState();
+      }
+    } catch (error) {
+      // Silently fail if no timeout manager is available
+    }
+    return null;
+  }
+
+  /**
    * Adaptive throttle calculation based on scroll velocity
    * Higher velocity = lower throttle for smoother scrolling
    * Lower velocity = higher throttle for better performance
@@ -140,6 +157,53 @@ class AdvancedScrollManager {
     this.metrics.eventCount++;
 
     let currentScrollTop = (e.target as HTMLElement).scrollTop;
+    const timestamp = performance.now();
+
+    // 🚨 INTERRUPTION DETECTION: Check if scroll event occurs during scroll jump
+    const currentScrollJumpState = this.getCurrentScrollJumpState();
+    if (
+      currentScrollJumpState &&
+      currentScrollJumpState.isScrollJumpInProgress
+    ) {
+      console.warn(
+        "🚨 [SCROLL INTERRUPT] Scroll event during active scroll jump!",
+        {
+          currentScrollTop,
+          previousScrollTop: this.lastScrollTop,
+          scrollDelta: currentScrollTop - this.lastScrollTop,
+          timestamp,
+          scrollJumpState: currentScrollJumpState,
+          eventTarget: e.target,
+        }
+      );
+    }
+
+    // 🔍 SCROLL SOURCE DETECTION
+    const scrollDelta = Math.abs(currentScrollTop - this.lastScrollTop);
+    const timeDelta = timestamp - this.lastProcessTime;
+    const scrollSpeed = timeDelta > 0 ? scrollDelta / timeDelta : 0;
+
+    // Detect scroll source based on patterns
+    let scrollSource = "unknown";
+    if (scrollDelta > 1000 && timeDelta < 50) {
+      scrollSource = "scrollbar_drag"; // Large instant movement
+    } else if (scrollDelta < 300 && timeDelta < 100) {
+      scrollSource = "mouse_wheel"; // Small incremental movement
+    } else if (scrollDelta > 500) {
+      scrollSource = "scrollbar_click"; // Medium jump (clicking scroll track)
+    } else {
+      scrollSource = "programmatic"; // Programmatic or other
+    }
+
+    // Log significant scroll changes with source detection
+    if (scrollDelta > 500) {
+      // Only log very large movements
+      console.log(
+        `📊 [SCROLL] Large movement: ${
+          this.lastScrollTop
+        } → ${currentScrollTop} (Δ${scrollDelta.toFixed(0)}) [${scrollSource}]`
+      );
+    }
 
     // Boundary check for negative scroll values
     if (currentScrollTop < 0) {

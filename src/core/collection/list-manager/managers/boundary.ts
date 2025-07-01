@@ -22,7 +22,8 @@ export interface BoundaryManagerDependencies {
   scrollJumpManager: {
     loadScrollToIndexWithBackgroundRanges: (
       targetIndex: number,
-      animate?: boolean
+      animate?: boolean,
+      isProgrammatic?: boolean
     ) => Promise<void>;
   };
 }
@@ -151,7 +152,7 @@ export const createBoundaryManager = (deps: BoundaryManagerDependencies) => {
       timeoutManager.updateState({ isBoundaryLoading: true });
 
       scrollJumpManager
-        .loadScrollToIndexWithBackgroundRanges(currentIndex)
+        .loadScrollToIndexWithBackgroundRanges(currentIndex, false, false)
         .catch((error) => {
           console.error(
             `❌ [BoundaryLoad] Viewport-based loading failed:`,

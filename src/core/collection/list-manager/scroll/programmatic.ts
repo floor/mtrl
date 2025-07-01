@@ -34,7 +34,8 @@ export interface ScrollingDependencies {
     loadAdditionalRangesInBackground: (pages: number[], phase?: string) => void;
     loadScrollToIndexWithBackgroundRanges: (
       index: number,
-      animate?: boolean
+      animate?: boolean,
+      isProgrammatic?: boolean
     ) => Promise<void>;
   };
 }

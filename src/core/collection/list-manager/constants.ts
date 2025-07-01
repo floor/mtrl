@@ -41,7 +41,7 @@ export const PAGINATION = {
 
   /** Number of initial ranges/pages to fetch during list creation for smoother scrolling (background preloading) */
   /** @deprecated Use viewport-based calculation instead of arbitrary page count */
-  INITIAL_RANGES_TO_FETCH: 2,
+  INITIAL_RANGES_TO_FETCH: 0,
 
   /** Number of pages to preload BEFORE the viewport for smooth backward navigation */
   ADJACENT_PAGES_PRELOAD_BEFORE: 1,
@@ -66,6 +66,12 @@ export const PAGINATION = {
 
   /** Large scroll jump detection threshold (number of pages) */
   LARGE_SCROLL_JUMP_THRESHOLD: 5,
+
+  /** Whether to wait for ALL viewport pages to load before rendering (prevents gradual filling on slow connections) */
+  WAIT_FOR_ALL_VIEWPORT_PAGES: true,
+
+  /** Whether to enable separate viewport and preload phases (prevents viewport interference) */
+  SEPARATE_VIEWPORT_AND_PRELOAD: true,
 } as const;
 
 /**
@@ -82,7 +88,7 @@ export const SCROLL = {
   LOAD_THROTTLE_MS: 100,
 
   /** Default load threshold as fraction (0-1) of total height */
-  DEFAULT_LOAD_THRESHOLD: 0.8,
+  DEFAULT_LOAD_THRESHOLD: 0.4,
 
   /** Reset scroll position */
   RESET_SCROLL_TOP: 0,

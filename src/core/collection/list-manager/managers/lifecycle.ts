@@ -37,7 +37,8 @@ export interface LifecycleDependencies {
   scrollJumpManager: {
     loadScrollToIndexWithBackgroundRanges: (
       targetIndex: number,
-      animate?: boolean
+      animate?: boolean,
+      isProgrammatic?: boolean
     ) => Promise<void>;
   };
 }

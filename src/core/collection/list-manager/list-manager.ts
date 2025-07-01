@@ -225,6 +225,23 @@ export const createListManager = (
     scrollTop = state.scrollTop,
     isPageJump = false
   ): void => {
+    // Reduce log noise during rapid scrolling - only log significant changes or page jumps
+    const shouldLog =
+      isPageJump ||
+      !(state as any).lastLoggedScrollTop ||
+      Math.abs(scrollTop - (state as any).lastLoggedScrollTop) > 1000;
+
+    if (shouldLog) {
+      console.log("🔄 [UpdateVisibleItems] Called:", {
+        scrollTop,
+        isPageJump,
+        currentPage: state.page,
+        visibleItems: state.visibleItems.length,
+        itemCount: state.itemCount,
+        scrollSource: isPageJump ? "programmatic" : "manual_scroll",
+      });
+      (state as any).lastLoggedScrollTop = scrollTop;
+    }
     updateVisibleItemsImpl?.(scrollTop, isPageJump);
   };
 
@@ -232,6 +249,13 @@ export const createListManager = (
    * Check if we need to load more data based on scroll position
    */
   const checkLoadMore = (scrollTop: number): void => {
+    console.log("🔍 [CheckLoadMore] Called:", {
+      scrollTop,
+      currentPage: state.page,
+      hasNext: state.hasNext,
+      loading: state.loading,
+      visibleItems: state.visibleItems.length,
+    });
     checkLoadMoreImpl?.(scrollTop);
   };
 
@@ -318,6 +342,17 @@ export const createListManager = (
       animate = false,
     } = options;
 
+    console.log("🔍 [LoadPage] Starting loadPage:", {
+      pageNumber,
+      setScrollPosition,
+      replaceCollection,
+      animate,
+      currentPage: state.page,
+      hasItems: state.items.length,
+      useStatic: state.useStatic,
+      paginationStrategy: validatedConfig.pagination?.strategy || "cursor",
+    });
+
     // Validate page number
     if (!Number.isInteger(pageNumber) || pageNumber < 1) {
       throw new Error("Page number must be a positive integer");
@@ -333,11 +368,15 @@ export const createListManager = (
 
     // If using static data, there's no pagination
     if (state.useStatic) {
+      console.log("📤 [LoadPage] Early return: Using static data");
       return { hasNext: false, items: state.items };
     }
 
     // For background loading (replaceCollection: false), handle differently
     if (!replaceCollection) {
+      console.log(
+        "📤 [LoadPage] Taking background loading path (replaceCollection: false)"
+      );
       // Check if we already have this page's data
       const pageSize = validatedConfig.pageSize || 20;
       const pageStartId = (pageNumber - 1) * pageSize + 1;
@@ -349,8 +388,20 @@ export const createListManager = (
       });
 
       if (hasPageData) {
-        // Already have this page, no need to load
-        return { hasNext: state.hasNext, items: [] };
+        // Already have this page, return the actual items for this page
+        const pageItems = state.items.filter((item) => {
+          const itemId = parseInt(item?.id);
+          return itemId >= pageStartId && itemId <= pageEndId;
+        });
+
+        console.log("📤 [LoadPage] Early return: Page data already exists", {
+          pageStartId,
+          pageEndId,
+          itemsFound: pageItems.length,
+          expectedItems: validatedConfig.pageSize || 20,
+        });
+
+        return { hasNext: state.hasNext, items: pageItems };
       }
 
       // Load page data without affecting current page state
@@ -398,6 +449,7 @@ export const createListManager = (
     // Regular loading (replaceCollection: true) - existing logic
     // If we're already on the same page and have items, just ensure they're rendered
     if (state.page === pageNumber && state.items.length > 0) {
+      console.log("📤 [LoadPage] Taking same page re-render path");
       // Force a re-render to ensure items are visible
       state.visibleRange = { start: -1, end: -1 };
       renderer.resetVisibleRange();
@@ -489,31 +541,147 @@ export const createListManager = (
     renderer.resetVisibleRange();
 
     requestAnimationFrame(() => {
+      const renderStartTime = performance.now();
+      console.log("🎬 [RENDER] Starting render phase:", {
+        pageNumber,
+        itemsLoaded: result.items.length,
+        setScrollPosition,
+        animate,
+        currentScrollTop: container.scrollTop,
+        naturalScrollPosition,
+        renderStartTime,
+        scrollJumpInProgress: timeoutManager.getState().isScrollJumpInProgress,
+      });
+
       // Only set scroll position for explicit user navigation
       let scrollPositionToUse = container.scrollTop;
 
       if (setScrollPosition && result.items.length > 0) {
-        if (animate) {
-          container.scrollTo({
-            top: naturalScrollPosition,
-            behavior: "smooth",
-          });
+        const currentScrollTop = container.scrollTop;
+        const scrollDifference = Math.abs(
+          currentScrollTop - naturalScrollPosition
+        );
+        const itemHeight = validatedConfig.itemHeight || 84;
+
+        // 🚨 SCROLLBAR DRAG DETECTION: Don't force position if user has scrolled significantly
+        if (scrollDifference > itemHeight * 5) {
+          // More than 5 items away
+          console.warn(
+            "📍 [RENDER] SKIPPING scroll position reset - user has scrolled away:",
+            {
+              from: currentScrollTop,
+              intendedPosition: naturalScrollPosition,
+              scrollDifference,
+              reason: "User likely still scrolling (scrollbar drag)",
+              action: "KEEPING_CURRENT_POSITION",
+            }
+          );
+
+          // Keep current position and load correct page for this position
+          scrollPositionToUse = currentScrollTop;
+          state.scrollTop = currentScrollTop;
+
+          // Calculate what page should be loaded for current position
+          const currentIndex = Math.floor(currentScrollTop / itemHeight);
+          const currentPageNeeded =
+            Math.floor(currentIndex / (validatedConfig.pageSize || 30)) + 1;
+
+          if (currentPageNeeded !== pageNumber) {
+            console.log(
+              "🔄 [RENDER] Loading correct page for current scroll position:",
+              {
+                currentScrollTop,
+                currentIndex,
+                currentPageNeeded,
+                loadedPage: pageNumber,
+                action: "LOADING_CORRECT_PAGE",
+              }
+            );
+
+            // Asynchronously load the correct page without blocking current render
+            setTimeout(() => {
+              loadPage(currentPageNeeded, {
+                setScrollPosition: false,
+                replaceCollection: false,
+                animate: false,
+              }).catch((error) => {
+                console.error(
+                  "❌ [RENDER] Failed to load correct page:",
+                  error.message
+                );
+              });
+            }, 10);
+          }
         } else {
-          container.scrollTop = naturalScrollPosition;
+          // Normal case: set intended scroll position
+          console.log("📍 [RENDER] Setting scroll position:", {
+            from: currentScrollTop,
+            to: naturalScrollPosition,
+            animate,
+            scrollDifference,
+          });
+
+          if (animate) {
+            container.scrollTo({
+              top: naturalScrollPosition,
+              behavior: "smooth",
+            });
+          } else {
+            container.scrollTop = naturalScrollPosition;
+          }
+          state.scrollTop = naturalScrollPosition;
+          scrollPositionToUse = naturalScrollPosition;
         }
-        state.scrollTop = naturalScrollPosition;
-        scrollPositionToUse = naturalScrollPosition;
       }
 
       // Temporarily allow updates
       const timeoutState = timeoutManager.getState();
       const wasJumpedToPage = timeoutState.justJumpedToPage;
+
+      console.log("🔄 [RENDER] Updating visible items:", {
+        scrollPositionToUse,
+        isPageJump: true,
+        timeoutState,
+        wasJumpedToPage,
+      });
+
       timeoutManager.updateState({ justJumpedToPage: false });
       updateVisibleItems(scrollPositionToUse, true);
       timeoutManager.updateState({ justJumpedToPage: wasJumpedToPage });
 
       // Reset page jump flag immediately after rendering
       timeoutManager.updateState({ justJumpedToPage: false });
+
+      const renderEndTime = performance.now();
+      const renderDuration = renderEndTime - renderStartTime;
+
+      console.log("🎭 [RENDER] Render phase completed:", {
+        pageNumber,
+        renderDuration: `${renderDuration.toFixed(2)}ms`,
+        finalScrollTop: container.scrollTop,
+        itemsRendered: result.items.length,
+        scrollJumpStillInProgress:
+          timeoutManager.getState().isScrollJumpInProgress,
+      });
+
+      // 🚨 FORCE FINAL RENDER: If we finished loading but scroll jump is still in progress,
+      // ensure we render the current viewport to prevent empty state
+      const finalState = timeoutManager.getState();
+      if (!finalState.isScrollJumpInProgress) {
+        console.log(
+          "✅ [RENDER] Final render check - scroll jump completed, ensuring visibility"
+        );
+        // Small delay to ensure this is the final render
+        setTimeout(() => {
+          const currentScrollTop = container.scrollTop;
+          console.log("🔄 [RENDER] Final visibility update:", {
+            currentScrollTop,
+            pageNumber,
+            finalCheck: true,
+          });
+          updateVisibleItems(currentScrollTop, true);
+        }, 50);
+      }
     });
 
     return {
@@ -666,6 +834,7 @@ export const createListManager = (
     state,
     config: validatedConfig,
     loadPage,
+    updateVisibleItems,
     timeoutManager: {
       setScrollJumpState: timeoutManager.setScrollJumpState,
       getState: timeoutManager.getState,
@@ -799,8 +968,20 @@ export const createListManager = (
   // Initialize immediately
   const actualCleanup = lifecycleManager.initialize();
 
+  // Attach list manager to container for scroll interrupt detection
+  const listManagerInstance = {
+    timeoutManager,
+    state,
+    config: validatedConfig,
+  };
+  (container as any).__listManager = listManagerInstance;
+
   // Add timeout manager cleanup to the main cleanup
   cleanupFunctions.push(() => timeoutManager.cleanup());
+  cleanupFunctions.push(() => {
+    // Clean up the container reference on destroy
+    delete (container as any).__listManager;
+  });
 
   // Return public API
   return {
@@ -814,6 +995,38 @@ export const createListManager = (
     scrollToItem,
     scrollToIndex,
     scrollToItemById,
+
+    // Page-based scrolling
+    scrollToPage: async (
+      pageNumber: number,
+      position?: "start" | "center" | "end",
+      animate?: boolean
+    ) => {
+      const shouldAnimate =
+        animate !== undefined ? animate : validatedConfig.animate || false;
+
+      // Get the configured page size
+      const pageSize = validatedConfig.pageSize || 20;
+
+      // Calculate the starting index of the page (0-based)
+      // Page 1 starts at index 0, page 2 starts at pageSize, etc.
+      const startIndex = (pageNumber - 1) * pageSize;
+
+      await scrollToIndex(startIndex, position, shouldAnimate);
+    },
+
+    // Page loading with scrolling
+    scrollNext: async () => {
+      const result = await loadNext();
+      return result;
+    },
+
+    scrollPrevious: async () => {
+      const result = await loadPreviousPage();
+      return result;
+    },
+
+    loadPreviousPage,
 
     // Page navigation
     getCurrentPage: () => {
@@ -855,6 +1068,19 @@ export const createListManager = (
     getVisibleItems: () => state.visibleItems,
     isLoading: () => state.loading,
     hasNextPage: () => state.hasNext,
+
+    // Collection and event handling
+    onCollectionChange: (
+      callback: (event: { type: string; data: any }) => void
+    ) => {
+      // Simple implementation - return cleanup function
+      // TODO: Implement proper collection event handling if needed
+      return () => {};
+    },
+
+    getCollection: () => itemsCollection,
+
+    isApiMode: () => !state.useStatic,
 
     // Lifecycle
     destroy: () => {
