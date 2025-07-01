@@ -145,14 +145,6 @@ export const createScrollingManager = (deps: ScrollingDependencies) => {
         const itemHeight = config.itemHeight || DEFAULTS.itemHeight;
         let scrollPosition = index * itemHeight;
 
-        console.log("🔗 [ScrollToIndex] Post-load scroll calculation:", {
-          index,
-          itemHeight,
-          initialScrollPosition: scrollPosition,
-          containerHeight: state.containerHeight,
-          position,
-        });
-
         // Adjust position based on requested alignment
         if (position === "center") {
           scrollPosition = scrollPosition - state.containerHeight / 2;
@@ -163,37 +155,12 @@ export const createScrollingManager = (deps: ScrollingDependencies) => {
         // Ensure we don't scroll past boundaries
         scrollPosition = Math.max(0, scrollPosition);
 
-        console.log(
-          "🔗 [ScrollToIndex] Final scroll position:",
-          scrollPosition
-        );
-        console.log(
-          "🔗 [ScrollToIndex] Current container.scrollTop:",
-          container.scrollTop
-        );
-
         // Perform the scroll
         if (animate) {
-          console.log(
-            "🔗 [ScrollToIndex] Performing ANIMATED scroll to:",
-            scrollPosition
-          );
           container.scrollTo({ top: scrollPosition, behavior: "smooth" });
         } else {
-          console.log(
-            "🔗 [ScrollToIndex] Performing INSTANT scroll to:",
-            scrollPosition
-          );
           container.scrollTop = scrollPosition;
         }
-
-        // Verify scroll actually happened
-        setTimeout(() => {
-          console.log(
-            "🔗 [ScrollToIndex] After scroll - container.scrollTop:",
-            container.scrollTop
-          );
-        }, 50);
       }, 100); // Small delay to ensure page is loaded and rendered
     } catch (error) {
       console.error(

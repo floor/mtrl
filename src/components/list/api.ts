@@ -54,6 +54,9 @@ interface ApiOptions {
   lifecycle: {
     destroy: () => void;
   };
+  config: {
+    animate?: boolean;
+  };
   // Added selection methods
   getSelectedItems?: () => any[];
   getSelectedItemIds?: () => string[];
@@ -79,7 +82,7 @@ interface ComponentWithElements {
  * @returns {Function} Higher-order function that adds API methods to component
  */
 export const withAPI =
-  ({ list, events, lifecycle }: ApiOptions) =>
+  ({ list, events, lifecycle, config }: ApiOptions) =>
   (component: ComponentWithElements) => ({
     ...component,
     element: component.element,
@@ -155,7 +158,9 @@ export const withAPI =
       position?: "start" | "center" | "end",
       animate?: boolean
     ) => {
-      list.scrollToItem(itemId, position, animate);
+      const shouldAnimate =
+        animate !== undefined ? animate : config?.animate || false;
+      list.scrollToItem(itemId, position, shouldAnimate);
       return component;
     },
 
@@ -171,7 +176,9 @@ export const withAPI =
       position?: "start" | "center" | "end",
       animate?: boolean
     ) => {
-      await list.scrollToIndex(index, position, animate);
+      const shouldAnimate =
+        animate !== undefined ? animate : config?.animate || false;
+      await list.scrollToIndex(index, position, shouldAnimate);
       return component;
     },
 
@@ -187,27 +194,17 @@ export const withAPI =
       position?: "start" | "center" | "end",
       animate?: boolean
     ) => {
-      console.log("🔗 [ScrollToPage] Called with:", {
-        pageNumber,
-        position,
-        animate,
-      });
+      const shouldAnimate =
+        animate !== undefined ? animate : config?.animate || false;
 
       // Get the configured page size from the list manager
       const pageSize = list.getPageSize();
-      console.log("🔗 [ScrollToPage] Page size:", pageSize);
 
       // Calculate the starting index of the page (0-based)
       // Page 1 starts at index 0, page 2 starts at pageSize, etc.
       const startIndex = (pageNumber - 1) * pageSize;
-      console.log(
-        "🔗 [ScrollToPage] Calculated startIndex:",
-        startIndex,
-        "for page:",
-        pageNumber
-      );
 
-      await list.scrollToIndex(startIndex, position, animate);
+      await list.scrollToIndex(startIndex, position, shouldAnimate);
       return component;
     },
 
@@ -223,7 +220,9 @@ export const withAPI =
       position?: "start" | "center" | "end",
       animate?: boolean
     ) => {
-      await list.scrollToItemById(itemId, position, animate);
+      const shouldAnimate =
+        animate !== undefined ? animate : config?.animate || false;
+      await list.scrollToItemById(itemId, position, shouldAnimate);
       return component;
     },
 

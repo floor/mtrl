@@ -493,39 +493,16 @@ export const createListManager = (
       let scrollPositionToUse = container.scrollTop;
 
       if (setScrollPosition && result.items.length > 0) {
-        console.log("🔗 [LoadPage] Setting scroll position:", {
-          naturalScrollPosition,
-          animate,
-          currentScrollTop: container.scrollTop,
-          itemsLoaded: result.items.length,
-        });
-
         if (animate) {
-          console.log(
-            "🔗 [LoadPage] Performing ANIMATED scroll to:",
-            naturalScrollPosition
-          );
           container.scrollTo({
             top: naturalScrollPosition,
             behavior: "smooth",
           });
         } else {
-          console.log(
-            "🔗 [LoadPage] Performing INSTANT scroll to:",
-            naturalScrollPosition
-          );
           container.scrollTop = naturalScrollPosition;
         }
         state.scrollTop = naturalScrollPosition;
         scrollPositionToUse = naturalScrollPosition;
-
-        // Verify scroll happened
-        setTimeout(() => {
-          console.log(
-            "🔗 [LoadPage] After scroll - container.scrollTop:",
-            container.scrollTop
-          );
-        }, 50);
       }
 
       // Temporarily allow updates
@@ -850,16 +827,7 @@ export const createListManager = (
     },
 
     // Configuration access
-    getPageSize: () => {
-      const pageSize = validatedConfig.pageSize || 20;
-      console.log(
-        "🔗 [GetPageSize] Returning page size:",
-        pageSize,
-        "from config:",
-        validatedConfig.pageSize
-      );
-      return pageSize;
-    },
+    getPageSize: () => validatedConfig.pageSize || 20,
 
     // Event handling
     onPageChange: (callback: (page: number) => void) => {

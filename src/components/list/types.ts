@@ -91,6 +91,13 @@ export interface ListConfig {
    * Additional CSS classes
    */
   class?: string;
+
+  /**
+   * Default animation behavior for scroll operations
+   * When true, scroll operations will be animated by default
+   * @default false
+   */
+  animate?: boolean;
 }
 
 /**

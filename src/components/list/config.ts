@@ -28,6 +28,7 @@ export const defaultConfig = {
   // Behavior settings
   trackSelection: true,
   multiSelect: false,
+  animate: false,
 };
 
 /**
@@ -89,9 +90,10 @@ export const getElementConfig = (config) => {
 /**
  * Creates API configuration for the List component
  * @param {Object} component - Component with list manager
+ * @param {Object} config - Base configuration
  * @returns {Object} API configuration object
  */
-export const getApiConfig = (component) => ({
+export const getApiConfig = (component, config) => ({
   list: {
     refresh: component.list?.refresh,
     loadNext: component.list?.loadNext,
@@ -119,6 +121,9 @@ export const getApiConfig = (component) => ({
   },
   lifecycle: {
     destroy: component.lifecycle?.destroy,
+  },
+  config: {
+    animate: config?.animate,
   },
 });
 

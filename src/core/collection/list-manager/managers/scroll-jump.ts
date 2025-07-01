@@ -180,13 +180,6 @@ export const createScrollJumpManager = (
             animate: isTargetPage ? animate : false,
           };
 
-          console.log(`🔗 [ScrollToIndex] Loading page ${page}:`, {
-            isTargetPage,
-            targetPage: viewportCalc.targetPage,
-            targetIndex,
-            loadOptions,
-          });
-
           return loadPage(page, loadOptions);
         });
 
