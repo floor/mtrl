@@ -24,6 +24,11 @@ interface ApiOptions {
       position?: "start" | "center" | "end",
       animate?: boolean
     ) => Promise<void>;
+    scrollToPage: (
+      pageNumber: number,
+      position?: "start" | "center" | "end",
+      animate?: boolean
+    ) => Promise<void>;
     scrollToItemById: (
       itemId: string,
       position?: "start" | "center" | "end",
@@ -38,6 +43,7 @@ interface ApiOptions {
     ) => () => void;
     onPageChange: (callback: (event: any, data: any) => void) => () => void;
     getCurrentPage: () => number;
+    getPageSize: () => number;
     getCollection: () => any;
     isApiMode: () => boolean;
   };
@@ -170,6 +176,42 @@ export const withAPI =
     },
 
     /**
+     * Scrolls to a specific page with animation support
+     * @param {number} pageNumber - Page number to scroll to (1-indexed)
+     * @param {string} position - Position ('start', 'center', 'end')
+     * @param {boolean} animate - Whether to animate the scroll
+     * @returns {Promise<void>} Promise that resolves when scroll is complete
+     */
+    scrollToPage: async (
+      pageNumber: number,
+      position?: "start" | "center" | "end",
+      animate?: boolean
+    ) => {
+      console.log("🔗 [ScrollToPage] Called with:", {
+        pageNumber,
+        position,
+        animate,
+      });
+
+      // Get the configured page size from the list manager
+      const pageSize = list.getPageSize();
+      console.log("🔗 [ScrollToPage] Page size:", pageSize);
+
+      // Calculate the starting index of the page (0-based)
+      // Page 1 starts at index 0, page 2 starts at pageSize, etc.
+      const startIndex = (pageNumber - 1) * pageSize;
+      console.log(
+        "🔗 [ScrollToPage] Calculated startIndex:",
+        startIndex,
+        "for page:",
+        pageNumber
+      );
+
+      await list.scrollToIndex(startIndex, position, animate);
+      return component;
+    },
+
+    /**
      * Scrolls to a specific item by ID using backend lookup
      * @param {string} itemId - Item ID to scroll to
      * @param {string} position - Position ('start', 'center', 'end')
@@ -228,6 +270,12 @@ export const withAPI =
      * @returns {number} Current page number
      */
     getCurrentPage: () => list.getCurrentPage(),
+
+    /**
+     * Get the configured page size
+     * @returns {number} Page size
+     */
+    getPageSize: () => list.getPageSize(),
 
     /**
      * Get the underlying collection

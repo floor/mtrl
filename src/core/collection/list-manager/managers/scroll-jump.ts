@@ -137,13 +137,20 @@ export const createScrollJumpManager = (
    * Load target page immediately, then load additional ranges in background
    * Specialized version for scrolling to a specific index with precise viewport calculation
    * @param targetIndex 0-based index to scroll to
+   * @param animate Whether to animate the scroll (defaults to false)
    * @returns Promise that resolves when target page is loaded
    */
   const loadScrollToIndexWithBackgroundRanges = async (
-    targetIndex: number
+    targetIndex: number,
+    animate: boolean = false
   ): Promise<void> => {
     // Set scroll jump flag to prevent boundary detection interference
     timeoutManager.updateState({ isScrollJumpInProgress: true });
+
+    console.log(
+      "🔗 [loadScrollToIndexWithBackgroundRanges] Loading index:",
+      targetIndex
+    );
 
     try {
       const pageSize = config.pageSize || 20;
@@ -166,11 +173,21 @@ export const createScrollJumpManager = (
       try {
         // Load all viewport pages in parallel
         const viewportPromises = allViewportPages.map((page, index) => {
-          // Only the target page should set scroll position, others just load data
-          return loadPage(page, {
-            setScrollPosition: page === viewportCalc.targetPage,
+          const isTargetPage = page === viewportCalc.targetPage;
+          const loadOptions = {
+            setScrollPosition: isTargetPage,
             replaceCollection: false,
+            animate: isTargetPage ? animate : false,
+          };
+
+          console.log(`🔗 [ScrollToIndex] Loading page ${page}:`, {
+            isTargetPage,
+            targetPage: viewportCalc.targetPage,
+            targetIndex,
+            loadOptions,
           });
+
+          return loadPage(page, loadOptions);
         });
 
         // Wait for ALL viewport pages to load before proceeding
@@ -252,13 +269,20 @@ export const createScrollJumpManager = (
   /**
    * Load target page immediately, then load additional ranges in background
    * @param targetPage Target page number to jump to
+   * @param animate Whether to animate the scroll (defaults to false)
    * @returns Promise that resolves when target page is loaded
    */
   const loadScrollJumpWithBackgroundRanges = async (
-    targetPage: number
+    targetPage: number,
+    animate: boolean = false
   ): Promise<void> => {
     // Set scroll jump flag to prevent boundary detection interference
     timeoutManager.updateState({ isScrollJumpInProgress: true });
+
+    console.log(
+      "🔗 [loadScrollJumpWithBackgroundRanges] Loading page:",
+      targetPage
+    );
 
     try {
       const pageSize = config.pageSize || 20;
@@ -290,6 +314,7 @@ export const createScrollJumpManager = (
           return loadPage(page, {
             setScrollPosition: page === viewportCalc.targetPage,
             replaceCollection: false,
+            animate: page === viewportCalc.targetPage ? animate : false,
           });
         });
 

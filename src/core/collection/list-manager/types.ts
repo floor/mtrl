@@ -214,6 +214,7 @@ export interface ListManager {
       preservePrevious?: boolean;
       setScrollPosition?: boolean;
       replaceCollection?: boolean;
+      animate?: boolean;
     }
   ) => Promise<{ hasNext: boolean; items: any[] }>;
 
@@ -287,6 +288,11 @@ export interface ListManager {
    * Get current page number based on scroll position
    */
   getCurrentPage: () => number;
+
+  /**
+   * Get the configured page size
+   */
+  getPageSize: () => number;
 
   /**
    * Gets the underlying collection

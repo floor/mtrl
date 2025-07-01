@@ -306,9 +306,17 @@ export const createListManager = (
    */
   const loadPage = async (
     pageNumber: number,
-    options: { setScrollPosition?: boolean; replaceCollection?: boolean } = {}
+    options: {
+      setScrollPosition?: boolean;
+      replaceCollection?: boolean;
+      animate?: boolean;
+    } = {}
   ): Promise<{ hasNext: boolean; items: any[] }> => {
-    const { setScrollPosition = true, replaceCollection = true } = options;
+    const {
+      setScrollPosition = true,
+      replaceCollection = true,
+      animate = false,
+    } = options;
 
     // Validate page number
     if (!Number.isInteger(pageNumber) || pageNumber < 1) {
@@ -485,9 +493,39 @@ export const createListManager = (
       let scrollPositionToUse = container.scrollTop;
 
       if (setScrollPosition && result.items.length > 0) {
-        container.scrollTop = naturalScrollPosition;
+        console.log("🔗 [LoadPage] Setting scroll position:", {
+          naturalScrollPosition,
+          animate,
+          currentScrollTop: container.scrollTop,
+          itemsLoaded: result.items.length,
+        });
+
+        if (animate) {
+          console.log(
+            "🔗 [LoadPage] Performing ANIMATED scroll to:",
+            naturalScrollPosition
+          );
+          container.scrollTo({
+            top: naturalScrollPosition,
+            behavior: "smooth",
+          });
+        } else {
+          console.log(
+            "🔗 [LoadPage] Performing INSTANT scroll to:",
+            naturalScrollPosition
+          );
+          container.scrollTop = naturalScrollPosition;
+        }
         state.scrollTop = naturalScrollPosition;
         scrollPositionToUse = naturalScrollPosition;
+
+        // Verify scroll happened
+        setTimeout(() => {
+          console.log(
+            "🔗 [LoadPage] After scroll - container.scrollTop:",
+            container.scrollTop
+          );
+        }, 50);
       }
 
       // Temporarily allow updates
@@ -809,6 +847,18 @@ export const createListManager = (
         calculateCurrentPage(state.scrollTop || 0, state.paginationStrategy) ||
         1
       );
+    },
+
+    // Configuration access
+    getPageSize: () => {
+      const pageSize = validatedConfig.pageSize || 20;
+      console.log(
+        "🔗 [GetPageSize] Returning page size:",
+        pageSize,
+        "from config:",
+        validatedConfig.pageSize
+      );
+      return pageSize;
     },
 
     // Event handling

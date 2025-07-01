@@ -109,6 +109,7 @@ export const getApiConfig = (component) => ({
     onCollectionChange: component.list?.onCollectionChange,
     onPageChange: component.list?.onPageChange,
     getCurrentPage: component.list?.getCurrentPage,
+    getPageSize: component.list?.getPageSize,
     getCollection: component.list?.getCollection,
     isApiMode: component.list?.isApiMode,
   },

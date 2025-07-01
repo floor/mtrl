@@ -36,7 +36,8 @@ export interface LifecycleDependencies {
   clearTimeouts: () => void;
   scrollJumpManager: {
     loadScrollToIndexWithBackgroundRanges: (
-      targetIndex: number
+      targetIndex: number,
+      animate?: boolean
     ) => Promise<void>;
   };
 }

@@ -8,8 +8,10 @@
     "noStrictGenericChecks": true,
     "strictNullChecks": false,
     "strictFunctionTypes": false,
-    "strictPropertyInitialization": false
+    "strictPropertyInitialization": false,
+    "types": ["bun-types"],
+    "typeRoots": ["./test/types", "./node_modules/@types"]
   },
-  "include": ["test/**/*", "src/**/*"],
+  "include": ["test/**/*", "src/**/*", "test/types/**/*"],
   "exclude": ["node_modules"]
-} 
+}

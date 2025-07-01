@@ -284,6 +284,19 @@ export interface ListComponent {
   ) => Promise<VirtualListComponent>;
 
   /**
+   * Scroll to a specific page with animation support
+   * @param {number} pageNumber - Page number to scroll to (1-indexed)
+   * @param {string} position - Position ('start', 'center', 'end')
+   * @param {boolean} animate - Whether to animate the scroll
+   * @returns {Promise<VirtualListComponent>} Promise that resolves when scroll is complete
+   */
+  scrollToPage: (
+    pageNumber: number,
+    position?: "start" | "center" | "end",
+    animate?: boolean
+  ) => Promise<VirtualListComponent>;
+
+  /**
    * Scroll to a specific item by ID using backend lookup
    * @param {string} itemId - Item ID to scroll to
    * @param {string} position - Position ('start', 'center', 'end')
@@ -307,6 +320,12 @@ export interface ListComponent {
    * @returns {any[]} All loaded items
    */
   getAllItems: () => any[];
+
+  /**
+   * Gets the configured page size
+   * @returns {number} Page size
+   */
+  getPageSize: () => number;
 
   /**
    * Checks if the list is currently loading

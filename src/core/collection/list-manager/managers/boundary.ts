@@ -21,7 +21,8 @@ export interface BoundaryManagerDependencies {
   };
   scrollJumpManager: {
     loadScrollToIndexWithBackgroundRanges: (
-      targetIndex: number
+      targetIndex: number,
+      animate?: boolean
     ) => Promise<void>;
   };
 }

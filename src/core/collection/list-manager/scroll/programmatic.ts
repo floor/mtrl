@@ -14,7 +14,11 @@ export interface ScrollingDependencies {
   container: HTMLElement;
   loadPage?: (
     pageNumber: number,
-    options?: { setScrollPosition?: boolean; replaceCollection?: boolean }
+    options?: {
+      setScrollPosition?: boolean;
+      replaceCollection?: boolean;
+      animate?: boolean;
+    }
   ) => Promise<{ hasNext: boolean; items: any[] }>;
   itemMeasurement?: {
     calculateOffsets?: (items: any[]) => void;
@@ -23,9 +27,15 @@ export interface ScrollingDependencies {
   };
   collection?: string;
   scrollJumpManager?: {
-    loadScrollJumpWithBackgroundRanges: (targetPage: number) => Promise<void>;
+    loadScrollJumpWithBackgroundRanges: (
+      targetPage: number,
+      animate?: boolean
+    ) => Promise<void>;
     loadAdditionalRangesInBackground: (pages: number[], phase?: string) => void;
-    loadScrollToIndexWithBackgroundRanges: (index: number) => Promise<void>;
+    loadScrollToIndexWithBackgroundRanges: (
+      index: number,
+      animate?: boolean
+    ) => Promise<void>;
   };
 }
 
@@ -59,6 +69,8 @@ export const createScrollingManager = (deps: ScrollingDependencies) => {
       console.warn(`Invalid index: ${index}. Index must be 0 or greater.`);
       return;
     }
+
+    console.log("🔗 [ScrollToIndex] Scrolling to index:", index);
 
     // Check if we're in static mode
     if (state.useStatic) {
@@ -110,14 +122,21 @@ export const createScrollingManager = (deps: ScrollingDependencies) => {
     try {
       // Use specialized scroll-to-index function with precise viewport calculation
       if (scrollJumpManager?.loadScrollToIndexWithBackgroundRanges) {
-        await scrollJumpManager.loadScrollToIndexWithBackgroundRanges(index);
+        await scrollJumpManager.loadScrollToIndexWithBackgroundRanges(
+          index,
+          animate
+        );
       } else if (scrollJumpManager?.loadScrollJumpWithBackgroundRanges) {
-        await scrollJumpManager.loadScrollJumpWithBackgroundRanges(targetPage);
+        await scrollJumpManager.loadScrollJumpWithBackgroundRanges(
+          targetPage,
+          animate
+        );
       } else {
         // Fallback to simple page loading
         await loadPage(targetPage, {
           setScrollPosition: true,
           replaceCollection: false,
+          animate,
         });
       }
 
@@ -125,6 +144,14 @@ export const createScrollingManager = (deps: ScrollingDependencies) => {
       setTimeout(() => {
         const itemHeight = config.itemHeight || DEFAULTS.itemHeight;
         let scrollPosition = index * itemHeight;
+
+        console.log("🔗 [ScrollToIndex] Post-load scroll calculation:", {
+          index,
+          itemHeight,
+          initialScrollPosition: scrollPosition,
+          containerHeight: state.containerHeight,
+          position,
+        });
 
         // Adjust position based on requested alignment
         if (position === "center") {
@@ -136,12 +163,37 @@ export const createScrollingManager = (deps: ScrollingDependencies) => {
         // Ensure we don't scroll past boundaries
         scrollPosition = Math.max(0, scrollPosition);
 
+        console.log(
+          "🔗 [ScrollToIndex] Final scroll position:",
+          scrollPosition
+        );
+        console.log(
+          "🔗 [ScrollToIndex] Current container.scrollTop:",
+          container.scrollTop
+        );
+
         // Perform the scroll
         if (animate) {
+          console.log(
+            "🔗 [ScrollToIndex] Performing ANIMATED scroll to:",
+            scrollPosition
+          );
           container.scrollTo({ top: scrollPosition, behavior: "smooth" });
         } else {
+          console.log(
+            "🔗 [ScrollToIndex] Performing INSTANT scroll to:",
+            scrollPosition
+          );
           container.scrollTop = scrollPosition;
         }
+
+        // Verify scroll actually happened
+        setTimeout(() => {
+          console.log(
+            "🔗 [ScrollToIndex] After scroll - container.scrollTop:",
+            container.scrollTop
+          );
+        }, 50);
       }, 100); // Small delay to ensure page is loaded and rendered
     } catch (error) {
       console.error(
