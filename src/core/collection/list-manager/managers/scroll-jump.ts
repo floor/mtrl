@@ -9,6 +9,7 @@ import { PAGINATION, BOUNDARIES } from "../constants";
 export interface ScrollJumpManagerDependencies {
   state: ListManagerState;
   config: ListManagerConfig;
+  container: HTMLElement;
   loadPage: (
     pageNumber: number,
     options?: any
@@ -104,7 +105,14 @@ export const calculatePreciseViewportPages = (
 export const createScrollJumpManager = (
   deps: ScrollJumpManagerDependencies
 ) => {
-  const { state, config, loadPage, updateVisibleItems, timeoutManager } = deps;
+  const {
+    state,
+    config,
+    container,
+    loadPage,
+    updateVisibleItems,
+    timeoutManager,
+  } = deps;
 
   /**
    * Load additional ranges in background without blocking the UI
@@ -175,8 +183,8 @@ export const createScrollJumpManager = (
         ? now - lastOperation.timestamp
         : Infinity;
 
-    if (timeSinceLastSame < 300) {
-      // Prevent same operation within 300ms (reduced from 500ms for better responsiveness)
+    if (timeSinceLastSame < 100) {
+      // Prevent same operation within 100ms (more aggressive for better UX)
       console.warn(
         "🚨 [FEEDBACK LOOP] Preventing repeated scroll to same position:",
         {
@@ -273,8 +281,33 @@ export const createScrollJumpManager = (
           isProgrammatic,
           currentState,
           action: "CANCELING_SCROLL_JUMP",
+          reason:
+            "Preventing viewport data corruption from overlapping operations",
         }
       );
+      return;
+    }
+
+    // 🚨 ADDITIONAL RACE PROTECTION: Cancel if there are pending viewport updates
+    if (state.visibleItems.length === 0 && state.items.length > 0) {
+      console.warn(
+        "⚠️ [VIEWPORT STATE] Delaying scroll jump - viewport is in transition:",
+        {
+          targetIndex,
+          visibleItems: state.visibleItems.length,
+          totalItems: state.items.length,
+          action: "DELAYING_SCROLL_JUMP",
+        }
+      );
+
+      // Retry after a short delay to allow viewport to stabilize
+      setTimeout(() => {
+        loadScrollToIndexWithBackgroundRanges(
+          targetIndex,
+          animate,
+          isProgrammatic
+        );
+      }, 50);
       return;
     }
 
@@ -283,53 +316,88 @@ export const createScrollJumpManager = (
     // Set scroll jump flag to prevent boundary detection interference
     timeoutManager.updateState({ isScrollJumpInProgress: true });
 
-    // 🎬 SIMPLE PLACEHOLDER RENDERING: Use current position only for manual scrolling
-    const scrollMovement = Math.abs(currentScrollTop - targetScrollPosition);
-    const useCurrentPosition =
-      !isProgrammatic && scrollMovement > itemHeight * 3; // Only for manual scrolling
+    // 🔍 CHECK IF WE ALREADY HAVE THE TARGET DATA
+    const targetPageNum = Math.floor(targetIndex / (config.pageSize || 20)) + 1;
+    const targetPageStart = (targetPageNum - 1) * (config.pageSize || 20);
+    const targetPageEnd = targetPageStart + (config.pageSize || 20) - 1;
 
-    const placeholderPosition = useCurrentPosition
-      ? currentScrollTop
-      : targetScrollPosition;
-
-    console.log("🎬 [PLACEHOLDER] Rendering placeholders:", {
-      targetIndex,
-      isProgrammatic,
-      useCurrentPosition,
-      placeholderPosition: placeholderPosition.toFixed(0),
+    // Check if we already have the target data loaded
+    const hasTargetData = state.items.some((item) => {
+      const itemId = parseInt(item.id);
+      return itemId >= targetPageStart + 1 && itemId <= targetPageEnd + 1;
     });
 
-    // Force immediate viewport update with placeholders
-    if (typeof updateVisibleItems === "function") {
-      updateVisibleItems(placeholderPosition, true);
+    console.log("🔍 [DATA CHECK] Checking if target data exists:", {
+      targetIndex,
+      targetPage: targetPageNum,
+      targetPageRange: `${targetPageStart + 1}-${targetPageEnd + 1}`,
+      hasTargetData,
+      totalItemsLoaded: state.items.length,
+      action: hasTargetData ? "SKIP_PLACEHOLDERS" : "RENDER_PLACEHOLDERS",
+    });
+
+    // 🎬 PLACEHOLDER STRATEGY: Only render placeholders if we don't have target data
+    if (!hasTargetData) {
+      // For animated scrolls: keep current content visible to avoid empty viewport
+      // For instant scrolls: jump to target position immediately
+      // For manual scrolling: use current position if user moved significantly
+      const scrollMovement = Math.abs(currentScrollTop - targetScrollPosition);
+      const useCurrentPositionForPlaceholders = animate
+        ? true // Keep current content visible during animated scrolls
+        : !isProgrammatic && scrollMovement > itemHeight * 3; // Use current position for manual scrolling
+
+      const placeholderPosition = useCurrentPositionForPlaceholders
+        ? currentScrollTop
+        : targetScrollPosition;
+
+      console.log("🎬 [PLACEHOLDER] Rendering placeholders:", {
+        targetIndex,
+        isProgrammatic,
+        animate,
+        useCurrentPosition: useCurrentPositionForPlaceholders,
+        placeholderPosition: placeholderPosition.toFixed(0),
+        reason: animate
+          ? "animated_scroll_keep_current"
+          : isProgrammatic
+          ? "instant_jump"
+          : "manual_scroll",
+      });
+
+      // Force immediate viewport update with placeholders
+      if (typeof updateVisibleItems === "function") {
+        updateVisibleItems(placeholderPosition, true);
+      }
+    } else {
+      console.log(
+        "✅ [DATA CHECK] Target data already available, skipping placeholders"
+      );
     }
+
+    // 🎬 DELAY ANIMATION until after data loading for better UX
+    // Starting animation immediately can cause conflicts with data loading
 
     try {
       const pageSize = config.pageSize || 20;
       const containerHeight = state.containerHeight || 400;
 
-      // Use precise viewport calculation - adjust for scrollbar dragging
-      const adjustedIndex = useCurrentPosition
-        ? Math.floor(currentScrollTop / itemHeight)
-        : targetIndex;
+      // 🎯 ALWAYS load target data for consistent behavior
+      // For animated scrolls, we still need to load the target data even though we keep current content visible
       const viewportCalc = calculatePreciseViewportPages(
-        adjustedIndex,
+        targetIndex,
         containerHeight,
         itemHeight,
         pageSize,
-        useCurrentPosition ? currentScrollTop : state.scrollTop || 0,
+        targetScrollPosition,
         state.itemCount
       );
 
-      if (useCurrentPosition) {
-        console.log("📐 [VIEWPORT CALC] Using current position:", {
-          originalTargetIndex: targetIndex,
-          adjustedIndex,
-          currentScrollTop,
-          viewportPages: viewportCalc.viewportPages,
-          targetPage: viewportCalc.targetPage,
-        });
-      }
+      console.log("📐 [VIEWPORT CALC] Loading target data:", {
+        targetIndex,
+        targetScrollPosition,
+        viewportPages: viewportCalc.viewportPages,
+        targetPage: viewportCalc.targetPage,
+        animate,
+      });
 
       // Load ALL viewport pages in parallel based on actual position
       const allViewportPages = viewportCalc.viewportPages;
@@ -339,12 +407,10 @@ export const createScrollJumpManager = (
         const viewportPromises = allViewportPages.map((page, index) => {
           const isTargetPage = page === viewportCalc.targetPage;
           const loadOptions = {
-            setScrollPosition: isTargetPage,
+            setScrollPosition: false, // Never set scroll position during loading - we handle scroll separately
             replaceCollection: false,
-            animate: isTargetPage ? animate : false,
+            animate: false, // Never animate in loadPage - we handle animation at the scroll jump level
           };
-
-          // Reduced logging for cleaner output
 
           return loadPage(page, loadOptions);
         });
@@ -450,33 +516,100 @@ export const createScrollJumpManager = (
       }
 
       console.log(`✅ [ScrollJump] Completed for index ${targetIndex}`);
+
+      // 🎯 SET FINAL SCROLL POSITION after data loading
+      if (!animate && isProgrammatic) {
+        // For instant scrolls, set position immediately and clear flag
+        console.log("📍 [SCROLL POSITION] Setting instant scroll position:", {
+          targetScrollPosition,
+          targetIndex,
+        });
+        container.scrollTop = targetScrollPosition;
+        state.scrollTop = targetScrollPosition;
+
+        // Clear scroll jump flag immediately for instant scrolls
+        timeoutManager.updateState({ isScrollJumpInProgress: false });
+      } else if (animate && isProgrammatic) {
+        // For animated scrolls, trigger animation after data is loaded
+        console.log(
+          "🎬 [SCROLL ANIMATION] Starting animation after data load:",
+          {
+            from: currentScrollTop,
+            to: targetScrollPosition,
+            targetIndex,
+            note: "Keeping scroll jump flag active during animation",
+          }
+        );
+        if (container && container.scrollTo) {
+          container.scrollTo({
+            top: targetScrollPosition,
+            behavior: "smooth",
+          });
+        }
+
+        // 🚨 CRITICAL: Keep scroll jump flag active during animation
+        // Calculate appropriate timeout based on scroll distance
+        const scrollDistance = Math.abs(
+          targetScrollPosition - currentScrollTop
+        );
+        const estimatedAnimationTime = Math.min(
+          Math.max(scrollDistance / 2000, 500),
+          2000
+        ); // 500ms to 2s based on distance
+
+        // Store animation details for interruption detection
+        (state as any).currentAnimation = {
+          targetScrollPosition,
+          targetIndex,
+          startTime: performance.now(),
+          estimatedDuration: estimatedAnimationTime,
+        };
+
+        setTimeout(() => {
+          console.log(
+            "🏁 [SCROLL ANIMATION] Animation timeout - clearing scroll jump flag",
+            {
+              scrollDistance,
+              estimatedTime: `${estimatedAnimationTime}ms`,
+              targetIndex,
+            }
+          );
+          timeoutManager.updateState({ isScrollJumpInProgress: false });
+          delete (state as any).currentAnimation;
+        }, estimatedAnimationTime);
+      }
     } catch (error) {
       console.error(
         `❌ [ScrollJump] FAILED for index ${targetIndex}:`,
         error.message
       );
     } finally {
-      // Always clear the scroll jump flag when done
-      timeoutManager.updateState({ isScrollJumpInProgress: false });
+      // Only clear the scroll jump flag for non-animated operations
+      // Animated operations handle flag clearing separately after animation completes
+      if (!animate || !isProgrammatic) {
+        timeoutManager.updateState({ isScrollJumpInProgress: false });
+      }
 
-      // 🚨 SIMPLE FINAL RENDER: Use current position only for manual scrolling
+      // 🚨 FINAL RENDER: Always render target page for programmatic calls
       setTimeout(() => {
         const currentScrollTop = state.scrollTop || 0;
         const currentIndex = Math.floor(currentScrollTop / itemHeight);
         const currentPage =
           Math.floor(currentIndex / (config.pageSize || 20)) + 1;
 
-        // Only use current position for manual scrolling, not programmatic
+        // For programmatic calls, always load target page
+        // For manual scrolling, use current position if user moved significantly
         const movement = Math.abs(currentScrollTop - targetScrollPosition);
-        const useCurrentPosition = !isProgrammatic && movement > itemHeight * 3;
+        const shouldUseCurrentPosition =
+          !isProgrammatic && movement > itemHeight * 3;
 
-        const finalPage = useCurrentPosition
+        const finalPage = shouldUseCurrentPosition
           ? currentPage
           : Math.floor(targetIndex / (config.pageSize || 20)) + 1;
 
         console.log(
           `🔄 [FINAL RENDER] Loading page ${finalPage} ${
-            useCurrentPosition ? "(current position)" : "(original target)"
+            shouldUseCurrentPosition ? "(current position)" : "(target)"
           }`
         );
 
@@ -700,10 +833,22 @@ export const createScrollJumpManager = (
         }
       );
 
-      // If there's already a scroll jump in progress, wait a bit and try again
+      // Define error handler first to avoid hoisting issues
+      const handleError = (error) => {
+        console.error(
+          `❌ [ScheduledScroll] Failed for index ${currentIndex}:`,
+          error.message
+        );
+        // Fallback to simple page load
+        const currentPage =
+          Math.floor(currentIndex / (config.pageSize || 20)) + 1;
+        loadPage(currentPage);
+      };
+
+      // If scroll jump in progress, retry quickly (shorter delay for better performance)
       if (currentState.isScrollJumpInProgress) {
         console.log(
-          "⏳ [ScheduledScroll] Waiting for existing scroll jump to complete..."
+          "⏳ [ScheduledScroll] Scroll jump in progress - retrying in 25ms..."
         );
         setTimeout(() => {
           const retryState = timeoutManager.getState();
@@ -717,24 +862,13 @@ export const createScrollJumpManager = (
               false
             ).catch(handleError);
           } else {
-            console.warn(
-              "⚠️ [ScheduledScroll] Giving up - scroll jump still in progress after retry"
+            console.log(
+              "⚠️ [ScheduledScroll] Still in progress - skipping to avoid delays"
             );
           }
-        }, 100);
+        }, 25); // Much shorter timeout for better performance
         return;
       }
-
-      const handleError = (error) => {
-        console.error(
-          `❌ [ScheduledScroll] Failed for index ${currentIndex}:`,
-          error.message
-        );
-        // Fallback to simple page load
-        const currentPage =
-          Math.floor(currentIndex / (config.pageSize || 20)) + 1;
-        loadPage(currentPage);
-      };
 
       loadScrollToIndexWithBackgroundRanges(currentIndex, false, false).catch(
         handleError

@@ -586,7 +586,40 @@ export const createListManager = (
           const currentPageNeeded =
             Math.floor(currentIndex / (validatedConfig.pageSize || 30)) + 1;
 
-          if (currentPageNeeded !== pageNumber) {
+          // 🚨 DON'T load "correct" page during scroll jump operations
+          const isScrollJumpInProgress =
+            timeoutManager.getState().isScrollJumpInProgress;
+
+          // 🎬 DETECT ANIMATION INTERRUPTION: Check if user is manually scrolling during animation
+          const currentAnimation = (state as any).currentAnimation;
+          const isAnimationInterrupted =
+            currentAnimation &&
+            performance.now() - currentAnimation.startTime <
+              currentAnimation.estimatedDuration &&
+            Math.abs(currentScrollTop - currentAnimation.targetScrollPosition) >
+              itemHeight * 10; // More than 10 items away from target
+
+          if (isAnimationInterrupted) {
+            console.log(
+              "🚨 [ANIMATION INTERRUPTED] User manually scrolled during animation - canceling:",
+              {
+                currentScrollTop,
+                targetPosition: currentAnimation.targetScrollPosition,
+                deviation: Math.abs(
+                  currentScrollTop - currentAnimation.targetScrollPosition
+                ),
+                currentPageNeeded,
+                loadedPage: pageNumber,
+                action: "CANCELING_ANIMATION",
+              }
+            );
+
+            // Cancel the animation by clearing the flag and animation data
+            timeoutManager.updateState({ isScrollJumpInProgress: false });
+            delete (state as any).currentAnimation;
+          }
+
+          if (currentPageNeeded !== pageNumber && !isScrollJumpInProgress) {
             console.log(
               "🔄 [RENDER] Loading correct page for current scroll position:",
               {
@@ -611,6 +644,21 @@ export const createListManager = (
                 );
               });
             }, 10);
+          } else if (
+            currentPageNeeded !== pageNumber &&
+            isScrollJumpInProgress
+          ) {
+            console.log(
+              "🔄 [RENDER] SKIPPING correct page load - scroll jump in progress:",
+              {
+                currentScrollTop,
+                currentIndex,
+                currentPageNeeded,
+                loadedPage: pageNumber,
+                action: "SKIPPING_CORRECT_PAGE_LOAD",
+                reason: "scroll_jump_in_progress",
+              }
+            );
           }
         } else {
           // Normal case: set intended scroll position
@@ -833,6 +881,7 @@ export const createListManager = (
   const scrollJumpManager = createScrollJumpManager({
     state,
     config: validatedConfig,
+    container,
     loadPage,
     updateVisibleItems,
     timeoutManager: {
