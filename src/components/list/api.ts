@@ -11,7 +11,7 @@ interface ApiOptions {
       pageNumber: number,
       options?: { preservePrevious?: boolean }
     ) => Promise<{ hasNext: boolean; items: any[] }>;
-    loadPreviousPage: () => Promise<{ hasPrev: boolean; items: any[] }>;
+    loadPrevious: () => Promise<{ hasPrev: boolean; items: any[] }>;
     scrollNext: () => Promise<{ hasNext: boolean; items: any[] }>;
     scrollPrevious: () => Promise<{ hasNext: boolean; items: any[] }>;
     scrollToItem: (
@@ -24,7 +24,7 @@ interface ApiOptions {
       position?: "start" | "center" | "end",
       animate?: boolean
     ) => Promise<void>;
-    scrollToPage: (
+    scrollTo: (
       pageNumber: number,
       position?: "start" | "center" | "end",
       animate?: boolean
@@ -123,8 +123,8 @@ export const withAPI =
      * Loads the previous page (only works with page-based pagination)
      * @returns {Promise<Object>} Promise with load result
      */
-    loadPreviousPage: async () => {
-      const result = await list.loadPreviousPage();
+    loadPrevious: async () => {
+      const result = await list.loadPrevious();
       return result;
     },
 
@@ -183,13 +183,13 @@ export const withAPI =
     },
 
     /**
-     * Scrolls to a specific page with animation support
+     * Scrolls to a specific page with animation support (strategy-agnostic)
      * @param {number} pageNumber - Page number to scroll to (1-indexed)
      * @param {string} position - Position ('start', 'center', 'end')
      * @param {boolean} animate - Whether to animate the scroll
      * @returns {Promise<void>} Promise that resolves when scroll is complete
      */
-    scrollToPage: async (
+    scrollTo: async (
       pageNumber: number,
       position?: "start" | "center" | "end",
       animate?: boolean

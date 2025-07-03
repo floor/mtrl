@@ -75,8 +75,8 @@ export const createPublicAPI = (deps: PublicAPIDependencies): ListManager => {
     scrollToIndex,
     scrollToItemById,
 
-    // Page-based scrolling
-    scrollToPage: async (
+    // Strategy-agnostic scrolling
+    scrollTo: async (
       pageNumber: number,
       position?: "start" | "center" | "end",
       animate?: boolean
@@ -105,7 +105,7 @@ export const createPublicAPI = (deps: PublicAPIDependencies): ListManager => {
       return result;
     },
 
-    loadPreviousPage: paginationManager.loadPreviousPage,
+    loadPrevious: paginationManager.loadPreviousPage,
 
     // Page navigation
     getCurrentPage: () => {

@@ -20,6 +20,7 @@ export interface ScrollingManagerDependencies {
     pageNumber: number,
     options?: any
   ) => Promise<{ hasNext: boolean; items: any[] }>;
+  loadItems: (params?: any) => Promise<{ items: any[]; meta: any }>;
   updateVisibleItems: (scrollTop?: number, isPageJump?: boolean) => void;
   timeoutManager: {
     setScrollJumpState: (callback: () => void, delay?: number) => void;
@@ -120,6 +121,7 @@ export const createScrollingManager = (deps: ScrollingManagerDependencies) => {
     config,
     container,
     loadPage,
+    loadItems,
     updateVisibleItems,
     timeoutManager,
     itemMeasurement,
@@ -132,6 +134,7 @@ export const createScrollingManager = (deps: ScrollingManagerDependencies) => {
     config,
     container,
     loadPage,
+    loadItems,
     updateVisibleItems,
     timeoutManager,
   });

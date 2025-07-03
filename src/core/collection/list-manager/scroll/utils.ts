@@ -31,6 +31,56 @@ export const calcViewportPages = (
 };
 
 /**
+ * Calculate ultra-precise viewport needs for offset-based pagination
+ * Loads EXACTLY what's visible for maximum efficiency
+ * @param scrollTop Current scroll position
+ * @param containerHeight Height of the viewport container
+ * @param itemHeight Height of each item
+ * @param totalItems Total number of items (optional)
+ * @returns Offset and limit for precise data loading
+ */
+export const calcViewportOffset = (
+  scrollTop: number,
+  containerHeight: number,
+  itemHeight: number,
+  totalItems?: number
+): {
+  offset: number;
+  limit: number;
+  startIndex: number;
+  endIndex: number;
+} => {
+  // Calculate which item indices should be visible
+  const startIndex = Math.floor(scrollTop / itemHeight);
+  const itemsInViewport = Math.ceil(containerHeight / itemHeight);
+
+  // 🎯 ULTRA-PRECISE: No buffer for offset strategy!
+  // Since we load on-demand with virtual positioning, we can load EXACTLY what's visible
+  const endIndex = startIndex + itemsInViewport;
+
+  // Constrain to valid range if totalItems is known
+  const constrainedStartIndex = Math.max(0, startIndex);
+  const constrainedEndIndex = totalItems
+    ? Math.min(endIndex, totalItems)
+    : endIndex;
+
+  const limit = Math.max(1, constrainedEndIndex - constrainedStartIndex);
+
+  console.log(
+    `🎯 [OFFSET-CALC] Ultra-precise loading: scrollTop=${scrollTop}, viewport needs items ${constrainedStartIndex}-${
+      constrainedEndIndex - 1
+    } (${limit} items exactly)`
+  );
+
+  return {
+    offset: constrainedStartIndex,
+    limit,
+    startIndex: constrainedStartIndex,
+    endIndex: constrainedEndIndex,
+  };
+};
+
+/**
  * Calculate scroll position with bounds
  */
 export const calcScrollPos = (

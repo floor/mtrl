@@ -100,12 +100,41 @@ const calculateMechanicalViewport = (
   const bufferedViewportTop = Math.max(0, scrollTop - bufferHeight);
   const bufferedViewportBottom = scrollTop + containerHeight + bufferHeight;
 
-  // Calculate which virtual item IDs should be visible (using buffered range for overscan)
-  // 🔧 FIX: Ensure consistent rounding to prevent floating point precision issues
+  // Calculate which virtual item IDs should be visible (using actual viewport, not buffered)
+  // 🔧 FIX: Use actual viewport bounds for visibility calculation
   const firstVirtualItemId =
-    Math.floor(Math.round(bufferedViewportTop) / itemHeight) + 1;
+    Math.floor(Math.round(actualViewportTop) / itemHeight) + 1;
   const lastVirtualItemId =
-    Math.floor(Math.round(bufferedViewportBottom) / itemHeight) + 1;
+    Math.floor(Math.round(actualViewportBottom) / itemHeight) + 1;
+
+  console.log(
+    `🔍 [VIEWPORT] Calculation: firstVirtualItemId = floor(${Math.round(
+      actualViewportTop
+    )}) / ${itemHeight}) + 1 = ${firstVirtualItemId}`
+  );
+  console.log(
+    `🔍 [VIEWPORT] Calculation: lastVirtualItemId = floor(${Math.round(
+      actualViewportBottom
+    )}) / ${itemHeight}) + 1 = ${lastVirtualItemId}`
+  );
+
+  console.log(
+    `🔍 [VIEWPORT] Virtual range: items ${firstVirtualItemId}-${lastVirtualItemId} should be visible`
+  );
+  console.log(
+    `🔍 [VIEWPORT] Scroll: ${scrollTop}, Height: ${containerHeight}, ItemHeight: ${itemHeight}`
+  );
+  console.log(
+    `🔍 [VIEWPORT] Actual viewport: ${actualViewportTop}-${actualViewportBottom}`
+  );
+  console.log(
+    `🔍 [VIEWPORT] Buffered viewport: ${bufferedViewportTop}-${bufferedViewportBottom}`
+  );
+  console.log(
+    `🔍 [VIEWPORT] Available items: [${items
+      .map((item) => item?.id || "null")
+      .join(", ")}]`
+  );
 
   // Now find which of these virtual items exist in our current collection
   const visibleIndices: number[] = [];
@@ -116,11 +145,16 @@ const calculateMechanicalViewport = (
 
     const itemId = parseInt(item.id);
 
-    // Check if this item ID falls within the visible virtual range
+    // Check if this item ID falls within the visible virtual range (includes overscan via buffered bounds)
     if (itemId >= firstVirtualItemId && itemId <= lastVirtualItemId) {
       visibleIndices.push(i);
+      console.log(`✅ [VIEWPORT] Item ID ${itemId} (index ${i}) is visible`);
     }
   }
+
+  console.log(
+    `🔍 [VIEWPORT] Found ${visibleIndices.length} visible items from ${items.length} total items`
+  );
 
   // If no items from the collection are visible, delegate to placeholder system
   if (visibleIndices.length === 0) {
@@ -186,12 +220,27 @@ export const createViewportManager = (
     const isBoundaryLoading = paginationFlags.isBoundaryLoading || false;
 
     // Skip updates if we're in the middle of a page jump or preloading
-    // BUT always allow placeholder replacement updates (they're essential for UX)
+    // BUT only for page-based pagination (offset-based doesn't use these concepts)
+    // Always allow placeholder replacement updates (they're essential for UX)
     if (
       !isPlaceholderReplacement &&
+      state.paginationStrategy === "page" &&
       (justJumpedToPage || isPreloadingPages || isBoundaryLoading)
     ) {
+      console.log(
+        `⏸️ [VIEWPORT] Skipping render due to pagination flags: justJumped=${justJumpedToPage}, preloading=${isPreloadingPages}, boundary=${isBoundaryLoading}`
+      );
       return;
+    }
+
+    // For offset-based pagination, always allow rendering (no page-based blocking)
+    if (state.paginationStrategy === "offset") {
+      console.log(
+        `🎯 [VIEWPORT] Offset-based rendering - bypassing page-based flags`
+      );
+      console.log(
+        `📊 [VIEWPORT] Items count: ${state.items.length}, scrollTop: ${scrollTop}`
+      );
     }
 
     // Get container height
@@ -248,7 +297,16 @@ export const createViewportManager = (
 
     // Calculate visible range - pure mechanical calculation
     const itemHeight = config.itemHeight || DEFAULTS.itemHeight;
-    const overscan = config.overscan || RENDERING.DEFAULT_OVERSCAN_COUNT;
+
+    // 🎯 ULTRA-EFFICIENT: Minimal overscan for offset strategy since we load on-demand
+    const overscan =
+      state.paginationStrategy === "offset"
+        ? 0 // No overscan - load exactly what's visible
+        : config.overscan || RENDERING.DEFAULT_OVERSCAN_COUNT;
+
+    console.log(
+      `🎯 [VIEWPORT] Using overscan: ${overscan} for ${state.paginationStrategy} strategy`
+    );
 
     let visibleRange = calculateMechanicalViewport(
       scrollTop,
@@ -256,6 +314,10 @@ export const createViewportManager = (
       state.items,
       itemHeight,
       overscan
+    );
+
+    console.log(
+      `📐 [VIEWPORT] Visible range calculated: start=${visibleRange.start}, end=${visibleRange.end}`
     );
 
     if (visibleRange.end - visibleRange.start === 0) {
@@ -268,7 +330,12 @@ export const createViewportManager = (
       const viewportBottom =
         scrollTop + state.containerHeight + overscan * itemHeight;
 
-      // Debug: viewport and collection don't intersect
+      console.log(
+        `❌ [VIEWPORT] No items visible - firstItemId: ${firstItemId}, lastItemId: ${lastItemId}`
+      );
+      console.log(
+        `❌ [VIEWPORT] Viewport range: ${viewportTop} to ${viewportBottom}`
+      );
     }
 
     // Check if range changed
@@ -383,7 +450,20 @@ export const createViewportManager = (
 
     // RENDER visible items with placeholder data support
     if (hasRangeChanged || isPageJump) {
-      if (state.paginationStrategy === "page") {
+      console.log(
+        `🎨 [VIEWPORT] Rendering - hasRangeChanged: ${hasRangeChanged}, isPageJump: ${isPageJump}`
+      );
+      console.log(
+        `🎨 [VIEWPORT] Pagination strategy: ${state.paginationStrategy}`
+      );
+      console.log(
+        `🎨 [VIEWPORT] Visible items count: ${state.visibleItems?.length || 0}`
+      );
+
+      if (
+        state.paginationStrategy === "page" ||
+        state.paginationStrategy === "offset"
+      ) {
         // Get items to render (could be real or fake)
         const itemsToRender = state.visibleItems || [];
 
@@ -413,9 +493,15 @@ export const createViewportManager = (
           })
           .filter(Boolean);
 
+        console.log(
+          `🎨 [VIEWPORT] Rendering ${positions.length} items with virtual positions (${state.paginationStrategy} strategy)`
+        );
         renderingManager.renderItemsWithVirtualPositions(positions);
       } else {
-        // Standard rendering for cursor-based pagination
+        // Standard rendering for cursor-based pagination only
+        console.log(
+          `🎨 [VIEWPORT] Standard rendering - items: ${state.items.length}, range: ${visibleRange.start}-${visibleRange.end}`
+        );
         renderer.renderVisibleItems(state.items, visibleRange);
       }
     }

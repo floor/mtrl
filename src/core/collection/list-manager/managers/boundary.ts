@@ -70,8 +70,8 @@ export const createBoundaryManager = (deps: BoundaryManagerDependencies) => {
       const loadParams = createLoadParams(state, "page");
       loadParams.page = pageNumber;
 
-      const perPageParam = config.pagination?.perPageParamName || "per_page";
-      loadParams[perPageParam] = pageSize;
+      const limitParam = config.pagination?.limitParam || "limit";
+      loadParams[limitParam] = pageSize;
 
       await loadItems(loadParams);
     } catch (error) {

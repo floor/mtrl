@@ -150,16 +150,22 @@ export interface ListManagerConfig {
     strategy?: "cursor" | "page" | "offset";
 
     /**
-     * Parameter name for page size (for page-based pagination)
-     * @default 'per_page'
+     * Parameter name for index/offset/page/cursor
+     * @default varies by strategy: 'offset', 'page', or 'cursor'
      */
-    perPageParamName?: string;
+    indexName?: string;
 
     /**
-     * Parameter name for limit (for cursor/offset pagination)
+     * Parameter name for limit/page size
      * @default 'limit'
      */
-    limitParamName?: string;
+    limitParam?: string;
+
+    /**
+     * Default number of items to load
+     * @default 20
+     */
+    limitSize?: number;
   };
 
   /**
@@ -226,9 +232,9 @@ export interface ListManager {
   ) => Promise<{ hasNext: boolean; items: any[] }>;
 
   /**
-   * Loads the previous page (only works with page-based pagination)
+   * Loads the previous items (adapts to pagination strategy)
    */
-  loadPreviousPage: () => Promise<{ hasPrev: boolean; items: any[] }>;
+  loadPrevious: () => Promise<{ hasPrev: boolean; items: any[] }>;
 
   /**
    * Scrolls to the next page and loads it if necessary

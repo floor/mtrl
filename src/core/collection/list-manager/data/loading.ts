@@ -97,6 +97,14 @@ export const createDataLoadingManager = (deps: DataLoadingDependencies) => {
         ? response.items.map(config.transform!)
         : [];
 
+      console.log(`📦 [DATA] API Response: ${items.length} items loaded`);
+      console.log(
+        `📦 [DATA] First few items: ${items
+          .slice(0, 3)
+          .map((item) => item.id)
+          .join(", ")}`
+      );
+
       // Store current state.items.length before updating state
       const currentStateItemsLength = state.items.length;
 
@@ -117,8 +125,25 @@ export const createDataLoadingManager = (deps: DataLoadingDependencies) => {
         if (items.length > 0) {
           await itemsCollection.add(items);
         }
+      } else if (state.paginationStrategy === "offset") {
+        // For offset pagination, replace collection for offset=0 or page jumps
+        const isInitialLoad = params.offset === 0 || isPageJumpLoad;
+
+        if (isInitialLoad && items.length > 0) {
+          console.log(
+            `🎯 [OFFSET-DATA] Initial load or page jump: replacing collection with ${items.length} items`
+          );
+          await itemsCollection.clear();
+          await itemsCollection.add(items);
+        } else if (items.length > 0) {
+          console.log(
+            `🎯 [OFFSET-DATA] Appending ${items.length} items to collection`
+          );
+          // For non-initial loads, append to existing collection
+          await itemsCollection.add(items);
+        }
       } else {
-        // For cursor/offset pagination, use deduplication
+        // For cursor pagination, use deduplication
         if (config.dedupeItems) {
           const existingIds = new Set(
             state.items.map((item) => item.id).filter(Boolean)
@@ -158,16 +183,31 @@ export const createDataLoadingManager = (deps: DataLoadingDependencies) => {
             totalHeightDirty: true,
           });
         }
+      } else if (state.paginationStrategy === "offset") {
+        // For offset pagination, always update state with the FULL collection
+        console.log(
+          `🎯 [OFFSET-STATE] Updating state with collection items: ${
+            itemsCollection.getItems().length
+          }`
+        );
+
+        Object.assign(state, {
+          items: [...itemsCollection.getItems()],
+          hasNext: response.meta.hasNext ?? false,
+          totalHeightDirty: true,
+          itemCount: response.meta.total ?? itemsCollection.getItems().length,
+        });
+
+        console.log(
+          `📦 [OFFSET-STATE] State updated - items: ${state.items.length}, hasNext: ${state.hasNext}`
+        );
+        console.log(
+          `📦 [OFFSET-STATE] State items IDs: [${state.items
+            .map((item) => item.id)
+            .join(", ")}]`
+        );
       } else {
-        // For boundary loads, update state with the FULL collection, not just new items
-        const existingCollection = [...itemsCollection.getItems()];
-
-        // Add items to collection
-        if (items.length > 0) {
-          await itemsCollection.add(items);
-        }
-
-        // Get updated state but preserve page during initial range loading
+        // For boundary loads and cursor pagination, update state with the FULL collection
         const stateUpdates = updateStateAfterLoad(
           state,
           [...itemsCollection.getItems()],

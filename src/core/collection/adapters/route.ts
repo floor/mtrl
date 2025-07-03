@@ -32,40 +32,22 @@ export interface PaginationConfig {
   strategy: PaginationStrategy;
 
   /**
-   * Parameter name for pagination cursor
-   * @default 'cursor'
+   * Parameter name for index/offset/page/cursor
+   * @default varies by strategy: 'offset', 'page', or 'cursor'
    */
-  cursorParamName?: string;
+  indexName?: string;
 
   /**
-   * Parameter name for page number
-   * @default 'page'
-   */
-  pageParamName?: string;
-
-  /**
-   * Parameter name for page size / items per page
-   * @default 'per_page'
-   */
-  perPageParamName?: string;
-
-  /**
-   * Parameter name for offset
-   * @default 'offset'
-   */
-  offsetParamName?: string;
-
-  /**
-   * Parameter name for limit
+   * Parameter name for limit/page size
    * @default 'limit'
    */
-  limitParamName?: string;
+  limitParam?: string;
 
   /**
-   * Default page size for pagination
+   * Default number of items to load
    * @default 20
    */
-  defaultPageSize?: number;
+  limitSize?: number;
 }
 
 /**
@@ -178,13 +160,28 @@ export const createRouteAdapter = (config: RouteAdapterConfig = {}) => {
   // This ensures we respect the user's desired pagination strategy
   const paginationConfig: Required<PaginationConfig> = {
     strategy: config.pagination?.strategy || "cursor",
-    cursorParamName: config.pagination?.cursorParamName || "cursor",
-    pageParamName: config.pagination?.pageParamName || "page",
-    perPageParamName: config.pagination?.perPageParamName || "per_page",
-    offsetParamName: config.pagination?.offsetParamName || "offset",
-    limitParamName: config.pagination?.limitParamName || "limit",
-    defaultPageSize: config.pagination?.defaultPageSize || 20,
+    indexName:
+      config.pagination?.indexName ||
+      getDefaultIndexName(config.pagination?.strategy || "cursor"),
+    limitParam: config.pagination?.limitParam || "limit",
+    limitSize: config.pagination?.limitSize || 20,
   };
+
+  /**
+   * Get default index parameter name based on strategy
+   */
+  function getDefaultIndexName(strategy: PaginationStrategy): string {
+    switch (strategy) {
+      case "offset":
+        return "offset";
+      case "page":
+        return "page";
+      case "cursor":
+        return "cursor";
+      default:
+        return "cursor";
+    }
+  }
 
   /**
    * Normalizes a base URL to ensure it can be used in URL construction
@@ -361,13 +358,13 @@ export const createRouteAdapter = (config: RouteAdapterConfig = {}) => {
         // Cursor-based pagination
         const cursor = query.cursor || options.cursor;
         if (cursor) {
-          params[paginationConfig.cursorParamName] = cursor;
+          params[paginationConfig.indexName] = cursor;
         }
 
         // Add limit parameter
         const limit =
-          query.limit || options.limit || paginationConfig.defaultPageSize;
-        params[paginationConfig.limitParamName] = limit;
+          query.limit || options.limit || paginationConfig.limitSize;
+        params[paginationConfig.limitParam] = limit;
         break;
       }
 
@@ -379,12 +376,12 @@ export const createRouteAdapter = (config: RouteAdapterConfig = {}) => {
             : options.offset !== undefined
             ? options.offset
             : 0;
-        params[paginationConfig.offsetParamName] = offset;
+        params[paginationConfig.indexName] = offset;
 
         // Add limit parameter
         const limit =
-          query.limit || options.limit || paginationConfig.defaultPageSize;
-        params[paginationConfig.limitParamName] = limit;
+          query.limit || options.limit || paginationConfig.limitSize;
+        params[paginationConfig.limitParam] = limit;
         break;
       }
 
@@ -399,7 +396,7 @@ export const createRouteAdapter = (config: RouteAdapterConfig = {}) => {
             ? query.cursor
             : 1; // Use cursor as page if specified
 
-        params[paginationConfig.pageParamName] = page;
+        params[paginationConfig.indexName] = page;
 
         // Add page size parameter
         const perPage =
@@ -409,9 +406,9 @@ export const createRouteAdapter = (config: RouteAdapterConfig = {}) => {
           options.per_page ||
           options.perPage ||
           options.limit ||
-          paginationConfig.defaultPageSize;
+          paginationConfig.limitSize;
 
-        params[paginationConfig.perPageParamName] = perPage;
+        params[paginationConfig.limitParam] = perPage;
         break;
       }
     }
@@ -493,7 +490,7 @@ export const createRouteAdapter = (config: RouteAdapterConfig = {}) => {
           // Default determination based on data
           // If items returned equals limit, assume there could be more
           const limit =
-            query.limit || options.limit || paginationConfig.defaultPageSize;
+            query.limit || options.limit || paginationConfig.limitSize;
           metadata.hasNext = data.length >= limit;
 
           // Try to generate a cursor based on the last item's ID
@@ -515,7 +512,7 @@ export const createRouteAdapter = (config: RouteAdapterConfig = {}) => {
           query.limit ||
             options.limit ||
             meta.limit ||
-            paginationConfig.defaultPageSize
+            paginationConfig.limitSize
         );
         const fetchedItems = data.length;
 
@@ -553,7 +550,7 @@ export const createRouteAdapter = (config: RouteAdapterConfig = {}) => {
             meta.perPage ||
             meta.size ||
             meta.limit ||
-            paginationConfig.defaultPageSize
+            paginationConfig.limitSize
         );
 
         // Store page in the metadata

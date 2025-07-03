@@ -250,7 +250,7 @@ export interface ListComponent {
    * Loads the previous page (only works with page-based pagination)
    * @returns {Promise<{hasPrev: boolean, items: any[]}>} Promise with load result
    */
-  loadPreviousPage: () => Promise<{ hasPrev: boolean; items: any[] }>;
+  loadPrevious: () => Promise<{ hasPrev: boolean; items: any[] }>;
 
   /**
    * Scrolls to the next page and loads it if necessary
@@ -297,7 +297,7 @@ export interface ListComponent {
    * @param {boolean} animate - Whether to animate the scroll
    * @returns {Promise<VirtualListComponent>} Promise that resolves when scroll is complete
    */
-  scrollToPage: (
+  scrollTo: (
     pageNumber: number,
     position?: "start" | "center" | "end",
     animate?: boolean

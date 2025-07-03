@@ -209,6 +209,7 @@ export const createListManager = (
     config: validatedConfig,
     container,
     loadPage,
+    loadItems,
     updateVisibleItems,
     timeoutManager: {
       setScrollJumpState: timeoutManager.setScrollJumpState,

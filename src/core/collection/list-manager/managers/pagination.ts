@@ -116,8 +116,8 @@ export const createPaginationManager = (deps: PaginationDependencies) => {
       const loadParams = createLoadParams(state, paginationStrategy);
       loadParams.page = pageNumber;
 
-      const perPageParam = config.pagination?.perPageParamName || "per_page";
-      loadParams[perPageParam] = config.pageSize || 20;
+      const limitParam = config.pagination?.limitParam || "limit";
+      loadParams[limitParam] = config.pageSize || 20;
 
       try {
         const response = await adapter.read(loadParams);
@@ -192,8 +192,8 @@ export const createPaginationManager = (deps: PaginationDependencies) => {
       loadParams.page = state.page + 1;
 
       // Add pageSize parameter
-      const perPageParam = config.pagination?.perPageParamName || "per_page";
-      loadParams[perPageParam] = config.pageSize || 20;
+      const limitParam = config.pagination?.limitParam || "limit";
+      loadParams[limitParam] = config.pageSize || 20;
     }
 
     try {
@@ -209,7 +209,7 @@ export const createPaginationManager = (deps: PaginationDependencies) => {
   };
 
   /**
-   * Enhanced loadPreviousPage function (moved from list-manager)
+   * Enhanced loadPrevious function (moved from list-manager, renamed for strategy-agnostic naming)
    */
   const loadPreviousPageEnhanced = async (): Promise<{
     hasPrev: boolean;
@@ -242,8 +242,8 @@ export const createPaginationManager = (deps: PaginationDependencies) => {
     loadParams.page = previousPage;
 
     // Add pageSize parameter
-    const perPageParam = config.pagination?.perPageParamName || "per_page";
-    loadParams[perPageParam] = config.pageSize || 20;
+    const limitParam = config.pagination?.limitParam || "limit";
+    loadParams[limitParam] = config.pageSize || 20;
 
     // Load the previous page
     const response = await adapter.read(loadParams);

@@ -3,7 +3,12 @@
  */
 import { ListManagerState, ListManagerConfig } from "../types";
 import { PAGINATION, BOUNDARIES } from "../constants";
-import { calcViewportPages, devLog, logError } from "./utils";
+import {
+  calcViewportPages,
+  calcViewportOffset,
+  devLog,
+  logError,
+} from "./utils";
 import { SCROLL } from "../constants";
 
 export interface ScrollJumpDependencies {
@@ -14,6 +19,7 @@ export interface ScrollJumpDependencies {
     pageNumber: number,
     options?: any
   ) => Promise<{ hasNext: boolean; items: any[] }>;
+  loadItems: (params?: any) => Promise<{ items: any[]; meta: any }>;
   updateVisibleItems: (scrollTop?: number, isPageJump?: boolean) => void;
   timeoutManager: {
     setScrollJumpState: (callback: () => void, delay?: number) => void;
@@ -28,9 +34,55 @@ export const createScrollJumpFunctions = (deps: ScrollJumpDependencies) => {
     config,
     container,
     loadPage,
+    loadItems,
     updateVisibleItems,
     timeoutManager,
   } = deps;
+
+  /**
+   * Load data using offset-based pagination
+   */
+  const loadOffsetData = async (offset: number, limit: number) => {
+    // 🎯 DIRECT OFFSET API CALL: Let the route adapter handle parameter building
+    const apiParams = { offset, limit };
+
+    console.log(
+      `🚀 [OFFSET-API] Making direct API call with offset=${offset}, limit=${limit}`
+    );
+
+    try {
+      // Direct API call - the route adapter will handle parameter naming
+      const response = await loadItems(apiParams);
+
+      console.log(
+        `✅ [OFFSET-API] Direct API call successful: ${response.items.length} items loaded`
+      );
+
+      return response;
+    } catch (error) {
+      console.error(`❌ [OFFSET-API] Direct API call failed:`, error);
+
+      // Fallback to page-based loading if offset API fails
+      console.log(`🔄 [OFFSET-FALLBACK] Converting to page-based loading`);
+      const pageSize = config.pageSize || 20;
+      const startPage = Math.floor(offset / pageSize) + 1;
+      const endPage = Math.floor((offset + limit - 1) / pageSize) + 1;
+
+      const pagePromises = [];
+      for (let page = startPage; page <= endPage; page++) {
+        pagePromises.push(
+          loadPage(page, {
+            setScrollPosition: false,
+            replaceCollection: false,
+            animate: false,
+          })
+        );
+      }
+
+      const results = await Promise.all(pagePromises);
+      return { items: results.flatMap((r) => r.items) };
+    }
+  };
 
   const loadAdditionalRangesInBackground = (pages: number[]): void => {
     setTimeout(async () => {
@@ -133,60 +185,111 @@ export const createScrollJumpFunctions = (deps: ScrollJumpDependencies) => {
     try {
       const containerHeight = state.containerHeight || 400;
       const pageSize = config.pageSize || 20;
+      const paginationStrategy = config.pagination?.strategy || "page";
+      let loadedPages: number[] = []; // Track loaded pages for preloading
 
-      const calc = calcViewportPages(
-        targetIndex,
-        containerHeight,
-        itemHeight,
-        pageSize,
-        targetScrollPosition,
-        state.itemCount
-      );
-
-      // Load viewport pages
-      const promises = calc.pages.map((page) =>
-        loadPage(page, {
-          setScrollPosition: false,
-          replaceCollection: false,
-          animate: false,
-        })
-      );
-      await Promise.all(promises);
-      console.log(
-        `✅ [SCROLL-JUMP] All ${promises.length} pages loaded successfully!`
-      );
-
-      // Background preloading
-      const before =
-        config.adjacentPagesPreloadBefore ??
-        Math.floor(
-          (config.adjacentPagesPreload ?? PAGINATION.ADJACENT_PAGES_PRELOAD) / 2
-        );
-      const after =
-        config.adjacentPagesPreloadAfter ??
-        Math.ceil(
-          (config.adjacentPagesPreload ?? PAGINATION.ADJACENT_PAGES_PRELOAD) / 2
+      if (paginationStrategy === "offset") {
+        // 🎯 OPTIMIZED: Offset-based loading - ONE precise API call
+        const offsetCalc = calcViewportOffset(
+          targetScrollPosition,
+          containerHeight,
+          itemHeight,
+          state.itemCount
         );
 
-      if (before > 0 || after > 0) {
-        const totalPages = state.itemCount
-          ? Math.ceil(state.itemCount / pageSize)
-          : null;
-        const additional: number[] = [];
-        const firstPage = Math.min(...calc.pages);
-        const lastPage = Math.max(...calc.pages);
+        console.log(
+          `🎯 [OFFSET-LOAD] Loading ${offsetCalc.limit} items from offset ${offsetCalc.offset}`
+        );
 
-        for (let i = 1; i <= before; i++) {
-          const p = firstPage - i;
-          if (p >= 1 && !calc.pages.includes(p)) additional.push(p);
-        }
-        for (let i = 1; i <= after; i++) {
-          const p = lastPage + i;
-          if ((!totalPages || p <= totalPages) && !calc.pages.includes(p))
-            additional.push(p);
-        }
+        // Single precise API call instead of multiple page calls
+        const response = await loadOffsetData(
+          offsetCalc.offset,
+          offsetCalc.limit
+        );
+        console.log(
+          `✅ [OFFSET-LOAD] Loaded ${response.items.length} items successfully!`
+        );
 
-        if (additional.length > 0) loadAdditionalRangesInBackground(additional);
+        // 🎯 CRITICAL: Trigger re-render after data loads to show items immediately
+        console.log(
+          `🎨 [OFFSET-LOAD] Triggering re-render with newly loaded data`
+        );
+        updateVisibleItems(targetScrollPosition, isProgrammatic);
+
+        // Calculate equivalent pages for preloading compatibility
+        const startPage = Math.floor(offsetCalc.offset / pageSize) + 1;
+        const endPage =
+          Math.floor((offsetCalc.offset + offsetCalc.limit - 1) / pageSize) + 1;
+        for (let page = startPage; page <= endPage; page++) {
+          loadedPages.push(page);
+        }
+      } else {
+        // 📄 LEGACY: Page-based loading - multiple API calls
+        const calc = calcViewportPages(
+          targetIndex,
+          containerHeight,
+          itemHeight,
+          pageSize,
+          targetScrollPosition,
+          state.itemCount
+        );
+
+        // Load viewport pages
+        const promises = calc.pages.map((page) =>
+          loadPage(page, {
+            setScrollPosition: false,
+            replaceCollection: false,
+            animate: false,
+          })
+        );
+        await Promise.all(promises);
+        console.log(
+          `✅ [SCROLL-JUMP] All ${promises.length} pages loaded successfully!`
+        );
+
+        loadedPages = calc.pages;
+      }
+
+      // Background preloading (only for page-based strategy)
+      if (paginationStrategy === "page") {
+        const before =
+          config.adjacentPagesPreloadBefore ??
+          Math.floor(
+            (config.adjacentPagesPreload ?? PAGINATION.ADJACENT_PAGES_PRELOAD) /
+              2
+          );
+        const after =
+          config.adjacentPagesPreloadAfter ??
+          Math.ceil(
+            (config.adjacentPagesPreload ?? PAGINATION.ADJACENT_PAGES_PRELOAD) /
+              2
+          );
+
+        if (before > 0 || after > 0) {
+          const totalPages = state.itemCount
+            ? Math.ceil(state.itemCount / pageSize)
+            : null;
+          const additional: number[] = [];
+          const firstPage = Math.min(...loadedPages);
+          const lastPage = Math.max(...loadedPages);
+
+          for (let i = 1; i <= before; i++) {
+            const p = firstPage - i;
+            if (p >= 1 && !loadedPages.includes(p)) additional.push(p);
+          }
+          for (let i = 1; i <= after; i++) {
+            const p = lastPage + i;
+            if ((!totalPages || p <= totalPages) && !loadedPages.includes(p))
+              additional.push(p);
+          }
+
+          if (additional.length > 0)
+            loadAdditionalRangesInBackground(additional);
+        }
+      } else {
+        console.log(
+          `🎯 [OFFSET-STRATEGY] Background preloading disabled for offset-based pagination - using on-demand loading`
+        );
       }
 
       // Set scroll position
