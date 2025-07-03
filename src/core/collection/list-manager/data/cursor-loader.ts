@@ -1,5 +1,5 @@
 import { LoadStatus, LoadParams, PaginationMeta } from "../types";
-import { SCROLL } from "../constants";
+// Note: Removed unused import of SCROLL constants
 
 /**
  * List manager interface needed for cursor pagination
@@ -30,7 +30,7 @@ export const createCursorPageLoader = (
 
   // Use a throttle to prevent rapid load calls
   let loadThrottleTimer: number | null = null;
-  const throttleMs = SCROLL.LOAD_THROTTLE_MS; // Minimum time between load operations
+  const throttleMs = 100; // Minimum time between load operations (was SCROLL.LOAD_THROTTLE_MS)
 
   const load = async (cursor = null, addToHistory = true) => {
     // Prevent concurrent load operations

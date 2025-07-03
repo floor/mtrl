@@ -15,7 +15,6 @@ import {
 } from "./types";
 import { createPageEventManager } from "./events";
 import { createPaginationManager } from "./managers/pagination";
-import { createScrollingManager } from "./scroll/programmatic";
 import { createRenderingManager } from "./render/virtual";
 import {
   createDataLoadingManager,
@@ -56,7 +55,6 @@ import {
   RENDERING,
   PAGINATION,
   BOUNDARIES,
-  SCROLL,
   COLLECTION,
   TIMING,
   DEFAULTS,
@@ -70,7 +68,7 @@ import {
 // Import new manager modules
 import { createTimeoutManager } from "./managers/timeout";
 import { createBoundaryManager } from "./managers/boundary";
-import { createScrollJumpManager } from "./managers/scroll-jump";
+import { createScrollingManager } from "./scroll/manager";
 import { initialize } from "./initialize";
 import { createPublicAPI } from "./api";
 
@@ -126,13 +124,6 @@ export const createListManager = (
   const renderingManager = createRenderingManager({
     config: validatedConfig,
     elements,
-  });
-
-  // Initialize scrolling manager (will be updated later with loadPage)
-  let scrollingManager = createScrollingManager({
-    state,
-    config: validatedConfig,
-    container,
   });
 
   // Initialize data loading manager
@@ -212,8 +203,8 @@ export const createListManager = (
 
   // loadPreviousPage moved to pagination manager
 
-  // Create scroll jump manager for complex scroll operations
-  const scrollJumpManager = createScrollJumpManager({
+  // Create centralized scrolling manager for all scroll operations
+  const scrollingManager = createScrollingManager({
     state,
     config: validatedConfig,
     container,
@@ -224,27 +215,11 @@ export const createListManager = (
       getState: timeoutManager.getState,
       updateState: timeoutManager.updateState,
     },
-  });
-
-  // Update scrolling manager with loadPage dependency
-  scrollingManager = createScrollingManager({
-    state,
-    config: validatedConfig,
-    container,
-    loadPage,
     itemMeasurement,
     collection,
-    scrollJumpManager: {
-      loadScrollJumpWithBackgroundRanges:
-        scrollJumpManager.loadScrollJumpWithBackgroundRanges,
-      loadAdditionalRangesInBackground:
-        scrollJumpManager.loadAdditionalRangesInBackground,
-      loadScrollToIndexWithBackgroundRanges:
-        scrollJumpManager.loadScrollToIndexWithBackgroundRanges,
-    },
   });
 
-  // Extract functions from scrolling manager
+  // Extract functions from centralized scrolling manager
   const { scrollToItem, scrollToIndex, scrollToItemById } = scrollingManager;
 
   // Create boundary manager first
@@ -255,7 +230,7 @@ export const createListManager = (
     timeoutManager,
     scrollJumpManager: {
       loadScrollToIndexWithBackgroundRanges:
-        scrollJumpManager.loadScrollToIndexWithBackgroundRanges,
+        scrollingManager.loadScrollToIndexWithBackgroundRanges,
     },
   });
 
@@ -269,7 +244,7 @@ export const createListManager = (
     renderer,
     checkPageChange,
     paginationManager: {
-      scheduleScrollStopPageLoad: scrollJumpManager.scheduleScrollStopPageLoad,
+      scheduleScrollStopPageLoad: scrollingManager.scheduleScrollStopPageLoad,
       checkPageBoundaries: boundaryManager.checkPageBoundaries,
       loadNext: paginationManager.loadNextPage,
       getPaginationFlags: () => timeoutManager.getState(),
@@ -324,7 +299,7 @@ export const createListManager = (
     clearTimeouts: () => timeoutManager.clearAllTimeouts(),
     scrollJumpManager: {
       loadScrollToIndexWithBackgroundRanges:
-        scrollJumpManager.loadScrollToIndexWithBackgroundRanges,
+        scrollingManager.loadScrollToIndexWithBackgroundRanges,
     },
   });
 

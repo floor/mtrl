@@ -79,22 +79,25 @@ export const PAGINATION = {
  */
 export const SCROLL = {
   /** Minimum scroll change in pixels to process scroll events */
-  SCROLL_THRESHOLD: 5,
+  THRESHOLD: 5,
 
   /** Default throttle time for scroll events in milliseconds */
-  DEFAULT_THROTTLE_MS: 16,
+  THROTTLE_MS: 16,
 
   /** Minimum time between load operations in milliseconds */
   LOAD_THROTTLE_MS: 100,
 
   /** Default load threshold as fraction (0-1) of total height */
-  DEFAULT_LOAD_THRESHOLD: 0.4,
+  LOAD_THRESHOLD: 0.4,
 
   /** Reset scroll position */
-  RESET_SCROLL_TOP: 0,
+  RESET_TOP: 0,
 
   /** Debounce delay for scroll stop detection in milliseconds */
-  SCROLL_STOP_DEBOUNCE: 300,
+  STOP_DEBOUNCE: 300,
+
+  /** Debounce delay for scroll jump page loads in milliseconds */
+  JUMP_DEBOUNCE: 200,
 } as const;
 
 /**
@@ -114,6 +117,7 @@ export const BOUNDARIES = {
   BOUNDARY_LOAD_DEBOUNCE: 150,
 
   /** Debounce delay for large scroll jump page loads in milliseconds */
+  /** @deprecated Use SCROLL.JUMP_DEBOUNCE instead */
   SCROLL_JUMP_LOAD_DEBOUNCE: 200,
 
   /** Debounce delay for adjacent page loads in milliseconds */
@@ -132,6 +136,17 @@ export const COLLECTION = {
 
   /** Small list threshold for simple rendering */
   SMALL_LIST_THRESHOLD: 10,
+} as const;
+
+/**
+ * Viewport Constants
+ */
+export const VIEWPORT = {
+  /** Number of extra items to render outside viewport (render buffer) */
+  RENDER_BUFFER_SIZE: 5,
+
+  /** Number of items to keep in DOM but invisible (overscan) */
+  OVERSCAN_COUNT: 3,
 } as const;
 
 /**
@@ -225,7 +240,7 @@ export const DEFAULTS = {
   adjacentPagesPreload: PAGINATION.ADJACENT_PAGES_PRELOAD,
   renderBufferSize: RENDERING.DEFAULT_RENDER_BUFFER_SIZE,
   overscanCount: RENDERING.DEFAULT_OVERSCAN_COUNT,
-  loadThreshold: SCROLL.DEFAULT_LOAD_THRESHOLD,
-  throttleMs: SCROLL.DEFAULT_THROTTLE_MS,
+  loadThreshold: SCROLL.LOAD_THRESHOLD,
+  throttleMs: SCROLL.THROTTLE_MS,
   containerHeight: RENDERING.DEFAULT_CONTAINER_HEIGHT,
 } as const;
