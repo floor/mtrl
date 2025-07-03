@@ -14,10 +14,7 @@
 export { createListManager } from "./list-manager";
 
 // Utility functions
-export { createPageLoader } from "./list-manager";
-
-// Transform functions for common data types
-export { transforms } from "./list-manager";
+export { createCursorPageLoader } from "./data/cursor-loader";
 
 // Re-export all types for external use
 export * from "./types";

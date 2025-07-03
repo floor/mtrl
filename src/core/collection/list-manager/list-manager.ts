@@ -71,276 +71,15 @@ import {
 import { createTimeoutManager } from "./managers/timeout";
 import { createBoundaryManager } from "./managers/boundary";
 import { createScrollJumpManager } from "./managers/scroll-jump";
+import { initialize } from "./initialize";
+import { createPublicAPI } from "./api";
 
 /**
  * Pagination helper functions
  * @private
  */
 
-export const createLoadPageFunction = (
-  state: any,
-  validatedConfig: any,
-  loadItems: any,
-  updateVisibleItems: any,
-  itemMeasurement: any,
-  renderer: any,
-  container: any,
-  timeoutManager: any,
-  elements: any,
-  itemsCollection: any,
-  adapter: any
-) => {
-  return async (
-    pageNumber: number,
-    options: {
-      setScrollPosition?: boolean;
-      replaceCollection?: boolean;
-      animate?: boolean;
-    } = {}
-  ): Promise<{ hasNext: boolean; items: any[] }> => {
-    const {
-      setScrollPosition = true,
-      replaceCollection = true,
-      animate = false,
-    } = options;
-
-    console.log("🔍 [LoadPage] Starting loadPage:", {
-      pageNumber,
-      setScrollPosition,
-      replaceCollection,
-      animate,
-      currentPage: state.page,
-      hasItems: state.items.length,
-      useStatic: state.useStatic,
-      paginationStrategy: validatedConfig.pagination?.strategy || "cursor",
-    });
-
-    // Validate page number
-    if (!Number.isInteger(pageNumber) || pageNumber < 1) {
-      throw new Error("Page number must be a positive integer");
-    }
-
-    // Check if we're using page-based pagination
-    const paginationStrategy = validatedConfig.pagination?.strategy || "cursor";
-    if (paginationStrategy !== "page") {
-      throw new Error(
-        "loadPage can only be used with page-based pagination strategy"
-      );
-    }
-
-    // If using static data, there's no pagination
-    if (state.useStatic) {
-      console.log("📤 [LoadPage] Early return: Using static data");
-      return { hasNext: false, items: state.items };
-    }
-
-    // For background loading (replaceCollection: false), handle differently
-    if (!replaceCollection) {
-      console.log(
-        "📤 [LoadPage] Taking background loading path (replaceCollection: false)"
-      );
-      // Check if we already have this page's data
-      const pageSize = validatedConfig.pageSize || 20;
-      const pageStartId = (pageNumber - 1) * pageSize + 1;
-      const pageEndId = pageNumber * pageSize;
-
-      const hasPageData = state.items.some((item) => {
-        const itemId = parseInt(item?.id);
-        return itemId >= pageStartId && itemId <= pageEndId;
-      });
-
-      if (hasPageData) {
-        // Already have this page, return the actual items for this page
-        const pageItems = state.items.filter((item) => {
-          const itemId = parseInt(item?.id);
-          return itemId >= pageStartId && itemId <= pageEndId;
-        });
-
-        console.log("📤 [LoadPage] Early return: Page data already exists", {
-          pageStartId,
-          pageEndId,
-          itemsFound: pageItems.length,
-          expectedItems: validatedConfig.pageSize || 20,
-        });
-
-        return { hasNext: state.hasNext, items: pageItems };
-      }
-
-      // Load page data without affecting current page state
-      const loadParams = createLoadParams(state, paginationStrategy);
-      loadParams.page = pageNumber;
-
-      const perPageParam =
-        validatedConfig.pagination?.perPageParamName || "per_page";
-      loadParams[perPageParam] = validatedConfig.pageSize || 20;
-
-      try {
-        const response = await adapter.read(loadParams);
-        const items = Array.isArray(response.items)
-          ? response.items.map(validatedConfig.transform!)
-          : [];
-
-        if (items.length > 0) {
-          // Add items to collection without clearing existing items
-          await itemsCollection.add(items);
-
-          // Update state items array (sorted by ID to maintain order)
-          const allItems = [...state.items, ...items];
-          allItems.sort((a, b) => parseInt(a.id) - parseInt(b.id));
-          state.items = allItems;
-
-          // Update item count if API provides total
-          if (response.meta?.total) {
-            state.itemCount = response.meta.total;
-          }
-        }
-
-        return {
-          hasNext: response.meta?.hasNext ?? false,
-          items,
-        };
-      } catch (error) {
-        console.error(
-          `❌ [BackgroundLoad] Failed to load page ${pageNumber}:`,
-          error
-        );
-        return { hasNext: false, items: [] };
-      }
-    }
-
-    // Regular loading (replaceCollection: true) - existing logic
-    // If we're already on the same page and have items, just ensure they're rendered
-    if (state.page === pageNumber && state.items.length > 0) {
-      console.log("📤 [LoadPage] Taking same page re-render path");
-      // Force a re-render to ensure items are visible
-      state.visibleRange = { start: -1, end: -1 };
-      renderer.resetVisibleRange();
-
-      // Force immediate render
-      requestAnimationFrame(() => {
-        updateVisibleItems(state.scrollTop);
-
-        // Immediate double-check - no delay needed
-        if (state.visibleItems.length === 0) {
-          console.warn(
-            `⚠️ [LoadPage] Force-rendering page ${pageNumber} items`
-          );
-          updateVisibleItems(state.scrollTop);
-        }
-      });
-
-      return { hasNext: state.hasNext, items: state.items };
-    }
-
-    return { hasNext: false, items: [] }; // Simplified for now - full implementation would continue
-  };
-};
-
-/**
- * Initialize core dependencies: config, state, DOM, utilities
- * @private
- */
-export const initializeCore = (
-  collection: string,
-  container: HTMLElement,
-  config: ListManagerConfig
-) => {
-  // Add collection name to config
-  config.collection = collection;
-
-  // Validate and merge configuration
-  const validatedConfig = validateConfig(config);
-
-  if (!container || !(container instanceof HTMLElement)) {
-    throw new Error("List manager requires a valid container element");
-  }
-
-  // Determine API mode and get static items
-  const useApi = determineApiMode(validatedConfig);
-  const useStatic = !useApi;
-
-  // Get initial static items (only if we're in static mode)
-  const initialItems = useStatic ? getStaticItems(validatedConfig) : [];
-
-  // Create state object with initial values
-  const state = {
-    // Core state
-    ...createInitialState(validatedConfig),
-    items: initialItems || [],
-    useStatic: !useApi,
-    mounted: false,
-
-    // Virtual scrolling support
-    virtualOffset: 0, // Offset for virtual positioning when jumping to pages
-
-    // Measurement and layout
-    containerHeight: container.clientHeight,
-    totalHeightDirty: true,
-  };
-
-  // Create DOM elements
-  const elements = createDomElements(container);
-
-  // Initialize tools and utilities
-  const itemMeasurement = createItemMeasurement(validatedConfig.itemHeight);
-  const recyclePool = createRecyclingPool();
-  const renderer = createRenderer(
-    validatedConfig,
-    elements,
-    itemMeasurement,
-    recyclePool
-  );
-
-  // Install placeholder render hook for automatic styling
-  installPlaceholderHook(renderer.setRenderHook);
-
-  // Initialize collection for data management
-  const itemsCollection = createCollection({
-    initialCapacity: useStatic
-      ? initialItems.length
-      : COLLECTION.DEFAULT_INITIAL_CAPACITY,
-  });
-
-  // Initialize route adapter (only if in API mode)
-  const adapter = useApi
-    ? createRouteAdapter({
-        base: validatedConfig.baseUrl!,
-        endpoints: {
-          list: `/${collection}`,
-        },
-        headers: {
-          "Content-Type": "application/json",
-        },
-        cache: true,
-        pagination: validatedConfig.pagination
-          ? {
-              strategy: validatedConfig.pagination.strategy || "cursor",
-              ...validatedConfig.pagination,
-            }
-          : { strategy: "cursor" },
-      })
-    : null;
-
-  // Track cleanup functions
-  const cleanupFunctions: (() => void)[] = [];
-
-  return {
-    validatedConfig,
-    state,
-    elements,
-    itemMeasurement,
-    recyclePool,
-    renderer,
-    itemsCollection,
-    adapter,
-    cleanupFunctions,
-    useApi,
-    useStatic,
-    initialItems,
-    container,
-    collection,
-  };
-};
+// createLoadPageFunction moved to pagination manager
 
 /**
  * Creates a list manager for a specific collection
@@ -355,7 +94,7 @@ export const createListManager = (
   config: ListManagerConfig
 ): ListManager => {
   // Phase 1: Initialize core dependencies
-  const core = initializeCore(collection, container, config);
+  const core = initialize(collection, container, config);
   const {
     validatedConfig,
     state,
@@ -408,6 +147,22 @@ export const createListManager = (
     setPaginationFlags: (flags) => timeoutManager.updateState(flags),
   });
 
+  // Create pagination manager with enhanced functions
+  const paginationManager = createPaginationManager({
+    state,
+    config: validatedConfig,
+    elements,
+    container,
+    itemsCollection,
+    adapter,
+    itemMeasurement,
+    renderer,
+    loadItems: dataLoadingManager.loadItems,
+    updateVisibleItems: (scrollTop?: number, isPageJump?: boolean) => {
+      functionContainer.updateVisibleItems?.(scrollTop, isPageJump);
+    },
+  });
+
   // Create core function containers that will be injected with implementations
   const functionContainer = {
     updateVisibleItems: null as
@@ -428,22 +183,9 @@ export const createListManager = (
     scrollTop = state.scrollTop,
     isPageJump = false
   ): void => {
-    // Reduce log noise during rapid scrolling - only log significant changes or page jumps
-    const shouldLog =
-      isPageJump ||
-      !(state as any).lastLoggedScrollTop ||
-      Math.abs(scrollTop - (state as any).lastLoggedScrollTop) > 1000;
-
-    if (shouldLog) {
-      console.log("🔄 [UpdateVisibleItems] Called:", {
-        scrollTop,
-        isPageJump,
-        currentPage: state.page,
-        visibleItems: state.visibleItems.length,
-        itemCount: state.itemCount,
-        scrollSource: isPageJump ? "programmatic" : "manual_scroll",
-      });
-      (state as any).lastLoggedScrollTop = scrollTop;
+    // Debug: Only log page jumps
+    if (isPageJump) {
+      console.log("[LIST-MANAGER] updateVisibleItems called (page jump)");
     }
     functionContainer.updateVisibleItems?.(scrollTop, isPageJump);
   };
@@ -452,76 +194,11 @@ export const createListManager = (
    * Check if we need to load more data based on scroll position
    */
   const checkLoadMore = (scrollTop: number): void => {
-    console.log("🔍 [CheckLoadMore] Called:", {
-      scrollTop,
-      currentPage: state.page,
-      hasNext: state.hasNext,
-      loading: state.loading,
-      visibleItems: state.visibleItems.length,
-    });
+    // checkLoadMore called
     functionContainer.checkLoadMore?.(scrollTop);
   };
 
-  /**
-   * Loads more items using appropriate pagination strategy
-   */
-  const loadNext = async (): Promise<{ hasNext: boolean; items: any[] }> => {
-    // If we're already at the bottom or loading, do nothing
-    if (state.loading || !state.hasNext) {
-      return { hasNext: state.hasNext, items: [] };
-    }
-
-    // If using static data, there are no more items to load
-    if (state.useStatic) {
-      return { hasNext: false, items: [] };
-    }
-
-    // Get pagination strategy from configuration
-    const paginationStrategy = validatedConfig.pagination?.strategy || "cursor";
-
-    // Store the pagination strategy in state for future use
-    state.paginationStrategy = paginationStrategy;
-
-    // For page-based pagination, increment the page number for next load
-    if (paginationStrategy === "page") {
-      // If we have a numeric cursor, use that to determine the next page
-      if (state.cursor && /^\d+$/.test(state.cursor)) {
-        state.page = parseInt(state.cursor, 10);
-      }
-      // Otherwise increment the current page
-      else if (state.page !== undefined) {
-        state.page += 1;
-      }
-      // If no page set yet, start with page 2 (since we're loading "next")
-      else {
-        state.page = 2;
-      }
-    }
-
-    // Create load params for pagination
-    const loadParams = createLoadParams(state, paginationStrategy);
-
-    // Add pageSize/limit regardless of strategy
-    if (!loadParams.limit && !loadParams.per_page) {
-      if (paginationStrategy === "page") {
-        const perPageParam =
-          validatedConfig.pagination?.perPageParamName || "per_page";
-        loadParams[perPageParam] = validatedConfig.pageSize || 20;
-      } else {
-        const limitParam =
-          validatedConfig.pagination?.limitParamName || "limit";
-        loadParams[limitParam] = validatedConfig.pageSize || 20;
-      }
-    }
-
-    const result = await loadItems(loadParams);
-    updateVisibleItems(state.scrollTop);
-
-    return {
-      hasNext: state.hasNext,
-      items: result.items,
-    };
-  };
+  // loadNext moved to pagination manager as loadNextPage
 
   /**
    * Refresh the list with the latest data
@@ -531,101 +208,9 @@ export const createListManager = (
   /**
    * Loads a specific page (only works with page-based pagination)
    */
-  const loadPage = createLoadPageFunction(
-    state,
-    validatedConfig,
-    loadItems,
-    updateVisibleItems,
-    itemMeasurement,
-    renderer,
-    container,
-    timeoutManager,
-    elements,
-    itemsCollection,
-    adapter
-  );
+  const loadPage = paginationManager.loadPage;
 
-  /**
-   * Loads the previous page (only works with page-based pagination)
-   */
-  const loadPreviousPage = async (): Promise<{
-    hasPrev: boolean;
-    items: any[];
-  }> => {
-    // Check if we're using page-based pagination
-    const paginationStrategy = validatedConfig.pagination?.strategy || "cursor";
-    if (paginationStrategy !== "page") {
-      throw new Error(
-        "loadPreviousPage can only be used with page-based pagination strategy"
-      );
-    }
-
-    // Check if we have a current page and can go back
-    if (!state.page || state.page <= 1) {
-      return { hasPrev: false, items: [] };
-    }
-
-    // If using static data, there's no pagination
-    if (state.useStatic) {
-      return { hasPrev: false, items: [] };
-    }
-
-    // Calculate previous page number
-    const previousPage = state.page - 1;
-
-    // Create load params for the previous page
-    const loadParams = createLoadParams(state, paginationStrategy);
-    loadParams.page = previousPage;
-
-    // Add pageSize parameter
-    const perPageParam =
-      validatedConfig.pagination?.perPageParamName || "per_page";
-    loadParams[perPageParam] = validatedConfig.pageSize || 20;
-
-    // Load the previous page
-    const response = await adapter.read(loadParams);
-
-    // Process items
-    const items = Array.isArray(response.items)
-      ? response.items.map(validatedConfig.transform!)
-      : [];
-
-    // Prepend items to the beginning of the collection
-    if (items.length > 0) {
-      // Get current items
-      const currentItems = [...state.items];
-
-      // Update state with new items at the beginning
-      state.items = [...items, ...currentItems];
-
-      // Add to collection at the beginning
-      await itemsCollection.clear();
-      await itemsCollection.add(state.items);
-
-      // Update state page number
-      state.page = previousPage;
-
-      // Mark height as dirty for recalculation
-      state.totalHeightDirty = true;
-
-      // ENHANCED: Calculate the height of the new items to adjust scroll position
-      const defaultItemHeight = validatedConfig.itemHeight || 84;
-      const addedHeight = items.length * defaultItemHeight;
-
-      // ENHANCED: Adjust scroll position to maintain visual position
-      const newScrollTop = state.scrollTop + addedHeight;
-      container.scrollTop = newScrollTop;
-      state.scrollTop = newScrollTop;
-
-      // Update visible items with the new scroll position
-      updateVisibleItems(newScrollTop);
-    }
-
-    return {
-      hasPrev: previousPage > 1,
-      items,
-    };
-  };
+  // loadPreviousPage moved to pagination manager
 
   // Create scroll jump manager for complex scroll operations
   const scrollJumpManager = createScrollJumpManager({
@@ -686,7 +271,7 @@ export const createListManager = (
     paginationManager: {
       scheduleScrollStopPageLoad: scrollJumpManager.scheduleScrollStopPageLoad,
       checkPageBoundaries: boundaryManager.checkPageBoundaries,
-      loadNext,
+      loadNext: paginationManager.loadNextPage,
       getPaginationFlags: () => timeoutManager.getState(),
     },
     renderingManager: {
@@ -727,7 +312,7 @@ export const createListManager = (
     container,
     updateVisibleItems,
     checkLoadMore,
-    loadNext,
+    loadNext: paginationManager.loadNextPage,
     loadPage,
     itemsCollection,
     initialItems,
@@ -762,231 +347,26 @@ export const createListManager = (
   });
 
   // Return public API
-  return {
-    // Core data operations
+  return createPublicAPI({
+    loadItems,
     loadPage,
-    loadNext,
     refresh,
     updateVisibleItems,
-
-    // Navigation and scrolling
     scrollToItem,
     scrollToIndex,
     scrollToItemById,
-
-    // Page-based scrolling
-    scrollToPage: async (
-      pageNumber: number,
-      position?: "start" | "center" | "end",
-      animate?: boolean
-    ) => {
-      const shouldAnimate =
-        animate !== undefined ? animate : validatedConfig.animate || false;
-
-      // Get the configured page size
-      const pageSize = validatedConfig.pageSize || 20;
-
-      // Calculate the starting index of the page (0-based)
-      // Page 1 starts at index 0, page 2 starts at pageSize, etc.
-      const startIndex = (pageNumber - 1) * pageSize;
-
-      await scrollToIndex(startIndex, position, shouldAnimate);
-    },
-
-    // Page loading with scrolling
-    scrollNext: async () => {
-      const result = await loadNext();
-      return result;
-    },
-
-    scrollPrevious: async () => {
-      const result = await loadPreviousPage();
-      return result;
-    },
-
-    loadPreviousPage,
-
-    // Page navigation
-    getCurrentPage: () => {
-      if (state.paginationStrategy === "page") {
-        return state.page || 1;
-      }
-      return (
-        calculateCurrentPage(state.scrollTop || 0, state.paginationStrategy) ||
-        1
-      );
-    },
-
-    // Configuration access
-    getPageSize: () => validatedConfig.pageSize || 20,
-
-    // Event handling
-    onPageChange: (callback: (page: number) => void) => {
-      let currentPageTracked = state.page || 1;
-      const checkPageChange = () => {
-        const newPage = state.page || 1;
-        if (newPage !== currentPageTracked) {
-          currentPageTracked = newPage;
-          callback(newPage);
-        }
-      };
-
-      const interval = setInterval(
-        checkPageChange,
-        TIMING.PAGE_CHANGE_INTERVAL
-      );
-      const cleanup = () => clearInterval(interval);
-      cleanupFunctions.push(cleanup);
-      return cleanup;
-    },
-
-    // State access
-    getState: () => ({ ...state }),
-    getAllItems: () => state.items,
-    getVisibleItems: () => state.visibleItems,
-    isLoading: () => state.loading,
-    hasNextPage: () => state.hasNext,
-
-    // Collection and event handling
-    onCollectionChange: (
-      callback: (event: { type: string; data: any }) => void
-    ) => {
-      // Simple implementation - return cleanup function
-      // TODO: Implement proper collection event handling if needed
-      return () => {};
-    },
-
-    getCollection: () => itemsCollection,
-
-    isApiMode: () => !state.useStatic,
-
-    // Lifecycle
-    destroy: () => {
-      actualCleanup();
-    },
-  } as any;
+    paginationManager,
+    pageEventManager,
+    state,
+    validatedConfig,
+    itemsCollection,
+    cleanupFunctions,
+    actualCleanup,
+  });
 };
 
-/**
- * Utility to create a cursor-based page loader
- * @param list List interface
- * @param listManager List manager instance
- * @param config Page loader configuration
- * @returns Page loader interface
- */
-export const createPageLoader = (
-  list: { setItems: (items: any[]) => void },
-  listManager: ReturnType<typeof createListManager>,
-  config: { onLoad?: (status: LoadStatus) => void; pageSize?: number } = {}
-) => {
-  let currentCursor: string | null = null;
-  let loading = false;
-  const pageHistory: (string | null)[] = [];
-  const pageSize = config.pageSize || 20;
-
-  // Use a throttle to prevent rapid load calls
-  let loadThrottleTimer: number | null = null;
-  const throttleMs = SCROLL.LOAD_THROTTLE_MS; // Minimum time between load operations
-
-  const load = async (cursor = null, addToHistory = true) => {
-    // Prevent concurrent load operations
-    if (loading) return;
-
-    // Apply throttling to prevent rapid load operations
-    if (loadThrottleTimer !== null) {
-      clearTimeout(loadThrottleTimer);
-    }
-
-    loading = true;
-    config.onLoad?.({
-      loading: true,
-      hasNext: false,
-      hasPrev: pageHistory.length > 0,
-      items: [],
-      allItems: listManager.getAllItems(),
-    });
-
-    try {
-      const result = await listManager.loadItems({
-        limit: pageSize,
-        cursor,
-      });
-
-      if (addToHistory && cursor) {
-        pageHistory.push(currentCursor);
-      }
-      currentCursor = result.meta.cursor;
-
-      // Update the list with the new items
-      list.setItems(result.items);
-
-      // Notify about load completion
-      config.onLoad?.({
-        loading: false,
-        hasNext: result.meta.hasNext,
-        hasPrev: pageHistory.length > 0,
-        items: result.items,
-        allItems: listManager.getAllItems(),
-      });
-
-      return {
-        hasNext: result.meta.hasNext,
-        hasPrev: pageHistory.length > 0,
-      };
-    } finally {
-      // Set timer to prevent rapid consecutive loads
-      loadThrottleTimer = window.setTimeout(() => {
-        loading = false;
-        loadThrottleTimer = null;
-      }, throttleMs);
-    }
-  };
-
-  const loadNext = () => load(currentCursor);
-
-  const loadPrev = () => {
-    const previousCursor = pageHistory.pop();
-    return load(previousCursor, false);
-  };
-
-  return {
-    load,
-    loadNext,
-    loadPrev,
-    get loading() {
-      return loading;
-    },
-    get cursor() {
-      return currentCursor;
-    },
-  };
-};
-
-/**
- * Transform functions for common collections
- */
-export const transforms = {
-  track: (track) => ({
-    id: track._id,
-    headline: track.title || "Untitled",
-    supportingText: track.artist || "Unknown Artist",
-    meta: track.year?.toString() || "",
-  }),
-
-  playlist: (playlist) => ({
-    id: playlist._id,
-    headline: playlist.name || "Untitled Playlist",
-    supportingText: `${playlist.tracks?.length || 0} tracks`,
-    meta: playlist.creator || "",
-  }),
-
-  country: (country) => ({
-    id: country._id,
-    headline: country.name || country.code,
-    supportingText: country.continent || "",
-    meta: country.code || "",
-  }),
-};
+// createCursorPageLoader moved to data/cursor-loader.ts
+// transforms moved to data/transforms.ts
 
 // Re-export types
 export * from "./types";

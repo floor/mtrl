@@ -1,25 +1,22 @@
 // src/core/collection/index.ts
 
 // Export collection factory and types
-export { createCollection } from './collection';
-export { COLLECTION_EVENTS } from './collection';
-export { OPERATORS as COLLECTION_OPERATORS } from './collection';
+export { createCollection } from "./collection";
+export { COLLECTION_EVENTS } from "./collection";
+export { OPERATORS as COLLECTION_OPERATORS } from "./collection";
 
-export type { 
-  CollectionItem, 
-  CollectionConfig, 
-  CollectionEvent, 
+export type {
+  CollectionItem,
+  CollectionConfig,
+  CollectionEvent,
   CollectionObserver,
-  Collection
-} from './collection';
+  Collection,
+} from "./collection";
 
 // Export list manager
-export { 
-  createListManager, 
-  transforms 
-} from './list-manager';
+export { createListManager } from "./list-manager";
 
-export type { 
+export type {
   ListManager,
   ListManagerConfig,
   ListItem,
@@ -27,26 +24,14 @@ export type {
   PageLoader,
   PageLoaderConfig,
   LoadStatus,
-  PaginationMeta
-} from './list-manager';
+  PaginationMeta,
+} from "./list-manager";
 
 // Export adapters
-export { 
-  createBaseAdapter, 
-  OPERATORS 
-} from './adapters/base';
+export { createBaseAdapter, OPERATORS } from "./adapters/base";
 
-export type { 
-  BaseAdapter, 
-  BaseAdapterConfig,
-  Operator
-} from './adapters/base';
+export type { BaseAdapter, BaseAdapterConfig, Operator } from "./adapters/base";
 
-export { 
-  createRouteAdapter 
-} from './adapters/route';
+export { createRouteAdapter } from "./adapters/route";
 
-export type { 
-  RouteAdapterConfig,
-  ParsedResponse
-} from './adapters/route';
+export type { RouteAdapterConfig, ParsedResponse } from "./adapters/route";
