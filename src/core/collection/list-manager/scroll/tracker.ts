@@ -66,6 +66,8 @@ class ScrollManager {
   private velocityTracker = new VelocityTracker();
   private lastScrollTop = 0;
   private lastProcessTime = 0;
+  private lastScrollTime = performance.now();
+  private speedLogTimeout: number | null = null;
   private metrics: ScrollMetrics = { eventCount: 0, throttleHits: 0 };
 
   constructor(
@@ -78,10 +80,36 @@ class ScrollManager {
     this.throttleMs = config.throttleMs || 16;
   }
 
+  private logScrollSpeed = (
+    scrollTop: number,
+    timeDelta: number,
+    scrollDistance: number
+  ): void => {
+    const speed = scrollDistance / Math.max(timeDelta, 1);
+
+    // Clear existing timeout
+    if (this.speedLogTimeout) {
+      clearTimeout(this.speedLogTimeout);
+    }
+
+    // Debounced speed logging (200ms)
+    this.speedLogTimeout = setTimeout(() => {
+      console.log(
+        `📊 [SCROLL-SPEED] ${speed.toFixed(
+          1
+        )}px/ms | Distance: ${scrollDistance}px | Time: ${timeDelta.toFixed(
+          1
+        )}ms | Position: ${scrollTop}px`
+      );
+      this.speedLogTimeout = null;
+    }, 200) as unknown as number;
+  };
+
   private handleScroll = (e: Event): void => {
     this.metrics.eventCount++;
 
     const scrollTop = Math.max(0, (e.target as HTMLElement).scrollTop);
+    const currentTime = performance.now();
     const now = Date.now();
     const timeDiff = now - this.lastProcessTime;
 
@@ -93,7 +121,19 @@ class ScrollManager {
     }
 
     this.velocityTracker.update(scrollTop);
+
+    // Debug: Track scroll events (calculate diff before updating lastScrollTop)
+    const scrollDiff = Math.abs(scrollTop - this.lastScrollTop);
+    const timeDelta = currentTime - this.lastScrollTime;
+    console.log(`🔄 [SCROLL] Event: ${scrollTop}px (diff: ${scrollDiff}px)`);
+
+    // Log scroll speed with debounce
+    if (scrollDiff > 0) {
+      this.logScrollSpeed(scrollTop, timeDelta, scrollDiff);
+    }
+
     this.lastScrollTop = scrollTop;
+    this.lastScrollTime = currentTime;
     this.lastProcessTime = now;
     this.callbacks.onScroll(scrollTop);
   };
@@ -104,6 +144,10 @@ class ScrollManager {
     });
     return () => {
       this.container.removeEventListener("scroll", this.handleScroll);
+      if (this.speedLogTimeout) {
+        clearTimeout(this.speedLogTimeout);
+        this.speedLogTimeout = null;
+      }
       this.velocityTracker.reset();
     };
   }

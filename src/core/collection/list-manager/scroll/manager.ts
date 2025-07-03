@@ -178,28 +178,42 @@ export const createScrollingManager = (deps: ScrollingManagerDependencies) => {
       return;
     }
 
-    // Dynamic mode - use scroll jump functionality
+    // 🎯 PREDICTIVE STRATEGY: Load data immediately (async) + start scroll in parallel
     try {
-      await scrollJumpFunctions.loadScrollToIndexWithBackgroundRanges(
+      const itemHeight = config.itemHeight || DEFAULTS.itemHeight;
+      const scrollPosition = calcScrollPos(
         index,
-        animate
+        position,
+        itemHeight,
+        state.containerHeight
       );
 
-      setTimeout(() => {
-        const itemHeight = config.itemHeight || DEFAULTS.itemHeight;
-        const scrollPosition = calcScrollPos(
+      // Start data loading immediately (async, non-blocking)
+      console.log(
+        `🎯 [PREDICTIVE] Starting data load for index ${index} + scroll to ${scrollPosition}px`
+      );
+      const dataLoadPromise =
+        scrollJumpFunctions.loadScrollToIndexWithBackgroundRanges(
           index,
-          position,
-          itemHeight,
-          state.containerHeight
+          animate,
+          true // isProgrammatic = true
         );
 
-        if (animate) {
-          container.scrollTo({ top: scrollPosition, behavior: "smooth" });
-        } else {
-          container.scrollTop = scrollPosition;
-        }
-      }, 100);
+      // Start scroll immediately in parallel (don't wait for data)
+      if (animate) {
+        container.scrollTo({ top: scrollPosition, behavior: "smooth" });
+      } else {
+        container.scrollTop = scrollPosition;
+        state.scrollTop = scrollPosition;
+      }
+
+      // Update viewport with placeholders immediately
+      updateVisibleItems(scrollPosition, true);
+
+      // Wait for data in background (for completion logging)
+      dataLoadPromise.catch((error) => {
+        logError(`PREDICTIVE data load failed for index ${index}`, error);
+      });
     } catch (error) {
       logError(`Failed to scroll to index ${index}`, error);
     }

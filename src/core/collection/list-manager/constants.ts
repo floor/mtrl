@@ -65,7 +65,6 @@ export const PAGINATION = {
   ADJACENT_PAGE_DIFF: 1,
 
   /** Large scroll jump detection threshold (number of pages) */
-  LARGE_SCROLL_JUMP_THRESHOLD: 5,
 
   /** Whether to wait for ALL viewport pages to load before rendering (prevents gradual filling on slow connections) */
   WAIT_FOR_ALL_VIEWPORT_PAGES: true,
@@ -98,6 +97,9 @@ export const SCROLL = {
 
   /** Debounce delay for scroll jump page loads in milliseconds */
   JUMP_DEBOUNCE: 200,
+
+  /** Speed threshold to distinguish scrollbar drags from animated scrolls (px/ms) */
+  INSTANTANEOUS_SCROLL_SPEED: 100,
 } as const;
 
 /**

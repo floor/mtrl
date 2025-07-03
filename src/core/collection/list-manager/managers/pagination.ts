@@ -294,7 +294,10 @@ export const createPaginationManager = (deps: PaginationDependencies) => {
    * Schedule a page load when scrolling stops (debounced)
    * @param targetPage Page to load when scrolling stops
    */
-  const scheduleScrollStopPageLoad = (targetPage: number): void => {
+  const scheduleScrollStopPageLoad = (
+    targetPage: number,
+    scrollSpeed: number
+  ): void => {
     // Clear any existing timeout
     if (scrollStopTimeout !== null) {
       clearTimeout(scrollStopTimeout);

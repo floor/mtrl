@@ -48,7 +48,10 @@ export interface ViewportDependencies {
   renderer: any;
   checkPageChange: (scrollTop: number, paginationStrategy?: string) => void;
   paginationManager: {
-    scheduleScrollStopPageLoad: (targetPage: number) => void;
+    scheduleScrollStopPageLoad: (
+      targetPage: number,
+      scrollSpeed: number
+    ) => void;
     checkPageBoundaries: (scrollTop: number) => void;
     loadNext: () => Promise<{ hasNext: boolean; items: any[] }>;
     getPaginationFlags: () => {
@@ -197,8 +200,11 @@ export const createViewportManager = (
         container.clientHeight || DEFAULTS.containerHeight;
     }
 
-    // Update scroll position
+    // Update scroll position and track timing for speed calculation
     const previousScrollTop = state.scrollTop;
+    const currentTime = performance.now();
+    const previousTime = (state as any).lastScrollTime || currentTime;
+    (state as any).lastScrollTime = currentTime;
     state.scrollTop = scrollTop;
 
     // Update page for page-based pagination
@@ -217,10 +223,21 @@ export const createViewportManager = (
 
         const pageDifference = Math.abs(calculatedPage - state.page);
 
-        // Handle large scroll jumps
-        if (pageDifference > PAGINATION.LARGE_SCROLL_JUMP_THRESHOLD) {
-          paginationManager.scheduleScrollStopPageLoad(calculatedPage);
-        }
+        // Handle scroll jumps based on speed (pixels per millisecond)
+        const scrollDistance = Math.abs(scrollTop - previousScrollTop);
+        const timeDelta = Math.max(currentTime - previousTime, 1); // Avoid division by zero
+        const scrollSpeed = scrollDistance / timeDelta;
+
+        // Always schedule scroll-stop loading for ANY page change - let speed detection handle the rest
+        console.log(
+          `⏸️ [SCROLL-STOP] Page change detected: page ${
+            state.page
+          } → ${calculatedPage} (speed: ${scrollSpeed.toFixed(1)}px/ms)`
+        );
+        paginationManager.scheduleScrollStopPageLoad(
+          calculatedPage,
+          scrollSpeed
+        );
 
         state.page = calculatedPage;
       }
