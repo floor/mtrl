@@ -236,81 +236,6 @@ export const createLoadPageFunction = (
   };
 };
 
-export const createLoadPreviousPageFunction = (
-  state: any,
-  validatedConfig: any,
-  adapter: any,
-  itemsCollection: any,
-  updateVisibleItems: any
-) => {
-  return async (): Promise<{ hasPrev: boolean; items: any[] }> => {
-    // Check if we're using page-based pagination
-    const paginationStrategy = validatedConfig.pagination?.strategy || "cursor";
-    if (paginationStrategy !== "page") {
-      throw new Error(
-        "loadPreviousPage can only be used with page-based pagination strategy"
-      );
-    }
-
-    // Check if we have a current page and can go back
-    if (!state.page || state.page <= 1) {
-      return { hasPrev: false, items: [] };
-    }
-
-    // If using static data, there's no pagination
-    if (state.useStatic) {
-      return { hasPrev: false, items: [] };
-    }
-
-    // Calculate previous page number
-    const previousPage = state.page - 1;
-
-    // Create load params for the previous page
-    const loadParams = createLoadParams(state, paginationStrategy);
-    loadParams.page = previousPage;
-
-    // Add pageSize parameter
-    const perPageParam =
-      validatedConfig.pagination?.perPageParamName || "per_page";
-    loadParams[perPageParam] = validatedConfig.pageSize || 20;
-
-    // Load the previous page
-    const response = await adapter.read(loadParams);
-
-    // Process items
-    const items = Array.isArray(response.items)
-      ? response.items.map(validatedConfig.transform!)
-      : [];
-
-    // Prepend items to the beginning of the collection
-    if (items.length > 0) {
-      // Get current items
-      const currentItems = [...state.items];
-
-      // Update state with new items at the beginning
-      state.items = [...items, ...currentItems];
-
-      // Add to collection at the beginning
-      await itemsCollection.clear();
-      await itemsCollection.add(state.items);
-
-      // Update state page number
-      state.page = previousPage;
-
-      // Mark height as dirty for recalculation
-      state.totalHeightDirty = true;
-
-      // Update visible items using current scroll position
-      updateVisibleItems(state.scrollTop);
-    }
-
-    return {
-      hasPrev: previousPage > 1,
-      items,
-    };
-  };
-};
-
 /**
  * Initialize core dependencies: config, state, DOM, utilities
  * @private
@@ -627,13 +552,79 @@ export const createListManager = (
     hasPrev: boolean;
     items: any[];
   }> => {
-    return createLoadPreviousPageFunction(
-      state,
-      validatedConfig,
-      adapter,
-      itemsCollection,
-      updateVisibleItems
-    )();
+    // Check if we're using page-based pagination
+    const paginationStrategy = validatedConfig.pagination?.strategy || "cursor";
+    if (paginationStrategy !== "page") {
+      throw new Error(
+        "loadPreviousPage can only be used with page-based pagination strategy"
+      );
+    }
+
+    // Check if we have a current page and can go back
+    if (!state.page || state.page <= 1) {
+      return { hasPrev: false, items: [] };
+    }
+
+    // If using static data, there's no pagination
+    if (state.useStatic) {
+      return { hasPrev: false, items: [] };
+    }
+
+    // Calculate previous page number
+    const previousPage = state.page - 1;
+
+    // Create load params for the previous page
+    const loadParams = createLoadParams(state, paginationStrategy);
+    loadParams.page = previousPage;
+
+    // Add pageSize parameter
+    const perPageParam =
+      validatedConfig.pagination?.perPageParamName || "per_page";
+    loadParams[perPageParam] = validatedConfig.pageSize || 20;
+
+    // Load the previous page
+    const response = await adapter.read(loadParams);
+
+    // Process items
+    const items = Array.isArray(response.items)
+      ? response.items.map(validatedConfig.transform!)
+      : [];
+
+    // Prepend items to the beginning of the collection
+    if (items.length > 0) {
+      // Get current items
+      const currentItems = [...state.items];
+
+      // Update state with new items at the beginning
+      state.items = [...items, ...currentItems];
+
+      // Add to collection at the beginning
+      await itemsCollection.clear();
+      await itemsCollection.add(state.items);
+
+      // Update state page number
+      state.page = previousPage;
+
+      // Mark height as dirty for recalculation
+      state.totalHeightDirty = true;
+
+      // ENHANCED: Calculate the height of the new items to adjust scroll position
+      const defaultItemHeight = validatedConfig.itemHeight || 84;
+      const addedHeight = items.length * defaultItemHeight;
+
+      // ENHANCED: Adjust scroll position to maintain visual position
+      const newScrollTop = state.scrollTop + addedHeight;
+      container.scrollTop = newScrollTop;
+      state.scrollTop = newScrollTop;
+
+      // Update visible items with the new scroll position
+      updateVisibleItems(newScrollTop);
+    }
+
+    return {
+      hasPrev: previousPage > 1,
+      items,
+    };
   };
 
   // Create scroll jump manager for complex scroll operations
