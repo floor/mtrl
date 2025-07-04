@@ -222,7 +222,42 @@ export const createViewportManager = (
     renderingManager,
   } = deps;
 
-  // Note: Scroll stop detection is now handled by the unified pagination manager
+  // 🚀 PERFORMANCE: Cache frequently accessed values to avoid repeated lookups
+  const itemHeight = config.itemHeight || DEFAULTS.itemHeight;
+  const pageLimit =
+    config.pagination?.limitSize || config.pageSize || DEFAULTS.pageLimit;
+  const overscanDefault = config.overscan || RENDERING.DEFAULT_OVERSCAN_COUNT;
+  const isPageStrategy = () => state.paginationStrategy === "page";
+  const isOffsetStrategy = () => state.paginationStrategy === "offset";
+  const isCursorStrategy = () => state.paginationStrategy === "cursor";
+
+  // 🚀 PERFORMANCE: Cache pagination flags to avoid function calls on every scroll
+  let cachedPaginationFlags = {
+    justJumpedToPage: false,
+    isPreloadingPages: false,
+    isBoundaryLoading: false,
+  };
+  let flagsCacheTime = 0;
+  const CACHE_DURATION = 16; // Cache for ~1 frame (16ms)
+
+  const getCachedPaginationFlags = () => {
+    const now = performance.now();
+    if (now - flagsCacheTime > CACHE_DURATION) {
+      const flags = paginationManager.getPaginationFlags();
+      cachedPaginationFlags = {
+        justJumpedToPage: flags.justJumpedToPage,
+        isPreloadingPages: flags.isPreloadingPages,
+        isBoundaryLoading: flags.isBoundaryLoading || false,
+      };
+      flagsCacheTime = now;
+    }
+    return cachedPaginationFlags;
+  };
+
+  // 🚀 PERFORMANCE: Pre-allocate arrays to avoid garbage collection
+  const reusablePositions: Array<{ index: number; item: any; offset: number }> =
+    [];
+  const reusableNeededIds: number[] = [];
 
   /**
    * Unified scroll speed calculation for both page and offset strategies
@@ -258,27 +293,23 @@ export const createViewportManager = (
   ): void => {
     if (!state.mounted) return;
 
-    const paginationFlags = paginationManager.getPaginationFlags();
-    const { justJumpedToPage, isPreloadingPages } = paginationFlags;
-    const isBoundaryLoading = paginationFlags.isBoundaryLoading || false;
+    // 🚀 PERFORMANCE: Use cached pagination flags to avoid function call overhead
+    const paginationFlags = getCachedPaginationFlags();
+    const { justJumpedToPage, isPreloadingPages, isBoundaryLoading } =
+      paginationFlags;
 
     // Skip updates if we're in the middle of a page jump or preloading
     // BUT only for page-based pagination (offset-based doesn't use these concepts)
     // Always allow placeholder replacement updates (they're essential for UX)
     if (
       !isPlaceholderReplacement &&
-      state.paginationStrategy === "page" &&
+      isPageStrategy() &&
       (justJumpedToPage || isPreloadingPages || isBoundaryLoading)
     ) {
       return;
     }
 
-    // For offset-based pagination, always allow rendering (no page-based blocking)
-    if (state.paginationStrategy === "offset") {
-      // Offset-based rendering - bypass page-based flags
-    }
-
-    // Get container height
+    // Get container height - cache it to avoid repeated DOM access
     if (state.containerHeight === 0) {
       state.containerHeight =
         container.clientHeight || DEFAULTS.containerHeight;
@@ -291,7 +322,7 @@ export const createViewportManager = (
     (state as any).lastScrollTime = currentTime;
     state.scrollTop = scrollTop;
 
-    // 🔧 UNIFIED SCROLL SPEED: Calculate once and use for both page and offset strategies
+    // 🚀 PERFORMANCE: Calculate scroll speed once and reuse
     const scrollSpeed = calculateScrollSpeed(
       scrollTop,
       previousScrollTop,
@@ -299,19 +330,11 @@ export const createViewportManager = (
       previousTime
     );
 
-    // Track scroll speed for auto-loading optimization
-
-    // 🔧 Note: Scroll stop detection is now handled by the unified scheduleScrollStopLoad function
-
-    // Cache itemHeight for reuse
-    const itemHeight = config.itemHeight || DEFAULTS.itemHeight;
-
     // Update page for page-based pagination
-    if (state.paginationStrategy === "page" && !isPageJump) {
-      // For page strategy, use pagination.limitSize or fallback to legacy pageSize
-      const pageLimit =
-        config.pagination?.limitSize || config.pageSize || DEFAULTS.pageLimit;
-      const virtualItemIndex = Math.floor(Math.round(scrollTop) / itemHeight);
+    if (isPageStrategy() && !isPageJump) {
+      // 🚀 PERFORMANCE: Cache calculation and avoid repeated Math operations
+      const scrollTopRounded = Math.round(scrollTop);
+      const virtualItemIndex = Math.floor(scrollTopRounded / itemHeight);
       const calculatedPage = Math.floor(virtualItemIndex / pageLimit) + 1;
 
       if (calculatedPage !== state.page && calculatedPage >= 1) {
@@ -330,58 +353,80 @@ export const createViewportManager = (
     // Check for page changes
     checkPageChange(scrollTop, state.paginationStrategy);
 
-    // Use viewport multiplier for offset strategy for better UX
-    const overscan =
-      state.paginationStrategy === "offset"
-        ? 0
-        : config.overscan || RENDERING.DEFAULT_OVERSCAN_COUNT;
+    // 🚀 PERFORMANCE: Use cached overscan value and strategy checks
+    const overscan = isOffsetStrategy() ? 0 : overscanDefault;
 
-    let visibleRange =
-      state.paginationStrategy === "cursor"
-        ? calculateCursorViewport(
-            scrollTop,
-            state.containerHeight,
-            state.items,
-            itemHeight,
-            overscan
-          )
-        : calculateMechanicalViewport(
-            scrollTop,
-            state.containerHeight,
-            state.items,
-            itemHeight,
-            overscan
-          );
+    let visibleRange = isCursorStrategy()
+      ? calculateCursorViewport(
+          scrollTop,
+          state.containerHeight,
+          state.items,
+          itemHeight,
+          overscan
+        )
+      : calculateMechanicalViewport(
+          scrollTop,
+          state.containerHeight,
+          state.items,
+          itemHeight,
+          overscan
+        );
 
     // Check viewport fill percentage for offset strategy
     if (
-      state.paginationStrategy === "offset" &&
+      isOffsetStrategy() &&
       !isPageJump &&
       !state.loading &&
       state.items.length > 0
     ) {
-      // Calculate what should be visible vs what is actually visible
+      // 🚀 PERFORMANCE: Cache expensive calculations
       const itemsPerViewport = Math.ceil(state.containerHeight / itemHeight);
-      const expectedVisibleItems = itemsPerViewport;
       const actualVisibleItems = visibleRange.end - visibleRange.start;
-      const viewportFillPercentage = actualVisibleItems / expectedVisibleItems;
+      const viewportFillPercentage = actualVisibleItems / itemsPerViewport;
 
       // Check for missing data based on viewport fill percentage
       if (viewportFillPercentage < OFFSET.AUTO_LOAD_THRESHOLD) {
-        const firstItemId = state.items[0] ? parseInt(state.items[0].id) : null;
-        const lastItemId = state.items[state.items.length - 1]
-          ? parseInt(state.items[state.items.length - 1].id)
-          : null;
-
-        // Calculate what data we need based on current scroll position
+        // 🚀 PERFORMANCE: Cache scroll calculations and avoid repeated Math operations
+        const scrollTopRounded = Math.round(scrollTop);
+        const scrollBottomRounded = Math.round(
+          scrollTop + state.containerHeight
+        );
         const firstVirtualItemId =
-          Math.floor(Math.round(scrollTop) / itemHeight) + 1;
+          Math.floor(scrollTopRounded / itemHeight) + 1;
         const lastVirtualItemId =
-          Math.floor(
-            Math.round(scrollTop + state.containerHeight) / itemHeight
-          ) + 1;
+          Math.floor(scrollBottomRounded / itemHeight) + 1;
 
-        // Use configurable multiplier for smart offset loading
+        // 🚀 PERFORMANCE: Use Map for O(1) item lookup instead of O(n) array searches
+        const itemIdMap = new Map<number, boolean>();
+        for (let i = 0; i < state.items.length; i++) {
+          const item = state.items[i];
+          if (item?.id) {
+            itemIdMap.set(parseInt(item.id), true);
+          }
+        }
+
+        // 🚀 PERFORMANCE: Check if we have all needed items without creating arrays
+        let hasAllNeededItems = true;
+        let firstMissingItemId = null;
+
+        for (
+          let itemId = firstVirtualItemId;
+          itemId <= lastVirtualItemId;
+          itemId++
+        ) {
+          if (!itemIdMap.has(itemId)) {
+            hasAllNeededItems = false;
+            if (firstMissingItemId === null) {
+              firstMissingItemId = itemId;
+            }
+          }
+        }
+
+        if (hasAllNeededItems) {
+          return; // Don't load anything, we have what we need
+        }
+
+        // 🚀 PERFORMANCE: Use cached multiplier calculation
         const viewportMultiplier = DEFAULTS.viewportMultiplier;
         const optimalLoadSize = Math.max(
           OFFSET.MIN_LOAD_SIZE,
@@ -389,25 +434,6 @@ export const createViewportManager = (
             OFFSET.MAX_LOAD_SIZE,
             Math.ceil(itemsPerViewport * viewportMultiplier)
           )
-        );
-
-        // Check if we already have the needed items to avoid loading wrong ranges
-        const neededItemIds = [];
-        for (let i = firstVirtualItemId; i <= lastVirtualItemId; i++) {
-          neededItemIds.push(i);
-        }
-
-        const hasAllNeededItems = neededItemIds.every((itemId) =>
-          state.items.some((item) => parseInt(item.id) === itemId)
-        );
-
-        if (hasAllNeededItems) {
-          return; // Don't load anything, we have what we need
-        }
-
-        // Find the first missing item in the needed range
-        const firstMissingItemId = neededItemIds.find(
-          (itemId) => !state.items.some((item) => parseInt(item.id) === itemId)
         );
 
         const startOffset = firstMissingItemId
@@ -533,15 +559,12 @@ export const createViewportManager = (
 
     // Render visible items with placeholder data support
     if (hasRangeChanged || isPageJump) {
-      if (
-        state.paginationStrategy === "page" ||
-        state.paginationStrategy === "offset"
-      ) {
+      if (isPageStrategy() || isOffsetStrategy()) {
         // Get items to render (could be real or fake)
         const itemsToRender = state.visibleItems || [];
 
-        // Calculate positions for virtual rendering
-        const positions = [];
+        // 🚀 PERFORMANCE: Reuse pre-allocated array to avoid garbage collection
+        reusablePositions.length = 0;
         for (
           let localIndex = 0;
           localIndex < itemsToRender.length;
@@ -553,14 +576,14 @@ export const createViewportManager = (
           const itemId = parseInt(item.id);
           const offset = Math.round((itemId - 1) * itemHeight);
 
-          positions.push({
+          reusablePositions.push({
             index: localIndex,
             item,
             offset,
           });
         }
 
-        renderingManager.renderItemsWithVirtualPositions(positions);
+        renderingManager.renderItemsWithVirtualPositions(reusablePositions);
       } else {
         // Standard rendering for cursor-based pagination only
         renderer.renderVisibleItems(state.items, visibleRange);
@@ -623,9 +646,10 @@ export const createViewportManager = (
    * Check if we need to load more data
    */
   const checkLoadMore = (scrollTop: number): void => {
-    const paginationFlags = paginationManager.getPaginationFlags();
-    const { justJumpedToPage, isPreloadingPages } = paginationFlags;
-    const isBoundaryLoading = paginationFlags.isBoundaryLoading || false;
+    // 🚀 PERFORMANCE: Use cached pagination flags
+    const paginationFlags = getCachedPaginationFlags();
+    const { justJumpedToPage, isPreloadingPages, isBoundaryLoading } =
+      paginationFlags;
 
     if (
       state.loading ||
@@ -642,10 +666,10 @@ export const createViewportManager = (
       return;
     }
 
-    if (state.paginationStrategy === "page") {
+    if (isPageStrategy()) {
       // Let page boundaries handle loading for page-based pagination
       paginationManager.checkPageBoundaries(scrollTop);
-    } else if (state.paginationStrategy === "offset") {
+    } else if (isOffsetStrategy()) {
       // Handle offset-based auto-loading when viewport detects missing data
       const offsetAutoLoad = (state as any).offsetAutoLoadNeeded;
 
@@ -663,8 +687,7 @@ export const createViewportManager = (
       }
     } else {
       // Handle traditional infinite scroll (cursor-based)
-      // For cursor pagination, use actual loaded content height (without buffer)
-      const itemHeight = config.itemHeight || RENDERING.LEGACY_ITEM_HEIGHT;
+      // 🚀 PERFORMANCE: Use cached itemHeight and avoid repeated calculation
       const loadedContentHeight = state.items.length * itemHeight;
       const scrollProgress =
         (scrollTop + state.containerHeight) / loadedContentHeight;

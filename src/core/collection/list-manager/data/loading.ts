@@ -43,6 +43,14 @@ export const createDataLoadingManager = (deps: DataLoadingDependencies) => {
     replacePlaceholdersWithReal,
   } = deps;
 
+  // 🚀 PERFORMANCE: Cache frequently accessed values
+  const itemHeight = config.itemHeight || 84;
+  const transformFn = config.transform!;
+  const isDedupeEnabled = config.dedupeItems;
+
+  // 🚀 PERFORMANCE: Pre-allocate reusable Set for deduplication
+  const reusableExistingIds = new Set<string>();
+
   /**
    * Load items with cursor pagination or from static data
    * @param params Query parameters
@@ -92,18 +100,12 @@ export const createDataLoadingManager = (deps: DataLoadingDependencies) => {
 
       const response = await adapter.read(params);
 
-      // Process items
+      // 🚀 PERFORMANCE: Process items more efficiently
       const items = Array.isArray(response.items)
-        ? response.items.map(config.transform!)
+        ? response.items.map(transformFn)
         : [];
 
-      console.log(`📦 [DATA] API Response: ${items.length} items loaded`);
-      console.log(
-        `📦 [DATA] First few items: ${items
-          .slice(0, 3)
-          .map((item) => item.id)
-          .join(", ")}`
-      );
+      // API response processed successfully
 
       // Store current state.items.length before updating state
       const currentStateItemsLength = state.items.length;
@@ -132,46 +134,46 @@ export const createDataLoadingManager = (deps: DataLoadingDependencies) => {
         const shouldReplace = isTrueInitialLoad || isPageJumpLoad;
 
         if (shouldReplace && items.length > 0) {
-          console.log(
-            `🎯 [OFFSET-DATA] Initial load or page jump: replacing collection with ${items.length} items`
-          );
+          // Initial load or page jump: replace collection
           await itemsCollection.clear();
           await itemsCollection.add(items);
         } else if (items.length > 0) {
-          console.log(
-            `🎯 [OFFSET-DATA] Appending ${items.length} items to collection (offset=${params.offset}, existing=${state.items.length})`
-          );
           // For non-initial loads, append to existing collection
           await itemsCollection.add(items);
         } else {
-          console.log(
-            `🚫 [OFFSET-DATA] Ignoring offset=${params.offset} request (would replace ${state.items.length} items with 0 items)`
-          );
+          // Ignore requests that would replace existing items with empty results
         }
 
-        // Debug unwanted offset=0 calls that would have corrupted data
+        // Block unwanted offset=0 calls that would corrupt data
         if (
           params.offset === 0 &&
           !isTrueInitialLoad &&
           !isPageJumpLoad &&
           state.items.length > 0
         ) {
-          console.warn(
-            `⚠️ [OFFSET-DATA] BLOCKED unwanted offset=0 call! This would have replaced ${
-              state.items.length
-            } items with items 1-${items.length}. Current items: [${state.items
-              .slice(0, 3)
-              .map((i) => i.id)
-              .join(", ")}...]`
-          );
+          // Unwanted offset=0 call blocked to prevent data corruption
         }
       } else {
         // For cursor pagination, use deduplication
-        if (config.dedupeItems) {
-          const existingIds = new Set(
-            state.items.map((item) => item.id).filter(Boolean)
-          );
-          const newItems = items.filter((item) => !existingIds.has(item.id));
+        if (isDedupeEnabled) {
+          // 🚀 PERFORMANCE: Reuse Set and avoid temporary arrays
+          reusableExistingIds.clear();
+          for (let i = 0; i < state.items.length; i++) {
+            const item = state.items[i];
+            if (item?.id) {
+              reusableExistingIds.add(item.id);
+            }
+          }
+
+          // 🚀 PERFORMANCE: Build new items array efficiently
+          const newItems = [];
+          for (let i = 0; i < items.length; i++) {
+            const item = items[i];
+            if (!reusableExistingIds.has(item.id)) {
+              newItems.push(item);
+            }
+          }
+
           if (newItems.length > 0) {
             await itemsCollection.add(newItems);
           }
@@ -188,54 +190,34 @@ export const createDataLoadingManager = (deps: DataLoadingDependencies) => {
         params.page
       ) {
         if (items.length > 0) {
-          // For page jumps with data, replace state items (fixed for high page numbers)
-          Object.assign(state, {
-            items: [...items],
-            cursor: response.meta.cursor ?? null,
-            page: response.meta.page ?? params.page,
-            hasNext: response.meta.hasNext ?? false,
-            totalHeightDirty: true,
-            itemCount: response.meta.total ?? items.length,
-          });
+          // 🚀 PERFORMANCE: Direct assignment instead of spreading
+          state.items = items;
+          state.cursor = response.meta.cursor ?? null;
+          state.page = response.meta.page ?? params.page;
+          state.hasNext = response.meta.hasNext ?? false;
+          state.totalHeightDirty = true;
+          state.itemCount = response.meta.total ?? items.length;
         } else {
           // For page jumps with 0 items, only update metadata, preserve existing items
-          Object.assign(state, {
-            cursor: response.meta.cursor ?? null,
-            hasNext: response.meta.hasNext ?? false,
-            // Keep existing items and itemCount
-            totalHeightDirty: true,
-          });
+          state.cursor = response.meta.cursor ?? null;
+          state.hasNext = response.meta.hasNext ?? false;
+          state.totalHeightDirty = true;
         }
       } else if (state.paginationStrategy === "offset") {
-        // For offset pagination, always update state with the FULL collection
-        console.log(
-          `🎯 [OFFSET-STATE] Updating state with collection items: ${
-            itemsCollection.getItems().length
-          }`
-        );
-
-        Object.assign(state, {
-          items: [...itemsCollection.getItems()],
-          hasNext: response.meta.hasNext ?? false,
-          totalHeightDirty: true,
-          itemCount: response.meta.total ?? itemsCollection.getItems().length,
-        });
-
-        console.log(
-          `📦 [OFFSET-STATE] State updated - items: ${state.items.length}, hasNext: ${state.hasNext}`
-        );
-        // console.log(
-        //   `📦 [OFFSET-STATE] State items IDs: [${state.items
-        //     .map((item) => item.id)
-        //     .join(", ")}]`
-        // );
+        // 🚀 PERFORMANCE: Cache collection items and avoid spreading
+        const collectionItems = itemsCollection.getItems();
+        state.items = collectionItems as any[];
+        state.hasNext = response.meta.hasNext ?? false;
+        state.totalHeightDirty = true;
+        state.itemCount = response.meta.total ?? collectionItems.length;
       } else {
-        // For boundary loads and cursor pagination, update state with the FULL collection
+        // 🚀 PERFORMANCE: Get collection items once and avoid spreading
+        const collectionItems = itemsCollection.getItems();
         const stateUpdates = updateStateAfterLoad(
           state,
-          [...itemsCollection.getItems()],
+          collectionItems as any[],
           response.meta,
-          config.dedupeItems
+          isDedupeEnabled
         );
 
         // Preserve page state during initial range loading (non-page-jump loads)
@@ -254,7 +236,8 @@ export const createDataLoadingManager = (deps: DataLoadingDependencies) => {
         !state.useStatic &&
         state.paginationStrategy !== "cursor"
       ) {
-        const naturalHeight = response.meta.total * (config.itemHeight || 84);
+        // 🚀 PERFORMANCE: Use cached itemHeight value
+        const naturalHeight = response.meta.total * itemHeight;
 
         state.totalHeight = naturalHeight;
         state.totalHeightDirty = false; // Mark as clean since we have the definitive height
@@ -274,14 +257,14 @@ export const createDataLoadingManager = (deps: DataLoadingDependencies) => {
 
       // Call afterLoad callback if provided
       if (config.afterLoad) {
-        // Create a read-only copy of the items array to prevent mutation
-        const itemsCopy = [...state.items] as any[];
+        // 🚀 PERFORMANCE: Create shallow copy more efficiently
+        const itemsCopy = state.items.slice() as any[];
 
         const loadData: LoadStatus = {
           loading: false,
           hasNext: state.hasNext,
           hasPrev: !!params.cursor || (params.page && params.page > 1),
-          items: [...items] as any[], // Use type assertion to satisfy the mutable array requirement
+          items: items.slice() as any[], // Use slice() instead of spread operator
           allItems: itemsCopy,
         };
 

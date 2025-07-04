@@ -26,6 +26,21 @@ export const createRenderer = (
   const itemElements = new Map<string, HTMLElement>();
   let lastVisibleRange: VisibleRange = { start: 0, end: 0 };
 
+  // 🚀 PERFORMANCE: Cache frequently accessed values
+  const itemHeight = config.itemHeight || 84;
+  const itemHeightPx = `${itemHeight}px`;
+  const paginationStrategy = config.pagination?.strategy || "cursor";
+  const isDynamicSize = config.dynamicItemSize === true;
+
+  // 🚀 PERFORMANCE: Pre-allocate reusable objects to avoid garbage collection
+  const reusableCurrentIds = new Set<string>();
+  const reusablePreviousIds = new Set<string>();
+  const reusableToAdd: Array<{ index: number; item: any; offset: number }> = [];
+  const reusableToRemove: Array<[string, HTMLElement]> = [];
+
+  // 🚀 PERFORMANCE: Cache regex pattern for transform parsing
+  const transformRegex = /translateY\((\d+)px\)/;
+
   // Initialize item measurement system
   if (typeof itemMeasurement.setup === "function") {
     itemMeasurement.setup(config);
@@ -42,7 +57,7 @@ export const createRenderer = (
     if (!item) {
       console.warn("Attempted to render undefined item at index", index);
       const placeholder = document.createElement("div");
-      placeholder.style.height = `${config.itemHeight || 48}px`;
+      placeholder.style.height = itemHeightPx;
       return placeholder;
     }
 
@@ -56,17 +71,24 @@ export const createRenderer = (
       console.warn("renderItem returned null or undefined for item", item);
       // Create a placeholder element to prevent errors
       const placeholder = document.createElement("div");
-      placeholder.style.height = `${config.itemHeight || 48}px`;
+      placeholder.style.height = itemHeightPx;
       return placeholder;
     }
 
+    // 🚀 PERFORMANCE: Batch DOM modifications and cache checks
+    const classList = element.classList;
+    const hasListClass = classList.contains("mtrl-list-item");
+    const hasDataId = element.hasAttribute("data-id");
+    const hasHeight = element.style.height;
+    const hasNeedsMeasurement = element.hasAttribute("data-needs-measurement");
+
     // Add CSS class for easier selection
-    if (!element.classList.contains("mtrl-list-item")) {
-      element.classList.add("mtrl-list-item");
+    if (!hasListClass) {
+      classList.add("mtrl-list-item");
     }
 
     // Ensure element has a data-id attribute for selection targeting
-    if (item.id && !element.hasAttribute("data-id")) {
+    if (item.id && !hasDataId) {
       element.setAttribute("data-id", item.id);
     }
 
@@ -76,16 +98,13 @@ export const createRenderer = (
     }
 
     // Add measurement flag if using dynamic sizing or for auto-detecting first item
-    if (
-      (config.dynamicItemSize === true || itemElements.size === 0) &&
-      !element.hasAttribute("data-needs-measurement")
-    ) {
+    if ((isDynamicSize || itemElements.size === 0) && !hasNeedsMeasurement) {
       element.dataset.needsMeasurement = "true";
     }
 
     // Apply itemHeight as CSS height if configured
-    if (config.itemHeight && !element.style.height) {
-      element.style.height = `${config.itemHeight}px`;
+    if (itemHeight && !hasHeight) {
+      element.style.height = itemHeightPx;
     }
 
     // Apply any post-render hooks if available
@@ -118,15 +137,24 @@ export const createRenderer = (
       return false;
     }
 
-    // Count how many items are the same
+    // 🚀 PERFORMANCE: Count same items without creating temporary arrays
     let sameItemCount = 0;
 
-    // Convert Set to array and iterate
-    Array.from(currentVisibleIds).forEach((id) => {
-      if (previousVisibleIds.has(id)) {
+    // Iterate over the smaller set for better performance
+    const smallerSet =
+      currentVisibleIds.size < previousVisibleIds.size
+        ? currentVisibleIds
+        : previousVisibleIds;
+    const largerSet =
+      currentVisibleIds.size < previousVisibleIds.size
+        ? previousVisibleIds
+        : currentVisibleIds;
+
+    for (const id of smallerSet) {
+      if (largerSet.has(id)) {
         sameItemCount++;
       }
-    });
+    }
 
     // If more than 50% of items are the same, do partial update
     return sameItemCount >= currentVisibleIds.size / 2;
@@ -176,107 +204,115 @@ export const createRenderer = (
 
       // Calculate positions for each visible item
       // Use sequential positioning for cursor pagination, regular positioning for page/offset
-      const paginationStrategy = config.pagination?.strategy || "cursor";
       const positions =
         paginationStrategy === "cursor"
-          ? calculateSequentialItemPositions(
-              items,
-              visibleRange,
-              config.itemHeight || 84
-            )
+          ? calculateSequentialItemPositions(items, visibleRange, itemHeight)
           : calculateItemPositions(items, visibleRange, itemMeasurement);
 
-      // Debug logging for cursor pagination
-      if (paginationStrategy === "cursor" && positions.length > 0) {
-        console.log(
-          `🎯 [CURSOR-RENDER] Positioning ${positions.length} items: range ${
-            visibleRange.start
-          }-${visibleRange.end}, offsets: ${positions
-            .slice(0, 3)
-            .map((p) => `${p.item.id}@${p.offset}px`)
-            .join(", ")}`
-        );
+      // 🚀 PERFORMANCE: Reuse Set objects to avoid garbage collection
+      reusableCurrentIds.clear();
+      reusablePreviousIds.clear();
+
+      // Build ID sets efficiently without creating temporary arrays
+      for (let i = 0; i < positions.length; i++) {
+        reusableCurrentIds.add(positions[i].item.id);
       }
 
-      // Get current visible IDs
-      const currentVisibleIds = new Set(positions.map((p) => p.item.id));
-      const previousVisibleIds = new Set(itemElements.keys());
+      for (const [id] of itemElements) {
+        reusablePreviousIds.add(id);
+      }
 
       // Determine if we should do a partial update
       const doPartialUpdate = shouldUsePartialUpdate(
-        currentVisibleIds,
-        previousVisibleIds,
+        reusableCurrentIds,
+        reusablePreviousIds,
         visibleRange
       );
 
       if (doPartialUpdate) {
         // Partial update - only add/remove/reposition necessary items
 
-        // Find items to add and remove
-        const toAdd = positions.filter(
-          (p) => !previousVisibleIds.has(p.item.id)
-        );
-        const toRemove = Array.from(itemElements.entries()).filter(
-          ([id]) => !currentVisibleIds.has(id)
-        );
+        // 🚀 PERFORMANCE: Reuse arrays to avoid garbage collection
+        reusableToAdd.length = 0;
+        reusableToRemove.length = 0;
+
+        // Find items to add and remove efficiently
+        for (let i = 0; i < positions.length; i++) {
+          const pos = positions[i];
+          if (!reusablePreviousIds.has(pos.item.id)) {
+            reusableToAdd.push(pos);
+          }
+        }
+
+        for (const [id, element] of itemElements) {
+          if (!reusableCurrentIds.has(id)) {
+            reusableToRemove.push([id, element]);
+          }
+        }
 
         // Remove items that are no longer visible
-        toRemove.forEach(([id, element]) => {
+        for (let i = 0; i < reusableToRemove.length; i++) {
+          const [id, element] = reusableToRemove[i];
           recyclePool.recycleElement(element);
           itemElements.delete(id);
           element.remove();
-        });
+        }
 
         // Add new items
-        if (toAdd.length > 0) {
+        if (reusableToAdd.length > 0) {
           const fragment = document.createDocumentFragment();
 
-          toAdd.forEach(({ index, item, offset }) => {
+          for (let i = 0; i < reusableToAdd.length; i++) {
+            const { index, item, offset } = reusableToAdd[i];
             const element = createItemElement(item, index);
 
             element.style.position = "absolute";
             element.style.transform = `translateY(${offset}px)`;
 
             // Ensure itemHeight is applied
-            if (config.itemHeight && !element.style.height) {
-              element.style.height = `${config.itemHeight}px`;
+            if (itemHeight && !element.style.height) {
+              element.style.height = itemHeightPx;
             }
 
             fragment.appendChild(element);
             itemElements.set(item.id, element);
-          });
+          }
 
           elements.content.appendChild(fragment);
         }
 
         // Reposition existing items
-        positions.forEach(({ item, offset }) => {
+        for (let i = 0; i < positions.length; i++) {
+          const { item, offset } = positions[i];
           if (itemElements.has(item.id)) {
             const element = itemElements.get(item.id)!;
-            // Extract current transform offset for comparison
+            // 🚀 PERFORMANCE: Use cached regex and avoid string parsing
             const currentTransform = element.style.transform;
-            const currentOffset = currentTransform.match(
-              /translateY\((\d+)px\)/
-            )?.[1];
-            if (parseInt(currentOffset || "0", 10) !== offset) {
+            const match = transformRegex.exec(currentTransform);
+            const currentOffset = match ? parseInt(match[1], 10) : 0;
+            if (currentOffset !== offset) {
               element.style.transform = `translateY(${offset}px)`;
             }
           }
-        });
+        }
       } else {
         // Full rerender - replace all elements
 
-        // Save references to existing elements for recycling
+        // 🚀 PERFORMANCE: Save references to existing elements for recycling without Array.from
         const existingElements = new Map<string, HTMLElement>();
-        Array.from(elements.content.children).forEach((child) => {
-          if (child === topSentinel || child === bottomSentinel) return;
+        const children = elements.content.children;
 
-          const id = (child as HTMLElement).getAttribute("data-id");
+        // Use backwards iteration to avoid issues with live NodeList
+        for (let i = children.length - 1; i >= 0; i--) {
+          const child = children[i] as HTMLElement;
+          if (child === topSentinel || child === bottomSentinel) continue;
+
+          const id = child.getAttribute("data-id");
           if (id) {
-            existingElements.set(id, child as HTMLElement);
+            existingElements.set(id, child);
             child.remove(); // Remove but keep reference
           }
-        });
+        }
 
         // Create document fragment for batch DOM updates
         const fragment = document.createDocumentFragment();
@@ -285,7 +321,8 @@ export const createRenderer = (
         itemElements.clear();
 
         // Render visible items
-        positions.forEach(({ index, item, offset }) => {
+        for (let i = 0; i < positions.length; i++) {
+          const { index, item, offset } = positions[i];
           let element: HTMLElement;
 
           // Reuse existing element if available
@@ -298,12 +335,12 @@ export const createRenderer = (
             element.style.willChange = "transform";
 
             // Ensure itemHeight is applied
-            if (config.itemHeight && !element.style.height) {
-              element.style.height = `${config.itemHeight}px`;
+            if (itemHeight && !element.style.height) {
+              element.style.height = itemHeightPx;
             }
 
             // Check if it needs measurement (first item or dynamic sizing)
-            if (config.dynamicItemSize === true || itemElements.size === 0) {
+            if (isDynamicSize || itemElements.size === 0) {
               element.dataset.needsMeasurement = "true";
             }
           } else {
@@ -314,8 +351,8 @@ export const createRenderer = (
             element.style.transform = `translateY(${offset}px)`;
 
             // Ensure itemHeight is applied
-            if (config.itemHeight && !element.style.height) {
-              element.style.height = `${config.itemHeight}px`;
+            if (itemHeight && !element.style.height) {
+              element.style.height = itemHeightPx;
             }
           }
 
@@ -324,15 +361,29 @@ export const createRenderer = (
 
           // Store the element reference
           itemElements.set(item.id, element);
-        });
+        }
 
         // Recycle any remaining elements
-        existingElements.forEach((element) => {
+        for (const [, element] of existingElements) {
           recyclePool.recycleElement(element);
-        });
+        }
 
-        // Batch DOM update
-        elements.content.innerHTML = "";
+        // 🚀 PERFORMANCE: Avoid expensive innerHTML = "" by removing remaining children
+        const remainingChildren = elements.content.children;
+        while (remainingChildren.length > 0) {
+          const child = remainingChildren[0];
+          if (child === topSentinel || child === bottomSentinel) {
+            // Skip sentinels - they should stay
+            if (remainingChildren.length > 1) {
+              remainingChildren[1].remove();
+            } else {
+              break;
+            }
+          } else {
+            child.remove();
+          }
+        }
+
         elements.content.appendChild(fragment);
       }
 

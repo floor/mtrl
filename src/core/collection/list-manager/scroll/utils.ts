@@ -77,12 +77,6 @@ export const calcViewportOffset = (
     Math.min(OFFSET.MAX_LOAD_SIZE, constrainedEndIndex - constrainedStartIndex)
   );
 
-  console.log(
-    `🎯 [OFFSET-CALC] Smart loading: scrollTop=${scrollTop}, loading items ${constrainedStartIndex}-${
-      constrainedStartIndex + limit - 1
-    } (${limit} items = ${itemsInViewport} per viewport × ${viewportMultiplier})`
-  );
-
   return {
     offset: constrainedStartIndex,
     limit,

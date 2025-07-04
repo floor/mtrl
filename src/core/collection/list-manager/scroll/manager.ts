@@ -192,9 +192,6 @@ export const createScrollingManager = (deps: ScrollingManagerDependencies) => {
       );
 
       // Start data loading immediately (async, non-blocking)
-      console.log(
-        `🎯 [PREDICTIVE] Starting data load for index ${index} + scroll to ${scrollPosition}px`
-      );
       const dataLoadPromise =
         scrollJumpFunctions.loadScrollToIndexWithBackgroundRanges(
           index,
@@ -301,22 +298,14 @@ export const createScrollingManager = (deps: ScrollingManagerDependencies) => {
     limit: number
   ): Promise<void> => {
     if (state.paginationStrategy !== "offset") {
-      console.warn(
-        `🎯 [OFFSET-AUTO] loadOffsetRange called but pagination strategy is ${state.paginationStrategy}`
-      );
       return;
     }
 
     if (state.loading) {
-      console.log(`🎯 [OFFSET-AUTO] Already loading, skipping offset load`);
       return;
     }
 
     try {
-      console.log(
-        `🎯 [OFFSET-AUTO] Loading offset range: offset=${offset}, limit=${limit}`
-      );
-
       // Use the existing loadItems function with offset parameters
       const result = await loadItems({
         offset,
@@ -325,16 +314,11 @@ export const createScrollingManager = (deps: ScrollingManagerDependencies) => {
       });
 
       if (result.items && result.items.length > 0) {
-        console.log(
-          `🎯 [OFFSET-AUTO] Successfully loaded ${result.items.length} items for offset ${offset}`
-        );
         // Trigger re-render with the new data
         updateVisibleItems(state.scrollTop, false);
-      } else {
-        console.log(`🎯 [OFFSET-AUTO] No items returned for offset ${offset}`);
       }
     } catch (error) {
-      console.error(`🎯 [OFFSET-AUTO] Error loading offset range:`, error);
+      // Error loading offset range - silently handled
     }
   };
 

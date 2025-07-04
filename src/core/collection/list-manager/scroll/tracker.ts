@@ -143,22 +143,12 @@ class ScrollManager {
         timestamp: Date.now(),
       };
 
-      console.log(
-        `🐌 [SPEED-THRESHOLD] Crossed to slow: ${speed.toFixed(1)}px/ms ≤ ${
-          this.FAST_SCROLL_THRESHOLD
-        }px/ms`
-      );
-
       this.emitSpeedThresholdEvent(event);
     }
 
     // 🔧 NEW: Schedule scroll stop detection if we're in fast state
     if (currentState === "fast") {
       this.scrollStopTimeout = setTimeout(() => {
-        console.log(
-          `🛑 [SCROLL-STOP] Scrolling stopped after fast scrolling - emitting slow threshold event`
-        );
-
         // Emit a synthetic "slow" event when scrolling stops after fast scrolling
         const syntheticEvent: SpeedThresholdEvent = {
           speed: 0, // Speed is now 0 since scrolling stopped

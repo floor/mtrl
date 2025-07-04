@@ -70,8 +70,6 @@ export const createPaginationManager = (deps: PaginationDependencies) => {
       animate = false,
     } = options;
 
-    // Load page enhanced called
-
     // Validate page number
     if (!Number.isInteger(pageNumber) || pageNumber < 1) {
       throw new Error("Page number must be a positive integer");
@@ -179,7 +177,6 @@ export const createPaginationManager = (deps: PaginationDependencies) => {
     hasNext: boolean;
     items: any[];
   }> => {
-    // Load next page called
     if (state.loading) {
       return { hasNext: state.hasNext, items: [] };
     }
@@ -215,7 +212,6 @@ export const createPaginationManager = (deps: PaginationDependencies) => {
     hasPrev: boolean;
     items: any[];
   }> => {
-    // Load previous page enhanced called
     // Check if we're using page-based pagination
     const paginationStrategy = config.pagination?.strategy || "cursor";
     if (paginationStrategy !== "page") {
@@ -312,22 +308,9 @@ export const createPaginationManager = (deps: PaginationDependencies) => {
 
     // Always load immediately based on speed - no delays
     if (scrollSpeed <= RESUME_SPEED_THRESHOLD) {
-      console.log(
-        `🚀 [SPEED-LOAD] Loading immediately: ${
-          state.paginationStrategy === "page" ? "page" : "offset"
-        } ${targetPageOrOffset} (speed: ${scrollSpeed.toFixed(
-          1
-        )}px/ms ≤ ${RESUME_SPEED_THRESHOLD}px/ms)`
-      );
-
       executeLoad(targetPageOrOffset, loadSize);
     } else {
-      // Fast scrolling - skip this load but don't schedule anything
-      console.log(
-        `⏸️ [SPEED-SKIP] Skipping load: speed ${scrollSpeed.toFixed(
-          1
-        )}px/ms > ${RESUME_SPEED_THRESHOLD}px/ms threshold`
-      );
+      // Fast scrolling - skip this load
     }
 
     // Helper function to execute the actual load

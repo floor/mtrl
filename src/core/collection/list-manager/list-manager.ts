@@ -174,10 +174,6 @@ export const createListManager = (
     scrollTop = state.scrollTop,
     isPageJump = false
   ): void => {
-    // Debug: Only log page jumps
-    if (isPageJump) {
-      console.log("[LIST-MANAGER] updateVisibleItems called (page jump)");
-    }
     functionContainer.updateVisibleItems?.(scrollTop, isPageJump);
   };
 
