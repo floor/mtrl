@@ -4,12 +4,25 @@ import { createSentinels } from "../dom/elements";
 import { devLog } from "./utils";
 
 /**
+ * Speed threshold event
+ */
+export interface SpeedThresholdEvent {
+  speed: number;
+  scrollTop: number;
+  crossedThreshold: "slow" | "fast";
+  timestamp: number;
+}
+
+/**
  * Common interface for scroll tracking strategies
  */
 export interface ScrollTracker {
   setup(): () => void;
   getScrollTop(): number;
   getScrollVelocity?(): number;
+  onSpeedThreshold?: (
+    callback: (event: SpeedThresholdEvent) => void
+  ) => () => void;
 }
 
 /**
@@ -70,6 +83,16 @@ class ScrollManager {
   private speedLogTimeout: number | null = null;
   private metrics: ScrollMetrics = { eventCount: 0, throttleHits: 0 };
 
+  // Speed threshold detection
+  private readonly FAST_SCROLL_THRESHOLD = 5.0; // px/ms - same as viewport manager
+  private speedThresholdCallbacks: Array<(event: SpeedThresholdEvent) => void> =
+    [];
+  private lastSpeedState: "slow" | "fast" | null = null;
+
+  // Scroll stop detection after fast scrolling
+  private scrollStopTimeout: number | null = null;
+  private readonly SCROLL_STOP_DELAY = 100; // ms - detect when scrolling stops
+
   constructor(
     container: HTMLElement,
     config: ListManagerConfig,
@@ -87,22 +110,94 @@ class ScrollManager {
   ): void => {
     const speed = scrollDistance / Math.max(timeDelta, 1);
 
+    // Check for speed threshold crossings
+    this.checkSpeedThreshold(speed, scrollTop);
+
     // Clear existing timeout
     if (this.speedLogTimeout) {
       clearTimeout(this.speedLogTimeout);
     }
 
-    // Debounced speed logging (200ms)
+    // Debounced speed logging (200ms) - for debugging
     this.speedLogTimeout = setTimeout(() => {
-      console.log(
-        `📊 [SCROLL-SPEED] ${speed.toFixed(
-          1
-        )}px/ms | Distance: ${scrollDistance}px | Time: ${timeDelta.toFixed(
-          1
-        )}ms | Position: ${scrollTop}px`
-      );
       this.speedLogTimeout = null;
     }, 200) as unknown as number;
+  };
+
+  private checkSpeedThreshold = (speed: number, scrollTop: number): void => {
+    const currentState: "slow" | "fast" =
+      speed > this.FAST_SCROLL_THRESHOLD ? "fast" : "slow";
+
+    // Clear any existing scroll stop timeout since we have activity
+    if (this.scrollStopTimeout !== null) {
+      clearTimeout(this.scrollStopTimeout);
+      this.scrollStopTimeout = null;
+    }
+
+    // Only emit event when crossing from fast to slow (when we want to load data)
+    if (this.lastSpeedState === "fast" && currentState === "slow") {
+      const event: SpeedThresholdEvent = {
+        speed,
+        scrollTop,
+        crossedThreshold: "slow",
+        timestamp: Date.now(),
+      };
+
+      console.log(
+        `🐌 [SPEED-THRESHOLD] Crossed to slow: ${speed.toFixed(1)}px/ms ≤ ${
+          this.FAST_SCROLL_THRESHOLD
+        }px/ms`
+      );
+
+      this.emitSpeedThresholdEvent(event);
+    }
+
+    // 🔧 NEW: Schedule scroll stop detection if we're in fast state
+    if (currentState === "fast") {
+      this.scrollStopTimeout = setTimeout(() => {
+        console.log(
+          `🛑 [SCROLL-STOP] Scrolling stopped after fast scrolling - emitting slow threshold event`
+        );
+
+        // Emit a synthetic "slow" event when scrolling stops after fast scrolling
+        const syntheticEvent: SpeedThresholdEvent = {
+          speed: 0, // Speed is now 0 since scrolling stopped
+          scrollTop: this.container.scrollTop, // Get current position
+          crossedThreshold: "slow",
+          timestamp: Date.now(),
+        };
+
+        this.emitSpeedThresholdEvent(syntheticEvent);
+        this.scrollStopTimeout = null;
+      }, this.SCROLL_STOP_DELAY) as unknown as number;
+    }
+
+    this.lastSpeedState = currentState;
+  };
+
+  private emitSpeedThresholdEvent = (event: SpeedThresholdEvent): void => {
+    // Emit to all listeners
+    this.speedThresholdCallbacks.forEach((callback) => {
+      try {
+        callback(event);
+      } catch (error) {
+        console.error("Error in speed threshold callback:", error);
+      }
+    });
+  };
+
+  onSpeedThreshold = (
+    callback: (event: SpeedThresholdEvent) => void
+  ): (() => void) => {
+    this.speedThresholdCallbacks.push(callback);
+
+    // Return cleanup function
+    return () => {
+      const index = this.speedThresholdCallbacks.indexOf(callback);
+      if (index > -1) {
+        this.speedThresholdCallbacks.splice(index, 1);
+      }
+    };
   };
 
   private handleScroll = (e: Event): void => {
@@ -122,10 +217,9 @@ class ScrollManager {
 
     this.velocityTracker.update(scrollTop);
 
-    // Debug: Track scroll events (calculate diff before updating lastScrollTop)
+    // Track scroll events (calculate diff before updating lastScrollTop)
     const scrollDiff = Math.abs(scrollTop - this.lastScrollTop);
     const timeDelta = currentTime - this.lastScrollTime;
-    console.log(`🔄 [SCROLL] Event: ${scrollTop}px (diff: ${scrollDiff}px)`);
 
     // Log scroll speed with debounce
     if (scrollDiff > 0) {
@@ -148,6 +242,10 @@ class ScrollManager {
         clearTimeout(this.speedLogTimeout);
         this.speedLogTimeout = null;
       }
+      if (this.scrollStopTimeout) {
+        clearTimeout(this.scrollStopTimeout);
+        this.scrollStopTimeout = null;
+      }
       this.velocityTracker.reset();
     };
   }
@@ -158,6 +256,12 @@ class ScrollManager {
 
   getScrollVelocity(): number {
     return this.velocityTracker.getVelocity();
+  }
+
+  getOnSpeedThreshold(): (
+    callback: (event: SpeedThresholdEvent) => void
+  ) => () => void {
+    return this.onSpeedThreshold;
   }
 }
 
@@ -199,6 +303,7 @@ function createTraditionalTracker(
     setup: () => manager.setup(),
     getScrollTop: () => manager.getScrollTop(),
     getScrollVelocity: () => manager.getScrollVelocity(),
+    onSpeedThreshold: (callback) => manager.onSpeedThreshold(callback),
   };
 }
 

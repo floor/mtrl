@@ -665,8 +665,20 @@ export const createViewportManager = (
 
       if (state.useStatic) {
         totalHeight = itemMeasurement.calculateTotalHeight(state.items);
+      } else if (state.paginationStrategy === "cursor") {
+        // 🎯 CURSOR PAGINATION: Use loaded items + buffer for height calculation
+        // Don't use total itemCount since cursor pagination can't jump to arbitrary positions
+        const loadedItemCount = state.items.length;
+        const bufferSize = Math.max(config.pageSize || 20, 50); // Buffer for smooth scrolling
+
+        // Use loaded items + buffer instead of total item count
+        totalHeight = Math.round((loadedItemCount + bufferSize) * itemHeight);
+
+        console.log(
+          `🎯 [CURSOR] Container height: ${loadedItemCount} loaded + ${bufferSize} buffer = ${totalHeight}px`
+        );
       } else if (state.itemCount) {
-        // 🛡️ BOUNDARY FIX: Use actual item count for total height calculation
+        // 🛡️ BOUNDARY FIX: Use actual item count for total height calculation (page/offset pagination)
         totalHeight = Math.round(state.itemCount * itemHeight); // 🔧 FIX: Round to prevent floating point precision issues
       } else {
         // Keep existing height if we have one and it's reasonable
@@ -816,7 +828,7 @@ export const createViewportManager = (
    * Cleanup function
    */
   const cleanup = (): void => {
-    // No cleanup needed - purely speed-based system
+    // Speed threshold listener cleanup is handled by lifecycle manager
   };
 
   return {

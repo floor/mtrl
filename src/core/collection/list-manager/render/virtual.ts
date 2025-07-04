@@ -59,6 +59,17 @@ export const createRenderingManager = (deps: RenderingDependencies) => {
       recycledElement.style.cssText = "";
       recycledElement.className = "mtrl-list-item"; // Reset to base class
 
+      // Clear custom properties
+      recycledElement.style.removeProperty("--item-offset");
+
+      // Restore base transform
+      recycledElement.style.transform = `translateY(var(--item-offset)) translateZ(0)`;
+
+      // Apply itemHeight if configured
+      if (config.itemHeight) {
+        recycledElement.style.height = `${config.itemHeight}px`;
+      }
+
       // Update with new content using recycled element
       const newElement = config.renderItem(item, index, recycledElement);
       if (newElement) {
@@ -104,7 +115,9 @@ export const createRenderingManager = (deps: RenderingDependencies) => {
   };
 
   /**
-   * Apply high-performance positioning using CSS transforms
+   * Apply APZ-friendly positioning using CSS custom properties
+   * This prevents Firefox scroll-linked effects warnings by using CSS custom properties
+   * instead of direct transform manipulation during scroll events
    * @param element Element to position
    * @param offset Y offset in pixels
    */
@@ -112,13 +125,23 @@ export const createRenderingManager = (deps: RenderingDependencies) => {
     element: HTMLElement,
     offset: number
   ): void => {
-    // Use transform instead of position for better performance (compositing layer)
-    element.style.transform = `translateY(${offset}px)`;
-    element.style.willChange = "transform"; // Hint for GPU acceleration
+    // Use CSS custom properties for APZ-friendly positioning
+    // This allows Firefox's async scrolling to work properly
+    element.style.setProperty("--item-offset", `${offset}px`);
+
+    // Ensure the element has the base transform applied
+    if (!element.style.transform) {
+      element.style.transform = `translateY(var(--item-offset)) translateZ(0)`;
+    }
 
     // Use absolute positioning but without changing top/left frequently
     if (!element.style.position) {
       element.style.position = "absolute";
+    }
+
+    // Apply itemHeight as CSS height if configured
+    if (config.itemHeight && !element.style.height) {
+      element.style.height = `${config.itemHeight}px`;
     }
   };
 
@@ -146,11 +169,14 @@ export const createRenderingManager = (deps: RenderingDependencies) => {
           ? " mtrl-item-placeholder"
           : "";
 
+        const itemHeight = config.itemHeight
+          ? `height: ${config.itemHeight}px; `
+          : "";
         htmlStrings.push(`
           <div class="mtrl-list-item${isPlaceholder}" 
                data-id="${itemId}" 
                data-index="${index}"
-               style="transform: translateY(${offset}px); position: absolute; left: 0; right: 0; width: 100%; will-change: transform;">
+               style="--item-offset: ${offset}px; transform: translateY(var(--item-offset)) translateZ(0); position: absolute; left: 0; right: 0; width: 100%; ${itemHeight}will-change: transform;">
             <!-- Content will be populated by post-processing -->
           </div>
         `);
@@ -220,8 +246,8 @@ export const createRenderingManager = (deps: RenderingDependencies) => {
   const recycleElements = (elementsToRecycle: HTMLElement[]): void => {
     elementsToRecycle.forEach((element) => {
       if (elementPool.length < maxPoolSize) {
-        // Prepare element for reuse
-        element.style.transform = "translateY(-9999px)"; // Move out of view
+        // Prepare element for reuse using custom properties
+        element.style.setProperty("--item-offset", "-9999px"); // Move out of view
         element.style.visibility = "hidden"; // Hide but keep in layout
         elementPool.push(element);
       } else {

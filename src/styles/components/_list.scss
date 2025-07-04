@@ -29,7 +29,7 @@ $opacity-transition: opacity $state-transition-duration $state-transition-easing
 // Placeholder styling variables
 $placeholder-opacity: 0.6 !default;
 $placeholder-opacity-skeleton: 0.8 !default;
-$placeholder-opacity-masked: 1 !default;
+$placeholder-opacity-masked: 0.7 !default;
 $placeholder-opacity-subtle: 0.4 !default;
 $placeholder-background-alpha: 0.4 !default;
 $placeholder-shimmer-alpha: 0.2 !default;
@@ -272,9 +272,11 @@ $placeholder-animation-speed: 1.5s !default;
     right: 0;
     width: 100%;
 
-    // Use transforms for positioning (GPU-accelerated)
+    // APZ-friendly positioning using CSS custom properties
+    // This prevents Firefox scroll-linked effects warnings
+    --item-offset: 0px;
+    transform: translateY(var(--item-offset)) translateZ(0);
     will-change: transform;
-    transform: translateZ(0);
     contain: layout style;
 
     gap: 16px;

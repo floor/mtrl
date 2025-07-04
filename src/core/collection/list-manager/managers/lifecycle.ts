@@ -4,6 +4,7 @@ import {
   ListManagerElements,
 } from "../types";
 import { PAGINATION } from "../constants";
+import { SpeedThresholdEvent } from "../scroll/tracker";
 
 /**
  * Lifecycle management dependencies
@@ -96,6 +97,41 @@ export const createLifecycleManager = (deps: LifecycleDependencies) => {
 
     const scrollTrackingCleanup = scrollTracker.setup();
     cleanupFunctions.push(scrollTrackingCleanup);
+
+    // Set up speed threshold listener for offset-based loading
+    if (
+      scrollTracker.onSpeedThreshold &&
+      state.paginationStrategy === "offset"
+    ) {
+      const speedThresholdCleanup = scrollTracker.onSpeedThreshold((event) => {
+        // Check if we have missing data in the current viewport
+        const itemHeight = config.itemHeight || 84;
+        const scrollTop = event.scrollTop;
+        const firstVirtualItemId =
+          Math.floor(Math.round(scrollTop) / itemHeight) + 1;
+        const lastVirtualItemId =
+          Math.floor(
+            Math.round(scrollTop + state.containerHeight) / itemHeight
+          ) + 1;
+
+        // Check if we have all needed items
+        const neededItemIds = [];
+        for (let i = firstVirtualItemId; i <= lastVirtualItemId; i++) {
+          neededItemIds.push(i);
+        }
+
+        const missingItemIds = neededItemIds.filter(
+          (itemId) => !state.items.some((item) => parseInt(item.id) === itemId)
+        );
+
+        if (missingItemIds.length > 0) {
+          // Trigger viewport update which will handle the missing data loading
+          updateVisibleItems(scrollTop);
+        }
+      });
+
+      cleanupFunctions.push(speedThresholdCleanup);
+    }
 
     // Subscribe to collection changes
     const unsubscribe = itemsCollection.subscribe(({ event }) => {

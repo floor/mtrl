@@ -80,6 +80,11 @@ export const createRenderer = (
       element.dataset.needsMeasurement = "true";
     }
 
+    // Apply itemHeight as CSS height if configured
+    if (config.itemHeight && !element.style.height) {
+      element.style.height = `${config.itemHeight}px`;
+    }
+
     // Apply any post-render hooks if available
     if (renderHook) {
       renderHook(item, element);
@@ -212,6 +217,11 @@ export const createRenderer = (
             element.style.position = "absolute";
             element.style.transform = `translateY(${offset}px)`;
 
+            // Ensure itemHeight is applied
+            if (config.itemHeight && !element.style.height) {
+              element.style.height = `${config.itemHeight}px`;
+            }
+
             fragment.appendChild(element);
             itemElements.set(item.id, element);
           });
@@ -267,6 +277,11 @@ export const createRenderer = (
             element.style.transform = `translateY(${offset}px)`;
             element.style.willChange = "transform";
 
+            // Ensure itemHeight is applied
+            if (config.itemHeight && !element.style.height) {
+              element.style.height = `${config.itemHeight}px`;
+            }
+
             // Check if it needs measurement (first item or dynamic sizing)
             if (config.dynamicItemSize === true || itemElements.size === 0) {
               element.dataset.needsMeasurement = "true";
@@ -277,6 +292,11 @@ export const createRenderer = (
             // Position the element using GPU-accelerated transforms
             element.style.position = "absolute";
             element.style.transform = `translateY(${offset}px)`;
+
+            // Ensure itemHeight is applied
+            if (config.itemHeight && !element.style.height) {
+              element.style.height = `${config.itemHeight}px`;
+            }
           }
 
           // Add to fragment

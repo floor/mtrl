@@ -224,6 +224,37 @@ export const createScrollJumpFunctions = (deps: ScrollJumpDependencies) => {
         for (let page = startPage; page <= endPage; page++) {
           loadedPages.push(page);
         }
+      } else if (paginationStrategy === "cursor") {
+        // 🎯 CURSOR-BASED: Load items using cursor pagination
+        console.log(
+          `🎯 [CURSOR-LOAD] Loading items for cursor-based pagination`
+        );
+
+        try {
+          // For cursor pagination, we need to load items sequentially
+          // Since we can't jump to arbitrary positions, we'll load what we can
+          const response = await loadItems({
+            limit: config.pageSize || 20,
+            // Note: cursor pagination doesn't support arbitrary positioning
+            // We'll load the first page and let the normal scrolling handle the rest
+          });
+
+          console.log(
+            `✅ [CURSOR-LOAD] Loaded ${response.items.length} items successfully!`
+          );
+
+          // 🎯 CRITICAL: Trigger re-render after data loads
+          console.log(
+            `🎨 [CURSOR-LOAD] Triggering re-render with newly loaded data`
+          );
+          updateVisibleItems(targetScrollPosition, isProgrammatic);
+
+          // For cursor pagination, we can't preload specific pages
+          loadedPages = [1]; // Equivalent to first page
+        } catch (error) {
+          console.error(`❌ [CURSOR-LOAD] Failed to load items:`, error);
+          throw error;
+        }
       } else {
         // 📄 LEGACY: Page-based loading - multiple API calls
         const calc = calcViewportPages(
@@ -287,9 +318,13 @@ export const createScrollJumpFunctions = (deps: ScrollJumpDependencies) => {
           if (additional.length > 0)
             loadAdditionalRangesInBackground(additional);
         }
-      } else {
+      } else if (paginationStrategy === "offset") {
         console.log(
           `🎯 [OFFSET-STRATEGY] Background preloading disabled for offset-based pagination - using on-demand loading`
+        );
+      } else if (paginationStrategy === "cursor") {
+        console.log(
+          `🎯 [CURSOR-STRATEGY] Background preloading disabled for cursor-based pagination - using sequential loading`
         );
       }
 
@@ -375,7 +410,10 @@ export const createScrollJumpFunctions = (deps: ScrollJumpDependencies) => {
     targetPage: number,
     scrollSpeed: number
   ): void => {
+    console.error("scheduleScrollStopPageLoad");
     const currentIndex = (targetPage - 1) * (config.pageSize || 20);
+    const paginationStrategy = config.pagination?.strategy || "page";
+
     console.log(
       `⏰ [SCROLL-STOP] Scheduled for page ${targetPage} → index ${currentIndex} (speed: ${scrollSpeed.toFixed(
         1
@@ -393,6 +431,14 @@ export const createScrollJumpFunctions = (deps: ScrollJumpDependencies) => {
         console.log(
           `🔍 [DEBUG] isScrollJumpInProgress=true is blocking data loading for scrollbar drag!`
         );
+      }
+
+      // Handle different pagination strategies
+      if (paginationStrategy === "cursor") {
+        console.log(`🎯 [CURSOR-SCROLL-STOP] Handling cursor-based pagination`);
+        // For cursor pagination, we just update viewport and let normal scrolling handle loading
+        updateVisibleItems(container.scrollTop, false);
+        return;
       }
 
       // 🖱️ REACTIVE STRATEGY: Always check data availability and load if missing

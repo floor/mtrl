@@ -224,11 +224,11 @@ export const createDataLoadingManager = (deps: DataLoadingDependencies) => {
         console.log(
           `📦 [OFFSET-STATE] State updated - items: ${state.items.length}, hasNext: ${state.hasNext}`
         );
-        console.log(
-          `📦 [OFFSET-STATE] State items IDs: [${state.items
-            .map((item) => item.id)
-            .join(", ")}]`
-        );
+        // console.log(
+        //   `📦 [OFFSET-STATE] State items IDs: [${state.items
+        //     .map((item) => item.id)
+        //     .join(", ")}]`
+        // );
       } else {
         // For boundary loads and cursor pagination, update state with the FULL collection
         const stateUpdates = updateStateAfterLoad(
