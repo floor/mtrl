@@ -46,27 +46,15 @@ export const createScrollJumpFunctions = (deps: ScrollJumpDependencies) => {
     // 🎯 DIRECT OFFSET API CALL: Let the route adapter handle parameter building
     const apiParams = { offset, limit };
 
-    console.log(
-      `🚀 [OFFSET-API] Making direct API call with offset=${offset}, limit=${limit}`
-    );
-
     try {
       // Direct API call - the route adapter will handle parameter naming
       const response = await loadItems(apiParams);
-
-      console.log(
-        `✅ [OFFSET-API] Direct API call successful: ${response.items.length} items loaded`
-      );
-
       return response;
     } catch (error) {
-      console.error(`❌ [OFFSET-API] Direct API call failed:`, error);
-
       // Fallback to page-based loading if offset API fails
-      console.log(`🔄 [OFFSET-FALLBACK] Converting to page-based loading`);
-      const pageSize = config.pageSize || 20;
-      const startPage = Math.floor(offset / pageSize) + 1;
-      const endPage = Math.floor((offset + limit - 1) / pageSize) + 1;
+      const fallbackPageSize = config.pageSize || 20;
+      const startPage = Math.floor(offset / fallbackPageSize) + 1;
+      const endPage = Math.floor((offset + limit - 1) / fallbackPageSize) + 1;
 
       const pagePromises = [];
       for (let page = startPage; page <= endPage; page++) {
@@ -85,13 +73,15 @@ export const createScrollJumpFunctions = (deps: ScrollJumpDependencies) => {
   };
 
   const loadAdditionalRangesInBackground = (pages: number[]): void => {
+    const backgroundLoadOptions = {
+      setScrollPosition: false,
+      replaceCollection: false,
+    };
+
     setTimeout(async () => {
       for (const page of pages) {
         try {
-          await loadPage(page, {
-            setScrollPosition: false,
-            replaceCollection: false,
-          });
+          await loadPage(page, backgroundLoadOptions);
           await new Promise((resolve) => setTimeout(resolve, 100));
         } catch (error) {
           logError(`Background load failed for page ${page}`, error);
@@ -105,11 +95,14 @@ export const createScrollJumpFunctions = (deps: ScrollJumpDependencies) => {
     animate: boolean = false,
     isProgrammatic: boolean = true
   ): Promise<void> => {
-    console.log(
-      `🚀 [SCROLL-JUMP] Starting: targetIndex=${targetIndex}, animate=${animate}, isProgrammatic=${isProgrammatic}`
-    );
     const currentState = timeoutManager.getState();
+
+    // Cache frequently used calculations
     const itemHeight = config.itemHeight || 84;
+    const pageSize = config.pageSize || 20;
+    const containerHeight = state.containerHeight || 400;
+    const paginationStrategy = config.pagination?.strategy || "page";
+
     const targetScrollPosition = targetIndex * itemHeight;
     const currentScrollTop = state.scrollTop || 0;
 
@@ -123,7 +116,6 @@ export const createScrollJumpFunctions = (deps: ScrollJumpDependencies) => {
 
     // Check if already at position with correct data
     const scrollDiff = Math.abs(currentScrollTop - targetScrollPosition);
-    const pageSize = config.pageSize || 30;
     const targetPage = Math.floor(targetIndex / pageSize) + 1;
     const hasCorrectData = state.visibleItems.some((item) => {
       const idx = state.items.findIndex((s) => s.id === item.id);
@@ -132,23 +124,11 @@ export const createScrollJumpFunctions = (deps: ScrollJumpDependencies) => {
     });
 
     if (scrollDiff < itemHeight && hasCorrectData) {
-      console.log(
-        `✅ [SCROLL-JUMP] Already at target position: targetIndex=${targetIndex}`
-      );
       return;
     }
 
-    console.log(
-      `🔄 [SCROLL-JUMP] Position check passed, continuing with loading`
-    );
-
-    // 🔥 REMOVED: Race condition prevention - let all operations proceed
-    // This was blocking legitimate scrollbar data loading
-    if (currentState.isScrollJumpInProgress) {
-      console.log(
-        `🔄 [SCROLL-JUMP] Operation in progress, but proceeding anyway (user needs data)`
-      );
-    }
+    // Allow operations to proceed even if one is in progress
+    // This prevents blocking legitimate scrollbar data loading
 
     if (state.visibleItems.length === 0 && state.items.length > 0) {
       setTimeout(
@@ -164,17 +144,14 @@ export const createScrollJumpFunctions = (deps: ScrollJumpDependencies) => {
     }
 
     (state as any).lastScrollOperation = { targetIndex, timestamp: now };
-    console.log(
-      `🔍 [DEBUG] Setting isScrollJumpInProgress=true for targetIndex=${targetIndex}, isProgrammatic=${isProgrammatic}`
-    );
     timeoutManager.updateState({ isScrollJumpInProgress: true });
 
     // Check if target data exists
-    const targetPageNum = Math.floor(targetIndex / (config.pageSize || 20)) + 1;
+    const targetPageNum = Math.floor(targetIndex / pageSize) + 1;
     const hasTargetData = state.items.some((item) => {
       const id = parseInt(item.id);
-      const start = (targetPageNum - 1) * (config.pageSize || 20);
-      return id >= start + 1 && id <= start + (config.pageSize || 20);
+      const start = (targetPageNum - 1) * pageSize;
+      return id >= start + 1 && id <= start + pageSize;
     });
 
     if (!hasTargetData && updateVisibleItems) {
@@ -183,104 +160,69 @@ export const createScrollJumpFunctions = (deps: ScrollJumpDependencies) => {
     }
 
     try {
-      const containerHeight = state.containerHeight || 400;
-      const pageSize = config.pageSize || 20;
-      const paginationStrategy = config.pagination?.strategy || "page";
       let loadedPages: number[] = []; // Track loaded pages for preloading
 
-      if (paginationStrategy === "offset") {
-        // 🎯 OPTIMIZED: Offset-based loading - ONE precise API call
-        const offsetCalc = calcViewportOffset(
-          targetScrollPosition,
-          containerHeight,
-          itemHeight,
-          state.itemCount,
-          DEFAULTS.viewportMultiplier // Use viewport multiplier from constants
-        );
+      // Handle different pagination strategies
+      switch (paginationStrategy) {
+        case "offset": {
+          // Offset-based loading - ONE precise API call
+          const offsetCalc = calcViewportOffset(
+            targetScrollPosition,
+            containerHeight,
+            itemHeight,
+            state.itemCount,
+            DEFAULTS.viewportMultiplier
+          );
 
-        console.log(
-          `🎯 [OFFSET-LOAD] Loading ${offsetCalc.limit} items from offset ${offsetCalc.offset}`
-        );
+          await loadOffsetData(offsetCalc.offset, offsetCalc.limit);
 
-        // Single precise API call instead of multiple page calls
-        const response = await loadOffsetData(
-          offsetCalc.offset,
-          offsetCalc.limit
-        );
-        console.log(
-          `✅ [OFFSET-LOAD] Loaded ${response.items.length} items successfully!`
-        );
-
-        // 🎯 CRITICAL: Trigger re-render after data loads to show items immediately
-        console.log(
-          `🎨 [OFFSET-LOAD] Triggering re-render with newly loaded data`
-        );
-        updateVisibleItems(targetScrollPosition, isProgrammatic);
-
-        // Calculate equivalent pages for preloading compatibility
-        const startPage = Math.floor(offsetCalc.offset / pageSize) + 1;
-        const endPage =
-          Math.floor((offsetCalc.offset + offsetCalc.limit - 1) / pageSize) + 1;
-        for (let page = startPage; page <= endPage; page++) {
-          loadedPages.push(page);
+          // Calculate equivalent pages for preloading compatibility
+          const startPage = Math.floor(offsetCalc.offset / pageSize) + 1;
+          const endPage =
+            Math.floor((offsetCalc.offset + offsetCalc.limit - 1) / pageSize) +
+            1;
+          for (let page = startPage; page <= endPage; page++) {
+            loadedPages.push(page);
+          }
+          break;
         }
-      } else if (paginationStrategy === "cursor") {
-        // 🎯 CURSOR-BASED: Load items using cursor pagination
-        console.log(
-          `🎯 [CURSOR-LOAD] Loading items for cursor-based pagination`
-        );
 
-        try {
-          // For cursor pagination, we need to load items sequentially
-          // Since we can't jump to arbitrary positions, we'll load what we can
-          const response = await loadItems({
-            limit: config.pageSize || 20,
-            // Note: cursor pagination doesn't support arbitrary positioning
-            // We'll load the first page and let the normal scrolling handle the rest
+        case "cursor": {
+          // Cursor-based: Load items using cursor pagination
+          await loadItems({
+            limit: pageSize,
           });
-
-          console.log(
-            `✅ [CURSOR-LOAD] Loaded ${response.items.length} items successfully!`
-          );
-
-          // 🎯 CRITICAL: Trigger re-render after data loads
-          console.log(
-            `🎨 [CURSOR-LOAD] Triggering re-render with newly loaded data`
-          );
-          updateVisibleItems(targetScrollPosition, isProgrammatic);
-
-          // For cursor pagination, we can't preload specific pages
           loadedPages = [1]; // Equivalent to first page
-        } catch (error) {
-          console.error(`❌ [CURSOR-LOAD] Failed to load items:`, error);
-          throw error;
+          break;
         }
-      } else {
-        // 📄 LEGACY: Page-based loading - multiple API calls
-        const calc = calcViewportPages(
-          targetIndex,
-          containerHeight,
-          itemHeight,
-          pageSize,
-          targetScrollPosition,
-          state.itemCount
-        );
 
-        // Load viewport pages
-        const promises = calc.pages.map((page) =>
-          loadPage(page, {
+        default: {
+          // Page-based loading - multiple API calls
+          const calc = calcViewportPages(
+            targetIndex,
+            containerHeight,
+            itemHeight,
+            pageSize,
+            targetScrollPosition,
+            state.itemCount
+          );
+
+          const loadOptions = {
             setScrollPosition: false,
             replaceCollection: false,
             animate: false,
-          })
-        );
-        await Promise.all(promises);
-        console.log(
-          `✅ [SCROLL-JUMP] All ${promises.length} pages loaded successfully!`
-        );
-
-        loadedPages = calc.pages;
+          };
+          const promises = calc.pages.map((page) =>
+            loadPage(page, loadOptions)
+          );
+          await Promise.all(promises);
+          loadedPages = calc.pages;
+          break;
+        }
       }
+
+      // Trigger re-render after data loads
+      updateVisibleItems(targetScrollPosition, isProgrammatic);
 
       // Background preloading (only for page-based strategy)
       if (paginationStrategy === "page") {
@@ -318,43 +260,30 @@ export const createScrollJumpFunctions = (deps: ScrollJumpDependencies) => {
           if (additional.length > 0)
             loadAdditionalRangesInBackground(additional);
         }
-      } else if (paginationStrategy === "offset") {
-        console.log(
-          `🎯 [OFFSET-STRATEGY] Background preloading disabled for offset-based pagination - using on-demand loading`
-        );
-      } else if (paginationStrategy === "cursor") {
-        console.log(
-          `🎯 [CURSOR-STRATEGY] Background preloading disabled for cursor-based pagination - using sequential loading`
-        );
+      } else {
+        // Background preloading disabled for offset/cursor pagination - using on-demand/sequential loading
       }
 
       // Set scroll position
-      if (!animate && isProgrammatic) {
-        container.scrollTop = targetScrollPosition;
-        state.scrollTop = targetScrollPosition;
-        console.log(
-          `🔍 [DEBUG] Clearing isScrollJumpInProgress (instant programmatic)`
-        );
-        timeoutManager.updateState({ isScrollJumpInProgress: false });
-      } else if (animate && isProgrammatic) {
-        container.scrollTo({ top: targetScrollPosition, behavior: "smooth" });
-        const distance = Math.abs(targetScrollPosition - currentScrollTop);
-        const time = Math.min(Math.max(distance / 2000, 500), 2000);
-        console.log(
-          `🔍 [DEBUG] Clearing isScrollJumpInProgress after ${time}ms (animated programmatic)`
-        );
-        setTimeout(
-          () => timeoutManager.updateState({ isScrollJumpInProgress: false }),
-          time
-        );
+      if (isProgrammatic) {
+        if (!animate) {
+          container.scrollTop = targetScrollPosition;
+          state.scrollTop = targetScrollPosition;
+          timeoutManager.updateState({ isScrollJumpInProgress: false });
+        } else {
+          container.scrollTo({ top: targetScrollPosition, behavior: "smooth" });
+          const distance = Math.abs(targetScrollPosition - currentScrollTop);
+          const time = Math.min(Math.max(distance / 2000, 500), 2000);
+          setTimeout(
+            () => timeoutManager.updateState({ isScrollJumpInProgress: false }),
+            time
+          );
+        }
       }
     } catch (error) {
       logError(`Scroll jump failed for index ${targetIndex}`, error);
     } finally {
       if (!animate || !isProgrammatic) {
-        console.log(
-          `🔍 [DEBUG] Clearing isScrollJumpInProgress (finally block for non-animated or non-programmatic)`
-        );
         timeoutManager.updateState({ isScrollJumpInProgress: false });
       }
     }
@@ -370,6 +299,7 @@ export const createScrollJumpFunctions = (deps: ScrollJumpDependencies) => {
     timeoutManager.updateState({ isScrollJumpInProgress: true });
 
     try {
+      // Cache frequently used calculations
       const pageSize = config.pageSize || 20;
       const itemHeight = config.itemHeight || 84;
       const containerHeight = state.containerHeight || 400;
@@ -384,13 +314,12 @@ export const createScrollJumpFunctions = (deps: ScrollJumpDependencies) => {
         state.itemCount
       );
 
-      const promises = calc.pages.map((page) =>
-        loadPage(page, {
-          setScrollPosition: false,
-          replaceCollection: false,
-          animate: false,
-        })
-      );
+      const loadOptions = {
+        setScrollPosition: false,
+        replaceCollection: false,
+        animate: false,
+      };
+      const promises = calc.pages.map((page) => loadPage(page, loadOptions));
       await Promise.all(promises);
 
       if (animate) {
@@ -410,40 +339,23 @@ export const createScrollJumpFunctions = (deps: ScrollJumpDependencies) => {
     targetPage: number,
     scrollSpeed: number
   ): void => {
-    console.error("scheduleScrollStopPageLoad");
-    const currentIndex = (targetPage - 1) * (config.pageSize || 20);
+    // Cache frequently used calculations
+    const pageSize = config.pageSize || 20;
     const paginationStrategy = config.pagination?.strategy || "page";
-
-    console.log(
-      `⏰ [SCROLL-STOP] Scheduled for page ${targetPage} → index ${currentIndex} (speed: ${scrollSpeed.toFixed(
-        1
-      )}px/ms, delay: ${SCROLL.JUMP_DEBOUNCE}ms)`
-    );
+    const currentIndex = (targetPage - 1) * pageSize;
 
     timeoutManager.setScrollJumpState(() => {
       const timeoutState = timeoutManager.getState();
-      console.log(
-        `🎯 [SCROLL-STOP] Triggered: page ${targetPage} → index ${currentIndex} (isScrollJumpInProgress: ${timeoutState.isScrollJumpInProgress})`
-      );
-
-      // 🔍 DEBUG: Track what's setting the flag during scrollbar dragging
-      if (timeoutState.isScrollJumpInProgress) {
-        console.log(
-          `🔍 [DEBUG] isScrollJumpInProgress=true is blocking data loading for scrollbar drag!`
-        );
-      }
 
       // Handle different pagination strategies
       if (paginationStrategy === "cursor") {
-        console.log(`🎯 [CURSOR-SCROLL-STOP] Handling cursor-based pagination`);
         // For cursor pagination, we just update viewport and let normal scrolling handle loading
         updateVisibleItems(container.scrollTop, false);
         return;
       }
 
-      // 🖱️ REACTIVE STRATEGY: Always check data availability and load if missing
+      // Always check data availability and load if missing
       // Don't let programmatic flags block scrollbar data loading!
-      const pageSize = config.pageSize || 20;
       const targetPageStart = (targetPage - 1) * pageSize + 1;
       const targetPageEnd = targetPage * pageSize;
 
@@ -454,20 +366,10 @@ export const createScrollJumpFunctions = (deps: ScrollJumpDependencies) => {
       });
 
       if (hasPageData) {
-        console.log(
-          `✅ [SCROLL-STOP] Data already available for page ${targetPage}, updating viewport only`
-        );
         // Just update viewport, no need to load
         updateVisibleItems(container.scrollTop, false);
       } else {
-        if (timeoutState.isScrollJumpInProgress) {
-          console.log(
-            `🔄 [SCROLL-STOP] DECOUPLED - Loading data despite programmatic operation in progress`
-          );
-        }
-        console.log(
-          `🖱️ [SCROLL-STOP] REACTIVE - Loading missing data for page ${targetPage} (${targetPageStart}-${targetPageEnd})`
-        );
+        // Load missing data for the target page
         loadScrollToIndexWithBackgroundRanges(currentIndex, false, false).catch(
           (error) => logError("REACTIVE load failed", error)
         );

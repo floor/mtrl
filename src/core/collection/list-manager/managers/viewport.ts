@@ -115,15 +115,8 @@ const calculateCursorViewport = (
   if (bufferedStart >= items.length) {
     const visibleCount = Math.ceil(containerHeight / itemHeight) + overscan * 2;
     const lastItemsStart = Math.max(0, items.length - visibleCount);
-    console.log(
-      `🎯 [CURSOR-VIEWPORT] Scrolled beyond loaded items - showing last ${visibleCount} items (${lastItemsStart}-${items.length})`
-    );
     return { start: lastItemsStart, end: items.length };
   }
-
-  console.log(
-    `🎯 [CURSOR-VIEWPORT] Scroll ${scrollTop}px → indices ${bufferedStart}-${bufferedEnd} of ${items.length} loaded items`
-  );
 
   return { start: bufferedStart, end: bufferedEnd };
 };
@@ -168,22 +161,6 @@ const calculateMechanicalViewport = (
   const lastVirtualItemId =
     Math.floor(Math.round(actualViewportBottom) / itemHeight) + 1;
 
-  console.log(
-    `🔍 [VIEWPORT] Virtual range: items ${firstVirtualItemId}-${lastVirtualItemId} should be visible`
-  );
-  console.log(
-    `🔍 [VIEWPORT] Scroll: ${scrollTop}, Height: ${containerHeight}, ItemHeight: ${itemHeight}`
-  );
-
-  console.log(
-    `🔍 [VIEWPORT] Buffered viewport: ${bufferedViewportTop}-${bufferedViewportBottom}`
-  );
-  // console.log(
-  //   `🔍 [VIEWPORT] Available items: [${items
-  //     .map((item) => item?.id || "null")
-  //     .join(", ")}]`
-  // );
-
   // Now find which of these virtual items exist in our current collection
   const visibleIndices: number[] = [];
 
@@ -196,13 +173,8 @@ const calculateMechanicalViewport = (
     // Check if this item ID falls within the visible virtual range (includes overscan via buffered bounds)
     if (itemId >= firstVirtualItemId && itemId <= lastVirtualItemId) {
       visibleIndices.push(i);
-      // console.log(`✅ [VIEWPORT] Item ID ${itemId} (index ${i}) is visible`);
     }
   }
-
-  console.log(
-    `🔍 [VIEWPORT] Found ${visibleIndices.length} visible items from ${items.length} total items`
-  );
 
   // If no items from the collection are visible, delegate to placeholder system
   if (visibleIndices.length === 0) {
@@ -298,20 +270,12 @@ export const createViewportManager = (
       state.paginationStrategy === "page" &&
       (justJumpedToPage || isPreloadingPages || isBoundaryLoading)
     ) {
-      console.log(
-        `⏸️ [VIEWPORT] Skipping render due to pagination flags: justJumped=${justJumpedToPage}, preloading=${isPreloadingPages}, boundary=${isBoundaryLoading}`
-      );
       return;
     }
 
     // For offset-based pagination, always allow rendering (no page-based blocking)
     if (state.paginationStrategy === "offset") {
-      console.log(
-        `🎯 [VIEWPORT] Offset-based rendering - bypassing page-based flags`
-      );
-      console.log(
-        `📊 [VIEWPORT] Items count: ${state.items.length}, scrollTop: ${scrollTop}`
-      );
+      // Offset-based rendering - bypass page-based flags
     }
 
     // Get container height
@@ -335,24 +299,18 @@ export const createViewportManager = (
       previousTime
     );
 
-    // Debug: Show unified scroll speed calculation
-    if (scrollSpeed > 0) {
-      console.log(
-        `🏃 [SCROLL-SPEED] ${scrollSpeed.toFixed(1)}px/ms (${
-          state.paginationStrategy
-        } strategy)`
-      );
-    }
+    // Track scroll speed for auto-loading optimization
 
     // 🔧 Note: Scroll stop detection is now handled by the unified scheduleScrollStopLoad function
+
+    // Cache itemHeight for reuse
+    const itemHeight = config.itemHeight || DEFAULTS.itemHeight;
 
     // Update page for page-based pagination
     if (state.paginationStrategy === "page" && !isPageJump) {
       // For page strategy, use pagination.limitSize or fallback to legacy pageSize
       const pageLimit =
         config.pagination?.limitSize || config.pageSize || DEFAULTS.pageLimit;
-      const itemHeight = config.itemHeight || DEFAULTS.itemHeight;
-      // 🔧 FIX: Ensure consistent rounding to prevent floating point precision issues
       const virtualItemIndex = Math.floor(Math.round(scrollTop) / itemHeight);
       const calculatedPage = Math.floor(virtualItemIndex / pageLimit) + 1;
 
@@ -362,17 +320,7 @@ export const createViewportManager = (
           return;
         }
 
-        const pageDifference = Math.abs(calculatedPage - state.page);
-
-        // Handle scroll jumps based on speed (pixels per millisecond)
-        // Use the already calculated unified scroll speed
-
-        // Always schedule scroll-stop loading for ANY page change - let speed detection handle the rest
-        console.log(
-          `⏸️ [SCROLL-STOP] Page change detected: page ${
-            state.page
-          } → ${calculatedPage} (speed: ${scrollSpeed.toFixed(1)}px/ms)`
-        );
+        // Schedule scroll-stop loading for page changes
         paginationManager.scheduleScrollLoad(calculatedPage, scrollSpeed);
 
         state.page = calculatedPage;
@@ -382,46 +330,30 @@ export const createViewportManager = (
     // Check for page changes
     checkPageChange(scrollTop, state.paginationStrategy);
 
-    // Calculate visible range - pure mechanical calculation
-    const itemHeight = config.itemHeight || DEFAULTS.itemHeight;
-
-    // 🎯 SMOOTH SCROLLING: Use viewport multiplier for offset strategy for better UX
+    // Use viewport multiplier for offset strategy for better UX
     const overscan =
       state.paginationStrategy === "offset"
-        ? 0 // No overscan for offset - we use viewport multiplier instead
+        ? 0
         : config.overscan || RENDERING.DEFAULT_OVERSCAN_COUNT;
 
-    console.log(
-      `🎯 [VIEWPORT] Using overscan: ${overscan} for ${state.paginationStrategy} strategy`
-    );
+    let visibleRange =
+      state.paginationStrategy === "cursor"
+        ? calculateCursorViewport(
+            scrollTop,
+            state.containerHeight,
+            state.items,
+            itemHeight,
+            overscan
+          )
+        : calculateMechanicalViewport(
+            scrollTop,
+            state.containerHeight,
+            state.items,
+            itemHeight,
+            overscan
+          );
 
-    let visibleRange;
-
-    if (state.paginationStrategy === "cursor") {
-      // For cursor pagination, use constrained viewport calculation
-      visibleRange = calculateCursorViewport(
-        scrollTop,
-        state.containerHeight,
-        state.items,
-        itemHeight,
-        overscan
-      );
-    } else {
-      // For page/offset pagination, use virtual viewport calculation
-      visibleRange = calculateMechanicalViewport(
-        scrollTop,
-        state.containerHeight,
-        state.items,
-        itemHeight,
-        overscan
-      );
-    }
-
-    console.log(
-      `📐 [VIEWPORT] Visible range calculated: start=${visibleRange.start}, end=${visibleRange.end}`
-    );
-
-    // 🎯 SMART AUTO-LOADING: Check viewport fill percentage for offset strategy
+    // Check viewport fill percentage for offset strategy
     if (
       state.paginationStrategy === "offset" &&
       !isPageJump &&
@@ -434,27 +366,12 @@ export const createViewportManager = (
       const actualVisibleItems = visibleRange.end - visibleRange.start;
       const viewportFillPercentage = actualVisibleItems / expectedVisibleItems;
 
-      // 🔧 SCROLL SPEED PROTECTION: Use the already calculated unified scroll speed
-
-      // Define speed thresholds for offset auto-loading
-      const isFastScroll = scrollSpeed > SCROLL.FAST_SCROLL_THRESHOLD;
-
-      // Always check for missing data - let scheduleScrollLoad decide based on speed
+      // Check for missing data based on viewport fill percentage
       if (viewportFillPercentage < OFFSET.AUTO_LOAD_THRESHOLD) {
         const firstItemId = state.items[0] ? parseInt(state.items[0].id) : null;
         const lastItemId = state.items[state.items.length - 1]
           ? parseInt(state.items[state.items.length - 1].id)
           : null;
-
-        console.log(
-          `🎯 [OFFSET-AUTO] Viewport fill: ${(
-            viewportFillPercentage * 100
-          ).toFixed(
-            1
-          )}% (${actualVisibleItems}/${expectedVisibleItems}) - below ${
-            OFFSET.AUTO_LOAD_THRESHOLD * 100
-          }% threshold`
-        );
 
         // Calculate what data we need based on current scroll position
         const firstVirtualItemId =
@@ -464,8 +381,8 @@ export const createViewportManager = (
             Math.round(scrollTop + state.containerHeight) / itemHeight
           ) + 1;
 
-        // 🎯 VIEWPORT MULTIPLIER: Use configurable multiplier for smart offset loading
-        const viewportMultiplier = DEFAULTS.viewportMultiplier; // From constants
+        // Use configurable multiplier for smart offset loading
+        const viewportMultiplier = DEFAULTS.viewportMultiplier;
         const optimalLoadSize = Math.max(
           OFFSET.MIN_LOAD_SIZE,
           Math.min(
@@ -474,17 +391,7 @@ export const createViewportManager = (
           )
         );
 
-        console.log(
-          `🎯 [OFFSET-AUTO] Need items ${firstVirtualItemId}-${lastVirtualItemId}, have items ${firstItemId}-${lastItemId}`
-        );
-        console.log(
-          `🎯 [OFFSET-AUTO] Loading ${optimalLoadSize} items (${itemsPerViewport} per viewport × ${viewportMultiplier})`
-        );
-
-        // 🔧 FIX: Check if we actually HAVE the needed items to avoid loading wrong ranges
-        let startOffset: number;
-
-        // Check if we actually have the items we need in the viewport range
+        // Check if we already have the needed items to avoid loading wrong ranges
         const neededItemIds = [];
         for (let i = firstVirtualItemId; i <= lastVirtualItemId; i++) {
           neededItemIds.push(i);
@@ -495,9 +402,6 @@ export const createViewportManager = (
         );
 
         if (hasAllNeededItems) {
-          console.log(
-            `🎯 [OFFSET-AUTO] Already have all needed items (${firstVirtualItemId}-${lastVirtualItemId}) - skipping load`
-          );
           return; // Don't load anything, we have what we need
         }
 
@@ -506,25 +410,11 @@ export const createViewportManager = (
           (itemId) => !state.items.some((item) => parseInt(item.id) === itemId)
         );
 
-        if (firstMissingItemId) {
-          startOffset = firstMissingItemId - 1; // 0-based offset
-          console.log(
-            `🎯 [OFFSET-AUTO] Loading missing items starting from ID ${firstMissingItemId} (offset: ${startOffset})`
-          );
-        } else {
-          // Fallback to original logic
-          startOffset = firstVirtualItemId - 1;
-          console.log(`🎯 [OFFSET-AUTO] Using fallback offset: ${startOffset}`);
-        }
+        const startOffset = firstMissingItemId
+          ? firstMissingItemId - 1
+          : firstVirtualItemId - 1;
 
-        // Always call scheduleScrollLoad - let it decide based on speed
-        console.log(
-          `🎯 [MISSING-DATA] Missing data detected: need offset ${startOffset} (speed: ${scrollSpeed.toFixed(
-            1
-          )}px/ms)`
-        );
-
-        // Use scheduleScrollLoad with current speed - purely speed-based decision
+        // Schedule load with current speed for speed-based decision
         paginationManager.scheduleScrollLoad(
           startOffset,
           scrollSpeed,
@@ -533,22 +423,9 @@ export const createViewportManager = (
       }
     }
 
-    // Legacy logging for completely empty viewport (for debugging)
+    // Handle empty viewport case
     if (visibleRange.end - visibleRange.start === 0) {
-      const firstItemId = state.items[0] ? parseInt(state.items[0].id) : null;
-      const lastItemId = state.items[state.items.length - 1]
-        ? parseInt(state.items[state.items.length - 1].id)
-        : null;
-      const viewportTop = Math.max(0, scrollTop - overscan * itemHeight);
-      const viewportBottom =
-        scrollTop + state.containerHeight + overscan * itemHeight;
-
-      console.log(
-        `❌ [VIEWPORT] No items visible - firstItemId: ${firstItemId}, lastItemId: ${lastItemId}`
-      );
-      console.log(
-        `❌ [VIEWPORT] Viewport range: ${viewportTop} to ${viewportBottom}`
-      );
+      // Empty viewport - no items visible
     }
 
     // Check if range changed
@@ -558,16 +435,7 @@ export const createViewportManager = (
 
     const needsBoundaryDetection = state.paginationStrategy === "page";
 
-    if (hasRangeChanged) {
-      console.log(
-        `🔄 [RANGE-CHANGE] Visible range changed: ${state.visibleRange.start}-${state.visibleRange.end} → ${visibleRange.start}-${visibleRange.end}`
-      );
-    }
-
     if (!hasRangeChanged && !needsBoundaryDetection) {
-      console.log(
-        `⏸️ [VIEWPORT] No range change and no boundary detection needed - skipping render`
-      );
       return;
     }
 
@@ -577,28 +445,21 @@ export const createViewportManager = (
         .slice(visibleRange.start, visibleRange.end)
         .filter(Boolean);
 
-      // If we have all the real items we need, use them directly
-      // Only generate placeholders when we have missing data
-      if (visibleItems.length > 0) {
-        // We have real items - use them
-      } else if (PLACEHOLDER.ENABLED && !justJumpedToPage) {
-        // We don't have real items for this range - generate placeholders only as a fallback
+      // Generate placeholders if we have missing data
+      if (
+        visibleItems.length === 0 &&
+        PLACEHOLDER.ENABLED &&
+        !justJumpedToPage
+      ) {
         const actualItemCount = state.itemCount || state.items.length;
 
-        if (scrollTop === 0 && state.items.length > 0) {
-          // Special case: if we're at the top and have items, don't generate placeholders
-          // This prevents the initial replacement issue
-        } else {
+        if (!(scrollTop === 0 && state.items.length > 0)) {
           // Calculate which virtual items should be visible based on scroll position
-          const viewportTop = Math.max(
-            0,
-            scrollTop - (config.overscan || 3) * itemHeight
-          );
+          const overscanBuffer = (config.overscan || 3) * itemHeight;
+          const viewportTop = Math.max(0, scrollTop - overscanBuffer);
           const viewportBottom =
-            scrollTop +
-            state.containerHeight +
-            (config.overscan || 3) * itemHeight;
-          // 🔧 FIX: Ensure consistent rounding to prevent floating point precision issues
+            scrollTop + state.containerHeight + overscanBuffer;
+
           const firstVirtualIndex = Math.floor(
             Math.round(viewportTop) / itemHeight
           );
@@ -628,9 +489,7 @@ export const createViewportManager = (
             const virtualIndex = constrainedFirstIndex + i;
             const virtualItemId = virtualIndex + 1;
 
-            if (virtualItemId > actualItemCount) {
-              break;
-            }
+            if (virtualItemId > actualItemCount) break;
 
             // Check if we already have real data for this item
             const existingRealItem = state.items.find(
@@ -640,7 +499,6 @@ export const createViewportManager = (
             if (existingRealItem) {
               placeholderItems.push(existingRealItem);
             } else {
-              // Generate placeholder only for missing data
               const placeholderItem =
                 placeholderDataGenerator.generatePlaceholderItem(
                   virtualIndex,
@@ -659,21 +517,13 @@ export const createViewportManager = (
         }
       }
 
-      console.log(
-        `📝 [VISIBLE-ITEMS] Updating visible items: ${visibleItems.length} items for range ${visibleRange.start}-${visibleRange.end}`
-      );
-      if (visibleItems.length > 0) {
-        console.log(
-          `📝 [VISIBLE-ITEMS] First/last visible: ${
-            visibleItems[0]?.id || "null"
-          } → ${visibleItems[visibleItems.length - 1]?.id || "null"}`
-        );
-      }
-
-      Object.assign(
+      const stateUpdates = updateStateVisibleItems(
         state,
-        updateStateVisibleItems(state, visibleItems, visibleRange)
+        visibleItems,
+        visibleRange
       );
+      state.visibleItems = stateUpdates.visibleItems;
+      state.visibleRange = stateUpdates.visibleRange;
     }
 
     // Calculate offsets
@@ -681,18 +531,8 @@ export const createViewportManager = (
       itemMeasurement.calculateOffsets(state.items);
     }
 
-    // RENDER visible items with placeholder data support
+    // Render visible items with placeholder data support
     if (hasRangeChanged || isPageJump) {
-      console.log(
-        `🎨 [VIEWPORT] Rendering - hasRangeChanged: ${hasRangeChanged}, isPageJump: ${isPageJump}`
-      );
-      console.log(
-        `🎨 [VIEWPORT] Pagination strategy: ${state.paginationStrategy}`
-      );
-      console.log(
-        `🎨 [VIEWPORT] Visible items count: ${state.visibleItems?.length || 0}`
-      );
-
       if (
         state.paginationStrategy === "page" ||
         state.paginationStrategy === "offset"
@@ -701,40 +541,28 @@ export const createViewportManager = (
         const itemsToRender = state.visibleItems || [];
 
         // Calculate positions for virtual rendering
-        const positions = itemsToRender
-          .map((item, localIndex) => {
-            if (!item?.id) return null;
+        const positions = [];
+        for (
+          let localIndex = 0;
+          localIndex < itemsToRender.length;
+          localIndex++
+        ) {
+          const item = itemsToRender[localIndex];
+          if (!item?.id) continue;
 
-            let offset: number;
+          const itemId = parseInt(item.id);
+          const offset = Math.round((itemId - 1) * itemHeight);
 
-            // Handle placeholder items differently than real items
-            if (placeholderDataGenerator.isPlaceholderItem(item)) {
-              // For placeholder items, use the same positioning as real items (they now have real IDs)
-              const itemId = parseInt(item.id);
-              offset = Math.round((itemId - 1) * itemHeight); // 🔧 FIX: Round to prevent floating point precision issues
-            } else {
-              // Real items always use their precise natural position
-              const itemId = parseInt(item.id);
-              offset = Math.round((itemId - 1) * itemHeight); // 🔧 FIX: Round to prevent floating point precision issues
-            }
+          positions.push({
+            index: localIndex,
+            item,
+            offset,
+          });
+        }
 
-            return {
-              index: localIndex,
-              item,
-              offset,
-            };
-          })
-          .filter(Boolean);
-
-        console.log(
-          `🎨 [VIEWPORT] Rendering ${positions.length} items with virtual positions (${state.paginationStrategy} strategy)`
-        );
         renderingManager.renderItemsWithVirtualPositions(positions);
       } else {
         // Standard rendering for cursor-based pagination only
-        console.log(
-          `🎨 [VIEWPORT] Standard rendering - items: ${state.items.length}, range: ${visibleRange.start}-${visibleRange.end}`
-        );
         renderer.renderVisibleItems(state.items, visibleRange);
       }
     }
@@ -746,57 +574,31 @@ export const createViewportManager = (
       if (state.useStatic) {
         totalHeight = itemMeasurement.calculateTotalHeight(state.items);
       } else if (state.paginationStrategy === "cursor") {
-        // 🎯 CURSOR PAGINATION: Use loaded items + dynamic buffer for height calculation
-        // Don't use total itemCount since cursor pagination can't jump to arbitrary positions
+        // Cursor pagination: Use loaded items + dynamic buffer for height calculation
         const loadedItemCount = state.items.length;
 
-        // 🔧 DYNAMIC BUFFER: Reduce buffer size when nearing end of data
-        // Check if we have more data available from the API response
+        // Reduce buffer size when nearing end of data
         const hasMoreData = state.hasNext !== false; // Default to true if undefined
         const baseBufferSize = Math.max(config.pageSize || 20, 50);
 
-        let bufferSize: number;
-        if (!hasMoreData) {
-          // 🏁 END OF DATA: Use minimal buffer (just for smooth scrolling)
-          bufferSize = Math.min(10, baseBufferSize / 5);
-          console.log(
-            `🏁 [CURSOR-END] No more data available - using minimal buffer: ${bufferSize} items`
-          );
-        } else {
-          // 📈 MORE DATA: Use full buffer for smooth loading
-          bufferSize = baseBufferSize;
-        }
+        const bufferSize = !hasMoreData
+          ? Math.min(10, baseBufferSize / 5) // End of data: minimal buffer
+          : baseBufferSize; // More data: full buffer
 
         // Use loaded items + dynamic buffer instead of total item count
         totalHeight = Math.round((loadedItemCount + bufferSize) * itemHeight);
-
-        console.log(
-          `🎯 [CURSOR] Container height calculation: ${loadedItemCount} loaded + ${bufferSize} buffer = ${totalHeight}px (itemHeight: ${itemHeight}px, hasMore: ${hasMoreData})`
-        );
-        console.log(
-          `🎯 [CURSOR] Previous height: ${
-            state.totalHeight
-          }px → New height: ${totalHeight}px (${
-            totalHeight > state.totalHeight ? "+" : ""
-          }${totalHeight - state.totalHeight}px)`
-        );
       } else if (state.itemCount) {
-        // 🛡️ BOUNDARY FIX: Use actual item count for total height calculation (page/offset pagination)
-        totalHeight = Math.round(state.itemCount * itemHeight); // 🔧 FIX: Round to prevent floating point precision issues
+        // Use actual item count for total height calculation (page/offset pagination)
+        totalHeight = Math.round(state.itemCount * itemHeight);
       } else {
         // Keep existing height if we have one and it's reasonable
         if (state.totalHeight > 0) {
-          // 🛡️ SANITY CHECK: If existing height is unreasonably large compared to actual data, recalculate
+          // Sanity check: If existing height is unreasonably large, recalculate
           const actualItemCount = state.items.length;
-          const expectedHeight = Math.round(actualItemCount * itemHeight); // 🔧 FIX: Round to prevent floating point precision issues
+          const expectedHeight = Math.round(actualItemCount * itemHeight);
 
           if (state.totalHeight > expectedHeight * 10) {
             // More than 10x expected
-            console.warn(
-              `⚠️ Total height too large (${Math.round(
-                state.totalHeight / 1000
-              )}k), recalculating from actual items`
-            );
             totalHeight = expectedHeight;
           } else {
             state.totalHeightDirty = false;
@@ -807,19 +609,13 @@ export const createViewportManager = (
         }
       }
 
-      Object.assign(state, updateTotalHeight(state, totalHeight));
-
-      console.log(
-        `📏 [SPACER] Updating spacer height: ${totalHeight}px (strategy: ${state.paginationStrategy})`
-      );
+      const heightUpdates = updateTotalHeight(state, totalHeight);
+      state.totalHeight = heightUpdates.totalHeight;
       updateSpacerHeight(elements, totalHeight);
       state.totalHeightDirty = false;
     }
 
     // Handle loading more data
-    console.log(
-      `🏁 [VIEWPORT-COMPLETE] State summary: ${state.items.length} items, scroll: ${scrollTop}px, container: ${state.containerHeight}px, total height: ${state.totalHeight}px`
-    );
     checkLoadMore(scrollTop);
   };
 
@@ -831,28 +627,18 @@ export const createViewportManager = (
     const { justJumpedToPage, isPreloadingPages } = paginationFlags;
     const isBoundaryLoading = paginationFlags.isBoundaryLoading || false;
 
-    console.log(
-      `🔍 [LOAD-MORE] Checking load more: scroll=${scrollTop}px, strategy=${state.paginationStrategy}, loading=${state.loading}`
-    );
-
     if (
       state.loading ||
       justJumpedToPage ||
       isPreloadingPages ||
       isBoundaryLoading
     ) {
-      console.log(
-        `⏸️ [LOAD-MORE] Skipping: loading=${state.loading}, justJumped=${justJumpedToPage}, preloading=${isPreloadingPages}, boundary=${isBoundaryLoading}`
-      );
       return;
     }
 
     // Don't run load checks during the initial phase (scroll near 0, low page numbers)
     // This prevents boundary detection from corrupting the initial load
     if (scrollTop <= 10 && state.page <= 2) {
-      console.log(
-        `⏸️ [LOAD-MORE] Skipping initial phase: scroll=${scrollTop}px, page=${state.page}`
-      );
       return;
     }
 
@@ -864,26 +650,14 @@ export const createViewportManager = (
       const offsetAutoLoad = (state as any).offsetAutoLoadNeeded;
 
       if (offsetAutoLoad) {
-        console.log(
-          `🎯 [OFFSET-AUTO] Loading missing data: offset=${offsetAutoLoad.offset}, limit=${offsetAutoLoad.limit}`
-        );
-
         // Clear the auto-load request
         delete (state as any).offsetAutoLoadNeeded;
 
         // Trigger loading via the scroll manager if available
         if (deps.scrollManager?.loadOffsetRange) {
-          console.log(
-            `🎯 [OFFSET-AUTO] Triggering auto-load for offset=${offsetAutoLoad.offset}, limit=${offsetAutoLoad.limit}`
-          );
           deps.scrollManager.loadOffsetRange(
             offsetAutoLoad.offset,
             offsetAutoLoad.limit
-          );
-        } else {
-          // Fallback: log for debugging
-          console.log(
-            `🎯 [OFFSET-AUTO] Would load offset=${offsetAutoLoad.offset}, limit=${offsetAutoLoad.limit} (scroll manager not available)`
           );
         }
       }
@@ -906,24 +680,7 @@ export const createViewportManager = (
         previousTime
       );
 
-      console.log(
-        `🎯 [CURSOR-THRESHOLD] Progress: ${(scrollProgress * 100).toFixed(
-          1
-        )}% (${
-          scrollTop + state.containerHeight
-        }px / ${loadedContentHeight}px), threshold: ${(threshold * 100).toFixed(
-          1
-        )}%`
-      );
-      console.log(
-        `🎯 [CURSOR-THRESHOLD] Items loaded: ${
-          state.items.length
-        }, content height: ${loadedContentHeight}px, scroll: ${scrollTop}px, viewport: ${
-          state.containerHeight
-        }px, speed: ${scrollSpeed.toFixed(1)}px/ms`
-      );
-
-      // 🔧 END-OF-DATA CHECK: Don't load if no more data is available
+      // Don't load if no more data is available
       const hasMoreData = state.hasNext !== false; // Default to true if undefined
 
       const shouldLoadMore = isLoadThresholdReached(
@@ -933,47 +690,19 @@ export const createViewportManager = (
         threshold
       );
 
-      if (!hasMoreData) {
-        console.log(
-          `🏁 [CURSOR-END] No more data to load (hasNext: false) - stopping infinite scroll`
-        );
-      } else if (shouldLoadMore) {
-        // 🔧 SPEED-BASED THROTTLING: Only load immediately during slow scrolling
-        const isFastScroll = scrollSpeed > SCROLL.FAST_SCROLL_THRESHOLD; // 5px/ms
+      if (hasMoreData && shouldLoadMore) {
+        // Speed-based throttling: Only load immediately during slow scrolling
+        const isFastScroll = scrollSpeed > SCROLL.FAST_SCROLL_THRESHOLD;
 
         if (isFastScroll) {
-          console.log(
-            `⚡ [CURSOR-FAST] Fast scroll detected (${scrollSpeed.toFixed(
-              1
-            )}px/ms > ${
-              SCROLL.FAST_SCROLL_THRESHOLD
-            }px/ms) - deferring load until scroll stops`
-          );
-
           // Schedule load for when scrolling stops/slows down
           paginationManager.scheduleScrollLoad(
             Math.floor(scrollTop / itemHeight), // Current virtual index
             scrollSpeed // Current scroll speed
           );
         } else {
-          console.log(
-            `🚀 [CURSOR-LOAD] Load threshold reached! ${(
-              scrollProgress * 100
-            ).toFixed(1)}% > ${(threshold * 100).toFixed(
-              1
-            )}% (slow scroll: ${scrollSpeed.toFixed(1)}px/ms)`
-          );
-          console.log(
-            `🚀 [CURSOR-LOAD] Loading next batch via paginationManager.loadNext()`
-          );
           paginationManager.loadNext();
         }
-      } else {
-        console.log(
-          `⏳ [CURSOR-LOAD] Threshold not reached: ${(
-            scrollProgress * 100
-          ).toFixed(1)}% < ${(threshold * 100).toFixed(1)}%`
-        );
       }
     }
   };
