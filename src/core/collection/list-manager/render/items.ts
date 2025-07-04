@@ -2,7 +2,10 @@
 import { ListManagerConfig, ListManagerElements, VisibleRange } from "../types";
 import { RecyclingPool } from "../utils/recycling";
 import { ItemMeasurement } from "../dom/measurement";
-import { calculateItemPositions } from "../utils/viewport";
+import {
+  calculateItemPositions,
+  calculateSequentialItemPositions,
+} from "../utils/viewport";
 
 /**
  * Creates a renderer for list items
@@ -172,11 +175,28 @@ export const createRenderer = (
       const bottomSentinel = elements.bottomSentinel;
 
       // Calculate positions for each visible item
-      const positions = calculateItemPositions(
-        items,
-        visibleRange,
-        itemMeasurement
-      );
+      // Use sequential positioning for cursor pagination, regular positioning for page/offset
+      const paginationStrategy = config.pagination?.strategy || "cursor";
+      const positions =
+        paginationStrategy === "cursor"
+          ? calculateSequentialItemPositions(
+              items,
+              visibleRange,
+              config.itemHeight || 84
+            )
+          : calculateItemPositions(items, visibleRange, itemMeasurement);
+
+      // Debug logging for cursor pagination
+      if (paginationStrategy === "cursor" && positions.length > 0) {
+        console.log(
+          `🎯 [CURSOR-RENDER] Positioning ${positions.length} items: range ${
+            visibleRange.start
+          }-${visibleRange.end}, offsets: ${positions
+            .slice(0, 3)
+            .map((p) => `${p.item.id}@${p.offset}px`)
+            .join(", ")}`
+        );
+      }
 
       // Get current visible IDs
       const currentVisibleIds = new Set(positions.map((p) => p.item.id));

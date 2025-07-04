@@ -287,6 +287,34 @@ export function calculateVisibleRange(
 }
 
 /**
+ * Calculate sequential positions for cursor pagination
+ * Uses array index * itemHeight for positioning instead of cumulative height calculation
+ * @param items All items
+ * @param visibleRange Visible range with start and end indices
+ * @param itemHeight Fixed item height
+ * @returns Array of positions with index, item, and offset
+ */
+export function calculateSequentialItemPositions(
+  items: any[],
+  visibleRange: VisibleRange,
+  itemHeight: number
+): Array<{ index: number; item: any; offset: number }> {
+  const positions: Array<{ index: number; item: any; offset: number }> = [];
+
+  for (let i = visibleRange.start; i < visibleRange.end; i++) {
+    if (items[i]) {
+      positions.push({
+        index: i,
+        item: items[i],
+        offset: i * itemHeight, // Sequential positioning based on array index
+      });
+    }
+  }
+
+  return positions;
+}
+
+/**
  * Calculate the position for each visible item
  * @param items All items
  * @param visibleRange Visible range with start and end indices

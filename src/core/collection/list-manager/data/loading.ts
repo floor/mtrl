@@ -248,12 +248,20 @@ export const createDataLoadingManager = (deps: DataLoadingDependencies) => {
 
       // CRITICAL: Set total height immediately after state update to fix scrollbar behavior
       // The scrollbar needs to know the correct total height as soon as we get the API total
-      if (response.meta.total && !state.useStatic) {
+      // BUT: Only for page/offset pagination - cursor pagination uses incremental height
+      if (
+        response.meta.total &&
+        !state.useStatic &&
+        state.paginationStrategy !== "cursor"
+      ) {
         const naturalHeight = response.meta.total * (config.itemHeight || 84);
 
         state.totalHeight = naturalHeight;
         state.totalHeightDirty = false; // Mark as clean since we have the definitive height
         updateSpacerHeight(elements, naturalHeight);
+      } else if (state.paginationStrategy === "cursor") {
+        // For cursor pagination, let the viewport manager calculate the appropriate height
+        state.totalHeightDirty = true;
       }
 
       // Reset the page jump flag
