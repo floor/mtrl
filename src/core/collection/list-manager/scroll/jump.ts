@@ -2,7 +2,7 @@
  * Scroll Jump Operations
  */
 import { ListManagerState, ListManagerConfig } from "../types";
-import { PAGINATION, BOUNDARIES } from "../constants";
+import { PAGINATION, BOUNDARIES, OFFSET, DEFAULTS } from "../constants";
 import {
   calcViewportPages,
   calcViewportOffset,
@@ -194,7 +194,8 @@ export const createScrollJumpFunctions = (deps: ScrollJumpDependencies) => {
           targetScrollPosition,
           containerHeight,
           itemHeight,
-          state.itemCount
+          state.itemCount,
+          DEFAULTS.viewportMultiplier // Use viewport multiplier from constants
         );
 
         console.log(

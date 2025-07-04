@@ -27,10 +27,14 @@ export const RENDERING = {
 } as const;
 
 /**
- * Pagination and Loading Constants
+ * Page-Based Pagination Constants
+ * Used for traditional page-based pagination (like 20 items per page)
  */
 export const PAGINATION = {
-  /** Default number of items per page */
+  /** Default number of items per page for page-based pagination */
+  DEFAULT_PAGE_LIMIT: 20,
+
+  /** @deprecated Use PAGINATION.DEFAULT_PAGE_LIMIT instead */
   DEFAULT_PAGE_SIZE: 20,
 
   /** Default page number for initial load */
@@ -74,6 +78,27 @@ export const PAGINATION = {
 } as const;
 
 /**
+ * Offset-Based Pagination Constants
+ * Used for flexible offset-based pagination (viewport-responsive)
+ */
+export const OFFSET = {
+  /** Viewport multiplier for smooth scrolling (2.5 = 2.5x viewport worth of data) */
+  VIEWPORT_MULTIPLIER: 2,
+
+  /** Minimum number of items to load (prevents too-small loads) */
+  MIN_LOAD_SIZE: 8,
+
+  /** Maximum number of items to load in one request (prevents too-large loads) */
+  MAX_LOAD_SIZE: 100,
+
+  /** Buffer size as multiplier of viewport (for overscan/preloading) */
+  BUFFER_MULTIPLIER: 0.5,
+
+  /** Threshold for triggering auto-load when scrolling (percentage of missing data) */
+  AUTO_LOAD_THRESHOLD: 0.7,
+} as const;
+
+/**
  * Scroll and Performance Constants
  */
 export const SCROLL = {
@@ -100,6 +125,9 @@ export const SCROLL = {
 
   /** Speed threshold to distinguish scrollbar drags from animated scrolls (px/ms) */
   INSTANTANEOUS_SCROLL_SPEED: 100,
+
+  /** Speed threshold for preventing auto-loading during fast scrolls (px/ms) */
+  FAST_SCROLL_THRESHOLD: 5.0,
 } as const;
 
 /**
@@ -235,7 +263,17 @@ export const PLACEHOLDER = {
  */
 export const DEFAULTS = {
   itemHeight: RENDERING.DEFAULT_ITEM_HEIGHT,
+
+  // Page strategy defaults
+  pageLimit: PAGINATION.DEFAULT_PAGE_LIMIT,
+
+  // Offset strategy defaults
+  viewportMultiplier: OFFSET.VIEWPORT_MULTIPLIER,
+
+  // Legacy compatibility
+  /** @deprecated Use pageLimit for page strategy or viewportMultiplier for offset strategy */
   pageSize: PAGINATION.DEFAULT_PAGE_SIZE,
+
   initialRangesToFetch: PAGINATION.INITIAL_RANGES_TO_FETCH,
   adjacentPagesPreloadBefore: PAGINATION.ADJACENT_PAGES_PRELOAD_BEFORE,
   adjacentPagesPreloadAfter: PAGINATION.ADJACENT_PAGES_PRELOAD_AFTER,

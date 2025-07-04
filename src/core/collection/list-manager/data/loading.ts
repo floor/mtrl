@@ -126,10 +126,12 @@ export const createDataLoadingManager = (deps: DataLoadingDependencies) => {
           await itemsCollection.add(items);
         }
       } else if (state.paginationStrategy === "offset") {
-        // For offset pagination, replace collection for offset=0 or page jumps
-        const isInitialLoad = params.offset === 0 || isPageJumpLoad;
+        // For offset pagination, replace collection only for explicit page jumps or true initial loads
+        const isTrueInitialLoad =
+          params.offset === 0 && state.items.length === 0;
+        const shouldReplace = isTrueInitialLoad || isPageJumpLoad;
 
-        if (isInitialLoad && items.length > 0) {
+        if (shouldReplace && items.length > 0) {
           console.log(
             `🎯 [OFFSET-DATA] Initial load or page jump: replacing collection with ${items.length} items`
           );
@@ -137,10 +139,31 @@ export const createDataLoadingManager = (deps: DataLoadingDependencies) => {
           await itemsCollection.add(items);
         } else if (items.length > 0) {
           console.log(
-            `🎯 [OFFSET-DATA] Appending ${items.length} items to collection`
+            `🎯 [OFFSET-DATA] Appending ${items.length} items to collection (offset=${params.offset}, existing=${state.items.length})`
           );
           // For non-initial loads, append to existing collection
           await itemsCollection.add(items);
+        } else {
+          console.log(
+            `🚫 [OFFSET-DATA] Ignoring offset=${params.offset} request (would replace ${state.items.length} items with 0 items)`
+          );
+        }
+
+        // Debug unwanted offset=0 calls that would have corrupted data
+        if (
+          params.offset === 0 &&
+          !isTrueInitialLoad &&
+          !isPageJumpLoad &&
+          state.items.length > 0
+        ) {
+          console.warn(
+            `⚠️ [OFFSET-DATA] BLOCKED unwanted offset=0 call! This would have replaced ${
+              state.items.length
+            } items with items 1-${items.length}. Current items: [${state.items
+              .slice(0, 3)
+              .map((i) => i.id)
+              .join(", ")}...]`
+          );
         }
       } else {
         // For cursor pagination, use deduplication

@@ -169,8 +169,8 @@ describe("Pagination Manager", () => {
 
       expect(typeof manager.loadPage).toBe("function");
       expect(typeof manager.loadPreviousPage).toBe("function");
-      expect(typeof manager.loadNext).toBe("function");
-      expect(typeof manager.scheduleScrollStopPageLoad).toBe("function");
+      expect(typeof manager.loadNextPage).toBe("function");
+      expect(typeof manager.scheduleScrollLoad).toBe("function");
       expect(typeof manager.getPaginationFlags).toBe("function");
       expect(typeof manager.setPaginationFlags).toBe("function");
       expect(typeof manager.cleanup).toBe("function");
@@ -495,7 +495,7 @@ describe("Pagination Manager", () => {
       expect(mockState.page).toBe(2);
 
       // 4. Load next page
-      const nextResult = await manager.loadNext();
+      const nextResult = await manager.loadNextPage();
       expect(nextResult.hasNext).toBe(true);
 
       // Verify all operations worked

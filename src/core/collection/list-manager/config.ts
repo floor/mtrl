@@ -354,6 +354,40 @@ export function getStaticItems(config: ListManagerConfig): any[] {
 }
 
 /**
+ * Gets the appropriate limit size based on pagination strategy
+ * @param config Validated configuration
+ * @returns Strategy-specific limit size
+ */
+export function getStrategyLimit(config: ListManagerConfig): number {
+  const strategy = config.pagination?.strategy || "page";
+
+  switch (strategy) {
+    case "page":
+    case "cursor":
+      // For page/cursor strategies, use pagination.limitSize or fallback to legacy pageSize
+      return config.pagination?.limitSize || config.pageSize || 20;
+
+    case "offset":
+      // For offset strategy, return a special marker to indicate viewport-based calculation
+      // The actual calculation happens in viewport logic using OFFSET.VIEWPORT_MULTIPLIER
+      return -1; // Special value indicating "use viewport calculation"
+
+    default:
+      return config.pageSize || 20;
+  }
+}
+
+/**
+ * Checks if the given strategy should use viewport-based sizing
+ * @param config Validated configuration
+ * @returns Whether to use viewport multiplier instead of fixed size
+ */
+export function useViewportBasedSizing(config: ListManagerConfig): boolean {
+  const strategy = config.pagination?.strategy || "page";
+  return strategy === "offset";
+}
+
+/**
  * Validates configuration without throwing errors
  * @param config User configuration
  * @returns Validation result with success flag and errors

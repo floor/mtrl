@@ -79,7 +79,8 @@ export interface ListManagerConfig {
   measureItemsInitially?: boolean;
 
   /**
-   * Number of items per page
+   * @deprecated Use pagination.limitSize for page strategy or offset strategy will use viewport multiplier
+   * Number of items per page (legacy - prefer strategy-specific options)
    */
   pageSize?: number;
 
@@ -162,8 +163,11 @@ export interface ListManagerConfig {
     limitParam?: string;
 
     /**
-     * Default number of items to load
-     * @default 20
+     * Number of items per request
+     * - Page strategy: Fixed page size (e.g., 20 items per page)
+     * - Cursor strategy: Items per cursor request
+     * - Offset strategy: Ignored (uses viewport multiplier from constants)
+     * @default 20 for page/cursor, calculated for offset
      */
     limitSize?: number;
   };

@@ -20,6 +20,7 @@ import {
   SCROLL,
   DEFAULTS,
   PLACEHOLDER,
+  OFFSET,
 } from "../constants";
 import { placeholderDataGenerator } from "../data/generator";
 
@@ -37,6 +38,7 @@ export interface ViewportManager {
   ) => void;
   checkLoadMore: (scrollTop: number) => void;
   replacePlaceholdersWithReal: (newRealItems: any[]) => void;
+  cleanup: () => void;
 }
 
 export interface ViewportDependencies {
@@ -48,9 +50,10 @@ export interface ViewportDependencies {
   renderer: any;
   checkPageChange: (scrollTop: number, paginationStrategy?: string) => void;
   paginationManager: {
-    scheduleScrollStopPageLoad: (
-      targetPage: number,
-      scrollSpeed: number
+    scheduleScrollLoad: (
+      targetPageOrOffset: number,
+      scrollSpeed: number,
+      loadSize?: number
     ) => void;
     checkPageBoundaries: (scrollTop: number) => void;
     loadNext: () => Promise<{ hasNext: boolean; items: any[] }>;
@@ -63,6 +66,18 @@ export interface ViewportDependencies {
   renderingManager: {
     renderItemsWithVirtualPositions: (
       positions: Array<{ index: number; item: any; offset: number }>
+    ) => void;
+  };
+  // Optional scroll manager for offset-based auto-loading
+  scrollManager?: {
+    loadOffsetRange: (offset: number, limit: number) => Promise<void>;
+  };
+  // Optional deferred loading manager for offset strategy
+  deferredLoadManager?: {
+    scheduleDeferredLoad: (
+      offset: number,
+      limit: number,
+      scrollSpeed: number
     ) => void;
   };
 }
@@ -108,33 +123,20 @@ const calculateMechanicalViewport = (
     Math.floor(Math.round(actualViewportBottom) / itemHeight) + 1;
 
   console.log(
-    `🔍 [VIEWPORT] Calculation: firstVirtualItemId = floor(${Math.round(
-      actualViewportTop
-    )}) / ${itemHeight}) + 1 = ${firstVirtualItemId}`
-  );
-  console.log(
-    `🔍 [VIEWPORT] Calculation: lastVirtualItemId = floor(${Math.round(
-      actualViewportBottom
-    )}) / ${itemHeight}) + 1 = ${lastVirtualItemId}`
-  );
-
-  console.log(
     `🔍 [VIEWPORT] Virtual range: items ${firstVirtualItemId}-${lastVirtualItemId} should be visible`
   );
   console.log(
     `🔍 [VIEWPORT] Scroll: ${scrollTop}, Height: ${containerHeight}, ItemHeight: ${itemHeight}`
   );
-  console.log(
-    `🔍 [VIEWPORT] Actual viewport: ${actualViewportTop}-${actualViewportBottom}`
-  );
+
   console.log(
     `🔍 [VIEWPORT] Buffered viewport: ${bufferedViewportTop}-${bufferedViewportBottom}`
   );
-  console.log(
-    `🔍 [VIEWPORT] Available items: [${items
-      .map((item) => item?.id || "null")
-      .join(", ")}]`
-  );
+  // console.log(
+  //   `🔍 [VIEWPORT] Available items: [${items
+  //     .map((item) => item?.id || "null")
+  //     .join(", ")}]`
+  // );
 
   // Now find which of these virtual items exist in our current collection
   const visibleIndices: number[] = [];
@@ -148,7 +150,7 @@ const calculateMechanicalViewport = (
     // Check if this item ID falls within the visible virtual range (includes overscan via buffered bounds)
     if (itemId >= firstVirtualItemId && itemId <= lastVirtualItemId) {
       visibleIndices.push(i);
-      console.log(`✅ [VIEWPORT] Item ID ${itemId} (index ${i}) is visible`);
+      // console.log(`✅ [VIEWPORT] Item ID ${itemId} (index ${i}) is visible`);
     }
   }
 
@@ -201,6 +203,29 @@ export const createViewportManager = (
     paginationManager,
     renderingManager,
   } = deps;
+
+  // Note: Scroll stop detection is now handled by the unified pagination manager
+
+  /**
+   * Unified scroll speed calculation for both page and offset strategies
+   * @param scrollTop Current scroll position
+   * @param previousScrollTop Previous scroll position
+   * @param currentTime Current time
+   * @param previousTime Previous time
+   * @returns Scroll speed in pixels per millisecond (always positive)
+   */
+  const calculateScrollSpeed = (
+    scrollTop: number,
+    previousScrollTop: number,
+    currentTime: number,
+    previousTime: number
+  ): number => {
+    const scrollDistance = Math.abs(scrollTop - previousScrollTop);
+    const timeDelta = Math.max(currentTime - previousTime, 1); // Avoid division by zero
+    return scrollDistance / timeDelta;
+  };
+
+  // Note: scheduleScrollStopCheck function removed - using unified scheduleScrollStopLoad instead
 
   /**
    * Simple mechanical update visible items - no complexity, just math
@@ -256,13 +281,34 @@ export const createViewportManager = (
     (state as any).lastScrollTime = currentTime;
     state.scrollTop = scrollTop;
 
+    // 🔧 UNIFIED SCROLL SPEED: Calculate once and use for both page and offset strategies
+    const scrollSpeed = calculateScrollSpeed(
+      scrollTop,
+      previousScrollTop,
+      currentTime,
+      previousTime
+    );
+
+    // Debug: Show unified scroll speed calculation
+    if (scrollSpeed > 0) {
+      console.log(
+        `🏃 [SCROLL-SPEED] ${scrollSpeed.toFixed(1)}px/ms (${
+          state.paginationStrategy
+        } strategy)`
+      );
+    }
+
+    // 🔧 Note: Scroll stop detection is now handled by the unified scheduleScrollStopLoad function
+
     // Update page for page-based pagination
     if (state.paginationStrategy === "page" && !isPageJump) {
-      const pageSize = config.pageSize || 20;
+      // For page strategy, use pagination.limitSize or fallback to legacy pageSize
+      const pageLimit =
+        config.pagination?.limitSize || config.pageSize || DEFAULTS.pageLimit;
       const itemHeight = config.itemHeight || DEFAULTS.itemHeight;
       // 🔧 FIX: Ensure consistent rounding to prevent floating point precision issues
       const virtualItemIndex = Math.floor(Math.round(scrollTop) / itemHeight);
-      const calculatedPage = Math.floor(virtualItemIndex / pageSize) + 1;
+      const calculatedPage = Math.floor(virtualItemIndex / pageLimit) + 1;
 
       if (calculatedPage !== state.page && calculatedPage >= 1) {
         // Don't update page during initial load phase
@@ -273,9 +319,7 @@ export const createViewportManager = (
         const pageDifference = Math.abs(calculatedPage - state.page);
 
         // Handle scroll jumps based on speed (pixels per millisecond)
-        const scrollDistance = Math.abs(scrollTop - previousScrollTop);
-        const timeDelta = Math.max(currentTime - previousTime, 1); // Avoid division by zero
-        const scrollSpeed = scrollDistance / timeDelta;
+        // Use the already calculated unified scroll speed
 
         // Always schedule scroll-stop loading for ANY page change - let speed detection handle the rest
         console.log(
@@ -283,10 +327,7 @@ export const createViewportManager = (
             state.page
           } → ${calculatedPage} (speed: ${scrollSpeed.toFixed(1)}px/ms)`
         );
-        paginationManager.scheduleScrollStopPageLoad(
-          calculatedPage,
-          scrollSpeed
-        );
+        paginationManager.scheduleScrollLoad(calculatedPage, scrollSpeed);
 
         state.page = calculatedPage;
       }
@@ -298,10 +339,10 @@ export const createViewportManager = (
     // Calculate visible range - pure mechanical calculation
     const itemHeight = config.itemHeight || DEFAULTS.itemHeight;
 
-    // 🎯 ULTRA-EFFICIENT: Minimal overscan for offset strategy since we load on-demand
+    // 🎯 SMOOTH SCROLLING: Use viewport multiplier for offset strategy for better UX
     const overscan =
       state.paginationStrategy === "offset"
-        ? 0 // No overscan - load exactly what's visible
+        ? 0 // No overscan for offset - we use viewport multiplier instead
         : config.overscan || RENDERING.DEFAULT_OVERSCAN_COUNT;
 
     console.log(
@@ -320,8 +361,120 @@ export const createViewportManager = (
       `📐 [VIEWPORT] Visible range calculated: start=${visibleRange.start}, end=${visibleRange.end}`
     );
 
+    // 🎯 SMART AUTO-LOADING: Check viewport fill percentage for offset strategy
+    if (
+      state.paginationStrategy === "offset" &&
+      !isPageJump &&
+      !state.loading &&
+      state.items.length > 0
+    ) {
+      // Calculate what should be visible vs what is actually visible
+      const itemsPerViewport = Math.ceil(state.containerHeight / itemHeight);
+      const expectedVisibleItems = itemsPerViewport;
+      const actualVisibleItems = visibleRange.end - visibleRange.start;
+      const viewportFillPercentage = actualVisibleItems / expectedVisibleItems;
+
+      // 🔧 SCROLL SPEED PROTECTION: Use the already calculated unified scroll speed
+
+      // Define speed thresholds for offset auto-loading
+      const isFastScroll = scrollSpeed > SCROLL.FAST_SCROLL_THRESHOLD;
+
+      // Always check for missing data - let scheduleScrollLoad decide based on speed
+      if (viewportFillPercentage < OFFSET.AUTO_LOAD_THRESHOLD) {
+        const firstItemId = state.items[0] ? parseInt(state.items[0].id) : null;
+        const lastItemId = state.items[state.items.length - 1]
+          ? parseInt(state.items[state.items.length - 1].id)
+          : null;
+
+        console.log(
+          `🎯 [OFFSET-AUTO] Viewport fill: ${(
+            viewportFillPercentage * 100
+          ).toFixed(
+            1
+          )}% (${actualVisibleItems}/${expectedVisibleItems}) - below ${
+            OFFSET.AUTO_LOAD_THRESHOLD * 100
+          }% threshold`
+        );
+
+        // Calculate what data we need based on current scroll position
+        const firstVirtualItemId =
+          Math.floor(Math.round(scrollTop) / itemHeight) + 1;
+        const lastVirtualItemId =
+          Math.floor(
+            Math.round(scrollTop + state.containerHeight) / itemHeight
+          ) + 1;
+
+        // 🎯 VIEWPORT MULTIPLIER: Use configurable multiplier for smart offset loading
+        const viewportMultiplier = DEFAULTS.viewportMultiplier; // From constants
+        const optimalLoadSize = Math.max(
+          OFFSET.MIN_LOAD_SIZE,
+          Math.min(
+            OFFSET.MAX_LOAD_SIZE,
+            Math.ceil(itemsPerViewport * viewportMultiplier)
+          )
+        );
+
+        console.log(
+          `🎯 [OFFSET-AUTO] Need items ${firstVirtualItemId}-${lastVirtualItemId}, have items ${firstItemId}-${lastItemId}`
+        );
+        console.log(
+          `🎯 [OFFSET-AUTO] Loading ${optimalLoadSize} items (${itemsPerViewport} per viewport × ${viewportMultiplier})`
+        );
+
+        // 🔧 FIX: Check if we actually HAVE the needed items to avoid loading wrong ranges
+        let startOffset: number;
+
+        // Check if we actually have the items we need in the viewport range
+        const neededItemIds = [];
+        for (let i = firstVirtualItemId; i <= lastVirtualItemId; i++) {
+          neededItemIds.push(i);
+        }
+
+        const hasAllNeededItems = neededItemIds.every((itemId) =>
+          state.items.some((item) => parseInt(item.id) === itemId)
+        );
+
+        if (hasAllNeededItems) {
+          console.log(
+            `🎯 [OFFSET-AUTO] Already have all needed items (${firstVirtualItemId}-${lastVirtualItemId}) - skipping load`
+          );
+          return; // Don't load anything, we have what we need
+        }
+
+        // Find the first missing item in the needed range
+        const firstMissingItemId = neededItemIds.find(
+          (itemId) => !state.items.some((item) => parseInt(item.id) === itemId)
+        );
+
+        if (firstMissingItemId) {
+          startOffset = firstMissingItemId - 1; // 0-based offset
+          console.log(
+            `🎯 [OFFSET-AUTO] Loading missing items starting from ID ${firstMissingItemId} (offset: ${startOffset})`
+          );
+        } else {
+          // Fallback to original logic
+          startOffset = firstVirtualItemId - 1;
+          console.log(`🎯 [OFFSET-AUTO] Using fallback offset: ${startOffset}`);
+        }
+
+        // Always call scheduleScrollLoad - let it decide based on speed
+        console.log(
+          `🎯 [MISSING-DATA] Missing data detected: need offset ${startOffset} (speed: ${scrollSpeed.toFixed(
+            1
+          )}px/ms)`
+        );
+
+        // Use scheduleScrollLoad with current speed - purely speed-based decision
+        paginationManager.scheduleScrollLoad(
+          startOffset,
+          scrollSpeed,
+          optimalLoadSize
+        );
+      }
+    }
+
+    // Legacy logging for completely empty viewport (for debugging)
     if (visibleRange.end - visibleRange.start === 0) {
-      // Log details when no items are visible to debug the issue
       const firstItemId = state.items[0] ? parseInt(state.items[0].id) : null;
       const lastItemId = state.items[state.items.length - 1]
         ? parseInt(state.items[state.items.length - 1].id)
@@ -574,8 +727,36 @@ export const createViewportManager = (
     if (state.paginationStrategy === "page") {
       // Let page boundaries handle loading for page-based pagination
       paginationManager.checkPageBoundaries(scrollTop);
+    } else if (state.paginationStrategy === "offset") {
+      // Handle offset-based auto-loading when viewport detects missing data
+      const offsetAutoLoad = (state as any).offsetAutoLoadNeeded;
+
+      if (offsetAutoLoad) {
+        console.log(
+          `🎯 [OFFSET-AUTO] Loading missing data: offset=${offsetAutoLoad.offset}, limit=${offsetAutoLoad.limit}`
+        );
+
+        // Clear the auto-load request
+        delete (state as any).offsetAutoLoadNeeded;
+
+        // Trigger loading via the scroll manager if available
+        if (deps.scrollManager?.loadOffsetRange) {
+          console.log(
+            `🎯 [OFFSET-AUTO] Triggering auto-load for offset=${offsetAutoLoad.offset}, limit=${offsetAutoLoad.limit}`
+          );
+          deps.scrollManager.loadOffsetRange(
+            offsetAutoLoad.offset,
+            offsetAutoLoad.limit
+          );
+        } else {
+          // Fallback: log for debugging
+          console.log(
+            `🎯 [OFFSET-AUTO] Would load offset=${offsetAutoLoad.offset}, limit=${offsetAutoLoad.limit} (scroll manager not available)`
+          );
+        }
+      }
     } else {
-      // Handle traditional infinite scroll
+      // Handle traditional infinite scroll (cursor-based)
       const shouldLoadMore = isLoadThresholdReached(
         scrollTop,
         state.containerHeight,
@@ -631,9 +812,17 @@ export const createViewportManager = (
     }
   };
 
+  /**
+   * Cleanup function
+   */
+  const cleanup = (): void => {
+    // No cleanup needed - purely speed-based system
+  };
+
   return {
     updateVisibleItems,
     checkLoadMore,
     replacePlaceholdersWithReal,
+    cleanup,
   };
 };

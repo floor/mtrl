@@ -245,7 +245,7 @@ export const createListManager = (
     renderer,
     checkPageChange,
     paginationManager: {
-      scheduleScrollStopPageLoad: scrollingManager.scheduleScrollStopPageLoad,
+      scheduleScrollLoad: paginationManager.scheduleScrollLoad,
       checkPageBoundaries: boundaryManager.checkPageBoundaries,
       loadNext: paginationManager.loadNextPage,
       getPaginationFlags: () => timeoutManager.getState(),
@@ -253,6 +253,9 @@ export const createListManager = (
     renderingManager: {
       renderItemsWithVirtualPositions:
         renderingManager.renderItemsWithVirtualPositions,
+    },
+    scrollManager: {
+      loadOffsetRange: scrollingManager.loadOffsetRange,
     },
   });
 

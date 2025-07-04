@@ -291,22 +291,66 @@ export const createPaginationManager = (deps: PaginationDependencies) => {
   };
 
   /**
-   * Schedule a page load when scrolling stops (debounced)
-   * @param targetPage Page to load when scrolling stops
+   * Load data based on scroll speed - purely speed-based, no delays
+   * @param targetPageOrOffset Page number (for page strategy) or offset (for offset strategy)
+   * @param scrollSpeed Current scroll speed
+   * @param loadSize Optional load size (for offset strategy)
    */
-  const scheduleScrollStopPageLoad = (
-    targetPage: number,
-    scrollSpeed: number
+  const scheduleScrollLoad = (
+    targetPageOrOffset: number,
+    scrollSpeed: number,
+    loadSize?: number
   ): void => {
-    // Clear any existing timeout
+    // Speed-based loading thresholds - increased for scrollbar dragging
+    const RESUME_SPEED_THRESHOLD = 5.0; // px/ms - load immediately when slower than this
+
+    // Clear any existing timeout first (cleanup)
     if (scrollStopTimeout !== null) {
       clearTimeout(scrollStopTimeout);
+      scrollStopTimeout = null;
     }
 
-    // Load page immediately - no need to wait for scroll stop
-    // Use the enhanced loadPage functionality which works perfectly
-    loadPageEnhanced(targetPage);
-    scrollStopTimeout = null;
+    // Always load immediately based on speed - no delays
+    if (scrollSpeed <= RESUME_SPEED_THRESHOLD) {
+      console.log(
+        `🚀 [SPEED-LOAD] Loading immediately: ${
+          state.paginationStrategy === "page" ? "page" : "offset"
+        } ${targetPageOrOffset} (speed: ${scrollSpeed.toFixed(
+          1
+        )}px/ms ≤ ${RESUME_SPEED_THRESHOLD}px/ms)`
+      );
+
+      executeLoad(targetPageOrOffset, loadSize);
+    } else {
+      // Fast scrolling - skip this load but don't schedule anything
+      console.log(
+        `⏸️ [SPEED-SKIP] Skipping load: speed ${scrollSpeed.toFixed(
+          1
+        )}px/ms > ${RESUME_SPEED_THRESHOLD}px/ms threshold`
+      );
+    }
+
+    // Helper function to execute the actual load
+    function executeLoad(targetPageOrOffset: number, loadSize?: number) {
+      if (state.paginationStrategy === "page") {
+        // For page strategy: load the target page
+        loadPageEnhanced(targetPageOrOffset, {
+          setScrollPosition: false,
+          replaceCollection: false,
+          animate: false,
+        });
+      } else if (state.paginationStrategy === "offset") {
+        // For offset strategy: store the needed range for loading
+        (state as any).offsetAutoLoadNeeded = {
+          offset: targetPageOrOffset,
+          limit: loadSize || 16,
+          reason: "speed-load",
+        };
+
+        // Don't call updateVisibleItems here - let checkLoadMore handle it
+        // This prevents infinite loops
+      }
+    }
   };
 
   /**
@@ -357,8 +401,8 @@ export const createPaginationManager = (deps: PaginationDependencies) => {
     loadNextPage,
     loadPreviousPage: loadPreviousPageEnhanced,
 
-    // Scroll stop handling
-    scheduleScrollStopPageLoad,
+    // Scroll-based loading
+    scheduleScrollLoad,
 
     // State management
     getPaginationFlags,

@@ -1,5 +1,5 @@
 import { ListManagerConfig } from "../types";
-import { SCROLL } from "../constants";
+import { SCROLL, OFFSET } from "../constants";
 
 /**
  * Calculate viewport pages for a target index
@@ -31,19 +31,21 @@ export const calcViewportPages = (
 };
 
 /**
- * Calculate ultra-precise viewport needs for offset-based pagination
- * Loads EXACTLY what's visible for maximum efficiency
+ * Calculate smart viewport needs for offset-based pagination
+ * Uses configurable viewport multiplier for smooth scrolling experience
  * @param scrollTop Current scroll position
  * @param containerHeight Height of the viewport container
  * @param itemHeight Height of each item
  * @param totalItems Total number of items (optional)
- * @returns Offset and limit for precise data loading
+ * @param viewportMultiplier How many viewports worth of data to load (defaults from constants)
+ * @returns Offset and limit for smooth data loading
  */
 export const calcViewportOffset = (
   scrollTop: number,
   containerHeight: number,
   itemHeight: number,
-  totalItems?: number
+  totalItems?: number,
+  viewportMultiplier: number = OFFSET.VIEWPORT_MULTIPLIER
 ): {
   offset: number;
   limit: number;
@@ -54,29 +56,38 @@ export const calcViewportOffset = (
   const startIndex = Math.floor(scrollTop / itemHeight);
   const itemsInViewport = Math.ceil(containerHeight / itemHeight);
 
-  // 🎯 ULTRA-PRECISE: No buffer for offset strategy!
-  // Since we load on-demand with virtual positioning, we can load EXACTLY what's visible
-  const endIndex = startIndex + itemsInViewport;
+  // 🎯 VIEWPORT MULTIPLIER: Use configurable multiplier for smooth scrolling!
+  // This prevents holes during scrolling and provides better UX
+  const totalItemsToLoad = Math.ceil(itemsInViewport * viewportMultiplier);
+
+  // Start loading a bit before the current position for smooth scrolling
+  const bufferBefore = Math.floor(itemsInViewport * OFFSET.BUFFER_MULTIPLIER);
+  const loadStartIndex = Math.max(0, startIndex - bufferBefore);
+  const loadEndIndex = loadStartIndex + totalItemsToLoad;
 
   // Constrain to valid range if totalItems is known
-  const constrainedStartIndex = Math.max(0, startIndex);
+  const constrainedStartIndex = Math.max(0, loadStartIndex);
   const constrainedEndIndex = totalItems
-    ? Math.min(endIndex, totalItems)
-    : endIndex;
+    ? Math.min(loadEndIndex, totalItems)
+    : loadEndIndex;
 
-  const limit = Math.max(1, constrainedEndIndex - constrainedStartIndex);
+  // Apply min/max limits from constants
+  const limit = Math.max(
+    OFFSET.MIN_LOAD_SIZE,
+    Math.min(OFFSET.MAX_LOAD_SIZE, constrainedEndIndex - constrainedStartIndex)
+  );
 
   console.log(
-    `🎯 [OFFSET-CALC] Ultra-precise loading: scrollTop=${scrollTop}, viewport needs items ${constrainedStartIndex}-${
-      constrainedEndIndex - 1
-    } (${limit} items exactly)`
+    `🎯 [OFFSET-CALC] Smart loading: scrollTop=${scrollTop}, loading items ${constrainedStartIndex}-${
+      constrainedStartIndex + limit - 1
+    } (${limit} items = ${itemsInViewport} per viewport × ${viewportMultiplier})`
   );
 
   return {
     offset: constrainedStartIndex,
     limit,
     startIndex: constrainedStartIndex,
-    endIndex: constrainedEndIndex,
+    endIndex: constrainedStartIndex + limit,
   };
 };
 

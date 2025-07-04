@@ -291,6 +291,53 @@ export const createScrollingManager = (deps: ScrollingManagerDependencies) => {
     }
   };
 
+  /**
+   * Load a specific offset range for offset-based auto-loading
+   * @param offset Starting offset (0-based)
+   * @param limit Number of items to load
+   */
+  const loadOffsetRange = async (
+    offset: number,
+    limit: number
+  ): Promise<void> => {
+    if (state.paginationStrategy !== "offset") {
+      console.warn(
+        `🎯 [OFFSET-AUTO] loadOffsetRange called but pagination strategy is ${state.paginationStrategy}`
+      );
+      return;
+    }
+
+    if (state.loading) {
+      console.log(`🎯 [OFFSET-AUTO] Already loading, skipping offset load`);
+      return;
+    }
+
+    try {
+      console.log(
+        `🎯 [OFFSET-AUTO] Loading offset range: offset=${offset}, limit=${limit}`
+      );
+
+      // Use the existing loadItems function with offset parameters
+      const result = await loadItems({
+        offset,
+        limit,
+        collection,
+      });
+
+      if (result.items && result.items.length > 0) {
+        console.log(
+          `🎯 [OFFSET-AUTO] Successfully loaded ${result.items.length} items for offset ${offset}`
+        );
+        // Trigger re-render with the new data
+        updateVisibleItems(state.scrollTop, false);
+      } else {
+        console.log(`🎯 [OFFSET-AUTO] No items returned for offset ${offset}`);
+      }
+    } catch (error) {
+      console.error(`🎯 [OFFSET-AUTO] Error loading offset range:`, error);
+    }
+  };
+
   return {
     // Programmatic scrolling functions
     scrollToItem,
@@ -298,5 +345,7 @@ export const createScrollingManager = (deps: ScrollingManagerDependencies) => {
     scrollToItemById,
     // Scroll jump functions
     ...scrollJumpFunctions,
+    // Offset auto-loading
+    loadOffsetRange,
   };
 };
