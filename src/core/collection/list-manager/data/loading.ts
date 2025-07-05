@@ -85,14 +85,6 @@ export const createDataLoadingManager = (deps: DataLoadingDependencies) => {
       // Update loading state
       Object.assign(state, updateLoadingState(state, true));
 
-      // If using static data, return the static items
-      if (state.useStatic) {
-        return {
-          items: state.items,
-          meta: { hasNext: false, cursor: null },
-        };
-      }
-
       // For API-connected lists, use the adapter
       if (!adapter) {
         throw new Error("Cannot load items: API adapter not initialized");
@@ -233,7 +225,6 @@ export const createDataLoadingManager = (deps: DataLoadingDependencies) => {
       // BUT: Only for page/offset pagination - cursor pagination uses incremental height
       if (
         response.meta.total &&
-        !state.useStatic &&
         state.paginationStrategy !== "cursor"
       ) {
         // 🚀 PERFORMANCE: Use cached itemHeight value
@@ -310,26 +301,15 @@ export const createDataLoadingManager = (deps: DataLoadingDependencies) => {
     // Clear collection first
     await itemsCollection.clear();
 
-    // Reset state to initial values
-    const initialItems = state.useStatic
-      ? config.staticItems || config.items || []
-      : [];
-
-    state.items = initialItems;
+    // Reset state to initial values for API mode
+    state.items = [];
     state.visibleItems = [];
     state.visibleRange = { start: 0, end: 0 };
     state.cursor = null;
     state.page = state.paginationStrategy === "page" ? 1 : undefined;
-    state.hasNext = !state.useStatic;
+    state.hasNext = true;
     state.totalHeightDirty = true;
-    state.itemCount = state.useStatic ? initialItems.length : 0;
-
-    // For static lists, add items back to collection
-    if (state.useStatic && initialItems.length > 0) {
-      // Transform static items before adding to collection (same as API items)
-      const transformedItems = initialItems.map(config.transform!);
-      await itemsCollection.add(transformedItems);
-    }
+    state.itemCount = 0;
   };
 
   return {

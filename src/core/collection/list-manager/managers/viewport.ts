@@ -570,11 +570,16 @@ export const createViewportManager = (
           const item = itemsToRender[localIndex];
           if (!item?.id) continue;
 
-          const itemId = parseInt(item.id);
           let offset: number;
 
-          // Use fixed height calculation for uniform sizing
-          offset = Math.round((itemId - 1) * itemHeight);
+          // For API-based lists, try to parse itemId as number
+          const itemId = parseInt(item.id);
+          if (!isNaN(itemId) && itemId > 0) {
+            offset = Math.round((itemId - 1) * itemHeight);
+          } else {
+            // Fallback to index-based positioning if itemId is not numeric
+            offset = Math.round(localIndex * itemHeight);
+          }
 
           reusablePositions.push({
             index: localIndex,
@@ -596,9 +601,7 @@ export const createViewportManager = (
     if (state.totalHeightDirty && !isPageJump) {
       let totalHeight: number;
 
-      if (state.useStatic) {
-        totalHeight = itemMeasurement.calculateTotalHeight(state.items);
-      } else if (state.paginationStrategy === "cursor") {
+      if (state.paginationStrategy === "cursor") {
         // Cursor pagination: Use loaded items + dynamic buffer for height calculation
         const loadedItemCount = state.items.length;
 

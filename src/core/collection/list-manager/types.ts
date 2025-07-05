@@ -40,10 +40,7 @@ export interface ListManagerConfig {
    */
   afterLoad?: (result: LoadStatus) => void;
 
-  /**
-   * Items for static mode
-   */
-  staticItems?: any[] | null;
+
 
   /**
    * Number of extra items to render outside viewport
@@ -125,10 +122,7 @@ export interface ListManagerConfig {
    */
   scrollStrategy?: ScrollStrategy;
 
-  /**
-   * Legacy support for static items
-   */
-  items?: any[];
+
 
   /**
    * Collection name
@@ -203,7 +197,7 @@ export interface PageChangeEventData {
  */
 export interface ListManager {
   /**
-   * Loads items from API or static data
+   * Loads items from API
    */
   loadItems: (params?: any) => Promise<{ items: any[]; meta: PaginationMeta }>;
 
@@ -510,10 +504,7 @@ export interface ListManagerState {
    */
   itemCount: number;
 
-  /**
-   * Whether list is in static mode
-   */
-  useStatic: boolean;
+
 
   /**
    * Custom render hook function

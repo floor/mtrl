@@ -65,21 +65,12 @@ function insertItemsSorted(existingItems: any[], newItems: any[]): any[] {
 export function createInitialState(
   config: ListManagerConfig
 ): ListManagerState {
-  // Determine API mode
-  const useApi = Boolean(config.baseUrl);
-  const useStatic = !useApi;
-
-  // Get initial static items
-  const initialItems = useStatic
-    ? config.staticItems || config.items || []
-    : [];
-
   // Get pagination strategy if provided
   const paginationStrategy = config.pagination?.strategy || "cursor";
 
-  // Create more efficient initial state
+  // Create initial state for API-based lists
   return {
-    items: initialItems, // Start with initial items for static mode
+    items: [], // Start empty for API mode
     visibleItems: [],
     visibleRange: { start: 0, end: 0 },
     totalHeight: 0,
@@ -89,15 +80,14 @@ export function createInitialState(
     cursor: null,
     page: paginationStrategy === "page" ? 1 : undefined, // Initialize page for page-based pagination
     paginationStrategy, // Store the pagination strategy
-    hasNext: useApi, // If using API, assume there might be data to load
+    hasNext: true, // Assume there might be data to load from API
     itemElements: new Map<string, HTMLElement>(),
     scrollTop: 0,
     containerHeight: 0,
     scrollRAF: null,
     resizeRAF: null, // For resize handling
     mounted: false,
-    itemCount: initialItems.length, // Initialize with correct count
-    useStatic: useStatic,
+    itemCount: 0, // Initialize with zero count for API mode
     renderHook: null,
   };
 }
@@ -242,23 +232,21 @@ export function updateLoadingState(
 /**
  * Resets the state for a refresh operation
  * @param state Current state
- * @param initialItems Initial items array for static mode
  * @returns Reset state
  */
 export function resetState(
-  state: ListManagerState,
-  initialItems: any[] = []
+  state: ListManagerState
 ): Partial<ListManagerState> {
   return {
-    items: state.useStatic ? [...initialItems] : [],
+    items: [],
     visibleItems: [],
     visibleRange: { start: 0, end: 0 },
     itemElements: new Map<string, HTMLElement>(),
     cursor: null,
     page: state.paginationStrategy === "page" ? 1 : undefined, // Reset page for page-based pagination
-    hasNext: !state.useStatic, // Reset hasNext based on data type
+    hasNext: true, // Reset hasNext for API mode
     totalHeightDirty: true,
-    itemCount: state.useStatic ? initialItems.length : 0,
+    itemCount: 0,
   };
 }
 

@@ -27,10 +27,14 @@ export const createRenderer = (
   let lastVisibleRange: VisibleRange = { start: 0, end: 0 };
 
   // 🚀 PERFORMANCE: Cache frequently accessed values
-  const itemHeight = config.itemHeight || 84;
-  const itemHeightPx = `${itemHeight}px`;
+  let itemHeight = config.itemHeight || 0; // 0 means auto-detect
+  let itemHeightPx = itemHeight ? `${itemHeight}px` : "auto";
   const paginationStrategy = config.pagination?.strategy || "cursor";
-  const isDynamicSize = false; // Dynamic sizing removed
+  
+  // Auto-detection state
+  let isAutoDetecting = itemHeight === 0;
+  let measuredHeights: number[] = [];
+  const maxMeasurementSamples = 5; // Measure first 5 items for average
 
   // 🚀 PERFORMANCE: Pre-allocate reusable objects to avoid garbage collection
   const reusableCurrentIds = new Set<string>();
@@ -46,6 +50,126 @@ export const createRenderer = (
     itemMeasurement.setup(config);
   }
 
+
+
+  /**
+   * Measure element height and update auto-detection if needed
+   * @param element The element to measure
+   */
+  const measureElementForAutoDetection = (element: HTMLElement): void => {
+    if (!isAutoDetecting || measuredHeights.length >= maxMeasurementSamples) {
+      return;
+    }
+
+    // Store original styles
+    const originalStyles = {
+      position: element.style.position,
+      visibility: element.style.visibility,
+      transform: element.style.transform,
+      top: element.style.top,
+      left: element.style.left
+    };
+
+    // Temporarily position for measurement
+    element.style.position = "absolute";
+    element.style.visibility = "hidden"; // Hidden but takes up space
+    element.style.transform = "none";
+    element.style.top = "-9999px"; // Move off-screen
+    element.style.left = "0";
+
+    // Force a layout to get accurate height
+    const height = element.offsetHeight;
+    
+    if (height > 0) {
+      measuredHeights.push(height);
+      console.log(`📐 Measured item ${measuredHeights.length}: ${height}px`);
+      
+      // Check if we have enough samples to finalize
+      if (measuredHeights.length >= maxMeasurementSamples) {
+        finalizeHeightDetection();
+      }
+    }
+
+    // Restore original styles
+    Object.assign(element.style, originalStyles);
+  };
+
+     /**
+    * Finalize height detection and update all elements
+    */
+   const finalizeHeightDetection = (): void => {
+     if (measuredHeights.length === 0) {
+       // Fallback to default height
+       itemHeight = 84;
+     } else {
+       // Calculate average height
+       const avgHeight = Math.round(
+         measuredHeights.reduce((sum, h) => sum + h, 0) / measuredHeights.length
+       );
+       itemHeight = avgHeight;
+     }
+     
+     itemHeightPx = `${itemHeight}px`;
+     isAutoDetecting = false;
+     
+     console.log(`📏 Auto-detected item height: ${itemHeight}px (from ${measuredHeights.length} samples)`);
+     
+     // CRITICAL: Update the measurement system with the detected height
+     // This ensures positioning calculations use the correct height
+     itemMeasurement.setDefaultHeight(itemHeight);
+     
+     // Update all existing elements with the detected height and make them visible
+     for (const [, element] of itemElements) {
+       element.style.height = itemHeightPx;
+       element.style.visibility = "visible";
+       element.style.position = "absolute"; // Restore absolute positioning
+     }
+     
+     // Clear measurement data
+     measuredHeights = [];
+     
+     // Force a re-render with accurate heights by resetting visible range
+     lastVisibleRange = { start: -1, end: -1 };
+   };
+
+  /**
+   * Apply positioning and styling to an element
+   * @param element The element to style
+   * @param offset Y offset in pixels
+   * @param isNewElement Whether this is a new element (needs position: absolute)
+   */
+  const applyElementPositioning = (
+    element: HTMLElement,
+    offset: number,
+    isNewElement: boolean = false
+  ): void => {
+    if (isAutoDetecting) {
+      // During auto-detection, make elements invisible but positioned
+      element.style.visibility = "hidden";
+      element.style.position = isNewElement ? "absolute" : element.style.position;
+      element.style.transform = `translateY(${offset}px)`;
+      return;
+    }
+
+    // Normal positioning after height is determined
+    if (isNewElement) {
+      element.style.position = "absolute";
+    }
+
+    element.style.transform = `translateY(${offset}px)`;
+    element.style.visibility = "visible";
+    
+    // Add will-change for performance on existing elements
+    if (!isNewElement) {
+      element.style.willChange = "transform";
+    }
+
+    // Apply determined item height if not already set
+    if (itemHeight && !element.style.height) {
+      element.style.height = itemHeightPx;
+    }
+  };
+
   /**
    * Create a wrapped renderItem function with hooks and optimizations
    * @param item Item to render
@@ -57,7 +181,10 @@ export const createRenderer = (
     if (!item) {
       console.warn("Attempted to render undefined item at index", index);
       const placeholder = document.createElement("div");
-      placeholder.style.height = itemHeightPx;
+      // Only set height if we have a determined height
+      if (itemHeight > 0) {
+        placeholder.style.height = itemHeightPx;
+      }
       return placeholder;
     }
 
@@ -71,7 +198,10 @@ export const createRenderer = (
       console.warn("renderItem returned null or undefined for item", item);
       // Create a placeholder element to prevent errors
       const placeholder = document.createElement("div");
-      placeholder.style.height = itemHeightPx;
+      // Only set height if we have a determined height
+      if (itemHeight > 0) {
+        placeholder.style.height = itemHeightPx;
+      }
       return placeholder;
     }
 
@@ -80,7 +210,6 @@ export const createRenderer = (
     const hasListClass = classList.contains("mtrl-list-item");
     const hasDataId = element.hasAttribute("data-id");
     const hasHeight = element.style.height;
-    const hasNeedsMeasurement = element.hasAttribute("data-needs-measurement");
 
     // Add CSS class for easier selection
     if (!hasListClass) {
@@ -97,14 +226,15 @@ export const createRenderer = (
       element.dataset.itemType = item.type;
     }
 
-    // Add measurement flag if using dynamic sizing or for auto-detecting first item
-    if ((isDynamicSize || itemElements.size === 0) && !hasNeedsMeasurement) {
-      element.dataset.needsMeasurement = "true";
+    // Apply uniform item height (only if not auto-detecting)
+    if (itemHeight && !hasHeight && !isAutoDetecting) {
+      element.style.height = itemHeightPx;
     }
 
-    // Apply itemHeight as CSS height only if NOT using dynamic sizing
-    if (itemHeight && !hasHeight && !isDynamicSize) {
-      element.style.height = itemHeightPx;
+    // Measure element for auto-detection if needed
+    if (isAutoDetecting) {
+      // Use requestAnimationFrame to ensure element is in DOM
+      requestAnimationFrame(() => measureElementForAutoDetection(element));
     }
 
     // Apply any post-render hooks if available
@@ -207,7 +337,7 @@ export const createRenderer = (
       const positions =
         paginationStrategy === "cursor"
           ? calculateSequentialItemPositions(items, visibleRange, itemHeight)
-          : calculateItemPositions(items, visibleRange, itemMeasurement);
+          : calculateItemPositions(items, visibleRange, itemMeasurement, itemHeight);
 
       // 🚀 PERFORMANCE: Reuse Set objects to avoid garbage collection
       reusableCurrentIds.clear();
@@ -266,13 +396,7 @@ export const createRenderer = (
             const { index, item, offset } = reusableToAdd[i];
             const element = createItemElement(item, index);
 
-            element.style.position = "absolute";
-            element.style.transform = `translateY(${offset}px)`;
-
-            // Ensure itemHeight is applied only if NOT using dynamic sizing
-            if (itemHeight && !element.style.height && !isDynamicSize) {
-              element.style.height = itemHeightPx;
-            }
+            applyElementPositioning(element, offset, true);
 
             fragment.appendChild(element);
             itemElements.set(item.id, element);
@@ -330,30 +454,11 @@ export const createRenderer = (
             element = existingElements.get(item.id)!;
             existingElements.delete(item.id);
 
-            // Update position using GPU-accelerated transforms
-            element.style.transform = `translateY(${offset}px)`;
-            element.style.willChange = "transform";
-
-            // Ensure itemHeight is applied only if NOT using dynamic sizing
-            if (itemHeight && !element.style.height && !isDynamicSize) {
-              element.style.height = itemHeightPx;
-            }
-
-            // Check if it needs measurement (first item or dynamic sizing)
-            if (isDynamicSize || itemElements.size === 0) {
-              element.dataset.needsMeasurement = "true";
-            }
+            applyElementPositioning(element, offset, false);
           } else {
             element = createItemElement(item, index);
 
-            // Position the element using GPU-accelerated transforms
-            element.style.position = "absolute";
-            element.style.transform = `translateY(${offset}px)`;
-
-            // Ensure itemHeight is applied only if NOT using dynamic sizing
-            if (itemHeight && !element.style.height && !isDynamicSize) {
-              element.style.height = itemHeightPx;
-            }
+            applyElementPositioning(element, offset, true);
           }
 
           // Add to fragment
@@ -413,6 +518,24 @@ export const createRenderer = (
     resetVisibleRange: (): void => {
       lastVisibleRange = { start: -1, end: -1 };
     },
+
+    /**
+     * Gets the current item height (detected or configured)
+     * @returns Current item height in pixels
+     */
+    getItemHeight: (): number => {
+      return itemHeight;
+    },
+
+    /**
+     * Checks if height auto-detection is in progress
+     * @returns Whether auto-detection is active
+     */
+    isAutoDetecting: (): boolean => {
+      return isAutoDetecting;
+    },
+
+
   };
 };
 

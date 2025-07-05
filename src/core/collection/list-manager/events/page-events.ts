@@ -63,7 +63,7 @@ export const createPageEventManager = (config: ListManagerConfig) => {
 
     // Ensure we have valid numbers to avoid NaN or undefined results
     const pageSize = config.pageSize || 20;
-    const itemHeight = config.itemHeight || 48;
+    const itemHeight = config.itemHeight || 48; // Use fallback during auto-detection
     const validScrollTop = Number(scrollTop) || 0;
 
     // Guard against division by zero or invalid calculations

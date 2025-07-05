@@ -131,7 +131,7 @@ export function calculateVisibleRange(
   const {
     renderBufferSize = RENDERING.DEFAULT_RENDER_BUFFER_SIZE,
     overscanCount = RENDERING.DEFAULT_OVERSCAN_COUNT,
-    itemHeight = RENDERING.LEGACY_ITEM_HEIGHT,
+    itemHeight, // No default - let auto-detection handle it
     overscan,
   } = config;
   // Use overscan if provided, otherwise fallback to overscanCount
@@ -149,9 +149,11 @@ export function calculateVisibleRange(
   // CRITICAL: For page-based navigation, always use the simple, reliable calculation
   // This bypasses complex height caching issues that cause wrong visible ranges
   if (items.length < COLLECTION.BINARY_SEARCH_THRESHOLD) {
+    // Use detected height from itemMeasurement or fallback
+    const effectiveHeight = itemHeight || itemMeasurement.getDefaultHeight() || RENDERING.LEGACY_ITEM_HEIGHT;
     const result = calculateVisibleRangeOptimized(
       scrollTop,
-      itemHeight,
+      effectiveHeight,
       containerHeight,
       items.length,
       config
@@ -167,6 +169,8 @@ export function calculateVisibleRange(
 
   // For very large variable height lists, use binary search approach
   if (items.length > COLLECTION.BINARY_SEARCH_THRESHOLD) {
+    // Use detected height from itemMeasurement or fallback
+    const effectiveHeight = itemHeight || itemMeasurement.getDefaultHeight() || RENDERING.LEGACY_ITEM_HEIGHT;
     return binarySearchVisibleRange(
       scrollTop,
       items,
@@ -174,7 +178,7 @@ export function calculateVisibleRange(
       itemMeasurement,
       renderBufferSize,
       effectiveOverscan,
-      itemHeight
+      effectiveHeight
     );
   }
 
@@ -192,9 +196,12 @@ export function calculateVisibleRange(
 
     const itemHeight = itemMeasurement.getItemHeight(items[i]);
 
+    // Use detected height from itemMeasurement or fallback
+    const effectiveHeight = config.itemHeight || itemMeasurement.getDefaultHeight() || RENDERING.LEGACY_ITEM_HEIGHT;
+    
     if (
       currentOffset + itemHeight >
-      scrollTop - renderBufferSize * config.itemHeight
+      scrollTop - renderBufferSize * effectiveHeight
     ) {
       startIndex = Math.max(0, i - effectiveOverscan);
       break;
@@ -211,9 +218,12 @@ export function calculateVisibleRange(
     const itemHeight = itemMeasurement.getItemHeight(items[i]);
     currentOffset += itemHeight;
 
+    // Use detected height from itemMeasurement or fallback
+    const effectiveHeight = config.itemHeight || itemMeasurement.getDefaultHeight() || RENDERING.LEGACY_ITEM_HEIGHT;
+    
     if (
       currentOffset >
-      scrollTop + containerHeight + renderBufferSize * config.itemHeight
+      scrollTop + containerHeight + renderBufferSize * effectiveHeight
     ) {
       endIndex = Math.min(items.length, i + effectiveOverscan);
       break;
@@ -261,15 +271,24 @@ export function calculateSequentialItemPositions(
  * @param items All items
  * @param visibleRange Visible range with start and end indices
  * @param itemMeasurement Item measurement instance
+ * @param rendererHeight Optional height from renderer (for auto-detection)
  * @returns Array of positions with index, item, and offset
  */
 export function calculateItemPositions(
   items: any[],
   visibleRange: VisibleRange,
-  itemMeasurement: ItemMeasurement
+  itemMeasurement: ItemMeasurement,
+  rendererHeight?: number
 ): Array<{ index: number; item: any; offset: number }> {
   const positions: Array<{ index: number; item: any; offset: number }> = [];
-  const itemHeight = itemMeasurement.getDefaultHeight();
+  
+  // Use renderer height if provided (during auto-detection), otherwise use measurement system
+  let itemHeight = rendererHeight || itemMeasurement.getDefaultHeight();
+  
+  // Fallback to legacy height if no height is available
+  if (!itemHeight || itemHeight === 0) {
+    itemHeight = RENDERING.LEGACY_ITEM_HEIGHT;
+  }
 
   // Simple calculation using uniform item height
   for (let i = visibleRange.start; i < visibleRange.end; i++) {

@@ -3,7 +3,7 @@
 import { pipe } from "../../core/compose/pipe";
 import { createBase, withElement } from "../../core/compose/component";
 import { withEvents, withLifecycle } from "../../core/compose/features";
-import { withListManager, withSelection } from "./features";
+import { withListManager, withSelection, withStaticItems } from "./features";
 import { withAPI } from "./api";
 import { createBaseConfig, getElementConfig, getApiConfig } from "./config";
 
@@ -21,13 +21,23 @@ const createList = (config = {}) => {
     // Process the configuration with defaults
     const baseConfig = createBaseConfig(config);
 
+    // Determine if this is a static list or needs the complex list manager
+    const hasStaticItems = Array.isArray(baseConfig.items) && baseConfig.items.length > 0;
+    const hasApiConfig = Boolean(baseConfig.baseUrl);
+    const isStaticList = hasStaticItems && !hasApiConfig;
+
+    console.log(`📋 Creating ${isStaticList ? 'static' : 'dynamic'} list with ${hasStaticItems ? baseConfig.items.length : 0} items`);
+
     // Create the component through functional composition
     const component = pipe(
       createBase,
       withEvents(),
       withElement(getElementConfig(baseConfig)),
-      withListManager(baseConfig), // Add list management capabilities
-      withSelection(baseConfig), // Add selection capabilities
+      // Choose the appropriate list implementation
+      isStaticList 
+        ? withStaticItems(baseConfig)  // Simple static list for static data
+        : withListManager(baseConfig), // Complex list manager for API data
+      withSelection(baseConfig), // Add selection capabilities (works with both)
       withLifecycle(),
       (comp) => withAPI(getApiConfig(comp, baseConfig))(comp) // Apply public API
     )(baseConfig);

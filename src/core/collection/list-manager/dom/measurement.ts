@@ -101,6 +101,14 @@ export const createItemMeasurement = (defaultHeight: number = 48) => {
     },
 
     /**
+     * Sets the default height for items
+     * @param height New default height
+     */
+    setDefaultHeight: (height: number): void => {
+      defaultHeight = height;
+    },
+
+    /**
      * Checks if using uniform height mode
      * @returns Whether using uniform height
      */

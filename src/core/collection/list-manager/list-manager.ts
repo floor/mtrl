@@ -301,6 +301,7 @@ export const createListManager = (
       loadScrollToIndexWithBackgroundRanges:
         scrollingManager.loadScrollToIndexWithBackgroundRanges,
     },
+    renderer,
   });
 
   // Initialize immediately

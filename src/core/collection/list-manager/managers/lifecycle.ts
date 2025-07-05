@@ -22,7 +22,6 @@ export interface LifecycleDependencies {
     options?: { setScrollPosition?: boolean; replaceCollection?: boolean }
   ) => Promise<{ hasNext: boolean; items: any[] }>;
   itemsCollection: any;
-  initialItems: any[];
   cleanupFunctions: (() => void)[];
   createScrollTracker: any;
   COLLECTION_EVENTS: any;
@@ -60,7 +59,6 @@ export const createLifecycleManager = (deps: LifecycleDependencies) => {
     loadNext,
     loadPage,
     itemsCollection,
-    initialItems,
     cleanupFunctions,
     createScrollTracker,
     COLLECTION_EVENTS,
@@ -161,55 +159,33 @@ export const createLifecycleManager = (deps: LifecycleDependencies) => {
 
     cleanupFunctions.push(unsubscribe);
 
-    // If using static items, add them to the collection right away
-    if (state.useStatic && initialItems && initialItems.length > 0) {
-      itemsCollection
-        .add(initialItems)
-        .then(() => {
-          // Clear initial load flag for static data
-          isInitialLoad = false;
-          // Force an update after adding items
-          requestAnimationFrame(() => {
-            updateVisibleItems(state.scrollTop);
-          });
-        })
-        .catch((err) => {
-          // Clear initial load flag even if there's an error
-          isInitialLoad = false;
-          // Silently handle static items collection errors
-        });
-    } else if (!state.useStatic) {
-      // Initial load for API data - use intelligent viewport filling like scroll jumps
-      // Use scroll jump logic to intelligently load exactly what's needed for viewport at position 0
-      scrollJumpManager
-        .loadScrollToIndexWithBackgroundRanges(0)
-        .then(() => {
-          // Clear initial load flag after viewport is loaded
-          isInitialLoad = false;
-        })
-        .catch((error) => {
-          // Clear initial load flag even if there's an error
-          isInitialLoad = false;
-          console.error(
-            `❌ [InitialLoad] Failed to load initial viewport:`,
-            error
-          );
+    // Initial load for API data - use intelligent viewport filling like scroll jumps
+    // Use scroll jump logic to intelligently load exactly what's needed for viewport at position 0
+    scrollJumpManager
+      .loadScrollToIndexWithBackgroundRanges(0)
+      .then(() => {
+        // Clear initial load flag after viewport is loaded
+        isInitialLoad = false;
+      })
+      .catch((error) => {
+        // Clear initial load flag even if there's an error
+        isInitialLoad = false;
+        console.error(
+          `❌ [InitialLoad] Failed to load initial viewport:`,
+          error
+        );
 
-          // Fallback to simple page 1 load
-          loadPage(1, {
-            setScrollPosition: true,
-            replaceCollection: true,
-          }).catch((fallbackError) => {
-            console.error(
-              `❌ [InitialLoad] Fallback loading also failed:`,
-              fallbackError
-            );
-          });
+        // Fallback to simple page 1 load
+        loadPage(1, {
+          setScrollPosition: true,
+          replaceCollection: true,
+        }).catch((fallbackError) => {
+          console.error(
+            `❌ [InitialLoad] Fallback loading also failed:`,
+            fallbackError
+          );
         });
-    } else {
-      // No static data and no API data - clear flag immediately
-      isInitialLoad = false;
-    }
+      });
 
     // Handle resize events with ResizeObserver if available
     if ("ResizeObserver" in window) {

@@ -8,7 +8,7 @@ export const DEFAULT_CONFIG: Partial<ListManagerConfig> = {
   // Rendering options
   renderBufferSize: 5, // Extra items to render above/below viewport
   overscanCount: 3, // Extra items to keep in DOM but invisible
-  itemHeight: 48, // Default height for items in pixels
+  // itemHeight: omitted to enable auto-detection
   measureItemsInitially: true, // Whether to measure initial items
 
   // Data loading options
@@ -251,13 +251,15 @@ export function validateConfig(config: ListManagerConfig): ListManagerConfig {
     mergedConfig.collection = validateCollection(mergedConfig.collection);
     mergedConfig.baseUrl = validateBaseUrl(mergedConfig.baseUrl);
 
-    // Validate numeric values
-    mergedConfig.itemHeight = validateNumber(
-      mergedConfig.itemHeight,
-      "itemHeight",
-      1,
-      10000
-    );
+    // Validate numeric values (itemHeight is optional for auto-detection)
+    if (mergedConfig.itemHeight !== undefined) {
+      mergedConfig.itemHeight = validateNumber(
+        mergedConfig.itemHeight,
+        "itemHeight",
+        1,
+        10000
+      );
+    }
     mergedConfig.pageSize = validateNumber(
       mergedConfig.pageSize,
       "pageSize",
@@ -340,15 +342,7 @@ export function determineApiMode(config: ListManagerConfig): boolean {
   return Boolean(config.baseUrl);
 }
 
-/**
- * Gets all static items from config
- * @param config User configuration
- * @returns Static items array or empty array
- */
-export function getStaticItems(config: ListManagerConfig): any[] {
-  // Support both staticItems (preferred) and items (legacy) properties
-  return config.staticItems || config.items || [];
-}
+
 
 /**
  * Gets the appropriate limit size based on pagination strategy

@@ -6,7 +6,7 @@ import { createRenderer } from "./render/items";
 import { createRecyclingPool } from "./utils/recycling";
 import { installPlaceholderHook } from "./data/generator";
 import { createInitialState } from "./utils/state";
-import { validateConfig, determineApiMode, getStaticItems } from "./config";
+import { validateConfig, determineApiMode } from "./config";
 import { COLLECTION } from "./constants";
 import { ListManagerConfig } from "./types";
 
@@ -32,19 +32,18 @@ export const initialize = (
     throw new Error("List manager requires a valid container element");
   }
 
-  // Determine API mode and get static items
+  // List manager only handles API-based lists now
   const useApi = determineApiMode(validatedConfig);
-  const useStatic = !useApi;
-
-  // Get initial static items (only if we're in static mode)
-  const initialItems = useStatic ? getStaticItems(validatedConfig) : [];
+  
+  if (!useApi) {
+    throw new Error("List manager requires a baseUrl for API-based lists. Use static list component for static data.");
+  }
 
   // Create state object with initial values
   const state = {
     // Core state
     ...createInitialState(validatedConfig),
-    items: initialItems || [],
-    useStatic: !useApi,
+    items: [],
     mounted: false,
 
     // Virtual scrolling support
@@ -73,30 +72,26 @@ export const initialize = (
 
   // Initialize collection for data management
   const itemsCollection = createCollection({
-    initialCapacity: useStatic
-      ? initialItems.length
-      : COLLECTION.DEFAULT_INITIAL_CAPACITY,
+    initialCapacity: COLLECTION.DEFAULT_INITIAL_CAPACITY,
   });
 
-  // Initialize route adapter (only if in API mode)
-  const adapter = useApi
-    ? createRouteAdapter({
-        base: validatedConfig.baseUrl!,
-        endpoints: {
-          list: `/${collection}`,
-        },
-        headers: {
-          "Content-Type": "application/json",
-        },
-        cache: true,
-        pagination: validatedConfig.pagination
-          ? {
-              strategy: validatedConfig.pagination.strategy || "cursor",
-              ...validatedConfig.pagination,
-            }
-          : { strategy: "cursor" },
-      })
-    : null;
+  // Initialize route adapter for API communication
+  const adapter = createRouteAdapter({
+    base: validatedConfig.baseUrl!,
+    endpoints: {
+      list: `/${collection}`,
+    },
+    headers: {
+      "Content-Type": "application/json",
+    },
+    cache: true,
+    pagination: validatedConfig.pagination
+      ? {
+          strategy: validatedConfig.pagination.strategy || "cursor",
+          ...validatedConfig.pagination,
+        }
+      : { strategy: "cursor" },
+  });
 
   // Track cleanup functions
   const cleanupFunctions: (() => void)[] = [];
@@ -112,8 +107,6 @@ export const initialize = (
     adapter,
     cleanupFunctions,
     useApi,
-    useStatic,
-    initialItems,
     container,
     collection,
   };
