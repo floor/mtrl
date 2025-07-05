@@ -102,8 +102,8 @@ export const createRenderer = (
       element.dataset.needsMeasurement = "true";
     }
 
-    // Apply itemHeight as CSS height if configured
-    if (itemHeight && !hasHeight) {
+    // Apply itemHeight as CSS height only if NOT using dynamic sizing
+    if (itemHeight && !hasHeight && !isDynamicSize) {
       element.style.height = itemHeightPx;
     }
 
@@ -269,8 +269,8 @@ export const createRenderer = (
             element.style.position = "absolute";
             element.style.transform = `translateY(${offset}px)`;
 
-            // Ensure itemHeight is applied
-            if (itemHeight && !element.style.height) {
+            // Ensure itemHeight is applied only if NOT using dynamic sizing
+            if (itemHeight && !element.style.height && !isDynamicSize) {
               element.style.height = itemHeightPx;
             }
 
@@ -334,8 +334,8 @@ export const createRenderer = (
             element.style.transform = `translateY(${offset}px)`;
             element.style.willChange = "transform";
 
-            // Ensure itemHeight is applied
-            if (itemHeight && !element.style.height) {
+            // Ensure itemHeight is applied only if NOT using dynamic sizing
+            if (itemHeight && !element.style.height && !isDynamicSize) {
               element.style.height = itemHeightPx;
             }
 
@@ -350,8 +350,8 @@ export const createRenderer = (
             element.style.position = "absolute";
             element.style.transform = `translateY(${offset}px)`;
 
-            // Ensure itemHeight is applied
-            if (itemHeight && !element.style.height) {
+            // Ensure itemHeight is applied only if NOT using dynamic sizing
+            if (itemHeight && !element.style.height && !isDynamicSize) {
               element.style.height = itemHeightPx;
             }
           }

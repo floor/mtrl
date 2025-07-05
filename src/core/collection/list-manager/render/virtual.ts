@@ -65,8 +65,8 @@ export const createRenderingManager = (deps: RenderingDependencies) => {
       // Restore base transform
       recycledElement.style.transform = `translateY(var(--item-offset)) translateZ(0)`;
 
-      // Apply itemHeight if configured
-      if (config.itemHeight) {
+      // Apply itemHeight if configured and NOT using dynamic sizing
+      if (config.itemHeight && !config.dynamicItemSize) {
         recycledElement.style.height = `${config.itemHeight}px`;
       }
 
@@ -139,8 +139,8 @@ export const createRenderingManager = (deps: RenderingDependencies) => {
       element.style.position = "absolute";
     }
 
-    // Apply itemHeight as CSS height if configured
-    if (config.itemHeight && !element.style.height) {
+    // Apply itemHeight as CSS height if configured and NOT using dynamic sizing
+    if (config.itemHeight && !element.style.height && !config.dynamicItemSize) {
       element.style.height = `${config.itemHeight}px`;
     }
   };
@@ -169,7 +169,7 @@ export const createRenderingManager = (deps: RenderingDependencies) => {
           ? " mtrl-item-placeholder"
           : "";
 
-        const itemHeight = config.itemHeight
+        const itemHeight = config.itemHeight && !config.dynamicItemSize
           ? `height: ${config.itemHeight}px; `
           : "";
         htmlStrings.push(`

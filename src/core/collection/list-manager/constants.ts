@@ -165,7 +165,7 @@ export const COLLECTION = {
   BINARY_SEARCH_THRESHOLD: 500,
 
   /** Small list threshold for simple rendering */
-  SMALL_LIST_THRESHOLD: 10,
+  SMALL_LIST_THRESHOLD: 50,
 } as const;
 
 /**

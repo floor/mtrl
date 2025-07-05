@@ -574,7 +574,19 @@ export const createViewportManager = (
           if (!item?.id) continue;
 
           const itemId = parseInt(item.id);
-          const offset = Math.round((itemId - 1) * itemHeight);
+          let offset: number;
+
+          // Use dynamic positioning when dynamicItemSize is enabled
+          if (config.dynamicItemSize && typeof itemMeasurement.getItemOffset === "function") {
+            offset = itemMeasurement.getItemOffset(state.items, item.id);
+            // Fallback to fixed calculation if offset not found
+            if (offset === -1) {
+              offset = Math.round((itemId - 1) * itemHeight);
+            }
+          } else {
+            // Use fixed height calculation for uniform sizing
+            offset = Math.round((itemId - 1) * itemHeight);
+          }
 
           reusablePositions.push({
             index: localIndex,
@@ -587,6 +599,59 @@ export const createViewportManager = (
       } else {
         // Standard rendering for cursor-based pagination only
         renderer.renderVisibleItems(state.items, visibleRange);
+      }
+
+      // Measure item heights for dynamic sizing (after rendering)
+      if (config.dynamicItemSize && typeof itemMeasurement.measureMarkedElements === "function") {
+        // Use requestAnimationFrame to ensure DOM has been updated
+        requestAnimationFrame(() => {
+          const heightsChanged = itemMeasurement.measureMarkedElements(container, state.items);
+          
+          // If heights changed, trigger re-render with correct positions
+          if (heightsChanged) {
+            // Force recalculation of offsets
+            if (typeof itemMeasurement.calculateOffsets === "function") {
+              itemMeasurement.calculateOffsets(state.items);
+            }
+            
+            // Re-render with updated positions
+            if (isPageStrategy() || isOffsetStrategy()) {
+              const itemsToRender = state.visibleItems || [];
+              
+              reusablePositions.length = 0;
+              for (
+                let localIndex = 0;
+                localIndex < itemsToRender.length;
+                localIndex++
+              ) {
+                const item = itemsToRender[localIndex];
+                if (!item?.id) continue;
+
+                const itemId = parseInt(item.id);
+                let offset: number;
+
+                // Use dynamic positioning with measured heights
+                if (typeof itemMeasurement.getItemOffset === "function") {
+                  offset = itemMeasurement.getItemOffset(state.items, item.id);
+                  // Fallback to fixed calculation if offset not found
+                  if (offset === -1) {
+                    offset = Math.round((itemId - 1) * itemHeight);
+                  }
+                } else {
+                  offset = Math.round((itemId - 1) * itemHeight);
+                }
+
+                reusablePositions.push({
+                  index: localIndex,
+                  item,
+                  offset,
+                });
+              }
+
+              renderingManager.renderItemsWithVirtualPositions(reusablePositions);
+            }
+          }
+        });
       }
     }
 
