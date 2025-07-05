@@ -66,12 +66,7 @@ export interface ListManagerConfig {
    */
   itemHeight?: number;
 
-  /**
-   * Whether items can have varying heights
-   * When false (default), all items use the same height for better performance
-   * When true, each item's height is measured individually
-   */
-  dynamicItemSize?: boolean;
+
 
   /**
    * Whether to measure initial items

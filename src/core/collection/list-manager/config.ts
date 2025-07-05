@@ -19,8 +19,7 @@ export const DEFAULT_CONFIG: Partial<ListManagerConfig> = {
   throttleMs: 16, // Throttle scroll event (ms)
   dedupeItems: true, // Remove duplicate items based on ID
 
-  // Item measurement options
-  dynamicItemSize: false, // Whether items can have different heights
+
 
   // Scroll detection strategy
   scrollStrategy: "scroll", // 'scroll', 'intersection', or 'hybrid'
@@ -313,9 +312,7 @@ export function validateConfig(config: ListManagerConfig): ListManagerConfig {
     if (mergedConfig.dedupeItems === undefined) {
       mergedConfig.dedupeItems = true;
     }
-    if (mergedConfig.dynamicItemSize === undefined) {
-      mergedConfig.dynamicItemSize = false;
-    }
+
     if (mergedConfig.measureItemsInitially === undefined) {
       mergedConfig.measureItemsInitially = true;
     }

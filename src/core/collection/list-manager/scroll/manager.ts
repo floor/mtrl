@@ -28,8 +28,6 @@ export interface ScrollingManagerDependencies {
     updateState: (updates: any) => void;
   };
   itemMeasurement?: {
-    calculateOffsets?: (items: any[]) => void;
-    getItemOffset?: (items: any[], itemId: string) => number;
     getItemHeight?: (item: any) => number;
   };
   collection?: string;

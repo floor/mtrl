@@ -30,7 +30,7 @@ export const createRenderer = (
   const itemHeight = config.itemHeight || 84;
   const itemHeightPx = `${itemHeight}px`;
   const paginationStrategy = config.pagination?.strategy || "cursor";
-  const isDynamicSize = config.dynamicItemSize === true;
+  const isDynamicSize = false; // Dynamic sizing removed
 
   // 🚀 PERFORMANCE: Pre-allocate reusable objects to avoid garbage collection
   const reusableCurrentIds = new Set<string>();

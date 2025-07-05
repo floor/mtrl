@@ -74,66 +74,8 @@ function binarySearchVisibleRange(
   let high = items.length - 1;
   let bestStartIndex = 0;
 
-  // Check if itemMeasurement has cached offsets
-  if (
-    typeof itemMeasurement.hasCachedOffsets === "function" &&
-    itemMeasurement.hasCachedOffsets()
-  ) {
-    // Use cached offsets for more efficient lookup
-    while (low <= high) {
-      const mid = Math.floor((low + high) / 2);
-      if (!items[mid]) {
-        low = mid + 1;
-        continue;
-      }
-
-      const offset = itemMeasurement.getItemOffset(items, items[mid].id);
-
-      if (offset < scrollTop) {
-        bestStartIndex = mid;
-        low = mid + 1;
-      } else {
-        high = mid - 1;
-      }
-    }
-  } else {
-    // Fall back to estimation using average height
-    const allHeights = itemMeasurement.getAllHeights();
-    let avgHeight = itemHeight;
-
-    if (allHeights.size > 0) {
-      // Calculate average without using spread operator on values iterator
-      let sum = 0;
-      let count = 0;
-      allHeights.forEach((height) => {
-        sum += height;
-        count++;
-      });
-      avgHeight = sum / count;
-    }
-
-    // Estimate start index based on average height
-    bestStartIndex = Math.floor(scrollTop / avgHeight);
-
-    // Refine estimate with linear search in both directions
-    let currentOffset = bestStartIndex * avgHeight;
-
-    // Search forward if we're underestimating
-    while (bestStartIndex < items.length && currentOffset < scrollTop) {
-      if (items[bestStartIndex]) {
-        currentOffset += itemMeasurement.getItemHeight(items[bestStartIndex]);
-      }
-      bestStartIndex++;
-    }
-
-    // Search backward if we're overestimating
-    while (bestStartIndex > 0 && currentOffset > scrollTop) {
-      bestStartIndex--;
-      if (items[bestStartIndex]) {
-        currentOffset -= itemMeasurement.getItemHeight(items[bestStartIndex]);
-      }
-    }
-  }
+  // Simple calculation using uniform item height
+  bestStartIndex = Math.floor(scrollTop / itemHeight);
 
   // Ensure bestStartIndex is valid
   bestStartIndex = Math.max(0, Math.min(bestStartIndex, items.length - 1));
@@ -326,49 +268,17 @@ export function calculateItemPositions(
   visibleRange: VisibleRange,
   itemMeasurement: ItemMeasurement
 ): Array<{ index: number; item: any; offset: number }> {
-  // Check if we can use cached offsets
-  if (
-    typeof itemMeasurement.hasCachedOffsets === "function" &&
-    itemMeasurement.hasCachedOffsets() &&
-    typeof itemMeasurement.getOffsetAtIndex === "function"
-  ) {
-    const positions: Array<{ index: number; item: any; offset: number }> = [];
-
-    for (let i = visibleRange.start; i < visibleRange.end; i++) {
-      if (items[i]) {
-        positions.push({
-          index: i,
-          item: items[i],
-          offset: itemMeasurement.getOffsetAtIndex(i),
-        });
-      }
-    }
-
-    return positions;
-  }
-
-  // Fall back to calculating offsets on the fly
-  let currentOffset = 0;
-
-  // Calculate offsets for items before visible range
-  for (let i = 0; i < visibleRange.start; i++) {
-    if (items[i]) {
-      currentOffset += itemMeasurement.getItemHeight(items[i]);
-    }
-  }
-
-  // Calculate positions for visible items
   const positions: Array<{ index: number; item: any; offset: number }> = [];
+  const itemHeight = itemMeasurement.getDefaultHeight();
 
+  // Simple calculation using uniform item height
   for (let i = visibleRange.start; i < visibleRange.end; i++) {
     if (items[i]) {
       positions.push({
         index: i,
         item: items[i],
-        offset: currentOffset,
+        offset: i * itemHeight, // Uniform height positioning
       });
-
-      currentOffset += itemMeasurement.getItemHeight(items[i]);
     }
   }
 
