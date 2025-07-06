@@ -4,158 +4,298 @@
  * @description DOM manipulation utilities optimized for performance
  */
 
-import { PREFIX } from '../config';
+import { PREFIX } from "../config";
 
 // Constant for prefix with dash for better performance
 const PREFIX_WITH_DASH = `${PREFIX}-`;
 
+// Cache for frequently used class combinations to avoid repeated processing
+const classCache = new Map<string, string[]>();
+const MAX_CACHE_SIZE = 500;
 
 /**
- * Normalizes class names input by handling various formats:
+ * Normalize classes to array of unique strings with optimization and caching
  * - String with space-separated classes
  * - Array of strings
  * - Mixed array of strings and space-separated classes
- * 
- * @param classes - Classes to normalize
- * @returns Array of unique, non-empty class names
+ *
+ * @param {...(string | string[])} classes - Classes to normalize
+ * @returns {string[]} Array of unique, non-empty class names
  */
-export const normalizeClasses = (...classes: (string | string[])[]): string[] => {
-  // Process the input classes
-  const processedClasses = classes
-    .flat()
-    .reduce((acc: string[], cls) => {
-      if (typeof cls === 'string') {
-        // Split space-separated classes and add them individually
-        acc.push(...cls.split(/\s+/));
+export const normalizeClasses = (
+  ...classes: (string | string[])[]
+): string[] => {
+  // Fast path 1: Empty input
+  if (classes.length === 0) return [];
+
+  // Fast path 2: Single string without spaces - most common case
+  if (classes.length === 1 && typeof classes[0] === "string") {
+    const input = classes[0];
+    if (!input) return [];
+    if (!input.includes(" ")) return [input];
+
+    // Check cache for single string with spaces
+    if (classCache.has(input)) {
+      return classCache.get(input)!;
+    }
+  }
+
+  // Optimized processing - single pass with minimal allocations
+  const seen = new Set<string>();
+  const result: string[] = [];
+
+  for (const cls of classes) {
+    if (typeof cls === "string" && cls) {
+      // Fast path for single class
+      if (!cls.includes(" ")) {
+        if (!seen.has(cls)) {
+          seen.add(cls);
+          result.push(cls);
+        }
+      } else {
+        // Split space-separated classes efficiently
+        cls.split(" ").forEach((c) => {
+          const trimmed = c.trim();
+          if (trimmed && !seen.has(trimmed)) {
+            seen.add(trimmed);
+            result.push(trimmed);
+          }
+        });
       }
-      return acc;
-    }, [])
-    .filter(Boolean); // Remove empty strings
-  
-  // Create a Set and convert back to array without spread operator
-  const uniqueClasses = new Set<string>();
-  processedClasses.forEach(cls => uniqueClasses.add(cls));
-  
-  return Array.from(uniqueClasses);
+    } else if (Array.isArray(cls)) {
+      // Process array of classes
+      cls.forEach((c) => {
+        if (typeof c === "string" && c && !seen.has(c)) {
+          seen.add(c);
+          result.push(c);
+        }
+      });
+    }
+  }
+
+  // Cache result for single string inputs to avoid repeated processing
+  if (
+    classes.length === 1 &&
+    typeof classes[0] === "string" &&
+    result.length <= 10
+  ) {
+    if (classCache.size < MAX_CACHE_SIZE) {
+      classCache.set(classes[0], result);
+    }
+  }
+
+  return result;
 };
 
 /**
- * Adds multiple classes to an element
+ * Add prefixed classes to element with optimizations
  * Automatically adds prefix to classes that don't already have it
- * Optimized for minimal array operations and DOM interactions
- * 
+ * Optimized for minimal DOM interactions and single-class scenarios
+ *
  * @param {HTMLElement} element - Target element
  * @param {...(string | string[])} classes - Classes to add
- * @returns {HTMLElement} Modified element
+ * @returns {HTMLElement} Modified element for chaining
  */
-export const addClass = (element: HTMLElement, ...classes: (string | string[])[]): HTMLElement => {
-  const normalizedClasses = normalizeClasses(...classes);
-  
-  // Early return for empty classes
-  if (!normalizedClasses.length) return element;
-  
-  // Using DOMTokenList's add() with multiple arguments is faster than multiple add() calls
-  // But we need to handle prefixing first
-  const prefixedClasses: string[] = [];
-  
-  for (let i = 0; i < normalizedClasses.length; i++) {
-    const cls = normalizedClasses[i];
-    if (!cls) continue;
-    
-    prefixedClasses.push(
-      cls.startsWith(PREFIX_WITH_DASH) ? cls : PREFIX_WITH_DASH + cls
-    );
+export const addClass = (
+  element: HTMLElement,
+  ...classes: (string | string[])[]
+): HTMLElement => {
+  // Fast path 1: Empty classes
+  if (classes.length === 0) return element;
+
+  // Fast path 2: Single string class - most common case
+  if (classes.length === 1 && typeof classes[0] === "string") {
+    const cls = classes[0];
+    if (cls && !cls.includes(" ")) {
+      const prefixed = cls.startsWith(PREFIX_WITH_DASH)
+        ? cls
+        : PREFIX_WITH_DASH + cls;
+      // Safety check: ensure no spaces were introduced by prefixing
+      if (!prefixed.includes(" ")) {
+        element.classList.add(prefixed);
+        return element;
+      }
+    }
   }
-  
-  // Add all classes in a single operation if possible
-  if (prefixedClasses.length) {
-    element.classList.add(...prefixedClasses);
+
+  // Full processing for complex cases
+  const normalized = normalizeClasses(...classes);
+  for (const cls of normalized) {
+    const prefixed = cls.startsWith(PREFIX_WITH_DASH)
+      ? cls
+      : PREFIX_WITH_DASH + cls;
+
+    // Safety check: ensure no spaces in class token (prevents DOMTokenList errors)
+    if (prefixed.includes(" ")) {
+      // Split further if needed (shouldn't happen if normalizeClasses works correctly)
+      prefixed.split(" ").forEach((c) => {
+        const trimmed = c.trim();
+        if (trimmed) element.classList.add(trimmed);
+      });
+    } else {
+      element.classList.add(prefixed);
+    }
   }
-  
+
   return element;
 };
 
 /**
- * Removes multiple classes from an element
- * Handles only exact class names as specified (no automatic prefixing)
- * For better performance, clients should know exactly which classes to remove
- * 
+ * Remove prefixed classes from element with optimizations
+ * Handles exact class names as specified with automatic prefixing
+ * Optimized for single-class scenarios and batch operations
+ *
  * @param {HTMLElement} element - Target element
  * @param {...(string | string[])} classes - Classes to remove
- * @returns {HTMLElement} Modified element
+ * @returns {HTMLElement} Modified element for chaining
  */
-export const removeClass = (element: HTMLElement, ...classes: (string | string[])[]): HTMLElement => {
-  const normalizedClasses = normalizeClasses(...classes);
-  
-  // Early return for empty classes
-  if (!normalizedClasses.length) return element;
-  
-  // Prepare prefixed class names
-  const prefixedClasses: string[] = [];
-  
-  for (let i = 0; i < normalizedClasses.length; i++) {
-    const cls = normalizedClasses[i];
-    if (!cls) continue;
-    
-    // Only add the prefixed version
-    prefixedClasses.push(
-      cls.startsWith(PREFIX_WITH_DASH) ? cls : PREFIX_WITH_DASH + cls
-    );
+export const removeClass = (
+  element: HTMLElement,
+  ...classes: (string | string[])[]
+): HTMLElement => {
+  // Fast path 1: Empty classes
+  if (classes.length === 0) return element;
+
+  // Fast path 2: Single string class - most common case
+  if (classes.length === 1 && typeof classes[0] === "string") {
+    const cls = classes[0];
+    if (cls && !cls.includes(" ")) {
+      const prefixed = cls.startsWith(PREFIX_WITH_DASH)
+        ? cls
+        : PREFIX_WITH_DASH + cls;
+      // Safety check: ensure no spaces were introduced by prefixing
+      if (!prefixed.includes(" ")) {
+        element.classList.remove(prefixed);
+        return element;
+      }
+    }
   }
-  
-  // Remove all classes in a single operation if possible
-  if (prefixedClasses.length) {
-    element.classList.remove(...prefixedClasses);
+
+  // Full processing for complex cases
+  const normalized = normalizeClasses(...classes);
+  for (const cls of normalized) {
+    const prefixed = cls.startsWith(PREFIX_WITH_DASH)
+      ? cls
+      : PREFIX_WITH_DASH + cls;
+
+    // Safety check: ensure no spaces in class token
+    if (prefixed.includes(" ")) {
+      prefixed.split(" ").forEach((c) => {
+        const trimmed = c.trim();
+        if (trimmed) element.classList.remove(trimmed);
+      });
+    } else {
+      element.classList.remove(prefixed);
+    }
   }
-  
+
   return element;
 };
 
 /**
- * Toggles multiple classes on an element
+ * Toggle prefixed classes on element with optimizations
  * Automatically adds prefix to classes that don't already have it
- * 
+ * Optimized for single-class scenarios
+ *
  * @param {HTMLElement} element - Target element
  * @param {...(string | string[])} classes - Classes to toggle
- * @returns {HTMLElement} Modified element
+ * @returns {HTMLElement} Modified element for chaining
  */
-export const toggleClass = (element: HTMLElement, ...classes: (string | string[])[]): HTMLElement => {
-  const normalizedClasses = normalizeClasses(...classes);
-  
-  for (let i = 0; i < normalizedClasses.length; i++) {
-    const cls = normalizedClasses[i];
-    if (!cls) continue;
-    
-    const prefixedClass = cls.startsWith(PREFIX_WITH_DASH) ? cls : PREFIX_WITH_DASH + cls;
-    element.classList.toggle(prefixedClass);
+export const toggleClass = (
+  element: HTMLElement,
+  ...classes: (string | string[])[]
+): HTMLElement => {
+  // Fast path: Single string class - most common case
+  if (classes.length === 1 && typeof classes[0] === "string") {
+    const cls = classes[0];
+    if (cls && !cls.includes(" ")) {
+      const prefixed = cls.startsWith(PREFIX_WITH_DASH)
+        ? cls
+        : PREFIX_WITH_DASH + cls;
+      // Safety check: ensure no spaces were introduced by prefixing
+      if (!prefixed.includes(" ")) {
+        element.classList.toggle(prefixed);
+        return element;
+      }
+    }
   }
-  
+
+  // Full processing for complex cases
+  const normalized = normalizeClasses(...classes);
+  for (const cls of normalized) {
+    const prefixed = cls.startsWith(PREFIX_WITH_DASH)
+      ? cls
+      : PREFIX_WITH_DASH + cls;
+
+    // Safety check: ensure no spaces in class token
+    if (prefixed.includes(" ")) {
+      prefixed.split(" ").forEach((c) => {
+        const trimmed = c.trim();
+        if (trimmed) element.classList.toggle(trimmed);
+      });
+    } else {
+      element.classList.toggle(prefixed);
+    }
+  }
+
   return element;
 };
 
 /**
- * Checks if an element has all specified classes
+ * Check if element has all specified prefixed classes with optimizations
  * Automatically adds prefix to classes that don't already have it
- * 
+ * Returns true only if ALL specified classes are present
+ *
  * @param {HTMLElement} element - Target element
  * @param {...(string | string[])} classes - Classes to check
  * @returns {boolean} True if element has all specified classes
  */
-export const hasClass = (element: HTMLElement, ...classes: (string | string[])[]): boolean => {
-  const normalizedClasses = normalizeClasses(...classes);
-  
-  // Early return for empty classes (technically all are present)
-  if (!normalizedClasses.length) return true;
-  
-  for (let i = 0; i < normalizedClasses.length; i++) {
-    const cls = normalizedClasses[i];
-    if (!cls) continue;
-    
-    const prefixedClass = cls.startsWith(PREFIX_WITH_DASH) ? cls : PREFIX_WITH_DASH + cls;
-    if (!element.classList.contains(prefixedClass)) {
-      return false;
+export const hasClass = (
+  element: HTMLElement,
+  ...classes: (string | string[])[]
+): boolean => {
+  // Fast path: Empty classes - vacuously true
+  if (classes.length === 0) return true;
+
+  // Fast path: Single string class - most common case
+  if (classes.length === 1 && typeof classes[0] === "string") {
+    const cls = classes[0];
+    if (cls && !cls.includes(" ")) {
+      const prefixed = cls.startsWith(PREFIX_WITH_DASH)
+        ? cls
+        : PREFIX_WITH_DASH + cls;
+      // Safety check: ensure no spaces were introduced by prefixing
+      if (!prefixed.includes(" ")) {
+        return element.classList.contains(prefixed);
+      }
     }
   }
-  
+
+  // Full processing for complex cases
+  const normalized = normalizeClasses(...classes);
+  for (const cls of normalized) {
+    const prefixed = cls.startsWith(PREFIX_WITH_DASH)
+      ? cls
+      : PREFIX_WITH_DASH + cls;
+
+    // Safety check: ensure no spaces in class token
+    if (prefixed.includes(" ")) {
+      // For hasClass, all space-separated tokens must exist
+      const tokens = prefixed
+        .split(" ")
+        .map((c) => c.trim())
+        .filter(Boolean);
+      for (const token of tokens) {
+        if (!element.classList.contains(token)) {
+          return false;
+        }
+      }
+    } else {
+      if (!element.classList.contains(prefixed)) {
+        return false;
+      }
+    }
+  }
+
   return true;
 };
