@@ -1,0 +1,35 @@
+# Project-specific rules for Cursor AI
+
+## Development Rules
+
+- Folow the less is more phylosohy
+- As the code is going to be bundled, we should keep the modules small
+- Do not create HTML test files
+- Do not create summaries .md file of codding session
+- Do not start servers using node or bun
+- Do not run any commands that would start a development server
+- Build using bun run build:app
+- The mtrl-app folder in this workspace contains the showcase of all components in /client/content/components
+- When fixing bugs, do not use hack or temporary fix but find the root cause and fix the problem elegantly and efficiently with a minimum line of code
+- We do not use React at all
+
+## Code Generation Rules
+
+- Do not create markdon doc for enhancement ot optimisation
+- Always follow the mtrl component structure conventions
+- Use TypeScript for all new components
+- Follow BEM naming convention for CSS classes (mtrl-component\_\_element--modifier)
+- Use the pipe pattern for component composition
+- Add proper TypeDoc comments for all public APIs
+
+## Testing Rules
+
+- Use Bun test runner for all tests
+- Mock components to avoid circular dependencies
+- Always use JSDOM for DOM testing
+
+## General Rules
+
+- Prefer editing existing files over creating new ones
+- Never create documentation files unless explicitly requested
+- Follow conventional commit format for any commit messages
