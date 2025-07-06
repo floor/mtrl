@@ -18,16 +18,18 @@ export const createHandlers = (
   eventHelpers
 ) => {
   // Get required elements from structure (with fallbacks)
+  // Check both direct component properties (from withDom) and components object (legacy)
   const components = state.component?.components || {};
+  const component = state.component || {};
 
-  // Extract needed components
-  const {
-    container = null,
-    handle = null,
-    valueBubble = null,
-    secondHandle = null,
-    secondValueBubble = null,
-  } = components;
+  // Extract needed components from both locations for backward compatibility
+  const container = component.container || components.container || null;
+  const handle = component.handle || components.handle || null;
+  const valueBubble = component.valueBubble || components.valueBubble || null;
+  const secondHandle =
+    component.secondHandle || components.secondHandle || null;
+  const secondValueBubble =
+    component.secondValueBubble || components.secondValueBubble || null;
 
   // Get required helper methods (with fallbacks)
   const {
@@ -505,9 +507,9 @@ export const createHandlers = (
    * Set up all event listeners
    */
   const setupEventListeners = () => {
-    if (!state.component || !state.component.components) {
+    if (!state.component || !handle) {
       console.warn(
-        "Cannot set up event listeners: missing component structure"
+        "Cannot set up event listeners: missing component or handle"
       );
       return;
     }
@@ -551,7 +553,7 @@ export const createHandlers = (
    * Clean up all event listeners
    */
   const cleanupEventListeners = () => {
-    if (!state.component || !state.component.components) return;
+    if (!state.component) return;
 
     // Clean up container listeners
     if (container) {

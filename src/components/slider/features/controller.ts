@@ -13,10 +13,8 @@ import { createHandlers } from "./handlers";
  */
 export const withController = (config: SliderConfig) => (component) => {
   // Ensure component has required properties
-  if (!component.element || !component.components) {
-    console.warn(
-      "Cannot initialize slider controller: missing element or components"
-    );
+  if (!component.element) {
+    console.warn("Cannot initialize slider controller: missing element");
     return component;
   }
 
@@ -62,13 +60,25 @@ export const withController = (config: SliderConfig) => (component) => {
    * Gets required components from state, safely handling missing components
    */
   const getComponents = () => {
-    // Return empty object if component or components are missing
-    if (!state.component?.components) {
+    // Return empty object if component is missing
+    if (!state.component) {
       return {};
     }
 
-    // Get flattened components
-    return state.component.components;
+    // Get components from both direct properties (withDom) and components object (legacy)
+    const components = state.component.components || {};
+    const component = state.component;
+
+    return {
+      container: component.container || components.container,
+      handle: component.handle || components.handle,
+      valueBubble: component.valueBubble || components.valueBubble,
+      secondHandle: component.secondHandle || components.secondHandle,
+      secondValueBubble:
+        component.secondValueBubble || components.secondValueBubble,
+      // Include any other components that might exist
+      ...components,
+    };
   };
 
   /**
@@ -313,9 +323,11 @@ export const withController = (config: SliderConfig) => (component) => {
   const initController = () => {
     try {
       // Verify we have the necessary components
-      if (!component.components || !component.components.handle) {
+      const components = getComponents();
+
+      if (!components.handle) {
         console.warn(
-          "Cannot initialize slider controller: missing required components"
+          "Cannot initialize slider controller: missing required handle component"
         );
         return;
       }
@@ -325,7 +337,7 @@ export const withController = (config: SliderConfig) => (component) => {
       component.element.setAttribute("aria-valuemax", String(state.max));
       component.element.setAttribute("aria-valuenow", String(state.value));
 
-      const { handle, secondHandle } = component.components;
+      const { handle, secondHandle } = components;
 
       // Set handle attributes
       if (handle) {
@@ -434,18 +446,13 @@ export const withController = (config: SliderConfig) => (component) => {
 
         // Update ARIA attributes if elements exist
         component.element.setAttribute("aria-valuemin", String(min));
-        if (component.components?.handle) {
-          component.components.handle.setAttribute(
-            "aria-valuemin",
-            String(min)
-          );
+        const components = getComponents();
+        if (components.handle) {
+          components.handle.setAttribute("aria-valuemin", String(min));
         }
 
-        if (config.range && component.components?.secondHandle) {
-          component.components.secondHandle.setAttribute(
-            "aria-valuemin",
-            String(min)
-          );
+        if (config.range && components.secondHandle) {
+          components.secondHandle.setAttribute("aria-valuemin", String(min));
         }
 
         // Clamp values to new min
@@ -485,18 +492,13 @@ export const withController = (config: SliderConfig) => (component) => {
 
         // Update ARIA attributes if elements exist
         component.element.setAttribute("aria-valuemax", String(max));
-        if (component.components?.handle) {
-          component.components.handle.setAttribute(
-            "aria-valuemax",
-            String(max)
-          );
+        const components = getComponents();
+        if (components.handle) {
+          components.handle.setAttribute("aria-valuemax", String(max));
         }
 
-        if (config.range && component.components?.secondHandle) {
-          component.components.secondHandle.setAttribute(
-            "aria-valuemax",
-            String(max)
-          );
+        if (config.range && components.secondHandle) {
+          components.secondHandle.setAttribute("aria-valuemax", String(max));
         }
 
         // Clamp values to new max

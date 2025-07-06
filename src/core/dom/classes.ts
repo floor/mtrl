@@ -103,6 +103,12 @@ export const addClass = (
   // Fast path 1: Empty classes
   if (classes.length === 0) return element;
 
+  // Handle the case where an array is passed directly (not spread)
+  // This happens when addClass(element, ["class1", "class2"]) is called
+  if (classes.length === 1 && Array.isArray(classes[0])) {
+    return addClass(element, ...classes[0]);
+  }
+
   // Fast path 2: Single string class - most common case
   if (classes.length === 1 && typeof classes[0] === "string") {
     const cls = classes[0];
@@ -156,6 +162,11 @@ export const removeClass = (
   // Fast path 1: Empty classes
   if (classes.length === 0) return element;
 
+  // Handle the case where an array is passed directly (not spread)
+  if (classes.length === 1 && Array.isArray(classes[0])) {
+    return removeClass(element, ...classes[0]);
+  }
+
   // Fast path 2: Single string class - most common case
   if (classes.length === 1 && typeof classes[0] === "string") {
     const cls = classes[0];
@@ -205,6 +216,11 @@ export const toggleClass = (
   element: HTMLElement,
   ...classes: (string | string[])[]
 ): HTMLElement => {
+  // Handle the case where an array is passed directly (not spread)
+  if (classes.length === 1 && Array.isArray(classes[0])) {
+    return toggleClass(element, ...classes[0]);
+  }
+
   // Fast path: Single string class - most common case
   if (classes.length === 1 && typeof classes[0] === "string") {
     const cls = classes[0];
@@ -256,6 +272,11 @@ export const hasClass = (
 ): boolean => {
   // Fast path: Empty classes - vacuously true
   if (classes.length === 0) return true;
+
+  // Handle the case where an array is passed directly (not spread)
+  if (classes.length === 1 && Array.isArray(classes[0])) {
+    return hasClass(element, ...classes[0]);
+  }
 
   // Fast path: Single string class - most common case
   if (classes.length === 1 && typeof classes[0] === "string") {

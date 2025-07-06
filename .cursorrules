@@ -10,8 +10,8 @@
 - Do not run any commands that would start a development server
 - Build using bun run build:app
 - The mtrl-app folder in this workspace contains the showcase of all components in /client/content/components
-- When fixing bugs, do not use hack or temporary fix but find the root cause and fix the problem elegantly and efficiently with a minimum line of code
-- We do not use React at all
+- When fixing bugs, don't use workarounds or hacks, but find the root cause and fix the problem elegantly and efficiently with as few lines of code as possible.
+- Do not use React
 
 ## Code Generation Rules
 

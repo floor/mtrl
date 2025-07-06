@@ -5,7 +5,6 @@ import {
 } from "../../core/config/component";
 import { SliderConfig } from "./types";
 import { SLIDER_DEFAULTS } from "./constants";
-import { createSliderSchema } from "./schema";
 
 /**
  * Default configuration for the Slider component
@@ -41,18 +40,7 @@ export const createBaseConfig = (config: SliderConfig = {}): SliderConfig => {
     "slider"
   ) as SliderConfig;
 
-  // Create a basic component object for structure generation
-  const baseComponent = {
-    componentName: "slider",
-    config: baseConfig,
-    getClass: (className) => {
-      const prefix = baseConfig.prefix || "mtrl";
-      return `${prefix}-${className}`;
-    },
-  };
-
-  // Add the structure definition to the config
-  baseConfig.schema = createSliderSchema(baseComponent, baseConfig);
+  // Schema is no longer needed as we use direct DOM creation
 
   return baseConfig;
 };
@@ -64,27 +52,37 @@ export const createBaseConfig = (config: SliderConfig = {}): SliderConfig => {
  */
 export const getElementConfig = (config: SliderConfig) => {
   const classes = [
-    "mtrl-slider",
+    "slider",
     config.class,
-    config.disabled ? "mtrl-disabled" : "",
-    config.size ? `mtrl-${config.size}` : "",
-    config.color ? `mtrl-${config.color}` : "",
-    config.iconPosition ? `mtrl-${config.iconPosition}` : "",
-    config.labelPosition ? `mtrl-${config.labelPosition}` : "",
-    config.centered ? "mtrl-slider--centered" : "",
-  ].join(" ");
+    config.disabled ? "slider--disabled" : "",
+    config.size && config.size !== "XS"
+      ? `slider--${
+          typeof config.size === "string"
+            ? config.size.toLowerCase()
+            : config.size
+        }`
+      : "",
+    config.color && config.color !== "primary" ? `slider--${config.color}` : "",
+    config.range ? "slider--range" : "",
+    config.centered ? "slider--centered" : "",
+    config.icon ? "slider--icon" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  // Add aria attributes for the slider
+  const attributes: Record<string, string> = {
+    tabindex: "-1",
+    role: "none",
+    "aria-disabled": config.disabled ? "true" : "false",
+    "aria-valuemin": String(config.min || 0),
+    "aria-valuemax": String(config.max || 100),
+    "aria-valuenow": String(config.value || config.min || 0),
+  };
 
   return createElementConfig(config, {
     tag: "div",
-    attributes: {
-      role: "slider",
-      "aria-valuemin": String(config.min),
-      "aria-valuemax": String(config.max),
-      "aria-valuenow": String(config.value),
-      "aria-orientation": "horizontal",
-      tabindex: "0",
-      "aria-disabled": config.disabled ? "true" : "false",
-    },
+    attributes,
     className: classes,
     forwardEvents: {
       click: true,
