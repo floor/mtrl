@@ -2,10 +2,10 @@
 /**
  * @module core
  * @description Core utilities and building blocks for the component system
- * 
+ *
  * This module provides the foundational elements used to build components
  * in a functional, composable way.
- * 
+ *
  * @packageDocumentation
  */
 
@@ -13,48 +13,51 @@
 // This makes imports cleaner for library users while maintaining an organized codebase
 
 // 1. Component composition system
-export * from './compose';
+export * from "./compose";
 
 // 2. DOM manipulation utilities
-export * from './dom';
+export * from "./dom";
 
 // 3. State management
 // Explicit re-exports to avoid ambiguity
-export { createEmitter } from './state/emitter';
-export type { Emitter, EventCallback } from './state/emitter';
+export { createEmitter } from "./state/emitter";
+export type { Emitter, EventCallback } from "./state/emitter";
 
-export { createStore, loggingMiddleware, deriveFiltered } from './state/store';
-export type { Store, StoreOptions, Selector, Computation, Updater } from './state/store';
+export { createStore, loggingMiddleware, deriveFiltered } from "./state/store";
+export type {
+  Store,
+  StoreOptions,
+  Selector,
+  Computation,
+  Updater,
+} from "./state/store";
 
-export { createLifecycle } from './state/lifecycle';
-export type { LifecycleManager, LifecycleManagers } from './state/lifecycle';
+export { createLifecycle } from "./state/lifecycle";
+export type { LifecycleManager, LifecycleManagers } from "./state/lifecycle";
 
-export { createDisabled } from './state/disabled';
-export type { DisabledState } from './state/disabled';
+export { createDisabled } from "./state/disabled";
+export type { DisabledState } from "./state/disabled";
 
 // Renamed to avoid conflict with DOM's createEventManager
-export { createEventManager as createStateEventManager } from './state/events';
-export type { EventManagerState } from './state/events';
-
-// 4. Layout system
-export * from './layout';
+export { createEventManager as createStateEventManager } from "./state/events";
+export type { EventManagerState } from "./state/events";
 
 // 5. Collection
-export * from './collection';
+export * from "./collection";
 
 // 6. Canvas utilities
-export * from './canvas';
+export * from "./canvas";
 
 // 7. Config and constants
-export { 
-  PREFIX, 
-  COMPONENTS, 
-  STATES, 
+export {
+  PREFIX,
+  COMPONENTS,
+  STATES,
   classNames,
   getComponentClass,
   getModifierClass,
-  getElementClass
-} from './config';
+  getElementClass,
+} from "./config";
 
 // Export global configuration system
 export {
@@ -62,25 +65,25 @@ export {
   getComponentDefaults,
   setGlobalDefaults,
   clearGlobalDefaults,
-  type ComponentConfigMap
-} from './config/global';
+  type ComponentConfigMap,
+} from "./config/global";
 
 // 8. Utility functions
-export { 
-  when, 
-  classNames as joinClasses, 
-  isObject, 
+export {
+  when,
+  classNames as joinClasses,
+  isObject,
   byString,
   hasTouchSupport,
   normalizeEvent,
   throttle,
   debounce,
   once,
-  getInheritedBackground
-} from './utils';
+  getInheritedBackground,
+} from "./utils";
 
 // 9. Gesture system
-export { createGestureManager } from './gestures';
+export { createGestureManager } from "./gestures";
 export type {
   GestureManager,
   GestureConfig,
@@ -92,18 +95,18 @@ export type {
   RotateEvent,
   PanEvent,
   AnyGestureEvent,
-  GestureHandler
-} from './gestures';
+  GestureHandler,
+} from "./gestures";
 
 // Type re-exports for better developer experience
-export type { 
-  ThemeConfig, 
-  ComponentConfig, 
-  ThemedComponentConfig, 
-  VariantComponentConfig, 
-  StateComponentConfig
-} from './config';
+export type {
+  ThemeConfig,
+  ComponentConfig,
+  ThemedComponentConfig,
+  VariantComponentConfig,
+  StateComponentConfig,
+} from "./config";
 
-export type { NormalizedEvent } from './utils/mobile';
+export type { NormalizedEvent } from "./utils/mobile";
 
 // Re-export useful TypeScript types

@@ -1,24 +1,24 @@
 // src/components/chips/chips.ts
 import { pipe } from "../../core/compose/pipe";
-import { createBase } from "../../core/compose/component";
+import { createBase, withElement } from "../../core/compose/component";
 import { withEvents, withLifecycle } from "../../core/compose/features";
 import {
-  withLayout,
-  withLabel as withCompositionLabel,
+  withContainer,
+  withChipItems,
+  withController,
   withDom,
-} from "../../core/composition/features";
-import { withContainer, withChipItems, withController } from "./features";
+} from "./features";
 import { withAPI } from "./api";
 import { ChipsConfig, ChipsComponent } from "./types";
-import { createBaseConfig, getApiConfig } from "./config";
+import { createBaseConfig, getElementConfig, getApiConfig } from "./config";
 
 /**
  * Creates a chips container for grouping related chips
  *
  * Chips follows a clear architectural pattern:
- * 1. Structure definition - Describes the DOM structure declaratively
+ * 1. Base component - Creates the foundation with event system
  * 2. Feature enhancement - Adds specific capabilities (container, items, etc.)
- * 3. DOM creation - Turns the structure into actual DOM elements
+ * 3. DOM creation - Creates DOM elements directly using optimized createElement
  * 4. Controller - Manages behavior, events, and UI rendering
  * 5. Lifecycle - Handles component lifecycle events
  * 6. Public API - Exposes a clean, consistent API
@@ -36,13 +36,15 @@ const createChips = (config: ChipsConfig = {}): ChipsComponent => {
       // Base component with event system
       createBase,
       withEvents(),
-      withLayout(baseConfig),
+
+      // Create the main chips element using standard withElement
+      withElement(getElementConfig(baseConfig)),
+
       withContainer(baseConfig),
-      withCompositionLabel(baseConfig),
       withChipItems(baseConfig),
 
-      // Now create the actual DOM elements from the complete structure
-      withDom(),
+      // Create inner DOM elements (label, container)
+      withDom(baseConfig),
 
       // Add state management and behavior
       withController(baseConfig),

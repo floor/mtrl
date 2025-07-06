@@ -24,8 +24,6 @@ import {
   clearGlobalDefaults,
 } from "./core";
 
-import { createLayout } from "./core/layout";
-
 // Export all "create*" functions
 export {
   addClass,
@@ -35,7 +33,6 @@ export {
   throttle,
   debounce,
   once,
-  createLayout,
   PREFIX,
   // Global configuration functions
   setComponentDefaults,
@@ -43,8 +40,6 @@ export {
   setGlobalDefaults,
   clearGlobalDefaults,
 };
-
-import { h } from "./core/layout/jsx";
 
 // Export constants individually to avoid naming conflicts
 export {
@@ -111,7 +106,3 @@ export {
   // Textfield related constants
   TEXTFIELD_VARIANTS,
 } from "./constants";
-
-export const jsx = h;
-export const jsxs = h;
-export const jsxDEV = h;
