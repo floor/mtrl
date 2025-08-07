@@ -42,13 +42,11 @@ export type { DisabledState } from "./state/disabled";
 export { createEventManager as createStateEventManager } from "./state/events";
 export type { EventManagerState } from "./state/events";
 
-// 5. Collection
-export * from "./collection";
 
-// 6. Canvas utilities
+// Canvas utilities
 export * from "./canvas";
 
-// 7. Config and constants
+// Config and constants
 export {
   PREFIX,
   COMPONENTS,
@@ -68,7 +66,7 @@ export {
   type ComponentConfigMap,
 } from "./config/global";
 
-// 8. Utility functions
+// Utility functions
 export {
   when,
   classNames as joinClasses,
@@ -81,22 +79,6 @@ export {
   once,
   getInheritedBackground,
 } from "./utils";
-
-// 9. Gesture system
-export { createGestureManager } from "./gestures";
-export type {
-  GestureManager,
-  GestureConfig,
-  GestureEvent,
-  TapEvent,
-  SwipeEvent,
-  LongPressEvent,
-  PinchEvent,
-  RotateEvent,
-  PanEvent,
-  AnyGestureEvent,
-  GestureHandler,
-} from "./gestures";
 
 // Type re-exports for better developer experience
 export type {
