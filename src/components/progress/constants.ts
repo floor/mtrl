@@ -115,9 +115,9 @@ export const PROGRESS_WAVE = {
   /** Linear progress wave parameters */
   LINEAR: {
     /** Base amplitude of the wave in pixels */
-    AMPLITUDE: 3,
+    AMPLITUDE: 4,
     /** Speed of wave animation in waves per second (Hz) */
-    SPEED: 0.88,
+    SPEED: 1,
     /** Number of complete waves per 100 pixels */
     FREQUENCY: 2,
     /** Number of complete waves per 100 pixels for indeterminate */
@@ -138,7 +138,7 @@ export const PROGRESS_WAVE = {
     /** Amplitude as percentage of radius for indeterminate (4 = 4%) */
     INDETERMINATE_AMPLITUDE: 4,
     /** Speed of wave rotation in rotations per second (Hz), negative value means clockwise */
-    SPEED: 1.1,
+    SPEED: 1,
     /** Number of complete waves around the circle */
     FREQUENCY: 10,
     /** Number of complete waves for indeterminate animation */
