@@ -6,49 +6,10 @@
  */
 export interface ListConfig {
   /**
-   * Collection name to fetch data from
-   * @default 'items'
-   */
-  collection?: string;
-
-  /**
-   * Transform function for API items
-   * @param {any} item - Raw item from API
-   * @returns {any} Transformed item
-   */
-  transform?: (item: any) => any;
-
-  /**
-   * Base URL for API requests
-   * @default 'http://localhost:4000/api'
-   */
-  baseUrl?: string;
-
-  /**
    * Static array of items to display
-   * @default []
+   * @required
    */
-  items?: any[];
-
-  /**
-   * Default height for items in pixels
-   * This is used for calculation before actual measurement
-   * @default 48
-   */
-  itemHeight?: number;
-
-  /**
-   * Number of items to fetch per page
-   * @default 20
-   */
-  pageSize?: number;
-
-  /**
-   * Number of extra items to render above/below viewport
-   * Higher values reduce blank spaces during fast scrolling but impact performance
-   * @default 5
-   */
-  renderBufferSize?: number;
+  items: any[];
 
   /**
    * Function to render an item
@@ -56,13 +17,7 @@ export interface ListConfig {
    * @param {number} index - Item index in the list
    * @returns {HTMLElement} Rendered DOM element
    */
-  renderItem: (item: any, index: number) => HTMLElement;
-
-  /**
-   * Callback when items are loaded
-   * @param {Object} data - Load result data
-   */
-  afterLoad?: (data: LoadResult) => void;
+  renderItem?: (item: any, index: number) => HTMLElement;
 
   /**
    * Whether to track item selection
@@ -80,7 +35,7 @@ export interface ListConfig {
   /**
    * Initial selection state (array of item IDs)
    */
-  initialSelection?: string[];
+  initialSelection?: (string | number)[];
 
   /**
    * ARIA label for accessibility
@@ -98,37 +53,18 @@ export interface ListConfig {
    * @default false
    */
   animate?: boolean;
-}
-
-/**
- * Result of a load operation
- * @interface LoadResult
- */
-export interface LoadResult {
-  /**
-   * Whether the list is currently loading
-   */
-  loading: boolean;
 
   /**
-   * Whether there are more items to load
+   * Component prefix for CSS class names
+   * @default 'mtrl'
    */
-  hasNext: boolean;
+  prefix?: string;
 
   /**
-   * Whether there are previous items (if paginating)
+   * Component name used in CSS class generation
+   * @default 'list'
    */
-  hasPrev: boolean;
-
-  /**
-   * Newly loaded items
-   */
-  items: any[];
-
-  /**
-   * All loaded items
-   */
-  allItems: any[];
+  componentName?: string;
 }
 
 /**
@@ -171,46 +107,41 @@ export interface SelectEvent {
  * Load event data
  * @interface LoadEvent
  */
-export interface LoadEvent extends LoadResult {
+export interface LoadEvent {
+  /**
+   * Loaded items
+   */
+  items: any[];
+
+  /**
+   * Whether the list is currently loading
+   */
+  loading: boolean;
+
+  /**
+   * Whether there are more items to load
+   */
+  hasNext: boolean;
+
+  /**
+   * Whether there are previous items
+   */
+  hasPrev: boolean;
+
   /**
    * Component instance
    */
-  component: VirtualListComponent;
+  component: ListComponent;
 
   /**
    * Prevent default behavior
    */
-  preventDefault: () => void;
+  preventDefault?: () => void;
 
   /**
    * Whether default was prevented
    */
-  defaultPrevented: boolean;
-}
-
-/**
- * Virtual List component interface - enhanced list with virtual scrolling
- * @interface VirtualListComponent
- */
-export interface VirtualListComponent extends ListComponent {
-  /**
-   * Updates the virtual scroll parameters
-   * @returns {VirtualListComponent} Component instance for chaining
-   */
-  updateScrollParams?: () => VirtualListComponent;
-
-  /**
-   * Gets the scroll position
-   * @returns {number} Current scroll position
-   */
-  getScrollTop?: () => number;
-
-  /**
-   * Sets the scroll position
-   * @param {number} scrollTop - Scroll position to set
-   * @returns {VirtualListComponent} Component instance for chaining
-   */
-  setScrollTop?: (scrollTop: number) => VirtualListComponent;
+  defaultPrevented?: boolean;
 }
 
 /**
@@ -224,125 +155,58 @@ export interface ListComponent {
   element: HTMLElement;
 
   /**
-   * Refreshes the list with the latest data
-   * @returns {Promise<VirtualListComponent>} Promise that resolves with component
+   * Refreshes the list display
+   * @returns {Promise<ListComponent>} Promise that resolves with component
    */
-  refresh: () => Promise<VirtualListComponent>;
+  refresh: () => Promise<ListComponent>;
 
   /**
-   * Loads more items
-   * @returns {Promise<{hasNext: boolean, items: any[]}>} Promise with load result
+   * Gets all items in the list
+   * @returns {any[]} All items
    */
-  loadMore: () => Promise<{ hasNext: boolean; items: any[] }>;
+  getAllItems: () => any[];
 
   /**
-   * Loads a specific page (only works with page-based pagination)
-   * @param {number} pageNumber - The page number to load (1-indexed)
-   * @param {Object} options - Load options
-   * @returns {Promise<{hasNext: boolean, items: any[]}>} Promise with load result
+   * Gets all visible items (same as getAllItems for rendered lists)
+   * @returns {any[]} Visible items
    */
-  loadPage: (
-    pageNumber: number,
-    options?: { preservePrevious?: boolean }
-  ) => Promise<{ hasNext: boolean; items: any[] }>;
-
-  /**
-   * Loads the previous page (only works with page-based pagination)
-   * @returns {Promise<{hasPrev: boolean, items: any[]}>} Promise with load result
-   */
-  loadPrevious: () => Promise<{ hasPrev: boolean; items: any[] }>;
-
-  /**
-   * Scrolls to the next page and loads it if necessary
-   * @returns {Promise<{hasNext: boolean, items: any[]}>} Promise with load result
-   */
-  scrollNext: () => Promise<{ hasNext: boolean; items: any[] }>;
-
-  /**
-   * Scrolls to the previous page and loads it if necessary
-   * @returns {Promise<{hasPrev: boolean, items: any[]}>} Promise with load result
-   */
-  scrollPrevious: () => Promise<{ hasPrev: boolean; items: any[] }>;
+  getVisibleItems: () => any[];
 
   /**
    * Scrolls to a specific item by ID
-   * @param {string} itemId - Item ID to scroll to
+   * @param {string | number} itemId - Item ID to scroll to
    * @param {string} position - Position ('start', 'center', 'end')
    * @param {boolean} animate - Whether to animate the scroll
-   * @returns {VirtualListComponent} Component instance for chaining
+   * @returns {ListComponent} Component instance for chaining
    */
   scrollToItem: (
-    itemId: string,
+    itemId: string | number,
     position?: "start" | "center" | "end",
     animate?: boolean
-  ) => VirtualListComponent;
+  ) => ListComponent;
 
   /**
    * Scroll to a specific index in the list
    * @param {number} index - Index to scroll to (0-based)
    * @param {string} position - Position ('start', 'center', 'end')
    * @param {boolean} animate - Whether to animate the scroll
-   * @returns {Promise<VirtualListComponent>} Promise that resolves when scroll is complete
+   * @returns {Promise<ListComponent>} Promise that resolves when scroll is complete
    */
   scrollToIndex: (
     index: number,
     position?: "start" | "center" | "end",
     animate?: boolean
-  ) => Promise<VirtualListComponent>;
+  ) => Promise<ListComponent>;
 
   /**
-   * Scroll to a specific page with animation support
-   * @param {number} pageNumber - Page number to scroll to (1-indexed)
-   * @param {string} position - Position ('start', 'center', 'end')
-   * @param {boolean} animate - Whether to animate the scroll
-   * @returns {Promise<VirtualListComponent>} Promise that resolves when scroll is complete
-   */
-  scrollTo: (
-    pageNumber: number,
-    position?: "start" | "center" | "end",
-    animate?: boolean
-  ) => Promise<VirtualListComponent>;
-
-  /**
-   * Scroll to a specific item by ID using backend lookup
-   * @param {string} itemId - Item ID to scroll to
-   * @param {string} position - Position ('start', 'center', 'end')
-   * @param {boolean} animate - Whether to animate the scroll
-   * @returns {Promise<VirtualListComponent>} Promise that resolves when scroll is complete
-   */
-  scrollToItemById: (
-    itemId: string,
-    position?: "start" | "center" | "end",
-    animate?: boolean
-  ) => Promise<VirtualListComponent>;
-
-  /**
-   * Gets all currently visible items
-   * @returns {any[]} Visible items
-   */
-  getVisibleItems: () => any[];
-
-  /**
-   * Gets all loaded items
-   * @returns {any[]} All loaded items
-   */
-  getAllItems: () => any[];
-
-  /**
-   * Gets the configured page size
-   * @returns {number} Page size
-   */
-  getPageSize: () => number;
-
-  /**
-   * Checks if the list is currently loading
-   * @returns {boolean} True if loading
+   * Checks if the list is currently loading (always false for rendered lists)
+   * @returns {boolean} Always false
    */
   isLoading: () => boolean;
 
   /**
-   * Checks if the list has more items to load
-   * @returns {boolean} True if has more items
+   * Checks if the list has more items to load (always false for rendered lists)
+   * @returns {boolean} Always false
    */
   hasNextPage: () => boolean;
 
@@ -360,24 +224,24 @@ export interface ListComponent {
 
   /**
    * Checks if an item is selected
-   * @param {string} itemId - Item ID to check
+   * @param {string | number} itemId - Item ID to check
    * @returns {boolean} True if item is selected
    */
-  isItemSelected: (itemId: string) => boolean;
+  isItemSelected: (itemId: string | number) => boolean;
 
   /**
    * Selects an item
-   * @param {string} itemId - Item ID to select
+   * @param {string | number} itemId - Item ID to select
    * @returns {ListComponent} Component instance for chaining
    */
-  selectItem: (itemId: string) => ListComponent;
+  selectItem: (itemId: string | number) => ListComponent;
 
   /**
    * Deselects an item
-   * @param {string} itemId - Item ID to deselect
+   * @param {string | number} itemId - Item ID to deselect
    * @returns {ListComponent} Component instance for chaining
    */
-  deselectItem: (itemId: string) => ListComponent;
+  deselectItem: (itemId: string | number) => ListComponent;
 
   /**
    * Clears all selections
@@ -387,10 +251,10 @@ export interface ListComponent {
 
   /**
    * Sets the selection to the specified item IDs
-   * @param {string[]} itemIds - Item IDs to select
+   * @param {(string | number)[]} itemIds - Item IDs to select
    * @returns {ListComponent} Component instance for chaining
    */
-  setSelection: (itemIds: string[]) => ListComponent;
+  setSelection: (itemIds: (string | number)[]) => ListComponent;
 
   /**
    * Adds an event listener to the list
@@ -429,6 +293,6 @@ export interface ListEvents {
   load: (event: LoadEvent) => void;
   scroll: (event: {
     originalEvent: Event;
-    component: VirtualListComponent;
+    component: ListComponent;
   }) => void;
 }

@@ -6,30 +6,41 @@ import { PREFIX } from "../../../core";
 
 /**
  * Adds selection management capabilities to a list component
- * Optimized implementation for better performance
+ * Simplified implementation for rendered lists
  *
  * @param config - Configuration options
  * @returns Function that enhances a component with selection management
  */
 export const withSelection = (config) => (component) => {
   if (!component.element || !config.trackSelection) {
-    return component;
+    return {
+      ...component,
+      // Return no-op methods when selection is disabled
+      getSelectedItems: () => [],
+      getSelectedItemIds: () => [],
+      isItemSelected: () => false,
+      selectItem: () => component,
+      deselectItem: () => component,
+      clearSelection: () => component,
+      setSelection: () => component,
+    };
   }
 
   // Track selected items
   const selectedItems = new Set();
 
-  // Initialize with pre-selected items
-  if (Array.isArray(config.items)) {
-    config.items.forEach((item) => {
-      if (item.selected) selectedItems.add(item.id);
-    });
+  // Initialize from initialSelection if provided
+  if (Array.isArray(config.initialSelection)) {
+    config.initialSelection.forEach((id) => selectedItems.add(String(id)));
   }
 
-  // Also initialize from initialSelection if provided
-  if (Array.isArray(config.initialSelection)) {
-    config.initialSelection.forEach((id) => {
-      selectedItems.add(id);
+  // Initialize from items marked as selected
+  if (Array.isArray(config.items)) {
+    config.items.forEach((item, index) => {
+      if (item?.selected) {
+        const itemId = item.id || String(index);
+        selectedItems.add(String(itemId));
+      }
     });
   }
 
@@ -44,104 +55,36 @@ export const withSelection = (config) => (component) => {
 
       if (isSelected && !hasClass(el as HTMLElement, LIST_CLASSES.SELECTED)) {
         addClass(el as HTMLElement, LIST_CLASSES.SELECTED);
-      } else if (
-        !isSelected &&
-        hasClass(el as HTMLElement, LIST_CLASSES.SELECTED)
-      ) {
+      } else if (!isSelected && hasClass(el as HTMLElement, LIST_CLASSES.SELECTED)) {
         removeClass(el as HTMLElement, LIST_CLASSES.SELECTED);
       }
     });
   };
 
   /**
-   * The render hook function that applies selection state to newly rendered items
-   */
-  const selectionRenderHook = (item, element) => {
-    if (selectedItems.has(item.id)) {
-      if (!hasClass(element, LIST_CLASSES.SELECTED)) {
-        addClass(element, LIST_CLASSES.SELECTED);
-      }
-    } else if (hasClass(element, LIST_CLASSES.SELECTED)) {
-      removeClass(element, LIST_CLASSES.SELECTED);
-    }
-  };
-
-  /**
-   * Set up the render hook with proper timing
-   */
-  const setupRenderHook = () => {
-    if (!component.list) {
-      // Retry until list manager is ready
-      setTimeout(setupRenderHook, 10);
-      return;
-    }
-
-    if (typeof component.list.setRenderHook === "function") {
-      component.list.setRenderHook(selectionRenderHook);
-      console.log("✅ Selection render hook installed");
-    } else {
-      console.warn("❌ setRenderHook not available on component.list");
-    }
-  };
-
-  // Set up render hook
-  setupRenderHook();
-
-  /**
-   * Listen for load events to reapply selection state after page navigation
-   */
-  if (component.on) {
-    component.on(LIST_EVENTS.LOAD, () => {
-      // Apply selection state after page loads
-      setTimeout(applySelectionState, 50);
-    });
-  }
-
-  /**
    * Handle item clicks for selection
    */
   const handleItemClick = (e) => {
-    console.log("🎯 HANDLE ITEM CLICK CALLED:", e.target);
-
-    if (!e.target.closest("[data-id]")) {
-      console.log("❌ No data-id element found");
-      return;
-    }
-
     const itemElement = e.target.closest("[data-id]");
+    if (!itemElement) return;
+
     const itemId = itemElement.getAttribute("data-id");
-
-    console.log("🎯 Found item element:", { itemId, element: itemElement });
-
-    if (!itemId) {
-      console.log("❌ No item ID found");
-      return;
-    }
+    if (!itemId) return;
 
     // Find the item data
-    const allItems = component.list?.getAllItems();
-    const visibleItems = component.list?.getVisibleItems();
-    console.log("🎯 All items:", allItems?.length);
-    console.log("🎯 Visible items:", visibleItems?.length);
-
-    // Try visible items first (what's actually displayed), then all items
-    let item = visibleItems?.find((i) => i.id === itemId);
+    const items = component.list?.getItems() || [];
+    let item = items.find((i) => String(i?.id) === itemId);
+    
+    // If no ID match, try by index
     if (!item) {
-      item = allItems?.find((i) => i.id === itemId);
+      const index = parseInt(itemId, 10);
+      if (!isNaN(index) && index >= 0 && index < items.length) {
+        item = items[index];
+      }
     }
 
-    console.log("🎯 Found item data:", item);
-    console.log(
-      "🎯 Found in:",
-      item
-        ? visibleItems?.find((i) => i.id === itemId)
-          ? "visible"
-          : "all"
-        : "neither"
-    );
-
     if (!item) {
-      console.log("❌ Item not found in list data:", itemId);
+      console.warn(`Item not found for ID: ${itemId}`);
       return;
     }
 
@@ -157,108 +100,69 @@ export const withSelection = (config) => (component) => {
       defaultPrevented: false,
     };
 
-    console.log("🎯 About to emit selection event:", selectionEvent);
-
     // Emit event before modifying selection
-    component.emit(LIST_EVENTS.SELECT, selectionEvent);
+    component.emit?.(LIST_EVENTS.SELECT, selectionEvent);
 
     // Exit if default was prevented
-    if (selectionEvent.defaultPrevented) {
-      console.log("❌ Selection event was prevented");
-      return;
-    }
-
-    console.log("🎯 Processing selection toggle:", {
-      multiSelect: config.multiSelect,
-      currentlySelected: selectedItems.has(itemId),
-    });
+    if (selectionEvent.defaultPrevented) return;
 
     // Toggle selection based on mode
     if (config.multiSelect) {
       if (selectedItems.has(itemId)) {
         selectedItems.delete(itemId);
-        removeClass(itemElement, LIST_CLASSES.SELECTED);
-        console.log("🎯 Deselected item:", itemId);
+        removeClass(itemElement as HTMLElement, LIST_CLASSES.SELECTED);
       } else {
         selectedItems.add(itemId);
-        addClass(itemElement, LIST_CLASSES.SELECTED);
-        console.log("🎯 Selected item:", itemId);
+        addClass(itemElement as HTMLElement, LIST_CLASSES.SELECTED);
       }
     } else {
-      // For single-select mode
-      const isCurrentlySelected = hasClass(itemElement, LIST_CLASSES.SELECTED);
+      // Single-select mode
+      const isCurrentlySelected = hasClass(itemElement as HTMLElement, LIST_CLASSES.SELECTED);
 
-      if (isCurrentlySelected) {
-        selectedItems.clear();
-        removeClass(itemElement, LIST_CLASSES.SELECTED);
-      } else {
-        // Clear previous selection from DOM first
-        const prevSelected = component.element.querySelectorAll(
-          `.${PREFIX}-${LIST_CLASSES.SELECTED}`
-        );
+      // Clear all previous selections
+      const prevSelected = component.element.querySelectorAll(`.${PREFIX}-${LIST_CLASSES.SELECTED}`);
+      prevSelected.forEach((el) => removeClass(el as HTMLElement, LIST_CLASSES.SELECTED));
+      selectedItems.clear();
 
-        prevSelected.forEach((el) => {
-          removeClass(el, LIST_CLASSES.SELECTED);
-        });
-
-        // Clear all selections and add new one
-        selectedItems.clear();
+      // Add new selection if not already selected
+      if (!isCurrentlySelected) {
         selectedItems.add(itemId);
-        addClass(itemElement, LIST_CLASSES.SELECTED);
+        addClass(itemElement as HTMLElement, LIST_CLASSES.SELECTED);
       }
     }
-
-    console.log("🎯 Final selection state:", {
-      selectedCount: selectedItems.size,
-      selectedIds: Array.from(selectedItems),
-    });
-  };
-
-  // Add event listener
-  component.element.addEventListener("click", handleItemClick);
-
-  /**
-   * Update visible elements based on selection state
-   */
-  const updateVisibleElements = () => {
-    const itemElements = component.element.querySelectorAll("[data-id]");
-    itemElements.forEach((el) => {
-      const itemId = el.getAttribute("data-id");
-      const isSelected = selectedItems.has(itemId);
-
-      if (isSelected && !hasClass(el, LIST_CLASSES.SELECTED)) {
-        addClass(el, LIST_CLASSES.SELECTED);
-      } else if (!isSelected && hasClass(el, LIST_CLASSES.SELECTED)) {
-        removeClass(el, LIST_CLASSES.SELECTED);
-      }
-    });
   };
 
   /**
    * Update item selection state
    */
   const updateItemState = (itemId, selected) => {
+    const stringId = String(itemId);
+    
     if (selected) {
-      selectedItems.add(itemId);
+      selectedItems.add(stringId);
     } else {
-      selectedItems.delete(itemId);
+      selectedItems.delete(stringId);
     }
 
     // Update DOM if element is visible
-    const itemElement = component.element.querySelector(
-      `[data-id="${itemId}"]`
-    );
+    const itemElement = component.element.querySelector(`[data-id="${stringId}"]`);
     if (itemElement) {
-      if (selected && !hasClass(itemElement, LIST_CLASSES.SELECTED)) {
-        addClass(itemElement, LIST_CLASSES.SELECTED);
-      } else if (!selected && hasClass(itemElement, LIST_CLASSES.SELECTED)) {
-        removeClass(itemElement, LIST_CLASSES.SELECTED);
+      if (selected && !hasClass(itemElement as HTMLElement, LIST_CLASSES.SELECTED)) {
+        addClass(itemElement as HTMLElement, LIST_CLASSES.SELECTED);
+      } else if (!selected && hasClass(itemElement as HTMLElement, LIST_CLASSES.SELECTED)) {
+        removeClass(itemElement as HTMLElement, LIST_CLASSES.SELECTED);
       }
     }
   };
 
+  // Add event listener
+  component.element.addEventListener("click", handleItemClick);
+
+  // Apply initial selection state after a brief delay to ensure DOM is ready
+  setTimeout(applySelectionState, 10);
+
   // Clean up on destruction
-  if (component.lifecycle && component.lifecycle.destroy) {
+  if (component.lifecycle?.destroy) {
     const originalDestroy = component.lifecycle.destroy;
     component.lifecycle.destroy = () => {
       component.element.removeEventListener("click", handleItemClick);
@@ -270,11 +174,14 @@ export const withSelection = (config) => (component) => {
   return {
     ...component,
     getSelectedItems: () => {
-      const allItems = component.list?.getAllItems() || [];
-      return allItems.filter((item) => selectedItems.has(item.id));
+      const items = component.list?.getItems() || [];
+      return items.filter((item, index) => {
+        const itemId = item?.id || String(index);
+        return selectedItems.has(String(itemId));
+      });
     },
     getSelectedItemIds: () => Array.from(selectedItems),
-    isItemSelected: (itemId) => selectedItems.has(itemId),
+    isItemSelected: (itemId) => selectedItems.has(String(itemId)),
     selectItem: (itemId) => {
       updateItemState(itemId, true);
       return component;
@@ -288,20 +195,16 @@ export const withSelection = (config) => (component) => {
         selectedItems.clear();
         component.element
           .querySelectorAll(`.${PREFIX}-${LIST_CLASSES.SELECTED}`)
-          .forEach((el) => removeClass(el, LIST_CLASSES.SELECTED));
+          .forEach((el) => removeClass(el as HTMLElement, LIST_CLASSES.SELECTED));
       }
       return component;
     },
     setSelection: (itemIds) => {
-      if (!itemIds?.length && selectedItems.size === 0) {
-        return component;
-      }
-
       selectedItems.clear();
       if (Array.isArray(itemIds)) {
-        itemIds.forEach((itemId) => selectedItems.add(itemId));
+        itemIds.forEach((itemId) => selectedItems.add(String(itemId)));
       }
-      updateVisibleElements();
+      applySelectionState();
       return component;
     },
   };

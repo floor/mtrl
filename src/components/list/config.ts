@@ -4,26 +4,15 @@ import {
   createComponentConfig,
   createElementConfig as coreCreateElementConfig,
 } from "../../core/config/component";
-import { LIST_DEFAULTS, LIST_CLASSES } from "./constants";
+import { LIST_CLASSES } from "./constants";
 import { ListConfig } from "./types";
 
 /**
  * Default configuration for the List component
  */
-export const defaultConfig = {
-  // Collection settings (for API-connected lists)
-  collection: LIST_DEFAULTS.COLLECTION,
-  transform: (item) => item,
-  baseUrl: LIST_DEFAULTS.BASE_URL,
-
-  // Static data (for in-memory lists)
+export const defaultConfig: Partial<ListConfig> = {
+  // Static data
   items: [],
-
-  // Rendering settings
-  // itemHeight: 48, // disabled to force itemHeightCalculation
-  pageSize: LIST_DEFAULTS.PAGE_SIZE,
-  renderBufferSize: LIST_DEFAULTS.RENDER_BUFFER_SIZE,
-  renderItem: null,
 
   // Behavior settings
   trackSelection: true,
@@ -38,19 +27,17 @@ export const defaultConfig = {
  */
 export const createBaseConfig = (config: Partial<ListConfig> = {}) => {
   // Validate required props
-  if (!config.renderItem && !Array.isArray(config.items)) {
-    throw new Error(
-      "List requires either static items or a renderItem function"
-    );
+  if (!Array.isArray(config.items) && !config.renderItem) {
+    throw new Error("List requires either items array or renderItem function");
   }
 
-  // If static items are provided but no renderItem, create a default renderer
-  if (Array.isArray(config.items) && !config.renderItem) {
+  // If items are provided but no renderItem, create a default renderer
+  if (Array.isArray(config.items) && config.items.length > 0 && !config.renderItem) {
     config.renderItem = (item) => {
       const element = document.createElement("div");
       element.className = "mtrl-list-item";
       element.textContent =
-        item.text || item.title || item.headline || item.name || item.id;
+        item.text || item.title || item.headline || item.name || item.id || String(item);
       return element;
     };
   }
@@ -78,7 +65,7 @@ export const getElementConfig = (config) => {
   // Create element config
   return coreCreateElementConfig(config, {
     tag: "div",
-    attributes,
+    attrs: attributes,
     className: [LIST_CLASSES.CONTAINER, config.class],
     forwardEvents: {
       scroll: true,
@@ -89,32 +76,29 @@ export const getElementConfig = (config) => {
 
 /**
  * Creates API configuration for the List component
- * @param {Object} component - Component with list manager
+ * @param {Object} component - Component with list features
  * @param {Object} config - Base configuration
  * @returns {Object} API configuration object
  */
 export const getApiConfig = (component, config) => ({
   list: {
     refresh: component.list?.refresh,
-    loadNext: component.list?.loadNext,
-    loadPage: component.list?.loadPage,
-    loadPrevious: component.list?.loadPrevious,
-    scrollNext: component.list?.scrollNext,
-    scrollPrevious: component.list?.scrollPrevious,
+    getItems: component.list?.getItems,
+    getAllItems: component.list?.getAllItems,
+    getVisibleItems: component.list?.getVisibleItems,
     scrollToItem: component.list?.scrollToItem,
     scrollToIndex: component.list?.scrollToIndex,
-    scrollTo: component.list?.scrollTo,
-    scrollToItemById: component.list?.scrollToItemById,
-    getVisibleItems: component.list?.getVisibleItems,
-    getAllItems: component.list?.getAllItems,
-    isLoading: component.list?.isLoading,
-    hasNextPage: component.list?.hasNextPage,
-    onCollectionChange: component.list?.onCollectionChange,
-    onPageChange: component.list?.onPageChange,
-    getCurrentPage: component.list?.getCurrentPage,
-    getPageSize: component.list?.getPageSize,
-    getCollection: component.list?.getCollection,
-    isApiMode: component.list?.isApiMode,
+    isLoading: () => false, // Simple lists are never loading
+    hasNextPage: () => false, // Simple lists don't paginate
+  },
+  selection: {
+    getSelectedItems: component.getSelectedItems,
+    getSelectedItemIds: component.getSelectedItemIds,
+    isItemSelected: component.isItemSelected,
+    selectItem: component.selectItem,
+    deselectItem: component.deselectItem,
+    clearSelection: component.clearSelection,
+    setSelection: component.setSelection,
   },
   events: {
     on: component.on,
