@@ -6,7 +6,7 @@ mtrl is a lightweight, composable TypeScript/JavaScript component library inspir
 
 ## Understanding mtrl
 
-mtrl (pronounced "material") takes its inspiration from Material Design while providing a flexible, framework-agnostic implementation. The library's name is reflected in its component prefix `mtrl-`, which you'll see used consistently throughout the codebase.
+mtrl (pronounced "material") takes its inspiration from Material Design while providing a flexible, framework-agnostic implementation.
 
 ### Design Philosophy
 
@@ -23,15 +23,15 @@ mtrl is built on several core principles:
 mtrl provides a comprehensive set of components, each following Material Design principles:
 
 ```typescript
-import { createButton, createTextField } from 'mtrl'
+import { createButton, createTextField } from "mtrl";
 
 // Create a material button with ripple effect
 const button = createButton({
-  text: 'Submit',
-  variant: 'filled',
+  text: "Submit",
+  variant: "filled",
   ripple: true,
-  class: 'custom-button'
-})
+  class: "custom-button",
+});
 
 // className will be: mtrl-button mtrl-button--filled custom-button
 ```
@@ -68,12 +68,12 @@ Let's look at how mtrl components are constructed:
 ```typescript
 // Example of a button component creation
 const button = createButton({
-  prefix: 'mtrl',           // The library's prefix
-  componentName: 'button',  // Component identifier
-  variant: 'filled',        // Visual variant
-  text: 'Click me',         // Button text
-  ripple: true             // Enable ripple effect
-})
+  prefix: "mtrl", // The library's prefix
+  componentName: "button", // Component identifier
+  variant: "filled", // Visual variant
+  text: "Click me", // Button text
+  ripple: true, // Enable ripple effect
+});
 ```
 
 ### The Composition System
@@ -84,19 +84,20 @@ mtrl uses a pipe-based composition system with full type safety for building com
 // Internal component creation
 const createButton = (config: ButtonConfig): ButtonComponent => {
   return pipe(
-    createBase,                // Base component structure
-    withEvents(),             // Event handling capability
-    withElement({             // DOM element creation
-      tag: 'button',
-      componentName: 'button',
-      prefix: 'mtrl'
+    createBase, // Base component structure
+    withEvents(), // Event handling capability
+    withElement({
+      // DOM element creation
+      tag: "button",
+      componentName: "button",
+      prefix: "mtrl",
     }),
-    withVariant(config),      // Visual variant support
-    withText(config),         // Text content management
-    withIcon(config),         // Icon support
-    withRipple(config)        // Ripple animation
-  )(config)
-}
+    withVariant(config), // Visual variant support
+    withText(config), // Text content management
+    withIcon(config), // Icon support
+    withRipple(config) // Ripple animation
+  )(config);
+};
 ```
 
 ### TypeScript Integration
@@ -105,14 +106,13 @@ mtrl provides comprehensive TypeScript definitions:
 
 ```typescript
 // Component interfaces for better developer experience
-export interface ButtonComponent extends 
-  BaseComponent, 
-  ElementComponent,
-  TextComponent,
-  IconComponent,
-  DisabledComponent,
-  LifecycleComponent {
-  
+export interface ButtonComponent
+  extends BaseComponent,
+    ElementComponent,
+    TextComponent,
+    IconComponent,
+    DisabledComponent,
+    LifecycleComponent {
   // Button-specific properties and methods
   getValue: () => string;
   setValue: (value: string) => ButtonComponent;
@@ -133,9 +133,10 @@ mtrl follows a consistent class naming convention:
 
 ```css
 .mtrl-component                /* Base component class */
+/* Base component class */
 .mtrl-component--variant      /* Variant modifier */
 .mtrl-component--state        /* State modifier (disabled, focused) */
-.mtrl-component-element       /* Child element */
+.mtrl-component-element; /* Child element */
 ```
 
 ## State Management
@@ -146,14 +147,14 @@ mtrl provides several approaches to state management:
 
 ```typescript
 const textField = createTextField({
-  label: 'Username'
-})
+  label: "Username",
+});
 
-textField.on('input', ({ value }) => {
-  console.log('Current value:', value)
-})
+textField.on("input", ({ value }) => {
+  console.log("Current value:", value);
+});
 
-textField.setValue('New value')
+textField.setValue("New value");
 ```
 
 ### Collection Management
@@ -164,13 +165,13 @@ For managing lists and datasets:
 const collection = new Collection<User>({
   transform: (item) => ({
     ...item,
-    displayName: `${item.firstName} ${item.lastName}`
-  })
-})
+    displayName: `${item.firstName} ${item.lastName}`,
+  }),
+});
 
 collection.subscribe(({ event, data }) => {
-  console.log(`Collection ${event}:`, data)
-})
+  console.log(`Collection ${event}:`, data);
+});
 ```
 
 ## Data Integration
@@ -180,19 +181,19 @@ mtrl provides adapters for different data sources:
 ```typescript
 // MongoDB adapter
 const mongoAdapter = createMongoAdapter({
-  uri: 'mongodb://localhost:27017',
-  dbName: 'mtrl-app',
-  collection: 'users'
-})
+  uri: "mongodb://localhost:27017",
+  dbName: "mtrl-app",
+  collection: "users",
+});
 
 // Route adapter for REST APIs
 const routeAdapter = createRouteAdapter({
-  base: '/api',
+  base: "/api",
   endpoints: {
-    list: '/users',
-    create: '/users'
-  }
-})
+    list: "/users",
+    create: "/users",
+  },
+});
 ```
 
 ## Customization
@@ -216,9 +217,9 @@ const createCustomCard = (config: CustomCardConfig): CustomCardComponent => {
     createBase,
     withEvents(),
     withElement({
-      tag: 'div',
-      componentName: 'card',
-      prefix: 'mtrl'
+      tag: "div",
+      componentName: "card",
+      prefix: "mtrl",
     }),
     // Add custom features
     (component) => ({
@@ -226,10 +227,10 @@ const createCustomCard = (config: CustomCardConfig): CustomCardComponent => {
       setContent(content: string) {
         component.element.innerHTML = content;
         return this;
-      }
+      },
     })
   )(config);
-}
+};
 ```
 
 ### Styling
@@ -241,7 +242,7 @@ mtrl components can be styled through CSS custom properties:
   --mtrl-primary: #6200ee;
   --mtrl-surface: #ffffff;
   --mtrl-on-surface: #000000;
-  --mtrl-elevation-1: 0 2px 4px rgba(0,0,0,0.2);
+  --mtrl-elevation-1: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 ```
 

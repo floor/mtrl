@@ -126,7 +126,7 @@ The mtrl-app showcase application is the best way to develop and test your compo
 4. Implement different variants and states for testing.
 5. Run the showcase server with `bun run dev` in the mtrl-app directory.
 
-This separation of the library code (mtrl) and the showcase app (mtrl-app) keeps the core library clean while providing a rich development environment.
+This separation of the library code (mtrl) and the showcase app (mtrl-app) keeps the main library clean while providing a rich development environment.
 
 ### TypeScript Standards
 

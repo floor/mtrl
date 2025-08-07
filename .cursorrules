@@ -1,35 +1,108 @@
-# Project-specific rules for Cursor AI
+# mtrl Package Development Rules
 
-## Development Rules
+## Package Overview
+mtrl is a lightweight TypeScript component library implementing Material Design 3 with pure functional composition. It delivers the complete MD3 specification through carefully crafted, composable building blocks with zero dependencies, embodying the "less is more" philosophy without sacrificing functionality or design fidelity.
 
-- Folow the less is more phylosohy
-- As the code is going to be bundled, we should keep the modules small
-- Do not create HTML test files
-- Do not create summaries .md file of codding session
-- Do not start servers using node or bun
-- Do not run any commands that would start a development server
-- Build using bun run build:app
-- The mtrl-app folder in this workspace contains the showcase of all components in /client/content/components
-- When fixing bugs, don't use workarounds or hacks, but find the root cause and fix the problem elegantly and efficiently with as few lines of code as possible.
-- Do not use React
+## Environment & Architecture
+- Part of workspace alongside mtrl-addons and mtrl-app packages
+- mtrl-app serves as the information hub with documentation and showcases
+- Core foundation for mtrl-addons extension library
+- Zero external dependencies - pure TypeScript/JavaScript library
 
-## Code Generation Rules
+## Development Philosophy
+- Follow "less is more" philosophy - minimalist but complete
+- Optimize for size, memory usage, and speed
+- Keep modules small and reusable for bundling
+- Find root causes and fix problems elegantly with minimal code
+- Avoid over-engineering and workarounds
+- Meticulously documented and performance-focused
 
-- Do not create markdon doc for enhancement ot optimisation
-- Always follow the mtrl component structure conventions
-- Use TypeScript for all new components
-- Follow BEM naming convention for CSS classes (mtrl-component\_\_element--modifier)
-- Use the pipe pattern for component composition
-- Add proper TypeDoc comments for all public APIs
+## Pre-Development Checklist
+1. Check if functionality already exists in core (mtrl/src/core)
+2. Check mtrl styles system (mtrl/src/styles) before creating new styles
+3. Create tests first (mtrl/test/) - test-driven development
+4. Use mtrl-app/docs for all documentation (no .md files in this package)
+
+## Code Standards
+### TypeScript & Structure
+- Use TypeScript for all components and core modules
+- Follow established component structure conventions (config, types, constants, features)
+- Use pipe pattern for core and component composition
+- First line of each file: `// src/components/...` or `// src/core/...`
+- Add comprehensive TypeDoc comments for all public APIs
+- Maintain zero external dependencies policy
+
+### CSS & Styling
+- No inline CSS - use external SCSS files in src/styles/
+- Follow BEM naming: mtrl-component__element--modifier
+- Implement complete Material Design 3 specification
+- Use CSS custom properties for theming
+
+### File Management
+- Prefer editing existing files over creating new ones
+- Avoid hyphens in filenames if possible
+- Prefer short filenames if clear enough
+- No HTML test files or standalone .js/.html files
+- No summary .md files for coding sessions
+
+### Component Development
+- Follow established component patterns (config, types, api, features)
+- Always use functional composition over class inheritance
+- Implement proper lifecycle management
+- Ensure accessibility compliance - this is important!
+- Focus on the specific issue when fixing bugs - avoid enhancements during fixes
+- Provide clean, consistent APIs for component manipulation
+
+### Core Development
+- Build reusable utilities in src/core/ (compose, dom, state, utils)
+- Create composable features that can be mixed and matched
+- Ensure backward compatibility when possible
+- Design for extensibility by mtrl-addons
 
 ## Testing Rules
-
 - Use Bun test runner for all tests
 - Mock components to avoid circular dependencies
 - Always use JSDOM for DOM testing
+- Comprehensive but lightweight tests
+- Follow test-first development approach
+- Test all public APIs and component interactions
 
-## General Rules
+## Showcase & Documentation
+- Create showcases in mtrl-app/client/content only and follow the hierarchy
+- Always use mtrl components via layout system (mtrl-app/docs/layout/usages.md)
+- Prefer array-based layout schema
+- Format schema following the formatting convention (mtrl-app/docs/core/layout/array-schema.md)
+- Avoid manual DOM element creation in showcases
+- Never inline CSS in showcases
+- Focus on demonstrating component capabilities and Material Design compliance
 
-- Prefer editing existing files over creating new ones
-- Never create documentation files unless explicitly requested
-- Follow conventional commit format for any commit messages
+## Build & Deployment
+- Build using `bun run build:app`
+- Do not start development servers (node/bun)
+- Follow conventional commit format
+- Use `bun run build` for package builds
+- Ensure compatibility with both ES modules and CommonJS
+
+## Performance & Optimization
+- When enhancing/optimizing/refactoring: focus on size, memory usage, and speed
+- Minimize bundle size impact - every byte counts
+- Avoid unnecessary re-renders or DOM manipulations
+- Use efficient algorithms and data structures
+- Design for tree-shaking compatibility
+
+## Material Design Compliance
+- Implement complete MD3 specification accurately
+- Follow Material Design accessibility guidelines
+- Ensure proper color contrast and touch targets
+- Support keyboard navigation and screen readers
+- Maintain design token consistency
+
+## Prohibited Actions
+- Do not use React (pure TypeScript/JavaScript library)
+- Do not add external dependencies
+- Do not create markdown documentation for enhancements
+- Do not run server commands
+- Do not create workarounds or hacks
+- Do not enhance during bug fixes - stay focused on the issue
+- Do not compromise Material Design specifications
+- Do not harcode prefix in ts or scss files
