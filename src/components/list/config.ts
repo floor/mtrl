@@ -32,12 +32,21 @@ export const createBaseConfig = (config: Partial<ListConfig> = {}) => {
   }
 
   // If items are provided but no renderItem, create a default renderer
-  if (Array.isArray(config.items) && config.items.length > 0 && !config.renderItem) {
+  if (
+    Array.isArray(config.items) &&
+    config.items.length > 0 &&
+    !config.renderItem
+  ) {
     config.renderItem = (item) => {
       const element = document.createElement("div");
       element.className = "mtrl-list-item";
       element.textContent =
-        item.text || item.title || item.headline || item.name || item.id || String(item);
+        item.text ||
+        item.title ||
+        item.headline ||
+        item.name ||
+        item.id ||
+        String(item);
       return element;
     };
   }
@@ -65,7 +74,7 @@ export const getElementConfig = (config) => {
   // Create element config
   return coreCreateElementConfig(config, {
     tag: "div",
-    attrs: attributes,
+    attributes: attributes,
     className: [LIST_CLASSES.CONTAINER, config.class],
     forwardEvents: {
       scroll: true,

@@ -4,9 +4,9 @@
  * @description Core composition utilities for creating and combining components
  */
 
-export { pipe, compose, transform } from './pipe';
-export { createComponent } from './base';
-export { createBase, withElement } from './component';
+export { pipe, compose, transform } from "./pipe";
+export { createComponent } from "./base";
+export { createBase, withElement } from "./component";
 export {
   withEvents,
   withIcon,
@@ -25,17 +25,17 @@ export {
   withTrack,
   withEnhancedEvents,
   withThrottle,
-  withDebounce
-} from './features';
+  withDebounce,
+} from "./features";
 
 // Component feature interfaces
-export type { Component } from './base';
-export type { 
-  BaseComponent, 
-  ElementComponent, 
+export type { Component } from "./base";
+export type {
+  BaseComponent,
+  ElementComponent,
   TouchState,
-  WithElementOptions
-} from './component';
+  WithElementOptions,
+} from "./component";
 
 export type {
   EventComponent,
@@ -57,16 +57,11 @@ export type {
   ThrottleConfig,
   DebounceComponent,
   DebounceConfig,
-  GesturesComponent,
-  GesturesFeatureConfig
-} from './features';
+} from "./features";
 
 // Type guards export
-export { 
-  hasLifecycle, 
-  hasEmit 
-} from './utils/type-guards';
-export type { 
-  ComponentWithLifecycle, 
-  ComponentWithEmit 
-} from './utils/type-guards';
+export { hasLifecycle, hasEmit } from "./utils/type-guards";
+export type {
+  ComponentWithLifecycle,
+  ComponentWithEmit,
+} from "./utils/type-guards";
