@@ -18,6 +18,8 @@ import {
   debounce,
   once,
   PREFIX,
+  createComponentConfig,
+  createElementConfig,
   setComponentDefaults,
   getComponentDefaults,
   setGlobalDefaults,
@@ -34,6 +36,8 @@ export {
   debounce,
   once,
   PREFIX,
+  createComponentConfig,
+  createElementConfig,
   // Global configuration functions
   setComponentDefaults,
   getComponentDefaults,

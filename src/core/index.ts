@@ -23,6 +23,8 @@ export * from "./dom";
 export { createEmitter } from "./state/emitter";
 export type { Emitter, EventCallback } from "./state/emitter";
 
+export { createComponentConfig, createElementConfig } from "./config/component";
+
 export { createStore, loggingMiddleware, deriveFiltered } from "./state/store";
 export type {
   Store,
@@ -39,9 +41,11 @@ export { createDisabled } from "./state/disabled";
 export type { DisabledState } from "./state/disabled";
 
 // Renamed to avoid conflict with DOM's createEventManager
-export { createEventManager as createStateEventManager } from "./state/events";
-export type { EventManagerState } from "./state/events";
+export { createEventManager as createStateEventManager } from './state/events';
+export type { EventManagerState } from './state/events';
 
+// Canvas utilities
+export * from "./canvas";
 
 // Canvas utilities
 export * from "./canvas";
