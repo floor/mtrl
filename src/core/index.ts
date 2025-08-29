@@ -23,8 +23,16 @@ export * from './dom';
 export { createEmitter } from './state/emitter';
 export type { Emitter, EventCallback } from './state/emitter';
 
-export { createStore, loggingMiddleware, deriveFiltered } from './state/store';
-export type { Store, StoreOptions, Selector, Computation, Updater } from './state/store';
+export { createComponentConfig, createElementConfig } from "./config/component";
+
+export { createStore, loggingMiddleware, deriveFiltered } from "./state/store";
+export type {
+  Store,
+  StoreOptions,
+  Selector,
+  Computation,
+  Updater,
+} from "./state/store";
 
 export { createLifecycle } from './state/lifecycle';
 export type { LifecycleManager, LifecycleManagers } from './state/lifecycle';
@@ -36,11 +44,8 @@ export type { DisabledState } from './state/disabled';
 export { createEventManager as createStateEventManager } from './state/events';
 export type { EventManagerState } from './state/events';
 
-// 4. Layout system
-export * from './layout';
-
-// 5. Collection
-export * from './collection';
+// Canvas utilities
+export * from "./canvas";
 
 // 6. Canvas utilities
 export * from './canvas';
