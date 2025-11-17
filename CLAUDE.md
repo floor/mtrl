@@ -59,20 +59,38 @@ mtrl/
 │   │   ├── textfield/      # Text input components
 │   │   ├── list/           # List components
 │   │   ├── dialog/         # Dialog components
-│   │   └── ...             # Other MD3 components
+│   │   ├── tabs/           # Tabs components
+│   │   ├── menu/           # Menu components
+│   │   ├── snackbar/       # Snackbar components
+│   │   ├── fab/            # Floating action button
+│   │   ├── checkbox/       # Checkbox components
+│   │   ├── switch/         # Switch components
+│   │   ├── slider/         # Slider components
+│   │   └── ...             # 30+ MD3 components total
 │   ├── core/               # Core utilities and systems
 │   │   ├── compose/        # Functional composition utilities
 │   │   ├── dom/            # DOM manipulation utilities
 │   │   ├── state/          # State management utilities
-│   │   └── utils/          # General utilities
+│   │   ├── utils/          # General utilities
+│   │   ├── canvas/         # Canvas drawing and animation utilities
+│   │   └── config/         # Component and global configuration
 │   ├── styles/             # SCSS styling system
 │   │   ├── components/     # Component-specific styles
 │   │   ├── themes/         # Material Design 3 themes
-│   │   └── abstract/       # Mixins and variables
+│   │   ├── abstract/       # Mixins and variables
+│   │   ├── base/           # Base styles and resets
+│   │   ├── utilities/      # Utility classes
+│   │   └── main.scss       # Main SCSS entry point
 │   └── constants.ts        # Package constants
 ├── test/                   # Bun test suite
 │   ├── components/         # Component tests
-│   └── core/               # Core utility tests
+│   ├── core/               # Core utility tests
+│   ├── benchmarks/         # Performance benchmarks
+│   ├── performance/        # Performance tests
+│   ├── svg/                # SVG-related tests
+│   ├── types/              # TypeScript type tests
+│   ├── utils/              # Test utilities and helpers
+│   └── setup.ts            # Test environment setup
 ├── dist/                   # Built package (gitignored)
 └── package.json
 ```
@@ -803,6 +821,8 @@ const createStatefulComponent = (config: Config): HTMLElement => {
 - `src/core/dom/` - DOM manipulation helpers
 - `src/core/state/` - State management utilities
 - `src/core/utils/` - General utility functions
+- `src/core/canvas/` - Canvas drawing and animation utilities
+- `src/core/config/` - Component and global configuration system
 
 ### Component System
 - `src/components/` - All Material Design 3 components
@@ -812,12 +832,20 @@ const createStatefulComponent = (config: Config): HTMLElement => {
 ### Styling System
 - `src/styles/components/` - Component styles
 - `src/styles/themes/` - Material Design 3 themes
-- `src/styles/abstract/` - Mixins and variables
+- `src/styles/abstract/` - SCSS mixins and variables
+- `src/styles/base/` - Base styles and resets
+- `src/styles/utilities/` - Utility classes
+- `src/styles/main.scss` - Main SCSS entry point
 
 ### Testing
+- `test/setup.ts` - Test environment setup
 - `test/components/` - Component tests
 - `test/core/` - Core utility tests
-- `test/mocks/` - Test mocks and fixtures
+- `test/benchmarks/` - Performance benchmarks
+- `test/performance/` - Performance tests
+- `test/svg/` - SVG-related tests
+- `test/types/` - TypeScript type tests
+- `test/utils/` - Test utilities and helpers
 
 ## Prohibited Actions
 
