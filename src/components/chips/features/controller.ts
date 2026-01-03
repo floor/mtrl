@@ -42,12 +42,12 @@ export const withController = (config: ChipsConfig) => (component) => {
     // Always ensure the chip's class is set correctly
     if (selectedChip.isSelected()) {
       selectedChip.element.classList.add(
-        `${component.getClass("chip")}--selected`
+        `${component.getClass("chip")}--selected`,
       );
       selectedChip.element.setAttribute("aria-selected", "true");
     } else {
       selectedChip.element.classList.remove(
-        `${component.getClass("chip")}--selected`
+        `${component.getClass("chip")}--selected`,
       );
       selectedChip.element.setAttribute("aria-selected", "false");
     }
@@ -58,7 +58,7 @@ export const withController = (config: ChipsConfig) => (component) => {
         if (chip !== selectedChip && chip.isSelected()) {
           chip.setSelected(false);
           chip.element.classList.remove(
-            `${component.getClass("chip")}--selected`
+            `${component.getClass("chip")}--selected`,
           );
           chip.element.setAttribute("aria-selected", "false");
         }
@@ -69,7 +69,7 @@ export const withController = (config: ChipsConfig) => (component) => {
       if (!selectedChip.isSelected() && getSelectedChips().length === 0) {
         selectedChip.setSelected(true);
         selectedChip.element.classList.add(
-          `${component.getClass("chip")}--selected`
+          `${component.getClass("chip")}--selected`,
         );
         selectedChip.element.setAttribute("aria-selected", "true");
       }
@@ -80,7 +80,7 @@ export const withController = (config: ChipsConfig) => (component) => {
 
     // Get all currently selected chips and their values
     const selectedChips = component.chipInstances.filter((chip) =>
-      chip.isSelected()
+      chip.isSelected(),
     );
     const selectedValues = selectedChips.map((chip) => chip.getValue());
     const changedValue = selectedChip ? selectedChip.getValue() : null;
@@ -129,12 +129,12 @@ export const withController = (config: ChipsConfig) => (component) => {
           // Ensure selection state is reflected in the DOM
           if (chip.isSelected()) {
             chip.element.classList.add(
-              `${component.getClass("chip")}--selected`
+              `${component.getClass("chip")}--selected`,
             );
             chip.element.setAttribute("aria-selected", "true");
           } else {
             chip.element.classList.remove(
-              `${component.getClass("chip")}--selected`
+              `${component.getClass("chip")}--selected`,
             );
             chip.element.setAttribute("aria-selected", "false");
           }
@@ -169,7 +169,7 @@ export const withController = (config: ChipsConfig) => (component) => {
         ) {
           newIndex = Math.min(
             component.chipInstances.length - 1,
-            focusedChipIndex + 1
+            focusedChipIndex + 1,
           );
         }
       }
@@ -278,12 +278,12 @@ export const withController = (config: ChipsConfig) => (component) => {
         // Explicitly ensure selected state reflects in the DOM
         if (chipInstance.isSelected()) {
           chipInstance.element.classList.add(
-            `${component.getClass("chip")}--selected`
+            `${component.getClass("chip")}--selected`,
           );
           chipInstance.element.setAttribute("aria-selected", "true");
         } else {
           chipInstance.element.classList.remove(
-            `${component.getClass("chip")}--selected`
+            `${component.getClass("chip")}--selected`,
           );
           chipInstance.element.setAttribute("aria-selected", "false");
         }
@@ -345,7 +345,7 @@ export const withController = (config: ChipsConfig) => (component) => {
    */
   const getSelectedChips = () => {
     return component.chipInstances.filter((chip: ChipComponent) =>
-      chip.isSelected()
+      chip.isSelected(),
     );
   };
 
@@ -365,7 +365,7 @@ export const withController = (config: ChipsConfig) => (component) => {
   const selectByValue = (
     values,
     triggerEvent = true,
-    exclusive = !config.multiSelect
+    exclusive = !config.multiSelect,
   ) => {
     const valueArray = Array.isArray(values) ? values : [values];
     let selectionChanged = false;
@@ -373,11 +373,12 @@ export const withController = (config: ChipsConfig) => (component) => {
     if (exclusive) {
       // First handle deselection if exclusive mode
       component.chipInstances.forEach((chip: ChipComponent) => {
-        const shouldSelect = valueArray.includes(chip.getValue());
+        const chipValue = chip.getValue();
+        const shouldSelect = valueArray.includes(chipValue);
         if (!shouldSelect && chip.isSelected()) {
           chip.setSelected(false);
           chip.element.classList.remove(
-            `${component.getClass("chip")}--selected`
+            `${component.getClass("chip")}--selected`,
           );
           chip.element.setAttribute("aria-selected", "false");
           selectionChanged = true;
@@ -387,7 +388,8 @@ export const withController = (config: ChipsConfig) => (component) => {
 
     // Then handle selection
     component.chipInstances.forEach((chip: ChipComponent) => {
-      const shouldSelect = valueArray.includes(chip.getValue());
+      const chipValue = chip.getValue();
+      const shouldSelect = valueArray.includes(chipValue);
       if (shouldSelect && !chip.isSelected()) {
         chip.setSelected(true);
         chip.element.classList.add(`${component.getClass("chip")}--selected`);

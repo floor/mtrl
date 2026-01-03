@@ -110,7 +110,7 @@ export { default as createButton } from "./button";
 export { default as createCard } from "./card";
 export { default as createCarousel } from "./carousel";
 export { default as createCheckbox } from "./checkbox";
-// export { default as createChip, default as createChips } from './chips';
+export { createChip, createChips } from "./chips";
 export { default as createDatePicker } from "./datepicker";
 export { default as createDialog } from "./dialog";
 export { default as createFab } from "./fab";

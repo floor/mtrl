@@ -48,7 +48,7 @@ const createChips = (config: ChipsConfig = {}): ChipsComponent => {
 
       // Add state management and behavior
       withController(baseConfig),
-      withLifecycle()
+      withLifecycle(),
     )(baseConfig);
 
     // Generate the API configuration based on the enhanced component
@@ -63,6 +63,14 @@ const createChips = (config: ChipsConfig = {}): ChipsComponent => {
         if (typeof handler === "function") {
           chips.on(event, handler);
         }
+      });
+    }
+
+    // Initialize chips from config after component is fully composed
+    // This ensures chips.addChip is available from withController
+    if (Array.isArray(baseConfig.chips) && baseConfig.chips.length > 0) {
+      baseConfig.chips.forEach((chipConfig) => {
+        chips.addChip(chipConfig);
       });
     }
 
