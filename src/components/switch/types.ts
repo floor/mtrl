@@ -72,11 +72,17 @@ export interface SwitchComponent {
   /** The input element */
   input: HTMLInputElement;
 
-  /** Gets the switch's value */
-  getValue: () => string;
+  /** Gets the switch's checked state (boolean) for form compatibility */
+  getValue: () => boolean;
 
-  /** Sets the switch's value */
-  setValue: (value: string) => SwitchComponent;
+  /** Sets the switch's checked state */
+  setValue: (value: boolean | string) => SwitchComponent;
+
+  /** Gets the HTML value attribute (rarely needed) */
+  getValueAttribute: () => string;
+
+  /** Sets the HTML value attribute (rarely needed) */
+  setValueAttribute: (value: string) => SwitchComponent;
 
   /** Checks/activates the switch */
   check: () => SwitchComponent;

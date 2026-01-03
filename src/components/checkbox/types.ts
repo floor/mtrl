@@ -124,17 +124,30 @@ export interface CheckboxComponent {
   input: HTMLInputElement;
 
   /**
-   * Gets the checkbox's current value attribute
-   * @returns Current value of the checkbox
+   * Gets the checkbox's checked state (boolean) for form compatibility
+   * @returns Whether the checkbox is checked
    */
-  getValue: () => string;
+  getValue: () => boolean;
 
   /**
-   * Sets the checkbox's value attribute
-   * @param value - New value to set
+   * Sets the checkbox's checked state
+   * @param value - Boolean or string ("true"/"false"/"1"/"0") value
    * @returns Checkbox component for method chaining
    */
-  setValue: (value: string) => CheckboxComponent;
+  setValue: (value: boolean | string) => CheckboxComponent;
+
+  /**
+   * Gets the HTML value attribute (rarely needed)
+   * @returns The input's value attribute
+   */
+  getValueAttribute: () => string;
+
+  /**
+   * Sets the HTML value attribute (rarely needed)
+   * @param value - New value attribute to set
+   * @returns Checkbox component for method chaining
+   */
+  setValueAttribute: (value: string) => CheckboxComponent;
 
   /**
    * Checks the checkbox (sets checked=true)

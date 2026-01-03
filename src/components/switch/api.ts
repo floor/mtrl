@@ -13,10 +13,41 @@ export const withAPI =
     element: component.element,
     input: component.input as HTMLInputElement,
 
-    // Value management
-    getValue: component.getValue || (() => ""),
-    setValue(value: string): SwitchComponent {
-      component.setValue?.(value);
+    // Value management - returns boolean checked state for form compatibility
+    getValue(): boolean {
+      return checkable.isChecked();
+    },
+
+    setValue(value: boolean | string): SwitchComponent {
+      // Handle boolean values
+      if (typeof value === "boolean") {
+        if (value) {
+          checkable.check();
+        } else {
+          checkable.uncheck();
+        }
+      }
+      // Handle string values ("true", "false", "1", "0")
+      else if (typeof value === "string") {
+        const shouldCheck = value === "true" || value === "1";
+        if (shouldCheck) {
+          checkable.check();
+        } else {
+          checkable.uncheck();
+        }
+      }
+      return this;
+    },
+
+    // HTML value attribute access (for rare cases where you need the input's value attribute)
+    getValueAttribute(): string {
+      return component.input?.value || "";
+    },
+
+    setValueAttribute(value: string): SwitchComponent {
+      if (component.input) {
+        component.input.value = value;
+      }
       return this;
     },
 
