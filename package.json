@@ -1,6 +1,6 @@
 {
   "name": "mtrl",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "description": "A functional TypeScript/JavaScript component library with composable architecture based on Material Design 3",
   "author": "floor",
   "license": "MIT License",
@@ -32,7 +32,8 @@
     "./styles": "./dist/styles.css"
   },
   "files": [
-    "dist"
+    "dist",
+    "src/styles"
   ],
   "scripts": {
     "start": "bun run server.js",
