@@ -52,7 +52,7 @@ const createChips = (config: ChipsConfig = {}): ChipsComponent => {
     )(baseConfig);
 
     // Generate the API configuration based on the enhanced component
-    const apiOptions = getApiConfig(component);
+    const apiOptions = getApiConfig(component, baseConfig);
 
     // Apply the public API layer
     const chips = withAPI(apiOptions)(component);

@@ -5,6 +5,9 @@ import { ChipsComponent, ChipComponent } from "./types";
  * API options interface - structured by feature area
  */
 interface ApiOptions {
+  config: {
+    multiSelect: boolean;
+  };
   chips: {
     addChip: (chipConfig: any) => ChipComponent;
     removeChip: (chipOrIndex: ChipComponent | number) => void;
@@ -99,16 +102,22 @@ export const withAPI =
 
       /**
        * Gets the current value (selected values) - form field compatibility
-       * @returns Array of selected chip values
+       * @returns Single string value for single-select, array for multi-select
        */
-      getValue() {
+      getValue(): string | string[] | null {
         if (
           options.chips &&
           typeof options.chips.getSelectedValues === "function"
         ) {
-          return options.chips.getSelectedValues();
+          const values = options.chips.getSelectedValues();
+          // For single-select mode, return first value as string (or null if none)
+          if (!options.config?.multiSelect) {
+            return values.length > 0 ? values[0] : null;
+          }
+          // For multi-select mode, return array
+          return values;
         }
-        return [];
+        return options.config?.multiSelect ? [] : null;
       },
 
       /**

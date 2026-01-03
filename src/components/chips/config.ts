@@ -28,7 +28,7 @@ export const createBaseConfig = (config: ChipsConfig = {}): ChipsConfig => {
   const baseConfig = createComponentConfig(
     defaultConfig,
     config,
-    "chips"
+    "chips",
   ) as ChipsConfig;
 
   return baseConfig;
@@ -71,9 +71,13 @@ export const getElementConfig = (config: ChipsConfig) => {
 /**
  * Creates API configuration for the Chips component
  * @param {Object} comp - Component with chips features
+ * @param {ChipsConfig} config - Chips configuration
  * @returns {Object} API configuration object
  */
-export const getApiConfig = (comp) => ({
+export const getApiConfig = (comp, config?: ChipsConfig) => ({
+  config: {
+    multiSelect: config?.multiSelect ?? false,
+  },
   chips: {
     addChip: function (chipConfig) {
       if (comp.chips && typeof comp.chips.addChip === "function") {
