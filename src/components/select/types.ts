@@ -175,10 +175,16 @@ export interface SelectComponent {
 
   /**
    * Sets the select's value (by option id)
-   * @param value - Option id to select
+   * @param value - Option id to select, or null/undefined to clear
    * @returns Select component for chaining
    */
-  setValue: (value: string) => SelectComponent;
+  setValue: (value: string | null | undefined) => SelectComponent;
+
+  /**
+   * Clears the current selection
+   * @returns Select component for chaining
+   */
+  clear: () => SelectComponent;
 
   /**
    * Gets the select's current displayed text
@@ -241,7 +247,7 @@ export interface SelectComponent {
    */
   on: <T extends keyof SelectEvents>(
     event: T,
-    handler: SelectEvents[T]
+    handler: SelectEvents[T],
   ) => SelectComponent;
 
   /**
@@ -252,7 +258,7 @@ export interface SelectComponent {
    */
   off: <T extends keyof SelectEvents>(
     event: T,
-    handler: SelectEvents[T]
+    handler: SelectEvents[T],
   ) => SelectComponent;
 
   /**
@@ -266,6 +272,20 @@ export interface SelectComponent {
    * @returns Select component for chaining
    */
   disable: () => SelectComponent;
+
+  /**
+   * Sets the error state on the select
+   * @param error - Whether to show error state
+   * @param message - Optional error message to display
+   * @returns Select component for chaining
+   */
+  setError: (error: boolean, message?: string) => SelectComponent;
+
+  /**
+   * Clears the error state on the select
+   * @returns Select component for chaining
+   */
+  clearError: () => SelectComponent;
 
   /**
    * Destroys the select component
@@ -335,7 +355,8 @@ export interface SelectEvents {
 export interface ApiOptions {
   select: {
     getValue: () => string | null;
-    setValue: (value: string) => any;
+    setValue: (value: string | null | undefined) => any;
+    clear: () => any;
     getText: () => string;
     getSelectedOption: () => SelectOption | null;
     getOptions: () => SelectOption[];

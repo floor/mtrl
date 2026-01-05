@@ -16,7 +16,7 @@ export const withTextfield =
     let initialText = "";
     if (config.value) {
       const option = (config.options || []).find(
-        (opt) => opt.id === config.value
+        (opt) => opt.id === config.value,
       );
       if (option) {
         initialText = option.text;
@@ -106,7 +106,7 @@ export const withMenu =
     // Find initial selected option
     if (config.value) {
       state.selectedOption = state.options.find(
-        (opt) => opt.id === config.value
+        (opt) => opt.id === config.value,
       );
     }
 
@@ -138,7 +138,7 @@ export const withMenu =
       const option = event.item.data;
       if (!option || !("id" in option) || !("text" in option)) {
         console.warn(
-          "Invalid menu selection: missing required data properties"
+          "Invalid menu selection: missing required data properties",
         );
         return;
       }
@@ -200,7 +200,7 @@ export const withMenu =
     menu.on("open", () => {
       // Add open class to the select component
       component.textfield.element.classList.add(
-        `${config.prefix || "mtrl"}-select--open`
+        `${config.prefix || "mtrl"}-select--open`,
       );
 
       // Add focused class to the textfield
@@ -210,11 +210,11 @@ export const withMenu =
       // If using the filled variant, we need to add focus styles
       if (
         component.textfield.element.classList.contains(
-          `${PREFIX}-textfield--filled`
+          `${PREFIX}-textfield--filled`,
         )
       ) {
         component.textfield.element.classList.add(
-          `${PREFIX}-textfield--filled-focused`
+          `${PREFIX}-textfield--filled-focused`,
         );
       }
     });
@@ -222,7 +222,7 @@ export const withMenu =
     menu.on("close", (event) => {
       // Remove open class from the select component
       component.textfield.element.classList.remove(
-        `${config.prefix || "mtrl"}-select--open`
+        `${config.prefix || "mtrl"}-select--open`,
       );
 
       // Let focus restoration happen naturally via the anchor component
@@ -236,28 +236,28 @@ export const withMenu =
         // Update styling based on actual focus state
         if (isFocused) {
           component.textfield.element.classList.add(
-            `${PREFIX}-textfield--focused`
+            `${PREFIX}-textfield--focused`,
           );
           if (
             component.textfield.element.classList.contains(
-              `${PREFIX}-textfield--filled`
+              `${PREFIX}-textfield--filled`,
             )
           ) {
             component.textfield.element.classList.add(
-              `${PREFIX}-textfield--filled-focused`
+              `${PREFIX}-textfield--filled-focused`,
             );
           }
         } else {
           component.textfield.element.classList.remove(
-            `${PREFIX}-textfield--focused`
+            `${PREFIX}-textfield--focused`,
           );
           if (
             component.textfield.element.classList.contains(
-              `${PREFIX}-textfield--filled`
+              `${PREFIX}-textfield--filled`,
             )
           ) {
             component.textfield.element.classList.remove(
-              `${PREFIX}-textfield--filled-focused`
+              `${PREFIX}-textfield--filled-focused`,
             );
           }
         }
@@ -295,14 +295,29 @@ export const withMenu =
         getValue: () => state.selectedOption?.id || null,
 
         setValue: (value) => {
+          // Handle null/undefined/empty string as clear
+          if (value === null || value === undefined || value === "") {
+            state.selectedOption = null;
+            component.textfield.setValue("");
+            menu.setSelected(null);
+            return component;
+          }
+
           const option = state.options.find(
-            (opt) => "id" in opt && opt.id === value
+            (opt) => "id" in opt && opt.id === value,
           );
           if (option && "text" in option) {
             state.selectedOption = option;
             component.textfield.setValue(option.text);
             menu.setSelected(option.id);
           }
+          return component;
+        },
+
+        clear: () => {
+          state.selectedOption = null;
+          component.textfield.setValue("");
+          menu.setSelected(null);
           return component;
         },
 
@@ -322,7 +337,7 @@ export const withMenu =
           if (
             state.selectedOption &&
             !options.find(
-              (opt) => "id" in opt && opt.id === state.selectedOption.id
+              (opt) => "id" in opt && opt.id === state.selectedOption.id,
             )
           ) {
             state.selectedOption = null;
@@ -334,7 +349,7 @@ export const withMenu =
 
         open: (
           event?: Event,
-          interactionType: "mouse" | "keyboard" = "mouse"
+          interactionType: "mouse" | "keyboard" = "mouse",
         ) => {
           menu.open(event, interactionType);
           return component;

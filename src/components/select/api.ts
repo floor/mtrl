@@ -17,8 +17,13 @@ export const withAPI =
 
     getValue: options.select.getValue,
 
-    setValue(value: string): SelectComponent {
+    setValue(value: string | null | undefined): SelectComponent {
       options.select.setValue(value);
+      return this;
+    },
+
+    clear(): SelectComponent {
+      options.select.clear();
       return this;
     },
 
@@ -90,6 +95,22 @@ export const withAPI =
 
     disable(): SelectComponent {
       options.disabled.disable();
+      return this;
+    },
+
+    setError(error: boolean, message?: string): SelectComponent {
+      // Delegate to the textfield's setError method
+      if (component.textfield?.setError) {
+        component.textfield.setError(error, message);
+      }
+      return this;
+    },
+
+    clearError(): SelectComponent {
+      // Clear error state on textfield
+      if (component.textfield?.setError) {
+        component.textfield.setError(false);
+      }
       return this;
     },
 

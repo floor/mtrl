@@ -19,7 +19,7 @@ export const defaultConfig: SelectConfig = {
  * @returns {SelectConfig} Complete configuration with defaults applied
  */
 export const createBaseConfig = (
-  config: SelectConfig = { options: [] }
+  config: SelectConfig = { options: [] },
 ): SelectConfig =>
   createComponentConfig(defaultConfig, config, "select") as SelectConfig;
 
@@ -32,6 +32,7 @@ export const getApiConfig = (comp: BaseComponent): ApiOptions => ({
   select: {
     getValue: comp.select?.getValue || (() => null),
     setValue: comp.select?.setValue || (() => comp),
+    clear: comp.select?.clear || (() => comp),
     getText: comp.select?.getText || (() => ""),
     getSelectedOption: comp.select?.getSelectedOption || (() => null),
     getOptions: comp.select?.getOptions || (() => []),
