@@ -140,7 +140,7 @@ const withController = (config: MenuConfig) => (component) => {
     if (!item.disabled) {
       // Mouse events
       itemElement.addEventListener("click", (e) =>
-        handleItemClick(e, item, index)
+        handleItemClick(e, item, index),
       );
 
       // Additional keyboard event handler for accessibility
@@ -242,7 +242,7 @@ const withController = (config: MenuConfig) => (component) => {
   const handleItemClick = (
     e: MouseEvent | KeyboardEvent,
     item: MenuItem,
-    index: number
+    index: number,
   ): void => {
     e.preventDefault();
     e.stopPropagation();
@@ -255,7 +255,7 @@ const withController = (config: MenuConfig) => (component) => {
       component.submenu.handleSubmenuClick(
         item,
         index,
-        e.currentTarget as HTMLElement
+        e.currentTarget as HTMLElement,
       );
       return;
     }
@@ -268,7 +268,7 @@ const withController = (config: MenuConfig) => (component) => {
         itemId: item.id,
         itemData: item.data,
       },
-      e
+      e,
     ) as MenuSelectEvent;
 
     // Close menu if needed
@@ -286,7 +286,7 @@ const withController = (config: MenuConfig) => (component) => {
 
     // Get all menu items
     const menuItems = component.element.querySelectorAll(
-      `.${component.getClass("menu-item")}`
+      `.${component.getClass("menu-item")}`,
     ) as NodeListOf<HTMLElement>;
 
     // Update selected state for each item
@@ -313,7 +313,7 @@ const withController = (config: MenuConfig) => (component) => {
    */
   const openMenu = (
     event?: Event,
-    interactionType: "mouse" | "keyboard" = "mouse"
+    interactionType: "mouse" | "keyboard" = "mouse",
   ): void => {
     if (state.visible) return;
 
@@ -327,7 +327,7 @@ const withController = (config: MenuConfig) => (component) => {
     if (!component.element.parentNode) {
       // Apply explicit initial styling to ensure it doesn't flash
       component.element.classList.remove(
-        `${component.getClass("menu--visible")}`
+        `${component.getClass("menu--visible")}`,
       );
       component.element.setAttribute("aria-hidden", "true");
       component.element.style.transform = "scaleY(0)";
@@ -337,14 +337,14 @@ const withController = (config: MenuConfig) => (component) => {
       document.body.appendChild(component.element);
     }
 
-    // Step 2: Position the menu (will be invisible)
-    const openerElement = getOpenerElement();
-    if (openerElement && component.position) {
-      component.position.positionMenu(openerElement);
-    }
-
-    // Step 3: Use a small delay to ensure DOM operations are complete
+    // Step 2: Use a small delay to ensure DOM operations are complete
     setTimeout(() => {
+      // Position the menu now that it's in the DOM
+      const openerElement = getOpenerElement();
+      if (openerElement && component.position) {
+        component.position.positionMenu(openerElement);
+      }
+
       // Set attributes for accessibility
       component.element.setAttribute("aria-hidden", "false");
 
@@ -363,7 +363,7 @@ const withController = (config: MenuConfig) => (component) => {
         if (component.keyboard && component.keyboard.handleInitialFocus) {
           component.keyboard.handleInitialFocus(
             component.element,
-            interactionType
+            interactionType,
           );
         } else {
           // Fallback if keyboard module isn't available
@@ -372,9 +372,9 @@ const withController = (config: MenuConfig) => (component) => {
             const items = Array.from(
               component.element.querySelectorAll(
                 `.${component.getClass("menu-item")}:not(.${component.getClass(
-                  "menu-item--disabled"
-                )})`
-              )
+                  "menu-item--disabled",
+                )})`,
+              ),
             ) as HTMLElement[];
 
             if (items.length > 0) {
@@ -401,9 +401,9 @@ const withController = (config: MenuConfig) => (component) => {
             const items = Array.from(
               component.element.querySelectorAll(
                 `.${component.getClass("menu-item")}:not(.${component.getClass(
-                  "menu-item--disabled"
-                )})`
-              )
+                  "menu-item--disabled",
+                )})`,
+              ),
             ) as HTMLElement[];
 
             if (items.length > 0) {
@@ -463,7 +463,7 @@ const withController = (config: MenuConfig) => (component) => {
       // Set attributes
       component.element.setAttribute("aria-hidden", "true");
       component.element.classList.remove(
-        `${component.getClass("menu--visible")}`
+        `${component.getClass("menu--visible")}`,
       );
 
       // Remove document events
@@ -478,7 +478,7 @@ const withController = (config: MenuConfig) => (component) => {
         {
           restoreFocus: restoreFocus,
         },
-        event
+        event,
       );
 
       // Remove from DOM after animation completes
@@ -495,7 +495,7 @@ const withController = (config: MenuConfig) => (component) => {
    */
   const toggleMenu = (
     event?: Event,
-    interactionType: "mouse" | "keyboard" = "mouse"
+    interactionType: "mouse" | "keyboard" = "mouse",
   ): void => {
     if (state.visible) {
       closeMenu(event);
@@ -703,7 +703,7 @@ const withController = (config: MenuConfig) => (component) => {
     menu: {
       open: (
         event?: Event,
-        interactionType: "mouse" | "keyboard" = "mouse"
+        interactionType: "mouse" | "keyboard" = "mouse",
       ) => {
         openMenu(event, interactionType);
         return component;
@@ -716,7 +716,7 @@ const withController = (config: MenuConfig) => (component) => {
 
       toggle: (
         event?: Event,
-        interactionType: "mouse" | "keyboard" = "mouse"
+        interactionType: "mouse" | "keyboard" = "mouse",
       ) => {
         toggleMenu(event, interactionType);
         return component;

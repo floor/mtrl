@@ -1,245 +1,251 @@
 // src/styles/components/_menu.scss
-@use '../../styles/abstract/base' as base;
-@use '../../styles/abstract/variables' as v;
-@use '../../styles/abstract/mixins' as m;
-@use '../../styles/abstract/functions' as f;
-@use '../../styles/abstract/theme' as t;
+@use "../../styles/abstract/base" as base;
+@use "../../styles/abstract/variables" as v;
+@use "../../styles/abstract/mixins" as m;
+@use "../../styles/abstract/functions" as f;
+@use "../../styles/abstract/theme" as t;
 
 $prefix: base.$prefix;
 
-$component: '#{$prefix}-menu';
+$component: "#{$prefix}-menu";
 
 .#{$component} {
-  // Base styles
-  @include m.typography('body-medium');
-  @include m.shape('extra-small');
-  
-  position: fixed;
-  z-index: f.get-z-index('menu');
-  min-width: 112px;
-  max-width: 280px;
-  padding: 8px 0; // Keep padding consistent
-  background-color: t.color('surface-container');
-  color: t.color('on-surface');
-  @include m.elevation(2);
-  overflow: hidden;
-  
-  // Initial state - hidden with proper transform origin
-  display: block;
-  opacity: 0;
-  transform-origin: top center; // Default transform origin
-  transform: scaleY(0);
-  pointer-events: none;
-  
-  // Material Design 3 standard animation curve for menus
-  transition: 
-    transform v.motion('duration-medium1') v.motion('easing-emphasized'),
-    opacity v.motion('duration-medium1') v.motion('easing-emphasized');
-  
-  // Visible state
-  &--visible {
-    opacity: 1;
-    transform: scaleY(1);
-    pointer-events: auto;
-  }
-  
-  // Position variations with appropriate transform origins
-  &--position-top,
-  &--position-top-start,
-  &--position-top-end {
-    transform-origin: bottom center;
-  }
-  
-  // Submenu styling
-  &--submenu {
-    position: absolute;
-    z-index: f.get-z-index('menu') + 1;
-  }
+    // Base styles
+    @include m.typography("body-medium");
+    @include m.shape("extra-small");
 
-  // List container
-  &-list {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    overflow-y: auto;
-    max-height: calc(100vh - 96px);
-    @include m.scrollbar;
-    width: 100%;
-  }
-
-  // Menu items
-  &-item {
-    @include m.typography('body-large');
-    @include m.flex-row;
-    
-    position: relative;
-    min-height: 48px;
-    padding: 12px 16px;
-    padding-right: 42px;
-    cursor: pointer;
-    user-select: none;
-    color: t.color('on-surface');
-    white-space: nowrap;
-    text-overflow: ellipsis;
+    position: fixed;
+    z-index: f.get-z-index("menu");
+    min-width: 112px;
+    max-width: 280px;
+    padding: 8px 0; // Keep padding consistent
+    background-color: t.color("surface-container");
+    color: t.color("on-surface");
+    @include m.elevation(2);
     overflow: hidden;
-    width: 100%;
-    box-sizing: border-box;
-    
-    // State layer effects
-    &:hover {
-      @include m.state-layer(t.color('on-surface'), 'hover');
-    }
-    
-    &:focus {
-      @include m.state-layer(t.color('on-surface'), 'focus');
-      outline: none;
-    }
-    
-    &:active {
-      @include m.state-layer(t.color('on-surface'), 'pressed');
-    }
 
-    // Submenu indicator
-    &--submenu {
-      padding-right: 48px;
-      
-      &::after {
-        content: '';
-        position: absolute;
-        right: 12px;
-        top: 50%;
-        transform: translateY(-50%);
-        width: 24px;
-        height: 24px;
-        mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M10 17l5-5-5-5v10z'/%3E%3C/svg%3E") center / contain no-repeat;
-        -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M10 17l5-5-5-5v10z'/%3E%3C/svg%3E") center / contain no-repeat;
-        background-color: currentColor;
-        opacity: 0.87;
-      }
-      
-      &[aria-expanded="true"] {
-        @include m.state-layer(t.color('on-surface'), 'hover');
-        
-        &::after {
-          opacity: 1;
-        }
-      }
-    }
+    // Initial state - hidden with proper transform origin
+    display: flex;
+    flex-direction: column;
+    opacity: 0;
+    transform-origin: top center; // Default transform origin
+    transform: scaleY(0);
+    pointer-events: none;
 
-    // Disabled state
-    &--disabled {
-      pointer-events: none;
-      color: t.alpha('on-surface', 0.38);
-    }
-    
-    // Selected state for select component
-    &--selected {
-      color: t.color('primary');
-      
-      &::after {
-        content: "";
-        position: absolute;
-        right: 12px;
-        top: 50%;
-        transform: translateY(-50%);
-        width: 18px;
-        height: 18px;
-        mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpolyline points='20 6 9 17 4 12' stroke='white' stroke-width='2' fill='none'/%3E%3C/svg%3E") center / contain no-repeat;
-        -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpolyline points='20 6 9 17 4 12' stroke='white' stroke-width='2' fill='none'/%3E%3C/svg%3E") center / contain no-repeat;
-        background-color: currentColor;
-      }
-    }
-    
-    // Content containers inside menu items
-    &-content {
-      display: flex;
-      align-items: center;
-      width: 100%;
-      overflow: hidden;
-    }
-    
-    &-icon {
-      margin-right: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      
-      svg {
-        width: 20px;
-        height: 20px;
-      }
-    }
-    
-    &-text {
-      flex: 1;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    
-    &-shortcut {
-      margin-left: 12px;
-      color: t.color('on-surface-variant');
-      flex-shrink: 0;
-    }
-  }
+    // Material Design 3 standard animation curve for menus
+    transition:
+        transform v.motion("duration-medium1") v.motion("easing-emphasized"),
+        opacity v.motion("duration-medium1") v.motion("easing-emphasized");
 
-  // Divider
-  &-divider {
-    height: 1px;
-    margin: 8px 0;
-    background-color: t.color('outline-variant');
-  }
-
-  // Accessibility
-  @include m.focus-ring('.#{$component}-item:focus-visible');
-  
-  // Reduced motion preference support
-  @include m.reduced-motion {
-    transition: opacity 0.1s linear;
-    transform: none !important;
-    
+    // Visible state
     &--visible {
-      transform: none !important;
+        opacity: 1;
+        transform: scaleY(1);
+        pointer-events: auto;
     }
-  }
-  
-  // High contrast mode
-  @include m.high-contrast {
-    border: 1px solid CurrentColor;
-    
-    .#{$component}-divider {
-      background-color: CurrentColor;
-    }
-    
-    .#{$component}-item--disabled {
-      opacity: 1;
-      color: GrayText;
-    }
-  }
 
-  // RTL Support
-  @include m.rtl {
-    transform-origin: top right;
-    
+    // Position variations with appropriate transform origins
     &--position-top,
     &--position-top-start,
     &--position-top-end {
-      transform-origin: bottom right;
+        transform-origin: bottom center;
     }
-    
-    .#{$component}-item {
-      &--submenu {
-        padding-right: 16px;
-        padding-left: 48px;
-        
-        &::after {
-          right: auto;
-          left: 16px;
-          transform: translateY(-50%) rotate(180deg);
+
+    // Submenu styling
+    &--submenu {
+        position: absolute;
+        z-index: f.get-z-index("menu") + 1;
+    }
+
+    // List container
+    &-list {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        overflow-y: auto;
+        flex: 1 1 auto;
+        min-height: 0; // Required for flex children with overflow
+        @include m.scrollbar;
+        width: 100%;
+    }
+
+    // Menu items
+    &-item {
+        @include m.typography("body-large");
+        @include m.flex-row;
+
+        position: relative;
+        min-height: 48px;
+        padding: 12px 16px;
+        padding-right: 42px;
+        cursor: pointer;
+        user-select: none;
+        color: t.color("on-surface");
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        width: 100%;
+        box-sizing: border-box;
+
+        // State layer effects
+        &:hover {
+            @include m.state-layer(t.color("on-surface"), "hover");
         }
-      }
+
+        &:focus {
+            @include m.state-layer(t.color("on-surface"), "focus");
+            outline: none;
+        }
+
+        &:active {
+            @include m.state-layer(t.color("on-surface"), "pressed");
+        }
+
+        // Submenu indicator
+        &--submenu {
+            padding-right: 48px;
+
+            &::after {
+                content: "";
+                position: absolute;
+                right: 12px;
+                top: 50%;
+                transform: translateY(-50%);
+                width: 24px;
+                height: 24px;
+                mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M10 17l5-5-5-5v10z'/%3E%3C/svg%3E")
+                    center / contain no-repeat;
+                -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M10 17l5-5-5-5v10z'/%3E%3C/svg%3E")
+                    center / contain no-repeat;
+                background-color: currentColor;
+                opacity: 0.87;
+            }
+
+            &[aria-expanded="true"] {
+                @include m.state-layer(t.color("on-surface"), "hover");
+
+                &::after {
+                    opacity: 1;
+                }
+            }
+        }
+
+        // Disabled state
+        &--disabled {
+            pointer-events: none;
+            color: t.alpha("on-surface", 0.38);
+        }
+
+        // Selected state for select component
+        &--selected {
+            color: t.color("primary");
+
+            &::after {
+                content: "";
+                position: absolute;
+                right: 12px;
+                top: 50%;
+                transform: translateY(-50%);
+                width: 18px;
+                height: 18px;
+                mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpolyline points='20 6 9 17 4 12' stroke='white' stroke-width='2' fill='none'/%3E%3C/svg%3E")
+                    center / contain no-repeat;
+                -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpolyline points='20 6 9 17 4 12' stroke='white' stroke-width='2' fill='none'/%3E%3C/svg%3E")
+                    center / contain no-repeat;
+                background-color: currentColor;
+            }
+        }
+
+        // Content containers inside menu items
+        &-content {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        &-icon {
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+
+            svg {
+                width: 20px;
+                height: 20px;
+            }
+        }
+
+        &-text {
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        &-shortcut {
+            margin-left: 12px;
+            color: t.color("on-surface-variant");
+            flex-shrink: 0;
+        }
     }
-  }
+
+    // Divider
+    &-divider {
+        height: 1px;
+        margin: 8px 0;
+        background-color: t.color("outline-variant");
+    }
+
+    // Accessibility
+    @include m.focus-ring(".#{$component}-item:focus-visible");
+
+    // Reduced motion preference support
+    @include m.reduced-motion {
+        transition: opacity 0.1s linear;
+        transform: none !important;
+
+        &--visible {
+            transform: none !important;
+        }
+    }
+
+    // High contrast mode
+    @include m.high-contrast {
+        border: 1px solid CurrentColor;
+
+        .#{$component}-divider {
+            background-color: CurrentColor;
+        }
+
+        .#{$component}-item--disabled {
+            opacity: 1;
+            color: GrayText;
+        }
+    }
+
+    // RTL Support
+    @include m.rtl {
+        transform-origin: top right;
+
+        &--position-top,
+        &--position-top-start,
+        &--position-top-end {
+            transform-origin: bottom right;
+        }
+
+        .#{$component}-item {
+            &--submenu {
+                padding-right: 16px;
+                padding-left: 48px;
+
+                &::after {
+                    right: auto;
+                    left: 16px;
+                    transform: translateY(-50%) rotate(180deg);
+                }
+            }
+        }
+    }
 }

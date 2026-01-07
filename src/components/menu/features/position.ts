@@ -1,6 +1,6 @@
 // src/components/menu/features/position.ts
 
-import { MenuConfig } from '../types';
+import { MenuConfig } from "../types";
 
 /**
  * Menu position helper
@@ -11,256 +11,298 @@ export const createPositioner = (component, config: MenuConfig) => {
    * Positions the menu relative to its opener
    * Ensures the menu maintains proper spacing from viewport edges
    * Makes sure the menu stays attached to opener during scrolling
-   * 
+   *
    * @param menuElement - The menu element to position
    * @param openerElement - The element to opener against
    * @param preferredPosition - The preferred position
    * @param isSubmenu - Whether this is a submenu (affects positioning logic)
    */
   const positionElement = (
-    menuElement: HTMLElement, 
-    openerElement: HTMLElement, 
+    menuElement: HTMLElement,
+    openerElement: HTMLElement,
     preferredPosition: string,
-    isSubmenu = false
+    isSubmenu = false,
   ): void => {
     if (!menuElement || !openerElement) return;
-    
+
     // Ensure menu is positioned absolutely for proper scroll behavior
-    menuElement.style.position = 'absolute';
-    
+    menuElement.style.position = "absolute";
+
     // Get current scroll position - critical for absolute positioning that tracks opener
     const scrollX = window.pageXOffset || document.documentElement.scrollLeft;
     const scrollY = window.pageYOffset || document.documentElement.scrollTop;
-    
+
+    // Get opener measurements first (needed for width calculation)
+    const openerRect = openerElement.getBoundingClientRect();
+
     // Make a copy of the menu for measurement without affecting the real menu
     const tempMenu = menuElement.cloneNode(true) as HTMLElement;
-    
+
     // Make the temp menu visible but not displayed for measurement
-    tempMenu.style.visibility = 'hidden';
-    tempMenu.style.display = 'block';
-    tempMenu.style.position = 'absolute';
-    tempMenu.style.top = '0';
-    tempMenu.style.left = '0';
-    tempMenu.style.transform = 'none';
-    tempMenu.style.opacity = '0';
-    tempMenu.style.pointerEvents = 'none';
-    tempMenu.classList.add(`${component.getClass('menu--visible')}`); // Add visible class for proper dimensions
-    
+    tempMenu.style.visibility = "hidden";
+    tempMenu.style.display = "block";
+    tempMenu.style.position = "absolute";
+    tempMenu.style.top = "0";
+    tempMenu.style.left = "0";
+    tempMenu.style.transform = "none";
+    tempMenu.style.opacity = "0";
+    tempMenu.style.pointerEvents = "none";
+    tempMenu.classList.add(`${component.getClass("menu--visible")}`); // Add visible class for proper dimensions
+
+    // Apply width to temp menu BEFORE measuring if config specifies 100% width
+    // This ensures we measure with the correct width on first open
+    if (config.width === "100%" && !isSubmenu) {
+      tempMenu.style.width = `${openerRect.width}px`;
+    }
+
     // Add it to the DOM temporarily
     document.body.appendChild(tempMenu);
-    
+
     // Get measurements
-    const openerRect = openerElement.getBoundingClientRect();
     const menuRect = tempMenu.getBoundingClientRect();
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
-    
+
     // Remove the temp element after measurements
     document.body.removeChild(tempMenu);
-    
+
     // Get values needed for calculations
     const offset = config.offset !== undefined ? config.offset : 8;
-    
+
     // Calculate position based on position
     let top = 0;
     let left = 0;
     let calculatedPosition = preferredPosition;
-    
+
     // Different positioning logic for main menu vs submenu
     if (isSubmenu) {
       // Default position is to the right of parent
-      calculatedPosition = preferredPosition || 'right-start';
-      
+      calculatedPosition = preferredPosition || "right-start";
+
       // Check if this would push the submenu out of the viewport
-      if (calculatedPosition.startsWith('right') && openerRect.right + menuRect.width + offset > viewportWidth - 16) {
+      if (
+        calculatedPosition.startsWith("right") &&
+        openerRect.right + menuRect.width + offset > viewportWidth - 16
+      ) {
         // Flip to the left side if it doesn't fit on the right
-        calculatedPosition = calculatedPosition.replace('right', 'left');
-      } else if (calculatedPosition.startsWith('left') && openerRect.left - menuRect.width - offset < 16) {
+        calculatedPosition = calculatedPosition.replace("right", "left");
+      } else if (
+        calculatedPosition.startsWith("left") &&
+        openerRect.left - menuRect.width - offset < 16
+      ) {
         // Flip to the right side if it doesn't fit on the left
-        calculatedPosition = calculatedPosition.replace('left', 'right');
+        calculatedPosition = calculatedPosition.replace("left", "right");
       }
-      
+
       // Check vertical positioning as well for submenus
       // If submenu would extend beyond the bottom of the viewport, adjust positioning
       if (openerRect.top + menuRect.height > viewportHeight - 48) {
-        if (calculatedPosition === 'right-start') {
-          calculatedPosition = 'right-end';
-        } else if (calculatedPosition === 'left-start') {
-          calculatedPosition = 'left-end';
+        if (calculatedPosition === "right-start") {
+          calculatedPosition = "right-end";
+        } else if (calculatedPosition === "left-start") {
+          calculatedPosition = "left-end";
         }
       }
     } else {
       // For main menu, follow the standard position calculation
       // First determine correct position based on original position
       switch (preferredPosition) {
-        case 'top-start':
-        case 'top':
-        case 'top-end':
+        case "top-start":
+        case "top":
+        case "top-end":
           // Check if enough space above
           if (openerRect.top < menuRect.height + offset + 48) {
             // Not enough space above, flip to bottom
-            calculatedPosition = preferredPosition.replace('top', 'bottom');
+            calculatedPosition = preferredPosition.replace("top", "bottom");
           }
           break;
-        
-        case 'bottom-start':
-        case 'bottom':
-        case 'bottom-end':
+
+        case "bottom-start":
+        case "bottom":
+        case "bottom-end":
           // Check if enough space below
-          if (openerRect.bottom + menuRect.height + offset + 48 > viewportHeight) {
+          if (
+            openerRect.bottom + menuRect.height + offset + 48 >
+            viewportHeight
+          ) {
             // Not enough space below, check if more space above
-            if (openerRect.top > (viewportHeight - openerRect.bottom)) {
+            if (openerRect.top > viewportHeight - openerRect.bottom) {
               // More space above, flip to top
-              calculatedPosition = preferredPosition.replace('bottom', 'top');
+              calculatedPosition = preferredPosition.replace("bottom", "top");
             }
           }
           break;
-          
+
         // Specifically handle right-start, right, left-start, and left positions
-        case 'right-start':
-        case 'right':
-        case 'left-start':
-        case 'left':
+        case "right-start":
+        case "right":
+        case "left-start":
+        case "left":
           // Check if enough space below for these side positions
           if (openerRect.bottom + menuRect.height > viewportHeight - 48) {
             // Not enough space below, shift the menu upward
-            if (preferredPosition === 'right-start') {
-              calculatedPosition = 'right-end';
-            } else if (preferredPosition === 'left-start') {
-              calculatedPosition = 'left-end';
-            } else if (preferredPosition === 'right') {
+            if (preferredPosition === "right-start") {
+              calculatedPosition = "right-end";
+            } else if (preferredPosition === "left-start") {
+              calculatedPosition = "left-end";
+            } else if (preferredPosition === "right") {
               // For center aligned, shift up by half menu height plus some spacing
-              top = openerRect.top - (menuRect.height - openerRect.height) - offset;
-            } else if (preferredPosition === 'left') {
+              top =
+                openerRect.top - (menuRect.height - openerRect.height) - offset;
+            } else if (preferredPosition === "left") {
               // For center aligned, shift up by half menu height plus some spacing
-              top = openerRect.top - (menuRect.height - openerRect.height) - offset;
+              top =
+                openerRect.top - (menuRect.height - openerRect.height) - offset;
             }
           }
           break;
       }
     }
-    
+
     // Reset any existing position classes
     const positionClasses = [
-      'position-top', 'position-bottom', 'position-right', 'position-left'
+      "position-top",
+      "position-bottom",
+      "position-right",
+      "position-left",
     ];
-    
-    positionClasses.forEach(posClass => {
-      menuElement.classList.remove(`${component.getClass('menu')}--${posClass}`);
+
+    positionClasses.forEach((posClass) => {
+      menuElement.classList.remove(
+        `${component.getClass("menu")}--${posClass}`,
+      );
     });
-    
+
     // Determine transform origin based on vertical position
     // Start by checking the calculated position to determine transform origin
-    const menuAppearsAboveOpener = 
-      calculatedPosition.startsWith('top') || 
-      calculatedPosition === 'right-end' || 
-      calculatedPosition === 'left-end' ||
-      (calculatedPosition === 'right' && top < openerRect.top) ||
-      (calculatedPosition === 'left' && top < openerRect.top);
-    
+    const menuAppearsAboveOpener =
+      calculatedPosition.startsWith("top") ||
+      calculatedPosition === "right-end" ||
+      calculatedPosition === "left-end" ||
+      (calculatedPosition === "right" && top < openerRect.top) ||
+      (calculatedPosition === "left" && top < openerRect.top);
+
     if (menuAppearsAboveOpener) {
-      menuElement.classList.add(`${component.getClass('menu')}--position-top`);
-    } else if (calculatedPosition.startsWith('left')) {
-      menuElement.classList.add(`${component.getClass('menu')}--position-left`);
-    } else if (calculatedPosition.startsWith('right')) {
-      menuElement.classList.add(`${component.getClass('menu')}--position-right`);
+      menuElement.classList.add(`${component.getClass("menu")}--position-top`);
+    } else if (calculatedPosition.startsWith("left")) {
+      menuElement.classList.add(`${component.getClass("menu")}--position-left`);
+    } else if (calculatedPosition.startsWith("right")) {
+      menuElement.classList.add(
+        `${component.getClass("menu")}--position-right`,
+      );
     } else {
-      menuElement.classList.add(`${component.getClass('menu')}--position-bottom`);
+      menuElement.classList.add(
+        `${component.getClass("menu")}--position-bottom`,
+      );
     }
-    
+
     // Position calculation - important: getBoundingClientRect() returns values relative to viewport
     // We need to add scroll position to get absolute position
     switch (calculatedPosition) {
-      case 'top-start':
+      case "top-start":
         top = openerRect.top + scrollY - menuRect.height - offset;
         left = openerRect.left + scrollX;
         break;
-      case 'top':
+      case "top":
         top = openerRect.top + scrollY - menuRect.height - offset;
-        left = openerRect.left + scrollX + (openerRect.width / 2) - (menuRect.width / 2);
+        left =
+          openerRect.left + scrollX + openerRect.width / 2 - menuRect.width / 2;
         break;
-      case 'top-end':
+      case "top-end":
         top = openerRect.top + scrollY - menuRect.height - offset;
         left = openerRect.right + scrollX - menuRect.width;
         break;
-      case 'right-start':
+      case "right-start":
         top = openerRect.top + scrollY;
         left = openerRect.right + scrollX + offset;
         break;
-      case 'right':
+      case "right":
         // Custom top position might be set above; only set if not already defined
         if (top === 0) {
-          top = openerRect.top + scrollY + (openerRect.height / 2) - (menuRect.height / 2);
+          top =
+            openerRect.top +
+            scrollY +
+            openerRect.height / 2 -
+            menuRect.height / 2;
         } else {
           top += scrollY;
         }
         left = openerRect.right + scrollX + offset;
         break;
-      case 'right-end':
+      case "right-end":
         top = openerRect.bottom + scrollY - menuRect.height;
         left = openerRect.right + scrollX + offset;
         break;
-      case 'bottom-start':
+      case "bottom-start":
         top = openerRect.bottom + scrollY + offset;
         left = openerRect.left + scrollX;
         break;
-      case 'bottom':
+      case "bottom":
         top = openerRect.bottom + scrollY + offset;
-        left = openerRect.left + scrollX + (openerRect.width / 2) - (menuRect.width / 2);
+        left =
+          openerRect.left + scrollX + openerRect.width / 2 - menuRect.width / 2;
         break;
-      case 'bottom-end':
+      case "bottom-end":
         top = openerRect.bottom + scrollY + offset;
         left = openerRect.right + scrollX - menuRect.width;
         break;
-      case 'left-start':
+      case "left-start":
         top = openerRect.top + scrollY;
         left = openerRect.left + scrollX - menuRect.width - offset;
         break;
-      case 'left':
+      case "left":
         // Custom top position might be set above; only set if not already defined
         if (top === 0) {
-          top = openerRect.top + scrollY + (openerRect.height / 2) - (menuRect.height / 2);
+          top =
+            openerRect.top +
+            scrollY +
+            openerRect.height / 2 -
+            menuRect.height / 2;
         } else {
           top += scrollY;
         }
         left = openerRect.left + scrollX - menuRect.width - offset;
         break;
-      case 'left-end':
+      case "left-end":
         top = openerRect.bottom + scrollY - menuRect.height;
         left = openerRect.left + scrollX - menuRect.width - offset;
         break;
     }
-    
+
     // Ensure the menu has proper spacing from viewport edges
-    
+
     // Top edge spacing - ensure the menu doesn't go above the viewport + padding
     const minTopSpacing = 48; // Minimum distance from top of viewport
     if (top - scrollY < minTopSpacing) {
       top = minTopSpacing + scrollY;
     }
-    
+
     // Bottom edge spacing - ensure the menu doesn't go below the viewport - padding
     const viewportBottomMargin = 48; // Minimum space from bottom of viewport
-    const bottomEdge = (top - scrollY) + menuRect.height;
-    
+    const bottomEdge = top - scrollY + menuRect.height;
+
     if (bottomEdge > viewportHeight - viewportBottomMargin) {
       // Option 1: We could adjust the top position
       // top = scrollY + viewportHeight - viewportBottomMargin - menuRect.height;
-      
+
       // Option 2: Instead of moving the menu, adjust its height to fit (better UX)
-      const availableHeight = viewportHeight - (top - scrollY) - viewportBottomMargin;
-      
+      const availableHeight =
+        viewportHeight - (top - scrollY) - viewportBottomMargin;
+
       // Set a minimum height to prevent tiny menus
       const minMenuHeight = Math.min(menuRect.height, 100);
       const newMaxHeight = Math.max(availableHeight, minMenuHeight);
-      
+
       // Update maxHeight to fit within viewport
       menuElement.style.maxHeight = `${newMaxHeight}px`;
-      
+
       // If user has explicitly set a maxHeight, respect it if smaller
       if (config.maxHeight) {
         const configMaxHeight = parseInt(config.maxHeight, 10);
-        if (!isNaN(configMaxHeight) && configMaxHeight < parseInt(menuElement.style.maxHeight || '0', 10)) {
+        if (
+          !isNaN(configMaxHeight) &&
+          configMaxHeight < parseInt(menuElement.style.maxHeight || "0", 10)
+        ) {
           menuElement.style.maxHeight = config.maxHeight;
         }
       }
@@ -270,22 +312,25 @@ export const createPositioner = (component, config: MenuConfig) => {
         menuElement.style.maxHeight = config.maxHeight;
       }
     }
-    
+
     // For 'width: 100%' configuration, match the opener width
-    if (config.width === '100%' && !isSubmenu) {
+    if (config.width === "100%" && !isSubmenu) {
       menuElement.style.width = `${openerRect.width}px`;
     }
-    
+
     // Apply final positions, ensuring menu stays within viewport
     // The position is absolute, not fixed, so it must account for scroll
-    menuElement.style.top = `${Math.max(minTopSpacing + scrollY, top)}px`;
-    menuElement.style.left = `${Math.max(16 + scrollX, left)}px`;
-    
-    // Make sure menu doesn't extend past right edge 
-    if ((left - scrollX) + menuRect.width > viewportWidth - 16) {
+    const finalTop = Math.max(minTopSpacing + scrollY, top);
+    const finalLeft = Math.max(16 + scrollX, left);
+
+    menuElement.style.top = `${finalTop}px`;
+    menuElement.style.left = `${finalLeft}px`;
+
+    // Make sure menu doesn't extend past right edge
+    if (finalLeft - scrollX + menuRect.width > viewportWidth - 16) {
       // If we're going past the right edge, set right with fixed distance from edge
-      menuElement.style.left = 'auto';
-      menuElement.style.right = '16px';
+      menuElement.style.left = "auto";
+      menuElement.style.right = "16px";
     }
   };
 
@@ -305,36 +350,36 @@ export const createPositioner = (component, config: MenuConfig) => {
    * @param level - Nesting level for calculating position
    */
   const positionSubmenu = (
-    submenuElement: HTMLElement, 
+    submenuElement: HTMLElement,
     parentItemElement: HTMLElement,
-    level: number = 1
+    level: number = 1,
   ): void => {
     if (!submenuElement || !parentItemElement) return;
-    
+
     // Alternate between right and left positioning for deeper nesting levels
     // This helps prevent menus from cascading off the screen
-    const prefPosition = level % 2 === 1 ? 'right-start' : 'left-start';
-    
+    const prefPosition = level % 2 === 1 ? "right-start" : "left-start";
+
     // Use higher z-index for deeper nested menus to ensure proper layering
-    submenuElement.style.zIndex = `${1000 + (level * 10)}`;
-    
+    submenuElement.style.zIndex = `${1000 + level * 10}`;
+
     positionElement(submenuElement, parentItemElement, prefPosition, true);
   };
 
   return {
     positionMenu,
     positionSubmenu,
-    positionElement
+    positionElement,
   };
 };
 
 /**
  * Adds positioning functionality to the menu component
- * 
+ *
  * @param config - Menu configuration options
  * @returns Component enhancer with positioning functionality
  */
-const withPosition = (config: MenuConfig) => component => {
+const withPosition = (config: MenuConfig) => (component) => {
   // Do nothing if no element
   if (!component.element) {
     return component;
@@ -342,11 +387,11 @@ const withPosition = (config: MenuConfig) => component => {
 
   // Create the positioner
   const positioner = createPositioner(component, config);
-  
+
   // Return enhanced component
   return {
     ...component,
-    position: positioner
+    position: positioner,
   };
 };
 
