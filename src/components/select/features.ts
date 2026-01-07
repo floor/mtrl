@@ -45,6 +45,38 @@ export const withTextfield =
     // Add select-specific class
     textfield.element.classList.add(`${config.prefix || "mtrl"}-select`);
 
+    // Prevent typing in the input while keeping normal focus/visual behavior
+    if (textfield.input) {
+      textfield.input.addEventListener("keydown", (e) => {
+        // Allow navigation keys to propagate (they're handled by the menu)
+        const allowedKeys = [
+          "Tab",
+          "Escape",
+          "ArrowDown",
+          "ArrowUp",
+          "ArrowLeft",
+          "ArrowRight",
+          "Enter",
+          " ",
+          "Home",
+          "End",
+        ];
+        if (!allowedKeys.includes(e.key)) {
+          e.preventDefault();
+        }
+      });
+
+      // Prevent paste
+      textfield.input.addEventListener("paste", (e) => {
+        e.preventDefault();
+      });
+
+      // Prevent cut
+      textfield.input.addEventListener("cut", (e) => {
+        e.preventDefault();
+      });
+    }
+
     return {
       ...component,
       element: textfield.element,

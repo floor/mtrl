@@ -10,6 +10,11 @@ export const createKeyboardNavigation = (component) => {
   // Track tab navigation state
   let isTabNavigation = false;
 
+  // Typeahead search state
+  let typeaheadBuffer = "";
+  let typeaheadTimeout: ReturnType<typeof setTimeout> | null = null;
+  const TYPEAHEAD_DELAY = 500; // Reset buffer after 500ms of no typing
+
   // Add event listener to detect Tab key navigation
   const setupTabKeyDetection = () => {
     document.addEventListener("keydown", (e: KeyboardEvent) => {
@@ -35,7 +40,7 @@ export const createKeyboardNavigation = (component) => {
     const focusableElementsString =
       'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
     const elements = document.querySelectorAll(
-      focusableElementsString
+      focusableElementsString,
     ) as NodeListOf<HTMLElement>;
 
     // Convert to array and filter out hidden elements
@@ -47,22 +52,36 @@ export const createKeyboardNavigation = (component) => {
   };
 
   /**
+   * Resets the typeahead search buffer
+   */
+  const resetTypeahead = (): void => {
+    typeaheadBuffer = "";
+    if (typeaheadTimeout) {
+      clearTimeout(typeaheadTimeout);
+      typeaheadTimeout = null;
+    }
+  };
+
+  /**
    * Sets up initial focus within the menu
    * @param menuElement - The menu element to set focus within
    * @param interactionType - Type of interaction that opened the menu
    */
   const handleInitialFocus = (
     menuElement: HTMLElement,
-    interactionType: "keyboard" | "mouse"
+    interactionType: "keyboard" | "mouse",
   ): void => {
+    // Reset typeahead when menu opens
+    resetTypeahead();
+
     if (interactionType === "keyboard") {
       // Find all focusable items
       const items = Array.from(
         menuElement.querySelectorAll(
           `.${component.getClass("menu-item")}:not(.${component.getClass(
-            "menu-item--disabled"
-          )})`
-        )
+            "menu-item--disabled",
+          )})`,
+        ),
       ) as HTMLElement[];
 
       if (items.length > 0) {
@@ -81,8 +100,8 @@ export const createKeyboardNavigation = (component) => {
       // Still set up the first item as focusable
       const firstItem = menuElement.querySelector(
         `.${component.getClass("menu-item")}:not(.${component.getClass(
-          "menu-item--disabled"
-        )})`
+          "menu-item--disabled",
+        )})`,
       ) as HTMLElement;
       if (firstItem) {
         firstItem.setAttribute("tabindex", "0");
@@ -103,14 +122,14 @@ export const createKeyboardNavigation = (component) => {
       handleSubmenuClick: (
         item: MenuItem,
         index: number,
-        itemElement: HTMLElement
+        itemElement: HTMLElement,
       ) => void;
       handleNestedSubmenuClick: (
         item: MenuItem,
         index: number,
-        itemElement: HTMLElement
+        itemElement: HTMLElement,
       ) => void;
-    }
+    },
   ): void => {
     // Determine if this event is from the main menu or a submenu
     const isSubmenu =
@@ -123,9 +142,9 @@ export const createKeyboardNavigation = (component) => {
     const items = Array.from(
       menuElement.querySelectorAll(
         `.${component.getClass("menu-item")}:not(.${component.getClass(
-          "menu-item--disabled"
-        )})`
-      )
+          "menu-item--disabled",
+        )})`,
+      ),
     ) as HTMLElement[];
 
     if (items.length === 0) return;
@@ -145,10 +164,61 @@ export const createKeyboardNavigation = (component) => {
       }
     };
 
+    // Handle typeahead search for printable characters
+    if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      // Add character to buffer
+      typeaheadBuffer += e.key.toLowerCase();
+
+      // Clear existing timeout
+      if (typeaheadTimeout) {
+        clearTimeout(typeaheadTimeout);
+      }
+
+      // Set timeout to reset buffer
+      typeaheadTimeout = setTimeout(() => {
+        typeaheadBuffer = "";
+        typeaheadTimeout = null;
+      }, TYPEAHEAD_DELAY);
+
+      // Find matching item
+      const matchIndex = items.findIndex((item) => {
+        const textElement = item.querySelector(
+          `.${component.getClass("menu-item-text")}`,
+        );
+        const text = textElement?.textContent?.toLowerCase() || "";
+        return text.startsWith(typeaheadBuffer);
+      });
+
+      if (matchIndex !== -1) {
+        focusItem(matchIndex);
+      } else if (typeaheadBuffer.length > 1) {
+        // If no match with multiple chars, try just the last character
+        const lastChar = typeaheadBuffer.slice(-1);
+        const singleCharMatch = items.findIndex((item) => {
+          const textElement = item.querySelector(
+            `.${component.getClass("menu-item-text")}`,
+          );
+          const text = textElement?.textContent?.toLowerCase() || "";
+          return text.startsWith(lastChar);
+        });
+
+        if (singleCharMatch !== -1) {
+          typeaheadBuffer = lastChar; // Reset buffer to just this char
+          focusItem(singleCharMatch);
+        }
+      }
+
+      return;
+    }
+
     switch (e.key) {
       case "ArrowDown":
       case "Down":
         e.preventDefault();
+        e.stopPropagation();
         if (focusedItemIndex < 0) {
           focusItem(0);
         } else if (focusedItemIndex < items.length - 1) {
@@ -161,6 +231,7 @@ export const createKeyboardNavigation = (component) => {
       case "ArrowUp":
       case "Up":
         e.preventDefault();
+        e.stopPropagation();
         if (focusedItemIndex < 0) {
           focusItem(items.length - 1);
         } else if (focusedItemIndex > 0) {
@@ -172,17 +243,20 @@ export const createKeyboardNavigation = (component) => {
 
       case "Home":
         e.preventDefault();
+        e.stopPropagation();
         focusItem(0);
         break;
 
       case "End":
         e.preventDefault();
+        e.stopPropagation();
         focusItem(items.length - 1);
         break;
 
       case "Enter":
       case " ":
         e.preventDefault();
+        e.stopPropagation();
         if (focusedItemIndex >= 0) {
           items[focusedItemIndex].click();
         }
@@ -191,21 +265,22 @@ export const createKeyboardNavigation = (component) => {
       case "ArrowRight":
       case "Right":
         e.preventDefault();
+        e.stopPropagation();
         if (isSubmenu) {
           // In a submenu, right arrow opens nested submenus
           if (
             focusedItemIndex >= 0 &&
             items[focusedItemIndex].classList.contains(
-              `${component.getClass("menu-item--submenu")}`
+              `${component.getClass("menu-item--submenu")}`,
             )
           ) {
             const itemElement = items[focusedItemIndex];
             const itemIndex = parseInt(
               itemElement.getAttribute("data-index"),
-              10
+              10,
             );
             const parentMenu = itemElement.closest(
-              `.${component.getClass("menu--submenu")}`
+              `.${component.getClass("menu--submenu")}`,
             );
             const parentItemId = parentMenu?.getAttribute("data-parent-item");
 
@@ -216,7 +291,7 @@ export const createKeyboardNavigation = (component) => {
               actions.handleNestedSubmenuClick(
                 itemData,
                 itemIndex,
-                itemElement
+                itemElement,
               );
             }
           }
@@ -225,14 +300,14 @@ export const createKeyboardNavigation = (component) => {
           if (
             focusedItemIndex >= 0 &&
             items[focusedItemIndex].classList.contains(
-              `${component.getClass("menu-item--submenu")}`
+              `${component.getClass("menu-item--submenu")}`,
             )
           ) {
             // Get the correct menu item data
             const itemElement = items[focusedItemIndex];
             const itemIndex = parseInt(
               itemElement.getAttribute("data-index"),
-              10
+              10,
             );
             const itemData = state.items[itemIndex] as MenuItem;
 
@@ -245,6 +320,7 @@ export const createKeyboardNavigation = (component) => {
       case "ArrowLeft":
       case "Left":
         e.preventDefault();
+        e.stopPropagation();
         if (isSubmenu) {
           // In a submenu, left arrow returns to the parent menu
           if (state.activeSubmenuItem) {
@@ -254,7 +330,7 @@ export const createKeyboardNavigation = (component) => {
             // Get the current level
             const currentLevel = parseInt(
               menuElement.getAttribute("data-level") || "1",
-              10
+              10,
             );
 
             // Close this level of submenu
@@ -272,6 +348,7 @@ export const createKeyboardNavigation = (component) => {
 
       case "Escape":
         e.preventDefault();
+        e.stopPropagation();
         if (isSubmenu) {
           // In a submenu, Escape closes just the submenu
           if (state.activeSubmenuItem) {
@@ -281,7 +358,7 @@ export const createKeyboardNavigation = (component) => {
             // Get the current level
             const currentLevel = parseInt(
               menuElement.getAttribute("data-level") || "1",
-              10
+              10,
             );
 
             // Close this level of submenu
@@ -301,6 +378,13 @@ export const createKeyboardNavigation = (component) => {
         break;
 
       case "Tab":
+        // Clear typeahead buffer when closing
+        typeaheadBuffer = "";
+        if (typeaheadTimeout) {
+          clearTimeout(typeaheadTimeout);
+          typeaheadTimeout = null;
+        }
+
         // Close the menu when tabbing out and move focus to next focusable element
         e.preventDefault();
 
@@ -341,13 +425,13 @@ export const createKeyboardNavigation = (component) => {
   const setupKeyboardHandlers = (
     menuElement: HTMLElement,
     state: any,
-    actions: any
+    actions: any,
   ) => {
     // Make all menu items focusable via keyboard navigation
     const items = menuElement.querySelectorAll(
       `.${component.getClass("menu-item")}:not(.${component.getClass(
-        "menu-item--disabled"
-      )})`
+        "menu-item--disabled",
+      )})`,
     ) as NodeListOf<HTMLElement>;
     items.forEach((item) => {
       item.tabIndex = -1;
@@ -359,7 +443,7 @@ export const createKeyboardNavigation = (component) => {
     }
 
     menuElement.addEventListener("keydown", (e) =>
-      handleMenuKeydown(e, state, actions)
+      handleMenuKeydown(e, state, actions),
     );
   };
 
@@ -375,6 +459,7 @@ export const createKeyboardNavigation = (component) => {
     setupKeyboardHandlers,
     isTabNavigationActive,
     getFocusableElements,
+    resetTypeahead,
   };
 };
 
