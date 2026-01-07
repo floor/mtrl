@@ -595,9 +595,15 @@ const withController = (config: MenuConfig) => (component) => {
    */
   const handleWindowResize = (): void => {
     if (state.visible) {
-      const openerElement = getOpenerElement();
-      if (openerElement && component.position) {
-        component.position.positionMenu(openerElement);
+      if (config.closeOnResize) {
+        // Close menu on resize (better UX for select components)
+        closeMenu(undefined, true);
+      } else {
+        // Reposition menu on resize (default behavior)
+        const openerElement = getOpenerElement();
+        if (openerElement && component.position) {
+          component.position.positionMenu(openerElement);
+        }
       }
     }
   };

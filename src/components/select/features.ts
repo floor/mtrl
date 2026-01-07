@@ -156,6 +156,7 @@ export const withMenu =
       closeOnSelect: true,
       closeOnClickOutside: true,
       closeOnEscape: true,
+      closeOnResize: true, // Close menu on window resize for better UX
       offset: 0, // Set offset to 0 to eliminate gap between textfield and menu
     });
 
