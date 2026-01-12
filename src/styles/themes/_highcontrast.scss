@@ -1,0 +1,156 @@
+// src/styles/themes/_highcontrast.scss
+@use "../abstract/base" as *;
+@use "base-theme" as *;
+
+@include create-theme("highcontrast") {
+    // High contrast light theme
+    // Designed for WCAG AAA compliance (7:1 contrast ratio)
+
+    // Key colors - bold and saturated for visibility
+    --#{$prefix}-sys-color-primary: #0052cc;
+    --#{$prefix}-sys-color-on-primary: #ffffff;
+    --#{$prefix}-sys-color-primary-container: #cce0ff;
+    --#{$prefix}-sys-color-on-primary-container: #001a41;
+
+    --#{$prefix}-sys-color-secondary: #404040;
+    --#{$prefix}-sys-color-on-secondary: #ffffff;
+    --#{$prefix}-sys-color-secondary-container: #d9d9d9;
+    --#{$prefix}-sys-color-on-secondary-container: #000000;
+
+    --#{$prefix}-sys-color-tertiary: #006644;
+    --#{$prefix}-sys-color-on-tertiary: #ffffff;
+    --#{$prefix}-sys-color-tertiary-container: #ccf2e1;
+    --#{$prefix}-sys-color-on-tertiary-container: #00261a;
+
+    // Neutral colors - maximum contrast
+    --#{$prefix}-sys-color-surface: #ffffff;
+    --#{$prefix}-sys-color-surface-dim: #e6e6e6;
+    --#{$prefix}-sys-color-surface-bright: #ffffff;
+    --#{$prefix}-sys-color-surface-container-lowest: #ffffff;
+    --#{$prefix}-sys-color-surface-container-low: #f5f5f5;
+    --#{$prefix}-sys-color-surface-container: #eeeeee;
+    --#{$prefix}-sys-color-surface-container-high: #e0e0e0;
+    --#{$prefix}-sys-color-surface-container-highest: #d6d6d6;
+
+    --#{$prefix}-sys-color-on-surface: #000000;
+    --#{$prefix}-sys-color-on-surface-variant: #1a1a1a;
+
+    // Strong outlines for better element definition
+    --#{$prefix}-sys-color-outline: #000000;
+    --#{$prefix}-sys-color-outline-variant: #4d4d4d;
+
+    // Workaround: Override surface-rgb for disabled button visibility
+    --#{$prefix}-sys-color-surface-rgb: 0, 0, 0;
+
+    // Status colors - bold and distinct
+    --#{$prefix}-sys-color-error: #b80000;
+    --#{$prefix}-sys-color-error-rgb: 184, 0, 0;
+    --#{$prefix}-sys-color-on-error: #ffffff;
+    --#{$prefix}-sys-color-on-error-rgb: 255, 255, 255;
+    --#{$prefix}-sys-color-error-container: #ffd9d9;
+    --#{$prefix}-sys-color-error-container-rgb: 255, 217, 217;
+    --#{$prefix}-sys-color-on-error-container: #410000;
+    --#{$prefix}-sys-color-on-error-container-rgb: 65, 0, 0;
+
+    --#{$prefix}-sys-color-success: #006622;
+    --#{$prefix}-sys-color-success-rgb: 0, 102, 34;
+    --#{$prefix}-sys-color-on-success: #ffffff;
+    --#{$prefix}-sys-color-on-success-rgb: 255, 255, 255;
+    --#{$prefix}-sys-color-success-container: #ccf5d9;
+    --#{$prefix}-sys-color-success-container-rgb: 204, 245, 217;
+    --#{$prefix}-sys-color-on-success-container: #00260d;
+    --#{$prefix}-sys-color-on-success-container-rgb: 0, 38, 13;
+
+    --#{$prefix}-sys-color-warning: #7a5400;
+    --#{$prefix}-sys-color-warning-rgb: 122, 84, 0;
+    --#{$prefix}-sys-color-on-warning: #ffffff;
+    --#{$prefix}-sys-color-on-warning-rgb: 255, 255, 255;
+    --#{$prefix}-sys-color-warning-container: #ffeccc;
+    --#{$prefix}-sys-color-warning-container-rgb: 255, 236, 204;
+    --#{$prefix}-sys-color-on-warning-container: #261a00;
+    --#{$prefix}-sys-color-on-warning-container-rgb: 38, 26, 0;
+
+    --#{$prefix}-sys-color-info: #004080;
+    --#{$prefix}-sys-color-info-rgb: 0, 64, 128;
+    --#{$prefix}-sys-color-on-info: #ffffff;
+    --#{$prefix}-sys-color-on-info-rgb: 255, 255, 255;
+    --#{$prefix}-sys-color-info-container: #cce0ff;
+    --#{$prefix}-sys-color-info-container-rgb: 204, 224, 255;
+    --#{$prefix}-sys-color-on-info-container: #001433;
+    --#{$prefix}-sys-color-on-info-container-rgb: 0, 20, 51;
+
+    &[data-theme-mode="dark"] {
+        // High contrast dark theme
+        // Pure black background with bright text for maximum readability
+
+        // Key colors - bright and vivid for dark backgrounds
+        --#{$prefix}-sys-color-primary: #66b3ff;
+        --#{$prefix}-sys-color-on-primary: #001a33;
+        --#{$prefix}-sys-color-primary-container: #003d80;
+        --#{$prefix}-sys-color-on-primary-container: #cce0ff;
+
+        --#{$prefix}-sys-color-secondary: #c0c0c0;
+        --#{$prefix}-sys-color-on-secondary: #000000;
+        --#{$prefix}-sys-color-secondary-container: #404040;
+        --#{$prefix}-sys-color-on-secondary-container: #ffffff;
+
+        --#{$prefix}-sys-color-tertiary: #66e6aa;
+        --#{$prefix}-sys-color-on-tertiary: #00261a;
+        --#{$prefix}-sys-color-tertiary-container: #004d33;
+        --#{$prefix}-sys-color-on-tertiary-container: #ccf2e1;
+
+        // Neutral colors - pure black background, white text
+        --#{$prefix}-sys-color-surface: #000000;
+        --#{$prefix}-sys-color-surface-dim: #000000;
+        --#{$prefix}-sys-color-surface-bright: #2e2e2e;
+        --#{$prefix}-sys-color-surface-container-lowest: #000000;
+        --#{$prefix}-sys-color-surface-container-low: #121212;
+        --#{$prefix}-sys-color-surface-container: #1a1a1a;
+        --#{$prefix}-sys-color-surface-container-high: #242424;
+        --#{$prefix}-sys-color-surface-container-highest: #2e2e2e;
+
+        --#{$prefix}-sys-color-on-surface: #ffffff;
+        --#{$prefix}-sys-color-on-surface-variant: #e6e6e6;
+
+        // Strong outlines for dark mode
+        --#{$prefix}-sys-color-outline: #ffffff;
+        --#{$prefix}-sys-color-outline-variant: #b3b3b3;
+
+        // Status colors for dark mode - bright and distinct
+        --#{$prefix}-sys-color-error: #ff6666;
+        --#{$prefix}-sys-color-error-rgb: 255, 102, 102;
+        --#{$prefix}-sys-color-on-error: #330000;
+        --#{$prefix}-sys-color-on-error-rgb: 51, 0, 0;
+        --#{$prefix}-sys-color-error-container: #800000;
+        --#{$prefix}-sys-color-error-container-rgb: 128, 0, 0;
+        --#{$prefix}-sys-color-on-error-container: #ffcccc;
+        --#{$prefix}-sys-color-on-error-container-rgb: 255, 204, 204;
+
+        --#{$prefix}-sys-color-success: #66ff8c;
+        --#{$prefix}-sys-color-success-rgb: 102, 255, 140;
+        --#{$prefix}-sys-color-on-success: #003311;
+        --#{$prefix}-sys-color-on-success-rgb: 0, 51, 17;
+        --#{$prefix}-sys-color-success-container: #004d1a;
+        --#{$prefix}-sys-color-success-container-rgb: 0, 77, 26;
+        --#{$prefix}-sys-color-on-success-container: #ccffdd;
+        --#{$prefix}-sys-color-on-success-container-rgb: 204, 255, 221;
+
+        --#{$prefix}-sys-color-warning: #ffcc00;
+        --#{$prefix}-sys-color-warning-rgb: 255, 204, 0;
+        --#{$prefix}-sys-color-on-warning: #332900;
+        --#{$prefix}-sys-color-on-warning-rgb: 51, 41, 0;
+        --#{$prefix}-sys-color-warning-container: #664d00;
+        --#{$prefix}-sys-color-warning-container-rgb: 102, 77, 0;
+        --#{$prefix}-sys-color-on-warning-container: #ffe680;
+        --#{$prefix}-sys-color-on-warning-container-rgb: 255, 230, 128;
+
+        --#{$prefix}-sys-color-info: #80c4ff;
+        --#{$prefix}-sys-color-info-rgb: 128, 196, 255;
+        --#{$prefix}-sys-color-on-info: #001a33;
+        --#{$prefix}-sys-color-on-info-rgb: 0, 26, 51;
+        --#{$prefix}-sys-color-info-container: #003366;
+        --#{$prefix}-sys-color-info-container-rgb: 0, 51, 102;
+        --#{$prefix}-sys-color-on-info-container: #cce6ff;
+        --#{$prefix}-sys-color-on-info-container-rgb: 204, 230, 255;
+    }
+}

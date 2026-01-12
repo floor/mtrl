@@ -1,125 +1,126 @@
 // src/styles/themes/_brownbeige.scss
-@use '../abstract/base' as *;
-@use 'base-theme' as *;
+@use "../abstract/base" as *;
+@use "base-theme" as *;
 
-@include create-theme('brownbeige') {
-  // Key colors based on brown and beige combination
-  --#{$prefix}-sys-color-primary: #3E2723; // Deep brown as primary
-  --#{$prefix}-sys-color-primary-rgb: 62, 39, 35;
-  --#{$prefix}-sys-color-on-primary: #FFFFFF;
-  --#{$prefix}-sys-color-on-primary-rgb: 255, 255, 255;
-  --#{$prefix}-sys-color-primary-container: #FFDBD0;
-  --#{$prefix}-sys-color-primary-container-rgb: 255, 219, 208;
-  --#{$prefix}-sys-color-on-primary-container: #2C1512;
-  --#{$prefix}-sys-color-on-primary-container-rgb: 44, 21, 18;
-  
-  --#{$prefix}-sys-color-secondary: #D7CDB7; // Beige as secondary
-  --#{$prefix}-sys-color-secondary-rgb: 215, 205, 183;
-  --#{$prefix}-sys-color-on-secondary: #32302A;
-  --#{$prefix}-sys-color-on-secondary-rgb: 50, 48, 42;
-  --#{$prefix}-sys-color-secondary-container: #F6F0E4;
-  --#{$prefix}-sys-color-secondary-container-rgb: 246, 240, 228;
-  --#{$prefix}-sys-color-on-secondary-container: #3D3A2F;
-  --#{$prefix}-sys-color-on-secondary-container-rgb: 61, 58, 47;
-  
-  --#{$prefix}-sys-color-tertiary: #795548; // Medium brown as tertiary
-  --#{$prefix}-sys-color-tertiary-rgb: 121, 85, 72;
-  --#{$prefix}-sys-color-on-tertiary: #FFFFFF;
-  --#{$prefix}-sys-color-on-tertiary-rgb: 255, 255, 255;
-  --#{$prefix}-sys-color-tertiary-container: #FFD8C7;
-  --#{$prefix}-sys-color-tertiary-container-rgb: 255, 216, 199;
-  --#{$prefix}-sys-color-on-tertiary-container: #2E1F1A;
-  --#{$prefix}-sys-color-on-tertiary-container-rgb: 46, 31, 26;
+@include create-theme("brownbeige") {
+    // Key colors based on brown and beige combination
+    --#{$prefix}-sys-color-primary: #3e2723; // Deep brown as primary
+    --#{$prefix}-sys-color-primary-rgb: 62, 39, 35;
+    --#{$prefix}-sys-color-on-primary: #ffffff;
+    --#{$prefix}-sys-color-on-primary-rgb: 255, 255, 255;
+    --#{$prefix}-sys-color-primary-container: #ffdbd0;
+    --#{$prefix}-sys-color-primary-container-rgb: 255, 219, 208;
+    --#{$prefix}-sys-color-on-primary-container: #2c1512;
+    --#{$prefix}-sys-color-on-primary-container-rgb: 44, 21, 18;
 
-  // Neutral colors with warm undertones
-  --#{$prefix}-sys-color-surface: #FFFBF7;
-  --#{$prefix}-sys-color-surface-rgb: 255, 251, 247;
-  --#{$prefix}-sys-color-surface-dim: #EFE9E2;
-  --#{$prefix}-sys-color-surface-dim-rgb: 239, 233, 226;
-  --#{$prefix}-sys-color-surface-bright: #FFFBF7;
-  --#{$prefix}-sys-color-surface-bright-rgb: 255, 251, 247;
-  --#{$prefix}-sys-color-surface-container-lowest: #FFFFFF;
-  --#{$prefix}-sys-color-surface-container-lowest-rgb: 255, 255, 255;
-  --#{$prefix}-sys-color-surface-container-low: #FBF5EF;
-  --#{$prefix}-sys-color-surface-container-low-rgb: 251, 245, 239;
-  --#{$prefix}-sys-color-surface-container: #F5EFE9;
-  --#{$prefix}-sys-color-surface-container-rgb: 245, 239, 233;
-  --#{$prefix}-sys-color-surface-container-high: #EFE9E3;
-  --#{$prefix}-sys-color-surface-container-high-rgb: 239, 233, 227;
-  --#{$prefix}-sys-color-surface-container-highest: #E9E3DD;
-  --#{$prefix}-sys-color-surface-container-highest-rgb: 233, 227, 221;
-  
-  --#{$prefix}-sys-color-on-surface: #1F1B17;
-  --#{$prefix}-sys-color-on-surface-rgb: 31, 27, 23;
-  --#{$prefix}-sys-color-on-surface-variant: #4A443D;
-  --#{$prefix}-sys-color-on-surface-variant-rgb: 74, 68, 61;
-  
-  --#{$prefix}-sys-color-outline: #7A7267;
-  --#{$prefix}-sys-color-outline-rgb: 122, 114, 103;
-  --#{$prefix}-sys-color-outline-variant: #CBC3B8;
-  --#{$prefix}-sys-color-outline-variant-rgb: 203, 195, 184;
+    --#{$prefix}-sys-color-secondary: #d7cdb7; // Beige as secondary
+    --#{$prefix}-sys-color-secondary-rgb: 215, 205, 183;
+    --#{$prefix}-sys-color-on-secondary: #32302a;
+    --#{$prefix}-sys-color-on-secondary-rgb: 50, 48, 42;
+    --#{$prefix}-sys-color-secondary-container: #f6f0e4;
+    --#{$prefix}-sys-color-secondary-container-rgb: 246, 240, 228;
+    --#{$prefix}-sys-color-on-secondary-container: #3d3a2f;
+    --#{$prefix}-sys-color-on-secondary-container-rgb: 61, 58, 47;
 
-  // Include status colors for light theme
-  @include status-colors-light();
+    --#{$prefix}-sys-color-tertiary: #795548; // Medium brown as tertiary
+    --#{$prefix}-sys-color-tertiary-rgb: 121, 85, 72;
+    --#{$prefix}-sys-color-on-tertiary: #ffffff;
+    --#{$prefix}-sys-color-on-tertiary-rgb: 255, 255, 255;
+    --#{$prefix}-sys-color-tertiary-container: #ffd8c7;
+    --#{$prefix}-sys-color-tertiary-container-rgb: 255, 216, 199;
+    --#{$prefix}-sys-color-on-tertiary-container: #2e1f1a;
+    --#{$prefix}-sys-color-on-tertiary-container-rgb: 46, 31, 26;
 
-  &[data-theme-mode="dark"] {
-    // Key colors for dark mode
-    --#{$prefix}-sys-color-primary: #FFAB95; // Lighter brown
-    --#{$prefix}-sys-color-primary-rgb: 255, 171, 149;
-    --#{$prefix}-sys-color-on-primary: #4A2B23;
-    --#{$prefix}-sys-color-on-primary-rgb: 74, 43, 35;
-    --#{$prefix}-sys-color-primary-container: #653B31;
-    --#{$prefix}-sys-color-primary-container-rgb: 101, 59, 49;
-    --#{$prefix}-sys-color-on-primary-container: #FFDBD0;
-    --#{$prefix}-sys-color-on-primary-container-rgb: 255, 219, 208;
-    
-    --#{$prefix}-sys-color-secondary: #E0D6C0; // Lighter beige
-    --#{$prefix}-sys-color-secondary-rgb: 224, 214, 192;
-    --#{$prefix}-sys-color-on-secondary: #3D3A2F;
-    --#{$prefix}-sys-color-on-secondary-rgb: 61, 58, 47;
-    --#{$prefix}-sys-color-secondary-container: #554F43;
-    --#{$prefix}-sys-color-secondary-container-rgb: 85, 79, 67;
-    --#{$prefix}-sys-color-on-secondary-container: #F6F0E4;
-    --#{$prefix}-sys-color-on-secondary-container-rgb: 246, 240, 228;
-    
-    --#{$prefix}-sys-color-tertiary: #FFB59F; // Lighter medium brown
-    --#{$prefix}-sys-color-tertiary-rgb: 255, 181, 159;
-    --#{$prefix}-sys-color-on-tertiary: #4A2B1D;
-    --#{$prefix}-sys-color-on-tertiary-rgb: 74, 43, 29;
-    --#{$prefix}-sys-color-tertiary-container: #653F2F;
-    --#{$prefix}-sys-color-tertiary-container-rgb: 101, 63, 47;
-    --#{$prefix}-sys-color-on-tertiary-container: #FFD8C7;
-    --#{$prefix}-sys-color-on-tertiary-container-rgb: 255, 216, 199;
-
-    // Neutral colors for dark mode
-    --#{$prefix}-sys-color-surface: #1F1B17;
+    // Neutral colors with warm undertones
+    --#{$prefix}-sys-color-surface: #fffbf7;
+    // Workaround: Override surface-rgb for disabled button visibility
     --#{$prefix}-sys-color-surface-rgb: 31, 27, 23;
-    --#{$prefix}-sys-color-surface-dim: #17130F;
-    --#{$prefix}-sys-color-surface-dim-rgb: 23, 19, 15;
-    --#{$prefix}-sys-color-surface-bright: #3B332E;
-    --#{$prefix}-sys-color-surface-bright-rgb: 59, 51, 46;
-    --#{$prefix}-sys-color-surface-container-lowest: #130F0A;
-    --#{$prefix}-sys-color-surface-container-lowest-rgb: 19, 15, 10;
-    --#{$prefix}-sys-color-surface-container-low: #1F1B17;
-    --#{$prefix}-sys-color-surface-container-low-rgb: 31, 27, 23;
-    --#{$prefix}-sys-color-surface-container: #241F1B;
-    --#{$prefix}-sys-color-surface-container-rgb: 36, 31, 27;
-    --#{$prefix}-sys-color-surface-container-high: #2F2925;
-    --#{$prefix}-sys-color-surface-container-high-rgb: 47, 41, 37;
-    --#{$prefix}-sys-color-surface-container-highest: #3A332F;
-    --#{$prefix}-sys-color-surface-container-highest-rgb: 58, 51, 47;
-    
-    --#{$prefix}-sys-color-on-surface: #ECE0D8;
-    --#{$prefix}-sys-color-on-surface-rgb: 236, 224, 216;
-    --#{$prefix}-sys-color-on-surface-variant: #CBC3B8;
-    --#{$prefix}-sys-color-on-surface-variant-rgb: 203, 195, 184;
-    
-    --#{$prefix}-sys-color-outline: #948B7F;
-    --#{$prefix}-sys-color-outline-rgb: 148, 139, 127;
-    --#{$prefix}-sys-color-outline-variant: #4A443D;
-    --#{$prefix}-sys-color-outline-variant-rgb: 74, 68, 61;
+    --#{$prefix}-sys-color-surface-dim: #efe9e2;
+    --#{$prefix}-sys-color-surface-dim-rgb: 239, 233, 226;
+    --#{$prefix}-sys-color-surface-bright: #fffbf7;
+    --#{$prefix}-sys-color-surface-bright-rgb: 255, 251, 247;
+    --#{$prefix}-sys-color-surface-container-lowest: #ffffff;
+    --#{$prefix}-sys-color-surface-container-lowest-rgb: 255, 255, 255;
+    --#{$prefix}-sys-color-surface-container-low: #fbf5ef;
+    --#{$prefix}-sys-color-surface-container-low-rgb: 251, 245, 239;
+    --#{$prefix}-sys-color-surface-container: #f5efe9;
+    --#{$prefix}-sys-color-surface-container-rgb: 245, 239, 233;
+    --#{$prefix}-sys-color-surface-container-high: #efe9e3;
+    --#{$prefix}-sys-color-surface-container-high-rgb: 239, 233, 227;
+    --#{$prefix}-sys-color-surface-container-highest: #e9e3dd;
+    --#{$prefix}-sys-color-surface-container-highest-rgb: 233, 227, 221;
 
-    // Include status colors for dark theme
-    @include status-colors-dark();
-  }
+    --#{$prefix}-sys-color-on-surface: #1f1b17;
+    --#{$prefix}-sys-color-on-surface-rgb: 31, 27, 23;
+    --#{$prefix}-sys-color-on-surface-variant: #4a443d;
+    --#{$prefix}-sys-color-on-surface-variant-rgb: 74, 68, 61;
+
+    --#{$prefix}-sys-color-outline: #7a7267;
+    --#{$prefix}-sys-color-outline-rgb: 122, 114, 103;
+    --#{$prefix}-sys-color-outline-variant: #cbc3b8;
+    --#{$prefix}-sys-color-outline-variant-rgb: 203, 195, 184;
+
+    // Include status colors for light theme
+    @include status-colors-light();
+
+    &[data-theme-mode="dark"] {
+        // Key colors for dark mode
+        --#{$prefix}-sys-color-primary: #ffab95; // Lighter brown
+        --#{$prefix}-sys-color-primary-rgb: 255, 171, 149;
+        --#{$prefix}-sys-color-on-primary: #4a2b23;
+        --#{$prefix}-sys-color-on-primary-rgb: 74, 43, 35;
+        --#{$prefix}-sys-color-primary-container: #653b31;
+        --#{$prefix}-sys-color-primary-container-rgb: 101, 59, 49;
+        --#{$prefix}-sys-color-on-primary-container: #ffdbd0;
+        --#{$prefix}-sys-color-on-primary-container-rgb: 255, 219, 208;
+
+        --#{$prefix}-sys-color-secondary: #e0d6c0; // Lighter beige
+        --#{$prefix}-sys-color-secondary-rgb: 224, 214, 192;
+        --#{$prefix}-sys-color-on-secondary: #3d3a2f;
+        --#{$prefix}-sys-color-on-secondary-rgb: 61, 58, 47;
+        --#{$prefix}-sys-color-secondary-container: #554f43;
+        --#{$prefix}-sys-color-secondary-container-rgb: 85, 79, 67;
+        --#{$prefix}-sys-color-on-secondary-container: #f6f0e4;
+        --#{$prefix}-sys-color-on-secondary-container-rgb: 246, 240, 228;
+
+        --#{$prefix}-sys-color-tertiary: #ffb59f; // Lighter medium brown
+        --#{$prefix}-sys-color-tertiary-rgb: 255, 181, 159;
+        --#{$prefix}-sys-color-on-tertiary: #4a2b1d;
+        --#{$prefix}-sys-color-on-tertiary-rgb: 74, 43, 29;
+        --#{$prefix}-sys-color-tertiary-container: #653f2f;
+        --#{$prefix}-sys-color-tertiary-container-rgb: 101, 63, 47;
+        --#{$prefix}-sys-color-on-tertiary-container: #ffd8c7;
+        --#{$prefix}-sys-color-on-tertiary-container-rgb: 255, 216, 199;
+
+        // Neutral colors for dark mode
+        --#{$prefix}-sys-color-surface: #1f1b17;
+        --#{$prefix}-sys-color-surface-rgb: 31, 27, 23;
+        --#{$prefix}-sys-color-surface-dim: #17130f;
+        --#{$prefix}-sys-color-surface-dim-rgb: 23, 19, 15;
+        --#{$prefix}-sys-color-surface-bright: #3b332e;
+        --#{$prefix}-sys-color-surface-bright-rgb: 59, 51, 46;
+        --#{$prefix}-sys-color-surface-container-lowest: #130f0a;
+        --#{$prefix}-sys-color-surface-container-lowest-rgb: 19, 15, 10;
+        --#{$prefix}-sys-color-surface-container-low: #1f1b17;
+        --#{$prefix}-sys-color-surface-container-low-rgb: 31, 27, 23;
+        --#{$prefix}-sys-color-surface-container: #241f1b;
+        --#{$prefix}-sys-color-surface-container-rgb: 36, 31, 27;
+        --#{$prefix}-sys-color-surface-container-high: #2f2925;
+        --#{$prefix}-sys-color-surface-container-high-rgb: 47, 41, 37;
+        --#{$prefix}-sys-color-surface-container-highest: #3a332f;
+        --#{$prefix}-sys-color-surface-container-highest-rgb: 58, 51, 47;
+
+        --#{$prefix}-sys-color-on-surface: #ece0d8;
+        --#{$prefix}-sys-color-on-surface-rgb: 236, 224, 216;
+        --#{$prefix}-sys-color-on-surface-variant: #cbc3b8;
+        --#{$prefix}-sys-color-on-surface-variant-rgb: 203, 195, 184;
+
+        --#{$prefix}-sys-color-outline: #948b7f;
+        --#{$prefix}-sys-color-outline-rgb: 148, 139, 127;
+        --#{$prefix}-sys-color-outline-variant: #4a443d;
+        --#{$prefix}-sys-color-outline-variant-rgb: 74, 68, 61;
+
+        // Include status colors for dark theme
+        @include status-colors-dark();
+    }
 }

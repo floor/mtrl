@@ -1,77 +1,80 @@
 // src/styles/themes/_spring.scss
-@use '../abstract/base' as *;
-@use 'base-theme' as *;
+@use "../abstract/base" as *;
+@use "base-theme" as *;
 
-@include create-theme('spring') {
-  // Key colors generated from seed color #76D275 (fresh spring green)
-  --#{$prefix}-sys-color-primary: #006E2B;
-  --#{$prefix}-sys-color-on-primary: #FFFFFF;
-  --#{$prefix}-sys-color-primary-container: #95F99A;
-  --#{$prefix}-sys-color-on-primary-container: #002108;
-  
-  --#{$prefix}-sys-color-secondary: #526350;
-  --#{$prefix}-sys-color-on-secondary: #FFFFFF;
-  --#{$prefix}-sys-color-secondary-container: #D5E8CF;
-  --#{$prefix}-sys-color-on-secondary-container: #101F10;
-  
-  --#{$prefix}-sys-color-tertiary: #386667;
-  --#{$prefix}-sys-color-on-tertiary: #FFFFFF;
-  --#{$prefix}-sys-color-tertiary-container: #BBECEE;
-  --#{$prefix}-sys-color-on-tertiary-container: #002021;
+@include create-theme("spring") {
+    // Key colors generated from seed color #76D275 (fresh spring green)
+    --#{$prefix}-sys-color-primary: #006e2b;
+    --#{$prefix}-sys-color-on-primary: #ffffff;
+    --#{$prefix}-sys-color-primary-container: #95f99a;
+    --#{$prefix}-sys-color-on-primary-container: #002108;
 
-  // Neutral colors
-  --#{$prefix}-sys-color-surface: #F8FFF3;
-  --#{$prefix}-sys-color-surface-dim: #D9E8D3;
-  --#{$prefix}-sys-color-surface-bright: #F8FFF3;
-  --#{$prefix}-sys-color-surface-container-lowest: #FFFFFF;
-  --#{$prefix}-sys-color-surface-container-low: #F2FAED;
-  --#{$prefix}-sys-color-surface-container: #ECF4E7;
-  --#{$prefix}-sys-color-surface-container-high: #E6EEE1;
-  --#{$prefix}-sys-color-surface-container-highest: #E0E8DB;
-  
-  --#{$prefix}-sys-color-on-surface: #191D19;
-  --#{$prefix}-sys-color-on-surface-variant: #424940;
-  
-  --#{$prefix}-sys-color-outline: #727970;
-  --#{$prefix}-sys-color-outline-variant: #C1C9BE;
+    --#{$prefix}-sys-color-secondary: #526350;
+    --#{$prefix}-sys-color-on-secondary: #ffffff;
+    --#{$prefix}-sys-color-secondary-container: #d5e8cf;
+    --#{$prefix}-sys-color-on-secondary-container: #101f10;
 
-  // Include status colors for light theme
-  @include status-colors-light();
-
-  &[data-theme-mode="dark"] {
-    // Key colors
-    --#{$prefix}-sys-color-primary: #79DC80;
-    --#{$prefix}-sys-color-on-primary: #003914;
-    --#{$prefix}-sys-color-primary-container: #00531F;
-    --#{$prefix}-sys-color-on-primary-container: #95F99A;
-    
-    --#{$prefix}-sys-color-secondary: #B9CCB3;
-    --#{$prefix}-sys-color-on-secondary: #263424;
-    --#{$prefix}-sys-color-secondary-container: #3C4B3A;
-    --#{$prefix}-sys-color-on-secondary-container: #D5E8CF;
-    
-    --#{$prefix}-sys-color-tertiary: #A0D0D2;
-    --#{$prefix}-sys-color-on-tertiary: #003738;
-    --#{$prefix}-sys-color-tertiary-container: #1F4E4F;
-    --#{$prefix}-sys-color-on-tertiary-container: #BBECEE;
+    --#{$prefix}-sys-color-tertiary: #386667;
+    --#{$prefix}-sys-color-on-tertiary: #ffffff;
+    --#{$prefix}-sys-color-tertiary-container: #bbecee;
+    --#{$prefix}-sys-color-on-tertiary-container: #002021;
 
     // Neutral colors
-    --#{$prefix}-sys-color-surface: #121711;
-    --#{$prefix}-sys-color-surface-dim: #0D120C;
-    --#{$prefix}-sys-color-surface-bright: #2D3229;
-    --#{$prefix}-sys-color-surface-container-lowest: #0A0F09;
-    --#{$prefix}-sys-color-surface-container-low: #121711;
-    --#{$prefix}-sys-color-surface-container: #161B15;
-    --#{$prefix}-sys-color-surface-container-high: #20251E;
-    --#{$prefix}-sys-color-surface-container-highest: #2A2F27;
-    
-    --#{$prefix}-sys-color-on-surface: #D9E3D4;
-    --#{$prefix}-sys-color-on-surface-variant: #C1C9BE;
-    
-    --#{$prefix}-sys-color-outline: #8B9388;
-    --#{$prefix}-sys-color-outline-variant: #424940;
+    --#{$prefix}-sys-color-surface: #f8fff3;
+    --#{$prefix}-sys-color-surface-dim: #d9e8d3;
+    --#{$prefix}-sys-color-surface-bright: #f8fff3;
+    --#{$prefix}-sys-color-surface-container-lowest: #ffffff;
+    --#{$prefix}-sys-color-surface-container-low: #f2faed;
+    --#{$prefix}-sys-color-surface-container: #ecf4e7;
+    --#{$prefix}-sys-color-surface-container-high: #e6eee1;
+    --#{$prefix}-sys-color-surface-container-highest: #e0e8db;
 
-    // Include status colors for dark theme
-    @include status-colors-dark();
-  }
+    --#{$prefix}-sys-color-on-surface: #191d19;
+    --#{$prefix}-sys-color-on-surface-variant: #424940;
+
+    --#{$prefix}-sys-color-outline: #727970;
+    --#{$prefix}-sys-color-outline-variant: #c1c9be;
+
+    // Workaround: Override surface-rgb for disabled button visibility
+    --#{$prefix}-sys-color-surface-rgb: 25, 29, 25;
+
+    // Include status colors for light theme
+    @include status-colors-light();
+
+    &[data-theme-mode="dark"] {
+        // Key colors
+        --#{$prefix}-sys-color-primary: #79dc80;
+        --#{$prefix}-sys-color-on-primary: #003914;
+        --#{$prefix}-sys-color-primary-container: #00531f;
+        --#{$prefix}-sys-color-on-primary-container: #95f99a;
+
+        --#{$prefix}-sys-color-secondary: #b9ccb3;
+        --#{$prefix}-sys-color-on-secondary: #263424;
+        --#{$prefix}-sys-color-secondary-container: #3c4b3a;
+        --#{$prefix}-sys-color-on-secondary-container: #d5e8cf;
+
+        --#{$prefix}-sys-color-tertiary: #a0d0d2;
+        --#{$prefix}-sys-color-on-tertiary: #003738;
+        --#{$prefix}-sys-color-tertiary-container: #1f4e4f;
+        --#{$prefix}-sys-color-on-tertiary-container: #bbecee;
+
+        // Neutral colors
+        --#{$prefix}-sys-color-surface: #121711;
+        --#{$prefix}-sys-color-surface-dim: #0d120c;
+        --#{$prefix}-sys-color-surface-bright: #2d3229;
+        --#{$prefix}-sys-color-surface-container-lowest: #0a0f09;
+        --#{$prefix}-sys-color-surface-container-low: #121711;
+        --#{$prefix}-sys-color-surface-container: #161b15;
+        --#{$prefix}-sys-color-surface-container-high: #20251e;
+        --#{$prefix}-sys-color-surface-container-highest: #2a2f27;
+
+        --#{$prefix}-sys-color-on-surface: #d9e3d4;
+        --#{$prefix}-sys-color-on-surface-variant: #c1c9be;
+
+        --#{$prefix}-sys-color-outline: #8b9388;
+        --#{$prefix}-sys-color-outline-variant: #424940;
+
+        // Include status colors for dark theme
+        @include status-colors-dark();
+    }
 }

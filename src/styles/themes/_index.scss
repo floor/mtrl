@@ -1,19 +1,21 @@
 // src/styles/themes/_index.scss
-@forward 'base-theme';
-@forward 'baseline';
+@forward "base-theme";
+@forward "baseline";
 
-@forward 'ocean';
-@forward 'forest';
-@forward 'sunset';
+@forward "ocean";
+@forward "forest";
+@forward "sunset";
 
-@forward 'spring';
-@forward 'summer';
-@forward 'autumn';
-@forward 'winter';
+@forward "spring";
+@forward "summer";
+@forward "autumn";
+@forward "winter";
 
-@forward 'brownbeige';
-@forward 'browngreen';
-@forward 'sageivory';
-@forward 'tealcaramel';
+@forward "brownbeige";
+@forward "browngreen";
+@forward "sageivory";
+@forward "tealcaramel";
 
-@forward 'material';
+@forward "material";
+
+@forward "highcontrast";

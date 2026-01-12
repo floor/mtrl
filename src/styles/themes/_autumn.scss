@@ -1,105 +1,107 @@
 // src/styles/themes/_autumn.scss
-@use '../abstract/base' as *;
-@use 'base-theme' as *;
+@use "../abstract/base" as *;
+@use "base-theme" as *;
 
-@include create-theme('autumn') {
-  // Key colors with brown as primary and red as secondary
-  --#{$prefix}-sys-color-primary: #795548; // Rich brown as primary color
-  --#{$prefix}-sys-color-on-primary: #FFFFFF;
-  --#{$prefix}-sys-color-primary-container: #FFDCC7;
-  --#{$prefix}-sys-color-on-primary-container: #2C1500;
-  
-  --#{$prefix}-sys-color-secondary: #A02A2A; // Autumn red as secondary
-  --#{$prefix}-sys-color-on-secondary: #FFFFFF;
-  --#{$prefix}-sys-color-secondary-container:  #EDD9B9;
-  --#{$prefix}-sys-color-on-secondary-container: #410001;
-  
-  --#{$prefix}-sys-color-tertiary: #4D6642; // Dark green like evergreen trees
-  --#{$prefix}-sys-color-on-tertiary: #FFFFFF;
-  --#{$prefix}-sys-color-tertiary-container: #CFE9BE;
-  --#{$prefix}-sys-color-on-tertiary-container: #0A2008;
-  
-  --#{$prefix}-sys-color-quaternary: #8B6500; // Golden yellow like autumn leaves
-  --#{$prefix}-sys-color-on-quaternary: #FFFFFF;
-  --#{$prefix}-sys-color-quaternary-container: #FFDF8A;
-  --#{$prefix}-sys-color-on-quaternary-container: #2C1F00;
+@include create-theme("autumn") {
+    // Key colors with brown as primary and red as secondary
+    --#{$prefix}-sys-color-primary: #795548; // Rich brown as primary color
+    --#{$prefix}-sys-color-on-primary: #ffffff;
+    --#{$prefix}-sys-color-primary-container: #ffdcc7;
+    --#{$prefix}-sys-color-on-primary-container: #2c1500;
 
-  // Neutral colors with warm, earthy undertones
-  --#{$prefix}-sys-color-surface: #FFFBF7;
-  --#{$prefix}-sys-color-surface-dim: #EAD7CE;
-  --#{$prefix}-sys-color-surface-bright: #FFFBF7;
-  --#{$prefix}-sys-color-surface-container-lowest: #FFFFFF;
-  --#{$prefix}-sys-color-surface-container-low: #FFF0EA;
-  --#{$prefix}-sys-color-surface-container: #F5E1D7;
-  --#{$prefix}-sys-color-surface-container-high: #EFDBD1;
-  --#{$prefix}-sys-color-surface-container-highest: #E9D5CB;
-  
-  --#{$prefix}-sys-color-on-surface: #201A17;
-  --#{$prefix}-sys-color-on-surface-variant: #53433C;
-  
-  --#{$prefix}-sys-color-outline: #85736C;
-  --#{$prefix}-sys-color-outline-variant: #D7C1BA;
+    --#{$prefix}-sys-color-secondary: #a02a2a; // Autumn red as secondary
+    --#{$prefix}-sys-color-on-secondary: #ffffff;
+    --#{$prefix}-sys-color-secondary-container: #edd9b9;
+    --#{$prefix}-sys-color-on-secondary-container: #410001;
 
-  // Success colors
-  --#{$prefix}-sys-color-success: #85CFA9;
-  --#{$prefix}-sys-color-success-rgb: 133, 207, 169;
-  --#{$prefix}-sys-color-on-success: #00392D;
-  --#{$prefix}-sys-color-on-success-rgb: 0, 57, 45;
-  
-  // Warning colors
-  --#{$prefix}-sys-color-warning: #FFB95C;
-  --#{$prefix}-sys-color-warning-rgb: 255, 185, 92;
-  --#{$prefix}-sys-color-on-warning: #3F2200;
-  --#{$prefix}-sys-color-on-warning-rgb: 63, 34, 0;
-  
-  // Info colors
-  --#{$prefix}-sys-color-info: #99CBFF;
-  --#{$prefix}-sys-color-info-rgb: 153, 203, 255;
-  --#{$prefix}-sys-color-on-info: #003060;
-  --#{$prefix}-sys-color-on-info-rgb: 0, 48, 96;
+    --#{$prefix}-sys-color-tertiary: #4d6642; // Dark green like evergreen trees
+    --#{$prefix}-sys-color-on-tertiary: #ffffff;
+    --#{$prefix}-sys-color-tertiary-container: #cfe9be;
+    --#{$prefix}-sys-color-on-tertiary-container: #0a2008;
+
+    --#{$prefix}-sys-color-quaternary: #8b6500; // Golden yellow like autumn leaves
+    --#{$prefix}-sys-color-on-quaternary: #ffffff;
+    --#{$prefix}-sys-color-quaternary-container: #ffdf8a;
+    --#{$prefix}-sys-color-on-quaternary-container: #2c1f00;
+
+    // Neutral colors with warm, earthy undertones
+    --#{$prefix}-sys-color-surface: #fffbf7;
+    --#{$prefix}-sys-color-surface-dim: #ead7ce;
+    --#{$prefix}-sys-color-surface-bright: #fffbf7;
+    --#{$prefix}-sys-color-surface-container-lowest: #ffffff;
+    --#{$prefix}-sys-color-surface-container-low: #fff0ea;
+    --#{$prefix}-sys-color-surface-container: #f5e1d7;
+    --#{$prefix}-sys-color-surface-container-high: #efdbd1;
+    --#{$prefix}-sys-color-surface-container-highest: #e9d5cb;
+
+    --#{$prefix}-sys-color-on-surface: #201a17;
+    --#{$prefix}-sys-color-on-surface-variant: #53433c;
+
+    --#{$prefix}-sys-color-outline: #85736c;
+    --#{$prefix}-sys-color-outline-variant: #d7c1ba;
+
+    // Workaround: Override surface-rgb for disabled button visibility
+    --#{$prefix}-sys-color-surface-rgb: 32, 26, 23;
+    // Success colors
+    --#{$prefix}-sys-color-success: #85cfa9;
+    --#{$prefix}-sys-color-success-rgb: 133, 207, 169;
+    --#{$prefix}-sys-color-on-success: #00392d;
+    --#{$prefix}-sys-color-on-success-rgb: 0, 57, 45;
+
+    // Warning colors
+    --#{$prefix}-sys-color-warning: #ffb95c;
+    --#{$prefix}-sys-color-warning-rgb: 255, 185, 92;
+    --#{$prefix}-sys-color-on-warning: #3f2200;
+    --#{$prefix}-sys-color-on-warning-rgb: 63, 34, 0;
+
+    // Info colors
+    --#{$prefix}-sys-color-info: #99cbff;
+    --#{$prefix}-sys-color-info-rgb: 153, 203, 255;
+    --#{$prefix}-sys-color-on-info: #003060;
+    --#{$prefix}-sys-color-on-info-rgb: 0, 48, 96;
 
     // Include status colors for light theme
-  @include status-colors-light();
+    @include status-colors-light();
 
-  &[data-theme-mode="dark"] {
-    // Key colors
-    --#{$prefix}-sys-color-primary: #DDB995; // Softer brown
-    --#{$prefix}-sys-color-on-primary: #422B09;
-    --#{$prefix}-sys-color-primary-container: #5D3F1C;
-    --#{$prefix}-sys-color-on-primary-container: #FFDCC7;
-    
-    --#{$prefix}-sys-color-secondary: #FFB4AB; // Vibrant red
-    --#{$prefix}-sys-color-on-secondary: #690004;
-    --#{$prefix}-sys-color-secondary-container: #6A3A22;
-    --#{$prefix}-sys-color-on-secondary-container: #FFDAD4;
-    
-    --#{$prefix}-sys-color-tertiary: #B4CCA4; // Muted green
-    --#{$prefix}-sys-color-on-tertiary: #213515;
-    --#{$prefix}-sys-color-tertiary-container: #384F2B;
-    --#{$prefix}-sys-color-on-tertiary-container: #CFE9BE;
-    
-    --#{$prefix}-sys-color-quaternary: #FFC147;
-    --#{$prefix}-sys-color-on-quaternary: #463300;
-    --#{$prefix}-sys-color-quaternary-container: #644900;
-    --#{$prefix}-sys-color-on-quaternary-container: #FFDF8A;
+    &[data-theme-mode="dark"] {
+        // Key colors
+        --#{$prefix}-sys-color-primary: #ddb995; // Softer brown
+        --#{$prefix}-sys-color-on-primary: #422b09;
+        --#{$prefix}-sys-color-primary-container: #5d3f1c;
+        --#{$prefix}-sys-color-on-primary-container: #ffdcc7;
 
-    // Include status colors for dark theme
-    @include status-colors-dark();
+        --#{$prefix}-sys-color-secondary: #ffb4ab; // Vibrant red
+        --#{$prefix}-sys-color-on-secondary: #690004;
+        --#{$prefix}-sys-color-secondary-container: #6a3a22;
+        --#{$prefix}-sys-color-on-secondary-container: #ffdad4;
 
-    // Neutral colors
-    --#{$prefix}-sys-color-surface: #201A17;
-    --#{$prefix}-sys-color-surface-dim: #17120F;
-    --#{$prefix}-sys-color-surface-bright: #3D3631;
-    --#{$prefix}-sys-color-surface-container-lowest: #130E0B;
-    --#{$prefix}-sys-color-surface-container-low: #201A17;
-    --#{$prefix}-sys-color-surface-container: #241E1A;
-    --#{$prefix}-sys-color-surface-container-high: #2E2723;
-    --#{$prefix}-sys-color-surface-container-highest: #39322D;
-    
-    --#{$prefix}-sys-color-on-surface: #EDE0D9;
-    --#{$prefix}-sys-color-on-surface-variant: #D7C1BA;
-    
-    --#{$prefix}-sys-color-outline: #A08C85;
-    --#{$prefix}-sys-color-outline-variant: #53433C;
-  }
+        --#{$prefix}-sys-color-tertiary: #b4cca4; // Muted green
+        --#{$prefix}-sys-color-on-tertiary: #213515;
+        --#{$prefix}-sys-color-tertiary-container: #384f2b;
+        --#{$prefix}-sys-color-on-tertiary-container: #cfe9be;
+
+        --#{$prefix}-sys-color-quaternary: #ffc147;
+        --#{$prefix}-sys-color-on-quaternary: #463300;
+        --#{$prefix}-sys-color-quaternary-container: #644900;
+        --#{$prefix}-sys-color-on-quaternary-container: #ffdf8a;
+
+        // Include status colors for dark theme
+        @include status-colors-dark();
+
+        // Neutral colors
+        --#{$prefix}-sys-color-surface: #201a17;
+        --#{$prefix}-sys-color-surface-dim: #17120f;
+        --#{$prefix}-sys-color-surface-bright: #3d3631;
+        --#{$prefix}-sys-color-surface-container-lowest: #130e0b;
+        --#{$prefix}-sys-color-surface-container-low: #201a17;
+        --#{$prefix}-sys-color-surface-container: #241e1a;
+        --#{$prefix}-sys-color-surface-container-high: #2e2723;
+        --#{$prefix}-sys-color-surface-container-highest: #39322d;
+
+        --#{$prefix}-sys-color-on-surface: #ede0d9;
+        --#{$prefix}-sys-color-on-surface-variant: #d7c1ba;
+
+        --#{$prefix}-sys-color-outline: #a08c85;
+        --#{$prefix}-sys-color-outline-variant: #53433c;
+    }
 }

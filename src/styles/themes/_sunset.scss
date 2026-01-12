@@ -1,60 +1,80 @@
 // src/styles/themes/_sunset.scss
-@use '../abstract/base' as *;
-@use 'base-theme' as *;
+@use "../abstract/base" as *;
+@use "base-theme" as *;
 
-@include create-theme('sunset') {
-  // Key colors generated from seed color #D35400
-  --#{$prefix}-sys-color-primary: #B34700;
-  --#{$prefix}-sys-color-on-primary: #FFFFFF;
-  --#{$prefix}-sys-color-primary-container: #FFDBC8;
-  --#{$prefix}-sys-color-on-primary-container: #3A1500;
-  
-  --#{$prefix}-sys-color-secondary: #775648;
-  --#{$prefix}-sys-color-on-secondary: #FFFFFF;
-  --#{$prefix}-sys-color-secondary-container: #FFDBD0;
-  --#{$prefix}-sys-color-on-secondary-container: #2C160C;
-  
-  --#{$prefix}-sys-color-tertiary: #705C2E;
-  --#{$prefix}-sys-color-on-tertiary: #FFFFFF;
-  --#{$prefix}-sys-color-tertiary-container: #FCDFAA;
-  --#{$prefix}-sys-color-on-tertiary-container: #261A00;
+@include create-theme("sunset") {
+    // Key colors generated from seed color #D35400
+    --#{$prefix}-sys-color-primary: #b34700;
+    --#{$prefix}-sys-color-on-primary: #ffffff;
+    --#{$prefix}-sys-color-primary-container: #ffdbc8;
+    --#{$prefix}-sys-color-on-primary-container: #3a1500;
 
-  // Neutral colors
-  --#{$prefix}-sys-color-surface: #FFFBFF;
-  --#{$prefix}-sys-color-surface-dim: #E5E1E6;
-  --#{$prefix}-sys-color-surface-bright: #FFFBFF;
-  --#{$prefix}-sys-color-surface-container-lowest: #FFFFFF;
-  --#{$prefix}-sys-color-surface-container-low: #FBF1F2;
-  --#{$prefix}-sys-color-surface-container: #F3EBE7;
-  --#{$prefix}-sys-color-surface-container-high: #EDE5E1;
-  --#{$prefix}-sys-color-surface-container-highest: #E7DFDB;
-  
-  --#{$prefix}-sys-color-on-surface: #201A18;
-  --#{$prefix}-sys-color-on-surface-variant: #53433E;
-  
-  --#{$prefix}-sys-color-outline: #85736D;
-  --#{$prefix}-sys-color-outline-variant: #D8C2BB;
+    --#{$prefix}-sys-color-secondary: #775648;
+    --#{$prefix}-sys-color-on-secondary: #ffffff;
+    --#{$prefix}-sys-color-secondary-container: #ffdbd0;
+    --#{$prefix}-sys-color-on-secondary-container: #2c160c;
 
-  // Include status colors for light theme
-  @include status-colors-light();
+    --#{$prefix}-sys-color-tertiary: #705c2e;
+    --#{$prefix}-sys-color-on-tertiary: #ffffff;
+    --#{$prefix}-sys-color-tertiary-container: #fcdfaa;
+    --#{$prefix}-sys-color-on-tertiary-container: #261a00;
 
-   &[data-theme-mode="dark"] {
-    --#{$prefix}-sys-color-primary: #FFB686;
-    --#{$prefix}-sys-color-on-primary: #5C2800;
-    --#{$prefix}-sys-color-primary-container: #833B00;
-    --#{$prefix}-sys-color-on-primary-container: #FFE0CC;
-    
-    --#{$prefix}-sys-color-secondary: #FFB98C;
-    --#{$prefix}-sys-color-on-secondary: #492900;
-    --#{$prefix}-sys-color-secondary-container: #663D00;
-    --#{$prefix}-sys-color-on-secondary-container: #FFE5D0;
-    
-    --#{$prefix}-sys-color-surface: #201210;
-    --#{$prefix}-sys-color-on-surface: #FFD9C7;
-    --#{$prefix}-sys-color-surface-container: #2B1714;
-    
-    --#{$prefix}-sys-color-outline: #B89784;
-    // Include status colors for dark theme
-    @include status-colors-dark();
-  }
+    // Neutral colors
+    --#{$prefix}-sys-color-surface: #fffbff;
+    --#{$prefix}-sys-color-surface-dim: #e5e1e6;
+    --#{$prefix}-sys-color-surface-bright: #fffbff;
+    --#{$prefix}-sys-color-surface-container-lowest: #ffffff;
+    --#{$prefix}-sys-color-surface-container-low: #fbf1f2;
+    --#{$prefix}-sys-color-surface-container: #f3ebe7;
+    --#{$prefix}-sys-color-surface-container-high: #ede5e1;
+    --#{$prefix}-sys-color-surface-container-highest: #e7dfdb;
+
+    --#{$prefix}-sys-color-on-surface: #201a18;
+    --#{$prefix}-sys-color-on-surface-variant: #53433e;
+
+    --#{$prefix}-sys-color-outline: #85736d;
+    --#{$prefix}-sys-color-outline-variant: #d8c2bb;
+
+    // Workaround: Override surface-rgb for disabled button visibility
+    --#{$prefix}-sys-color-surface-rgb: 32, 26, 24;
+
+    // Include status colors for light theme
+    @include status-colors-light();
+
+    &[data-theme-mode="dark"] {
+        // Key colors
+        --#{$prefix}-sys-color-primary: #ffb686;
+        --#{$prefix}-sys-color-on-primary: #5c2800;
+        --#{$prefix}-sys-color-primary-container: #833b00;
+        --#{$prefix}-sys-color-on-primary-container: #ffdbc8;
+
+        --#{$prefix}-sys-color-secondary: #e7bda8;
+        --#{$prefix}-sys-color-on-secondary: #44291b;
+        --#{$prefix}-sys-color-secondary-container: #5d3f30;
+        --#{$prefix}-sys-color-on-secondary-container: #ffdbd0;
+
+        --#{$prefix}-sys-color-tertiary: #dfc38c;
+        --#{$prefix}-sys-color-on-tertiary: #3d2e05;
+        --#{$prefix}-sys-color-tertiary-container: #564419;
+        --#{$prefix}-sys-color-on-tertiary-container: #fcdfaa;
+
+        // Neutral colors
+        --#{$prefix}-sys-color-surface: #1a1110;
+        --#{$prefix}-sys-color-surface-dim: #1a1110;
+        --#{$prefix}-sys-color-surface-bright: #423735;
+        --#{$prefix}-sys-color-surface-container-lowest: #140c0b;
+        --#{$prefix}-sys-color-surface-container-low: #231917;
+        --#{$prefix}-sys-color-surface-container: #271d1b;
+        --#{$prefix}-sys-color-surface-container-high: #322826;
+        --#{$prefix}-sys-color-surface-container-highest: #3d3230;
+
+        --#{$prefix}-sys-color-on-surface: #f0dfd9;
+        --#{$prefix}-sys-color-on-surface-variant: #d8c2bb;
+
+        --#{$prefix}-sys-color-outline: #a08c85;
+        --#{$prefix}-sys-color-outline-variant: #53433e;
+
+        // Include status colors for dark theme
+        @include status-colors-dark();
+    }
 }

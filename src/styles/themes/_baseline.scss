@@ -1,173 +1,174 @@
 // src/styles/themes/_baseline.scss
-@use '../abstract/base' as *;
-@use 'base-theme' as *;
+@use "../abstract/base" as *;
+@use "base-theme" as *;
 
 // Variables for light theme (default)
 @mixin baseline-light-variables {
-  // Key colors
-  --#{$prefix}-sys-color-primary: #6750A4;
-  --#{$prefix}-sys-color-primary-rgb: 103, 80, 164;
-  --#{$prefix}-sys-color-on-primary: #FFFFFF;
-  --#{$prefix}-sys-color-on-primary-rgb: 255, 255, 255;
-  --#{$prefix}-sys-color-primary-container: #EADDFF;
-  --#{$prefix}-sys-color-primary-container-rgb: 234, 221, 255;
-  --#{$prefix}-sys-color-on-primary-container: #21005D;
-  --#{$prefix}-sys-color-on-primary-container-rgb: 33, 0, 93;
-  
-  --#{$prefix}-sys-color-secondary: #625B71;
-  --#{$prefix}-sys-color-secondary-rgb: 98, 91, 113;
-  --#{$prefix}-sys-color-on-secondary: #FFFFFF;
-  --#{$prefix}-sys-color-on-secondary-rgb: 255, 255, 255;
-  --#{$prefix}-sys-color-secondary-container: #E8DEF8;
-  --#{$prefix}-sys-color-secondary-container-rgb: 232, 222, 248;
-  --#{$prefix}-sys-color-on-secondary-container: #1D192B;
-  --#{$prefix}-sys-color-on-secondary-container-rgb: 29, 25, 43;
-  
-  --#{$prefix}-sys-color-tertiary: #7D5260;
-  --#{$prefix}-sys-color-tertiary-rgb: 125, 82, 96;
-  --#{$prefix}-sys-color-on-tertiary: #FFFFFF;
-  --#{$prefix}-sys-color-on-tertiary-rgb: 255, 255, 255;
-  --#{$prefix}-sys-color-tertiary-container: #FFD8E4;
-  --#{$prefix}-sys-color-tertiary-container-rgb: 255, 216, 228;
-  --#{$prefix}-sys-color-on-tertiary-container: #31111D;
-  --#{$prefix}-sys-color-on-tertiary-container-rgb: 49, 17, 29;
+    // Key colors
+    --#{$prefix}-sys-color-primary: #6750a4;
+    --#{$prefix}-sys-color-primary-rgb: 103, 80, 164;
+    --#{$prefix}-sys-color-on-primary: #ffffff;
+    --#{$prefix}-sys-color-on-primary-rgb: 255, 255, 255;
+    --#{$prefix}-sys-color-primary-container: #eaddff;
+    --#{$prefix}-sys-color-primary-container-rgb: 234, 221, 255;
+    --#{$prefix}-sys-color-on-primary-container: #21005d;
+    --#{$prefix}-sys-color-on-primary-container-rgb: 33, 0, 93;
 
-  // Neutral colors
-  --#{$prefix}-sys-color-surface: #FFFBFE;
-  --#{$prefix}-sys-color-surface-rgb: 255, 251, 254;
-  --#{$prefix}-sys-color-surface-dim: #DED8E1;
-  --#{$prefix}-sys-color-surface-dim-rgb: 222, 216, 225;
-  --#{$prefix}-sys-color-surface-bright: #FFF8F7;
-  --#{$prefix}-sys-color-surface-bright-rgb: 255, 248, 247;
-  --#{$prefix}-sys-color-surface-container-lowest: #FFFFFF;
-  --#{$prefix}-sys-color-surface-container-lowest-rgb: 255, 255, 255;
-  --#{$prefix}-sys-color-surface-container-low: #F7F2FA;
-  --#{$prefix}-sys-color-surface-container-low-rgb: 247, 242, 250;
-  --#{$prefix}-sys-color-surface-container: #F3EDF7;
-  --#{$prefix}-sys-color-surface-container-rgb: 243, 237, 247;
-  --#{$prefix}-sys-color-surface-container-high: #ECE6F0;
-  --#{$prefix}-sys-color-surface-container-high-rgb: 236, 230, 240;
-  --#{$prefix}-sys-color-surface-container-highest: #E6E0E9;
-  --#{$prefix}-sys-color-surface-container-highest-rgb: 230, 224, 233;
-  
-  --#{$prefix}-sys-color-on-surface: #1C1B1F;
-  --#{$prefix}-sys-color-on-surface-rgb: 28, 27, 31;
-  --#{$prefix}-sys-color-on-surface-variant: #49454F;
-  --#{$prefix}-sys-color-on-surface-variant-rgb: 73, 69, 79;
-  
-  // Additional colors
-  --#{$prefix}-sys-color-outline: #79747E;
-  --#{$prefix}-sys-color-outline-rgb: 121, 116, 126;
-  --#{$prefix}-sys-color-outline-variant: #CAC4D0;
-  --#{$prefix}-sys-color-outline-variant-rgb: 202, 196, 208;
-  --#{$prefix}-sys-color-shadow: #000000;
-  --#{$prefix}-sys-color-shadow-rgb: 0, 0, 0;
-  --#{$prefix}-sys-color-scrim: #000000;
-  --#{$prefix}-sys-color-scrim-rgb: 0, 0, 0;
-  --#{$prefix}-sys-color-inverse-surface: #313033;
-  --#{$prefix}-sys-color-inverse-surface-rgb: 49, 48, 51;
-  --#{$prefix}-sys-color-inverse-on-surface: #F4EFF4;
-  --#{$prefix}-sys-color-inverse-on-surface-rgb: 244, 239, 244;
-  --#{$prefix}-sys-color-inverse-primary: #D0BCFF;
-  --#{$prefix}-sys-color-inverse-primary-rgb: 208, 188, 255;
+    --#{$prefix}-sys-color-secondary: #625b71;
+    --#{$prefix}-sys-color-secondary-rgb: 98, 91, 113;
+    --#{$prefix}-sys-color-on-secondary: #ffffff;
+    --#{$prefix}-sys-color-on-secondary-rgb: 255, 255, 255;
+    --#{$prefix}-sys-color-secondary-container: #e8def8;
+    --#{$prefix}-sys-color-secondary-container-rgb: 232, 222, 248;
+    --#{$prefix}-sys-color-on-secondary-container: #1d192b;
+    --#{$prefix}-sys-color-on-secondary-container-rgb: 29, 25, 43;
 
-  // State layers
-  --#{$prefix}-sys-state-hover-state-layer-opacity: 0.08;
-  --#{$prefix}-sys-state-focus-state-layer-opacity: 0.12;
-  --#{$prefix}-sys-state-pressed-state-layer-opacity: 0.12;
-  --#{$prefix}-sys-state-dragged-state-layer-opacity: 0.16;
+    --#{$prefix}-sys-color-tertiary: #7d5260;
+    --#{$prefix}-sys-color-tertiary-rgb: 125, 82, 96;
+    --#{$prefix}-sys-color-on-tertiary: #ffffff;
+    --#{$prefix}-sys-color-on-tertiary-rgb: 255, 255, 255;
+    --#{$prefix}-sys-color-tertiary-container: #ffd8e4;
+    --#{$prefix}-sys-color-tertiary-container-rgb: 255, 216, 228;
+    --#{$prefix}-sys-color-on-tertiary-container: #31111d;
+    --#{$prefix}-sys-color-on-tertiary-container-rgb: 49, 17, 29;
+
+    // Neutral colors
+    --#{$prefix}-sys-color-surface: #fffbfe;
+    // Workaround: Override surface-rgb for disabled button visibility
+    --#{$prefix}-sys-color-surface-rgb: 28, 27, 31;
+    --#{$prefix}-sys-color-surface-dim: #ded8e1;
+    --#{$prefix}-sys-color-surface-dim-rgb: 222, 216, 225;
+    --#{$prefix}-sys-color-surface-bright: #fff8f7;
+    --#{$prefix}-sys-color-surface-bright-rgb: 255, 248, 247;
+    --#{$prefix}-sys-color-surface-container-lowest: #ffffff;
+    --#{$prefix}-sys-color-surface-container-lowest-rgb: 255, 255, 255;
+    --#{$prefix}-sys-color-surface-container-low: #f7f2fa;
+    --#{$prefix}-sys-color-surface-container-low-rgb: 247, 242, 250;
+    --#{$prefix}-sys-color-surface-container: #f3edf7;
+    --#{$prefix}-sys-color-surface-container-rgb: 243, 237, 247;
+    --#{$prefix}-sys-color-surface-container-high: #ece6f0;
+    --#{$prefix}-sys-color-surface-container-high-rgb: 236, 230, 240;
+    --#{$prefix}-sys-color-surface-container-highest: #e6e0e9;
+    --#{$prefix}-sys-color-surface-container-highest-rgb: 230, 224, 233;
+
+    --#{$prefix}-sys-color-on-surface: #1c1b1f;
+    --#{$prefix}-sys-color-on-surface-rgb: 28, 27, 31;
+    --#{$prefix}-sys-color-on-surface-variant: #49454f;
+    --#{$prefix}-sys-color-on-surface-variant-rgb: 73, 69, 79;
+
+    // Additional colors
+    --#{$prefix}-sys-color-outline: #79747e;
+    --#{$prefix}-sys-color-outline-rgb: 121, 116, 126;
+    --#{$prefix}-sys-color-outline-variant: #cac4d0;
+    --#{$prefix}-sys-color-outline-variant-rgb: 202, 196, 208;
+    --#{$prefix}-sys-color-shadow: #000000;
+    --#{$prefix}-sys-color-shadow-rgb: 0, 0, 0;
+    --#{$prefix}-sys-color-scrim: #000000;
+    --#{$prefix}-sys-color-scrim-rgb: 0, 0, 0;
+    --#{$prefix}-sys-color-inverse-surface: #313033;
+    --#{$prefix}-sys-color-inverse-surface-rgb: 49, 48, 51;
+    --#{$prefix}-sys-color-inverse-on-surface: #f4eff4;
+    --#{$prefix}-sys-color-inverse-on-surface-rgb: 244, 239, 244;
+    --#{$prefix}-sys-color-inverse-primary: #d0bcff;
+    --#{$prefix}-sys-color-inverse-primary-rgb: 208, 188, 255;
+
+    // State layers
+    --#{$prefix}-sys-state-hover-state-layer-opacity: 0.08;
+    --#{$prefix}-sys-state-focus-state-layer-opacity: 0.12;
+    --#{$prefix}-sys-state-pressed-state-layer-opacity: 0.12;
+    --#{$prefix}-sys-state-dragged-state-layer-opacity: 0.16;
 }
 
 // Variables for dark theme
 @mixin baseline-dark-variables {
-  // Key colors
-  --#{$prefix}-sys-color-primary: #D0BCFF;
-  --#{$prefix}-sys-color-primary-rgb: 208, 188, 255;
-  --#{$prefix}-sys-color-on-primary: #381E72;
-  --#{$prefix}-sys-color-on-primary-rgb: 56, 30, 114;
-  --#{$prefix}-sys-color-primary-container: #4F378B;
-  --#{$prefix}-sys-color-primary-container-rgb: 79, 55, 139;
-  --#{$prefix}-sys-color-on-primary-container: #EADDFF;
-  --#{$prefix}-sys-color-on-primary-container-rgb: 234, 221, 255;
-  
-  --#{$prefix}-sys-color-secondary: #CCC2DC;
-  --#{$prefix}-sys-color-secondary-rgb: 204, 194, 220;
-  --#{$prefix}-sys-color-on-secondary: #332D41;
-  --#{$prefix}-sys-color-on-secondary-rgb: 51, 45, 65;
-  --#{$prefix}-sys-color-secondary-container: #4A4458;
-  --#{$prefix}-sys-color-secondary-container-rgb: 74, 68, 88;
-  --#{$prefix}-sys-color-on-secondary-container: #E8DEF8;
-  --#{$prefix}-sys-color-on-secondary-container-rgb: 232, 222, 248;
-  
-  --#{$prefix}-sys-color-tertiary: #EFB8C8;
-  --#{$prefix}-sys-color-tertiary-rgb: 239, 184, 200;
-  --#{$prefix}-sys-color-on-tertiary: #492532;
-  --#{$prefix}-sys-color-on-tertiary-rgb: 73, 37, 50;
-  --#{$prefix}-sys-color-tertiary-container: #633B48;
-  --#{$prefix}-sys-color-tertiary-container-rgb: 99, 59, 72;
-  --#{$prefix}-sys-color-on-tertiary-container: #FFD8E4;
-  --#{$prefix}-sys-color-on-tertiary-container-rgb: 255, 216, 228;
+    // Key colors
+    --#{$prefix}-sys-color-primary: #d0bcff;
+    --#{$prefix}-sys-color-primary-rgb: 208, 188, 255;
+    --#{$prefix}-sys-color-on-primary: #381e72;
+    --#{$prefix}-sys-color-on-primary-rgb: 56, 30, 114;
+    --#{$prefix}-sys-color-primary-container: #4f378b;
+    --#{$prefix}-sys-color-primary-container-rgb: 79, 55, 139;
+    --#{$prefix}-sys-color-on-primary-container: #eaddff;
+    --#{$prefix}-sys-color-on-primary-container-rgb: 234, 221, 255;
 
-  // Neutral colors
-  --#{$prefix}-sys-color-surface: #1C1B1F;
-  --#{$prefix}-sys-color-surface-rgb: 28, 27, 31;
-  --#{$prefix}-sys-color-surface-dim: #141218;
-  --#{$prefix}-sys-color-surface-dim-rgb: 20, 18, 24;
-  --#{$prefix}-sys-color-surface-bright: #3B383D;
-  --#{$prefix}-sys-color-surface-bright-rgb: 59, 56, 61;
-  --#{$prefix}-sys-color-surface-container-lowest: #0F0D13;
-  --#{$prefix}-sys-color-surface-container-lowest-rgb: 15, 13, 19;
-  --#{$prefix}-sys-color-surface-container-low: #1D1B20;
-  --#{$prefix}-sys-color-surface-container-low-rgb: 29, 27, 32;
-  --#{$prefix}-sys-color-surface-container: #211F26;
-  --#{$prefix}-sys-color-surface-container-rgb: 33, 31, 38;
-  --#{$prefix}-sys-color-surface-container-high: #2B2930;
-  --#{$prefix}-sys-color-surface-container-high-rgb: 43, 41, 48;
-  --#{$prefix}-sys-color-surface-container-highest: #36343B;
-  --#{$prefix}-sys-color-surface-container-highest-rgb: 54, 52, 59;
-  
-  --#{$prefix}-sys-color-on-surface: #E6E1E5;
-  --#{$prefix}-sys-color-on-surface-rgb: 230, 225, 229;
-  --#{$prefix}-sys-color-on-surface-variant: #CAC4D0;
-  --#{$prefix}-sys-color-on-surface-variant-rgb: 202, 196, 208;
-  
-  // Additional colors
-  --#{$prefix}-sys-color-outline: #938F99;
-  --#{$prefix}-sys-color-outline-rgb: 147, 143, 153;
-  --#{$prefix}-sys-color-outline-variant: #444746;
-  --#{$prefix}-sys-color-outline-variant-rgb: 68, 71, 70;
-  --#{$prefix}-sys-color-shadow: #000000;
-  --#{$prefix}-sys-color-shadow-rgb: 0, 0, 0;
-  --#{$prefix}-sys-color-scrim: #000000;
-  --#{$prefix}-sys-color-scrim-rgb: 0, 0, 0;
-  --#{$prefix}-sys-color-inverse-surface: #E6E1E5;
-  --#{$prefix}-sys-color-inverse-surface-rgb: 230, 225, 229;
-  --#{$prefix}-sys-color-inverse-on-surface: #313033;
-  --#{$prefix}-sys-color-inverse-on-surface-rgb: 49, 48, 51;
-  --#{$prefix}-sys-color-inverse-primary: #6750A4;
-  --#{$prefix}-sys-color-inverse-primary-rgb: 103, 80, 164;
+    --#{$prefix}-sys-color-secondary: #ccc2dc;
+    --#{$prefix}-sys-color-secondary-rgb: 204, 194, 220;
+    --#{$prefix}-sys-color-on-secondary: #332d41;
+    --#{$prefix}-sys-color-on-secondary-rgb: 51, 45, 65;
+    --#{$prefix}-sys-color-secondary-container: #4a4458;
+    --#{$prefix}-sys-color-secondary-container-rgb: 74, 68, 88;
+    --#{$prefix}-sys-color-on-secondary-container: #e8def8;
+    --#{$prefix}-sys-color-on-secondary-container-rgb: 232, 222, 248;
+
+    --#{$prefix}-sys-color-tertiary: #efb8c8;
+    --#{$prefix}-sys-color-tertiary-rgb: 239, 184, 200;
+    --#{$prefix}-sys-color-on-tertiary: #492532;
+    --#{$prefix}-sys-color-on-tertiary-rgb: 73, 37, 50;
+    --#{$prefix}-sys-color-tertiary-container: #633b48;
+    --#{$prefix}-sys-color-tertiary-container-rgb: 99, 59, 72;
+    --#{$prefix}-sys-color-on-tertiary-container: #ffd8e4;
+    --#{$prefix}-sys-color-on-tertiary-container-rgb: 255, 216, 228;
+
+    // Neutral colors
+    --#{$prefix}-sys-color-surface: #1c1b1f;
+    --#{$prefix}-sys-color-surface-rgb: 28, 27, 31;
+    --#{$prefix}-sys-color-surface-dim: #141218;
+    --#{$prefix}-sys-color-surface-dim-rgb: 20, 18, 24;
+    --#{$prefix}-sys-color-surface-bright: #3b383d;
+    --#{$prefix}-sys-color-surface-bright-rgb: 59, 56, 61;
+    --#{$prefix}-sys-color-surface-container-lowest: #0f0d13;
+    --#{$prefix}-sys-color-surface-container-lowest-rgb: 15, 13, 19;
+    --#{$prefix}-sys-color-surface-container-low: #1d1b20;
+    --#{$prefix}-sys-color-surface-container-low-rgb: 29, 27, 32;
+    --#{$prefix}-sys-color-surface-container: #211f26;
+    --#{$prefix}-sys-color-surface-container-rgb: 33, 31, 38;
+    --#{$prefix}-sys-color-surface-container-high: #2b2930;
+    --#{$prefix}-sys-color-surface-container-high-rgb: 43, 41, 48;
+    --#{$prefix}-sys-color-surface-container-highest: #36343b;
+    --#{$prefix}-sys-color-surface-container-highest-rgb: 54, 52, 59;
+
+    --#{$prefix}-sys-color-on-surface: #e6e1e5;
+    --#{$prefix}-sys-color-on-surface-rgb: 230, 225, 229;
+    --#{$prefix}-sys-color-on-surface-variant: #cac4d0;
+    --#{$prefix}-sys-color-on-surface-variant-rgb: 202, 196, 208;
+
+    // Additional colors
+    --#{$prefix}-sys-color-outline: #938f99;
+    --#{$prefix}-sys-color-outline-rgb: 147, 143, 153;
+    --#{$prefix}-sys-color-outline-variant: #444746;
+    --#{$prefix}-sys-color-outline-variant-rgb: 68, 71, 70;
+    --#{$prefix}-sys-color-shadow: #000000;
+    --#{$prefix}-sys-color-shadow-rgb: 0, 0, 0;
+    --#{$prefix}-sys-color-scrim: #000000;
+    --#{$prefix}-sys-color-scrim-rgb: 0, 0, 0;
+    --#{$prefix}-sys-color-inverse-surface: #e6e1e5;
+    --#{$prefix}-sys-color-inverse-surface-rgb: 230, 225, 229;
+    --#{$prefix}-sys-color-inverse-on-surface: #313033;
+    --#{$prefix}-sys-color-inverse-on-surface-rgb: 49, 48, 51;
+    --#{$prefix}-sys-color-inverse-primary: #6750a4;
+    --#{$prefix}-sys-color-inverse-primary-rgb: 103, 80, 164;
 }
 
 // Apply baseline light theme to :root by default
 :root {
-  @include baseline-light-variables;
-  
-  // Apply dark theme based on system preference
-  @media (prefers-color-scheme: dark) {
-    @include baseline-dark-variables;
-  }
+    @include baseline-light-variables;
+
+    // Apply dark theme based on system preference
+    @media (prefers-color-scheme: dark) {
+        @include baseline-dark-variables;
+    }
 }
 
 // Dark theme class for manual switching
 .dark-theme {
-  @include baseline-dark-variables;
+    @include baseline-dark-variables;
 }
 
 // Make it available as a selectable theme
-@include create-theme('baseline') {
-  @include baseline-light-variables;
+@include create-theme("baseline") {
+    @include baseline-light-variables;
 
-  &[data-theme-mode="dark"] {
-    @include baseline-dark-variables;
-  }
+    &[data-theme-mode="dark"] {
+        @include baseline-dark-variables;
+    }
 }
