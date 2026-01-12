@@ -333,8 +333,9 @@ const withController = (config: MenuConfig) => (component) => {
       component.element.style.transform = "scaleY(0)";
       component.element.style.opacity = "0";
 
-      // Add to DOM
-      document.body.appendChild(component.element);
+      // Add to DOM - use container if provided, otherwise use document.body
+      const container = config.container || document.body;
+      container.appendChild(component.element);
     }
 
     // Step 2: Use a small delay to ensure DOM operations are complete

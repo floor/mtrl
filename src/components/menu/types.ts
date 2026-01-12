@@ -202,6 +202,13 @@ export interface MenuConfig {
   visible?: boolean;
 
   /**
+   * Container element to append the menu to
+   * If not provided, menu will be appended to document.body
+   * Use this when the menu needs to stay within a specific container (e.g., inside a dialog)
+   */
+  container?: HTMLElement | null;
+
+  /**
    * Additional CSS classes to add to the menu
    */
   class?: string;

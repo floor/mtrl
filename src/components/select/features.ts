@@ -147,6 +147,8 @@ export const withMenu =
 
     // Create menu component - pass the entire textfield component as opener
     // This is crucial - passing the whole component instead of just its element
+    // The menu is appended to the select's element (not document.body) to ensure
+    // proper z-index stacking when the select is inside a dialog or other overlay
     const menu = createMenu({
       opener: component.textfield, // Pass the entire textfield component
       items: menuItems,
@@ -158,6 +160,7 @@ export const withMenu =
       closeOnEscape: true,
       closeOnResize: true, // Close menu on window resize for better UX
       offset: 0, // Set offset to 0 to eliminate gap between textfield and menu
+      container: component.element, // Keep menu within select element for proper stacking context
     });
 
     // Handle menu selection

@@ -25,12 +25,20 @@ export const createPositioner = (component, config: MenuConfig) => {
   ): void => {
     if (!menuElement || !openerElement) return;
 
+    // Check if menu is inside a container (not document.body)
+    const hasContainer = config.container && config.container !== document.body;
+
     // Ensure menu is positioned absolutely for proper scroll behavior
     menuElement.style.position = "absolute";
 
     // Get current scroll position - critical for absolute positioning that tracks opener
-    const scrollX = window.pageXOffset || document.documentElement.scrollLeft;
-    const scrollY = window.pageYOffset || document.documentElement.scrollTop;
+    // When inside a container, we position relative to the container, not the viewport
+    const scrollX = hasContainer
+      ? 0
+      : window.pageXOffset || document.documentElement.scrollLeft;
+    const scrollY = hasContainer
+      ? 0
+      : window.pageYOffset || document.documentElement.scrollTop;
 
     // Get opener measurements first (needed for width calculation)
     const openerRect = openerElement.getBoundingClientRect();
@@ -55,8 +63,9 @@ export const createPositioner = (component, config: MenuConfig) => {
       tempMenu.style.width = `${openerRect.width}px`;
     }
 
-    // Add it to the DOM temporarily
-    document.body.appendChild(tempMenu);
+    // Add it to the DOM temporarily (use container if available for accurate measurement)
+    const measureContainer = config.container || document.body;
+    measureContainer.appendChild(tempMenu);
 
     // Get measurements
     const menuRect = tempMenu.getBoundingClientRect();
@@ -64,7 +73,7 @@ export const createPositioner = (component, config: MenuConfig) => {
     const viewportHeight = window.innerHeight;
 
     // Remove the temp element after measurements
-    document.body.removeChild(tempMenu);
+    measureContainer.removeChild(tempMenu);
 
     // Get values needed for calculations
     const offset = config.offset !== undefined ? config.offset : 8;
@@ -197,79 +206,107 @@ export const createPositioner = (component, config: MenuConfig) => {
     }
 
     // Position calculation - important: getBoundingClientRect() returns values relative to viewport
-    // We need to add scroll position to get absolute position
+    // We need to add scroll position to get absolute position (unless we have a container)
+    // When inside a container, position relative to the container
+    const containerRect =
+      hasContainer && config.container
+        ? config.container.getBoundingClientRect()
+        : { top: 0, left: 0, right: 0, bottom: 0 };
+
+    // Calculate offsets - when in a container, subtract container position
+    const offsetX = hasContainer ? -containerRect.left : scrollX;
+    const offsetY = hasContainer ? -containerRect.top : scrollY;
+
     switch (calculatedPosition) {
       case "top-start":
-        top = openerRect.top + scrollY - menuRect.height - offset;
-        left = openerRect.left + scrollX;
+        top = openerRect.top + offsetY - menuRect.height - offset;
+        left = openerRect.left + offsetX;
         break;
       case "top":
-        top = openerRect.top + scrollY - menuRect.height - offset;
+        top = openerRect.top + offsetY - menuRect.height - offset;
         left =
-          openerRect.left + scrollX + openerRect.width / 2 - menuRect.width / 2;
+          openerRect.left + offsetX + openerRect.width / 2 - menuRect.width / 2;
         break;
       case "top-end":
-        top = openerRect.top + scrollY - menuRect.height - offset;
-        left = openerRect.right + scrollX - menuRect.width;
+        top = openerRect.top + offsetY - menuRect.height - offset;
+        left = openerRect.right + offsetX - menuRect.width;
         break;
       case "right-start":
-        top = openerRect.top + scrollY;
-        left = openerRect.right + scrollX + offset;
+        top = openerRect.top + offsetY;
+        left = openerRect.right + offsetX + offset;
         break;
       case "right":
         // Custom top position might be set above; only set if not already defined
         if (top === 0) {
           top =
             openerRect.top +
-            scrollY +
+            offsetY +
             openerRect.height / 2 -
             menuRect.height / 2;
         } else {
-          top += scrollY;
+          top += offsetY;
         }
-        left = openerRect.right + scrollX + offset;
+        left = openerRect.right + offsetX + offset;
         break;
       case "right-end":
-        top = openerRect.bottom + scrollY - menuRect.height;
-        left = openerRect.right + scrollX + offset;
+        top = openerRect.bottom + offsetY - menuRect.height;
+        left = openerRect.right + offsetX + offset;
         break;
       case "bottom-start":
-        top = openerRect.bottom + scrollY + offset;
-        left = openerRect.left + scrollX;
+        top = openerRect.bottom + offsetY + offset;
+        left = openerRect.left + offsetX;
         break;
       case "bottom":
-        top = openerRect.bottom + scrollY + offset;
+        top = openerRect.bottom + offsetY + offset;
         left =
-          openerRect.left + scrollX + openerRect.width / 2 - menuRect.width / 2;
+          openerRect.left + offsetX + openerRect.width / 2 - menuRect.width / 2;
         break;
       case "bottom-end":
-        top = openerRect.bottom + scrollY + offset;
-        left = openerRect.right + scrollX - menuRect.width;
+        top = openerRect.bottom + offsetY + offset;
+        left = openerRect.right + offsetX - menuRect.width;
         break;
       case "left-start":
-        top = openerRect.top + scrollY;
-        left = openerRect.left + scrollX - menuRect.width - offset;
+        top = openerRect.top + offsetY;
+        left = openerRect.left + offsetX - menuRect.width - offset;
         break;
       case "left":
         // Custom top position might be set above; only set if not already defined
         if (top === 0) {
           top =
             openerRect.top +
-            scrollY +
+            offsetY +
             openerRect.height / 2 -
             menuRect.height / 2;
         } else {
-          top += scrollY;
+          top += offsetY;
         }
-        left = openerRect.left + scrollX - menuRect.width - offset;
+        left = openerRect.left + offsetX - menuRect.width - offset;
         break;
       case "left-end":
-        top = openerRect.bottom + scrollY - menuRect.height;
-        left = openerRect.left + scrollX - menuRect.width - offset;
+        top = openerRect.bottom + offsetY - menuRect.height;
+        left = openerRect.left + offsetX - menuRect.width - offset;
         break;
     }
 
     // Ensure the menu has proper spacing from viewport edges
+    // Skip viewport edge checks when inside a container
+    if (hasContainer) {
+      // For container-based positioning, just apply the calculated positions
+      menuElement.style.top = `${top}px`;
+      menuElement.style.left = `${left}px`;
+
+      // For 'width: 100%' configuration, match the opener width
+      if (config.width === "100%" && !isSubmenu) {
+        menuElement.style.width = `${openerRect.width}px`;
+      }
+
+      // Apply maxHeight if configured
+      if (config.maxHeight) {
+        menuElement.style.maxHeight = config.maxHeight;
+      }
+
+      return; // Exit early for container-based menus
+    }
 
     // Top edge spacing - ensure the menu doesn't go above the viewport + padding
     const minTopSpacing = 48; // Minimum distance from top of viewport
