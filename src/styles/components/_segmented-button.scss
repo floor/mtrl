@@ -164,14 +164,28 @@ $component: "#{base.$prefix}-segmented-button";
             }
         }
 
-        // Hover state
+        // Reset button ::before pseudo-element (used for state layers)
+        // This prevents button hover effects from interfering
+        &::before {
+            content: none !important;
+        }
+
+        // Hover state (MD3: 8% state layer with on-surface color over surface)
         &:hover:not([disabled]) {
-            background-color: t.alpha("on-surface", 0.08);
+            background-color: color-mix(
+                in srgb,
+                t.color("on-surface") 8%,
+                t.color("surface")
+            );
         }
 
         // Pressed state (MD3: 12% state layer)
         &:active:not([disabled]) {
-            background-color: t.alpha("on-surface", 0.12);
+            background-color: color-mix(
+                in srgb,
+                t.color("on-surface") 12%,
+                t.color("surface")
+            );
         }
 
         // Focus state
@@ -194,6 +208,7 @@ $component: "#{base.$prefix}-segmented-button";
         &:not(:last-child)::after {
             content: "";
             position: absolute;
+            opacity: 0.25;
             top: 0;
             right: 0;
             height: 100%;
@@ -236,6 +251,31 @@ $component: "#{base.$prefix}-segmented-button";
             box-shadow: none;
             color: t.color("on-surface");
             border: none;
+
+            // Reset variant ::before pseudo-element (state layers)
+            &::before {
+                content: none !important;
+            }
+
+            // Override variant hover states
+            &:hover:not([disabled]) {
+                background-color: color-mix(
+                    in srgb,
+                    t.color("on-surface") 8%,
+                    t.color("surface")
+                );
+                box-shadow: none;
+            }
+
+            // Override variant active/pressed states
+            &:active:not([disabled]) {
+                background-color: color-mix(
+                    in srgb,
+                    t.color("on-surface") 12%,
+                    t.color("surface")
+                );
+                box-shadow: none;
+            }
 
             &:active,
             &.#{base.$prefix}-button--active {
@@ -302,6 +342,31 @@ $component: "#{base.$prefix}-segmented-button";
         &.#{base.$prefix}-button--text {
             background-color: t.color("secondary-container");
             color: t.color("on-secondary-container");
+
+            // Reset variant ::before pseudo-element
+            &::before {
+                content: none !important;
+            }
+
+            // Override variant hover states for selected
+            &:hover:not([disabled]) {
+                background-color: color-mix(
+                    in srgb,
+                    t.color("on-secondary-container") 8%,
+                    t.color("secondary-container")
+                );
+                box-shadow: none;
+            }
+
+            // Override variant active/pressed states for selected
+            &:active:not([disabled]) {
+                background-color: color-mix(
+                    in srgb,
+                    t.color("on-secondary-container") 12%,
+                    t.color("secondary-container")
+                );
+                box-shadow: none;
+            }
         }
 
         // Selected segment icon color
