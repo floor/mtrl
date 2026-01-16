@@ -5,5 +5,5 @@
  * @module components/button
  */
 
-export { default } from './button'
-export { ButtonConfig, ButtonComponent, ButtonVariant } from './types'
+export { default } from "./button";
+export type { ButtonConfig, ButtonComponent, ButtonVariant } from "./types";

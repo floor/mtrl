@@ -27,6 +27,29 @@ export type {
   LoadEvent,
 } from "./list/types";
 
+// Export button group types and constants
+export {
+  BUTTON_GROUP_VARIANTS,
+  BUTTON_GROUP_ORIENTATIONS,
+  BUTTON_GROUP_DENSITY,
+  BUTTON_GROUP_EVENTS,
+  BUTTON_GROUP_DEFAULTS,
+  BUTTON_GROUP_CLASSES,
+  BUTTON_GROUP_HEIGHTS,
+  BUTTON_GROUP_RADII,
+} from "./button-group/constants";
+
+export type {
+  ButtonGroupConfig,
+  ButtonGroupComponent,
+  ButtonGroupItemConfig,
+  ButtonGroupEvent,
+  ButtonGroupEventType,
+  ButtonGroupVariant,
+  ButtonGroupOrientation,
+  ButtonGroupDensity,
+} from "./button-group/types";
+
 // Export select types with explicit naming
 export {
   SELECT_VARIANTS,
@@ -50,6 +73,7 @@ export type {
 export * from "./badge";
 export * from "./bottom-app-bar";
 export * from "./button";
+export * from "./button-group";
 export * from "./card";
 export * from "./carousel";
 export * from "./checkbox";
@@ -107,6 +131,7 @@ export {
 export { default as createBadge } from "./badge";
 export { default as createBottomAppBar } from "./bottom-app-bar";
 export { default as createButton } from "./button";
+export { default as createButtonGroup } from "./button-group";
 export { default as createCard } from "./card";
 export { default as createCarousel } from "./carousel";
 export { default as createCheckbox } from "./checkbox";

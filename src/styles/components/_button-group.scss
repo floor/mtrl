@@ -1,0 +1,409 @@
+// src/styles/components/_button-group.scss
+@use '../../styles/abstract/base' as base;
+@use '../../styles/abstract/variables' as v;
+@use '../../styles/abstract/functions' as f;
+@use '../../styles/abstract/mixins' as m;
+@use '../../styles/abstract/theme' as t;
+
+$component: '#{base.$prefix}-button-group';
+
+// =============================================================================
+// BUTTON GROUP COMPONENT STYLES
+// =============================================================================
+// Material Design 3 Button Group Implementation
+//
+// Button groups visually connect related action buttons. Unlike segmented
+// buttons (for selection), button groups are for grouping related actions
+// where each button triggers an independent action.
+//
+// Supports:
+// - Multiple variants (filled, tonal, outlined, elevated, text)
+// - Horizontal and vertical orientations
+// - Density scaling (default, comfortable, compact)
+// - Equal width option
+// - Proper border handling between buttons
+// - Accessibility support
+// =============================================================================
+
+.#{$component} {
+  // Base styles
+  position: relative;
+  display: inline-flex;
+  align-items: stretch;
+
+  // CSS custom properties for dynamic sizing
+  --button-group-height: 40px;
+  --button-group-radius: 20px;
+  --button-group-gap: 0;
+
+  // Default to horizontal orientation
+  flex-direction: row;
+
+  // Remove default button margins within group
+  > .#{base.$prefix}-button {
+    margin: 0;
+    flex-shrink: 0;
+  }
+
+  // =========================================================================
+  // ORIENTATION VARIANTS
+  // =========================================================================
+
+  &--horizontal {
+    flex-direction: row;
+
+    // First button - rounded left corners only
+    > .#{$component}__button--first,
+    > .#{base.$prefix}-button:first-child {
+      border-top-left-radius: var(--button-group-radius);
+      border-bottom-left-radius: var(--button-group-radius);
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+
+    // Last button - rounded right corners only
+    > .#{$component}__button--last,
+    > .#{base.$prefix}-button:last-child {
+      border-top-right-radius: var(--button-group-radius);
+      border-bottom-right-radius: var(--button-group-radius);
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+    }
+
+    // Middle buttons - no rounded corners
+    > .#{$component}__button--middle,
+    > .#{base.$prefix}-button:not(:first-child):not(:last-child) {
+      border-radius: 0;
+    }
+
+    // Single button - all corners rounded
+    > .#{$component}__button--single,
+    > .#{base.$prefix}-button:only-child {
+      border-radius: var(--button-group-radius);
+    }
+  }
+
+  &--vertical {
+    flex-direction: column;
+
+    // First button - rounded top corners only
+    > .#{$component}__button--first,
+    > .#{base.$prefix}-button:first-child {
+      border-top-left-radius: var(--button-group-radius);
+      border-top-right-radius: var(--button-group-radius);
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+
+    // Last button - rounded bottom corners only
+    > .#{$component}__button--last,
+    > .#{base.$prefix}-button:last-child {
+      border-bottom-left-radius: var(--button-group-radius);
+      border-bottom-right-radius: var(--button-group-radius);
+      border-top-left-radius: 0;
+      border-top-right-radius: 0;
+    }
+
+    // Middle buttons - no rounded corners
+    > .#{$component}__button--middle,
+    > .#{base.$prefix}-button:not(:first-child):not(:last-child) {
+      border-radius: 0;
+    }
+
+    // Single button - all corners rounded
+    > .#{$component}__button--single,
+    > .#{base.$prefix}-button:only-child {
+      border-radius: var(--button-group-radius);
+    }
+  }
+
+  // =========================================================================
+  // VARIANT STYLES
+  // =========================================================================
+
+  // Outlined variant (default for button groups per MD3)
+  &--outlined {
+    > .#{base.$prefix}-button {
+      background-color: transparent;
+      color: t.color('primary');
+      box-shadow: none;
+
+      &:hover:not([disabled]) {
+        background-color: t.alpha('primary', 0.08);
+      }
+
+      &:focus-visible {
+        background-color: t.alpha('primary', 0.12);
+      }
+
+      &:active:not([disabled]) {
+        background-color: t.alpha('primary', 0.12);
+      }
+    }
+
+    // Horizontal border handling
+    &.#{$component}--horizontal {
+      > .#{base.$prefix}-button {
+        border: 1px solid t.color('outline');
+
+        // Remove right border except for last button to avoid double borders
+        &:not(:last-child) {
+          border-right: none;
+        }
+      }
+    }
+
+    // Vertical border handling
+    &.#{$component}--vertical {
+      > .#{base.$prefix}-button {
+        border: 1px solid t.color('outline');
+
+        // Remove bottom border except for last button to avoid double borders
+        &:not(:last-child) {
+          border-bottom: none;
+        }
+      }
+    }
+  }
+
+  // Filled variant
+  &--filled {
+    > .#{base.$prefix}-button {
+      background-color: t.color('primary');
+      color: t.color('on-primary');
+      border: none;
+      box-shadow: none;
+
+      &:hover:not([disabled]) {
+        background-color: t.alpha('primary', 0.92);
+        box-shadow: v.elevation('level-1');
+      }
+
+      &:focus-visible {
+        background-color: t.alpha('primary', 0.88);
+      }
+
+      &:active:not([disabled]) {
+        background-color: t.alpha('primary', 0.88);
+        box-shadow: none;
+      }
+    }
+
+    // Add subtle dividers between buttons
+    &.#{$component}--horizontal {
+      > .#{base.$prefix}-button:not(:last-child) {
+        border-right: 1px solid t.alpha('on-primary', 0.12);
+      }
+    }
+
+    &.#{$component}--vertical {
+      > .#{base.$prefix}-button:not(:last-child) {
+        border-bottom: 1px solid t.alpha('on-primary', 0.12);
+      }
+    }
+  }
+
+  // Tonal variant
+  &--tonal {
+    > .#{base.$prefix}-button {
+      background-color: t.color('secondary-container');
+      color: t.color('on-secondary-container');
+      border: none;
+      box-shadow: none;
+
+      &:hover:not([disabled]) {
+        background-color: t.alpha('secondary-container', 0.92);
+        box-shadow: v.elevation('level-1');
+      }
+
+      &:focus-visible {
+        background-color: t.alpha('secondary-container', 0.88);
+      }
+
+      &:active:not([disabled]) {
+        background-color: t.alpha('secondary-container', 0.88);
+        box-shadow: none;
+      }
+    }
+
+    // Add subtle dividers between buttons
+    &.#{$component}--horizontal {
+      > .#{base.$prefix}-button:not(:last-child) {
+        border-right: 1px solid t.alpha('on-secondary-container', 0.12);
+      }
+    }
+
+    &.#{$component}--vertical {
+      > .#{base.$prefix}-button:not(:last-child) {
+        border-bottom: 1px solid t.alpha('on-secondary-container', 0.12);
+      }
+    }
+  }
+
+  // Elevated variant
+  &--elevated {
+    box-shadow: v.elevation('level-1');
+    border-radius: var(--button-group-radius);
+
+    > .#{base.$prefix}-button {
+      background-color: t.color('surface-container-low');
+      color: t.color('primary');
+      border: none;
+      box-shadow: none;
+
+      &:hover:not([disabled]) {
+        background-color: t.alpha('primary', 0.08);
+      }
+
+      &:focus-visible {
+        background-color: t.alpha('primary', 0.12);
+      }
+
+      &:active:not([disabled]) {
+        background-color: t.alpha('primary', 0.12);
+      }
+    }
+
+    // Add subtle dividers between buttons
+    &.#{$component}--horizontal {
+      > .#{base.$prefix}-button:not(:last-child) {
+        border-right: 1px solid t.color('outline-variant');
+      }
+    }
+
+    &.#{$component}--vertical {
+      > .#{base.$prefix}-button:not(:last-child) {
+        border-bottom: 1px solid t.color('outline-variant');
+      }
+    }
+  }
+
+  // Text variant
+  &--text {
+    > .#{base.$prefix}-button {
+      background-color: transparent;
+      color: t.color('primary');
+      border: none;
+      box-shadow: none;
+
+      &:hover:not([disabled]) {
+        background-color: t.alpha('primary', 0.08);
+      }
+
+      &:focus-visible {
+        background-color: t.alpha('primary', 0.12);
+      }
+
+      &:active:not([disabled]) {
+        background-color: t.alpha('primary', 0.12);
+      }
+    }
+  }
+
+  // =========================================================================
+  // DENSITY VARIANTS
+  // =========================================================================
+
+  // Default density (40px height)
+  // Uses CSS custom properties set by default
+
+  // Comfortable density (36px height)
+  &--density-comfortable {
+    --button-group-height: 36px;
+    --button-group-radius: 18px;
+
+    > .#{base.$prefix}-button {
+      height: 36px;
+      padding: 0 20px;
+
+      .#{base.$prefix}-button-text {
+        font-size: 0.8125rem;
+      }
+    }
+  }
+
+  // Compact density (32px height)
+  &--density-compact {
+    --button-group-height: 32px;
+    --button-group-radius: 16px;
+
+    > .#{base.$prefix}-button {
+      height: 32px;
+      padding: 0 16px;
+      min-width: 48px;
+
+      .#{base.$prefix}-button-text {
+        font-size: 0.75rem;
+      }
+
+      .#{base.$prefix}-button-icon {
+        svg {
+          width: 18px;
+          height: 18px;
+        }
+      }
+    }
+  }
+
+  // =========================================================================
+  // EQUAL WIDTH OPTION
+  // =========================================================================
+
+  &--equal-width {
+    > .#{base.$prefix}-button {
+      flex: 1 1 0;
+      justify-content: center;
+    }
+  }
+
+  // =========================================================================
+  // DISABLED STATE
+  // =========================================================================
+
+  &--disabled {
+    opacity: 0.38;
+    pointer-events: none;
+
+    > .#{base.$prefix}-button {
+      pointer-events: none;
+    }
+  }
+
+  // =========================================================================
+  // BUTTON POSITION CLASSES
+  // =========================================================================
+
+  &__button {
+    // Base button in group styling
+    position: relative;
+
+    &--first,
+    &--middle,
+    &--last,
+    &--single {
+      // Position-specific styles are handled above in orientation variants
+    }
+  }
+}
+
+// =============================================================================
+// DARK THEME ADJUSTMENTS
+// =============================================================================
+
+body[data-theme-mode=dark] {
+  .#{$component} {
+    &--outlined {
+      > .#{base.$prefix}-button {
+        border-color: t.color('outline');
+      }
+    }
+
+    &--elevated {
+      background-color: t.color('surface-container-high');
+
+      > .#{base.$prefix}-button {
+        background-color: transparent;
+      }
+    }
+  }
+}

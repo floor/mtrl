@@ -120,7 +120,7 @@ export const withStructure = (config: DialogConfig) => (component) => {
     // Add buttons if provided
     if (Array.isArray(config.buttons) && config.buttons.length > 0) {
       config.buttons.forEach((buttonConfig) =>
-        addButton(footer, buttonConfig, component)
+        addButton(footer, buttonConfig, component),
       );
     }
 
@@ -157,7 +157,7 @@ export const withStructure = (config: DialogConfig) => (component) => {
   if (animation !== "scale") {
     addClass(
       component.element,
-      `${component.getClass("dialog")}--${animation}`
+      `${component.getClass("dialog")}--${animation}`,
     );
   }
 
@@ -172,7 +172,7 @@ export const withStructure = (config: DialogConfig) => (component) => {
     // Add header divider (between header and content)
     headerDivider = createDividerElement();
     headerDivider.element.classList.add(
-      component.getClass("dialog-header-divider")
+      component.getClass("dialog-header-divider"),
     );
     component.element.appendChild(headerDivider.element);
 
@@ -180,7 +180,7 @@ export const withStructure = (config: DialogConfig) => (component) => {
     if (footer) {
       footerDivider = createDividerElement();
       footerDivider.element.classList.add(
-        component.getClass("dialog-footer-divider")
+        component.getClass("dialog-footer-divider"),
       );
     }
   }
@@ -240,14 +240,14 @@ export const withDivider = () => (component) => {
           const headerDivider = createDivider({
             variant: "full-width",
             class: `${component.getClass(
-              "dialog-divider"
+              "dialog-divider",
             )} ${component.getClass("dialog-header-divider")}`,
           });
 
           // Insert after header, before content
           component.element.insertBefore(
             headerDivider.element,
-            component.structure.content
+            component.structure.content,
           );
 
           component.structure.headerDivider = headerDivider;
@@ -260,14 +260,14 @@ export const withDivider = () => (component) => {
             const footerDivider = createDivider({
               variant: "full-width",
               class: `${component.getClass(
-                "dialog-divider"
+                "dialog-divider",
               )} ${component.getClass("dialog-footer-divider")}`,
             });
 
             // Insert before footer
             component.element.insertBefore(
               footerDivider.element,
-              component.structure.footer
+              component.structure.footer,
             );
 
             component.structure.footerDivider = footerDivider;
@@ -309,7 +309,7 @@ export const withDivider = () => (component) => {
 const addButton = (
   footer: HTMLElement,
   buttonConfig: DialogButton,
-  component: any
+  component: any,
 ) => {
   const {
     text,
@@ -401,7 +401,7 @@ export const withVisibility = () => (component) => {
     if (component.config.autofocus) {
       // Check for a button with autofocus attribute
       const autofocusElement = component.element.querySelector(
-        "[autofocus]"
+        "[autofocus]",
       ) as HTMLElement;
       if (autofocusElement) {
         autofocusElement.focus();
@@ -482,7 +482,7 @@ export const withVisibility = () => (component) => {
   if (isOpen) {
     addClass(
       component.overlay,
-      `${component.getClass("dialog-overlay")}--visible`
+      `${component.getClass("dialog-overlay")}--visible`,
     );
     addClass(component.element, `${component.getClass("dialog")}--visible`);
 
@@ -525,7 +525,7 @@ export const withVisibility = () => (component) => {
       // Show the overlay
       addClass(
         component.overlay,
-        `${component.getClass("dialog-overlay")}--visible`
+        `${component.getClass("dialog-overlay")}--visible`,
       );
 
       // Show the dialog
@@ -572,7 +572,7 @@ export const withVisibility = () => (component) => {
       // Get class names
       const dialogVisibleClass = `${component.getClass("dialog")}--visible`;
       const overlayVisibleClass = `${component.getClass(
-        "dialog-overlay"
+        "dialog-overlay",
       )}--visible`;
 
       // Remove dialog visible class
@@ -614,7 +614,7 @@ export const withVisibility = () => (component) => {
 
     isOpen() {
       return component.element.classList.contains(
-        `${component.getClass("dialog")}--visible`
+        `${component.getClass("dialog")}--visible`,
       );
     },
   };
@@ -650,7 +650,7 @@ export const withContent = () => (component) => {
        */
       setTitle(title: string) {
         let titleElement = headerElement.querySelector(
-          `.${component.getClass("dialog-header-title")}`
+          `.${component.getClass("dialog-header-title")}`,
         );
 
         if (!titleElement && title) {
@@ -673,7 +673,7 @@ export const withContent = () => (component) => {
        */
       getTitle() {
         const titleElement = headerElement.querySelector(
-          `.${component.getClass("dialog-header-title")}`
+          `.${component.getClass("dialog-header-title")}`,
         );
         return titleElement ? titleElement.textContent || "" : "";
       },
@@ -684,14 +684,14 @@ export const withContent = () => (component) => {
        */
       setSubtitle(subtitle: string) {
         let subtitleElement = headerElement.querySelector(
-          `.${component.getClass("dialog-header-subtitle")}`
+          `.${component.getClass("dialog-header-subtitle")}`,
         );
 
         if (!subtitleElement && subtitle) {
           // Create subtitle element if it doesn't exist
           subtitleElement = document.createElement("p");
           subtitleElement.classList.add(
-            component.getClass("dialog-header-subtitle")
+            component.getClass("dialog-header-subtitle"),
           );
           headerElement
             .querySelector(`.${component.getClass("dialog-header-content")}`)
@@ -709,7 +709,7 @@ export const withContent = () => (component) => {
        */
       getSubtitle() {
         const subtitleElement = headerElement.querySelector(
-          `.${component.getClass("dialog-header-subtitle")}`
+          `.${component.getClass("dialog-header-subtitle")}`,
         );
         return subtitleElement ? subtitleElement.textContent || "" : "";
       },
@@ -787,7 +787,7 @@ export const withButtons = () => (component) => {
           if (alignment !== "right") {
             addClass(
               footer,
-              `${component.getClass("dialog-footer")}--${alignment}`
+              `${component.getClass("dialog-footer")}--${alignment}`,
             );
           }
 
@@ -814,7 +814,7 @@ export const withButtons = () => (component) => {
         } else {
           // Remove by text
           const index = component._buttons.findIndex(
-            (button) => button.config.text === indexOrText
+            (button) => button.config.text === indexOrText,
           );
 
           if (index !== -1) {
@@ -854,7 +854,7 @@ export const withButtons = () => (component) => {
           if (align !== "right") {
             removeClass(
               component.structure.footer,
-              `${component.getClass("dialog-footer")}--${align}`
+              `${component.getClass("dialog-footer")}--${align}`,
             );
           }
         });
@@ -863,7 +863,7 @@ export const withButtons = () => (component) => {
         if (alignment !== "right") {
           addClass(
             component.structure.footer,
-            `${component.getClass("dialog-footer")}--${alignment}`
+            `${component.getClass("dialog-footer")}--${alignment}`,
           );
         }
       },
@@ -897,7 +897,7 @@ export const withSize = () => (component) => {
         ALL_SIZES.forEach((sizeValue) => {
           removeClass(
             component.element,
-            `${component.getClass("dialog")}--${sizeValue}`
+            `${component.getClass("dialog")}--${sizeValue}`,
           );
         });
 
@@ -905,7 +905,7 @@ export const withSize = () => (component) => {
         if (size !== "medium") {
           addClass(
             component.element,
-            `${component.getClass("dialog")}--${size}`
+            `${component.getClass("dialog")}--${size}`,
           );
         }
       },

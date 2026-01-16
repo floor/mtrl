@@ -38,6 +38,7 @@
 @use "./components/top-app-bar" as top-app-bar;
 
 @use "./components/button" as button;
+@use "./components/button-group" as button-group;
 @use "./components/fab" as fab;
 @use "./components/extended-fab" as extended-fab;
 @use "./components/segmented-button" as segmented-button;
@@ -71,24 +72,25 @@
 
 // Base styles
 body {
-  margin: 0;
-  padding: 0;
-  background-color: var(--#{base.$prefix}-sys-color-surface);
-  color: var(--#{base.$prefix}-sys-color-on-surface);
-  font-family: var(
-      --#{base.$prefix}-sys-typescale-body-medium-font-family-name,
-      "Roboto"
-    ),
-    var(
-      --#{base.$prefix}-sys-typescale-body-medium-font-family-fallback,
-      sans-serif
-    );
-  font-size: var(--#{base.$prefix}-sys-typescale-body-medium-font-size);
-  line-height: var(--#{base.$prefix}-sys-typescale-body-medium-line-height);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+    margin: 0;
+    padding: 0;
+    background-color: var(--#{base.$prefix}-sys-color-surface);
+    color: var(--#{base.$prefix}-sys-color-on-surface);
+    font-family:
+        var(
+            --#{base.$prefix}-sys-typescale-body-medium-font-family-name,
+            "Roboto"
+        ),
+        var(
+            --#{base.$prefix}-sys-typescale-body-medium-font-family-fallback,
+            sans-serif
+        );
+    font-size: var(--#{base.$prefix}-sys-typescale-body-medium-font-size);
+    line-height: var(--#{base.$prefix}-sys-typescale-body-medium-line-height);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 
-  @include m.motion-transition(background-color, color);
+    @include m.motion-transition(background-color, color);
 }
 
 // // Ensure links have the correct contrast
@@ -114,16 +116,16 @@ body {
 
 // // Use smooth scrolling for the page
 html {
-  scroll-behavior: smooth;
+    scroll-behavior: smooth;
 
-  @include m.reduced-motion {
-    scroll-behavior: auto;
-  }
+    @include m.reduced-motion {
+        scroll-behavior: auto;
+    }
 }
 
 // Set box-sizing for all elements
 *,
 *::before,
 *::after {
-  box-sizing: border-box;
+    box-sizing: border-box;
 }

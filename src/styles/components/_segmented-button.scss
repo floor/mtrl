@@ -1,227 +1,413 @@
-// src/components/segmented-button/_styles.scss
-@use '../../styles/abstract/base' as base;
-@use '../../styles/abstract/variables' as v;
-@use '../../styles/abstract/functions' as f;
-@use '../../styles/abstract/mixins' as m;
-@use '../../styles/abstract/theme' as t;
+// src/styles/components/_segmented-button.scss
+@use "../../styles/abstract/base" as base;
+@use "../../styles/abstract/variables" as v;
+@use "../../styles/abstract/functions" as f;
+@use "../../styles/abstract/mixins" as m;
+@use "../../styles/abstract/theme" as t;
 
-$component: '#{base.$prefix}-segmented-button';
+$component: "#{base.$prefix}-segmented-button";
+
+// =============================================================================
+// SEGMENTED BUTTON COMPONENT STYLES
+// =============================================================================
+// Material Design 3 Segmented Button Implementation
+//
+// Segmented buttons help people select options, switch views, or sort elements.
+// They contain two to five segments, each functioning as a distinct action.
+//
+// Key MD3 behaviors:
+// - Selected segments show checkmark icon (for text-only and icon+text)
+// - Dividers should NOT appear adjacent to selected segments
+// - Segments should have equal width by default
+// - Container has full-rounded corners, inner segments are squared
+// =============================================================================
 
 .#{$component} {
-  // Base styles
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 20px; // Half of height per MD3 specs
-  border: 1px solid t.color('outline');
-  background-color: transparent;
-  overflow: hidden;
-  
-  // Density variables with defaults (Material Design 3 standard density)
-  --segment-height: 40px;
-  --segment-padding-x: 24px;
-  --segment-padding-icon-only: 12px;
-  --segment-padding-icon-text-left: 16px;
-  --segment-padding-icon-text-right: 24px;
-  --segment-icon-size: 18px;
-  --segment-text-size: 0.875rem;
-  --segment-border-radius: 20px;
-  
-  // Set height from the CSS variable
-  height: var(--segment-height);
-  // Adjust border radius based on height
-  border-radius: calc(var(--segment-height) / 2);
-  
-  // Comfortable density (medium)
-  &--comfortable {
-    --segment-height: 36px;
-    --segment-padding-x: 20px;
-    --segment-padding-icon-only: 10px;
-    --segment-padding-icon-text-left: 14px;
-    --segment-padding-icon-text-right: 20px;
-    --segment-icon-size: 16px;
-    --segment-text-size: 0.8125rem;
-    --segment-border-radius: 18px;
-    
-    border-radius: var(--segment-border-radius);
-  }
-  
-  // Compact density (small)
-  &--compact {
-    --segment-height: 32px;
-    --segment-padding-x: 16px;
-    --segment-padding-icon-only: 8px;
+    // Base styles
+    position: relative;
+    display: inline-flex;
+    align-items: stretch;
+    border-radius: 20px;
+    border: 1px solid t.color("outline");
+    background-color: transparent;
+    overflow: hidden;
+
+    // Density variables with defaults (Material Design 3 standard density)
+    --segment-height: 40px;
+    --segment-padding-x: 24px;
+    --segment-padding-icon-only: 12px;
     --segment-padding-icon-text-left: 12px;
     --segment-padding-icon-text-right: 16px;
-    --segment-icon-size: 16px;
-    --segment-text-size: 0.75rem;
-    --segment-border-radius: 16px;
-    
-    border-radius: var(--segment-border-radius);
-  }
-  
-  // Disabled state for whole component
-  &--disabled {
-    opacity: 0.38;
-    pointer-events: none;
-  }
+    --segment-icon-size: 18px;
+    --segment-text-size: 0.875rem;
+    --segment-border-radius: 20px;
+    --segment-checkmark-size: 18px;
 
-  // Style for button elements used as segments
-  .#{base.$prefix}-button {
-    // Reset button styles that we don't want
-    margin: 0;
-    box-shadow: none;
-    background-color: transparent;
-    border: none;
-    position: relative; // For pseudo-elements
-    border-radius: 0; // Reset any border-radius
-    min-width: 48px;
-    height: 100%;
-    color: t.color('on-surface'); // Original color
-    
-    // Use CSS variables for dynamic sizing based on density
-    padding: 0 var(--segment-padding-x);
-    
-    // Icon-only segments have equal padding all around
-    &.#{base.$prefix}-button--circular {
-      padding: 0 var(--segment-padding-icon-only);
+    // Set height from the CSS variable
+    height: var(--segment-height);
+    // Adjust border radius based on height
+    border-radius: calc(var(--segment-height) / 2);
+
+    // Comfortable density (medium)
+    &--comfortable {
+        --segment-height: 36px;
+        --segment-padding-x: 20px;
+        --segment-padding-icon-only: 10px;
+        --segment-padding-icon-text-left: 10px;
+        --segment-padding-icon-text-right: 14px;
+        --segment-icon-size: 18px;
+        --segment-text-size: 0.8125rem;
+        --segment-border-radius: 18px;
+        --segment-checkmark-size: 16px;
+
+        border-radius: var(--segment-border-radius);
     }
-    
-    // Segments with both icon and text
-    &:has(.#{base.$prefix}-button-icon + .#{base.$prefix}-button-text) {
-      padding: 0 var(--segment-padding-icon-text-right) 0 var(--segment-padding-icon-text-left);
+
+    // Compact density (small)
+    &--compact {
+        --segment-height: 32px;
+        --segment-padding-x: 16px;
+        --segment-padding-icon-only: 8px;
+        --segment-padding-icon-text-left: 8px;
+        --segment-padding-icon-text-right: 12px;
+        --segment-icon-size: 16px;
+        --segment-text-size: 0.75rem;
+        --segment-border-radius: 16px;
+        --segment-checkmark-size: 16px;
+
+        border-radius: var(--segment-border-radius);
     }
-    
-    // Only add border radius to first and last segments
-    &:first-child {
-      border-top-left-radius: var(--segment-border-radius);
-      border-bottom-left-radius: var(--segment-border-radius);
-    }
-    
-    &:last-child {
-      border-top-right-radius: var(--segment-border-radius);
-      border-bottom-right-radius: var(--segment-border-radius);
-    }
-    
-    // Hover state - keeping original color
-    &:hover:not([disabled]) {
-      background-color: t.alpha('on-surface', 0.08);
-    }
-    
-    // Focus state
-    &:focus {
-      outline: none;
-    }
-    
-    &:focus-visible {
-      outline: 2px solid t.color('outline');
-      outline-offset: -2px;
-    }
-    
-    // Replace border with pseudo-elements for better control
-    // Each segment has its own right border (except last)
-    &:not(:last-child)::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      right: 0;
-      height: 100%;
-      width: 1px;
-      background-color: t.color('outline');
-      pointer-events: none;
-    }
-    
-    // Disabled state handling
-    &[disabled] {
-      opacity: 0.38;
-      
-      // When a disabled button has a right border, make it lower opacity
-      &::after {
-        background-color: t.alpha('outline', 0.38);
-      }
-      
-      // When a disabled button is before a non-disabled button, let the non-disabled handle the border
-      + .#{base.$prefix}-button:not([disabled])::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        height: 100%;
-        width: 1px;
-        background-color: t.color('outline');
+
+    // Disabled state for whole component
+    &--disabled {
+        opacity: 0.38;
         pointer-events: none;
-      }
-      
-      // When a disabled button is after a non-disabled button, make the non-disabled button's border low opacity
-      &:not(:first-child) {
-        &::before {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 0;
-          height: 100%;
-          width: 1px;
-          background-color: t.alpha('outline', 0.38);
-          pointer-events: none;
+    }
+
+    // ==========================================================================
+    // SEGMENT STYLES (using button component)
+    // ==========================================================================
+
+    .#{base.$prefix}-button {
+        // Reset button styles
+        margin: 0;
+        box-shadow: none;
+        background-color: transparent;
+        border: none;
+        position: relative;
+        border-radius: 0 !important; // Override button's border-radius completely
+        min-width: 48px;
+        height: 100%;
+        color: t.color("on-surface");
+        flex: 1 1 0; // Equal width segments by default
+        justify-content: center;
+
+        // Use CSS variables for dynamic sizing
+        padding: 0 var(--segment-padding-x);
+
+        // CRITICAL: Override button's active state border-radius changes
+        // Segmented button segments must maintain their shape
+        &:active,
+        &.#{base.$prefix}-button--active {
+            border-radius: 0 !important;
         }
-      }
+
+        // Icon-only segments
+        &.#{base.$prefix}-button--circular {
+            padding: 0 var(--segment-padding-icon-only);
+            flex: 0 0 auto; // Icon-only don't flex
+        }
+
+        // Segments with both icon and text
+        &:has(.#{base.$prefix}-button-icon + .#{base.$prefix}-button-text) {
+            padding: 0 var(--segment-padding-icon-text-right) 0
+                var(--segment-padding-icon-text-left);
+        }
+
+        // First segment - rounded left corners only
+        &:first-child {
+            border-top-left-radius: var(--segment-border-radius) !important;
+            border-bottom-left-radius: var(--segment-border-radius) !important;
+
+            &:active,
+            &.#{base.$prefix}-button--active {
+                border-top-left-radius: var(--segment-border-radius) !important;
+                border-bottom-left-radius: var(
+                    --segment-border-radius
+                ) !important;
+            }
+        }
+
+        // Last segment - rounded right corners only
+        &:last-child {
+            border-top-right-radius: var(--segment-border-radius) !important;
+            border-bottom-right-radius: var(--segment-border-radius) !important;
+
+            &:active,
+            &.#{base.$prefix}-button--active {
+                border-top-right-radius: var(
+                    --segment-border-radius
+                ) !important;
+                border-bottom-right-radius: var(
+                    --segment-border-radius
+                ) !important;
+            }
+        }
+
+        // Single segment - all corners rounded
+        &:only-child {
+            border-radius: var(--segment-border-radius) !important;
+
+            &:active,
+            &.#{base.$prefix}-button--active {
+                border-radius: var(--segment-border-radius) !important;
+            }
+        }
+
+        // Hover state
+        &:hover:not([disabled]) {
+            background-color: t.alpha("on-surface", 0.08);
+        }
+
+        // Pressed state (MD3: 12% state layer)
+        &:active:not([disabled]) {
+            background-color: t.alpha("on-surface", 0.12);
+        }
+
+        // Focus state
+        &:focus {
+            outline: none;
+        }
+
+        &:focus-visible {
+            outline: 2px solid t.color("secondary");
+            outline-offset: -2px;
+            z-index: 1;
+        }
+
+        // ==========================================================================
+        // DIVIDER STYLES
+        // ==========================================================================
+        // MD3: Dividers should NOT appear adjacent to selected segments
+
+        // Each segment has a right divider (except last)
+        &:not(:last-child)::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            right: 0;
+            height: 100%;
+            width: 1px;
+            background-color: t.color("outline");
+            pointer-events: none;
+            transition: opacity v.motion("duration-short1")
+                v.motion("easing-standard");
+        }
+
+        // Hide divider when this segment is selected
+        &.#{base.$prefix}-segment--selected:not(:last-child)::after {
+            opacity: 0;
+        }
+
+        // Hide divider when NEXT segment is selected (using adjacent sibling)
+        &:has(+ .#{base.$prefix}-segment--selected)::after {
+            opacity: 0;
+        }
+
+        // Fallback for browsers without :has() - hide divider on selected
+        // The segment before selected won't hide, but it's acceptable degradation
+
+        // Disabled state handling
+        &[disabled] {
+            opacity: 0.38;
+
+            &::after {
+                background-color: t.alpha("outline", 0.38);
+            }
+        }
+
+        // Reset all button variant styles
+        &.#{base.$prefix}-button--filled,
+        &.#{base.$prefix}-button--outlined,
+        &.#{base.$prefix}-button--tonal,
+        &.#{base.$prefix}-button--elevated,
+        &.#{base.$prefix}-button--text {
+            background-color: transparent;
+            box-shadow: none;
+            color: t.color("on-surface");
+            border: none;
+
+            &:active,
+            &.#{base.$prefix}-button--active {
+                border-radius: 0 !important;
+            }
+
+            &:first-child {
+                &:active,
+                &.#{base.$prefix}-button--active {
+                    border-top-left-radius: var(
+                        --segment-border-radius
+                    ) !important;
+                    border-bottom-left-radius: var(
+                        --segment-border-radius
+                    ) !important;
+                }
+            }
+
+            &:last-child {
+                &:active,
+                &.#{base.$prefix}-button--active {
+                    border-top-right-radius: var(
+                        --segment-border-radius
+                    ) !important;
+                    border-bottom-right-radius: var(
+                        --segment-border-radius
+                    ) !important;
+                }
+            }
+        }
     }
-    
-    // Ensure all button styles are reset appropriately
-    &.#{base.$prefix}-button--filled,
-    &.#{base.$prefix}-button--outlined,
-    &.#{base.$prefix}-button--tonal,
-    &.#{base.$prefix}-button--elevated,
-    &.#{base.$prefix}-button--text {
-      background-color: transparent;
-      box-shadow: none;
-      color: t.color('on-surface');
+
+    // ==========================================================================
+    // SELECTED STATE
+    // ==========================================================================
+
+    .#{base.$prefix}-segment--selected {
+        background-color: t.color("secondary-container");
+        color: t.color("on-secondary-container");
+
+        &:hover:not([disabled]) {
+            // MD3: Selected hover uses on-secondary-container at 8% over secondary-container
+            background-color: color-mix(
+                in srgb,
+                t.color("on-secondary-container") 8%,
+                t.color("secondary-container")
+            );
+        }
+
+        &:active:not([disabled]) {
+            // MD3: Selected pressed uses on-secondary-container at 12%
+            background-color: color-mix(
+                in srgb,
+                t.color("on-secondary-container") 12%,
+                t.color("secondary-container")
+            );
+        }
+
+        // Override for all button variants
+        &.#{base.$prefix}-button--filled,
+        &.#{base.$prefix}-button--outlined,
+        &.#{base.$prefix}-button--tonal,
+        &.#{base.$prefix}-button--elevated,
+        &.#{base.$prefix}-button--text {
+            background-color: t.color("secondary-container");
+            color: t.color("on-secondary-container");
+        }
+
+        // Selected segment icon color
+        .#{base.$prefix}-button-icon {
+            color: t.color("on-secondary-container");
+        }
     }
-  }
-  
-  // Selected state
-  .#{base.$prefix}-segment--selected {
-    background-color: t.color('secondary-container');
-    color: t.color('on-secondary-container');
-    
-    &:hover:not([disabled]) {
-      background-color: t.alpha('secondary-container', 0.8);
+
+    // ==========================================================================
+    // CHECKMARK ICON FOR SELECTED SEGMENTS
+    // ==========================================================================
+    // MD3: Selected text-only segments show checkmark before text
+    // The checkmark is added via the segment.ts file, but we style it here
+
+    .#{base.$prefix}-segment-checkmark {
+        display: none;
+        align-items: center;
+        justify-content: center;
+        width: var(--segment-checkmark-size);
+        height: var(--segment-checkmark-size);
+        margin-right: 8px;
+        flex-shrink: 0;
+
+        // Animate checkmark appearance
+        animation: segmentCheckmarkIn v.motion("duration-short2")
+            v.motion("easing-emphasized-decelerate");
+
+        svg {
+            width: 100%;
+            height: 100%;
+            fill: currentColor;
+        }
     }
-    
-    // Ensure color change even with different button variants
-    &.#{base.$prefix}-button--filled,
-    &.#{base.$prefix}-button--outlined,
-    &.#{base.$prefix}-button--tonal,
-    &.#{base.$prefix}-button--elevated,
-    &.#{base.$prefix}-button--text {
-      background-color: t.color('secondary-container');
-      color: t.color('on-secondary-container');
+
+    // Show checkmark when segment is selected
+    .#{base.$prefix}-segment--selected .#{base.$prefix}-segment-checkmark {
+        display: flex;
     }
-  }
-  
-  // Ensure proper spacing in button contents
-  .#{base.$prefix}-button-text {
-    margin: 0;
-    white-space: nowrap;
-    @include m.typography('label-large');
-    // Apply density-specific font sizing
-    font-size: var(--segment-text-size);
-  }
-  
-  .#{base.$prefix}-button-icon + .#{base.$prefix}-button-text {
-    margin-left: 8px; // MD3 spec for space between icon and text
-  }
-  
-  // Icon sizing per MD3
-  .#{base.$prefix}-button-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    
-    svg {
-      width: var(--segment-icon-size);
-      height: var(--segment-icon-size);
+
+    // Checkmark animation
+    @keyframes segmentCheckmarkIn {
+        from {
+            opacity: 0;
+            transform: scale(0.6);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
     }
-  }
+
+    // ==========================================================================
+    // TEXT AND ICON STYLES
+    // ==========================================================================
+
+    .#{base.$prefix}-button-text {
+        margin: 0;
+        white-space: nowrap;
+        @include m.typography("label-large");
+        font-size: var(--segment-text-size);
+    }
+
+    // Space between icon/checkmark and text
+    .#{base.$prefix}-button-icon + .#{base.$prefix}-button-text,
+    .#{base.$prefix}-segment-checkmark + .#{base.$prefix}-button-text {
+        margin-left: 8px;
+    }
+
+    // Icon sizing
+    .#{base.$prefix}-button-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+
+        svg {
+            width: var(--segment-icon-size);
+            height: var(--segment-icon-size);
+        }
+    }
+
+    // ==========================================================================
+    // EQUAL WIDTH MODIFIER
+    // ==========================================================================
+    // By default segments have equal width (flex: 1 1 0)
+    // This modifier can be used to disable it
+
+    &--auto-width {
+        .#{base.$prefix}-button {
+            flex: 0 0 auto;
+        }
+    }
+}
+
+// =============================================================================
+// DARK THEME ADJUSTMENTS
+// =============================================================================
+
+body[data-theme-mode="dark"] {
+    .#{$component} {
+        border-color: t.color("outline");
+
+        .#{base.$prefix}-button {
+            &::after {
+                background-color: t.color("outline");
+            }
+        }
+    }
 }
