@@ -126,6 +126,14 @@ export interface ChipConfig {
   selectable?: boolean;
 
   /**
+   * Flag indicating selection is managed externally (by chips container)
+   * When true, the chip won't add its own click handler for selection toggle
+   * @default false
+   * @internal Used by chips container to prevent double-toggle
+   */
+  managedSelection?: boolean;
+
+  /**
    * Function called when the trailing icon is clicked
    */
   onTrailingIconClick?: (chip: ChipComponent) => void;

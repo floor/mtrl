@@ -253,9 +253,11 @@ export const withController = (config: ChipsConfig) => (component) => {
    * @returns {ChipComponent} The created chip instance
    */
   const addChip = (chipConfig) => {
-    // CHANGE: Remove the onSelect handler that calls handleSelection
+    // Create chip with managedSelection flag to prevent double-toggle
+    // The controller handles all selection logic via its own click handler
     const chipInstance = createChip({
       ...chipConfig,
+      managedSelection: true,
       // Only pass through the user's onSelect handler, don't create a path to handleSelection
       onSelect: chipConfig.onSelect,
     });

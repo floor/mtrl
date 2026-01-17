@@ -29,7 +29,7 @@ const createChip = (config: ChipConfig = {}): ChipComponent => {
       withVariant(baseConfig),
       withDisabled(baseConfig),
       withRipple(baseConfig),
-      withLifecycle()
+      withLifecycle(),
     )(baseConfig);
 
     // Create a container for the chip content to ensure proper ordering
@@ -94,12 +94,14 @@ const createChip = (config: ChipConfig = {}): ChipComponent => {
     }
 
     // Add click handler for selection toggle
-    if (
+    // Skip if managedSelection is true (chip is managed by a chips container)
+    const isSelectableVariant =
       config.variant === "filter" ||
       config.variant === "assist" ||
       config.variant === "suggestion" ||
-      config.selectable
-    ) {
+      config.selectable;
+
+    if (isSelectableVariant && !config.managedSelection) {
       chip.element.addEventListener("click", () => {
         if (enhancedChip.isDisabled()) return;
 
