@@ -12,6 +12,13 @@ export interface ToggleConfig {
   toggle?: boolean;
 
   /**
+   * Whether clicking toggles the state automatically
+   * Set to false to control selection programmatically only
+   * @default true
+   */
+  toggleOnClick?: boolean;
+
+  /**
    * Initial selected state
    */
   selected?: boolean;
@@ -274,7 +281,9 @@ export const withToggle =
       updateAriaPressed();
     }
 
-    // Add click handler for toggle behavior
+    // Add click handler for toggle behavior (unless toggleOnClick is false)
+    const toggleOnClick = config.toggleOnClick !== false;
+
     const handleClick = (): void => {
       toggleState.toggle();
 
@@ -286,13 +295,17 @@ export const withToggle =
       component.element.dispatchEvent(event);
     };
 
-    component.element.addEventListener("click", handleClick);
+    if (toggleOnClick) {
+      component.element.addEventListener("click", handleClick);
+    }
 
     // Store cleanup handler if lifecycle exists
     const originalDestroy = component.lifecycle?.destroy;
     if (component.lifecycle) {
       component.lifecycle.destroy = () => {
-        component.element.removeEventListener("click", handleClick);
+        if (toggleOnClick) {
+          component.element.removeEventListener("click", handleClick);
+        }
         if (originalDestroy) {
           originalDestroy();
         }

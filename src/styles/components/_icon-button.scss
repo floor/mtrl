@@ -1,11 +1,11 @@
 // src/styles/components/_icon-button.scss
-@use '../../styles/abstract/base' as base;
-@use '../../styles/abstract/variables' as v;
-@use '../../styles/abstract/functions' as f;
-@use '../../styles/abstract/mixins' as m;
-@use '../../styles/abstract/theme' as t;
+@use "../../styles/abstract/base" as base;
+@use "../../styles/abstract/variables" as v;
+@use "../../styles/abstract/functions" as f;
+@use "../../styles/abstract/mixins" as m;
+@use "../../styles/abstract/theme" as t;
 
-$component: '#{base.$prefix}-icon-button';
+$component: "#{base.$prefix}-icon-button";
 
 // =============================================================================
 // ICON BUTTON COMPONENT STYLES
@@ -26,479 +26,527 @@ $component: '#{base.$prefix}-icon-button';
 // Size configuration maps
 // -----------------------------------------------------------------------------
 $sizes: (
-  'xs': (container: 32px, icon: 18px, square-radius: 12px, pressed-radius: 8px),
-  's':  (container: 40px, icon: 24px, square-radius: 12px, pressed-radius: 8px),
-  'm':  (container: 56px, icon: 24px, square-radius: 16px, pressed-radius: 12px),
-  'l':  (container: 96px, icon: 36px, square-radius: 28px, pressed-radius: 16px),
-  'xl': (container: 136px, icon: 48px, square-radius: 28px, pressed-radius: 16px)
+    "xs": (
+        container: 32px,
+        icon: 18px,
+        square-radius: 12px,
+        pressed-radius: 8px,
+    ),
+    "s": (
+        container: 40px,
+        icon: 24px,
+        square-radius: 12px,
+        pressed-radius: 8px,
+    ),
+    "m": (
+        container: 56px,
+        icon: 24px,
+        square-radius: 16px,
+        pressed-radius: 12px,
+    ),
+    "l": (
+        container: 96px,
+        icon: 36px,
+        square-radius: 28px,
+        pressed-radius: 16px,
+    ),
+    "xl": (
+        container: 136px,
+        icon: 48px,
+        square-radius: 28px,
+        pressed-radius: 16px,
+    ),
 );
 
 $widths: (
-  'xs': (narrow: 28px, default: 32px, wide: 36px),
-  's':  (narrow: 32px, default: 40px, wide: 48px),
-  'm':  (narrow: 48px, default: 56px, wide: 64px),
-  'l':  (narrow: 80px, default: 96px, wide: 112px),
-  'xl': (narrow: 112px, default: 136px, wide: 160px)
+    "xs": (
+        narrow: 28px,
+        default: 32px,
+        wide: 36px,
+    ),
+    "s": (
+        narrow: 32px,
+        default: 40px,
+        wide: 48px,
+    ),
+    "m": (
+        narrow: 48px,
+        default: 56px,
+        wide: 64px,
+    ),
+    "l": (
+        narrow: 80px,
+        default: 96px,
+        wide: 112px,
+    ),
+    "xl": (
+        narrow: 112px,
+        default: 136px,
+        wide: 160px,
+    ),
 );
 
 // Helper function to get size values
 @function get-size($size, $property) {
-  @return map-get(map-get($sizes, $size), $property);
+    @return map-get(map-get($sizes, $size), $property);
 }
 
 @function get-width($size, $width-variant) {
-  @return map-get(map-get($widths, $size), $width-variant);
+    @return map-get(map-get($widths, $size), $width-variant);
 }
 
 // -----------------------------------------------------------------------------
 // Base styles
 // -----------------------------------------------------------------------------
 .#{$component} {
-  // Reset and base styles
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  background-color: transparent;
-  color: t.color('on-surface-variant');
-  font: inherit;
-  text-decoration: none;
-  cursor: pointer;
-  user-select: none;
-  vertical-align: middle;
-  appearance: none;
-  overflow: hidden;
-  flex-shrink: 0;
-
-  // Default size (s - 40px)
-  width: get-size('s', container);
-  height: get-size('s', container);
-
-  // Default shape (round - full radius)
-  border-radius: 50%;
-
-  // Smooth transitions for shape morphing
-  transition:
-    background-color v.motion('duration-short2') v.motion('easing-standard'),
-    color v.motion('duration-short2') v.motion('easing-standard'),
-    border-color v.motion('duration-short2') v.motion('easing-standard'),
-    border-radius v.motion('duration-short1') v.motion('easing-standard-accelerate'),
-    transform v.motion('duration-short1') v.motion('easing-standard-accelerate'),
-    box-shadow v.motion('duration-short2') v.motion('easing-standard');
-
-  // Focus styles
-  &:focus {
-    outline: none;
-  }
-
-  &:focus-visible {
-    outline: 2px solid t.color('outline');
-    outline-offset: 2px;
-  }
-
-  // State layer
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: currentColor;
-    opacity: 0;
-    pointer-events: none;
-    border-radius: inherit;
-    transition: opacity v.motion('duration-short2') v.motion('easing-standard');
-  }
-
-  // Hover state layer (8%)
-  &:hover::before {
-    opacity: 0.08;
-  }
-
-  // Focus state layer (10%)
-  &:focus-visible::before {
-    opacity: 0.10;
-  }
-
-  // Pressed state layer (10%)
-  &:active::before {
-    opacity: 0.10;
-  }
-
-  // ---------------------------------------------------------------------------
-  // Icon element
-  // ---------------------------------------------------------------------------
-  &__icon,
-  .#{base.$prefix}-icon,
-  .#{$component}-icon {
+    // Reset and base styles
+    position: relative;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: get-size('s', icon);
-    height: get-size('s', icon);
-    pointer-events: none;
+    border: none;
+    background-color: transparent;
+    color: t.color("on-surface-variant");
+    font: inherit;
+    text-decoration: none;
+    cursor: pointer;
+    user-select: none;
+    vertical-align: middle;
+    appearance: none;
+    overflow: hidden;
+    flex-shrink: 0;
 
-    svg {
-      width: 100%;
-      height: 100%;
-      fill: currentColor;
-    }
-  }
+    // Default size (s - 40px)
+    width: get-size("s", container);
+    height: get-size("s", container);
 
-  // ---------------------------------------------------------------------------
-  // Size variants
-  // ---------------------------------------------------------------------------
-  &--xs {
-    width: get-size('xs', container);
-    height: get-size('xs', container);
-
-    .#{base.$prefix}-icon,
-    .#{$component}-icon {
-      width: get-size('xs', icon);
-      height: get-size('xs', icon);
-    }
-
-    // Ensure minimum 48px touch target
-    &::after {
-      content: '';
-      position: absolute;
-      width: 48px;
-      height: 48px;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-    }
-  }
-
-  // Size S is the default, no additional styles needed
-
-  &--m {
-    width: get-size('m', container);
-    height: get-size('m', container);
-
-    .#{base.$prefix}-icon,
-    .#{$component}-icon {
-      width: get-size('m', icon);
-      height: get-size('m', icon);
-    }
-  }
-
-  &--l {
-    width: get-size('l', container);
-    height: get-size('l', container);
-
-    .#{base.$prefix}-icon,
-    .#{$component}-icon {
-      width: get-size('l', icon);
-      height: get-size('l', icon);
-    }
-  }
-
-  &--xl {
-    width: get-size('xl', container);
-    height: get-size('xl', container);
-
-    .#{base.$prefix}-icon,
-    .#{$component}-icon {
-      width: get-size('xl', icon);
-      height: get-size('xl', icon);
-    }
-  }
-
-  // ---------------------------------------------------------------------------
-  // Shape variants
-  // ---------------------------------------------------------------------------
-
-  // Round is default (50% radius)
-  &--round {
+    // Default shape (round - full radius)
     border-radius: 50%;
-  }
 
-  // Square shape with size-specific corner radius
-  &--square {
-    border-radius: get-size('s', square-radius);
+    // Smooth transitions for shape morphing
+    transition:
+        background-color v.motion("duration-short2") v.motion("easing-standard"),
+        color v.motion("duration-short2") v.motion("easing-standard"),
+        border-color v.motion("duration-short2") v.motion("easing-standard"),
+        border-radius v.motion("duration-short1")
+            v.motion("easing-standard-accelerate"),
+        transform v.motion("duration-short1")
+            v.motion("easing-standard-accelerate"),
+        box-shadow v.motion("duration-short2") v.motion("easing-standard");
 
-    &.#{$component}--xs {
-      border-radius: get-size('xs', square-radius);
+    // Focus styles
+    &:focus {
+        outline: none;
     }
 
-    &.#{$component}--m {
-      border-radius: get-size('m', square-radius);
+    &:focus-visible {
+        outline: 2px solid t.color("outline");
+        outline-offset: 2px;
     }
 
-    &.#{$component}--l {
-      border-radius: get-size('l', square-radius);
-    }
-
-    &.#{$component}--xl {
-      border-radius: get-size('xl', square-radius);
-    }
-  }
-
-  // Shape morph on press - both round and square morph to pressed radius
-  &:active {
-    &.#{$component}--round {
-      border-radius: get-size('s', pressed-radius);
-
-      &.#{$component}--xs {
-        border-radius: get-size('xs', pressed-radius);
-      }
-
-      &.#{$component}--m {
-        border-radius: get-size('m', pressed-radius);
-      }
-
-      &.#{$component}--l {
-        border-radius: get-size('l', pressed-radius);
-      }
-
-      &.#{$component}--xl {
-        border-radius: get-size('xl', pressed-radius);
-      }
-    }
-
-    &.#{$component}--square {
-      border-radius: get-size('s', pressed-radius);
-
-      &.#{$component}--xs {
-        border-radius: get-size('xs', pressed-radius);
-      }
-
-      &.#{$component}--m {
-        border-radius: get-size('m', pressed-radius);
-      }
-
-      &.#{$component}--l {
-        border-radius: get-size('l', pressed-radius);
-      }
-
-      &.#{$component}--xl {
-        border-radius: get-size('xl', pressed-radius);
-      }
-    }
-  }
-
-  // ---------------------------------------------------------------------------
-  // Width variants
-  // ---------------------------------------------------------------------------
-  &--narrow {
-    width: get-width('s', narrow);
-
-    &.#{$component}--xs {
-      width: get-width('xs', narrow);
-    }
-
-    &.#{$component}--m {
-      width: get-width('m', narrow);
-    }
-
-    &.#{$component}--l {
-      width: get-width('l', narrow);
-    }
-
-    &.#{$component}--xl {
-      width: get-width('xl', narrow);
-    }
-  }
-
-  &--wide {
-    width: get-width('s', wide);
-
-    &.#{$component}--xs {
-      width: get-width('xs', wide);
-    }
-
-    &.#{$component}--m {
-      width: get-width('m', wide);
-    }
-
-    &.#{$component}--l {
-      width: get-width('l', wide);
-    }
-
-    &.#{$component}--xl {
-      width: get-width('xl', wide);
-    }
-  }
-
-  // ---------------------------------------------------------------------------
-  // Variant: Standard (default)
-  // ---------------------------------------------------------------------------
-  &--standard {
-    background-color: transparent;
-    color: t.color('on-surface-variant');
-
-    &:hover {
-      color: t.color('on-surface-variant');
-    }
-
-    &:disabled,
-    &.#{$component}--disabled {
-      color: t.alpha('on-surface', 0.38);
-    }
-
-    // Toggle selected state
-    &.#{$component}--selected {
-      color: t.color('primary');
-    }
-  }
-
-  // ---------------------------------------------------------------------------
-  // Variant: Filled
-  // ---------------------------------------------------------------------------
-  &--filled {
-    background-color: t.color('primary');
-    color: t.color('on-primary');
-
+    // State layer
     &::before {
-      background-color: t.color('on-primary');
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: currentColor;
+        opacity: 0;
+        pointer-events: none;
+        border-radius: inherit;
+        transition: opacity v.motion("duration-short2")
+            v.motion("easing-standard");
     }
 
+    // Hover state layer (8%)
+    &:hover::before {
+        opacity: 0.08;
+    }
+
+    // Focus state layer (10%)
+    &:focus-visible::before {
+        opacity: 0.1;
+    }
+
+    // Pressed state layer (10%)
+    &:active::before {
+        opacity: 0.1;
+    }
+
+    // ---------------------------------------------------------------------------
+    // Icon element
+    // ---------------------------------------------------------------------------
+    &__icon,
+    .#{base.$prefix}-icon,
+    .#{$component}-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: get-size("s", icon);
+        height: get-size("s", icon);
+        pointer-events: none;
+
+        svg {
+            width: 100%;
+            height: 100%;
+            fill: currentColor !important;
+        }
+    }
+
+    // ---------------------------------------------------------------------------
+    // Size variants
+    // ---------------------------------------------------------------------------
+    &--xs {
+        width: get-size("xs", container);
+        height: get-size("xs", container);
+
+        .#{base.$prefix}-icon,
+        .#{$component}-icon {
+            width: get-size("xs", icon);
+            height: get-size("xs", icon);
+        }
+
+        // Ensure minimum 48px touch target
+        &::after {
+            content: "";
+            position: absolute;
+            width: 48px;
+            height: 48px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+    }
+
+    // Size S is the default, no additional styles needed
+
+    &--m {
+        width: get-size("m", container);
+        height: get-size("m", container);
+
+        .#{base.$prefix}-icon,
+        .#{$component}-icon {
+            width: get-size("m", icon);
+            height: get-size("m", icon);
+        }
+    }
+
+    &--l {
+        width: get-size("l", container);
+        height: get-size("l", container);
+
+        .#{base.$prefix}-icon,
+        .#{$component}-icon {
+            width: get-size("l", icon);
+            height: get-size("l", icon);
+        }
+    }
+
+    &--xl {
+        width: get-size("xl", container);
+        height: get-size("xl", container);
+
+        .#{base.$prefix}-icon,
+        .#{$component}-icon {
+            width: get-size("xl", icon);
+            height: get-size("xl", icon);
+        }
+    }
+
+    // ---------------------------------------------------------------------------
+    // Shape variants
+    // ---------------------------------------------------------------------------
+
+    // Round is default (50% radius)
+    &--round {
+        border-radius: 50%;
+    }
+
+    // Square shape with size-specific corner radius
+    &--square {
+        border-radius: get-size("s", square-radius);
+
+        &.#{$component}--xs {
+            border-radius: get-size("xs", square-radius);
+        }
+
+        &.#{$component}--m {
+            border-radius: get-size("m", square-radius);
+        }
+
+        &.#{$component}--l {
+            border-radius: get-size("l", square-radius);
+        }
+
+        &.#{$component}--xl {
+            border-radius: get-size("xl", square-radius);
+        }
+    }
+
+    // Shape morph on press - both round and square morph to pressed radius
+    &:active {
+        &.#{$component}--round {
+            border-radius: get-size("s", pressed-radius);
+
+            &.#{$component}--xs {
+                border-radius: get-size("xs", pressed-radius);
+            }
+
+            &.#{$component}--m {
+                border-radius: get-size("m", pressed-radius);
+            }
+
+            &.#{$component}--l {
+                border-radius: get-size("l", pressed-radius);
+            }
+
+            &.#{$component}--xl {
+                border-radius: get-size("xl", pressed-radius);
+            }
+        }
+
+        &.#{$component}--square {
+            border-radius: get-size("s", pressed-radius);
+
+            &.#{$component}--xs {
+                border-radius: get-size("xs", pressed-radius);
+            }
+
+            &.#{$component}--m {
+                border-radius: get-size("m", pressed-radius);
+            }
+
+            &.#{$component}--l {
+                border-radius: get-size("l", pressed-radius);
+            }
+
+            &.#{$component}--xl {
+                border-radius: get-size("xl", pressed-radius);
+            }
+        }
+    }
+
+    // ---------------------------------------------------------------------------
+    // Width variants
+    // ---------------------------------------------------------------------------
+    &--narrow {
+        width: get-width("s", narrow);
+
+        &.#{$component}--xs {
+            width: get-width("xs", narrow);
+        }
+
+        &.#{$component}--m {
+            width: get-width("m", narrow);
+        }
+
+        &.#{$component}--l {
+            width: get-width("l", narrow);
+        }
+
+        &.#{$component}--xl {
+            width: get-width("xl", narrow);
+        }
+    }
+
+    &--wide {
+        width: get-width("s", wide);
+
+        &.#{$component}--xs {
+            width: get-width("xs", wide);
+        }
+
+        &.#{$component}--m {
+            width: get-width("m", wide);
+        }
+
+        &.#{$component}--l {
+            width: get-width("l", wide);
+        }
+
+        &.#{$component}--xl {
+            width: get-width("xl", wide);
+        }
+    }
+
+    // ---------------------------------------------------------------------------
+    // Variant: Standard (default)
+    // ---------------------------------------------------------------------------
+    &--standard {
+        background-color: transparent;
+        color: t.color("on-surface-variant");
+
+        &:hover {
+            color: t.color("on-surface-variant");
+        }
+
+        &:disabled,
+        &.#{$component}--disabled {
+            color: t.alpha("on-surface", 0.38);
+        }
+
+        // Toggle selected state
+        &.#{$component}--selected {
+            color: t.color("primary");
+        }
+    }
+
+    // ---------------------------------------------------------------------------
+    // Variant: Filled
+    // ---------------------------------------------------------------------------
+    &--filled {
+        background-color: t.color("primary");
+        color: t.color("on-primary");
+
+        &::before {
+            background-color: t.color("on-primary");
+        }
+
+        &:disabled,
+        &.#{$component}--disabled {
+            background-color: t.alpha("on-surface", 0.12);
+            color: t.alpha("on-surface", 0.38);
+        }
+
+        // Toggle unselected state
+        &.#{$component}--toggle:not(.#{$component}--selected) {
+            background-color: t.color("surface-container-highest");
+            color: t.color("primary");
+
+            &::before {
+                background-color: t.color("primary");
+            }
+        }
+    }
+
+    // ---------------------------------------------------------------------------
+    // Variant: Tonal (Filled Tonal)
+    // ---------------------------------------------------------------------------
+    &--tonal {
+        background-color: t.color("secondary-container");
+        color: t.color("on-secondary-container");
+
+        &::before {
+            background-color: t.color("on-secondary-container");
+        }
+
+        &:disabled,
+        &.#{$component}--disabled {
+            background-color: t.alpha("on-surface", 0.12);
+            color: t.alpha("on-surface", 0.38);
+        }
+
+        // Toggle unselected state
+        &.#{$component}--toggle:not(.#{$component}--selected) {
+            background-color: t.color("surface-container-highest");
+            color: t.color("on-surface-variant");
+
+            &::before {
+                background-color: t.color("on-surface-variant");
+            }
+        }
+    }
+
+    // ---------------------------------------------------------------------------
+    // Variant: Outlined
+    // ---------------------------------------------------------------------------
+    &--outlined {
+        background-color: transparent;
+        color: t.color("on-surface-variant");
+        border: 1px solid t.color("outline");
+
+        &::before {
+            background-color: t.color("on-surface-variant");
+        }
+
+        &:disabled,
+        &.#{$component}--disabled {
+            color: t.alpha("on-surface", 0.38);
+            border-color: t.alpha("on-surface", 0.12);
+        }
+
+        // Toggle selected state
+        &.#{$component}--selected {
+            background-color: t.color("inverse-surface");
+            color: t.color("inverse-on-surface");
+            border-color: transparent;
+
+            &::before {
+                background-color: t.color("inverse-on-surface");
+            }
+        }
+    }
+
+    // ---------------------------------------------------------------------------
+    // Toggle mode
+    // ---------------------------------------------------------------------------
+    &--toggle {
+        // Toggles use aria-pressed for accessibility
+        // Shape morphs on selection (handled by selected class)
+    }
+
+    // Selected state - shape morphs (round becomes square, square becomes round)
+    &--selected {
+        // Round buttons become square when selected
+        &.#{$component}--round:not(:active) {
+            border-radius: get-size("s", square-radius);
+
+            &.#{$component}--xs {
+                border-radius: get-size("xs", square-radius);
+            }
+
+            &.#{$component}--m {
+                border-radius: get-size("m", square-radius);
+            }
+
+            &.#{$component}--l {
+                border-radius: get-size("l", square-radius);
+            }
+
+            &.#{$component}--xl {
+                border-radius: get-size("xl", square-radius);
+            }
+        }
+
+        // Square buttons become round when selected
+        &.#{$component}--square:not(:active) {
+            border-radius: 50%;
+        }
+    }
+
+    // ---------------------------------------------------------------------------
+    // Disabled state
+    // ---------------------------------------------------------------------------
     &:disabled,
-    &.#{$component}--disabled {
-      background-color: t.alpha('on-surface', 0.12);
-      color: t.alpha('on-surface', 0.38);
+    &--disabled {
+        pointer-events: none;
+        cursor: default;
+
+        &::before {
+            display: none;
+        }
     }
-
-    // Toggle unselected state
-    &.#{$component}--toggle:not(.#{$component}--selected) {
-      background-color: t.color('surface-container-highest');
-      color: t.color('primary');
-
-      &::before {
-        background-color: t.color('primary');
-      }
-    }
-  }
-
-  // ---------------------------------------------------------------------------
-  // Variant: Tonal (Filled Tonal)
-  // ---------------------------------------------------------------------------
-  &--tonal {
-    background-color: t.color('secondary-container');
-    color: t.color('on-secondary-container');
-
-    &::before {
-      background-color: t.color('on-secondary-container');
-    }
-
-    &:disabled,
-    &.#{$component}--disabled {
-      background-color: t.alpha('on-surface', 0.12);
-      color: t.alpha('on-surface', 0.38);
-    }
-
-    // Toggle unselected state
-    &.#{$component}--toggle:not(.#{$component}--selected) {
-      background-color: t.color('surface-container-highest');
-      color: t.color('on-surface-variant');
-
-      &::before {
-        background-color: t.color('on-surface-variant');
-      }
-    }
-  }
-
-  // ---------------------------------------------------------------------------
-  // Variant: Outlined
-  // ---------------------------------------------------------------------------
-  &--outlined {
-    background-color: transparent;
-    color: t.color('on-surface-variant');
-    border: 1px solid t.color('outline');
-
-    &::before {
-      background-color: t.color('on-surface-variant');
-    }
-
-    &:disabled,
-    &.#{$component}--disabled {
-      color: t.alpha('on-surface', 0.38);
-      border-color: t.alpha('on-surface', 0.12);
-    }
-
-    // Toggle selected state
-    &.#{$component}--selected {
-      background-color: t.color('inverse-surface');
-      color: t.color('inverse-on-surface');
-      border-color: transparent;
-
-      &::before {
-        background-color: t.color('inverse-on-surface');
-      }
-    }
-  }
-
-  // ---------------------------------------------------------------------------
-  // Toggle mode
-  // ---------------------------------------------------------------------------
-  &--toggle {
-    // Toggles use aria-pressed for accessibility
-    // Shape morphs on selection (handled by selected class)
-  }
-
-  // Selected state - shape morphs (round becomes square, square becomes round)
-  &--selected {
-    // Round buttons become square when selected
-    &.#{$component}--round:not(:active) {
-      border-radius: get-size('s', square-radius);
-
-      &.#{$component}--xs {
-        border-radius: get-size('xs', square-radius);
-      }
-
-      &.#{$component}--m {
-        border-radius: get-size('m', square-radius);
-      }
-
-      &.#{$component}--l {
-        border-radius: get-size('l', square-radius);
-      }
-
-      &.#{$component}--xl {
-        border-radius: get-size('xl', square-radius);
-      }
-    }
-
-    // Square buttons become round when selected
-    &.#{$component}--square:not(:active) {
-      border-radius: 50%;
-    }
-  }
-
-  // ---------------------------------------------------------------------------
-  // Disabled state
-  // ---------------------------------------------------------------------------
-  &:disabled,
-  &--disabled {
-    pointer-events: none;
-    cursor: default;
-
-    &::before {
-      display: none;
-    }
-  }
 }
 
 // =============================================================================
 // Dark theme adjustments
 // =============================================================================
-body[data-theme-mode=dark] {
-  .#{$component} {
-    &:disabled,
-    &.#{$component}--disabled {
-      color: t.alpha('on-surface', 0.38);
+body[data-theme-mode="dark"] {
+    .#{$component} {
+        &:disabled,
+        &.#{$component}--disabled {
+            color: t.alpha("on-surface", 0.38);
 
-      &.#{$component}--filled,
-      &.#{$component}--tonal {
-        background-color: t.alpha('on-surface', 0.12);
-      }
+            &.#{$component}--filled,
+            &.#{$component}--tonal {
+                background-color: t.alpha("on-surface", 0.12);
+            }
 
-      &.#{$component}--outlined {
-        border-color: t.alpha('on-surface', 0.12);
-      }
+            &.#{$component}--outlined {
+                border-color: t.alpha("on-surface", 0.12);
+            }
+        }
     }
-  }
 }
