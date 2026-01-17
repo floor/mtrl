@@ -1,46 +1,48 @@
 // src/components/search/api.ts
-import { SearchComponent, SearchEvent } from "./types";
+
+import {
+  SearchComponent,
+  SearchEvent,
+  SearchEventType,
+  SearchState,
+  SearchViewMode,
+  SearchSuggestion,
+  SearchTrailingItem,
+} from "./types";
 import { SEARCH_EVENTS } from "./constants";
 
 /**
  * API options interface - structured by feature area
  */
 interface ApiOptions {
-  search: {
+  value: {
     setValue: (value: string, triggerEvent?: boolean) => void;
     getValue: () => string;
     setPlaceholder: (text: string) => void;
     getPlaceholder: () => string;
-    focus: () => void;
-    blur: () => void;
-    expand: () => void;
-    collapse: () => void;
     clear: () => void;
     submit: () => void;
-    setSuggestions: (
-      suggestions:
-        | string[]
-        | Array<{ text: string; value?: string; icon?: string }>
-    ) => void;
-    showSuggestions: (show: boolean) => void;
+    focus: () => void;
+    blur: () => void;
+  };
+  state: {
+    expand: () => void;
+    collapse: () => void;
+    getState: () => SearchState;
+    isExpanded: () => boolean;
+    setViewMode: (mode: SearchViewMode) => void;
+    getViewMode: () => SearchViewMode;
   };
   disabled: {
     enable: () => void;
     disable: () => void;
     isDisabled: () => boolean;
   };
-  appearance: {
-    setColor: (color: string) => void;
-    getColor: () => string;
-    setSize: (size: string) => void;
-    getSize: () => string;
-  };
-  icons: {
-    setLeadingIcon: (iconHtml: string) => void;
-    setTrailingIcon: (iconHtml: string) => void;
-    setTrailingIcon2: (iconHtml: string) => void;
-    setAvatar: (avatarHtml: string) => void;
-    showClearButton: (show: boolean) => void;
+  suggestions: {
+    set: (suggestions: SearchSuggestion[] | string[]) => void;
+    get: () => SearchSuggestion[];
+    clear: () => void;
+    render: () => void;
   };
   events: {
     on: (event: string, handler: Function) => void;
@@ -52,110 +54,137 @@ interface ApiOptions {
 }
 
 /**
- * Enhances a search component with a streamlined API
- * @param {ApiOptions} options - API configuration options
- * @returns {Function} Higher-order function that adds API methods to component
+ * Enhances a search component with a streamlined public API
+ * Aligned with Material Design 3 specifications
+ *
+ * @param options API configuration options
+ * @returns Higher-order function that adds API methods to component
  * @internal This is an internal utility for the Search component
  */
 export const withAPI =
   (options: ApiOptions) =>
   (component: { element: HTMLElement }): SearchComponent => {
     const searchComponent: SearchComponent = {
-      // Element access
+      // === Element Access ===
       element: component.element,
 
-      // Value management
-      setValue(value: string, triggerEvent: boolean = true) {
-        options.search.setValue(value, triggerEvent);
+      // === Value Management ===
+
+      setValue(value: string, triggerEvent = true) {
+        options.value.setValue(value, triggerEvent);
         return this;
       },
 
       getValue() {
-        return options.search.getValue();
+        return options.value.getValue();
       },
 
-      // Placeholder management
       setPlaceholder(text: string) {
-        options.search.setPlaceholder(text);
+        options.value.setPlaceholder(text);
         return this;
       },
 
       getPlaceholder() {
-        return options.search.getPlaceholder();
+        return options.value.getPlaceholder();
       },
 
-      // Icon management
-      setLeadingIcon(iconHtml: string) {
-        options.icons.setLeadingIcon(iconHtml);
-        return this;
-      },
-
-      setTrailingIcon(iconHtml: string) {
-        options.icons.setTrailingIcon(iconHtml);
-        return this;
-      },
-
-      setTrailingIcon2(iconHtml: string) {
-        options.icons.setTrailingIcon2(iconHtml);
-        return this;
-      },
-
-      setAvatar(avatarHtml: string) {
-        options.icons.setAvatar(avatarHtml);
-        return this;
-      },
-
-      // Controls
-      showClearButton(show: boolean) {
-        options.icons.showClearButton(show);
-        return this;
-      },
-
-      setSuggestions(
-        suggestions:
-          | string[]
-          | Array<{ text: string; value?: string; icon?: string }>
-      ) {
-        options.search.setSuggestions(suggestions);
-        return this;
-      },
-
-      showSuggestions(show: boolean) {
-        options.search.showSuggestions(show);
-        return this;
-      },
-
-      focus() {
-        options.search.focus();
-        return this;
-      },
-
-      blur() {
-        options.search.blur();
-        return this;
-      },
+      // === State Management ===
 
       expand() {
-        options.search.expand();
+        options.state.expand();
         return this;
       },
 
       collapse() {
-        options.search.collapse();
+        options.state.collapse();
+        return this;
+      },
+
+      getState() {
+        return options.state.getState();
+      },
+
+      isExpanded() {
+        return options.state.isExpanded();
+      },
+
+      setViewMode(mode: SearchViewMode) {
+        options.state.setViewMode(mode);
+        return this;
+      },
+
+      getViewMode() {
+        return options.state.getViewMode();
+      },
+
+      // === Input Controls ===
+
+      focus() {
+        options.value.focus();
+        return this;
+      },
+
+      blur() {
+        options.value.blur();
         return this;
       },
 
       clear() {
-        options.search.clear();
+        options.value.clear();
         return this;
       },
 
       submit() {
-        options.search.submit();
+        options.value.submit();
         return this;
       },
 
-      // State management
+      // === Content Management ===
+
+      setLeadingIcon(iconHtml: string) {
+        // TODO: Implement in a separate icons feature if needed
+        console.warn("setLeadingIcon: Not yet implemented");
+        return this;
+      },
+
+      addTrailingItem(item: SearchTrailingItem) {
+        // TODO: Implement trailing items management
+        console.warn("addTrailingItem: Not yet implemented");
+        return this;
+      },
+
+      removeTrailingItem(id: string) {
+        // TODO: Implement trailing items management
+        console.warn("removeTrailingItem: Not yet implemented");
+        return this;
+      },
+
+      setTrailingItems(items: SearchTrailingItem[]) {
+        // TODO: Implement trailing items management
+        console.warn("setTrailingItems: Not yet implemented");
+        return this;
+      },
+
+      // === Suggestions ===
+
+      setSuggestions(suggestions: SearchSuggestion[] | string[]) {
+        options.suggestions.set(suggestions);
+        options.suggestions.render();
+        return this;
+      },
+
+      getSuggestions() {
+        return options.suggestions.get();
+      },
+
+      clearSuggestions() {
+        options.suggestions.clear();
+        options.suggestions.render();
+        return this;
+      },
+
+      // === Disabled State ===
+
       enable() {
         options.disabled.enable();
         return this;
@@ -170,28 +199,20 @@ export const withAPI =
         return options.disabled.isDisabled();
       },
 
-      // Event management
-      on(
-        event:
-          | keyof typeof SEARCH_EVENTS
-          | (typeof SEARCH_EVENTS)[keyof typeof SEARCH_EVENTS],
-        handler: (event: SearchEvent) => void
-      ) {
+      // === Events ===
+
+      on(event: SearchEventType, handler: (event: SearchEvent) => void) {
         options.events.on(event, handler);
         return this;
       },
 
-      off(
-        event:
-          | keyof typeof SEARCH_EVENTS
-          | (typeof SEARCH_EVENTS)[keyof typeof SEARCH_EVENTS],
-        handler: (event: SearchEvent) => void
-      ) {
+      off(event: SearchEventType, handler: (event: SearchEvent) => void) {
         options.events.off(event, handler);
         return this;
       },
 
-      // Lifecycle management
+      // === Lifecycle ===
+
       destroy() {
         if (options.lifecycle?.destroy) {
           options.lifecycle.destroy();

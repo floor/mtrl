@@ -1,197 +1,244 @@
 // src/components/search/features/structure.ts
-import { SearchConfig } from '../types';
-import { createElement } from '../../../core/dom/create';
+
+import { SearchConfig, SearchStructure } from "../types";
+import { SEARCH_CLASSES, SEARCH_ICONS, SEARCH_STATES } from "../constants";
+import { createElement } from "../../../core/dom/create";
 
 /**
- * Creates the search component DOM structure
+ * Creates the search component DOM structure following MD3 specifications
+ *
+ * Structure:
+ * - search (root)
+ *   - search__container (header/bar area)
+ *     - search__leading-icon
+ *     - search__input-wrapper
+ *       - search__input
+ *     - search__clear-button (conditional)
+ *     - search__trailing-icon(s) (conditional)
+ *     - search__avatar (conditional)
+ *   - search__divider (view mode only)
+ *   - search__content (view mode only)
+ *     - search__suggestions
+ *
  * @param config Search configuration
  * @returns Component enhancer with DOM structure
  */
-export const withStructure = (config: SearchConfig) => component => {
-  // Get initial config values
+export const withStructure = (config: SearchConfig) => (component) => {
   const isDisabled = config.disabled === true;
-  const variant = config.variant || 'bar';
-  const isViewMode = variant === 'view';
-  const placeholder = config.placeholder || 'Search';
-  const value = config.value || '';
-  
-  // Get prefixed class names
-  const getClass = (className) => component.getClass(className);
-  
-  // Build attributes object for the input
-  const inputAttributes = {
-    'type': 'text',
-    'placeholder': placeholder,
-    'value': value,
-    'aria-label': placeholder
+  const initialState = config.initialState || SEARCH_STATES.BAR;
+  const isViewState = initialState === SEARCH_STATES.VIEW;
+  const placeholder = config.placeholder || "Search";
+  const value = config.value || "";
+
+  // Helper to get prefixed class names
+  const getClass = (className: string): string => {
+    return component.getClass ? component.getClass(className) : className;
   };
-  
-  // Only add disabled attribute if the input should be disabled
-  if (isDisabled) {
-    inputAttributes['disabled'] = 'disabled';
+
+  // Build root element classes
+  const rootClasses = [
+    getClass(SEARCH_CLASSES.ROOT),
+    getClass(
+      initialState === SEARCH_STATES.BAR
+        ? SEARCH_CLASSES.STATE_BAR
+        : SEARCH_CLASSES.STATE_VIEW,
+    ),
+    getClass(
+      config.viewMode === "fullscreen"
+        ? SEARCH_CLASSES.VIEW_FULLSCREEN
+        : SEARCH_CLASSES.VIEW_DOCKED,
+    ),
+  ];
+
+  if (config.fullWidth) {
+    rootClasses.push(getClass(SEARCH_CLASSES.FULL_WIDTH));
   }
-  
-  // Create container element
+
+  if (isDisabled) {
+    rootClasses.push(getClass(SEARCH_CLASSES.DISABLED));
+  }
+
+  if (value) {
+    rootClasses.push(getClass(SEARCH_CLASSES.POPULATED));
+  }
+
+  // Apply classes to root element
+  component.element.className = rootClasses.filter(Boolean).join(" ");
+  component.element.setAttribute("role", "search");
+  component.element.setAttribute(
+    "aria-disabled",
+    isDisabled ? "true" : "false",
+  );
+
+  // Create container (header in view mode, bar in bar mode)
   const container = createElement({
-    tag: 'div',
-    className: getClass('search-container'),
+    tag: "div",
+    className: getClass(SEARCH_CLASSES.CONTAINER),
     container: component.element,
-    attributes: {
-      style: `
-        ${config.minWidth ? `min-width: ${config.minWidth}px;` : ''}
-        ${config.maxWidth ? `max-width: ${config.maxWidth}px;` : ''}
-        ${config.fullWidth ? 'width: 100%;' : ''}
-      `
-    }
   });
-  
-  // Create leading icon
+
+  // Create leading icon (search icon in bar, back arrow in view)
+  const leadingIconHtml = isViewState
+    ? SEARCH_ICONS.BACK
+    : config.leadingIcon || SEARCH_ICONS.SEARCH;
+
   const leadingIcon = createElement({
-    tag: 'div',
-    className: getClass('search-leading-icon'),
-    container: container,
-    html: config.leadingIcon || '',
+    tag: "button",
+    className: getClass(SEARCH_CLASSES.LEADING_ICON),
+    container,
+    html: leadingIconHtml,
     attributes: {
-      'role': 'button',
-      'tabindex': isDisabled ? '-1' : '0',
-      'aria-label': 'Search'
-    }
+      type: "button",
+      tabindex: isDisabled ? "-1" : "0",
+      "aria-label": isViewState ? "Go back" : "Search",
+    },
   });
-  
+
   // Create input wrapper
   const inputWrapper = createElement({
-    tag: 'div',
-    className: getClass('search-input-wrapper'),
-    container: container
+    tag: "div",
+    className: getClass(SEARCH_CLASSES.INPUT_WRAPPER),
+    container,
   });
-  
-  // Create input element with properly handled disabled state
+
+  // Create input element
+  const inputAttributes: Record<string, string> = {
+    type: "text",
+    placeholder,
+    "aria-label": placeholder,
+  };
+
+  if (value) {
+    inputAttributes.value = value;
+  }
+
+  if (isDisabled) {
+    inputAttributes.disabled = "disabled";
+  }
+
   const input = createElement({
-    tag: 'input',
-    className: getClass('search-input'),
+    tag: "input",
+    className: getClass(SEARCH_CLASSES.INPUT),
     container: inputWrapper,
-    attributes: inputAttributes
-  });
-  
-  // Create clear button
-  const clearButton = createElement({
-    tag: 'div',
-    className: [
-      getClass('search-clear-button'),
-      value ? '' : getClass('search-clear-button--hidden')
-    ],
-    container: container,
-    html: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>',
-    attributes: {
-      'role': 'button',
-      'tabindex': isDisabled || !value ? '-1' : '0',
-      'aria-label': 'Clear search'
+    attributes: inputAttributes,
+  }) as HTMLInputElement;
+
+  // Set value programmatically (more reliable than attribute)
+  if (value) {
+    input.value = value;
+  }
+
+  // Create clear button (hidden when no value)
+  let clearButton: HTMLElement | null = null;
+
+  if (config.showClearButton !== false) {
+    const clearButtonClasses = [getClass(SEARCH_CLASSES.CLEAR_BUTTON)];
+
+    if (!value) {
+      clearButtonClasses.push(getClass(SEARCH_CLASSES.CLEAR_BUTTON_HIDDEN));
     }
+
+    clearButton = createElement({
+      tag: "button",
+      className: clearButtonClasses.join(" "),
+      container,
+      html: SEARCH_ICONS.CLEAR,
+      attributes: {
+        type: "button",
+        tabindex: isDisabled || !value ? "-1" : "0",
+        "aria-label": "Clear search",
+      },
+    });
+  }
+
+  // Create trailing items container (for icons and avatar)
+  let trailingContainer: HTMLElement | null = null;
+
+  if (config.trailingItems && config.trailingItems.length > 0) {
+    trailingContainer = createElement({
+      tag: "div",
+      className: getClass("search__trailing"),
+      container,
+    });
+
+    // Render each trailing item
+    config.trailingItems.forEach((item) => {
+      const itemClass =
+        item.type === "avatar"
+          ? getClass(SEARCH_CLASSES.AVATAR)
+          : getClass(SEARCH_CLASSES.TRAILING_ICON);
+
+      createElement({
+        tag: item.type === "avatar" ? "div" : "button",
+        className: itemClass,
+        container: trailingContainer!,
+        html: item.content,
+        attributes: {
+          ...(item.type !== "avatar" && { type: "button" }),
+          tabindex: isDisabled ? "-1" : "0",
+          "aria-label": item.ariaLabel || "",
+          "data-trailing-id": item.id,
+        },
+      });
+    });
+  }
+
+  // Create divider and content area (for view state or when suggestions are provided)
+  let divider: HTMLElement | null = null;
+  let contentArea: HTMLElement | null = null;
+  let suggestionsContainer: HTMLElement | null = null;
+  let suggestionsList: HTMLElement | null = null;
+
+  // Always create the content structure for potential expansion
+  // but only show it in view state
+  divider = createElement({
+    tag: "div",
+    className: getClass(SEARCH_CLASSES.DIVIDER),
   });
-  
-  // Create optional trailing elements
-  let trailingIcon, trailingIcon2, avatar;
-  
-  if (config.trailingIcon) {
-    trailingIcon = createElement({
-      tag: 'div',
-      className: getClass('search-trailing-icon'),
-      container: container,
-      html: config.trailingIcon,
-      attributes: {
-        'role': 'button',
-        'tabindex': isDisabled ? '-1' : '0',
-        'aria-label': 'Search option'
-      }
-    });
+
+  contentArea = createElement({
+    tag: "div",
+    className: getClass(SEARCH_CLASSES.CONTENT),
+  });
+
+  suggestionsContainer = createElement({
+    tag: "div",
+    className: getClass(SEARCH_CLASSES.SUGGESTIONS),
+    container: contentArea,
+  });
+
+  suggestionsList = createElement({
+    tag: "ul",
+    className: getClass(SEARCH_CLASSES.SUGGESTION_LIST),
+    container: suggestionsContainer,
+    attributes: {
+      role: "listbox",
+      "aria-label": "Search suggestions",
+    },
+  });
+
+  // Only append to DOM if in view state initially
+  if (isViewState) {
+    component.element.appendChild(divider);
+    component.element.appendChild(contentArea);
   }
-  
-  if (config.trailingIcon2) {
-    trailingIcon2 = createElement({
-      tag: 'div',
-      className: getClass('search-trailing-icon'),
-      container: container,
-      html: config.trailingIcon2,
-      attributes: {
-        'role': 'button',
-        'tabindex': isDisabled ? '-1' : '0',
-        'aria-label': 'Search option'
-      }
-    });
-  }
-  
-  if (config.avatar) {
-    avatar = createElement({
-      tag: 'div',
-      className: getClass('search-avatar'),
-      container: container,
-      html: config.avatar
-    });
-  }
-  
-  // Create divider and suggestions container for view variant
-  let divider, suggestionsContainer;
-  
-  if (isViewMode || config.suggestions) {
-    divider = createElement({
-      tag: 'div',
-      className: getClass('search-divider')
-    });
-    
-    suggestionsContainer = createElement({
-      tag: 'div',
-      className: getClass('search-suggestions-container'),
-      container: component.element
-    });
-  }
-  
-  // Add component base class and accessibility attributes
-  component.element.classList.add(component.getClass('search'));
-  component.element.setAttribute('role', 'search');
-  component.element.setAttribute('aria-disabled', isDisabled ? 'true' : 'false');
-  
-  // Apply style classes
-  applyStyleClasses(component, config, isViewMode, isDisabled);
-  
+
+  // Build structure object
+  const structure: SearchStructure = {
+    container,
+    input,
+    inputWrapper,
+    leadingIcon,
+    clearButton,
+    trailingContainer,
+    divider,
+    suggestionsContainer,
+    suggestionsList,
+  };
+
   // Return enhanced component with structure
   return {
     ...component,
-    structure: {
-      container,
-      input,
-      inputWrapper,
-      leadingIcon,
-      clearButton,
-      trailingIcon,
-      trailingIcon2,
-      avatar,
-      divider,
-      suggestionsContainer
-    }
+    structure,
   };
 };
-
-/**
- * Applies style classes based on configuration
- */
-function applyStyleClasses(component, config, isViewMode, isDisabled) {
-  const baseClass = component.getClass('search');
-  
-  // Apply variant class
-  component.element.classList.add(`${baseClass}--${config.variant || 'bar'}`);
-    
-  // Apply disabled class if needed
-  if (isDisabled) {
-    component.element.classList.add(`${baseClass}--disabled`);
-  }
-  
-  // Apply expanded class for view mode
-  if (isViewMode) {
-    component.element.classList.add(`${baseClass}--expanded`);
-  }
-  
-  // Apply fullwidth class if needed
-  if (config.fullWidth) {
-    component.element.classList.add(`${baseClass}--fullwidth`);
-  }
-}

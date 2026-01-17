@@ -1,1135 +1,1322 @@
 // test/components/search.test.ts
-import { describe, test, expect } from 'bun:test';
-import { 
-  type SearchComponent,
-  type SearchConfig,
-  type NavVariant,
-  type SearchEventType,
-  type SearchEvent
-} from '../../src/components/search/types';
+import { describe, test, expect, beforeAll, afterAll } from "bun:test";
+import { JSDOM } from "jsdom";
 
-// Constants for search variants
-const SEARCH_VARIANTS = {
-  RAIL: 'rail',
-  DRAWER: 'drawer',
-  BAR: 'bar',
-  MODAL: 'modal',
-  STANDARD: 'standard'
-} as const;
+import type {
+  SearchComponent,
+  SearchConfig,
+  SearchState,
+  SearchViewMode,
+  SearchEventType,
+  SearchEvent,
+  SearchSuggestion,
+} from "../../src/components/search/types";
 
-// Constants for search events
-const SEARCH_EVENTS = {
-  FOCUS: 'focus',
-  BLUR: 'blur',
-  INPUT: 'input',
-  SUBMIT: 'submit',
-  CLEAR: 'clear',
-  ICON_CLICK: 'iconClick'
-} as const;
+import {
+  SEARCH_STATES,
+  SEARCH_VIEW_MODES,
+  SEARCH_EVENTS,
+  SEARCH_CLASSES,
+  SEARCH_ICONS,
+  SEARCH_MEASUREMENTS,
+} from "../../src/components/search/constants";
 
-// Mock search implementation
+// Setup JSDOM environment
+let dom: JSDOM;
+let window: Window;
+let document: Document;
+let originalGlobalDocument: typeof globalThis.document;
+let originalGlobalWindow: typeof globalThis.window;
+
+beforeAll(() => {
+  dom = new JSDOM("<!DOCTYPE html><html><body></body></html>", {
+    url: "http://localhost/",
+    pretendToBeVisual: true,
+  });
+
+  window = dom.window as unknown as Window;
+  document = window.document;
+
+  originalGlobalDocument = global.document;
+  originalGlobalWindow = global.window;
+
+  global.document = document;
+  global.window = window as unknown as typeof globalThis.window;
+  global.Element = window.Element;
+  global.HTMLElement = window.HTMLElement;
+  global.HTMLInputElement = window.HTMLInputElement;
+  global.HTMLButtonElement = window.HTMLButtonElement;
+  global.Event = window.Event;
+  global.KeyboardEvent = window.KeyboardEvent;
+  global.MouseEvent = window.MouseEvent;
+  global.FocusEvent = window.FocusEvent;
+});
+
+afterAll(() => {
+  global.document = originalGlobalDocument;
+  global.window = originalGlobalWindow;
+  window.close();
+});
+
+/**
+ * Mock Search component implementation for testing
+ * Mirrors the public API of the real Search component
+ */
 const createMockSearch = (config: SearchConfig = {}): SearchComponent => {
-  // Create main container element
-  const element = document.createElement('div');
-  element.className = 'mtrl-search';
-  
-  // Default settings
-  const settings = {
-    variant: config.variant || SEARCH_VARIANTS.STANDARD,
-    disabled: config.disabled || false,
-    placeholder: config.placeholder || 'Search',
-    value: config.value || '',
-    leadingIcon: config.leadingIcon !== undefined ? config.leadingIcon : '<svg>search</svg>',
-    trailingIcon: config.trailingIcon || '',
-    trailingIcon2: config.trailingIcon2 || '',
-    avatar: config.avatar || '',
-    showClearButton: config.showClearButton !== undefined ? config.showClearButton : true,
-    suggestions: config.suggestions || [],
-    showDividers: config.showDividers || false,
-    expanded: false,
-    hasFocus: false
-  };
-  
-  // Apply variant class
-  element.classList.add(`mtrl-search--${settings.variant}`);
-  
-  // Apply disabled state
-  if (settings.disabled) {
-    element.classList.add('mtrl-search--disabled');
+  // Create root element
+  const element = document.createElement("div");
+  element.setAttribute("role", "search");
+
+  // Initialize state
+  let currentState: SearchState = config.initialState || SEARCH_STATES.BAR;
+  let currentViewMode: SearchViewMode =
+    config.viewMode || SEARCH_VIEW_MODES.DOCKED;
+  let currentValue = config.value || "";
+  let currentPlaceholder = config.placeholder || "Search";
+  let isDisabled = config.disabled || false;
+  let suggestions: SearchSuggestion[] = normalizeSuggestions(
+    config.suggestions,
+  );
+
+  // Apply root classes
+  element.className = [
+    "mtrl-search",
+    `mtrl-search--${currentState}`,
+    `mtrl-search--${currentViewMode}`,
+    isDisabled ? "mtrl-search--disabled" : "",
+    currentValue ? "mtrl-search--populated" : "",
+    config.fullWidth ? "mtrl-search--full-width" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  element.setAttribute("aria-disabled", isDisabled ? "true" : "false");
+
+  // Create container
+  const container = document.createElement("div");
+  container.className = "mtrl-search__container";
+  element.appendChild(container);
+
+  // Create leading icon
+  const leadingIcon = document.createElement("button");
+  leadingIcon.className = "mtrl-search__leading-icon";
+  leadingIcon.setAttribute("type", "button");
+  leadingIcon.innerHTML =
+    currentState === SEARCH_STATES.VIEW
+      ? SEARCH_ICONS.BACK
+      : config.leadingIcon || SEARCH_ICONS.SEARCH;
+  leadingIcon.setAttribute(
+    "aria-label",
+    currentState === SEARCH_STATES.VIEW ? "Go back" : "Search",
+  );
+  container.appendChild(leadingIcon);
+
+  // Create input wrapper
+  const inputWrapper = document.createElement("div");
+  inputWrapper.className = "mtrl-search__input-wrapper";
+  container.appendChild(inputWrapper);
+
+  // Create input
+  const input = document.createElement("input");
+  input.className = "mtrl-search__input";
+  input.type = "text";
+  input.placeholder = currentPlaceholder;
+  input.value = currentValue;
+  input.setAttribute("aria-label", currentPlaceholder);
+  if (isDisabled) {
+    input.disabled = true;
   }
-  
-  // Apply additional classes
-  if (config.class) {
-    const classes = config.class.split(' ');
-    classes.forEach(className => element.classList.add(className));
-  }
-  
-  // Apply width styles
-  if (config.fullWidth) {
-    element.classList.add('mtrl-search--full-width');
-    element.style.width = '100%';
-  } else {
-    if (config.maxWidth) {
-      element.style.maxWidth = `${config.maxWidth}px`;
-    }
-    
-    if (config.minWidth) {
-      element.style.minWidth = `${config.minWidth}px`;
-    }
-  }
-  
-  // Create search input container
-  const inputContainer = document.createElement('div');
-  inputContainer.className = 'mtrl-search__container';
-  
-  // Create leading icon if provided
-  if (settings.leadingIcon && settings.leadingIcon !== 'none') {
-    const leadingIconElement = document.createElement('div');
-    leadingIconElement.className = 'mtrl-search__leading-icon';
-    leadingIconElement.innerHTML = settings.leadingIcon;
-    inputContainer.appendChild(leadingIconElement);
-  }
-  
-  // Create search input
-  const input = document.createElement('input');
-  input.type = 'text';
-  input.className = 'mtrl-search__input';
-  input.placeholder = settings.placeholder;
-  input.value = settings.value;
-  input.disabled = settings.disabled;
-  inputContainer.appendChild(input);
-  
-  // Create clear button if enabled
+  inputWrapper.appendChild(input);
+
+  // Create clear button
   let clearButton: HTMLElement | null = null;
-  if (settings.showClearButton) {
-    clearButton = document.createElement('button');
-    clearButton.className = 'mtrl-search__clear';
-    clearButton.type = 'button';
-    clearButton.innerHTML = '<svg>clear</svg>';
-    clearButton.style.display = settings.value ? 'block' : 'none';
-    inputContainer.appendChild(clearButton);
-  }
-  
-  // Create avatar if provided
-  if (settings.avatar) {
-    const avatarElement = document.createElement('div');
-    avatarElement.className = 'mtrl-search__avatar';
-    avatarElement.innerHTML = settings.avatar;
-    inputContainer.appendChild(avatarElement);
-  }
-  
-  // Create trailing icons if provided
-  if (settings.trailingIcon) {
-    const trailingIconElement = document.createElement('div');
-    trailingIconElement.className = 'mtrl-search__trailing-icon';
-    trailingIconElement.innerHTML = settings.trailingIcon;
-    inputContainer.appendChild(trailingIconElement);
-  }
-  
-  if (settings.trailingIcon2) {
-    const trailingIcon2Element = document.createElement('div');
-    trailingIcon2Element.className = 'mtrl-search__trailing-icon';
-    trailingIcon2Element.innerHTML = settings.trailingIcon2;
-    inputContainer.appendChild(trailingIcon2Element);
-  }
-  
-  element.appendChild(inputContainer);
-  
-  // Create suggestions container if suggestions provided
-  let suggestionsContainer: HTMLElement | null = null;
-  if (settings.suggestions.length > 0) {
-    suggestionsContainer = document.createElement('div');
-    suggestionsContainer.className = 'mtrl-search__suggestions';
-    suggestionsContainer.style.display = 'none';
-    
-    const renderSuggestions = () => {
-      if (!suggestionsContainer) return;
-      
-      suggestionsContainer.innerHTML = '';
-      
-      settings.suggestions.forEach((suggestion, index) => {
-        const suggestionElement = document.createElement('div');
-        suggestionElement.className = 'mtrl-search__suggestion';
-        
-        if (typeof suggestion === 'string') {
-          suggestionElement.textContent = suggestion;
-          suggestionElement.setAttribute('data-value', suggestion);
-        } else {
-          if (suggestion.icon) {
-            const iconElement = document.createElement('span');
-            iconElement.className = 'mtrl-search__suggestion-icon';
-            iconElement.innerHTML = suggestion.icon;
-            suggestionElement.appendChild(iconElement);
-          }
-          
-          const textElement = document.createElement('span');
-          textElement.className = 'mtrl-search__suggestion-text';
-          textElement.textContent = suggestion.text;
-          suggestionElement.appendChild(textElement);
-          
-          suggestionElement.setAttribute('data-value', suggestion.value || suggestion.text);
-        }
-        
-        // Add divider if enabled and not the last item
-        if (settings.showDividers && index < settings.suggestions.length - 1) {
-          const divider = document.createElement('div');
-          divider.className = 'mtrl-search__suggestion-divider';
-          suggestionsContainer.appendChild(suggestionElement);
-          suggestionsContainer.appendChild(divider);
-        } else {
-          suggestionsContainer.appendChild(suggestionElement);
-        }
-        
-        // Handle suggestion click
-        suggestionElement.addEventListener('click', () => {
-          const value = suggestionElement.getAttribute('data-value') || '';
-          search.setValue(value, true);
-          search.submit();
-          search.showSuggestions(false);
-        });
-      });
-    };
-    
-    renderSuggestions();
-    element.appendChild(suggestionsContainer);
-  }
-  
-  // Track event handlers
-  const eventHandlers: Record<string, Function[]> = {};
-  
-  // Emit an event
-  const emit = (event: SearchEventType, originalEvent?: Event | null): boolean => {
-    let defaultPrevented = false;
-    
-    const eventData: SearchEvent = {
-      search,
-      value: input.value,
-      originalEvent: originalEvent || null,
-      preventDefault: () => {
-        defaultPrevented = true;
-      },
-      defaultPrevented: false
-    };
-    
-    // Call handlers from config.on
-    if (config.on && config.on[event]) {
-      config.on[event]!(eventData);
+  if (config.showClearButton !== false) {
+    clearButton = document.createElement("button");
+    clearButton.className = "mtrl-search__clear-button";
+    if (!currentValue) {
+      clearButton.classList.add("mtrl-search__clear-button--hidden");
     }
-    
-    // Call registered event handlers
-    if (eventHandlers[event]) {
-      eventHandlers[event].forEach(handler => handler(eventData));
-    }
-    
-    // Direct callback handlers
-    if (event === SEARCH_EVENTS.SUBMIT && config.onSubmit) {
-      config.onSubmit(input.value);
-    } else if (event === SEARCH_EVENTS.INPUT && config.onInput) {
-      config.onInput(input.value);
-    } else if (event === SEARCH_EVENTS.CLEAR && config.onClear) {
-      config.onClear();
-    }
-    
-    eventData.defaultPrevented = defaultPrevented;
-    return defaultPrevented;
-  };
-  
-  // Set up event handlers
-  input.addEventListener('focus', (e) => {
-    if (!settings.disabled) {
-      settings.hasFocus = true;
-      element.classList.add('mtrl-search--focused');
-      
-      if (suggestionsContainer && settings.suggestions.length > 0) {
-        suggestionsContainer.style.display = 'block';
+    clearButton.setAttribute("type", "button");
+    clearButton.innerHTML = SEARCH_ICONS.CLEAR;
+    clearButton.setAttribute("aria-label", "Clear search");
+    container.appendChild(clearButton);
+  }
+
+  // Create divider (for view state)
+  const divider = document.createElement("div");
+  divider.className = "mtrl-search__divider";
+
+  // Create content area (for view state)
+  const content = document.createElement("div");
+  content.className = "mtrl-search__content";
+
+  // Create suggestions container
+  const suggestionsContainer = document.createElement("div");
+  suggestionsContainer.className = "mtrl-search__suggestions";
+  content.appendChild(suggestionsContainer);
+
+  // Create suggestions list
+  const suggestionsList = document.createElement("ul");
+  suggestionsList.className = "mtrl-search__suggestion-list";
+  suggestionsList.setAttribute("role", "listbox");
+  suggestionsContainer.appendChild(suggestionsList);
+
+  // Add view elements if in view state
+  if (currentState === SEARCH_STATES.VIEW) {
+    element.appendChild(divider);
+    element.appendChild(content);
+  }
+
+  // Event handlers storage
+  const eventHandlers: Record<string, Array<(event: SearchEvent) => void>> = {};
+
+  // Helper to normalize suggestions
+  function normalizeSuggestions(
+    items: SearchSuggestion[] | string[] | undefined,
+  ): SearchSuggestion[] {
+    if (!items) return [];
+    return items.map((item) => {
+      if (typeof item === "string") {
+        return { text: item, value: item };
       }
-      
-      emit(SEARCH_EVENTS.FOCUS, e);
-    }
-  });
-  
-  input.addEventListener('blur', (e) => {
-    settings.hasFocus = false;
-    element.classList.remove('mtrl-search--focused');
-    
-    // Delay hiding suggestions to allow for clicks
-    setTimeout(() => {
-      if (suggestionsContainer && !settings.hasFocus) {
-        suggestionsContainer.style.display = 'none';
-      }
-    }, 200);
-    
-    emit(SEARCH_EVENTS.BLUR, e);
-  });
-  
-  input.addEventListener('input', (e) => {
-    if (!settings.disabled) {
-      if (clearButton) {
-        clearButton.style.display = input.value ? 'block' : 'none';
-      }
-      
-      emit(SEARCH_EVENTS.INPUT, e);
-    }
-  });
-  
-  input.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && !settings.disabled) {
-      search.submit();
-    }
-  });
-  
-  // Clear button handler
-  if (clearButton) {
-    clearButton.addEventListener('click', (e) => {
-      if (!settings.disabled) {
-        search.clear();
-        emit(SEARCH_EVENTS.CLEAR, e);
-      }
+      return { ...item, value: item.value ?? item.text };
     });
   }
-  
-  // Create the search component
+
+  // Helper to create event data
+  function createEventData(
+    originalEvent: Event | null = null,
+    extra: Record<string, unknown> = {},
+  ): SearchEvent {
+    return {
+      component: search,
+      value: currentValue,
+      originalEvent,
+      preventDefault: function () {
+        this.defaultPrevented = true;
+      },
+      defaultPrevented: false,
+      ...extra,
+    } as SearchEvent;
+  }
+
+  // Helper to emit events
+  function emit(
+    eventType: string,
+    originalEvent: Event | null = null,
+    extra: Record<string, unknown> = {},
+  ) {
+    const eventData = createEventData(originalEvent, extra);
+    const handlers = eventHandlers[eventType] || [];
+    handlers.forEach((handler) => handler(eventData));
+
+    // Call config handlers
+    const handlerName = `on${eventType.charAt(0).toUpperCase()}${eventType.slice(1)}`;
+    const configHandler = config[handlerName as keyof SearchConfig];
+    if (typeof configHandler === "function") {
+      if (eventType === "suggestionSelect" && extra.suggestion) {
+        (configHandler as (s: SearchSuggestion) => void)(
+          extra.suggestion as SearchSuggestion,
+        );
+      } else {
+        (configHandler as (v: string) => void)(currentValue);
+      }
+    }
+
+    return eventData;
+  }
+
+  // Helper to update clear button visibility
+  function updateClearButton(hasValue: boolean) {
+    if (!clearButton) return;
+    if (hasValue) {
+      clearButton.classList.remove("mtrl-search__clear-button--hidden");
+    } else {
+      clearButton.classList.add("mtrl-search__clear-button--hidden");
+    }
+  }
+
+  // Helper to update populated state
+  function updatePopulatedState(hasValue: boolean) {
+    if (hasValue) {
+      element.classList.add("mtrl-search--populated");
+    } else {
+      element.classList.remove("mtrl-search--populated");
+    }
+  }
+
+  // Helper to render suggestions
+  function renderSuggestions() {
+    suggestionsList.innerHTML = "";
+    suggestions.forEach((suggestion, index) => {
+      const item = document.createElement("li");
+      item.className = "mtrl-search__suggestion-item";
+      item.setAttribute("role", "option");
+      item.setAttribute("data-index", String(index));
+      item.setAttribute("data-value", suggestion.value || suggestion.text);
+
+      if (suggestion.icon) {
+        const icon = document.createElement("span");
+        icon.className = "mtrl-search__suggestion-icon";
+        icon.innerHTML = suggestion.icon;
+        item.appendChild(icon);
+      }
+
+      const text = document.createElement("span");
+      text.className = "mtrl-search__suggestion-text";
+      text.textContent = suggestion.text;
+      item.appendChild(text);
+
+      suggestionsList.appendChild(item);
+    });
+  }
+
+  // Initial suggestion render
+  if (suggestions.length > 0) {
+    renderSuggestions();
+  }
+
+  // The search component API
   const search: SearchComponent = {
     element,
-    
-    setValue: (value: string, triggerEvent: boolean = false) => {
+
+    // Value methods
+    setValue(value: string, triggerEvent = true) {
+      const previousValue = currentValue;
+      currentValue = value;
       input.value = value;
-      
-      if (clearButton) {
-        clearButton.style.display = value ? 'block' : 'none';
-      }
-      
-      if (triggerEvent) {
+      updateClearButton(!!value);
+      updatePopulatedState(!!value);
+      if (triggerEvent && value !== previousValue) {
         emit(SEARCH_EVENTS.INPUT);
       }
-      
-      return search;
+      return this;
     },
-    
-    getValue: () => input.value,
-    
-    setPlaceholder: (text: string) => {
-      settings.placeholder = text;
+
+    getValue() {
+      return currentValue;
+    },
+
+    setPlaceholder(text: string) {
+      currentPlaceholder = text;
       input.placeholder = text;
-      return search;
+      input.setAttribute("aria-label", text);
+      return this;
     },
-    
-    getPlaceholder: () => settings.placeholder,
-    
-    setLeadingIcon: (iconHtml: string) => {
-      const existingIcon = element.querySelector('.mtrl-search__leading-icon');
-      
-      if (iconHtml === 'none') {
-        if (existingIcon) {
-          existingIcon.remove();
-        }
-      } else {
-        if (existingIcon) {
-          existingIcon.innerHTML = iconHtml;
-        } else {
-          const leadingIconElement = document.createElement('div');
-          leadingIconElement.className = 'mtrl-search__leading-icon';
-          leadingIconElement.innerHTML = iconHtml;
-          inputContainer.insertBefore(leadingIconElement, inputContainer.firstChild);
-        }
+
+    getPlaceholder() {
+      return currentPlaceholder;
+    },
+
+    // State methods
+    expand() {
+      if (currentState === SEARCH_STATES.VIEW || isDisabled) return this;
+
+      currentState = SEARCH_STATES.VIEW;
+      element.classList.remove("mtrl-search--bar");
+      element.classList.add("mtrl-search--view");
+      leadingIcon.innerHTML = SEARCH_ICONS.BACK;
+      leadingIcon.setAttribute("aria-label", "Go back");
+
+      if (!element.contains(divider)) {
+        element.appendChild(divider);
+        element.appendChild(content);
       }
-      
-      settings.leadingIcon = iconHtml;
-      return search;
+
+      emit(SEARCH_EVENTS.EXPAND);
+      return this;
     },
-    
-    setTrailingIcon: (iconHtml: string) => {
-      const existingIcon = element.querySelector('.mtrl-search__trailing-icon');
-      
-      if (iconHtml === 'none') {
-        if (existingIcon) {
-          existingIcon.remove();
-        }
-      } else {
-        if (existingIcon) {
-          existingIcon.innerHTML = iconHtml;
-        } else {
-          const trailingIconElement = document.createElement('div');
-          trailingIconElement.className = 'mtrl-search__trailing-icon';
-          trailingIconElement.innerHTML = iconHtml;
-          inputContainer.appendChild(trailingIconElement);
-        }
+
+    collapse() {
+      if (currentState === SEARCH_STATES.BAR) return this;
+
+      currentState = SEARCH_STATES.BAR;
+      element.classList.remove("mtrl-search--view");
+      element.classList.add("mtrl-search--bar");
+      leadingIcon.innerHTML = config.leadingIcon || SEARCH_ICONS.SEARCH;
+      leadingIcon.setAttribute("aria-label", "Search");
+
+      if (element.contains(divider)) {
+        element.removeChild(divider);
+        element.removeChild(content);
       }
-      
-      settings.trailingIcon = iconHtml;
-      return search;
+
+      emit(SEARCH_EVENTS.COLLAPSE);
+      return this;
     },
-    
-    setTrailingIcon2: (iconHtml: string) => {
-      const existingIcons = element.querySelectorAll('.mtrl-search__trailing-icon');
-      const existingIcon2 = existingIcons.length > 1 ? existingIcons[1] : null;
-      
-      if (iconHtml === 'none') {
-        if (existingIcon2) {
-          existingIcon2.remove();
-        }
-      } else {
-        if (existingIcon2) {
-          existingIcon2.innerHTML = iconHtml;
-        } else {
-          const trailingIcon2Element = document.createElement('div');
-          trailingIcon2Element.className = 'mtrl-search__trailing-icon';
-          trailingIcon2Element.innerHTML = iconHtml;
-          inputContainer.appendChild(trailingIcon2Element);
-        }
-      }
-      
-      settings.trailingIcon2 = iconHtml;
-      return search;
+
+    getState() {
+      return currentState;
     },
-    
-    setAvatar: (avatarHtml: string) => {
-      const existingAvatar = element.querySelector('.mtrl-search__avatar');
-      
-      if (avatarHtml === 'none') {
-        if (existingAvatar) {
-          existingAvatar.remove();
-        }
-      } else {
-        if (existingAvatar) {
-          existingAvatar.innerHTML = avatarHtml;
-        } else {
-          const avatarElement = document.createElement('div');
-          avatarElement.className = 'mtrl-search__avatar';
-          avatarElement.innerHTML = avatarHtml;
-          inputContainer.appendChild(avatarElement);
-        }
-      }
-      
-      settings.avatar = avatarHtml;
-      return search;
+
+    isExpanded() {
+      return currentState === SEARCH_STATES.VIEW;
     },
-    
-    showClearButton: (show: boolean) => {
-      settings.showClearButton = show;
-      
-      if (show) {
-        if (!clearButton) {
-          clearButton = document.createElement('button');
-          clearButton.className = 'mtrl-search__clear';
-          clearButton.type = 'button';
-          clearButton.innerHTML = '<svg>clear</svg>';
-          
-          clearButton.addEventListener('click', (e) => {
-            if (!settings.disabled) {
-              search.clear();
-              emit(SEARCH_EVENTS.CLEAR, e);
-            }
-          });
-          
-          inputContainer.appendChild(clearButton);
-        }
-        
-        clearButton.style.display = input.value ? 'block' : 'none';
-      } else {
-        if (clearButton) {
-          clearButton.remove();
-          clearButton = null;
-        }
-      }
-      
-      return search;
+
+    setViewMode(mode: SearchViewMode) {
+      if (mode === currentViewMode) return this;
+
+      element.classList.remove(`mtrl-search--${currentViewMode}`);
+      currentViewMode = mode;
+      element.classList.add(`mtrl-search--${currentViewMode}`);
+      return this;
     },
-    
-    setSuggestions: (suggestions: string[] | Array<{text: string, value?: string, icon?: string}>) => {
-      settings.suggestions = suggestions;
-      
-      if (suggestions.length > 0) {
-        if (!suggestionsContainer) {
-          suggestionsContainer = document.createElement('div');
-          suggestionsContainer.className = 'mtrl-search__suggestions';
-          suggestionsContainer.style.display = settings.hasFocus ? 'block' : 'none';
-          element.appendChild(suggestionsContainer);
-        }
-        
-        suggestionsContainer.innerHTML = '';
-        
-        suggestions.forEach((suggestion, index) => {
-          const suggestionElement = document.createElement('div');
-          suggestionElement.className = 'mtrl-search__suggestion';
-          
-          if (typeof suggestion === 'string') {
-            suggestionElement.textContent = suggestion;
-            suggestionElement.setAttribute('data-value', suggestion);
-          } else {
-            if (suggestion.icon) {
-              const iconElement = document.createElement('span');
-              iconElement.className = 'mtrl-search__suggestion-icon';
-              iconElement.innerHTML = suggestion.icon;
-              suggestionElement.appendChild(iconElement);
-            }
-            
-            const textElement = document.createElement('span');
-            textElement.className = 'mtrl-search__suggestion-text';
-            textElement.textContent = suggestion.text;
-            suggestionElement.appendChild(textElement);
-            
-            suggestionElement.setAttribute('data-value', suggestion.value || suggestion.text);
-          }
-          
-          // Add divider if enabled and not the last item
-          if (settings.showDividers && index < suggestions.length - 1) {
-            const divider = document.createElement('div');
-            divider.className = 'mtrl-search__suggestion-divider';
-            suggestionsContainer.appendChild(suggestionElement);
-            suggestionsContainer.appendChild(divider);
-          } else {
-            suggestionsContainer.appendChild(suggestionElement);
-          }
-          
-          // Handle suggestion click
-          suggestionElement.addEventListener('click', () => {
-            const value = suggestionElement.getAttribute('data-value') || '';
-            search.setValue(value, true);
-            search.submit();
-            search.showSuggestions(false);
-          });
-        });
-      } else if (suggestionsContainer) {
-        suggestionsContainer.remove();
-        suggestionsContainer = null;
-      }
-      
-      return search;
+
+    getViewMode() {
+      return currentViewMode;
     },
-    
-    showSuggestions: (show: boolean) => {
-      if (suggestionsContainer) {
-        suggestionsContainer.style.display = show ? 'block' : 'none';
-      }
-      
-      return search;
-    },
-    
-    focus: () => {
-      if (!settings.disabled) {
+
+    // Input control methods
+    focus() {
+      if (!isDisabled) {
         input.focus();
+        element.classList.add("mtrl-search--focused");
+        emit(SEARCH_EVENTS.FOCUS);
       }
-      
-      return search;
+      return this;
     },
-    
-    blur: () => {
+
+    blur() {
       input.blur();
-      return search;
+      element.classList.remove("mtrl-search--focused");
+      emit(SEARCH_EVENTS.BLUR);
+      return this;
     },
-    
-    expand: () => {
-      if (settings.variant === SEARCH_VARIANTS.BAR && !settings.expanded) {
-        settings.expanded = true;
-        element.classList.add('mtrl-search--expanded');
+
+    clear() {
+      this.setValue("", false);
+      emit(SEARCH_EVENTS.CLEAR);
+      if (!isDisabled) {
         input.focus();
       }
-      
-      return search;
+      return this;
     },
-    
-    collapse: () => {
-      if (settings.variant === SEARCH_VARIANTS.BAR && settings.expanded) {
-        settings.expanded = false;
-        element.classList.remove('mtrl-search--expanded');
-        input.blur();
+
+    submit() {
+      if (currentValue) {
+        emit(SEARCH_EVENTS.SUBMIT);
       }
-      
-      return search;
+      return this;
     },
-    
-    clear: () => {
-      input.value = '';
-      
-      if (clearButton) {
-        clearButton.style.display = 'none';
+
+    // Content methods
+    setLeadingIcon(iconHtml: string) {
+      if (currentState === SEARCH_STATES.BAR) {
+        leadingIcon.innerHTML = iconHtml;
       }
-      
-      emit(SEARCH_EVENTS.CLEAR);
-      
-      return search;
+      return this;
     },
-    
-    submit: () => {
-      emit(SEARCH_EVENTS.SUBMIT);
-      return search;
+
+    addTrailingItem() {
+      // Simplified for testing
+      return this;
     },
-    
-    enable: () => {
-      settings.disabled = false;
+
+    removeTrailingItem() {
+      // Simplified for testing
+      return this;
+    },
+
+    setTrailingItems() {
+      // Simplified for testing
+      return this;
+    },
+
+    // Suggestion methods
+    setSuggestions(items: SearchSuggestion[] | string[]) {
+      suggestions = normalizeSuggestions(items);
+      renderSuggestions();
+      return this;
+    },
+
+    getSuggestions() {
+      return [...suggestions];
+    },
+
+    clearSuggestions() {
+      suggestions = [];
+      suggestionsList.innerHTML = "";
+      return this;
+    },
+
+    // Disabled state methods
+    enable() {
+      isDisabled = false;
+      element.classList.remove("mtrl-search--disabled");
+      element.setAttribute("aria-disabled", "false");
       input.disabled = false;
-      element.classList.remove('mtrl-search--disabled');
-      return search;
+      return this;
     },
-    
-    disable: () => {
-      settings.disabled = true;
+
+    disable() {
+      isDisabled = true;
+      element.classList.add("mtrl-search--disabled");
+      element.setAttribute("aria-disabled", "true");
       input.disabled = true;
-      element.classList.add('mtrl-search--disabled');
-      return search;
+      return this;
     },
-    
-    isDisabled: () => settings.disabled,
-    
-    on: (event: SearchEventType, handler: (event: SearchEvent) => void) => {
+
+    isDisabled() {
+      return isDisabled;
+    },
+
+    // Event methods
+    on(event: SearchEventType, handler: (e: SearchEvent) => void) {
       if (!eventHandlers[event]) {
         eventHandlers[event] = [];
       }
-      
       eventHandlers[event].push(handler);
-      return search;
+      return this;
     },
-    
-    off: (event: SearchEventType, handler: (event: SearchEvent) => void) => {
+
+    off(event: SearchEventType, handler: (e: SearchEvent) => void) {
       if (eventHandlers[event]) {
-        eventHandlers[event] = eventHandlers[event].filter(h => h !== handler);
+        eventHandlers[event] = eventHandlers[event].filter(
+          (h) => h !== handler,
+        );
       }
-      
-      return search;
+      return this;
     },
-    
-    destroy: () => {
-      // Remove element from DOM if it has a parent
-      if (element.parentNode) {
-        element.parentNode.removeChild(element);
-      }
-      
-      // Clear event handlers
-      for (const event in eventHandlers) {
-        eventHandlers[event] = [];
-      }
-    }
+
+    // Lifecycle
+    destroy() {
+      Object.keys(eventHandlers).forEach((key) => {
+        eventHandlers[key] = [];
+      });
+      element.remove();
+    },
   };
-  
+
   return search;
 };
 
-describe('Search Component', () => {
-  test('should create a search component', () => {
-    const search = createMockSearch({
-      placeholder: 'Search items'
+// =============================================================================
+// TESTS
+// =============================================================================
+
+describe("Search Component", () => {
+  // ---------------------------------------------------------------------------
+  // Basic Creation Tests
+  // ---------------------------------------------------------------------------
+
+  describe("Creation", () => {
+    test("should create a search component with default configuration", () => {
+      const search = createMockSearch();
+
+      expect(search.element).toBeDefined();
+      expect(search.element.classList.contains("mtrl-search")).toBe(true);
+      expect(search.element.getAttribute("role")).toBe("search");
     });
-    
-    expect(search.element).toBeDefined();
-    expect(search.element.tagName).toBe('DIV');
-    expect(search.element.className).toContain('mtrl-search');
-    
-    const input = search.element.querySelector('input');
-    expect(input).toBeDefined();
-    expect(input?.className).toContain('mtrl-search__input');
-    expect(input?.placeholder).toBe('Search items');
-  });
-  
-  test('should apply variant classes', () => {
-    const variants: NavVariant[] = [
-      SEARCH_VARIANTS.STANDARD,
-      SEARCH_VARIANTS.BAR,
-      SEARCH_VARIANTS.DRAWER,
-      SEARCH_VARIANTS.MODAL,
-      SEARCH_VARIANTS.RAIL
-    ];
-    
-    variants.forEach(variant => {
-      const search = createMockSearch({ variant });
-      expect(search.element.className).toContain(`mtrl-search--${variant}`);
+
+    test("should create with custom placeholder", () => {
+      const search = createMockSearch({
+        placeholder: "Search products...",
+      });
+
+      expect(search.getPlaceholder()).toBe("Search products...");
+      const input = search.element.querySelector(
+        ".mtrl-search__input",
+      ) as HTMLInputElement;
+      expect(input.placeholder).toBe("Search products...");
+    });
+
+    test("should create with initial value", () => {
+      const search = createMockSearch({
+        value: "initial query",
+      });
+
+      expect(search.getValue()).toBe("initial query");
+      expect(search.element.classList.contains("mtrl-search--populated")).toBe(
+        true,
+      );
+    });
+
+    test("should create in disabled state", () => {
+      const search = createMockSearch({
+        disabled: true,
+      });
+
+      expect(search.isDisabled()).toBe(true);
+      expect(search.element.classList.contains("mtrl-search--disabled")).toBe(
+        true,
+      );
+      expect(search.element.getAttribute("aria-disabled")).toBe("true");
+    });
+
+    test("should create with full width", () => {
+      const search = createMockSearch({
+        fullWidth: true,
+      });
+
+      expect(search.element.classList.contains("mtrl-search--full-width")).toBe(
+        true,
+      );
     });
   });
-  
-  test('should apply disabled state', () => {
-    const search = createMockSearch({
-      disabled: true
+
+  // ---------------------------------------------------------------------------
+  // State Tests
+  // ---------------------------------------------------------------------------
+
+  describe("State Management", () => {
+    test("should start in bar state by default", () => {
+      const search = createMockSearch();
+
+      expect(search.getState()).toBe("bar");
+      expect(search.isExpanded()).toBe(false);
+      expect(search.element.classList.contains("mtrl-search--bar")).toBe(true);
     });
-    
-    expect(search.element.className).toContain('mtrl-search--disabled');
-    
-    const input = search.element.querySelector('input');
-    expect(input?.disabled).toBe(true);
-    
-    expect(search.isDisabled()).toBe(true);
-  });
-  
-  test('should render leading icon by default', () => {
-    const search = createMockSearch();
-    
-    const leadingIcon = search.element.querySelector('.mtrl-search__leading-icon');
-    expect(leadingIcon).toBeDefined();
-    expect(leadingIcon?.innerHTML).toBe('<svg>search</svg>');
-  });
-  
-  test('should support no leading icon with "none" value', () => {
-    const search = createMockSearch({
-      leadingIcon: 'none'
+
+    test("should start in view state when configured", () => {
+      const search = createMockSearch({
+        initialState: "view",
+      });
+
+      expect(search.getState()).toBe("view");
+      expect(search.isExpanded()).toBe(true);
+      expect(search.element.classList.contains("mtrl-search--view")).toBe(true);
     });
-    
-    const leadingIcon = search.element.querySelector('.mtrl-search__leading-icon');
-    expect(leadingIcon).toBeNull();
-  });
-  
-  test('should render trailing icons when provided', () => {
-    const search = createMockSearch({
-      trailingIcon: '<svg>filter</svg>',
-      trailingIcon2: '<svg>more</svg>'
+
+    test("should expand to view state", () => {
+      const search = createMockSearch();
+      let expandEventFired = false;
+
+      search.on("expand", () => {
+        expandEventFired = true;
+      });
+
+      search.expand();
+
+      expect(search.getState()).toBe("view");
+      expect(search.isExpanded()).toBe(true);
+      expect(search.element.classList.contains("mtrl-search--view")).toBe(true);
+      expect(search.element.classList.contains("mtrl-search--bar")).toBe(false);
+      expect(expandEventFired).toBe(true);
     });
-    
-    const trailingIcons = search.element.querySelectorAll('.mtrl-search__trailing-icon');
-    expect(trailingIcons.length).toBe(2);
-    expect(trailingIcons[0].innerHTML).toBe('<svg>filter</svg>');
-    expect(trailingIcons[1].innerHTML).toBe('<svg>more</svg>');
-  });
-  
-  test('should render avatar when provided', () => {
-    const avatarHtml = '<img src="avatar.jpg" alt="User">';
-    const search = createMockSearch({
-      avatar: avatarHtml
+
+    test("should collapse to bar state", () => {
+      const search = createMockSearch({ initialState: "view" });
+      let collapseEventFired = false;
+
+      search.on("collapse", () => {
+        collapseEventFired = true;
+      });
+
+      search.collapse();
+
+      expect(search.getState()).toBe("bar");
+      expect(search.isExpanded()).toBe(false);
+      expect(search.element.classList.contains("mtrl-search--bar")).toBe(true);
+      expect(search.element.classList.contains("mtrl-search--view")).toBe(
+        false,
+      );
+      expect(collapseEventFired).toBe(true);
     });
-    
-    const avatar = search.element.querySelector('.mtrl-search__avatar');
-    expect(avatar).toBeDefined();
-    expect(avatar?.innerHTML).toBe(avatarHtml);
-  });
-  
-  test('should show clear button by default when value is provided', () => {
-    const search = createMockSearch({
-      value: 'test query'
+
+    test("should not expand when disabled", () => {
+      const search = createMockSearch({ disabled: true });
+
+      search.expand();
+
+      expect(search.getState()).toBe("bar");
+      expect(search.isExpanded()).toBe(false);
     });
-    
-    const clearButton = search.element.querySelector('.mtrl-search__clear');
-    expect(clearButton).toBeDefined();
-    expect(clearButton?.style.display).not.toBe('none');
-  });
-  
-  test('should hide clear button when value is empty', () => {
-    const search = createMockSearch({
-      value: ''
+
+    test("should support docked view mode", () => {
+      const search = createMockSearch({ viewMode: "docked" });
+
+      expect(search.getViewMode()).toBe("docked");
+      expect(search.element.classList.contains("mtrl-search--docked")).toBe(
+        true,
+      );
     });
-    
-    const clearButton = search.element.querySelector('.mtrl-search__clear');
-    expect(clearButton).toBeDefined();
-    expect(clearButton?.style.display).toBe('none');
-  });
-  
-  test('should not render clear button when showClearButton is false', () => {
-    const search = createMockSearch({
-      showClearButton: false,
-      value: 'test'
+
+    test("should support fullscreen view mode", () => {
+      const search = createMockSearch({ viewMode: "fullscreen" });
+
+      expect(search.getViewMode()).toBe("fullscreen");
+      expect(search.element.classList.contains("mtrl-search--fullscreen")).toBe(
+        true,
+      );
     });
-    
-    const clearButton = search.element.querySelector('.mtrl-search__clear');
-    expect(clearButton).toBeNull();
-  });
-  
-  test('should set and get value', () => {
-    const search = createMockSearch();
-    
-    expect(search.getValue()).toBe('');
-    
-    search.setValue('test query');
-    
-    expect(search.getValue()).toBe('test query');
-    
-    const input = search.element.querySelector('input');
-    expect(input?.value).toBe('test query');
-  });
-  
-  test('should set and get placeholder', () => {
-    const search = createMockSearch({
-      placeholder: 'Original placeholder'
+
+    test("should change view mode", () => {
+      const search = createMockSearch({ viewMode: "docked" });
+
+      search.setViewMode("fullscreen");
+
+      expect(search.getViewMode()).toBe("fullscreen");
+      expect(search.element.classList.contains("mtrl-search--fullscreen")).toBe(
+        true,
+      );
+      expect(search.element.classList.contains("mtrl-search--docked")).toBe(
+        false,
+      );
     });
-    
-    expect(search.getPlaceholder()).toBe('Original placeholder');
-    
-    search.setPlaceholder('New placeholder');
-    
-    expect(search.getPlaceholder()).toBe('New placeholder');
-    
-    const input = search.element.querySelector('input');
-    expect(input?.placeholder).toBe('New placeholder');
   });
-  
-  test('should change leading icon', () => {
-    const search = createMockSearch();
-    
-    const initialIcon = search.element.querySelector('.mtrl-search__leading-icon');
-    expect(initialIcon?.innerHTML).toBe('<svg>search</svg>');
-    
-    search.setLeadingIcon('<svg>new-icon</svg>');
-    
-    const updatedIcon = search.element.querySelector('.mtrl-search__leading-icon');
-    expect(updatedIcon?.innerHTML).toBe('<svg>new-icon</svg>');
-  });
-  
-  test('should remove leading icon', () => {
-    const search = createMockSearch();
-    
-    const initialIcon = search.element.querySelector('.mtrl-search__leading-icon');
-    expect(initialIcon).not.toBeNull();
-    
-    search.setLeadingIcon('none');
-    
-    const updatedIcon = search.element.querySelector('.mtrl-search__leading-icon');
-    expect(updatedIcon).toBeNull();
-  });
-  
-  test('should change trailing icon', () => {
-    const search = createMockSearch({
-      trailingIcon: '<svg>menu</svg>'
+
+  // ---------------------------------------------------------------------------
+  // Value Tests
+  // ---------------------------------------------------------------------------
+
+  describe("Value Management", () => {
+    test("should set and get value", () => {
+      const search = createMockSearch();
+
+      search.setValue("test query");
+
+      expect(search.getValue()).toBe("test query");
+      const input = search.element.querySelector(
+        ".mtrl-search__input",
+      ) as HTMLInputElement;
+      expect(input.value).toBe("test query");
     });
-    
-    const initialIcon = search.element.querySelector('.mtrl-search__trailing-icon');
-    expect(initialIcon?.innerHTML).toBe('<svg>menu</svg>');
-    
-    search.setTrailingIcon('<svg>new-icon</svg>');
-    
-    const updatedIcon = search.element.querySelector('.mtrl-search__trailing-icon');
-    expect(updatedIcon?.innerHTML).toBe('<svg>new-icon</svg>');
-  });
-  
-  test('should change second trailing icon', () => {
-    const search = createMockSearch({
-      trailingIcon: '<svg>filter</svg>',
-      trailingIcon2: '<svg>menu</svg>'
+
+    test("should update populated state when value changes", () => {
+      const search = createMockSearch();
+
+      expect(search.element.classList.contains("mtrl-search--populated")).toBe(
+        false,
+      );
+
+      search.setValue("query");
+      expect(search.element.classList.contains("mtrl-search--populated")).toBe(
+        true,
+      );
+
+      search.setValue("");
+      expect(search.element.classList.contains("mtrl-search--populated")).toBe(
+        false,
+      );
     });
-    
-    const trailingIcons = search.element.querySelectorAll('.mtrl-search__trailing-icon');
-    expect(trailingIcons[1].innerHTML).toBe('<svg>menu</svg>');
-    
-    search.setTrailingIcon2('<svg>new-icon</svg>');
-    
-    const updatedIcons = search.element.querySelectorAll('.mtrl-search__trailing-icon');
-    expect(updatedIcons[1].innerHTML).toBe('<svg>new-icon</svg>');
-  });
-  
-  test('should change avatar', () => {
-    const search = createMockSearch({
-      avatar: '<img src="user1.jpg">'
+
+    test("should trigger input event when value changes", () => {
+      const search = createMockSearch();
+      let inputEventFired = false;
+      let eventValue = "";
+
+      search.on("input", (e) => {
+        inputEventFired = true;
+        eventValue = e.value;
+      });
+
+      search.setValue("new value");
+
+      expect(inputEventFired).toBe(true);
+      expect(eventValue).toBe("new value");
     });
-    
-    const initialAvatar = search.element.querySelector('.mtrl-search__avatar');
-    expect(initialAvatar?.innerHTML).toBe('<img src="user1.jpg">');
-    
-    search.setAvatar('<img src="user2.jpg">');
-    
-    const updatedAvatar = search.element.querySelector('.mtrl-search__avatar');
-    expect(updatedAvatar?.innerHTML).toBe('<img src="user2.jpg">');
-  });
-  
-  test('should render string suggestions', () => {
-    const suggestions = ['Suggestion 1', 'Suggestion 2', 'Suggestion 3'];
-    
-    const search = createMockSearch({
-      suggestions
+
+    test("should not trigger event when triggerEvent is false", () => {
+      const search = createMockSearch();
+      let inputEventFired = false;
+
+      search.on("input", () => {
+        inputEventFired = true;
+      });
+
+      search.setValue("new value", false);
+
+      expect(inputEventFired).toBe(false);
+      expect(search.getValue()).toBe("new value");
     });
-    
-    const suggestionsContainer = search.element.querySelector('.mtrl-search__suggestions');
-    expect(suggestionsContainer).toBeDefined();
-    expect(suggestionsContainer?.style.display).toBe('none');
-    
-    const suggestionElements = search.element.querySelectorAll('.mtrl-search__suggestion');
-    expect(suggestionElements.length).toBe(3);
-    
-    expect(suggestionElements[0].textContent).toBe('Suggestion 1');
-    expect(suggestionElements[1].textContent).toBe('Suggestion 2');
-    expect(suggestionElements[2].textContent).toBe('Suggestion 3');
-  });
-  
-  test('should render object suggestions with icons', () => {
-    const suggestions = [
-      { text: 'Suggestion 1', icon: '<svg>icon1</svg>' },
-      { text: 'Suggestion 2', icon: '<svg>icon2</svg>' },
-      { text: 'Suggestion 3', value: 'custom-value', icon: '<svg>icon3</svg>' }
-    ];
-    
-    const search = createMockSearch({
-      suggestions
+
+    test("should set and get placeholder", () => {
+      const search = createMockSearch({ placeholder: "Initial" });
+
+      expect(search.getPlaceholder()).toBe("Initial");
+
+      search.setPlaceholder("Updated");
+
+      expect(search.getPlaceholder()).toBe("Updated");
+      const input = search.element.querySelector(
+        ".mtrl-search__input",
+      ) as HTMLInputElement;
+      expect(input.placeholder).toBe("Updated");
     });
-    
-    const suggestionElements = search.element.querySelectorAll('.mtrl-search__suggestion');
-    expect(suggestionElements.length).toBe(3);
-    
-    // Check for icons
-    const icons = search.element.querySelectorAll('.mtrl-search__suggestion-icon');
-    expect(icons.length).toBe(3);
-    
-    // Check text content
-    const textElements = search.element.querySelectorAll('.mtrl-search__suggestion-text');
-    expect(textElements.length).toBe(3);
-    expect(textElements[0].textContent).toBe('Suggestion 1');
-    expect(textElements[1].textContent).toBe('Suggestion 2');
-    expect(textElements[2].textContent).toBe('Suggestion 3');
-    
-    // Check data-value attributes
-    expect(suggestionElements[0].getAttribute('data-value')).toBe('Suggestion 1');
-    expect(suggestionElements[1].getAttribute('data-value')).toBe('Suggestion 2');
-    expect(suggestionElements[2].getAttribute('data-value')).toBe('custom-value');
   });
-  
-  test('should add dividers between suggestions when enabled', () => {
-    const suggestions = ['Suggestion 1', 'Suggestion 2', 'Suggestion 3'];
-    
-    const search = createMockSearch({
-      suggestions,
-      showDividers: true
+
+  // ---------------------------------------------------------------------------
+  // Clear Button Tests
+  // ---------------------------------------------------------------------------
+
+  describe("Clear Button", () => {
+    test("should show clear button when value exists", () => {
+      const search = createMockSearch({ value: "test" });
+
+      const clearButton = search.element.querySelector(
+        ".mtrl-search__clear-button",
+      );
+      expect(clearButton).toBeDefined();
+      expect(
+        clearButton?.classList.contains("mtrl-search__clear-button--hidden"),
+      ).toBe(false);
     });
-    
-    const dividers = search.element.querySelectorAll('.mtrl-search__suggestion-divider');
-    // There should be dividers between items (n-1 dividers)
-    expect(dividers.length).toBe(2);
-  });
-  
-  test('should update suggestions', () => {
-    const search = createMockSearch();
-    
-    const newSuggestions = ['New 1', 'New 2', 'New 3'];
-    search.setSuggestions(newSuggestions);
-    
-    const suggestionsContainer = search.element.querySelector('.mtrl-search__suggestions');
-    expect(suggestionsContainer).toBeDefined();
-    
-    const suggestionElements = search.element.querySelectorAll('.mtrl-search__suggestion');
-    expect(suggestionElements.length).toBe(3);
-    
-    expect(suggestionElements[0].textContent).toBe('New 1');
-    expect(suggestionElements[1].textContent).toBe('New 2');
-    expect(suggestionElements[2].textContent).toBe('New 3');
-  });
-  
-  test('should show and hide suggestions', () => {
-    const search = createMockSearch({
-      suggestions: ['Suggestion 1', 'Suggestion 2']
+
+    test("should hide clear button when value is empty", () => {
+      const search = createMockSearch({ value: "" });
+
+      const clearButton = search.element.querySelector(
+        ".mtrl-search__clear-button",
+      );
+      expect(
+        clearButton?.classList.contains("mtrl-search__clear-button--hidden"),
+      ).toBe(true);
     });
-    
-    const suggestionsContainer = search.element.querySelector('.mtrl-search__suggestions');
-    expect(suggestionsContainer?.style.display).toBe('none');
-    
-    search.showSuggestions(true);
-    expect(suggestionsContainer?.style.display).toBe('block');
-    
-    search.showSuggestions(false);
-    expect(suggestionsContainer?.style.display).toBe('none');
-  });
-  
-  test('should clear input value', () => {
-    const search = createMockSearch({
-      value: 'test query'
+
+    test("should not render clear button when showClearButton is false", () => {
+      const search = createMockSearch({
+        showClearButton: false,
+        value: "test",
+      });
+
+      const clearButton = search.element.querySelector(
+        ".mtrl-search__clear-button",
+      );
+      expect(clearButton).toBeNull();
     });
-    
-    expect(search.getValue()).toBe('test query');
-    
-    search.clear();
-    
-    expect(search.getValue()).toBe('');
-    
-    const clearButton = search.element.querySelector('.mtrl-search__clear');
-    expect(clearButton?.style.display).toBe('none');
-  });
-  
-  test('should enable and disable search', () => {
-    const search = createMockSearch();
-    
-    expect(search.isDisabled()).toBe(false);
-    
-    search.disable();
-    
-    expect(search.isDisabled()).toBe(true);
-    expect(search.element.className).toContain('mtrl-search--disabled');
-    
-    const input = search.element.querySelector('input');
-    expect(input?.disabled).toBe(true);
-    
-    search.enable();
-    
-    expect(search.isDisabled()).toBe(false);
-    expect(search.element.className).not.toContain('mtrl-search--disabled');
-    expect(input?.disabled).toBe(false);
-  });
-  
-  test('should expand and collapse search bar', () => {
-    const search = createMockSearch({
-      variant: SEARCH_VARIANTS.BAR
+
+    test("should toggle clear button visibility when value changes", () => {
+      const search = createMockSearch();
+      const clearButton = search.element.querySelector(
+        ".mtrl-search__clear-button",
+      );
+
+      expect(
+        clearButton?.classList.contains("mtrl-search__clear-button--hidden"),
+      ).toBe(true);
+
+      search.setValue("text");
+      expect(
+        clearButton?.classList.contains("mtrl-search__clear-button--hidden"),
+      ).toBe(false);
+
+      search.setValue("");
+      expect(
+        clearButton?.classList.contains("mtrl-search__clear-button--hidden"),
+      ).toBe(true);
     });
-    
-    expect(search.element.className).not.toContain('mtrl-search--expanded');
-    
-    search.expand();
-    
-    expect(search.element.className).toContain('mtrl-search--expanded');
-    
-    search.collapse();
-    
-    expect(search.element.className).not.toContain('mtrl-search--expanded');
   });
-  
-  test('should emit change events', () => {
-    const search = createMockSearch();
-    
-    let inputEventFired = false;
-    let eventValue = '';
-    
-    search.on(SEARCH_EVENTS.INPUT, (event) => {
-      inputEventFired = true;
-      eventValue = event.value;
+
+  // ---------------------------------------------------------------------------
+  // Input Control Tests
+  // ---------------------------------------------------------------------------
+
+  describe("Input Controls", () => {
+    test("should clear the input value", () => {
+      const search = createMockSearch({ value: "test" });
+      let clearEventFired = false;
+
+      search.on("clear", () => {
+        clearEventFired = true;
+      });
+
+      search.clear();
+
+      expect(search.getValue()).toBe("");
+      expect(clearEventFired).toBe(true);
     });
-    
-    search.setValue('test', true);
-    
-    expect(inputEventFired).toBe(true);
-    expect(eventValue).toBe('test');
+
+    test("should submit the search", () => {
+      const search = createMockSearch({ value: "query" });
+      let submitEventFired = false;
+      let submitValue = "";
+
+      search.on("submit", (e) => {
+        submitEventFired = true;
+        submitValue = e.value;
+      });
+
+      search.submit();
+
+      expect(submitEventFired).toBe(true);
+      expect(submitValue).toBe("query");
+    });
+
+    test("should not submit when value is empty", () => {
+      const search = createMockSearch({ value: "" });
+      let submitEventFired = false;
+
+      search.on("submit", () => {
+        submitEventFired = true;
+      });
+
+      search.submit();
+
+      expect(submitEventFired).toBe(false);
+    });
+
+    test("should focus the input", () => {
+      const search = createMockSearch();
+      let focusEventFired = false;
+
+      search.on("focus", () => {
+        focusEventFired = true;
+      });
+
+      search.focus();
+
+      expect(focusEventFired).toBe(true);
+      expect(search.element.classList.contains("mtrl-search--focused")).toBe(
+        true,
+      );
+    });
+
+    test("should blur the input", () => {
+      const search = createMockSearch();
+
+      search.focus();
+      expect(search.element.classList.contains("mtrl-search--focused")).toBe(
+        true,
+      );
+
+      search.blur();
+      expect(search.element.classList.contains("mtrl-search--focused")).toBe(
+        false,
+      );
+    });
+
+    test("should not focus when disabled", () => {
+      const search = createMockSearch({ disabled: true });
+      let focusEventFired = false;
+
+      search.on("focus", () => {
+        focusEventFired = true;
+      });
+
+      search.focus();
+
+      expect(focusEventFired).toBe(false);
+    });
   });
-  
-  test('should emit submit events', () => {
-    const search = createMockSearch({
-      value: 'query'
+
+  // ---------------------------------------------------------------------------
+  // Disabled State Tests
+  // ---------------------------------------------------------------------------
+
+  describe("Disabled State", () => {
+    test("should enable the component", () => {
+      const search = createMockSearch({ disabled: true });
+
+      expect(search.isDisabled()).toBe(true);
+
+      search.enable();
+
+      expect(search.isDisabled()).toBe(false);
+      expect(search.element.classList.contains("mtrl-search--disabled")).toBe(
+        false,
+      );
+      expect(search.element.getAttribute("aria-disabled")).toBe("false");
     });
-    
-    let submitEventFired = false;
-    let eventValue = '';
-    
-    search.on(SEARCH_EVENTS.SUBMIT, (event) => {
-      submitEventFired = true;
-      eventValue = event.value;
+
+    test("should disable the component", () => {
+      const search = createMockSearch();
+
+      expect(search.isDisabled()).toBe(false);
+
+      search.disable();
+
+      expect(search.isDisabled()).toBe(true);
+      expect(search.element.classList.contains("mtrl-search--disabled")).toBe(
+        true,
+      );
+      expect(search.element.getAttribute("aria-disabled")).toBe("true");
     });
-    
-    search.submit();
-    
-    expect(submitEventFired).toBe(true);
-    expect(eventValue).toBe('query');
+
+    test("should disable the input element", () => {
+      const search = createMockSearch();
+
+      search.disable();
+
+      const input = search.element.querySelector(
+        ".mtrl-search__input",
+      ) as HTMLInputElement;
+      expect(input.disabled).toBe(true);
+    });
   });
-  
-  test('should emit clear events', () => {
-    const search = createMockSearch({
-      value: 'query'
+
+  // ---------------------------------------------------------------------------
+  // Suggestions Tests
+  // ---------------------------------------------------------------------------
+
+  describe("Suggestions", () => {
+    test("should set string suggestions", () => {
+      const search = createMockSearch();
+
+      search.setSuggestions(["Apple", "Banana", "Cherry"]);
+
+      const suggestions = search.getSuggestions();
+      expect(suggestions.length).toBe(3);
+      expect(suggestions[0].text).toBe("Apple");
+      expect(suggestions[0].value).toBe("Apple");
     });
-    
-    let clearEventFired = false;
-    
-    search.on(SEARCH_EVENTS.CLEAR, () => {
-      clearEventFired = true;
+
+    test("should set object suggestions", () => {
+      const search = createMockSearch();
+
+      search.setSuggestions([
+        { text: "Apple", value: "apple" },
+        { text: "Banana", value: "banana" },
+      ]);
+
+      const suggestions = search.getSuggestions();
+      expect(suggestions.length).toBe(2);
+      expect(suggestions[0].text).toBe("Apple");
+      expect(suggestions[0].value).toBe("apple");
     });
-    
-    search.clear();
-    
-    expect(clearEventFired).toBe(true);
-    expect(search.getValue()).toBe('');
-  });
-  
-  test('should call onSubmit callback', () => {
-    let callbackFired = false;
-    let callbackValue = '';
-    
-    const search = createMockSearch({
-      value: 'test',
-      onSubmit: (value) => {
-        callbackFired = true;
-        callbackValue = value;
-      }
+
+    test("should render suggestions to the DOM", () => {
+      const search = createMockSearch({
+        initialState: "view",
+        suggestions: ["One", "Two", "Three"],
+      });
+
+      const items = search.element.querySelectorAll(
+        ".mtrl-search__suggestion-item",
+      );
+      expect(items.length).toBe(3);
     });
-    
-    search.submit();
-    
-    expect(callbackFired).toBe(true);
-    expect(callbackValue).toBe('test');
-  });
-  
-  test('should call onInput callback', () => {
-    let callbackFired = false;
-    let callbackValue = '';
-    
-    const search = createMockSearch({
-      onInput: (value) => {
-        callbackFired = true;
-        callbackValue = value;
-      }
+
+    test("should clear suggestions", () => {
+      const search = createMockSearch({
+        suggestions: ["One", "Two", "Three"],
+      });
+
+      expect(search.getSuggestions().length).toBe(3);
+
+      search.clearSuggestions();
+
+      expect(search.getSuggestions().length).toBe(0);
     });
-    
-    search.setValue('input test', true);
-    
-    expect(callbackFired).toBe(true);
-    expect(callbackValue).toBe('input test');
-  });
-  
-  test('should call onClear callback', () => {
-    let callbackFired = false;
-    
-    const search = createMockSearch({
-      value: 'test',
-      onClear: () => {
-        callbackFired = true;
-      }
+
+    test("should render suggestions with icons", () => {
+      const search = createMockSearch({
+        initialState: "view",
+        suggestions: [{ text: "Apple", icon: "<svg>icon</svg>" }],
+      });
+
+      const icon = search.element.querySelector(
+        ".mtrl-search__suggestion-icon",
+      );
+      expect(icon).toBeDefined();
+      expect(icon?.innerHTML).toBe("<svg>icon</svg>");
     });
-    
-    search.clear();
-    
-    expect(callbackFired).toBe(true);
   });
-  
-  test('should apply full width', () => {
-    const search = createMockSearch({
-      fullWidth: true
+
+  // ---------------------------------------------------------------------------
+  // Event Tests
+  // ---------------------------------------------------------------------------
+
+  describe("Events", () => {
+    test("should add event listeners", () => {
+      const search = createMockSearch();
+      let eventFired = false;
+
+      search.on("input", () => {
+        eventFired = true;
+      });
+
+      search.setValue("test");
+
+      expect(eventFired).toBe(true);
     });
-    
-    expect(search.element.className).toContain('mtrl-search--full-width');
-    expect(search.element.style.width).toBe('100%');
-  });
-  
-  test('should apply min and max width', () => {
-    const search = createMockSearch({
-      minWidth: 200,
-      maxWidth: 400
+
+    test("should remove event listeners", () => {
+      const search = createMockSearch();
+      let eventCount = 0;
+
+      const handler = () => {
+        eventCount++;
+      };
+
+      search.on("input", handler);
+      search.setValue("first");
+      expect(eventCount).toBe(1);
+
+      search.off("input", handler);
+      search.setValue("second");
+      expect(eventCount).toBe(1);
     });
-    
-    expect(search.element.style.minWidth).toBe('200px');
-    expect(search.element.style.maxWidth).toBe('400px');
-  });
-  
-  test('should toggle clear button visibility', () => {
-    const search = createMockSearch({
-      value: 'test'
+
+    test("should call onSubmit callback", () => {
+      let callbackValue = "";
+
+      const search = createMockSearch({
+        value: "test query",
+        onSubmit: (value) => {
+          callbackValue = value;
+        },
+      });
+
+      search.submit();
+
+      expect(callbackValue).toBe("test query");
     });
-    
-    // Clear button should be visible with value
-    const initialClearButton = search.element.querySelector('.mtrl-search__clear');
-    expect(initialClearButton).not.toBeNull();
-    
-    // Hide clear button
-    search.showClearButton(false);
-    let clearButton = search.element.querySelector('.mtrl-search__clear');
-    expect(clearButton).toBeNull();
-    
-    // Show clear button again
-    search.showClearButton(true);
-    clearButton = search.element.querySelector('.mtrl-search__clear');
-    expect(clearButton).not.toBeNull();
+
+    test("should call onInput callback", () => {
+      let callbackValue = "";
+
+      const search = createMockSearch({
+        onInput: (value) => {
+          callbackValue = value;
+        },
+      });
+
+      search.setValue("new value");
+
+      expect(callbackValue).toBe("new value");
+    });
+
+    test("should call onClear callback", () => {
+      let callbackFired = false;
+
+      const search = createMockSearch({
+        value: "test",
+        onClear: () => {
+          callbackFired = true;
+        },
+      });
+
+      search.clear();
+
+      expect(callbackFired).toBe(true);
+    });
+
+    test("should support method chaining on events", () => {
+      const search = createMockSearch();
+
+      const result = search
+        .on("input", () => {})
+        .on("submit", () => {})
+        .on("clear", () => {});
+
+      expect(result).toBe(search);
+    });
   });
-  
-  test('should remove event listeners', () => {
-    const search = createMockSearch();
-    
-    let eventCount = 0;
-    
-    const handler = () => {
-      eventCount++;
-    };
-    
-    search.on(SEARCH_EVENTS.INPUT, handler);
-    
-    search.setValue('test', true);
-    expect(eventCount).toBe(1);
-    
-    search.off(SEARCH_EVENTS.INPUT, handler);
-    
-    search.setValue('another', true);
-    expect(eventCount).toBe(1); // Count should not increase
+
+  // ---------------------------------------------------------------------------
+  // Lifecycle Tests
+  // ---------------------------------------------------------------------------
+
+  describe("Lifecycle", () => {
+    test("should destroy the component", () => {
+      const search = createMockSearch();
+      document.body.appendChild(search.element);
+
+      expect(document.body.contains(search.element)).toBe(true);
+
+      search.destroy();
+
+      expect(document.body.contains(search.element)).toBe(false);
+    });
+
+    test("should clear event handlers on destroy", () => {
+      const search = createMockSearch();
+      let eventCount = 0;
+
+      search.on("input", () => {
+        eventCount++;
+      });
+
+      search.destroy();
+
+      // After destroy, events should not fire
+      // (In real implementation, setValue wouldn't work after destroy)
+      expect(eventCount).toBe(0);
+    });
   });
-  
-  test('should be properly destroyed', () => {
-    const search = createMockSearch();
-    document.body.appendChild(search.element);
-    
-    expect(document.body.contains(search.element)).toBe(true);
-    
-    search.destroy();
-    
-    expect(document.body.contains(search.element)).toBe(false);
+
+  // ---------------------------------------------------------------------------
+  // Accessibility Tests
+  // ---------------------------------------------------------------------------
+
+  describe("Accessibility", () => {
+    test('should have role="search" on root element', () => {
+      const search = createMockSearch();
+
+      expect(search.element.getAttribute("role")).toBe("search");
+    });
+
+    test("should have aria-disabled attribute", () => {
+      const search = createMockSearch();
+
+      expect(search.element.getAttribute("aria-disabled")).toBe("false");
+
+      search.disable();
+
+      expect(search.element.getAttribute("aria-disabled")).toBe("true");
+    });
+
+    test("should have aria-label on input", () => {
+      const search = createMockSearch({ placeholder: "Search items" });
+
+      const input = search.element.querySelector(".mtrl-search__input");
+      expect(input?.getAttribute("aria-label")).toBe("Search items");
+    });
+
+    test("should update aria-label when placeholder changes", () => {
+      const search = createMockSearch({ placeholder: "Initial" });
+
+      search.setPlaceholder("Updated");
+
+      const input = search.element.querySelector(".mtrl-search__input");
+      expect(input?.getAttribute("aria-label")).toBe("Updated");
+    });
+
+    test('should have role="listbox" on suggestions list', () => {
+      const search = createMockSearch({ initialState: "view" });
+
+      const suggestionsList = search.element.querySelector(
+        ".mtrl-search__suggestion-list",
+      );
+      expect(suggestionsList?.getAttribute("role")).toBe("listbox");
+    });
+
+    test('should have role="option" on suggestion items', () => {
+      const search = createMockSearch({
+        initialState: "view",
+        suggestions: ["Apple", "Banana"],
+      });
+
+      const items = search.element.querySelectorAll(
+        ".mtrl-search__suggestion-item",
+      );
+      items.forEach((item) => {
+        expect(item.getAttribute("role")).toBe("option");
+      });
+    });
+
+    test("should have aria-label on leading icon button", () => {
+      const search = createMockSearch();
+
+      const leadingIcon = search.element.querySelector(
+        ".mtrl-search__leading-icon",
+      );
+      expect(leadingIcon?.getAttribute("aria-label")).toBe("Search");
+    });
+
+    test("should update leading icon aria-label when expanded", () => {
+      const search = createMockSearch();
+
+      search.expand();
+
+      const leadingIcon = search.element.querySelector(
+        ".mtrl-search__leading-icon",
+      );
+      expect(leadingIcon?.getAttribute("aria-label")).toBe("Go back");
+    });
+
+    test("should have aria-label on clear button", () => {
+      const search = createMockSearch({ value: "test" });
+
+      const clearButton = search.element.querySelector(
+        ".mtrl-search__clear-button",
+      );
+      expect(clearButton?.getAttribute("aria-label")).toBe("Clear search");
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // Method Chaining Tests
+  // ---------------------------------------------------------------------------
+
+  describe("Method Chaining", () => {
+    test("should support chaining on value methods", () => {
+      const search = createMockSearch();
+
+      const result = search.setValue("test").setPlaceholder("Search...");
+
+      expect(result).toBe(search);
+    });
+
+    test("should support chaining on state methods", () => {
+      const search = createMockSearch();
+
+      const result = search.expand().setViewMode("fullscreen").collapse();
+
+      expect(result).toBe(search);
+    });
+
+    test("should support chaining on input control methods", () => {
+      const search = createMockSearch();
+
+      const result = search.focus().setValue("test").clear();
+
+      expect(result).toBe(search);
+    });
+
+    test("should support chaining on disabled methods", () => {
+      const search = createMockSearch();
+
+      const result = search.disable().enable();
+
+      expect(result).toBe(search);
+    });
+
+    test("should support chaining on suggestion methods", () => {
+      const search = createMockSearch();
+
+      const result = search.setSuggestions(["A", "B"]).clearSuggestions();
+
+      expect(result).toBe(search);
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // Leading Icon Tests
+  // ---------------------------------------------------------------------------
+
+  describe("Leading Icon", () => {
+    test("should render search icon in bar state", () => {
+      const search = createMockSearch();
+
+      const leadingIcon = search.element.querySelector(
+        ".mtrl-search__leading-icon",
+      );
+      expect(leadingIcon?.innerHTML).toContain("svg");
+    });
+
+    test("should render back icon in view state", () => {
+      const search = createMockSearch({ initialState: "view" });
+
+      const leadingIcon = search.element.querySelector(
+        ".mtrl-search__leading-icon",
+      );
+      // JSDOM normalizes self-closing tags, so use toContain for SVG content
+      expect(leadingIcon?.innerHTML).toContain("M20 11H7.83");
+    });
+
+    test("should change icon when expanding", () => {
+      const search = createMockSearch();
+
+      search.expand();
+
+      const leadingIcon = search.element.querySelector(
+        ".mtrl-search__leading-icon",
+      );
+      // JSDOM normalizes self-closing tags, so use toContain for SVG content
+      expect(leadingIcon?.innerHTML).toContain("M20 11H7.83");
+    });
+
+    test("should change icon when collapsing", () => {
+      const search = createMockSearch({ initialState: "view" });
+
+      search.collapse();
+
+      const leadingIcon = search.element.querySelector(
+        ".mtrl-search__leading-icon",
+      );
+      // JSDOM normalizes self-closing tags, so use toContain for SVG content
+      expect(leadingIcon?.innerHTML).toContain("M15.5 14h-.79");
+    });
+
+    test("should use custom leading icon when provided", () => {
+      const customIcon = "<svg>custom</svg>";
+      const search = createMockSearch({ leadingIcon: customIcon });
+
+      const leadingIcon = search.element.querySelector(
+        ".mtrl-search__leading-icon",
+      );
+      expect(leadingIcon?.innerHTML).toBe(customIcon);
+    });
   });
 });

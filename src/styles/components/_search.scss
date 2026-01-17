@@ -1,306 +1,566 @@
-// src/components/search/_styles.scss
-@use '../../styles/abstract/base' as base;
-@use '../../styles/abstract/variables' as v;
-@use '../../styles/abstract/functions' as f;
-@use '../../styles/abstract/mixins' as m;
-@use '../../styles/abstract/theme' as t;
+// src/styles/components/_search.scss
+// Material Design 3 Search Component Styles
+// Implements MD3 Search Bar and Search View specifications
 
-$component: '#{base.$prefix}-search';
+@use "../abstract/base" as base;
+@use "../abstract/variables" as v;
+@use "../abstract/mixins" as m;
+@use "../abstract/theme" as t;
+
+$component: "#{base.$prefix}-search";
+
+// ============================================================================
+// MD3 Design Tokens
+// ============================================================================
+
+$bar-height: 56px;
+$bar-min-width: 360px;
+$bar-max-width: 720px;
+
+$view-docked-header-height: 56px;
+$view-docked-min-width: 360px;
+$view-docked-max-width: 720px;
+$view-docked-min-height: 240px;
+
+$view-fullscreen-header-height: 72px;
+
+$padding-horizontal: 16px;
+$icon-size: 24px;
+$avatar-size: 30px;
+$icon-spacing: 16px;
+
+$transition-duration: 200ms;
+$transition-easing: cubic-bezier(0.2, 0, 0, 1);
+
+// ============================================================================
+// Root Element
+// ============================================================================
 
 .#{$component} {
-  // Base styles
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  max-width: 720px;
-  min-width: 360px;
-  background-color: transparent;
-  transition: background-color 0.2s ease;
-  z-index: 1; 
-  
-  // Container
-  &-container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    min-width: $bar-min-width;
+    max-width: $bar-max-width;
+    background-color: transparent;
+    z-index: 1;
+
+    // ========================================================================
+    // State Modifiers
+    // ========================================================================
+
+    // Bar state (collapsed) - default
+    &--bar {
+        .#{$component}__container {
+            border-radius: v.shape("pill");
+            height: $bar-height;
+        }
+
+        // Hide content area in bar state
+        .#{$component}__divider,
+        .#{$component}__content {
+            display: none;
+        }
+    }
+
+    // View state (expanded)
+    &--view {
+        .#{$component}__container {
+            border-radius: v.shape("extra-large") v.shape("extra-large") 0 0;
+        }
+
+        .#{$component}__divider,
+        .#{$component}__content {
+            display: block;
+        }
+    }
+
+    // ========================================================================
+    // View Mode Modifiers
+    // ========================================================================
+
+    // Docked mode (inline)
+    &--docked {
+        &.#{$component}--view {
+            .#{$component}__container {
+                height: $view-docked-header-height;
+            }
+
+            .#{$component}__content {
+                min-height: $view-docked-min-height;
+                max-height: calc(66.67vh - #{$view-docked-header-height});
+                border-radius: 0 0 v.shape("extra-large") v.shape("extra-large");
+            }
+        }
+    }
+
+    // Fullscreen mode (overlay)
+    &--fullscreen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        min-width: 100%;
+        max-width: 100%;
+        z-index: 1000;
+        background-color: t.color("surface");
+
+        &.#{$component}--view {
+            .#{$component}__container {
+                height: $view-fullscreen-header-height;
+                border-radius: 0;
+            }
+
+            .#{$component}__content {
+                flex: 1;
+                max-height: none;
+                border-radius: 0;
+            }
+        }
+    }
+
+    // ========================================================================
+    // Interactive State Modifiers
+    // ========================================================================
+
+    &--focused {
+        // Focus state styling if needed
+    }
+
+    &--disabled {
+        pointer-events: none;
+
+        .#{$component}__container {
+            opacity: 0.38;
+        }
+    }
+
+    &--populated {
+        // Populated state styling if needed
+    }
+
+    &--full-width {
+        min-width: 0;
+        max-width: none;
+    }
+}
+
+// ============================================================================
+// Container (Header/Bar area)
+// ============================================================================
+
+.#{$component}__container {
     position: relative;
     display: flex;
     align-items: center;
-    height: 56px;
-    padding: 0 16px;
-    border-radius: v.shape('pill');
-    background-color: t.color('surface-container-high');
-    transition: background-color 0.2s ease;
-    overflow: hidden; 
-    
-    .#{$component}--disabled & {
-      opacity: 0.38;
-      pointer-events: none;
-    }
-  }
-  
-  // Leading Icon
-  &-leading-icon {
+    height: $bar-height;
+    padding: 0 $padding-horizontal;
+    background-color: t.color("surface-container-high");
+    transition:
+        background-color $transition-duration $transition-easing,
+        border-radius $transition-duration $transition-easing,
+        height $transition-duration $transition-easing;
+    overflow: hidden;
+}
+
+// ============================================================================
+// Leading Icon
+// ============================================================================
+
+.#{$component}__leading-icon {
     display: flex;
     align-items: center;
     justify-content: center;
-    min-width: 24px;
-    height: 24px;
-    margin-right: 16px;
-    color: t.color('on-surface');
-    cursor: pointer;
     flex-shrink: 0;
-    
-    svg {
-      width: 24px;
-      height: 24px;
-    }
-    
-    &:focus {
-      outline: none;
-    }
-    
-    &:focus-visible {
-      outline: 2px solid t.color('outline');
-      border-radius: 50%;
-    }
-  }
-  
-  // Input wrapper
-  &-input-wrapper {
-    flex: 1;
-    min-width: 0;
-    height: 100%; 
-    display: flex;
-    align-items: center;
-  }
-  
-  // Input field
-  &-input {
-    width: 100%;
-    height: 100%; 
-    min-height: 36px; 
+    width: $icon-size;
+    height: $icon-size;
+    margin-right: $icon-spacing;
+    padding: 0;
     border: none;
     background: transparent;
+    color: t.color("on-surface");
+    cursor: pointer;
+    border-radius: 50%;
+    transition: background-color $transition-duration $transition-easing;
+
+    svg {
+        width: $icon-size;
+        height: $icon-size;
+        fill: currentColor;
+    }
+
+    &:hover {
+        background-color: t.alpha("on-surface", 0.08);
+    }
+
+    &:focus {
+        outline: none;
+    }
+
+    &:focus-visible {
+        outline: 2px solid t.color("primary");
+        outline-offset: 2px;
+    }
+
+    &[aria-disabled="true"] {
+        cursor: not-allowed;
+        opacity: 0.38;
+
+        &:hover {
+            background-color: transparent;
+        }
+    }
+}
+
+// ============================================================================
+// Input Wrapper & Input
+// ============================================================================
+
+.#{$component}__input-wrapper {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.#{$component}__input {
+    width: 100%;
+    height: 100%;
+    min-height: 36px;
+    padding: 8px 0;
+    border: none;
+    background: transparent;
+    font-family: inherit;
     font-size: 16px;
-    color: t.color('on-surface');
-    padding: 8px 0; 
-    box-sizing: border-box;
+    line-height: 24px;
+    color: t.color("on-surface");
+    caret-color: t.color("primary");
     outline: none;
-    
+    box-sizing: border-box;
+
     &::placeholder {
-      color: t.color('on-surface-variant');
+        color: t.color("on-surface-variant");
     }
-    
-    .#{$component}--disabled & {
-      cursor: not-allowed;
+
+    &:disabled {
+        cursor: not-allowed;
+        color: t.color("on-surface");
     }
-  }
-  
-  // Clear button
-  &-clear-button {
+}
+
+// ============================================================================
+// Clear Button
+// ============================================================================
+
+.#{$component}__clear-button {
     display: flex;
     align-items: center;
     justify-content: center;
-    min-width: 24px;
-    height: 24px;
-    margin-left: 16px;
-    color: t.color('on-surface-variant');
-    cursor: pointer;
     flex-shrink: 0;
+    width: $icon-size;
+    height: $icon-size;
+    margin-left: $icon-spacing;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: t.color("on-surface-variant");
+    cursor: pointer;
+    border-radius: 50%;
     opacity: 1;
     visibility: visible;
-    transition: opacity 0.2s ease, visibility 0s;
-    
+    transition:
+        opacity $transition-duration $transition-easing,
+        visibility 0s,
+        background-color $transition-duration $transition-easing;
+
     svg {
-      width: 20px;
-      height: 20px;
+        width: 20px;
+        height: 20px;
+        fill: currentColor;
     }
-    
+
+    &:hover {
+        background-color: t.alpha("on-surface", 0.08);
+    }
+
+    &:focus {
+        outline: none;
+    }
+
+    &:focus-visible {
+        outline: 2px solid t.color("primary");
+        outline-offset: 2px;
+    }
+
     &--hidden {
-      opacity: 0;
-      visibility: hidden;
-      transition: opacity 0.2s ease, visibility 0s 0.2s;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition:
+            opacity $transition-duration $transition-easing,
+            visibility 0s $transition-duration;
     }
-    
-    &:focus {
-      outline: none;
-    }
-    
-    &:focus-visible {
-      outline: 2px solid t.color('outline');
-      border-radius: 50%;
-    }
-  }
-  
-  // Trailing icons
-  &-trailing-icon {
+}
+
+// ============================================================================
+// Trailing Icons & Avatar
+// ============================================================================
+
+.#{$component}__trailing-icon {
     display: flex;
     align-items: center;
     justify-content: center;
-    min-width: 24px;
-    height: 24px;
-    margin-left: 16px;
-    color: t.color('on-surface-variant');
+    flex-shrink: 0;
+    width: $icon-size;
+    height: $icon-size;
+    margin-left: $icon-spacing;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: t.color("on-surface-variant");
     cursor: pointer;
-    flex-shrink: 0;
-    
+    border-radius: 50%;
+    transition: background-color $transition-duration $transition-easing;
+
     svg {
-      width: 24px;
-      height: 24px;
+        width: $icon-size;
+        height: $icon-size;
+        fill: currentColor;
     }
-    
+
+    &:hover {
+        background-color: t.alpha("on-surface", 0.08);
+    }
+
     &:focus {
-      outline: none;
+        outline: none;
     }
-    
+
     &:focus-visible {
-      outline: 2px solid t.color('outline');
-      border-radius: 50%;
+        outline: 2px solid t.color("primary");
+        outline-offset: 2px;
     }
-  }
-  
-  // Avatar
-  &-avatar {
+
+    &[aria-disabled="true"] {
+        cursor: not-allowed;
+        opacity: 0.38;
+
+        &:hover {
+            background-color: transparent;
+        }
+    }
+}
+
+.#{$component}__avatar {
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-left: 16px;
-    min-width: 30px;
-    height: 30px;
     flex-shrink: 0;
+    width: $avatar-size;
+    height: $avatar-size;
+    margin-left: $icon-spacing;
     border-radius: 50%;
     overflow: hidden;
-    
+
     img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
     }
-  }
-  
-  // Search variants
-  &--bar {
-    border-radius: v.shape('pill');
-    overflow: hidden;
-    transition: max-width 0.3s ease, width 0.3s ease;
-  }
-  
-  &--view {
-    border-radius: 0;
-    max-width: 100%;
-    width: 100%;
-    
-    .#{$component}-container {
-      border-radius: 0;
-    }
-    
-    // For docked view mode
-    @include m.breakpoint-up('md') {
-      border-radius: v.shape('extra-large');
-      
-      .#{$component}-container {
-        border-radius: v.shape('extra-large') v.shape('extra-large') 0 0;
-        height: 56px;
-      }
-    }
-  }
-  
-  // Divider
-  &-divider {
-    display: block;
+}
+
+// Trailing items container
+.#{$component}__trailing {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: $icon-spacing;
+}
+
+// ============================================================================
+// Divider
+// ============================================================================
+
+.#{$component}__divider {
     width: 100%;
     height: 1px;
-    background-color: t.color('outline');
-    opacity: 0.5;
-  }
-  
-  // Suggestions container
-  &-suggestions-container {
-    display: none;
-    background-color: t.color('surface-container-high');
-    max-height: 400px;
+    background-color: t.color("outline-variant");
+    flex-shrink: 0;
+}
+
+// ============================================================================
+// Content Area (View mode only)
+// ============================================================================
+
+.#{$component}__content {
+    display: flex;
+    flex-direction: column;
+    background-color: t.color("surface-container-high");
+    overflow: hidden;
+}
+
+// ============================================================================
+// Suggestions
+// ============================================================================
+
+.#{$component}__suggestions {
+    flex: 1;
     overflow-y: auto;
-    border-bottom-left-radius: v.shape('medium');
-    border-bottom-right-radius: v.shape('medium');
-    
-    &--visible {
-      display: block;
+    overflow-x: hidden;
+
+    // Scrollbar styling
+    &::-webkit-scrollbar {
+        width: 4px;
     }
-    
-    // For docked view mode
-    @include m.breakpoint-up('md') {
-      border-radius: 0 0 v.shape('extra-large') v.shape('extra-large');
+
+    &::-webkit-scrollbar-track {
+        background: transparent;
     }
-  }
-  
-  // Suggestions list
-  &-suggestions-list {
+
+    &::-webkit-scrollbar-thumb {
+        background-color: t.alpha("on-surface", 0.2);
+        border-radius: 2px;
+    }
+}
+
+.#{$component}__suggestion-list {
     list-style: none;
     padding: 8px 0;
     margin: 0;
-  }
-  
-  // Suggestion item
-  &-suggestion-item {
+}
+
+.#{$component}__suggestion-item {
     display: flex;
     align-items: center;
-    padding: 12px 16px;
-    min-height: 48px; 
+    padding: 12px $padding-horizontal;
+    min-height: 48px;
     font-size: 16px;
-    color: t.color('on-surface');
+    line-height: 24px;
+    color: t.color("on-surface");
     cursor: pointer;
-    transition: background-color 0.15s ease;
-    
-    &:hover, &:focus {
-      background-color: t.alpha('on-surface', 0.05);
-    }
-    
+    transition: background-color $transition-duration $transition-easing;
+    box-sizing: border-box;
+
+    &:hover,
     &:focus {
-      outline: none;
+        background-color: t.alpha("on-surface", 0.08);
     }
-    
-    // Highlight matched text
+
+    &:focus {
+        outline: none;
+    }
+
+    &--selected {
+        background-color: t.alpha("on-surface", 0.12);
+    }
+
+    // Highlighted text in suggestions
     strong {
-      font-weight: 600;
-      color: t.color('on-surface');
+        font-weight: 600;
+        color: t.color("on-surface");
     }
-  }
-  
-  // Suggestion item icon
-  &-suggestion-icon {
+}
+
+.#{$component}__suggestion-icon {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 24px;
-    height: 24px;
-    margin-right: 16px;
-    color: t.color('on-surface-variant');
-    
+    flex-shrink: 0;
+    width: $icon-size;
+    height: $icon-size;
+    margin-right: $icon-spacing;
+    color: t.color("on-surface-variant");
+
     svg {
-      width: 20px;
-      height: 20px;
+        width: 20px;
+        height: 20px;
+        fill: currentColor;
     }
-  }
-  
-  // Suggestion item text
-  &-suggestion-text {
+}
+
+.#{$component}__suggestion-text {
     flex: 1;
-  }
-  
-  // Focus state
-  &--focused {
-    .#{$component}-container {
-      // No additional styles needed for focus in MD3
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.#{$component}__suggestion-divider {
+    height: 1px;
+    margin: 8px 0;
+    background-color: t.color("outline-variant");
+}
+
+// ============================================================================
+// Responsive Adjustments
+// ============================================================================
+
+@include m.breakpoint-down("sm") {
+    .#{$component} {
+        min-width: 0;
+        max-width: 100%;
+
+        &--docked {
+            // On small screens, docked behaves more like fullscreen
+            &.#{$component}--view {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                z-index: 1000;
+                background-color: t.color("surface");
+
+                .#{$component}__container {
+                    border-radius: 0;
+                }
+
+                .#{$component}__content {
+                    flex: 1;
+                    max-height: none;
+                    border-radius: 0;
+                }
+            }
+        }
     }
-  }
-  
-  // Full width
-  &--fullwidth {
-    max-width: 100%;
-  }
-  
-  // Expanded state (transitioning from bar to view)
-  &--expanded {
-    max-width: 100%;
-    width: 100%;
-  }
+}
+
+// ============================================================================
+// Animation Classes (for JavaScript transitions)
+// ============================================================================
+
+.#{$component}--expanding {
+    .#{$component}__container {
+        animation: search-expand $transition-duration $transition-easing
+            forwards;
+    }
+}
+
+.#{$component}--collapsing {
+    .#{$component}__container {
+        animation: search-collapse $transition-duration $transition-easing
+            forwards;
+    }
+}
+
+@keyframes search-expand {
+    from {
+        border-radius: v.shape("pill");
+    }
+    to {
+        border-radius: v.shape("extra-large") v.shape("extra-large") 0 0;
+    }
+}
+
+@keyframes search-collapse {
+    from {
+        border-radius: v.shape("extra-large") v.shape("extra-large") 0 0;
+    }
+    to {
+        border-radius: v.shape("pill");
+    }
 }

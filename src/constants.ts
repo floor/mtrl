@@ -149,12 +149,14 @@ import {
 } from "./components/radios/constants";
 
 import {
-  SEARCH_VARIANTS,
   SEARCH_STATES,
+  SEARCH_VIEW_MODES,
   SEARCH_EVENTS,
   SEARCH_ICONS,
   SEARCH_DEFAULTS,
   SEARCH_CLASSES,
+  SEARCH_MEASUREMENTS,
+  SEARCH_KEYS,
 } from "./components/search/constants";
 
 import {
@@ -395,12 +397,14 @@ export {
   RADIO_CLASSES,
 
   // Search
-  SEARCH_VARIANTS,
   SEARCH_STATES,
+  SEARCH_VIEW_MODES,
   SEARCH_EVENTS,
   SEARCH_ICONS,
   SEARCH_DEFAULTS,
   SEARCH_CLASSES,
+  SEARCH_MEASUREMENTS,
+  SEARCH_KEYS,
 
   // Segmented Button
   SEGMENTED_BUTTON_MODES,
