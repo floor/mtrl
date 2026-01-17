@@ -1,6 +1,6 @@
 // src/components/button/api.ts
 import { ButtonComponent } from "./types";
-import { addClass, removeClass } from "../../core";
+import { addClass } from "../../core";
 import { ProgressComponent } from "../progress/types";
 
 /**
@@ -54,7 +54,7 @@ interface ComponentWithElements {
   setIndeterminateSync?: (indeterminate: boolean) => ComponentWithElements;
   setLoading?: (
     loading: boolean,
-    text?: string
+    text?: string,
   ) => Promise<ComponentWithElements>;
   setLoadingSync?: (loading: boolean, text?: string) => ComponentWithElements;
 }
@@ -163,7 +163,6 @@ export const withAPI =
        */
       setText(content: string) {
         component.text.setText(content);
-        buttonComponent.updateCircularStyle();
         return buttonComponent;
       },
 
@@ -219,7 +218,7 @@ export const withAPI =
           if (component.element.firstChild) {
             component.element.insertBefore(
               newIconElement,
-              component.element.firstChild
+              component.element.firstChild,
             );
           } else {
             component.element.appendChild(newIconElement);
@@ -237,7 +236,6 @@ export const withAPI =
           }
         }
 
-        buttonComponent.updateCircularStyle();
         return buttonComponent;
       },
 
@@ -328,7 +326,7 @@ export const withAPI =
 
         // First remove all existing size classes
         const sizeClasses = ["xs", "s", "m", "l", "xl"].map(
-          (s) => `${buttonClass}--${s}`
+          (s) => `${buttonClass}--${s}`,
         );
 
         sizeClasses.forEach((cls) => {
@@ -372,7 +370,7 @@ export const withAPI =
 
         // First remove all existing shape classes
         const shapeClasses = ["round", "square"].map(
-          (s) => `${buttonClass}--${s}`
+          (s) => `${buttonClass}--${s}`,
         );
 
         shapeClasses.forEach((cls) => {
@@ -393,11 +391,11 @@ export const withAPI =
       setActive(active: boolean) {
         if (active) {
           component.element.classList.add(
-            `${component.getClass("button")}--active`
+            `${component.getClass("button")}--active`,
           );
         } else {
           component.element.classList.remove(
-            `${component.getClass("button")}--active`
+            `${component.getClass("button")}--active`,
           );
         }
         return buttonComponent;
@@ -418,27 +416,6 @@ export const withAPI =
        */
       destroy() {
         lifecycle.destroy();
-      },
-
-      /**
-       * Updates the button's circular style based on content.
-       * If the button has an icon but no text, it will be styled as circular.
-       * @internal
-       */
-      updateCircularStyle() {
-        const hasText = component.text.getText() !== "";
-        const hasIcon = buttonComponent.hasIcon();
-
-        if (!hasText) {
-          addClass(component.element, "button--circular");
-          removeClass(component.element, "button--icon");
-        } else {
-          removeClass(component.element, "button--circular");
-        }
-
-        if (hasIcon && hasText) {
-          addClass(component.element, "button--icon");
-        }
       },
     };
 

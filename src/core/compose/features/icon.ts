@@ -63,7 +63,7 @@ export interface IconConfig {
   /**
    * Additional configuration options
    */
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 /**
@@ -86,7 +86,7 @@ export interface IconComponent extends BaseComponent {
  */
 const createIcon = (
   element: HTMLElement,
-  config: IconConfig = {}
+  config: IconConfig = {},
 ): IconManager => {
   let iconElement: HTMLElement | null = null;
   const PREFIX = config.prefix || "mtrl";
@@ -135,7 +135,7 @@ const createIcon = (
         } else {
           // For 'start' position, insert after any existing label
           const labelElement = element.querySelector(
-            `[class*="${PREFIX}-${config.componentName || "component"}-label"]`
+            `[class*="${PREFIX}-${config.componentName || "component"}-label"]`,
           );
           if (labelElement) {
             // Insert after the label
@@ -175,26 +175,6 @@ const createIcon = (
 };
 
 /**
- * Updates the component's circular style based on content
- * Adds circular class if there's an icon but no text
- * @private
- */
-const updateCircularStyle = (
-  component: ElementComponent,
-  config: IconConfig
-): void => {
-  const hasText = config.text;
-  const hasIcon = config.icon;
-
-  const circularClass = `${component.getClass("button")}--circular`;
-  if (!hasText && hasIcon) {
-    component.element.classList.add(circularClass);
-  } else {
-    component.element.classList.remove(circularClass);
-  }
-};
-
-/**
  * Adds icon management to a component
  *
  * @param config - Configuration object containing icon information
@@ -216,15 +196,9 @@ export const withIcon =
       icon.setIcon(config.icon);
     }
 
-    // Apply button-specific styling if the component is a button
-    if (component.componentName === "button") {
-      if (!config.text) {
-        updateCircularStyle(component, config);
-      } else if (config.icon && config.text) {
-        component.element.classList.add(
-          `${component.getClass("button")}--icon`
-        );
-      }
+    // Apply button-specific styling for buttons with both icon and text
+    if (component.componentName === "button" && config.icon && config.text) {
+      component.element.classList.add(`${component.getClass("button")}--icon`);
     }
 
     // Return enhanced component with icon capabilities
@@ -233,4 +207,3 @@ export const withIcon =
       icon,
     };
   };
-

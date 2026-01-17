@@ -82,6 +82,7 @@ export * from "./datepicker";
 export * from "./dialog";
 export * from "./fab";
 export * from "./extended-fab";
+export * from "./icon-button";
 export * from "./menu";
 export * from "./navigation";
 
@@ -140,6 +141,7 @@ export { default as createDatePicker } from "./datepicker";
 export { default as createDialog } from "./dialog";
 export { default as createFab } from "./fab";
 export { default as createExtendedFab } from "./extended-fab";
+export { default as createIconButton } from "./icon-button";
 export { default as createList } from "./list";
 export { default as createMenu } from "./menu";
 export { default as createNavigation } from "./navigation";
