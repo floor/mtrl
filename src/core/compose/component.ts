@@ -4,13 +4,17 @@
  * @description Core utilities for component composition and creation with built-in mobile support
  */
 
-import { createElement, CreateElementOptions, removeEventHandlers } from '../dom/create';
+import {
+  createElement,
+  CreateElementOptions,
+  removeEventHandlers,
+} from "../dom/create";
 import {
   normalizeEvent,
   hasTouchSupport,
   TOUCH_CONFIG,
-  PASSIVE_EVENTS
-} from '../utils/mobile';
+  PASSIVE_EVENTS,
+} from "../utils/mobile";
 
 /**
  * Touch state interface to track touch interactions
@@ -32,7 +36,7 @@ export interface BaseComponent {
   getModifierClass: (base: string, modifier: string) => string;
   getElementClass: (base: string, element: string) => string;
   touchState: TouchState;
-  updateTouchState: (event: Event, status: 'start' | 'end') => void;
+  updateTouchState: (event: Event, status: "start" | "end") => void;
 }
 
 /**
@@ -52,7 +56,10 @@ export interface WithElementOptions {
   componentName?: string;
   attributes?: Record<string, any>;
   className?: string | string[];
-  forwardEvents?: Record<string, boolean | ((component: any, event: Event) => boolean)>;
+  forwardEvents?: Record<
+    string,
+    boolean | ((component: any, event: Event) => boolean)
+  >;
   interactive?: boolean;
   parent?: HTMLElement | string;
 }
@@ -69,22 +76,24 @@ const withPrefix = (prefix: string) => ({
    * @returns {string} Prefixed class name
    */
   getClass: (name: string): string => `${prefix}-${name}`,
-  
+
   /**
    * Gets a prefixed modifier class name
    * @param {string} base - Base class name
    * @param {string} modifier - Modifier name
    * @returns {string} Prefixed modifier class
    */
-  getModifierClass: (base: string, modifier: string): string => `${base}--${modifier}`,
-  
+  getModifierClass: (base: string, modifier: string): string =>
+    `${base}--${modifier}`,
+
   /**
    * Gets a prefixed element class name
    * @param {string} base - Base class name
    * @param {string} element - Element name
    * @returns {string} Prefixed element class
    */
-  getElementClass: (base: string, element: string): string => `${base}-${element}`
+  getElementClass: (base: string, element: string): string =>
+    `${base}-${element}`,
 });
 
 /**
@@ -94,10 +103,12 @@ const withPrefix = (prefix: string) => ({
  * @param {Object} config - Component configuration
  * @returns {BaseComponent} Base component with prefix utilities
  */
-export const createBase = (config: Record<string, any> = {}): BaseComponent => ({
+export const createBase = (
+  config: Record<string, any> = {},
+): BaseComponent => ({
   config,
   componentName: config.componentName,
-  ...withPrefix(config.prefix || 'mtrl'),
+  ...withPrefix(config.prefix || "mtrl"),
 
   /**
    * Manages the touch interaction state for the component.
@@ -106,32 +117,32 @@ export const createBase = (config: Record<string, any> = {}): BaseComponent => (
     startTime: 0,
     startPosition: { x: 0, y: 0 },
     isTouching: false,
-    activeTarget: null
+    activeTarget: null,
   },
 
   /**
    * Updates the component's touch state based on user interactions.
    * Tracks touch position and timing for gesture recognition.
    */
-  updateTouchState(event: Event, status: 'start' | 'end'): void {
+  updateTouchState(event: Event, status: "start" | "end"): void {
     // Cast to MouseEvent as a safe fallback when working with general Events
     const normalized = normalizeEvent(event as MouseEvent);
 
-    if (status === 'start') {
+    if (status === "start") {
       this.touchState = {
         startTime: Date.now(),
         startPosition: {
           x: normalized.clientX,
-          y: normalized.clientY
+          y: normalized.clientY,
         },
         isTouching: true,
-        activeTarget: normalized.target
+        activeTarget: normalized.target,
       };
-    } else if (status === 'end') {
+    } else if (status === "end") {
       this.touchState.isTouching = false;
       this.touchState.activeTarget = null;
     }
-  }
+  },
 });
 
 /**
@@ -139,17 +150,18 @@ export const createBase = (config: Record<string, any> = {}): BaseComponent => (
  * @param {WithElementOptions} options - Element creation options
  * @returns {Function} Component enhancer
  */
-export const withElement = (options: WithElementOptions = {}) => 
+export const withElement =
+  (options: WithElementOptions = {}) =>
   <T extends BaseComponent>(component: T): T & ElementComponent => {
     /**
      * Handles the start of a touch interaction.
      */
     const handleTouchStart = (event: Event): void => {
-      base.updateTouchState(event, 'start');
-      element.classList.add(`${base.getClass('touch-active')}`);
+      base.updateTouchState(event, "start");
+      element.classList.add(`${base.getClass("touch-active")}`);
 
-      if (options.forwardEvents?.touchstart && 'emit' in component) {
-        (component as any).emit('touchstart', normalizeEvent(event));
+      if (options.forwardEvents?.touchstart && "emit" in component) {
+        (component as any).emit("touchstart", normalizeEvent(event));
       }
     };
 
@@ -160,16 +172,16 @@ export const withElement = (options: WithElementOptions = {}) =>
       if (!base.touchState.isTouching) return;
 
       const touchDuration = Date.now() - base.touchState.startTime;
-      element.classList.remove(`${base.getClass('touch-active')}`);
-      base.updateTouchState(event, 'end');
+      element.classList.remove(`${base.getClass("touch-active")}`);
+      base.updateTouchState(event, "end");
 
       // Emit tap event for short touches
-      if (touchDuration < TOUCH_CONFIG.TAP_THRESHOLD && 'emit' in component) {
-        (component as any).emit('tap', normalizeEvent(event));
+      if (touchDuration < TOUCH_CONFIG.TAP_THRESHOLD && "emit" in component) {
+        (component as any).emit("tap", normalizeEvent(event));
       }
 
-      if (options.forwardEvents?.touchend && 'emit' in component) {
-        (component as any).emit('touchend', normalizeEvent(event));
+      if (options.forwardEvents?.touchend && "emit" in component) {
+        (component as any).emit("touchend", normalizeEvent(event));
       }
     };
 
@@ -184,16 +196,19 @@ export const withElement = (options: WithElementOptions = {}) =>
       const deltaY = normalized.clientY - base.touchState.startPosition.y;
 
       // Detect and emit swipe gestures
-      if (Math.abs(deltaX) > TOUCH_CONFIG.SWIPE_THRESHOLD && 'emit' in component) {
-        (component as any).emit('swipe', {
-          direction: deltaX > 0 ? 'right' : 'left',
+      if (
+        Math.abs(deltaX) > TOUCH_CONFIG.SWIPE_THRESHOLD &&
+        "emit" in component
+      ) {
+        (component as any).emit("swipe", {
+          direction: deltaX > 0 ? "right" : "left",
           deltaX,
-          deltaY
+          deltaY,
         });
       }
 
-      if (options.forwardEvents?.touchmove && 'emit' in component) {
-        (component as any).emit('touchmove', { ...normalized, deltaX, deltaY });
+      if (options.forwardEvents?.touchmove && "emit" in component) {
+        (component as any).emit("touchmove", { ...normalized, deltaX, deltaY });
       }
     };
 
@@ -202,24 +217,30 @@ export const withElement = (options: WithElementOptions = {}) =>
 
     // Check for parent in component config
     let parent = component.config.parent || options.parent;
-    
+
     // Handle string selectors
-    if (typeof parent === 'string') {
+    if (typeof parent === "string") {
       parent = document.querySelector(parent) as HTMLElement | null;
     }
 
     // Create element options from component options
     const elementOptions: CreateElementOptions = {
-      tag: options.tag || 'div',
+      tag: options.tag || "div",
       className: [
-        base.getClass(options.componentName || base.componentName || 'component'),
-        hasTouchSupport() && options.interactive ? base.getClass('interactive') : null,
-        ...(Array.isArray(options.className) ? options.className : [options.className])
+        base.getClass(
+          options.componentName || base.componentName || "component",
+        ),
+        hasTouchSupport() && options.interactive
+          ? base.getClass("interactive")
+          : null,
+        ...(Array.isArray(options.className)
+          ? options.className
+          : [options.className]),
       ].filter(Boolean),
       attributes: options.attributes || {},
       forwardEvents: options.forwardEvents || {},
       context: component, // Pass component as context for events
-      container: parent // Pass to createElement's container option (internal use)
+      container: parent, // Pass to createElement's container option (internal use)
     };
 
     // Create the element with appropriate classes
@@ -227,9 +248,9 @@ export const withElement = (options: WithElementOptions = {}) =>
 
     // Add event listeners only if touch is supported and the component is interactive
     if (hasTouchSupport() && options.interactive) {
-      element.addEventListener('touchstart', handleTouchStart, PASSIVE_EVENTS);
-      element.addEventListener('touchend', handleTouchEnd);
-      element.addEventListener('touchmove', handleTouchMove, PASSIVE_EVENTS);
+      element.addEventListener("touchstart", handleTouchStart, PASSIVE_EVENTS);
+      element.addEventListener("touchend", handleTouchEnd);
+      element.addEventListener("touchmove", handleTouchMove, PASSIVE_EVENTS);
     }
 
     return {
@@ -252,15 +273,15 @@ export const withElement = (options: WithElementOptions = {}) =>
        */
       destroy(): void {
         if (hasTouchSupport() && options.interactive) {
-          element.removeEventListener('touchstart', handleTouchStart);
-          element.removeEventListener('touchend', handleTouchEnd);
-          element.removeEventListener('touchmove', handleTouchMove);
+          element.removeEventListener("touchstart", handleTouchStart);
+          element.removeEventListener("touchend", handleTouchEnd);
+          element.removeEventListener("touchmove", handleTouchMove);
         }
-        
+
         // Clean up any registered event handlers using our new utility
         removeEventHandlers(element);
-        
+
         element.remove();
-      }
+      },
     };
   };

@@ -134,10 +134,21 @@ export const getElementConfig = (config: IconButtonConfig) => {
     componentClasses.push("icon-button--disabled");
   }
 
-  // Create enhanced config with component classes
+  // Merge user-provided class/className with component classes
+  const userClasses = config.className || config.class;
+  const mergedClasses = [
+    ...componentClasses,
+    ...(Array.isArray(userClasses)
+      ? userClasses
+      : userClasses
+        ? [userClasses]
+        : []),
+  ];
+
+  // Create enhanced config with merged classes
   const enhancedConfig = {
     ...config,
-    className: componentClasses,
+    className: mergedClasses,
   };
 
   return createElementConfig(enhancedConfig, {
