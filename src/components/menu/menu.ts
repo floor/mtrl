@@ -56,8 +56,17 @@ const createMenu = (config: MenuConfig): MenuComponent => {
       withController(baseConfig), // Menu controller
       withOpener(baseConfig), // Opener management
       withLifecycle(), // Lifecycle management
-      (comp) => withAPI(getApiConfig(comp))(comp) // Public API
+      (comp) => withAPI(getApiConfig(comp))(comp), // Public API
     )(baseConfig);
+
+    // Register event handlers from config
+    if (baseConfig.on && typeof menu.on === "function") {
+      Object.entries(baseConfig.on).forEach(([event, handler]) => {
+        if (typeof handler === "function") {
+          menu.on(event, handler);
+        }
+      });
+    }
 
     // The menu will be added to the DOM when opened and removed when closed
 
