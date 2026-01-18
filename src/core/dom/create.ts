@@ -36,12 +36,31 @@ export interface CreateElementOptions {
   html?: string;
   /** Text content */
   text?: string;
+  // Common HTML attributes
   /** Element ID */
   id?: string;
-  /** Element aria-label */
-  ariaLabel?: string;
-  /** Dataset attributes */
+  /** Form element name */
+  name?: string;
+  /** Element title (native browser tooltip on hover) */
+  title?: string;
+  /** Keyboard navigation order (-1 to remove from tab order, 0+ for custom order) */
+  tabIndex?: number;
+  /** Inline styles (string or object) */
+  style?: string | Partial<CSSStyleDeclaration>;
+  // Data attributes
+  /** Dataset attributes (e.g., { name: 'value' } → data-name="value") */
   data?: Record<string, string>;
+  // ARIA attributes for accessibility
+  /** ARIA role (e.g., 'button', 'menuitem', 'dialog') */
+  role?: string;
+  /** Accessible label for screen readers */
+  ariaLabel?: string;
+  /** ID of element that describes this element */
+  ariaDescribedBy?: string;
+  /** ID of element that labels this element */
+  ariaLabelledBy?: string;
+  /** Hide from screen readers */
+  ariaHidden?: boolean;
   /** CSS classes (will be automatically prefixed with 'mtrl-') - alias for className */
   class?: string | string[];
   /** CSS classes (will be automatically prefixed with 'mtrl-') - alias for class */
@@ -110,7 +129,7 @@ const SVG_TAGS = [
 const setupEventForwarding = (
   element: HTMLElement | SVGElement,
   forwardEvents: Record<string, EventCondition>,
-  context: any
+  context: any,
 ): void => {
   if (!forwardEvents || (!context?.emit && !context?.on)) return;
 
@@ -157,7 +176,7 @@ class ElementPool {
       element.innerHTML = "";
       element.removeAttribute("id");
       Object.keys(element.dataset).forEach(
-        (key) => delete element.dataset[key]
+        (key) => delete element.dataset[key],
       );
       return element;
     }
@@ -206,7 +225,7 @@ const elementPool = new ElementPool();
  * @returns {HTMLElement} Created HTML element
  */
 export const createElement = (
-  options: CreateElementOptions = {}
+  options: CreateElementOptions = {},
 ): HTMLElement => {
   // Fast path 1: Empty options - return basic div
   if (!options || Object.keys(options).length === 0) {
@@ -224,8 +243,31 @@ export const createElement = (
   // Apply basic properties first for optimal performance
   if (options.html) element.innerHTML = options.html;
   else if (options.text) element.textContent = options.text;
+
+  // Common HTML attributes
   if (options.id) element.id = options.id;
+  if (options.name) element.setAttribute("name", options.name);
+  if (options.title) element.title = options.title;
+  if (options.tabIndex !== undefined) element.tabIndex = options.tabIndex;
+
+  // Inline styles (string or object)
+  if (options.style) {
+    if (typeof options.style === "string") {
+      element.setAttribute("style", options.style);
+    } else {
+      Object.assign(element.style, options.style);
+    }
+  }
+
+  // ARIA attributes
+  if (options.role) element.setAttribute("role", options.role);
   if (options.ariaLabel) element.setAttribute("aria-label", options.ariaLabel);
+  if (options.ariaDescribedBy)
+    element.setAttribute("aria-describedby", options.ariaDescribedBy);
+  if (options.ariaLabelledBy)
+    element.setAttribute("aria-labelledby", options.ariaLabelledBy);
+  if (options.ariaHidden !== undefined)
+    element.setAttribute("aria-hidden", String(options.ariaHidden));
 
   // Apply classes with automatic prefixing and raw classes
   const classSource = options.className || options.class;
@@ -256,7 +298,15 @@ export const createElement = (
         "html",
         "text",
         "id",
+        "name",
+        "title",
+        "tabIndex",
+        "style",
+        "role",
         "ariaLabel",
+        "ariaDescribedBy",
+        "ariaLabelledBy",
+        "ariaHidden",
         "data",
         "class",
         "className",
@@ -292,7 +342,7 @@ export const createElement = (
  * @returns Created HTML element from pool
  */
 export const createElementPooled = (
-  options: CreateElementOptions = {}
+  options: CreateElementOptions = {},
 ): HTMLElement => {
   const element = elementPool.acquire(options.tag || "div");
 
@@ -328,11 +378,11 @@ export const releaseElement = (element: HTMLElement): void => {
  * @returns Created SVG element
  */
 export const createSVGElement = (
-  options: CreateSVGElementOptions = {}
+  options: CreateSVGElementOptions = {},
 ): SVGElement => {
   const element = document.createElementNS(
     "http://www.w3.org/2000/svg",
-    options.tag || "svg"
+    options.tag || "svg",
   ) as SVGElement;
 
   if (options.text) element.textContent = options.text;
@@ -351,7 +401,7 @@ export const createSVGElement = (
  * @param element - Element to clean up
  */
 export const removeEventHandlers = (
-  element: HTMLElement | SVGElement
+  element: HTMLElement | SVGElement,
 ): void => {
   const handlers = (element as any).__eventHandlers;
   if (handlers) {

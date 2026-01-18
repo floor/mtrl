@@ -56,6 +56,20 @@ export interface WithElementOptions {
   componentName?: string;
   attributes?: Record<string, any>;
   className?: string | string[];
+  // Common HTML attributes
+  id?: string; // Element ID
+  name?: string; // Form element name
+  title?: string; // Tooltip text (native browser tooltip on hover)
+  tabIndex?: number; // Keyboard navigation order (-1 to remove from tab order, 0+ for custom order)
+  style?: string | Partial<CSSStyleDeclaration>; // Inline styles (string or object)
+  // Data attributes
+  data?: Record<string, string>; // Data attributes (e.g., { name: 'value' } → data-name="value")
+  // ARIA attributes for accessibility
+  role?: string; // ARIA role (e.g., 'button', 'menuitem', 'dialog')
+  ariaLabel?: string; // Accessible label for screen readers
+  ariaDescribedBy?: string; // ID of element that describes this element
+  ariaLabelledBy?: string; // ID of element that labels this element
+  ariaHidden?: boolean; // Hide from screen readers
   forwardEvents?: Record<
     string,
     boolean | ((component: any, event: Event) => boolean)
@@ -238,6 +252,20 @@ export const withElement =
           : [options.className]),
       ].filter(Boolean),
       attributes: options.attributes || {},
+      // Common HTML attributes
+      id: options.id,
+      name: options.name,
+      title: options.title,
+      tabIndex: options.tabIndex,
+      style: options.style,
+      // Data attributes
+      data: options.data,
+      // ARIA attributes
+      role: options.role,
+      ariaLabel: options.ariaLabel,
+      ariaDescribedBy: options.ariaDescribedBy,
+      ariaLabelledBy: options.ariaLabelledBy,
+      ariaHidden: options.ariaHidden,
       forwardEvents: options.forwardEvents || {},
       context: component, // Pass component as context for events
       container: parent, // Pass to createElement's container option (internal use)

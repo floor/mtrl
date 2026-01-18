@@ -13,6 +13,20 @@ export interface BaseComponentConfig {
   className?: string | string[]; // Alternative to class
   rawClass?: string | string[]; // Classes that should not be prefixed
   parent?: HTMLElement | string | null; // Parent element to append to (element or selector)
+  // Common HTML attributes
+  id?: string; // Element ID
+  name?: string; // Form element name
+  title?: string; // Tooltip text (native browser tooltip on hover)
+  tabIndex?: number; // Keyboard navigation order (-1 to remove from tab order, 0+ for custom order)
+  style?: string | Partial<CSSStyleDeclaration>; // Inline styles (string or object)
+  // Data attributes
+  data?: Record<string, string>; // Data attributes (e.g., { name: 'value' } → data-name="value")
+  // ARIA attributes for accessibility
+  role?: string; // ARIA role (e.g., 'button', 'menuitem', 'dialog')
+  ariaLabel?: string; // Accessible label for screen readers
+  ariaDescribedBy?: string; // ID of element that describes this element
+  ariaLabelledBy?: string; // ID of element that labels this element
+  ariaHidden?: boolean; // Hide from screen readers
   [key: string]: any;
 }
 
@@ -174,6 +188,20 @@ export const createElementConfig = (
     attributes: elementAttributes,
     className: combinedClassNames.length > 0 ? combinedClassNames : undefined,
     rawClass: config.rawClass,
+    // Common HTML attributes
+    id: config.id,
+    name: config.name,
+    title: config.title,
+    tabIndex: config.tabIndex,
+    style: config.style,
+    // Data attributes
+    data: config.data,
+    // ARIA attributes
+    role: config.role,
+    ariaLabel: config.ariaLabel,
+    ariaDescribedBy: config.ariaDescribedBy,
+    ariaLabelledBy: config.ariaLabelledBy,
+    ariaHidden: config.ariaHidden,
     html: options.html,
     text: options.text,
     forwardEvents: options.forwardEvents || {},
