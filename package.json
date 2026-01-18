@@ -1,6 +1,6 @@
 {
   "name": "mtrl",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "A functional TypeScript/JavaScript component library with composable architecture based on Material Design 3",
   "author": "floor",
   "license": "MIT License",
