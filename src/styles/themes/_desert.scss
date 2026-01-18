@@ -1,0 +1,84 @@
+// src/styles/themes/_desert.scss
+// Inspired by Chuck Jones' Road Runner cartoons
+@use "../abstract/base" as *;
+@use "base-theme" as *;
+
+@include create-theme("desert") {
+    // Key colors from the classic desert palette
+    // Primary: Sandy desert floor (#C9A55E)
+    --#{$prefix}-sys-color-primary: #9a7a3e;
+    --#{$prefix}-sys-color-on-primary: #ffffff;
+    --#{$prefix}-sys-color-primary-container: #f0ddb8;
+    --#{$prefix}-sys-color-on-primary-container: #2d2008;
+
+    // Secondary: Desert sky blue (#5B9BD5)
+    --#{$prefix}-sys-color-secondary: #4a87c4;
+    --#{$prefix}-sys-color-on-secondary: #ffffff;
+    --#{$prefix}-sys-color-secondary-container: #d4e5f7;
+    --#{$prefix}-sys-color-on-secondary-container: #0a2840;
+
+    // Tertiary: Iconic turquoise sky (#4DBAB0)
+    --#{$prefix}-sys-color-tertiary: #3a9e95;
+    --#{$prefix}-sys-color-on-tertiary: #ffffff;
+    --#{$prefix}-sys-color-tertiary-container: #a8e5df;
+    --#{$prefix}-sys-color-on-tertiary-container: #0a2d2a;
+
+    // Neutral colors with warm desert undertones
+    --#{$prefix}-sys-color-surface: #fdf9f3;
+    --#{$prefix}-sys-color-surface-dim: #e3dfd7;
+    --#{$prefix}-sys-color-surface-bright: #fdf9f3;
+    --#{$prefix}-sys-color-surface-container-lowest: #ffffff;
+    --#{$prefix}-sys-color-surface-container-low: #f7f3eb;
+    --#{$prefix}-sys-color-surface-container: #f1ede5;
+    --#{$prefix}-sys-color-surface-container-high: #ebe7df;
+    --#{$prefix}-sys-color-surface-container-highest: #e5e1d9;
+
+    --#{$prefix}-sys-color-on-surface: #1d1b17;
+    --#{$prefix}-sys-color-on-surface-variant: #4a4640;
+
+    --#{$prefix}-sys-color-outline: #7c7770;
+    --#{$prefix}-sys-color-outline-variant: #cdc7be;
+
+    // Workaround: Override surface-rgb for disabled button visibility
+    --#{$prefix}-sys-color-surface-rgb: 29, 27, 23;
+
+    // Include status colors for light theme
+    @include status-colors-light();
+
+    &[data-theme-mode="dark"] {
+        // Key colors - lighter versions for dark mode
+        --#{$prefix}-sys-color-primary: #d4bc8a;
+        --#{$prefix}-sys-color-on-primary: #3d2e12;
+        --#{$prefix}-sys-color-primary-container: #5c4a26;
+        --#{$prefix}-sys-color-on-primary-container: #f0ddb8;
+
+        --#{$prefix}-sys-color-secondary: #a3c9ef;
+        --#{$prefix}-sys-color-on-secondary: #0f3a5c;
+        --#{$prefix}-sys-color-secondary-container: #2d5a82;
+        --#{$prefix}-sys-color-on-secondary-container: #d4e5f7;
+
+        --#{$prefix}-sys-color-tertiary: #7dd4cb;
+        --#{$prefix}-sys-color-on-tertiary: #0a3b36;
+        --#{$prefix}-sys-color-tertiary-container: #1f5c55;
+        --#{$prefix}-sys-color-on-tertiary-container: #a8e5df;
+
+        // Neutral colors - warm dark surfaces
+        --#{$prefix}-sys-color-surface: #1d1b17;
+        --#{$prefix}-sys-color-surface-dim: #141210;
+        --#{$prefix}-sys-color-surface-bright: #3a3732;
+        --#{$prefix}-sys-color-surface-container-lowest: #100e0c;
+        --#{$prefix}-sys-color-surface-container-low: #1d1b17;
+        --#{$prefix}-sys-color-surface-container: #21201c;
+        --#{$prefix}-sys-color-surface-container-high: #2c2a26;
+        --#{$prefix}-sys-color-surface-container-highest: #373431;
+
+        --#{$prefix}-sys-color-on-surface: #e7e3db;
+        --#{$prefix}-sys-color-on-surface-variant: #cdc7be;
+
+        --#{$prefix}-sys-color-outline: #969189;
+        --#{$prefix}-sys-color-outline-variant: #4a4640;
+
+        // Include status colors for dark theme
+        @include status-colors-dark();
+    }
+}

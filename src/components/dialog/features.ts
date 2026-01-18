@@ -328,7 +328,6 @@ const addButton = (
 
   // Button click handler with event-based communication
   button.on("click", (event) => {
-    console.log("button click");
     let shouldClose = closeDialog;
 
     // Call onClick handler if provided
@@ -548,7 +547,7 @@ export const withVisibility = () => (component) => {
     },
 
     close() {
-      console.log("Dialog close method called");
+      // console.log("Dialog close method called");
 
       // Trigger before close event
       const beforeCloseEvent = {

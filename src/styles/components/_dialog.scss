@@ -1,4 +1,4 @@
-// src/components/dialog/_dialog.scss
+// src/styles/components/_dialog.scss
 @use "../../styles/abstract/base" as base;
 @use "../../styles/abstract/variables" as v;
 @use "../../styles/abstract/functions" as f;
@@ -8,14 +8,16 @@
 $component: "#{base.$prefix}-dialog";
 
 // Dialog overlay (background scrim)
+// MD3 specifies 32% opacity for scrim
 .#{$component}-overlay {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: t.alpha("scrim", 0.48);
+    background-color: t.alpha("scrim", 0.32);
     opacity: 0;
+    visibility: hidden;
     z-index: v.z-index("modal");
     display: flex;
     align-items: center;
@@ -23,12 +25,11 @@ $component: "#{base.$prefix}-dialog";
     overflow: auto;
     padding: 24px;
     box-sizing: border-box;
-    // Use proper SCSS function calls for transition values
-    $duration: v.motion("duration-short4");
-    $easing: v.motion("easing-standard");
+
+    // MD3 standard animation for overlay
     transition:
-        opacity #{$duration} #{$easing},
-        visibility #{$duration} #{$easing};
+        opacity v.motion("duration-medium1") v.motion("easing-emphasized"),
+        visibility v.motion("duration-medium1") v.motion("easing-emphasized");
 
     &--visible {
         opacity: 1;
@@ -37,6 +38,7 @@ $component: "#{base.$prefix}-dialog";
 }
 
 // Dialog container
+// MD3: surface-container-high, 28dp corners, elevation 3
 .#{$component} {
     position: relative;
     background-color: t.color("surface-container-high");
@@ -46,18 +48,24 @@ $component: "#{base.$prefix}-dialog";
     min-width: 280px;
     width: 100%;
     margin: auto;
-    opacity: 0;
-    transform: scale(0.8);
-    $duration: v.motion("duration-short4");
-    $easing: v.motion("easing-standard");
-    transition:
-        transform #{$duration} #{$easing},
-        opacity #{$duration} #{$easing};
     @include m.elevation(3);
 
+    // Initial state - hidden with scaleY for MD3 reveal animation (like menu)
+    opacity: 0;
+    transform-origin: center center;
+    transform: scaleY(0);
+    pointer-events: none;
+
+    // MD3 emphasized easing for dialogs
+    transition:
+        transform v.motion("duration-medium1") v.motion("easing-emphasized"),
+        opacity v.motion("duration-medium1") v.motion("easing-emphasized");
+
+    // Visible state
     &--visible {
         opacity: 1;
-        transform: scale(1);
+        transform: scaleY(1);
+        pointer-events: auto;
     }
 
     // Size variants
@@ -89,30 +97,81 @@ $component: "#{base.$prefix}-dialog";
         max-height: none;
         margin: 0;
         border-radius: 0;
-    }
+        transform-origin: center center;
 
-    // Animation variants
-    &--slide-up {
-        transform: translateY(50px);
+        // Fullscreen uses scale instead of scaleY for better appearance
+        transform: scale(0.9);
 
         &.#{$component}--visible {
-            transform: translateY(0);
+            transform: scale(1);
+        }
+    }
+
+    // Animation variants with appropriate transform origins
+    &--slide-up {
+        transform-origin: bottom center;
+        transform: scaleY(0);
+
+        &.#{$component}--visible {
+            transform: scaleY(1);
         }
     }
 
     &--slide-down {
-        transform: translateY(-50px);
+        transform-origin: top center;
+        transform: scaleY(0);
 
         &.#{$component}--visible {
-            transform: translateY(0);
+            transform: scaleY(1);
         }
     }
 
     &--fade {
-        transform: scale(1);
+        transform: scaleY(1);
+
+        &.#{$component}--visible {
+            transform: scaleY(1);
+        }
+    }
+
+    // Scale animation variant (original behavior)
+    &--scale {
+        transform-origin: center center;
+        transform: scale(0.8);
 
         &.#{$component}--visible {
             transform: scale(1);
+        }
+    }
+}
+
+// Dialog icon (optional, MD3 spec)
+// Centered above headline, 24dp, secondary color
+.#{$component}-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 24px 0 24px;
+    color: t.color("secondary");
+
+    svg,
+    .#{$component}-icon-content {
+        width: 24px;
+        height: 24px;
+    }
+
+    // When icon is present, header should be centered
+    & + .#{$component}-header {
+        .#{$component}-header-content {
+            text-align: center;
+        }
+
+        .#{$component}-header-title {
+            text-align: center;
+        }
+
+        .#{$component}-header-subtitle {
+            text-align: center;
         }
     }
 }
@@ -124,15 +183,17 @@ $component: "#{base.$prefix}-dialog";
     justify-content: space-between;
     padding: 24px 24px 16px 24px;
 
+    // When following an icon, reduce top padding
+    .#{$component}-icon + & {
+        padding-top: 16px;
+    }
+
     &-content {
         flex: 1;
     }
 
     &-title {
         margin: 0;
-        font-size: 24px;
-        line-height: 32px;
-        font-weight: 400;
         color: t.color("on-surface");
         @include m.typography("headline-small");
     }
@@ -156,6 +217,8 @@ $component: "#{base.$prefix}-dialog";
         border-radius: 50%;
         cursor: pointer;
         color: t.color("on-surface-variant");
+        transition: background-color v.motion("duration-short2")
+            v.motion("easing-standard");
 
         &:hover {
             background-color: t.alpha("on-surface", 0.08);
@@ -166,18 +229,40 @@ $component: "#{base.$prefix}-dialog";
             background-color: t.alpha("on-surface", 0.12);
         }
 
+        &:focus-visible {
+            outline: 2px solid t.color("primary");
+            outline-offset: 2px;
+        }
+
+        &:active {
+            background-color: t.alpha("on-surface", 0.12);
+        }
+
         svg {
             width: 24px;
             height: 24px;
         }
     }
+
+    // RTL Support
+    @include m.rtl {
+        &-close {
+            margin: -8px 0 0 -8px;
+        }
+    }
 }
 
 // Dialog content
+// MD3: Body medium typography, on-surface-variant for supporting text
 .#{$component}-content {
     padding: 16px 24px;
-    color: t.color("on-surface");
+    color: t.color("on-surface-variant");
     @include m.typography("body-medium");
+
+    // Scrollable content support
+    overflow-y: auto;
+    max-height: 60vh;
+    @include m.scrollbar;
 
     p {
         margin: 0 0 16px 0;
@@ -186,14 +271,20 @@ $component: "#{base.$prefix}-dialog";
             margin-bottom: 0;
         }
     }
+
+    // When content needs emphasis, use on-surface
+    &--emphasis {
+        color: t.color("on-surface");
+    }
 }
 
 // Dialog footer
+// MD3: Actions right-aligned, 8dp gap, text buttons preferred
 .#{$component}-footer {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    padding: 24px;
+    padding: 16px 24px 24px 24px;
     gap: 8px;
 
     &--left {
@@ -207,26 +298,56 @@ $component: "#{base.$prefix}-dialog";
     &--space-between {
         justify-content: space-between;
     }
+
+    // Stacked buttons for long text (MD3 spec)
+    &--stacked {
+        flex-direction: column-reverse;
+        align-items: stretch;
+        gap: 8px;
+    }
 }
 
 // Dialog divider styling
-.#{$component}-header-divider {
-    margin: 0;
-}
-
+// MD3: outline-variant color for dividers
+.#{$component}-header-divider,
 .#{$component}-footer-divider {
     margin: 0;
+    border: none;
+    height: 1px;
+    background-color: t.color("outline-variant");
 }
 
-// Accessibility
+// Accessibility - Reduced motion preference support
 @include m.reduced-motion {
     .#{$component},
     .#{$component}-overlay {
-        transition: none;
+        transition: opacity 0.1s linear;
+        transform: none !important;
+    }
+
+    .#{$component}--visible {
+        transform: none !important;
+    }
+}
+
+// High contrast mode
+@include m.high-contrast {
+    .#{$component} {
+        border: 2px solid CurrentColor;
+    }
+
+    .#{$component}-header-divider,
+    .#{$component}-footer-divider {
+        background-color: CurrentColor;
+    }
+
+    .#{$component}-header-close:focus-visible {
+        outline: 2px solid CurrentColor;
     }
 }
 
 // Mobile responsiveness
+// MD3: Dialogs may become full-width sheets on mobile
 @media (max-width: v.breakpoint("sm")) {
     .#{$component} {
         min-width: 280px;
@@ -234,10 +355,14 @@ $component: "#{base.$prefix}-dialog";
         max-width: 100%;
         margin: 16px;
 
+        // Mobile dialogs animate from bottom
+        transform-origin: bottom center;
+
         &--fullscreen {
             width: 100%;
             height: 100%;
             margin: 0;
+            transform-origin: center center;
         }
     }
 
@@ -250,12 +375,40 @@ $component: "#{base.$prefix}-dialog";
         }
     }
 
-    // Adjust animations for mobile
+    .#{$component}-content {
+        max-height: 50vh;
+    }
+
+    // Adjust animations for mobile - slide up from bottom
     .#{$component}--slide-up {
-        transform: translateY(100%);
+        transform-origin: bottom center;
+        transform: scaleY(0);
 
         &.#{$component}--visible {
-            transform: translateY(0);
+            transform: scaleY(1);
         }
+    }
+
+    // Stacked footer buttons on mobile when needed
+    .#{$component}-footer--responsive {
+        flex-direction: column-reverse;
+        align-items: stretch;
+    }
+}
+
+// Print styles
+@media print {
+    .#{$component}-overlay {
+        position: static;
+        background: none;
+        padding: 0;
+    }
+
+    .#{$component} {
+        box-shadow: none;
+        border: 1px solid #000;
+        max-width: 100%;
+        transform: none;
+        opacity: 1;
     }
 }
