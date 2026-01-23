@@ -259,10 +259,15 @@ $component: "#{base.$prefix}-dialog";
     color: t.color("on-surface-variant");
     @include m.typography("body-medium");
 
-    // Scrollable content support
-    overflow-y: auto;
-    max-height: 60vh;
-    @include m.scrollbar;
+    // Allow dropdowns/select menus to overflow the dialog
+    overflow: visible;
+
+    // Scrollable content variant (opt-in)
+    &--scrollable {
+        overflow-y: auto;
+        max-height: 60vh;
+        @include m.scrollbar;
+    }
 
     p {
         margin: 0 0 16px 0;
@@ -375,7 +380,7 @@ $component: "#{base.$prefix}-dialog";
         }
     }
 
-    .#{$component}-content {
+    .#{$component}-content--scrollable {
         max-height: 50vh;
     }
 

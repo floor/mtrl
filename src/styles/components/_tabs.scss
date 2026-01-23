@@ -1,421 +1,447 @@
 // src/components/tabs/_styles.scss
-@use '../../styles/abstract/base' as base;
-@use '../../styles/abstract/variables' as v;
-@use '../../styles/abstract/functions' as f;
-@use '../../styles/abstract/mixins' as m;
-@use '../../styles/abstract/theme' as t;
+@use "../../styles/abstract/base" as base;
+@use "../../styles/abstract/variables" as v;
+@use "../../styles/abstract/functions" as f;
+@use "../../styles/abstract/mixins" as m;
+@use "../../styles/abstract/theme" as t;
 
-$component: '#{base.$prefix}-button.#{base.$prefix}-tab';
-$container: '#{base.$prefix}-tabs';
+$component: "#{base.$prefix}-button.#{base.$prefix}-tab";
+$container: "#{base.$prefix}-tabs";
 
 // Tabs Container Styles (1. Container)
 .#{$container} {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  // background-color: t.color('surface'); // MD3: Surface color
-  box-sizing: border-box;
-  
-  // Basic container sizing
-  &--primary {
-    min-height: 48px;
-    
-    // Tab container with icons and text needs more space
-    &:has(.#{$component}--icon-and-text) {
-      min-height: 64px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    // background-color: t.color('surface'); // MD3: Surface color
+    box-sizing: border-box;
+
+    // Basic container sizing
+    &--primary {
+        min-height: 48px;
+
+        // Tab container with icons and text needs more space
+        &:has(.#{$component}--icon-and-text) {
+            min-height: 64px;
+        }
+
+        // Primary indicator specific styling
+        .#{$container}-indicator {
+            height: 4px;
+            border-radius: 3px 3px 0 0;
+            background-color: t.color("primary");
+        }
     }
-    
-    // Primary indicator specific styling
-    .#{$container}-indicator {
-      height: 4px;
-      border-radius: 3px 3px 0 0;
-      background-color: t.color('primary');
+
+    &--secondary {
+        min-height: 48px;
+        // Tab indicator styling for secondary variant
+        .#{$container}-indicator {
+            height: 2px;
+            border-radius: 0;
+            background-color: t.color("on-surface");
+        }
     }
-  }
-  
-  &--secondary {
-    min-height: 48px;
-    // Tab indicator styling for secondary variant
-    .#{$container}-indicator {
-      height: 2px;
-      border-radius: 0;
-      background-color: t.color('on-surface');
+
+    // Scrollable container
+    &--scrollable {
+        overflow: hidden;
+
+        .#{$container}-scroll {
+            display: flex;
+            overflow-x: auto;
+            scrollbar-width: none; // Firefox
+            -ms-overflow-style: none; // IE and Edge
+
+            &::-webkit-scrollbar {
+                display: none; // Chrome, Safari, and Opera
+            }
+        }
     }
-  }
-  
-  // Scrollable container
-  &--scrollable {
-    overflow: hidden;
-    
-    .#{$container}-scroll {
-      display: flex;
-      overflow-x: auto;
-      scrollbar-width: none; // Firefox
-      -ms-overflow-style: none; // IE and Edge
-      
-      &::-webkit-scrollbar {
-        display: none; // Chrome, Safari, and Opera
-      }
+
+    // Container divider (5. Divider)
+    &-divider {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background-color: t.color(
+            "outline-variant"
+        ); // MD3: Outline variant color
     }
-  }
-  
-  // Container divider (5. Divider)
-  &-divider {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background-color: t.color('outline-variant'); // MD3: Outline variant color
-  }
-  
-  // Tab indicator styling - base styles
-  &-indicator {
-    position: absolute;
-    bottom: 1px;
-    transition: transform 250ms cubic-bezier(0.4, 0, 0.2, 1),
-                width 250ms cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 1; // Ensure indicator appears above divider
-  }
+
+    // Tab indicator styling - base styles
+    &-indicator {
+        position: absolute;
+        bottom: 1px;
+        transition:
+            transform 250ms cubic-bezier(0.4, 0, 0.2, 1),
+            width 250ms cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 1; // Ensure indicator appears above divider
+    }
 }
 
 // Individual Tab Styles
 .#{$component} {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 90px;
-  max-width: 360px;
-  padding: 0 16px;
-  border: none;
-  border-radius: 5px 5px 0 0;
-  background-color: transparent;
-  color: t.color('on-surface-variant');
-  cursor: pointer;
-  user-select: none;
-  flex-shrink: 0;
-  
-
-
-  // Typography for label text (4. Label)
-  @include m.typography('label-large');
-  
-  // Transition for state changes
-  transition:
-    background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
-    color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  
-  // Container heights based on layout
-  &--text-only {
-    height: 48px;
-  }
-  
-  &--icon-only {
-    height: 48px;
-  }
-  
-  &--icon-and-text {
-    height: 64px;
-    flex-direction: column;
-  }
-  
-  // Focus styles (3/7. Focused state)
-  &:focus {
-    outline: none;
-  }
-  
-  &:focus-visible {
-    outline: 2px solid t.color('primary');
-    outline-offset: -2px;
-    z-index: 1;
-  }
-  
-  // Disabled state
-  &--disabled, &:disabled {
-    pointer-events: none;
-    opacity: 0.38;
-  }
-  
-  // Tab Icon (3. Icon - optional)
-  &-icon {
-    display: flex;
+    position: relative;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 24px;
-    height: 24px;
-    
-    svg {
-      width: 100%;
-      height: 100%;
-      fill: currentColor;
+    min-width: 90px;
+    max-width: 360px;
+    padding: 0 16px;
+    border: none;
+    border-radius: 0;
+    background-color: transparent;
+    color: t.color("on-surface-variant");
+    cursor: pointer;
+    user-select: none;
+    flex-shrink: 0;
+
+    // Typography for label text (4. Label)
+    @include m.typography("label-large");
+
+    // Transition for state changes
+    transition:
+        background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+        color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+    // Container heights based on layout
+    &--text-only {
+        height: 48px;
     }
-  }
-  
-  // Ensure proper vertical spacing for icon and text
-  &--icon-and-text {
-    .#{$component}-icon {
-      margin-bottom: 4px;
+
+    &--icon-only {
+        height: 48px;
     }
-  }
-  
-  // Tab Text (4. Label)
-  &-text {
-    @include m.truncate;
-    max-width: 100%;
-    text-align: center;
-    line-height: 1.2;
-    
-    .#{$component}--icon-only & {
-      @include m.visually-hidden;
+
+    &--icon-and-text {
+        height: 64px;
+        flex-direction: column;
     }
-  }
-  
-  // Badge positioning (2. Badge - optional)
-  .#{base.$prefix}-badge-wrapper {
-    .#{base.$prefix}-badge {
-      // Position for different tab layouts
-      &--top-right {
+
+    // Focus styles (3/7. Focused state)
+    &:focus {
+        outline: none;
+    }
+
+    &:focus-visible {
+        outline: 2px solid t.color("primary");
+        outline-offset: -2px;
+        z-index: 1;
+    }
+
+    // Disabled state
+    &--disabled,
+    &:disabled {
+        pointer-events: none;
+        opacity: 0.38;
+    }
+
+    // Tab Icon (3. Icon - optional)
+    &-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+
+        svg {
+            width: 100%;
+            height: 100%;
+            fill: currentColor;
+        }
+    }
+
+    // Ensure proper vertical spacing for icon and text
+    &--icon-and-text {
+        .#{$component}-icon {
+            margin-bottom: 4px;
+        }
+    }
+
+    // Tab Text (4. Label)
+    &-text {
+        @include m.truncate;
+        max-width: 100%;
+        text-align: center;
+        line-height: 1.2;
+
         .#{$component}--icon-only & {
-          top: 4px;
-          right: 4px;
+            @include m.visually-hidden;
         }
-        
-        .#{$component}--text-only & {
-          top: 8px;
-          right: 8px;
+    }
+
+    // Badge positioning (2. Badge - optional)
+    .#{base.$prefix}-badge-wrapper {
+        .#{base.$prefix}-badge {
+            // Position for different tab layouts
+            &--top-right {
+                .#{$component}--icon-only & {
+                    top: 4px;
+                    right: 4px;
+                }
+
+                .#{$component}--text-only & {
+                    top: 8px;
+                    right: 8px;
+                }
+
+                .#{$component}--icon-and-text & {
+                    top: 4px;
+                    right: calc(50% - 20px);
+                }
+            }
         }
-        
-        .#{$component}--icon-and-text & {
-          top: 4px;
-          right: calc(50% - 20px);
+    }
+
+    // ACTIVE TAB STATES - PRIMARY VARIANT
+    .#{$container}--primary & {
+        // Active Tab Base State - Apply to primary variant
+        &--active {
+            color: t.color("primary");
+            border-radius: 0;
+            .#{$component}-icon {
+                color: t.color("primary");
+            }
+
+            // Hover state for active tabs
+            &:hover,
+            &.#{$component}--hover {
+                background-color: t.alpha("primary", 0.08);
+            }
+
+            // Focused state for active tabs
+            &:focus-visible,
+            &.#{$component}--focus {
+                background-color: t.alpha("primary", 0.1);
+                outline-color: t.color("primary");
+            }
+
+            // Pressed state for active tabs
+            &:active,
+            &.#{$component}--pressed {
+                background-color: t.alpha("primary", 0.12);
+                border-radius: 5px 5px 0 0;
+            }
         }
-      }
+
+        // Inactive Tabs - Primary variant
+        &:not(.#{$component}--active):not(.#{$component}--disabled):not(
+                :disabled
+            ) {
+            color: t.color("on-surface-variant");
+
+            // Hover state for inactive tabs
+            &:hover,
+            &.#{$component}--hover {
+                background-color: t.alpha("on-surface-variant", 0.08);
+            }
+
+            // Focused state for inactive tabs
+            &:focus-visible,
+            &.#{$component}--focus {
+                background-color: t.alpha("on-surface-variant", 0.1);
+                outline-color: t.color("on-surface-variant");
+            }
+
+            // Pressed state for inactive tabs
+            &:active,
+            &.#{$component}--pressed {
+                background-color: t.alpha("on-surface-variant", 0.12);
+                border-radius: 5px 5px 0 0;
+            }
+        }
     }
-  }
-  
-  // ACTIVE TAB STATES - PRIMARY VARIANT
-  .#{$container}--primary & {
-    // Active Tab Base State - Apply to primary variant
-    &--active {
-      color: t.color('primary');
-      
-      .#{$component}-icon {
-        color: t.color('primary');
-      }
-      
-      // Hover state for active tabs
-      &:hover, &.#{$component}--hover {
-        background-color: t.alpha('primary', 0.08);
-      }
-      
-      // Focused state for active tabs
-      &:focus-visible, &.#{$component}--focus {
-        background-color: t.alpha('primary', 0.1);
-        outline-color: t.color('primary');
-      }
-      
-      // Pressed state for active tabs
-      &:active, &.#{$component}--pressed {
-        background-color: t.alpha('primary', 0.12);
-        border-radius: 5px 5px 0 0;
-      }
+
+    // ACTIVE TAB STATES - SECONDARY VARIANT
+    .#{$container}--secondary & {
+        // Active Tab - Secondary variant
+        &--active {
+            color: t.color("on-surface");
+            border-radius: 0;
+            .#{$component}-icon {
+                color: t.color("on-surface");
+            }
+
+            // Hover state for active tabs - secondary
+            &:hover,
+            &.#{$component}--hover {
+                background-color: t.alpha("on-surface", 0.08);
+            }
+
+            // Focused state for active tabs - secondary
+            &:focus-visible,
+            &.#{$component}--focus {
+                background-color: t.alpha("on-surface", 0.1);
+                outline-color: t.color("on-surface");
+            }
+
+            // Pressed state for active tabs - secondary
+            &:active,
+            &.#{$component}--pressed {
+                background-color: t.alpha("on-surface", 0.12);
+            }
+        }
+
+        // Inactive Tabs - Secondary variant
+        &:not(.#{$component}--active):not(.#{$component}--disabled):not(
+                :disabled
+            ) {
+            color: t.color("on-surface-variant");
+
+            // Hover state for inactive tabs - secondary
+            &:hover,
+            &.#{$component}--hover {
+                background-color: t.alpha("on-surface-variant", 0.08);
+            }
+
+            // Focused state for inactive tabs - secondary
+            &:focus-visible,
+            &.#{$component}--focus {
+                background-color: t.alpha("on-surface-variant", 0.1);
+                outline-color: t.color("on-surface-variant");
+            }
+
+            // Pressed state for inactive tabs - secondary
+            &:active,
+            &.#{$component}--pressed {
+                background-color: t.alpha("on-surface-variant", 0.12);
+                border-radius: 5px 5px 0 0;
+            }
+        }
     }
-    
-    // Inactive Tabs - Primary variant
-    &:not(.#{$component}--active):not(.#{$component}--disabled):not(:disabled) {
-      color: t.color('on-surface-variant');
-      
-      // Hover state for inactive tabs
-      &:hover, &.#{$component}--hover {
-        background-color: t.alpha('on-surface-variant', 0.08);
-      }
-      
-      // Focused state for inactive tabs
-      &:focus-visible, &.#{$component}--focus {
-        background-color: t.alpha('on-surface-variant', 0.1);
-        outline-color: t.color('on-surface-variant');
-      }
-      
-      // Pressed state for inactive tabs
-      &:active, &.#{$component}--pressed {
-        background-color: t.alpha('on-surface-variant', 0.12);
-        border-radius: 5px 5px 0 0;
-      }
+
+    // Ripple effect styling
+    .#{$component}-ripple {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        overflow: hidden;
+        border-radius: inherit;
+        pointer-events: none;
+
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            transform: scale(0);
+            pointer-events: none;
+            background-color: currentColor;
+            opacity: 0.1;
+            transform-origin: center;
+        }
     }
-  }
-  
-  // ACTIVE TAB STATES - SECONDARY VARIANT
-  .#{$container}--secondary & {
-    // Active Tab - Secondary variant
-    &--active {
-      color: t.color('on-surface');
-      
-      .#{$component}-icon {
-        color: t.color('on-surface');
-      }
-      
-      // Hover state for active tabs - secondary
-      &:hover, &.#{$component}--hover {
-        background-color: t.alpha('on-surface', 0.08);
-      }
-      
-      // Focused state for active tabs - secondary
-      &:focus-visible, &.#{$component}--focus {
-        background-color: t.alpha('on-surface', 0.1);
-        outline-color: t.color('on-surface');
-      }
-      
-      // Pressed state for active tabs - secondary
-      &:active, &.#{$component}--pressed {
-        background-color: t.alpha('on-surface', 0.12);
-      }
-    }
-    
-    // Inactive Tabs - Secondary variant
-    &:not(.#{$component}--active):not(.#{$component}--disabled):not(:disabled) {
-      color: t.color('on-surface-variant');
-      
-      // Hover state for inactive tabs - secondary
-      &:hover, &.#{$component}--hover {
-        background-color: t.alpha('on-surface-variant', 0.08);
-      }
-      
-      // Focused state for inactive tabs - secondary
-      &:focus-visible, &.#{$component}--focus {
-        background-color: t.alpha('on-surface-variant', 0.1);
-        outline-color: t.color('on-surface-variant');
-      }
-      
-      // Pressed state for inactive tabs - secondary
-      &:active, &.#{$component}--pressed {
-        background-color: t.alpha('on-surface-variant', 0.12);
-        border-radius: 5px 5px 0 0;
-      }
-    }
-  }
-  
-  // Ripple effect styling
-  .#{$component}-ripple {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    overflow: hidden;
-    border-radius: inherit;
-    pointer-events: none;
-    
-    .ripple {
-      position: absolute;
-      border-radius: 50%;
-      transform: scale(0);
-      pointer-events: none;
-      background-color: currentColor;
-      opacity: 0.1;
-      transform-origin: center;
-    }
-  }
 }
 
 // Tab panel styles
 .#{base.$prefix}-tab-panel {
-  padding: 16px;
-  
-  &[hidden] {
-    display: none;
-  }
+    padding: 16px;
+
+    &[hidden] {
+        display: none;
+    }
 }
 
 // Scroll indicators
 .#{$container} {
-  &-scroll-indicator {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    width: 24px;
-    pointer-events: none;
-    z-index: 1;
-    opacity: 0;
-    transition: opacity 0.2s ease;
-    
-    &.visible {
-      opacity: 1;
+    &-scroll-indicator {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 24px;
+        pointer-events: none;
+        z-index: 1;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+
+        &.visible {
+            opacity: 1;
+        }
+
+        &--left {
+            left: 0;
+            background: linear-gradient(
+                to right,
+                t.color("surface"),
+                transparent
+            );
+        }
+
+        &--right {
+            right: 0;
+            background: linear-gradient(
+                to left,
+                t.color("surface"),
+                transparent
+            );
+        }
+
+        &--shadow {
+            &.#{$container}-scroll-indicator--left {
+                box-shadow: 2px 0 4px -2px rgba(0, 0, 0, 0.2);
+                background: none;
+            }
+
+            &.#{$container}-scroll-indicator--right {
+                box-shadow: -2px 0 4px -2px rgba(0, 0, 0, 0.2);
+                background: none;
+            }
+        }
     }
-    
-    &--left {
-      left: 0;
-      background: linear-gradient(to right, t.color('surface'), transparent);
+
+    &-scroll-button {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: t.color("surface-container-high");
+        border: none;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 2;
+
+        &:disabled {
+            opacity: 0.38;
+            cursor: default;
+        }
+
+        svg {
+            width: 24px;
+            height: 24px;
+            fill: t.color("on-surface");
+        }
+
+        &--left {
+            left: 4px;
+        }
+
+        &--right {
+            right: 4px;
+        }
+
+        &:focus {
+            outline: none;
+        }
+
+        &:focus-visible {
+            outline: 2px solid t.color("primary");
+        }
     }
-    
-    &--right {
-      right: 0;
-      background: linear-gradient(to left, t.color('surface'), transparent);
-    }
-    
-    &--shadow {
-      &.#{$container}-scroll-indicator--left {
-        box-shadow: 2px 0 4px -2px rgba(0, 0, 0, 0.2);
-        background: none;
-      }
-      
-      &.#{$container}-scroll-indicator--right {
-        box-shadow: -2px 0 4px -2px rgba(0, 0, 0, 0.2);
-        background: none;
-      }
-    }
-  }
-  
-  &-scroll-button {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background-color: t.color('surface-container-high');
-    border: none;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    z-index: 2;
-    
-    &:disabled {
-      opacity: 0.38;
-      cursor: default;
-    }
-    
-    svg {
-      width: 24px;
-      height: 24px;
-      fill: t.color('on-surface');
-    }
-    
-    &--left {
-      left: 4px;
-    }
-    
-    &--right {
-      right: 4px;
-    }
-    
-    &:focus {
-      outline: none;
-    }
-    
-    &:focus-visible {
-      outline: 2px solid t.color('primary');
-    }
-  }
 }
 
 // Responsive styles for small screens
 .#{$container}--responsive-small {
-  .#{$component} {
-    padding: 0 12px;
-    min-width: 72px;
-  }
+    .#{$component} {
+        padding: 0 12px;
+        min-width: 72px;
+    }
 }
