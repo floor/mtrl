@@ -15,7 +15,7 @@ export const createHandlers = (
   config: SliderConfig,
   state,
   uiRenderer,
-  eventHelpers
+  eventHelpers,
 ) => {
   // Get required elements from structure (with fallbacks)
   // Check both direct component properties (from withDom) and components object (legacy)
@@ -87,11 +87,11 @@ export const createHandlers = (
     // Clear local focus indicators
     if (handle)
       handle.classList.remove(
-        `${state.component.getClass("slider-handle")}--focused`
+        `${state.component.getClass("slider-handle")}--focused`,
       );
     if (secondHandle)
       secondHandle.classList.remove(
-        `${state.component.getClass("slider-handle")}--focused`
+        `${state.component.getClass("slider-handle")}--focused`,
       );
 
     // Clear global focus indicators
@@ -103,7 +103,7 @@ export const createHandlers = (
 
       if (
         document.activeElement?.classList.contains(
-          state.component.getClass("slider-handle")
+          state.component.getClass("slider-handle"),
         )
       ) {
         (document.activeElement as HTMLElement).blur();
@@ -125,7 +125,10 @@ export const createHandlers = (
       return;
     }
 
-    e.preventDefault();
+    // Only preventDefault for mouse events to allow passive touchstart
+    if (e.type === "mousedown") {
+      e.preventDefault();
+    }
     e.stopPropagation();
 
     hideAllBubbles();
@@ -167,7 +170,10 @@ export const createHandlers = (
       return;
     }
 
-    e.preventDefault();
+    // Only preventDefault for mouse events to allow passive touchstart
+    if (e.type === "mousedown") {
+      e.preventDefault();
+    }
     hideAllBubbles();
     clearKeyboardFocus();
 
@@ -283,7 +289,7 @@ export const createHandlers = (
         hasActualDragStarted = true;
         state.dragging = true;
         state.component.element.classList.add(
-          `${state.component.getClass("slider")}--dragging`
+          `${state.component.getClass("slider")}--dragging`,
         );
       }
 
@@ -351,7 +357,7 @@ export const createHandlers = (
     state.pressed = false; // Clear pressed state
     hasActualDragStarted = false;
     state.component.element.classList.remove(
-      `${state.component.getClass("slider")}--dragging`
+      `${state.component.getClass("slider")}--dragging`,
     );
 
     // Hide bubble with delay
@@ -475,7 +481,7 @@ export const createHandlers = (
 
     // Add focus class and show bubble
     currentHandle.classList.add(
-      `${state.component.getClass("slider-handle")}--focused`
+      `${state.component.getClass("slider-handle")}--focused`,
     );
     showActiveBubble(isSecondHandle ? secondValueBubble : valueBubble);
     state.activeBubble = isSecondHandle ? secondValueBubble : valueBubble;
@@ -489,7 +495,7 @@ export const createHandlers = (
   const handleBlur = (e, isSecondHandle = false) => {
     const handleElement = isSecondHandle ? secondHandle : handle;
     handleElement.classList.remove(
-      `${state.component.getClass("slider-handle")}--focused`
+      `${state.component.getClass("slider-handle")}--focused`,
     );
 
     // Only hide bubble if not tabbing to another handle
@@ -509,7 +515,7 @@ export const createHandlers = (
   const setupEventListeners = () => {
     if (!state.component || !handle) {
       console.warn(
-        "Cannot set up event listeners: missing component or handle"
+        "Cannot set up event listeners: missing component or handle",
       );
       return;
     }
@@ -517,17 +523,17 @@ export const createHandlers = (
     // Use container for track events instead of track for better UX
     container.addEventListener("mousedown", handleTrackMouseDown);
     container.addEventListener("touchstart", handleTrackMouseDown, {
-      passive: false,
+      passive: true,
     });
 
     // Handle events
     handle.addEventListener("mousedown", (e) =>
-      handleHandleMouseDown(e, false)
+      handleHandleMouseDown(e, false),
     );
     handle.addEventListener(
       "touchstart",
       (e) => handleHandleMouseDown(e, false),
-      { passive: false }
+      { passive: true },
     );
     handle.addEventListener("keydown", (e) => handleKeyDown(e, false));
     handle.addEventListener("focus", (e) => handleFocus(e, false));
@@ -536,12 +542,12 @@ export const createHandlers = (
     // Second handle events for range slider
     if (config.range && secondHandle) {
       secondHandle.addEventListener("mousedown", (e) =>
-        handleHandleMouseDown(e, true)
+        handleHandleMouseDown(e, true),
       );
       secondHandle.addEventListener(
         "touchstart",
         (e) => handleHandleMouseDown(e, true),
-        { passive: false }
+        { passive: true },
       );
       secondHandle.addEventListener("keydown", (e) => handleKeyDown(e, true));
       secondHandle.addEventListener("focus", (e) => handleFocus(e, true));
@@ -564,10 +570,10 @@ export const createHandlers = (
     // Clean up handle listeners
     if (handle) {
       handle.removeEventListener("mousedown", (e) =>
-        handleHandleMouseDown(e, false)
+        handleHandleMouseDown(e, false),
       );
       handle.removeEventListener("touchstart", (e) =>
-        handleHandleMouseDown(e, false)
+        handleHandleMouseDown(e, false),
       );
       handle.removeEventListener("keydown", (e) => handleKeyDown(e, false));
       handle.removeEventListener("focus", (e) => handleFocus(e, false));
@@ -577,13 +583,13 @@ export const createHandlers = (
     // Clean up second handle listeners
     if (config.range && secondHandle) {
       secondHandle.removeEventListener("mousedown", (e) =>
-        handleHandleMouseDown(e, true)
+        handleHandleMouseDown(e, true),
       );
       secondHandle.removeEventListener("touchstart", (e) =>
-        handleHandleMouseDown(e, true)
+        handleHandleMouseDown(e, true),
       );
       secondHandle.removeEventListener("keydown", (e) =>
-        handleKeyDown(e, true)
+        handleKeyDown(e, true),
       );
       secondHandle.removeEventListener("focus", (e) => handleFocus(e, true));
       secondHandle.removeEventListener("blur", (e) => handleBlur(e, true));

@@ -124,6 +124,11 @@ const SVG_TAGS = [
 ];
 
 /**
+ * Touch events that should use passive listeners for better scroll performance
+ */
+const PASSIVE_TOUCH_EVENTS = new Set(["touchstart", "touchmove"]);
+
+/**
  * Set up event forwarding for an element
  */
 const setupEventForwarding = (
@@ -157,7 +162,12 @@ const setupEventForwarding = (
     };
 
     (element as any).__eventHandlers[nativeEvent] = handler;
-    element.addEventListener(nativeEvent, handler);
+
+    // Use passive listeners for touch events to avoid scroll-blocking warnings
+    const options = PASSIVE_TOUCH_EVENTS.has(nativeEvent)
+      ? { passive: true }
+      : undefined;
+    element.addEventListener(nativeEvent, handler, options);
   }
 };
 
