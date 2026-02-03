@@ -2,11 +2,11 @@
 
 /**
  * @module Fab
- * 
+ *
  * Floating Action Button (FAB) component following Material Design 3 guidelines.
  * FABs are circular buttons that represent the primary action in an application.
  * They are prominently displayed, typically in a fixed position overlaid on the UI.
- * 
+ *
  * Features:
  * - Multiple variants (primary, secondary, tertiary, surface)
  * - Three size options (small, default, large)
@@ -14,7 +14,7 @@
  * - Icon support with customization
  * - Ripple effect on interaction
  * - Accessibility support
- * 
+ *
  * @example
  * ```typescript
  * // Create a primary FAB with a plus icon
@@ -23,22 +23,22 @@
  *   position: 'bottom-right',
  *   ariaLabel: 'Add new item'
  * });
- * 
+ *
  * // Attach to DOM and add click handler
  * container.appendChild(fab.element);
  * fab.on('click', () => {
  *   console.log('FAB clicked');
  * });
  * ```
- * 
+ *
  * @category Components
  */
 
-export { default, default as createFab } from './fab';
+export { default, default as createFab } from "./fab";
 export {
   FabConfig,
   FabComponent,
   FabVariant,
   FabSize,
-  FabPosition
-} from './types';
+  FabPosition,
+} from "./types";

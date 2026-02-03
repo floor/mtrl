@@ -103,14 +103,5 @@ export {
   withElevation,
 } from "./features";
 
-// Export card constants
-export {
-  CARD_VARIANTS,
-  CARD_ELEVATIONS,
-  CARD_WIDTHS,
-  CARD_CORNER_RADIUS,
-  CARD_ASPECT_RATIOS,
-  CARD_ACTION_ALIGNMENT,
-  CARD_MEDIA_POSITION,
-  CARD_CLASSES,
-} from "./constants";
+// NOTE: Constants are exported from './constants' directly
+// Import constants from 'mtrl/components/card/constants' for tree-shaking

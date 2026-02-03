@@ -37,6 +37,11 @@
       "import": "./dist/components/*/index.js",
       "types": "./dist/components/*/index.d.ts"
     },
+    "./components/*/constants": {
+      "development": "./src/components/*/constants.ts",
+      "import": "./dist/components/*/constants.js",
+      "types": "./dist/components/*/constants.d.ts"
+    },
     "./core": {
       "development": "./src/core/index.ts",
       "import": "./dist/core/index.js",
