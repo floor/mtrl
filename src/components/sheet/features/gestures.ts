@@ -131,7 +131,7 @@ export const withGestures = (config) => (component) => {
     let transform = 0;
     if (component.element.style.transform) {
       const match = component.element.style.transform.match(
-        /translate[XY]\(([^p]+)px\)/
+        /translate[XY]\(([^p]+)px\)/,
       );
       transform = match ? parseFloat(match[1]) : 0;
     }
@@ -156,8 +156,8 @@ export const withGestures = (config) => (component) => {
   };
 
   // Add event listeners to drag handle
-  dragHandle.addEventListener("touchstart", handleDragStart);
-  dragHandle.addEventListener("touchmove", handleDragMove);
+  dragHandle.addEventListener("touchstart", handleDragStart, { passive: true });
+  dragHandle.addEventListener("touchmove", handleDragMove, { passive: true });
   dragHandle.addEventListener("touchend", handleDragEnd);
   dragHandle.addEventListener("mousedown", handleDragStart);
 

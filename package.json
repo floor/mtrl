@@ -1,6 +1,6 @@
 {
   "name": "mtrl",
-  "version": "0.6.2",
+  "version": "0.6.3",
   "description": "A functional TypeScript/JavaScript component library with composable architecture based on Material Design 3",
   "author": "floor",
   "license": "MIT License",
@@ -19,6 +19,7 @@
     "tested",
     "type-safe"
   ],
+  "sideEffects": false,
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -30,7 +31,27 @@
       "require": "./dist/index.cjs",
       "types": "./dist/index.d.ts"
     },
-    "./styles": "./dist/styles.css"
+    "./styles": "./dist/styles.css",
+    "./components/*": {
+      "development": "./src/components/*/index.ts",
+      "import": "./dist/components/*/index.js",
+      "types": "./dist/components/*/index.d.ts"
+    },
+    "./components/*/constants": {
+      "development": "./src/components/*/constants.ts",
+      "import": "./dist/components/*/constants.js",
+      "types": "./dist/components/*/constants.d.ts"
+    },
+    "./core": {
+      "development": "./src/core/index.ts",
+      "import": "./dist/core/index.js",
+      "types": "./dist/core/index.d.ts"
+    },
+    "./core/*": {
+      "development": "./src/core/*/index.ts",
+      "import": "./dist/core/*/index.js",
+      "types": "./dist/core/*/index.d.ts"
+    }
   },
   "files": [
     "dist",

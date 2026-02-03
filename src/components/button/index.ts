@@ -7,3 +7,4 @@
 
 export { default } from "./button";
 export type { ButtonConfig, ButtonComponent, ButtonVariant } from "./types";
+export type { ButtonSize, ButtonShape } from "./constants";

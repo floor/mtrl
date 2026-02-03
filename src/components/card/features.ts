@@ -155,12 +155,12 @@ export const withElevation = (component: BaseComponent): BaseComponent => {
   if (config.variant === "elevated") {
     component.element.style.setProperty(
       "--card-elevation",
-      String(CARD_ELEVATION_LEVELS.LEVEL1)
+      String(CARD_ELEVATION_LEVELS.LEVEL1),
     );
   } else {
     component.element.style.setProperty(
       "--card-elevation",
-      String(CARD_ELEVATION_LEVELS.LEVEL0)
+      String(CARD_ELEVATION_LEVELS.LEVEL0),
     );
   }
 
@@ -201,7 +201,7 @@ export const withElevation = (component: BaseComponent): BaseComponent => {
 export const withExpandable =
   (config: ExpandableConfig = {}) =>
   (
-    component: BaseComponent
+    component: BaseComponent,
   ): BaseComponent & { expandable: ExpandableFeature } => {
     const initialExpanded = config.initialExpanded || false;
     let isExpanded = initialExpanded;
@@ -222,7 +222,7 @@ export const withExpandable =
 
     // Add to card as action if not already present
     const actionsContainer = component.element.querySelector(
-      `.${PREFIX}-card-actions`
+      `.${PREFIX}-card-actions`,
     );
     if (actionsContainer) {
       actionsContainer.appendChild(expandButton);
@@ -268,14 +268,14 @@ export const withExpandable =
         expandableContent.style.display = expanded ? "block" : "none";
         expandableContent.setAttribute(
           "aria-hidden",
-          expanded ? "false" : "true"
+          expanded ? "false" : "true",
         );
       }
 
       expandButton.setAttribute("aria-expanded", expanded ? "true" : "false");
       expandButton.setAttribute(
         "aria-label",
-        expanded ? "Collapse content" : "Expand content"
+        expanded ? "Collapse content" : "Expand content",
       );
 
       if (expanded) {
@@ -349,7 +349,7 @@ export const withExpandable =
 export const withSwipeable =
   (config: SwipeableConfig = {}) =>
   (
-    component: BaseComponent
+    component: BaseComponent,
   ): BaseComponent & { swipeable: SwipeableFeature } => {
     const threshold = config.threshold || 100;
     let startX = 0;
@@ -358,7 +358,7 @@ export const withSwipeable =
     // Add accessibility information for swipeable cards
     component.element.setAttribute(
       "aria-description",
-      "Swipeable card. Swipe left or right to perform actions."
+      "Swipeable card. Swipe left or right to perform actions.",
     );
 
     // Create hidden buttons for keyboard accessibility
@@ -450,11 +450,13 @@ export const withSwipeable =
     // Add event listeners
     component.element.addEventListener(
       "touchstart",
-      handleTouchStart as EventListener
+      handleTouchStart as EventListener,
+      { passive: true },
     );
     component.element.addEventListener(
       "touchmove",
-      handleTouchMove as EventListener
+      handleTouchMove as EventListener,
+      { passive: true },
     );
     component.element.addEventListener("touchend", handleTouchEnd);
 

@@ -45,68 +45,15 @@ export {
   clearGlobalDefaults,
 };
 
-// Export constants individually to avoid naming conflicts
-export {
-  // Badge related constants
-  BADGE_VARIANTS,
-  BADGE_COLORS,
-  BADGE_POSITIONS,
-  BADGE_MAX_CHARACTERS,
-
-  // Button related constants
-  BUTTON_VARIANTS,
-  BUTTON_TYPES,
-  BUTTON_CLASSES,
-  BUTTON_SIZES,
-  BUTTON_SHAPES,
-  DEFAULT_RIPPLE_CONFIG,
-
-  // Card related constants
-  CARD_VARIANTS,
-  CARD_ELEVATIONS,
-  CARD_WIDTHS,
-  CARD_ASPECT_RATIOS,
-
-  // Checkbox related constants
-  CHECKBOX_VARIANTS,
-  CHECKBOX_LABEL_POSITION,
-
-  // Chip related constants
-  CHIP_VARIANTS,
-  CHIP_EVENTS,
-  CHIPS_EVENTS,
-
-  // Datepicker related constants
-  DATEPICKER_VARIANTS,
-  DATEPICKER_VIEWS,
-  DATEPICKER_SELECTION_MODES,
-  DAY_NAMES,
-  MONTH_NAMES,
-  MONTH_NAMES_SHORT,
-  DEFAULT_DATE_FORMAT,
-
-  // Dialog related constants
-  DIALOG_SIZES,
-  DIALOG_ANIMATIONS,
-  DIALOG_FOOTER_ALIGNMENTS,
-  DIALOG_BUTTON_VARIANTS,
-  DEFAULT_CONFIRM_BUTTON_TEXT,
-  DEFAULT_CANCEL_BUTTON_TEXT,
-
-  // FAB related constants
-  FAB_VARIANTS,
-  FAB_SIZES,
-  FAB_POSITIONS,
-
-  // Sheet related constants
-  SHEET_VARIANTS,
-  SHEET_POSITIONS,
-
-  // Tab related constants
-  TAB_VARIANTS,
-  TAB_STATES,
-  TABS_EVENTS,
-
-  // Textfield related constants
-  TEXTFIELD_VARIANTS,
-} from "./constants";
+// NOTE: Constants are no longer exported from the main entry point
+// to enable proper tree-shaking. Import constants directly from
+// component paths:
+//
+// Before (no longer works):
+//   import { BUTTON_VARIANTS } from 'mtrl'
+//
+// After:
+//   import { BUTTON_VARIANTS } from 'mtrl/components/button/constants'
+//
+// Or use the component's index which re-exports its constants:
+//   import { BUTTON_VARIANTS } from 'mtrl/components/button'

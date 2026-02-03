@@ -7,12 +7,12 @@
  * or highlights an element requiring attention.
  */
 
-export { default } from './badge';
+export { default } from "./badge";
 
-export type { 
-  BadgeConfig, 
-  BadgeComponent, 
-  BadgeVariant, 
-  BadgeColor, 
-  BadgePosition 
-} from './types';
+export type {
+  BadgeConfig,
+  BadgeComponent,
+  BadgeVariant,
+  BadgeColor,
+  BadgePosition,
+} from "./types";

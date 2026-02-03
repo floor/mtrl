@@ -513,22 +513,70 @@ const buttonShowcase = [
 
 ### Build Configuration
 
-**Package Exports:**
+**Package Exports (tree-shaking optimized):**
 ```json
 {
   "name": "mtrl",
   "type": "module",
+  "sideEffects": false,
   "exports": {
     ".": {
+      "development": "./src/index.ts",
       "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
     },
+    "./styles": "./dist/styles.css",
     "./components/*": {
-      "import": "./dist/components/*.js",
-      "require": "./dist/components/*.cjs"
+      "development": "./src/components/*/index.ts",
+      "import": "./dist/components/*/index.js",
+      "types": "./dist/components/*/index.d.ts"
+    },
+    "./components/*/constants": {
+      "development": "./src/components/*/constants.ts",
+      "import": "./dist/components/*/constants.js",
+      "types": "./dist/components/*/constants.d.ts"
+    },
+    "./core": {
+      "development": "./src/core/index.ts",
+      "import": "./dist/core/index.js",
+      "types": "./dist/core/index.d.ts"
+    },
+    "./core/*": {
+      "development": "./src/core/*/index.ts",
+      "import": "./dist/core/*/index.js",
+      "types": "./dist/core/*/index.d.ts"
     }
   }
 }
+```
+
+### Tree-Shaking Import Patterns
+
+Constants are **NOT** exported from main entry points to enable tree-shaking. Import them directly from constants files:
+
+| Import Type | Path |
+|-------------|------|
+| Component creators | `import { createButton } from 'mtrl'` |
+| Button constants | `import { BUTTON_VARIANTS } from 'mtrl/components/button/constants'` |
+| Slider constants | `import { SLIDER_SIZES } from 'mtrl/components/slider/constants'` |
+| Card constants | `import { CARD_VARIANTS } from 'mtrl/components/card/constants'` |
+| Card features | `import { withLoading } from 'mtrl/components/card'` |
+| Direct component import | `import createButton from 'mtrl/components/button'` |
+| Core utilities | `import { addClass, removeClass } from 'mtrl/core/dom'` |
+
+**Example:**
+```typescript
+// ✅ Optimal - tree-shakeable
+import { createButton } from 'mtrl';
+import { BUTTON_VARIANTS, BUTTON_SIZES } from 'mtrl/components/button/constants';
+
+// ✅ Also optimal - direct component import
+import createSlider from 'mtrl/components/slider';
+import { SLIDER_COLORS } from 'mtrl/components/slider/constants';
+
+// ❌ No longer works - constants removed from main entry
+import { createButton, BUTTON_VARIANTS } from 'mtrl';
 ```
 
 ### TypeScript Configuration
