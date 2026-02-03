@@ -2,133 +2,17 @@
 /**
  * Component library exports
  *
- * This file re-exports all components and their associated types, constants,
- * and utilities from the mtrl library. Both named exports and default exports
- * are handled to provide a consistent public API while maintaining tree-shaking
- * compatibility.
+ * This file exports all component creators and their types.
+ * Constants are NOT re-exported here to enable proper tree-shaking.
+ * Import constants directly from component paths if needed.
  *
  * @packageDocumentation
  */
 
-// Export list types with explicit naming for the ambiguous SelectEvent
-export {
-  LIST_DEFAULTS,
-  LIST_TYPES,
-  LIST_SELECTION_MODES,
-  LIST_EVENTS,
-  LIST_SCROLL_POSITIONS,
-  LIST_CLASSES,
-} from "./list/constants";
+// ============================================================================
+// Component Creators
+// ============================================================================
 
-export type {
-  ListConfig,
-  ListComponent,
-  SelectEvent as ListSelectEvent, // Rename to avoid collision
-  LoadEvent,
-} from "./list/types";
-
-// Export button group types and constants
-export {
-  BUTTON_GROUP_VARIANTS,
-  BUTTON_GROUP_ORIENTATIONS,
-  BUTTON_GROUP_DENSITY,
-  BUTTON_GROUP_EVENTS,
-  BUTTON_GROUP_DEFAULTS,
-  BUTTON_GROUP_CLASSES,
-  BUTTON_GROUP_HEIGHTS,
-  BUTTON_GROUP_RADII,
-} from "./button-group/constants";
-
-export type {
-  ButtonGroupConfig,
-  ButtonGroupComponent,
-  ButtonGroupItemConfig,
-  ButtonGroupEvent,
-  ButtonGroupEventType,
-  ButtonGroupVariant,
-  ButtonGroupOrientation,
-  ButtonGroupDensity,
-} from "./button-group/types";
-
-// Export select types with explicit naming
-export {
-  SELECT_VARIANTS,
-  SELECT_PLACEMENT,
-  SELECT_INTERACTION,
-  SELECT_EVENTS,
-  SELECT_ICONS,
-  SELECT_DEFAULTS,
-  SELECT_CLASSES,
-} from "./select/constants";
-
-export type {
-  SelectConfig,
-  SelectComponent,
-  SelectOption,
-  SelectEvent, // Keep the original name since select is more commonly used
-  SelectChangeEvent,
-} from "./select/types";
-
-// Re-export all named exports from components
-export * from "./badge";
-export * from "./bottom-app-bar";
-export * from "./button";
-export * from "./button-group";
-export * from "./card";
-export * from "./carousel";
-export * from "./checkbox";
-export * from "./chips";
-export * from "./datepicker";
-export * from "./dialog";
-export * from "./fab";
-export * from "./extended-fab";
-export * from "./icon-button";
-export * from "./menu";
-export * from "./navigation";
-
-// Progress - explicit exports to avoid bundler issues with re-exports
-export {
-  PROGRESS_VARIANTS,
-  PROGRESS_SHAPES,
-  PROGRESS_EVENTS,
-  PROGRESS_DEFAULTS,
-  PROGRESS_CLASSES,
-  PROGRESS_MEASUREMENTS,
-  PROGRESS_THICKNESS,
-} from "./progress/constants";
-export type {
-  ProgressConfig,
-  ProgressComponent,
-  ProgressShape,
-} from "./progress/types";
-
-export * from "./radios";
-export * from "./search";
-export * from "./segmented-button";
-export * from "./sheet";
-export * from "./slider";
-export * from "./snackbar";
-export * from "./switch";
-export * from "./tabs";
-export * from "./textfield";
-export * from "./timepicker";
-export * from "./top-app-bar";
-export * from "./tooltip";
-
-// Explicitly re-export divider items to avoid naming collisions
-export { createDivider } from "./divider";
-export type { DividerConfig } from "./divider/config";
-export type { DividerComponent } from "./divider/types";
-
-// Re-export card content components
-export {
-  createCardContent,
-  createCardHeader,
-  createCardActions,
-  createCardMedia,
-} from "./card/content";
-
-// Explicitly re-export default exports from components
 export { default as createBadge } from "./badge";
 export { default as createBottomAppBar } from "./bottom-app-bar";
 export { default as createButton } from "./button";
@@ -139,6 +23,7 @@ export { default as createCheckbox } from "./checkbox";
 export { createChip, createChips } from "./chips";
 export { default as createDatePicker } from "./datepicker";
 export { default as createDialog } from "./dialog";
+export { createDivider } from "./divider";
 export { default as createFab } from "./fab";
 export { default as createExtendedFab } from "./extended-fab";
 export { default as createIconButton } from "./icon-button";
@@ -162,3 +47,169 @@ export { default as createTextfield } from "./textfield";
 export { default as createTimePicker } from "./timepicker";
 export { default as createTopAppBar } from "./top-app-bar";
 export { default as createTooltip } from "./tooltip";
+
+// Card content components
+export {
+  createCardContent,
+  createCardHeader,
+  createCardActions,
+  createCardMedia,
+} from "./card/content";
+
+// ============================================================================
+// Type Exports (these are erased at compile time, zero bundle impact)
+// ============================================================================
+
+// Badge
+export type { BadgeConfig, BadgeComponent } from "./badge/types";
+
+// Bottom App Bar
+export type { BottomAppBarConfig, BottomAppBar } from "./bottom-app-bar/types";
+
+// Button
+export type {
+  ButtonConfig,
+  ButtonComponent,
+  ButtonVariant,
+} from "./button/types";
+
+// Button Group
+export type {
+  ButtonGroupConfig,
+  ButtonGroupComponent,
+  ButtonGroupItemConfig,
+  ButtonGroupEvent,
+  ButtonGroupEventType,
+  ButtonGroupVariant,
+  ButtonGroupOrientation,
+  ButtonGroupDensity,
+} from "./button-group/types";
+
+// Card
+export type { CardSchema } from "./card/types";
+
+// Carousel
+export type { CarouselConfig, CarouselComponent } from "./carousel/types";
+
+// Checkbox
+export type { CheckboxConfig, CheckboxComponent } from "./checkbox/types";
+
+// Chips
+export type {
+  ChipConfig,
+  ChipComponent,
+  ChipVariant,
+  ChipsConfig,
+  ChipsComponent,
+} from "./chips/types";
+
+// Datepicker
+export type { DatePickerConfig, DatePickerComponent } from "./datepicker/types";
+
+// Dialog
+export type { DialogConfig, DialogComponent } from "./dialog/types";
+
+// Divider
+export type { DividerConfig } from "./divider/config";
+export type { DividerComponent } from "./divider/types";
+
+// FAB
+export type { FabConfig, FabComponent } from "./fab/types";
+
+// Extended FAB
+export type {
+  ExtendedFabConfig,
+  ExtendedFabComponent,
+} from "./extended-fab/types";
+
+// Icon Button
+export type {
+  IconButtonConfig,
+  IconButtonComponent,
+} from "./icon-button/types";
+
+// List
+export type {
+  ListConfig,
+  ListComponent,
+  SelectEvent as ListSelectEvent,
+  LoadEvent,
+} from "./list/types";
+
+// Menu
+export type { MenuConfig, MenuComponent, MenuItem } from "./menu/types";
+
+// Navigation
+export type {
+  NavigationConfig,
+  NavigationComponent,
+  NavItemConfig,
+} from "./navigation/types";
+
+// Progress
+export type {
+  ProgressConfig,
+  ProgressComponent,
+  ProgressShape,
+} from "./progress/types";
+
+// Radios
+export type {
+  RadiosConfig,
+  RadiosComponent,
+  RadioOptionConfig,
+} from "./radios/types";
+
+// Search
+export type { SearchConfig, SearchComponent } from "./search/types";
+
+// Select
+export type {
+  SelectConfig,
+  SelectComponent,
+  SelectOption,
+  SelectEvent,
+  SelectChangeEvent,
+} from "./select/types";
+
+// Segmented Button
+export type {
+  SegmentedButtonConfig,
+  SegmentedButtonComponent,
+} from "./segmented-button/types";
+
+// Sheet
+export type { SheetConfig, SheetComponent } from "./sheet/types";
+
+// Slider
+export type {
+  SliderConfig,
+  SliderComponent,
+  SliderEvent,
+} from "./slider/types";
+
+// Snackbar
+export type { SnackbarConfig, SnackbarComponent } from "./snackbar/types";
+
+// Switch
+export type { SwitchConfig, SwitchComponent } from "./switch/types";
+
+// Tabs
+export type {
+  TabsConfig,
+  TabsComponent,
+  TabConfig,
+  TabComponent,
+} from "./tabs/types";
+
+// Textfield
+export type { TextfieldConfig, TextfieldComponent } from "./textfield/types";
+
+// Timepicker
+export type { TimePickerConfig, TimePickerComponent } from "./timepicker/types";
+
+// Top App Bar
+export type { TopAppBarConfig, TopAppBar } from "./top-app-bar/types";
+
+// Tooltip
+export type { TooltipConfig, TooltipComponent } from "./tooltip/types";

@@ -19,6 +19,7 @@
     "tested",
     "type-safe"
   ],
+  "sideEffects": false,
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -30,7 +31,22 @@
       "require": "./dist/index.cjs",
       "types": "./dist/index.d.ts"
     },
-    "./styles": "./dist/styles.css"
+    "./styles": "./dist/styles.css",
+    "./components/*": {
+      "development": "./src/components/*/index.ts",
+      "import": "./dist/components/*/index.js",
+      "types": "./dist/components/*/index.d.ts"
+    },
+    "./core": {
+      "development": "./src/core/index.ts",
+      "import": "./dist/core/index.js",
+      "types": "./dist/core/index.d.ts"
+    },
+    "./core/*": {
+      "development": "./src/core/*/index.ts",
+      "import": "./dist/core/*/index.js",
+      "types": "./dist/core/*/index.d.ts"
+    }
   },
   "files": [
     "dist",
