@@ -61,6 +61,45 @@ yarn add mtrl
 bun add mtrl
 ```
 
+## Tree-Shaking Optimized Imports
+
+mtrl is optimized for tree-shaking. Constants are exported separately from component creators to minimize bundle size.
+
+### Import Patterns
+
+| Import Type | Path |
+|-------------|------|
+| Component creators | `import { createButton } from 'mtrl'` |
+| Button constants | `import { BUTTON_VARIANTS } from 'mtrl/components/button/constants'` |
+| Slider constants | `import { SLIDER_SIZES } from 'mtrl/components/slider/constants'` |
+| Card constants | `import { CARD_VARIANTS } from 'mtrl/components/card/constants'` |
+| Direct component import | `import createButton from 'mtrl/components/button'` |
+| Core utilities | `import { addClass, removeClass } from 'mtrl/core/dom'` |
+
+### Example
+
+```typescript
+// ✅ Optimal - only imports what you need
+import { createButton } from 'mtrl';
+import { BUTTON_VARIANTS, BUTTON_SIZES } from 'mtrl/components/button/constants';
+
+const button = createButton({
+  text: 'Submit',
+  variant: BUTTON_VARIANTS.FILLED,
+  size: BUTTON_SIZES.LARGE
+});
+
+// ✅ Also optimal - direct component import
+import createSlider from 'mtrl/components/slider';
+import { SLIDER_COLORS } from 'mtrl/components/slider/constants';
+
+const slider = createSlider({
+  color: SLIDER_COLORS.PRIMARY
+});
+```
+
+**Note:** Constants are NOT exported from main entry points. Always import them from the component's constants file.
+
 ## Component Architecture
 
 Let's look at how mtrl components are constructed:
