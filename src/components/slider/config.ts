@@ -37,7 +37,7 @@ export const createBaseConfig = (config: SliderConfig = {}): SliderConfig => {
   const baseConfig = createComponentConfig(
     defaultConfig,
     config,
-    "slider"
+    "slider",
   ) as SliderConfig;
 
   // Schema is no longer needed as we use direct DOM creation
@@ -70,15 +70,15 @@ export const getElementConfig = (config: SliderConfig) => {
     .filter(Boolean)
     .join(" ");
 
-  // Add aria attributes for the slider
+  // Root element is a presentational wrapper — ARIA slider attributes
+  // belong on the handle elements (set in dom.ts), not here.
   const attributes: Record<string, string> = {
     tabindex: "-1",
-    role: "none",
-    "aria-disabled": config.disabled ? "true" : "false",
-    "aria-valuemin": String(config.min || 0),
-    "aria-valuemax": String(config.max || 100),
-    "aria-valuenow": String(config.value || config.min || 0),
   };
+
+  if (config.disabled) {
+    attributes["aria-disabled"] = "true";
+  }
 
   return createElementConfig(config, {
     tag: "div",

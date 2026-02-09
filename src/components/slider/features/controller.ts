@@ -161,7 +161,7 @@ export const withController = (config: SliderConfig) => (component) => {
 
       const adjustedPosition = Math.max(
         leftEdge,
-        Math.min(rightEdge, position)
+        Math.min(rightEdge, position),
       );
       const percentageFromLeft = (adjustedPosition - leftEdge) / effectiveWidth;
 
@@ -223,7 +223,7 @@ export const withController = (config: SliderConfig) => (component) => {
       const secondPercent = getPercentage(state.secondValue);
       const adjustedSecondPercent = mapValueToVisualPercent(
         secondPercent,
-        trackSize
+        trackSize,
       );
 
       secondHandle.style.left = `${adjustedSecondPercent}%`;
@@ -327,15 +327,10 @@ export const withController = (config: SliderConfig) => (component) => {
 
       if (!components.handle) {
         console.warn(
-          "Cannot initialize slider controller: missing required handle component"
+          "Cannot initialize slider controller: missing required handle component",
         );
         return;
       }
-
-      // Set ARIA attributes
-      component.element.setAttribute("aria-valuemin", String(state.min));
-      component.element.setAttribute("aria-valuemax", String(state.max));
-      component.element.setAttribute("aria-valuenow", String(state.value));
 
       const { handle, secondHandle } = components;
 
@@ -444,8 +439,7 @@ export const withController = (config: SliderConfig) => (component) => {
       setMin(min) {
         state.min = min;
 
-        // Update ARIA attributes if elements exist
-        component.element.setAttribute("aria-valuemin", String(min));
+        // Update ARIA attributes on handles
         const components = getComponents();
         if (components.handle) {
           components.handle.setAttribute("aria-valuemin", String(min));
@@ -490,8 +484,7 @@ export const withController = (config: SliderConfig) => (component) => {
       setMax(max) {
         state.max = max;
 
-        // Update ARIA attributes if elements exist
-        component.element.setAttribute("aria-valuemax", String(max));
+        // Update ARIA attributes on handles
         const components = getComponents();
         if (components.handle) {
           components.handle.setAttribute("aria-valuemax", String(max));
@@ -538,7 +531,7 @@ export const withController = (config: SliderConfig) => (component) => {
 
         // Add or remove discrete class
         component.element.classList[step > 0 ? "add" : "remove"](
-          `${component.getClass("slider")}--discrete`
+          `${component.getClass("slider")}--discrete`,
         );
 
         // Regenerate ticks if needed

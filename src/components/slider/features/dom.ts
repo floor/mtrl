@@ -13,7 +13,7 @@ import { ElementComponent } from "../../../core/compose/component";
 export const withDom =
   (config: SliderConfig) =>
   <T extends ElementComponent>(
-    component: T
+    component: T,
   ): T & {
     container: HTMLElement;
     handle: HTMLElement;
@@ -51,21 +51,32 @@ export const withDom =
       position: "relative", // For canvas absolute positioning
     });
 
+    // Build accessible label for handles
+    const label = config.label || "";
+    const handleLabel = config.range && label ? `${label} minimum` : label;
+    const secondHandleLabel = label ? `${label} maximum` : "";
+
     // Create the main handle (kept as DOM for accessibility)
+    const handleAttributes: Record<string, string> = {
+      role: "slider",
+      "aria-valuemin": String(min),
+      "aria-valuemax": String(max),
+      "aria-valuenow": String(value),
+      "aria-orientation": "horizontal",
+      tabindex: isDisabled ? "-1" : "0",
+      "aria-disabled": isDisabled ? "true" : "false",
+      "data-value": String(value),
+      "data-handle-index": "0",
+    };
+
+    if (handleLabel) {
+      handleAttributes["aria-label"] = handleLabel;
+    }
+
     const handle = createElement({
       tag: "div",
       className: getClass("slider-handle"),
-      attributes: {
-        role: "slider",
-        "aria-valuemin": String(min),
-        "aria-valuemax": String(max),
-        "aria-valuenow": String(value),
-        "aria-orientation": "horizontal",
-        tabindex: isDisabled ? "-1" : "0",
-        "aria-disabled": isDisabled ? "true" : "false",
-        "data-value": String(value),
-        "data-handle-index": "0",
-      },
+      attributes: handleAttributes,
       container: container,
     });
 
@@ -101,20 +112,26 @@ export const withDom =
       const secondValuePercent = ((secondValue - min) / (max - min)) * 100;
 
       // Create the second handle
+      const secondHandleAttributes: Record<string, string> = {
+        role: "slider",
+        "aria-valuemin": String(min),
+        "aria-valuemax": String(max),
+        "aria-valuenow": String(secondValue),
+        "aria-orientation": "horizontal",
+        tabindex: isDisabled ? "-1" : "0",
+        "aria-disabled": isDisabled ? "true" : "false",
+        "data-value": String(secondValue),
+        "data-handle-index": "1",
+      };
+
+      if (secondHandleLabel) {
+        secondHandleAttributes["aria-label"] = secondHandleLabel;
+      }
+
       secondHandle = createElement({
         tag: "div",
         className: getClass("slider-handle"),
-        attributes: {
-          role: "slider",
-          "aria-valuemin": String(min),
-          "aria-valuemax": String(max),
-          "aria-valuenow": String(secondValue),
-          "aria-orientation": "horizontal",
-          tabindex: isDisabled ? "-1" : "0",
-          "aria-disabled": isDisabled ? "true" : "false",
-          "data-value": String(secondValue),
-          "data-handle-index": "1",
-        },
+        attributes: secondHandleAttributes,
         container: container,
       });
 
