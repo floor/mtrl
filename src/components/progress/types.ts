@@ -232,7 +232,7 @@ export interface ProgressComponent {
    * @returns The progress component for chaining
    */
   setLabelFormatter: (
-    formatter: (value: number, max: number) => string
+    formatter: (value: number, max: number) => string,
   ) => ProgressComponent;
 
   /**
@@ -288,6 +288,15 @@ export interface ProgressComponent {
    * @returns Current size in pixels, or undefined for linear variant
    */
   getSize: () => number | undefined;
+
+  /**
+   * Returns a Promise that resolves after the current canvas state
+   * has been painted to screen. Useful when you need to ensure a
+   * value change (e.g. 100%) is visually rendered before proceeding.
+   *
+   * @returns Promise that resolves after the next paint
+   */
+  painted: () => Promise<void>;
 
   /**
    * Adds an event listener to the progress

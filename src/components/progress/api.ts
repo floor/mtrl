@@ -93,7 +93,7 @@ export const withAPI =
 
     // Determine variant once
     const isCircular = element.classList.contains(
-      getClass(PROGRESS_CLASSES.CIRCULAR)
+      getClass(PROGRESS_CLASSES.CIRCULAR),
     );
 
     // Create event emitter helper
@@ -241,14 +241,14 @@ export const withAPI =
         return api;
       },
       setLabelFormatter(
-        formatter: (value: number, max: number) => string
+        formatter: (value: number, max: number) => string,
       ): ProgressComponent {
         if (options.label?.format) options.label.format(formatter);
         const label = comp.label || comp.state?.label;
         if (label) {
           label.textContent = formatter(
             options.value.getValue(),
-            options.value.getMax()
+            options.value.getMax(),
           );
         }
         return api;
@@ -337,6 +337,13 @@ export const withAPI =
       addClass(...classes: string[]): ProgressComponent {
         classes.forEach((className) => element.classList.add(className));
         return api;
+      },
+
+      // Paint synchronization
+      painted(): Promise<void> {
+        return new Promise((resolve) =>
+          requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+        );
       },
 
       // Cleanup
