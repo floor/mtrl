@@ -5,29 +5,29 @@
  */
 export const MENU_POSITION = {
   /** Places menu below the opener, aligned to left edge */
-  BOTTOM_START: 'bottom-start',
+  BOTTOM_START: "bottom-start",
   /** Places menu below the opener, centered */
-  BOTTOM: 'bottom',
+  BOTTOM: "bottom",
   /** Places menu below the opener, aligned to right edge */
-  BOTTOM_END: 'bottom-end',
+  BOTTOM_END: "bottom-end",
   /** Places menu above the opener, aligned to left edge */
-  TOP_START: 'top-start',
+  TOP_START: "top-start",
   /** Places menu above the opener, centered */
-  TOP: 'top',
+  TOP: "top",
   /** Places menu above the opener, aligned to right edge */
-  TOP_END: 'top-end',
+  TOP_END: "top-end",
   /** Places menu to the right of the opener, aligned to top edge */
-  RIGHT_START: 'right-start',
+  RIGHT_START: "right-start",
   /** Places menu to the right of the opener, centered */
-  RIGHT: 'right',
+  RIGHT: "right",
   /** Places menu to the right of the opener, aligned to bottom edge */
-  RIGHT_END: 'right-end',
+  RIGHT_END: "right-end",
   /** Places menu to the left of the opener, aligned to top edge */
-  LEFT_START: 'left-start',
+  LEFT_START: "left-start",
   /** Places menu to the left of the opener, centered */
-  LEFT: 'left',
+  LEFT: "left",
   /** Places menu to the left of the opener, aligned to bottom edge */
-  LEFT_END: 'left-end'
+  LEFT_END: "left-end",
 } as const;
 
 /**
@@ -47,7 +47,7 @@ export const MENU_DEFAULTS = {
   /** Open submenus on hover */
   OPEN_SUBMENU_ON_HOVER: true,
   /** Automatically flip menu position to stay in viewport */
-  AUTO_FLIP: true
+  AUTO_FLIP: true,
 } as const;
 
 /**
@@ -55,9 +55,9 @@ export const MENU_DEFAULTS = {
  */
 export const MENU_INTERACTION_TYPES = {
   /** Interaction via mouse or touch */
-  MOUSE: 'mouse',
+  MOUSE: "mouse",
   /** Interaction via keyboard */
-  KEYBOARD: 'keyboard'
+  KEYBOARD: "keyboard",
 } as const;
 
 /**
@@ -65,9 +65,9 @@ export const MENU_INTERACTION_TYPES = {
  */
 export const MENU_ITEM_TYPES = {
   /** Standard interactive menu item */
-  ITEM: 'item',
+  ITEM: "item",
   /** Non-interactive dividing line */
-  DIVIDER: 'divider'
+  DIVIDER: "divider",
 } as const;
 
 /**
@@ -75,11 +75,11 @@ export const MENU_ITEM_TYPES = {
  */
 export const MENU_EVENTS = {
   /** Fired when the menu is opened */
-  OPEN: 'open',
+  OPEN: "open",
   /** Fired when the menu is closed */
-  CLOSE: 'close',
+  CLOSE: "close",
   /** Fired when a menu item is selected */
-  SELECT: 'select'
+  SELECT: "select",
 } as const;
 
 /**
@@ -87,27 +87,29 @@ export const MENU_EVENTS = {
  */
 export const MENU_CLASSES = {
   /** Menu container */
-  CONTAINER: 'menu',
+  CONTAINER: "menu",
   /** Visible menu */
-  VISIBLE: 'menu--visible',
+  VISIBLE: "menu--visible",
   /** Menu inner container */
-  INNER: 'menu__inner',
+  INNER: "menu__inner",
   /** Individual menu item */
-  ITEM: 'menu__item',
+  ITEM: "menu__item",
   /** Disabled menu item */
-  ITEM_DISABLED: 'menu__item--disabled',
+  ITEM_DISABLED: "menu__item--disabled",
   /** Selected menu item */
-  ITEM_SELECTED: 'menu__item--selected',
+  ITEM_SELECTED: "menu__item--selected",
   /** Menu item with submenu */
-  ITEM_HAS_SUBMENU: 'menu__item--has-submenu',
+  ITEM_HAS_SUBMENU: "menu__item--has-submenu",
   /** Divider */
-  DIVIDER: 'menu__divider',
+  DIVIDER: "menu__divider",
   /** Item icon */
-  ITEM_ICON: 'menu__item-icon',
+  ITEM_ICON: "menu__item-icon",
   /** Item text */
-  ITEM_TEXT: 'menu__item-text',
+  ITEM_TEXT: "menu__item-text",
   /** Item keyboard shortcut */
-  ITEM_SHORTCUT: 'menu__item-shortcut',
+  ITEM_SHORTCUT: "menu__item-shortcut",
   /** Submenu indicator */
-  SUBMENU_INDICATOR: 'menu__submenu-indicator'
+  SUBMENU_INDICATOR: "menu__submenu-indicator",
+  /** Dense/compact variant */
+  DENSE: "menu--dense",
 } as const;

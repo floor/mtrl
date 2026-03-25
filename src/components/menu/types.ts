@@ -209,6 +209,22 @@ export interface MenuConfig {
   container?: HTMLElement | null;
 
   /**
+   * When true, the opener is used only for positioning.
+   * No click, blur, or keyboard handlers are attached to the opener element.
+   * The consumer is responsible for calling open() / close() manually.
+   * @default false
+   */
+  manualOpen?: boolean;
+
+  /**
+   * When true, renders a compact menu with smaller items and tighter spacing.
+   * Useful in dense UIs like toolbars and action bars where the standard
+   * 48px item height is too large.
+   * @default false
+   */
+  dense?: boolean;
+
+  /**
    * Additional CSS classes to add to the menu
    */
   class?: string;

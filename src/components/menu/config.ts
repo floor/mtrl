@@ -82,6 +82,7 @@ export const getElementConfig = (config: MenuConfig) => {
     attributes,
     className: [
       config.visible ? MENU_CLASSES.VISIBLE : null,
+      config.dense ? `${config.prefix}-menu--dense` : null,
       config.class,
     ].filter(Boolean),
     forwardEvents: {

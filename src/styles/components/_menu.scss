@@ -225,6 +225,31 @@ $component: "#{$prefix}-menu";
         }
     }
 
+    // Dense variant — compact items for toolbars and dense UIs
+    &--dense {
+        padding: 4px 0;
+
+        .#{$component}-item {
+            @include m.typography("body-medium");
+            min-height: 32px;
+            padding: 4px 12px;
+            padding-right: 32px;
+
+            &--submenu {
+                padding-right: 36px;
+            }
+
+            &-icon svg {
+                width: 16px;
+                height: 16px;
+            }
+        }
+
+        .#{$component}-divider {
+            margin: 4px 0;
+        }
+    }
+
     // RTL Support
     @include m.rtl {
         transform-origin: top right;
