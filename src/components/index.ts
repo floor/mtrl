@@ -24,13 +24,13 @@ export { createChip, createChips } from "./chips";
 export { default as createDatePicker } from "./datepicker";
 export { default as createDialog } from "./dialog";
 export { createDivider } from "./divider";
+export { default as createDrawer } from "./drawer";
 export { default as createFab } from "./fab";
 export { default as createExtendedFab } from "./extended-fab";
 export { default as createIconButton } from "./icon-button";
 export { default as createList } from "./list";
 export { default as createMenu } from "./menu";
-export { default as createNavigation } from "./navigation";
-export { default as createNavigationSystem } from "./navigation/system";
+
 export { default as createProgress } from "./progress";
 export { default as createRadios } from "./radios";
 export { default as createSearch } from "./search";
@@ -109,6 +109,16 @@ export type { DatePickerConfig, DatePickerComponent } from "./datepicker/types";
 // Dialog
 export type { DialogConfig, DialogComponent } from "./dialog/types";
 
+// Drawer
+export type {
+  DrawerConfig,
+  DrawerComponent,
+  DrawerVariant,
+  DrawerPosition,
+  DrawerItemConfig,
+  DrawerSelectEvent,
+} from "./drawer/types";
+
 // Divider
 export type { DividerConfig } from "./divider/config";
 export type { DividerComponent } from "./divider/types";
@@ -138,13 +148,6 @@ export type {
 
 // Menu
 export type { MenuConfig, MenuComponent, MenuItem } from "./menu/types";
-
-// Navigation
-export type {
-  NavigationConfig,
-  NavigationComponent,
-  NavItemConfig,
-} from "./navigation/types";
 
 // Progress
 export type {

@@ -1,0 +1,611 @@
+// src/styles/components/_drawer.scss
+@use "../../styles/abstract/base" as base;
+@use "../../styles/abstract/variables" as v;
+@use "../../styles/abstract/functions" as f;
+@use "../../styles/abstract/mixins" as m;
+@use "../../styles/abstract/theme" as t;
+
+$component: "#{base.$prefix}-drawer";
+
+// Must match DRAWER_DEFAULTS.WIDTH in constants.ts
+// Only used as a CSS fallback if --drawer-width is not set by JS
+$default-width: 360px;
+
+// ==========================================================================
+// ROOT CONTAINER
+// ==========================================================================
+
+.#{$component} {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    height: 100%;
+    z-index: 1200;
+    pointer-events: none;
+
+    // --open modifier enables interaction
+    &--open {
+        pointer-events: auto;
+
+        .#{$component}__sheet {
+            transform: translateX(0);
+            visibility: visible;
+        }
+
+        .#{$component}__scrim {
+            pointer-events: auto;
+        }
+
+        .#{$component}__scrim--visible {
+            opacity: 1;
+        }
+    }
+
+    // ========================================================================
+    // POSITION VARIANTS
+    // ========================================================================
+
+    &--start {
+        .#{$component}__sheet {
+            left: 0;
+            right: auto;
+            border-top-right-radius: 16px;
+            border-bottom-right-radius: 16px;
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+            transform: translateX(-100%);
+        }
+
+        @include m.rtl {
+            .#{$component}__sheet {
+                left: auto;
+                right: 0;
+                border-top-right-radius: 0;
+                border-bottom-right-radius: 0;
+                border-top-left-radius: 16px;
+                border-bottom-left-radius: 16px;
+                transform: translateX(100%);
+            }
+        }
+
+        &.#{$component}--open {
+            .#{$component}__sheet {
+                transform: translateX(0);
+            }
+        }
+    }
+
+    &--end {
+        .#{$component}__sheet {
+            left: auto;
+            right: 0;
+            border-top-left-radius: 16px;
+            border-bottom-left-radius: 16px;
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+            transform: translateX(100%);
+        }
+
+        @include m.rtl {
+            .#{$component}__sheet {
+                left: 0;
+                right: auto;
+                border-top-left-radius: 0;
+                border-bottom-left-radius: 0;
+                border-top-right-radius: 16px;
+                border-bottom-right-radius: 16px;
+                transform: translateX(-100%);
+            }
+        }
+
+        &.#{$component}--open {
+            .#{$component}__sheet {
+                transform: translateX(0);
+            }
+        }
+    }
+
+    // ========================================================================
+    // VARIANT: STANDARD
+    // ========================================================================
+
+    &--standard {
+        position: relative;
+        z-index: auto;
+        pointer-events: auto;
+        flex-shrink: 0;
+        overflow: hidden;
+        // Closed: collapse to 0. --drawer-width is set inline by the JS component.
+        width: 0;
+        transition: width v.motion("duration-short4")
+            v.motion("easing-standard");
+
+        .#{$component}__sheet {
+            position: relative;
+            background-color: t.color("surface");
+            @include m.elevation(0);
+        }
+
+        // Open — expand to the concrete width value via custom property
+        &.#{$component}--open {
+            width: var(--drawer-width, $default-width);
+        }
+
+        // Border on the end edge (standard variant visual separator)
+        &.#{$component}--start {
+            .#{$component}__sheet {
+                border-right: 1px solid t.color("outline-variant");
+                border-top-right-radius: 0;
+                border-bottom-right-radius: 0;
+            }
+
+            @include m.rtl {
+                .#{$component}__sheet {
+                    border-right: none;
+                    border-left: 1px solid t.color("outline-variant");
+                    border-top-left-radius: 0;
+                    border-bottom-left-radius: 0;
+                }
+            }
+        }
+
+        &.#{$component}--end {
+            .#{$component}__sheet {
+                border-left: 1px solid t.color("outline-variant");
+                border-top-left-radius: 0;
+                border-bottom-left-radius: 0;
+            }
+
+            @include m.rtl {
+                .#{$component}__sheet {
+                    border-left: none;
+                    border-right: 1px solid t.color("outline-variant");
+                    border-top-right-radius: 0;
+                    border-bottom-right-radius: 0;
+                }
+            }
+        }
+    }
+
+    // ========================================================================
+    // VARIANT: MODAL
+    // ========================================================================
+
+    &--modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 1200;
+
+        .#{$component}__sheet {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            background-color: t.color("surface-container-low");
+            @include m.elevation(1);
+        }
+    }
+
+    // ========================================================================
+    // SHEET (inner panel)
+    // ========================================================================
+
+    &__sheet {
+        display: flex;
+        flex-direction: column;
+        width: var(--drawer-width, $default-width);
+        max-width: calc(100vw - 56px);
+        height: 100%;
+        overflow-y: auto;
+        overflow-x: hidden;
+        box-sizing: border-box;
+        padding: 12px 0;
+        @include m.motion-transition(transform, visibility);
+
+        // Smooth scrollbar
+        scrollbar-width: thin;
+        scrollbar-color: t.color("outline-variant") transparent;
+    }
+
+    // ========================================================================
+    // SCRIM (modal overlay)
+    // ========================================================================
+
+    &__scrim {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: t.alpha("scrim", 0.32);
+        opacity: 0;
+        pointer-events: none;
+        z-index: -1;
+        @include m.motion-transition(opacity);
+    }
+
+    // ========================================================================
+    // HEADLINE
+    // ========================================================================
+
+    &__headline {
+        @include m.typography("title-small");
+        color: t.color("on-surface-variant");
+        padding: 16px 28px 0;
+        margin-bottom: 4px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    // ========================================================================
+    // ITEMS CONTAINER
+    // ========================================================================
+
+    &__items {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        padding: 0;
+        margin: 0;
+    }
+
+    // ========================================================================
+    // NAVIGATION ITEM
+    // ========================================================================
+
+    &__item {
+        display: flex;
+        align-items: center;
+        position: relative;
+        width: calc(100% - 24px);
+        height: 56px;
+        margin: 0 12px;
+        padding: 0 24px 0 16px;
+        gap: 12px;
+        border: none;
+        border-radius: 28px;
+        background: none;
+        cursor: pointer;
+        color: t.color("on-surface-variant");
+        text-decoration: none;
+        box-sizing: border-box;
+        outline: none;
+        -webkit-tap-highlight-color: transparent;
+        @include m.typography("label-large");
+        @include m.motion-transition(background-color, color);
+
+        // Active indicator (background shape — positioned behind content)
+        .#{$component}__active-indicator {
+            position: absolute;
+            inset: 0;
+            border-radius: 28px;
+            background-color: transparent;
+            pointer-events: none;
+            @include m.motion-transition(background-color);
+        }
+
+        // ======================================================================
+        // HOVER STATE
+        // ======================================================================
+
+        &:hover:not([disabled]) {
+            .#{$component}__active-indicator {
+                background-color: t.alpha("on-surface", 0.08);
+            }
+        }
+
+        // ======================================================================
+        // FOCUS-VISIBLE STATE
+        // ======================================================================
+
+        &:focus-visible {
+            .#{$component}__active-indicator {
+                background-color: t.alpha("on-surface", 0.12);
+            }
+        }
+
+        // ======================================================================
+        // PRESSED STATE
+        // ======================================================================
+
+        &:active:not([disabled]) {
+            .#{$component}__active-indicator {
+                background-color: t.alpha("on-surface", 0.12);
+            }
+        }
+
+        // ======================================================================
+        // ACTIVE / SELECTED STATE
+        // ======================================================================
+
+        &--active {
+            color: t.color("on-secondary-container");
+
+            .#{$component}__active-indicator {
+                background-color: t.color("secondary-container");
+            }
+
+            &:hover:not([disabled]) {
+                .#{$component}__active-indicator {
+                    background-color: t.color("secondary-container");
+
+                    // Overlay hover state on top of active indicator
+                    &::before {
+                        content: "";
+                        position: absolute;
+                        inset: 0;
+                        border-radius: inherit;
+                        background-color: t.alpha(
+                            "on-secondary-container",
+                            0.08
+                        );
+                        pointer-events: none;
+                    }
+                }
+            }
+
+            &:focus-visible {
+                .#{$component}__active-indicator {
+                    background-color: t.color("secondary-container");
+
+                    &::before {
+                        content: "";
+                        position: absolute;
+                        inset: 0;
+                        border-radius: inherit;
+                        background-color: t.alpha(
+                            "on-secondary-container",
+                            0.12
+                        );
+                        pointer-events: none;
+                    }
+                }
+            }
+
+            &:active:not([disabled]) {
+                .#{$component}__active-indicator {
+                    background-color: t.color("secondary-container");
+
+                    &::before {
+                        content: "";
+                        position: absolute;
+                        inset: 0;
+                        border-radius: inherit;
+                        background-color: t.alpha(
+                            "on-secondary-container",
+                            0.12
+                        );
+                        pointer-events: none;
+                    }
+                }
+            }
+
+            .#{$component}__item-icon {
+                color: t.color("on-secondary-container");
+            }
+
+            .#{$component}__item-label {
+                color: t.color("on-secondary-container");
+                font-weight: 700;
+            }
+
+            .#{$component}__item-badge {
+                color: t.color("on-secondary-container");
+            }
+        }
+
+        // ======================================================================
+        // DISABLED STATE
+        // ======================================================================
+
+        &[disabled] {
+            cursor: default;
+            opacity: 0.38;
+            pointer-events: none;
+        }
+    }
+
+    // ========================================================================
+    // ITEM ICON
+    // ========================================================================
+
+    &__item-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        width: 24px;
+        height: 24px;
+        color: inherit;
+        position: relative;
+        z-index: 1;
+
+        svg {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+        }
+    }
+
+    // ========================================================================
+    // ITEM LABEL
+    // ========================================================================
+
+    &__item-label {
+        flex: 1;
+        text-align: left;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        position: relative;
+        z-index: 1;
+        color: inherit;
+
+        @include m.rtl {
+            text-align: right;
+        }
+    }
+
+    // ========================================================================
+    // ITEM BADGE
+    // ========================================================================
+
+    &__item-badge {
+        @include m.typography("label-large");
+        color: t.color("on-surface-variant");
+        margin-left: auto;
+        position: relative;
+        z-index: 1;
+        flex-shrink: 0;
+
+        @include m.rtl {
+            margin-left: 0;
+            margin-right: auto;
+        }
+    }
+
+    // ========================================================================
+    // DIVIDER
+    // ========================================================================
+
+    &__divider {
+        width: calc(100% - 56px);
+        height: 1px;
+        margin: 8px 28px;
+        border: none;
+        background-color: t.color("outline-variant");
+    }
+
+    // ========================================================================
+    // SECTION LABEL
+    // ========================================================================
+
+    &__section-label {
+        @include m.typography("title-small");
+        color: t.color("on-surface-variant");
+        padding: 18px 28px 4px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    // ========================================================================
+    // DENSE VARIANT — compact items for admin UIs
+    // ========================================================================
+
+    &--dense {
+        .#{$component}__sheet {
+            padding: 8px 0;
+        }
+
+        .#{$component}__headline {
+            @include m.typography("label-large");
+            padding: 10px 20px 0;
+            margin-bottom: 2px;
+        }
+
+        .#{$component}__item {
+            height: 36px;
+            margin: 0 8px;
+            padding: 0 16px 0 12px;
+            width: calc(100% - 16px);
+            gap: 8px;
+            border-radius: 18px;
+            @include m.typography("body-medium");
+
+            .#{$component}__active-indicator {
+                border-radius: 18px;
+            }
+        }
+
+        .#{$component}__item-icon {
+            width: 20px;
+            height: 20px;
+
+            svg {
+                width: 20px;
+                height: 20px;
+            }
+        }
+
+        .#{$component}__item-badge {
+            @include m.typography("label-medium");
+        }
+
+        .#{$component}__divider {
+            width: calc(100% - 40px);
+            margin: 4px 20px;
+        }
+
+        .#{$component}__section-label {
+            @include m.typography("label-large");
+            padding: 10px 20px 2px;
+        }
+    }
+
+    // ========================================================================
+    // RTL — item padding direction
+    // ========================================================================
+
+    @include m.rtl {
+        &__item {
+            padding: 0 16px 0 24px;
+        }
+
+        &--dense {
+            .#{$component}__item {
+                padding: 0 12px 0 16px;
+            }
+        }
+    }
+
+    // ========================================================================
+    // REDUCED MOTION
+    // ========================================================================
+
+    @include m.reduced-motion {
+        &__sheet {
+            transition: none;
+        }
+
+        &__scrim {
+            transition: none;
+        }
+
+        &__item,
+        &__active-indicator {
+            transition: none;
+        }
+    }
+
+    // ========================================================================
+    // HIGH CONTRAST (forced-colors)
+    // ========================================================================
+
+    @include m.high-contrast {
+        &__sheet {
+            border: 1px solid currentColor;
+        }
+
+        &__item {
+            &--active {
+                .#{$component}__active-indicator {
+                    outline: 2px solid currentColor;
+                    outline-offset: -2px;
+                }
+            }
+
+            &:focus-visible {
+                outline: 2px solid currentColor;
+                outline-offset: -2px;
+            }
+        }
+
+        &__divider {
+            background-color: currentColor;
+        }
+    }
+}
