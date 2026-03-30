@@ -1,0 +1,1026 @@
+mtrl — full changelog
+initial commit → latest
+613 commits · Feb 22, 2025 – Mar 30, 2026
+
+
+2026-03-30
+
+  fix(dialog): require mousedown+mouseup on overlay to prevent accidental closes
+  fix(styles): use html[data-theme-mode=dark] instead of body selector for dark theme
+  fix(core): split space-separated class strings inside arrays in normalizeClasses
+  fix(test): remove 19 orphaned test files for modules moved to mtrl-addons
+  fix(test): stabilize createElement benchmark assertions for system load variance
+  fix(test): update withTextLabel test to expect position modifier class
+
+  → v0.7.0
+
+
+2026-03-29
+
+  feat(drawer): add MD3 navigation drawer component
+
+2026-03-25
+
+  feat(menu): add manualOpen and dense config options
+
+2026-02-09
+
+  feat(progress): add painted() method for paint synchronization
+  fix(slider): resolve ARIA accessibility violations
+
+2026-02-03
+
+
+  → v0.6.3
+
+  docs: add tree-shaking optimization documentation
+  fix(core): prevent duplicate exports by removing constants from component indexes
+  feat(core): improve tree-shaking with explicit exports and subpaths
+  fix(core): use passive event listeners for touch events
+
+2026-01-23
+
+  → v0.6.2
+
+  style(dialog, tabs): allow dialog overflow and normalize tab styling
+
+2026-01-18
+
+  fix(types): add index signature to FabConfig and ExtendedFabConfig for IconConfig compatibility
+  → v0.6.0
+
+  feat(styles): enhances dialog styles
+  fix(menu): register event handlers from config.on
+  style(icon-button): disable forced fill on svg icons
+  feat(core): add passthrough for common HTML, data, and ARIA attributes
+
+2026-01-17
+
+  fix(icon-button): merge user className with component classes instead of overwriting
+  feat(icon-button): add toggleOnClick option and fix SVG fill inheritance
+  fix(chips): prevent double-toggle when chips are managed by container
+  feat(icon-button): add IconButton component following MD3 specs
+  refactor(search): rewrite component to MD3 specifications
+
+2026-01-16
+
+  fix(segmented-button): use color-mix for visible hover states
+  feat(components): add button-group component and fix segmented-button MD3 compliance
+
+2026-01-12
+
+  feat(menu,select): add container option for menu positioning
+  fix(themes): add disabled button visibility workaround and highcontrast theme
+
+2026-01-08
+
+  → v0.5.5
+
+  feat(menu): add closeOnResize option for select components
+
+2026-01-07
+
+  feat(menu): add typeahead search and prevent select input editing
+  fix(menu): fix list overflow and first-open positioning
+
+2026-01-05
+
+  feat(select): add clear() method and setError/clearError support
+
+2026-01-03
+
+  fix(chips): return string for single-select, array for multi-select
+  feat(chips): add form field compatibility with getValue/setValue
+  feat(switch,checkbox): unified getValue/setValue API for form compatibility
+  chore: include src/styles in npm package for SCSS imports
+
+2025-12-31
+
+  → v0.5.2
+
+  feat(docs): update claude rules
+
+2025-11-17
+
+  fix(docs): update CLAUDE.md to reflect complete package structure
+  docs: consolidate AI assistant documentation into CLAUDE.md
+
+2025-08-29
+
+  fix(chore): build/type errors and produced clean declarations
+  → v0.5.1
+
+  chore(core): export createCompopnentConfig
+
+2025-08-07
+
+  → v0.5.0
+
+  feat(docs): enhance docs
+  feat(scripts): add find-orphaned-functions
+  feat(components): enhance progress component constants
+  feat(components): add list renderer feature
+  chore(core): move gesture in addons
+  feat(components): simplify list
+  chore(core): remove collection from mtrl
+
+2025-07-06
+
+  chore(core): remove layout from mtrl core and move it to addons
+  feat(components): remove layout feature from slider component
+  chore(rules): add .cursorrules
+  test(core): add core dom test benchmarks
+  feat(core): optimize dom modules
+
+2025-07-05
+
+  feat(core): static lists do not use list manager
+  feat(core): remove dynamic item size measurement
+  fix(core): list manager dynamic height calculation
+
+2025-07-04
+
+  chore(core): remove debug logs from list-manager modules
+  feat(core): optimize list manager viewport and scroll jump module
+  fix(core): list manager pagination cursor strategy
+  feat(core): enhance speed threshold
+  feat(core): use speed only strategy to prevent massive loading when scrolling really fast
+
+2025-07-03
+
+  feat(core): start implementing offset strategy
+  feat(core): use real scrolling speed instead of threshold related to the data loading
+  chore(core): refactor scrolling list-manager manager
+  chore(core): architectural refactoring
+  feat(core): refactor list-manager
+  feat(core): optimize list-manager
+
+2025-07-02
+
+  feat(core): enhance list manager loading mechanism
+
+2025-07-01
+
+  fix(core): list manager loading data mess
+  feat(component): add animate option
+  feat(core): enhance list manager scrolling animation
+
+2025-06-29
+
+  chore(core): list manager clean up debug logs
+  fix(core): list manager page load calculation after scroll jump
+  feat(core): list manager loading required ranges when we scroll jump
+  feat(core): add list manager scrollToIndex and scrollToItemById
+  feat(core): remove unneeded styles to items
+  fix(core): list manager shift when replacing placeholder
+
+2025-06-28
+
+  chore(core): finalize list manager refactoring
+  chore(core): refactoring list-manager
+  chore(core): optimize and refactor list manager
+  chore(core): remove unwanted folder modules
+
+2025-06-27
+
+  fix(core): list manager for relative path in baseUrl
+  chore(test): add tests for list manager modules
+  chore(core): remove unused list-manager modules
+  feat(test): add collection and list-manager tests
+  feat(core): clean list-manager debug logs
+  fix(core): list manager when scrolling beyond data boundaries
+  feat(core): list manager placeholder styles
+  feat(core): update list manager data generator
+  feat(core): list manager placeholders
+  feat(core): enhance list when jump scrolling, used a place holder we auto generated data
+  fix(core): scroll positioning issues related to collection sync
+
+2025-06-26
+
+  feat(core): optimize collection and list manager
+  feat(core): fix list manager when scrolling to the boundaries
+  feat(core): optimize list manager by fetching ranges sequentially
+  feat(core): list manager preload
+  feat(core): list manager remove snap mechanism on scroll
+  feat(core): optimize collection and list manager
+
+2025-06-24
+
+  feat(core): enhance list manager bounds
+  fix(core): list manager height
+  feat(core): enhance list manager pagination
+  chore(core): fix last scrolling issue
+
+2025-06-23
+
+  chore(core): refactor list manager phase 4A
+  chore(core): refactor list manager phase 3 and 4
+  chore(core): refactor list manager phase 1 and 2
+
+2025-06-22
+
+  feat(core): enhance list-manager scrolling
+  feat(core): enhance list manager scrolling
+  fix(core): list-manager rendering on page jumpTo
+  feat(core): fix page next and page previous
+  feat(core): fix jump to
+  feat(core): enhance collection list-manager
+
+2025-06-21
+
+  fix(components): list selection
+
+2025-06-20
+
+  feat(components): api enhancements
+  Fix(components): loadPage list function sync
+  fix(components): next list and previous list
+  feat(components): use loadNext instead of loadMore
+  fix(components): list jump load
+  fix(components): list previous/next page
+  feat(components): list handle jump on page strategy
+  feat(components): add error api and suppoting text
+  → v0.4.5
+
+  feat(components): enhance text field autofill handling
+
+2025-06-13
+
+  → v0.4.4
+
+  → v0.4.3
+
+  fix(various): ts linting errors
+  feat(components): add density option for text field and select components
+
+2025-06-12
+
+  fix(core): checkable features initial state handling
+  fix(components): linting errors
+  feat(components): enhance show label
+  fix(components): linear progress track overlapping
+
+2025-06-11
+
+  feat(components): enhance circular progress when reaching 100%
+  fix(components): linting errors
+  feat(components): update the shape terminology from "line" to "flat"
+  feat(components): expose setSize/getSize api function
+  feat(components): enhance progress wavy units constants
+
+2025-06-08
+
+  chore(scripts): add analyze-any-types.ts
+  fix(components): fix public API types in highest priority files
+  fix(components): fix lint errors
+  fix(components): various linting errors
+  feat: add ESLint and Prettier configuration
+  feat(components): add button progress complete event
+
+2025-06-07
+
+  fix(components): progress component complete event
+  feat(components): set value not updating immediately when using it rapidly
+  fix(components): progress wavy animation reset on set value
+  feat(components): thickness and end dot for values under 4
+  feat(components): enhance default constants and circular transition
+  feat(components): implement progressive transition at start
+  feat(components): add start end progressive transition in the constants
+  feat(components): enhance linear indicator length at start
+
+2025-06-04
+
+  feat(core): add global config file
+  feat(core): add global config system
+  feat(components): add shape feature
+
+2025-06-03
+
+  feat(components): remove min size to progress stroke
+  feat(components): add button size option
+  feat(components): add button progress feature
+
+2025-06-02
+
+  feat(components): slider clean up
+  fix(constants): remove slider orientations for now
+  → v0.4.1
+
+  feat(components): parent option as container
+  feat(components): add container options
+  feat(components): optimize slider canvas by using core canvas utils
+  feat(components): optimize slider canvas feature
+  feat(components): remove tab index on chips container
+  feat(components): cleanup slider controller
+  feat(components): enhance disabled slider
+  feat(components): enhance handle visual feedback
+  feat(components): slider handle gap shrinking as visual feedback on click and hold
+  fix(components): slider inner components animation transition
+  feat(components): add canvas animation for inner components
+
+2025-06-01
+
+  fix(components): fix border radius on the edge
+  feat(components): adapt handle size and border radius according the slider size
+  feat(components): enhance handle and dot position
+  feat(components): add slider size option
+  feat(components): remove unused dom elements
+  fix(components): range slider
+  chore(components): first working slider prototype using canvas
+  feat(components): enhance ticks position
+  feat(components): enhance slider animation timing
+  feat(components): enhance centered slider animation
+  feat(components): start enhancing centered slider
+
+2025-05-31
+
+  → v0.4.0
+
+  fix(components): animation wavy animation reset on set value
+  feat(components): optimize progress canvas
+  feat(components): optimize circular progress
+  feat(components): handle remaining part in indeterminate circular progress
+  feat(components): enhance indeterminate circular progress
+  feat(components): enhance indeterminate circular animation
+  feat(components): optimize linear progress
+  feat(components): enhance linear indeterminate animation using proper gap
+  feat(components): enhance indeterminate linear progress animation
+  feat(components): update progress setValue function by adding a second parameter to disable animation
+  feat(components): decrease circular determinate wave amplitude when reaching 100%
+  feat(components): use size to define wave amplitude for circular progress variant
+  feat(components): remove the dot for zero value and use the line with appropriate length
+  feat(components): enhance amplitude calculation for circular progress
+  feat(components): enhance waves curve
+  feat(components): use constants for wave parameters
+
+2025-05-30
+
+  fix(progress): setShape
+  fix(components): progress wavy linear not animated after setting value
+  chore(components): split canvas into variant files
+
+2025-05-29
+
+  chore(components): enhance timing on set value
+  feat(components): enhance component styles
+
+2025-05-27
+
+  chore(components): enhance progress animation
+
+2025-05-26
+
+  chore(components): enhance animation
+
+2025-05-25
+
+  chore(components): enhance set value 100%
+  chore(components): add circular indeterminate animation
+  chore(components): enhance progress transitions
+
+2025-05-24
+
+  chore(components): implement wavy shape
+  chore(components): setup indeterminate linear animation
+  chore(components): clean scss
+  chore(components): add size options for circular progress
+  chore(components): fix last details in determinate progress edge cases
+  chore(components): enhance edge case for linear progress when value is zero
+  chore(components): edge case for linear progress when value is zero
+
+2025-05-23
+
+  chore(component): add stop indicator for determinate linear progress
+  chore(components): fix circular progress size
+  chore(components): fix progress setValue
+  chore(components): enhance api thickness
+  chore(component): progress using proper theme color in canvas
+  feat(core): add getThemeColor utility function
+  chore(components): use canvas as main progress renderer
+  chore(components): prepare shape options
+
+2025-05-22
+
+  chore(components): use html elements for linear progress instead of svg
+  chore(components): fix gap calculation according the thickness
+  chore(components): adapt gap according the thickness
+
+2025-05-21
+
+  chore(refactor): enhance linear progress gap calculation
+  chore(components): add thickness options
+  chore(components): add progress stop indicator
+
+2025-05-20
+
+  chore(components): enhance buffer indicator
+  chore(components): enhance animation
+
+2025-05-19
+
+  chore(components): optimized progress code
+  chore(components): enhance circular progress remaining part
+  chore(components): use remaining part in circular progress to
+  chore(components): use remaining part in circular progress to
+  chore(components): fix gap between indicator and remaining
+  chore(components): back to work
+
+2025-05-18
+
+  chore(components): progress enhance setValue
+  chore(components): simplify API
+
+2025-05-17
+
+  chore(components): use svg for linear progress
+  chore(components): fix circular progress
+  fix(core): add createSVGElement function
+  Revert "fix: preserve case for SVG viewBox and other case-sensitive attributes"
+  fix: preserve case for SVG viewBox and other case-sensitive attributes
+
+2025-05-16
+
+  refactor: remove attrs and rely only on attributes property
+  refactor: rename attrs to attributes across all components
+  refactor: rename attrs property to attributes across codebase for better naming consistency
+  feat(chore): add backup to gitignore
+  chore(components): enhance progress values and styles
+  fix(components): list selection
+
+2025-05-15
+
+  chore(components): continue refactoring
+  chore(components): enhance indeterminate linear animation
+  chore(components): refactor indicator transition
+  chore(components): first refactoring step using layout
+
+2025-05-14
+
+  chore(components): fix progress issues and start refactoring using remaining part
+
+2025-05-13
+
+  → v0.3.9
+
+  → v0.3.9
+
+  feat(components): enhance disable state for text button
+  fix(typescript): add typescript error and analyse bundle scripts
+  fix(typescript): enhance test setup
+  fix(typescript): fix checkable feature test
+  fix(typescript): enhance tests by adding global type declarations for JSDOM among others things
+  fix(typescript): fix test errors
+  fix(typescript): continue fixing ts errors
+  fix(typescript): fix a bunch of ts errors
+
+2025-05-11
+
+  fix(core): layoutResult definition
+  fix(components): enhance type definition
+
+2025-05-10
+
+  feat(markdown): update mtrl app repository name
+  chore(core): rename component-config just component
+  chore(core): enhance component config for user classes
+  chore(components): enhance user class mechanism
+  chore(core): fix layout class component detection
+  chore(core): merge build and features
+  chore(styles): enhance main styles file
+  chore(styles): enhance disabled state
+
+2025-05-04
+
+  feat(components): enhance behavior on hover state
+
+2025-05-01
+
+  feat(components): enhance setIcon api
+
+2025-04-30
+
+  feat(components): enhance label background on changing theme
+  feat(components): add getInhertitedBackground core/utils function to get the proper label bg color
+  feat(components): remove align-self flex-start
+  feat(components): chips motion and prevent textfield stretching vertically
+  feat(components): enhance setIcon api and icon when disabled
+
+2025-04-28
+
+  refactor(exports): refactor library exports for better modularity and tree-shaking
+  chore(components): constants restored and enhanced
+
+2025-04-27
+
+  feat(components): small adjustements in spacing
+
+2025-04-26
+
+  fix(core): core collection to handle standard pagination
+
+2025-04-25
+
+  feat(chore): list manager state
+  feat(core): optimize list-manager
+  feat(core): optimize collection
+  feat: modularization of the list-manager
+  feat(core): use cursor based routes
+
+2025-04-24
+
+  chore(styles): enhance list styles
+  chore(components): refactor list with optimized scrolling and recycling, auto height and more
+
+2025-04-22
+
+  chore(code): enhance conventions
+  test(core): feature gesture longpress
+  feat(test): core gestures
+  chore(components): remove layout md file (see mtrl.app)
+  chore(components): remove core layout md docs (see mtrl.app)
+  feat(root): add conventions md
+  feat(core): modularization of the core gestures and features
+  feat(core): add gestures manager
+
+2025-04-21
+
+  feat(components): enhance styles
+  feat(core): layout to support jsx
+  feat(core): layout module to handle style and event option
+
+2025-04-18
+
+  chore(components): refactor menu controller by extracting the submenu logic in a feature
+  chore(components): renaming anchor opener
+
+2025-04-17
+
+  chore(components): enhance tab navigation on close menu
+  chore(components): enhance menu and select anchor coordination
+  chore(components): fix anchor restoration
+  chore(components): fix submenu state after click event
+
+2025-04-16
+
+  chore(components): extract keyboard navigation from controller
+
+2025-04-15
+
+  → v0.3.8
+
+  fix(components): menu and select keyboard navigation
+  fix(components): icon icon check
+  eat: add setSelected method to the menu API
+  feat(components): menu accessibility enhancements
+  fix(components): menu keyboard navigation via tab
+  feat(components): enhance keyboard navigation and accessibility
+  feat: close menu if open
+  → v0.3.7
+
+  fix: sub menu behavior and related anchor state
+  fix: submenus behaviour
+  feat: enabled submenus for select component
+
+2025-04-14
+
+  fix: positioning on edge cases
+  fix: open and close animation
+  fix: first rename placement by position
+  test: complete adding/updating test units
+  test: add/update/fix test units
+  test: add/update tests for core modules
+  feat: add code analysis script
+  chore: convert core collection to TypeScript
+
+2025-04-13
+
+  feat: textfield component prefix/suffix implemented
+  feat: enhance position of the suffix and prefix text
+  feat: prefix suffix features initial commit
+  feat: enhance menu positioning and repositioning
+
+2025-04-12
+
+  feat: enhance menu positioning
+  feat: update drop down icon
+  feat: add select component
+  feat: enhance menu anchor to use component
+
+2025-04-11
+
+  → v0.3.6
+
+  fix: enhance positioning and lifecycle
+  fix: refactor the menu to fix all the issues
+  feat: remove unnecessary layout functionalities
+  fix: menu behavior on open
+  fix: options layout and layoutItem treated as a attributes
+
+2025-04-10
+
+  feat: enhance core layout README.md
+  feat: arrangements of components using grid, flex via config
+  feat: add _layout.scss
+  feat: use prefix automatically when adding or removing classes
+  fix: main.scss components path
+  feat: normalize and optimize classes in layout and add rawClass option
+
+2025-04-09
+
+  → v0.3.5
+
+  feat: implement density option
+  feat: enhance segmented button by using the button component as segment
+  fix: segmented button className
+  fix: chip hover border-radius
+  → v0.3.4
+
+  feat: enhance icon button position
+
+2025-04-07
+
+  → v0.3.3
+
+  feat: use anchor in navigation item
+  fix: autumn theme error colors
+  feat: add automatically mtrl to classes when using className
+  feat: enhance contributing.md
+
+2025-04-06
+
+  → v0.3.2
+
+  chore: chips refactoring
+  chore: refactor chips component, 1st iteration
+
+2025-04-05
+
+  feat: export prefix f* aliases
+
+2025-04-04
+
+  feat: ChipSet event change on.
+
+2025-04-03
+
+  docs: enhance Card component
+
+2025-04-02
+
+  docs: enhance Menu component documentation
+  docs: enhance List component documentation
+  docs: enhance Fab component documentation
+  docs: enhance ExtendedFab component documentation
+  docs: enhance Divider component documentation
+  docs: enhance Dialog component documentation
+  docs: enhance Checkbox component documentation
+  docs: enhance Carousel component documentation
+  docs: enhance Badge component documentation
+  chore: add docs/ folder to .gitignore
+  docs: improve Button component documentation with JSDoc comments
+  chore: move tooltip constants to types.ts and remove constants.ts
+  chore: move slider constants to types.ts
+  chore: move sheet constants to types.ts
+  chore: move list constants to types.ts
+  chore: fix BadgeComponent imports in tabs component and move constants to types.ts
+  chore: move checkbox constants to types.ts
+  chore: use lowercase the the library name
+  docs: add version control conventions to CLAUDE.md
+  docs: expand testing commands in README.md
+  docs: update documentation with testing information
+  chore: refactor components
+  chore: remove old JavaScript test files
+  test: add TypeScript tests for Slider, Tabs, TimePicker, Tooltip, and TopAppBar components
+  test: add TypeScript tests for Progress, Radios, Search, SegmentedButton, and Sheet components
+  test: add TypeScript tests for DatePicker, Dialog, Divider, Extended FAB, and FAB components
+  test: add TypeScript tests for Badge, BottomAppBar, Card, Carousel, and Chip components
+  test: migrate existing component tests to TypeScript
+  test: add TypeScript tests for core modules
+  test: add TypeScript test setup file
+  refactor: remove unused createStructure export from index.ts
+  chore: update package.json and tsconfig.json for TypeScript tests
+
+2025-04-01
+
+  → v0.3.0
+
+
+2025-03-31
+
+  components(fix): various fixes on slider and button docs
+  components(feat): supporting text for switch
+
+2025-03-30
+
+  components(feat): add supporting text features to switch component
+  components(feat): adapt transition duration
+  components(feat): enhance disabled state
+  components(feat): add hover/ripple transition
+  components(feat): enhance the hover/ripple effect
+  components(feat): enhance hover and pressed styles
+
+2025-03-29
+
+  components(feat): inherit bg color for label
+
+2025-03-28
+
+  core(fix): layout using name as tag
+  styles(feat): add spacing function and scale definition
+  core(chore): complete migration
+  core(layout): adapt layout naming and terminology
+  core(layout): move to core layout
+
+2025-03-27
+
+  core(feat): add BEM options to processClass function
+  core(feat): add third argument options to createStructure function
+
+2025-03-26
+
+  core(feature): add array based schema and html
+  core(feat): allow structure to process array based schema
+  core(chore): enhance terminology
+  core(chore): structure modularization
+  core(chore): Update structure terminology
+
+2025-03-25
+
+  add structure to export index
+  add git-stats
+  components(chore): broke navigation into meaningful pieces
+  components(feat): navigation system mobile
+
+2025-03-23
+
+  → v0.2.9
+
+  components(feat): optimize slider structure workflow
+  core(feat): optimize structure module
+  components(chore): navigation system optimization and cleanup
+  components(chore): enhance navigation system behavior
+  components(chore): clean up logs and tests
+  components(chore): add navigation system
+
+2025-03-21
+
+  components(chore): slider to use new composition structure
+  components(chore): refactoring complete using new structure mechanism
+  components(chore): remove withElement feature and use withStructure instead
+  components(chore): add slider structure
+  components(feat): enhance navigation item events
+
+2025-03-20
+
+  components(chore): use createStructure for internal components
+  components(chore): use createStructure for internal components
+  components(feat): restore multiline support with textarea
+  components(feat): enhance label transition for outlined variant using leading icon
+  components(feat): adapt label position related to the leading icon
+  components(feat): add leading and trailing icons + supporting text
+  add demo to .gitignore
+
+2025-03-19
+
+  components(feat): enhance textfield styles
+  remove console
+  components(feat): enhance navigation events
+
+2025-03-18
+
+  → v0.2.8
+
+  components(fix): various fixes and clean up
+  components(chore): centralized components styles
+  components(chore): removal of constants done
+  components(chore): remove contstants
+  component(feat): enhance styles organization
+
+2025-03-17
+
+  → v0.2.7
+
+  components(fix): styles
+  components(feat): search second iteration
+
+2025-03-16
+
+  components(feat): search first iteration
+  components(fix): aria on buttons
+  components(fix): aria implementation
+  components(chore): slider optimisation
+  components(feat): reduce space between hand and tracks on active hand
+  components(feat): add slider transitions
+
+2025-03-15
+
+  components(feat): clean card features
+  components(card): implement inline config
+  components(feat): use canvas for the clock dial
+
+2025-03-14
+
+  components(fix): some of the time picker behaviors
+  components(fix): timepicker visibility
+  components(feat) add time picker component
+  components(feat): fix event propagation closing the date picker
+  components(feat): fix date formatting
+  components(feat): add datePicker component
+  component(feat): use position fix for app bars for now
+  components(feat): enhance dialog component
+  components(feat): add divider component
+  components(feat): add top-app-bar component
+  components(feat): add bottom app bar component
+  components(feat): add segmented button
+  components(feat): add index segmented button
+  components(feat): add extended-fab component
+  components(feat): add Fab button component
+  components(fix): badge label
+  components(fix): badge label count
+
+2025-03-13
+
+  components(chore): complete handle renaming
+  components(chore): rename slider handle
+  core(fix): ripple not showing
+  styles(feat): add themes
+  core(fix): label position
+  components(chore): badge refactored
+  core(feat): enhance label and icon features
+  components(feat): enhance label and icon
+
+2025-03-12
+
+  components(feat): add inner container and adapt calculations
+  styles(chore): add status colors
+  components(chore): enhance dialog component
+
+2025-03-11
+
+  components(chore): enhance tab indicator width depending on the variant
+
+2025-03-10
+
+  → v0.2.6
+
+  components(chore): enhance card styles
+  components(chore): enhance content set
+  components(chore): refactor card component first iteration
+  remove size option from chip
+
+2025-03-09
+
+  components(chore): remove size option
+  components(chore): remove some styles from tabs indicator
+  components(fix): keyboard interactions bubble
+  components(fix): slider bubble not dismissing
+  components(chore): clean and optimization
+  components(chore): enhance tab indicator behavior
+  core(chore): fix CreateElementOptions function to handle class array
+  components(chore): fix styles issue of the badge styles
+  components(chore): enhance styles and tab indicators
+  components(chore): fix issues after refactor process
+
+2025-03-08
+
+  component(chore): tabs fix imports/exports
+  components(chore): first iteration
+  components(feat): fix tab for disabled slider
+  components(feat): enhance slider keyboard accessibility
+  component (feat): enhance slider accessibility
+  → v0.2.5
+
+  feat: remove vertical orientation
+  feat: remove label indicators
+  feat: optimize slider size
+  feat: optimize enhanced slider
+  feat: enhance ticks
+  feat optimize ui module
+  feat: fix vertical slider behavior
+  feat: optimize file size
+  feat: enhance size and positioning
+  feat: enhance slider thumb position
+
+2025-03-06
+
+  feat: enhance thumb at the edges
+  feat: enhance thumb position
+  fix: slider thumb position
+  feature: enhance slider thumbs position
+
+2025-03-05
+
+  → v0.2.4
+
+  feature: add core build
+  → v0.2.3
+
+  feature: remove transitions for now
+  feature: enhance slider tracks
+  feature: enhance carousel
+  feature: enhance slider styles
+  feature: enhance progress styles
+  prepare carousel component
+
+2025-03-03
+
+  feature: enhance slider styles
+  feature: enhance slider styles
+  feature enhance progress component styles
+  fix: vertical slider inverted orientation
+  feature: slider following the latest design
+  fix: event click on track
+  fix: slider errors and warnings
+
+2025-03-02
+
+  feature: enhance radio styles
+  fix: linear progress indicator
+  feature: add radios component
+  feature: add sheet component
+  feature: tooltip component
+  feature: add tabs components
+  feature: enhance textfield styles
+  fix: button types
+  feature: add slider component
+  feature: add dialog component
+  feature: add badge component
+  fix: textfield styles size
+  prepare documentation (typedoc)
+  fix: progress component class attribution
+  feature: add chip configuration
+
+2025-03-01
+
+  → v0.2.2
+
+  main(enhance): chip
+  → v0.2.1
+
+  fix: improve event handling for TypeScript compatibility
+  fix constants
+  → v0.2.0
+
+  convert core to ts
+  add progress component
+  convert to ts and refactor the menu component
+  add .gitignore
+  refactor and convert list component to ts
+  refactor and convert snackbar component to ts
+  convert navigation to ts
+  convert textfield component to ts
+  convert switch component to ts
+  remove unneeded container component
+  convert checkbox component to typescript
+  convert chip component to typescript
+  fix chip-set
+  delete old styles
+  add chip component to index files
+  enhance config by using a core config creator
+  convert button to typescript
+  fix checkbox label position
+  add chip component
+
+2025-02-28
+
+  → v0.1.3
+
+  prepare card component
+
+2025-02-27
+
+  → v0.1.2
+
+  add themes and bump version
+  → v0.1.0
+
+  styles refactoring
+
+2025-02-26
+
+  enhance checkbox styles
+  → v0.0.3
+
+  fix disabled state for checkbox and switch
+
+2025-02-25
+
+  add textfield component test suite
+  add tests for components
+  update license to MIT
+  → v0.0.2
+
+  add tests
+  → v0.0.1
+
+  add CONTRIBUTING.md
+  fix nested menus behavior
+  enhance menu styles and behaviour
+
+2025-02-24
+
+  add menu component
+
+2025-02-22
+
+  initial commit

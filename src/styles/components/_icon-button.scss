@@ -534,7 +534,7 @@ $widths: (
 // =============================================================================
 // Dark theme adjustments
 // =============================================================================
-body[data-theme-mode="dark"] {
+html[data-theme-mode="dark"] {
     .#{$component} {
         &:disabled,
         &.#{$component}--disabled {

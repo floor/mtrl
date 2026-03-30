@@ -65,9 +65,15 @@ export const normalizeClasses = (
     } else if (Array.isArray(cls)) {
       // Process array of classes
       cls.forEach((c) => {
-        if (typeof c === "string" && c && !seen.has(c)) {
-          seen.add(c);
-          result.push(c);
+        if (typeof c === "string" && c) {
+          // Split space-separated classes, same as top-level strings
+          c.split(" ").forEach((part) => {
+            const trimmed = part.trim();
+            if (trimmed && !seen.has(trimmed)) {
+              seen.add(trimmed);
+              result.push(trimmed);
+            }
+          });
         }
       });
     }

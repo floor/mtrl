@@ -390,7 +390,7 @@ $component: '#{base.$prefix}-button-group';
 // DARK THEME ADJUSTMENTS
 // =============================================================================
 
-body[data-theme-mode=dark] {
+html[data-theme-mode=dark] {
   .#{$component} {
     &--outlined {
       > .#{base.$prefix}-button {

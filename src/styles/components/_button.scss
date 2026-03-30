@@ -717,7 +717,7 @@ $component: '#{base.$prefix}-button';
 }
 
 // FIX: Disabled on dark theme (recommandations do not work as expected)
-body[data-theme-mode=dark] {
+html[data-theme-mode=dark] {
   // Interactive states
   .#{$component} {
     &:disabled {

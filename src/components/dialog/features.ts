@@ -383,6 +383,7 @@ export const withVisibility = () => (component) => {
   const focusableElements =
     'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
   let previouslyFocusedElement: HTMLElement | null = null;
+  let mouseDownOnOverlay = false;
 
   const trapFocus = () => {
     if (!component.config.trapFocus) return;
@@ -448,9 +449,11 @@ export const withVisibility = () => (component) => {
   };
 
   const setupEvents = () => {
-    // Handle overlay click
+    // Handle overlay close: require both mousedown and mouseup on overlay
+    // to prevent accidental closes when dragging from dialog content to overlay
     if (component.config.closeOnOverlayClick !== false) {
-      component.overlay.addEventListener("click", handleOverlayClick);
+      component.overlay.addEventListener("mousedown", handleOverlayMouseDown);
+      document.addEventListener("mouseup", handleOverlayMouseUp);
     }
 
     // Handle Escape key
@@ -460,15 +463,22 @@ export const withVisibility = () => (component) => {
   };
 
   const cleanupEvents = () => {
-    component.overlay.removeEventListener("click", handleOverlayClick);
+    component.overlay.removeEventListener("mousedown", handleOverlayMouseDown);
+    document.removeEventListener("mouseup", handleOverlayMouseUp);
     document.removeEventListener("keydown", handleEscKey);
   };
 
-  function handleOverlayClick(e: MouseEvent) {
-    // Only close if the click was directly on the overlay
-    if (e.target === component.overlay) {
+  function handleOverlayMouseDown(e: MouseEvent) {
+    // Track that mousedown started on the overlay itself
+    mouseDownOnOverlay = e.target === component.overlay;
+  }
+
+  function handleOverlayMouseUp(e: MouseEvent) {
+    // Only close if both mousedown and mouseup were on the overlay
+    if (mouseDownOnOverlay && e.target === component.overlay) {
       visibility.close();
     }
+    mouseDownOnOverlay = false;
   }
 
   function handleEscKey(e: KeyboardEvent) {

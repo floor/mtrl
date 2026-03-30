@@ -465,7 +465,7 @@ $component: "#{base.$prefix}-segmented-button";
 // DARK THEME ADJUSTMENTS
 // =============================================================================
 
-body[data-theme-mode="dark"] {
+html[data-theme-mode="dark"] {
     .#{$component} {
         border-color: t.color("outline");
 
