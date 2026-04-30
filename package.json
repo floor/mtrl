@@ -60,11 +60,8 @@
   "scripts": {
     "start": "bun run server.js",
     "dev": "bun --watch server.js",
-    "build:js": "bun build demo/main.js --outfile=demo/dist/bundle.js --format=esm",
-    "build:css": "sass src/styles/main.scss:demo/dist/styles.css --style=compressed",
-    "build": "bun run build:js && bun run build:css",
-    "build:lib": "bun run build.ts",
-    "prepublishOnly": "bun run build:lib",
+    "build": "bun run build.ts",
+    "prepublishOnly": "bun run build",
     "lint": "bunx eslint src --ext .ts,.tsx",
     "lint:fix": "bunx eslint src --ext .ts,.tsx --fix",
     "format": "bunx prettier --write .",

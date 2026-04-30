@@ -145,22 +145,18 @@ export const withMenu =
     // Convert options to menu items with proper recursive processing
     const menuItems = processMenuItems(state.options);
 
-    // Create menu component - pass the entire textfield component as opener
-    // This is crucial - passing the whole component instead of just its element
-    // The menu is appended to the select's element (not document.body) to ensure
-    // proper z-index stacking when the select is inside a dialog or other overlay
     const menu = createMenu({
-      opener: component.textfield, // Pass the entire textfield component
+      opener: component.textfield,
       items: menuItems,
       position: (config.placement || "bottom-start") as MenuPosition,
-      width: "100%", // Match width of textfield
+      width: "100%",
       class: "select-menu",
       closeOnSelect: true,
       closeOnClickOutside: true,
       closeOnEscape: true,
-      closeOnResize: true, // Close menu on window resize for better UX
-      offset: 0, // Set offset to 0 to eliminate gap between textfield and menu
-      container: component.element, // Keep menu within select element for proper stacking context
+      closeOnResize: true,
+      offset: 0,
+      container: component.element,
     });
 
     // Handle menu selection

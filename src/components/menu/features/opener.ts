@@ -249,6 +249,7 @@ const withOpener = (config: MenuConfig) => (component) => {
    */
   const handleOpenerClick = (e: MouseEvent): void => {
     e.preventDefault();
+    e.stopPropagation();
 
     // Toggle menu visibility with mouse interaction type
     if (component.menu) {
