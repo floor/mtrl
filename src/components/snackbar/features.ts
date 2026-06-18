@@ -27,9 +27,10 @@ export const withActionButton = (config: SnackbarConfig) =>
  * @param {SnackbarConfig} config - Component configuration
  * @returns {Function} Higher-order function that adds timer features
  */
-export const withDismissTimer = (config: SnackbarConfig) => 
+export const withDismissTimer = (config: SnackbarConfig) =>
   (component: BaseComponent): BaseComponent => {
     let timeoutId: number | null = null;
+    let duration = typeof config.duration === 'number' ? config.duration : 0;
 
     const startTimer = (): void => {
       // Clear any existing timer
@@ -39,12 +40,12 @@ export const withDismissTimer = (config: SnackbarConfig) =>
       }
 
       // Only start timer if duration is positive and numeric
-      if (typeof config.duration === 'number' && config.duration > 0) {
+      if (duration > 0) {
         timeoutId = window.setTimeout(() => {
           if (component.element && component.emit) {
             component.emit('dismiss');
           }
-        }, config.duration);
+        }, duration);
       }
     };
 
@@ -54,6 +55,12 @@ export const withDismissTimer = (config: SnackbarConfig) =>
         timeoutId = null;
       }
     };
+
+    const setDuration = (value: number): void => {
+      duration = typeof value === 'number' && value > 0 ? value : 0;
+    };
+
+    const getDuration = (): number => duration;
 
     // Clean up on destroy
     const originalDestroy = component.lifecycle?.destroy;
@@ -70,7 +77,9 @@ export const withDismissTimer = (config: SnackbarConfig) =>
       ...component,
       timer: {
         start: startTimer,
-        stop: stopTimer
+        stop: stopTimer,
+        setDuration,
+        getDuration
       } as SnackbarTimer
     };
   };

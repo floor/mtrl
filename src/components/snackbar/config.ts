@@ -14,6 +14,7 @@ export const defaultConfig: Partial<SnackbarConfig> = {
   variant: SNACKBAR_DEFAULTS.VARIANT,
   position: SNACKBAR_DEFAULTS.POSITION,
   duration: SNACKBAR_DEFAULTS.DURATION,
+  queueBehavior: SNACKBAR_DEFAULTS.QUEUE_BEHAVIOR,
 };
 
 /**
@@ -55,11 +56,16 @@ export const getTextConfig = (config: SnackbarConfig) => ({
  * @param {SnackbarQueue} queue - Snackbar queue manager
  * @returns {ApiOptions} API configuration object
  */
-export const getApiConfig = (comp: BaseComponent, queue: any): ApiOptions => ({
+export const getApiConfig = (
+  comp: BaseComponent,
+  queue: any,
+  config?: SnackbarConfig
+): ApiOptions => ({
   lifecycle: {
     destroy: comp.lifecycle?.destroy || (() => {}),
   },
   queue,
+  queueBehavior: config?.queueBehavior,
 });
 
 export default defaultConfig;

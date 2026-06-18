@@ -14,7 +14,7 @@ import {
  * @returns {Function} Higher-order function that adds API methods to component
  */
 export const withAPI =
-  ({ lifecycle, queue }: ApiOptions) =>
+  ({ lifecycle, queue, queueBehavior }: ApiOptions) =>
   (component: BaseComponent): SnackbarComponent => {
     if (!queue) {
       throw new Error("Snackbar queue is required");
@@ -40,26 +40,32 @@ export const withAPI =
         isVisible = true;
         this.state = "visible";
 
-        queue.add({
-          ...this,
-          _show: (): SnackbarComponent => {
-            document.body.appendChild(component.element);
+        queue.add(
+          {
+            ...this,
+            _show: (): SnackbarComponent => {
+              document.body.appendChild(component.element);
 
-            // Force reflow for animation
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const _ = component.element.offsetHeight;
+              // Force reflow for animation
+              // eslint-disable-next-line @typescript-eslint/no-unused-vars
+              const _ = component.element.offsetHeight;
 
-            component.element.classList.add(
-              `${component.getClass?.("snackbar")}--visible`
-            );
+              component.element.classList.add(
+                `${component.getClass?.("snackbar")}--visible`
+              );
 
-            if (component.timer) {
-              component.timer.start();
-            }
+              if (component.timer) {
+                component.timer.start();
+              }
 
-            return this;
-          },
-        } as QueuedSnackbar);
+              return this;
+            },
+            // Lets the queue evict this snackbar (e.g. on 'replace') without
+            // routing through the dismiss event.
+            _hide: (): SnackbarComponent => this.hide(),
+          } as QueuedSnackbar,
+          { behavior: queueBehavior }
+        );
 
         return this;
       },
@@ -142,12 +148,15 @@ export const withAPI =
 
       /**
        * Sets the display duration
-       * @param {number} duration - New duration in milliseconds
+       * @param {number} duration - New duration in milliseconds (0 for indefinite)
        * @returns {SnackbarComponent} Component instance for chaining
        */
-      setDuration(): SnackbarComponent {
-        // Implementation would depend on how the timer is configured
-        // This is a placeholder implementation
+      setDuration(duration: number): SnackbarComponent {
+        component.timer?.setDuration?.(duration);
+        // Restart the countdown with the new duration if already on screen.
+        if (isVisible && component.timer) {
+          component.timer.start();
+        }
         return this;
       },
 
@@ -156,9 +165,7 @@ export const withAPI =
        * @returns {number} Current duration in milliseconds
        */
       getDuration(): number {
-        // Implementation would depend on how the timer is configured
-        // This is a placeholder implementation
-        return 0;
+        return component.timer?.getDuration?.() ?? 0;
       },
 
       /**

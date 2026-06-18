@@ -36,6 +36,21 @@ export const SNACKBAR_STATES = {
 } as const;
 
 /**
+ * Snackbar queue behaviors
+ *
+ * Controls how a newly shown snackbar interacts with the one currently on
+ * screen and any still waiting in the queue.
+ * @category Components
+ */
+export const SNACKBAR_QUEUE_BEHAVIORS = {
+  /** Wait in line — shown one at a time, in order (default) */
+  QUEUE: 'queue',
+  /** Replace — immediately dismiss the current snackbar, drop any pending
+   *  ones, and show this snackbar right away (last-wins) */
+  REPLACE: 'replace'
+} as const;
+
+/**
  * Snackbar event types
  * @category Components
  */
@@ -61,6 +76,10 @@ export const SNACKBAR_DEFAULTS = {
   POSITION: SNACKBAR_POSITIONS.CENTER,
   /** Default display duration in milliseconds (4 seconds) */
   DURATION: 4000,
+  /** Default queue behavior */
+  QUEUE_BEHAVIOR: SNACKBAR_QUEUE_BEHAVIORS.QUEUE,
+  /** Delay in milliseconds between a dismissed snackbar and the next one */
+  QUEUE_GAP: 200,
   /** Default z-index for snackbars */
   Z_INDEX: 1000,
   /** Default animation duration in milliseconds */

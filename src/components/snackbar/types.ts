@@ -28,6 +28,21 @@ export const SNACKBAR_POSITIONS = {
 } as const;
 
 /**
+ * Available snackbar queue behaviors
+ */
+export type SnackbarQueueBehavior = 'queue' | 'replace';
+
+/**
+ * Snackbar queue behaviors
+ */
+export const SNACKBAR_QUEUE_BEHAVIORS = {
+  /** Shown one at a time, in order (default) */
+  QUEUE: 'queue',
+  /** Replace the current snackbar and drop pending ones (last-wins) */
+  REPLACE: 'replace'
+} as const;
+
+/**
  * Snackbar visibility states
  */
 export type SnackbarState = 'visible' | 'hidden';
@@ -82,7 +97,16 @@ export interface SnackbarConfig {
   
   /** Duration in milliseconds to show the snackbar (0 for indefinite) */
   duration?: number;
-  
+
+  /**
+   * How this snackbar interacts with the queue when shown.
+   * - `'queue'` (default): wait in line and show one at a time, in order.
+   * - `'replace'`: immediately dismiss the current snackbar, drop any pending
+   *   ones, and show this snackbar right away. Useful for rapid, repeated
+   *   actions where only the latest message matters.
+   */
+  queueBehavior?: SnackbarQueueBehavior;
+
   /** Action button callback function */
   onAction?: (event: SnackbarEvent) => void;
   
@@ -188,6 +212,10 @@ export interface BaseComponent {
 export interface SnackbarTimer {
   start: () => void;
   stop: () => void;
+  /** Sets the auto-dismiss duration in milliseconds */
+  setDuration: (duration: number) => void;
+  /** Gets the current auto-dismiss duration in milliseconds */
+  getDuration: () => number;
 }
 
 /**
@@ -195,15 +223,25 @@ export interface SnackbarTimer {
  */
 export interface QueuedSnackbar {
   _show: () => void;
+  /** Visually dismisses the snackbar without advancing the queue */
+  _hide?: () => void;
   on: (event: string, handler: () => void) => void;
   off: (event: string, handler: () => void) => void;
+}
+
+/**
+ * Options controlling how a snackbar is added to the queue
+ */
+export interface SnackbarQueueAddOptions {
+  /** Behavior to apply when adding this snackbar (defaults to `'queue'`) */
+  behavior?: SnackbarQueueBehavior;
 }
 
 /**
  * Interface for the snackbar queue manager
  */
 export interface SnackbarQueue {
-  add: (snackbar: QueuedSnackbar) => void;
+  add: (snackbar: QueuedSnackbar, options?: SnackbarQueueAddOptions) => void;
   clear: () => void;
   getLength: () => number;
 }
@@ -216,4 +254,6 @@ export interface ApiOptions {
     destroy: () => void;
   };
   queue: SnackbarQueue;
+  /** Queue behavior applied when the snackbar is shown */
+  queueBehavior?: SnackbarQueueBehavior;
 }

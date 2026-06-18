@@ -47,7 +47,7 @@ const createSnackbar = (config: SnackbarConfig): SnackbarComponent => {
       // First apply timer
       withDismissTimer(baseConfig),
       // Then apply API which needs timer
-      comp => withAPI(getApiConfig(comp, queue))(comp)
+      comp => withAPI(getApiConfig(comp, queue, baseConfig))(comp)
     )(baseConfig);
 
     return snackbar as SnackbarComponent;

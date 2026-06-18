@@ -2,4 +2,11 @@
 export { default } from "./snackbar";
 
 // Export types
-export { SnackbarConfig, SnackbarComponent } from "./types";
+export {
+  SnackbarConfig,
+  SnackbarComponent,
+  SnackbarQueueBehavior,
+} from "./types";
+
+// Export constants
+export { SNACKBAR_QUEUE_BEHAVIORS } from "./constants";
