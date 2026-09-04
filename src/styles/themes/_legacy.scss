@@ -1,8 +1,8 @@
 // src/styles/themes/_legacy.scss
 // Legacy: the Radiooooo v3 palette. Values are the v3 ones, set by hand:
-// bar blue on primary (and primary container, for the vibrant toolbar
-// scheme), selection orange on tertiary, the charcoal indicator on secondary,
-// the salmon selected-mode disc on secondary container, cream surfaces.
+// bar blue on primary, selection orange on tertiary, the charcoal indicator
+// on secondary, the salmon selected-mode disc on secondary container, cream
+// surfaces. Dark mode keeps the bar blue as the primary container.
 @use "../abstract/base" as *;
 @use "base-theme" as *;
 
@@ -10,8 +10,8 @@
     // Key colors (light)
     --#{$prefix}-sys-color-primary: #00489a;
     --#{$prefix}-sys-color-on-primary: #ffffff;
-    --#{$prefix}-sys-color-primary-container: #00489a;
-    --#{$prefix}-sys-color-on-primary-container: #ffffff;
+    --#{$prefix}-sys-color-primary-container: #d6e3ff;
+    --#{$prefix}-sys-color-on-primary-container: #001b3f;
     --#{$prefix}-sys-color-secondary: #333333;
     --#{$prefix}-sys-color-on-secondary: #ffffff;
     --#{$prefix}-sys-color-secondary-container: #ea9d97;
