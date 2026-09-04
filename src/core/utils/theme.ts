@@ -26,11 +26,13 @@ const setupThemeObserver = (): void => {
     }
   });
 
-  // Start observing body for theme changes
-  themeObserver.observe(document.body, {
-    attributes: true,
-    attributeFilter: ['data-theme', 'data-theme-mode']
-  });
+  // Themes are set with data-theme / data-theme-mode on <html> or on <body>;
+  // observe both so a change on either notifies.
+  const options = { attributes: true, attributeFilter: ['data-theme', 'data-theme-mode'] };
+  themeObserver.observe(document.documentElement, options);
+  if (document.body) {
+    themeObserver.observe(document.body, options);
+  }
 };
 
 /**
