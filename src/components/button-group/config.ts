@@ -62,6 +62,7 @@ export const getContainerConfig = (config: ButtonGroupConfig) => {
   const density = config.density || BUTTON_GROUP_DEFAULTS.DENSITY;
   const kind = config.kind || BUTTON_GROUP_DEFAULTS.KIND;
   const selection = config.selection || BUTTON_GROUP_DEFAULTS.SELECTION;
+  const labels = config.labels || BUTTON_GROUP_DEFAULTS.LABELS;
   const shape = config.shape || BUTTON_GROUP_DEFAULTS.SHAPE;
   const size = config.size || BUTTON_GROUP_DEFAULTS.SIZE;
 
@@ -77,10 +78,12 @@ export const getContainerConfig = (config: ButtonGroupConfig) => {
       'data-kind': kind,
       'data-selection': selection,
       'data-shape': shape,
-      'data-size': size
+      'data-size': size,
+      'data-labels': labels
     },
     className: [
       config.class,
+      labels === 'selected' ? `${config.prefix}-button-group--labels-selected` : null,
       config.disabled ? `${config.prefix}-button-group--disabled` : null,
       `${config.prefix}-button-group--${orientation}`,
       `${config.prefix}-button-group--${variant}`,

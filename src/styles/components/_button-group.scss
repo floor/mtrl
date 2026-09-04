@@ -478,6 +478,23 @@ $component: '#{base.$prefix}-button-group';
     }
   }
 
+  // --- labels "selected": buttons with icon + text show the text only while
+  // selected; the selected button widens to reveal it (M3 Expressive)
+  &--labels-selected {
+    > .#{base.$prefix}-button {
+      min-width: var(--button-group-height);
+      padding: 0 calc((var(--button-group-height) - 24px) / 2);
+      .#{base.$prefix}-button-text {
+        display: inline-block; max-width: 0; opacity: 0; overflow: hidden; white-space: nowrap; margin-left: 0;
+        transition: max-width 200ms cubic-bezier(0.2, 0, 0, 1), opacity 150ms linear, margin-left 200ms cubic-bezier(0.2, 0, 0, 1);
+      }
+    }
+    > .#{$component}__button--selected {
+      padding-right: 16px;
+      .#{base.$prefix}-button-text { max-width: 12em; opacity: 1; margin-left: 8px; }
+    }
+  }
+
   // --- selected colours follow the toggle button styles of each variant
   &--selectable {
     > .#{$component}__button--selected {

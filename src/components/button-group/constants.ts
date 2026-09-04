@@ -95,11 +95,18 @@ export const BUTTON_GROUP_CONNECTED_GAP = 2;
 /**
  * Default configuration values
  */
+/** Label display in selection groups */
+export const BUTTON_GROUP_LABELS = {
+  ALWAYS: 'always',
+  SELECTED: 'selected'
+} as const;
+
 export const BUTTON_GROUP_DEFAULTS = {
   KIND: BUTTON_GROUP_KINDS.STANDARD,
   SELECTION: BUTTON_GROUP_SELECTION.NONE,
   SHAPE: BUTTON_GROUP_SHAPES.ROUND,
   SIZE: BUTTON_GROUP_SIZES.S,
+  LABELS: BUTTON_GROUP_LABELS.ALWAYS,
   /** Default variant (outlined per MD3 button group specs) */
   VARIANT: BUTTON_GROUP_VARIANTS.OUTLINED,
   /** Default orientation */

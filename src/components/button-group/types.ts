@@ -43,6 +43,8 @@ export type ButtonGroupKind = "standard" | "connected";
 export type ButtonGroupSelection = "none" | "single" | "multi";
 export type ButtonGroupShape = "round" | "square";
 export type ButtonGroupSize = "xs" | "s" | "m" | "l" | "xl";
+/** Label display: always, or only on the selected button (icon-only otherwise) */
+export type ButtonGroupLabels = "always" | "selected";
 
 /** Payload of the "change" event: the selection after the change. */
 export interface ButtonGroupChangeEvent {
@@ -142,6 +144,12 @@ export interface ButtonGroupConfig {
   shape?: ButtonGroupShape;
   /** Material size token: xs, s (default), m, l, xl */
   size?: ButtonGroupSize;
+  /**
+   * "always" (default): buttons show icon and text. "selected": buttons with
+   * an icon and a text show the text only while selected; the selected button
+   * widens to reveal it (M3 Expressive connected groups).
+   */
+  labels?: ButtonGroupLabels;
 
   /**
    * Visual variant applied to all buttons in the group

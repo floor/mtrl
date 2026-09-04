@@ -571,6 +571,21 @@ describe("Button group selection (Material 3 kinds)", () => {
     group.destroy();
   });
 
+  it("labels selected: the container carries the modifier and buttons keep icon and text", () => {
+    const group = createButtonGroup({
+      kind: "connected", selection: "single", labels: "selected",
+      buttons: [{ value: "a", icon: "<svg></svg>", text: "Alpha", selected: true }, { value: "b", icon: "<svg></svg>", text: "Beta" }],
+    });
+    expect(group.element.classList.contains("mtrl-button-group--labels-selected")).toBe(true);
+    expect(group.element.getAttribute("data-labels")).toBe("selected");
+    expect(group.buttons[1].element.querySelector(".mtrl-button-text")?.textContent).toBe("Beta");
+    expect(group.buttons[0].element.classList.contains("mtrl-button-group__button--selected")).toBe(true);
+    const plain = createButtonGroup({ buttons: [{ text: "x", value: "x" }] });
+    expect(plain.element.getAttribute("data-labels")).toBe("always");
+    group.destroy();
+    plain.destroy();
+  });
+
   it("size and kind tokens are exposed as custom properties", () => {
     const group = createButtonGroup({ kind: "connected", size: "m", buttons: items.slice(0, 2) });
     expect(group.element.style.getPropertyValue("--button-group-height")).toBe("56px");
