@@ -49,13 +49,57 @@ export const BUTTON_GROUP_EVENTS = {
   /** Fired when a button receives focus */
   FOCUS: 'focus',
   /** Fired when a button loses focus */
-  BLUR: 'blur'
+  BLUR: 'blur',
+  /** Fired when the selection changes (selection groups) */
+  CHANGE: 'change'
 } as const;
+
+/** Material 3 button group kinds */
+export const BUTTON_GROUP_KINDS = {
+  STANDARD: 'standard',
+  CONNECTED: 'connected'
+} as const;
+
+/** Selection behaviour of the group */
+export const BUTTON_GROUP_SELECTION = {
+  NONE: 'none',
+  SINGLE: 'single',
+  MULTI: 'multi'
+} as const;
+
+export const BUTTON_GROUP_SHAPES = {
+  ROUND: 'round',
+  SQUARE: 'square'
+} as const;
+
+export const BUTTON_GROUP_SIZES = {
+  XS: 'xs',
+  S: 's',
+  M: 'm',
+  L: 'l',
+  XL: 'xl'
+} as const;
+
+/** Material 3 button group tokens per size (dp): container height, standard inner padding, connected inner corner */
+export const BUTTON_GROUP_SIZE_TOKENS = {
+  xs: { height: 32, standardGap: 18, connectedCorner: 4 },
+  s: { height: 40, standardGap: 12, connectedCorner: 8 },
+  m: { height: 56, standardGap: 8, connectedCorner: 8 },
+  l: { height: 96, standardGap: 8, connectedCorner: 16 },
+  xl: { height: 136, standardGap: 8, connectedCorner: 20 }
+} as const;
+
+/** Connected groups use 2dp between buttons at every size */
+export const BUTTON_GROUP_CONNECTED_GAP = 2;
 
 /**
  * Default configuration values
  */
 export const BUTTON_GROUP_DEFAULTS = {
+  KIND: BUTTON_GROUP_KINDS.STANDARD,
+  SELECTION: BUTTON_GROUP_SELECTION.NONE,
+  SHAPE: BUTTON_GROUP_SHAPES.ROUND,
+  SIZE: BUTTON_GROUP_SIZES.S,
   /** Default variant (outlined per MD3 button group specs) */
   VARIANT: BUTTON_GROUP_VARIANTS.OUTLINED,
   /** Default orientation */

@@ -387,6 +387,120 @@ $component: '#{base.$prefix}-button-group';
 }
 
 // =============================================================================
+// MATERIAL 3 BUTTON GROUPS: KINDS, SHAPES, SIZES, SELECTION
+// =============================================================================
+// Standard: padding between buttons (18/12/8/8/8dp by size); a selected
+// button morphs round -> square. Connected: 2dp between buttons, round or
+// square outer corners, square inner corners (4/8/8/16/20dp by size);
+// selection changes only the selected button. Tokens come from the
+// component as custom properties (--button-group-height, --button-group-gap,
+// --button-group-inner-corner, --button-group-radius).
+.#{$component} {
+  &--standard,
+  &--connected {
+    gap: var(--button-group-gap);
+
+    > .#{base.$prefix}-button,
+    > .#{base.$prefix}-icon-button {
+      height: var(--button-group-height);
+      min-width: var(--button-group-height);
+      border-radius: var(--button-group-radius);
+      transition: border-radius 200ms cubic-bezier(0.2, 0, 0, 1), width 200ms cubic-bezier(0.2, 0, 0, 1), background-color 150ms linear;
+    }
+    // Selectable groups: no dividing borders, the selected state carries the meaning
+    &.#{$component}--selectable > .#{base.$prefix}-button,
+    &.#{$component}--selectable > .#{base.$prefix}-icon-button {
+      border-color: transparent;
+    }
+  }
+
+  // --- standard: round buttons; the selected one becomes square
+  &--standard {
+    > .#{base.$prefix}-button,
+    > .#{base.$prefix}-icon-button {
+      border-radius: var(--button-group-radius);
+    }
+    &.#{$component}--square > .#{base.$prefix}-button,
+    &.#{$component}--square > .#{base.$prefix}-icon-button {
+      border-radius: var(--button-group-inner-corner);
+    }
+    > .#{$component}__button--selected {
+      border-radius: var(--button-group-inner-corner);
+    }
+    &.#{$component}--square > .#{$component}__button--selected {
+      border-radius: var(--button-group-radius);
+    }
+  }
+
+  // --- connected: outer corners on the ends, square inner corners
+  &--connected {
+    > .#{base.$prefix}-button,
+    > .#{base.$prefix}-icon-button {
+      border-radius: var(--button-group-inner-corner);
+    }
+    > .#{$component}__button--first {
+      border-top-left-radius: var(--button-group-radius);
+      border-bottom-left-radius: var(--button-group-radius);
+    }
+    > .#{$component}__button--last {
+      border-top-right-radius: var(--button-group-radius);
+      border-bottom-right-radius: var(--button-group-radius);
+    }
+    > .#{$component}__button--single {
+      border-radius: var(--button-group-radius);
+    }
+    &.#{$component}--square {
+      > .#{$component}__button--first,
+      > .#{$component}__button--last,
+      > .#{$component}__button--single {
+        border-radius: var(--button-group-inner-corner);
+      }
+    }
+    &.#{$component}--vertical {
+      > .#{$component}__button--first {
+        border-radius: var(--button-group-radius) var(--button-group-radius) var(--button-group-inner-corner) var(--button-group-inner-corner);
+      }
+      > .#{$component}__button--last {
+        border-radius: var(--button-group-inner-corner) var(--button-group-inner-corner) var(--button-group-radius) var(--button-group-radius);
+      }
+    }
+    // the selected button keeps its place; only its colour and inner shape change
+    > .#{$component}__button--selected {
+      border-radius: var(--button-group-inner-corner);
+    }
+    > .#{$component}__button--selected.#{$component}__button--first {
+      border-top-left-radius: var(--button-group-radius);
+      border-bottom-left-radius: var(--button-group-radius);
+    }
+    > .#{$component}__button--selected.#{$component}__button--last {
+      border-top-right-radius: var(--button-group-radius);
+      border-bottom-right-radius: var(--button-group-radius);
+    }
+  }
+
+  // --- selected colours follow the toggle button styles of each variant
+  &--selectable {
+    > .#{$component}__button--selected {
+      background-color: t.color('primary');
+      color: t.color('on-primary');
+    }
+    &.#{$component}--tonal > .#{$component}__button--selected {
+      background-color: t.color('secondary-container');
+      color: t.color('on-secondary-container');
+    }
+    &.#{$component}--outlined > .#{$component}__button--selected,
+    &.#{$component}--text > .#{$component}__button--selected {
+      background-color: t.color('inverse-surface');
+      color: t.color('inverse-on-surface');
+    }
+    &.#{$component}--elevated > .#{$component}__button--selected {
+      background-color: t.color('primary');
+      color: t.color('on-primary');
+    }
+  }
+}
+
+// =============================================================================
 // DARK THEME ADJUSTMENTS
 // =============================================================================
 

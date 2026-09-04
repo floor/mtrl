@@ -4,6 +4,7 @@ import { pipe } from '../../core/compose/pipe';
 import { createBase, withElement } from '../../core/compose/component';
 import { withEvents, withLifecycle } from '../../core/compose/features';
 import { createEmitter } from '../../core/state/emitter';
+import createIconButton from '../icon-button/icon-button';
 import createButton from '../button';
 import {
   ButtonGroupConfig,
@@ -11,13 +12,17 @@ import {
   ButtonGroupVariant,
   ButtonGroupOrientation,
   ButtonGroupDensity,
-  ButtonGroupEvent
+  ButtonGroupEvent,
+  ButtonGroupChangeEvent,
+  ButtonGroupKind,
+  ButtonGroupSelection
 } from './types';
 import { ButtonComponent } from '../button/types';
 import {
   createBaseConfig,
   getContainerConfig,
   getDensityStyles,
+  getSizeStyles,
   getButtonConfig
 } from './config';
 import {
@@ -82,6 +87,10 @@ const createButtonGroup = (config: ButtonGroupConfig = {}): ButtonGroupComponent
   let currentVariant: ButtonGroupVariant = baseConfig.variant || BUTTON_GROUP_DEFAULTS.VARIANT;
   let currentOrientation: ButtonGroupOrientation = baseConfig.orientation || BUTTON_GROUP_DEFAULTS.ORIENTATION;
   let currentDensity: ButtonGroupDensity = baseConfig.density || BUTTON_GROUP_DEFAULTS.DENSITY;
+  const kind: ButtonGroupKind = baseConfig.kind || BUTTON_GROUP_DEFAULTS.KIND;
+  const selection: ButtonGroupSelection = baseConfig.selection || BUTTON_GROUP_DEFAULTS.SELECTION;
+  const required = Boolean(baseConfig.required);
+  const selectedValues = new Set<string>();
 
   try {
     // Create the base component with container element
@@ -97,29 +106,93 @@ const createButtonGroup = (config: ButtonGroupConfig = {}): ButtonGroupComponent
     Object.entries(densityStyles).forEach(([prop, value]) => {
       component.element.style.setProperty(prop, value);
     });
+    // Material 3 sizes and kinds (height, gap, corners) override the density defaults
+    Object.entries(getSizeStyles(baseConfig.size, kind)).forEach(([prop, value]) => {
+      component.element.style.setProperty(prop, value);
+    });
 
     // Create buttons
     const buttons: ButtonComponent[] = [];
     const buttonConfigs = baseConfig.buttons || [];
     const totalButtons = buttonConfigs.length;
 
+    const valueOf = (button: ButtonComponent): string => {
+      const config = (button as any)._groupConfig;
+      return String(config?.value ?? config?.id ?? (button as any)._groupIndex);
+    };
+
+    const applySelectedState = (button: ButtonComponent, selected: boolean) => {
+      const selectedClass = `${baseConfig.prefix}-button-group__button--selected`;
+      button.element.classList.toggle(selectedClass, selected);
+      button.element.setAttribute('aria-pressed', String(selected));
+      const toggleState = (button as any).toggleState;
+      if (toggleState?.isToggle?.()) {
+        if (selected) toggleState.select();
+        else toggleState.deselect();
+      }
+    };
+
+    const emitChange = (button?: ButtonComponent, originalEvent?: Event) => {
+      const selected = buttons.filter(b => selectedValues.has(valueOf(b)));
+      const changeEvent: ButtonGroupChangeEvent = {
+        buttonGroup,
+        values: selected.map(valueOf),
+        selected,
+        button,
+        originalEvent
+      };
+      emitter.emit('change', changeEvent);
+    };
+
+    /** Applies a selection change; returns false when nothing changed. */
+    const setSelected = (value: string, selected: boolean, button?: ButtonComponent, originalEvent?: Event): boolean => {
+      if (selection === 'none') return false;
+      const target = buttons.find(b => valueOf(b) === value);
+      if (!target) return false;
+      if (selected === selectedValues.has(value)) return false;
+      if (!selected && required && selectedValues.size === 1) return false;
+      if (selected && selection === 'single') {
+        for (const other of buttons) {
+          const otherValue = valueOf(other);
+          if (otherValue !== value && selectedValues.has(otherValue)) {
+            selectedValues.delete(otherValue);
+            applySelectedState(other, false);
+          }
+        }
+      }
+      if (selected) selectedValues.add(value);
+      else selectedValues.delete(value);
+      applySelectedState(target, selected);
+      emitChange(button ?? target, originalEvent);
+      return true;
+    };
+
     buttonConfigs.forEach((buttonConfig, index) => {
-      // Get configuration for this button with group-specific settings
       const resolvedConfig = getButtonConfig(
         buttonConfig,
         index,
         totalButtons,
         baseConfig
       );
-
-      // Create button component
-      const button = createButton(resolvedConfig);
-
-      // Store reference to original config for later use
+      const selectable = selection !== 'none';
+      const iconOnly = Boolean(buttonConfig.icon) && !buttonConfig.text;
+      // Icon-only items are icon buttons (the Material spec allows both in a
+      // group); they carry their own toggle state and selected icon.
+      const button = (iconOnly
+        ? createIconButton({
+            ...resolvedConfig,
+            toggle: selectable,
+            toggleOnClick: false,
+            selected: Boolean(buttonConfig.selected),
+            selectedIcon: buttonConfig.selectedIcon,
+            variant: resolvedConfig.variant === 'text' ? 'standard' : resolvedConfig.variant
+          } as any)
+        : createButton(resolvedConfig)) as unknown as ButtonComponent;
       (button as any)._groupConfig = buttonConfig;
       (button as any)._groupIndex = index;
-
-      // Add click handler that emits group event
+      if (selectable) {
+        button.element.setAttribute('aria-pressed', 'false');
+      }
       button.on('click', (originalEvent: Event) => {
         if (!button.disabled?.isDisabled()) {
           const groupEvent: ButtonGroupEvent = {
@@ -129,10 +202,18 @@ const createButtonGroup = (config: ButtonGroupConfig = {}): ButtonGroupComponent
             originalEvent: originalEvent
           };
           emitter.emit('click', groupEvent);
+          if (selection !== 'none') {
+            const value = valueOf(button);
+            const isSelected = selectedValues.has(value);
+            if (selection === 'single') {
+              if (!isSelected) setSelected(value, true, button, originalEvent);
+              else if (!required) setSelected(value, false, button, originalEvent);
+            } else {
+              setSelected(value, !isSelected, button, originalEvent);
+            }
+          }
         }
       });
-
-      // Add focus handler
       button.on('focus', (originalEvent: Event) => {
         const groupEvent: ButtonGroupEvent = {
           buttonGroup: buttonGroup,
@@ -142,8 +223,6 @@ const createButtonGroup = (config: ButtonGroupConfig = {}): ButtonGroupComponent
         };
         emitter.emit('focus', groupEvent);
       });
-
-      // Add blur handler
       button.on('blur', (originalEvent: Event) => {
         const groupEvent: ButtonGroupEvent = {
           buttonGroup: buttonGroup,
@@ -153,17 +232,21 @@ const createButtonGroup = (config: ButtonGroupConfig = {}): ButtonGroupComponent
         };
         emitter.emit('blur', groupEvent);
       });
-
-      // Add to container
       component.element.appendChild(button.element);
       buttons.push(button);
     });
 
-    /**
-     * Updates the variant for all buttons
-     * @param {ButtonGroupVariant} variant - New variant
-     * @private
-     */
+    // Initial selection, without events
+    if (selection !== 'none') {
+      buttons.forEach(button => {
+        const config = (button as any)._groupConfig;
+        if (config?.selected && (selection === 'multi' || selectedValues.size === 0)) {
+          selectedValues.add(valueOf(button));
+          applySelectedState(button, true);
+        }
+      });
+    }
+
     const updateVariant = (variant: ButtonGroupVariant) => {
       // Update container class
       const variantClasses = ['filled', 'tonal', 'outlined', 'elevated', 'text'];
@@ -295,6 +378,30 @@ const createButtonGroup = (config: ButtonGroupConfig = {}): ButtonGroupComponent
           button.enable();
         }
         return this;
+      },
+      getSelected() {
+        return buttons.filter(b => selectedValues.has(valueOf(b))).map(valueOf);
+      },
+      isSelected(value: string) {
+        return selectedValues.has(value);
+      },
+      select(value: string) {
+        setSelected(value, true);
+        return this;
+      },
+      deselect(value: string) {
+        setSelected(value, false);
+        return this;
+      },
+      toggle(value: string) {
+        setSelected(value, !selectedValues.has(value));
+        return this;
+      },
+      getKind() {
+        return kind;
+      },
+      getSelection() {
+        return selection;
       },
 
       disableButton(index: number) {

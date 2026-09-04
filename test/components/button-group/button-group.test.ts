@@ -492,3 +492,93 @@ describe("Button Group Component", () => {
     });
   });
 });
+
+describe("Button group selection (Material 3 kinds)", () => {
+  const items = [
+    { value: "explore", icon: "<svg></svg>", ariaLabel: "Explore", selected: true },
+    { value: "taxi", icon: "<svg></svg>", ariaLabel: "Taxi" },
+    { value: "islands", icon: "<svg></svg>", ariaLabel: "Islands" },
+  ];
+
+  it("renders icon-only items as icon buttons with aria-pressed", () => {
+    const group = createButtonGroup({ kind: "connected", selection: "single", buttons: items });
+    expect(group.element.getAttribute("data-kind")).toBe("connected");
+    expect(group.element.classList.contains("mtrl-button-group--connected")).toBe(true);
+    expect(group.element.classList.contains("mtrl-button-group--selectable")).toBe(true);
+    expect(group.buttons).toHaveLength(3);
+    expect(group.buttons[0].element.classList.contains("mtrl-icon-button")).toBe(true);
+    expect(group.buttons[0].element.getAttribute("aria-pressed")).toBe("true");
+    expect(group.buttons[1].element.getAttribute("aria-pressed")).toBe("false");
+    expect(group.getSelected()).toEqual(["explore"]);
+    group.destroy();
+  });
+
+  it("single selection: a click selects one and deselects the other, with a change event", () => {
+    const group = createButtonGroup({ kind: "connected", selection: "single", buttons: items });
+    const changes: string[][] = [];
+    group.on("change", (event) => changes.push(event.values));
+    group.buttons[1].element.click();
+    expect(group.getSelected()).toEqual(["taxi"]);
+    expect(group.buttons[0].element.getAttribute("aria-pressed")).toBe("false");
+    expect(group.buttons[1].element.classList.contains("mtrl-button-group__button--selected")).toBe(true);
+    expect(changes).toEqual([["taxi"]]);
+    group.destroy();
+  });
+
+  it("required: the selected button cannot be deselected", () => {
+    const group = createButtonGroup({ kind: "connected", selection: "single", required: true, buttons: items });
+    group.buttons[0].element.click();
+    expect(group.getSelected()).toEqual(["explore"]);
+    group.deselect("explore");
+    expect(group.getSelected()).toEqual(["explore"]);
+    group.destroy();
+  });
+
+  it("without required, clicking the selected button in single mode clears the selection", () => {
+    const group = createButtonGroup({ selection: "single", buttons: items });
+    group.buttons[0].element.click();
+    expect(group.getSelected()).toEqual([]);
+    group.destroy();
+  });
+
+  it("multi selection toggles independently", () => {
+    const group = createButtonGroup({ kind: "standard", selection: "multi", buttons: items });
+    group.buttons[1].element.click();
+    group.buttons[2].element.click();
+    expect(group.getSelected()).toEqual(["explore", "taxi", "islands"]);
+    group.toggle("explore");
+    expect(group.getSelected()).toEqual(["taxi", "islands"]);
+    group.destroy();
+  });
+
+  it("programmatic select emits change and honours single mode", () => {
+    const group = createButtonGroup({ selection: "single", buttons: items });
+    const changes: string[][] = [];
+    group.on("change", (event) => changes.push(event.values));
+    group.select("islands");
+    expect(group.getSelected()).toEqual(["islands"]);
+    group.select("islands"); // no change, no event
+    expect(changes).toEqual([["islands"]]);
+    group.destroy();
+  });
+
+  it("selection none keeps plain buttons", () => {
+    const group = createButtonGroup({ buttons: [{ text: "Bold", value: "b" }, { text: "Italic", value: "i" }] });
+    group.buttons[0].element.click();
+    expect(group.getSelected()).toEqual([]);
+    expect(group.buttons[0].element.hasAttribute("aria-pressed")).toBe(false);
+    expect(group.element.getAttribute("data-kind")).toBe("standard");
+    group.destroy();
+  });
+
+  it("size and kind tokens are exposed as custom properties", () => {
+    const group = createButtonGroup({ kind: "connected", size: "m", buttons: items.slice(0, 2) });
+    expect(group.element.style.getPropertyValue("--button-group-height")).toBe("56px");
+    expect(group.element.style.getPropertyValue("--button-group-gap")).toBe("2px");
+    expect(group.element.style.getPropertyValue("--button-group-inner-corner")).toBe("8px");
+    const standard = createButtonGroup({ kind: "standard", size: "xs", buttons: items.slice(0, 2) });
+    expect(standard.element.style.getPropertyValue("--button-group-gap")).toBe("18px");
+    group.destroy();
+    standard.destroy();
+  });
+});

@@ -29,7 +29,31 @@ export type ButtonGroupDensity = "default" | "comfortable" | "compact";
 /**
  * Event types for button group
  */
-export type ButtonGroupEventType = "click" | "focus" | "blur";
+export type ButtonGroupEventType = "click" | "focus" | "blur" | "change";
+
+/**
+ * Material 3 button group kinds.
+ * - "standard": padding between buttons; a selected button morphs from round
+ *   to square and its neighbours adjust.
+ * - "connected": 2dp between buttons, round outer corners, square inner
+ *   corners; selection changes only the selected button. Replaces the
+ *   segmented button for single- and multi-select.
+ */
+export type ButtonGroupKind = "standard" | "connected";
+export type ButtonGroupSelection = "none" | "single" | "multi";
+export type ButtonGroupShape = "round" | "square";
+export type ButtonGroupSize = "xs" | "s" | "m" | "l" | "xl";
+
+/** Payload of the "change" event: the selection after the change. */
+export interface ButtonGroupChangeEvent {
+  buttonGroup: ButtonGroupComponent;
+  /** Values of the selected buttons, in button order */
+  values: string[];
+  selected: ButtonComponent[];
+  /** The button whose click caused the change, if any */
+  button?: ButtonComponent;
+  originalEvent?: Event;
+}
 
 /**
  * Event data for button group events
@@ -88,6 +112,10 @@ export interface ButtonGroupItemConfig extends Omit<ButtonConfig, "variant"> {
    * Value associated with this button
    */
   value?: string;
+  /** Icon shown while selected (toggle buttons) */
+  selectedIcon?: string;
+  /** Initially selected (selection groups only) */
+  selected?: boolean;
 
   /**
    * Additional CSS class for this button
@@ -104,6 +132,16 @@ export interface ButtonGroupConfig {
    * Array of button configurations
    */
   buttons?: ButtonGroupItemConfig[];
+  /** "standard" (default) or "connected" */
+  kind?: ButtonGroupKind;
+  /** "none" (default): plain actions. "single" or "multi": toggle buttons. */
+  selection?: ButtonGroupSelection;
+  /** With single or multi selection: the last selected button cannot be deselected */
+  required?: boolean;
+  /** Corner style: round (default) or square */
+  shape?: ButtonGroupShape;
+  /** Material size token: xs, s (default), m, l, xl */
+  size?: ButtonGroupSize;
 
   /**
    * Visual variant applied to all buttons in the group
@@ -179,7 +217,10 @@ export interface ButtonGroupConfig {
    * Event handlers for button group events
    */
   on?: {
-    [key in ButtonGroupEventType]?: (event: ButtonGroupEvent) => void;
+    click?: (event: ButtonGroupEvent) => void;
+    focus?: (event: ButtonGroupEvent) => void;
+    blur?: (event: ButtonGroupEvent) => void;
+    change?: (event: ButtonGroupChangeEvent) => void;
   };
 }
 
@@ -272,6 +313,14 @@ export interface ButtonGroupComponent {
    * @returns The ButtonGroupComponent for chaining
    */
   disableButton: (index: number) => ButtonGroupComponent;
+  /** Selection (groups with selection "single" or "multi") */
+  getSelected: () => string[];
+  isSelected: (value: string) => boolean;
+  select: (value: string) => ButtonGroupComponent;
+  deselect: (value: string) => ButtonGroupComponent;
+  toggle: (value: string) => ButtonGroupComponent;
+  getKind: () => ButtonGroupKind;
+  getSelection: () => ButtonGroupSelection;
 
   /**
    * Adds an event listener to the button group
@@ -279,10 +328,10 @@ export interface ButtonGroupComponent {
    * @param handler - Event handler function
    * @returns The ButtonGroupComponent for chaining
    */
-  on: (
-    event: ButtonGroupEventType,
-    handler: (event: ButtonGroupEvent) => void,
-  ) => ButtonGroupComponent;
+  on: {
+    (event: "change", handler: (event: ButtonGroupChangeEvent) => void): ButtonGroupComponent;
+    (event: "click" | "focus" | "blur", handler: (event: ButtonGroupEvent) => void): ButtonGroupComponent;
+  };
 
   /**
    * Removes an event listener from the button group
@@ -292,7 +341,7 @@ export interface ButtonGroupComponent {
    */
   off: (
     event: ButtonGroupEventType,
-    handler: (event: ButtonGroupEvent) => void,
+    handler: (event: ButtonGroupEvent | ButtonGroupChangeEvent) => void,
   ) => ButtonGroupComponent;
 
   /**
