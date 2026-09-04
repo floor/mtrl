@@ -2,7 +2,7 @@
 // Legacy: the Radiooooo v3 palette. Values are the v3 ones, set by hand:
 // bar blue on primary, selection orange on tertiary, the charcoal indicator
 // on secondary, the salmon selected-mode disc on secondary container, cream
-// surfaces. Dark mode keeps the bar blue as the primary container.
+// surfaces; dark mode uses the v3 blue-grey neutrals.
 @use "../abstract/base" as *;
 @use "base-theme" as *;
 
@@ -53,19 +53,20 @@
         --#{$prefix}-sys-color-tertiary-container: #8a1c00;
         --#{$prefix}-sys-color-on-tertiary-container: #ffd9cc;
 
-        --#{$prefix}-sys-color-surface: #121212;
-        --#{$prefix}-sys-color-surface-dim: #121212;
-        --#{$prefix}-sys-color-surface-bright: #383838;
-        --#{$prefix}-sys-color-surface-container-lowest: #0d0d0d;
-        --#{$prefix}-sys-color-surface-container-low: #1a1a1a;
-        --#{$prefix}-sys-color-surface-container: #1f1f1f;
-        --#{$prefix}-sys-color-surface-container-high: #2a2a2a;
-        --#{$prefix}-sys-color-surface-container-highest: #353535;
-        --#{$prefix}-sys-color-on-surface: #e5e2e1;
-        --#{$prefix}-sys-color-on-surface-variant: #c7c3bf;
-        --#{$prefix}-sys-color-outline: #918d89;
-        --#{$prefix}-sys-color-outline-variant: #47433f;
-        --#{$prefix}-sys-color-surface-rgb: 18, 18, 18;
+        // v3 dark: blue-grey neutrals (background #262631, bars #363644)
+        --#{$prefix}-sys-color-surface: #262631;
+        --#{$prefix}-sys-color-surface-dim: #262631;
+        --#{$prefix}-sys-color-surface-bright: #4a4a5a;
+        --#{$prefix}-sys-color-surface-container-lowest: #1e1e27;
+        --#{$prefix}-sys-color-surface-container-low: #2c2c38;
+        --#{$prefix}-sys-color-surface-container: #363644;
+        --#{$prefix}-sys-color-surface-container-high: #3f3f4e;
+        --#{$prefix}-sys-color-surface-container-highest: #4a4a5a;
+        --#{$prefix}-sys-color-on-surface: #e6e4ea;
+        --#{$prefix}-sys-color-on-surface-variant: #c6c4cc;
+        --#{$prefix}-sys-color-outline: #8f8d96;
+        --#{$prefix}-sys-color-outline-variant: #45444f;
+        --#{$prefix}-sys-color-surface-rgb: 38, 38, 49;
 
         @include status-colors-dark();
     }
