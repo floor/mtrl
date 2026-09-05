@@ -1,645 +1,165 @@
-// src/components/carousel/_styles.scss
+// src/styles/components/_carousel.scss
 @use '../../styles/abstract/base' as base;
 @use '../../styles/abstract/variables' as v;
-@use '../../styles/abstract/functions' as f;
 @use '../../styles/abstract/mixins' as m;
 @use '../../styles/abstract/theme' as t;
 
 $component: '#{base.$prefix}-carousel';
 
-// Layout size adjustments
-$large-item-width-multi-browse: 240px;
-$medium-item-width-multi-browse: 180px;
-$small-item-width-multi-browse: 48px;
-
-$large-item-width-hero: 300px;
-$small-item-width-hero: 48px;
+// =============================================================================
+// CAROUSEL COMPONENT STYLES
+// =============================================================================
+// Material 3 carousel (m3.material.io carousel specs; Compose Material 3
+// carousel). The component lays the items out from a keyline strategy:
+// each item is translated to its centre and clipped to its visible width
+// (transform, clip-path and --mtrl-carousel-fade are set per item from the
+// component). This stylesheet owns everything static: the native scroller,
+// the snap points, the item shell and the text over the image.
+//
+// Custom properties set by the component: --mtrl-carousel-corner (item
+// corner radius, 28dp by default) and --mtrl-carousel-fade per item (1 for
+// a large item, 0 for a small one).
+// =============================================================================
 
 .#{$component} {
-  // Base styles
   position: relative;
   width: 100%;
+  height: 100%;
   overflow: hidden;
-  user-select: none;
-  padding: 8px 0;
-  outline: none;
-  
-  // Focus styles
-  &:focus {
-    outline: none;
-  }
-  
-  &:focus-visible {
-    outline: 2px solid t.color('outline');
-    outline-offset: 2px;
-  }
-  
-  // Layout specific styles
-  &-layout {
-    &--multi-browse {
-      // Multi-browse layout with different sized items
-      .#{$component}-slides {
-        scroll-snap-type: x mandatory;
-        padding: 0 16px;
-      }
-      
-      .#{$component}-slide {
-        height: 320px;
-        
-        &--large {
-          width: $large-item-width-multi-browse;
-          flex: 0 0 auto;
-        }
-        
-        &--medium {
-          width: $medium-item-width-multi-browse;
-          flex: 0 0 auto;
-        }
-        
-        &--small {
-          width: $small-item-width-multi-browse;
-          flex: 0 0 auto;
-        }
-      }
-    }
-    
-    &--uncontained {
-      // Uncontained layout with uniform sized items
-      overflow: visible;
-      
-      .#{$component}-slides {
-        scroll-snap-type: none;
-        padding: 0 16px;
-      }
-      
-      .#{$component}-slide {
-        width: 240px;
-        height: 320px;
-        flex: 0 0 auto;
-      }
-    }
-    
-    &--hero {
-      // Hero layout with one large item and smaller previews
-      .#{$component}-slides {
-        scroll-snap-type: x mandatory;
-        padding: 0 16px;
-      }
-      
-      .#{$component}-slide {
-        height: 360px;
-        
-        &--large {
-          width: $large-item-width-hero;
-          flex: 0 0 auto;
-        }
-        
-        &--small {
-          width: $small-item-width-hero;
-          flex: 0 0 auto;
-        }
-      }
-      
-      // Center-aligned hero
-      &[data-centered="true"] {
-        .#{$component}-slides {
-          padding: 0;
-          justify-content: center;
-        }
-        
-        .#{$component}-slide--large {
-          margin: 0 16px;
-        }
-      }
-    }
-    
-    &--full-screen {
-      // Full-screen layout for immersive experiences
-      height: 100%;
-      max-height: 100vh;
-      padding: 0;
-      
-      .#{$component}-wrapper {
-        height: 100%;
-      }
-      
-      .#{$component}-slides {
-        height: 100%;
-        flex-direction: column;
-        scroll-snap-type: y mandatory;
-        padding: 0;
-      }
-      
-      .#{$component}-slide {
-        width: 100%;
-        height: 100vh;
-        flex: 0 0 auto;
-        border-radius: 0 !important;
-        scroll-snap-align: start;
-        
-        &-image {
-          height: 100%;
-        }
-        
-        &-content {
-          position: absolute;
-          bottom: 0;
-          left: 0;
-          right: 0;
-          padding: 24px;
-          background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0) 100%);
-          color: #FFFFFF;
-        }
-        
-        &-title {
-          font-size: 24px;
-          font-weight: 500;
-          margin-bottom: 8px;
-        }
-        
-        &-description {
-          font-size: 16px;
-          margin-bottom: 16px;
-        }
-      }
-      
-      // Hide show all link in full-screen mode
-      .#{$component}-show-all {
-        display: none;
-      }
-    }
-  }
-  
-  // Scroll behavior
-  &[data-scroll-behavior="snap"] {
-    .#{$component}-slides {
-      scroll-snap-type: x mandatory;
-      
-      &[data-vertical-scroll="true"] {
-        scroll-snap-type: y mandatory;
-      }
-    }
-    
-    .#{$component}-slide {
-      scroll-snap-align: start;
-      
-      &--active {
-        z-index: 1;
-      }
-    }
-  }
-  
-  // Slides container
-  &-slides {
-    display: flex;
+
+  &__scroller {
+    position: relative;
+    width: 100%;
+    height: 100%;
     overflow-x: auto;
-    scroll-snap-type: none;
-    gap: 12px;
-    padding: 0 16px;
-    margin: 0 -16px;
-    -ms-overflow-style: none; // Hide scrollbar on IE/Edge
-    scrollbar-width: none; // Hide scrollbar on Firefox
-    scroll-behavior: smooth;
-    
-    // Set gap dynamically from data attribute
-    &[data-gap] {
-      gap: attr(data-gap px);
-    }
-    
-    // Hide scrollbar on Chrome/Safari
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    cursor: grab;
+
     &::-webkit-scrollbar {
       display: none;
     }
-    
-    // Force overscroll behavior to be auto (no bounce/elastic effect)
-    overscroll-behavior: auto;
-    -webkit-overflow-scrolling: auto; // Disable momentum scrolling on iOS
-    
-    // Completely disable all scrolling effects and resistance
-    &[data-dragging="true"] {
-      * {
-        pointer-events: none;
-      }
-    }
   }
-  
-  // Individual slide
-  &-slide {
+
+  &--snap &__scroller {
+    scroll-snap-type: x mandatory;
+  }
+
+  &--snap.#{$component}--vertical &__scroller {
+    scroll-snap-type: y mandatory;
+  }
+
+  // A mouse drag turns snapping off until the release scroll settles
+  &[data-settling] &__scroller {
+    scroll-snap-type: none;
+  }
+
+  &[data-dragging] &__scroller {
+    cursor: grabbing;
+  }
+
+  &--vertical &__scroller {
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior-x: auto;
+    overscroll-behavior-y: contain;
+  }
+
+  // Sized by the component to the scroll range; holds the snap points and the items
+  &__track {
     position: relative;
-    flex-shrink: 0;
-    width: 240px;
-    height: 320px;
-    overflow: hidden;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    background-color: #FFFFFF;
-    
-    // Set border radius dynamically from data attribute
-    &[data-border-radius] {
-      border-radius: attr(data-border-radius px);
-    }
-    
-    // Default border radius
-    border-radius: 16px;
-    
-    // Active state
-    &--active {
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-      transform: translateY(-4px);
-      z-index: 1;
-    }
-    
-    // Image container
-    &-image {
-      position: relative;
-      width: 100%;
-      height: 70%;
-      overflow: hidden;
-      
-      // Ensure images cover the slide properly
-      img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transition: transform 0.2s ease;
-      }
-    }
-    
-    // Content container
-    &-content {
-      padding: 8px 12px;
-      height: 30%;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-    
-    // Slide title
-    &-title {
-      position: absolute;
-      bottom: 16px;
-      left: 16px;
-      color: #FFFFFF;
-      font-size: 18px;
-      font-weight: 500;
-      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-      z-index: 2;
-      pointer-events: none;
-      
-      &.visually-hidden {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        padding: 0;
-        margin: -1px;
-        overflow: hidden;
-        clip: rect(0, 0, 0, 0);
-        white-space: nowrap;
-        border: 0;
-      }
-    }
-    
-    // Slide description
-    &-description {
-      position: absolute;
-      bottom: 48px;
-      left: 16px;
-      color: #FFFFFF;
-      font-size: 14px;
-      max-width: 80%;
-      z-index: 2;
-      pointer-events: none;
-      
-      &.visually-hidden {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        padding: 0;
-        margin: -1px;
-        overflow: hidden;
-        clip: rect(0, 0, 0, 0);
-        white-space: nowrap;
-        border: 0;
-      }
-    }
-    
-    // Overlay for accent color
-    &-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(to bottom, rgba(0,0,0,0) 50%, rgba(0,0,0,0.6) 100%);
-      opacity: 0.7;
-      pointer-events: none;
-      z-index: 1;
-    }
-    
-    // Button for actions
-    &-button {
-      display: inline-block;
-      position: absolute;
-      bottom: 16px;
-      right: 16px;
-      color: #FFFFFF;
-      padding: 8px 16px;
-      border-radius: 20px;
-      text-decoration: none;
-      font-size: 14px;
-      font-weight: 500;
-      z-index: 2;
-      background-color: rgba(0, 0, 0, 0.6);
-      
-      &:hover {
-        opacity: 0.9;
-      }
-    }
-    
-    // Different sizes for multi-browse layout
-    &--large {
-      // Styles already set based on layout
-    }
-    
-    &--medium {
-      // Medium items may show less detail
-      .#{$component}-slide-content {
-        padding: 6px 10px;
-      }
-      
-      .#{$component}-slide-title {
-        font-size: 16px;
-      }
-      
-      .#{$component}-slide-description {
-        font-size: 12px;
-      }
-    }
-    
-    &--small {
-      // Small items are primarily visual with minimal text
-      .#{$component}-slide-content {
-        padding: 4px 8px;
-      }
-      
-      // Handle text abbreviation for small items
-      .#{$component}-slide-title,
-      .#{$component}-slide-description {
-        font-size: 12px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-      
-      .#{$component}-slide-button {
-        padding: 4px 8px;
-        font-size: 12px;
-      }
-    }
+    height: 100%;
   }
-  
-  // Show all link
-  &-show-all {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    padding: 8px 16px;
-    cursor: pointer;
-    text-align: right;
-    
-    span {
-      color: #1967D2; // Google blue
-      font-size: 16px;
-      font-weight: 500;
-      transition: color 0.2s ease;
-    }
-    
-    &:hover {
-      span {
-        text-decoration: underline;
-      }
-    }
-    
+
+  &--vertical &__track {
+    width: 100%;
+  }
+
+  &__snap {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1px;
+    height: 1px;
+    scroll-snap-align: start;
+    pointer-events: none;
+  }
+
+  // Item: positioned and clipped by the component
+  &__item {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    overflow: hidden;
+    border-radius: var(--#{base.$prefix}-carousel-corner, 28px);
+    background-color: t.color('surface-container');
+    will-change: transform, clip-path;
+    user-select: none;
+
     &:focus {
       outline: none;
     }
-    
+
+    // Focus ring: 3dp secondary, inside the clip so it stays visible
     &:focus-visible {
-      outline: 2px solid t.color('outline');
-      outline-offset: 2px;
+      outline: 3px solid t.color('secondary');
+      outline-offset: -3px;
     }
   }
-  
-  // Drag-related styles
-  &[data-swipe="true"] {
-    cursor: grab;
+
+  &--vertical &__item {
+    width: 100%;
+    height: auto;
   }
-  
-  &[data-dragging="true"] {
-    cursor: grabbing;
+
+  &__image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
   }
-  
-  // Add parallax effect for multi-browse layout
-  &[data-enable-parallax="true"] {
-    .#{$component}-slide-image img {
-      transition: transform 0.1s ease-out;
-    }
-  }
-  
-  // Navigation elements (can be shown with a CSS class if needed)
-  &-navigation {
-    display: none;
-    
-    &.visible {
-      display: flex;
-      position: absolute;
-      bottom: 16px;
-      left: 50%;
-      transform: translateX(-50%);
-      justify-content: center;
-      align-items: center;
-      gap: 8px;
-      z-index: 2;
-    }
-  }
-  
-  // Responsive adjustments for different screen sizes
-  @media (max-width: 600px) {
-    // In compact windows, adjust multi-browse layout
-    &-layout--multi-browse {
-      .#{$component}-slide {
-        &--large {
-          width: 200px;
-          height: 280px;
-        }
-        
-        &--medium {
-          width: 150px;
-          height: 280px;
-        }
-      }
-    }
-    
-    // For hero layout, ensure good visibility on mobile
-    &-layout--hero {
-      .#{$component}-slide {
-        &--large {
-          width: 280px;
-          height: 320px;
-        }
-      }
-    }
-    
-    // General mobile adjustments
-    &-slide {
-      &-title {
-        font-size: 16px;
-      }
-      
-      &-description {
-        font-size: 12px;
-        bottom: 42px;
-      }
-    }
-    
-    &-show-all {
-      padding: 6px 12px;
-      
-      span {
-        font-size: 14px;
-      }
-    }
-  }
-  
-  // Even smaller screens
-  @media (max-width: 360px) {
-    // Further compact layout for small screens
-    &-layout--multi-browse {
-      .#{$component}-slide {
-        &--large {
-          width: 160px;
-          height: 240px;
-        }
-        
-        &--medium,
-        &--small {
-          width: 120px;
-          height: 240px;
-        }
-      }
-    }
-    
-    &-layout--hero {
-      .#{$component}-slide {
-        &--large {
-          width: 240px;
-          height: 280px;
-        }
-      }
-    }
-    
-    &-slide {
-      &-title {
-        font-size: 14px;
-        bottom: 12px;
-        left: 12px;
-      }
-      
-      &-description {
-        font-size: 11px;
-        bottom: 36px;
-        left: 12px;
-      }
-      
-      &-button {
-        bottom: 12px;
-        right: 12px;
-        padding: 6px 12px;
-        font-size: 12px;
-      }
-    }
-    
-    &-show-all {
-      padding: 4px 10px;
-      
-      span {
-        font-size: 13px;
-      }
-    }
-  }
-  
-  // Print styles
-  @media print {
-    overflow: visible;
-    
-    &-slides {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 16px;
-      overflow: visible;
-    }
-    
-    &-slide {
-      page-break-inside: avoid;
-      break-inside: avoid;
-    }
-    
-    &-show-all,
-    &-navigation {
-      display: none; /* Hide navigation and show all for print */
-    }
-  }
-  
-  // RTL support
-  [dir="rtl"] & {
-    .#{$component}-slides {
-      direction: rtl;
-    }
-    
-    .#{$component}-slide {
-      &-title {
-        left: auto;
-        right: 16px;
-      }
-      
-      &-description {
-        left: auto;
-        right: 16px;
-      }
-      
-      &-button {
-        right: auto;
-        left: 16px;
-      }
-    }
-    
-    .#{$component}-show-all {
-      justify-content: flex-start;
-    }
-  }
-  
-  // Animation for parallax effect
-  @keyframes slide-in {
-    0% {
-      opacity: 0;
-      transform: translateX(30px);
-    }
-    100% {
-      opacity: 1;
-      transform: translateX(0);
-    }
-  }
-  
-  // Accessibility classes for text that should be visually hidden
-  .visually-hidden {
+
+  // Text over the image fades out as the item shrinks
+  &__content {
     position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
+    inset: auto 0 0 0;
+    padding: 16px;
+    color: #fff; // text over the scrim, independent of the theme
+    background: linear-gradient(to top, t.alpha('scrim', 0.6), transparent);
+    opacity: var(--#{base.$prefix}-carousel-fade, 1);
+    pointer-events: none;
+
+    > * {
+      pointer-events: auto;
+    }
+  }
+
+  &__title {
+    @include m.typography('title-medium');
+    @include m.truncate;
+  }
+
+  &__description {
+    @include m.typography('body-medium');
+    margin-top: 4px;
+    @include m.truncate;
+  }
+
+  &__button {
+    display: inline-block;
+    margin-top: 12px;
+    color: inherit;
+    text-decoration: none;
+    @include m.typography('label-large');
+  }
+
+  // Reduced motion: no smooth scrolling; the component keeps every item one size
+  @media (prefers-reduced-motion: reduce) {
+    &__scroller {
+      scroll-behavior: auto;
+    }
   }
 }

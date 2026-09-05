@@ -1,192 +1,153 @@
 // src/components/carousel/features/slides.ts
-// DOM creation and management for carousel slides.
-// Positioning is handled by the scroll engine — this module only
-// creates, removes, and updates slide DOM elements.
+//
+// Builds and maintains the carousel items. Each item is a focusable group
+// labelled "n of total" (m3.material.io carousel accessibility); sizes and
+// positions are set by the scroll feature.
 
-import { CarouselConfig, CarouselSlide } from "../types";
-import { CAROUSEL_DEFAULTS } from "../constants";
+import { CarouselConfig, CarouselSlide, SlidesAPI } from "../types";
 
-export const withSlides = (config: CarouselConfig) => (component: any) => {
+export interface SlidesComponent {
+  element: HTMLElement;
+  getClass: (name: string) => string;
+  /** Scroll container holding the track */
+  scroller: HTMLElement;
+  /** Positioned parent of the items */
+  track: HTMLElement;
+  slides: SlidesAPI;
+  slideElements: HTMLElement[];
+  /** Registers the callback run when items are added or removed (the scroll feature rebuilds) */
+  onSlidesChanged: (handler: () => void) => void;
+  [key: string]: unknown;
+}
+
+export const withSlides = (config: CarouselConfig) => <C extends { element: HTMLElement; getClass: (name: string) => string }>(component: C): C & SlidesComponent => {
   const prefix = component.getClass("carousel");
-  const cornerRadius = config.cornerRadius ?? CAROUSEL_DEFAULTS.CORNER_RADIUS;
 
+  const scroller = document.createElement("div");
+  scroller.className = `${prefix}__scroller`;
   const track = document.createElement("div");
   track.className = `${prefix}__track`;
-  track.setAttribute("role", "list");
-  track.style.position = "relative";
-  track.style.height = "100%";
-  component.element.appendChild(track);
+  scroller.appendChild(track);
+  component.element.appendChild(scroller);
 
   const slideData: CarouselSlide[] = [];
   const slideElements: HTMLElement[] = [];
+  const enhanced = component as C & SlidesComponent;
+  let slidesChanged: (() => void) | undefined;
 
-  function createSlideElement(slide: CarouselSlide, index: number): HTMLElement {
-    const el = document.createElement("div");
-    el.className = `${prefix}__slide`;
-    el.setAttribute("role", "listitem");
-    el.setAttribute("aria-roledescription", "slide");
-    el.dataset.index = String(index);
-    el.style.position = "absolute";
-    el.style.top = "0";
-    el.style.left = "0";
-    el.style.height = "100%";
-    el.style.overflow = "hidden";
-    el.style.borderRadius = `${cornerRadius}px`;
-    el.style.flexShrink = "0";
+  const relabel = (): void => {
+    const total = slideElements.length;
+    slideElements.forEach((el, i) => {
+      el.dataset.index = String(i);
+      el.setAttribute("aria-label", `${i + 1} of ${total}`);
+    });
+  };
 
-    const imageWrap = document.createElement("div");
-    imageWrap.className = `${prefix}__slide-image`;
-    imageWrap.style.width = "100%";
-    imageWrap.style.height = "100%";
-    imageWrap.style.position = "relative";
-    imageWrap.style.overflow = "hidden";
-
-    const img = document.createElement("img");
-    img.src = slide.image;
-    img.alt = slide.title || "Carousel slide";
-    img.style.width = "100%";
-    img.style.height = "100%";
-    img.style.objectFit = "cover";
-    img.style.display = "block";
-    imageWrap.appendChild(img);
-
-    if (slide.accent) {
-      const overlay = document.createElement("div");
-      overlay.className = `${prefix}__slide-overlay`;
-      overlay.style.position = "absolute";
-      overlay.style.inset = "0";
-      overlay.style.backgroundColor = slide.accent;
-      overlay.style.opacity = "0.3";
-      imageWrap.appendChild(overlay);
+  const fill = (el: HTMLElement, slide: CarouselSlide): void => {
+    el.replaceChildren();
+    if (slide.content !== undefined) {
+      if (typeof slide.content === "string") el.innerHTML = slide.content;
+      else el.appendChild(slide.content);
+      return;
     }
-
-    el.appendChild(imageWrap);
-
+    if (slide.image) {
+      const img = document.createElement("img");
+      img.className = `${prefix}__image`;
+      img.src = slide.image;
+      img.alt = slide.alt ?? slide.title ?? "";
+      img.draggable = false;
+      el.appendChild(img);
+    }
     if (slide.title || slide.description || slide.buttonText) {
       const content = document.createElement("div");
-      content.className = `${prefix}__slide-content`;
-      content.style.position = "absolute";
-      content.style.bottom = "0";
-      content.style.left = "0";
-      content.style.right = "0";
-      content.style.padding = "16px";
-      content.style.opacity = "var(--mtrl-carousel-role-weight, 1)";
-
+      content.className = `${prefix}__content`;
       if (slide.title) {
         const title = document.createElement("div");
-        title.className = `${prefix}__slide-title`;
+        title.className = `${prefix}__title`;
         title.textContent = slide.title;
         content.appendChild(title);
       }
-
       if (slide.description) {
-        const desc = document.createElement("div");
-        desc.className = `${prefix}__slide-description`;
-        desc.textContent = slide.description;
-        content.appendChild(desc);
+        const description = document.createElement("div");
+        description.className = `${prefix}__description`;
+        description.textContent = slide.description;
+        content.appendChild(description);
       }
-
       if (slide.buttonText) {
-        const btn = document.createElement("a");
-        btn.className = `${prefix}__slide-button`;
-        btn.textContent = slide.buttonText;
-        if (slide.buttonUrl) btn.href = slide.buttonUrl;
-        content.appendChild(btn);
+        const button = document.createElement("a");
+        button.className = `${prefix}__button`;
+        button.textContent = slide.buttonText;
+        if (slide.buttonUrl) button.href = slide.buttonUrl;
+        content.appendChild(button);
       }
-
       el.appendChild(content);
     }
-
-    return el;
-  }
-
-  function addSlide(slide: CarouselSlide, index?: number): void {
-    const insertAt = index !== undefined && index >= 0 && index <= slideData.length
-      ? index
-      : slideData.length;
-
-    slideData.splice(insertAt, 0, slide);
-    const el = createSlideElement(slide, insertAt);
-
-    if (insertAt < slideElements.length) {
-      track.insertBefore(el, slideElements[insertAt]!);
-      slideElements.splice(insertAt, 0, el);
-    } else {
-      track.appendChild(el);
-      slideElements.push(el);
-    }
-
-    // Re-index all slides after insert
-    for (let i = insertAt; i < slideElements.length; i++) {
-      slideElements[i]!.dataset.index = String(i);
-    }
-
-    if (component.rebuildOnSlideChange) component.rebuildOnSlideChange();
-  }
-
-  function removeSlide(index: number): void {
-    if (index < 0 || index >= slideElements.length) return;
-    track.removeChild(slideElements[index]!);
-    slideElements.splice(index, 1);
-    slideData.splice(index, 1);
-
-    for (let i = index; i < slideElements.length; i++) {
-      slideElements[i]!.dataset.index = String(i);
-    }
-
-    if (component.rebuildOnSlideChange) component.rebuildOnSlideChange();
-  }
-
-  function updateSlide(index: number, slide: CarouselSlide): void {
-    if (index < 0 || index >= slideElements.length) return;
-    slideData[index] = slide;
-
-    const el = slideElements[index]!;
-    const img = el.querySelector("img");
-    if (img) {
-      img.src = slide.image;
-      img.alt = slide.title || "Carousel slide";
-    }
-
-    const titleEl = el.querySelector(`.${prefix}__slide-title`);
-    if (titleEl && slide.title) titleEl.textContent = slide.title;
-
-    const descEl = el.querySelector(`.${prefix}__slide-description`);
-    if (descEl && slide.description) descEl.textContent = slide.description;
-  }
-
-  // Add initial slides
-  if (config.slides) {
-    config.slides.forEach((slide) => {
-      const el = createSlideElement(slide, slideData.length);
-      slideData.push(slide);
-      slideElements.push(el);
-      track.appendChild(el);
-    });
-  }
-
-  return {
-    ...component,
-
-    trackElement: track,
-    slideData,
-
-    slides: {
-      addSlide: (slide: CarouselSlide, index?: number) => {
-        addSlide(slide, index);
-        return component.slides;
-      },
-      removeSlide: (index: number) => {
-        removeSlide(index);
-        return component.slides;
-      },
-      updateSlide: (index: number, slide: CarouselSlide) => {
-        updateSlide(index, slide);
-        return component.slides;
-      },
-      getSlide: (index: number) => slideData[index] ?? null,
-      getCount: () => slideData.length,
-      getElements: () => [...slideElements],
-    },
   };
+
+  const createSlideElement = (slide: CarouselSlide): HTMLElement => {
+    const el = document.createElement("div");
+    el.className = `${prefix}__item`;
+    el.setAttribute("role", "group");
+    el.setAttribute("aria-roledescription", "slide");
+    el.tabIndex = 0;
+    fill(el, slide);
+    return el;
+  };
+
+  const changed = (): void => {
+    relabel();
+    slidesChanged?.();
+  };
+
+  const slides: SlidesAPI = {
+    addSlide(slide, index) {
+      const at = index !== undefined && index >= 0 && index <= slideData.length ? index : slideData.length;
+      const el = createSlideElement(slide);
+      slideData.splice(at, 0, slide);
+      if (at < slideElements.length) {
+        track.insertBefore(el, slideElements[at]!);
+        slideElements.splice(at, 0, el);
+      } else {
+        track.appendChild(el);
+        slideElements.push(el);
+      }
+      changed();
+      return slides;
+    },
+    removeSlide(index) {
+      if (index < 0 || index >= slideElements.length) return slides;
+      track.removeChild(slideElements[index]!);
+      slideElements.splice(index, 1);
+      slideData.splice(index, 1);
+      changed();
+      return slides;
+    },
+    updateSlide(index, slide) {
+      if (index < 0 || index >= slideElements.length) return slides;
+      slideData[index] = slide;
+      fill(slideElements[index]!, slide);
+      return slides;
+    },
+    getSlide: (index) => slideData[index] ?? null,
+    getCount: () => slideData.length,
+    getElements: () => slideElements.slice(),
+  };
+
+  enhanced.scroller = scroller;
+  enhanced.track = track;
+  enhanced.slides = slides;
+  enhanced.slideElements = slideElements;
+  enhanced.onSlidesChanged = (handler) => {
+    slidesChanged = handler;
+  };
+
+  (config.slides ?? []).forEach((slide) => {
+    const el = createSlideElement(slide);
+    slideData.push(slide);
+    slideElements.push(el);
+    track.appendChild(el);
+  });
+  relabel();
+
+  return enhanced;
 };

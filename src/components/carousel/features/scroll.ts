@@ -1,553 +1,412 @@
 // src/components/carousel/features/scroll.ts
-// Virtual-scroll carousel engine ported from vlist.
-// Manages scroll position, infinite loop, snap-to-item, per-frame layout,
-// and CSS custom property updates. No native scrolling — all items are
-// positioned with CSS transforms.
+//
+// Native scrolling for the carousel. The scroller is a real overflow
+// container (touch, trackpad, wheel and assistive technologies work as
+// they do anywhere), a track sized to the scroll range holds one snap
+// point per item, and on every scroll event the items are placed from the
+// keyline strategy: translated to their centre and clipped to their
+// visible size, as the Compose carousel masks its items.
 
-import { CarouselConfig } from "../types";
-import { createLayoutEngine } from "../engine";
-import type { LayoutEngine } from "../engine";
-import { resolvePreset, hasSlots } from "../presets";
-import type { TextFade, SlotConfigResolver } from "../presets";
-import { CAROUSEL_EVENTS, CAROUSEL_DEFAULTS } from "../constants";
+import { CarouselConfig, CarouselVariant } from "../types";
+import { CAROUSEL_DEFAULTS, CAROUSEL_EVENTS, CAROUSEL_VARIANTS } from "../constants";
+import { resolveLayoutDefaults } from "../config";
+import {
+  KeylineRules,
+  multiBrowseKeylines,
+  heroKeylines,
+  uncontainedKeylines,
+  fullScreenKeylines,
+} from "../keylines";
+import {
+  Strategy,
+  createStrategy,
+  keylinesForScrollOffset,
+  snapPositionOffset,
+  maxScrollOffset,
+  placeItem,
+} from "../strategy";
+import type { SlidesComponent } from "./slides";
 
-interface NormalizedVariant {
-  variant: string;
-  resolveSlots: SlotConfigResolver;
+/** A mouse drag faster than this (px per ms) advances one item in its direction */
+const FLING_VELOCITY = 0.4;
+/** Pointer travel below this is a click, not a drag */
+const DRAG_THRESHOLD = 4;
+
+interface ScrollComponent {
+  getCurrentSlide: () => number;
+  getVariant: () => CarouselVariant;
+  next: () => void;
+  prev: () => void;
+  goTo: (index: number) => void;
+  lifecycle: { destroy: () => void };
 }
 
-function normalizeVariant(
-  input: CarouselConfig["variant"],
-): NormalizedVariant {
-  if (typeof input === "function") {
-    return { variant: "custom", resolveSlots: input as SlotConfigResolver };
-  }
-  if (typeof input === "object" && input !== null && "slots" in input) {
-    const slots = input;
-    return { variant: "custom", resolveSlots: () => slots };
-  }
-  const name = (input as string) || CAROUSEL_DEFAULTS.VARIANT;
-  return {
-    variant: name,
-    resolveSlots: (containerSize, peek) => resolvePreset(name, containerSize, peek),
-  };
-}
+export const withScroll = (config: CarouselConfig) =>
+  <C extends SlidesComponent & { emit?: (event: string, data?: unknown) => unknown; lifecycle?: { destroy: () => void } }>(
+    component: C,
+  ): C & ScrollComponent => {
+    const { variant, gap, padding, snap } = resolveLayoutDefaults(config);
+    const vertical = variant === CAROUSEL_VARIANTS.FULL_SCREEN;
+    const rules: KeylineRules = {
+      minSmallSize: config.minSmallItemWidth ?? CAROUSEL_DEFAULTS.MIN_SMALL_ITEM_WIDTH,
+      maxSmallSize: config.maxSmallItemWidth ?? CAROUSEL_DEFAULTS.MAX_SMALL_ITEM_WIDTH,
+      anchorSize: CAROUSEL_DEFAULTS.ANCHOR_SIZE,
+      mediumLargeThreshold: CAROUSEL_DEFAULTS.MEDIUM_LARGE_THRESHOLD,
+    };
+    const cornerRadius = config.cornerRadius ?? CAROUSEL_DEFAULTS.CORNER_RADIUS;
+    const reduceMotion =
+      typeof window !== "undefined" && typeof window.matchMedia === "function"
+        ? window.matchMedia("(prefers-reduced-motion: reduce)")
+        : null;
 
-function resolvePeekSize(peekConfig: CarouselConfig["peek"], containerSize: number): number {
-  if (typeof peekConfig === "number") return peekConfig;
-  if (typeof peekConfig === "string" && peekConfig.endsWith("%")) {
-    return Math.round(containerSize * parseFloat(peekConfig) / 100);
-  }
-  return Math.max(40, Math.min(Math.round(containerSize * 0.15), 120));
-}
+    const { element, scroller, track, slideElements } = component;
+    const prefix = component.getClass("carousel");
+    const snapClass = `${prefix}__snap`;
+    element.classList.toggle(`${prefix}--snap`, snap);
 
-export const withScroll = (config: CarouselConfig) => (component: any) => {
-  const { resolveSlots } = normalizeVariant(config.variant);
-  const snapEnabled = config.snap ?? CAROUSEL_DEFAULTS.SNAP;
-  const snapDuration = config.snapDuration ?? CAROUSEL_DEFAULTS.SNAP_DURATION;
-  const gapPx = config.gap ?? CAROUSEL_DEFAULTS.GAP;
-  const peekConfig = config.peek ?? CAROUSEL_DEFAULTS.PEEK;
-  const initialIndex = config.initialSlide ?? CAROUSEL_DEFAULTS.INITIAL_SLIDE;
+    let strategy: Strategy | null = null;
+    let count = 0;
+    let containerSize = 0;
+    let scrollOffsetAtStart = 0;
+    let snapPositions: number[] = [];
+    let currentIndex = Math.max(0, config.initialSlide ?? CAROUSEL_DEFAULTS.INITIAL_SLIDE);
+    const lastStyles = new WeakMap<HTMLElement, string>();
 
-  const track: HTMLElement = component.trackElement;
-  const container: HTMLElement = component.element;
-  const prefix = component.getClass("carousel");
+    // A programmatic scroll reports its target, not every item it passes
+    let pending: number | null = null;
+    let pendingTimer = 0;
+    const clearPending = (): void => {
+      pending = null;
+      window.clearTimeout(pendingTimer);
+    };
+    const expect = (index: number): void => {
+      pending = index;
+      window.clearTimeout(pendingTimer);
+      pendingTimer = window.setTimeout(clearPending, 1000);
+    };
 
-  // State
-  let scrollPosition = 0;
-  let currentIndex = initialIndex;
-  let realTotal = 0;
-  let stepSize = 0;
-  let lapSize = 0;
-  let intendedVi = -1;
-  let textFade: TextFade = "role";
-
-  let stepSizes: number[] = [];
-  let stepOffsets: number[] = [];
-  let layoutEngine: LayoutEngine | null = null;
-
-  // Animation state
-  let animFrameId = 0;
-  let smoothStart = 0;
-  let smoothEnd = 0;
-  let smoothStartTime = 0;
-  let smoothDuration = 0;
-  let isSmoothing = false;
-
-  // Drag state
-  let isDragging = false;
-  let dragStartX = 0;
-  let dragStartScroll = 0;
-  let dragCurrentX = 0;
-  let dragVelocity = 0;
-  let dragLastTime = 0;
-
-  // Idle detection
-  let idleTimer = 0;
-  const IDLE_DELAY = 150;
-
-  // ── Index math ───────────────────────────────────────────────
-
-  function resolveIndex(index: number): number {
-    if (realTotal <= 0) return 0;
-    return ((index % realTotal) + realTotal) % realTotal;
-  }
-
-  function virtualIndexOf(logicalIndex: number): number {
-    return logicalIndex;
-  }
-
-  function logicalIndexOf(virtualIndex: number): number {
-    if (realTotal <= 0) return 0;
-    return ((virtualIndex % realTotal) + realTotal) % realTotal;
-  }
-
-  // ── Step cache ───────────────────────────────────────────────
-
-  function buildStepCache(sizes: number[]): void {
-    stepSizes = sizes;
-    const n = sizes.length;
-    stepOffsets = new Array(n + 1);
-    stepOffsets[0] = 0;
-    for (let i = 0; i < n; i++) {
-      stepOffsets[i + 1] = stepOffsets[i]! + sizes[i]!;
-    }
-    lapSize = n > 0 ? stepOffsets[n]! : 0;
-  }
-
-  function decomposeScroll(pos: number): { vi: number; frac: number } {
-    if (realTotal <= 0 || lapSize <= 0) return { vi: 0, frac: 0 };
-    const cycle = Math.floor(pos / lapSize);
-    let rem = pos - cycle * lapSize;
-    if (rem < 0) rem = 0;
-    const s = stepSizes[0]!;
-    const idx = Math.min(Math.floor(rem / s), realTotal - 1);
-    return { vi: cycle * realTotal + idx, frac: s > 0 ? (rem / s) - idx : 0 };
-  }
-
-  function scrollPositionForVirtual(vi: number): number {
-    if (realTotal <= 0 || lapSize <= 0) return 0;
-    const cycle = Math.floor(vi / realTotal);
-    const within = ((vi % realTotal) + realTotal) % realTotal;
-    return cycle * lapSize + (stepOffsets[within] ?? 0);
-  }
-
-  function virtualIndexAtScroll(pos: number): number {
-    const { vi, frac } = decomposeScroll(pos);
-    return frac >= 0.5 ? vi + 1 : vi;
-  }
-
-  function getBaseVi(): number {
-    if (intendedVi >= 0) return intendedVi;
-    return virtualIndexAtScroll(scrollPosition);
-  }
-
-  // ── Smooth scroll animation ──────────────────────────────────
-
-  function cancelSmooth(): void {
-    if (animFrameId) {
-      cancelAnimationFrame(animFrameId);
-      animFrameId = 0;
-    }
-    isSmoothing = false;
-  }
-
-  function smoothScrollTo(target: number, duration: number): void {
-    cancelSmooth();
-    smoothStart = scrollPosition;
-    smoothEnd = target;
-    smoothStartTime = performance.now();
-    smoothDuration = duration;
-    isSmoothing = true;
-    animFrameId = requestAnimationFrame(smoothStep);
-  }
-
-  function smoothStep(now: number): void {
-    const elapsed = now - smoothStartTime;
-    const t = Math.min(elapsed / smoothDuration, 1);
-    const eased = 1 - Math.pow(1 - t, 3);
-    scrollPosition = smoothStart + (smoothEnd - smoothStart) * eased;
-    updateLayout();
-
-    if (t < 1) {
-      animFrameId = requestAnimationFrame(smoothStep);
-    } else {
-      isSmoothing = false;
-      animFrameId = 0;
-      scheduleIdle();
-    }
-  }
-
-  // ── Momentum ─────────────────────────────────────────────────
-
-  function startMomentum(velocity: number): void {
-    cancelSmooth();
-    const friction = 0.95;
-    let v = velocity;
-
-    function step(): void {
-      v *= friction;
-      scrollPosition -= v;
-      updateLayout();
-
-      if (Math.abs(v) > 0.5) {
-        animFrameId = requestAnimationFrame(step);
+    const scrollPosition = (): number => (vertical ? scroller.scrollTop : scroller.scrollLeft);
+    const setScrollPosition = (value: number, smooth: boolean): void => {
+      const behavior = smooth && !reduceMotion?.matches ? "smooth" : "auto";
+      if (typeof scroller.scrollTo === "function") {
+        scroller.scrollTo(vertical ? { top: value, behavior } : { left: value, behavior });
+      } else if (vertical) {
+        scroller.scrollTop = value;
       } else {
-        animFrameId = 0;
-        snapToNearest();
+        scroller.scrollLeft = value;
       }
-    }
+    };
 
-    animFrameId = requestAnimationFrame(step);
-  }
+    const emitChange = (): void => {
+      component.emit?.(CAROUSEL_EVENTS.CHANGE, { index: currentIndex });
+    };
 
-  // ── Idle / Snap ──────────────────────────────────────────────
-
-  function scheduleIdle(): void {
-    clearTimeout(idleTimer);
-    idleTimer = window.setTimeout(onIdle, IDLE_DELAY);
-  }
-
-  function onIdle(): void {
-    intendedVi = -1;
-    if (snapEnabled && realTotal > 1) {
-      snapToNearest();
-    }
-  }
-
-  function snapToNearest(): void {
-    if (realTotal <= 1) return;
-    const nearestVi = virtualIndexAtScroll(scrollPosition);
-    const snapTarget = scrollPositionForVirtual(nearestVi);
-    if (Math.abs(scrollPosition - snapTarget) > 1) {
-      const newIndex = logicalIndexOf(nearestVi);
-      if (newIndex !== currentIndex) {
-        currentIndex = newIndex;
-        emitChange();
-      }
-      smoothScrollTo(snapTarget, snapDuration);
-    }
-  }
-
-  // ── Navigation ───────────────────────────────────────────────
-
-  function navigateTo(logicalTarget: number, smooth: boolean, duration: number): void {
-    currentIndex = logicalTarget;
-    if (realTotal <= 1) return;
-
-    const baseVi = getBaseVi();
-    const currentLogical = logicalIndexOf(baseVi);
-    const forward = ((logicalTarget - currentLogical) % realTotal + realTotal) % realTotal;
-    const backward = realTotal - forward;
-    const delta = forward <= backward ? forward : -backward;
-    const targetVi = baseVi + delta;
-    intendedVi = targetVi;
-    const nearestPos = scrollPositionForVirtual(targetVi);
-
-    if (smooth) {
-      smoothScrollTo(nearestPos, duration);
-    } else {
-      scrollPosition = nearestPos;
-      updateLayout();
-    }
-  }
-
-  function next(): void {
-    if (realTotal <= 1) return;
-    cancelSmooth();
-    const prevIndex = currentIndex;
-    const baseVi = getBaseVi();
-    const targetVi = baseVi + 1;
-    intendedVi = targetVi;
-    currentIndex = logicalIndexOf(targetVi);
-    smoothScrollTo(scrollPositionForVirtual(targetVi), snapDuration);
-    if (currentIndex !== prevIndex) emitChange();
-  }
-
-  function prev(): void {
-    if (realTotal <= 1) return;
-    cancelSmooth();
-    const prevIndex = currentIndex;
-    const baseVi = getBaseVi();
-    const targetVi = baseVi - 1;
-    intendedVi = targetVi;
-    currentIndex = logicalIndexOf(targetVi);
-    smoothScrollTo(scrollPositionForVirtual(targetVi), snapDuration);
-    if (currentIndex !== prevIndex) emitChange();
-  }
-
-  function goTo(index: number): void {
-    if (realTotal <= 0) return;
-    cancelSmooth();
-    const target = resolveIndex(index);
-    navigateTo(target, true, snapDuration);
-    emitChange();
-  }
-
-  // ── Events ───────────────────────────────────────────────────
-
-  function emitChange(): void {
-    const event = new CustomEvent(CAROUSEL_EVENTS.SLIDE_CHANGED, {
-      detail: { index: currentIndex, scrollPosition },
-    });
-    container.dispatchEvent(event);
-  }
-
-  // ── Per-frame layout update ──────────────────────────────────
-
-  function updateLayout(): void {
-    if (realTotal <= 0) return;
-
-    const slides = track.children;
-    if (slides.length === 0) return;
-
-    const { vi: focalVi, frac } = decomposeScroll(scrollPosition);
-    const baseCycle = focalVi - ((focalVi % realTotal + realTotal) % realTotal);
-    const focalWidth = layoutEngine ? (layoutEngine.slotWidths[layoutEngine.focalSlot] ?? 0) : 0;
-
-    if (layoutEngine) {
-      const anchor = layoutEngine.getAnchorOffset(focalVi, frac);
-
-      for (let i = 0; i < slides.length; i++) {
-        const el = slides[i] as HTMLElement;
-        const logical = parseInt(el.dataset.index ?? "0", 10);
-        let vi = baseCycle + logical;
-        if (vi - focalVi > realTotal / 2) vi -= realTotal;
-        if (focalVi - vi > realTotal / 2) vi += realTotal;
-
-        const layout = layoutEngine.getItemLayout(vi, focalVi, frac, anchor);
-        const roundedSize = Math.max(0, Math.round(layout.size));
-        const roundedOffset = Math.round(layout.offset);
-
-        if (roundedSize <= 0) {
-          el.style.display = "none";
-        } else {
-          el.style.display = "";
-          el.style.width = roundedSize + "px";
-          el.style.transform = `translateX(${roundedOffset}px)`;
+    const nearestIndex = (position: number): number => {
+      let best = 0;
+      let bestDistance = Number.MAX_VALUE;
+      snapPositions.forEach((snapPosition, i) => {
+        const distance = Math.abs(position - snapPosition);
+        if (distance < bestDistance) {
+          bestDistance = distance;
+          best = i;
         }
-
-        let roleWeight: number;
-        if (textFade === "size") {
-          const maxSize = layoutEngine.slotWidths[layoutEngine.focalSlot] ?? 1;
-          roleWeight = Math.min(1, Math.max(0, roundedSize / maxSize));
-        } else {
-          roleWeight = layout.role === "large" ? 1 - layout.progress : 0;
-        }
-
-        el.style.setProperty("--mtrl-carousel-progress", layout.progress.toFixed(3));
-        el.style.setProperty("--mtrl-carousel-offset", String(layout.relOffset));
-        el.style.setProperty("--mtrl-carousel-role", layout.role);
-        el.style.setProperty("--mtrl-carousel-role-weight", roleWeight.toFixed(3));
-        el.style.setProperty("--mtrl-carousel-width", roundedSize + "px");
-        el.style.setProperty("--mtrl-carousel-focal-width", focalWidth + "px");
-      }
-    } else {
-      // Static variant — uniform sizes, no layout engine
-      const itemSize = stepSizes[0] ?? 0;
-      for (let i = 0; i < slides.length; i++) {
-        const el = slides[i] as HTMLElement;
-        const logical = parseInt(el.dataset.index ?? "0", 10);
-        let vi = baseCycle + logical;
-        if (vi - focalVi > realTotal / 2) vi -= realTotal;
-        if (focalVi - vi > realTotal / 2) vi += realTotal;
-
-        const absOffset = scrollPositionForVirtual(vi);
-        const roundedOffset = Math.round(absOffset - scrollPosition + (container.clientWidth - itemSize) / 2);
-
-        el.style.display = "";
-        el.style.width = itemSize + "px";
-        el.style.transform = `translateX(${roundedOffset}px)`;
-
-        const relOffset = vi - focalVi;
-        const progress = Math.min(1, Math.abs(relOffset) + (relOffset === 0 ? frac : 0));
-        const roleWeight = 1 - progress;
-
-        el.style.setProperty("--mtrl-carousel-progress", progress.toFixed(3));
-        el.style.setProperty("--mtrl-carousel-offset", String(relOffset));
-        el.style.setProperty("--mtrl-carousel-role", "large");
-        el.style.setProperty("--mtrl-carousel-role-weight", roleWeight.toFixed(3));
-        el.style.setProperty("--mtrl-carousel-width", itemSize + "px");
-      }
-    }
-
-    // Track change during free scroll (non-programmatic)
-    if (intendedVi < 0) {
-      const vi = virtualIndexAtScroll(scrollPosition);
-      const newIndex = logicalIndexOf(vi);
-      if (newIndex !== currentIndex) {
-        currentIndex = newIndex;
-        emitChange();
-      }
-    }
-  }
-
-  // ── Input handlers ───────────────────────────────────────────
-
-  function handlePointerDown(e: PointerEvent): void {
-    if (e.button !== 0) return;
-    cancelSmooth();
-    clearTimeout(idleTimer);
-
-    isDragging = true;
-    dragStartX = e.clientX;
-    dragStartScroll = scrollPosition;
-    dragCurrentX = e.clientX;
-    dragVelocity = 0;
-    dragLastTime = performance.now();
-
-    container.setPointerCapture(e.pointerId);
-    container.style.cursor = "grabbing";
-    e.preventDefault();
-  }
-
-  function handlePointerMove(e: PointerEvent): void {
-    if (!isDragging) return;
-    const dx = e.clientX - dragStartX;
-    scrollPosition = dragStartScroll - dx;
-    updateLayout();
-
-    const now = performance.now();
-    const dt = now - dragLastTime;
-    if (dt > 0) {
-      dragVelocity = (e.clientX - dragCurrentX) / dt;
-    }
-    dragCurrentX = e.clientX;
-    dragLastTime = now;
-    e.preventDefault();
-  }
-
-  function handlePointerUp(e: PointerEvent): void {
-    if (!isDragging) return;
-    isDragging = false;
-    container.releasePointerCapture(e.pointerId);
-    container.style.cursor = "";
-
-    if (Math.abs(dragVelocity) > 0.5) {
-      startMomentum(dragVelocity);
-    } else {
-      snapToNearest();
-    }
-  }
-
-  function handlePointerCancel(e: PointerEvent): void {
-    if (!isDragging) return;
-    isDragging = false;
-    container.releasePointerCapture(e.pointerId);
-    container.style.cursor = "";
-    snapToNearest();
-  }
-
-  function handleWheel(e: WheelEvent): void {
-    e.preventDefault();
-    cancelSmooth();
-    clearTimeout(idleTimer);
-
-    const delta = e.deltaY || e.deltaX;
-    scrollPosition += delta * 0.5;
-    updateLayout();
-    scheduleIdle();
-  }
-
-  function handleKeyDown(e: KeyboardEvent): void {
-    switch (e.key) {
-      case "ArrowRight":
-      case "ArrowDown":
-        e.preventDefault();
-        next();
-        break;
-      case "ArrowLeft":
-      case "ArrowUp":
-        e.preventDefault();
-        prev();
-        break;
-      case "Home":
-        e.preventDefault();
-        goTo(0);
-        break;
-      case "End":
-        e.preventDefault();
-        goTo(realTotal - 1);
-        break;
-    }
-  }
-
-  // ── Init ─────────────────────────────────────────────────────
-
-  function init(): void {
-    const slideEls = track.children;
-    realTotal = slideEls.length;
-    if (realTotal <= 0) return;
-
-    const containerSize = container.clientWidth;
-    const peekResolved = resolvePeekSize(peekConfig, containerSize);
-    const presetResult = resolveSlots(containerSize, peekResolved);
-
-    if (hasSlots(presetResult)) {
-      textFade = presetResult.textFade ?? "role";
-      layoutEngine = createLayoutEngine({
-        slots: presetResult.slots,
-        focalSlot: presetResult.focalSlot,
-        containerSize,
-        gap: gapPx,
       });
-      stepSize = layoutEngine.stepSize;
-      buildStepCache(Array.from({ length: realTotal }, () => stepSize));
-    } else {
-      textFade = (presetResult && "textFade" in presetResult && presetResult.textFade) ? presetResult.textFade : "viewport";
-      stepSize = containerSize;
-      buildStepCache(Array.from({ length: realTotal }, () => stepSize));
-      layoutEngine = null;
-    }
+      return best;
+    };
 
-    currentIndex = resolveIndex(initialIndex);
-    scrollPosition = scrollPositionForVirtual(virtualIndexOf(currentIndex));
-    updateLayout();
-  }
+    // ── Strategy ────────────────────────────────────────────────
 
-  function rebuildOnSlideChange(): void {
-    init();
-  }
+    const buildKeylines = (size: number) => {
+      // Reduced motion: items keep one size and run past the edges
+      // (m3.material.io carousel accessibility)
+      const uniform = reduceMotion?.matches === true;
+      const preferred = config.itemWidth ?? CAROUSEL_DEFAULTS.ITEM_WIDTH;
+      switch (variant) {
+        case CAROUSEL_VARIANTS.HERO:
+        case CAROUSEL_VARIANTS.HERO_CENTER: {
+          const max = config.itemWidth ?? null;
+          return uniform
+            ? uncontainedKeylines(size, Math.min(max ?? size, size), gap, rules)
+            : heroKeylines(size, max, gap, count, variant === CAROUSEL_VARIANTS.HERO_CENTER, rules);
+        }
+        case CAROUSEL_VARIANTS.UNCONTAINED:
+          return uncontainedKeylines(size, preferred, gap, rules);
+        case CAROUSEL_VARIANTS.FULL_SCREEN:
+          return fullScreenKeylines(size, gap, rules);
+        default:
+          return uniform
+            ? uncontainedKeylines(size, preferred, gap, rules)
+            : multiBrowseKeylines(size, preferred, gap, count, rules);
+      }
+    };
 
-  // ── Event binding ────────────────────────────────────────────
+    const build = (): void => {
+      count = slideElements.length;
+      containerSize = vertical ? scroller.clientHeight : scroller.clientWidth;
+      currentIndex = count ? Math.min(currentIndex, count - 1) : 0;
+      if (containerSize <= 0 || count === 0) {
+        strategy = null;
+        return;
+      }
+      const afterPadding = variant === CAROUSEL_VARIANTS.UNCONTAINED ? 0 : padding;
+      strategy = createStrategy(buildKeylines(containerSize), containerSize, gap, padding, afterPadding);
+      if (!strategy.valid) {
+        strategy = null;
+        return;
+      }
 
-  container.addEventListener("pointerdown", handlePointerDown);
-  container.addEventListener("pointermove", handlePointerMove);
-  container.addEventListener("pointerup", handlePointerUp);
-  container.addEventListener("pointercancel", handlePointerCancel);
-  container.addEventListener("wheel", handleWheel, { passive: false });
-  container.addEventListener("keydown", handleKeyDown);
-  container.setAttribute("tabindex", "0");
+      const unit = strategy.itemSize + strategy.gap;
+      scrollOffsetAtStart = -snapPositionOffset(strategy, 0, count);
+      snapPositions = slideElements.map((_, i) => i * unit - snapPositionOffset(strategy!, i, count) - scrollOffsetAtStart);
+      const scrollRange = Math.max(0, snapPositions[count - 1] ?? 0);
 
-  const resizeObserver = new ResizeObserver(() => init());
-  resizeObserver.observe(container);
+      // Track length and one snap point per item
+      track.style[vertical ? "height" : "width"] = `${containerSize + scrollRange}px`;
+      track.style[vertical ? "width" : "height"] = "";
+      track.querySelectorAll(`.${snapClass}`).forEach((el) => el.remove());
+      const fragment = document.createDocumentFragment();
+      snapPositions.forEach((snapPosition) => {
+        const point = document.createElement("div");
+        point.className = snapClass;
+        point.style[vertical ? "top" : "left"] = `${snapPosition}px`;
+        fragment.appendChild(point);
+      });
+      track.appendChild(fragment);
 
-  // Defer init to after slides are in the DOM
-  requestAnimationFrame(() => init());
+      slideElements.forEach((el) => {
+        el.style[vertical ? "height" : "width"] = `${strategy!.itemSize}px`;
+        el.style[vertical ? "width" : "height"] = "";
+      });
+      element.style.setProperty("--mtrl-carousel-corner", `${cornerRadius}px`);
+    };
 
-  return {
-    ...component,
+    // ── Placement ───────────────────────────────────────────────
 
-    getCurrentSlide: () => currentIndex,
-    next,
-    prev,
-    goTo,
-    rebuildOnSlideChange,
+    const layout = (): void => {
+      if (!strategy) return;
+      const position = scrollPosition();
+      const scrollOffset = position + scrollOffsetAtStart;
+      const keylines = keylinesForScrollOffset(strategy, scrollOffset, maxScrollOffset(strategy, count));
+      const itemSize = strategy.itemSize;
+      const fadeRange = strategy.maxItemSize - strategy.minItemSize;
 
-    lifecycle: {
-      ...component.lifecycle,
+      for (let i = 0; i < count; i++) {
+        const el = slideElements[i]!;
+        const placement = placeItem(strategy, keylines, i, scrollOffset);
+        const visible = Math.max(0, Math.min(itemSize, placement.size));
+        // Keylines are container coordinates; the items live inside the
+        // scrolled track, so the scroll position is added back
+        const start = placement.center - itemSize / 2 + position;
+        const offscreen = placement.center + visible / 2 < -itemSize || placement.center - visible / 2 > containerSize + itemSize;
+        const inset = Math.max(0, (itemSize - visible) / 2);
+        const fade = fadeRange > 0 ? Math.min(1, Math.max(0, (visible - strategy.minItemSize) / fadeRange)) : 1;
+        const style = offscreen
+          ? "hidden"
+          : `${Math.round(start * 100) / 100}|${Math.round(inset * 100) / 100}|${fade.toFixed(3)}`;
+        if (lastStyles.get(el) === style) continue;
+        lastStyles.set(el, style);
+        if (offscreen) {
+          el.style.visibility = "hidden";
+          continue;
+        }
+        el.style.visibility = "";
+        el.style.transform = vertical ? `translate3d(0, ${start}px, 0)` : `translate3d(${start}px, 0, 0)`;
+        el.style.clipPath = vertical
+          ? `inset(${inset}px 0 round ${cornerRadius}px)`
+          : `inset(0 ${inset}px round ${cornerRadius}px)`;
+        el.style.setProperty("--mtrl-carousel-fade", fade.toFixed(3));
+      }
+
+      if (pending !== null) {
+        if (Math.abs(scrollPosition() - (snapPositions[pending] ?? 0)) < 1) clearPending();
+        return;
+      }
+      const index = nearestIndex(scrollPosition());
+      if (index !== currentIndex) {
+        currentIndex = index;
+        emitChange();
+      }
+    };
+
+    const rebuild = (): void => {
+      build();
+      if (strategy) {
+        expect(currentIndex);
+        setScrollPosition(snapPositions[currentIndex] ?? 0, false);
+      }
+      layout();
+    };
+
+    // ── Navigation ──────────────────────────────────────────────
+
+    const goTo = (index: number): void => {
+      if (!count) return;
+      const target = Math.min(Math.max(index, 0), count - 1);
+      if (strategy) {
+        expect(target);
+        setScrollPosition(snapPositions[target] ?? 0, true);
+      }
+      if (target !== currentIndex) {
+        currentIndex = target;
+        emitChange();
+      }
+    };
+    const next = (): void => goTo(currentIndex + 1);
+    const prev = (): void => goTo(currentIndex - 1);
+
+    // ── Keyboard and focus (m3.material.io carousel accessibility) ──
+
+    const indexOf = (target: EventTarget | null): number => {
+      const item = (target as HTMLElement | null)?.closest?.(`.${prefix}__item`) as HTMLElement | null;
+      return item ? slideElements.indexOf(item) : -1;
+    };
+
+    const handleKeyDown = (e: KeyboardEvent): void => {
+      const from = indexOf(e.target);
+      if (from < 0) return;
+      const forward = vertical ? "ArrowDown" : "ArrowRight";
+      const backward = vertical ? "ArrowUp" : "ArrowLeft";
+      let target = -1;
+      if (e.key === forward) target = from + 1;
+      else if (e.key === backward) target = from - 1;
+      else if (e.key === "Home") target = 0;
+      else if (e.key === "End") target = count - 1;
+      if (target < 0 || target >= count) return;
+      e.preventDefault();
+      slideElements[target]!.focus({ preventScroll: true });
+      goTo(target);
+    };
+
+    const handleFocusIn = (e: FocusEvent): void => {
+      const index = indexOf(e.target);
+      if (index >= 0 && index !== currentIndex) goTo(index);
+    };
+
+    // ── Mouse drag (touch and trackpad scroll natively) ─────────
+
+    let dragging = false;
+    let dragged = false;
+    let dragStart = 0;
+    let dragScrollStart = 0;
+    let dragLast = 0;
+    let dragLastTime = 0;
+    let dragVelocity = 0;
+    let settleTimer = 0;
+
+    // While the mouse drags and until the release scroll settles, the
+    // snap points are off so they do not fight the pointer
+    const restoreSnap = (): void => {
+      window.clearTimeout(settleTimer);
+      scroller.removeEventListener("scrollend", restoreSnap);
+      delete element.dataset.settling;
+    };
+
+    const handlePointerDown = (e: PointerEvent): void => {
+      clearPending();
+      if (e.pointerType !== "mouse" || e.button !== 0 || !strategy) return;
+      dragging = true;
+      dragged = false;
+      dragStart = vertical ? e.clientY : e.clientX;
+      dragLast = dragStart;
+      dragLastTime = e.timeStamp;
+      dragVelocity = 0;
+      dragScrollStart = scrollPosition();
+      restoreSnap();
+      element.dataset.settling = "true";
+      scroller.setPointerCapture(e.pointerId);
+    };
+
+    const handlePointerMove = (e: PointerEvent): void => {
+      if (!dragging) return;
+      const position = vertical ? e.clientY : e.clientX;
+      const delta = position - dragStart;
+      if (!dragged && Math.abs(delta) < DRAG_THRESHOLD) return;
+      dragged = true;
+      element.dataset.dragging = "true";
+      const dt = e.timeStamp - dragLastTime;
+      if (dt > 0) dragVelocity = (position - dragLast) / dt;
+      dragLast = position;
+      dragLastTime = e.timeStamp;
+      if (vertical) scroller.scrollTop = dragScrollStart - delta;
+      else scroller.scrollLeft = dragScrollStart - delta;
+      e.preventDefault();
+    };
+
+    const handlePointerUp = (e: PointerEvent): void => {
+      if (!dragging) return;
+      dragging = false;
+      if (scroller.hasPointerCapture(e.pointerId)) scroller.releasePointerCapture(e.pointerId);
+      delete element.dataset.dragging;
+      if (!dragged) {
+        restoreSnap();
+        return;
+      }
+      if (snap) {
+        let target = nearestIndex(scrollPosition());
+        if (dragVelocity < -FLING_VELOCITY) target = Math.min(count - 1, target + 1);
+        else if (dragVelocity > FLING_VELOCITY) target = Math.max(0, target - 1);
+        goTo(target);
+        scroller.addEventListener("scrollend", restoreSnap, { once: true });
+        settleTimer = window.setTimeout(restoreSnap, 600);
+      } else {
+        restoreSnap();
+      }
+    };
+
+    // A drag must not activate a link or button inside the item
+    const handleClick = (e: MouseEvent): void => {
+      if (dragged) {
+        dragged = false;
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    };
+
+    // ── Wiring ──────────────────────────────────────────────────
+
+    scroller.addEventListener("scroll", layout, { passive: true });
+    scroller.addEventListener("wheel", clearPending, { passive: true });
+    scroller.addEventListener("touchstart", clearPending, { passive: true });
+    scroller.addEventListener("keydown", handleKeyDown);
+    scroller.addEventListener("focusin", handleFocusIn);
+    scroller.addEventListener("pointerdown", handlePointerDown);
+    scroller.addEventListener("pointermove", handlePointerMove);
+    scroller.addEventListener("pointerup", handlePointerUp);
+    scroller.addEventListener("pointercancel", handlePointerUp);
+    scroller.addEventListener("click", handleClick, true);
+    reduceMotion?.addEventListener?.("change", rebuild);
+
+    const resizeObserver = typeof ResizeObserver === "function" ? new ResizeObserver(rebuild) : null;
+    resizeObserver?.observe(scroller);
+
+    component.onSlidesChanged(rebuild);
+    rebuild();
+
+    const destroy = component.lifecycle?.destroy;
+    const enhanced = component as C & ScrollComponent;
+    enhanced.getCurrentSlide = () => currentIndex;
+    enhanced.getVariant = () => variant;
+    enhanced.next = next;
+    enhanced.prev = prev;
+    enhanced.goTo = goTo;
+    enhanced.lifecycle = {
       destroy: () => {
-        cancelSmooth();
-        clearTimeout(idleTimer);
-        resizeObserver.disconnect();
-        container.removeEventListener("pointerdown", handlePointerDown);
-        container.removeEventListener("pointermove", handlePointerMove);
-        container.removeEventListener("pointerup", handlePointerUp);
-        container.removeEventListener("pointercancel", handlePointerCancel);
-        container.removeEventListener("wheel", handleWheel);
-        container.removeEventListener("keydown", handleKeyDown);
-        if (component.lifecycle?.destroy) component.lifecycle.destroy();
+        restoreSnap();
+        resizeObserver?.disconnect();
+        reduceMotion?.removeEventListener?.("change", rebuild);
+        clearPending();
+        scroller.removeEventListener("scroll", layout);
+        scroller.removeEventListener("wheel", clearPending);
+        scroller.removeEventListener("touchstart", clearPending);
+        scroller.removeEventListener("keydown", handleKeyDown);
+        scroller.removeEventListener("focusin", handleFocusIn);
+        scroller.removeEventListener("pointerdown", handlePointerDown);
+        scroller.removeEventListener("pointermove", handlePointerMove);
+        scroller.removeEventListener("pointerup", handlePointerUp);
+        scroller.removeEventListener("pointercancel", handlePointerUp);
+        scroller.removeEventListener("click", handleClick, true);
+        destroy?.();
       },
-    },
+    };
+    return enhanced;
   };
-};

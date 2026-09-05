@@ -7,34 +7,39 @@ import { withAPI } from "./api";
 import { CarouselConfig, CarouselComponent } from "./types";
 import { createBaseConfig, getElementConfig } from "./config";
 
-export const createCarousel = (
-  config: CarouselConfig = {},
-): CarouselComponent => {
+/**
+ * Creates a Material 3 carousel.
+ *
+ * Items are laid out by a keyline strategy per layout (multi-browse,
+ * uncontained, hero, centred hero, full-screen) and scrolled natively;
+ * they change size as they move through the layout and snap into place.
+ *
+ * @example
+ * ```ts
+ * const carousel = createCarousel({
+ *   variant: 'hero',
+ *   itemWidth: 360,
+ *   slides: [
+ *     { image: 'a.jpg', title: 'Alpha' },
+ *     { image: 'b.jpg', title: 'Beta' },
+ *   ],
+ * });
+ * carousel.on('change', ({ index }) => console.log(index));
+ * ```
+ *
+ * @category Components
+ */
+export const createCarousel = (config: CarouselConfig = {}): CarouselComponent => {
   const baseConfig = createBaseConfig(config);
-
-  const core = pipe(
+  return pipe(
     createBase,
     withEvents(),
     withElement(getElementConfig(baseConfig)),
+    withSlides(baseConfig),
+    withLifecycle(),
+    withScroll(baseConfig),
+    withAPI(),
   )(baseConfig);
-
-  core.element.style.position = "relative";
-  core.element.style.overflow = "hidden";
-  core.element.style.userSelect = "none";
-  core.element.style.touchAction = "pan-y";
-  core.element.style.cursor = "grab";
-
-  if (baseConfig.variant) {
-    core.element.dataset.variant = typeof baseConfig.variant === "string"
-      ? baseConfig.variant
-      : "custom";
-  }
-
-  const withSlidesComponent = withSlides(baseConfig)(core);
-  const withScrollComponent = withScroll(baseConfig)(withSlidesComponent);
-  const withLifecycleComponent = withLifecycle()(withScrollComponent);
-
-  return withAPI()(withLifecycleComponent);
 };
 
 export default createCarousel;
