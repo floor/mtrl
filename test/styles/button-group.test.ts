@@ -72,4 +72,16 @@ describe('button group stylesheet', () => {
     expect(value('.mtrl-button-group--labels-selected > .mtrl-button-group__button--selected', 'gap')).toBe('8px');
     expect(value('.mtrl-button-group--labels-selected > .mtrl-button-group__button--selected .mtrl-button-text', 'max-width')).toBe('12em');
   });
+
+  test('size and shape changes ride the fast spatial spring, colours the effects spring', () => {
+    const transition = value('.mtrl-button-group > .mtrl-button, .mtrl-button-group > .mtrl-icon-button', 'transition') ?? '';
+    expect(transition).toMatch(/width 425ms linear\(0(\.0)?, 0\.102, .*1\.094.*\)/);
+    expect(transition).toMatch(/border-radius 425ms linear\(/);
+    expect(transition).toMatch(/background-color 250ms linear\(0(\.0)?, /);
+    expect(transition).not.toContain('cubic-bezier');
+  });
+
+  test('a collapsing label clips instead of showing an ellipsis', () => {
+    expect(value('.mtrl-button-group--labels-selected > .mtrl-button .mtrl-button-text', 'text-overflow')).toBe('clip');
+  });
 });

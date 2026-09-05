@@ -41,7 +41,25 @@ $motion: (
   'easing-appear': cubic-bezier(0.0, 0.0, 0.2, 1.0),       // Elements appearing (decelerated)
   'easing-disappear': cubic-bezier(0.3, 0.0, 1.0, 1.0),    // Elements disappearing (accelerated)
   'easing-expand': cubic-bezier(0.0, 0.0, 0.2, 1.0),       // Elements expanding (decelerated)
-  'easing-collapse': cubic-bezier(0.3, 0.0, 1.0, 1.0)      // Elements collapsing (accelerated)
+  'easing-collapse': cubic-bezier(0.3, 0.0, 1.0, 1.0),     // Elements collapsing (accelerated)
+
+  // Material 3 expressive motion scheme: springs sampled as linear() easings
+  // (Compose ExpressiveMotionTokens.kt, mass 1). Spatial springs move size,
+  // shape and position and may overshoot; effects springs change colour and
+  // opacity without overshoot. The duration is the time for the spring to
+  // settle within 0.1%.
+  'spring-default-spatial-duration': 450ms,
+  'spring-default-spatial-easing': linear(0.0, 0.055, 0.18, 0.332, 0.483, 0.619, 0.733, 0.823, 0.891, 0.94, 0.973, 0.994, 1.007, 1.013, 1.015, 1.015, 1.013, 1.011, 1.009, 1.006, 1.005, 1.003, 1.002, 1.001, 1),
+  'spring-fast-spatial-duration': 425ms,
+  'spring-fast-spatial-easing': linear(0.0, 0.102, 0.323, 0.57, 0.784, 0.942, 1.039, 1.085, 1.094, 1.082, 1.06, 1.037, 1.018, 1.004, 0.995, 0.992, 0.991, 0.992, 0.995, 0.997, 0.999, 1.0, 1.001, 1.001, 1),
+  'spring-slow-spatial-duration': 625ms,
+  'spring-slow-spatial-easing': linear(0.0, 0.056, 0.182, 0.335, 0.488, 0.624, 0.738, 0.827, 0.895, 0.943, 0.975, 0.996, 1.007, 1.013, 1.015, 1.015, 1.013, 1.011, 1.008, 1.006, 1.004, 1.003, 1.002, 1.001, 1),
+  'spring-default-effects-duration': 250ms,
+  'spring-default-effects-easing': linear(0.0, 0.066, 0.203, 0.355, 0.496, 0.616, 0.713, 0.788, 0.845, 0.888, 0.92, 0.943, 0.96, 0.971, 0.98, 0.986, 0.99, 0.993, 0.995, 0.997, 0.998, 0.998, 0.999, 0.999, 1),
+  'spring-fast-effects-duration': 175ms,
+  'spring-fast-effects-easing': linear(0.0, 0.075, 0.227, 0.39, 0.537, 0.657, 0.751, 0.822, 0.874, 0.912, 0.939, 0.958, 0.971, 0.98, 0.987, 0.991, 0.994, 0.996, 0.997, 0.998, 0.999, 0.999, 0.999, 1.0, 1),
+  'spring-slow-effects-duration': 350ms,
+  'spring-slow-effects-easing': linear(0.0, 0.065, 0.2, 0.351, 0.491, 0.611, 0.708, 0.783, 0.841, 0.885, 0.917, 0.941, 0.958, 0.97, 0.979, 0.985, 0.99, 0.993, 0.995, 0.997, 0.998, 0.998, 0.999, 0.999, 1),
 ) !default;
 
 $elevation: (

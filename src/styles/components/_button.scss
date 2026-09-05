@@ -73,17 +73,19 @@ $content-color: (
   user-select: none;
   vertical-align: middle;
   appearance: none;
-  will-change: border-radius, transform;
+  will-change: border-radius;
 
   // Typography
   @include m.typography('label-large');
 
+  // Colours follow the default effects spring, the shape morph the fast
+  // spatial spring (Compose Button and ToggleButton animation specs)
   transition:
-    background-color v.motion('duration-short2') v.motion('easing-standard'),
-    color v.motion('duration-short2') v.motion('easing-standard'),
-    box-shadow v.motion('duration-short2') v.motion('easing-standard'),
-    border-radius v.motion('duration-short1') v.motion('easing-standard-accelerate'),
-    transform v.motion('duration-short1') v.motion('easing-standard-accelerate');
+    background-color v.motion('spring-default-effects-duration') v.motion('spring-default-effects-easing'),
+    color v.motion('spring-default-effects-duration') v.motion('spring-default-effects-easing'),
+    box-shadow v.motion('spring-default-effects-duration') v.motion('spring-default-effects-easing'),
+    border-color v.motion('spring-default-effects-duration') v.motion('spring-default-effects-easing'),
+    border-radius v.motion('spring-fast-spatial-duration') v.motion('spring-fast-spatial-easing');
 
   // Focus indicator: 3dp secondary ring, 2dp outside the container
   // (material-web tokens/_md-comp-focus-ring.scss)
