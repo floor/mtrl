@@ -142,6 +142,12 @@ export interface ButtonGroupConfig {
   required?: boolean;
   /** Corner style: round (default) or square */
   shape?: ButtonGroupShape;
+  /**
+   * Standard groups: share of its width a pressed button gains while its
+   * neighbours give up the difference (M3: 0.15). 0 disables the motion.
+   * @default 0.15
+   */
+  expandedRatio?: number;
   /** Material size token: xs, s (default), m, l, xl */
   size?: ButtonGroupSize;
   /**

@@ -6,484 +6,171 @@
 @use '../../styles/abstract/theme' as t;
 
 $component: '#{base.$prefix}-button-group';
+$button: '#{base.$prefix}-button';
+$icon-button: '#{base.$prefix}-icon-button';
+$shape: '--#{base.$prefix}-button-shape';
 
 // =============================================================================
 // BUTTON GROUP COMPONENT STYLES
 // =============================================================================
-// Material Design 3 Button Group Implementation
+// Material 3 button groups (m3.material.io button group specs; Compose
+// ButtonGroupDefaults, ButtonGroupSmallTokens.kt and
+// ConnectedButtonGroupSmallTokens.kt).
 //
-// Button groups visually connect related action buttons. Unlike segmented
-// buttons (for selection), button groups are for grouping related actions
-// where each button triggers an independent action.
+// A group is a row (or column) of ordinary buttons and icon buttons. The
+// buttons keep their own colours, states, toggle colours and shape morphs;
+// the group owns the spacing, the container height, and, for connected
+// groups, the corner shapes per position. Shapes are handed to the buttons
+// through the --<prefix>-button-shape custom properties.
 //
-// Supports:
-// - Multiple variants (filled, tonal, outlined, elevated, text)
-// - Horizontal and vertical orientations
-// - Density scaling (default, comfortable, compact)
-// - Equal width option
-// - Proper border handling between buttons
-// - Accessibility support
+// - standard: 18/12/8/8/8dp between buttons by size; a selected toggle
+//   swaps round and square like a standalone button; a pressed button
+//   widens by 15% (set from the component)
+// - connected: 2dp between buttons; round outer corners, square inner
+//   corners (4/8/8/16/20dp by size), 4dp inner corners while pressed; a
+//   selected button becomes a full pill
+//
+// The component sets --button-group-height, --button-group-icon,
+// --button-group-gap, --button-group-inner-corner,
+// --button-group-pressed-corner and --button-group-radius.
 // =============================================================================
 
 .#{$component} {
-  // Base styles
   position: relative;
   display: inline-flex;
-  align-items: stretch;
-
-  // CSS custom properties for dynamic sizing
-  --button-group-height: 40px;
-  --button-group-radius: 20px;
-  --button-group-gap: 0;
-
-  // Default to horizontal orientation
   flex-direction: row;
+  align-items: center;
+  gap: var(--button-group-gap, 12px);
 
-  // Remove default button margins within group
-  > .#{base.$prefix}-button {
+  --button-group-height: 40px;
+  --button-group-icon: 20px;
+  --button-group-gap: 12px;
+  --button-group-inner-corner: 8px;
+  --button-group-pressed-corner: 4px;
+  --button-group-radius: 20px;
+
+  &--vertical {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  > .#{$button},
+  > .#{$icon-button} {
     margin: 0;
     flex-shrink: 0;
+    height: var(--button-group-height);
+    transition:
+      background-color v.motion('duration-short2') v.motion('easing-standard'),
+      color v.motion('duration-short2') v.motion('easing-standard'),
+      box-shadow v.motion('duration-short2') v.motion('easing-standard'),
+      border-radius v.motion('duration-short2') v.motion('easing-standard'),
+      width v.motion('duration-short2') v.motion('easing-standard'),
+      gap v.motion('duration-short2') v.motion('easing-standard');
   }
 
-  // =========================================================================
-  // ORIENTATION VARIANTS
-  // =========================================================================
-
-  // Buttons in a group stay flat: no hover elevation (M3 button group states)
-  > .#{base.$prefix}-button:hover:not([disabled]),
-  > .#{base.$prefix}-icon-button:hover:not([disabled]),
-  > .#{base.$prefix}-button:active:not([disabled]),
-  > .#{base.$prefix}-icon-button:active:not([disabled]) {
-    box-shadow: none;
+  // Density lowers the height; a round icon button keeps its aspect
+  > .#{$icon-button} {
+    width: var(--button-group-height);
   }
-
-  // Orientation sets the direction only; the shape belongs to the kind
-  // blocks below (standard, connected), per the M3 button group spec.
-  &--horizontal { flex-direction: row; }
-  &--vertical { flex-direction: column; }
-
-  // =========================================================================
-  // VARIANT STYLES
-  // =========================================================================
-
-  // Outlined variant (default for button groups per MD3)
-  &--outlined {
-    > .#{base.$prefix}-button {
-      background-color: transparent;
-      color: t.color('primary');
-      box-shadow: none;
-
-      // unselected only: a selected button keeps its colour and shows the state layer
-      &:hover:not([disabled]):not(.#{$component}__button--selected) {
-        background-color: t.alpha('primary', 0.08);
-      }
-
-      &:focus-visible {
-        background-color: t.alpha('primary', 0.12);
-      }
-
-      &:active:not([disabled]):not(.#{$component}__button--selected) {
-        background-color: t.alpha('primary', 0.12);
-      }
-    }
-
-    // Horizontal border handling
-    &.#{$component}--horizontal {
-      > .#{base.$prefix}-button {
-        border: 1px solid t.color('outline');
-
-        // Remove right border except for last button to avoid double borders
-        &:not(:last-child) {
-          border-right: none;
-        }
-      }
-    }
-
-    // Vertical border handling
-    &.#{$component}--vertical {
-      > .#{base.$prefix}-button {
-        border: 1px solid t.color('outline');
-
-        // Remove bottom border except for last button to avoid double borders
-        &:not(:last-child) {
-          border-bottom: none;
-        }
-      }
-    }
-  }
-
-  // Filled variant
-  &--filled {
-    > .#{base.$prefix}-button {
-      background-color: t.color('primary');
-      color: t.color('on-primary');
-      border: none;
-      box-shadow: none;
-
-      // unselected only: a selected button keeps its colour and shows the state layer
-      &:hover:not([disabled]):not(.#{$component}__button--selected) {
-        background-color: t.alpha('primary', 0.92);
-      }
-
-      &:focus-visible {
-        background-color: t.alpha('primary', 0.88);
-      }
-
-      &:active:not([disabled]):not(.#{$component}__button--selected) {
-        background-color: t.alpha('primary', 0.88);
-      }
-    }
-
-    // Add subtle dividers between buttons
-    &.#{$component}--horizontal {
-      > .#{base.$prefix}-button:not(:last-child) {
-        border-right: 1px solid t.alpha('on-primary', 0.12);
-      }
-    }
-
-    &.#{$component}--vertical {
-      > .#{base.$prefix}-button:not(:last-child) {
-        border-bottom: 1px solid t.alpha('on-primary', 0.12);
-      }
-    }
-  }
-
-  // Tonal variant
-  &--tonal {
-    > .#{base.$prefix}-button {
-      background-color: t.color('secondary-container');
-      color: t.color('on-secondary-container');
-      border: none;
-      box-shadow: none;
-
-      // unselected only: a selected button keeps its colour and shows the state layer
-      &:hover:not([disabled]):not(.#{$component}__button--selected) {
-        background-color: t.alpha('secondary-container', 0.92);
-      }
-
-      &:focus-visible {
-        background-color: t.alpha('secondary-container', 0.88);
-      }
-
-      &:active:not([disabled]):not(.#{$component}__button--selected) {
-        background-color: t.alpha('secondary-container', 0.88);
-      }
-    }
-
-    // Add subtle dividers between buttons
-    &.#{$component}--horizontal {
-      > .#{base.$prefix}-button:not(:last-child) {
-        border-right: 1px solid t.alpha('on-secondary-container', 0.12);
-      }
-    }
-
-    &.#{$component}--vertical {
-      > .#{base.$prefix}-button:not(:last-child) {
-        border-bottom: 1px solid t.alpha('on-secondary-container', 0.12);
-      }
-    }
-  }
-
-  // Elevated variant
-  &--elevated {
-    box-shadow: v.elevation('level-1');
-    border-radius: var(--button-group-radius);
-
-    > .#{base.$prefix}-button {
-      background-color: t.color('surface-container-low');
-      color: t.color('primary');
-      border: none;
-      box-shadow: none;
-
-      // unselected only: a selected button keeps its colour and shows the state layer
-      &:hover:not([disabled]):not(.#{$component}__button--selected) {
-        background-color: t.alpha('primary', 0.08);
-      }
-
-      &:focus-visible {
-        background-color: t.alpha('primary', 0.12);
-      }
-
-      &:active:not([disabled]):not(.#{$component}__button--selected) {
-        background-color: t.alpha('primary', 0.12);
-      }
-    }
-
-    // Add subtle dividers between buttons
-    &.#{$component}--horizontal {
-      > .#{base.$prefix}-button:not(:last-child) {
-        border-right: 1px solid t.color('outline-variant');
-      }
-    }
-
-    &.#{$component}--vertical {
-      > .#{base.$prefix}-button:not(:last-child) {
-        border-bottom: 1px solid t.color('outline-variant');
-      }
-    }
-  }
-
-  // Text variant
-  &--text {
-    > .#{base.$prefix}-button {
-      background-color: transparent;
-      color: t.color('primary');
-      border: none;
-      box-shadow: none;
-
-      // unselected only: a selected button keeps its colour and shows the state layer
-      &:hover:not([disabled]):not(.#{$component}__button--selected) {
-        background-color: t.alpha('primary', 0.08);
-      }
-
-      &:focus-visible {
-        background-color: t.alpha('primary', 0.12);
-      }
-
-      &:active:not([disabled]):not(.#{$component}__button--selected) {
-        background-color: t.alpha('primary', 0.12);
-      }
-    }
-  }
-
-  // =========================================================================
-  // DENSITY VARIANTS
-  // =========================================================================
-
-  // Default density (40px height)
-  // Uses CSS custom properties set by default
-
-  // Comfortable density (36px height)
-  &--density-comfortable {
-    --button-group-height: 36px;
-    --button-group-radius: 18px;
-
-    > .#{base.$prefix}-button {
-      height: 36px;
-      padding: 0 20px;
-
-      .#{base.$prefix}-button-text {
-        font-size: 0.8125rem;
-      }
-    }
-  }
-
-  // Compact density (32px height)
-  &--density-compact {
-    --button-group-height: 32px;
-    --button-group-radius: 16px;
-
-    > .#{base.$prefix}-button {
-      height: 32px;
-      padding: 0 16px;
-      min-width: 48px;
-
-      .#{base.$prefix}-button-text {
-        font-size: 0.75rem;
-      }
-
-      .#{base.$prefix}-button-icon {
-        svg {
-          width: 18px;
-          height: 18px;
-        }
-      }
-    }
-  }
-
-  // =========================================================================
-  // EQUAL WIDTH OPTION
-  // =========================================================================
 
   &--equal-width {
-    > .#{base.$prefix}-button {
+    > .#{$button} {
       flex: 1 1 0;
       justify-content: center;
     }
   }
 
-  // =========================================================================
-  // DISABLED STATE
-  // =========================================================================
-
   &--disabled {
-    opacity: 0.38;
     pointer-events: none;
-
-    > .#{base.$prefix}-button {
-      pointer-events: none;
-    }
   }
 
-  // =========================================================================
-  // BUTTON POSITION CLASSES
-  // =========================================================================
-
-  &__button {
-    // Base button in group styling
-    position: relative;
-
-    &--first,
-    &--middle,
-    &--last,
-    &--single {
-      // Position-specific styles are handled above in orientation variants
-    }
-  }
-}
-
-// =============================================================================
-// MATERIAL 3 BUTTON GROUPS: KINDS, SHAPES, SIZES, SELECTION
-// =============================================================================
-// Standard: padding between buttons (18/12/8/8/8dp by size); a selected
-// button morphs round -> square. Connected: 2dp between buttons, round or
-// square outer corners, square inner corners (4/8/8/16/20dp by size);
-// selection changes only the selected button. Tokens come from the
-// component as custom properties (--button-group-height, --button-group-gap,
-// --button-group-inner-corner, --button-group-radius).
-.#{$component} {
-  &--standard,
+  // ---------------------------------------------------------------------------
+  // Connected groups: corner shapes per position
+  // ---------------------------------------------------------------------------
   &--connected {
-    gap: var(--button-group-gap);
+    > .#{$button},
+    > .#{$icon-button} {
+      #{$shape}: var(--button-group-inner-corner);
+      #{$shape}-pressed: var(--button-group-pressed-corner);
+      #{$shape}-selected: var(--button-group-radius);
+    }
 
-    > .#{base.$prefix}-button,
-    > .#{base.$prefix}-icon-button {
-      height: var(--button-group-height);
-      min-width: var(--button-group-height);
-      border-radius: var(--button-group-radius);
-      transition: border-radius 200ms cubic-bezier(0.2, 0, 0, 1), width 200ms cubic-bezier(0.2, 0, 0, 1), background-color 150ms linear;
-    }
-    // Selectable groups: no dividing borders, the selected state carries the meaning
-    &.#{$component}--selectable > .#{base.$prefix}-button,
-    &.#{$component}--selectable > .#{base.$prefix}-icon-button {
-      border-color: transparent;
-    }
-  }
-
-  // --- standard: round buttons; the selected one becomes square
-  &--standard {
-    > .#{base.$prefix}-button,
-    > .#{base.$prefix}-icon-button {
-      border-radius: var(--button-group-radius);
-    }
-    &.#{$component}--square > .#{base.$prefix}-button,
-    &.#{$component}--square > .#{base.$prefix}-icon-button {
-      border-radius: var(--button-group-inner-corner);
-    }
-    > .#{$component}__button--selected {
-      border-radius: var(--button-group-inner-corner);
-    }
-    &.#{$component}--square > .#{$component}__button--selected {
-      border-radius: var(--button-group-radius);
-    }
-  }
-
-  // --- connected: outer corners on the ends, square inner corners
-  &--connected {
-    > .#{base.$prefix}-button,
-    > .#{base.$prefix}-icon-button {
-      border-radius: var(--button-group-inner-corner);
-    }
     > .#{$component}__button--first {
-      border-top-left-radius: var(--button-group-radius);
-      border-bottom-left-radius: var(--button-group-radius);
+      #{$shape}: var(--button-group-radius) var(--button-group-inner-corner) var(--button-group-inner-corner) var(--button-group-radius);
+      #{$shape}-pressed: var(--button-group-radius) var(--button-group-pressed-corner) var(--button-group-pressed-corner) var(--button-group-radius);
     }
+
     > .#{$component}__button--last {
-      border-top-right-radius: var(--button-group-radius);
-      border-bottom-right-radius: var(--button-group-radius);
+      #{$shape}: var(--button-group-inner-corner) var(--button-group-radius) var(--button-group-radius) var(--button-group-inner-corner);
+      #{$shape}-pressed: var(--button-group-pressed-corner) var(--button-group-radius) var(--button-group-radius) var(--button-group-pressed-corner);
     }
+
     > .#{$component}__button--single {
-      border-radius: var(--button-group-radius);
+      #{$shape}: var(--button-group-radius);
+      #{$shape}-pressed: var(--button-group-radius);
     }
+
+    &.#{$component}--vertical {
+      > .#{$component}__button--first {
+        #{$shape}: var(--button-group-radius) var(--button-group-radius) var(--button-group-inner-corner) var(--button-group-inner-corner);
+        #{$shape}-pressed: var(--button-group-radius) var(--button-group-radius) var(--button-group-pressed-corner) var(--button-group-pressed-corner);
+      }
+
+      > .#{$component}__button--last {
+        #{$shape}: var(--button-group-inner-corner) var(--button-group-inner-corner) var(--button-group-radius) var(--button-group-radius);
+        #{$shape}-pressed: var(--button-group-pressed-corner) var(--button-group-pressed-corner) var(--button-group-radius) var(--button-group-radius);
+      }
+    }
+
+    // Square connected groups: the outer corners take the inner corner size
     &.#{$component}--square {
       > .#{$component}__button--first,
       > .#{$component}__button--last,
       > .#{$component}__button--single {
-        border-radius: var(--button-group-inner-corner);
+        #{$shape}: var(--button-group-inner-corner);
+        #{$shape}-pressed: var(--button-group-pressed-corner);
       }
     }
-    &.#{$component}--vertical {
-      > .#{$component}__button--first {
-        border-radius: var(--button-group-radius) var(--button-group-radius) var(--button-group-inner-corner) var(--button-group-inner-corner);
+
+    // xs and s connected groups keep a 48dp minimum width per button
+    &.#{$component}--size-xs,
+    &.#{$component}--size-s {
+      > .#{$button},
+      > .#{$icon-button} {
+        min-width: 48px;
       }
-      > .#{$component}__button--last {
-        border-radius: var(--button-group-inner-corner) var(--button-group-inner-corner) var(--button-group-radius) var(--button-group-radius);
-      }
-    }
-    // the selected button becomes a full pill wherever it sits (M3 spec:
-    // selection "only affects the shape of the button being selected")
-    > .#{$component}__button--selected {
-      border-radius: var(--button-group-radius);
     }
   }
 
-  // --- labels "selected": buttons with icon + text show the text only while
-  // selected; the selected button widens to reveal it (M3 Expressive)
+  // ---------------------------------------------------------------------------
+  // Labels shown on the selected button only: buttons with icon and text
+  // collapse to the icon and the selected one widens to reveal its label
+  // ---------------------------------------------------------------------------
   &--labels-selected {
-    > .#{base.$prefix}-button {
+    > .#{$button} {
+      gap: 0;
       min-width: var(--button-group-height);
-      padding: 0 calc((var(--button-group-height) - 24px) / 2);
-      .#{base.$prefix}-button-text {
-        display: inline-block; max-width: 0; opacity: 0; overflow: hidden; white-space: nowrap; margin-left: 0;
-        transition: max-width 200ms cubic-bezier(0.2, 0, 0, 1), opacity 150ms linear, margin-left 200ms cubic-bezier(0.2, 0, 0, 1);
-      }
-    }
-    // once the label shows, the M3 small button padding (16dp) on both sides
-    > .#{$component}__button--selected {
-      padding: 0 16px;
-      .#{base.$prefix}-button-text { max-width: 12em; opacity: 1; margin-left: 8px; }
-    }
-  }
+      padding: 0 calc((var(--button-group-height) - var(--button-group-icon)) / 2);
 
-  // --- selected colours follow the toggle button styles of each variant
-  // Toggle button colours (M3 button group spec: groups take the filled, tonal
-  // or outlined toggle styles; text and standard have no container treatment)
-  &--selectable {
-    // filled toggle: unselected on the surface container, selected primary
-    &.#{$component}--filled > .#{base.$prefix}-button:not(.#{$component}__button--selected),
-    &.#{$component}--filled > .#{base.$prefix}-icon-button:not(.#{$component}__button--selected) {
-      background-color: t.color('surface-container');
-      color: t.color('on-surface-variant');
-    }
-    > .#{$component}__button--selected {
-      background-color: t.color('primary');
-      color: t.color('on-primary');
-    }
-    // tonal toggle: unselected secondary container, selected secondary
-    &.#{$component}--tonal > .#{$component}__button--selected {
-      background-color: t.color('secondary');
-      color: t.color('on-secondary');
-    }
-    // outlined toggle: selected inverse surface
-    &.#{$component}--outlined > .#{$component}__button--selected,
-    &.#{$component}--text > .#{$component}__button--selected {
-      background-color: t.color('inverse-surface');
-      color: t.color('inverse-on-surface');
-    }
-    &.#{$component}--elevated > .#{$component}__button--selected {
-      background-color: t.color('primary');
-      color: t.color('on-primary');
-    }
-  }
-}
-
-// =============================================================================
-// DARK THEME ADJUSTMENTS
-// =============================================================================
-
-html[data-theme-mode=dark] {
-  .#{$component} {
-    &--outlined {
-      > .#{base.$prefix}-button {
-        border-color: t.color('outline');
+      .#{$button}-text {
+        display: inline-block;
+        max-width: 0;
+        opacity: 0;
+        overflow: hidden;
+        white-space: nowrap;
+        transition:
+          max-width v.motion('duration-short2') v.motion('easing-standard'),
+          opacity v.motion('duration-short2') linear;
       }
     }
 
-    &--elevated {
-      background-color: t.color('surface-container-high');
+    > .#{$component}__button--selected {
+      gap: v.button('icon-gap-s');
+      padding: 0 v.button('padding-s');
 
-      > .#{base.$prefix}-button {
-        background-color: transparent;
+      .#{$button}-text {
+        max-width: 12em;
+        opacity: 1;
       }
     }
   }

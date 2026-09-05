@@ -80,17 +80,37 @@ export const BUTTON_GROUP_SIZES = {
   XL: 'xl'
 } as const;
 
-/** Material 3 button group tokens per size (dp): container height, standard inner padding, connected inner corner */
+/**
+ * Material 3 button group tokens per size (dp): container height, button
+ * icon size, standard between-space, connected inner corner
+ * (m3.material.io button group specs; ButtonGroupSmallTokens.kt and
+ * ConnectedButtonGroupSmallTokens.kt for the s size)
+ */
 export const BUTTON_GROUP_SIZE_TOKENS = {
-  xs: { height: 32, standardGap: 18, connectedCorner: 4 },
-  s: { height: 40, standardGap: 12, connectedCorner: 8 },
-  m: { height: 56, standardGap: 8, connectedCorner: 8 },
-  l: { height: 96, standardGap: 8, connectedCorner: 16 },
-  xl: { height: 136, standardGap: 8, connectedCorner: 20 }
+  xs: { height: 32, icon: 20, standardGap: 18, connectedCorner: 4 },
+  s: { height: 40, icon: 20, standardGap: 12, connectedCorner: 8 },
+  m: { height: 56, icon: 24, standardGap: 8, connectedCorner: 8 },
+  l: { height: 96, icon: 32, standardGap: 8, connectedCorner: 16 },
+  xl: { height: 136, icon: 40, standardGap: 8, connectedCorner: 20 }
 } as const;
 
 /** Connected groups use 2dp between buttons at every size */
 export const BUTTON_GROUP_CONNECTED_GAP = 2;
+
+/** Connected pressed inner corner: extra-small (ConnectedButtonGroupSmallTokens.PressedInnerCornerCornerSize) */
+export const BUTTON_GROUP_CONNECTED_PRESSED_CORNER = 4;
+
+/** Connected xs and s groups keep a 48dp minimum width per button */
+export const BUTTON_GROUP_CONNECTED_MIN_WIDTH = 48;
+
+/**
+ * Standard groups: a pressed button widens by this share of its width and
+ * its neighbours give up the difference (ButtonGroupDefaults.ExpandedRatio)
+ */
+export const BUTTON_GROUP_EXPANDED_RATIO = 0.15;
+
+/** Density reduces the container height by 4dp per step */
+export const BUTTON_GROUP_DENSITY_STEP = 4;
 
 /**
  * Default configuration values
@@ -166,23 +186,4 @@ export const BUTTON_GROUP_CLASSES = {
   DENSITY_COMFORTABLE: 'button-group--density-comfortable',
   /** Compact density */
   DENSITY_COMPACT: 'button-group--density-compact'
-} as const;
-
-/**
- * Density-specific height values per MD3 specifications
- */
-export const BUTTON_GROUP_HEIGHTS = {
-  [BUTTON_GROUP_DENSITY.DEFAULT]: 40,
-  [BUTTON_GROUP_DENSITY.COMFORTABLE]: 36,
-  [BUTTON_GROUP_DENSITY.COMPACT]: 32
-} as const;
-
-/**
- * Border radius values per MD3 specifications
- * Button groups use full-rounded corners on outer edges
- */
-export const BUTTON_GROUP_RADII = {
-  [BUTTON_GROUP_DENSITY.DEFAULT]: 20,
-  [BUTTON_GROUP_DENSITY.COMFORTABLE]: 18,
-  [BUTTON_GROUP_DENSITY.COMPACT]: 16
 } as const;

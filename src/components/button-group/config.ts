@@ -4,16 +4,15 @@ import { createComponentConfig } from '../../core/config/component';
 import {
   ButtonGroupConfig,
   ButtonGroupVariant,
-  ButtonGroupOrientation,
   ButtonGroupDensity
 } from './types';
 import {
   BUTTON_GROUP_DEFAULTS,
   BUTTON_GROUP_DENSITY,
-  BUTTON_GROUP_HEIGHTS,
-  BUTTON_GROUP_RADII,
   BUTTON_GROUP_SIZE_TOKENS,
-  BUTTON_GROUP_CONNECTED_GAP
+  BUTTON_GROUP_CONNECTED_GAP,
+  BUTTON_GROUP_CONNECTED_PRESSED_CORNER,
+  BUTTON_GROUP_DENSITY_STEP
 } from './constants';
 
 /**
@@ -100,36 +99,33 @@ export const getContainerConfig = (config: ButtonGroupConfig) => {
   };
 };
 
-/**
- * Gets density-specific sizing values per MD3 specifications
- * @param {ButtonGroupDensity} density - The density level
- * @returns {Object} CSS variables with sizing values
- * @internal
- */
-export const getDensityStyles = (
-  density: ButtonGroupDensity
-): Record<string, string> => {
-  const height = BUTTON_GROUP_HEIGHTS[density] || BUTTON_GROUP_HEIGHTS.default;
-  const radius = BUTTON_GROUP_RADII[density] || BUTTON_GROUP_RADII.default;
-
-  return {
-    '--button-group-height': `${height}px`,
-    '--button-group-radius': `${radius}px`
-  };
+/** Height steps removed by each density level (4dp per step) */
+const DENSITY_STEPS: Record<ButtonGroupDensity, number> = {
+  [BUTTON_GROUP_DENSITY.DEFAULT]: 0,
+  [BUTTON_GROUP_DENSITY.COMFORTABLE]: 1,
+  [BUTTON_GROUP_DENSITY.COMPACT]: 2
 };
 
-/** Size and kind tokens as custom properties (Material 3 button group specs) */
+/**
+ * Size, kind and density tokens as custom properties on the container
+ * (Material 3 button group specs). Density lowers the container height by
+ * 4dp per step; the buttons follow the container height.
+ */
 export const getSizeStyles = (
   size: ButtonGroupConfig['size'],
-  kind: ButtonGroupConfig['kind']
+  kind: ButtonGroupConfig['kind'],
+  density: ButtonGroupDensity = BUTTON_GROUP_DENSITY.DEFAULT
 ): Record<string, string> => {
   const tokens = BUTTON_GROUP_SIZE_TOKENS[size || BUTTON_GROUP_DEFAULTS.SIZE] || BUTTON_GROUP_SIZE_TOKENS.s;
   const gap = kind === 'connected' ? BUTTON_GROUP_CONNECTED_GAP : tokens.standardGap;
+  const height = tokens.height - BUTTON_GROUP_DENSITY_STEP * (DENSITY_STEPS[density] ?? 0);
   return {
-    '--button-group-height': `${tokens.height}px`,
+    '--button-group-height': `${height}px`,
+    '--button-group-icon': `${tokens.icon}px`,
     '--button-group-gap': `${gap}px`,
     '--button-group-inner-corner': `${tokens.connectedCorner}px`,
-    '--button-group-radius': `${tokens.height / 2}px`
+    '--button-group-pressed-corner': `${BUTTON_GROUP_CONNECTED_PRESSED_CORNER}px`,
+    '--button-group-radius': `${height / 2}px`
   };
 };
 
@@ -167,6 +163,8 @@ export const getButtonConfig = (
   return {
     ...buttonConfig,
     variant: groupConfig.variant,
+    size: groupConfig.size || BUTTON_GROUP_DEFAULTS.SIZE,
+    shape: groupConfig.shape || BUTTON_GROUP_DEFAULTS.SHAPE,
     disabled: groupConfig.disabled || buttonConfig.disabled,
     ripple: groupConfig.ripple,
     rippleConfig: groupConfig.rippleConfig,

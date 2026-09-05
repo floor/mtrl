@@ -596,4 +596,77 @@ describe("Button group selection (Material 3 kinds)", () => {
     group.destroy();
     standard.destroy();
   });
+
+  it("buttons take the group size, shape and toggle role", () => {
+    const group = createButtonGroup({
+      size: "m",
+      shape: "square",
+      selection: "single",
+      buttons: [{ text: "Alpha", value: "a" }, { text: "Beta", value: "b", selected: true }],
+    });
+    const [alpha, beta] = group.buttons;
+    expect(alpha.element.classList.contains("mtrl-button--m")).toBe(true);
+    expect(alpha.element.classList.contains("mtrl-button--square")).toBe(true);
+    expect(alpha.element.classList.contains("mtrl-button--toggle")).toBe(true);
+    expect(beta.element.classList.contains("mtrl-button--selected")).toBe(true);
+    expect(alpha.element.classList.contains("mtrl-button--selected")).toBe(false);
+
+    // the group owns the selection: a click on a toggle button does not flip it twice
+    alpha.element.click();
+    expect(alpha.isSelected()).toBe(true);
+    expect(beta.isSelected()).toBe(false);
+    expect(beta.element.getAttribute("aria-pressed")).toBe("false");
+  });
+
+  it("density lowers the container height by 4dp per step", () => {
+    const group = createButtonGroup({ size: "s", density: "compact", buttons: [{ text: "A" }] });
+    expect(group.element.style.getPropertyValue("--button-group-height")).toBe("32px");
+    group.setDensity("comfortable");
+    expect(group.element.style.getPropertyValue("--button-group-height")).toBe("36px");
+    group.setDensity("default");
+    expect(group.element.style.getPropertyValue("--button-group-height")).toBe("40px");
+  });
+
+  it("a pressed button in a standard group widens by 15% and its neighbours narrow", () => {
+    const group = createButtonGroup({ buttons: [{ text: "A" }, { text: "B" }, { text: "C" }] });
+    document.body.appendChild(group.element);
+    group.buttons.forEach((b) => {
+      b.element.getBoundingClientRect = () => ({ width: 100, height: 40 } as DOMRect);
+      b.element.style.padding = "0 16px";
+    });
+    group.buttons[1].element.dispatchEvent(new dom.window.Event("pointerdown", { bubbles: true }));
+    expect(group.buttons[1].element.style.width).toBe("115px");
+    expect(group.buttons[0].element.style.width).toBe("92.5px");
+    expect(group.buttons[0].element.style.paddingRight).toBe("8.5px");
+    expect(group.buttons[2].element.style.width).toBe("92.5px");
+    expect(group.buttons[2].element.style.paddingLeft).toBe("8.5px");
+    document.dispatchEvent(new dom.window.Event("pointerup"));
+    expect(group.buttons[1].element.style.width).toBe("");
+    expect(group.buttons[0].element.style.width).toBe("");
+    expect(group.buttons[0].element.style.paddingRight).toBe("");
+  });
+
+  it("the compression of a neighbour stops at its facing padding; an end button takes all its growth from one side", () => {
+    const group = createButtonGroup({ buttons: [{ text: "A" }, { text: "B" }] });
+    document.body.appendChild(group.element);
+    group.buttons.forEach((b) => {
+      b.element.getBoundingClientRect = () => ({ width: 100, height: 40 } as DOMRect);
+      b.element.style.padding = "0 4px";
+    });
+    group.buttons[0].element.dispatchEvent(new dom.window.Event("pointerdown", { bubbles: true }));
+    // 15% of 100 would be 15, the neighbour only has 4px of padding to give
+    expect(group.buttons[1].element.style.width).toBe("96px");
+    expect(group.buttons[1].element.style.paddingLeft).toBe("0px");
+    expect(group.buttons[0].element.style.width).toBe("104px");
+    document.dispatchEvent(new dom.window.Event("pointerup"));
+  });
+
+  it("connected groups and expandedRatio 0 do not change widths on press", () => {
+    const connected = createButtonGroup({ kind: "connected", buttons: [{ text: "A" }, { text: "B" }] });
+    connected.buttons[0].element.dispatchEvent(new dom.window.Event("pointerdown", { bubbles: true }));
+    expect(connected.buttons[0].element.style.width).toBe("");
+    const still = createButtonGroup({ expandedRatio: 0, buttons: [{ text: "A" }, { text: "B" }] });
+    still.buttons[0].element.dispatchEvent(new dom.window.Event("pointerdown", { bubbles: true }));
+    expect(still.buttons[0].element.style.width).toBe("");
+  });
 });
