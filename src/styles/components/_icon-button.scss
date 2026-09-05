@@ -122,7 +122,7 @@ $widths: (
     height: get-size("s", container);
 
     // Default shape (round - full radius)
-    border-radius: 50%;
+    border-radius: var(--#{base.$prefix}-button-shape, 50%);
 
     // Smooth transitions for shape morphing
     transition:
@@ -262,69 +262,69 @@ $widths: (
 
     // Round is default (50% radius)
     &--round {
-        border-radius: 50%;
+        border-radius: var(--#{base.$prefix}-button-shape, 50%);
     }
 
     // Square shape with size-specific corner radius
     &--square {
-        border-radius: get-size("s", square-radius);
+        border-radius: var(--#{base.$prefix}-button-shape, get-size("s", square-radius));
 
         &.#{$component}--xs {
-            border-radius: get-size("xs", square-radius);
+            border-radius: var(--#{base.$prefix}-button-shape, get-size("xs", square-radius));
         }
 
         &.#{$component}--m {
-            border-radius: get-size("m", square-radius);
+            border-radius: var(--#{base.$prefix}-button-shape, get-size("m", square-radius));
         }
 
         &.#{$component}--l {
-            border-radius: get-size("l", square-radius);
+            border-radius: var(--#{base.$prefix}-button-shape, get-size("l", square-radius));
         }
 
         &.#{$component}--xl {
-            border-radius: get-size("xl", square-radius);
+            border-radius: var(--#{base.$prefix}-button-shape, get-size("xl", square-radius));
         }
     }
 
     // Shape morph on press - both round and square morph to pressed radius
     &:active {
         &.#{$component}--round {
-            border-radius: get-size("s", pressed-radius);
+            border-radius: var(--#{base.$prefix}-button-shape-pressed, get-size("s", pressed-radius));
 
             &.#{$component}--xs {
-                border-radius: get-size("xs", pressed-radius);
+                border-radius: var(--#{base.$prefix}-button-shape-pressed, get-size("xs", pressed-radius));
             }
 
             &.#{$component}--m {
-                border-radius: get-size("m", pressed-radius);
+                border-radius: var(--#{base.$prefix}-button-shape-pressed, get-size("m", pressed-radius));
             }
 
             &.#{$component}--l {
-                border-radius: get-size("l", pressed-radius);
+                border-radius: var(--#{base.$prefix}-button-shape-pressed, get-size("l", pressed-radius));
             }
 
             &.#{$component}--xl {
-                border-radius: get-size("xl", pressed-radius);
+                border-radius: var(--#{base.$prefix}-button-shape-pressed, get-size("xl", pressed-radius));
             }
         }
 
         &.#{$component}--square {
-            border-radius: get-size("s", pressed-radius);
+            border-radius: var(--#{base.$prefix}-button-shape-pressed, get-size("s", pressed-radius));
 
             &.#{$component}--xs {
-                border-radius: get-size("xs", pressed-radius);
+                border-radius: var(--#{base.$prefix}-button-shape-pressed, get-size("xs", pressed-radius));
             }
 
             &.#{$component}--m {
-                border-radius: get-size("m", pressed-radius);
+                border-radius: var(--#{base.$prefix}-button-shape-pressed, get-size("m", pressed-radius));
             }
 
             &.#{$component}--l {
-                border-radius: get-size("l", pressed-radius);
+                border-radius: var(--#{base.$prefix}-button-shape-pressed, get-size("l", pressed-radius));
             }
 
             &.#{$component}--xl {
-                border-radius: get-size("xl", pressed-radius);
+                border-radius: var(--#{base.$prefix}-button-shape-pressed, get-size("xl", pressed-radius));
             }
         }
     }
@@ -492,28 +492,28 @@ $widths: (
     &--selected {
         // Round buttons become square when selected
         &.#{$component}--round:not(:active) {
-            border-radius: get-size("s", square-radius);
+            border-radius: var(--#{base.$prefix}-button-shape-selected, get-size("s", square-radius));
 
             &.#{$component}--xs {
-                border-radius: get-size("xs", square-radius);
+                border-radius: var(--#{base.$prefix}-button-shape-selected, get-size("xs", square-radius));
             }
 
             &.#{$component}--m {
-                border-radius: get-size("m", square-radius);
+                border-radius: var(--#{base.$prefix}-button-shape-selected, get-size("m", square-radius));
             }
 
             &.#{$component}--l {
-                border-radius: get-size("l", square-radius);
+                border-radius: var(--#{base.$prefix}-button-shape-selected, get-size("l", square-radius));
             }
 
             &.#{$component}--xl {
-                border-radius: get-size("xl", square-radius);
+                border-radius: var(--#{base.$prefix}-button-shape-selected, get-size("xl", square-radius));
             }
         }
 
         // Square buttons become round when selected
         &.#{$component}--square:not(:active) {
-            border-radius: 50%;
+            border-radius: var(--#{base.$prefix}-button-shape-selected, 50%);
         }
     }
 

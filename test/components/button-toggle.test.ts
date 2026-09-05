@@ -84,4 +84,16 @@ describe('withToggle', () => {
     enhanced.toggle?.setSelected(false);
     expect(component.element.getAttribute('aria-pressed')).toBe('false');
   });
+
+  test('toggleOnClick false leaves the state to the container', () => {
+    const component = createComponent();
+    const enhanced = withToggle({ toggle: true, toggleOnClick: false })(component);
+
+    component.element.click();
+    expect(enhanced.toggle?.isSelected()).toBe(false);
+    expect(component.emit).not.toHaveBeenCalled();
+
+    enhanced.toggle?.setSelected(true);
+    expect(component.element.classList.contains(`${PREFIX}-button--selected`)).toBe(true);
+  });
 });
