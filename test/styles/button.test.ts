@@ -211,4 +211,11 @@ describe('button stylesheet: toggle buttons (ToggleButtonDefaults)', () => {
     expect(declaration(block, 'background-color')).toBe('color-mix(in srgb, var(--mtrl-sys-color-on-surface) 10%, transparent)');
     expect(value('.mtrl-button--toggle.mtrl-button--outlined:disabled', 'background-color')).toBe('transparent');
   });
+
+  test('the shape morph rides the fast spatial spring and colours the effects spring', () => {
+    const transition = value('.mtrl-button', 'transition') ?? '';
+    expect(transition).toMatch(/border-radius 425ms linear\(/);
+    expect(transition).toMatch(/background-color 250ms linear\(/);
+    expect(transition).not.toContain('cubic-bezier');
+  });
 });

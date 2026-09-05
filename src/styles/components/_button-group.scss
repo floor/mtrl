@@ -59,13 +59,17 @@ $shape: '--#{base.$prefix}-button-shape';
     margin: 0;
     flex-shrink: 0;
     height: var(--button-group-height);
+    // Size and shape changes ride the fast spatial spring, colours the
+    // default effects spring (ButtonGroup and ToggleButton animation specs)
     transition:
-      background-color v.motion('duration-short2') v.motion('easing-standard'),
-      color v.motion('duration-short2') v.motion('easing-standard'),
-      box-shadow v.motion('duration-short2') v.motion('easing-standard'),
-      border-radius v.motion('duration-short2') v.motion('easing-standard'),
-      width v.motion('duration-short2') v.motion('easing-standard'),
-      gap v.motion('duration-short2') v.motion('easing-standard');
+      background-color v.motion('spring-default-effects-duration') v.motion('spring-default-effects-easing'),
+      color v.motion('spring-default-effects-duration') v.motion('spring-default-effects-easing'),
+      box-shadow v.motion('spring-default-effects-duration') v.motion('spring-default-effects-easing'),
+      border-color v.motion('spring-default-effects-duration') v.motion('spring-default-effects-easing'),
+      border-radius v.motion('spring-fast-spatial-duration') v.motion('spring-fast-spatial-easing'),
+      width v.motion('spring-fast-spatial-duration') v.motion('spring-fast-spatial-easing'),
+      padding v.motion('spring-fast-spatial-duration') v.motion('spring-fast-spatial-easing'),
+      gap v.motion('spring-fast-spatial-duration') v.motion('spring-fast-spatial-easing');
   }
 
   // Density lowers the height; a round icon button keeps its aspect
@@ -158,9 +162,10 @@ $shape: '--#{base.$prefix}-button-shape';
         opacity: 0;
         overflow: hidden;
         white-space: nowrap;
+        text-overflow: clip;
         transition:
-          max-width v.motion('duration-short2') v.motion('easing-standard'),
-          opacity v.motion('duration-short2') linear;
+          max-width v.motion('spring-fast-spatial-duration') v.motion('spring-fast-spatial-easing'),
+          opacity v.motion('spring-default-effects-duration') v.motion('spring-default-effects-easing');
       }
     }
 
