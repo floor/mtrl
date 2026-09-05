@@ -1,4 +1,5 @@
-// src/components/button/_styles.scss
+// src/styles/components/_button.scss
+@use 'sass:map';
 @use '../../styles/abstract/base' as base;
 @use '../../styles/abstract/variables' as v;
 @use '../../styles/abstract/functions' as f;
@@ -10,25 +11,52 @@ $component: '#{base.$prefix}-button';
 // =============================================================================
 // BUTTON COMPONENT STYLES
 // =============================================================================
+// Material Design 3 common button.
+//
+// Measurements, shapes and colour roles follow the Compose Material 3 token
+// files (ButtonXSmallTokens.kt … ButtonXLargeTokens.kt, FilledButtonTokens.kt,
+// ElevatedButtonTokens.kt, TonalButtonTokens.kt, OutlinedButtonTokens.kt,
+// TextButtonTokens.kt) and ButtonDefaults in Button.kt. Values live in the
+// $button map in abstract/_variables.scss.
+//
 // Supports:
-// - Multiple variants (filled, elevated, tonal, outlined, text)
-// - Icon integration
-// - Progress indicator integration
-// - Circular/icon-only buttons
-// - Ripple effects
-// - State layers
-// - Accessibility focus indicators
+// - Five colour styles (filled, elevated, tonal, outlined, text)
+// - Five sizes (xs, s, m, l, xl) and two shapes (round, square)
+// - Leading icon, integrated progress indicator
+// - State layers, focus ring, pressed shape morph
+// - 48dp touch target on the xs and s sizes
 // =============================================================================
 
+$sizes: xs, s, m, l, xl;
+
+// Label typescale per size (ButtonDefaults.textStyleFor)
+$label-typescale: (
+  'xs': 'label-large',
+  's': 'label-large',
+  'm': 'title-medium',
+  'l': 'headline-small',
+  'xl': 'headline-large'
+);
+
+// Colour of the icon, label and state layer per colour style
+$content-color: (
+  'filled': 'on-primary',
+  'elevated': 'primary',
+  'tonal': 'on-secondary-container',
+  'outlined': 'on-surface-variant',
+  'text': 'primary'
+);
+
 .#{$component} {
-  // Base styles
+  // Base styles (the s size is the default)
   position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: v.button('icon-gap-s');
   min-width: v.button('min-width');
-  height: v.button('height');
-  padding: 0 v.button('padding-horizontal');
+  height: v.button('height-s');
+  padding: 0 v.button('padding-s');
   border: none;
   border-radius: v.button('border-radius');
   background-color: transparent;
@@ -39,136 +67,302 @@ $component: '#{base.$prefix}-button';
   user-select: none;
   vertical-align: middle;
   appearance: none;
-  overflow: hidden;
   will-change: border-radius, transform;
-  
+
   // Typography
   @include m.typography('label-large');
-  
-  // Default to round shape (pill-shaped)
-  border-radius: v.button('border-radius');
-  
-  // Explicitly apply fast transition to border-radius
-  transition: 
+
+  transition:
     background-color v.motion('duration-short2') v.motion('easing-standard'),
     color v.motion('duration-short2') v.motion('easing-standard'),
     box-shadow v.motion('duration-short2') v.motion('easing-standard'),
     border-radius v.motion('duration-short1') v.motion('easing-standard-accelerate'),
     transform v.motion('duration-short1') v.motion('easing-standard-accelerate');
-  
-  // Focus styles
+
+  // Focus indicator: 3dp secondary ring, 2dp outside the container
+  // (material-web tokens/_md-comp-focus-ring.scss)
   &:focus {
     outline: none;
   }
-  
+
   &:focus-visible {
-    outline: 2px solid t.color('outline');
+    outline: 3px solid t.color('secondary');
     outline-offset: 2px;
   }
-  
-  // Interactive states
+
+  // Disabled: container on-surface 10%, label and icon on-surface-variant 38%
+  // (FilledButtonTokens.Disabled*)
   &:disabled {
     pointer-events: none;
-    color: t.alpha('surface', 0.38);
-    background-color: t.alpha('surface', 0.12);
-      
+    color: t.alpha('on-surface-variant', 0.38);
+    background-color: t.alpha('on-surface', 0.1);
+    box-shadow: none;
+
     .#{$component}-icon {
-      color: t.alpha('surface', 0.38);
+      color: t.alpha('on-surface-variant', 0.38);
     }
   }
-  
-  // State layer for ripple effect
+
+  // State layer
   &::before {
     content: '';
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    inset: 0;
     background-color: currentColor;
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: inherit;
+    transition: opacity v.motion('duration-short2') v.motion('easing-standard');
   }
-  
-  // Ensure proper layout with icons
+
+  // Icon
   &-icon {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 22px;
-    height: 22px;
-    
+    flex: none;
+    width: v.button('icon-size-s');
+    height: v.button('icon-size-s');
+
     svg {
-      width: 22px;
-      height: 22px;
-    }
-    
-    + .#{$component}-text {
-      margin-left: 8px;
+      width: 100%;
+      height: 100%;
     }
   }
 
-  // Progress element styling
+  // Progress indicator: takes the icon slot
   &-progress {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    margin-inline-end: 8px;
-    width: 20px;
-    height: 20px;
-    
-    // When it's the mtrl-progress element itself
+    flex: none;
+    width: v.button('icon-size-s');
+    height: v.button('icon-size-s');
+
     &.#{base.$prefix}-progress {
-      // Reset progress default size since we're setting it here
-      width: 20px;
-      height: 20px;
-      
-      &-canvas {
-        color: currentColor;
-      }
+      width: v.button('icon-size-s');
+      height: v.button('icon-size-s');
+      transition: opacity v.motion('duration-short2') v.motion('easing-standard');
     }
-    
-    // In text-only buttons (no icon), progress acts like an icon
-    &:first-child {
-      margin-inline-start: 0;
-    }
-    
-    // When following a visible icon, add left margin too
-    .#{$component}-icon:not([style*="display: none"]) + & {
-      margin-inline-start: 4px;
+
+    .#{base.$prefix}-progress-canvas {
+      color: currentColor;
     }
   }
-  
+
   &-text {
-    // Text truncation for long button labels
     @include m.truncate;
-    
+
     .#{$component}--icon-only & {
       @include m.visually-hidden;
     }
   }
-  
-  // Circular buttons
+
+  // ---------------------------------------------------------------------------
+  // Sizes
+  // ---------------------------------------------------------------------------
+  @each $size in $sizes {
+    &--#{$size} {
+      height: v.button('height-#{$size}');
+      padding: 0 v.button('padding-#{$size}');
+      gap: v.button('icon-gap-#{$size}');
+      @include m.typography(map.get($label-typescale, $size));
+
+      .#{$component}-icon,
+      .#{$component}-progress,
+      .#{$component}-progress.#{base.$prefix}-progress {
+        width: v.button('icon-size-#{$size}');
+        height: v.button('icon-size-#{$size}');
+      }
+
+      // Square shape at rest
+      &.#{$component}--square {
+        border-radius: v.button('shape-square-#{$size}');
+      }
+
+      // Outlined outline width
+      &.#{$component}--outlined {
+        border-width: v.button('outline-width-#{$size}');
+      }
+    }
+  }
+
+  // Small button next to an icon: 12dp on the icon side on pointer devices
+  // (ButtonDefaults.getSmallContentPadding)
+  &--s.#{$component}--icon {
+    padding-left: v.button('padding-icon');
+
+    &:has(.#{$component}-icon--end) {
+      padding-left: v.button('padding-s');
+      padding-right: v.button('padding-icon');
+    }
+  }
+
+  // The xs and s sizes keep a 48dp touch target (m3.material.io button specs,
+  // target areas): the hit area extends above and below the container.
+  &--xs,
+  &--s {
+    &::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 50%;
+      height: v.button('touch-target');
+      transform: translateY(-50%);
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Pressed shape: the container squares off while pressed, for both shapes
+  // (Button*Tokens.PressedContainerShape). Declared after the size and shape
+  // rules so it wins at equal specificity.
+  // ---------------------------------------------------------------------------
+  &:active,
+  &--active {
+    border-radius: v.button('shape-pressed-s');
+    box-shadow: none;
+  }
+
+  @each $size in $sizes {
+    &--#{$size} {
+      &:active,
+      &.#{$component}--active {
+        border-radius: v.button('shape-pressed-#{$size}');
+      }
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Colour styles
+  // ---------------------------------------------------------------------------
+  @each $variant, $role in $content-color {
+    &--#{$variant} {
+      color: t.color($role);
+
+      &:hover {
+        @include m.state-layer(t.color($role), 'hover');
+      }
+
+      &:focus-visible {
+        @include m.state-layer(t.color($role), 'focus');
+      }
+
+      &:active,
+      &.#{$component}--active {
+        @include m.state-layer(t.color($role), 'pressed');
+      }
+    }
+  }
+
+  // Filled: primary container, level 1 on hover (FilledButtonTokens)
+  &--filled {
+    background-color: t.color('primary');
+
+    &:hover {
+      @include m.elevation(1);
+    }
+
+    &:active,
+    &.#{$component}--active,
+    &:disabled {
+      @include m.elevation(0);
+    }
+  }
+
+  // Elevated: surface-container-low, level 1 at rest, 2 on hover, 0 disabled
+  // (ElevatedButtonTokens)
+  &--elevated {
+    background-color: t.color('surface-container-low');
+    @include m.elevation(1);
+
+    &:hover {
+      @include m.elevation(2);
+    }
+
+    &:active,
+    &.#{$component}--active {
+      @include m.elevation(1);
+    }
+
+    &:disabled {
+      box-shadow: none;
+    }
+  }
+
+  // Tonal: secondary container, level 1 on hover (TonalButtonTokens)
+  &--tonal {
+    background-color: t.color('secondary-container');
+
+    &:hover {
+      @include m.elevation(1);
+    }
+
+    &:active,
+    &.#{$component}--active,
+    &:disabled {
+      @include m.elevation(0);
+    }
+  }
+
+  // Outlined: outline-variant outline, on-surface-variant content
+  // (OutlinedButtonTokens, ButtonDefaults.outlinedButtonBorder)
+  &--outlined {
+    border: v.button('outline-width-s') solid t.color('outline-variant');
+
+    &:disabled {
+      background-color: transparent;
+      border-color: t.alpha('outline-variant', 0.1);
+    }
+  }
+
+  // Text: no container, 12dp horizontal padding, 16dp beside the label when
+  // there is an icon (ButtonDefaults.TextButtonContentPadding,
+  // TextButtonWithIconContentPadding). Larger sizes use the size's spacing.
+  &--text {
+    padding: 0 v.button('padding-horizontal-small');
+
+    &.#{$component}--icon {
+      padding: 0 v.button('padding-s') 0 v.button('padding-horizontal-small');
+
+      &:has(.#{$component}-icon--end) {
+        padding: 0 v.button('padding-horizontal-small') 0 v.button('padding-s');
+      }
+    }
+
+    @each $size in m, l, xl {
+      &.#{$component}--#{$size} {
+        padding: 0 v.button('padding-#{$size}');
+      }
+    }
+
+    &:disabled {
+      background-color: transparent;
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Icon-only and circular buttons (kept for the icon-button family)
+  // ---------------------------------------------------------------------------
+  &--icon-only {
+    min-width: v.button('height-s');
+    width: v.button('height-s');
+    padding: 0;
+    border-radius: 50%;
+  }
+
   &--circular {
     flex: none !important;
     border-radius: 50%;
     padding: 8px;
     min-width: unset;
-    width: 40px !important ;
-    height: 40px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    
-    // Material Design 3 Accessibility Requirement:
-    // Icon buttons must have a minimum touch target of 48x48dp
-    // even when their visual size appears smaller
-    
-    // Circular buttons should always remain circular when pressed
+    width: v.button('height-s') !important;
+    height: v.button('height-s');
+
     &:active,
     &.#{$component}--active {
       border-radius: 50%;
+
       &.#{$component}--square {
         border-radius: 12px !important;
       }
@@ -178,579 +372,25 @@ $component: '#{base.$prefix}-button';
       border-radius: 12px;
     }
 
-    // Size-specific circular button dimensions
-    &.#{$component}--xs {
-      // Ensure minimum 48dp touch target for accessibility
-      width: v.button('height-xs');
-      height: v.button('height-xs');
-      padding: 8px;
-  
-
-      // Adjust icon size to maintain visual proportions
-      .#{$component}-icon {
-        width: v.button('icon-size-xs');
-        height: v.button('icon-size-xs');
-        
-        svg {
-          width: v.button('icon-size-xs');
-          height: v.button('icon-size-xs');
-        }
-      }
-
-
-    }
-    
-    &.#{$component}--s {
-      // Ensure minimum 48dp touch target for accessibility
-      width: v.button('height-s');
-      height: v.button('height-s');
-      padding: 8px;
-      
-      // Standard icon size for S
-      .#{$component}-icon {
-        width: v.button('icon-size-s');
-        height: v.button('icon-size-s');
-        
-        svg {
-          width: v.button('icon-size-s');
-          height: v.button('icon-size-s');
-        }
+    @each $size in $sizes {
+      &.#{$component}--#{$size} {
+        width: v.button('height-#{$size}');
+        height: v.button('height-#{$size}');
+        padding: 0;
       }
     }
-    
-    &.#{$component}--m {
-      width: v.button('height-m');
-      height: v.button('height-m');
-      padding: 12px;
-    }
-    
-    &.#{$component}--l {
-      width: v.button('height-l');
-      height: v.button('height-l');
-      padding: 20px;
-    }
-    
-    &.#{$component}--xl {
-      width: v.button('height-xl');
-      height: v.button('height-xl');
-      padding: 32px;
-    }
 
-    .#{$component}-icon {
-      margin: 0;
-    }
-    
-    // Hide text in circular buttons
     .#{$component}-text {
       display: none;
     }
-    
-    // Progress in circular buttons
-    .#{$component}-progress {
-      margin: 0;
-      
-      &.#{base.$prefix}-progress {
-        width: 24px;
-        height: 24px;
-      }
-    }
-    
-    // Override padding adjustments for circular buttons
+
     &.#{$component}--progress {
       padding: 0 !important;
     }
   }
-  
-  &--icon {
-    padding: 0 v.button('padding-horizontal') 0 calc(v.button('padding-horizontal') / 2 + 4px);
-  }
-  
-  // Shape variants
-  &--round {
-    // Default round shape - already applied in base styles
-    // Sizes M, L, XL get special pill-shaped radius
-    &.#{$component}--m {
-      border-radius: calc(v.button('height-m') / 2);
-    }
-    
-    &.#{$component}--l {
-      border-radius: calc(v.button('height-l') / 2);
-    }
-    
-    &.#{$component}--xl {
-      border-radius: calc(v.button('height-xl') / 2);
-    }
-  }
-  
-  &--square {
-    // Square shape with size-specific border radius
-    &.#{$component}--xs,
-    &.#{$component}--s {
-      border-radius: f.get-shape('medium'); // 12dp
-    }
-    
-    &.#{$component}--m {
-      border-radius: f.get-shape('large'); // 16dp
-    }
-    
-    &.#{$component}--l,
-    &.#{$component}--xl {
-      border-radius: f.get-shape('extra-large'); // 28dp
-    }
-    
-    // Pressed state for square buttons - no morphing needed
-    &:active,
-    &.#{$component}--active {
-      // Square buttons maintain their border radius when pressed
-    }
-  }
-  
-  // Size variants
-  &--xs {
-    height: v.button('height-xs');
-    padding: 0 v.button('padding-xs');
-    min-width: 48px;
-    
-    &.#{$component}--icon {
-      padding: 0 v.button('padding-xs') 0 calc(v.button('padding-xs') / 2 + 4px);
-    }
-    
-    &.#{$component}--progress {
-      padding: 0 v.button('padding-xs') 0 calc(v.button('padding-xs') / 2 + 4px);
-    }
-    
-    &.#{$component}--text {
-      padding: 0 calc(v.button('padding-xs') - 4px);
-    }
-    
-    .#{$component}-icon {
-      width: v.button('icon-size-xs');
-      height: v.button('icon-size-xs');
-      
-      svg {
-        width: v.button('icon-size-xs');
-        height: v.button('icon-size-xs');
-      }
-    }
-    
-    .#{$component}-progress {
-      width: v.button('icon-size-xs');
-      height: v.button('icon-size-xs');
-      
-      &.#{base.$prefix}-progress {
-        width: v.button('icon-size-xs');
-        height: v.button('icon-size-xs');
-      }
-    }
-  }
 
-  &--s {
-    // S is the default size, already defined in base styles
-    // Explicitly setting them here for clarity
-    height: v.button('height-s');
-    padding: 0 v.button('padding-s');
-    
-    &.#{$component}--icon {
-      padding: 0 v.button('padding-s') 0 calc(v.button('padding-s') / 2 + 4px);
-    }
-    
-    &.#{$component}--progress {
-      padding: 0 v.button('padding-s') 0 calc(v.button('padding-s') / 2 + 4px);
-    }
-    
-    &.#{$component}--text {
-      padding: 0 v.button('padding-horizontal-small');
-    }
-  }
-
-  &--m {
-    height: v.button('height-m');
-    padding: 0 v.button('padding-m');
-    min-width: 80px;
-    
-    &.#{$component}--icon {
-      padding: 0 v.button('padding-m') 0 calc(v.button('padding-m') / 2 + 8px);
-    }
-    
-    &.#{$component}--progress {
-      padding: 0 v.button('padding-m') 0 calc(v.button('padding-m') / 2 + 8px);
-    }
-    
-    &.#{$component}--text {
-      padding: 0 calc(v.button('padding-m') - 4px);
-    }
-    
-    .#{$component}-icon {
-      width: v.button('icon-size-m');
-      height: v.button('icon-size-m');
-      
-      svg {
-        width: v.button('icon-size-m');
-        height: v.button('icon-size-m');
-      }
-    }
-    
-    .#{$component}-progress {
-      width: v.button('icon-size-m');
-      height: v.button('icon-size-m');
-      
-      &.#{base.$prefix}-progress {
-        width: v.button('icon-size-m');
-        height: v.button('icon-size-m');
-      }
-    }
-  }
-
-  &--l {
-    height: v.button('height-l');
-    padding: 0 v.button('padding-l');
-    min-width: 120px;
-    
-    // Use larger typography for L and XL sizes
-    @include m.typography('title-large');
-    
-    &.#{$component}--icon {
-      padding: 0 v.button('padding-l') 0 calc(v.button('padding-l') / 2 + 12px);
-    }
-    
-    &.#{$component}--progress {
-      padding: 0 v.button('padding-l') 0 calc(v.button('padding-l') / 2 + 12px);
-    }
-    
-    &.#{$component}--text {
-      padding: 0 calc(v.button('padding-l') - 8px);
-    }
-    
-    .#{$component}-icon {
-      width: v.button('icon-size-l');
-      height: v.button('icon-size-l');
-      
-      svg {
-        width: v.button('icon-size-l');
-        height: v.button('icon-size-l');
-      }
-      
-      + .#{$component}-text {
-        margin-left: 16px;
-      }
-    }
-    
-    .#{$component}-progress {
-      width: v.button('icon-size-l');
-      height: v.button('icon-size-l');
-      margin-inline-end: 16px;
-      
-      &.#{base.$prefix}-progress {
-        width: v.button('icon-size-l');
-        height: v.button('icon-size-l');
-      }
-    }
-  }
-
-  &--xl {
-    height: v.button('height-xl');
-    padding: 0 v.button('padding-xl');
-    min-width: 160px;
-    
-    // Use larger typography for L and XL sizes
-    @include m.typography('headline-medium');
-    
-    &.#{$component}--icon {
-      padding: 0 v.button('padding-xl') 0 calc(v.button('padding-xl') / 2 + 16px);
-    }
-    
-    &.#{$component}--progress {
-      padding: 0 v.button('padding-xl') 0 calc(v.button('padding-xl') / 2 + 16px);
-    }
-    
-    &.#{$component}--text {
-      padding: 0 calc(v.button('padding-xl') - 12px);
-    }
-    
-    .#{$component}-icon {
-      width: v.button('icon-size-xl');
-      height: v.button('icon-size-xl');
-      
-      svg {
-        width: v.button('icon-size-xl');
-        height: v.button('icon-size-xl');
-      }
-      
-      + .#{$component}-text {
-        margin-left: 24px;
-      }
-    }
-    
-    .#{$component}-progress {
-      width: v.button('icon-size-xl');
-      height: v.button('icon-size-xl');
-      margin-inline-end: 24px;
-      
-      &.#{base.$prefix}-progress {
-        width: v.button('icon-size-xl');
-        height: v.button('icon-size-xl');
-      }
-    }
-  }
-  
-  &--active {
-    // Common active state styling for all variants
-    box-shadow: none;
-    
-    // Per MD3, buttons have a significantly more rectangular appearance when pressed
-    // Default to small shape
-    border-radius: f.get-shape('small');
-    
-    // ARIA attribute to indicate active state for accessibility
-    &[aria-expanded="true"] {
-      // For compatibility with ARIA
-    }
-  }
-
-  // Size-specific active state border radius based on MD3 specs
-  // Only applies to round shape buttons - square buttons maintain their radius
-  &--round {
-    &.#{$component}--xs,
-    &.#{$component}--s {
-      &:active,
-      &.#{$component}--active {
-        // XS and S sizes use 12dp radius when pressed
-        border-radius: f.get-shape('medium');
-      }
-    }
-    
-    &.#{$component}--m {
-      &:active,
-      &.#{$component}--active {
-        // M size uses 16dp radius when pressed
-        border-radius: f.get-shape('large');
-      }
-    }
-    
-    &.#{$component}--l,
-    &.#{$component}--xl {
-      &:active,
-      &.#{$component}--active {
-        // L and XL sizes use 28dp radius when pressed
-        border-radius: f.get-shape('extra-large');
-      }
-    }
-  }
-
-  // FILLED BUTTON
-  &--filled {
-    background-color: t.color('primary');
-    color: t.color('on-primary');
-    
-    // Progress inherits the on-primary color
-    .#{base.$prefix}-progress-canvas {
-      color: t.color('on-primary');
-    }
-    
-    &:hover {
-      @include m.state-layer(t.color('on-primary'), 'hover');
-      // According to MD3, filled buttons DO have elevation on hover
-      @include m.elevation(1);
-    }
-    
-    &:active,
-    &.#{$component}--active {
-      @include m.state-layer(t.color('on-primary'), 'pressed');
-      // MD3 reduces elevation on press
-      @include m.elevation(0);
-    }
-    &:disabled {
-      @include m.elevation(0);
-    }
-  }
-  
-  // ELEVATED BUTTON
-  &--elevated {
-    background-color: t.color('surface-container-low');
-    color: t.color('primary');
-    @include m.elevation(1);
-    
-    // Progress uses primary color
-    .#{base.$prefix}-progress-canvas {
-      color: t.color('primary');
-    }
-    
-    &:hover {
-      @include m.state-layer(t.color('primary'), 'hover');
-      // MD3 increases elevation on hover
-      @include m.elevation(2);
-    }
-    
-    &:active,
-    &.#{$component}--active {
-      @include m.state-layer(t.color('primary'), 'pressed');
-      // MD3 reduces elevation on press, but not completely removed
-      @include m.elevation(1);
-    }
-    
-    &:disabled {
-      @include m.elevation(0);
-      box-shadow: none;
-    }
-    
-    // Handle icon color in elevated button
-    .#{$component}-icon {
-      color: t.color('primary');
-    }
-  }
-  
-  // TONAL BUTTON
-  &--tonal {
-    background-color: t.color('secondary-container');
-    color: t.color('on-secondary-container');
-    // MD3 tonal buttons have a subtle initial elevation
-    @include m.elevation(0);
-    
-    // Progress uses on-secondary-container color
-    .#{base.$prefix}-progress-canvas {
-      color: t.color('on-secondary-container');
-    }
-    
-    &:hover {
-      @include m.state-layer(t.color('on-secondary-container'), 'hover');
-      // MD3 tonal buttons have elevation on hover
-      @include m.elevation(1);
-    }
-    
-    &:active,
-    &.#{$component}--active {
-      @include m.state-layer(t.color('on-secondary-container'), 'pressed');
-      // MD3 reduces elevation on press
-      @include m.elevation(0);
-    }
-    
-    &:disabled {
-      box-shadow: none;
-    }
-  }
-  
-  // OUTLINED BUTTON
-  &--outlined {
-    border: 1px solid rgba(var(--mtrl-sys-color-outline-rgb), 0.38);
-    color: t.color('primary');
-    
-    // Progress uses primary color
-    .#{base.$prefix}-progress-canvas {
-      color: t.color('primary');
-    }
-    
-    &:hover {
-      @include m.state-layer(t.color('primary'), 'hover');
-    }
-    
-    &:active,
-    &.#{$component}--active {
-      @include m.state-layer(t.color('primary'), 'pressed');
-    }
-    
-    &:disabled {
-      border: 1px solid t.alpha('outline', 0.12);
-    }
-  }
-  
-  // TEXT BUTTON
-  &--text {
-    min-width: v.button('min-width');
-    padding: 0 v.button('padding-horizontal-small');
-    color: t.color('primary');
-    
-    // Progress uses primary color
-    .#{base.$prefix}-progress-canvas {
-      color: t.color('primary');
-    }
-    
-    &:hover {
-      @include m.state-layer(t.color('primary'), 'hover');
-    }
-    
-    &:active,
-    &.#{$component}--active {
-      @include m.state-layer(t.color('primary'), 'pressed');
-    }
-    
-    &:disabled {
-      background-color: transparent;  
-    }
-  }
-  
-  // Special case for icon-only buttons
-  &--icon-only {
-    min-width: v.button('height');
-    width: v.button('height');
-    padding: 0;
-    border-radius: 50%;
-  }
-
-  // When button has progress showing
-  &--progress {
-    // Reduce left padding when progress is showing, similar to icon buttons
-    padding: 0 v.button('padding-horizontal') 0 calc(v.button('padding-horizontal') / 2 + 4px);
-    
-    // Per MD3, round buttons have a significantly more rectangular appearance when progress (active) is showing
-    // Square buttons maintain their standard border radius
-    &.#{$component}--round {
-      &.#{$component}--xs,
-      &.#{$component}--s {
-        border-radius: f.get-shape('medium') !important;
-      }
-      
-      &.#{$component}--m {
-        border-radius: f.get-shape('large') !important;
-      }
-      
-      &.#{$component}--l,
-      &.#{$component}--xl {
-        border-radius: f.get-shape('extra-large') !important;
-      }
-    }
-
-    // If button also has an icon, use even less left padding
-    &.#{$component}--icon {
-      padding: 0 v.button('padding-horizontal') 0 calc(v.button('padding-horizontal') / 2);
-    }
-  }
-}
-
-// FIX: Disabled on dark theme (recommandations do not work as expected)
-html[data-theme-mode=dark] {
-  // Interactive states
-  .#{$component} {
-    &:disabled {
-      color: t.alpha('on-surface-dim', 0.38);
-      background-color: t.alpha('surface-dim', 0.12);
-
-      .#{$component}-text { 
-        opacity: 0.38;
-      }
-      .#{$component}-icon {
-        opacity: 0.38;
-        color: t.alpha('on-surface-dim', 0.12);
-      }
-    }
-  }
-}
-
-// Add loading state styles
-.#{$component} {
-  // Loading state animations
-  &[disabled] {
-    &.#{$component}--progress {
-      .#{$component}-progress {
-        // Ensure progress is visible in disabled state
-        opacity: 0.7;
-      }
-    }
-  }
-  
-  // Smooth transitions when showing/hiding progress
-  .#{$component}-progress {
-    &.#{base.$prefix}-progress {
-      transition: opacity v.motion('duration-short2') v.motion('easing-standard');
-    }
+  // Progress showing while disabled (loading state)
+  &[disabled].#{$component}--progress .#{$component}-progress {
+    opacity: 0.7;
   }
 }
