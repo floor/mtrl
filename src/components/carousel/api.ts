@@ -1,64 +1,66 @@
 // src/components/carousel/api.ts
-import { CarouselComponent, CarouselSlide } from "./types";
+import { CarouselComponent, CarouselSlide, CarouselVariant, SlidesAPI } from "./types";
 
-export const withAPI = () => (component: any): CarouselComponent => {
+interface ApiComponent {
+  element: HTMLElement;
+  slides: SlidesAPI;
+  getClass: (name: string) => string;
+  getCurrentSlide: () => number;
+  getVariant: () => CarouselVariant;
+  next: () => void;
+  prev: () => void;
+  goTo: (index: number) => void;
+  lifecycle?: { destroy: () => void };
+  on?: (event: string, handler: Function) => unknown;
+  off?: (event: string, handler: Function) => unknown;
+}
+
+export const withAPI = () => (component: ApiComponent): CarouselComponent => {
   const api: CarouselComponent = {
     element: component.element,
-
     slides: component.slides,
-
-    lifecycle: {
-      destroy: () => component.lifecycle?.destroy(),
-    },
-
+    lifecycle: { destroy: () => component.lifecycle?.destroy() },
     getClass: component.getClass,
 
     next() {
       component.next();
-      return this;
+      return api;
     },
-
     prev() {
       component.prev();
-      return this;
+      return api;
     },
-
     goTo(index: number) {
       component.goTo(index);
-      return this;
+      return api;
     },
-
     getCurrentSlide: () => component.getCurrentSlide(),
+    getVariant: () => component.getVariant(),
 
     addSlide(slide: CarouselSlide, index?: number) {
       component.slides.addSlide(slide, index);
-      return this;
+      return api;
     },
-
     removeSlide(index: number) {
       component.slides.removeSlide(index);
-      return this;
+      return api;
     },
 
     destroy() {
       component.lifecycle?.destroy();
     },
-
     on(event: string, handler: Function) {
-      component.element.addEventListener(event, handler as EventListener);
-      return this;
+      component.on?.(event, handler);
+      return api;
     },
-
     off(event: string, handler: Function) {
-      component.element.removeEventListener(event, handler as EventListener);
-      return this;
+      component.off?.(event, handler);
+      return api;
     },
-
     addClass(...classes: string[]) {
-      classes.forEach((cls) => component.element.classList.add(cls));
-      return this;
+      component.element.classList.add(...classes);
+      return api;
     },
   };
-
   return api;
 };
