@@ -49,73 +49,18 @@ $component: '#{base.$prefix}-button-group';
   // ORIENTATION VARIANTS
   // =========================================================================
 
-  &--horizontal {
-    flex-direction: row;
-
-    // First button - rounded left corners only
-    > .#{$component}__button--first,
-    > .#{base.$prefix}-button:first-child {
-      border-top-left-radius: var(--button-group-radius);
-      border-bottom-left-radius: var(--button-group-radius);
-      border-top-right-radius: 0;
-      border-bottom-right-radius: 0;
-    }
-
-    // Last button - rounded right corners only
-    > .#{$component}__button--last,
-    > .#{base.$prefix}-button:last-child {
-      border-top-right-radius: var(--button-group-radius);
-      border-bottom-right-radius: var(--button-group-radius);
-      border-top-left-radius: 0;
-      border-bottom-left-radius: 0;
-    }
-
-    // Middle buttons - no rounded corners
-    > .#{$component}__button--middle,
-    > .#{base.$prefix}-button:not(:first-child):not(:last-child) {
-      border-radius: 0;
-    }
-
-    // Single button - all corners rounded
-    > .#{$component}__button--single,
-    > .#{base.$prefix}-button:only-child {
-      border-radius: var(--button-group-radius);
-    }
+  // Buttons in a group stay flat: no hover elevation (M3 button group states)
+  > .#{base.$prefix}-button:hover:not([disabled]),
+  > .#{base.$prefix}-icon-button:hover:not([disabled]),
+  > .#{base.$prefix}-button:active:not([disabled]),
+  > .#{base.$prefix}-icon-button:active:not([disabled]) {
+    box-shadow: none;
   }
 
-  &--vertical {
-    flex-direction: column;
-
-    // First button - rounded top corners only
-    > .#{$component}__button--first,
-    > .#{base.$prefix}-button:first-child {
-      border-top-left-radius: var(--button-group-radius);
-      border-top-right-radius: var(--button-group-radius);
-      border-bottom-left-radius: 0;
-      border-bottom-right-radius: 0;
-    }
-
-    // Last button - rounded bottom corners only
-    > .#{$component}__button--last,
-    > .#{base.$prefix}-button:last-child {
-      border-bottom-left-radius: var(--button-group-radius);
-      border-bottom-right-radius: var(--button-group-radius);
-      border-top-left-radius: 0;
-      border-top-right-radius: 0;
-    }
-
-    // Middle buttons - no rounded corners
-    > .#{$component}__button--middle,
-    > .#{base.$prefix}-button:not(:first-child):not(:last-child) {
-      border-radius: 0;
-    }
-
-    // Single button - all corners rounded
-    > .#{$component}__button--single,
-    > .#{base.$prefix}-button:only-child {
-      border-radius: var(--button-group-radius);
-    }
-  }
+  // Orientation sets the direction only; the shape belongs to the kind
+  // blocks below (standard, connected), per the M3 button group spec.
+  &--horizontal { flex-direction: row; }
+  &--vertical { flex-direction: column; }
 
   // =========================================================================
   // VARIANT STYLES
@@ -128,7 +73,8 @@ $component: '#{base.$prefix}-button-group';
       color: t.color('primary');
       box-shadow: none;
 
-      &:hover:not([disabled]) {
+      // unselected only: a selected button keeps its colour and shows the state layer
+      &:hover:not([disabled]):not(.#{$component}__button--selected) {
         background-color: t.alpha('primary', 0.08);
       }
 
@@ -136,7 +82,7 @@ $component: '#{base.$prefix}-button-group';
         background-color: t.alpha('primary', 0.12);
       }
 
-      &:active:not([disabled]) {
+      &:active:not([disabled]):not(.#{$component}__button--selected) {
         background-color: t.alpha('primary', 0.12);
       }
     }
@@ -174,18 +120,17 @@ $component: '#{base.$prefix}-button-group';
       border: none;
       box-shadow: none;
 
-      &:hover:not([disabled]) {
+      // unselected only: a selected button keeps its colour and shows the state layer
+      &:hover:not([disabled]):not(.#{$component}__button--selected) {
         background-color: t.alpha('primary', 0.92);
-        box-shadow: v.elevation('level-1');
       }
 
       &:focus-visible {
         background-color: t.alpha('primary', 0.88);
       }
 
-      &:active:not([disabled]) {
+      &:active:not([disabled]):not(.#{$component}__button--selected) {
         background-color: t.alpha('primary', 0.88);
-        box-shadow: none;
       }
     }
 
@@ -211,18 +156,17 @@ $component: '#{base.$prefix}-button-group';
       border: none;
       box-shadow: none;
 
-      &:hover:not([disabled]) {
+      // unselected only: a selected button keeps its colour and shows the state layer
+      &:hover:not([disabled]):not(.#{$component}__button--selected) {
         background-color: t.alpha('secondary-container', 0.92);
-        box-shadow: v.elevation('level-1');
       }
 
       &:focus-visible {
         background-color: t.alpha('secondary-container', 0.88);
       }
 
-      &:active:not([disabled]) {
+      &:active:not([disabled]):not(.#{$component}__button--selected) {
         background-color: t.alpha('secondary-container', 0.88);
-        box-shadow: none;
       }
     }
 
@@ -251,7 +195,8 @@ $component: '#{base.$prefix}-button-group';
       border: none;
       box-shadow: none;
 
-      &:hover:not([disabled]) {
+      // unselected only: a selected button keeps its colour and shows the state layer
+      &:hover:not([disabled]):not(.#{$component}__button--selected) {
         background-color: t.alpha('primary', 0.08);
       }
 
@@ -259,7 +204,7 @@ $component: '#{base.$prefix}-button-group';
         background-color: t.alpha('primary', 0.12);
       }
 
-      &:active:not([disabled]) {
+      &:active:not([disabled]):not(.#{$component}__button--selected) {
         background-color: t.alpha('primary', 0.12);
       }
     }
@@ -286,7 +231,8 @@ $component: '#{base.$prefix}-button-group';
       border: none;
       box-shadow: none;
 
-      &:hover:not([disabled]) {
+      // unselected only: a selected button keeps its colour and shows the state layer
+      &:hover:not([disabled]):not(.#{$component}__button--selected) {
         background-color: t.alpha('primary', 0.08);
       }
 
@@ -294,7 +240,7 @@ $component: '#{base.$prefix}-button-group';
         background-color: t.alpha('primary', 0.12);
       }
 
-      &:active:not([disabled]) {
+      &:active:not([disabled]):not(.#{$component}__button--selected) {
         background-color: t.alpha('primary', 0.12);
       }
     }
@@ -464,17 +410,10 @@ $component: '#{base.$prefix}-button-group';
         border-radius: var(--button-group-inner-corner) var(--button-group-inner-corner) var(--button-group-radius) var(--button-group-radius);
       }
     }
-    // the selected button keeps its place; only its colour and inner shape change
+    // the selected button becomes a full pill wherever it sits (M3 spec:
+    // selection "only affects the shape of the button being selected")
     > .#{$component}__button--selected {
-      border-radius: var(--button-group-inner-corner);
-    }
-    > .#{$component}__button--selected.#{$component}__button--first {
-      border-top-left-radius: var(--button-group-radius);
-      border-bottom-left-radius: var(--button-group-radius);
-    }
-    > .#{$component}__button--selected.#{$component}__button--last {
-      border-top-right-radius: var(--button-group-radius);
-      border-bottom-right-radius: var(--button-group-radius);
+      border-radius: var(--button-group-radius);
     }
   }
 
@@ -489,22 +428,33 @@ $component: '#{base.$prefix}-button-group';
         transition: max-width 200ms cubic-bezier(0.2, 0, 0, 1), opacity 150ms linear, margin-left 200ms cubic-bezier(0.2, 0, 0, 1);
       }
     }
+    // once the label shows, the M3 small button padding (16dp) on both sides
     > .#{$component}__button--selected {
-      padding-right: 16px;
+      padding: 0 16px;
       .#{base.$prefix}-button-text { max-width: 12em; opacity: 1; margin-left: 8px; }
     }
   }
 
   // --- selected colours follow the toggle button styles of each variant
+  // Toggle button colours (M3 button group spec: groups take the filled, tonal
+  // or outlined toggle styles; text and standard have no container treatment)
   &--selectable {
+    // filled toggle: unselected on the surface container, selected primary
+    &.#{$component}--filled > .#{base.$prefix}-button:not(.#{$component}__button--selected),
+    &.#{$component}--filled > .#{base.$prefix}-icon-button:not(.#{$component}__button--selected) {
+      background-color: t.color('surface-container');
+      color: t.color('on-surface-variant');
+    }
     > .#{$component}__button--selected {
       background-color: t.color('primary');
       color: t.color('on-primary');
     }
+    // tonal toggle: unselected secondary container, selected secondary
     &.#{$component}--tonal > .#{$component}__button--selected {
-      background-color: t.color('secondary-container');
-      color: t.color('on-secondary-container');
+      background-color: t.color('secondary');
+      color: t.color('on-secondary');
     }
+    // outlined toggle: selected inverse surface
     &.#{$component}--outlined > .#{$component}__button--selected,
     &.#{$component}--text > .#{$component}__button--selected {
       background-color: t.color('inverse-surface');
