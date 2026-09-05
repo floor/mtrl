@@ -50,7 +50,10 @@ export interface SliderConfig extends BaseComponentConfig {
   /** Whether the slider is disabled */
   disabled?: boolean;
 
-  /** Color variant of the slider */
+  /** Color variant of the slider *
+   * A stylesheet can override the drawn colours per slider with the custom
+   * properties --mtrl-slider-color and --mtrl-slider-on-color.
+   */
   color?: SliderColor;
 
   /** Size variant of the slider */
