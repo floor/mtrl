@@ -1,6 +1,14 @@
 // src/components/dialog/api.ts (partial update)
-import { DialogComponent, DialogEvent, DialogButton, DialogConfirmOptions, DialogFooterAlignment, DialogSize, DialogEventType } from './types';
-import { removeClass } from '../../core/dom/classes';
+import {
+  DialogComponent,
+  DialogEvent,
+  DialogButton,
+  DialogConfirmOptions,
+  DialogFooterAlignment,
+  DialogSize,
+  DialogEventType,
+} from "./types";
+import { removeClass } from "../../core/dom/classes";
 
 interface ApiOptions {
   visibility: {
@@ -60,10 +68,11 @@ interface ComponentWithElements {
  * @returns {Function} Higher-order function that adds API methods to component
  * @internal This is an internal utility for the Dialog component
  */
-export const withAPI = (options: ApiOptions) => 
+export const withAPI =
+  (options: ApiOptions) =>
   (component: ComponentWithElements): DialogComponent => ({
-    ...component as any,
-    
+    ...(component as any),
+
     /**
      * Opens the dialog
      * @returns {DialogComponent} Dialog component instance for chaining
@@ -72,7 +81,7 @@ export const withAPI = (options: ApiOptions) =>
       options.visibility.open();
       return this;
     },
-    
+
     /**
      * Closes the dialog
      * @returns {DialogComponent} Dialog component instance for chaining
@@ -81,7 +90,7 @@ export const withAPI = (options: ApiOptions) =>
       options.visibility.close();
       return this;
     },
-    
+
     /**
      * Toggles dialog open/closed state
      * @param {boolean} [open] - Optional flag to force open state
@@ -91,7 +100,7 @@ export const withAPI = (options: ApiOptions) =>
       options.visibility.toggle(open);
       return this;
     },
-    
+
     /**
      * Checks if dialog is open
      * @returns {boolean} True if dialog is open
@@ -99,7 +108,7 @@ export const withAPI = (options: ApiOptions) =>
     isOpen() {
       return options.visibility.isOpen();
     },
-    
+
     /**
      * Sets dialog title
      * @param {string} title - Title text
@@ -109,7 +118,7 @@ export const withAPI = (options: ApiOptions) =>
       options.content.setTitle(title);
       return this;
     },
-    
+
     /**
      * Gets dialog title
      * @returns {string} Title text
@@ -117,7 +126,7 @@ export const withAPI = (options: ApiOptions) =>
     getTitle() {
       return options.content.getTitle();
     },
-    
+
     /**
      * Sets dialog subtitle
      * @param {string} subtitle - Subtitle text
@@ -127,7 +136,7 @@ export const withAPI = (options: ApiOptions) =>
       options.content.setSubtitle(subtitle);
       return this;
     },
-    
+
     /**
      * Gets dialog subtitle
      * @returns {string} Subtitle text
@@ -145,7 +154,7 @@ export const withAPI = (options: ApiOptions) =>
       options.content.setContent(content);
       return this;
     },
-    
+
     /**
      * Gets dialog content
      * @returns {string} Content HTML
@@ -153,7 +162,7 @@ export const withAPI = (options: ApiOptions) =>
     getContent() {
       return options.content.getContent();
     },
-    
+
     /**
      * Adds a button to the dialog footer
      * @param {DialogButton} button - Button configuration
@@ -163,7 +172,7 @@ export const withAPI = (options: ApiOptions) =>
       options.buttons.addButton(button);
       return this;
     },
-    
+
     /**
      * Removes a button by index or text
      * @param {number|string} indexOrText - Button index or text
@@ -173,7 +182,7 @@ export const withAPI = (options: ApiOptions) =>
       options.buttons.removeButton(indexOrText);
       return this;
     },
-    
+
     /**
      * Gets all footer buttons
      * @returns {DialogButton[]} Array of button configurations
@@ -181,7 +190,7 @@ export const withAPI = (options: ApiOptions) =>
     getButtons() {
       return options.buttons.getButtons();
     },
-    
+
     /**
      * Sets footer alignment
      * @param {string} alignment - Footer alignment
@@ -201,7 +210,7 @@ export const withAPI = (options: ApiOptions) =>
       options.divider.toggleDivider(show);
       return this;
     },
-    
+
     /**
      * Checks if the dialog has a divider
      * @returns {boolean} True if the dialog has a divider
@@ -219,7 +228,7 @@ export const withAPI = (options: ApiOptions) =>
       options.size.setSize(size);
       return this;
     },
-    
+
     /**
      * Adds event listener
      * @param {string} event - Event name
@@ -230,18 +239,21 @@ export const withAPI = (options: ApiOptions) =>
       options.events.on(event, handler);
       return this;
     },
-    
+
     /**
      * Removes event listener
      * @param {string} event - Event name
      * @param {Function} handler - Event handler
      * @returns {DialogComponent} Dialog component instance for chaining
      */
-    off(event: DialogEventType | string, handler: (event: DialogEvent) => void) {
+    off(
+      event: DialogEventType | string,
+      handler: (event: DialogEvent) => void,
+    ) {
       options.events.off(event, handler);
       return this;
     },
-    
+
     /**
      * Gets dialog header element
      * @returns {HTMLElement|null} Header element
@@ -249,7 +261,7 @@ export const withAPI = (options: ApiOptions) =>
     getHeaderElement() {
       return options.content.getHeaderElement();
     },
-    
+
     /**
      * Gets dialog content element
      * @returns {HTMLElement|null} Content element
@@ -257,7 +269,7 @@ export const withAPI = (options: ApiOptions) =>
     getContentElement() {
       return options.content.getContentElement();
     },
-    
+
     /**
      * Gets dialog footer element
      * @returns {HTMLElement|null} Footer element
@@ -265,7 +277,7 @@ export const withAPI = (options: ApiOptions) =>
     getFooterElement() {
       return options.content.getFooterElement();
     },
-    
+
     /**
      * Creates a confirmation dialog with Yes/No buttons
      * @param {DialogConfirmOptions} options - Confirmation dialog options
@@ -273,45 +285,44 @@ export const withAPI = (options: ApiOptions) =>
      */
     confirm(options?: DialogConfirmOptions) {
       if (component.confirm) {
-        return component.confirm(options || { message: 'Are you sure?' });
+        return component.confirm(options || { message: "Are you sure?" });
       }
-      
+
       // Fallback if confirm feature is not available
       return Promise.resolve(false);
     },
-    
+
     /**
      * Destroys the dialog and removes it from DOM
      */
     destroy() {
       // Close the dialog first if it's open
-      console.log('destroy', this.isOpen());
       if (this.isOpen()) {
         // We'll handle removal directly rather than calling this.close()
         // to avoid animation delay in critical cleanup
-        const dialogVisibleClass = `${component.getClass('dialog')}--visible`;
-        const overlayVisibleClass = `${component.getClass('dialog-overlay')}--visible`;
-        
+        const dialogVisibleClass = `${component.getClass("dialog")}--visible`;
+        const overlayVisibleClass = `${component.getClass("dialog-overlay")}--visible`;
+
         // Remove visibility classes using core utilities
         removeClass(component.element, dialogVisibleClass);
         removeClass(component.overlay, overlayVisibleClass);
-        
+
         // Call any cleanup needed
         if (options.focus && options.focus.releaseFocus) {
           options.focus.releaseFocus();
         }
       }
-      
+
       // Call lifecycle destroy
       options.lifecycle.destroy();
-      
+
       // Immediately remove from DOM
       if (component.overlay && component.overlay.parentNode) {
         component.overlay.parentNode.removeChild(component.overlay);
       }
     },
-    
+
     // Pass through element references
     element: component.element,
-    overlay: component.overlay
+    overlay: component.overlay,
   });

@@ -56,8 +56,10 @@ $mtrl-sys-shape: (
  * @return {String} rgba CSS function with variable
  */
 @function alpha($key, $opacity) {
-  // #{'...'} prevents SASS from interpreting rgba as a SASS function
-  @return #{'rgba(var(--#{$prefix}-sys-color-#{$key}-rgb), #{$opacity})'};
+  // color-mix on the role itself: themes made with create-theme define the
+  // colour tokens only (no -rgb twins), so an rgba(var(--…-rgb)) would fall
+  // back to the baseline palette. #{'...'} keeps Sass from evaluating it.
+  @return #{'color-mix(in srgb, var(--#{$prefix}-sys-color-#{$key}) #{$opacity * 100}%, transparent)'};
 }
 
 @function state($key) {

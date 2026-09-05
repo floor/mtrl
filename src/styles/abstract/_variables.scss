@@ -5,8 +5,8 @@
 // Core design tokens
 $state: (
   'hover-state-layer-opacity': 0.08,
-  'focus-state-layer-opacity': 0.12,
-  'pressed-state-layer-opacity': 0.12,
+  'focus-state-layer-opacity': 0.1,
+  'pressed-state-layer-opacity': 0.1,
   'dragged-state-layer-opacity': 0.16
 ) !default;
 
@@ -221,30 +221,59 @@ $chip-config: (
 ) !default;
 
 $button: (
+  // M3 button tokens (Compose Material 3 ButtonXSmall/Small/Medium/Large/XLargeTokens.kt)
   'height': 40px,
-  'min-width': 64px,
-  'padding-horizontal': 24px,
-  'padding-horizontal-small': 16px,
-  'padding-icon': 16px,
-  'border-radius': 20px,
+  'min-width': 58px, // ButtonDefaults.MinWidth
+  'padding-horizontal': 16px,
+  'padding-horizontal-small': 12px, // text button (ButtonDefaults.TextButtonContentPadding)
+  'padding-icon': 12px, // small button leading space next to an icon (pointer devices)
+  'border-radius': map.get($shape, 'full'),
   'transition-duration': map.get($motion, 'duration-short2'),
   'transition-easing': map.get($motion, 'easing-standard'),
-  // Size-specific configurations based on MD3 specs
+  // Container height per size
   'height-xs': 32px,
   'height-s': 40px,
   'height-m': 56px,
   'height-l': 96px,
   'height-xl': 136px,
+  // Leading and trailing space per size
   'padding-xs': 12px,
   'padding-s': 16px,
   'padding-m': 24px,
   'padding-l': 48px,
   'padding-xl': 64px,
-  'icon-size-xs': 18px,
-  'icon-size-s': 22px,
+  // Icon size per size
+  'icon-size-xs': 20px,
+  'icon-size-s': 20px,
   'icon-size-m': 24px,
   'icon-size-l': 32px,
-  'icon-size-xl': 48px
+  'icon-size-xl': 40px,
+  // Icon to label space per size
+  'icon-gap-xs': 8px,
+  'icon-gap-s': 8px,
+  'icon-gap-m': 8px,
+  'icon-gap-l': 12px,
+  'icon-gap-xl': 16px,
+  // Outlined outline width per size
+  'outline-width-xs': 1px,
+  'outline-width-s': 1px,
+  'outline-width-m': 1px,
+  'outline-width-l': 2px,
+  'outline-width-xl': 3px,
+  // Square container shape per size
+  'shape-square-xs': map.get($shape, 'medium'),
+  'shape-square-s': map.get($shape, 'medium'),
+  'shape-square-m': map.get($shape, 'large'),
+  'shape-square-l': map.get($shape, 'extra-large'),
+  'shape-square-xl': map.get($shape, 'extra-large'),
+  // Pressed container shape per size (round and square)
+  'shape-pressed-xs': map.get($shape, 'small'),
+  'shape-pressed-s': map.get($shape, 'small'),
+  'shape-pressed-m': map.get($shape, 'medium'),
+  'shape-pressed-l': map.get($shape, 'large'),
+  'shape-pressed-xl': map.get($shape, 'large'),
+  // Minimum touch target for the xs and s sizes
+  'touch-target': 48px
 ) !default;
 
 

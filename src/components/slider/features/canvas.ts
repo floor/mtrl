@@ -83,18 +83,31 @@ const getColors = (
     };
   }
 
+  // A stylesheet may override the colour per slider with the custom
+  // properties --mtrl-slider-color (active track, handle) and
+  // --mtrl-slider-on-color (ticks on the active track), e.g. a slider that
+  // sits on a coloured bar. Their computed values resolve any var() chain.
+  const styles =
+    component?.element && typeof getComputedStyle === "function"
+      ? getComputedStyle(component.element)
+      : undefined;
+  const override = styles?.getPropertyValue("--mtrl-slider-color").trim();
+  const onOverride = styles?.getPropertyValue("--mtrl-slider-on-color").trim();
+
   if (elementType === "tick") {
     return {
-      primary: getThemeColor(`sys-color-on-${variant}`, {
-        fallback: "#ffffff",
-      }),
-      secondary: getThemeColor(`sys-color-${variant}`, { fallback: "#1976d2" }),
+      primary:
+        onOverride ||
+        getThemeColor(`sys-color-on-${variant}`, { fallback: "#ffffff" }),
+      secondary:
+        override ||
+        getThemeColor(`sys-color-${variant}`, { fallback: "#1976d2" }),
     };
   }
 
-  const primaryColor = getThemeColor(`sys-color-${variant}`, {
-    fallback: "#1976d2",
-  });
+  const primaryColor =
+    override ||
+    getThemeColor(`sys-color-${variant}`, { fallback: "#1976d2" });
   return {
     primary: primaryColor,
     secondary: colorToRGBA(primaryColor, 0.24),
@@ -183,15 +196,14 @@ const updateCanvasDimensions = (
   const sliderElement = canvas.parentElement;
   if (!sliderElement) return;
 
-  const width = Math.max(
-    sliderElement.getBoundingClientRect().width || sliderElement.offsetWidth,
-    200
-  );
-  const height = Math.max(
-    handleHeight + 20,
-    trackHeight + 32,
-    SLIDER_MEASUREMENTS.MIN_HEIGHT
-  );
+  // the canvas takes the element's real width (fluid width comes from the
+  // stylesheet); 200 is only a fallback before layout, never a minimum,
+  // otherwise a narrower slider is drawn at 200 and stretched by the CSS
+  const width =
+    sliderElement.getBoundingClientRect().width || sliderElement.offsetWidth || 200;
+  // the container is as tall as its handle, never under the 48dp touch
+  // target (M3): XS/S 48, M 52, L 68, XL 108
+  const height = Math.max(handleHeight, trackHeight, SLIDER_MEASUREMENTS.MIN_HEIGHT);
 
   // Update container height
   sliderElement.style.height = `${height}px`;
@@ -214,15 +226,14 @@ const setupCanvas = (
 
   const trackHeight = getTrackHeight(config?.size);
   const handleHeight = getHandleHeight(config?.size);
-  const width = Math.max(
-    sliderElement.getBoundingClientRect().width || sliderElement.offsetWidth,
-    200
-  );
-  const height = Math.max(
-    handleHeight + 20,
-    trackHeight + 32,
-    SLIDER_MEASUREMENTS.MIN_HEIGHT
-  );
+  // the canvas takes the element's real width (fluid width comes from the
+  // stylesheet); 200 is only a fallback before layout, never a minimum,
+  // otherwise a narrower slider is drawn at 200 and stretched by the CSS
+  const width =
+    sliderElement.getBoundingClientRect().width || sliderElement.offsetWidth || 200;
+  // the container is as tall as its handle, never under the 48dp touch
+  // target (M3): XS/S 48, M 52, L 68, XL 108
+  const height = Math.max(handleHeight, trackHeight, SLIDER_MEASUREMENTS.MIN_HEIGHT);
 
   // Update container height
   sliderElement.style.height = `${height}px`;

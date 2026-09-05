@@ -42,6 +42,12 @@ interface ComponentWithElements {
   off?: (event: string, handler: Function) => ComponentWithElements;
   addClass?: (...classes: string[]) => ComponentWithElements;
 
+  // Toggle manager (if withToggle was applied)
+  toggle?: {
+    setSelected: (selected: boolean) => void;
+    isSelected: () => boolean;
+  };
+
   // Progress methods (if withProgress was applied)
   progress?: ProgressComponent;
   showProgress?: () => Promise<ComponentWithElements>;
@@ -400,6 +406,22 @@ export const withAPI =
         }
         return buttonComponent;
       },
+
+      /**
+       * Sets the selected state of a toggle button
+       * @param selected - Whether the button is selected
+       * @returns Button component for method chaining
+       */
+      setSelected(selected: boolean) {
+        component.toggle?.setSelected(selected);
+        return buttonComponent;
+      },
+
+      /**
+       * Whether a toggle button is selected
+       * @returns Selected state, false for non-toggle buttons
+       */
+      isSelected: () => component.toggle?.isSelected() ?? false,
 
       /**
        * Sets the button's aria-label attribute for accessibility

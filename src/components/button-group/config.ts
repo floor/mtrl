@@ -11,7 +11,9 @@ import {
   BUTTON_GROUP_DEFAULTS,
   BUTTON_GROUP_DENSITY,
   BUTTON_GROUP_HEIGHTS,
-  BUTTON_GROUP_RADII
+  BUTTON_GROUP_RADII,
+  BUTTON_GROUP_SIZE_TOKENS,
+  BUTTON_GROUP_CONNECTED_GAP
 } from './constants';
 
 /**
@@ -19,6 +21,11 @@ import {
  * @internal
  */
 export const DEFAULT_CONFIG: Partial<ButtonGroupConfig> = {
+  kind: BUTTON_GROUP_DEFAULTS.KIND,
+  selection: BUTTON_GROUP_DEFAULTS.SELECTION,
+  shape: BUTTON_GROUP_DEFAULTS.SHAPE,
+  size: BUTTON_GROUP_DEFAULTS.SIZE,
+  required: false,
   variant: BUTTON_GROUP_DEFAULTS.VARIANT,
   orientation: BUTTON_GROUP_DEFAULTS.ORIENTATION,
   density: BUTTON_GROUP_DEFAULTS.DENSITY,
@@ -53,6 +60,11 @@ export const getContainerConfig = (config: ButtonGroupConfig) => {
   const variant = config.variant || BUTTON_GROUP_DEFAULTS.VARIANT;
   const orientation = config.orientation || BUTTON_GROUP_DEFAULTS.ORIENTATION;
   const density = config.density || BUTTON_GROUP_DEFAULTS.DENSITY;
+  const kind = config.kind || BUTTON_GROUP_DEFAULTS.KIND;
+  const selection = config.selection || BUTTON_GROUP_DEFAULTS.SELECTION;
+  const labels = config.labels || BUTTON_GROUP_DEFAULTS.LABELS;
+  const shape = config.shape || BUTTON_GROUP_DEFAULTS.SHAPE;
+  const size = config.size || BUTTON_GROUP_DEFAULTS.SIZE;
 
   return {
     tag: 'div',
@@ -62,13 +74,23 @@ export const getContainerConfig = (config: ButtonGroupConfig) => {
       'aria-label': config.ariaLabel || 'Button group',
       'data-variant': variant,
       'data-orientation': orientation,
-      'data-density': density
+      'data-density': density,
+      'data-kind': kind,
+      'data-selection': selection,
+      'data-shape': shape,
+      'data-size': size,
+      'data-labels': labels
     },
     className: [
       config.class,
+      labels === 'selected' ? `${config.prefix}-button-group--labels-selected` : null,
       config.disabled ? `${config.prefix}-button-group--disabled` : null,
       `${config.prefix}-button-group--${orientation}`,
       `${config.prefix}-button-group--${variant}`,
+      `${config.prefix}-button-group--${kind}`,
+      `${config.prefix}-button-group--${shape}`,
+      `${config.prefix}-button-group--size-${size}`,
+      selection !== 'none' ? `${config.prefix}-button-group--selectable` : null,
       density !== BUTTON_GROUP_DENSITY.DEFAULT
         ? `${config.prefix}-button-group--density-${density}`
         : null,
@@ -93,6 +115,21 @@ export const getDensityStyles = (
   return {
     '--button-group-height': `${height}px`,
     '--button-group-radius': `${radius}px`
+  };
+};
+
+/** Size and kind tokens as custom properties (Material 3 button group specs) */
+export const getSizeStyles = (
+  size: ButtonGroupConfig['size'],
+  kind: ButtonGroupConfig['kind']
+): Record<string, string> => {
+  const tokens = BUTTON_GROUP_SIZE_TOKENS[size || BUTTON_GROUP_DEFAULTS.SIZE] || BUTTON_GROUP_SIZE_TOKENS.s;
+  const gap = kind === 'connected' ? BUTTON_GROUP_CONNECTED_GAP : tokens.standardGap;
+  return {
+    '--button-group-height': `${tokens.height}px`,
+    '--button-group-gap': `${gap}px`,
+    '--button-group-inner-corner': `${tokens.connectedCorner}px`,
+    '--button-group-radius': `${tokens.height / 2}px`
   };
 };
 
