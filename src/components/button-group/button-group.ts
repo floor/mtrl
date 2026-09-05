@@ -21,13 +21,13 @@ import { ButtonComponent } from '../button/types';
 import {
   createBaseConfig,
   getContainerConfig,
-  getDensityStyles,
   getSizeStyles,
   getButtonConfig
 } from './config';
 import {
   BUTTON_GROUP_DEFAULTS,
-  BUTTON_GROUP_DENSITY
+  BUTTON_GROUP_DENSITY,
+  BUTTON_GROUP_EXPANDED_RATIO
 } from './constants';
 
 /**
@@ -38,11 +38,13 @@ import {
  * related actions where each button triggers an independent action.
  *
  * Per Material Design 3 specifications:
- * - Buttons are visually connected with shared borders
- * - Only outer corners are rounded
- * - All buttons share the same variant for visual consistency
+ * - Standard groups space their buttons (18/12/8/8/8dp by size) and a
+ *   pressed button briefly widens while its neighbours narrow
+ * - Connected groups space their buttons 2dp apart with square inner
+ *   corners and round outer corners; a selected button becomes a pill
+ * - All buttons share the same variant, size and shape
  * - Supports horizontal and vertical orientations
- * - Supports density scaling
+ * - Supports density scaling (4dp per step)
  *
  * @param {ButtonGroupConfig} config - Button Group configuration
  * @returns {ButtonGroupComponent} Button Group component instance
@@ -101,15 +103,13 @@ const createButtonGroup = (config: ButtonGroupConfig = {}): ButtonGroupComponent
       withLifecycle()
     )(baseConfig);
 
-    // Apply density styles
-    const densityStyles = getDensityStyles(currentDensity);
-    Object.entries(densityStyles).forEach(([prop, value]) => {
-      component.element.style.setProperty(prop, value);
-    });
-    // Material 3 sizes and kinds (height, gap, corners) override the density defaults
-    Object.entries(getSizeStyles(baseConfig.size, kind)).forEach(([prop, value]) => {
-      component.element.style.setProperty(prop, value);
-    });
+    // Material 3 size, kind and density tokens (height, gap, corners)
+    const applySizeStyles = (density: ButtonGroupDensity) => {
+      Object.entries(getSizeStyles(baseConfig.size, kind, density)).forEach(([prop, value]) => {
+        component.element.style.setProperty(prop, value);
+      });
+    };
+    applySizeStyles(currentDensity);
 
     // Create buttons
     const buttons: ButtonComponent[] = [];
@@ -121,6 +121,8 @@ const createButtonGroup = (config: ButtonGroupConfig = {}): ButtonGroupComponent
       return String(config?.value ?? config?.id ?? (button as any)._groupIndex);
     };
 
+    // The buttons carry the M3 toggle colours and shapes themselves; the group
+    // only owns which of them is selected.
     const applySelectedState = (button: ButtonComponent, selected: boolean) => {
       const selectedClass = `${baseConfig.prefix}-button-group__button--selected`;
       button.element.classList.toggle(selectedClass, selected);
@@ -129,7 +131,52 @@ const createButtonGroup = (config: ButtonGroupConfig = {}): ButtonGroupComponent
       if (toggleState?.isToggle?.()) {
         if (selected) toggleState.select();
         else toggleState.deselect();
+      } else {
+        button.setSelected?.(selected);
       }
+    };
+
+    // Standard groups: while pressed, a button widens by the expanded ratio
+    // of its width and each neighbour gives up the same amount, limited to
+    // the neighbour's padding on the facing side so its label never clips
+    // (ButtonGroupDefaults.ExpandedRatio and the ButtonGroup measure policy;
+    // m3.material.io button group states)
+    const expandedRatio = baseConfig.expandedRatio ?? BUTTON_GROUP_EXPANDED_RATIO;
+    const releasePress = () => {
+      buttons.forEach(b => {
+        b.element.style.width = '';
+        b.element.style.paddingLeft = '';
+        b.element.style.paddingRight = '';
+      });
+      document.removeEventListener('pointerup', releasePress);
+      document.removeEventListener('pointercancel', releasePress);
+    };
+    const pressExpand = (index: number) => {
+      if (kind !== 'standard' || expandedRatio <= 0 || currentOrientation !== 'horizontal') return;
+      const widths = buttons.map(b => b.element.getBoundingClientRect().width);
+      if (!widths[index]) return;
+      const view = component.element.ownerDocument.defaultView;
+      const padding = (i: number, side: 'paddingLeft' | 'paddingRight') =>
+        view ? parseFloat(view.getComputedStyle(buttons[i].element)[side]) || 0 : 0;
+      const previous = buttons[index - 1] ? index - 1 : -1;
+      const next = buttons[index + 1] ? index + 1 : -1;
+      const middle = previous >= 0 && next >= 0;
+      // a middle button shares its growth between both sides, an end button
+      // takes all of it from its only neighbour
+      const share = expandedRatio * widths[index] / (middle ? 2 : 1);
+      let growth = 0;
+      const compress = (i: number, side: 'paddingLeft' | 'paddingRight') => {
+        const limit = Math.min(share, padding(i, side), widths[i]);
+        if (limit <= 0) return;
+        buttons[i].element.style.width = `${widths[i] - limit}px`;
+        buttons[i].element.style[side] = `${padding(i, side) - limit}px`;
+        growth += limit;
+      };
+      if (previous >= 0) compress(previous, 'paddingRight');
+      if (next >= 0) compress(next, 'paddingLeft');
+      buttons[index].element.style.width = `${widths[index] + growth}px`;
+      document.addEventListener('pointerup', releasePress);
+      document.addEventListener('pointercancel', releasePress);
     };
 
     const emitChange = (button?: ButtonComponent, originalEvent?: Event) => {
@@ -183,16 +230,22 @@ const createButtonGroup = (config: ButtonGroupConfig = {}): ButtonGroupComponent
             ...resolvedConfig,
             toggle: selectable,
             toggleOnClick: false,
-            selected: Boolean(buttonConfig.selected),
             selectedIcon: buttonConfig.selectedIcon,
             variant: resolvedConfig.variant === 'text' ? 'standard' : resolvedConfig.variant
           } as any)
-        : createButton(resolvedConfig)) as unknown as ButtonComponent;
+        : createButton({
+            ...resolvedConfig,
+            toggle: selectable,
+            toggleOnClick: false
+          })) as unknown as ButtonComponent;
       (button as any)._groupConfig = buttonConfig;
       (button as any)._groupIndex = index;
       if (selectable) {
         button.element.setAttribute('aria-pressed', 'false');
       }
+      button.element.addEventListener('pointerdown', () => {
+        if (!button.disabled?.isDisabled()) pressExpand(index);
+      });
       button.on('click', (originalEvent: Event) => {
         if (!button.disabled?.isDisabled()) {
           const groupEvent: ButtonGroupEvent = {
@@ -300,12 +353,7 @@ const createButtonGroup = (config: ButtonGroupConfig = {}): ButtonGroupComponent
       // Update data attribute
       component.element.setAttribute('data-density', density);
 
-      // Apply density styles
-      const densityStyles = getDensityStyles(density);
-      Object.entries(densityStyles).forEach(([prop, value]) => {
-        component.element.style.setProperty(prop, value);
-      });
-
+      applySizeStyles(density);
       currentDensity = density;
     };
 
@@ -423,6 +471,8 @@ const createButtonGroup = (config: ButtonGroupConfig = {}): ButtonGroupComponent
       },
 
       destroy() {
+        releasePress();
+
         // Destroy all buttons
         buttons.forEach(button => {
           button.destroy();

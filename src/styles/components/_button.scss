@@ -26,6 +26,11 @@ $component: '#{base.$prefix}-button';
 // - Leading icon, integrated progress indicator
 // - State layers, focus ring, pressed shape morph
 // - 48dp touch target on the xs and s sizes
+//
+// Shape hooks: a container (button group, split button) can override the
+// resting, pressed and selected corner shapes through the custom properties
+// --<prefix>-button-shape, --<prefix>-button-shape-pressed and
+// --<prefix>-button-shape-selected, without fighting the rules below.
 // =============================================================================
 
 $sizes: xs, s, m, l, xl;
@@ -59,7 +64,7 @@ $content-color: (
   height: v.button('height-s');
   padding: 0 v.button('padding-s');
   border: none;
-  border-radius: v.button('border-radius');
+  border-radius: var(--#{base.$prefix}-button-shape, v.button('border-radius'));
   background-color: transparent;
   color: inherit;
   font: inherit;
@@ -178,7 +183,7 @@ $content-color: (
 
       // Square shape at rest
       &.#{$component}--square {
-        border-radius: v.button('shape-square-#{$size}');
+        border-radius: var(--#{base.$prefix}-button-shape, v.button('shape-square-#{$size}'));
       }
 
       // Outlined outline width
@@ -221,7 +226,7 @@ $content-color: (
   // ---------------------------------------------------------------------------
   &:active,
   &--active {
-    border-radius: v.button('shape-pressed-s');
+    border-radius: var(--#{base.$prefix}-button-shape-pressed, v.button('shape-pressed-s'));
     box-shadow: none;
   }
 
@@ -229,7 +234,7 @@ $content-color: (
     &--#{$size} {
       &:active,
       &.#{$component}--active {
-        border-radius: v.button('shape-pressed-#{$size}');
+        border-radius: var(--#{base.$prefix}-button-shape-pressed, v.button('shape-pressed-#{$size}'));
       }
     }
   }
@@ -406,18 +411,18 @@ $content-color: (
       // Shape swap: a round toggle squares off, a square one rounds
       @each $size in $sizes {
         &.#{$component}--#{$size} {
-          border-radius: v.button('shape-square-#{$size}');
+          border-radius: var(--#{base.$prefix}-button-shape-selected, v.button('shape-square-#{$size}'));
         }
       }
 
       &.#{$component}--square {
-        border-radius: v.button('border-radius');
+        border-radius: var(--#{base.$prefix}-button-shape-selected, v.button('border-radius'));
       }
 
       @each $size in $sizes {
         &.#{$component}--#{$size}:active,
         &.#{$component}--#{$size}.#{$component}--active {
-          border-radius: v.button('shape-pressed-#{$size}');
+          border-radius: var(--#{base.$prefix}-button-shape-pressed, v.button('shape-pressed-#{$size}'));
         }
       }
     }

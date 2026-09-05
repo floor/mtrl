@@ -36,8 +36,10 @@ export interface ToggleComponent {
  * `--selected` classes drive the selected colours and the shape swap.
  *
  * Emits a `change` event with `{ selected }` when the user toggles it.
+ * With `toggleOnClick: false` the click does nothing and a container
+ * (button group) drives the state through `setSelected`.
  *
- * @param config - Button configuration (`toggle`, `selected`)
+ * @param config - Button configuration (`toggle`, `selected`, `toggleOnClick`)
  * @returns Component enhancer
  * @category Components
  */
@@ -61,11 +63,13 @@ export const withToggle =
     element.classList.add(`${buttonClass}--toggle`);
     apply(config.selected === true);
 
-    element.addEventListener("click", () => {
-      if ((element as HTMLButtonElement).disabled) return;
-      apply(!selected);
-      component.emit?.("change", { selected });
-    });
+    if (config.toggleOnClick !== false) {
+      element.addEventListener("click", () => {
+        if ((element as HTMLButtonElement).disabled) return;
+        apply(!selected);
+        component.emit?.("change", { selected });
+      });
+    }
 
     return {
       ...component,

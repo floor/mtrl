@@ -146,6 +146,13 @@ export interface ButtonConfig extends BaseComponentConfig {
    * @default false
    */
   selected?: boolean;
+
+  /**
+   * Whether a click flips the selected state of a toggle button. Set to
+   * false when a container (button group) owns the selection.
+   * @default true
+   */
+  toggleOnClick?: boolean;
 }
 
 /**
