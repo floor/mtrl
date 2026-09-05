@@ -131,6 +131,21 @@ export interface ButtonConfig extends BaseComponentConfig {
    * @default false
    */
   showProgress?: boolean;
+
+  /**
+   * Makes the button a toggle button: a click flips its selected state,
+   * the element carries aria-pressed, and the selected state uses the M3
+   * toggle colours and swaps the resting shape (round to square, square
+   * to round). Text buttons have no toggle style.
+   * @default false
+   */
+  toggle?: boolean;
+
+  /**
+   * Initial selected state of a toggle button
+   * @default false
+   */
+  selected?: boolean;
 }
 
 /**
@@ -330,6 +345,19 @@ export interface ButtonComponent {
    * @returns The button component for chaining
    */
   setActive: (active: boolean) => ButtonComponent;
+
+  /**
+   * Sets the selected state of a toggle button (no-op unless `toggle` is set)
+   * @param selected - Whether the button is selected
+   * @returns The button component for chaining
+   */
+  setSelected: (selected: boolean) => ButtonComponent;
+
+  /**
+   * Whether a toggle button is selected
+   * @returns true when selected, false otherwise or when not a toggle button
+   */
+  isSelected: () => boolean;
 
   /**
    * Adds an event listener to the button

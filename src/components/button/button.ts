@@ -12,6 +12,7 @@ import {
   withLifecycle,
 } from "../../core/compose/features";
 import { withProgress } from "./features/progress";
+import { withToggle } from "./features/toggle";
 import { withAPI } from "./api";
 import { ButtonConfig } from "./types";
 import { createBaseConfig, getElementConfig, getApiConfig } from "./config";
@@ -90,6 +91,7 @@ const createButton = (config: ButtonConfig = {}) => {
       withText(baseConfig),
       withIcon(baseConfig),
       withDisabled(baseConfig),
+      withToggle(baseConfig),
       withProgress(baseConfig),
       withRipple(baseConfig),
       withLifecycle(),

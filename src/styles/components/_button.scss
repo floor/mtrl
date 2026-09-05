@@ -1,5 +1,6 @@
 // src/styles/components/_button.scss
 @use 'sass:map';
+@use 'sass:list';
 @use '../../styles/abstract/base' as base;
 @use '../../styles/abstract/variables' as v;
 @use '../../styles/abstract/functions' as f;
@@ -337,6 +338,100 @@ $content-color: (
     }
 
     &:disabled {
+      background-color: transparent;
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Toggle buttons (ToggleButtonDefaults in ToggleButton.kt, *ButtonTokens
+  // Unselected*/Selected* roles). Unselected filled buttons drop to
+  // surface-container; selected buttons take the selected roles and swap
+  // the resting shape: round becomes square, square becomes round
+  // (m3.material.io button specs, "When selected").
+  // ---------------------------------------------------------------------------
+  &--toggle {
+    &.#{$component}--filled {
+      background-color: t.color('surface-container');
+      color: t.color('on-surface-variant');
+
+      &:hover {
+        @include m.state-layer(t.color('on-surface-variant'), 'hover');
+      }
+
+      &:focus-visible {
+        @include m.state-layer(t.color('on-surface-variant'), 'focus');
+      }
+
+      &:active,
+      &.#{$component}--active {
+        @include m.state-layer(t.color('on-surface-variant'), 'pressed');
+      }
+    }
+
+    &.#{$component}--selected {
+      $selected: (
+        'filled': ('primary', 'on-primary'),
+        'elevated': ('primary', 'on-primary'),
+        'tonal': ('secondary', 'on-secondary'),
+        'outlined': ('inverse-surface', 'inverse-on-surface')
+      );
+
+      @each $variant, $roles in $selected {
+        $container: list.nth($roles, 1);
+        $content: list.nth($roles, 2);
+
+        &.#{$component}--#{$variant} {
+          background-color: t.color($container);
+          color: t.color($content);
+
+          &:hover {
+            @include m.state-layer(t.color($content), 'hover');
+          }
+
+          &:focus-visible {
+            @include m.state-layer(t.color($content), 'focus');
+          }
+
+          &:active,
+          &.#{$component}--active {
+            @include m.state-layer(t.color($content), 'pressed');
+          }
+        }
+      }
+
+      &.#{$component}--outlined {
+        border-color: transparent;
+      }
+
+      // Shape swap: a round toggle squares off, a square one rounds
+      @each $size in $sizes {
+        &.#{$component}--#{$size} {
+          border-radius: v.button('shape-square-#{$size}');
+        }
+      }
+
+      &.#{$component}--square {
+        border-radius: v.button('border-radius');
+      }
+
+      @each $size in $sizes {
+        &.#{$component}--#{$size}:active,
+        &.#{$component}--#{$size}.#{$component}--active {
+          border-radius: v.button('shape-pressed-#{$size}');
+        }
+      }
+    }
+
+    // Disabled keeps the common disabled roles whatever the selection
+    &:disabled,
+    &.#{$component}--selected:disabled {
+      color: t.alpha('on-surface-variant', 0.38);
+      background-color: t.alpha('on-surface', 0.1);
+      border-color: t.alpha('outline-variant', 0.1);
+      box-shadow: none;
+    }
+
+    &.#{$component}--outlined:disabled {
       background-color: transparent;
     }
   }

@@ -166,3 +166,44 @@ describe('button stylesheet: states', () => {
     expect(css).not.toMatch(/--progress[^{]*\{[^}]*border-radius/);
   });
 });
+
+describe('button stylesheet: toggle buttons (ToggleButtonDefaults)', () => {
+  test('unselected filled toggle drops to surface-container', () => {
+    expect(value('.mtrl-button--toggle.mtrl-button--filled', 'background-color')).toBe('var(--mtrl-sys-color-surface-container)');
+    expect(value('.mtrl-button--toggle.mtrl-button--filled', 'color')).toBe('var(--mtrl-sys-color-on-surface-variant)');
+  });
+
+  test('selected colours per style', () => {
+    const selected = (variant: string, property: string) =>
+      value(`.mtrl-button--toggle.mtrl-button--selected.mtrl-button--${variant}`, property);
+    expect(selected('filled', 'background-color')).toBe('var(--mtrl-sys-color-primary)');
+    expect(selected('filled', 'color')).toBe('var(--mtrl-sys-color-on-primary)');
+    expect(selected('elevated', 'background-color')).toBe('var(--mtrl-sys-color-primary)');
+    expect(selected('tonal', 'background-color')).toBe('var(--mtrl-sys-color-secondary)');
+    expect(selected('tonal', 'color')).toBe('var(--mtrl-sys-color-on-secondary)');
+    expect(selected('outlined', 'background-color')).toBe('var(--mtrl-sys-color-inverse-surface)');
+    expect(selected('outlined', 'color')).toBe('var(--mtrl-sys-color-inverse-on-surface)');
+    expect(selected('outlined', 'border-color')).toBe('transparent');
+    expect(rule('.mtrl-button--toggle.mtrl-button--selected.mtrl-button--text')).toBe('');
+  });
+
+  test('selected swaps the resting shape', () => {
+    expect(value('.mtrl-button--toggle.mtrl-button--selected.mtrl-button--s', 'border-radius')).toBe('12px');
+    expect(value('.mtrl-button--toggle.mtrl-button--selected.mtrl-button--m', 'border-radius')).toBe('16px');
+    expect(value('.mtrl-button--toggle.mtrl-button--selected.mtrl-button--xl', 'border-radius')).toBe('28px');
+    expect(value('.mtrl-button--toggle.mtrl-button--selected.mtrl-button--square', 'border-radius')).toBe('9999px');
+    expect(css.indexOf('.mtrl-button--toggle.mtrl-button--selected.mtrl-button--square')).toBeGreaterThan(
+      css.indexOf('.mtrl-button--toggle.mtrl-button--selected.mtrl-button--xl'),
+    );
+  });
+
+  test('selected buttons still take the pressed shape', () => {
+    expect(value('.mtrl-button--toggle.mtrl-button--selected.mtrl-button--s:active, .mtrl-button--toggle.mtrl-button--selected.mtrl-button--s.mtrl-button--active', 'border-radius')).toBe('8px');
+  });
+
+  test('disabled toggle buttons keep the disabled roles', () => {
+    const block = rule('.mtrl-button--toggle:disabled, .mtrl-button--toggle.mtrl-button--selected:disabled');
+    expect(declaration(block, 'background-color')).toBe('color-mix(in srgb, var(--mtrl-sys-color-on-surface) 10%, transparent)');
+    expect(value('.mtrl-button--toggle.mtrl-button--outlined:disabled', 'background-color')).toBe('transparent');
+  });
+});
