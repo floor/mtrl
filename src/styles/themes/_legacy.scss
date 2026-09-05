@@ -1,8 +1,8 @@
 // src/styles/themes/_legacy.scss
 // Legacy: the Radiooooo v3 palette. Values are the v3 ones, set by hand:
-// bar blue on primary, selection orange on tertiary, the charcoal indicator
-// on secondary, the salmon selected-mode disc on secondary container, cream
-// surfaces; dark mode uses the v3 blue-grey neutrals.
+// bar blue on primary, selection orange on tertiary, the salmon selected-mode
+// disc on secondary (the M3 tonal toggle's selected colour), cream surfaces;
+// dark mode uses the v3 blue-grey neutrals.
 @use "../abstract/base" as *;
 @use "base-theme" as *;
 
@@ -12,10 +12,10 @@
     --#{$prefix}-sys-color-on-primary: #ffffff;
     --#{$prefix}-sys-color-primary-container: #d6e3ff;
     --#{$prefix}-sys-color-on-primary-container: #001b3f;
-    --#{$prefix}-sys-color-secondary: #333333;
+    --#{$prefix}-sys-color-secondary: #ea9d97;
     --#{$prefix}-sys-color-on-secondary: #ffffff;
-    --#{$prefix}-sys-color-secondary-container: #ea9d97;
-    --#{$prefix}-sys-color-on-secondary-container: #ffffff;
+    --#{$prefix}-sys-color-secondary-container: #ffdad6;
+    --#{$prefix}-sys-color-on-secondary-container: #3b0907;
     --#{$prefix}-sys-color-tertiary: #ff3400;
     --#{$prefix}-sys-color-on-tertiary: #ffffff;
     --#{$prefix}-sys-color-tertiary-container: #ffd9cc;
@@ -44,10 +44,10 @@
         --#{$prefix}-sys-color-on-primary: #002a63;
         --#{$prefix}-sys-color-primary-container: #00489a;
         --#{$prefix}-sys-color-on-primary-container: #ffffff;
-        --#{$prefix}-sys-color-secondary: #cfcfcf;
-        --#{$prefix}-sys-color-on-secondary: #1a1a1a;
-        --#{$prefix}-sys-color-secondary-container: #b5645e;
-        --#{$prefix}-sys-color-on-secondary-container: #ffffff;
+        --#{$prefix}-sys-color-secondary: #e08e88;
+        --#{$prefix}-sys-color-on-secondary: #3b0907;
+        --#{$prefix}-sys-color-secondary-container: #7a3a35;
+        --#{$prefix}-sys-color-on-secondary-container: #ffdad6;
         --#{$prefix}-sys-color-tertiary: #ff5c2e;
         --#{$prefix}-sys-color-on-tertiary: #ffffff;
         --#{$prefix}-sys-color-tertiary-container: #8a1c00;
