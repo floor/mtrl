@@ -83,7 +83,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/floor/mtrl.git"
+    "url": "git+https://github.com/floor/mtrl.git"
   },
   "devDependencies": {
     "@types/jsdom": "^21.1.7",

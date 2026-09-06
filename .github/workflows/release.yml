@@ -1,0 +1,54 @@
+# Publishes mtrl to npm when a version tag is pushed, with npm trusted
+# publishing: the workflow's identity is what npm trusts (configured on
+# npmjs.com for the package), no token is stored, and the release carries
+# provenance. A pre-release version (x.y.z-next.N) goes under the `next`
+# dist-tag, anything else under `latest`.
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+
+      # trusted publishing needs npm 11.5.1 or later
+      - run: npm install -g npm@latest
+
+      - name: The tag must be the package version
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          version="$(node -p "require('./package.json').version")"
+          if [ "$tag" != "$version" ]; then
+            echo "tag v$tag does not match package.json version $version" >&2
+            exit 1
+          fi
+
+      - run: bun install --frozen-lockfile
+
+      # prepublishOnly runs the build (bun run build) before npm packs
+      - name: Publish
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          case "$version" in
+            *-*) tag=next ;;
+            *) tag=latest ;;
+          esac
+          npm publish --provenance --access public --tag "$tag"

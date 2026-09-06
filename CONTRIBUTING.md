@@ -216,3 +216,21 @@ By contributing to mtrl, you agree that your contributions will be licensed unde
 ---
 
 Thank you for contributing to mtrl! Your efforts help make this library better for everyone.
+
+## Releasing
+
+Releases are published by GitHub Actions with npm trusted publishing
+(`.github/workflows/release.yml`); no npm token is involved.
+
+1. On `main`, bump the version in `package.json` in its own commit:
+   `chore(release): x.y.z`. A pre-release is `x.y.z-next.N`.
+2. Tag that commit `vx.y.z` and push the tag:
+
+   ```bash
+   git tag vx.y.z
+   git push origin vx.y.z
+   ```
+
+3. The workflow checks that the tag matches the version, builds, and
+   publishes: a pre-release under the `next` dist-tag, a release under
+   `latest`. `npm view mtrl dist-tags` confirms.
