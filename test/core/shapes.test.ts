@@ -125,10 +125,33 @@ describe('material shapes', () => {
     expect(radialProfile(materialShape('circle')).maxRadius).toBeCloseTo(0.5, 1);
   });
 
-  test('profiles sample the outline around the bounds centre at even angles', () => {
+  test('profiles sample the outline around the area centroid at even angles', () => {
     const profile = radialProfile(materialShape('circle'), 90);
     expect(profile.radii.length).toBe(90);
-    expect(profile.centerX).toBeCloseTo(0.5, 5);
-    expect(profile.centerY).toBeCloseTo(0.5, 5);
+    expect(profile.centerX).toBeCloseTo(0.5, 4);
+    expect(profile.centerY).toBeCloseTo(0.5, 4);
+    // the pentagon's mass sits below the middle of its box; the pivot follows it
+    const pentagon = radialProfile(materialShape('pentagon'));
+    expect(pentagon.centerY).toBeGreaterThan(0.52);
+    // so the sampled outline has its centroid at the pivot
+    const centroid = (p: ReturnType<typeof radialProfile>) => {
+      const n = p.radii.length;
+      const at = (i: number): [number, number] => {
+        const a = (i / n) * 2 * Math.PI;
+        return [p.centerX + Math.cos(a) * p.radii[i % n]!, p.centerY + Math.sin(a) * p.radii[i % n]!];
+      };
+      let area = 0; let cx = 0; let cy = 0;
+      for (let i = 0; i < n; i++) {
+        const [x0, y0] = at(i); const [x1, y1] = at(i + 1);
+        const c = x0 * y1 - x1 * y0; area += c; cx += (x0 + x1) * c; cy += (y0 + y1) * c;
+      }
+      return [cx / (3 * area), cy / (3 * area)];
+    };
+    for (const name of ['pentagon', 'cookie9', 'softBurst'] as const) {
+      const p = radialProfile(materialShape(name));
+      const [cx, cy] = centroid(p);
+      expect(cx).toBeCloseTo(p.centerX, 3);
+      expect(cy).toBeCloseTo(p.centerY, 3);
+    }
   });
 });

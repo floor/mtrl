@@ -121,6 +121,7 @@ export const materialShape = (name: MaterialShapeName): RoundedPolygon => {
 export interface RadialProfile {
   /** Radius at angle i * 2π / radii.length, clockwise from the positive x axis on a y-down canvas */
   radii: Float32Array;
+  /** The area centroid the radii are measured from */
   centerX: number;
   centerY: number;
   /** The largest radius, for fitting the shape into a circle */
@@ -130,26 +131,48 @@ export interface RadialProfile {
 const TWO_PI = Math.PI * 2;
 
 /**
- * Samples the outline at `samples` angles. The shape must be star-shaped
- * around its bounds centre, which every Material shape is: each ray from the
- * centre crosses the outline once.
+ * Samples the outline at `samples` angles around the shape's area centroid.
+ * The centroid, not the bounds centre, is the pivot: a pentagon's mass sits
+ * below the middle of its box, and turning it about the box would make it
+ * orbit. The shape must be star-shaped around its centroid, which every
+ * Material shape is: each ray from the centre crosses the outline once.
  */
 export const radialProfile = (polygon: RoundedPolygon, samples = 360, stepsPerCubic = 24): RadialProfile => {
-  const bounds = polygonBounds(polygon);
-  const centerX = (bounds[0] + bounds[2]) / 2;
-  const centerY = (bounds[1] + bounds[3]) / 2;
+  // The outline as a dense polygon
+  const points: [number, number][] = [];
+  for (const cubic of polygon.cubics) {
+    for (let s = 0; s < stepsPerCubic; s++) points.push(pointOnCurve(cubic, s / stepsPerCubic) as [number, number]);
+  }
+
+  // Its area centroid (shoelace formula)
+  let area = 0;
+  let centerX = 0;
+  let centerY = 0;
+  for (let i = 0; i < points.length; i++) {
+    const [x0, y0] = points[i]!;
+    const [x1, y1] = points[(i + 1) % points.length]!;
+    const cross = x0 * y1 - x1 * y0;
+    area += cross;
+    centerX += (x0 + x1) * cross;
+    centerY += (y0 + y1) * cross;
+  }
+  if (Math.abs(area) > 1e-12) {
+    centerX /= 3 * area;
+    centerY /= 3 * area;
+  } else {
+    const bounds = polygonBounds(polygon);
+    centerX = (bounds[0] + bounds[2]) / 2;
+    centerY = (bounds[1] + bounds[3]) / 2;
+  }
 
   // The outline as (angle, radius) pairs, sorted by angle
   const outline: [number, number][] = [];
-  for (const cubic of polygon.cubics) {
-    for (let s = 0; s < stepsPerCubic; s++) {
-      const [x, y] = pointOnCurve(cubic, s / stepsPerCubic);
-      const dx = x - centerX;
-      const dy = y - centerY;
-      let angle = Math.atan2(dy, dx);
-      if (angle < 0) angle += TWO_PI;
-      outline.push([angle, Math.hypot(dx, dy)]);
-    }
+  for (const [x, y] of points) {
+    const dx = x - centerX;
+    const dy = y - centerY;
+    let angle = Math.atan2(dy, dx);
+    if (angle < 0) angle += TWO_PI;
+    outline.push([angle, Math.hypot(dx, dy)]);
   }
   outline.sort((a, b) => a[0] - b[0]);
   const last = outline[outline.length - 1]!;
