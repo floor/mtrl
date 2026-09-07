@@ -357,6 +357,23 @@ $content-color: (
   // (m3.material.io button specs, "When selected").
   // ---------------------------------------------------------------------------
   &--toggle {
+    // A toggle's states are state layers, not elevation: ToggleButtonDefaults
+    // carries colours and shapes only, and every state below is a layer. As a
+    // standalone button the filled and tonal containers still rise on hover
+    // (ButtonDefaults.buttonElevation); as toggles they stay flat, which also
+    // keeps a connected group's segment from casting a shadow over the
+    // neighbour 2dp away. An elevated toggle keeps its elevation: that is what
+    // its container is.
+    &.#{$component}--filled,
+    &.#{$component}--tonal {
+      &,
+      &:hover,
+      &:active,
+      &.#{$component}--active {
+        box-shadow: none;
+      }
+    }
+
     &.#{$component}--filled {
       background-color: t.color('surface-container');
       color: t.color('on-surface-variant');
