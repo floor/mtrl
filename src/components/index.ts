@@ -34,6 +34,7 @@ export { default as createNavigation } from "./navigation";
 export { default as createNavigationSystem } from "./navigation/system";
 
 export { default as createProgress } from "./progress";
+export { default as createLoadingIndicator } from "./loading-indicator";
 export { default as createRadios } from "./radios";
 export { default as createSearch } from "./search";
 export { default as createSelect } from "./select";
@@ -151,6 +152,12 @@ export type {
 
 // Menu
 export type { MenuConfig, MenuComponent, MenuItem } from "./menu/types";
+
+// Loading indicator
+export type {
+  LoadingIndicatorConfig,
+  LoadingIndicatorComponent,
+} from "./loading-indicator/types";
 
 // Progress
 export type {

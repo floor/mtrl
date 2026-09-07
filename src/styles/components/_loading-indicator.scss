@@ -1,0 +1,41 @@
+// src/styles/components/_loading-indicator.scss
+//
+// Loading indicator (Compose Material 3 LoadingIndicatorTokens.kt): a 48dp
+// container, the active indicator in primary, and a contained variant on a
+// primary-container circle with the indicator in on-primary-container. The
+// shapes are drawn on a canvas that reads the element's colour.
+@use '../../styles/abstract/base' as base;
+@use '../../styles/abstract/functions' as f;
+@use '../../styles/abstract/mixins' as m;
+@use '../../styles/abstract/theme' as t;
+
+$component: '#{base.$prefix}-loading-indicator';
+
+.#{$component} {
+  --#{base.$prefix}-loading-indicator-size: 48px;
+  box-sizing: border-box;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--#{base.$prefix}-loading-indicator-size);
+  height: var(--#{base.$prefix}-loading-indicator-size);
+  color: t.color('primary');
+  border-radius: f.get-shape('full');
+  vertical-align: middle;
+
+  &--contained {
+    background-color: t.color('primary-container');
+    color: t.color('on-primary-container');
+  }
+
+  &__canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  @include m.print {
+    display: none;
+  }
+}
