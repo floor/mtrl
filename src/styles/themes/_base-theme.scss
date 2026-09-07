@@ -68,18 +68,3 @@
   --#{$prefix}-sys-color-on-info: #003060;
   --#{$prefix}-sys-color-on-info-rgb: 0, 48, 96;
 }
-
-%theme-base {
-  // Common properties for all themes
-  --#{$prefix}-sys-typescale-label-large-font-family-name: "Roboto";
-  --#{$prefix}-sys-typescale-label-large-font-weight: 500;
-  --#{$prefix}-sys-typescale-label-large-size: 0.875rem;
-  --#{$prefix}-sys-typescale-label-large-line-height: 1.25rem;
-  --#{$prefix}-sys-typescale-label-large-letter-spacing: 0.00625rem;
-
-  --#{$prefix}-sys-shape-corner-extra-small: 4px;
-  --#{$prefix}-sys-shape-corner-small: 8px;
-  --#{$prefix}-sys-shape-corner-medium: 12px;
-  --#{$prefix}-sys-shape-corner-large: 16px;
-  --#{$prefix}-sys-shape-corner-extra-large: 28px;
-}

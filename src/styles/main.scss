@@ -22,7 +22,8 @@
 // Themes
 @use "themes/index";
 
-// Reset
+// System tokens (shape and type as custom properties) then the reset
+@use "base/tokens";
 @use "base/reset";
 @use "base/typography";
 
@@ -78,15 +79,7 @@ body {
     padding: 0;
     background-color: var(--#{base.$prefix}-sys-color-surface);
     color: var(--#{base.$prefix}-sys-color-on-surface);
-    font-family:
-        var(
-            --#{base.$prefix}-sys-typescale-body-medium-font-family-name,
-            "Roboto"
-        ),
-        var(
-            --#{base.$prefix}-sys-typescale-body-medium-font-family-fallback,
-            sans-serif
-        );
+    font-family: var(--#{base.$prefix}-sys-typescale-body-medium-font);
     font-size: var(--#{base.$prefix}-sys-typescale-body-medium-font-size);
     line-height: var(--#{base.$prefix}-sys-typescale-body-medium-line-height);
     -webkit-font-smoothing: antialiased;

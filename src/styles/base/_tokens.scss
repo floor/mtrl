@@ -1,0 +1,46 @@
+// src/styles/base/_tokens.scss
+// Material's system tokens as CSS custom properties, emitted from the Sass maps
+// that already hold them. Colour belongs to a theme and is emitted per theme
+// (themes/_base-theme.scss, `create-theme`); shape and type are system-wide, so
+// they sit on :root, and a theme may still override any of them.
+//
+// Material models the two faces as reference tokens: an application sets
+// `--mtrl-ref-typeface-brand` or `--mtrl-ref-typeface-plain` once and every role
+// follows. Display, headline and title wear the brand face, body and label the
+// plain one.
+
+@use 'sass:map';
+@use 'sass:string';
+@use '../abstract/base' as base;
+@use '../abstract/variables' as v;
+
+/// The face a typescale role wears: the brand one for display, headline and
+/// title, the plain one for body and label.
+@function face($role) {
+  @each $group in ('display-', 'headline-', 'title-') {
+    @if string.index($role, $group) == 1 {
+      @return 'brand';
+    }
+  }
+  @return 'plain';
+}
+
+:root {
+  // the two faces; the baseline dresses both in the typescale's own family
+  --#{base.$prefix}-ref-typeface-brand: #{map.get(map.get(v.$typescale, 'headline-small'), 'font-family')};
+  --#{base.$prefix}-ref-typeface-plain: #{map.get(map.get(v.$typescale, 'body-medium'), 'font-family')};
+
+  // the shape scale, every step of it
+  @each $step, $radius in v.$shape {
+    --#{base.$prefix}-sys-shape-corner-#{$step}: #{$radius};
+  }
+
+  // the typescale, every role
+  @each $role, $spec in v.$typescale {
+    --#{base.$prefix}-sys-typescale-#{$role}-font: var(--#{base.$prefix}-ref-typeface-#{face($role)});
+    --#{base.$prefix}-sys-typescale-#{$role}-font-size: #{map.get($spec, 'font-size')};
+    --#{base.$prefix}-sys-typescale-#{$role}-line-height: #{map.get($spec, 'line-height')};
+    --#{base.$prefix}-sys-typescale-#{$role}-letter-spacing: #{map.get($spec, 'letter-spacing')};
+    --#{base.$prefix}-sys-typescale-#{$role}-font-weight: #{map.get($spec, 'font-weight')};
+  }
+}
