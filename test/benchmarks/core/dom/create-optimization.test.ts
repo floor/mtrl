@@ -1,5 +1,6 @@
 // test/benchmarks/core/dom/create-optimization.bench.test.ts - createElement Optimization Benchmarks
 import { describe, test, expect, beforeAll, afterAll } from "bun:test";
+import { benchmark } from "../../bench";
 import { JSDOM } from "jsdom";
 
 // Import the actual optimized createElement from mtrl local source
@@ -12,7 +13,7 @@ global.HTMLElement = dom.window.HTMLElement;
 global.Element = dom.window.Element;
 global.SVGElement = dom.window.SVGElement;
 
-describe("createElement Optimization Benchmarks", () => {
+benchmark("createElement Optimization Benchmarks", () => {
   // Mock the original createElement implementation for comparison
   const createElementOriginal = (options: any = {}) => {
     // Simulate the original heavy destructuring

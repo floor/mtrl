@@ -1,4 +1,5 @@
 import { expect, describe, it } from "bun:test";
+import { benchmark } from "../../bench";
 import { JSDOM } from "jsdom";
 
 // Set up DOM environment
@@ -16,7 +17,7 @@ import {
   normalizeClasses,
 } from "../../../../src/core/dom/classes";
 
-describe("DOM Classes Performance Benchmarks", () => {
+benchmark("DOM Classes Performance Benchmarks", () => {
   describe("normalizeClasses Performance", () => {
     it("should handle simple string classes efficiently", () => {
       const iterations = 100000;

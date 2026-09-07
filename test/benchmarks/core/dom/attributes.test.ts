@@ -1,4 +1,5 @@
 import { expect, describe, it } from "bun:test";
+import { benchmark } from "../../bench";
 import { JSDOM } from "jsdom";
 
 // Set up DOM environment
@@ -16,7 +17,7 @@ import {
   getAttribute,
 } from "../../../../src/core/dom/attributes";
 
-describe("DOM Attributes Performance Benchmarks", () => {
+benchmark("DOM Attributes Performance Benchmarks", () => {
   describe("setAttributes Performance", () => {
     it("should set single attributes efficiently", () => {
       const iterations = 75000;

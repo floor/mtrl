@@ -1,4 +1,5 @@
 import { expect, describe, it } from "bun:test";
+import { benchmark } from "../../bench";
 import { JSDOM } from "jsdom";
 
 // Set up DOM environment
@@ -17,7 +18,7 @@ import {
   removeEventHandlers,
 } from "../../../../src/core/dom/create";
 
-describe("DOM Create Performance Benchmarks", () => {
+benchmark("DOM Create Performance Benchmarks", () => {
   describe("createElement Fast Path Performance", () => {
     it("should handle empty options efficiently", () => {
       const iterations = 100000;

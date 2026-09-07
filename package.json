@@ -46,6 +46,7 @@
     "format": "bunx prettier --write .",
     "format:check": "bunx prettier --check .",
     "test": "bun test",
+    "bench": "MTRL_BENCH=1 bun test test/benchmarks/",
     "test:watch": "bun test --watch",
     "test:coverage": "bun test --coverage",
     "test:ui": "bun test --watch --ui",

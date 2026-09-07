@@ -1,4 +1,5 @@
 import { expect, describe, it } from "bun:test";
+import { benchmark } from "../../bench";
 import { JSDOM } from "jsdom";
 
 // Set up DOM environment
@@ -41,7 +42,7 @@ import {
   closest,
 } from "../../../../src/core/dom/utils";
 
-describe("DOM Modules Comprehensive Benchmarks", () => {
+benchmark("DOM Modules Comprehensive Benchmarks", () => {
   describe("Module Integration Performance", () => {
     it("should demonstrate complete component creation workflow", () => {
       const iterations = 5000;
