@@ -1,0 +1,32 @@
+# Runs on every push and pull request. Without it a version tag publishes
+# whatever is on that commit having run nothing: `prepublishOnly` builds, so a
+# broken build fails the release, but the tests were never run in CI at all.
+#
+# Benchmarks are excluded by default (test/benchmarks/bench.ts): they compare
+# elapsed time to fixed thresholds and fail on a busy runner, which would make
+# this red for reasons that are not about the code.
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile
+      - name: Types
+        run: bun run ts:check
+      - name: Tests
+        run: bun test
+      - name: Build
+        run: bun run build
