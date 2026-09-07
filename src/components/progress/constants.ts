@@ -1,153 +1,179 @@
 // src/components/progress/constants.ts
+//
+// Measurements and timings from the Material 3 progress indicator tokens
+// (Compose ProgressIndicatorTokens.kt, LinearProgressIndicatorTokens.kt,
+// CircularProgressIndicatorTokens.kt) and from ProgressIndicator.kt and
+// WavyProgressIndicator.kt for the motion.
 
-/**
- * Progress component variants
- */
 export const PROGRESS_VARIANTS = {
-  /** Standard horizontal progress bar */
   LINEAR: "linear",
-  /** Circular spinner progress indicator */
   CIRCULAR: "circular",
 } as const;
 
-/**
- * Progress component shapes (linear only)
- */
 export const PROGRESS_SHAPES = {
-  /** Standard flat progress */
   FLAT: "flat",
-  /** Wavy animated progress */
   WAVY: "wavy",
 } as const;
 
-/**
- * Progress component events
- */
 export const PROGRESS_EVENTS = {
-  /** Fired when progress value changes */
   CHANGE: "change",
-  /** Fired when progress reaches 100% */
   COMPLETE: "complete",
 } as const;
 
-/**
- * Default configuration values
- */
 export const PROGRESS_DEFAULTS = {
-  /** Default progress variant */
   VARIANT: "linear",
-  /** Initial progress value */
   VALUE: 0,
-  /** Maximum progress value */
   MAX: 100,
-  /** Buffer value for linear progress with buffer */
   BUFFER: 0,
-  /** Default shape for linear indeterminate progress */
   SHAPE: "flat",
-  /** Whether to show percentage label */
   SHOW_LABEL: false,
-  /** Whether progress is indeterminate */
   INDETERMINATE: false,
+  /** Accessible name when none is given */
+  LABEL: "Loading",
 } as const;
 
-/**
- * CSS classes for progress elements
- */
 export const PROGRESS_CLASSES = {
-  /** Container element class */
   CONTAINER: "progress",
-  /** Linear variant class */
   LINEAR: "progress--linear",
-  /** Circular variant class */
   CIRCULAR: "progress--circular",
-  /** Track element (unfilled part) class */
   TRACK: "progress__track",
-  /** Indicator element (filled part) class */
   INDICATOR: "progress__indicator",
-  /** Buffer element class */
   BUFFER: "progress__buffer",
-  /** Label element class */
   LABEL: "progress__label",
-  /** Indeterminate state class */
   INDETERMINATE: "progress--indeterminate",
-  /** Disabled state class */
   DISABLED: "progress--disabled",
-  /** Test state class */
   TEST: "progress--test",
   TRANSITION: "progress--transition",
 } as const;
 
 /**
- * Progress component measurements
+ * Colour roles (ProgressIndicatorTokens): the active indicator and the stop
+ * indicator take primary, the track secondary-container. A circular
+ * indeterminate indicator has no track.
  */
+export const PROGRESS_COLORS = {
+  INDICATOR: "sys-color-primary",
+  TRACK: "sys-color-secondary-container",
+  STOP: "sys-color-primary",
+  /** Not an M3 role: the buffer is this library's own extension */
+  BUFFER: "sys-color-primary-container",
+} as const;
+
 export const PROGRESS_MEASUREMENTS = {
   LINEAR: {
-    MIN_HEIGHT: 4,
+    /** Track and active indicator thickness (LinearProgressIndicatorTokens.Height) */
+    HEIGHT: 4,
+    /** Space between the active indicator and the track (TrackActiveSpace) */
     GAP: 4,
+    /** The dot that marks the end of the track (StopSize) */
     STOP_INDICATOR: 4,
-    HEIGHT: 4, // Added default height
+    /** How far the stop indicator sits from the trailing edge, at most */
+    STOP_TRAILING_SPACE: 6,
+    /** Container height of a wavy linear indicator (WaveHeight) */
+    WAVE_HEIGHT: 10,
+    /** Inset from the edge of the element (m3.material.io: 4dp minimum) */
+    EDGE_INSET: 4,
+    MIN_HEIGHT: 4,
   },
   CIRCULAR: {
-    SIZE: 48,
-    GAP: 8,
+    /** Flat container size (CircularProgressIndicatorTokens.Size) */
+    SIZE: 40,
+    /** Wavy container size (CircularProgressIndicatorTokens.WaveSize) */
+    WAVE_SIZE: 48,
+    /** Space between the active indicator and the track (TrackActiveSpace) */
+    GAP: 4,
+    /** The guidelines' range for a circular indicator */
+    MIN_SIZE: 24,
+    MAX_SIZE: 240,
   },
   COMMON: {
-    // Added common measurements
     STROKE_WIDTH: 4,
   },
 } as const;
 
-/**
- * Thickness presets for progress component
- * These are the standard thickness options following Material Design 3
- */
 export const PROGRESS_THICKNESS = {
-  /** Thin stroke width (4px) - default */
   THIN: 4,
-  /** Thick stroke width (8px) */
   THICK: 8,
 } as const;
 
 /**
- * Wave animation parameters for progress components
+ * Wave geometry (LinearProgressIndicatorTokens, CircularProgressIndicatorTokens).
+ * Wavelengths and amplitudes are in dp at the default 4dp thickness and scale
+ * with the indicator's size.
  */
 export const PROGRESS_WAVE = {
-  /** Linear progress wave parameters */
   LINEAR: {
-    /** Base amplitude of the wave in pixels */
-    AMPLITUDE: 4,
-    /** Speed of wave animation in waves per second (Hz) */
-    SPEED: 1,
-    /** Number of complete waves per 100 pixels */
-    FREQUENCY: 2,
-    /** Number of complete waves per 100 pixels for indeterminate */
-    INDETERMINATE_FREQUENCY: 4,
-    /** Amplitude for indeterminate animation */
-    INDETERMINATE_AMPLITUDE: 2,
-    /** Wave shape power (lower = rounder peaks, higher = sharper) */
-    POWER: 0.8,
-    /** Percentage at which wave amplitude reaches full strength from start */
-    START_TRANSITION_END: 0,
-    /** Percentage at which wave amplitude begins to decrease near end */
-    END_TRANSITION_START: 0.92,
+    /** ActiveWaveWavelength */
+    WAVELENGTH: 40,
+    /** IndeterminateActiveWaveWavelength */
+    INDETERMINATE_WAVELENGTH: 20,
+    /** ActiveWaveAmplitude */
+    AMPLITUDE: 3,
   },
-  /** Circular progress wave parameters */
   CIRCULAR: {
-    /** Amplitude as percentage of radius (7 = 7%) */
-    AMPLITUDE: 6,
-    /** Amplitude as percentage of radius for indeterminate (4 = 4%) */
-    INDETERMINATE_AMPLITUDE: 4,
-    /** Speed of wave rotation in rotations per second (Hz), negative value means clockwise */
-    SPEED: 1,
-    /** Number of complete waves around the circle */
-    FREQUENCY: 10,
-    /** Number of complete waves for indeterminate animation */
-    INDETERMINATE_FREQUENCY: 16,
-    /** Wave shape power (lower = rounder peaks, higher = sharper) */
-    POWER: 0.8,
-    /** Percentage at which wave amplitude reaches full strength from start */
-    START_TRANSITION_END: 0,
-    /** Percentage at which wave amplitude begins to decrease near end */
-    END_TRANSITION_START: 0.92,
+    /** ActiveWaveWavelength */
+    WAVELENGTH: 15,
+    /** ActiveWaveAmplitude */
+    AMPLITUDE: 1.6,
   },
+  /** The wave travels one wavelength per second (WavyProgressIndicatorDefaults) */
+  SPEED: 1,
+  /**
+   * The wave flattens at both ends of the range
+   * (WavyProgressIndicatorDefaults.indicatorAmplitude)
+   */
+  AMPLITUDE_START: 0.1,
+  AMPLITUDE_END: 0.95,
+  /** How long the amplitude takes to appear or go (MotionTokens.DurationLong2) */
+  AMPLITUDE_DURATION: 500,
+} as const;
+
+/**
+ * Indeterminate motion (ProgressIndicator.kt)
+ */
+export const PROGRESS_MOTION = {
+  LINEAR: {
+    /** LinearAnimationDuration */
+    DURATION: 1750,
+    FIRST_HEAD_DELAY: 0,
+    FIRST_HEAD_DURATION: 1000,
+    FIRST_TAIL_DELAY: 250,
+    FIRST_TAIL_DURATION: 1000,
+    SECOND_HEAD_DELAY: 650,
+    SECOND_HEAD_DURATION: 850,
+    SECOND_TAIL_DELAY: 900,
+    SECOND_TAIL_DURATION: 850,
+  },
+  CIRCULAR: {
+    /** CircularAnimationProgressDuration */
+    DURATION: 6000,
+    /** CircularAnimationAdditionalRotationDuration */
+    ROTATION_DURATION: 300,
+    /** CircularAnimationAdditionalRotationDelay */
+    ROTATION_DELAY: 1500,
+    /** CircularGlobalRotationDegreesTarget */
+    GLOBAL_ROTATION: 1080,
+    /** CircularAdditionalRotationDegreesTarget */
+    ADDITIONAL_ROTATION: 360,
+    /** CircularIndeterminateMinProgress */
+    MIN_PROGRESS: 0.1,
+    /** CircularIndeterminateMaxProgress */
+    MAX_PROGRESS: 0.87,
+  },
+  /** How long a value change takes to animate (MotionTokens.DurationLong2) */
+  VALUE_DURATION: 500,
+} as const;
+
+/**
+ * Easing curves (MotionTokens), as cubic Bézier control points
+ */
+export const PROGRESS_EASING = {
+  /** EasingEmphasizedAccelerateCubicBezier */
+  EMPHASIZED_ACCELERATE: [0.3, 0.0, 0.8, 0.15],
+  /** EasingEmphasizedDecelerateCubicBezier */
+  EMPHASIZED_DECELERATE: [0.05, 0.7, 0.1, 1.0],
+  /** EasingStandardCubicBezier */
+  STANDARD: [0.2, 0.0, 0.0, 1.0],
+  /** EasingLinearCubicBezier */
+  LINEAR: [0.0, 0.0, 1.0, 1.0],
 } as const;

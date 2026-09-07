@@ -48,18 +48,15 @@ const createProgress = (config: ProgressConfig = {}): ProgressComponent => {
       withVariant(baseConfig), // Add variant classes
       withDisabled(baseConfig), // Add disabled state
       withState(baseConfig), // Add state management first
+      // The lifecycle goes before the canvas so that destroying the component
+      // takes the element off the page as well as stopping the animation
+      withLifecycle(),
       withCanvas(baseConfig), // Add canvas rendering after state
       (comp) => {
         // Add API after both state and canvas
         return withAPI(getApiConfig(comp))(comp);
-      },
-      withLifecycle()
+      }
     )(baseConfig);
-
-    // Initialize the component lifecycle if it has an init method
-    if (component.lifecycle?.init) {
-      component.lifecycle.init();
-    }
 
     return component;
   } catch (error) {

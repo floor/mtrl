@@ -1,101 +1,94 @@
-// src/components/progress/_progress.scss - Canvas-based progress styles (no SVG dependency)
+// src/styles/components/_progress.scss
+//
+// Progress indicator. The indicator itself is drawn on a canvas, which reads
+// its colours from the theme, so this stylesheet only lays the element out:
+// the 4dp inset from the container edge that the guidelines ask for, the
+// optional label, and the hidden and disabled states.
 @use "../../styles/abstract/base" as base;
 @use "../../styles/abstract/variables" as v;
 @use "../../styles/abstract/functions" as f;
 @use "../../styles/abstract/mixins" as m;
 @use "../../styles/abstract/theme" as t;
-@use "sass:math";
 
 $component: "#{base.$prefix}-progress";
 
 .#{$component} {
-  // Base container styles
   position: relative;
   display: block;
-  overflow: hidden;
-  transition: opacity 0.1s ease-in-out;
-  // Common accessibility attributes
-  &[aria-disabled="true"] {
-    opacity: 0.38;
-    pointer-events: none;
+  // The canvas is the only child and defines the height; without this the
+  // line box adds a few pixels under it
+  line-height: 0;
+
+  &[hidden] {
+    display: none;
   }
 
-  .#{$component}[style*="display: none"] {
-    opacity: 0 !important;
-    transition: none !important;
-  }
-
-  // Canvas element - shared by both variants
   &-canvas {
     display: block;
-    width: 100%;
-    height: 100%;
-    max-width: 100%; // Prevent canvas from growing beyond container
-    box-sizing: border-box; // Include borders in width calculation
-    position: relative; // Ensure proper stacking context
-
-    // Smooth transitions for canvas transforms (used in animations)
-    transition: transform 0.3s ease;
+    max-width: 100%;
   }
 
-  // Linear progress variant
+  // ---------------------------------------------------------------------------
+  // Linear: spans its container, inset 4dp from each edge
+  // ---------------------------------------------------------------------------
   &--linear {
     width: 100%;
-    margin: 0 4px;
-    // Allow overflow for label visibility
-    overflow: visible;
-    min-height: 20px; // Ensure enough height for label
-    padding-bottom: 20px; // Space for label below
-
-    // When label is present, ensure proper spacing
-    &:has(.#{$component}__label) {
-      margin-bottom: 8px;
-    }
+    padding: 0 #{4px};
+    box-sizing: border-box;
   }
 
-  // Circular progress variant
+  // ---------------------------------------------------------------------------
+  // Circular: sized by the canvas
+  // ---------------------------------------------------------------------------
   &--circular {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border-radius: 50%;
+    vertical-align: middle;
   }
 
-  // Label element (created dynamically when showLabel is used)
+  // ---------------------------------------------------------------------------
+  // Label, an extension of this library rather than an M3 element
+  // ---------------------------------------------------------------------------
   &__label {
+    @include m.typography("label-medium");
     position: absolute;
-    font-size: 12px;
+    line-height: normal;
     color: t.color("on-surface-variant");
     white-space: nowrap;
-    transition: opacity 0.3s ease;
-    z-index: 1; // Ensure label is above canvas
 
-    // Position differently based on variant
     .#{$component}--linear & {
-      position: absolute;
-      right: 0;
-      top: initial;
-      // Remove transform and background for below positioning
-      font-size: 11px;
-      color: t.color("on-surface-variant");
+      inset-inline-end: 0;
+      top: 100%;
+      margin-top: 4px;
     }
 
     .#{$component}--circular & {
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      font-weight: 500;
     }
   }
 
-  // Disabled state
-  &--disabled {
+  // A linear indicator with a label leaves room for it underneath
+  &--linear:has(.#{$component}__label) {
+    margin-bottom: 20px;
+  }
+
+  // ---------------------------------------------------------------------------
+  // States
+  // ---------------------------------------------------------------------------
+  &--disabled,
+  &[aria-disabled="true"] {
     opacity: 0.38;
     pointer-events: none;
+  }
 
-    // Disable animations when disabled
-    .#{$component}-canvas {
-      animation: none !important;
-    }
+  &--transition {
+    transition: opacity v.motion("duration-short4") v.motion("easing-standard");
+  }
+
+  @include m.print {
+    display: none;
   }
 }
