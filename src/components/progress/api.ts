@@ -37,8 +37,8 @@ interface CanvasComponent {
   hide?: () => void;
   show?: () => void;
   isVisible?: () => boolean;
-  startIndeterminateAnimation?: () => void;
-  stopIndeterminateAnimation?: () => void;
+  setIndeterminate?: (indeterminate: boolean) => void;
+  resize?: () => void;
 }
 
 /**
@@ -121,33 +121,20 @@ export const withAPI =
       }
     };
 
-    // Handle indeterminate state by toggling CSS classes and animations
+    // Handle indeterminate state: the class and the aria value here, the
+    // animation in the canvas feature
     const handleIndeterminateState = (indeterminate: boolean): void => {
       if (indeterminate) {
         addClass(element, PROGRESS_CLASSES.INDETERMINATE);
         element.removeAttribute("aria-valuenow");
-
-        // Start indeterminate animation for linear progress (if not wavy)
-        if (!isCircular) {
-          const currentShape =
-            options.shape?.getShape() || PROGRESS_SHAPES.FLAT;
-          if (currentShape !== "wavy" && comp.startIndeterminateAnimation) {
-            comp.startIndeterminateAnimation();
-          }
-        }
       } else {
         removeClass(element, PROGRESS_CLASSES.INDETERMINATE);
-
-        // Stop indeterminate animation (but keep wavy animation if shape is wavy)
-        if (comp.stopIndeterminateAnimation) {
-          comp.stopIndeterminateAnimation();
-        }
+        element.setAttribute(
+          "aria-valuenow",
+          options.value.getValue().toString(),
+        );
       }
-
-      // Always redraw for state change
-      if (typeof comp.draw === "function") {
-        comp.draw();
-      }
+      comp.setIndeterminate?.(indeterminate);
     };
 
     // Initialize indeterminate state if needed
@@ -159,10 +146,14 @@ export const withAPI =
     const api: ProgressComponent = {
       // Element references
       element,
+      canvas: canvas as HTMLCanvasElement,
+      // The indicator is drawn on one canvas; these three named the elements
+      // of the SVG implementation this replaced
       track: canvas as unknown as SVGElement,
       indicator: canvas as unknown as SVGElement,
       buffer: canvas as unknown as SVGElement,
       getClass,
+      resize: () => comp.resize?.(),
 
       // Value management
       getValue() {

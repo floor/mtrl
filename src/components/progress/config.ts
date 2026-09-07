@@ -5,6 +5,7 @@ import {
   createElementConfig,
 } from "../../core/config/component";
 import { ProgressConfig, ProgressThickness, ProgressShape } from "./types";
+import { getCircularSize } from "./features/canvas";
 import {
   PROGRESS_CLASSES,
   PROGRESS_VARIANTS,
@@ -24,6 +25,8 @@ export const defaultConfig: ProgressConfig = {
   showLabel: PROGRESS_DEFAULTS.SHOW_LABEL,
   thickness: "thin",
   shape: PROGRESS_DEFAULTS.SHAPE,
+  showStopIndicator: true,
+  ariaLabel: PROGRESS_DEFAULTS.LABEL,
 };
 
 /**
@@ -55,9 +58,11 @@ export const getElementConfig = (config: ProgressConfig) => {
   const isIndeterminate = config.indeterminate === true;
   const isCircular = config.variant === PROGRESS_VARIANTS.CIRCULAR;
 
-  // Create the attributes object
+  // Create the attributes object. The label says what is loading, as the M3
+  // accessibility guidance asks.
   const attributes: Record<string, any> = {
     role: "progressbar",
+    "aria-label": config.ariaLabel || PROGRESS_DEFAULTS.LABEL,
     "aria-valuemin": "0",
     "aria-valuemax": (config.max || 100).toString(),
   };

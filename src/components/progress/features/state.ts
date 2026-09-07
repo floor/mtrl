@@ -100,56 +100,9 @@ export const withState =
       showLabel: config.showLabel,
     };
 
-    // Store original lifecycle hooks if they exist
-    const originalInit = component.lifecycle?.init;
-    const originalDestroy = component.lifecycle?.destroy;
-
-    // Add state to component
+    // The canvas feature draws itself as soon as it is composed, so there is
+    // nothing to initialise here: the state is the state.
     component.state = state;
-
-    // Add lifecycle hooks
-    component.lifecycle = {
-      init: () => {
-        // Schedule API initialization for next frame
-        // This ensures all features and API methods are properly attached
-        requestAnimationFrame(() => {
-          try {
-            // Initialize API state based on configuration
-            if (state.indeterminate) {
-              component.setIndeterminate?.(true);
-            } else {
-              component.setValue?.(state.value);
-              if (config.buffer !== undefined) {
-                component.setBuffer?.(state.buffer);
-              }
-            }
-
-            // Set initial shape if configured (and not default)
-            if (state.shape !== PROGRESS_SHAPES.FLAT && component.setShape) {
-              component.setShape(state.shape);
-            }
-
-            // Initialize thickness
-            if (state.thickness) {
-              // If API is available, use it to set thickness
-              if (component.setThickness) {
-                component.setThickness(state.thickness);
-              } else {
-                // Otherwise, just store it in state and let canvas handle it
-                component.state.thickness = state.thickness;
-              }
-            }
-          } catch (error) {
-            console.error("Error initializing progress state:", error);
-          }
-        });
-
-        if (originalInit) originalInit();
-      },
-      destroy: () => {
-        if (originalDestroy) originalDestroy();
-      },
-    };
 
     return {
       ...component,

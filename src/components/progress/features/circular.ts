@@ -1,301 +1,144 @@
-/**
- * Circular progress drawing functionality
- */
+// src/components/progress/features/circular.ts
+//
+// The circular indicator, after Compose ProgressIndicator.kt and
+// WavyProgressIndicator.kt: an arc from 12 o'clock clockwise, a track around
+// the rest with a gap at both ends of the arc, and, when indeterminate, an
+// arc that grows and shrinks as it turns. A circular indeterminate indicator
+// has no track (ProgressIndicatorDefaults.circularIndeterminateTrackColor is
+// transparent).
 
-import { ProgressConfig, ProgressShape } from "../types";
+import { CanvasContext } from "./canvas";
+import { ProgressColors } from "./colors";
+import { circularIndeterminateFrame } from "./motion";
 import { PROGRESS_MEASUREMENTS, PROGRESS_WAVE } from "../constants";
-import { getThemeColor } from "../../../core/utils";
-import { getStrokeWidth, getWaveAmplitude, CanvasContext } from "./canvas";
+
+/** What a frame of the circular indicator needs */
+export interface CircularFrame {
+  /** Progress from 0 to 1; ignored when indeterminate */
+  progress: number;
+  indeterminate: boolean;
+  /** Arc thickness in pixels */
+  strokeWidth: number;
+  /** Milliseconds since the animation started */
+  time: number;
+  /** Wave height in pixels; 0 draws a flat arc */
+  waveAmplitude: number;
+  colors: ProgressColors;
+}
+
+const TWO_PI = Math.PI * 2;
+/** 12 o'clock, where a circular indicator starts */
+const START_ANGLE = -Math.PI / 2;
 
 /**
- * Draws a wavy arc by modulating the radius with a smooth wave pattern
- * Uses a modified sine wave to create rounded peaks
+ * An arc, flat or waved. The wave runs along the arc at one wavelength per
+ * second, displacing it towards and away from the centre.
  */
-const drawWavyArc = (
+const drawArc = (
   ctx: CanvasRenderingContext2D,
   centerX: number,
   centerY: number,
-  baseRadius: number,
-  startAngle: number,
-  endAngle: number,
-  waveAmplitude: number,
-  waveFrequency: number,
-  animationTime: number
+  radius: number,
+  from: number,
+  sweep: number,
+  color: string,
+  strokeWidth: number,
+  wave?: { amplitude: number; wavelength: number; phase: number }
 ): void => {
-  const steps = Math.max(100, Math.abs(endAngle - startAngle) * 50); // More steps for smoother curves
-  const angleStep = (endAngle - startAngle) / steps;
-
-  // Convert rotations per second to radians per millisecond
-  const waveSpeed = (PROGRESS_WAVE.CIRCULAR.SPEED * 2 * Math.PI) / 1000;
-
+  if (sweep <= 0 || radius <= 0) return;
+  ctx.strokeStyle = color;
+  ctx.lineWidth = strokeWidth;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
   ctx.beginPath();
 
-  for (let i = 0; i <= steps; i++) {
-    const angle = startAngle + angleStep * i;
-
-    // Generate base sine wave
-    const phase = angle * waveFrequency + animationTime * waveSpeed;
-    const sineWave = Math.sin(phase);
-
-    // Apply smoothing to create rounder peaks (same as linear)
-    const smoothedWave =
-      Math.sign(sineWave) *
-      Math.pow(Math.abs(sineWave), PROGRESS_WAVE.CIRCULAR.POWER);
-
-    // Apply wave to radius
-    const radiusModulation = smoothedWave * waveAmplitude;
-    const currentRadius = baseRadius + radiusModulation;
-
-    const x = centerX + currentRadius * Math.cos(angle);
-    const y = centerY + currentRadius * Math.sin(angle);
-
-    if (i === 0) {
-      ctx.moveTo(x, y);
-    } else {
-      ctx.lineTo(x, y);
-    }
+  if (!wave || wave.amplitude <= 0) {
+    ctx.arc(centerX, centerY, radius, from, from + sweep);
+    ctx.stroke();
+    return;
   }
 
+  // One point every few pixels along the arc, so the wave stays smooth
+  const arcLength = sweep * radius;
+  const steps = Math.max(8, Math.ceil(arcLength / Math.max(1, wave.wavelength / 24)));
+  for (let i = 0; i <= steps; i++) {
+    const t = i / steps;
+    const angle = from + sweep * t;
+    const along = t * arcLength;
+    const r =
+      radius + wave.amplitude * Math.sin((TWO_PI * (along - wave.phase)) / wave.wavelength);
+    const x = centerX + Math.cos(angle) * r;
+    const y = centerY + Math.sin(angle) * r;
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
   ctx.stroke();
 };
 
 /**
- * Draws circular progress on canvas
+ * Draws one frame of the circular indicator.
  */
 export const drawCircularProgress = (
   context: CanvasContext,
-  config: ProgressConfig,
-  value: number,
-  max: number,
-  isIndeterminate: boolean,
-  animationTime: number = 0,
-  currentShape: ProgressShape = "flat"
+  frame: CircularFrame
 ): void => {
   const { ctx, width, height } = context;
-  const strokeWidth = getStrokeWidth(config.thickness);
-  const isWavy = currentShape === "wavy";
+  const { strokeWidth, colors, indeterminate, waveAmplitude } = frame;
+  if (width <= 0 || height <= 0) return;
 
-  // Calculate size and radius
-  const componentSize = Math.min(width, height);
-
-  const amplitudePercent = isIndeterminate
-    ? PROGRESS_WAVE.CIRCULAR.INDETERMINATE_AMPLITUDE
-    : PROGRESS_WAVE.CIRCULAR.AMPLITUDE;
-
-  // Calculate wave amplitude proportional to the radius
-  // This ensures consistent visual appearance across all sizes
-  const baseRadius = componentSize / 2 - strokeWidth / 2;
-
-  // Apply the percentage to get base amplitude (divide by 100 to convert to decimal)
-  const baseAmplitude = baseRadius * (amplitudePercent / 100);
-
-  // Apply subtle stroke width scaling
-  const waveAmplitude = isWavy
-    ? getWaveAmplitude(strokeWidth, baseAmplitude)
-    : 0;
-
-  const radius = baseRadius - waveAmplitude;
+  const size = Math.min(width, height);
   const centerX = width / 2;
   const centerY = height / 2;
+  const radius = size / 2 - strokeWidth / 2 - waveAmplitude;
+  if (radius <= 0) return;
 
-  // Clear canvas
   ctx.clearRect(0, 0, width, height);
 
-  // Calculate gap angle
-  const topGapPx = PROGRESS_MEASUREMENTS.CIRCULAR.GAP + 2 * strokeWidth;
-  const topGapAngle = topGapPx / radius; // Gap at 12 o'clock
-  const startAngle = -Math.PI / 2; // 12 o'clock
-  const maxAngle = 2 * Math.PI - topGapAngle;
+  // The wavelength is a fixed 15dp at the default 40dp size and grows with it,
+  // so the waveform keeps its proportions (M3: "the waveform should scale
+  // with the size")
+  const scale = size / PROGRESS_MEASUREMENTS.CIRCULAR.SIZE;
+  const wavelength = PROGRESS_WAVE.CIRCULAR.WAVELENGTH * scale;
+  const wave =
+    waveAmplitude > 0
+      ? {
+          amplitude: waveAmplitude,
+          wavelength,
+          phase: ((frame.time / 1000) * PROGRESS_WAVE.SPEED * wavelength) % wavelength,
+        }
+      : undefined;
 
-  // Set line properties
-  ctx.lineWidth = strokeWidth;
-  ctx.lineCap = "round";
-  ctx.lineJoin = "round";
+  // Round caps add half a stroke at each end of the arc, so the gap clears it
+  const gapPx = PROGRESS_MEASUREMENTS.CIRCULAR.GAP + strokeWidth;
+  const gapSweep = size > 0 ? (gapPx / (Math.PI * size)) * TWO_PI : 0;
 
-  // Wave frequency - use constant frequency for all sizes
-  const waveFrequency = isIndeterminate
-    ? PROGRESS_WAVE.CIRCULAR.INDETERMINATE_FREQUENCY
-    : PROGRESS_WAVE.CIRCULAR.FREQUENCY;
-
-  if (isIndeterminate) {
-    // Material Design 3 indeterminate animation specs
-    const arcDuration = 1333; // milliseconds
-    const arcTime = (animationTime % arcDuration) / arcDuration;
-
-    // Helper functions for indeterminate animation
-    const getArcLength = (time: number): number => {
-      const expandFraction = time <= 0.5 ? time * 2 : 2 - time * 2;
-      const eased =
-        expandFraction < 0.5
-          ? 2 * expandFraction * expandFraction
-          : 1 - Math.pow(-2 * expandFraction + 2, 2) / 2;
-      return 0.028 + (0.75 - 0.028) * eased;
-    };
-
-    const getRotation = (): number => {
-      // Continuous rotation with accumulated travel from contraction
-      const baseRotation = (animationTime / 1568) * 2 * Math.PI;
-      const cyclesCompleted = Math.floor(animationTime / arcDuration);
-      const cycleProgress = (animationTime % arcDuration) / arcDuration;
-
-      let currentCycleTravel = 0;
-      if (cycleProgress > 0.5) {
-        const contractionProgress = (cycleProgress - 0.5) * 2;
-        const eased =
-          contractionProgress < 0.5
-            ? 2 * contractionProgress * contractionProgress
-            : 1 - Math.pow(-2 * contractionProgress + 2, 2) / 2;
-        currentCycleTravel = 0.722 * eased;
-      }
-
-      return (
-        baseRotation +
-        (cyclesCompleted * 0.722 + currentCycleTravel) * 2 * Math.PI
-      );
-    };
-
-    // Calculate current arc parameters
-    const arcLength = getArcLength(arcTime) * 2 * Math.PI;
-    const rotation = getRotation();
-
-    // Calculate arc positions for track drawing
-    const arcStart = startAngle + rotation;
-    const arcEnd = arcStart + arcLength;
-
-    // Draw the track in the remaining portion (gap between arc end and start)
-    // Track is never wavy
-    ctx.strokeStyle = getThemeColor("sys-color-primary-rgb", {
-      alpha: 0.12,
-      fallback: "rgba(103, 80, 164, 0.12)",
-    });
-
-    // Draw the track from where the arc ends to where it starts
-    // This creates the visual gap effect
-    ctx.beginPath();
-    // Add a small gap for visual separation (similar to determinate progress)
-    const trackGapAngle = topGapAngle / 2;
-    ctx.arc(
-      centerX,
-      centerY,
-      radius,
-      arcEnd + trackGapAngle,
-      arcStart - trackGapAngle + 2 * Math.PI
-    );
-    ctx.stroke();
-
-    // Draw the indeterminate arc
-    ctx.strokeStyle = getThemeColor("sys-color-primary", {
-      fallback: "#6750A4",
-    });
-
-    if (isWavy) {
-      drawWavyArc(
-        ctx,
-        centerX,
-        centerY,
-        radius,
-        arcStart,
-        arcEnd,
-        waveAmplitude,
-        waveFrequency,
-        animationTime
-      );
-    } else {
-      ctx.beginPath();
-      ctx.arc(centerX, centerY, radius, arcStart, arcEnd);
-      ctx.stroke();
-    }
-
+  if (indeterminate) {
+    const { rotation, sweep } = circularIndeterminateFrame(frame.time);
+    const start = (rotation * Math.PI) / 180;
+    drawArc(ctx, centerX, centerY, radius, start, sweep * TWO_PI, colors.indicator, strokeWidth, wave);
     return;
   }
 
-  // Rest of the determinate drawing code
-  const percentage = value / max;
-  const minArcPercentage = 0.001; // 0.1% minimum arc to show progress is ready
-  const actualPercentage = Math.max(percentage, minArcPercentage);
+  const progress = Math.min(1, Math.max(0, frame.progress));
+  const sweep = progress * TWO_PI;
+  const gap = Math.min(sweep, gapSweep);
 
-  // Calculate effective max angle for gap transition
-  const gapTransitionStart = 0.95; // Start closing gap at 95%
-  let effectiveMaxAngle = maxAngle;
-
-  if (percentage >= gapTransitionStart) {
-    // Smoothly transition from gap to no gap between 95% and 100%
-    const transitionProgress =
-      (percentage - gapTransitionStart) / (1 - gapTransitionStart);
-    const easedProgress = transitionProgress * transitionProgress; // Quadratic easing
-    effectiveMaxAngle = maxAngle + topGapAngle * easedProgress;
-  }
-
-  // Draw track first (always present except at 99%) - track is never wavy
-  if (percentage < 0.99) {
-    // Track always starts after progress with a consistent gap
-    const progressEnd = startAngle + effectiveMaxAngle * actualPercentage;
-    const trackStart = progressEnd + topGapAngle / 2;
-
-    // Track end always stays at the same position (maintaining top gap)
-    const trackEnd = startAngle + maxAngle + topGapAngle / 2;
-
-    // Only draw if track is visible (not too small)
-    if (trackStart < trackEnd) {
-      ctx.strokeStyle = getThemeColor("sys-color-primary-rgb", {
-        alpha: 0.12,
-        fallback: "rgba(103, 80, 164, 0.12)",
-      });
-      ctx.beginPath();
-      ctx.arc(centerX, centerY, radius, trackStart, trackEnd);
-      ctx.stroke();
-    }
-  }
-
-  // Draw progress indicator
-  ctx.strokeStyle = getThemeColor("sys-color-primary", { fallback: "#6750A4" });
-
-  // Calculate wave amplitude with transitions at start and end
-  let adjustedWaveAmplitude = waveAmplitude;
-  if (isWavy) {
-    const startTransitionEnd = PROGRESS_WAVE.CIRCULAR.START_TRANSITION_END;
-    const endTransitionStart = PROGRESS_WAVE.CIRCULAR.END_TRANSITION_START;
-
-    // No amplitude at zero if there's a start transition
-    if (percentage === 0 && startTransitionEnd > 0) {
-      adjustedWaveAmplitude = 0;
-    } else if (percentage > 0 && percentage <= startTransitionEnd) {
-      // Apply amplitude transition at start (use percentage, not actualPercentage)
-      const transitionProgress = percentage / startTransitionEnd;
-      adjustedWaveAmplitude = waveAmplitude * Math.pow(transitionProgress, 2);
-    } else if (percentage >= endTransitionStart) {
-      // Apply amplitude transition at end
-      const transitionProgress =
-        (percentage - endTransitionStart) / (1 - endTransitionStart);
-      const easedProgress = 1 - Math.pow(1 - transitionProgress, 2);
-      adjustedWaveAmplitude = waveAmplitude * (1 - easedProgress);
-    }
-
-    // Ensure wave amplitude is zero at 100% for seamless closure
-    if (percentage >= 1) {
-      adjustedWaveAmplitude = 0;
-    }
-  }
-
-  // Draw progress arc
-  const progressStart = startAngle;
-  const progressEnd = startAngle + effectiveMaxAngle * actualPercentage;
-
-  if (isWavy) {
-    drawWavyArc(
+  // Track around the rest of the circle, clear of both ends of the arc
+  const trackSweep = TWO_PI - sweep - gap * 2;
+  if (trackSweep > 0) {
+    drawArc(
       ctx,
       centerX,
       centerY,
       radius,
-      progressStart,
-      progressEnd,
-      adjustedWaveAmplitude,
-      waveFrequency,
-      animationTime
+      START_ANGLE + sweep + gap,
+      trackSweep,
+      colors.track,
+      strokeWidth
     );
-  } else {
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, radius, progressStart, progressEnd);
-    ctx.stroke();
   }
+
+  // The active arc. Nothing shows at 0; at a low value the round caps alone
+  // read as the dot the guidelines ask for.
+  drawArc(ctx, centerX, centerY, radius, START_ANGLE, sweep, colors.indicator, strokeWidth, wave);
 };

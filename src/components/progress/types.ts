@@ -91,6 +91,21 @@ export interface ProgressConfig {
   indeterminate?: boolean;
 
   /**
+   * Whether to mark the end of a linear determinate track with a 4dp dot.
+   * The dot is required unless the track has at least 3:1 contrast with
+   * everything around it (M3 progress indicator accessibility), so it is on
+   * by default.
+   * @default true
+   */
+  showStopIndicator?: boolean;
+
+  /**
+   * Accessible name: what is loading, such as "Loading news article"
+   * @default 'Loading'
+   */
+  ariaLabel?: string;
+
+  /**
    * Custom label formatter function
    */
   labelFormatter?: (value: number, max: number) => string;
@@ -134,6 +149,12 @@ export interface ProgressComponent {
 
   /** The indicator element (filled part) - always an SVG element */
   indicator: SVGElement;
+
+  /** The canvas the indicator is drawn on */
+  canvas?: HTMLCanvasElement;
+
+  /** Re-measures the canvas and redraws; the component does this on resize */
+  resize?: () => void;
 
   /** The buffer element for linear variant (pre-loaded state) - always an SVG element */
   buffer?: SVGElement;

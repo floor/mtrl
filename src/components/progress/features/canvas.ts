@@ -1,21 +1,26 @@
 // src/components/progress/features/canvas.ts
+//
+// The canvas, its size, and the clock. Sizes follow the Material 3 tokens: a
+// linear indicator is as tall as its track, or 10dp at the default thickness
+// when it waves; a circular one is 40dp, or 48dp when it waves, and can be
+// set anywhere from 24dp to 240dp.
 
 import { ProgressConfig, ProgressThickness, ProgressShape } from "../types";
 import {
   PROGRESS_CLASSES,
   PROGRESS_VARIANTS,
+  PROGRESS_SHAPES,
   PROGRESS_MEASUREMENTS,
+  PROGRESS_MOTION,
   PROGRESS_THICKNESS,
   PROGRESS_WAVE,
 } from "../constants";
-import { getThemeColor } from "../../../core/utils";
 import { observeCanvasResize } from "../../../core/canvas/resize";
+import { createColors } from "./colors";
 import { drawCircularProgress } from "./circular";
 import { drawLinearProgress } from "./linear";
+import { waveAmplitudeAt, waveAmplitudeTarget } from "./motion";
 
-/**
- * Canvas dimensions and drawing context
- */
 export interface CanvasContext {
   canvas: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
@@ -24,22 +29,6 @@ export interface CanvasContext {
   pixelRatio: number;
 }
 
-/**
- * Component with canvas capabilities
- */
-interface CanvasComponent {
-  element: HTMLElement;
-  canvas: HTMLCanvasElement;
-  ctx: CanvasRenderingContext2D;
-  getClass: (name: string) => string;
-  draw: () => void;
-  resize: () => void;
-  [key: string]: unknown;
-}
-
-/**
- * Base component interface for withCanvas
- */
 interface BaseComponent {
   element: HTMLElement;
   getClass: (name: string) => string;
@@ -54,683 +43,391 @@ interface BaseComponent {
     indeterminate?: boolean;
     [key: string]: unknown;
   };
-  // Animation properties that will be added
-  animationId?: number | null;
-  wavyAnimationId?: number | null;
-  valueAnimationId?: number | null;
-  animationTime?: number;
-  setIndeterminate?: (indeterminate: boolean) => void;
   [key: string]: unknown;
 }
 
-/**
- * Gets the stroke width for a given thickness preset or custom value
- */
-export const getStrokeWidth = (
-  thickness: ProgressThickness = "thin"
-): number => {
-  if (typeof thickness === "number") {
-    return thickness;
-  }
+export interface CanvasComponent extends BaseComponent {
+  canvas: HTMLCanvasElement;
+  ctx?: CanvasRenderingContext2D;
+  draw: () => void;
+  resize: () => void;
+}
 
-  return thickness === "thick"
-    ? PROGRESS_THICKNESS.THICK
-    : PROGRESS_THICKNESS.THIN;
+/**
+ * Resolves a thickness preset or a number of pixels
+ */
+export const getStrokeWidth = (thickness: ProgressThickness = "thin"): number => {
+  if (typeof thickness === "number") return thickness;
+  return thickness === "thick" ? PROGRESS_THICKNESS.THICK : PROGRESS_THICKNESS.THIN;
 };
 
 /**
- * Calculates wave amplitude based on stroke width
- * Uses thickness 4 as the baseline (where amplitude is perfect)
+ * How tall the wave is, in pixels. The linear wave keeps the token's
+ * relationship to the track (3dp of wave to a 4dp track, which is the 10dp
+ * container the tokens describe), so a thicker track waves proportionally;
+ * the circular wave scales with the indicator's size, as the guidelines ask.
  */
 export const getWaveAmplitude = (
+  isCircular: boolean,
   strokeWidth: number,
-  baseAmplitude: number,
-  maxAmplitude?: number
-): number => {
-  // Use thickness 4 as baseline (perfect amplitude)
-  const baselineThickness = 4;
+  size: number
+): number =>
+  isCircular
+    ? PROGRESS_WAVE.CIRCULAR.AMPLITUDE * (size / PROGRESS_MEASUREMENTS.CIRCULAR.SIZE)
+    : PROGRESS_WAVE.LINEAR.AMPLITUDE * (strokeWidth / PROGRESS_THICKNESS.THIN);
 
-  // Formula with dampening factor for gentler scaling
-  // The 0.3 factor makes the scaling very subtle
-  const scaleFactor =
-    1 +
-    (0.3 * (baselineThickness - strokeWidth)) /
-      (strokeWidth + baselineThickness);
-
-  const amplitude = baseAmplitude * scaleFactor;
-  return maxAmplitude ? Math.min(amplitude, maxAmplitude) : amplitude;
+/** The container size of a circular indicator: 40dp flat, 48dp wavy */
+export const getCircularSize = (config: ProgressConfig): number => {
+  const fallback =
+    config.shape === PROGRESS_SHAPES.WAVY
+      ? PROGRESS_MEASUREMENTS.CIRCULAR.WAVE_SIZE
+      : PROGRESS_MEASUREMENTS.CIRCULAR.SIZE;
+  return Math.max(
+    PROGRESS_MEASUREMENTS.CIRCULAR.MIN_SIZE,
+    Math.min(config.size ?? fallback, PROGRESS_MEASUREMENTS.CIRCULAR.MAX_SIZE)
+  );
 };
 
-/**
- * Updates canvas dimensions based on current thickness
- */
-const updateCanvasDimensions = (
-  canvas: HTMLCanvasElement,
-  context: CanvasContext,
-  isCircular: boolean,
-  config?: ProgressConfig
-): void => {
-  const pixelRatio = window.devicePixelRatio || 1;
-  const strokeWidth = getStrokeWidth(config?.thickness);
-  const { ctx } = context;
-
-  if (isCircular) {
-    const size = Math.max(
-      24,
-      Math.min(config?.size ?? PROGRESS_MEASUREMENTS.CIRCULAR.SIZE, 240)
-    );
-
-    // Calculate wave amplitude using the same logic as in drawCircularProgress
-    let waveAmplitude = 0;
-    if (config?.shape === "wavy") {
-      const baseRadius = size / 2 - strokeWidth / 2;
-      const amplitudePercent = config?.indeterminate
-        ? PROGRESS_WAVE.CIRCULAR.INDETERMINATE_AMPLITUDE
-        : PROGRESS_WAVE.CIRCULAR.AMPLITUDE;
-      const baseAmplitude = baseRadius * (amplitudePercent / 100);
-      waveAmplitude = getWaveAmplitude(strokeWidth, baseAmplitude);
-    }
-
-    const adjustedSize = size + waveAmplitude * 2;
-
-    canvas.style.width = canvas.style.height = `${adjustedSize}px`;
-    canvas.width = canvas.height = Math.round(adjustedSize * pixelRatio);
-    context.width = context.height = adjustedSize;
-  } else {
-    const progressElement = canvas.parentElement;
-    if (!progressElement) return;
-
-    const width = Math.max(
-      progressElement.getBoundingClientRect().width ||
-        progressElement.offsetWidth,
-      200
-    );
-
-    // Calculate extra height needed for waves based on actual amplitude
-    let extraHeight = 0;
-    if (config?.shape === "wavy") {
-      const baseAmplitude = PROGRESS_WAVE.LINEAR.AMPLITUDE;
-      const waveAmplitude = getWaveAmplitude(strokeWidth, baseAmplitude);
-      extraHeight = Math.ceil(waveAmplitude * 2); // Space for wave peaks above and below
-    }
-
-    const height = strokeWidth + extraHeight;
-
-    canvas.style.width = `${width}px`;
-    canvas.style.height = `${height}px`;
-    canvas.width = Math.round(width * pixelRatio);
-    canvas.height = Math.round(height * pixelRatio);
-
-    context.width = width;
-    context.height = height;
-  }
-
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
-  ctx.scale(pixelRatio, pixelRatio);
-};
+/** The height of a linear indicator: the track, plus the wave on both sides */
+export const getLinearHeight = (strokeWidth: number, isWavy: boolean): number =>
+  isWavy ? strokeWidth + 2 * getWaveAmplitude(false, strokeWidth, 0) : strokeWidth;
 
 /**
- * Sets up canvas with proper pixel ratio and dimensions
- */
-const setupCanvas = (
-  canvas: HTMLCanvasElement,
-  isCircular: boolean,
-  config?: ProgressConfig
-): CanvasContext => {
-  const context: CanvasContext = {
-    canvas,
-    ctx: canvas.getContext("2d")!,
-    width: 0,
-    height: 0,
-    pixelRatio: window.devicePixelRatio || 1,
-  };
-
-  updateCanvasDimensions(canvas, context, isCircular, config);
-  return context;
-};
-
-/**
- * Adds canvas functionality to replace complex DOM structure
+ * Adds the canvas, the drawing routine and the animation loop
  */
 export const withCanvas =
   (config: ProgressConfig) =>
   (component: BaseComponent): CanvasComponent => {
-    const variant = config.variant;
-    const isCircular = variant === PROGRESS_VARIANTS.CIRCULAR;
+    const isCircular = config.variant === PROGRESS_VARIANTS.CIRCULAR;
+    const view = component.element.ownerDocument?.defaultView ?? null;
 
-    // Create canvas element
     const canvas = document.createElement("canvas");
-    canvas.className = `${component.getClass(
-      PROGRESS_CLASSES.CONTAINER
-    )}-canvas`;
-    canvas.style.maxWidth = "100%";
-    canvas.style.maxHeight = "100%";
-    canvas.style.boxSizing = "border-box";
-
+    canvas.className = `${component.getClass(PROGRESS_CLASSES.CONTAINER)}-canvas`;
+    canvas.setAttribute("aria-hidden", "true");
     component.element.appendChild(canvas);
 
-    // Setup canvas context
-    let canvasContext: CanvasContext | null = null;
-    let resizeCleanup: (() => void) | null = null;
-    let themeChangeCleanup: (() => void) | null = null;
+    let context: CanvasContext | null = null;
+    let currentThickness: ProgressThickness = config.thickness ?? "thin";
+    let currentShape: ProgressShape = config.shape ?? PROGRESS_SHAPES.FLAT;
+    let currentSize = getCircularSize(config);
 
-    // Current values - managed by API
-    let currentThickness = config.thickness;
-    let currentShape = config.shape;
-    let currentSize = config.size ?? PROGRESS_MEASUREMENTS.CIRCULAR.SIZE;
-
-    // Track animated value for smooth transitions
+    // The value the indicator is drawn at, which follows the state's value
     let animatedValue = config.value ?? 0;
     let targetValue = animatedValue;
+    let valueAnimationId: number | null = null;
     let lastSetValueTime = 0;
 
-    const initializeCanvas = (): boolean => {
-      try {
-        canvasContext = setupCanvas(canvas, isCircular, {
-          ...config,
-          thickness: currentThickness,
-          shape: currentShape,
-          size: currentSize,
-        });
-        component.ctx = canvasContext.ctx;
-        return true;
-      } catch (error) {
-        console.warn("Canvas initialization failed:", error);
-        return false;
-      }
-    };
+    // The wave's height, which fades in and out with the value
+    let amplitudeFrom = 0;
+    let amplitudeTarget = 0;
+    let amplitudeStarted = 0;
 
-    // Try to initialize immediately
-    if (!initializeCanvas()) {
-      requestAnimationFrame(() => {
-        if (!initializeCanvas()) {
-          setTimeout(initializeCanvas, 100);
-        }
-      });
-    }
+    let animationId: number | null = null;
+    let animationTime = 0;
+    let animationStart = 0;
 
-    // Store canvas references and animation state
-    component.canvas = canvas;
-    component.animationTime = 0;
-    component.animationId = null;
-    component.wavyAnimationId = null;
-    component.valueAnimationId = null;
-    component.currentShape = currentShape;
+    const reducedMotion = view?.matchMedia?.("(prefers-reduced-motion: reduce)") ?? null;
+    const isWavy = (): boolean => currentShape === PROGRESS_SHAPES.WAVY;
+    const strokeWidth = (): number => getStrokeWidth(currentThickness);
+    const max = (): number => (component.state?.max as number) ?? config.max ?? 100;
+    const isIndeterminate = (): boolean =>
+      (component.state?.indeterminate as boolean) ?? config.indeterminate ?? false;
 
-    // Animation loop for indeterminate progress
-    const startIndeterminateAnimation = (timeOffset: number = 0): void => {
-      if (!component.state?.indeterminate) return;
+    const colors = createColors(() => draw(animationTime));
 
-      if (component.animationId) {
-        cancelAnimationFrame(component.animationId);
-        component.animationId = null;
-      }
-
-      // Store the animation start time
-      let animationStartTime = 0;
-
-      const animate = (timestamp: number): void => {
-        if (!component.state?.indeterminate) {
-          stopIndeterminateAnimation();
-          return;
-        }
-
-        if (animationStartTime === 0) {
-          animationStartTime = timestamp - timeOffset;
-        }
-
-        const relativeTime = timestamp - animationStartTime;
-        component.animationTime = relativeTime;
-        draw(relativeTime);
-        component.animationId = requestAnimationFrame(animate);
-      };
-
-      component.animationId = requestAnimationFrame(animate);
-    };
-
-    const stopIndeterminateAnimation = (): void => {
-      if (component.animationId) {
-        cancelAnimationFrame(component.animationId);
-        component.animationId = null;
-      }
-    };
-
-    // Animation loop for wavy progress
-    const startWavyAnimation = (timeOffset: number = 0): void => {
-      if (component.wavyAnimationId) {
-        cancelAnimationFrame(component.wavyAnimationId);
-        component.wavyAnimationId = null;
-      }
-
-      // Store the animation start time
-      let animationStartTime = 0;
-
-      const animate = (timestamp: number): void => {
-        if (animationStartTime === 0) {
-          animationStartTime = timestamp - timeOffset;
-        }
-
-        const relativeTime = timestamp - animationStartTime;
-        component.animationTime = relativeTime;
-        draw(relativeTime);
-        component.wavyAnimationId = requestAnimationFrame(animate);
-      };
-
-      component.wavyAnimationId = requestAnimationFrame(animate);
-    };
-
-    const stopWavyAnimation = (): void => {
-      if (component.wavyAnimationId) {
-        cancelAnimationFrame(component.wavyAnimationId);
-        component.wavyAnimationId = null;
-      }
-    };
-
-    // Drawing function with animation support
-    const draw = (animationTime: number = 0): void => {
-      if (!canvasContext) return;
-
-      const state = component.state;
-      const value = state?.value ?? config.value ?? 0;
-      const max = state?.max ?? config.max ?? 100;
-      const buffer = state?.buffer ?? config.buffer ?? 0;
-      const isIndeterminate =
-        state?.indeterminate ?? config.indeterminate ?? false;
-
-      const currentConfig = {
-        ...config,
-        thickness: currentThickness,
-        shape: currentShape,
-        size: currentSize,
-      };
-
-      updateCanvasDimensions(canvas, canvasContext, isCircular, currentConfig);
-
-      const drawValue = isIndeterminate || !state ? value : animatedValue;
+    /** Sizes the canvas to the element and the device's pixel ratio */
+    const measure = (): void => {
+      if (!context) return;
+      const ratio = view?.devicePixelRatio || 1;
+      let width: number;
+      let height: number;
 
       if (isCircular) {
-        drawCircularProgress(
-          canvasContext,
-          currentConfig,
-          drawValue,
-          max,
-          isIndeterminate,
-          animationTime,
-          currentShape
-        );
+        width = height = currentSize;
       } else {
-        drawLinearProgress(
-          canvasContext,
-          currentConfig,
-          drawValue,
-          max,
-          buffer,
-          isIndeterminate,
-          animationTime,
-          true,
-          currentShape
-        );
+        const rect = component.element.getBoundingClientRect?.();
+        width = Math.max(rect?.width || component.element.offsetWidth || 0, 0);
+        height = getLinearHeight(strokeWidth(), isWavy());
       }
+
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+      canvas.width = Math.round(width * ratio);
+      canvas.height = Math.round(height * ratio);
+      context.width = width;
+      context.height = height;
+      context.pixelRatio = ratio;
+      context.ctx.setTransform(1, 0, 0, 1, 0, 0);
+      context.ctx.scale(ratio, ratio);
     };
 
-    // Resize function
-    const resize = (): void => {
-      if (!canvasContext) return;
+    const initialize = (): boolean => {
+      if (typeof canvas.getContext !== "function") return false;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return false;
+      context = { canvas, ctx, width: 0, height: 0, pixelRatio: view?.devicePixelRatio || 1 };
+      measure();
+      component.ctx = ctx;
+      return true;
+    };
 
-      try {
-        const newContext = setupCanvas(canvas, isCircular, {
-          ...config,
-          thickness: currentThickness,
-          shape: currentShape,
-          size: currentSize,
+    /** The wave's height right now, in pixels */
+    const currentAmplitude = (): number => {
+      if (!isWavy()) return 0;
+      const full = getWaveAmplitude(isCircular, strokeWidth(), currentSize);
+      if (isIndeterminate()) return full;
+      const fraction = waveAmplitudeAt(
+        amplitudeFrom,
+        amplitudeTarget,
+        (view?.performance ?? performance).now() - amplitudeStarted
+      );
+      return full * fraction;
+    };
+
+    const draw = (time: number = animationTime): void => {
+      if (!context || context.width <= 0 || context.height <= 0) return;
+      const indeterminate = isIndeterminate();
+      const value = indeterminate ? 0 : animatedValue / max();
+
+      if (isCircular) {
+        drawCircularProgress(context, {
+          progress: value,
+          indeterminate,
+          strokeWidth: strokeWidth(),
+          time,
+          waveAmplitude: currentAmplitude(),
+          colors: colors.get(),
         });
-        component.ctx = newContext.ctx;
-        Object.assign(canvasContext, newContext);
-        draw();
-      } catch (error) {
-        console.warn("Canvas resize failed:", error);
-      }
-    };
-
-    // Setup observers
-    resizeCleanup = observeCanvasResize(component.element, canvas, () => {
-      if (component.element.offsetWidth > 0 || isCircular) {
-        resize();
-      }
-    });
-
-    const cleanup = getThemeColor("sys-color-primary", { onThemeChange: draw });
-    themeChangeCleanup = typeof cleanup === "function" ? cleanup : null;
-
-    // Initial draw and setup animation if needed
-    const initialDraw = (): void => {
-      if (!canvasContext) {
-        requestAnimationFrame(initialDraw);
-        return;
-      }
-
-      draw();
-
-      // Start appropriate animation
-      if (component.state?.indeterminate) {
-        if (currentShape === "wavy" || !isCircular) {
-          startWavyAnimation();
-        } else {
-          startIndeterminateAnimation();
-        }
-      } else if (currentShape === "wavy") {
-        startWavyAnimation();
-      }
-    };
-
-    requestAnimationFrame(initialDraw);
-
-    // Helper to update config and redraw
-    const updateConfigAndDraw = (updates: Partial<ProgressConfig>) => {
-      if (!canvasContext) return;
-
-      const currentConfig = {
-        ...config,
-        thickness: currentThickness,
-        shape: currentShape,
-        size: currentSize,
-        ...updates,
-      };
-
-      updateCanvasDimensions(canvas, canvasContext, isCircular, currentConfig);
-      draw();
-    };
-
-    // Add setThickness method to component
-    component.setThickness = (thickness: ProgressThickness) => {
-      currentThickness = thickness;
-      updateConfigAndDraw({ thickness });
-    };
-
-    // Add setSize and getSize API to returned component
-    component.setSize = (size: number) => {
-      if (!isCircular) return;
-      currentSize = Math.max(24, Math.min(size, 240));
-      updateConfigAndDraw({ size: currentSize });
-    };
-
-    component.getSize = () => (isCircular ? currentSize : undefined);
-
-    // Update currentShape in setShape
-    component.setShape = (shape: ProgressShape) => {
-      // Don't do anything if shape hasn't changed
-      if (currentShape === shape) return;
-
-      currentShape = shape;
-      component.currentShape = currentShape;
-
-      updateConfigAndDraw({ shape });
-
-      // For indeterminate mode, we need to switch animation types
-      // but preserve the current animation time
-      if (component.state?.indeterminate) {
-        const currentAnimationTime = component.animationTime || 0;
-
-        // Stop current animations
-        stopWavyAnimation();
-        stopIndeterminateAnimation();
-
-        // Start the appropriate animation with time offset
-        if (shape === "wavy" || !isCircular) {
-          startWavyAnimation(currentAnimationTime);
-        } else {
-          startIndeterminateAnimation(currentAnimationTime);
-        }
-      } else if (shape === "wavy") {
-        // For determinate wavy, start wavy animation if not already running
-        if (!component.wavyAnimationId) {
-          startWavyAnimation();
-        }
       } else {
-        // For determinate non-wavy, stop wavy animation
-        stopWavyAnimation();
+        const rtl =
+          view?.getComputedStyle?.(component.element)?.direction === "rtl";
+        drawLinearProgress(context, {
+          progress: value,
+          buffer: ((component.state?.buffer as number) ?? config.buffer ?? 0) / max(),
+          indeterminate,
+          strokeWidth: strokeWidth(),
+          time,
+          waveAmplitude: currentAmplitude(),
+          rtl,
+          colors: colors.get(),
+          showStopIndicator: !indeterminate && config.showStopIndicator !== false,
+        });
       }
-
-      // Force a redraw
-      draw(component.animationTime || 0);
     };
 
-    // Update setValue method to handle rapid updates better
-    component.setValue = (value: number, animate: boolean = true) => {
-      targetValue = Math.max(0, Math.min(component.state.max, value));
+    /**
+     * The frame loop. It runs while the indicator is indeterminate or waving,
+     * and not at all under prefers-reduced-motion, where a still frame stands
+     * in for the animation.
+     */
+    const needsAnimation = (): boolean =>
+      !reducedMotion?.matches && (isIndeterminate() || isWavy());
 
-      if (component.state.indeterminate) {
-        component.setIndeterminate(false);
-      }
-
-      // If animation is already running and we want to animate, just update the target
-      if (component.valueAnimationId && animate) {
-        // Update target, existing animation will handle it
+    const startAnimation = (offset = 0): void => {
+      stopAnimation();
+      if (!needsAnimation()) {
+        draw(0);
         return;
       }
+      animationStart = 0;
+      const step = (timestamp: number): void => {
+        if (animationStart === 0) animationStart = timestamp - offset;
+        animationTime = timestamp - animationStart;
+        draw(animationTime);
+        animationId = needsAnimation() ? requestAnimationFrame(step) : null;
+      };
+      animationId = requestAnimationFrame(step);
+    };
 
-      if (component.valueAnimationId) {
-        cancelAnimationFrame(component.valueAnimationId);
-        component.valueAnimationId = null;
+    const stopAnimation = (): void => {
+      if (animationId !== null) {
+        cancelAnimationFrame(animationId);
+        animationId = null;
       }
+    };
 
-      if (!animate) {
+    const stopValueAnimation = (): void => {
+      if (valueAnimationId !== null) {
+        cancelAnimationFrame(valueAnimationId);
+        valueAnimationId = null;
+      }
+    };
+
+    /** Points the wave at the height this value calls for */
+    const retargetAmplitude = (progress: number): void => {
+      const next = waveAmplitudeTarget(progress);
+      if (next === amplitudeTarget) return;
+      amplitudeFrom = waveAmplitudeAt(
+        amplitudeFrom,
+        amplitudeTarget,
+        (view?.performance ?? performance).now() - amplitudeStarted
+      );
+      amplitudeTarget = next;
+      amplitudeStarted = (view?.performance ?? performance).now();
+    };
+
+    const complete = (value: number): void => {
+      component.element.dispatchEvent(
+        new CustomEvent("complete", { detail: { value, max: max() } })
+      );
+    };
+
+    // ---------------------------------------------------------------------
+    // Methods the API delegates to
+    // ---------------------------------------------------------------------
+
+    component.setValue = (value: number, animate = true): void => {
+      targetValue = Math.max(0, Math.min(max(), value));
+      retargetAmplitude(targetValue / max());
+
+      if (valueAnimationId !== null && animate) return; // the running animation picks it up
+      stopValueAnimation();
+
+      if (!animate || reducedMotion?.matches) {
         animatedValue = targetValue;
         draw();
-        // Don't restart wavy animation if it's already running
-        if (
-          currentShape === "wavy" &&
-          !component.state.indeterminate &&
-          !component.wavyAnimationId
-        ) {
-          startWavyAnimation();
-        }
-        // Emit complete event if reached max
-        if (targetValue >= component.state.max) {
-          component.element.dispatchEvent(
-            new CustomEvent("complete", {
-              detail: { value: targetValue, max: component.state.max },
-            })
-          );
-        }
+        if (targetValue >= max()) complete(targetValue);
         return;
       }
 
       const startValue = animatedValue;
-      const startTime = performance.now();
-
-      // Calculate adaptive duration based on update frequency
-      const timeSinceLastCall = startTime - lastSetValueTime;
-      let duration = 300; // Default duration
-
-      if (timeSinceLastCall < 300 && lastSetValueTime > 0) {
-        // If updates are coming faster than our animation, speed it up
-        duration = Math.max(100, timeSinceLastCall * 0.9); // 90% of update interval, min 100ms
-      }
-
+      const startTime = (view?.performance ?? performance).now();
+      // A value that changes faster than the animation would always lag, so
+      // the animation shortens to the interval between updates
+      const sinceLast = startTime - lastSetValueTime;
+      const duration =
+        lastSetValueTime > 0 && sinceLast < PROGRESS_MOTION.VALUE_DURATION
+          ? Math.max(100, sinceLast * 0.9)
+          : PROGRESS_MOTION.VALUE_DURATION;
       lastSetValueTime = startTime;
 
-      const animateValue = (currentTime: number) => {
-        const elapsed = currentTime - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-        const easedProgress =
-          progress < 0.5
-            ? 4 * progress * progress * progress
-            : 1 - Math.pow(-2 * progress + 2, 3) / 2;
-
-        animatedValue = startValue + (targetValue - startValue) * easedProgress;
-
-        // Always use the current animation time if wavy is running
-        if (!component.wavyAnimationId || currentShape !== "wavy") {
-          draw(currentTime);
-        }
-
-        if (progress < 1) {
-          component.valueAnimationId = requestAnimationFrame(animateValue);
+      const step = (now: number): void => {
+        // The value tween is linear (ProgressIndicatorDefaults.ProgressAnimationSpec)
+        const fraction = Math.min((now - startTime) / duration, 1);
+        animatedValue = startValue + (targetValue - startValue) * fraction;
+        if (animationId === null) draw();
+        if (fraction < 1) {
+          valueAnimationId = requestAnimationFrame(step);
         } else {
+          valueAnimationId = null;
           animatedValue = targetValue;
-          component.valueAnimationId = null;
-
-          // Start wavy animation if needed and not already running
-          if (
-            currentShape === "wavy" &&
-            !component.state.indeterminate &&
-            !component.wavyAnimationId
-          ) {
-            startWavyAnimation();
-          }
-
-          // Emit complete event if reached max
-          if (targetValue >= component.state.max) {
-            component.element.dispatchEvent(
-              new CustomEvent("complete", {
-                detail: { value: targetValue, max: component.state.max },
-              })
-            );
-          }
+          if (animationId === null) draw();
+          if (targetValue >= max()) complete(targetValue);
         }
       };
-
-      component.valueAnimationId = requestAnimationFrame(animateValue);
+      valueAnimationId = requestAnimationFrame(step);
     };
 
-    // Add setIndeterminate method to component
-    component.setIndeterminate = (indeterminate: boolean) => {
-      if (!component.state) {
-        console.warn("[Progress] No state available for setIndeterminate");
-        return;
-      }
-
-      component.state.indeterminate = indeterminate;
-
-      if (indeterminate) {
-        // Stop value animation
-        if (component.valueAnimationId) {
-          cancelAnimationFrame(component.valueAnimationId);
-          component.valueAnimationId = null;
-        }
-
-        animatedValue = component.state.value;
-
-        // Start appropriate animation
-        if (currentShape === "wavy" || !isCircular) {
-          startWavyAnimation();
-        } else {
-          startIndeterminateAnimation();
-        }
-      } else {
-        // Stopping indeterminate mode
-        animatedValue = component.state.value;
-
-        // Stop indeterminate animation
-        stopIndeterminateAnimation();
-
-        // For wavy shape, keep or start wavy animation
-        if (currentShape === "wavy") {
-          if (!component.wavyAnimationId) {
-            startWavyAnimation();
-          }
-        } else {
-          stopWavyAnimation();
-        }
-
-        draw();
-      }
+    component.setIndeterminate = (indeterminate: boolean): void => {
+      if (component.state) component.state.indeterminate = indeterminate;
+      stopValueAnimation();
+      animatedValue = (component.state?.value as number) ?? animatedValue;
+      if (!indeterminate) retargetAmplitude(animatedValue / max());
+      startAnimation();
+      if (!needsAnimation()) draw(0);
     };
 
-    // Add hide method to component
-    component.hide = () => {
-      component.element.classList.add(
-        component.getClass(PROGRESS_CLASSES.TRANSITION)
+    component.setThickness = (thickness: ProgressThickness): void => {
+      currentThickness = thickness;
+      measure();
+      draw();
+    };
+
+    component.setShape = (shape: ProgressShape): void => {
+      if (currentShape === shape) return;
+      currentShape = shape;
+      component.currentShape = shape;
+      if (component.state) component.state.shape = shape;
+      if (isCircular && config.size === undefined) currentSize = getCircularSize({ ...config, shape });
+      // A wave that has just appeared starts from nothing
+      if (shape === PROGRESS_SHAPES.WAVY) {
+        amplitudeFrom = 0;
+        amplitudeTarget = 0;
+        amplitudeStarted = (view?.performance ?? performance).now();
+        retargetAmplitude(animatedValue / max());
+      }
+      measure();
+      startAnimation(animationTime);
+      if (!needsAnimation()) draw(0);
+    };
+
+    component.setSize = (size: number): void => {
+      if (!isCircular) return;
+      currentSize = Math.max(
+        PROGRESS_MEASUREMENTS.CIRCULAR.MIN_SIZE,
+        Math.min(size, PROGRESS_MEASUREMENTS.CIRCULAR.MAX_SIZE)
       );
-      component.element.style.opacity = "0";
+      measure();
+      draw();
+    };
 
-      const onTransitionEnd = () => {
-        component.element.style.display = "none";
-        component.element.removeEventListener("transitionend", onTransitionEnd);
-      };
-      component.element.addEventListener("transitionend", onTransitionEnd);
+    component.getSize = (): number | undefined => (isCircular ? currentSize : undefined);
 
-      // Stop all animations
-      [
-        component.animationId,
-        component.wavyAnimationId,
-        component.valueAnimationId,
-      ].forEach((id) => {
-        if (id) cancelAnimationFrame(id as number);
+    component.hide = (): BaseComponent => {
+      component.element.classList.add(component.getClass(PROGRESS_CLASSES.TRANSITION));
+      component.element.setAttribute("hidden", "");
+      stopAnimation();
+      stopValueAnimation();
+      return component;
+    };
+
+    component.show = (): BaseComponent => {
+      component.element.classList.add(component.getClass(PROGRESS_CLASSES.TRANSITION));
+      component.element.removeAttribute("hidden");
+      measure();
+      startAnimation(animationTime);
+      if (!needsAnimation()) draw(0);
+      return component;
+    };
+
+    component.isVisible = (): boolean => !component.element.hasAttribute("hidden");
+
+    const resize = (): void => {
+      measure();
+      draw();
+    };
+
+    // ---------------------------------------------------------------------
+    // Wiring
+    // ---------------------------------------------------------------------
+
+    if (!initialize()) {
+      requestAnimationFrame(() => {
+        if (initialize()) {
+          startAnimation();
+          draw();
+        }
       });
-      component.animationId =
-        component.wavyAnimationId =
-        component.valueAnimationId =
-          null;
-
-      return component;
-    };
-
-    // Add show method to component
-    component.show = () => {
-      component.element.classList.add(
-        component.getClass(PROGRESS_CLASSES.TRANSITION)
-      );
-      component.element.style.display = "";
-      component.element.style.opacity = "0";
-      component.element.offsetHeight; // Force reflow
-      component.element.style.opacity = "1";
-
-      // Restart animations
-      if (component.state?.indeterminate) {
-        if (currentShape === "wavy" || !isCircular) {
-          startWavyAnimation();
-        } else {
-          startIndeterminateAnimation();
-        }
-      } else if (currentShape === "wavy") {
-        startWavyAnimation();
-      }
-
-      return component;
-    };
-
-    // Add isVisible method to component
-    component.isVisible = () =>
-      component.element.style.display !== "none" &&
-      component.element.style.opacity !== "0";
-
-    // Cleanup on destroy
-    if (component.lifecycle) {
-      const originalDestroy = component.lifecycle.destroy || (() => {});
-      component.lifecycle.destroy = () => {
-        if (resizeCleanup) resizeCleanup();
-        if (themeChangeCleanup) themeChangeCleanup();
-
-        // Stop all animations
-        [
-          component.animationId,
-          component.wavyAnimationId,
-          component.valueAnimationId,
-        ].forEach((id) => {
-          if (id) cancelAnimationFrame(id as number);
-        });
-
-        originalDestroy();
-      };
     }
 
-    // Expose animation methods
-    Object.assign(component, {
-      startWavyAnimation,
-      stopWavyAnimation,
-      startIndeterminateAnimation,
-      stopIndeterminateAnimation,
-    });
+    const resizeCleanup = observeCanvasResize(component.element, canvas, resize);
+
+    if (isWavy() && !isIndeterminate()) {
+      amplitudeStarted = (view?.performance ?? performance).now();
+      retargetAmplitude(animatedValue / max());
+    }
+
+    // A first frame now, and the loop if it is called for
+    draw();
+    startAnimation();
+
+    const originalDestroy = component.lifecycle?.destroy;
+    component.lifecycle = {
+      ...(component.lifecycle ?? {}),
+      destroy: () => {
+        resizeCleanup();
+        colors.destroy();
+        stopAnimation();
+        stopValueAnimation();
+        originalDestroy?.();
+      },
+    };
 
     return {
       ...component,
       canvas,
-      get ctx() {
-        return canvasContext?.ctx;
-      },
+      ctx: context?.ctx,
       draw,
       resize,
-    };
+    } as CanvasComponent;
   };
