@@ -1,12 +1,11 @@
 // src/components/snackbar/snackbar.ts
 import { pipe } from '../../core/compose';
 import { createBase, withElement } from '../../core/compose/component';
-import { withActionButton, withDismissTimer } from './features';
+import { withActionButton, withCloseButton, withDismissTimer } from './features';
 import { withPosition } from './position';
 import {
   withEvents,
   withText,
-  withVariant,
   withLifecycle
 } from '../../core/compose/features';
 import { withAPI } from './api';
@@ -39,14 +38,12 @@ const createSnackbar = (config: SnackbarConfig): SnackbarComponent => {
       createBase,
       withEvents(),
       withElement(getElementConfig(baseConfig)),
-      withVariant(baseConfig),
       withPosition(baseConfig),
       withText(getTextConfig(baseConfig)),
       withActionButton(baseConfig),
+      withCloseButton(baseConfig),
       withLifecycle(),
-      // First apply timer
       withDismissTimer(baseConfig),
-      // Then apply API which needs timer
       comp => withAPI(getApiConfig(comp, queue, baseConfig))(comp)
     )(baseConfig);
 
