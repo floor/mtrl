@@ -7,6 +7,7 @@ import {
   SnackbarPosition,
   SnackbarState,
 } from "./types";
+import { SNACKBAR_DEFAULTS } from "./constants";
 
 /**
  * Enhances snackbar component with API methods
@@ -83,9 +84,17 @@ export const withAPI =
           component.timer.stop();
         }
 
-        const handleTransitionEnd = (event: TransitionEvent): void => {
-          if (event.propertyName !== "opacity") return;
-
+        // Taken off the page once it has faded. `transitionend` is the signal,
+        // but it does not always come: no transition is declared under
+        // prefers-reduced-motion, and a page that is not rendering runs no
+        // animations at all. Without a fallback the element would stay in the
+        // document for good, one per message, invisible and in the way.
+        let fallback: ReturnType<typeof setTimeout> | undefined;
+        const remove = (): void => {
+          if (fallback !== undefined) {
+            clearTimeout(fallback);
+            fallback = undefined;
+          }
           component.element.removeEventListener(
             "transitionend",
             handleTransitionEnd
@@ -94,6 +103,10 @@ export const withAPI =
             component.element.remove();
           }
         };
+        function handleTransitionEnd(event: TransitionEvent): void {
+          if (event.propertyName !== "opacity") return;
+          remove();
+        }
 
         component.element.addEventListener(
           "transitionend",
@@ -102,6 +115,7 @@ export const withAPI =
         component.element.classList.remove(
           `${component.getClass?.("snackbar")}--visible`
         );
+        fallback = setTimeout(remove, SNACKBAR_DEFAULTS.ANIMATION_DURATION);
 
         return this;
       },

@@ -3,7 +3,7 @@ export { default } from "./snackbar";
 export { clearSnackbars } from "./snackbar";
 
 // Export types
-export {
+export type {
   SnackbarConfig,
   SnackbarComponent,
   SnackbarQueueBehavior,
