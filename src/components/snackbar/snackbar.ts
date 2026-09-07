@@ -57,4 +57,14 @@ const createSnackbar = (config: SnackbarConfig): SnackbarComponent => {
   }
 };
 
+/**
+ * Dismisses the snackbar on screen and drops the ones still waiting.
+ *
+ * Messages belong to the thing that raised them: a drawer that closes, an
+ * account that signs out. Without this the queue outlives them, so a message
+ * about a list nobody is looking at any more stays on screen, and, because the
+ * queue shows one at a time, the next message waits behind it.
+ */
+export const clearSnackbars = (): void => queue.clear();
+
 export default createSnackbar;

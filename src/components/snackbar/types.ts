@@ -225,6 +225,8 @@ export interface QueuedSnackbar {
   _show: () => void;
   /** Visually dismisses the snackbar without advancing the queue */
   _hide?: () => void;
+  /** The snackbar's own element, so the queue can tell whether it is still on screen */
+  element?: HTMLElement;
   on: (event: string, handler: () => void) => void;
   off: (event: string, handler: () => void) => void;
 }

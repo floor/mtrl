@@ -112,3 +112,45 @@ describe('Snackbar Queue', () => {
     expect(queue.getLength()).toBe(0);
   });
 });
+
+describe('a snackbar the queue can no longer hear from', () => {
+  test('a current whose element left the document does not hold the next one', () => {
+    const queue = createSnackbarQueue(0);
+    const gone = { ...makeFake('gone'), element: { isConnected: false } as HTMLElement };
+    const next = makeFake('next');
+
+    queue.add(gone as QueuedSnackbar);
+    expect(gone.shown).toBe(1);
+
+    // Its auto-dismiss timer belonged to a page that is gone, so it will never
+    // fire; without this the queue would wait on it for the rest of the session.
+    queue.add(next);
+    expect(next.shown).toBe(1);
+  });
+
+  test('a current still on screen keeps its turn', () => {
+    const queue = createSnackbarQueue(0);
+    const onScreen = { ...makeFake('on-screen'), element: { isConnected: true } as HTMLElement };
+    const next = makeFake('next');
+
+    queue.add(onScreen as QueuedSnackbar);
+    queue.add(next);
+    expect(next.shown).toBe(0);
+  });
+
+  test('clear frees the queue even when hiding the active one throws', () => {
+    const queue = createSnackbarQueue(0);
+    const throws = makeFake('throws');
+    throws._hide = () => {
+      throw new Error('its page is gone');
+    };
+    const next = makeFake('next');
+
+    queue.add(throws);
+    queue.clear();
+    expect(queue.getLength()).toBe(0);
+
+    queue.add(next);
+    expect(next.shown).toBe(1);
+  });
+});

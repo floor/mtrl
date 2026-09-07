@@ -42,6 +42,7 @@ export { createSegment } from "./segmented-button/segment";
 export { default as createSheet } from "./sheet";
 export { default as createSlider } from "./slider";
 export { default as createSnackbar } from "./snackbar";
+export { clearSnackbars } from "./snackbar";
 export { default as createSwitch } from "./switch";
 export { default as createTabs } from "./tabs";
 export { createTab } from "./tabs/tab";

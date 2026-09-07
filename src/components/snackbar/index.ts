@@ -1,5 +1,6 @@
 // src/components/snackbar/index.ts
 export { default } from "./snackbar";
+export { clearSnackbars } from "./snackbar";
 
 // Export types
 export {

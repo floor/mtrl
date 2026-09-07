@@ -46,6 +46,24 @@ export const createSnackbarQueue = (
     currentDismiss = null;
   };
 
+  /**
+   * Takes the active snackbar off the queue, then tries to hide it. That order
+   * matters: hiding touches the page the snackbar was shown on, and if that
+   * page is gone (a test file's document, a torn-down island) the call throws.
+   * Releasing first means a throw costs one stale element, not every message
+   * after it: the queue shows one at a time, so a `current` that is never let
+   * go silences the component for the rest of the session.
+   */
+  const evictCurrent = (): void => {
+    const active = current;
+    releaseCurrent();
+    try {
+      active?._hide?.();
+    } catch {
+      /* its page is gone; the queue moves on */
+    }
+  };
+
   const showNext = (): void => {
     clearAdvanceTimer();
     if (current || pending.length === 0) return;
@@ -82,15 +100,20 @@ export const createSnackbarQueue = (
 
       const behavior = options.behavior ?? SNACKBAR_QUEUE_BEHAVIORS.QUEUE;
 
+      // A snackbar dismisses itself on a timer owned by the page it was shown
+      // on. If something took its element out of the document, that timer can
+      // no longer reach it, so it would hold the queue for good. Nothing can
+      // be waiting behind an element that is not on screen: let it go.
+      if (current && current.element && !current.element.isConnected) {
+        releaseCurrent();
+      }
+
       if (behavior === SNACKBAR_QUEUE_BEHAVIORS.REPLACE) {
         // Drop everything still waiting and evict whatever is on screen, then
         // show this one immediately (no inter-snackbar gap).
         pending.length = 0;
         clearAdvanceTimer();
-        if (current) {
-          current._hide?.();
-          releaseCurrent();
-        }
+        evictCurrent();
         pending.push(snackbar);
         showNext();
         return;
@@ -108,10 +131,7 @@ export const createSnackbarQueue = (
     clear(): void {
       pending.length = 0;
       clearAdvanceTimer();
-      if (current) {
-        current._hide?.();
-        releaseCurrent();
-      }
+      evictCurrent();
     },
 
     /**
