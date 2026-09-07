@@ -1,4 +1,13 @@
-// src/components/snackbar/_snackbar.scss
+// src/styles/components/_snackbar.scss
+//
+// Snackbar, after the Material 3 tokens (Compose SnackbarTokens.kt): an
+// inverse-surface container at elevation level 3 with the extra-small corner,
+// 48dp for one line of body-medium and 68dp for two, an inverse-primary text
+// button for the action and an inverse-on-surface icon for the close
+// affordance. Spacing follows Compose Snackbar.kt: 16dp at the start, 8dp
+// between the text and the action, 8dp after the action, none after the
+// close icon, and 14dp above and below the text. The action moves below the
+// text when it is wider than 128dp (Android `maxActionInlineWidth`).
 @use '../../styles/abstract/base' as base;
 @use '../../styles/abstract/variables' as v;
 @use '../../styles/abstract/functions' as f;
@@ -6,205 +15,182 @@
 @use '../../styles/abstract/theme' as t;
 
 $component: '#{base.$prefix}-snackbar';
+$button: '#{base.$prefix}-button';
+$icon-button: '#{base.$prefix}-icon-button';
+
+// Distance from the edges of the window. Neither source makes it a token:
+// the Android snackbar keeps 8dp, the Compose host 12dp.
+$margin: 16px;
 
 .#{$component} {
-  // Base styles following modern minimal design
   @include m.typography('body-medium');
+  box-sizing: border-box;
   position: fixed;
+  bottom: $margin;
+  z-index: f.get-z-index('snackbar');
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  min-width: 280px;
-  max-width: 480px;
-  padding: 14px 16px;
-  gap: 12px;
-  
-  // Updated colors and appearance
-  background-color: rgba(32, 33, 36, 0.9);
-  color: rgb(255, 255, 255);
+  min-width: 320px;
+  max-width: 600px;
+  min-height: 48px;
+  padding: 0 16px;
+  background-color: t.color('inverse-surface');
+  color: t.color('inverse-on-surface');
   border-radius: f.get-shape('extra-small');
-  backdrop-filter: blur(8px);
-  
-  // Animation setup - separated properties for better transitions
-  opacity: 0;
-  transform: translateY(20px);
-  transition: 
-    opacity v.motion('duration-short2') v.motion('easing-standard'),
-    transform v.motion('duration-short2') v.motion('easing-standard');
-  
-  // Using a fixed z-index since 'snackbar' isn't defined in z-index tokens
-  z-index: f.get-z-index('popover');
-  pointer-events: none;
-  will-change: transform, opacity;
-  
-  @include m.elevation(2);
+  @include m.elevation(3);
 
-  // Message text styles
-  &-text {
-    @include m.truncate(1);
-    flex: 1;
-    font-size: 14px;
-    line-height: 20px;
-  }
-  
-  // Action button styles
-  &-action {
-    @include m.typography('label-large');
-    padding: 8px 12px;
-    margin: -8px -10px -8px -4px;
-    // margin-left: 4px;
-    color: rgb(138, 180, 248);
-    background: none;
-    border: none;
-    border-radius: f.get-shape('extra-small');
-    cursor: pointer;
-    font-weight: 500;
-    font-size: 14px;
-    text-transform: capitalize;
-    white-space: nowrap;
-    @include m.motion-transition(background-color);
-    
-    &:hover {
-      background-color: rgba(138, 180, 248, 0.08);
-    }
-    
-    &:focus-visible {
-      outline: 2px solid rgb(138, 180, 248);
-      outline-offset: 0px;
-    }
-    
-    &:active {
-      background-color: rgba(138, 180, 248, 0.12);
-    }
-  }
-  
-  // Positioning variants with corrected transforms
-  &--start {
-    bottom: 24px;
-    left: 24px;
-    transform: translateY(20px);
-    
-    @include m.rtl {
-      left: auto;
-      right: 24px;
-    }
-    
-    @include m.breakpoint-down('sm') {
-      left: 16px;
-      bottom: 16px;
-      
-      @include m.rtl {
-        left: auto;
-        right: 16px;
-      }
-    }
-  }
-  
-  &--center {
-    bottom: 24px;
-    left: 50%;
-    transform: translate(-50%, 20px);
-    
-    @include m.breakpoint-down('sm') {
-      bottom: 16px;
-      width: calc(100% - 32px);
-    }
-  }
-  
-  &--end {
-    bottom: 24px;
-    right: 24px;
-    transform: translateY(20px);
-    
-    @include m.rtl {
-      right: auto;
-      left: 24px;
-    }
-    
-    @include m.breakpoint-down('sm') {
-      right: 16px;
-      bottom: 16px;
-      
-      @include m.rtl {
-        right: auto;
-        left: 16px;
-      }
-    }
-  }
-  
-  // Visible state with corrected transforms
+  // Enter and exit: a fade on the fast effects spring and a scale from 0.8 on
+  // the fast spatial spring (Compose SnackbarHost FadeInFadeOutWithScale)
+  opacity: 0;
+  scale: 0.8;
+  transition:
+    opacity v.motion('spring-fast-effects-duration') v.motion('spring-fast-effects-easing'),
+    scale v.motion('spring-fast-spatial-duration') v.motion('spring-fast-spatial-easing');
+  pointer-events: none;
+
   &--visible {
     opacity: 1;
+    scale: 1;
     pointer-events: auto;
-    
-    &.#{$component}--start,
-    &.#{$component}--end {
-      transform: translateY(0);
-    }
-    
-    &.#{$component}--center {
-      transform: translate(-50%, 0);
-    }
-  }
-  
-  // Multiple line variant
-  &--multiline {
-    padding-top: 14px;
-    padding-bottom: 14px;
-    
-    .#{$component}-text {
-      @include m.truncate(2);
-    }
-  }
-  
-  // Color variants
-  &--primary {
-    background-color: t.alpha('primary', 0.9);
-    
-    .#{$component}-action {
-      color: t.color('on-primary');
-      
-      &:hover {
-        background-color: t.alpha('on-primary', 0.08);
-      }
-      
-      &:active {
-        background-color: t.alpha('on-primary', 0.12);
-      }
-      
-      &:focus-visible {
-        outline-color: t.color('on-primary');
-      }
-    }
-  }
-  
-  // Accessibility
-  @include m.reduced-motion {
-    transition: none;
-    transform: none;
-    
-    &--visible {
-      transform: none;
-      
-      &.#{$component}--center {
-        transform: translateX(-50%);
-      }
-    }
-  }
-  
-  @include m.high-contrast {
-    outline: 2px solid currentColor;
-    background-color: black;
-  }
-  
-  // Mobile optimizations
-  @include m.breakpoint-down('sm') {
-    min-width: auto;
-    max-width: none;
-    margin: 0 16px;
   }
 
-  // Print styles
+  // ---------------------------------------------------------------------------
+  // Position along the bottom edge
+  // ---------------------------------------------------------------------------
+  &--center {
+    left: 50%;
+    translate: -50% 0;
+  }
+
+  &--start {
+    inset-inline-start: $margin;
+  }
+
+  &--end {
+    inset-inline-end: $margin;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Supporting text: up to two lines
+  // ---------------------------------------------------------------------------
+  // Vertical spacing is margin, not padding: the two-line clamp clips at the
+  // padding box, so a third line would show through padding.
+  &-text {
+    @include m.truncate(2);
+    flex: 1 1 auto;
+    min-width: 0;
+    margin: 14px 0;
+    overflow-wrap: anywhere;
+  }
+
+  &--with-action &-text,
+  &--dismissible &-text {
+    padding-inline-end: 8px;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Action: the library's text button in the inverse colours
+  // ---------------------------------------------------------------------------
+  &--with-action {
+    padding-inline-end: 8px;
+  }
+
+  &--dismissible {
+    padding-inline-end: 0;
+  }
+
+  .#{$button}.#{$component}-action {
+    flex: 0 0 auto;
+    color: t.color('inverse-primary');
+
+    &:hover {
+      @include m.state-layer(t.color('inverse-primary'), 'hover');
+    }
+
+    &:focus-visible {
+      @include m.state-layer(t.color('inverse-primary'), 'focus');
+      // The focus ring keeps the button's 3dp and 2dp offset, in the action's
+      // own colour: secondary does not reach 3:1 against inverse-surface
+      // (WCAG 2.4.13 focus appearance).
+      outline-color: t.color('inverse-primary');
+    }
+
+    &:active,
+    &.#{$button}--active {
+      @include m.state-layer(t.color('inverse-primary'), 'pressed');
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Close affordance: a standard icon button in inverse-on-surface
+  // ---------------------------------------------------------------------------
+  .#{$icon-button}.#{$component}-close {
+    flex: 0 0 auto;
+    color: t.color('inverse-on-surface');
+
+    &:hover {
+      color: t.color('inverse-on-surface');
+    }
+
+    &:focus-visible {
+      outline-color: t.color('inverse-on-surface');
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // A long action sits below the text, aligned to the end
+  // (Compose NewLineButtonSnackbar: 4dp under the action row)
+  // ---------------------------------------------------------------------------
+  &--action-below {
+    flex-wrap: wrap;
+    padding-bottom: 4px;
+
+    .#{$component}-text {
+      flex-basis: 100%;
+      padding-inline-end: 16px;
+    }
+
+    .#{$component}-action {
+      margin-inline-start: auto;
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Compact windows: a fixed distance from the leading, trailing and bottom
+  // edges, whatever the position (M3 snackbar guidelines, responsive layout)
+  // ---------------------------------------------------------------------------
+  @include m.breakpoint-down('sm') {
+    min-width: 0;
+    max-width: none;
+    width: calc(100% - #{2 * $margin});
+
+    &--center {
+      left: $margin;
+      translate: none;
+    }
+
+    &--start,
+    &--end {
+      inset-inline: $margin;
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Reduced motion: the fade stays, the scale goes
+  // ---------------------------------------------------------------------------
+  @include m.reduced-motion {
+    scale: none;
+    transition: opacity v.motion('spring-fast-effects-duration') v.motion('spring-fast-effects-easing');
+
+    &--visible {
+      scale: none;
+    }
+  }
+
+  @include m.high-contrast {
+    border: 1px solid CanvasText;
+  }
+
   @include m.print {
     display: none;
   }

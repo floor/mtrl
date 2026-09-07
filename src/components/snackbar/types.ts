@@ -1,31 +1,21 @@
 // src/components/snackbar/types.ts
+import type { ButtonComponent } from '../button/types';
+import type { IconButtonComponent } from '../icon-button/types';
 
 /**
- * Available snackbar variants
- */
-export type SnackbarVariant = 'basic' | 'action';
-
-/**
- * Snackbar visual variants
- */
-export const SNACKBAR_VARIANTS = {
-  BASIC: 'basic',
-  ACTION: 'action' // With action button
-} as const;
-
-/**
- * Available snackbar positions
+ * Where the snackbar sits along the bottom edge
  */
 export type SnackbarPosition = 'center' | 'start' | 'end';
 
 /**
- * Snackbar display positions
+ * Duration presets: 4 s, 10 s, or until dismissed
  */
-export const SNACKBAR_POSITIONS = {
-  CENTER: 'center',
-  START: 'start',
-  END: 'end'
-} as const;
+export type SnackbarDurationPreset = 'short' | 'long' | 'indefinite';
+
+/**
+ * A preset or a number of milliseconds (0 for indefinite)
+ */
+export type SnackbarDuration = SnackbarDurationPreset | number;
 
 /**
  * Available snackbar queue behaviors
@@ -33,32 +23,19 @@ export const SNACKBAR_POSITIONS = {
 export type SnackbarQueueBehavior = 'queue' | 'replace';
 
 /**
- * Snackbar queue behaviors
- */
-export const SNACKBAR_QUEUE_BEHAVIORS = {
-  /** Shown one at a time, in order (default) */
-  QUEUE: 'queue',
-  /** Replace the current snackbar and drop pending ones (last-wins) */
-  REPLACE: 'replace'
-} as const;
-
-/**
  * Snackbar visibility states
  */
 export type SnackbarState = 'visible' | 'hidden';
 
 /**
- * Snackbar state classes
+ * Why a snackbar closed
  */
-export const SNACKBAR_STATES = {
-  VISIBLE: 'visible',
-  HIDDEN: 'hidden'
-} as const;
+export type SnackbarCloseReason = 'timeout' | 'action' | 'close-button' | 'escape' | 'api' | 'queue';
 
 /**
  * Available snackbar event types
  */
-export type SnackbarEventType = 'open' | 'close' | 'action';
+export type SnackbarEventType = 'open' | 'close' | 'action' | 'dismiss';
 
 /**
  * Snackbar event data
@@ -67,15 +44,12 @@ export type SnackbarEventType = 'open' | 'close' | 'action';
 export interface SnackbarEvent {
   /** The snackbar component that triggered the event */
   snackbar: SnackbarComponent;
-  
-  /** Original DOM event if available */
+
+  /** Why the snackbar closed (`close` and `dismiss` events) */
+  reason?: SnackbarCloseReason;
+
+  /** Original DOM event if there was one */
   originalEvent: Event | null;
-  
-  /** Function to prevent default behavior */
-  preventDefault: () => void;
-  
-  /** Whether default behavior was prevented */
-  defaultPrevented: boolean;
 }
 
 /**
@@ -83,20 +57,28 @@ export interface SnackbarEvent {
  * @interface SnackbarConfig
  */
 export interface SnackbarConfig {
-  /** Visual variant of the snackbar */
-  variant?: SnackbarVariant;
-  
-  /** Position of the snackbar on screen */
-  position?: SnackbarPosition;
-  
-  /** Text message to display */
+  /** Text message to display; up to two lines */
   message: string;
-  
-  /** Action button text (for 'action' variant) */
+
+  /** Label of the single text-button action, if any */
   action?: string;
-  
-  /** Duration in milliseconds to show the snackbar (0 for indefinite) */
-  duration?: number;
+
+  /** Adds a close icon button */
+  dismissible?: boolean;
+
+  /** Accessible name of the close icon (default "Dismiss") */
+  closeLabel?: string;
+
+  /**
+   * How long the snackbar stays: `'short'` (4 s), `'long'` (10 s),
+   * `'indefinite'`, or milliseconds (0 for indefinite). Defaults to
+   * `'short'` without an action and `'indefinite'` with one: an actionable
+   * snackbar should not go away on its own.
+   */
+  duration?: SnackbarDuration;
+
+  /** Position of the snackbar along the bottom edge */
+  position?: SnackbarPosition;
 
   /**
    * How this snackbar interacts with the queue when shown.
@@ -109,22 +91,22 @@ export interface SnackbarConfig {
 
   /** Action button callback function */
   onAction?: (event: SnackbarEvent) => void;
-  
+
   /** Callback function when the snackbar opens */
   onOpen?: (event: SnackbarEvent) => void;
-  
+
   /** Callback function when the snackbar closes */
   onClose?: (event: SnackbarEvent) => void;
-  
+
   /** Additional CSS classes */
   class?: string;
-  
+
   /** Component prefix for CSS classes */
   prefix?: string;
-  
+
   /** Component name for CSS classes */
   componentName?: string;
-  
+
   /** Event handlers for snackbar events */
   on?: {
     [key in SnackbarEventType]?: (event: SnackbarEvent) => void;
@@ -138,71 +120,84 @@ export interface SnackbarConfig {
 export interface SnackbarComponent {
   /** The root element of the snackbar */
   element: HTMLElement;
-  
+
   /** Current state of the snackbar */
   state: SnackbarState;
-  
+
   /** The action button element (if present) */
   actionButton?: HTMLElement;
-  
+
+  /** The close icon button element (if present) */
+  closeButton?: HTMLElement;
+
   /** Timer for auto-dismissal */
   timer?: SnackbarTimer;
-  
-  /** Position management functions */
-  position?: {
-    getPosition: () => SnackbarPosition;
-    setPosition: (position: SnackbarPosition) => BaseComponent;
-  };
-  
+
   /** Displays the snackbar */
   show: () => SnackbarComponent;
-  
+
   /** Hides the snackbar */
   hide: () => SnackbarComponent;
-  
+
   /** Sets the message text */
   setMessage: (message: string) => SnackbarComponent;
-  
+
   /** Gets the message text */
   getMessage: () => string;
-  
+
   /** Sets the action button text */
   setAction: (text: string) => SnackbarComponent;
-  
+
   /** Gets the action button text */
   getAction: () => string;
-  
-  /** Sets the display duration */
-  setDuration: (duration: number) => SnackbarComponent;
-  
-  /** Gets the display duration */
+
+  /** Sets the display duration: a preset or milliseconds (0 for indefinite) */
+  setDuration: (duration: SnackbarDuration) => SnackbarComponent;
+
+  /** Gets the display duration in milliseconds (0 for indefinite) */
   getDuration: () => number;
-  
+
   /** Sets the snackbar position */
   setPosition: (position: SnackbarPosition) => SnackbarComponent;
-  
+
   /** Gets the snackbar position */
   getPosition: () => SnackbarPosition;
-  
+
   /** Adds event listener */
   on: (event: SnackbarEventType, handler: (event: SnackbarEvent) => void) => SnackbarComponent;
-  
+
   /** Removes event listener */
   off: (event: SnackbarEventType, handler: (event: SnackbarEvent) => void) => SnackbarComponent;
-  
+
   /** Destroys the snackbar component and cleans up resources */
   destroy: () => void;
 }
 
 /**
- * Basic component with element property
+ * The component as it passes through the enhancers
  */
 export interface BaseComponent {
   element: HTMLElement;
   emit?: (event: string, data?: any) => void;
+  on?: (event: string, handler: (...args: any[]) => void) => any;
+  off?: (event: string, handler: (...args: any[]) => void) => any;
+  getClass?: (name: string) => string;
   lifecycle?: {
     destroy?: () => void;
   };
+  text?: {
+    setText: (text: string) => any;
+    getText: () => string;
+  };
+  position?: {
+    getPosition: () => SnackbarPosition;
+    setPosition: (position: SnackbarPosition) => any;
+  };
+  action?: ButtonComponent;
+  actionButton?: HTMLElement;
+  close?: IconButtonComponent;
+  closeButton?: HTMLElement;
+  timer?: SnackbarTimer;
   [key: string]: any;
 }
 
@@ -210,9 +205,11 @@ export interface BaseComponent {
  * Timer interface for snackbar auto-dismissal
  */
 export interface SnackbarTimer {
+  /** Starts the countdown from the full duration */
   start: () => void;
+  /** Cancels the countdown */
   stop: () => void;
-  /** Sets the auto-dismiss duration in milliseconds */
+  /** Sets the auto-dismiss duration in milliseconds (0 for none) */
   setDuration: (duration: number) => void;
   /** Gets the current auto-dismiss duration in milliseconds */
   getDuration: () => number;
@@ -256,6 +253,6 @@ export interface ApiOptions {
     destroy: () => void;
   };
   queue: SnackbarQueue;
-  /** Queue behavior applied when the snackbar is shown */
-  queueBehavior?: SnackbarQueueBehavior;
+  /** The resolved configuration */
+  config: SnackbarConfig;
 }

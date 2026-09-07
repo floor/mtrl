@@ -10,38 +10,22 @@ interface PositionConfig {
   position?: SnackbarPosition;
 }
 
+const isPosition = (value: unknown): value is SnackbarPosition =>
+  (Object.values(SNACKBAR_POSITIONS) as unknown[]).includes(value);
+
 /**
- * Adds position handling to snackbar
+ * Adds position handling to snackbar. The position is a class; the
+ * stylesheet does the rest, so nothing here touches inline styles.
  * @param {PositionConfig} config - Position configuration
  * @returns {Function} Higher-order function that adds position features
  */
-export const withPosition = (config: PositionConfig) => 
+export const withPosition = (config: PositionConfig) =>
   (component: BaseComponent): BaseComponent => {
-    const position = config.position || SNACKBAR_POSITIONS.CENTER;
     const prefix = config.prefix || 'mtrl';
-    const positionClass = `${prefix}-snackbar--${position}`;
+    let position: SnackbarPosition = isPosition(config.position) ? config.position : SNACKBAR_POSITIONS.CENTER;
 
-    // Add position class
-    component.element.classList.add(positionClass);
-
-    // Method to update position
-    const setPosition = (newPosition: SnackbarPosition): void => {
-      // Remove current position class
-      component.element.classList.remove(positionClass);
-
-      // Add new position class
-      const newPositionClass = `${prefix}-snackbar--${newPosition}`;
-      component.element.classList.add(newPositionClass);
-
-      // Update visible state transform for center position
-      if (component.element.classList.contains(`${prefix}-snackbar--visible`)) {
-        if (newPosition === SNACKBAR_POSITIONS.CENTER) {
-          component.element.style.transform = 'translateX(-50%) scale(1)';
-        } else {
-          component.element.style.transform = 'scale(1)';
-        }
-      }
-    };
+    const className = (value: SnackbarPosition): string => `${prefix}-snackbar--${value}`;
+    component.element.classList.add(className(position));
 
     return {
       ...component,
@@ -50,22 +34,22 @@ export const withPosition = (config: PositionConfig) =>
          * Get current position
          * @returns {string} Current position
          */
-        getPosition: (): SnackbarPosition => position as SnackbarPosition,
+        getPosition: (): SnackbarPosition => position,
 
         /**
-         * Set new position
-         * @param {string} newPosition - New position to set
+         * Set new position; an unknown value falls back to the centre
+         * @param {string} next - New position to set
          * @returns {BaseComponent} Component instance
          */
-        setPosition: (newPosition: SnackbarPosition): BaseComponent => {
-          if (Object.values(SNACKBAR_POSITIONS).includes(newPosition)) {
-            setPosition(newPosition);
-            return component;
-          } else {
-            console.warn(`Invalid position: ${newPosition}. Using default: ${SNACKBAR_POSITIONS.CENTER}`);
-            setPosition(SNACKBAR_POSITIONS.CENTER);
-            return component;
+        setPosition: (next: SnackbarPosition): BaseComponent => {
+          const value = isPosition(next) ? next : SNACKBAR_POSITIONS.CENTER;
+          if (!isPosition(next)) {
+            console.warn(`Invalid position: ${next}. Using default: ${SNACKBAR_POSITIONS.CENTER}`);
           }
+          component.element.classList.remove(className(position));
+          position = value;
+          component.element.classList.add(className(position));
+          return component;
         }
       }
     };
