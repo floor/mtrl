@@ -28,8 +28,10 @@ $component: "#{$prefix}-menu";
     display: flex;
     flex-direction: column;
     opacity: 0;
-    transform-origin: top center; // Default transform origin
-    transform: scaleY(0);
+    transform-origin: top center;
+    // A fade with a slight scale, as menus enter in M3; the vertical squash
+    // this replaced is not one of its patterns
+    transform: scale(0.8);
     pointer-events: none;
 
     // Material Design 3 standard animation curve for menus
@@ -40,7 +42,7 @@ $component: "#{$prefix}-menu";
     // Visible state
     &--visible {
         opacity: 1;
-        transform: scaleY(1);
+        transform: scale(1);
         pointer-events: auto;
     }
 
@@ -71,13 +73,15 @@ $component: "#{$prefix}-menu";
 
     // Menu items
     &-item {
-        @include m.typography("body-large");
+        @include m.typography("label-large");
         @include m.flex-row;
 
         position: relative;
         min-height: 48px;
-        padding: 12px 16px;
-        padding-right: 42px;
+        // 12dp each side (m3.material.io menu specs, "Measurements"), with
+        // room at the end for a trailing mark
+        padding: 12px;
+        padding-inline-end: 40px;
         cursor: pointer;
         user-select: none;
         color: t.color("on-surface");
@@ -130,15 +134,45 @@ $component: "#{$prefix}-menu";
             }
         }
 
-        // Disabled state
+        // Disabled: it can be focused and read, it just cannot be chosen
+        // (m3.material.io menu accessibility, "Interactability")
         &--disabled {
-            pointer-events: none;
+            cursor: default;
             color: t.alpha("on-surface", 0.38);
+
+            &:hover,
+            &:active {
+                &::before {
+                    opacity: 0;
+                }
+            }
         }
 
         // Selected state for select component
+        // Selected: a secondary-container behind it and its own label colour
+        // (MenuTokens.ListItemSelectedContainerColor and
+        // ListItemSelectedLabelTextColor). The check is the second cue the
+        // accessibility guidance asks for on top of colour.
         &--selected {
-            color: t.color("primary");
+            background-color: t.color("secondary-container");
+            color: t.color("on-secondary-container");
+
+            &:hover {
+                @include m.state-layer(t.color("on-secondary-container"), "hover");
+            }
+
+            &:focus {
+                @include m.state-layer(t.color("on-secondary-container"), "focus");
+            }
+
+            &:active {
+                @include m.state-layer(t.color("on-secondary-container"), "pressed");
+            }
+
+            .#{$component}-item-icon,
+            .#{$component}-item-shortcut {
+                color: inherit;
+            }
 
             &::after {
                 content: "";
@@ -165,15 +199,16 @@ $component: "#{$prefix}-menu";
         }
 
         &-icon {
-            margin-right: 12px;
+            margin-inline-end: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
+            color: t.color("on-surface-variant");
 
             svg {
-                width: 20px;
-                height: 20px;
+                width: 24px;
+                height: 24px;
             }
         }
 
@@ -203,11 +238,11 @@ $component: "#{$prefix}-menu";
 
     // Reduced motion preference support
     @include m.reduced-motion {
-        transition: opacity 0.1s linear;
-        transform: none !important;
+        transition: opacity v.motion("duration-short2") linear;
 
+        &,
         &--visible {
-            transform: none !important;
+            transform: none;
         }
     }
 

@@ -367,52 +367,24 @@ const withController = (config: MenuConfig) => (component) => {
             interactionType,
           );
         } else {
-          // Fallback if keyboard module isn't available
-          if (interactionType === "keyboard") {
-            // Find all focusable items
-            const items = Array.from(
-              component.element.querySelectorAll(
-                `.${component.getClass("menu-item")}:not(.${component.getClass(
-                  "menu-item--disabled",
-                )})`,
-              ),
-            ) as HTMLElement[];
+          // Fallback when the keyboard feature is not composed in: focus the
+          // first item, whether the menu was opened with a pointer or a key
+          const items = Array.from(
+            component.element.querySelectorAll(
+              `.${component.getClass("menu-item")}`,
+            ),
+          ) as HTMLElement[];
 
-            if (items.length > 0) {
-              // Make sure ALL items are focusable with tabindex -1
-              items.forEach((item) => {
-                item.tabIndex = -1;
-              });
+          items.forEach((item) => {
+            item.tabIndex = -1;
+          });
 
-              // Only set first item as regularly focusable
-              items[0].tabIndex = 0;
-
-              // Focus the first item
-              items[0].focus();
-            } else {
-              // If no items, focus the menu itself
-              component.element.tabIndex = 0;
-              component.element.focus();
-            }
+          if (items.length > 0) {
+            items[0].tabIndex = 0;
+            items[0].focus();
           } else {
-            // For mouse interaction, make the menu focusable but don't auto-focus
-            component.element.tabIndex = -1;
-
-            // Still make the first item focusable for keyboard navigation after mouse open
-            const items = Array.from(
-              component.element.querySelectorAll(
-                `.${component.getClass("menu-item")}:not(.${component.getClass(
-                  "menu-item--disabled",
-                )})`,
-              ),
-            ) as HTMLElement[];
-
-            if (items.length > 0) {
-              items.forEach((item) => {
-                item.tabIndex = -1;
-              });
-              items[0].tabIndex = 0;
-            }
+            component.element.tabIndex = 0;
+            component.element.focus();
           }
         }
       }, 100);
