@@ -96,9 +96,16 @@ $component: "#{$prefix}-menu";
             @include m.state-layer(t.color("on-surface"), "hover");
         }
 
+        // The focus layer is for a person navigating by key. Focus moves into
+        // the menu however it was opened, so keying this off `:focus` marked
+        // the first item as soon as the menu appeared under the pointer, which
+        // reads as a highlight nobody asked for.
         &:focus {
-            @include m.state-layer(t.color("on-surface"), "focus");
             outline: none;
+        }
+
+        &:focus-visible {
+            @include m.state-layer(t.color("on-surface"), "focus");
         }
 
         &:active {
@@ -161,7 +168,7 @@ $component: "#{$prefix}-menu";
                 @include m.state-layer(t.color("on-secondary-container"), "hover");
             }
 
-            &:focus {
+            &:focus-visible {
                 @include m.state-layer(t.color("on-secondary-container"), "focus");
             }
 
@@ -381,7 +388,7 @@ $component: "#{$prefix}-menu";
                     @include m.state-layer(var(--#{$prefix}-menu-selected-label), "hover");
                 }
 
-                &:focus {
+                &:focus-visible {
                     @include m.state-layer(var(--#{$prefix}-menu-selected-label), "focus");
                 }
 
