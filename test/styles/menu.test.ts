@@ -54,6 +54,17 @@ describe('menu stylesheet', () => {
     expect(value('.mtrl-menu-item--selected:hover::before', 'background-color')).toBe('var(--mtrl-sys-color-on-secondary-container)');
   });
 
+  test('the focus layer is for keyboard navigation only', () => {
+    // Focus moves into the menu however it was opened, so a plain `:focus`
+    // marked the first item the moment the menu appeared under the pointer
+    expect(value('.mtrl-menu-item:focus-visible::before', 'opacity')).toBe('0.1');
+    expect(value('.mtrl-menu-item:focus::before', 'opacity')).toBeUndefined();
+    expect(value('.mtrl-menu-item:focus', 'outline')).toBe('none');
+    // the hover and pressed layers are unaffected
+    expect(value('.mtrl-menu-item:hover::before', 'opacity')).toBe('0.08');
+    expect(value('.mtrl-menu-item:active::before', 'opacity')).toBe('0.1');
+  });
+
   test('a disabled item is dimmed but still reachable', () => {
     expect(value('.mtrl-menu-item--disabled', 'color')).toBe('color-mix(in srgb, var(--mtrl-sys-color-on-surface) 38%, transparent)');
     // it can be focused and read; it just does nothing, so no pointer block
