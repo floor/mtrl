@@ -147,6 +147,29 @@ $gap: 2px;
   }
 
   // ---------------------------------------------------------------------------
+  // The halves stay flat. A standalone filled or tonal button rises to level 1
+  // on hover (ButtonDefaults.buttonElevation), but here that shadow falls
+  // across the 2dp gap and onto the other half, and the pair stops reading as
+  // one control: whichever half the pointer is over appears to float above its
+  // neighbour. The split button's own states are state layers and the inner
+  // corner morph (m3.material.io split button specs, "States"), which is what
+  // is left. A connected button group flattens its segments for the same
+  // reason. An elevated split button keeps its elevation: that is what the
+  // variant is.
+  // ---------------------------------------------------------------------------
+  &--filled,
+  &--tonal {
+    .#{$button} {
+      &,
+      &:hover,
+      &:focus-visible,
+      &:active {
+        box-shadow: none;
+      }
+    }
+  }
+
+  // ---------------------------------------------------------------------------
   // Open: the inner corner rounds off and the chevron turns over
   // ---------------------------------------------------------------------------
   &--expanded {

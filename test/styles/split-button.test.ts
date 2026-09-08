@@ -120,6 +120,13 @@ describe('split button stylesheet', () => {
     expect(value(selector, 'position')).toBe('absolute');
   });
 
+  test('filled and tonal halves stay flat, so neither casts a shadow on the other', () => {
+    const selector = '.mtrl-split-button--filled .mtrl-button, .mtrl-split-button--filled .mtrl-button:hover, .mtrl-split-button--filled .mtrl-button:focus-visible, .mtrl-split-button--filled .mtrl-button:active, .mtrl-split-button--tonal .mtrl-button, .mtrl-split-button--tonal .mtrl-button:hover, .mtrl-split-button--tonal .mtrl-button:focus-visible, .mtrl-split-button--tonal .mtrl-button:active';
+    expect(value(selector, 'box-shadow')).toBe('none');
+    // an elevated split button keeps its elevation: that is what the variant is
+    expect(css).not.toContain('.mtrl-split-button--elevated');
+  });
+
   test('nothing hard-codes a colour: both halves are the library button', () => {
     expect(css).not.toMatch(/#[0-9a-f]{6}/i);
     expect(css).not.toMatch(/background-color:\s*(?!inherit|transparent)/);
