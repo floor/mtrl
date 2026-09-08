@@ -75,4 +75,48 @@ describe('menu stylesheet', () => {
     expect(css).not.toContain('!important');
     expect(css).toMatch(/prefers-reduced-motion: reduce\)\s*\{[\s\S]{0,300}?transform: none;/);
   });
+
+  describe('the expressive vertical menu', () => {
+    test('a 16dp container on surface-container-low, items 2dp apart', () => {
+      expect(value('.mtrl-menu--vertical', 'border-radius')).toBe('16px');
+      expect(value('.mtrl-menu--vertical', 'padding')).toBe('8px');
+      expect(value('.mtrl-menu--vertical', 'background-color')).toBe('var(--mtrl-menu-container)');
+      expect(value('.mtrl-menu--vertical', '--mtrl-menu-container')).toBe('var(--mtrl-sys-color-surface-container-low)');
+      expect(value('.mtrl-menu--vertical .mtrl-menu-list', 'gap')).toBe('2px');
+    });
+
+    test('vibrant swaps the mapping to tertiary', () => {
+      expect(value('.mtrl-menu--vertical.mtrl-menu--vibrant', '--mtrl-menu-container')).toBe('var(--mtrl-sys-color-tertiary-container)');
+      expect(value('.mtrl-menu--vertical.mtrl-menu--vibrant', '--mtrl-menu-label')).toBe('var(--mtrl-sys-color-on-tertiary-container)');
+      expect(value('.mtrl-menu--vertical.mtrl-menu--vibrant', '--mtrl-menu-selected-container')).toBe('var(--mtrl-sys-color-tertiary)');
+      expect(value('.mtrl-menu--vertical.mtrl-menu--vibrant', '--mtrl-menu-selected-label')).toBe('var(--mtrl-sys-color-on-tertiary)');
+    });
+
+    test('an item is 44dp, body-large, and its shape is its state', () => {
+      expect(value('.mtrl-menu--vertical .mtrl-menu-item', 'min-height')).toBe('44px');
+      expect(value('.mtrl-menu--vertical .mtrl-menu-item', 'font-size')).toBe('16px');
+      expect(value('.mtrl-menu--vertical .mtrl-menu-item', 'padding')).toBe('8px 16px');
+      // 4dp at rest, 12dp once it is touched
+      expect(value('.mtrl-menu--vertical .mtrl-menu-item', 'border-radius')).toBe('4px');
+      const active = '.mtrl-menu--vertical .mtrl-menu-item:hover, .mtrl-menu--vertical .mtrl-menu-item:focus-visible, .mtrl-menu--vertical .mtrl-menu-item:active';
+      expect(value(active, 'border-radius')).toBe('12px');
+      expect(value('.mtrl-menu--vertical .mtrl-menu-item--selected', 'border-radius')).toBe('12px');
+      // and the ends of the column round outwards
+      expect(value('.mtrl-menu--vertical .mtrl-menu-item:first-child', 'border-start-start-radius')).toBe('12px');
+      expect(value('.mtrl-menu--vertical .mtrl-menu-item:last-child', 'border-end-end-radius')).toBe('12px');
+    });
+
+    test('a selected item takes the tertiary roles; icons are 20dp', () => {
+      expect(value('.mtrl-menu--vertical .mtrl-menu-item--selected', 'background-color')).toBe('var(--mtrl-menu-selected-container)');
+      expect(value('.mtrl-menu--vertical .mtrl-menu-item--selected', 'color')).toBe('var(--mtrl-menu-selected-label)');
+      expect(value('.mtrl-menu--vertical .mtrl-menu-item-icon svg', 'width')).toBe('20px');
+      expect(value('.mtrl-menu--vertical .mtrl-menu-item-supporting', 'font-size')).toBe('14px');
+      expect(value('.mtrl-menu--vertical .mtrl-menu-item-shortcut', 'font-size')).toBe('11px');
+    });
+
+    test('the container morphs to show which menu is active', () => {
+      expect(value('.mtrl-menu--vertical.mtrl-menu--active', 'border-radius')).toBe('24px');
+      expect(value('.mtrl-menu--vertical.mtrl-menu--inactive', 'border-radius')).toBe('8px');
+    });
+  });
 });

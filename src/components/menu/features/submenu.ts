@@ -199,6 +199,31 @@ const withSubmenu = (config: MenuConfig) => (component) => {
   /**
    * Opens a submenu with proper animation and positioning
    */
+  /**
+   * Marks which menu is the active one. While a submenu is open, the menu it
+   * came from steps back to a smaller corner and the submenu takes a larger
+   * one, which is the expressive active state the vertical menu describes
+   * (m3.material.io menu specs, "States"; SegmentedMenuTokens
+   * ActiveContainerShape and InactiveContainerShape).
+   */
+  const markActiveMenu = (active: HTMLElement | null): void => {
+    const activeClass = component.getClass("menu--active");
+    const inactiveClass = component.getClass("menu--inactive");
+    const menus: HTMLElement[] = [
+      component.element,
+      ...state.activeSubmenus.map((entry) => entry.element),
+    ];
+
+    for (const menu of menus) {
+      if (!menu) continue;
+      const isActive = menu === active;
+      menu.classList.toggle(activeClass, isActive);
+      // Only the menus behind the active one step back; a menu on its own
+      // keeps the shape it started with
+      menu.classList.toggle(inactiveClass, active !== null && !isActive);
+    }
+  };
+
   const openSubmenu = (
     item: MenuItem,
     index: number,
@@ -237,6 +262,14 @@ const withSubmenu = (config: MenuConfig) => (component) => {
     submenuElement.className = `${component.getClass(
       "menu"
     )} ${component.getClass("menu--submenu")}`;
+
+    // A submenu carries its parent's variant and colour, so the two match
+    for (const variantClass of ["menu--vertical", "menu--vibrant", "menu--dense"]) {
+      const name = component.getClass(variantClass);
+      if (component.element.classList.contains(name)) {
+        submenuElement.classList.add(name);
+      }
+    }
     submenuElement.setAttribute("role", "menu");
     submenuElement.setAttribute("tabindex", "-1");
     submenuElement.setAttribute("data-level", currentLevel.toString());
@@ -318,6 +351,7 @@ const withSubmenu = (config: MenuConfig) => (component) => {
 
     // Update submenu level
     state.submenuLevel = currentLevel;
+    markActiveMenu(submenuElement);
 
     // Add document events for this submenu
     document.addEventListener("click", handleDocumentClickForSubmenu);
@@ -420,6 +454,7 @@ const withSubmenu = (config: MenuConfig) => (component) => {
       if (deepestRemaining.menuItem) {
         deepestRemaining.menuItem.focus();
       }
+      markActiveMenu(deepestRemaining.element);
     } else {
       state.activeSubmenu = null;
       state.activeSubmenuItem = null;
@@ -434,6 +469,9 @@ const withSubmenu = (config: MenuConfig) => (component) => {
    * Closes all submenus
    */
   const closeAllSubmenus = (): void => {
+    // Nothing is nested any more: the menu goes back to its own shape
+    markActiveMenu(null);
+
     // Clear timers
     clearHoverIntent();
     clearSubmenuTimer();

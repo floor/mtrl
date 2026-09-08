@@ -70,6 +70,12 @@ export interface MenuItem {
   shortcut?: string;
 
   /**
+   * A second line under the label, for a short explanation of the item
+   * (vertical menus only)
+   */
+  supportingText?: string;
+
+  /**
    * Whether the menu item is disabled
    * Disabled items cannot be clicked but remain visible
    */
@@ -123,6 +129,12 @@ export type MenuContent = MenuItem | MenuDivider;
  *
  * @category Components
  */
+/** Menu variants */
+export type MenuVariant = "baseline" | "vertical";
+
+/** Colour mappings for the vertical menu */
+export type MenuColor = "standard" | "vibrant";
+
 export interface MenuConfig {
   /**
    * Element to which the menu will be openered
@@ -139,6 +151,20 @@ export interface MenuConfig {
    * Position of the menu relative to the opener
    * @default 'bottom-start'
    */
+  /**
+   * Menu variant. `'vertical'` is the M3 expressive menu: a rounded
+   * container holding items that sit apart and change shape as they are
+   * hovered, focused, pressed or selected. Defaults to `'baseline'`, the
+   * original M3 menu.
+   */
+  variant?: MenuVariant;
+
+  /**
+   * Colour mapping for the vertical variant. `'vibrant'` is tertiary-based
+   * and more prominent, so it should be used sparingly.
+   */
+  color?: MenuColor;
+
   position?: MenuPosition;
 
   /**
