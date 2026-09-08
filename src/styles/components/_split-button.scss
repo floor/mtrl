@@ -11,6 +11,7 @@
 // focus rings and touch targets come from there. Everything is written with
 // logical properties, so the pair mirrors in right-to-left languages.
 @use "sass:map";
+@use "sass:math";
 @use "../../styles/abstract/base" as base;
 @use "../../styles/abstract/variables" as v;
 @use "../../styles/abstract/functions" as f;
@@ -48,13 +49,14 @@ $gap: 2px;
   vertical-align: middle;
 
   // The two halves keep their own shapes; nothing here fights the button's
-  // own colours or states
+  // own colours or states.
+  //
+  // The outer corners are half the height rather than a large pill value.
+  // CSS scales every corner of a box down together when the radii along any
+  // side overflow it, so a 9999px pill beside a 4dp corner drags that corner
+  // to about a fiftieth of a pixel and the split reads as a square cut.
+  // Half the height is the same pill and leaves the inner corner alone.
   .#{$button} {
-    // A pill on the outside, a small corner where the two meet
-    border-start-start-radius: v.shape("full");
-    border-end-start-radius: v.shape("full");
-    border-start-end-radius: v.shape("full");
-    border-end-end-radius: v.shape("full");
     transition:
       border-radius v.motion("spring-fast-spatial-duration") v.motion("spring-fast-spatial-easing"),
       background-color v.motion("duration-short2") v.motion("easing-standard");
@@ -71,9 +73,15 @@ $gap: 2px;
         #{map.get($spec, "inner-active")}
       );
 
+      $outer: math.div(map.get($spec, "height"), 2);
+
       .#{$button} {
         height: map.get($spec, "height");
         min-height: map.get($spec, "height");
+        border-start-start-radius: $outer;
+        border-end-start-radius: $outer;
+        border-start-end-radius: $outer;
+        border-end-end-radius: $outer;
       }
 
       // The leading button: an outer pill edge, an inner corner facing its
@@ -100,21 +108,14 @@ $gap: 2px;
         padding-inline: map.get($spec, "trail");
         // Its width is its padding and its icon, not the button's own minimum
         min-width: 0;
+        border-start-start-radius: $inner;
+        border-end-start-radius: $inner;
 
         // The icon sits in the button's icon wrapper, which has a size of its
         // own; the split button's chevron is bigger than a button icon
         .#{$button}-icon {
           width: map.get($spec, "icon");
           height: map.get($spec, "icon");
-        }
-        border-start-start-radius: $inner;
-        border-end-start-radius: $inner;
-
-        &:hover,
-        &:focus-visible,
-        &:active {
-          border-start-start-radius: $inner-active;
-          border-end-start-radius: $inner-active;
         }
 
         .#{$component}__chevron {
@@ -128,6 +129,19 @@ $gap: 2px;
             translate: map.get($spec, "offset") 0;
           }
         }
+
+        &:hover,
+        &:focus-visible,
+        &:active {
+          border-start-start-radius: $inner-active;
+          border-end-start-radius: $inner-active;
+        }
+      }
+
+      // Open: the trailing button's inner corner rounds off into a circle
+      &.#{$component}--expanded .#{$component}__trailing {
+        border-start-start-radius: $outer;
+        border-end-start-radius: $outer;
       }
     }
   }
@@ -137,9 +151,6 @@ $gap: 2px;
   // ---------------------------------------------------------------------------
   &--expanded {
     .#{$component}__trailing {
-      border-start-start-radius: v.shape("full");
-      border-end-start-radius: v.shape("full");
-
       .#{$component}__chevron {
         translate: 0 0;
         rotate: 180deg;
