@@ -159,6 +159,34 @@ const withSubmenu = (config: MenuConfig) => (component) => {
   /**
    * Handles keyboard-triggered nested submenu click
    */
+  /**
+   * Finds an item anywhere in the tree by its id, so a submenu's keyboard
+   * handler can reach the same data the main menu's does.
+   */
+  /**
+   * The item list to search. This feature is composed before the controller,
+   * so `component.menu` is not there yet at that point; the configured items
+   * are, and the live list is used once the controller has published it.
+   */
+  const currentItems = (): unknown[] =>
+    ((component.menu?.getItems?.() as unknown[]) ?? config.items ?? []) as unknown[];
+
+  const findItemById = (id: string): MenuItem | null => {
+    const search = (list: unknown[]): MenuItem | null => {
+      for (const entry of list) {
+        const item = entry as MenuItem;
+        if (!item || typeof item !== "object") continue;
+        if (item.id === id) return item;
+        if (Array.isArray(item.submenu)) {
+          const found = search(item.submenu);
+          if (found) return found;
+        }
+      }
+      return null;
+    };
+    return search(currentItems());
+  };
+
   const handleNestedSubmenuClick = (
     item: MenuItem,
     index: number,
@@ -317,12 +345,22 @@ const withSubmenu = (config: MenuConfig) => (component) => {
 
     // Setup keyboard navigation if available
     if (component.keyboard && component.keyboard.setupKeyboardHandlers) {
+      // The submenu's handler needs the same actions the main menu's gets.
+      // It used to receive two of the five, so a right arrow inside a
+      // submenu reached for `findItemById` and found nothing.
       component.keyboard.setupKeyboardHandlers(
         submenuElement,
-        { activeSubmenus: state.activeSubmenus },
+        {
+          activeSubmenus: state.activeSubmenus,
+          items: currentItems(),
+        },
         {
           closeSubmenu,
           handleNestedSubmenuClick,
+          handleSubmenuClick,
+          findItemById,
+          closeMenu: (event?: Event, restoreFocus?: boolean) =>
+            component.menu?.close(event, restoreFocus),
         }
       );
     }

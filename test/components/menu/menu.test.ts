@@ -79,20 +79,29 @@ describe('menu', () => {
     expect(menuItems(menu).length).toBe(2);
   });
 
-  test('focus lands on the first item, however the menu was opened', async () => {
-    const byPointer = createMenu({ opener, items });
-    await opened(byPointer);
-    expect(document.activeElement).toBe(menuItems(byPointer)[0]);
-    byPointer.close();
+  test('a menu opened with a key focuses its first item', async () => {
+    const menu = createMenu({ opener, items });
+    menu.open(new dom.window.KeyboardEvent('keydown', { key: 'Enter' }));
     await after(200);
-
-    const byKey = createMenu({ opener, items });
-    byKey.open(new dom.window.KeyboardEvent('keydown', { key: 'Enter' }));
-    await after(200);
-    expect(document.activeElement).toBe(menuItems(byKey)[0]);
+    expect(document.activeElement).toBe(menuItems(menu)[0]);
   });
 
-  test('only the focused item is in the tab order', async () => {
+  test('a menu opened with a pointer takes focus itself, and the first arrow reaches the first item', async () => {
+    const menu = createMenu({ opener, items });
+    await opened(menu);
+    // focus is inside the menu, so Escape works and it is announced, but no
+    // item is marked
+    expect(document.activeElement).toBe(menu.element);
+    expect(document.activeElement).not.toBe(menuItems(menu)[0]);
+
+    menu.element.dispatchEvent(
+      new dom.window.KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true })
+    );
+    // the first press lands on the first item rather than stepping past it
+    expect(document.activeElement).toBe(menuItems(menu)[0]);
+  });
+
+  test('the first item is the way into the menu for the Tab order', async () => {
     const menu = createMenu({ opener, items });
     await opened(menu);
     const rendered = menuItems(menu);
@@ -104,6 +113,7 @@ describe('menu', () => {
     const menu = createMenu({ opener, items });
     await opened(menu);
     const rendered = menuItems(menu);
+    rendered[0]!.focus();
     const press = (key: string) =>
       (document.activeElement as HTMLElement).dispatchEvent(
         new dom.window.KeyboardEvent('keydown', { key, bubbles: true, cancelable: true })
@@ -142,7 +152,7 @@ describe('menu', () => {
     const menu = createMenu({ opener, items });
     await opened(menu);
     expect(menu.isOpen()).toBe(true);
-    (document.activeElement as HTMLElement).dispatchEvent(
+    menu.element.dispatchEvent(
       new dom.window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })
     );
     await after(300);
@@ -153,6 +163,7 @@ describe('menu', () => {
     const menu = createMenu({ opener, items });
     await opened(menu);
     const rendered = menuItems(menu);
+    rendered[0]!.focus();
     (document.activeElement as HTMLElement).dispatchEvent(
       new dom.window.KeyboardEvent('keydown', { key: 's', bubbles: true, cancelable: true })
     );
@@ -260,5 +271,100 @@ describe('the expressive vertical menu', () => {
     expect(submenu!.classList.contains('mtrl-menu--active')).toBe(true);
     expect(parent.classList.contains('mtrl-menu--inactive')).toBe(true);
     expect(parent.classList.contains('mtrl-menu--active')).toBe(false);
+  });
+});
+
+describe('submenu keyboard navigation', () => {
+  const nested = [
+    { id: 'exec', text: 'Executive' },
+    {
+      id: 'eng',
+      text: 'Engineering',
+      hasSubmenu: true,
+      submenu: [
+        { id: 'sw', text: 'Software', hasSubmenu: true, submenu: [{ id: 'fe', text: 'Frontend' }, { id: 'be', text: 'Backend' }] },
+        { id: 'infra', text: 'Infrastructure' },
+        { id: 'qa', text: 'Quality Assurance' },
+      ],
+    },
+    { id: 'mkt', text: 'Marketing' },
+  ];
+
+  const press = (key: string) =>
+    (document.activeElement as HTMLElement).dispatchEvent(
+      new dom.window.KeyboardEvent('keydown', { key, bubbles: true, cancelable: true })
+    );
+  const focusedText = () => (document.activeElement as HTMLElement)?.textContent?.trim();
+  const openSubmenus = () => document.querySelectorAll('.mtrl-menu--submenu').length;
+
+  test('the right arrow enters a submenu and the arrows then stay inside it', async () => {
+    const menu = createMenu({ opener, items: nested });
+    await opened(menu);
+    const rootItems = menuItems(menu);
+    rootItems[1]!.focus();
+
+    press('ArrowRight');
+    await after(400);
+    expect(openSubmenus()).toBe(1);
+    expect(focusedText()).toBe('Software');
+
+    // this used to jump back to the main menu's first item
+    press('ArrowDown');
+    expect(focusedText()).toBe('Infrastructure');
+    press('ArrowDown');
+    expect(focusedText()).toBe('Quality Assurance');
+    press('ArrowUp');
+    expect(focusedText()).toBe('Infrastructure');
+  });
+
+  test('the right arrow opens a nested submenu too', async () => {
+    const menu = createMenu({ opener, items: nested });
+    await opened(menu);
+    menuItems(menu)[1]!.focus();
+    press('ArrowRight');
+    await after(400);
+    expect(focusedText()).toBe('Software');
+
+    press('ArrowRight');
+    await after(400);
+    expect(openSubmenus()).toBe(2);
+    expect(focusedText()).toBe('Frontend');
+    press('ArrowDown');
+    expect(focusedText()).toBe('Backend');
+  });
+
+  test('the left arrow closes a submenu and goes back to the item that opened it', async () => {
+    const menu = createMenu({ opener, items: nested });
+    await opened(menu);
+    menuItems(menu)[1]!.focus();
+    press('ArrowRight');
+    await after(400);
+    press('ArrowRight');
+    await after(400);
+    expect(openSubmenus()).toBe(2);
+
+    press('ArrowLeft');
+    await after(400);
+    expect(openSubmenus()).toBe(1);
+    expect(focusedText()).toBe('Software');
+
+    press('ArrowLeft');
+    await after(400);
+    expect(openSubmenus()).toBe(0);
+    expect(focusedText()).toBe('Engineering');
+  });
+
+  test('Escape in a submenu closes only that submenu', async () => {
+    const menu = createMenu({ opener, items: nested });
+    await opened(menu);
+    menuItems(menu)[1]!.focus();
+    press('ArrowRight');
+    await after(400);
+
+    press('Escape');
+    await after(400);
+    expect(openSubmenus()).toBe(0);
+    expect(menu.isOpen()).toBe(true);
+    expect(focusedText()).toBe('Engineering');
   });
 });

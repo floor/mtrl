@@ -76,13 +76,10 @@ const withAPI =
        * @param interactionType - The type of interaction that triggered the open ('mouse' or 'keyboard')
        * @returns Menu component for chaining
        */
-      open(event?: Event, interactionType: "mouse" | "keyboard" = "mouse") {
-        // Determine interaction type from event if not explicitly provided
-        if (event && !interactionType) {
-          if (event instanceof KeyboardEvent) {
-            interactionType = "keyboard";
-          }
-        }
+      open(event?: Event, interactionType?: "mouse" | "keyboard") {
+        // Left undefined on purpose: the controller reads the event to tell a
+        // key from a pointer, which decides where focus lands. Defaulting to
+        // "mouse" here made that check dead and every open a pointer open.
 
         menu.open(event, interactionType);
         return this;

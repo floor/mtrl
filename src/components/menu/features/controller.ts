@@ -329,9 +329,17 @@ const withController = (config: MenuConfig) => (component) => {
    */
   const openMenu = (
     event?: Event,
-    interactionType: "mouse" | "keyboard" = "mouse",
+    interactionType?: "mouse" | "keyboard",
   ): void => {
     if (state.visible) return;
+
+    // Work out how the menu was opened when the caller does not say. It
+    // decides where focus lands, and `toggle` already read the event this
+    // way, so opening with a key through `open` behaved like a mouse.
+    if (!interactionType) {
+      if (event instanceof KeyboardEvent) interactionType = "keyboard";
+      else interactionType = "mouse";
+    }
 
     // Update state
     state.visible = true;
@@ -383,8 +391,10 @@ const withController = (config: MenuConfig) => (component) => {
             interactionType,
           );
         } else {
-          // Fallback when the keyboard feature is not composed in: focus the
-          // first item, whether the menu was opened with a pointer or a key
+          // Fallback when the keyboard feature is not composed in: the first
+          // item is the way in for the Tab order; a menu opened with a key
+          // focuses it, one opened with a pointer focuses the menu itself so
+          // the first arrow press lands on the first item
           const items = Array.from(
             component.element.querySelectorAll(
               `.${component.getClass("menu-item")}`,
@@ -394,12 +404,12 @@ const withController = (config: MenuConfig) => (component) => {
           items.forEach((item) => {
             item.tabIndex = -1;
           });
+          if (items.length > 0) items[0].tabIndex = 0;
 
-          if (items.length > 0) {
-            items[0].tabIndex = 0;
+          if (interactionType === "keyboard" && items.length > 0) {
             items[0].focus();
           } else {
-            component.element.tabIndex = 0;
+            component.element.tabIndex = -1;
             component.element.focus();
           }
         }
@@ -484,7 +494,7 @@ const withController = (config: MenuConfig) => (component) => {
    */
   const toggleMenu = (
     event?: Event,
-    interactionType: "mouse" | "keyboard" = "mouse",
+    interactionType?: "mouse" | "keyboard",
   ): void => {
     if (state.visible) {
       closeMenu(event);
@@ -552,9 +562,32 @@ const withController = (config: MenuConfig) => (component) => {
     // If the event target is inside the menu/submenu, the dedicated menu keydown handler
     // will already process it, so we only need to handle Escape here
     if (state.visible) {
-      if (isTargetInsideMenu || isTargetInsideSubmenu) {
-        // Only handle Escape at the document level for menu items
+      if (isTargetInsideMenu) {
+        // The menu has its own keydown handler, so only Escape is left here
         if (e.key === "Escape") {
+          e.preventDefault();
+          closeMenu(e, true);
+        }
+      } else if (isTargetInsideSubmenu) {
+        // A submenu has no handler of its own: its keys arrive here, and the
+        // handler works out which menu they belong to from the event target.
+        // This branch used to stop at Escape, so an arrow inside a submenu
+        // fell through to the main menu and moved focus there.
+        if (component.keyboard && component.keyboard.handleMenuKeydown) {
+          component.keyboard.handleMenuKeydown(e, state, {
+            closeMenu,
+            closeSubmenu: component.submenu
+              ? component.submenu.closeSubmenu
+              : null,
+            findItemById,
+            handleSubmenuClick: component.submenu
+              ? component.submenu.handleSubmenuClick
+              : null,
+            handleNestedSubmenuClick: component.submenu
+              ? component.submenu.handleNestedSubmenuClick
+              : null,
+          });
+        } else if (e.key === "Escape") {
           e.preventDefault();
           closeMenu(e, true);
         }
@@ -696,10 +729,9 @@ const withController = (config: MenuConfig) => (component) => {
   return {
     ...component,
     menu: {
-      open: (
-        event?: Event,
-        interactionType: "mouse" | "keyboard" = "mouse",
-      ) => {
+      open: (event?: Event, interactionType?: "mouse" | "keyboard") => {
+        // Left undefined so openMenu can read the event; defaulting here fed
+        // it "mouse" whatever opened the menu
         openMenu(event, interactionType);
         return component;
       },
@@ -709,10 +741,7 @@ const withController = (config: MenuConfig) => (component) => {
         return component;
       },
 
-      toggle: (
-        event?: Event,
-        interactionType: "mouse" | "keyboard" = "mouse",
-      ) => {
+      toggle: (event?: Event, interactionType?: "mouse" | "keyboard") => {
         toggleMenu(event, interactionType);
         return component;
       },

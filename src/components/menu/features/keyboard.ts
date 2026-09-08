@@ -52,6 +52,26 @@ export const createKeyboardNavigation = (component) => {
   };
 
   /**
+   * The item that opened a submenu. A submenu records the id of that item and
+   * its own depth, so the item can be found one level up. This used to come
+   * from `state.activeSubmenuItem`, which the controller's state never had.
+   */
+  const parentItemOf = (menuElement: HTMLElement): HTMLElement | null => {
+    const parentId = menuElement.getAttribute("data-parent-item");
+    if (!parentId) return null;
+    const level = parseInt(menuElement.getAttribute("data-level") || "1", 10);
+    const scope =
+      level <= 1
+        ? component.element
+        : document.querySelector(
+            `.${component.getClass("menu--submenu")}[data-level="${level - 1}"]`
+          );
+    return ((scope ?? document).querySelector(
+      `.${component.getClass("menu-item")}[data-id="${parentId}"]`
+    ) ?? null) as HTMLElement | null;
+  };
+
+  /**
    * Every item in a menu, disabled ones included. A disabled item can take
    * focus and be read out, it just cannot be chosen
    * (m3.material.io menu accessibility, "Interactability"), so it belongs in
@@ -86,19 +106,27 @@ export const createKeyboardNavigation = (component) => {
     // Reset typeahead when menu opens
     resetTypeahead();
 
-    // Focus lands on the first item whether the menu was opened with a
-    // pointer or a key (m3.material.io menu accessibility, "Initial focus")
     const items = menuItems(menuElement);
 
+    // The first item is the way into the menu for the Tab order, whichever
+    // way the menu was opened
     items.forEach((item) => item.setAttribute("tabindex", "-1"));
+    if (items.length > 0) items[0].setAttribute("tabindex", "0");
 
-    if (items.length > 0) {
-      items[0].setAttribute("tabindex", "0");
+    // Opened with a key: focus the first item, which is what the spec asks
+    // for and what a person navigating by key expects to see marked
+    // (m3.material.io menu accessibility, "Initial focus").
+    if (interactionType === "keyboard" && items.length > 0) {
       items[0].focus();
-    } else {
-      menuElement.setAttribute("tabindex", "0");
-      menuElement.focus();
+      return;
     }
+
+    // Opened with a pointer: focus the menu itself. Focus is still inside
+    // the menu, so Escape works and a screen reader announces it, but no
+    // item is marked, and the first arrow press then lands on the first
+    // item rather than stepping past it to the second.
+    menuElement.setAttribute("tabindex", "-1");
+    menuElement.focus();
   };
 
   /**
@@ -123,12 +151,18 @@ export const createKeyboardNavigation = (component) => {
       ) => void;
     },
   ): void => {
-    // Determine if this event is from the main menu or a submenu
+    // Which menu the key belongs to is read from the element the event came
+    // from. It used to come from `state.activeSubmenu`, a field the
+    // controller's state never had, so every key was handled against the
+    // root menu: an arrow inside a submenu looked for the focused item among
+    // the root's items, found nothing, and jumped to the root's first item.
+    const target = e.target as HTMLElement | null;
+    const targetMenu = (target?.closest?.(`.${component.getClass("menu")}`) ??
+      null) as HTMLElement | null;
+    const menuElement = targetMenu ?? component.element;
     const isSubmenu =
-      state.activeSubmenu && state.activeSubmenu.contains(e.target as Node);
-
-    // Get the appropriate menu element
-    const menuElement = isSubmenu ? state.activeSubmenu : component.element;
+      !!targetMenu &&
+      targetMenu.classList.contains(component.getClass("menu--submenu"));
 
     // Focus moves through every item, disabled ones included
     const items = menuItems(menuElement);
@@ -309,25 +343,14 @@ export const createKeyboardNavigation = (component) => {
         e.stopPropagation();
         if (isSubmenu) {
           // In a submenu, left arrow returns to the parent menu
-          if (state.activeSubmenuItem) {
-            // Store the reference to the parent item before closing the submenu
-            const parentItem = state.activeSubmenuItem;
-
-            // Get the current level
+          {
+            const parentItem = parentItemOf(menuElement);
             const currentLevel = parseInt(
               menuElement.getAttribute("data-level") || "1",
               10,
             );
-
-            // Close this level of submenu
             actions.closeSubmenu(currentLevel);
-
-            // Focus the parent item after closing
-            if (parentItem) {
-              parentItem.focus();
-            }
-          } else {
-            actions.closeSubmenu(1);
+            if (parentItem) parentItem.focus();
           }
         }
         break;
@@ -336,26 +359,16 @@ export const createKeyboardNavigation = (component) => {
         e.preventDefault();
         e.stopPropagation();
         if (isSubmenu) {
-          // In a submenu, Escape closes just the submenu
-          if (state.activeSubmenuItem) {
-            // Store the reference to the parent item before closing the submenu
-            const parentItem = state.activeSubmenuItem;
-
-            // Get the current level
+          // In a submenu, Escape closes just that submenu and goes back to
+          // the item that opened it
+          {
+            const parentItem = parentItemOf(menuElement);
             const currentLevel = parseInt(
               menuElement.getAttribute("data-level") || "1",
               10,
             );
-
-            // Close this level of submenu
             actions.closeSubmenu(currentLevel);
-
-            // Focus the parent item after closing
-            if (parentItem) {
-              parentItem.focus();
-            }
-          } else {
-            actions.closeSubmenu(1);
+            if (parentItem) parentItem.focus();
           }
         } else {
           // In main menu, Escape closes the entire menu and restores focus to opener
