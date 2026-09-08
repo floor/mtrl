@@ -50,10 +50,12 @@ $component: "#{base.$prefix}-dialog";
     margin: auto;
     @include m.elevation(3);
 
-    // Initial state - hidden with scaleY for MD3 reveal animation (like menu)
+    // Hidden as a scaled-down, transparent container; it fades in to full size
     opacity: 0;
     transform-origin: center center;
-    transform: scaleY(0);
+    // Dialogs fade in with a slight scale; the vertical squash this replaced
+    // is not an M3 pattern
+    transform: scale(0.8);
     pointer-events: none;
 
     // MD3 emphasized easing for dialogs
@@ -64,7 +66,7 @@ $component: "#{base.$prefix}-dialog";
     // Visible state
     &--visible {
         opacity: 1;
-        transform: scaleY(1);
+        transform: scale(1);
         pointer-events: auto;
     }
 
@@ -79,9 +81,11 @@ $component: "#{base.$prefix}-dialog";
         max-width: 560px;
     }
 
+    // 560dp is the widest a basic dialog goes; past that the answer is a
+    // full-screen dialog
     &--large {
         width: 95%;
-        max-width: 800px;
+        max-width: 560px;
     }
 
     &--fullwidth {
@@ -99,7 +103,6 @@ $component: "#{base.$prefix}-dialog";
         border-radius: 0;
         transform-origin: center center;
 
-        // Fullscreen uses scale instead of scaleY for better appearance
         transform: scale(0.9);
 
         &.#{$component}--visible {
@@ -109,28 +112,26 @@ $component: "#{base.$prefix}-dialog";
 
     // Animation variants with appropriate transform origins
     &--slide-up {
-        transform-origin: bottom center;
-        transform: scaleY(0);
+        transform: translateY(24px);
 
         &.#{$component}--visible {
-            transform: scaleY(1);
+            transform: translateY(0);
         }
     }
 
     &--slide-down {
-        transform-origin: top center;
-        transform: scaleY(0);
+        transform: translateY(-24px);
 
         &.#{$component}--visible {
-            transform: scaleY(1);
+            transform: translateY(0);
         }
     }
 
     &--fade {
-        transform: scaleY(1);
+        transform: none;
 
         &.#{$component}--visible {
-            transform: scaleY(1);
+            transform: none;
         }
     }
 
@@ -254,8 +255,19 @@ $component: "#{base.$prefix}-dialog";
 
 // Dialog content
 // MD3: Body medium typography, on-surface-variant for supporting text
+.#{$component}-header:empty {
+    display: none;
+}
+
+.#{$component}-header:not(:has(*)) + .#{$component}-content,
+.#{$component} > .#{$component}-content:first-child {
+    padding-top: 24px;
+}
+
 .#{$component}-content {
-    padding: 16px 24px;
+    // The gaps above and below belong to the header and the footer, so that
+    // title to body is 16dp and body to actions is 24dp, counted once
+    padding: 0 24px;
     color: t.color("on-surface-variant");
     @include m.typography("body-medium");
 
@@ -281,6 +293,10 @@ $component: "#{base.$prefix}-dialog";
     &--emphasis {
         color: t.color("on-surface");
     }
+
+    &:last-child {
+        padding-bottom: 24px;
+    }
 }
 
 // Dialog footer
@@ -289,7 +305,7 @@ $component: "#{base.$prefix}-dialog";
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    padding: 16px 24px 24px 24px;
+    padding: 24px 24px 24px 24px;
     gap: 8px;
 
     &--left {
@@ -314,6 +330,51 @@ $component: "#{base.$prefix}-dialog";
 
 // Dialog divider styling
 // MD3: outline-variant color for dividers
+// -----------------------------------------------------------------------------
+// Full-screen dialog: a 56dp header carrying the close affordance and the
+// headline, and a 56dp action bar at the bottom. For compact windows only;
+// wider ones take a basic dialog.
+// -----------------------------------------------------------------------------
+.#{$component}--fullscreen {
+    .#{$component}-header {
+        display: flex;
+        align-items: center;
+        min-height: 56px;
+        padding: 0 24px;
+        gap: 8px;
+    }
+
+    // The close affordance leads, the headline follows it
+    .#{$component}-header-close {
+        order: -1;
+        margin: 0 0 0 -8px;
+
+        @include m.rtl {
+            margin: 0 -8px 0 0;
+        }
+    }
+
+    .#{$component}-header-title {
+        @include m.typography("title-large");
+        text-align: start;
+    }
+
+    .#{$component}-content {
+        flex: 1;
+        overflow-y: auto;
+        padding: 24px;
+    }
+
+    .#{$component}-footer {
+        min-height: 56px;
+        padding: 0 24px;
+        box-sizing: border-box;
+    }
+
+    display: flex;
+    flex-direction: column;
+}
+
 .#{$component}-header-divider,
 .#{$component}-footer-divider {
     margin: 0;
@@ -326,12 +387,16 @@ $component: "#{base.$prefix}-dialog";
 @include m.reduced-motion {
     .#{$component},
     .#{$component}-overlay {
-        transition: opacity 0.1s linear;
-        transform: none !important;
+        transition: opacity v.motion("duration-short2") linear;
     }
 
-    .#{$component}--visible {
-        transform: none !important;
+    .#{$component},
+    .#{$component}--visible,
+    .#{$component}--scale,
+    .#{$component}--slide-up,
+    .#{$component}--slide-down,
+    .#{$component}--fullscreen {
+        transform: none;
     }
 }
 
@@ -386,11 +451,10 @@ $component: "#{base.$prefix}-dialog";
 
     // Adjust animations for mobile - slide up from bottom
     .#{$component}--slide-up {
-        transform-origin: bottom center;
-        transform: scaleY(0);
+        transform: translateY(24px);
 
         &.#{$component}--visible {
-            transform: scaleY(1);
+            transform: translateY(0);
         }
     }
 

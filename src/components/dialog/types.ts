@@ -79,11 +79,24 @@ export interface DialogConfig {
    */
   content?: string;
   
-  /** 
-   * Whether to show close button (X) in the header
-   * @default true
+  /**
+   * Whether to show a close affordance in the header. A basic dialog has
+   * none in M3: it is dismissed by its actions. A full-screen dialog shows
+   * one unless this is set to false.
+   * @default false (true for the fullscreen size)
    */
   closeButton?: boolean;
+
+  /**
+   * Accessible name for a dialog without a headline
+   */
+  ariaLabel?: string;
+
+  /**
+   * ARIA role for the dialog. A basic dialog is an `alertdialog` and a
+   * full-screen one a `dialog`; set this to override.
+   */
+  role?: 'alertdialog' | 'dialog';
   
   /** 
    * Additional CSS classes to apply to the dialog
