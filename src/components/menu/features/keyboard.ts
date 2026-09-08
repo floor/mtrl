@@ -52,6 +52,17 @@ export const createKeyboardNavigation = (component) => {
   };
 
   /**
+   * Every item in a menu, disabled ones included. A disabled item can take
+   * focus and be read out, it just cannot be chosen
+   * (m3.material.io menu accessibility, "Interactability"), so it belongs in
+   * the set focus moves through.
+   */
+  const menuItems = (menuElement: HTMLElement): HTMLElement[] =>
+    Array.from(
+      menuElement.querySelectorAll(`.${component.getClass("menu-item")}`)
+    ) as HTMLElement[];
+
+  /**
    * Resets the typeahead search buffer
    */
   const resetTypeahead = (): void => {
@@ -65,7 +76,8 @@ export const createKeyboardNavigation = (component) => {
   /**
    * Sets up initial focus within the menu
    * @param menuElement - The menu element to set focus within
-   * @param interactionType - Type of interaction that opened the menu
+   * @param interactionType - How the menu was opened; focus lands on the
+   *   first item either way, so this is kept only for callers
    */
   const handleInitialFocus = (
     menuElement: HTMLElement,
@@ -74,38 +86,18 @@ export const createKeyboardNavigation = (component) => {
     // Reset typeahead when menu opens
     resetTypeahead();
 
-    if (interactionType === "keyboard") {
-      // Find all focusable items
-      const items = Array.from(
-        menuElement.querySelectorAll(
-          `.${component.getClass("menu-item")}:not(.${component.getClass(
-            "menu-item--disabled",
-          )})`,
-        ),
-      ) as HTMLElement[];
+    // Focus lands on the first item whether the menu was opened with a
+    // pointer or a key (m3.material.io menu accessibility, "Initial focus")
+    const items = menuItems(menuElement);
 
-      if (items.length > 0) {
-        // Set tabindex on first item and focus it
-        items[0].setAttribute("tabindex", "0");
-        items[0].focus();
-      } else {
-        // If no items, focus the menu itself
-        menuElement.setAttribute("tabindex", "0");
-        menuElement.focus();
-      }
+    items.forEach((item) => item.setAttribute("tabindex", "-1"));
+
+    if (items.length > 0) {
+      items[0].setAttribute("tabindex", "0");
+      items[0].focus();
     } else {
-      // For mouse interaction, make the menu focusable but don't auto-focus
-      menuElement.setAttribute("tabindex", "-1");
-
-      // Still set up the first item as focusable
-      const firstItem = menuElement.querySelector(
-        `.${component.getClass("menu-item")}:not(.${component.getClass(
-          "menu-item--disabled",
-        )})`,
-      ) as HTMLElement;
-      if (firstItem) {
-        firstItem.setAttribute("tabindex", "0");
-      }
+      menuElement.setAttribute("tabindex", "0");
+      menuElement.focus();
     }
   };
 
@@ -138,14 +130,8 @@ export const createKeyboardNavigation = (component) => {
     // Get the appropriate menu element
     const menuElement = isSubmenu ? state.activeSubmenu : component.element;
 
-    // Get all non-disabled menu items from the current menu
-    const items = Array.from(
-      menuElement.querySelectorAll(
-        `.${component.getClass("menu-item")}:not(.${component.getClass(
-          "menu-item--disabled",
-        )})`,
-      ),
-    ) as HTMLElement[];
+    // Focus moves through every item, disabled ones included
+    const items = menuItems(menuElement);
 
     if (items.length === 0) return;
 
