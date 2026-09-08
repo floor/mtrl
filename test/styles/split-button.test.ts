@@ -37,20 +37,37 @@ describe('split button stylesheet', () => {
     }
   });
 
-  test('the outer corners are a pill and the inner ones follow the size', () => {
+  test('the outer corners are a pill and the inner ones grow with the size', () => {
     expect(value('.mtrl-split-button .mtrl-button', 'border-start-start-radius')).toBe('9999px');
-    const inner: Record<string, string> = { xs: '4px', s: '4px', m: '4px', l: '8px', xl: '12px' };
+    // The two small sizes keep the token value; the larger ones hold its
+    // proportion instead of the token's 4, 8 and 12dp, which read as square
+    // corners beside a full pill
+    const inner: Record<string, string> = { xs: '4px', s: '4px', m: '8px', l: '12px', xl: '16px' };
     for (const [size, corner] of Object.entries(inner)) {
-      expect(value(`.mtrl-split-button--${size} .mtrl-split-button__leading`, 'border-start-end-radius')).toBe(corner);
-      expect(value(`.mtrl-split-button--${size} .mtrl-split-button__trailing`, 'border-start-start-radius')).toBe(corner);
+      const fallback = `var(--mtrl-split-button-inner-shape, ${corner})`;
+      expect(value(`.mtrl-split-button--${size} .mtrl-split-button__leading`, 'border-start-end-radius')).toBe(fallback);
+      expect(value(`.mtrl-split-button--${size} .mtrl-split-button__trailing`, 'border-start-start-radius')).toBe(fallback);
     }
   });
 
-  test('the inner corners grow when the button is hovered, focused or pressed', () => {
+  test('every inner corner stays between a tenth and a seventh of the height', () => {
+    const heights: Record<string, number> = { xs: 32, s: 40, m: 56, l: 96, xl: 136 };
+    const inner: Record<string, number> = { xs: 4, s: 4, m: 8, l: 12, xl: 16 };
+    for (const size of Object.keys(heights)) {
+      const ratio = inner[size]! / heights[size]!;
+      expect(ratio).toBeGreaterThanOrEqual(0.1);
+      expect(ratio).toBeLessThanOrEqual(0.145);
+    }
+  });
+
+  test('the inner corners grow further when the button is hovered, focused or pressed', () => {
     const active: Record<string, string> = { xs: '8px', s: '12px', m: '12px', l: '20px', xl: '20px' };
+    const resting: Record<string, number> = { xs: 4, s: 4, m: 8, l: 12, xl: 16 };
     for (const [size, corner] of Object.entries(active)) {
       const selector = `.mtrl-split-button--${size} .mtrl-split-button__leading:hover, .mtrl-split-button--${size} .mtrl-split-button__leading:focus-visible, .mtrl-split-button--${size} .mtrl-split-button__leading:active`;
-      expect(value(selector, 'border-start-end-radius')).toBe(corner);
+      expect(value(selector, 'border-start-end-radius')).toBe(`var(--mtrl-split-button-inner-shape-active, ${corner})`);
+      // and it is always rounder than the resting corner
+      expect(parseInt(corner, 10)).toBeGreaterThan(resting[size]!);
     }
   });
 

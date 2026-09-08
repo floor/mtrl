@@ -22,13 +22,20 @@ $button: "#{base.$prefix}-button";
 
 // height, leading start/end space, trailing space, icon, inner corner,
 // inner corner when hovered or pressed, and how far the chevron sits from
-// the centre while the menu is closed
+// the centre while the menu is closed.
+//
+// The resting inner corner keeps the token value at the two small sizes,
+// where the spec's own renders show it at about an eighth of the height, and
+// holds that proportion at the three larger ones instead of the token's
+// 4, 8 and 12dp. Those read as square corners beside a full pill: a 4dp
+// corner is a fourteenth of a 56dp button. Set
+// `--<prefix>-split-button-inner-shape` to go back to the token value.
 $sizes: (
   "xs": (height: 32px, lead-start: 12px, lead-end: 10px, trail: 13px, icon: 22px, inner: map.get(v.$shape, "extra-small"), inner-active: map.get(v.$shape, "small"), offset: 1px),
   "s":  (height: 40px, lead-start: 16px, lead-end: 12px, trail: 13px, icon: 22px, inner: map.get(v.$shape, "extra-small"), inner-active: map.get(v.$shape, "medium"), offset: 1px),
-  "m":  (height: 56px, lead-start: 24px, lead-end: 24px, trail: 15px, icon: 26px, inner: map.get(v.$shape, "extra-small"), inner-active: map.get(v.$shape, "medium"), offset: 2px),
-  "l":  (height: 96px, lead-start: 48px, lead-end: 48px, trail: 29px, icon: 38px, inner: map.get(v.$shape, "small"), inner-active: map.get(v.$shape, "large-increased"), offset: 3px),
-  "xl": (height: 136px, lead-start: 64px, lead-end: 64px, trail: 43px, icon: 50px, inner: map.get(v.$shape, "medium"), inner-active: map.get(v.$shape, "large-increased"), offset: 6px)
+  "m":  (height: 56px, lead-start: 24px, lead-end: 24px, trail: 15px, icon: 26px, inner: map.get(v.$shape, "small"), inner-active: map.get(v.$shape, "medium"), offset: 2px),
+  "l":  (height: 96px, lead-start: 48px, lead-end: 48px, trail: 29px, icon: 38px, inner: map.get(v.$shape, "medium"), inner-active: map.get(v.$shape, "large-increased"), offset: 3px),
+  "xl": (height: 136px, lead-start: 64px, lead-end: 64px, trail: 43px, icon: 50px, inner: map.get(v.$shape, "large"), inner-active: map.get(v.$shape, "large-increased"), offset: 6px)
 );
 
 // The space between the two halves, at every size (BetweenSpace)
@@ -58,8 +65,11 @@ $gap: 2px;
   // ---------------------------------------------------------------------------
   @each $size, $spec in $sizes {
     &--#{$size} {
-      $inner: map.get($spec, "inner");
-      $inner-active: map.get($spec, "inner-active");
+      $inner: var(--#{base.$prefix}-split-button-inner-shape, #{map.get($spec, "inner")});
+      $inner-active: var(
+        --#{base.$prefix}-split-button-inner-shape-active,
+        #{map.get($spec, "inner-active")}
+      );
 
       .#{$button} {
         height: map.get($spec, "height");
