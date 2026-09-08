@@ -37,8 +37,19 @@ describe('split button stylesheet', () => {
     }
   });
 
-  test('the outer corners are a pill and the inner ones grow with the size', () => {
-    expect(value('.mtrl-split-button .mtrl-button', 'border-start-start-radius')).toBe('9999px');
+  test('the outer corner is exactly half the height, so the inner one survives', () => {
+    // CSS scales every corner of a box down together when the radii along a
+    // side overflow it, so a 9999px pill beside a 4dp corner drags that
+    // corner to a fiftieth of a pixel and the split reads as a square cut
+    const outer: Record<string, string> = { xs: '16px', s: '20px', m: '28px', l: '48px', xl: '68px' };
+    for (const [size, corner] of Object.entries(outer)) {
+      expect(value(`.mtrl-split-button--${size} .mtrl-button`, 'border-start-start-radius')).toBe(corner);
+      expect(value(`.mtrl-split-button--${size} .mtrl-button`, 'border-end-end-radius')).toBe(corner);
+    }
+    expect(css).not.toContain('9999px');
+  });
+
+  test('the inner corners grow with the size', () => {
     // The two small sizes keep the token value; the larger ones hold its
     // proportion instead of the token's 4, 8 and 12dp, which read as square
     // corners beside a full pill
@@ -96,7 +107,8 @@ describe('split button stylesheet', () => {
   });
 
   test('open: the inner corner rounds off, the icon centres and the chevron turns over', () => {
-    expect(value('.mtrl-split-button--expanded .mtrl-split-button__trailing', 'border-start-start-radius')).toBe('9999px');
+    expect(value('.mtrl-split-button--s.mtrl-split-button--expanded .mtrl-split-button__trailing', 'border-start-start-radius')).toBe('20px');
+    expect(value('.mtrl-split-button--xl.mtrl-split-button--expanded .mtrl-split-button__trailing', 'border-start-start-radius')).toBe('68px');
     expect(value('.mtrl-split-button--expanded .mtrl-split-button__trailing .mtrl-split-button__chevron', 'rotate')).toBe('180deg');
     expect(value('.mtrl-split-button--expanded .mtrl-split-button__trailing .mtrl-split-button__chevron', 'translate')).toBe('0 0');
   });
