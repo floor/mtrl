@@ -11,7 +11,7 @@ export {
   SHEET_GESTURE,
   SHEET_CLASSES
 } from './constants';
-export { 
+export type { 
   // Types
   SheetConfig, 
   SheetComponent 

@@ -35,7 +35,7 @@
  */
 
 export { default, default as createFab } from "./fab";
-export {
+export type {
   FabConfig,
   FabComponent,
   FabVariant,

@@ -20,7 +20,16 @@ const DIALOG_EVENTS = {
  * @param config Dialog configuration
  * @returns Component enhancer with DOM structure
  */
+/** Ids for the elements that name and describe a dialog */
+let dialogCount = 0;
+
 export const withStructure = (config: DialogConfig) => (component) => {
+  // The headline names the dialog and the supporting text describes it, so
+  // both need an id to point at (M3 dialog accessibility, "Labeling elements")
+  const uid = `${component.getClass("dialog")}-${++dialogCount}`;
+  const titleId = `${uid}-title`;
+  const contentId = `${uid}-content`;
+
   // Create the overlay element
   const overlayConfig = getOverlayConfig(config);
   const overlay = document.createElement(overlayConfig.tag || "div");
@@ -45,6 +54,10 @@ export const withStructure = (config: DialogConfig) => (component) => {
     overlay.style.zIndex = String(config.zIndex);
   }
 
+  // A basic dialog has no close affordance; a full-screen one does
+  const showCloseButton =
+    config.closeButton ?? config.size === "fullscreen";
+
   // Create internal structure
   const createHeader = () => {
     const header = document.createElement("div");
@@ -57,6 +70,7 @@ export const withStructure = (config: DialogConfig) => (component) => {
     if (config.title) {
       const title = document.createElement("h2");
       title.classList.add(component.getClass("dialog-header-title"));
+      title.id = titleId;
       title.textContent = config.title;
       headerContent.appendChild(title);
     }
@@ -68,7 +82,7 @@ export const withStructure = (config: DialogConfig) => (component) => {
       headerContent.appendChild(subtitle);
     }
 
-    if (config.closeButton !== false) {
+    if (showCloseButton) {
       const closeButton = document.createElement("button");
       closeButton.classList.add(component.getClass("dialog-header-close"));
       closeButton.setAttribute("aria-label", "Close dialog");
@@ -99,6 +113,7 @@ export const withStructure = (config: DialogConfig) => (component) => {
   const createContent = () => {
     const content = document.createElement("div");
     content.classList.add(component.getClass("dialog-content"));
+    content.id = contentId;
 
     if (config.content) {
       content.innerHTML = config.content;
@@ -145,6 +160,16 @@ export const withStructure = (config: DialogConfig) => (component) => {
 
   // Add dialog classes to the main component element
   addClass(component.element, component.getClass("dialog"));
+
+  // Name and describe the dialog by its own content
+  if (config.title) {
+    component.element.setAttribute("aria-labelledby", titleId);
+  } else if (config.ariaLabel) {
+    component.element.setAttribute("aria-label", config.ariaLabel);
+  }
+  if (config.content) {
+    component.element.setAttribute("aria-describedby", contentId);
+  }
 
   // Apply size class
   const size = config.size || "medium";
@@ -384,68 +409,111 @@ export const withVisibility = () => (component) => {
     'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
   let previouslyFocusedElement: HTMLElement | null = null;
   let mouseDownOnOverlay = false;
+  /** Elements taken out of the page while the dialog is open */
+  const inerted: HTMLElement[] = [];
+  /** The body's own overflow, put back when the dialog closes */
+  let scrollLock: string | null = null;
+
+  /**
+   * The elements a person can tab to inside the dialog, looked up when they
+   * press Tab rather than when the dialog opens, so buttons added later are
+   * part of the cycle.
+   */
+  const focusable = (): HTMLElement[] =>
+    (Array.from(
+      component.element.querySelectorAll(focusableElements)
+    ) as HTMLElement[]).filter(
+      (el) =>
+        !el.hasAttribute("disabled") &&
+        el.getAttribute("aria-hidden") !== "true" &&
+        (el.offsetWidth > 0 || el.offsetHeight > 0 || el === document.activeElement)
+    );
+
+  /**
+   * Tab cycles inside the dialog. The handler is kept here so it can be taken
+   * off again: the previous one was removed by name from an inner scope that
+   * never held it, so every open left another listener behind.
+   */
+  function handleTabKey(e: KeyboardEvent) {
+    if (e.key !== "Tab") return;
+    const elements = focusable();
+    if (elements.length === 0) {
+      // Nothing to move to: keep focus on the dialog itself
+      e.preventDefault();
+      component.element.focus();
+      return;
+    }
+    const first = elements[0];
+    const last = elements[elements.length - 1];
+    const active = document.activeElement;
+    if (e.shiftKey && (active === first || !component.element.contains(active))) {
+      last.focus();
+      e.preventDefault();
+    } else if (!e.shiftKey && active === last) {
+      first.focus();
+      e.preventDefault();
+    }
+  }
+
+  /**
+   * Everything outside the dialog is taken out of the page while it is open:
+   * `inert` stops the pointer and the keyboard reaching it, and screen readers
+   * stay inside. Without it the Tab handler alone leaves a reader free to walk
+   * out of a modal dialog, and the page scrolls behind the scrim.
+   */
+  const inertBackground = (): void => {
+    if (component.config.modal === false) return;
+    const parent = component.overlay.parentElement;
+    if (parent) {
+      (Array.from(parent.children) as HTMLElement[]).forEach((sibling) => {
+        if (sibling === component.overlay) return;
+        if (sibling.hasAttribute("inert")) return;
+        sibling.setAttribute("inert", "");
+        inerted.push(sibling);
+      });
+    }
+    const body = component.element.ownerDocument.body;
+    if (body && scrollLock === null) {
+      scrollLock = body.style.overflow;
+      body.style.overflow = "hidden";
+    }
+  };
+
+  const releaseBackground = (): void => {
+    inerted.forEach((el) => el.removeAttribute("inert"));
+    inerted.length = 0;
+    const body = component.element.ownerDocument.body;
+    if (body && scrollLock !== null) {
+      body.style.overflow = scrollLock;
+      scrollLock = null;
+    }
+  };
 
   const trapFocus = () => {
-    if (!component.config.trapFocus) return;
+    inertBackground();
 
-    const focusableContent =
-      component.element.querySelectorAll(focusableElements);
-    if (focusableContent.length === 0) return;
-
-    const firstFocusableElement = focusableContent[0] as HTMLElement;
-    const lastFocusableElement = focusableContent[
-      focusableContent.length - 1
-    ] as HTMLElement;
-
-    // Focus the first element if autofocus is enabled
-    if (component.config.autofocus) {
-      // Check for a button with autofocus attribute
-      const autofocusElement = component.element.querySelector(
-        "[autofocus]",
-      ) as HTMLElement;
-      if (autofocusElement) {
-        autofocusElement.focus();
-      } else {
-        firstFocusableElement.focus();
-      }
+    // Focus lands on the first interactive element in the dialog, or on the
+    // dialog itself when it has none (M3 dialog accessibility, "Initial focus")
+    if (component.config.autofocus !== false) {
+      const requested = component.element.querySelector("[autofocus]") as HTMLElement | null;
+      const target = requested || focusable()[0] || component.element;
+      target.focus();
     }
 
-    // Set up the keyboard trap
-    component.element.addEventListener("keydown", handleKeyDown);
-
-    function handleKeyDown(e: KeyboardEvent) {
-      const isTabPressed = e.key === "Tab";
-
-      if (!isTabPressed) return;
-
-      if (e.shiftKey) {
-        // If shift + tab pressed and focus is on first element, move to last
-        if (document.activeElement === firstFocusableElement) {
-          lastFocusableElement.focus();
-          e.preventDefault();
-        }
-      } else {
-        // If tab pressed and focus is on last element, move to first
-        if (document.activeElement === lastFocusableElement) {
-          firstFocusableElement.focus();
-          e.preventDefault();
-        }
-      }
+    if (component.config.trapFocus !== false) {
+      component.element.addEventListener("keydown", handleTabKey);
     }
   };
 
   const releaseFocus = () => {
-    if (!component.config.trapFocus) return;
+    component.element.removeEventListener("keydown", handleTabKey);
+    releaseBackground();
 
-    component.element.removeEventListener("keydown", handleKeyDown);
-
-    // Restore focus to previously focused element
+    // Focus goes back where it came from, whether or not it was trapped
     if (previouslyFocusedElement) {
-      previouslyFocusedElement.focus();
+      if (previouslyFocusedElement.isConnected) previouslyFocusedElement.focus();
       previouslyFocusedElement = null;
     }
-
-    function handleKeyDown() {}
   };
 
   const setupEvents = () => {
@@ -638,6 +706,11 @@ export const withVisibility = () => (component) => {
   return {
     ...component,
     visibility,
+    // The API's destroy path releases focus through this
+    focus: {
+      trapFocus,
+      releaseFocus,
+    },
   };
 };
 

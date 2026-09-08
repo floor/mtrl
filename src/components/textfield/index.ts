@@ -2,4 +2,4 @@
 export { default } from "./textfield";
 
 // Export types
-export { TextfieldConfig, TextfieldComponent, TextfieldDensity } from "./types";
+export type { TextfieldConfig, TextfieldComponent, TextfieldDensity } from "./types";

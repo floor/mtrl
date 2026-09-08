@@ -1,6 +1,6 @@
 // src/components/radios/index.ts
 export { default } from './radios';
-export { RadiosConfig, RadiosComponent, RadioOptionConfig } from './types';
+export type { RadiosConfig, RadiosComponent, RadioOptionConfig } from './types';
 export {
   RADIO_STATES,
   RADIO_DIRECTIONS,

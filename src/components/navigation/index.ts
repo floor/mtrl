@@ -1,6 +1,6 @@
 // src/components/navigation/index.ts
 export { default } from './navigation'
-export {
+export type {
   NavigationConfig,
   NavigationComponent,
   NavItemConfig,

@@ -69,7 +69,7 @@ export { default } from "./card";
  *
  * These types define the structure and behavior of the Card component.
  */
-export {
+export type {
   CardVariant,
   CardElevationLevel,
   CardSchema,

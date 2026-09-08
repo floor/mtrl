@@ -4,8 +4,8 @@
 export { default } from "./slider";
 
 // Export types
-export {
-  type SliderConfig,
-  type SliderComponent,
-  type SliderEvent,
+export type {
+  SliderConfig,
+  SliderComponent,
+  SliderEvent,
 } from "./types";

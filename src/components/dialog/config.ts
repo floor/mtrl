@@ -13,7 +13,6 @@ export const defaultConfig: DialogConfig = {
   animation: 'scale',
   footerAlignment: 'right',
   open: false,
-  closeButton: true,
   closeOnOverlayClick: true,
   closeOnEscape: true,
   modal: true,
@@ -38,9 +37,25 @@ export const createBaseConfig = (config: DialogConfig = {}): DialogConfig =>
  * @returns {Object} Element configuration object for withElement
  */
 export const getElementConfig = (config: DialogConfig) => {
+  // The dialog itself carries the semantics, not the scrim behind it. On the
+  // web a basic dialog is an alert dialog (M3 dialog accessibility,
+  // "Labeling elements"); a full-screen dialog holds a task rather than a
+  // prompt, so it stays a plain dialog.
+  const role =
+    config.role ||
+    (config.size === 'fullscreen' ? 'dialog' : 'alertdialog');
+
+  const attributes: Record<string, any> = {
+    role,
+    tabindex: -1
+  };
+  if (config.modal !== false) {
+    attributes['aria-modal'] = 'true';
+  }
+
   return createElementConfig(config, {
     tag: 'div',
-    attributes: {},
+    attributes,
     className: config.class
   });
 };
@@ -53,11 +68,9 @@ export const getElementConfig = (config: DialogConfig) => {
 export const getOverlayConfig = (config: DialogConfig) => {
   return {
     tag: 'div',
-    attributes: {
-      'aria-modal': config.modal === false ? false : true,
-      'role': 'dialog',
-      'tabindex': -1
-    },
+    // The overlay is the scrim: it is decoration, and the dialog inside it
+    // carries the role and the modal flag
+    attributes: {},
     className: ''
   };
 };

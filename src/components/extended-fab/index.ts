@@ -36,7 +36,7 @@
  */
 
 export { default, default as createExtendedFab } from './extended-fab';
-export {
+export type {
   ExtendedFabConfig,
   ExtendedFabComponent,
   ExtendedFabVariant,
