@@ -1,0 +1,185 @@
+// src/styles/components/_split-button.scss
+//
+// Split button, after the Material 3 tokens (Compose SplitButtonXSmallTokens
+// through SplitButtonXLargeTokens): a leading button carrying an action and a
+// trailing button that opens more choices, 2dp apart, the pair reading as one
+// pill. The outer corners are full and the inner ones are small, growing when
+// the button is hovered or pressed; the trailing button's inner corner
+// becomes a circle while its menu is open, and its chevron turns 180 degrees.
+//
+// Both halves are the library's own button, so their colours, state layers,
+// focus rings and touch targets come from there. Everything is written with
+// logical properties, so the pair mirrors in right-to-left languages.
+@use "sass:map";
+@use "../../styles/abstract/base" as base;
+@use "../../styles/abstract/variables" as v;
+@use "../../styles/abstract/functions" as f;
+@use "../../styles/abstract/mixins" as m;
+@use "../../styles/abstract/theme" as t;
+
+$component: "#{base.$prefix}-split-button";
+$button: "#{base.$prefix}-button";
+
+// height, leading start/end space, trailing space, icon, inner corner,
+// inner corner when hovered or pressed, and how far the chevron sits from
+// the centre while the menu is closed
+$sizes: (
+  "xs": (height: 32px, lead-start: 12px, lead-end: 10px, trail: 13px, icon: 22px, inner: map.get(v.$shape, "extra-small"), inner-active: map.get(v.$shape, "small"), offset: 1px),
+  "s":  (height: 40px, lead-start: 16px, lead-end: 12px, trail: 13px, icon: 22px, inner: map.get(v.$shape, "extra-small"), inner-active: map.get(v.$shape, "medium"), offset: 1px),
+  "m":  (height: 56px, lead-start: 24px, lead-end: 24px, trail: 15px, icon: 26px, inner: map.get(v.$shape, "extra-small"), inner-active: map.get(v.$shape, "medium"), offset: 2px),
+  "l":  (height: 96px, lead-start: 48px, lead-end: 48px, trail: 29px, icon: 38px, inner: map.get(v.$shape, "small"), inner-active: map.get(v.$shape, "large-increased"), offset: 3px),
+  "xl": (height: 136px, lead-start: 64px, lead-end: 64px, trail: 43px, icon: 50px, inner: map.get(v.$shape, "medium"), inner-active: map.get(v.$shape, "large-increased"), offset: 6px)
+);
+
+// The space between the two halves, at every size (BetweenSpace)
+$gap: 2px;
+
+.#{$component} {
+  display: inline-flex;
+  align-items: stretch;
+  gap: $gap;
+  vertical-align: middle;
+
+  // The two halves keep their own shapes; nothing here fights the button's
+  // own colours or states
+  .#{$button} {
+    // A pill on the outside, a small corner where the two meet
+    border-start-start-radius: v.shape("full");
+    border-end-start-radius: v.shape("full");
+    border-start-end-radius: v.shape("full");
+    border-end-end-radius: v.shape("full");
+    transition:
+      border-radius v.motion("spring-fast-spatial-duration") v.motion("spring-fast-spatial-easing"),
+      background-color v.motion("duration-short2") v.motion("easing-standard");
+  }
+
+  // ---------------------------------------------------------------------------
+  // Sizes
+  // ---------------------------------------------------------------------------
+  @each $size, $spec in $sizes {
+    &--#{$size} {
+      $inner: map.get($spec, "inner");
+      $inner-active: map.get($spec, "inner-active");
+
+      .#{$button} {
+        height: map.get($spec, "height");
+        min-height: map.get($spec, "height");
+      }
+
+      // The leading button: an outer pill edge, an inner corner facing its
+      // neighbour
+      .#{$component}__leading {
+        padding-inline: map.get($spec, "lead-start") map.get($spec, "lead-end");
+        // Compose SplitButtonDefaults.LeadingButtonMinWidth
+        min-width: 48px;
+        border-start-end-radius: $inner;
+        border-end-end-radius: $inner;
+
+        &:hover,
+        &:focus-visible,
+        &:active {
+          border-start-end-radius: $inner-active;
+          border-end-end-radius: $inner-active;
+        }
+      }
+
+      // The trailing button is symmetrical, so its icon is nudged towards the
+      // flat edge to sit optically centred; while the menu is open the corner
+      // is round and the icon centres properly
+      .#{$component}__trailing {
+        padding-inline: map.get($spec, "trail");
+        // Its width is its padding and its icon, not the button's own minimum
+        min-width: 0;
+
+        // The icon sits in the button's icon wrapper, which has a size of its
+        // own; the split button's chevron is bigger than a button icon
+        .#{$button}-icon {
+          width: map.get($spec, "icon");
+          height: map.get($spec, "icon");
+        }
+        border-start-start-radius: $inner;
+        border-end-start-radius: $inner;
+
+        &:hover,
+        &:focus-visible,
+        &:active {
+          border-start-start-radius: $inner-active;
+          border-end-start-radius: $inner-active;
+        }
+
+        .#{$component}__chevron {
+          width: map.get($spec, "icon");
+          height: map.get($spec, "icon");
+          translate: calc(-1 * #{map.get($spec, "offset")}) 0;
+        }
+
+        @include m.rtl {
+          .#{$component}__chevron {
+            translate: map.get($spec, "offset") 0;
+          }
+        }
+      }
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Open: the inner corner rounds off and the chevron turns over
+  // ---------------------------------------------------------------------------
+  &--expanded {
+    .#{$component}__trailing {
+      border-start-start-radius: v.shape("full");
+      border-end-start-radius: v.shape("full");
+
+      .#{$component}__chevron {
+        translate: 0 0;
+        rotate: 180deg;
+      }
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // The chevron: it turns on the standard motion scheme, not the expressive
+  // one (M3 split button guidelines, "Behavior")
+  // ---------------------------------------------------------------------------
+  &__chevron {
+    display: block;
+    flex: none;
+    transition:
+      rotate v.motion("duration-medium1") v.motion("easing-standard"),
+      translate v.motion("duration-medium1") v.motion("easing-standard");
+  }
+
+  // ---------------------------------------------------------------------------
+  // Each half keeps a 48dp target even when the button is shorter
+  // (M3 split button accessibility)
+  // ---------------------------------------------------------------------------
+  &--xs,
+  &--s {
+    .#{$button} {
+      position: relative;
+
+      &::after {
+        content: "";
+        position: absolute;
+        inset-inline: 0;
+        top: 50%;
+        translate: 0 -50%;
+        height: v.button("touch-target");
+        min-height: 100%;
+      }
+    }
+  }
+
+  @include m.reduced-motion {
+    .#{$button},
+    &__chevron {
+      transition: none;
+    }
+  }
+
+  @include m.print {
+    .#{$component}__trailing {
+      display: none;
+    }
+  }
+}

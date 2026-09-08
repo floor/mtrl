@@ -35,6 +35,7 @@ export { default as createNavigationSystem } from "./navigation/system";
 
 export { default as createProgress } from "./progress";
 export { default as createLoadingIndicator } from "./loading-indicator";
+export { default as createSplitButton } from "./split-button";
 export { default as createRadios } from "./radios";
 export { default as createSearch } from "./search";
 export { default as createSelect } from "./select";
@@ -152,6 +153,12 @@ export type {
 
 // Menu
 export type { MenuConfig, MenuComponent, MenuItem } from "./menu/types";
+
+// Split button
+export type {
+  SplitButtonConfig,
+  SplitButtonComponent,
+} from "./split-button/types";
 
 // Loading indicator
 export type {

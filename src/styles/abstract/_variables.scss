@@ -187,6 +187,9 @@ $shape: (
   'small': 8px,
   'medium': 12px,
   'large': 16px,
+  // Compose ShapeTokens.CornerValueLargeIncreased, used by the split
+  // button's inner corners when hovered or pressed
+  'large-increased': 20px,
   'extra-large': 28px,
   'full': 9999px,
   'pill': 100px
