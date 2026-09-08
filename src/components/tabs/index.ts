@@ -18,7 +18,7 @@ export {
   TAB_CLASSES,
 } from "./constants";
 
-export {
+export type {
   // Types
   TabsConfig,
   TabsComponent,
@@ -39,19 +39,8 @@ export {
 };
 
 // Export features
-export {
-  withTabsManagement,
-  withScrollable,
-  withDivider,
-  withIndicator,
-  TabsManagementConfig,
-  TabsManagementComponent,
-  ScrollableConfig,
-  ScrollableComponent,
-  DividerConfig,
-  IndicatorFeatureConfig,
-  IndicatorComponent,
-} from "./features";
+export { withTabsManagement, withScrollable, withDivider, withIndicator } from "./features";
+export type { TabsManagementConfig, TabsManagementComponent, ScrollableConfig, ScrollableComponent, DividerConfig, IndicatorFeatureConfig, IndicatorComponent } from "./features";
 
 // Default export
 export default createTabs;

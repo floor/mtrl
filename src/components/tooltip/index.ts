@@ -11,7 +11,7 @@ export {
 } from './constants';
 
 // Export types
-export { 
+export type { 
   TooltipConfig, 
   TooltipComponent
 } from './types';

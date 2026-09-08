@@ -17,7 +17,7 @@
 export { default } from "./dialog";
 
 // TypeScript types and interfaces
-export {
+export type {
   DialogConfig,
   DialogComponent,
   DialogButton,

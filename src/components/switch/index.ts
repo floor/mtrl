@@ -11,10 +11,11 @@ export {
 } from './constants'
 
 // Export types
-export { 
+export type { 
   SwitchConfig, 
   SwitchComponent
 } from './types'
 
 // Export features
-export { withSupportingText, SupportingTextComponent } from './features'
+export { withSupportingText } from './features';
+export type { SupportingTextComponent } from './features'
