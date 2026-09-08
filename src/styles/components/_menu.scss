@@ -219,6 +219,25 @@ $component: "#{$prefix}-menu";
             text-overflow: ellipsis;
         }
 
+        // A label with a line under it. The stacking belongs to every
+        // variant, so a supporting line never runs into its label; the
+        // vertical menu adds its own type and colour on top.
+        &-label {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            flex: 1;
+            min-width: 0;
+        }
+
+        &-supporting {
+            @include m.typography("body-medium");
+            color: t.color("on-surface-variant");
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
         &-shortcut {
             margin-left: 12px;
             color: t.color("on-surface-variant");
@@ -286,6 +305,167 @@ $component: "#{$prefix}-menu";
     }
 
     // RTL Support
+    // -------------------------------------------------------------------------
+    // The M3 expressive vertical menu (Compose SegmentedMenuTokens and
+    // StandardMenuTokens / VibrantMenuTokens). A 16dp container holding 44dp
+    // items 2dp apart; an item is a 4dp rectangle at rest and rounds to 12dp
+    // as it is hovered, focused, pressed or selected, which is the expressive
+    // state this variant is for. The first and last items round to 12dp on
+    // their outer corners so the column reads as one block.
+    // -------------------------------------------------------------------------
+    &--vertical {
+        // Standard: surface-based, the lower-emphasis mapping
+        --#{$prefix}-menu-container: #{t.color("surface-container-low")};
+        --#{$prefix}-menu-label: #{t.color("on-surface")};
+        --#{$prefix}-menu-supporting: #{t.color("on-surface-variant")};
+        --#{$prefix}-menu-selected-container: #{t.color("tertiary-container")};
+        --#{$prefix}-menu-selected-label: #{t.color("on-tertiary-container")};
+
+        border-radius: v.shape("large");
+        background-color: var(--#{$prefix}-menu-container);
+        color: var(--#{$prefix}-menu-label);
+        padding: 8px;
+
+        // Vibrant: tertiary-based, more prominent, to be used sparingly
+        &.#{$component}--vibrant {
+            --#{$prefix}-menu-container: #{t.color("tertiary-container")};
+            --#{$prefix}-menu-label: #{t.color("on-tertiary-container")};
+            --#{$prefix}-menu-supporting: #{t.color("on-tertiary-container")};
+            --#{$prefix}-menu-selected-container: #{t.color("tertiary")};
+            --#{$prefix}-menu-selected-label: #{t.color("on-tertiary")};
+        }
+
+        .#{$component}-list {
+            display: flex;
+            flex-direction: column;
+            gap: 2px; // SegmentedGap
+        }
+
+        .#{$component}-item {
+            @include m.typography("body-large");
+            min-height: 44px; // SegmentedMenuTokens.Item
+            padding: 8px 16px; // ItemTopSpace / ItemLeadingSpace
+            padding-inline-end: 16px;
+            color: var(--#{$prefix}-menu-label);
+            border-radius: v.shape("extra-small"); // ItemShape
+            transition:
+                border-radius v.motion("spring-fast-spatial-duration")
+                    v.motion("spring-fast-spatial-easing"),
+                background-color v.motion("duration-short2")
+                    v.motion("easing-standard");
+
+            // The shape is the state: 4dp at rest, 12dp once it is touched
+            &:hover,
+            &:focus-visible,
+            &:active {
+                border-radius: v.shape("medium");
+            }
+
+            // The ends of the column round outwards, so the items read as one
+            &:first-child {
+                border-start-start-radius: v.shape("medium");
+                border-start-end-radius: v.shape("medium");
+            }
+
+            &:last-child {
+                border-end-start-radius: v.shape("medium");
+                border-end-end-radius: v.shape("medium");
+            }
+
+            &--selected {
+                background-color: var(--#{$prefix}-menu-selected-container);
+                color: var(--#{$prefix}-menu-selected-label);
+                border-radius: v.shape("medium"); // ItemSelectedShape
+
+                &:hover {
+                    @include m.state-layer(var(--#{$prefix}-menu-selected-label), "hover");
+                }
+
+                &:focus {
+                    @include m.state-layer(var(--#{$prefix}-menu-selected-label), "focus");
+                }
+
+                &:active {
+                    @include m.state-layer(var(--#{$prefix}-menu-selected-label), "pressed");
+                }
+            }
+
+            &--disabled {
+                color: color-mix(in srgb, var(--#{$prefix}-menu-label) 38%, transparent);
+            }
+
+            &-icon {
+                color: var(--#{$prefix}-menu-supporting);
+                margin-inline-end: 12px; // ItemBetweenSpace
+
+                svg {
+                    // ItemLeadingIconSize / ItemTrailingIconSize
+                    width: 20px;
+                    height: 20px;
+                }
+            }
+
+            &-shortcut {
+                @include m.typography("label-small"); // ItemTrailingSupportingTextFont
+                color: var(--#{$prefix}-menu-supporting);
+            }
+
+            // A label with a line under it
+            &-label {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                flex: 1;
+                min-width: 0;
+            }
+
+            &-supporting {
+                @include m.typography("body-medium"); // ItemSupportingTextFont
+                color: var(--#{$prefix}-menu-supporting);
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            &--selected {
+                .#{$component}-item-icon,
+                .#{$component}-item-shortcut,
+                .#{$component}-item-supporting {
+                    color: inherit;
+                }
+            }
+        }
+
+        // A grouped menu separates its runs of items with a divider; the gap
+        // treatment the spec shows is not offered on the web
+        // (m3.material.io menu guidelines, "Gaps & dividers")
+        .#{$component}-divider {
+            margin: 6px 0;
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Shape morph on the container: while a submenu is open, the menu that
+    // opened it steps back to an 8dp corner and the active one takes 24dp
+    // (SegmentedMenuTokens.ActiveContainerShape and InactiveContainerShape).
+    // This is the expressive active state the spec describes.
+    // -------------------------------------------------------------------------
+    &--vertical {
+        transition:
+            transform v.motion("duration-medium1") v.motion("easing-emphasized"),
+            opacity v.motion("duration-medium1") v.motion("easing-emphasized"),
+            border-radius v.motion("spring-fast-spatial-duration")
+                v.motion("spring-fast-spatial-easing");
+
+        &.#{$component}--active {
+            border-radius: 24px;
+        }
+
+        &.#{$component}--inactive {
+            border-radius: v.shape("small");
+        }
+    }
+
     @include m.rtl {
         transform-origin: top right;
 

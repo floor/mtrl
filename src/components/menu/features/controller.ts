@@ -124,7 +124,23 @@ const withController = (config: MenuConfig) => (component) => {
     const textElement = document.createElement("span");
     textElement.className = `${component.getClass("menu-item-text")}`;
     textElement.textContent = item.text;
-    contentContainer.appendChild(textElement);
+
+    if (item.supportingText) {
+      // A label and a line under it: the two stack, so they go in their own
+      // box rather than beside the icon and the trailing text
+      const labelElement = document.createElement("span");
+      labelElement.className = `${component.getClass("menu-item-label")}`;
+      const supportingElement = document.createElement("span");
+      supportingElement.className = `${component.getClass(
+        "menu-item-supporting",
+      )}`;
+      supportingElement.textContent = item.supportingText;
+      labelElement.appendChild(textElement);
+      labelElement.appendChild(supportingElement);
+      contentContainer.appendChild(labelElement);
+    } else {
+      contentContainer.appendChild(textElement);
+    }
 
     // Add shortcut if provided
     if (item.shortcut) {

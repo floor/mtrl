@@ -187,3 +187,78 @@ describe('menu', () => {
     expect(document.body.contains(menu.element)).toBe(false);
   });
 });
+
+describe('the expressive vertical menu', () => {
+  test('is opt-in: a plain menu is still the baseline one', async () => {
+    const menu = createMenu({ opener, items });
+    await opened(menu);
+    expect(menu.element.classList.contains('mtrl-menu--vertical')).toBe(false);
+    expect(menu.element.classList.contains('mtrl-menu--vibrant')).toBe(false);
+  });
+
+  test('the vertical variant carries its own class, and vibrant its own', async () => {
+    const standard = createMenu({ opener, items, variant: 'vertical' });
+    await opened(standard);
+    expect(standard.element.classList.contains('mtrl-menu--vertical')).toBe(true);
+    expect(standard.element.classList.contains('mtrl-menu--vibrant')).toBe(false);
+    standard.close();
+    await after(450);
+
+    const vibrant = createMenu({ opener, items, variant: 'vertical', color: 'vibrant' });
+    await opened(vibrant);
+    expect(vibrant.element.classList.contains('mtrl-menu--vertical')).toBe(true);
+    expect(vibrant.element.classList.contains('mtrl-menu--vibrant')).toBe(true);
+    // vibrant only means anything on the vertical variant
+    const baseline = createMenu({ opener, items, color: 'vibrant' });
+    await opened(baseline);
+    expect(baseline.element.classList.contains('mtrl-menu--vibrant')).toBe(false);
+  });
+
+  test('an item can carry a line of supporting text under its label', async () => {
+    const menu = createMenu({
+      opener,
+      variant: 'vertical',
+      items: [
+        { id: 'share', text: 'Share', supportingText: 'Anyone with the link' },
+        { id: 'copy', text: 'Copy' },
+      ],
+    });
+    await opened(menu);
+    const [withText, without] = menuItems(menu) as [HTMLElement, HTMLElement];
+    const label = withText.querySelector('.mtrl-menu-item-label');
+    expect(label).not.toBeNull();
+    expect(label!.querySelector('.mtrl-menu-item-text')!.textContent).toBe('Share');
+    expect(label!.querySelector('.mtrl-menu-item-supporting')!.textContent).toBe('Anyone with the link');
+    // an item without it keeps the simpler markup
+    expect(without.querySelector('.mtrl-menu-item-label')).toBeNull();
+    expect(without.querySelector('.mtrl-menu-item-text')!.textContent).toBe('Copy');
+  });
+
+  test('a submenu takes its parent\'s variant, and the pair shows which is active', async () => {
+    const menu = createMenu({
+      opener,
+      variant: 'vertical',
+      color: 'vibrant',
+      items: [
+        { id: 'share', text: 'Share', hasSubmenu: true, submenu: [{ id: 'link', text: 'Copy link' }] },
+        { id: 'copy', text: 'Copy' },
+      ],
+    });
+    await opened(menu);
+    const parent = menu.element;
+    expect(parent.classList.contains('mtrl-menu--active')).toBe(false);
+    expect(parent.classList.contains('mtrl-menu--inactive')).toBe(false);
+
+    menuItems(menu)[0]!.click();
+    await after(400);
+    const submenu = document.querySelector('.mtrl-menu--submenu');
+    expect(submenu).not.toBeNull();
+    // the submenu looks like its parent
+    expect(submenu!.classList.contains('mtrl-menu--vertical')).toBe(true);
+    expect(submenu!.classList.contains('mtrl-menu--vibrant')).toBe(true);
+    // and the shape says which one is live
+    expect(submenu!.classList.contains('mtrl-menu--active')).toBe(true);
+    expect(parent.classList.contains('mtrl-menu--inactive')).toBe(true);
+    expect(parent.classList.contains('mtrl-menu--active')).toBe(false);
+  });
+});

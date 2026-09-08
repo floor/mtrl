@@ -3,6 +3,36 @@
 /**
  * Menu position options for alignment relative to opener element
  */
+/**
+ * Menu variants
+ *
+ * The baseline menu is the original M3 design: square-ish corners, a
+ * surface-container container, and items that fill the width. The vertical
+ * menu is the M3 expressive one: a 16dp container holding 44dp items that
+ * sit 2dp apart and change shape as they are hovered, focused, pressed or
+ * selected. New designs should take the vertical variant.
+ * @category Components
+ */
+export const MENU_VARIANTS = {
+  /** The original M3 menu (default, for compatibility) */
+  BASELINE: "baseline",
+  /** The M3 expressive vertical menu */
+  VERTICAL: "vertical",
+} as const;
+
+/**
+ * Colour mappings for the vertical menu
+ *
+ * Standard is surface-based and carries lower emphasis; vibrant is
+ * tertiary-based, is more prominent, and should be used sparingly
+ * (m3.material.io menu guidelines, "Color options").
+ * @category Components
+ */
+export const MENU_COLORS = {
+  STANDARD: "standard",
+  VIBRANT: "vibrant",
+} as const;
+
 export const MENU_POSITION = {
   /** Places menu below the opener, aligned to left edge */
   BOTTOM_START: "bottom-start",
@@ -34,6 +64,10 @@ export const MENU_POSITION = {
  * Default configuration values for menus
  */
 export const MENU_DEFAULTS = {
+  /** Default variant; the baseline menu, so existing menus are untouched */
+  VARIANT: MENU_VARIANTS.BASELINE,
+  /** Default colour mapping for the vertical variant */
+  COLOR: MENU_COLORS.STANDARD,
   /** Default menu position */
   POSITION: MENU_POSITION.BOTTOM_START,
   /** Default offset from the opener (in pixels) */
