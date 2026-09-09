@@ -16,6 +16,7 @@
 export { default as createBadge } from "./badge";
 export { default as createBottomAppBar } from "./bottom-app-bar";
 export { default as createBottomSheet } from "./bottom-sheet";
+export { default as createSideSheet } from "./side-sheet";
 export { default as createButton } from "./button";
 export { default as createButtonGroup } from "./button-group";
 export { default as createCard } from "./card";
@@ -80,6 +81,13 @@ export type {
   BottomSheetStateEvent,
   BottomSheetEventHandlers,
 } from "./bottom-sheet/types";
+export type {
+  SideSheetConfig,
+  SideSheetComponent,
+  SideSheetVariant,
+  SideSheetPosition,
+  SideSheetEventHandlers,
+} from "./side-sheet/types";
 
 // Button
 export type {
