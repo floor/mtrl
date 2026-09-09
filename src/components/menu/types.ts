@@ -148,14 +148,10 @@ export interface MenuConfig {
   items: MenuContent[];
 
   /**
-   * Position of the menu relative to the opener
-   * @default 'bottom-start'
-   */
-  /**
    * Menu variant. `'vertical'` is the M3 expressive menu: a rounded
    * container holding items that sit apart and change shape as they are
-   * hovered, focused, pressed or selected. Defaults to `'baseline'`, the
-   * original M3 menu.
+   * hovered, focused, pressed or selected.
+   * @default 'baseline'
    */
   variant?: MenuVariant;
 
@@ -165,6 +161,10 @@ export interface MenuConfig {
    */
   color?: MenuColor;
 
+  /**
+   * Position of the menu relative to the opener
+   * @default 'bottom-start'
+   */
   position?: MenuPosition;
 
   /**
@@ -211,7 +211,7 @@ export interface MenuConfig {
 
   /**
    * Optional offset from the opener (in pixels)
-   * @default 8
+   * @default 0
    */
   offset?: number;
 
