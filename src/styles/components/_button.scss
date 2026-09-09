@@ -64,7 +64,7 @@ $content-color: (
   height: v.button('height-s');
   padding: 0 v.button('padding-s');
   border: none;
-  border-radius: var(--#{base.$prefix}-button-shape, v.button('border-radius'));
+  border-radius: var(--#{base.$prefix}-button-shape, v.button('shape-round-s'));
   background-color: transparent;
   color: inherit;
   font: inherit;
@@ -182,6 +182,10 @@ $content-color: (
         width: v.button('icon-size-#{$size}');
         height: v.button('icon-size-#{$size}');
       }
+
+      // Round shape at rest: half the height, so the pressed shape is a
+      // morph rather than a snap. See shape-round-* in $button.
+      border-radius: var(--#{base.$prefix}-button-shape, v.button('shape-round-#{$size}'));
 
       // Square shape at rest
       &.#{$component}--square {
@@ -434,8 +438,10 @@ $content-color: (
         }
       }
 
-      &.#{$component}--square {
-        border-radius: var(--#{base.$prefix}-button-shape-selected, v.button('border-radius'));
+      @each $size in $sizes {
+        &.#{$component}--square.#{$component}--#{$size} {
+          border-radius: var(--#{base.$prefix}-button-shape-selected, v.button('shape-round-#{$size}'));
+        }
       }
 
       @each $size in $sizes {
