@@ -70,6 +70,10 @@ export const createCardContent = (config: CardContentConfig = {}): HTMLElement =
       });
     }
 
+    // Add debug class to make troubleshooting easier
+    // Remove this in production
+    content.element.classList.add('debug-content');
+
     return content.element;
   } catch (error) {
     console.error('Card content creation error:', error instanceof Error ? error.message : String(error));

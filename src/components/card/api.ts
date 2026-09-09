@@ -172,17 +172,16 @@ export const withAPI = ({ lifecycle }: ApiOptions) => (component: BaseComponent)
     component.element.setAttribute('draggable', 'true');
     component.element.setAttribute('aria-grabbed', 'false');
 
-    // The grabbed state is maintained whether or not a callback was given.
-    // These listeners used to live inside the callback branch, so a card made
-    // draggable without one reported itself as not grabbed for the whole drag.
-    component.element.addEventListener('dragstart', (e: DragEvent) => {
-      component.element.setAttribute('aria-grabbed', 'true');
-      if (typeof dragStartCallback === 'function') dragStartCallback(e);
-    });
-
-    component.element.addEventListener('dragend', () => {
-      component.element.setAttribute('aria-grabbed', 'false');
-    });
+    if (typeof dragStartCallback === 'function') {
+      component.element.addEventListener('dragstart', (e: DragEvent) => {
+        component.element.setAttribute('aria-grabbed', 'true');
+        dragStartCallback(e);
+      });
+      
+      component.element.addEventListener('dragend', () => {
+        component.element.setAttribute('aria-grabbed', 'false');
+      });
+    }
 
     return this;
   },

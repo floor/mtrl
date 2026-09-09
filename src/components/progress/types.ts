@@ -67,7 +67,7 @@ export interface ProgressConfig {
   /**
    * Thickness of the progress track and indicator
    * Can be a named preset ('thin', 'default', 'thick') or a specific number in pixels
-   * @default 'thin'
+   * @default 'default'
    */
   thickness?: ProgressThickness;
 
@@ -131,7 +131,7 @@ export interface ProgressConfig {
   /**
    * Size of the circular progress indicator in dp (only for circular variant)
    * Clamped between 24 and 240
-   * @default 40 (48 when wavy)
+   * @default 50
    */
   size?: number;
 }

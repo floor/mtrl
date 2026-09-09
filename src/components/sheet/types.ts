@@ -30,10 +30,6 @@ export const SHEET_EVENTS = {
 } as const;
 
 /**
- * @deprecated Since 0.8.0. Use BottomSheetConfig or SideSheetConfig.
- * The sheet component this belongs to does not open: see createSheet.
- */
-/**
  * Configuration interface for the Sheet component
  * @category Components
  */
@@ -176,10 +172,6 @@ export interface TitleAPI {
   getElement: () => HTMLElement | null;
 }
 
-/**
- * @deprecated Since 0.8.0. Use BottomSheetComponent or SideSheetComponent.
- * The sheet component this belongs to does not open: see createSheet.
- */
 /**
  * Sheet component interface
  * @category Components

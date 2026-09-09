@@ -17,11 +17,7 @@ $component: '#{base.$prefix}-card';
   background-color: t.color('surface');
   color: t.color('on-surface');
   overflow: hidden;
-  // No width of its own. A card fills the column, grid cell or flex track it
-  // is placed in, as the M3 card specs describe. This used to be a hard 344px,
-  // which meant every card had to opt out of its own component to sit in a
-  // layout. The sizes are still available as modifiers below for the cases
-  // that genuinely want them.
+  width: v.card('width'); // Use card width variable
   --card-elevation: 0;
   
   // Typography - use mixin
@@ -61,89 +57,47 @@ $component: '#{base.$prefix}-card';
   
   // === Variants - use proper theme colors ===
   
-  // Elevated: ElevatedCardTokens. Level 1 at rest, 2 hovered, back to 1 when
-  // pressed or focused, 4 while dragged.
+  // Elevated variant
   &--elevated {
     background-color: t.color('surface-container-low');
-    @include m.elevation(1);
-
+    @include m.elevation(1); // Use elevation mixin
+    
     &:hover.#{$component}--interactive {
-      @include m.elevation(2);
+      @include m.elevation(2); // Use elevation mixin for hover state
     }
 
     &:active.#{$component}--interactive {
-      @include m.elevation(1);
-      @include m.state-layer(t.color('on-surface'), 'pressed');
-    }
-
-    &.#{$component}--dragging {
-      @include m.elevation(4); // DraggedContainerElevation
-    }
-
-    &.#{$component}--state-disabled {
-      background-color: t.color('surface'); // DisabledContainerColor
-      @include m.elevation(1); // it keeps its elevation while disabled
+      @include m.state-layer(t.color('on-surface'), 'pressed'); // Use state-layer mixin
     }
   }
-
-  // Filled: FilledCardTokens. Flat at rest, and it rises to level 1 on hover,
-  // which is the only elevation it ever takes.
+  
+  // Filled variant
   &--filled {
     background-color: t.color('surface-container-highest');
-    @include m.elevation(0);
-
+    @include m.elevation(0); // No elevation
+    
     &:hover.#{$component}--interactive {
-      @include m.elevation(1); // HoverContainerElevation
       @include m.state-layer(t.color('on-surface'), 'hover');
     }
 
     &:active.#{$component}--interactive {
-      @include m.elevation(0);
       @include m.state-layer(t.color('on-surface'), 'pressed');
-    }
-
-    &.#{$component}--dragging {
-      @include m.elevation(3); // DraggedContainerElevation
-    }
-
-    &.#{$component}--state-disabled {
-      background-color: t.color('surface-variant'); // DisabledContainerColor
     }
   }
-
-  // Outlined: OutlinedCardTokens. The outline is outline-variant at rest and
-  // hovered, and on-surface once focused, which is the only state that changes
-  // it. It used to sit at the darker `outline` and lighten on hover, which is
-  // the wrong role and the wrong direction.
+  
+  // Outlined variant
   &--outlined {
-    border: 1px solid t.color('outline-variant'); // OutlineColor
+    border: 1px solid t.color('outline');
     background-color: t.color('surface');
-    @include m.elevation(0);
-
+    @include m.elevation(0); // No elevation
+    
     &:hover.#{$component}--interactive {
-      @include m.elevation(1); // HoverContainerElevation
       @include m.state-layer(t.color('on-surface'), 'hover');
-      border-color: t.color('outline-variant'); // HoverOutlineColor
-    }
-
-    &:focus-visible,
-    &.#{$component}--focused {
-      border-color: t.color('on-surface'); // FocusOutlineColor
+      border-color: t.color('outline-variant');
     }
 
     &:active.#{$component}--interactive {
-      @include m.elevation(0);
       @include m.state-layer(t.color('on-surface'), 'pressed');
-      border-color: t.color('outline-variant'); // PressedOutlineColor
-    }
-
-    &.#{$component}--dragging {
-      @include m.elevation(3); // DraggedContainerElevation
-    }
-
-    &.#{$component}--state-disabled {
-      // DisabledOutlineColor at DisabledOutlineOpacity
-      border-color: t.alpha('outline', 0.12);
     }
   }
   
@@ -155,21 +109,9 @@ $component: '#{base.$prefix}-card';
     user-select: none;
   }
   
-  // Widths, for the cases that want a fixed one. A card has none by default.
+  // Full-width cards
   &--full-width {
     width: 100%;
-  }
-
-  &--small {
-    width: v.card('width-small');
-  }
-
-  &--medium {
-    width: v.card('width-medium');
-  }
-
-  &--large {
-    width: v.card('width-large');
   }
   
   // === Sub-components ===
@@ -368,10 +310,9 @@ $component: '#{base.$prefix}-card';
     pointer-events: none;
   }
   
-  // Elevation while dragged differs by variant, so it is set with each of them
-  // above. The 0.9 opacity that used to be here is in no token.
   &--dragging {
-    cursor: grabbing;
+    @include m.elevation(4); // Use elevation mixin
+    opacity: 0.9;
   }
   
   // Loading overlay

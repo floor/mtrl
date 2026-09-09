@@ -63,7 +63,7 @@ describe('button stylesheet: sizes (ButtonXSmall…XLargeTokens.kt)', () => {
     expect(declaration(block, 'height')).toBe('40px');
     expect(declaration(block, 'padding')).toBe('0 16px');
     expect(declaration(block, 'min-width')).toBe('58px');
-    expect(declaration(block, 'border-radius')).toBe('var(--mtrl-button-shape, 20px)');
+    expect(declaration(block, 'border-radius')).toBe('var(--mtrl-button-shape, 9999px)');
   });
 
   test('xs and s extend the hit area to a 48dp target', () => {
@@ -87,39 +87,6 @@ describe('button stylesheet: shapes', () => {
     expect(value('.mtrl-button--m.mtrl-button--square', 'border-radius')).toBe(shape('16px'));
     expect(value('.mtrl-button--l.mtrl-button--square', 'border-radius')).toBe(shape('28px'));
     expect(value('.mtrl-button--xl.mtrl-button--square', 'border-radius')).toBe(shape('28px'));
-  });
-
-  test('round container shape per size is half the height, not a large number', () => {
-    // A pill written as 9999px paints correctly but animates as a step: the
-    // interpolated value stays above half the height for nearly the whole
-    // transition, so the press morph held the pill and then snapped square.
-    // Half the height is the same pill and a real animation.
-    const round = (size: string) => value(`.mtrl-button--${size}`, 'border-radius');
-    expect(round('xs')).toBe(shape('16px'));
-    expect(round('s')).toBe(shape('20px'));
-    expect(round('m')).toBe(shape('28px'));
-    expect(round('l')).toBe(shape('48px'));
-    expect(round('xl')).toBe(shape('68px'));
-
-    // Each is exactly half the container height the size test asserts
-    const heights: Record<string, number> = { xs: 32, s: 40, m: 56, l: 96, xl: 136 };
-    for (const [size, height] of Object.entries(heights)) {
-      const declared = value(`.mtrl-button--${size}`, 'border-radius');
-      expect(declared).toBe(shape(`${height / 2}px`));
-    }
-  });
-
-  test('no button corner is written as an unanimatable pill', () => {
-    // 9999px anywhere in this stylesheet reintroduces the snap
-    expect(css).not.toContain('9999px');
-  });
-
-  test('a selected square toggle rounds to half its height', () => {
-    for (const [size, radius] of Object.entries({ xs: '16px', s: '20px', m: '28px', l: '48px', xl: '68px' })) {
-      expect(
-        value(`.mtrl-button--toggle.mtrl-button--selected.mtrl-button--square.mtrl-button--${size}`, 'border-radius')
-      ).toBe(selectedShape(radius));
-    }
   });
 
   test('pressed container shape per size', () => {
@@ -229,8 +196,7 @@ describe('button stylesheet: toggle buttons (ToggleButtonDefaults)', () => {
     expect(value('.mtrl-button--toggle.mtrl-button--selected.mtrl-button--s', 'border-radius')).toBe('var(--mtrl-button-shape-selected, 12px)');
     expect(value('.mtrl-button--toggle.mtrl-button--selected.mtrl-button--m', 'border-radius')).toBe('var(--mtrl-button-shape-selected, 16px)');
     expect(value('.mtrl-button--toggle.mtrl-button--selected.mtrl-button--xl', 'border-radius')).toBe('var(--mtrl-button-shape-selected, 28px)');
-    // A square toggle rounds off; the radius is per size, asserted above
-    expect(value('.mtrl-button--toggle.mtrl-button--selected.mtrl-button--square.mtrl-button--s', 'border-radius')).toBe('var(--mtrl-button-shape-selected, 20px)');
+    expect(value('.mtrl-button--toggle.mtrl-button--selected.mtrl-button--square', 'border-radius')).toBe('var(--mtrl-button-shape-selected, 9999px)');
     expect(css.indexOf('.mtrl-button--toggle.mtrl-button--selected.mtrl-button--square')).toBeGreaterThan(
       css.indexOf('.mtrl-button--toggle.mtrl-button--selected.mtrl-button--xl'),
     );

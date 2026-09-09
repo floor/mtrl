@@ -52,6 +52,7 @@
     "test:ui": "bun test --watch --ui",
     "docs": "typedoc --skipErrorChecking",
     "docs:js": "typedoc --options typedoc.simple.json",
+    "docs:alt": "bun generate-docs.js",
     "docs:serve": "bun run --bun serve docs",
     "docs:fix-errors": "tsc --noEmit --allowJs --skipLibCheck",
     "ts:check": "tsc --noEmit --skipLibCheck",

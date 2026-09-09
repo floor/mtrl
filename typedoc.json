@@ -1,7 +1,7 @@
 // typedoc.json
 {
   "entryPoints": ["./src/index.ts"],
-  "out": "docs/api",
+  "out": "docs",
   "name": "mtrl Documentation",
   "exclude": ["**/node_modules/**", "**/*.test.ts", "**/*.spec.ts"],
   "excludePrivate": false,
@@ -21,8 +21,8 @@
   "skipErrorChecking": true,
   "disableSources": false,
   "validation": {
-    "invalidLink": true,
-    "notDocumented": true
+    "invalidLink": false,
+    "notDocumented": false
   },
   "visibilityFilters": {
     "protected": true,

@@ -191,7 +191,7 @@ export interface DialogConfig {
   
   /** 
    * Duration of open/close animations in milliseconds
-   * @default 150
+   * @default 300
    */
   animationDuration?: number;
   

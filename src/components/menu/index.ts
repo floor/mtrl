@@ -19,7 +19,6 @@ export type {
   MenuComponent, 
   MenuItem, 
   MenuDivider,
-  MenuGap,
   MenuContent,
   MenuEvent,
   MenuSelectEvent,

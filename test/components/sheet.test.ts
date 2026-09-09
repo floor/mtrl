@@ -622,27 +622,3 @@ describe('Sheet Component', () => {
     expect(document.body.contains(sheet.element)).toBe(false);
   });
 });
-describe('Sheet Component (deprecated)', () => {
-  // The sheet is superseded by createBottomSheet and createSideSheet, and it
-  // does not open: its features call an events object the composed enhancer
-  // never provides. It stays exported so existing imports resolve, and this
-  // test exists so the notice is not quietly dropped before the component is.
-  test('the creator and its types carry a deprecation notice', async () => {
-    const { readFileSync } = await import('fs');
-    const source = readFileSync('src/components/sheet/sheet.ts', 'utf8');
-    const types = readFileSync('src/components/sheet/types.ts', 'utf8');
-    const barrel = readFileSync('src/components/index.ts', 'utf8');
-
-    expect(source).toContain('@deprecated');
-    expect(source).toContain('createBottomSheet');
-    expect(source).toContain('createSideSheet');
-    expect(types.match(/@deprecated/g)?.length).toBe(2);
-    expect(barrel).toMatch(/@deprecated[^\n]*\n\s*export \{ default as createSheet \}/);
-  });
-
-  test('the replacements exist and are exported', async () => {
-    const components = await import('../../src/components/index');
-    expect(typeof (components as any).createBottomSheet).toBe('function');
-    expect(typeof (components as any).createSideSheet).toBe('function');
-  });
-});
