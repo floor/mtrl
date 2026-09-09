@@ -15,6 +15,7 @@
 
 export { default as createBadge } from "./badge";
 export { default as createBottomAppBar } from "./bottom-app-bar";
+export { default as createBottomSheet } from "./bottom-sheet";
 export { default as createButton } from "./button";
 export { default as createButtonGroup } from "./button-group";
 export { default as createCard } from "./card";
@@ -41,6 +42,7 @@ export { default as createSearch } from "./search";
 export { default as createSelect } from "./select";
 export { default as createSegmentedButton } from "./segmented-button";
 export { createSegment } from "./segmented-button/segment";
+/** @deprecated Since 0.8.0. Use createBottomSheet or createSideSheet. */
 export { default as createSheet } from "./sheet";
 export { default as createSlider } from "./slider";
 export { default as createSnackbar } from "./snackbar";
@@ -70,6 +72,14 @@ export type { BadgeConfig, BadgeComponent } from "./badge/types";
 
 // Bottom App Bar
 export type { BottomAppBarConfig, BottomAppBar } from "./bottom-app-bar/types";
+export type {
+  BottomSheetConfig,
+  BottomSheetComponent,
+  BottomSheetVariant,
+  BottomSheetState,
+  BottomSheetStateEvent,
+  BottomSheetEventHandlers,
+} from "./bottom-sheet/types";
 
 // Button
 export type {
@@ -199,6 +209,7 @@ export type {
 } from "./segmented-button/types";
 
 // Sheet
+/** @deprecated Since 0.8.0. Use the BottomSheet or SideSheet types. */
 export type { SheetConfig, SheetComponent } from "./sheet/types";
 
 // Slider
