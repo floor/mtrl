@@ -214,12 +214,40 @@ const withController = (config: MenuConfig) => (component) => {
     menuList.className = `${component.getClass("menu-list")}`;
     menuList.setAttribute("role", "menu");
 
-    // Create items
+    // A gap separates groups rather than drawing a line across one surface, so
+    // the items on either side of it go into their own list. Everything else
+    // stays a flat list, which is what the standard menu has always been.
+    // Groups are presentational: the items inside keep their menuitem role and
+    // their index into state.items, so focus order and item lookup are
+    // untouched by the nesting.
+    let target: HTMLElement = menuList;
+
+    const startGroup = (): void => {
+      const group = document.createElement("li");
+      group.className = `${component.getClass("menu-group")}`;
+      group.setAttribute("role", "none");
+
+      const list = document.createElement("ul");
+      list.setAttribute("role", "none");
+      group.appendChild(list);
+      menuList.appendChild(group);
+      target = list;
+    };
+
+    const hasGaps = state.items.some(
+      (item) => "type" in item && item.type === "gap",
+    );
+    if (hasGaps) startGroup();
+
     state.items.forEach((item, index) => {
-      if ("type" in item && item.type === "divider") {
-        menuList.appendChild(createDivider(item, index));
+      if ("type" in item && item.type === "gap") {
+        // The space between groups is the group's own margin, so the gap
+        // itself needs no element
+        startGroup();
+      } else if ("type" in item && item.type === "divider") {
+        target.appendChild(createDivider(item, index));
       } else {
-        menuList.appendChild(createMenuItem(item as MenuItem, index));
+        target.appendChild(createMenuItem(item as MenuItem, index));
       }
     });
 
@@ -702,7 +730,12 @@ const withController = (config: MenuConfig) => (component) => {
 
     items.forEach((item, index) => {
       let element;
-      if ("type" in item && item.type === "divider") {
+      if ("type" in item && item.type === "gap") {
+        // Submenus are a single surface; a gap there is spacing
+        element = document.createElement("li");
+        element.className = `${component.getClass("menu-gap")}`;
+        element.setAttribute("role", "none");
+      } else if ("type" in item && item.type === "divider") {
         element = createDivider(item, index);
       } else {
         element = createMenuItem(item as MenuItem, index);
@@ -721,6 +754,9 @@ const withController = (config: MenuConfig) => (component) => {
   if (component.lifecycle) {
     const originalDestroy = component.lifecycle.destroy || (() => {});
     component.lifecycle.destroy = () => {
+      // A menu destroyed while open must not stay the registered one
+      menuClosed(registryEntry);
+
       // Clean up document events
       document.removeEventListener("click", handleDocumentClick);
       document.removeEventListener("keydown", handleDocumentKeydown);
