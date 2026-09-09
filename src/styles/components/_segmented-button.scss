@@ -27,7 +27,6 @@ $component: "#{base.$prefix}-segmented-button";
     position: relative;
     display: inline-flex;
     align-items: stretch;
-    border-radius: 20px;
     border: 1px solid t.color("outline");
     background-color: transparent;
     overflow: hidden;
@@ -95,7 +94,6 @@ $component: "#{base.$prefix}-segmented-button";
         background-color: transparent;
         border: none;
         position: relative;
-        border-radius: 0 !important; // Override button's border-radius completely
         min-width: 48px;
         height: 100%;
         color: t.color("on-surface");
@@ -105,12 +103,16 @@ $component: "#{base.$prefix}-segmented-button";
         // Use CSS variables for dynamic sizing
         padding: 0 var(--segment-padding-x);
 
-        // CRITICAL: Override button's active state border-radius changes
-        // Segmented button segments must maintain their shape
-        &:active,
-        &.#{base.$prefix}-button--active {
-            border-radius: 0 !important;
-        }
+        // Corner shapes are handed to the button through its own shape hooks
+        // rather than declared over the top of it. The button reads every one
+        // of its radii through these, resting, pressed and selected alike, so
+        // one declaration per position holds the segment's shape in every
+        // state. Overriding border-radius directly meant re-stating each
+        // corner for each state and each variant, and losing to the button
+        // stylesheet without !important on all of it.
+        --#{base.$prefix}-button-shape: 0;
+        --#{base.$prefix}-button-shape-pressed: 0;
+        --#{base.$prefix}-button-shape-selected: 0;
 
         // Icon-only segments
         &.#{base.$prefix}-button--circular {
@@ -124,50 +126,34 @@ $component: "#{base.$prefix}-segmented-button";
                 var(--segment-padding-icon-text-left);
         }
 
-        // First segment - rounded left corners only
+        // The container is one rounded shape, so only its ends round off
+        $round: var(--segment-border-radius);
+
+        // First segment: left corners only
         &:first-child {
-            border-top-left-radius: var(--segment-border-radius) !important;
-            border-bottom-left-radius: var(--segment-border-radius) !important;
-
-            &:active,
-            &.#{base.$prefix}-button--active {
-                border-top-left-radius: var(--segment-border-radius) !important;
-                border-bottom-left-radius: var(
-                    --segment-border-radius
-                ) !important;
-            }
+            --#{base.$prefix}-button-shape: #{$round} 0 0 #{$round};
+            --#{base.$prefix}-button-shape-pressed: #{$round} 0 0 #{$round};
+            --#{base.$prefix}-button-shape-selected: #{$round} 0 0 #{$round};
         }
 
-        // Last segment - rounded right corners only
+        // Last segment: right corners only
         &:last-child {
-            border-top-right-radius: var(--segment-border-radius) !important;
-            border-bottom-right-radius: var(--segment-border-radius) !important;
-
-            &:active,
-            &.#{base.$prefix}-button--active {
-                border-top-right-radius: var(
-                    --segment-border-radius
-                ) !important;
-                border-bottom-right-radius: var(
-                    --segment-border-radius
-                ) !important;
-            }
+            --#{base.$prefix}-button-shape: 0 #{$round} #{$round} 0;
+            --#{base.$prefix}-button-shape-pressed: 0 #{$round} #{$round} 0;
+            --#{base.$prefix}-button-shape-selected: 0 #{$round} #{$round} 0;
         }
 
-        // Single segment - all corners rounded
+        // A lone segment is the whole container
         &:only-child {
-            border-radius: var(--segment-border-radius) !important;
-
-            &:active,
-            &.#{base.$prefix}-button--active {
-                border-radius: var(--segment-border-radius) !important;
-            }
+            --#{base.$prefix}-button-shape: #{$round};
+            --#{base.$prefix}-button-shape-pressed: #{$round};
+            --#{base.$prefix}-button-shape-selected: #{$round};
         }
 
         // Reset button ::before pseudo-element (used for state layers)
         // This prevents button hover effects from interfering
         &::before {
-            content: none !important;
+            content: none;
         }
 
         // Hover state (MD3: 8% state layer with on-surface color over surface)
@@ -254,7 +240,7 @@ $component: "#{base.$prefix}-segmented-button";
 
             // Reset variant ::before pseudo-element (state layers)
             &::before {
-                content: none !important;
+                content: none;
             }
 
             // Override variant hover states
@@ -277,34 +263,6 @@ $component: "#{base.$prefix}-segmented-button";
                 box-shadow: none;
             }
 
-            &:active,
-            &.#{base.$prefix}-button--active {
-                border-radius: 0 !important;
-            }
-
-            &:first-child {
-                &:active,
-                &.#{base.$prefix}-button--active {
-                    border-top-left-radius: var(
-                        --segment-border-radius
-                    ) !important;
-                    border-bottom-left-radius: var(
-                        --segment-border-radius
-                    ) !important;
-                }
-            }
-
-            &:last-child {
-                &:active,
-                &.#{base.$prefix}-button--active {
-                    border-top-right-radius: var(
-                        --segment-border-radius
-                    ) !important;
-                    border-bottom-right-radius: var(
-                        --segment-border-radius
-                    ) !important;
-                }
-            }
         }
     }
 
@@ -345,7 +303,7 @@ $component: "#{base.$prefix}-segmented-button";
 
             // Reset variant ::before pseudo-element
             &::before {
-                content: none !important;
+                content: none;
             }
 
             // Override variant hover states for selected
