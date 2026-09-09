@@ -125,6 +125,51 @@ describe('menu stylesheet', () => {
       expect(value('.mtrl-menu--vertical .mtrl-menu-item-shortcut', 'font-size')).toBe('11px');
     });
 
+    test('a gap gives each group its own surface', () => {
+      // The divider draws a line across one surface; the gap splits the menu
+      // into several, so the page shows through between them
+      const gapped = '.mtrl-menu--vertical:has(.mtrl-menu-group)';
+      expect(value(gapped, 'background-color')).toBe('transparent');
+      expect(value(gapped, 'box-shadow')).toBe('none');
+      expect(value(gapped, 'padding')).toBe('0');
+
+      // the group takes over the surface and its elevation
+      expect(value(`${gapped} .mtrl-menu-group`, 'background-color')).toBe('var(--mtrl-menu-container)');
+      expect(value(`${gapped} .mtrl-menu-group`, 'box-shadow')).toBe('0px 1px 2px rgba(0, 0, 0, 0.3), 0px 2px 6px 2px rgba(0, 0, 0, 0.15)');
+    });
+
+    test('a corner facing a gap is 8dp; only the outside of the menu is 16dp', () => {
+      // SegmentedMenuTokens: GroupShape is CornerSmall and ContainerShape is
+      // CornerLarge, so a cut through the menu is tighter than its outline
+      const group = '.mtrl-menu--vertical:has(.mtrl-menu-group) .mtrl-menu-group';
+      expect(value(group, 'border-radius')).toBe('8px');
+      expect(value(`${group}:first-child`, 'border-start-start-radius')).toBe('16px');
+      expect(value(`${group}:first-child`, 'border-start-end-radius')).toBe('16px');
+      expect(value(`${group}:last-child`, 'border-end-start-radius')).toBe('16px');
+      expect(value(`${group}:last-child`, 'border-end-end-radius')).toBe('16px');
+    });
+
+    test('the separator is 2dp, and a group hugs its items at 4dp', () => {
+      // Measured off the vertical menu specimen on m3.material.io at its
+      // 2px-per-dp scale: 4dp of padding inside a group and 2dp between two,
+      // so items either side of a boundary sit 10dp apart. An 8dp gap between
+      // 8dp-padded groups put them 24dp apart, which read as a chasm.
+      const gapped = '.mtrl-menu--vertical:has(.mtrl-menu-group)';
+      expect(value(`${gapped} .mtrl-menu-group`, 'padding')).toBe('4px');
+      expect(value(`${gapped} .mtrl-menu-list`, 'gap')).toBe('2px');
+      expect(value(`${gapped} .mtrl-menu-group > ul`, 'gap')).toBe('2px');
+    });
+
+    test('a gapped menu does not clip, so the group shadows survive', () => {
+      // .mtrl-menu clips to keep item backgrounds inside its rounded corners;
+      // with no container of its own, clipping only cut the shadows off square
+      const gapped = '.mtrl-menu--vertical:has(.mtrl-menu-group)';
+      expect(value(gapped, 'overflow')).toBe('visible');
+      expect(value(`${gapped} .mtrl-menu-list`, 'overflow')).toBe('visible');
+      // and the plain menu still clips
+      expect(value('.mtrl-menu', 'overflow')).toBe('hidden');
+    });
+
     test('the container morphs to show which menu is active', () => {
       expect(value('.mtrl-menu--vertical.mtrl-menu--active', 'border-radius')).toBe('24px');
       expect(value('.mtrl-menu--vertical.mtrl-menu--inactive', 'border-radius')).toBe('8px');
