@@ -368,3 +368,91 @@ describe('submenu keyboard navigation', () => {
     expect(focusedText()).toBe('Engineering');
   });
 });
+
+describe('only one menu at a time', () => {
+  // Both openers carrying aria-expanded="true" tells a screen reader there are
+  // two open menus. Menus used to stack up because the close relied on the
+  // document click listener each open menu installs, and an opener stops its
+  // click from propagating, so that listener never saw it.
+  const secondOpener = () => {
+    const button = document.createElement('button');
+    button.textContent = 'View';
+    document.body.appendChild(button);
+    return button;
+  };
+
+  test('opening a menu closes the one that was open', async () => {
+    const first = createMenu({ opener, items });
+    const second = createMenu({ opener: secondOpener(), items });
+
+    await opened(first);
+    expect(first.isOpen()).toBe(true);
+
+    await opened(second);
+    await after(200);
+    expect(second.isOpen()).toBe(true);
+    expect(first.isOpen()).toBe(false);
+  });
+
+  test('only one opener reports itself expanded', async () => {
+    const other = secondOpener();
+    const first = createMenu({ opener, items });
+    const second = createMenu({ opener: other, items });
+
+    await opened(first);
+    await opened(second);
+    await after(200);
+
+    expect(opener.getAttribute('aria-expanded')).toBe('false');
+    expect(other.getAttribute('aria-expanded')).toBe('true');
+  });
+
+  test('it holds however the menu was opened, including by key', async () => {
+    const other = secondOpener();
+    const first = createMenu({ opener, items });
+    const second = createMenu({ opener: other, items });
+
+    await opened(first);
+    // a keyboard open takes the same path, which a click-based fix would miss
+    second.open(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    await after(300);
+
+    expect(second.isOpen()).toBe(true);
+    expect(first.isOpen()).toBe(false);
+  });
+
+  test('reopening the same menu does not close it', async () => {
+    const menu = createMenu({ opener, items });
+    await opened(menu);
+    menu.open();
+    await after(200);
+    expect(menu.isOpen()).toBe(true);
+  });
+
+  test('closing one menu leaves another free to open', async () => {
+    const other = secondOpener();
+    const first = createMenu({ opener, items });
+    const second = createMenu({ opener: other, items });
+
+    await opened(first);
+    first.close();
+    await after(300);
+    expect(first.isOpen()).toBe(false);
+
+    await opened(second);
+    expect(second.isOpen()).toBe(true);
+  });
+
+  test('destroying an open menu releases its claim', async () => {
+    const other = secondOpener();
+    const first = createMenu({ opener, items });
+    await opened(first);
+    first.destroy();
+    await after(200);
+
+    const second = createMenu({ opener: other, items });
+    await opened(second);
+    expect(second.isOpen()).toBe(true);
+  });
+});
+

@@ -1,8 +1,7 @@
 // src/components/menu/features/controller.ts
 
 import { MenuConfig, MenuItem, MenuDivider, MenuSelectEvent } from "../types";
-
-let ignoreNextDocumentClick = false;
+import { menuOpened, menuClosed } from "./registry";
 
 /**
  * Adds controller functionality to the menu component
@@ -322,6 +321,12 @@ const withController = (config: MenuConfig) => (component) => {
     state.selectedItemId = itemId;
   };
 
+  // What the registry closes when another menu opens. Focus is not restored to
+  // this opener: the pointer or the key has already moved to the new one.
+  const registryEntry = {
+    close: (event?: Event) => closeMenu(event, false),
+  };
+
   /**
    * Opens the menu
    * @param {Event} [event] - Optional event that triggered the open
@@ -340,6 +345,11 @@ const withController = (config: MenuConfig) => (component) => {
       if (event instanceof KeyboardEvent) interactionType = "keyboard";
       else interactionType = "mouse";
     }
+
+    // A menu button's menu is dismissed when interaction moves outside it, so
+    // only one is open at a time. This closes whichever was open, whether it
+    // was opened by pointer, by key or by code.
+    menuOpened(registryEntry, event);
 
     // Update state
     state.visible = true;
@@ -447,6 +457,8 @@ const withController = (config: MenuConfig) => (component) => {
   const closeMenu = (event?: Event, restoreFocus: boolean = true): void => {
     if (!state.visible) return;
 
+    menuClosed(registryEntry);
+
     // Emit pre-close event for other features to react
     component.emit("menu-closing", { event, restoreFocus });
 
@@ -515,12 +527,6 @@ const withController = (config: MenuConfig) => (component) => {
    * Handles document click
    */
   const handleDocumentClick = (e: MouseEvent): void => {
-    // If we should ignore this click (happens right after opening), reset the flag and return
-    if (ignoreNextDocumentClick) {
-      ignoreNextDocumentClick = false;
-      return;
-    }
-
     // Don't close if clicked inside menu
     if (component.element.contains(e.target as Node)) {
       return;
