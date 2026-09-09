@@ -349,7 +349,11 @@ $component: "#{$prefix}-menu";
         border-radius: v.shape("large");
         background-color: var(--#{$prefix}-menu-container);
         color: var(--#{$prefix}-menu-label);
-        padding: 8px;
+        // GroupPadding. The vertical menu has no container spacing token of
+        // its own: it is made of groups, and a menu with no gaps is one group,
+        // so the container's inset is the group's. The 8dp that was here is
+        // the horizontal variant's ContainerTopSpace, which does not apply.
+        padding: 4px;
 
         // Vibrant: tertiary-based, more prominent, to be used sparingly
         &.#{$component}--vibrant {
