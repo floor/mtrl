@@ -368,3 +368,192 @@ describe('submenu keyboard navigation', () => {
     expect(focusedText()).toBe('Engineering');
   });
 });
+
+describe('only one menu at a time', () => {
+  // Both openers carrying aria-expanded="true" tells a screen reader there are
+  // two open menus. Menus used to stack up because the close relied on the
+  // document click listener each open menu installs, and an opener stops its
+  // click from propagating, so that listener never saw it.
+  const secondOpener = () => {
+    const button = document.createElement('button');
+    button.textContent = 'View';
+    document.body.appendChild(button);
+    return button;
+  };
+
+  test('opening a menu closes the one that was open', async () => {
+    const first = createMenu({ opener, items });
+    const second = createMenu({ opener: secondOpener(), items });
+
+    await opened(first);
+    expect(first.isOpen()).toBe(true);
+
+    await opened(second);
+    await after(200);
+    expect(second.isOpen()).toBe(true);
+    expect(first.isOpen()).toBe(false);
+  });
+
+  test('only one opener reports itself expanded', async () => {
+    const other = secondOpener();
+    const first = createMenu({ opener, items });
+    const second = createMenu({ opener: other, items });
+
+    await opened(first);
+    await opened(second);
+    await after(200);
+
+    expect(opener.getAttribute('aria-expanded')).toBe('false');
+    expect(other.getAttribute('aria-expanded')).toBe('true');
+  });
+
+  test('it holds however the menu was opened, including by key', async () => {
+    const other = secondOpener();
+    const first = createMenu({ opener, items });
+    const second = createMenu({ opener: other, items });
+
+    await opened(first);
+    // a keyboard open takes the same path, which a click-based fix would miss
+    second.open(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    await after(300);
+
+    expect(second.isOpen()).toBe(true);
+    expect(first.isOpen()).toBe(false);
+  });
+
+  test('reopening the same menu does not close it', async () => {
+    const menu = createMenu({ opener, items });
+    await opened(menu);
+    menu.open();
+    await after(200);
+    expect(menu.isOpen()).toBe(true);
+  });
+
+  test('closing one menu leaves another free to open', async () => {
+    const other = secondOpener();
+    const first = createMenu({ opener, items });
+    const second = createMenu({ opener: other, items });
+
+    await opened(first);
+    first.close();
+    await after(300);
+    expect(first.isOpen()).toBe(false);
+
+    await opened(second);
+    expect(second.isOpen()).toBe(true);
+  });
+
+  test('destroying an open menu releases its claim', async () => {
+    const other = secondOpener();
+    const first = createMenu({ opener, items });
+    await opened(first);
+    first.destroy();
+    await after(200);
+
+    const second = createMenu({ opener: other, items });
+    await opened(second);
+    expect(second.isOpen()).toBe(true);
+  });
+});
+
+describe('the gap separator', () => {
+  // A gap splits the vertical menu into separate surfaces, where a divider
+  // draws a line across one. The grouping is presentational: it must not
+  // change what the items are, what order they are in, or how they are found.
+  const gapped = [
+    { id: 'view', text: 'View' },
+    { id: 'copy', text: 'Copy' },
+    { type: 'gap' as const },
+    { id: 'upload', text: 'Upload' },
+  ];
+
+  const groups = (menu: { element: HTMLElement }) =>
+    menu.element.querySelectorAll('.mtrl-menu-group');
+
+  const press = (key: string) =>
+    (document.activeElement as HTMLElement).dispatchEvent(
+      new dom.window.KeyboardEvent('keydown', { key, bubbles: true, cancelable: true })
+    );
+
+  test('a gap splits the items into groups', async () => {
+    const menu = createMenu({ opener, items: gapped, variant: 'vertical' });
+    await opened(menu);
+
+    expect(groups(menu).length).toBe(2);
+    expect(groups(menu)[0]!.querySelectorAll('.mtrl-menu-item').length).toBe(2);
+    expect(groups(menu)[1]!.querySelectorAll('.mtrl-menu-item').length).toBe(1);
+  });
+
+  test('a menu without gaps keeps its flat list', async () => {
+    const menu = createMenu({ opener, items, variant: 'vertical' });
+    await opened(menu);
+    expect(groups(menu).length).toBe(0);
+    expect(menu.element.querySelectorAll('.mtrl-menu-item').length).toBe(items.length);
+  });
+
+  test('the grouping is presentational, so the items stay menuitems in order', async () => {
+    const menu = createMenu({ opener, items: gapped, variant: 'vertical' });
+    await opened(menu);
+
+    for (const group of groups(menu)) {
+      expect(group.getAttribute('role')).toBe('none');
+      expect(group.querySelector('ul')!.getAttribute('role')).toBe('none');
+    }
+
+    const found = Array.from(menu.element.querySelectorAll('.mtrl-menu-item'));
+    expect(found.map((el) => el.textContent?.trim())).toEqual(['View', 'Copy', 'Upload']);
+    expect(found.every((el) => el.getAttribute('role') === 'menuitem')).toBe(true);
+  });
+
+  test('the keyboard walks across a gap as if it were not there', async () => {
+    const menu = createMenu({ opener, items: gapped, variant: 'vertical' });
+    await opened(menu);
+
+    const all = Array.from(menu.element.querySelectorAll('.mtrl-menu-item')) as HTMLElement[];
+    all[1]!.focus();
+    press('ArrowDown');
+    await after(100);
+    // from the last item of one group into the first of the next
+    expect(document.activeElement?.textContent?.trim()).toBe('Upload');
+
+    press('ArrowUp');
+    await after(100);
+    expect(document.activeElement?.textContent?.trim()).toBe('Copy');
+  });
+
+  test('selecting an item in a later group still reports that item', async () => {
+    const chosen: string[] = [];
+    const menu = createMenu({
+      opener,
+      items: gapped,
+      variant: 'vertical',
+      on: { select: (e: { item: { id: string } }) => chosen.push(e.item.id) },
+    });
+    await opened(menu);
+
+    const last = menu.element.querySelectorAll('.mtrl-menu-item')[2] as HTMLElement;
+    last.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    await after(200);
+    // the index into the items array counts the gap, as it counts a divider
+    expect(chosen).toEqual(['upload']);
+  });
+
+  test('gaps and dividers can be mixed', async () => {
+    const menu = createMenu({
+      opener,
+      variant: 'vertical',
+      items: [
+        { id: 'a', text: 'A' },
+        { type: 'divider' as const },
+        { id: 'b', text: 'B' },
+        { type: 'gap' as const },
+        { id: 'c', text: 'C' },
+      ],
+    });
+    await opened(menu);
+
+    expect(groups(menu).length).toBe(2);
+    expect(menu.element.querySelectorAll('.mtrl-menu-divider').length).toBe(1);
+    expect(groups(menu)[0]!.querySelectorAll('.mtrl-menu-item').length).toBe(2);
+  });
+});

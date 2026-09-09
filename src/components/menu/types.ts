@@ -118,11 +118,35 @@ export interface MenuDivider {
 }
 
 /**
- * Combined type for menu content items (regular items or dividers)
+ * Menu item type for a gap between groups.
+ *
+ * The M3 expressive vertical menu separates groups two ways: a divider line,
+ * or a gap. A gap splits the menu into separate surfaces, each with its own
+ * rounded container, rather than drawing a line across one surface
+ * (m3.material.io/components/menus, vertical menus).
+ *
+ * A standard menu is a single surface, so a gap there is simply space.
  *
  * @category Components
  */
-export type MenuContent = MenuItem | MenuDivider;
+export interface MenuGap {
+  /**
+   * Type must be 'gap' to differentiate from regular menu items
+   */
+  type: "gap";
+
+  /**
+   * Optional ID for the gap (for accessibility)
+   */
+  id?: string;
+}
+
+/**
+ * Combined type for menu content items (regular items, dividers or gaps)
+ *
+ * @category Components
+ */
+export type MenuContent = MenuItem | MenuDivider | MenuGap;
 
 /**
  * Configuration interface for the Menu component
@@ -148,14 +172,10 @@ export interface MenuConfig {
   items: MenuContent[];
 
   /**
-   * Position of the menu relative to the opener
-   * @default 'bottom-start'
-   */
-  /**
    * Menu variant. `'vertical'` is the M3 expressive menu: a rounded
    * container holding items that sit apart and change shape as they are
-   * hovered, focused, pressed or selected. Defaults to `'baseline'`, the
-   * original M3 menu.
+   * hovered, focused, pressed or selected.
+   * @default 'baseline'
    */
   variant?: MenuVariant;
 
@@ -165,6 +185,10 @@ export interface MenuConfig {
    */
   color?: MenuColor;
 
+  /**
+   * Position of the menu relative to the opener
+   * @default 'bottom-start'
+   */
   position?: MenuPosition;
 
   /**
@@ -211,7 +235,7 @@ export interface MenuConfig {
 
   /**
    * Optional offset from the opener (in pixels)
-   * @default 8
+   * @default 0
    */
   offset?: number;
 

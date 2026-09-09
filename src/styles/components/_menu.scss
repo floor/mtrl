@@ -59,6 +59,24 @@ $component: "#{$prefix}-menu";
         z-index: f.get-z-index("menu") + 1;
     }
 
+    // A run of items between gaps. The element is presentational: it exists so
+    // a gap can split the menu into separate surfaces in the vertical variant.
+    // A standard menu is one surface, so here a group is only spacing.
+    &-group {
+        display: block;
+        list-style: none;
+
+        > ul {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        + .#{$component}-group {
+            margin-top: 8px;
+        }
+    }
+
     // List container
     &-list {
         margin: 0;
@@ -331,7 +349,11 @@ $component: "#{$prefix}-menu";
         border-radius: v.shape("large");
         background-color: var(--#{$prefix}-menu-container);
         color: var(--#{$prefix}-menu-label);
-        padding: 8px;
+        // GroupPadding. The vertical menu has no container spacing token of
+        // its own: it is made of groups, and a menu with no gaps is one group,
+        // so the container's inset is the group's. The 8dp that was here is
+        // the horizontal variant's ContainerTopSpace, which does not apply.
+        padding: 4px;
 
         // Vibrant: tertiary-based, more prominent, to be used sparingly
         &.#{$component}--vibrant {
@@ -443,11 +465,75 @@ $component: "#{$prefix}-menu";
             }
         }
 
-        // A grouped menu separates its runs of items with a divider; the gap
-        // treatment the spec shows is not offered on the web
+        // A grouped menu separates its runs of items two ways, as the spec
+        // shows: a divider line across one surface, or a gap
         // (m3.material.io menu guidelines, "Gaps & dividers")
         .#{$component}-divider {
             margin: 6px 0;
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // The gap separator: the menu stops being one surface and each group
+    // becomes its own, keeping the container's shape and elevation.
+    //
+    // The measurements come from the vertical menu specimen on
+    // m3.material.io/components/menus, which the guidelines show but do not
+    // give numbers for. Read off that image at its 2px-per-dp scale: a 44dp
+    // item, a 16dp group corner, 4dp of padding inside each group and 2dp
+    // between them, so two items either side of a boundary sit 10dp apart.
+    // The group hugs its items more tightly than the whole-menu container
+    // does, which is what keeps a gap from reading as a chasm.
+    // -------------------------------------------------------------------------
+    &--vertical:has(.#{$component}-group) {
+        background-color: transparent;
+        box-shadow: none;
+        padding: 0;
+
+        // Each group casts its own shadow. The container clips so that item
+        // backgrounds stay inside its rounded corners, but there is no
+        // container here to stay inside, and clipping would cut the shadows
+        // off square.
+        overflow: visible;
+
+        .#{$component}-list {
+            overflow: visible;
+            // the separator is the 2dp the variant already puts between items
+            gap: 2px;
+        }
+
+        .#{$component}-group {
+            background-color: var(--#{$prefix}-menu-container);
+            padding: 4px; // GroupPadding
+            @include m.elevation(2);
+
+            // A corner facing a gap is the group's own shape, 8dp
+            // (SegmentedMenuTokens.GroupShape). Only the outside of the menu
+            // keeps the 16dp container shape, so the run of groups reads as
+            // one menu that has been cut, rather than as loose cards.
+            border-radius: v.shape("small");
+
+            &:first-child {
+                border-start-start-radius: v.shape("large"); // ContainerShape
+                border-start-end-radius: v.shape("large");
+            }
+
+            &:last-child {
+                border-end-start-radius: v.shape("large");
+                border-end-end-radius: v.shape("large");
+            }
+
+            // its own margin would add to the list gap
+            + .#{$component}-group {
+                margin-top: 0;
+            }
+
+            // and the items inside keep the 2dp separation of the variant
+            > ul {
+                display: flex;
+                flex-direction: column;
+                gap: 2px;
+            }
         }
     }
 
