@@ -249,7 +249,6 @@ $button: (
   'padding-horizontal': 16px,
   'padding-horizontal-small': 12px, // text button (ButtonDefaults.TextButtonContentPadding)
   'padding-icon': 12px, // small button leading space next to an icon (pointer devices)
-  'border-radius': map.get($shape, 'full'),
   'transition-duration': map.get($motion, 'duration-short2'),
   'transition-easing': map.get($motion, 'easing-standard'),
   // Container height per size
@@ -288,6 +287,19 @@ $button: (
   'shape-square-m': map.get($shape, 'large'),
   'shape-square-l': map.get($shape, 'extra-large'),
   'shape-square-xl': map.get($shape, 'extra-large'),
+  // Round container shape per size: exactly half the container height.
+  //
+  // A pill needs the real radius, not merely a large one. border-radius
+  // animates on the number in the stylesheet, not on the corner you see, so a
+  // 9999px pill morphing to a 12px pressed shape spends almost the whole
+  // transition above half the height, paints as a pill throughout, and then
+  // snaps square at the very end. Half the height interpolates linearly and
+  // the morph reads as a morph.
+  'shape-round-xs': 16px,
+  'shape-round-s': 20px,
+  'shape-round-m': 28px,
+  'shape-round-l': 48px,
+  'shape-round-xl': 68px,
   // Pressed container shape per size (round and square)
   'shape-pressed-xs': map.get($shape, 'small'),
   'shape-pressed-s': map.get($shape, 'small'),
