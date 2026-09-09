@@ -112,7 +112,7 @@ export interface DrawerConfig extends BaseComponentConfig {
 
   /**
    * Drawer width as a CSS value
-   * @default '360px'
+   * @default 360
    */
   width?: string | number;
 
