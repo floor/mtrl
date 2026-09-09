@@ -90,7 +90,9 @@ describe('menu stylesheet', () => {
   describe('the expressive vertical menu', () => {
     test('a 16dp container on surface-container-low, items 2dp apart', () => {
       expect(value('.mtrl-menu--vertical', 'border-radius')).toBe('16px');
-      expect(value('.mtrl-menu--vertical', 'padding')).toBe('8px');
+      // GroupPadding: the vertical menu has no container spacing token, so its
+      // inset is the group's. Only the horizontal variant gets 8dp.
+      expect(value('.mtrl-menu--vertical', 'padding')).toBe('4px');
       expect(value('.mtrl-menu--vertical', 'background-color')).toBe('var(--mtrl-menu-container)');
       expect(value('.mtrl-menu--vertical', '--mtrl-menu-container')).toBe('var(--mtrl-sys-color-surface-container-low)');
       expect(value('.mtrl-menu--vertical .mtrl-menu-list', 'gap')).toBe('2px');
