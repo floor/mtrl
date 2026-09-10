@@ -1,5 +1,6 @@
 // src/components/menu/features/controller.ts
 
+import { createMenuTasks } from "./tasks";
 import { MenuConfig, MenuItem, MenuDivider, MenuSelectEvent } from "../types";
 import { menuOpened, menuClosed } from "./registry";
 
@@ -15,6 +16,8 @@ const withController = (config: MenuConfig) => (component) => {
     console.warn("Cannot initialize menu controller: missing element");
     return component;
   }
+
+  const tasks = createMenuTasks();
 
   // Initialize state
   const state = {
@@ -364,7 +367,7 @@ const withController = (config: MenuConfig) => (component) => {
     event?: Event,
     interactionType?: "mouse" | "keyboard",
   ): void => {
-    if (state.visible) return;
+    if (tasks.destroyed || state.visible) return;
 
     // Work out how the menu was opened when the caller does not say. It
     // decides where focus lands, and `toggle` already read the event this
@@ -401,7 +404,7 @@ const withController = (config: MenuConfig) => (component) => {
     }
 
     // Step 2: Use a small delay to ensure DOM operations are complete
-    setTimeout(() => {
+    tasks.setTimeout(() => {
       // Position the menu now that it's in the DOM
       const openerElement = getOpenerElement();
       if (openerElement && component.position) {
@@ -422,7 +425,7 @@ const withController = (config: MenuConfig) => (component) => {
       component.element.classList.add(`${component.getClass("menu--visible")}`);
 
       // Step 4: Set up initial focus based on interaction type
-      setTimeout(() => {
+      tasks.setTimeout(() => {
         if (component.keyboard && component.keyboard.handleInitialFocus) {
           component.keyboard.handleInitialFocus(
             component.element,
@@ -455,7 +458,7 @@ const withController = (config: MenuConfig) => (component) => {
 
       // Add the document click handler on the next event loop
       // after the current click is fully processed
-      setTimeout(() => {
+      tasks.setTimeout(() => {
         if (config.closeOnClickOutside && state.visible) {
           document.addEventListener("click", handleDocumentClick);
         }
@@ -495,7 +498,7 @@ const withController = (config: MenuConfig) => (component) => {
       component.submenu.closeAllSubmenus();
     }
 
-    setTimeout(() => {
+    tasks.setTimeout(() => {
       // Update state
       state.visible = false;
 
@@ -521,7 +524,7 @@ const withController = (config: MenuConfig) => (component) => {
       );
 
       // Remove from DOM after animation completes
-      setTimeout(() => {
+      tasks.setTimeout(() => {
         if (component.element.parentNode && !state.visible) {
           component.element.parentNode.removeChild(component.element);
         }
@@ -670,7 +673,7 @@ const withController = (config: MenuConfig) => (component) => {
   const handleWindowScroll = (): void => {
     if (state.visible) {
       // Use requestAnimationFrame to optimize scroll performance
-      window.requestAnimationFrame(() => {
+      tasks.requestAnimationFrame(() => {
         // Reposition the main menu to stay attached to opener when scrolling
         const openerElement = getOpenerElement();
         if (openerElement && component.position) {
@@ -748,12 +751,15 @@ const withController = (config: MenuConfig) => (component) => {
   });
 
   // Initialize after DOM is ready
-  setTimeout(initMenu, 0);
+  tasks.setTimeout(initMenu, 0);
 
   // Register with lifecycle if available
   if (component.lifecycle) {
     const originalDestroy = component.lifecycle.destroy || (() => {});
     component.lifecycle.destroy = () => {
+      if (tasks.destroyed) return;
+      tasks.destroy();
+      state.visible = false;
       // A menu destroyed while open must not stay the registered one
       menuClosed(registryEntry);
 
@@ -763,7 +769,7 @@ const withController = (config: MenuConfig) => (component) => {
       window.removeEventListener("resize", handleWindowResize);
       window.removeEventListener("scroll", handleWindowScroll);
 
-      originalDestroy();
+      originalDestroy.call(component.lifecycle);
     };
   }
 

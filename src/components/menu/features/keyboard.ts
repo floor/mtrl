@@ -1,5 +1,6 @@
 // src/components/menu/features/keyboard.ts
 
+import { createMenuTasks } from "./tasks";
 import { MenuItem } from "../types";
 
 /**
@@ -7,6 +8,8 @@ import { MenuItem } from "../types";
  * Manages focus management and keyboard interactions for accessibility
  */
 export const createKeyboardNavigation = (component) => {
+  const tasks = createMenuTasks();
+
   // Track tab navigation state
   let isTabNavigation = false;
 
@@ -15,21 +18,27 @@ export const createKeyboardNavigation = (component) => {
   let typeaheadTimeout: ReturnType<typeof setTimeout> | null = null;
   const TYPEAHEAD_DELAY = 500; // Reset buffer after 500ms of no typing
 
-  // Add event listener to detect Tab key navigation
-  const setupTabKeyDetection = () => {
-    document.addEventListener("keydown", (e: KeyboardEvent) => {
-      // Set flag when Tab key is pressed
-      isTabNavigation = e.key === "Tab";
-
-      // Reset flag after a short delay
-      setTimeout(() => {
-        isTabNavigation = false;
-      }, 100);
-    });
+  let tabTimeout: ReturnType<typeof setTimeout> | null = null;
+  const handleTabKey = (e: KeyboardEvent) => {
+    isTabNavigation = e.key === "Tab";
+    tasks.clearTimeout(tabTimeout);
+    tabTimeout = tasks.setTimeout(() => { isTabNavigation = false; }, 100);
   };
-
-  // Call setup once
-  setupTabKeyDetection();
+  document.addEventListener("keydown", handleTabKey);
+  const handlers = new Map<HTMLElement, (e: KeyboardEvent) => void>();
+  const removeKeyboardHandlers = (element: HTMLElement) => {
+    const handler = handlers.get(element);
+    if (handler) element.removeEventListener("keydown", handler);
+    handlers.delete(element);
+  };
+  const destroy = () => {
+    tasks.destroy();
+    document.removeEventListener("keydown", handleTabKey);
+    handlers.forEach((_, element) => removeKeyboardHandlers(element));
+    resetTypeahead();
+    isTabNavigation = false;
+    tabTimeout = null;
+  };
 
   /**
    * Gets all focusable elements in the document
@@ -88,7 +97,7 @@ export const createKeyboardNavigation = (component) => {
   const resetTypeahead = (): void => {
     typeaheadBuffer = "";
     if (typeaheadTimeout) {
-      clearTimeout(typeaheadTimeout);
+      tasks.clearTimeout(typeaheadTimeout);
       typeaheadTimeout = null;
     }
   };
@@ -194,11 +203,11 @@ export const createKeyboardNavigation = (component) => {
 
       // Clear existing timeout
       if (typeaheadTimeout) {
-        clearTimeout(typeaheadTimeout);
+        tasks.clearTimeout(typeaheadTimeout);
       }
 
       // Set timeout to reset buffer
-      typeaheadTimeout = setTimeout(() => {
+      typeaheadTimeout = tasks.setTimeout(() => {
         typeaheadBuffer = "";
         typeaheadTimeout = null;
       }, TYPEAHEAD_DELAY);
@@ -380,7 +389,7 @@ export const createKeyboardNavigation = (component) => {
         // Clear typeahead buffer when closing
         typeaheadBuffer = "";
         if (typeaheadTimeout) {
-          clearTimeout(typeaheadTimeout);
+          tasks.clearTimeout(typeaheadTimeout);
           typeaheadTimeout = null;
         }
 
@@ -397,7 +406,7 @@ export const createKeyboardNavigation = (component) => {
         if (openerElement) {
           // Let the browser focus the opener first (happens because we passed true above)
           // Then we can optionally set a timeout to move to next element
-          setTimeout(() => {
+          tasks.setTimeout(() => {
             // Optional: If you want to move focus to next/prev element after restoring to opener
             if (e.shiftKey) {
               // For shift+tab, we could let natural tabbing continue from the opener
@@ -426,6 +435,8 @@ export const createKeyboardNavigation = (component) => {
     state: any,
     actions: any,
   ) => {
+    if (tasks.destroyed) return;
+    removeKeyboardHandlers(menuElement);
     // Make all menu items focusable via keyboard navigation
     const items = menuElement.querySelectorAll(
       `.${component.getClass("menu-item")}:not(.${component.getClass(
@@ -441,9 +452,9 @@ export const createKeyboardNavigation = (component) => {
       items[0].tabIndex = 0;
     }
 
-    menuElement.addEventListener("keydown", (e) =>
-      handleMenuKeydown(e, state, actions),
-    );
+    const handler = (e: KeyboardEvent) => handleMenuKeydown(e, state, actions);
+    handlers.set(menuElement, handler);
+    menuElement.addEventListener("keydown", handler);
   };
 
   /**
@@ -453,6 +464,8 @@ export const createKeyboardNavigation = (component) => {
 
   // Return the public API
   return {
+    destroy,
+    removeKeyboardHandlers,
     handleInitialFocus,
     handleMenuKeydown,
     setupKeyboardHandlers,
@@ -475,6 +488,14 @@ const withKeyboard = () => (component) => {
 
   // Create keyboard navigation controller
   const keyboard = createKeyboardNavigation(component);
+
+  if (component.lifecycle) {
+    const originalDestroy = component.lifecycle.destroy;
+    component.lifecycle.destroy = () => {
+      keyboard.destroy();
+      originalDestroy.call(component.lifecycle);
+    };
+  }
 
   // Return enhanced component
   return {

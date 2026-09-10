@@ -1,5 +1,6 @@
 // src/components/menu/features/opener.ts
 
+import { createMenuTasks } from "./tasks";
 import { MenuConfig } from "../types";
 
 /**
@@ -15,19 +16,24 @@ const withOpener = (config: MenuConfig) => (component) => {
     return component;
   }
 
+  const tasks = createMenuTasks();
+
   // Track keyboard navigation state
   let isTabNavigation = false;
 
   // Add an event listener to detect Tab key navigation
-  document.addEventListener("keydown", (e: KeyboardEvent) => {
+  let tabTimeout: ReturnType<typeof setTimeout> | null = null;
+  const handleTabKey = (e: KeyboardEvent) => {
     // Set flag when Tab key is pressed
     isTabNavigation = e.key === "Tab";
 
     // Reset flag after a short delay
-    setTimeout(() => {
+    tasks.clearTimeout(tabTimeout);
+    tabTimeout = tasks.setTimeout(() => {
       isTabNavigation = false;
     }, 100);
-  });
+  };
+  document.addEventListener("keydown", handleTabKey);
 
   // Track opener state
   const state = {
@@ -118,7 +124,7 @@ const withOpener = (config: MenuConfig) => (component) => {
   }): void => {
     const { element: openerElement, component: openerComponent } = openerData;
 
-    if (!openerElement) return;
+    if (tasks.destroyed || !openerElement) return;
 
     // Remove previously attached event if any
     if (state.openerElement && state.openerElement !== openerElement) {
@@ -218,7 +224,7 @@ const withOpener = (config: MenuConfig) => (component) => {
       state.openerComponent &&
       typeof state.openerComponent.focus === "function"
     ) {
-      requestAnimationFrame(() => {
+      tasks.requestAnimationFrame(() => {
         state.openerComponent.focus();
       });
       return;
@@ -232,14 +238,14 @@ const withOpener = (config: MenuConfig) => (component) => {
       "input" in state.openerComponent &&
       state.openerComponent.input instanceof HTMLElement
     ) {
-      requestAnimationFrame(() => {
+      tasks.requestAnimationFrame(() => {
         state.openerComponent.input.focus();
       });
       return;
     }
 
     // Case 3: Default - focus the element directly
-    requestAnimationFrame(() => {
+    tasks.requestAnimationFrame(() => {
       state.openerElement.focus();
     });
   };
@@ -304,7 +310,7 @@ const withOpener = (config: MenuConfig) => (component) => {
           component.menu.open(e, "keyboard");
 
           // Wait for menu to open and grab the last item
-          setTimeout(() => {
+          tasks.setTimeout(() => {
             const items = component.element.querySelectorAll(
               `.${component.getClass("menu-item")}:not(.${component.getClass("menu-item--disabled")})`,
             ) as NodeListOf<HTMLElement>;
@@ -336,7 +342,7 @@ const withOpener = (config: MenuConfig) => (component) => {
 
     // If this is tab navigation, always close the menu regardless of next focus target
     if (isTabNavigation) {
-      setTimeout(() => {
+      tasks.setTimeout(() => {
         // Verify menu is still open (may have been closed in the meantime)
         if (component.menu && component.menu.isOpen()) {
           // Close the menu but don't restore focus
@@ -368,7 +374,7 @@ const withOpener = (config: MenuConfig) => (component) => {
 
     // Wait a brief moment to ensure we're not in the middle of another operation
     // This helps prevent conflicts with click handlers
-    setTimeout(() => {
+    tasks.setTimeout(() => {
       // Verify menu is still open (may have been closed in the meantime)
       if (component.menu && component.menu.isOpen()) {
         // Close the menu but don't restore focus since focus has moved elsewhere
@@ -381,6 +387,9 @@ const withOpener = (config: MenuConfig) => (component) => {
    * Removes event listeners from opener
    */
   const cleanup = (): void => {
+    tasks.cancelAll();
+    tabTimeout = null;
+    isTabNavigation = false;
     if (state.openerElement) {
       if (!config.manualOpen) {
         state.openerElement.removeEventListener("click", handleOpenerClick);
@@ -409,8 +418,11 @@ const withOpener = (config: MenuConfig) => (component) => {
   if (component.lifecycle) {
     const originalDestroy = component.lifecycle.destroy || (() => {});
     component.lifecycle.destroy = () => {
+      if (tasks.destroyed) return;
+      tasks.destroy();
+      document.removeEventListener("keydown", handleTabKey);
       cleanup();
-      originalDestroy();
+      originalDestroy.call(component.lifecycle);
     };
   }
 
