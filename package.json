@@ -86,6 +86,7 @@
     "ts:fix-next": "bun scripts/fix-next-error.ts",
     "size:check": "bun run scripts/check-package-size.ts",
     "consumer:check": "bun run scripts/check-consumer.ts",
+    "slider:check": "bun run scripts/check-slider.ts",
     "tooling:check": "tsc --project tsconfig.tools.json --noEmit"
   },
   "repository": {

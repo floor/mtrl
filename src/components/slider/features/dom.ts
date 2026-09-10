@@ -48,7 +48,7 @@ export const withDom =
 
     // Apply styles using setStyles
     setStyles(container, {
-      position: "relative", // For canvas absolute positioning
+      position: "relative", // For track and handle positioning
     });
 
     // Build accessible label for handles

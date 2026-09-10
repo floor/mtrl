@@ -11,7 +11,7 @@ import {
   withRange,
   withStates,
   withController,
-  withCanvas,
+  withTracks,
   withDom,
 } from "./features";
 import { withAPI } from "./api";
@@ -25,7 +25,7 @@ import { createBaseConfig, getElementConfig, getApiConfig } from "./config";
  * 1. Base component - Creates the foundation with event system
  * 2. Feature enhancement - Adds specific capabilities (range, icons)
  * 3. DOM creation - Creates DOM elements directly using optimized createElement
- * 4. Canvas rendering - Uses canvas for visual elements, keeping handles as DOM
+ * 4. Track rendering - Uses decorative DOM and CSS alongside accessible handles
  * 5. State management - Handles visual states and appearance
  * 6. Controller - Manages behavior, events, and UI rendering
  * 7. Lifecycle - Handles component lifecycle events
@@ -58,12 +58,12 @@ const createSlider = (config: SliderConfig = {}): SliderComponent => {
       withTextLabel(baseConfig),
       withIcon(baseConfig),
 
-      // Establish lifecycle and appearance before canvas hooks wrap them.
+      // Establish lifecycle and appearance before track hooks wrap them.
       withLifecycle(),
       withStates(baseConfig),
 
-      // Add canvas rendering for tracks and ticks
-      withCanvas(baseConfig),
+      // Add DOM rendering for tracks and ticks
+      withTracks(baseConfig),
 
       // Add state management and behavior
       withController(baseConfig)

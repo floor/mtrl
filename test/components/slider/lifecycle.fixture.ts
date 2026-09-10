@@ -85,46 +85,39 @@ test("canvas observer cleanup stops notifications while another subscriber remai
   expect(active).toBe(2);
 });
 
-test("real slider destruction releases the theme callback without stopping a live slider", async () => {
+test("real slider renders without canvas and destroy removes its handles", async () => {
   const removed = slider(), live = slider();
   await tick(); flushFrames();
-  const removedCanvas = removed.element.querySelector("canvas")!;
-  const liveCanvas = live.element.querySelector("canvas")!;
+  expect(document.querySelector("canvas")).toBeNull();
   removed.destroy();
-  draws.clear();
   await theme("desert");
-  expect(draws.get(removedCanvas) ?? 0).toBe(0);
-  expect(draws.get(liveCanvas)).toBe(1);
-});
-
-test("colour replacement redraws and keeps one subscription until destruction", async () => {
-  const component = slider();
-  await tick(); flushFrames();
-  const canvas = component.element.querySelector("canvas")!;
-  for (const color of ["secondary", "tertiary", "primary"] as const) {
-    draws.clear();
-    component.setColor(color);
-    expect(draws.get(canvas)).toBe(1);
-    draws.clear();
-    await theme(color);
-    expect(draws.get(canvas)).toBe(1);
-  }
-  component.destroy();
-  component.setColor("secondary");
-  draws.clear();
-  await theme("winter");
+  expect(removed.element.isConnected).toBe(false);
+  expect(live.element.isConnected).toBe(true);
   expect(draws.size).toBe(0);
 });
 
-test("destroy before initialization cancels queued canvas drawing", async () => {
+test("colour replacement remains functional and cannot revive a destroyed slider", async () => {
+  const component = slider();
+  await tick();
+  for (const color of ["secondary", "tertiary", "primary"] as const) {
+    component.setColor(color);
+    expect(component.getColor()).toBe(color);
+    await theme(color);
+  }
+  component.destroy();
+  component.setColor("secondary");
+  await theme("winter");
+  expect(component.element.isConnected).toBe(false);
+  expect(draws.size).toBe(0);
+});
+
+test("destroy before initialization leaves no animation frames or canvas work", async () => {
   const component = slider();
   component.destroy();
-  draws.clear();
   expect(frames.size).toBe(0);
   await tick(); flushFrames();
   expect(draws.size).toBe(0);
 });
-
 
 test("aborting canvas initialization cancels both retry phases", async () => {
   for (const afterFrame of [false, true]) {
@@ -141,13 +134,14 @@ test("aborting canvas initialization cancels both retry phases", async () => {
   }
 });
 
-test("appearance setup preserves disabled-state canvas redraws", async () => {
+test("disabled state remains accessible with DOM tracks", async () => {
   const component = slider();
-  await tick(); flushFrames();
-  const canvas = component.element.querySelector("canvas")!;
-  draws.clear();
+  await tick();
+  const handle = component.element.querySelector('[role="slider"]')!;
   component.disable();
-  expect(draws.get(canvas)).toBe(1);
+  expect(handle.getAttribute("aria-disabled")).toBe("true");
+  expect(handle.getAttribute("tabindex")).toBe("-1");
   component.enable();
-  expect(draws.get(canvas)).toBe(2);
+  expect(handle.getAttribute("aria-disabled")).toBe("false");
+  expect(handle.getAttribute("tabindex")).toBe("0");
 });

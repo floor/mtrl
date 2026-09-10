@@ -83,12 +83,15 @@ try {
   const fixtures = [
     { name: "addClass", code: "export { addClass } from 'mtrl';", gzip: 900 },
     { name: "button", code: "export { createButton } from 'mtrl';", gzip: 15000 },
+    { name: "slider", code: "export { createSlider } from 'mtrl';", gzip: 11000 },
     { name: "textfield", code: "export { createTextfield } from 'mtrl';", gzip: 8500 },
     { name: "form", code: "export { createButton, createTextfield, createCheckbox } from 'mtrl';", gzip: 22000 },
     { name: "all-js", code: "export * from 'mtrl';", gzip: 125000 },
     { name: "button-css", code: "import 'mtrl/styles/base'; import 'mtrl/styles/button';", gzip: 6500 },
     { name: "select-css", code: "import 'mtrl/styles/base'; import 'mtrl/styles/select';", gzip: 8000 },
-    { name: "full-css", code: "import 'mtrl/styles';", gzip: 45000 },
+    { name: "slider-css", code: "import 'mtrl/styles/base'; import 'mtrl/styles/slider';", gzip: 6500 },
+    // Slider decoration moved from JS into CSS (+270 gzip bytes in the full sheet).
+    { name: "full-css", code: "import 'mtrl/styles';", gzip: 45500 },
   ];
   for (const fixture of fixtures) {
     const entry = join(temporary, `${fixture.name}.ts`);
