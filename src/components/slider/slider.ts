@@ -58,13 +58,15 @@ const createSlider = (config: SliderConfig = {}): SliderComponent => {
       withTextLabel(baseConfig),
       withIcon(baseConfig),
 
+      // Establish lifecycle and appearance before canvas hooks wrap them.
+      withLifecycle(),
+      withStates(baseConfig),
+
       // Add canvas rendering for tracks and ticks
       withCanvas(baseConfig),
 
       // Add state management and behavior
-      withStates(baseConfig),
-      withController(baseConfig),
-      withLifecycle()
+      withController(baseConfig)
     )(baseConfig);
 
     // Generate the API configuration based on the enhanced component

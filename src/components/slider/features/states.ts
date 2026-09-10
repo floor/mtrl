@@ -14,9 +14,11 @@ export const withStates = (config: SliderConfig) => (component) => {
   // Track initial disabled state
   const isDisabled = config.disabled === true;
 
+  let initialization: ReturnType<typeof setTimeout> | null = null;
+
   // Apply initial disabled state if needed
   if (isDisabled) {
-    setTimeout(() => {
+    initialization = setTimeout(() => {
       disableComponent();
     }, 0);
   }
@@ -102,10 +104,16 @@ export const withStates = (config: SliderConfig) => (component) => {
     return foundKey || "XS"; // Default to 'XS' (extra small)
   }
 
-  // Return enhanced component
-  return {
-    ...component,
+  if (component.lifecycle) {
+    const originalDestroy = component.lifecycle.destroy;
+    component.lifecycle.destroy = () => {
+      if (initialization !== null) clearTimeout(initialization);
+      originalDestroy.call(component.lifecycle);
+    };
+  }
 
+  // Share the instance so these callbacks see canvas methods installed next.
+  return Object.assign(component, {
     // Disabled state management
     disabled: {
       /**
@@ -242,5 +250,5 @@ export const withStates = (config: SliderConfig) => (component) => {
         return this;
       },
     },
-  };
+  });
 };
