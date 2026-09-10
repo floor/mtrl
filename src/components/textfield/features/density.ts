@@ -94,8 +94,7 @@ export const withDensity =
 
       // Trigger position update if available
       if (component.updateElementPositions) {
-        // Small delay to ensure styles are applied
-        setTimeout(() => component.updateElementPositions!(), 10);
+        component.updateElementPositions();
       }
     };
 

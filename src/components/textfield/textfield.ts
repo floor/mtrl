@@ -66,6 +66,7 @@ const createTextfield = (config: TextfieldConfig = {}): TextfieldComponent => {
       createBase, // Base component structure
       withEvents(), // Event handling system
       withElement(getElementConfig(baseConfig)), // Create DOM element
+      withLifecycle(), // Features register cleanup on the shared lifecycle
       withVariant(baseConfig), // Apply variant styling (filled/outlined)
       withDensity(baseConfig), // Apply density level
       withTextInput(baseConfig), // Add input element
@@ -77,7 +78,6 @@ const createTextfield = (config: TextfieldConfig = {}): TextfieldComponent => {
       withSupportingText(baseConfig), // Add supporting/helper text (if specified)
       withError(baseConfig), // Add error state management
       withDisabled(baseConfig), // Add disabled state management
-      withLifecycle(), // Add lifecycle management
       withPlacement(), // Add dynamic positioning for elements
       (comp) => withAPI(getApiConfig(comp))(comp) // Add public API
     )(baseConfig);

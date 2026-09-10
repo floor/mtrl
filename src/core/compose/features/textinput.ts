@@ -296,7 +296,7 @@ export const withTextInput =
 
     // Check for autofill immediately (handles pre-filled values)
     // This catches autofill that happens before component initialization
-    setTimeout(() => {
+    const initialAutofillCheck = setTimeout(() => {
       checkForAutofill(false);
     }, 0);
 
@@ -313,6 +313,7 @@ export const withTextInput =
     if (hasLifecycle(component)) {
       const originalDestroy = component.lifecycle.destroy;
       component.lifecycle.destroy = () => {
+        clearTimeout(initialAutofillCheck);
         // Clean up observer
         if (autofillObserver) {
           autofillObserver.disconnect();
