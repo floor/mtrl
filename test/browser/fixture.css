@@ -1,0 +1,4 @@
+/* Test layout only; component rules must come from the installed package. */
+main { max-width: 760px; padding: 24px; display: flex; flex-direction: column; gap: 24px; }
+section { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
+*, *::before, *::after { animation: none !important; transition: none !important; caret-color: transparent !important; }

@@ -30,3 +30,22 @@ jobs:
         run: bun test
       - name: Build
         run: bun run build
+      - name: Build and consumer tooling types
+        run: bun run tooling:check
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Packed imports and size budgets
+        run: bun run size:check
+      - name: Install Chromium
+        run: node node_modules/playwright/cli.js install --with-deps chromium
+      - name: Vite and browser regression checks
+        run: bun run consumer:check
+      - name: Browser comparison artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-comparisons
+          path: analysis/browser
+          retention-days: 7
+          if-no-files-found: ignore
