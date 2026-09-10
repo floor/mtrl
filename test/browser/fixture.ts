@@ -78,6 +78,17 @@ try {
   await cases[document.body.dataset.case!]();
   await document.fonts.ready;
   await new Promise(resolve => setTimeout(resolve, 100));
+  if (params.get("state") === "open") {
+    // Opening positions the menu after 20 ms and focuses it 100 ms later.
+    // A fixed 100 ms fixture delay can capture either side of that focus change.
+    const deadline = performance.now() + 5000;
+    while (true) {
+      const menu = document.querySelector(".mtrl-menu--visible");
+      if (menu?.contains(document.activeElement)) break;
+      if (performance.now() > deadline) throw new Error("Open menu did not receive initial focus");
+      await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+    }
+  }
   document.body.dataset.ready = "true";
 } catch (error) {
   console.error(error);
