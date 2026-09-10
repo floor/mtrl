@@ -1,5 +1,6 @@
 // src/components/menu/features/submenu.ts
 
+import { createMenuTasks } from "./tasks";
 import { MenuConfig, MenuItem } from "../types";
 
 /**
@@ -14,6 +15,16 @@ const withSubmenu = (config: MenuConfig) => (component) => {
     console.warn("Cannot initialize menu submenu: missing element");
     return component;
   }
+
+  const tasks = createMenuTasks();
+
+  // Includes elements fading out after they leave activeSubmenus.
+  const ownedElements = new Set<HTMLElement>();
+  const removeSubmenu = (element: HTMLElement) => {
+    component.keyboard?.removeKeyboardHandlers(element);
+    element.remove();
+    ownedElements.delete(element);
+  };
 
   // Initialize submenu state
   const state = {
@@ -39,7 +50,7 @@ const withSubmenu = (config: MenuConfig) => (component) => {
    */
   const clearHoverIntent = () => {
     if (state.hoverIntent.timer) {
-      clearTimeout(state.hoverIntent.timer);
+      tasks.clearTimeout(state.hoverIntent.timer);
       state.hoverIntent.timer = null;
       state.hoverIntent.activeItem = null;
     }
@@ -50,7 +61,7 @@ const withSubmenu = (config: MenuConfig) => (component) => {
    */
   const clearSubmenuTimer = () => {
     if (state.submenuTimer) {
-      clearTimeout(state.submenuTimer);
+      tasks.clearTimeout(state.submenuTimer);
       state.submenuTimer = null;
     }
   };
@@ -71,7 +82,7 @@ const withSubmenu = (config: MenuConfig) => (component) => {
 
     // Set hover intent
     state.hoverIntent.activeItem = itemElement;
-    state.hoverIntent.timer = setTimeout(() => {
+    state.hoverIntent.timer = tasks.setTimeout(() => {
       const isCurrentlyHovered = itemElement.matches(":hover");
       if (isCurrentlyHovered) {
         // Only close and reopen if this is a different submenu item
@@ -94,7 +105,7 @@ const withSubmenu = (config: MenuConfig) => (component) => {
     clearSubmenuTimer();
 
     // Set a timer to close the submenu if not re-entered
-    state.submenuTimer = setTimeout(() => {
+    state.submenuTimer = tasks.setTimeout(() => {
       // Check if mouse is over the submenu or the parent menu item
       const submenuElement = state.activeSubmenu;
       const menuItemElement = state.activeSubmenuItem;
@@ -120,7 +131,7 @@ const withSubmenu = (config: MenuConfig) => (component) => {
     index: number,
     itemElement: HTMLElement
   ): void => {
-    if (!item.submenu || !item.hasSubmenu) return;
+    if (tasks.destroyed || !item.submenu || !item.hasSubmenu) return;
 
     // Check if the submenu is already open
     const isOpen = itemElement.getAttribute("aria-expanded") === "true";
@@ -192,7 +203,7 @@ const withSubmenu = (config: MenuConfig) => (component) => {
     index: number,
     itemElement: HTMLElement
   ): void => {
-    if (!item.submenu || !item.hasSubmenu) return;
+    if (tasks.destroyed || !item.submenu || !item.hasSubmenu) return;
 
     // Check if the submenu is already open
     const isOpen = itemElement.getAttribute("aria-expanded") === "true";
@@ -257,7 +268,7 @@ const withSubmenu = (config: MenuConfig) => (component) => {
     index: number,
     itemElement: HTMLElement
   ): void => {
-    if (!item.submenu || !item.hasSubmenu) return;
+    if (tasks.destroyed || !item.submenu || !item.hasSubmenu) return;
 
     // Get current level of the submenu we're opening
     const currentLevel = itemElement.closest(
@@ -333,6 +344,7 @@ const withSubmenu = (config: MenuConfig) => (component) => {
 
     // Add to DOM to enable measurement and transitions
     document.body.appendChild(submenuElement);
+    ownedElements.add(submenuElement);
 
     // Position the submenu using position component
     if (component.position && component.position.positionSubmenu) {
@@ -401,11 +413,11 @@ const withSubmenu = (config: MenuConfig) => (component) => {
     });
 
     // Make visible with animation
-    requestAnimationFrame(() => {
+    tasks.requestAnimationFrame(() => {
       submenuElement.classList.add(`${component.getClass("menu--visible")}`);
 
       // Wait for transition to complete before marking as fully opened
-      setTimeout(() => {
+      tasks.setTimeout(() => {
         // Find this submenu in the active submenus array and update its state
         const index = state.activeSubmenus.findIndex(
           (s) => s.element === submenuElement
@@ -413,6 +425,8 @@ const withSubmenu = (config: MenuConfig) => (component) => {
         if (index !== -1) {
           state.activeSubmenus[index].isOpening = false;
         }
+
+        if (index === -1) return;
 
         // Focus the first item in the submenu if keyboard navigation is being used
         if (submenuItems.length > 0) {
@@ -462,12 +476,8 @@ const withSubmenu = (config: MenuConfig) => (component) => {
         );
 
         // Schedule for removal
-        setTimeout(() => {
-          if (submenuToClose.element.parentNode) {
-            submenuToClose.element.parentNode.removeChild(
-              submenuToClose.element
-            );
-          }
+        tasks.setTimeout(() => {
+          removeSubmenu(submenuToClose.element);
         }, 200);
 
         // Mark for removal from state
@@ -497,6 +507,9 @@ const withSubmenu = (config: MenuConfig) => (component) => {
       state.activeSubmenu = null;
       state.activeSubmenuItem = null;
       state.submenuLevel = 0;
+      document.removeEventListener("click", handleDocumentClickForSubmenu);
+      window.removeEventListener("resize", handleWindowResizeForSubmenu);
+      window.removeEventListener("scroll", handleWindowScrollForSubmenu);
     }
 
     // Emit event for other features to react
@@ -514,6 +527,10 @@ const withSubmenu = (config: MenuConfig) => (component) => {
     clearHoverIntent();
     clearSubmenuTimer();
 
+    document.removeEventListener("click", handleDocumentClickForSubmenu);
+    window.removeEventListener("resize", handleWindowResizeForSubmenu);
+    window.removeEventListener("scroll", handleWindowScrollForSubmenu);
+
     if (state.activeSubmenus.length === 0) return;
 
     // Close all active submenus
@@ -529,10 +546,8 @@ const withSubmenu = (config: MenuConfig) => (component) => {
       );
 
       // Remove after animation
-      setTimeout(() => {
-        if (submenu.element.parentNode) {
-          submenu.element.parentNode.removeChild(submenu.element);
-        }
+      tasks.setTimeout(() => {
+        removeSubmenu(submenu.element);
       }, 200);
     });
 
@@ -541,11 +556,6 @@ const withSubmenu = (config: MenuConfig) => (component) => {
     state.activeSubmenuItem = null;
     state.activeSubmenus = [];
     state.submenuLevel = 0;
-
-    // Remove document events
-    document.removeEventListener("click", handleDocumentClickForSubmenu);
-    window.removeEventListener("resize", handleWindowResizeForSubmenu);
-    window.removeEventListener("scroll", handleWindowScrollForSubmenu);
 
     // Emit event for other features to react
     component.emit("all-submenus-closed", {});
@@ -591,7 +601,7 @@ const withSubmenu = (config: MenuConfig) => (component) => {
    */
   const handleWindowScrollForSubmenu = (): void => {
     // Use requestAnimationFrame to optimize scroll performance
-    window.requestAnimationFrame(() => {
+    tasks.requestAnimationFrame(() => {
       // Only reposition if we have an active submenu
       if (
         state.activeSubmenu &&
@@ -637,6 +647,8 @@ const withSubmenu = (config: MenuConfig) => (component) => {
   if (component.lifecycle) {
     const originalDestroy = component.lifecycle.destroy || (() => {});
     component.lifecycle.destroy = () => {
+      if (tasks.destroyed) return;
+      tasks.destroy();
       // Clean up timers
       clearHoverIntent();
       clearSubmenuTimer();
@@ -647,15 +659,15 @@ const withSubmenu = (config: MenuConfig) => (component) => {
       window.removeEventListener("scroll", handleWindowScrollForSubmenu);
 
       // Clean up submenu elements
-      if (state.activeSubmenus.length > 0) {
-        state.activeSubmenus.forEach((submenu) => {
-          if (submenu.element.parentNode) {
-            submenu.element.parentNode.removeChild(submenu.element);
-          }
-        });
-      }
-
-      originalDestroy();
+      state.activeSubmenus.forEach((submenu) => {
+        submenu.menuItem?.setAttribute("aria-expanded", "false");
+      });
+      ownedElements.forEach(removeSubmenu);
+      state.activeSubmenus = [];
+      state.activeSubmenu = null;
+      state.activeSubmenuItem = null;
+      state.submenuLevel = 0;
+      originalDestroy.call(component.lifecycle);
     };
   }
 

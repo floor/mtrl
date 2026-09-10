@@ -50,12 +50,12 @@ const createMenu = (config: MenuConfig): MenuComponent => {
       createBase, // Base component
       withEvents(), // Event handling
       withElement(getElementConfig(baseConfig)), // DOM element
+      withLifecycle(), // Features register their cleanup on this lifecycle
       withPosition(baseConfig), // Position management
       withKeyboard(), // Keyboard navigation
       withSubmenu(baseConfig), // Submenu management
       withController(baseConfig), // Menu controller
       withOpener(baseConfig), // Opener management
-      withLifecycle(), // Lifecycle management
       (comp) => withAPI(getApiConfig(comp))(comp), // Public API
     )(baseConfig);
 
