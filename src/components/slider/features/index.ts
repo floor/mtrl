@@ -3,5 +3,5 @@
 export { withRange } from "./range";
 export { withStates } from "./states";
 export { withController } from "./controller";
-export { withCanvas } from "./canvas";
+export { withTracks } from "./tracks";
 export { withDom } from "./dom";

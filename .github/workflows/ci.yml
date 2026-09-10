@@ -41,11 +41,15 @@ jobs:
         run: node node_modules/playwright/cli.js install --with-deps chromium
       - name: Vite and browser regression checks
         run: bun run consumer:check
+      - name: Slider rendering and interaction checks
+        run: bun run slider:check
       - name: Browser comparison artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: browser-comparisons
-          path: analysis/browser
+          path: |
+            analysis/browser
+            analysis/slider-dom
           retention-days: 7
           if-no-files-found: ignore

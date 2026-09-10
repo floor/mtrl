@@ -90,54 +90,10 @@ export const withController = (config: SliderConfig) => (component) => {
     return range === 0 ? 0 : ((value - state.min) / range) * 100;
   };
 
-  /**
-   * Gets track dimensions and constraints for positioning calculations
-   * Handles edge constraints and padding for proper handle positioning
-   */
-  const getTrackDimensions = () => {
-    const components = getComponents();
-    const { handle, container } = components;
-
-    if (!handle || !container) return null;
-
-    try {
-      const handleRect = handle.getBoundingClientRect();
-      const containerRect = container.getBoundingClientRect();
-      const handleSize = handleRect.width || SLIDER_MEASUREMENTS.HANDLE_SIZE;
-      const trackSize = containerRect.width;
-
-      // Use EDGE_PADDING for consistent edge constraints
-      const edgeConstraint =
-        (SLIDER_MEASUREMENTS.EDGE_PADDING / trackSize) * 100;
-      const paddingPixels = state.activeHandle ? 6 : 8;
-      const paddingPercent = (paddingPixels / trackSize) * 100;
-
-      return { handleSize, trackSize, edgeConstraint, paddingPercent };
-    } catch (error) {
-      console.warn("Error calculating track dimensions:", error);
-      return {
-        handleSize: SLIDER_MEASUREMENTS.HANDLE_SIZE,
-        trackSize: 200,
-        edgeConstraint: 3, // 6px / 200px * 100
-        paddingPercent: 4,
-      };
-    }
-  };
-
-  /**
-   * Maps value percentage to visual position with edge constraints
-   * Ensures handles stay within the visible track area
-   */
-  const mapValueToVisualPercent = (valuePercent, trackSize = 200) => {
-    // Calculate edge constraint using EDGE_PADDING
-    const edgeConstraint = (SLIDER_MEASUREMENTS.EDGE_PADDING / trackSize) * 100;
-    const minEdge = edgeConstraint;
-    const maxEdge = 100 - edgeConstraint;
-    const visualRange = maxEdge - minEdge;
-
-    if (valuePercent <= 0) return minEdge;
-    if (valuePercent >= 100) return maxEdge;
-    return minEdge + (valuePercent / 100) * visualRange;
+  // Percentage plus a fixed inset stays aligned when the container resizes.
+  const visualPosition = (percent: number) => {
+    const ratio = Math.min(1, Math.max(0, percent / 100));
+    return `calc(${ratio * 100}% + ${SLIDER_MEASUREMENTS.EDGE_PADDING * (1 - 2 * ratio)}px)`;
   };
 
   /**
@@ -201,36 +157,21 @@ export const withController = (config: SliderConfig) => (component) => {
 
     if (!handle || !container) return;
 
-    const dims = getTrackDimensions();
-    if (!dims) return;
-
-    const { trackSize } = dims;
-
-    // Update main handle position
-    const percent = getPercentage(state.value);
-    const adjustedPercent = mapValueToVisualPercent(percent, trackSize);
-
-    handle.style.left = `${adjustedPercent}%`;
+    handle.style.left = visualPosition(getPercentage(state.value));
     handle.style.transform = "translate(-50%, -50%)";
 
     if (valueBubble) {
-      valueBubble.style.left = `${adjustedPercent}%`;
+      valueBubble.style.left = visualPosition(getPercentage(state.value));
       valueBubble.style.transform = "translateX(-50%)";
     }
 
     // Update second handle if range slider
     if (config.range && secondHandle && state.secondValue !== null) {
-      const secondPercent = getPercentage(state.secondValue);
-      const adjustedSecondPercent = mapValueToVisualPercent(
-        secondPercent,
-        trackSize,
-      );
-
-      secondHandle.style.left = `${adjustedSecondPercent}%`;
+      secondHandle.style.left = visualPosition(getPercentage(state.secondValue));
       secondHandle.style.transform = "translate(-50%, -50%)";
 
       if (secondValueBubble) {
-        secondValueBubble.style.left = `${adjustedSecondPercent}%`;
+        secondValueBubble.style.left = visualPosition(getPercentage(state.secondValue));
         secondValueBubble.style.transform = "translateX(-50%)";
       }
     }
@@ -272,18 +213,18 @@ export const withController = (config: SliderConfig) => (component) => {
 
   /**
    * Generates tick marks
-   * NOTE: Ticks are now rendered via canvas, this just clears any DOM ticks
+   * NOTE: Ticks are now rendered via track, this just clears any DOM ticks
    */
   const generateTicks = () => {
-    // Canvas handles tick rendering - no DOM manipulation needed
+    // Track handles tick rendering - no DOM manipulation needed
   };
 
   /**
    * Updates active state of tick marks
-   * NOTE: Ticks are now rendered via canvas, so this is no longer needed
+   * NOTE: Ticks are now rendered via track, so this is no longer needed
    */
   const updateTicks = () => {
-    // Canvas handles tick rendering - no DOM manipulation needed
+    // Track handles tick rendering - no DOM manipulation needed
   };
 
   /**
@@ -295,10 +236,10 @@ export const withController = (config: SliderConfig) => (component) => {
       updateHandlePositions();
       updateValueBubbles();
 
-      // Trigger canvas redraw if available
-      if (component.drawCanvas) {
-        // Pass the current state directly to canvas
-        component.drawCanvas(state);
+      // Trigger track redraw if available
+      if (component.renderTracks) {
+        // Pass the current state directly to track
+        component.renderTracks(state);
       }
     } catch (error) {
       console.warn("Error rendering UI:", error);
@@ -527,6 +468,7 @@ export const withController = (config: SliderConfig) => (component) => {
        */
       setStep(step) {
         state.step = step;
+        render();
 
         // Add or remove discrete class
         component.element.classList[step > 0 ? "add" : "remove"](
@@ -552,11 +494,11 @@ export const withController = (config: SliderConfig) => (component) => {
 
       /**
        * Regenerate tick marks and labels
-       * NOTE: Canvas handles tick rendering, this just triggers a redraw
+       * NOTE: Track handles tick rendering, this just triggers a redraw
        * @returns Slider controller for chaining
        */
       regenerateTicks() {
-        render(); // Canvas will redraw ticks based on current state
+        render(); // Track will redraw ticks based on current state
         return this;
       },
 

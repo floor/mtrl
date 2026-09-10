@@ -71,17 +71,46 @@ $component: '#{base.$prefix}-slider';
     align-items: center;
   }
 
-  // Canvas element for hybrid rendering
-  &-canvas {
-    position: absolute !important;
-    top: 0;
-    left: 0;
-    width: 100% !important;
-    height: 100% !important;
-    pointer-events: none;
-    z-index: 0;
+  // Decoration inherits theme colours directly, without JavaScript subscriptions.
+  --#{base.$prefix}-slider-track-color: var(--#{base.$prefix}-slider-color, #{t.color('primary')});
+  --#{base.$prefix}-slider-tick-color: var(--#{base.$prefix}-slider-on-color, #{t.color('on-primary')});
+  --#{base.$prefix}-slider-active-opacity: 1;
+  --#{base.$prefix}-slider-inactive-opacity: 0.24;
+  --#{base.$prefix}-slider-tick-opacity: 0.5;
+  @each $color in (secondary, tertiary, error) {
+    &--#{$color} {
+      --#{base.$prefix}-slider-track-color: var(--#{base.$prefix}-slider-color, #{t.color($color)});
+      --#{base.$prefix}-slider-tick-color: var(--#{base.$prefix}-slider-on-color, #{t.color('on-' + $color)});
+    }
   }
- 
+  &--disabled {
+    --#{base.$prefix}-slider-track-color: #{t.color('on-surface')};
+    --#{base.$prefix}-slider-tick-color: #{t.color('on-surface')};
+    --#{base.$prefix}-slider-active-opacity: 0.38;
+    --#{base.$prefix}-slider-inactive-opacity: 0.12;
+    --#{base.$prefix}-slider-tick-opacity: 0.06;
+  }
+  &-visual { position: absolute; inset: 0; pointer-events: none; }
+  &-track { position: absolute; top: 50%; width: 100%; transform: translateY(-50%); overflow: hidden; }
+  &-segment {
+    position: absolute; height: 100%; border-radius: 3px;
+    background: var(--#{base.$prefix}-slider-track-color); opacity: var(--#{base.$prefix}-slider-inactive-opacity);
+    transition: left 0.225s cubic-bezier(0.4, 0, 0.2, 1), width 0.225s cubic-bezier(0.4, 0, 0.2, 1);
+    &--active { opacity: var(--#{base.$prefix}-slider-active-opacity); }
+  }
+  &-ticks {
+    position: absolute; inset: 0; color: var(--#{base.$prefix}-slider-track-color); opacity: var(--#{base.$prefix}-slider-tick-opacity);
+    background-image: radial-gradient(circle at center, currentColor 2px, transparent 2px);
+    background-repeat: repeat-x;
+    &--active { color: var(--#{base.$prefix}-slider-tick-color); opacity: var(--#{base.$prefix}-slider-active-opacity); }
+  }
+  &-dot { position: absolute; right: 5px; top: calc(50% - 2px); width: 4px; height: 4px;
+    border-radius: 50%; background: var(--#{base.$prefix}-slider-track-color); opacity: var(--#{base.$prefix}-slider-active-opacity); }
+  &--dragging &-segment { transition: none; }
+  @media (prefers-reduced-motion: reduce) {
+    &-segment, &-handle, &-value { transition: none !important; }
+  }
+
   // Handle - updated with T-shape and proper focus styles
   &-handle {
     position: absolute;

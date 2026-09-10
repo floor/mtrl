@@ -16,6 +16,7 @@
     "scripts/package-fixture.ts",
     "scripts/check-package-size.ts",
     "scripts/check-consumer.ts",
+    "scripts/check-slider.ts",
     "test/build/style-manifest.test.ts",
     "test/browser/fixture.ts"
   ],

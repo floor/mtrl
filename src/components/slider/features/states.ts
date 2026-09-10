@@ -11,6 +11,9 @@ import { SliderConfig } from "../types";
  * @returns Component enhancer with state management features
  */
 export const withStates = (config: SliderConfig) => (component) => {
+  const handle = component.handle ?? component.structure?.handle;
+  const secondHandle = component.secondHandle ?? component.structure?.secondHandle;
+
   // Track initial disabled state
   const isDisabled = config.disabled === true;
 
@@ -33,19 +36,19 @@ export const withStates = (config: SliderConfig) => (component) => {
     component.element.setAttribute("aria-disabled", "true");
 
     // Ensure handles cannot receive focus when disabled
-    if (component.structure?.handle) {
-      component.structure.handle.tabIndex = -1;
-      component.structure.handle.setAttribute("aria-disabled", "true");
+    if (handle) {
+      handle.tabIndex = -1;
+      handle.setAttribute("aria-disabled", "true");
     }
 
-    if (config.range && component.structure?.secondHandle) {
-      component.structure.secondHandle.tabIndex = -1;
-      component.structure.secondHandle.setAttribute("aria-disabled", "true");
+    if (config.range && secondHandle) {
+      secondHandle.tabIndex = -1;
+      secondHandle.setAttribute("aria-disabled", "true");
     }
 
-    // Redraw canvas with disabled colors
-    if (component.drawCanvas) {
-      component.drawCanvas();
+    // Redraw track with disabled colors
+    if (component.renderTracks) {
+      component.renderTracks();
     }
   }
 
@@ -59,19 +62,19 @@ export const withStates = (config: SliderConfig) => (component) => {
     component.element.setAttribute("aria-disabled", "false");
 
     // Re-enable focus on handles
-    if (component.structure?.handle) {
-      component.structure.handle.tabIndex = 0;
-      component.structure.handle.setAttribute("aria-disabled", "false");
+    if (handle) {
+      handle.tabIndex = 0;
+      handle.setAttribute("aria-disabled", "false");
     }
 
-    if (config.range && component.structure?.secondHandle) {
-      component.structure.secondHandle.tabIndex = 0;
-      component.structure.secondHandle.setAttribute("aria-disabled", "false");
+    if (config.range && secondHandle) {
+      secondHandle.tabIndex = 0;
+      secondHandle.setAttribute("aria-disabled", "false");
     }
 
-    // Redraw canvas with enabled colors
-    if (component.drawCanvas) {
-      component.drawCanvas();
+    // Redraw track with enabled colors
+    if (component.renderTracks) {
+      component.renderTracks();
     }
   }
 
@@ -112,7 +115,7 @@ export const withStates = (config: SliderConfig) => (component) => {
     };
   }
 
-  // Share the instance so these callbacks see canvas methods installed next.
+  // Share the instance so these callbacks see track methods installed next.
   return Object.assign(component, {
     // Disabled state management
     disabled: {
@@ -233,9 +236,7 @@ export const withStates = (config: SliderConfig) => (component) => {
         config.ticks = show;
 
         // Regenerate ticks if slider is initialized
-        if (component.slider) {
-          component.slider.regenerateTicks();
-        }
+        component.renderTracks?.();
 
         return this;
       },

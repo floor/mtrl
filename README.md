@@ -137,6 +137,17 @@ Button progress and card action buttons retain their dynamic imports in ESM.
 Enable code splitting in your application build to load those features on demand.
 The CommonJS compatibility bundle includes them eagerly.
 
+Slider decoration uses DOM tracks and CSS backgrounds for ticks; it no longer
+creates a canvas or subscribes to theme changes. Its public slider API and
+accessible handles remain. Themes and per-slider colour overrides apply through
+CSS. Custom styling that targets the former `.mtrl-slider-canvas` element must be
+updated. Run `bun run slider:check` after building for slider geometry, keyboard,
+pointer, resize, and lifecycle checks. For comparison with a previous canvas
+build, pass `--reference=/path/to/reference` to `scripts/check-slider.ts`; that
+directory must contain an ESM `slider.js` exporting `createSlider` and its full
+`styles.css`. Comparison screenshots and measurements go to `analysis/slider-dom`.
+CSS rounded corners differ slightly from the previous canvas curves.
+
 ### Checking distribution size
 
 ```bash
