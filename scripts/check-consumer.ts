@@ -162,10 +162,11 @@ try {
         const css = getComputedStyle(el, pseudo);
         return Object.fromEntries([
           "display", "visibility", "position", "color", "background-color", "opacity", "font-family", "font-size", "font-weight",
+          "outline-style", "outline-width", "outline-color", "outline-offset",
           "line-height", "border-radius", "border-width", "border-color", "padding", "margin", "box-shadow", "transform",
         ].map(key => [key, css.getPropertyValue(key)]));
       };
-      return { tag: el.tagName, rect: [rect.x, rect.y, rect.width, rect.height].map(n => Math.round(n * 100) / 100),
+      return { tag: el.tagName, focused: el === document.activeElement, focusVisible: el.matches(":focus-visible"), rect: [rect.x, rect.y, rect.width, rect.height].map(n => Math.round(n * 100) / 100),
         styles: styles(), before: styles("::before"), after: styles("::after") };
     }));
   }
