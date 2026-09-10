@@ -63,7 +63,9 @@ bun add mtrl
 
 ## Tree-Shaking Optimized Imports
 
-mtrl is optimized for tree-shaking. Constants are exported separately from component creators to minimize bundle size.
+mtrl publishes ESM modules so application bundlers can remove unused exports and
+split dynamic imports. The root and direct component imports use the same modules.
+CommonJS remains available through `require('mtrl')`.
 
 ### Import Patterns
 
@@ -99,6 +101,79 @@ const slider = createSlider({
 ```
 
 **Note:** Constants are NOT exported from main entry points. Always import them from the component's constants file.
+
+### Selective styles
+
+The full stylesheet remains available:
+
+```typescript
+import 'mtrl/styles';
+```
+
+For smaller applications, import the base once, followed by the components you use:
+
+```typescript
+import 'mtrl/styles/base';
+import 'mtrl/styles/button';
+import 'mtrl/styles/textfield';
+
+// Optional: alternate themes and utility classes
+import 'mtrl/themes/ocean';
+import 'mtrl/styles/utilities';
+```
+
+The base includes the baseline light/dark theme, tokens, reset, typography, and
+ripple styles. Selective style entry points are JavaScript modules that import
+their CSS and dependencies (for example, button imports progress; select imports
+textfield and menu). Use a CSS-capable application bundler to resolve and
+deduplicate these imports. Their ordered `mtrl` cascade layers preserve component
+overrides even when a bundler reorders CSS chunks. Unlayered application CSS can
+override these library styles. Load optional themes after the base.
+Choose either the full stylesheet or selective imports to avoid
+duplicating styles. DatePicker remains available through the full stylesheet;
+it has no separate style entry while in development.
+
+Button progress and card action buttons retain their dynamic imports in ESM.
+Enable code splitting in your application build to load those features on demand.
+The CommonJS compatibility bundle includes them eagerly.
+
+### Checking distribution size
+
+```bash
+bun run build
+bun run size:check
+```
+
+The size check packs and installs the local distribution in a temporary directory,
+checks Node ESM/CommonJS and TypeScript imports, and measures minified consumer
+bundles with gzip and Brotli. It enforces budgets for individual imports, a form,
+CSS, and the initial button chunks. Results are saved to
+`analysis/package-size.json`. Run it after building; it does not rebuild dist.
+
+For a second bundler and real-browser checks:
+
+```bash
+node node_modules/playwright/cli.js install chromium
+bun run consumer:check
+```
+
+This builds a packed Vite application and checks tree-shaking, CSS deduplication,
+and on-demand progress loading. Chromium compares full and selective CSS with
+screenshots and computed styles across component states, baseline/ocean themes,
+light/dark modes, and desktop/mobile widths. It also exercises pointer and keyboard
+interactions. Reports and screenshots are saved to `analysis/browser`; CI runs
+these checks and uploads the artifacts. Comparisons use the full stylesheet from
+the same build as their reference, so they test distribution equivalence rather
+than establish a separate design baseline.
+
+`scripts/style-manifest.ts` declares selective entries and their dependencies.
+The build rejects missing dependencies and cycles, checks the manifest against
+Sass's parsed full-stylesheet imports, and verifies component dependencies retained
+by tree-shaking, including lazy imports. Vite and Playwright are development-only
+dependencies, pinned along with the existing tools in `bun.lock`.
+
+Builds fail on TypeScript or Sass errors. Published ESM is readable and includes
+declarations; source maps are omitted from the package to reduce installation size.
 
 ## Component Architecture
 

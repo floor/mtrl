@@ -1,0 +1,23 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "target": "ES2022",
+    "rootDir": ".",
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    "declaration": false,
+    "types": ["bun"]
+  },
+  "include": [
+    "build.ts",
+    "scripts/build-modules.ts",
+    "scripts/build-styles.ts",
+    "scripts/style-manifest.ts",
+    "scripts/package-fixture.ts",
+    "scripts/check-package-size.ts",
+    "scripts/check-consumer.ts",
+    "test/build/style-manifest.test.ts",
+    "test/browser/fixture.ts"
+  ],
+  "exclude": ["node_modules"]
+}

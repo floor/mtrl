@@ -19,7 +19,11 @@
     "tested",
     "type-safe"
   ],
-  "sideEffects": false,
+  "sideEffects": [
+    "**/*.css",
+    "**/*.scss",
+    "**/styles/*.js"
+  ],
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -30,7 +34,28 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
-    "./styles": "./dist/styles.css"
+    "./styles": "./dist/styles.css",
+    "./components/*/constants": {
+      "types": "./dist/components/*/constants.d.ts",
+      "import": "./dist/components/*/constants.js"
+    },
+    "./components/*": {
+      "types": "./dist/components/*/index.d.ts",
+      "import": "./dist/components/*/index.js"
+    },
+    "./core": {
+      "types": "./dist/core/index.d.ts",
+      "import": "./dist/core/index.js"
+    },
+    "./core/*": {
+      "types": "./dist/core/*/index.d.ts",
+      "import": "./dist/core/*/index.js"
+    },
+    "./styles/*": {
+      "types": "./dist/styles/*.d.ts",
+      "import": "./dist/styles/*.js"
+    },
+    "./themes/*": "./dist/themes/*.css"
   },
   "files": [
     "dist",
@@ -58,20 +83,25 @@
     "ts:next-error": "bun scripts/next-ts-error.ts",
     "ts:fix": "bun scripts/fix-typescript.ts",
     "ts:fix-file": "bun scripts/fix-typescript.ts",
-    "ts:fix-next": "bun scripts/fix-next-error.ts"
+    "ts:fix-next": "bun scripts/fix-next-error.ts",
+    "size:check": "bun run scripts/check-package-size.ts",
+    "consumer:check": "bun run scripts/check-consumer.ts",
+    "tooling:check": "tsc --project tsconfig.tools.json --noEmit"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/floor/mtrl.git"
   },
   "devDependencies": {
+    "@types/bun": "latest",
     "@types/jsdom": "^21.1.7",
     "@typescript-eslint/eslint-plugin": "^8.33.1",
     "eslint": "8",
     "jsdom": "^26.0.0",
+    "playwright": "^1.63.0",
     "sass": "^1.85.1",
     "typedoc": "^0.27.9",
     "typescript": "^5.8.2",
-    "@types/bun": "latest"
+    "vite": "^8.2.2"
   }
 }
