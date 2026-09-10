@@ -1,4 +1,4 @@
-import { getThemeColor } from '../utils';
+import { onThemeChange } from '../utils/theme';
 
 /**
  * Common canvas context interface used by components
@@ -84,50 +84,57 @@ export const updateCanvasDimensions = (
  * 
  * @param initFn - Function that performs initialization
  * @param onSuccess - Optional callback on successful initialization
+ * @param signal - Optional signal to cancel pending initialization attempts
  * @returns Whether initialization was immediately successful
  */
 export const initializeCanvasWithRetry = (
   initFn: () => boolean,
-  onSuccess?: () => void
+  onSuccess?: () => void,
+  signal?: AbortSignal
 ): boolean => {
-  // Try to initialize immediately
-  if (initFn()) {
+  let frame: number | null = null;
+  let timer: ReturnType<typeof setTimeout> | null = null;
+  const cleanup = () => {
+    if (frame !== null) cancelAnimationFrame(frame);
+    if (timer !== null) clearTimeout(timer);
+    signal?.removeEventListener('abort', cleanup);
+  };
+  if (signal?.aborted) return false;
+  signal?.addEventListener('abort', cleanup, { once: true });
+  const attempt = () => {
+    if (signal?.aborted) return false;
+    if (!initFn()) return false;
+    cleanup();
     onSuccess?.();
     return true;
-  }
-  
-  // Retry with requestAnimationFrame
-  requestAnimationFrame(() => {
-    if (initFn()) {
-      onSuccess?.();
-    } else {
-      // Final retry with setTimeout
-      setTimeout(() => {
-        if (initFn()) {
-          onSuccess?.();
-        }
-      }, 100);
-    }
+  };
+  if (attempt()) return true;
+  frame = requestAnimationFrame(() => {
+    frame = null;
+    if (attempt() || signal?.aborted) return;
+    timer = setTimeout(() => {
+      timer = null;
+      attempt();
+      cleanup();
+    }, 100);
   });
-  
   return false;
 };
 
 /**
  * Creates a theme observer that triggers a callback on theme changes
  * 
- * @param color - The theme color to observe (e.g., 'primary', 'secondary')
+ * @param _color - Colour name retained for compatibility; notifications cover all colours
  * @param callback - Function to call when theme changes
- * @returns Cleanup function or null
+ * @returns Function that unsubscribes from theme changes
  */
 export const createCanvasThemeObserver = (
-  color: string,
+  _color: string,
   callback: () => void
-): (() => void) | null => {
-  const cleanup = getThemeColor(`sys-color-${color}`, { 
-    onThemeChange: callback 
-  });
-  return typeof cleanup === 'function' ? cleanup : null;
+): (() => void) => {
+  // Theme notifications apply to every colour. Keep the colour argument for
+  // compatibility; colour lookup belongs to the drawing callback.
+  return onThemeChange(callback);
 };
 
 /**

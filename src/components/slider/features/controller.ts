@@ -357,19 +357,18 @@ export const withController = (config: SliderConfig) => (component) => {
     }
   };
 
+  const initialization = setTimeout(initController, 0);
+
   // Register with lifecycle if available
   if (component.lifecycle) {
     const originalDestroy = component.lifecycle.destroy || (() => {});
     component.lifecycle.destroy = () => {
+      clearTimeout(initialization);
       handlers.cleanupEventListeners();
-      originalDestroy();
+      originalDestroy.call(component.lifecycle);
     };
   }
 
-  // Schedule initialization after current execution completes
-  setTimeout(() => {
-    initController();
-  }, 0);
 
   // Return enhanced component
   return {

@@ -51,6 +51,10 @@ export const onThemeChange = (callback: ThemeChangeCallback): (() => void) => {
   // Return function to unregister
   return () => {
     themeChangeCallbacks.delete(callback);
+    if (themeChangeCallbacks.size === 0) {
+      themeObserver?.disconnect();
+      themeObserver = null;
+    }
   };
 };
 

@@ -772,6 +772,8 @@ export const withCanvas =
       component.element.appendChild(canvas);
     }
 
+    const lifetime = new AbortController();
+
     // Setup canvas context
     let canvasContext: CanvasContext | null = null;
     let resizeCleanup: (() => void) | null = null;
@@ -824,7 +826,8 @@ export const withCanvas =
       () => {
         // Set initial handle sizes after successful initialization
         updateHandleSizes(component, currentSize);
-      }
+      },
+      lifetime.signal
     );
 
     // Add color class to component element if not primary
@@ -839,7 +842,7 @@ export const withCanvas =
 
     // Helper to draw with current animated state
     const drawAnimatedState = () => {
-      if (!canvasContext) return;
+      if (lifetime.signal.aborted || !canvasContext) return;
       draw(
         canvasContext,
         {
@@ -857,7 +860,7 @@ export const withCanvas =
 
     // Animation loop function
     const animate = (currentTime?: number): void => {
-      if (!canvasContext) return;
+      if (lifetime.signal.aborted || !canvasContext) return;
 
       // If no currentTime provided, use performance.now()
       const now = currentTime || performance.now();
@@ -1005,7 +1008,7 @@ export const withCanvas =
 
     // Resize function
     const resize = (): void => {
-      if (!canvasContext) return;
+      if (lifetime.signal.aborted || !canvasContext) return;
 
       try {
         const newContext = setupCanvas(canvas, {
@@ -1034,7 +1037,7 @@ export const withCanvas =
     );
 
     // Initial draw
-    requestAnimationFrame(() => {
+    const initialFrame = requestAnimationFrame(() => {
       drawCanvas();
     });
 
@@ -1065,7 +1068,8 @@ export const withCanvas =
     const originalSetColor = component.appearance?.setColor;
     if (originalSetColor) {
       component.appearance.setColor = (color: SliderColor) => {
-        originalSetColor(color);
+        if (lifetime.signal.aborted) return;
+        originalSetColor.call(component.appearance, color);
 
         // Remove old color class if not primary
         if (config.color && config.color !== "primary") {
@@ -1101,12 +1105,18 @@ export const withCanvas =
     if (component.lifecycle) {
       const originalDestroy = component.lifecycle.destroy || (() => {});
       component.lifecycle.destroy = () => {
+        if (lifetime.signal.aborted) return;
+        lifetime.abort();
+        cancelAnimationFrame(initialFrame);
         if (resizeCleanup) resizeCleanup();
         if (themeCleanup) themeCleanup();
+        resizeCleanup = null;
+        themeCleanup = null;
         if (animationState.animationFrame) {
           cancelAnimationFrame(animationState.animationFrame);
         }
-        originalDestroy();
+        canvasContext = null;
+        originalDestroy.call(component.lifecycle);
       };
     }
 
