@@ -89,13 +89,14 @@ export const withLeadingIcon = <T extends LeadingIconConfig>(config: T) =>
     if ('lifecycle' in component && component.lifecycle?.destroy) {
       const originalDestroy = component.lifecycle.destroy;
       component.lifecycle.destroy = () => {
+        clearTimeout(initialPosition);
         iconElement.remove();
         originalDestroy.call(component.lifecycle);
       };
     }
     
     // Update label position based on icon
-    setTimeout(() => {
+    const initialPosition = setTimeout(() => {
       const labelEl = component.element.querySelector(`.${PREFIX}-${config.componentName || 'textfield'}-label`);
       if (labelEl) {
         if (!component.element.classList.contains(`${PREFIX}-${config.componentName || 'textfield'}--with-prefix`)) {

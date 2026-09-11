@@ -15,6 +15,7 @@ type ComponentWithDensity = BaseComponent & {
     set: (density: string) => void;
   };
   updateElementPositions?: () => void;
+  schedulePositionUpdate?: () => void;
   setError?: (error: boolean, message?: string) => any;
   isError?: () => boolean;
 };
@@ -68,7 +69,7 @@ export const withAPI =
 
       // Update positioning after variant change
       if (component.updateElementPositions) {
-        setTimeout(() => component.updateElementPositions(), 10);
+        component.schedulePositionUpdate?.();
       }
 
       return this;
@@ -92,7 +93,7 @@ export const withAPI =
       component.label?.setText(text);
       // Update positions after changing label
       if (component.updateElementPositions) {
-        setTimeout(() => component.updateElementPositions(), 10);
+        component.schedulePositionUpdate?.();
       }
       return this;
     },
@@ -108,7 +109,7 @@ export const withAPI =
         component.setLeadingIcon(html);
         // Update positions after changing icon
         if (component.updateElementPositions) {
-          setTimeout(() => component.updateElementPositions(), 10);
+          component.schedulePositionUpdate?.();
         }
       }
       return this;
@@ -119,7 +120,7 @@ export const withAPI =
         component.removeLeadingIcon();
         // Update positions after removing icon
         if (component.updateElementPositions) {
-          setTimeout(() => component.updateElementPositions(), 10);
+          component.schedulePositionUpdate?.();
         }
       }
       return this;
@@ -132,7 +133,7 @@ export const withAPI =
         component.setTrailingIcon(html);
         // Update positions after changing icon
         if (component.updateElementPositions) {
-          setTimeout(() => component.updateElementPositions(), 10);
+          component.schedulePositionUpdate?.();
         }
       }
       return this;
@@ -143,7 +144,7 @@ export const withAPI =
         component.removeTrailingIcon();
         // Update positions after removing icon
         if (component.updateElementPositions) {
-          setTimeout(() => component.updateElementPositions(), 10);
+          component.schedulePositionUpdate?.();
         }
       }
       return this;
@@ -172,7 +173,7 @@ export const withAPI =
         component.setPrefixText(text);
         // Update positions after changing prefix
         if (component.updateElementPositions) {
-          setTimeout(() => component.updateElementPositions(), 10);
+          component.schedulePositionUpdate?.();
         }
       }
       return this;
@@ -183,7 +184,7 @@ export const withAPI =
         component.removePrefixText();
         // Update positions after removing prefix
         if (component.updateElementPositions) {
-          setTimeout(() => component.updateElementPositions(), 10);
+          component.schedulePositionUpdate?.();
         }
       }
       return this;
@@ -196,7 +197,7 @@ export const withAPI =
         component.setSuffixText(text);
         // Update positions after changing suffix
         if (component.updateElementPositions) {
-          setTimeout(() => component.updateElementPositions(), 10);
+          component.schedulePositionUpdate?.();
         }
       }
       return this;
@@ -207,7 +208,7 @@ export const withAPI =
         component.removeSuffixText();
         // Update positions after removing suffix
         if (component.updateElementPositions) {
-          setTimeout(() => component.updateElementPositions(), 10);
+          component.schedulePositionUpdate?.();
         }
       }
       return this;

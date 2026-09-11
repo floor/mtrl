@@ -23,6 +23,8 @@ export interface PlacementComponent extends BaseComponent {
    * @returns The component instance for chaining
    */
   updateElementPositions: () => PlacementComponent;
+  /** Queue a placement update owned by this component lifecycle. */
+  schedulePositionUpdate: () => void;
 }
 
 /**
@@ -37,6 +39,17 @@ export const withPlacement =
     const PREFIX = component.config.prefix || "mtrl";
     const COMPONENT = component.config.componentName || "textfield";
 
+    let destroyed = false;
+    let updateTimer: ReturnType<typeof setTimeout> | null = null;
+    const schedulePositionUpdate = () => {
+      if (destroyed) return;
+      if (updateTimer !== null) clearTimeout(updateTimer);
+      updateTimer = setTimeout(() => {
+        updateTimer = null;
+        updateElementPositions();
+      }, 10);
+    };
+
     // Use WeakMaps to store observers without extending HTMLElement
     const bgSourceObservers = new WeakMap<HTMLElement, MutationObserver>();
     const parentObservers = new WeakMap<HTMLElement, MutationObserver[]>();
@@ -48,7 +61,7 @@ export const withPlacement =
      * to accommodate prefix/suffix elements
      */
     const updateElementPositions = () => {
-      if (!component.element || !component.element.isConnected)
+      if (destroyed || !component.element || !component.element.isConnected)
         return component as any;
 
       // Get necessary elements
@@ -224,7 +237,7 @@ export const withPlacement =
             mutation.attributeName === "class"
           ) {
             // Debounce the update to avoid excessive recalculations
-            setTimeout(updateElementPositions, 10);
+            schedulePositionUpdate();
           }
         });
       });
@@ -243,7 +256,8 @@ export const withPlacement =
     };
 
     // Perform initial setup
-    setTimeout(() => {
+    const initialization = setTimeout(() => {
+      if (destroyed) return;
       setupEventListeners();
       updateElementPositions();
     }, 0);
@@ -252,6 +266,11 @@ export const withPlacement =
     if ("lifecycle" in component && component.lifecycle?.destroy) {
       const originalDestroy = component.lifecycle.destroy;
       component.lifecycle.destroy = () => {
+        if (destroyed) return;
+        destroyed = true;
+        clearTimeout(initialization);
+        if (updateTimer !== null) clearTimeout(updateTimer);
+        updateTimer = null;
         window.removeEventListener("resize", updateElementPositions);
 
         // Disconnect class observer
@@ -288,6 +307,7 @@ export const withPlacement =
 
     return {
       ...component,
+      schedulePositionUpdate,
       updateElementPositions: () => {
         updateElementPositions();
         return component as unknown as C & PlacementComponent;
