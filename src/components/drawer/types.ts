@@ -125,6 +125,13 @@ export interface DrawerConfig extends BaseComponentConfig {
   dense?: boolean;
 
   /**
+   * Whether items show a ripple on press. The ripple is clipped to the
+   * item shape, so it reads as part of the active indicator.
+   * @default true
+   */
+  ripple?: boolean;
+
+  /**
    * Additional CSS classes to add to the drawer
    */
   class?: string;

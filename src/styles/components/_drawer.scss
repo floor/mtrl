@@ -275,47 +275,85 @@ $default-width: 360px;
         text-decoration: none;
         box-sizing: border-box;
         outline: none;
+        // Clip the indicator, the state layer and the ripple to the pill
+        overflow: hidden;
+        isolation: isolate;
         -webkit-tap-highlight-color: transparent;
         @include m.typography("label-large");
-        @include m.motion-transition(background-color, color);
+        transition: color v.motion("spring-default-effects-duration")
+            v.motion("spring-default-effects-easing");
 
-        // Active indicator (background shape — positioned behind content)
+        // Active indicator: a secondary-container pill that scales in from
+        // the middle of the item when it becomes active and scales back out
+        // when it stops being active (m3.material.io navigation, Android
+        // NavigationBarItemView.ActiveIndicatorTransform: scaleX from 0.4).
+        // The scale takes the spatial spring and the opacity the effects
+        // spring (Compose NavigationBarItem). Leaving the active state, the
+        // fade is stretched over the shrink so the pill is seen shrinking
+        // rather than vanishing; a transition takes the timing of the state
+        // it moves to, so the base rule holds the outgoing timing.
         .#{$component}__active-indicator {
             position: absolute;
             inset: 0;
-            border-radius: 28px;
-            background-color: transparent;
+            border-radius: inherit;
+            background-color: t.color("secondary-container");
+            opacity: 0;
+            transform: scaleX(0.32);
+            transform-origin: center;
             pointer-events: none;
-            @include m.motion-transition(background-color);
+            z-index: 0;
+            transition:
+                transform v.motion("spring-default-spatial-duration")
+                    v.motion("spring-default-spatial-easing"),
+                opacity v.motion("spring-default-spatial-duration")
+                    v.motion("spring-default-effects-easing");
+        }
+
+        // State layer for hover, focus and press, drawn above the indicator
+        // in the item's current content colour
+        &::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background-color: currentColor;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 1;
+            transition: opacity v.motion("spring-default-effects-duration")
+                v.motion("spring-default-effects-easing");
+        }
+
+        // Press ripple, between the indicator and the content
+        .#{base.$prefix}-ripple {
+            z-index: 1;
         }
 
         // ======================================================================
-        // HOVER STATE
+        // HOVER / FOCUS / PRESSED STATES
         // ======================================================================
 
         &:hover:not([disabled]) {
-            .#{$component}__active-indicator {
-                background-color: t.alpha("on-surface", 0.08);
+            color: t.color("on-surface");
+
+            &::before {
+                opacity: v.state("hover-state-layer-opacity");
             }
         }
-
-        // ======================================================================
-        // FOCUS-VISIBLE STATE
-        // ======================================================================
 
         &:focus-visible {
-            .#{$component}__active-indicator {
-                background-color: t.alpha("on-surface", 0.12);
+            color: t.color("on-surface");
+
+            &::before {
+                opacity: v.state("focus-state-layer-opacity");
             }
         }
 
-        // ======================================================================
-        // PRESSED STATE
-        // ======================================================================
-
         &:active:not([disabled]) {
-            .#{$component}__active-indicator {
-                background-color: t.alpha("on-surface", 0.12);
+            color: t.color("on-surface");
+
+            &::before {
+                opacity: v.state("pressed-state-layer-opacity");
             }
         }
 
@@ -323,79 +361,26 @@ $default-width: 360px;
         // ACTIVE / SELECTED STATE
         // ======================================================================
 
-        &--active {
+        &--active,
+        &--active:hover:not([disabled]),
+        &--active:focus-visible,
+        &--active:active:not([disabled]) {
             color: t.color("on-secondary-container");
+        }
 
+        &--active {
             .#{$component}__active-indicator {
-                background-color: t.color("secondary-container");
-            }
-
-            &:hover:not([disabled]) {
-                .#{$component}__active-indicator {
-                    background-color: t.color("secondary-container");
-
-                    // Overlay hover state on top of active indicator
-                    &::before {
-                        content: "";
-                        position: absolute;
-                        inset: 0;
-                        border-radius: inherit;
-                        background-color: t.alpha(
-                            "on-secondary-container",
-                            0.08
-                        );
-                        pointer-events: none;
-                    }
-                }
-            }
-
-            &:focus-visible {
-                .#{$component}__active-indicator {
-                    background-color: t.color("secondary-container");
-
-                    &::before {
-                        content: "";
-                        position: absolute;
-                        inset: 0;
-                        border-radius: inherit;
-                        background-color: t.alpha(
-                            "on-secondary-container",
-                            0.12
-                        );
-                        pointer-events: none;
-                    }
-                }
-            }
-
-            &:active:not([disabled]) {
-                .#{$component}__active-indicator {
-                    background-color: t.color("secondary-container");
-
-                    &::before {
-                        content: "";
-                        position: absolute;
-                        inset: 0;
-                        border-radius: inherit;
-                        background-color: t.alpha(
-                            "on-secondary-container",
-                            0.12
-                        );
-                        pointer-events: none;
-                    }
-                }
-            }
-
-            .#{$component}__item-icon {
-                color: t.color("on-secondary-container");
+                opacity: 1;
+                transform: scaleX(1);
+                transition:
+                    transform v.motion("spring-default-spatial-duration")
+                        v.motion("spring-default-spatial-easing"),
+                    opacity v.motion("spring-default-effects-duration")
+                        v.motion("spring-default-effects-easing");
             }
 
             .#{$component}__item-label {
-                color: t.color("on-secondary-container");
                 font-weight: 700;
-            }
-
-            .#{$component}__item-badge {
-                color: t.color("on-secondary-container");
             }
         }
 
@@ -423,7 +408,7 @@ $default-width: 360px;
         height: 24px;
         color: inherit;
         position: relative;
-        z-index: 1;
+        z-index: 2;
 
         svg {
             width: 24px;
@@ -443,7 +428,7 @@ $default-width: 360px;
         overflow: hidden;
         text-overflow: ellipsis;
         position: relative;
-        z-index: 1;
+        z-index: 2;
         color: inherit;
 
         @include m.rtl {
@@ -460,7 +445,7 @@ $default-width: 360px;
         color: t.color("on-surface-variant");
         margin-left: auto;
         position: relative;
-        z-index: 1;
+        z-index: 2;
         flex-shrink: 0;
 
         @include m.rtl {
@@ -580,6 +565,7 @@ $default-width: 360px;
         }
 
         &__item,
+        &__item::before,
         &__active-indicator {
             transition: none;
         }

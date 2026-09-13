@@ -71,7 +71,7 @@ export interface RippleComponent extends BaseComponent {
  * @param config - Ripple configuration
  * @returns Ripple controller
  */
-const createRipple = (config: RippleConfig = {}): RippleController => {
+export const createRipple = (config: RippleConfig = {}): RippleController => {
   const options = {
     ...RIPPLE_CONFIG,
     ...config,

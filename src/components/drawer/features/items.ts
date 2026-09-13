@@ -2,6 +2,10 @@
 
 import { DrawerConfig, DrawerItemConfig, DrawerSelectEvent } from "../types";
 import { DRAWER_EVENTS } from "../constants";
+import {
+  createRipple,
+  RippleController,
+} from "../../../core/compose/features/ripple";
 
 /**
  * Component shape expected by withItems
@@ -111,6 +115,16 @@ export const withItems =
     let activeId: string | null = null;
     let itemsContainer: HTMLElement | null = null;
 
+    // One ripple controller serves every item; the press ripple is clipped
+    // to the item shape by CSS so it reads as part of the active indicator.
+    const ripple: RippleController | null =
+      config.ripple !== false ? createRipple() : null;
+    let rippled: HTMLElement[] = [];
+    const unmountRipples = (): void => {
+      rippled.forEach((element) => ripple?.unmount(element));
+      rippled = [];
+    };
+
     // Find initial active item
     const initialActive = currentItems.find(
       (item) =>
@@ -127,6 +141,7 @@ export const withItems =
       if (!itemsContainer) return;
 
       // Clear existing items
+      unmountRipples();
       itemsContainer.innerHTML = "";
 
       let navIndex = 0;
@@ -171,10 +186,13 @@ export const withItems =
           }
         });
 
+        if (ripple && !item.disabled) {
+          ripple.mount(itemEl);
+          rippled.push(itemEl);
+        }
+
         itemsContainer!.appendChild(itemEl);
       });
-
-
     };
 
     /**
@@ -325,6 +343,7 @@ export const withItems =
         getItems,
         setBadge,
         renderItems,
+        destroy: unmountRipples,
       },
     };
   };
