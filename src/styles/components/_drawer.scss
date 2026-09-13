@@ -202,7 +202,7 @@ $default-width: 360px;
         overflow-x: hidden;
         box-sizing: border-box;
         padding: 12px 0;
-        @include m.motion-transition(transform, visibility);
+        @include m.motion-transition(transform);
 
         // Smooth scrollbar
         scrollbar-width: thin;
@@ -261,6 +261,8 @@ $default-width: 360px;
         align-items: center;
         position: relative;
         width: calc(100% - 24px);
+        min-height: 56px;
+        flex-shrink: 0;
         height: 56px;
         margin: 0 12px;
         padding: 0 24px 0 16px;
@@ -508,6 +510,7 @@ $default-width: 360px;
         }
 
         .#{$component}__item {
+            min-height: 36px;
             height: 36px;
             margin: 0 8px;
             padding: 0 16px 0 12px;
@@ -567,6 +570,7 @@ $default-width: 360px;
     // ========================================================================
 
     @include m.reduced-motion {
+        &--standard { transition: none; }
         &__sheet {
             transition: none;
         }

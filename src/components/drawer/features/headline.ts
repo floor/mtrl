@@ -34,6 +34,7 @@ export const withHeadline =
      */
     const setHeadline = (text: string): void => {
       headlineText = text;
+      if (!config.ariaLabel) component.element.setAttribute("aria-label", text || "Navigation");
 
       if (text) {
         if (!headlineElement) {
@@ -41,6 +42,7 @@ export const withHeadline =
           headlineElement.className = component.getClass("drawer__headline");
         }
         headlineElement.textContent = text;
+        component.element.querySelector(`.${component.getClass("drawer__sheet")}`)?.prepend(headlineElement);
       } else if (headlineElement && headlineElement.parentNode) {
         headlineElement.parentNode.removeChild(headlineElement);
         headlineElement = null;

@@ -20,6 +20,13 @@ $component: '#{base.$prefix}-slider';
   flex-direction: column;
   user-select: none;
   touch-action: none;
+
+  // Decoration inherits theme colours directly, without JavaScript subscriptions.
+  --#{base.$prefix}-slider-track-color: var(--#{base.$prefix}-slider-color, #{t.color('primary')});
+  --#{base.$prefix}-slider-tick-color: var(--#{base.$prefix}-slider-on-color, #{t.color('on-primary')});
+  --#{base.$prefix}-slider-active-opacity: 1;
+  --#{base.$prefix}-slider-inactive-opacity: 0.24;
+  --#{base.$prefix}-slider-tick-opacity: 0.5;
   
   // Container should not have a focus outline
   &:focus {
@@ -71,12 +78,6 @@ $component: '#{base.$prefix}-slider';
     align-items: center;
   }
 
-  // Decoration inherits theme colours directly, without JavaScript subscriptions.
-  --#{base.$prefix}-slider-track-color: var(--#{base.$prefix}-slider-color, #{t.color('primary')});
-  --#{base.$prefix}-slider-tick-color: var(--#{base.$prefix}-slider-on-color, #{t.color('on-primary')});
-  --#{base.$prefix}-slider-active-opacity: 1;
-  --#{base.$prefix}-slider-inactive-opacity: 0.24;
-  --#{base.$prefix}-slider-tick-opacity: 0.5;
   @each $color in (secondary, tertiary, error) {
     &--#{$color} {
       --#{base.$prefix}-slider-track-color: var(--#{base.$prefix}-slider-color, #{t.color($color)});

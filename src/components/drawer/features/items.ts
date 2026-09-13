@@ -22,8 +22,8 @@ const createItemElement = (
 ): HTMLElement => {
   const el = document.createElement("button");
   el.className = getClass("drawer__item");
-  el.setAttribute("role", "tab");
-  el.setAttribute("tabindex", "-1");
+  el.type = "button";
+  el.setAttribute("tabindex", item.disabled ? "-1" : "0");
 
   if (item.id) {
     el.dataset.id = item.id;
@@ -44,6 +44,7 @@ const createItemElement = (
     const iconEl = document.createElement("span");
     iconEl.className = getClass("drawer__item-icon");
     iconEl.innerHTML = item.icon;
+    iconEl.setAttribute("aria-hidden", "true");
     el.appendChild(iconEl);
   }
 
@@ -66,10 +67,7 @@ const createItemElement = (
   // Active state
   if (item.active) {
     el.classList.add(`${getClass("drawer__item")}--active`);
-    el.setAttribute("aria-selected", "true");
-    el.setAttribute("tabindex", "0");
-  } else {
-    el.setAttribute("aria-selected", "false");
+    el.setAttribute("aria-current", "page");
   }
 
   return el;
@@ -116,7 +114,7 @@ export const withItems =
     // Find initial active item
     const initialActive = currentItems.find(
       (item) =>
-        item.type !== "divider" && item.type !== "section" && item.active,
+        item.type !== "divider" && item.type !== "section" && item.active && !item.disabled,
     );
     if (initialActive?.id) {
       activeId = initialActive.id;
@@ -149,7 +147,7 @@ export const withItems =
         }
 
         // Navigation item
-        const itemEl = createItemElement(item, component.getClass);
+        const itemEl = createItemElement({ ...item, active: !!activeId && item.id === activeId }, component.getClass);
         itemEl.dataset.navIndex = String(navIndex);
         navIndex++;
 
@@ -176,15 +174,7 @@ export const withItems =
         itemsContainer!.appendChild(itemEl);
       });
 
-      // Set first item as tabbable if no active item
-      if (!activeId) {
-        const firstItem = itemsContainer.querySelector(
-          `.${component.getClass("drawer__item")}`,
-        ) as HTMLElement;
-        if (firstItem) {
-          firstItem.setAttribute("tabindex", "0");
-        }
-      }
+
     };
 
     /**
@@ -195,39 +185,15 @@ export const withItems =
 
       const activeClass = `${component.getClass("drawer__item")}--active`;
 
-      // Deactivate all items
-      const allItems = itemsContainer.querySelectorAll(
-        `.${component.getClass("drawer__item")}`,
-      );
-      allItems.forEach((el) => {
-        el.classList.remove(activeClass);
-        el.setAttribute("aria-selected", "false");
-        el.setAttribute("tabindex", "-1");
+      const allItems = [...itemsContainer.querySelectorAll<HTMLElement>(`.${component.getClass("drawer__item")}`)];
+      const target = allItems.find(element => element.dataset.id === id && !element.hasAttribute("disabled"));
+      if (id && !target) return;
+      allItems.forEach(element => {
+        element.classList.toggle(activeClass, element === target);
+        if (element === target) element.setAttribute("aria-current", "page");
+        else element.removeAttribute("aria-current");
       });
-
-      // Clear or activate
-      if (!id) {
-        activeId = null;
-
-        // Ensure first item is tabbable when nothing is active
-        const firstItem = itemsContainer.querySelector(
-          `.${component.getClass("drawer__item")}`,
-        ) as HTMLElement;
-        if (firstItem) {
-          firstItem.setAttribute("tabindex", "0");
-        }
-      } else {
-        // Activate the target item
-        const targetItem = itemsContainer.querySelector(
-          `[data-id="${id}"]`,
-        ) as HTMLElement;
-        if (targetItem) {
-          targetItem.classList.add(activeClass);
-          targetItem.setAttribute("aria-selected", "true");
-          targetItem.setAttribute("tabindex", "0");
-          activeId = id;
-        }
-      }
+      activeId = target ? id : null;
 
       // Update the items config to reflect new active state
       currentItems = currentItems.map((item) => ({
@@ -250,7 +216,7 @@ export const withItems =
       // Recalculate active id
       const active = items.find(
         (item) =>
-          item.type !== "divider" && item.type !== "section" && item.active,
+          item.type !== "divider" && item.type !== "section" && item.active && !item.disabled,
       );
       activeId = active?.id || null;
 
@@ -268,9 +234,7 @@ export const withItems =
     const setBadge = (id: string, badge: string): void => {
       if (!itemsContainer) return;
 
-      const itemEl = itemsContainer.querySelector(
-        `[data-id="${id}"]`,
-      ) as HTMLElement;
+      const itemEl = [...itemsContainer.querySelectorAll<HTMLElement>("[data-id]")].find(element => element.dataset.id === id);
       if (!itemEl) return;
 
       let badgeEl = itemEl.querySelector(
@@ -339,8 +303,6 @@ export const withItems =
       }
 
       if (nextIndex >= 0 && nextIndex < items.length) {
-        items.forEach((item) => item.setAttribute("tabindex", "-1"));
-        items[nextIndex].setAttribute("tabindex", "0");
         items[nextIndex].focus();
       }
     };
@@ -348,8 +310,7 @@ export const withItems =
     // Create the items container and render
     itemsContainer = document.createElement("div");
     itemsContainer.className = component.getClass("drawer__items");
-    itemsContainer.setAttribute("role", "tablist");
-    itemsContainer.setAttribute("aria-orientation", "vertical");
+
     itemsContainer.addEventListener("keydown", handleKeydown);
 
     renderItems();
