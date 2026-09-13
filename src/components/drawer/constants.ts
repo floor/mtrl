@@ -102,4 +102,6 @@ export const DRAWER_DEFAULTS = {
   DISMISSIBLE: true,
   /** Default drawer width in pixels */
   WIDTH: 360,
+  /** Whether items ripple on press */
+  RIPPLE: true,
 } as const;

@@ -18,6 +18,7 @@ export const defaultConfig: DrawerConfig = {
   open: DRAWER_DEFAULTS.OPEN,
   dismissible: DRAWER_DEFAULTS.DISMISSIBLE,
   width: DRAWER_DEFAULTS.WIDTH,
+  ripple: DRAWER_DEFAULTS.RIPPLE,
   items: [],
 };
 
@@ -97,6 +98,7 @@ export const getApiConfig = (comp: {
     setItems: (items: DrawerConfig["items"]) => void;
     getItems: () => DrawerConfig["items"];
     setBadge: (id: string, badge: string) => void;
+    destroy: () => void;
   };
   drawerHeadline: {
     setHeadline: (text: string) => void;
@@ -131,6 +133,7 @@ export const getApiConfig = (comp: {
       if (comp._stateCleanup) {
         comp._stateCleanup();
       }
+      comp.drawerItems.destroy();
       comp.lifecycle.destroy();
     },
   },
