@@ -45,6 +45,8 @@ jobs:
         run: bun run slider:check
       - name: Drawer rendering and accessibility checks
         run: bun run drawer:check
+      - name: Navigation rail rendering and interaction checks
+        run: bun run navigation-rail:check
       - name: Browser comparison artifacts
         if: always()
         uses: actions/upload-artifact@v4
@@ -54,5 +56,6 @@ jobs:
             analysis/browser
             analysis/slider-dom
             analysis/drawer
+            analysis/navigation-rail
           retention-days: 7
           if-no-files-found: ignore

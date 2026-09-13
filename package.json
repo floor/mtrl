@@ -88,6 +88,7 @@
     "consumer:check": "bun run scripts/check-consumer.ts",
     "slider:check": "bun run scripts/check-slider.ts",
     "drawer:check": "bun run scripts/check-drawer.ts",
+    "navigation-rail:check": "bun run scripts/check-navigation-rail.ts",
     "tooling:check": "tsc --project tsconfig.tools.json --noEmit"
   },
   "repository": {
