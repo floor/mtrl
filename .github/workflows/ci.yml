@@ -43,6 +43,8 @@ jobs:
         run: bun run consumer:check
       - name: Slider rendering and interaction checks
         run: bun run slider:check
+      - name: Drawer rendering and accessibility checks
+        run: bun run drawer:check
       - name: Browser comparison artifacts
         if: always()
         uses: actions/upload-artifact@v4
@@ -51,5 +53,6 @@ jobs:
           path: |
             analysis/browser
             analysis/slider-dom
+            analysis/drawer
           retention-days: 7
           if-no-files-found: ignore

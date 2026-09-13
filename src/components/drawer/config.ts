@@ -57,9 +57,8 @@ export const getElementConfig = (config: DrawerConfig) => {
     attributes.role = "navigation";
   }
 
-  if (config.ariaLabel) {
-    attributes["aria-label"] = config.ariaLabel;
-  }
+  attributes["aria-label"] = config.ariaLabel || config.headline || "Navigation";
+  attributes.tabindex = "-1";
 
   return createElementConfig(config, {
     tag: "aside",
