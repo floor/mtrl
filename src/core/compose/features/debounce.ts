@@ -1,3 +1,5 @@
+import { getCleanup } from "../cleanup";
+import type { Cancellable } from "../../utils/performance";
 // src/core/compose/features/debounce.ts
 /**
  * @module core/compose/features
@@ -15,17 +17,6 @@ export interface ComponentWithLifecycle extends ElementComponent {
     destroy: () => void;
     [key: string]: any;
   };
-}
-
-/**
- * Type guard to check if component has lifecycle
- */
-function hasLifecycle(component: any): component is ComponentWithLifecycle {
-  return 'lifecycle' in component && 
-         component.lifecycle && 
-         typeof component.lifecycle === 'object' &&
-         'destroy' in component.lifecycle &&
-         typeof component.lifecycle.destroy === 'function';
 }
 
 /**
@@ -104,7 +95,7 @@ export const withDebounce = (config: DebounceConfig = {}) =>
     // Store debounced handlers for cleanup
     const debouncedHandlers: Record<string, {
       original: (event: Event) => void;
-      debounced: EventListener;
+      debounced: Cancellable<EventListener>;
     }> = {};
     
     /**
@@ -116,6 +107,7 @@ export const withDebounce = (config: DebounceConfig = {}) =>
       wait: number,
       options: { leading?: boolean; maxWait?: number } = {}
     ): C & DebounceComponent => {
+      if (resources.destroyed) return enhancedComponent;
       // Remove existing handler if any
       if (debouncedHandlers[event]) {
         removeDebouncedEvent(event);
@@ -130,7 +122,7 @@ export const withDebounce = (config: DebounceConfig = {}) =>
       // Store for later cleanup
       debouncedHandlers[event] = {
         original: handler,
-        debounced: debounced as EventListener
+        debounced: debounced as Cancellable<EventListener>
       };
       
       return enhancedComponent;
@@ -143,6 +135,7 @@ export const withDebounce = (config: DebounceConfig = {}) =>
       const handler = debouncedHandlers[event];
       
       if (handler) {
+        handler.debounced.cancel();
         component.element.removeEventListener(event, handler.debounced);
         delete debouncedHandlers[event];
       }
@@ -150,21 +143,17 @@ export const withDebounce = (config: DebounceConfig = {}) =>
       return enhancedComponent;
     };
     
-    // Handle lifecycle integration if available
-    if (hasLifecycle(component)) {
-      const originalDestroy = component.lifecycle.destroy;
-      
-      component.lifecycle.destroy = () => {
-        // Remove all debounced event listeners
-        Object.keys(debouncedHandlers).forEach(event => {
-          const handler = debouncedHandlers[event];
-          component.element.removeEventListener(event, handler.debounced);
-        });
-        
-        // Call original destroy method
-        originalDestroy.call(component.lifecycle);
-      };
-    }
+    const resources = getCleanup(component);
+    resources.add(() => {
+      Object.keys(debouncedHandlers).forEach(event => removeDebouncedEvent(event));
+    });
+
+    // Create enhanced component
+    const enhancedComponent = {
+      ...component,
+      addDebouncedEvent,
+      removeDebouncedEvent
+    };
     
     // Initialize with config
     if (config.debouncedEvents) {
@@ -177,13 +166,6 @@ export const withDebounce = (config: DebounceConfig = {}) =>
         );
       });
     }
-    
-    // Create enhanced component
-    const enhancedComponent = {
-      ...component,
-      addDebouncedEvent,
-      removeDebouncedEvent
-    };
     
     return enhancedComponent;
   };

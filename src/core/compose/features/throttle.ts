@@ -1,3 +1,5 @@
+import { getCleanup } from "../cleanup";
+import type { Cancellable } from "../../utils/performance";
 // src/core/compose/features/throttle.ts
 /**
  * @module core/compose/features
@@ -6,7 +8,7 @@
 
 import { BaseComponent, ElementComponent } from "../component";
 import { throttle } from "../../utils/performance";
-import { hasLifecycle } from "../utils/type-guards";
+
 
 /**
  * Configuration for throttled event handlers
@@ -90,7 +92,7 @@ export const withThrottle =
       string,
       {
         original: (event: Event) => void;
-        throttled: EventListener;
+        throttled: Cancellable<EventListener>;
       }
     > = {};
 
@@ -103,6 +105,7 @@ export const withThrottle =
       wait: number,
       options: { leading?: boolean; trailing?: boolean } = {}
     ): C & ThrottleComponent => {
+      if (resources.destroyed) return enhancedComponent;
       // Remove existing handler if any
       if (throttledHandlers[event]) {
         removeThrottledEvent(event);
@@ -117,7 +120,7 @@ export const withThrottle =
       // Store for later cleanup
       throttledHandlers[event] = {
         original: handler,
-        throttled: throttled as EventListener,
+        throttled: throttled as Cancellable<EventListener>,
       };
 
       return enhancedComponent;
@@ -130,6 +133,7 @@ export const withThrottle =
       const handler = throttledHandlers[event];
 
       if (handler) {
+        handler.throttled.cancel();
         component.element.removeEventListener(event, handler.throttled);
         delete throttledHandlers[event];
       }
@@ -137,21 +141,17 @@ export const withThrottle =
       return enhancedComponent;
     };
 
-    // Handle lifecycle integration if available
-    if (hasLifecycle(component)) {
-      const originalDestroy = component.lifecycle.destroy;
+    const resources = getCleanup(component);
+    resources.add(() => {
+      Object.keys(throttledHandlers).forEach(event => removeThrottledEvent(event));
+    });
 
-      component.lifecycle.destroy = () => {
-        // Remove all throttled event listeners
-        Object.keys(throttledHandlers).forEach((event) => {
-          const handler = throttledHandlers[event];
-          component.element.removeEventListener(event, handler.throttled);
-        });
-
-        // Call original destroy method
-        originalDestroy.call(component.lifecycle);
-      };
-    }
+    // Create enhanced component
+    const enhancedComponent = {
+      ...component,
+      addThrottledEvent,
+      removeThrottledEvent,
+    };
 
     // Initialize with config
     if (config.throttledEvents) {
@@ -164,13 +164,6 @@ export const withThrottle =
         );
       });
     }
-
-    // Create enhanced component
-    const enhancedComponent = {
-      ...component,
-      addThrottledEvent,
-      removeThrottledEvent,
-    };
 
     return enhancedComponent;
   };

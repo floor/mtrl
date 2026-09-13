@@ -123,6 +123,32 @@ const SVG_TAGS = [
   "foreignObject",
 ];
 
+const RESERVED_OPTIONS: Record<string, unknown> = {
+  __proto__: null,
+  tag: true,
+  container: true,
+  html: true,
+  text: true,
+  id: true,
+  name: true,
+  title: true,
+  tabIndex: true,
+  style: true,
+  role: true,
+  ariaLabel: true,
+  ariaDescribedBy: true,
+  ariaLabelledBy: true,
+  ariaHidden: true,
+  data: true,
+  class: true,
+  className: true,
+  rawClass: true,
+  attributes: true,
+  forwardEvents: true,
+  onCreate: true,
+  context: true,
+};
+
 /**
  * Touch events that should use passive listeners for better scroll performance
  */
@@ -225,7 +251,8 @@ class ElementPool {
   }
 }
 
-const elementPool = new ElementPool();
+let elementPool: ElementPool | undefined;
+const getElementPool = (): ElementPool => elementPool ??= new ElementPool();
 
 /**
  * Create an HTML element with comprehensive options and optimizations
@@ -301,32 +328,7 @@ export const createElement = (
 
   // Apply other attributes from options spread (rest parameters)
   for (const key in options) {
-    if (
-      ![
-        "tag",
-        "container",
-        "html",
-        "text",
-        "id",
-        "name",
-        "title",
-        "tabIndex",
-        "style",
-        "role",
-        "ariaLabel",
-        "ariaDescribedBy",
-        "ariaLabelledBy",
-        "ariaHidden",
-        "data",
-        "class",
-        "className",
-        "rawClass",
-        "attributes",
-        "forwardEvents",
-        "onCreate",
-        "context",
-      ].includes(key)
-    ) {
+    if (!(key in RESERVED_OPTIONS)) {
       const value = options[key];
       if (value != null) {
         element.setAttribute(key, String(value));
@@ -354,7 +356,7 @@ export const createElement = (
 export const createElementPooled = (
   options: CreateElementOptions = {},
 ): HTMLElement => {
-  const element = elementPool.acquire(options.tag || "div");
+  const element = getElementPool().acquire(options.tag || "div");
 
   // Apply properties similar to createElement but skip creating new element
   if (options.html) element.innerHTML = options.html;
@@ -379,7 +381,7 @@ export const createElementPooled = (
  * @param element - Element to release
  */
 export const releaseElement = (element: HTMLElement): void => {
-  elementPool.release(element);
+  getElementPool().release(element);
 };
 
 /**

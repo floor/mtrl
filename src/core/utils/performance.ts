@@ -1,3 +1,5 @@
+export type Cancellable<F> = F & { cancel(): void };
+
 // src/core/utils/performance.ts
 /**
  * @module core/utils/performance
@@ -30,12 +32,12 @@ export const throttle = <T extends (...args: any[]) => any>(
   fn: T,
   wait: number,
   options: { leading?: boolean; trailing?: boolean } = {}
-): ((...args: Parameters<T>) => void) => {
+): Cancellable<(...args: Parameters<T>) => void> => {
   let timeout: number | null = null;
   let previous = 0;
   const { leading = true, trailing = true } = options;
   
-  return function(this: any, ...args: Parameters<T>): void {
+  const throttled = function(this: any, ...args: Parameters<T>): void {
     const now = Date.now();
     
     if (!previous && !leading) {
@@ -60,6 +62,11 @@ export const throttle = <T extends (...args: any[]) => any>(
       }, remaining);
     }
   };
+  return Object.assign(throttled, { cancel() {
+    if (timeout !== null) clearTimeout(timeout);
+    timeout = null;
+    previous = 0;
+  } });
 };
 
 /**
@@ -91,7 +98,7 @@ export const debounce = <T extends (...args: any[]) => any>(
   fn: T,
   wait: number,
   options: { leading?: boolean; maxWait?: number } = {}
-): ((...args: Parameters<T>) => void) => {
+): Cancellable<(...args: Parameters<T>) => void> => {
   let timeout: number | null = null;
   let lastArgs: Parameters<T> | null = null;
   let lastThis: any = null;
@@ -150,7 +157,7 @@ export const debounce = <T extends (...args: any[]) => any>(
   };
   
   // Main debounced function to return
-  return function(this: any, ...args: Parameters<T>): ReturnType<T> {
+  const debounced = function(this: any, ...args: Parameters<T>): ReturnType<T> {
     const time = Date.now();
     const isInvoking = shouldInvoke(time);
     
@@ -165,6 +172,7 @@ export const debounce = <T extends (...args: any[]) => any>(
       
       if (maxWait !== undefined) {
         // Handle maxWait timing
+        window.clearTimeout(timeout);
         timeout = window.setTimeout(() => {
           const timeNow = Date.now();
           if (shouldInvoke(timeNow)) {
@@ -182,6 +190,12 @@ export const debounce = <T extends (...args: any[]) => any>(
     
     return result;
   };
+  return Object.assign(debounced, { cancel() {
+    if (timeout !== null) window.clearTimeout(timeout);
+    timeout = null;
+    lastArgs = lastThis = lastCallTime = null;
+    lastInvokeTime = 0;
+  } });
 };
 
 /**

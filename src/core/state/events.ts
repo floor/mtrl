@@ -40,7 +40,7 @@ export interface EventManagerState {
  * @returns Event manager interface
  */
 export const createEventManager = (element: HTMLElement): EventManagerState => {
-  const handlers = new Map<(...args: any[]) => void, string>();
+  const handlers = new Map<string, Set<(...args: unknown[]) => void>>();
 
   return {
     /**
@@ -51,7 +51,9 @@ export const createEventManager = (element: HTMLElement): EventManagerState => {
      */
     on(event: string, handler: (...args: any[]) => void): EventManagerState {
       element.addEventListener(event, handler as EventListener);
-      handlers.set(handler, event);
+      let callbacks = handlers.get(event);
+      if (!callbacks) handlers.set(event, callbacks = new Set());
+      callbacks.add(handler);
       return this;
     },
 
@@ -63,7 +65,9 @@ export const createEventManager = (element: HTMLElement): EventManagerState => {
      */
     off(event: string, handler: (...args: any[]) => void): EventManagerState {
       element.removeEventListener(event, handler as EventListener);
-      handlers.delete(handler);
+      const callbacks = handlers.get(event);
+      callbacks?.delete(handler);
+      if (!callbacks?.size) handlers.delete(event);
       return this;
     },
 
@@ -71,8 +75,8 @@ export const createEventManager = (element: HTMLElement): EventManagerState => {
      * Removes all event listeners and cleans up
      */
     destroy(): void {
-      handlers.forEach((event, handler) => {
-        element.removeEventListener(event, handler as EventListener);
+      handlers.forEach((callbacks, event) => {
+        callbacks.forEach(handler => element.removeEventListener(event, handler as EventListener));
       });
       handlers.clear();
     },
@@ -82,7 +86,10 @@ export const createEventManager = (element: HTMLElement): EventManagerState => {
      * @returns Map of handlers to event names
      */
     getHandlers(): Map<(...args: any[]) => void, string> {
-      return new Map(handlers);
+      // Preserve the legacy snapshot shape; cleanup tracks each event separately.
+      const snapshot = new Map<(...args: unknown[]) => void, string>();
+      handlers.forEach((callbacks, event) => callbacks.forEach(handler => snapshot.set(handler, event)));
+      return snapshot;
     }
   };
 };

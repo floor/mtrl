@@ -100,8 +100,8 @@ try {
     { name: "button-css", code: "import 'mtrl/styles/base'; import 'mtrl/styles/button';", gzip: 6500 },
     { name: "select-css", code: "import 'mtrl/styles/base'; import 'mtrl/styles/select';", gzip: 8000 },
     { name: "slider-css", code: "import 'mtrl/styles/base'; import 'mtrl/styles/slider';", gzip: 6500 },
-    // Includes the standalone Expressive rail (roughly 1.2 KB additional gzip CSS).
-    { name: "full-css", code: "import 'mtrl/styles';", gzip: 47000 },
+    // The .43 rail-motion baseline is 47,117 bytes; core ripple adds about 20 bytes.
+    { name: "full-css", code: "import 'mtrl/styles';", gzip: 47500 },
   ];
   for (const fixture of fixtures) {
     const entry = join(temporary, `${fixture.name}.ts`);

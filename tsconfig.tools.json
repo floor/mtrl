@@ -19,6 +19,7 @@
     "scripts/check-slider.ts",
     "scripts/check-drawer.ts",
     "scripts/check-navigation-rail.ts",
+    "scripts/check-core.ts",
     "test/build/style-manifest.test.ts",
     "test/browser/fixture.ts"
   ],

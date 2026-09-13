@@ -2,7 +2,7 @@
 
 import { createEventManager } from "../../state/events";
 import { BaseComponent, ElementComponent } from "../component";
-import { hasLifecycle } from "../utils/type-guards";
+import { getCleanup } from "../cleanup";
 
 /**
  * Event manager interface
@@ -123,14 +123,8 @@ export const withEvents =
       },
     };
 
-    // Add lifecycle integration
-    if (hasLifecycle(component)) {
-      const originalDestroy = component.lifecycle.destroy;
-      component.lifecycle.destroy = () => {
-        events.destroy();
-        originalDestroy.call(component.lifecycle);
-      };
-    }
+    const resources = getCleanup(component);
+    resources.add(() => events.destroy());
 
     return {
       ...component,
