@@ -18,6 +18,7 @@
     "scripts/check-consumer.ts",
     "scripts/check-slider.ts",
     "scripts/check-drawer.ts",
+    "scripts/check-navigation-rail.ts",
     "test/build/style-manifest.test.ts",
     "test/browser/fixture.ts"
   ],

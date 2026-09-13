@@ -4,6 +4,10 @@
 
 // Variables for light theme (default)
 @mixin baseline-light-variables {
+    --#{$prefix}-sys-color-error: #B3261E;
+    --#{$prefix}-sys-color-error-rgb: 179, 38, 30;
+    --#{$prefix}-sys-color-on-error: #FFFFFF;
+    --#{$prefix}-sys-color-on-error-rgb: 255, 255, 255;
     // Key colors
     --#{$prefix}-sys-color-primary: #6750a4;
     --#{$prefix}-sys-color-primary-rgb: 103, 80, 164;
@@ -81,6 +85,10 @@
 
 // Variables for dark theme
 @mixin baseline-dark-variables {
+    --#{$prefix}-sys-color-error: #F2B8B5;
+    --#{$prefix}-sys-color-error-rgb: 242, 184, 181;
+    --#{$prefix}-sys-color-on-error: #601410;
+    --#{$prefix}-sys-color-on-error-rgb: 96, 20, 16;
     // Key colors
     --#{$prefix}-sys-color-primary: #d0bcff;
     --#{$prefix}-sys-color-primary-rgb: 208, 188, 255;

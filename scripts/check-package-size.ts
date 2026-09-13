@@ -28,10 +28,12 @@ try {
     import * as esm from 'mtrl';
     import { createButton, createTextfield, createCard, addClass } from 'mtrl';
     import button from 'mtrl/components/button';
+    import rail from 'mtrl/components/navigation-rail';
     import { BUTTON_VARIANTS } from 'mtrl/components/button/constants';
     import { addClass as directAddClass } from 'mtrl/core/dom';
     import { JSDOM } from ${JSON.stringify(pathToFileURL(resolve("node_modules/jsdom/lib/api.js")).href)};
     assert.equal(button, createButton);
+    assert.equal(rail, esm.createNavigationRail);
     assert.equal(directAddClass, addClass);
     const cjs = createRequire(import.meta.url)('mtrl');
     assert.equal(typeof cjs.createButton, 'function');
@@ -49,6 +51,8 @@ try {
     addClass(b.element, 'smoke');
     assert(b.element.classList.contains('mtrl-smoke'));
     assert(b.element.textContent.includes('Save'));
+    const navigation = rail({ items: [{ id: 'home', label: 'Home', icon: '<svg></svg>' }] });
+    document.body.append(navigation.element); navigation.expand(); assert(navigation.isExpanded()); navigation.destroy();
     const field = createTextfield({ label: 'Name' });
     field.setValue('Ada');
     assert.equal(field.getValue(), 'Ada');
@@ -68,7 +72,11 @@ try {
   // Check declaration resolution using strict NodeNext semantics.
   const typeFixture = join(temporary, "types.ts");
   await writeFile(typeFixture, `
-    import { createButton, type ButtonConfig } from 'mtrl';
+    import { createButton, type ButtonConfig, type NavigationRailConfig, type NavigationRailComponent } from 'mtrl';
+    import rail from 'mtrl/components/navigation-rail';
+    const railConfig: NavigationRailConfig = { expanded: true, layout: 'modal', items: [] };
+    const navigation: NavigationRailComponent = rail(railConfig);
+    navigation.on('select', event => event.originalEvent.preventDefault());
     import button from 'mtrl/components/button';
     import { BUTTON_VARIANTS } from 'mtrl/components/button/constants';
     import { addClass } from 'mtrl/core/dom';
@@ -84,14 +92,16 @@ try {
     { name: "addClass", code: "export { addClass } from 'mtrl';", gzip: 900 },
     { name: "button", code: "export { createButton } from 'mtrl';", gzip: 15000 },
     { name: "slider", code: "export { createSlider } from 'mtrl';", gzip: 11000 },
+    { name: "navigation-rail", code: "export { createNavigationRail } from 'mtrl';", gzip: 7000 },
+    { name: "navigation-rail-css", code: "import 'mtrl/styles/base'; import 'mtrl/styles/navigation-rail';", gzip: 6500 },
     { name: "textfield", code: "export { createTextfield } from 'mtrl';", gzip: 8500 },
     { name: "form", code: "export { createButton, createTextfield, createCheckbox } from 'mtrl';", gzip: 22000 },
     { name: "all-js", code: "export * from 'mtrl';", gzip: 125000 },
     { name: "button-css", code: "import 'mtrl/styles/base'; import 'mtrl/styles/button';", gzip: 6500 },
     { name: "select-css", code: "import 'mtrl/styles/base'; import 'mtrl/styles/select';", gzip: 8000 },
     { name: "slider-css", code: "import 'mtrl/styles/base'; import 'mtrl/styles/slider';", gzip: 6500 },
-    // Slider decoration moved from JS into CSS (+270 gzip bytes in the full sheet).
-    { name: "full-css", code: "import 'mtrl/styles';", gzip: 45500 },
+    // Includes the standalone Expressive rail (roughly 1.2 KB additional gzip CSS).
+    { name: "full-css", code: "import 'mtrl/styles';", gzip: 47000 },
   ];
   for (const fixture of fixtures) {
     const entry = join(temporary, `${fixture.name}.ts`);

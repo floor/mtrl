@@ -65,6 +65,7 @@
 
 @use "./components/snackbar" as snackbar;
 @use "./components/navigation" as navigation;
+@use "./components/navigation-rail" as navigation-rail;
 @use "./components/list" as list;
 
 @use "./utilities/ripple" as ripple;

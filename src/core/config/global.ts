@@ -6,6 +6,7 @@
  */
 
 import { ButtonConfig } from '../../components/button/types';
+import type { NavigationRailConfig } from '../../components/navigation-rail/types';
 import { TextfieldConfig } from '../../components/textfield/types';
 // Import other component configs as needed
 
@@ -16,6 +17,7 @@ import { TextfieldConfig } from '../../components/textfield/types';
  * For components not yet integrated, use Partial<any> as a placeholder
  */
 export interface ComponentConfigMap {
+  "navigation-rail"?: Partial<NavigationRailConfig>;
   button?: Partial<ButtonConfig>;
   textfield?: Partial<TextfieldConfig>;
   checkbox?: Partial<any>;

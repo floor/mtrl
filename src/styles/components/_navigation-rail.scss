@@ -1,0 +1,179 @@
+@use '../abstract/base' as base;
+@use '../abstract/theme' as t;
+@use '../abstract/mixins' as m;
+@use '../abstract/variables' as v;
+
+// Android Material3Expressive.NavigationRailView, generated nav-rail tokens v34.
+// https://github.com/material-components/material-components-android/blob/master/lib/java/com/google/android/material/navigationrail/res/values/tokens.xml
+$component: '#{base.$prefix}-navigation-rail';
+.#{$component} {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  inline-size: 96px;
+  block-size: 100%;
+  min-block-size: 0;
+  padding-block: 44px 16px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: t.color('surface');
+  color: t.color('on-surface-variant');
+  transition: inline-size v.motion('duration-medium2') v.motion('easing-emphasized');
+
+  &--expanded { inline-size: var(--#{base.$prefix}-navigation-rail-expanded-width, 280px); }
+  &__header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-shrink: 0;
+    gap: 8px;
+    margin-block-end: 40px;
+  }
+  &__toggle {
+    display: grid;
+    place-items: center;
+    position: relative;
+    overflow: hidden;
+    inline-size: 48px;
+    block-size: 48px;
+    padding: 12px;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: t.color('on-surface-variant');
+    cursor: pointer;
+    svg { inline-size: 24px; block-size: 24px; fill: currentColor; }
+    &:hover { background: t.alpha('on-surface', 0.08); }
+  }
+  &__content { display: contents; }
+  &__items { display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; }
+  &__item {
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    box-sizing: border-box;
+    inline-size: 100%;
+    min-block-size: 64px;
+    padding: 6px 16px;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    text-decoration: none;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    @include m.typography('label-medium');
+
+    &:hover .#{$component}__indicator::after { opacity: 0.08; }
+    &:focus-visible .#{$component}__indicator::after,
+    &:active .#{$component}__indicator::after { opacity: 0.12; }
+    &[aria-disabled='true'] { opacity: 0.38; cursor: default; }
+    &[aria-disabled='true'] .#{$component}__indicator::after { opacity: 0; }
+    &--active {
+      color: t.color('secondary');
+      .#{$component}__indicator { background: t.color('secondary-container'); }
+      .#{$component}__icon { color: t.color('on-secondary-container'); }
+    }
+  }
+  &__indicator {
+    position: absolute;
+    z-index: -1;
+    inset-block-start: 6px;
+    inset-inline-start: calc(50% - 28px);
+    inline-size: 56px;
+    block-size: 32px;
+    border-radius: 999px;
+    pointer-events: none;
+    overflow: hidden;
+    @include m.motion-transition(background-color);
+    &::after { content: ''; position: absolute; inset: 0; border-radius: inherit; background: t.color('on-secondary-container'); opacity: 0; }
+  }
+  &__ripple {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    background: t.color('on-secondary-container');
+    animation: #{$component}-ripple 450ms ease-out forwards;
+  }
+  &__icon {
+    display: grid;
+    place-items: center;
+    inline-size: 24px;
+    block-size: 32px;
+    flex-shrink: 0;
+    svg { inline-size: 24px; block-size: 24px; fill: currentColor; }
+  }
+  &__label { overflow-wrap: anywhere; text-align: center; max-inline-size: 100%; }
+  &__badge {
+    position: absolute;
+    inset-inline-start: calc(50% + 6px);
+    inset-block-start: 2px;
+    min-inline-size: 16px;
+    min-block-size: 16px;
+    padding-inline: 4px;
+    box-sizing: border-box;
+    border-radius: 999px;
+    background: t.color('error');
+    color: t.color('on-error');
+    @include m.typography('label-small');
+    &--dot { inline-size: 6px; block-size: 6px; min-inline-size: 0; min-block-size: 0; padding: 0; inset-inline-start: calc(50% + 10px); inset-block-start: 6px; }
+  }
+  &--expanded &__header { align-items: flex-start; padding-inline: 20px; }
+  &--expanded &__items { gap: 0; }
+  &--expanded &__item {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 8px;
+    inline-size: 100%;
+    min-block-size: 56px;
+    padding: 0 20px;
+    @include m.typography('label-large');
+  }
+  &--expanded &__content {
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 16px;
+    max-inline-size: 100%;
+    box-sizing: border-box;
+  }
+  &--expanded &__item--active { color: t.color('on-secondary-container'); }
+  &--expanded &__indicator { inset: 0; inline-size: 100%; block-size: 100%; }
+  &--expanded &__icon { block-size: 24px; }
+  &--expanded &__label { text-align: start; min-inline-size: 0; }
+  &--expanded &__badge { position: static; flex-shrink: 0; }
+  &--hide-collapsed:not(&--expanded) { display: none; }
+  &--modal {
+    position: fixed;
+    inset-block: 0;
+    inset-inline: 0 auto;
+    margin: 0;
+    border: 0;
+    max-inline-size: calc(100vw - 56px);
+    max-block-size: 100dvh;
+    block-size: 100dvh;
+    background: t.color('surface-container-low');
+    border-start-end-radius: 28px;
+    border-end-end-radius: 28px;
+    @include m.elevation(1);
+    &:not([open]) { display: none; }
+    &::backdrop { background: t.alpha('scrim', 0.32); }
+  }
+  &__item:focus-visible, &__toggle:focus-visible { outline: 2px solid t.color('secondary'); outline-offset: -2px; border-radius: 24px; }
+  @include m.reduced-motion { &, & *, & *::before, & *::after { transition: none; animation: none; } }
+  @include m.high-contrast {
+    border-inline-end: 1px solid CanvasText;
+    &__item--active .#{$component}__indicator { outline: 2px solid Highlight; outline-offset: -2px; }
+  }
+}
+
+@keyframes #{$component}-ripple {
+  from { transform: scale(0); opacity: 0.16; }
+  to { transform: scale(1); opacity: 0; }
+}
