@@ -1,11 +1,29 @@
+@use 'sass:math';
 @use '../abstract/base' as base;
 @use '../abstract/theme' as t;
 @use '../abstract/mixins' as m;
 @use '../abstract/variables' as v;
 
-// Android Material3Expressive.NavigationRailView, generated nav-rail tokens v34.
-// https://github.com/material-components/material-components-android/blob/master/lib/java/com/google/android/material/navigationrail/res/values/tokens.xml
+// M3 Expressive navigation rail.
+// Geometry: Compose NavigationRailCollapsed/Expanded/BaselineItem/VerticalItem/
+// HorizontalItem tokens v0_11_0 and Android navigationrail/res/values/tokens.xml.
+// Motion: Compose WideNavigationRail animates the width, the item spacing and
+// the item height on the default spatial spring (fast spatial for the modal);
+// Compose NavigationItem glides the icon between its top and start positions
+// on the same spring and swaps the label position at the midpoint behind a
+// fade. The active indicator fades on the effects spring and scales in from
+// its centre as in Android NavigationBarItemView.ActiveIndicatorTransform.
+// Icon, label, badge and indicator are positioned absolutely inside the item
+// so that every one of those moves is a transition rather than a reflow.
 $component: '#{base.$prefix}-navigation-rail';
+$spatial: v.motion('spring-default-spatial-duration') v.motion('spring-default-spatial-easing');
+$fast-spatial: v.motion('spring-fast-spatial-duration') v.motion('spring-fast-spatial-easing');
+$effects: v.motion('spring-default-effects-duration') v.motion('spring-default-effects-easing');
+$midpoint: math.div(v.motion('spring-default-spatial-duration'), 2);
+// Properties that change layout rather than glide snap at the midpoint of the
+// spatial spring, when the swap fade has the element at opacity 0.
+$snap: 0s linear $midpoint;
+
 .#{$component} {
   display: flex;
   flex-direction: column;
@@ -20,17 +38,24 @@ $component: '#{base.$prefix}-navigation-rail';
   overscroll-behavior: contain;
   background: t.color('surface');
   color: t.color('on-surface-variant');
-  transition: inline-size v.motion('duration-medium2') v.motion('easing-emphasized');
+  transition: inline-size $spatial;
 
   &--expanded { inline-size: var(--#{base.$prefix}-navigation-rail-expanded-width, 280px); }
+
+  // Header: the menu button and an optional FAB. 24dp of start padding centres
+  // the 48dp menu button in the collapsed rail; expanded content aligns with
+  // the 20dp item margin.
   &__header {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: flex-start;
     flex-shrink: 0;
     gap: 8px;
     margin-block-end: 40px;
+    padding-inline-start: 24px;
+    transition: padding-inline-start $spatial;
   }
+  &--expanded &__header { padding-inline-start: 20px; }
   &__toggle {
     display: grid;
     place-items: center;
@@ -44,111 +69,206 @@ $component: '#{base.$prefix}-navigation-rail';
     background: transparent;
     color: t.color('on-surface-variant');
     cursor: pointer;
+    transition: background-color $effects;
     svg { inline-size: 24px; block-size: 24px; fill: currentColor; }
-    &:hover { background: t.alpha('on-surface', 0.08); }
+    &:hover { background: t.alpha('on-surface', v.state('hover-state-layer-opacity')); }
   }
+
+  &__items {
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    gap: 4px;
+    transition: gap $spatial;
+  }
+  &--expanded &__items { gap: 0; }
   &__content { display: contents; }
-  &__items { display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; }
+
+  // Item: the hit target spans the rail; 64dp tall with the icon on top,
+  // 56dp tall with the icon at the start.
   &__item {
     position: relative;
     isolation: isolate;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
+    display: block;
     box-sizing: border-box;
     inline-size: 100%;
-    min-block-size: 64px;
-    padding: 6px 16px;
+    block-size: 64px;
+    padding: 0;
     border: 0;
     background: transparent;
     color: inherit;
     text-decoration: none;
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
-    @include m.typography('label-medium');
+    transition: block-size $spatial, color $effects;
 
-    &:hover .#{$component}__indicator::after { opacity: 0.08; }
-    &:focus-visible .#{$component}__indicator::after,
-    &:active .#{$component}__indicator::after { opacity: 0.12; }
     &[aria-disabled='true'] { opacity: 0.38; cursor: default; }
-    &[aria-disabled='true'] .#{$component}__indicator::after { opacity: 0; }
-    &--active {
-      color: t.color('secondary');
-      .#{$component}__indicator { background: t.color('secondary-container'); }
-      .#{$component}__icon { color: t.color('on-secondary-container'); }
-    }
+    // Active label: secondary with the icon on top, on secondary container beside it
+    &--active { color: t.color('secondary'); }
   }
+  &--expanded &__item { block-size: 56px; }
+  &--expanded &__item--active { color: t.color('on-secondary-container'); }
+
+  // Indicator frame: a 56x32 pill centred under the icon, a 56dp pill across
+  // the item when expanded. It clips the fill, the state layer and the ripple.
+  // Positions are lengths, not percentages of the rail: in a 96dp rail the
+  // icon and the pill sit 36dp and 20dp from the start in both states, so
+  // only their vertical position and the pill's size move (Compose
+  // NavigationItem lerps the same pixel positions).
   &__indicator {
     position: absolute;
     z-index: -1;
     inset-block-start: 6px;
-    inset-inline-start: calc(50% - 28px);
+    inset-inline-start: 20px;
     inline-size: 56px;
     block-size: 32px;
     border-radius: 999px;
-    pointer-events: none;
     overflow: hidden;
-    @include m.motion-transition(background-color);
-    &::after { content: ''; position: absolute; inset: 0; border-radius: inherit; background: t.color('on-secondary-container'); opacity: 0; }
+    pointer-events: none;
+    transition:
+      inset-block-start $spatial,
+      inline-size $spatial,
+      block-size $spatial;
+
+    // Fill: scales in from the centre when the item becomes active and back
+    // out when it stops being active; the fade out is stretched over the
+    // shrink so the pill is seen leaving. A transition takes the timing of
+    // the state it moves to, so this base rule holds the outgoing timing.
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: t.color('secondary-container');
+      opacity: 0;
+      transform: scaleX(0.4);
+      transition:
+        transform $spatial,
+        opacity v.motion('spring-default-spatial-duration') v.motion('spring-default-effects-easing');
+    }
+    // State layer, on secondary container for active and inactive items alike
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: t.color('on-secondary-container');
+      opacity: 0;
+      transition: opacity $effects;
+    }
   }
+  &--expanded &__indicator {
+    inset-block-start: 0;
+    inline-size: calc(100% - 40px);
+    block-size: 56px;
+  }
+  &__item--active &__indicator::before {
+    opacity: 1;
+    transform: scaleX(1);
+    transition: transform $spatial, opacity $effects;
+  }
+  &__item:hover &__indicator::after { opacity: v.state('hover-state-layer-opacity'); }
+  &__item:focus-visible &__indicator::after { opacity: v.state('focus-state-layer-opacity'); }
+  &__item:active &__indicator::after { opacity: v.state('pressed-state-layer-opacity'); }
+  &__item[aria-disabled='true'] &__indicator::after { opacity: 0; }
+  // The focus ring is drawn around the pill, not the full-width hit target
+  &__item:focus-visible { outline: none; }
+  &__item:focus-visible &__indicator { outline: 3px solid t.color('secondary'); outline-offset: 2px; }
+
   &__ripple {
     position: absolute;
     border-radius: 50%;
     pointer-events: none;
     background: t.color('on-secondary-container');
-    animation: #{$component}-ripple 450ms ease-out forwards;
+    animation: #{$component}-ripple v.motion('spring-default-spatial-duration') ease-out forwards;
   }
+
+  // Icon: glides from above the label to the start of the pill
   &__icon {
+    position: absolute;
     display: grid;
     place-items: center;
+    inset-block-start: 10px;
+    inset-inline-start: 36px;
     inline-size: 24px;
-    block-size: 32px;
-    flex-shrink: 0;
+    block-size: 24px;
+    color: t.color('on-surface-variant');
+    transition: inset-block-start $spatial, color $effects;
     svg { inline-size: 24px; block-size: 24px; fill: currentColor; }
   }
-  &__label { overflow-wrap: anywhere; text-align: center; max-inline-size: 100%; }
+  &__item--active &__icon { color: t.color('on-secondary-container'); }
+  &--expanded &__icon { inset-block-start: 16px; }
+
+  // Label: centred under the pill in a 64dp box (16dp leading and trailing
+  // space), beside the icon when expanded. Its position and type scale snap at
+  // the midpoint of the spring while the swap fade hides it.
+  &__label {
+    position: absolute;
+    box-sizing: border-box;
+    inset-block-start: 42px;
+    inset-inline-start: 16px;
+    inline-size: 64px;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    @include m.typography('label-medium');
+    transition:
+      inset-block-start $snap,
+      inset-inline-start $snap,
+      inline-size $snap,
+      font-size $snap,
+      line-height $snap,
+      letter-spacing $snap,
+      text-align $snap;
+    transition-behavior: allow-discrete;
+  }
+  &--expanded &__label {
+    inset-block-start: 18px;
+    inset-inline-start: 68px;
+    inline-size: calc(100% - 104px);
+    text-align: start;
+    @include m.typography('label-large');
+  }
+  &--expanded &__item--badged &__label { inline-size: calc(100% - 140px); }
+  &--switching &__label,
+  &--switching &__badge {
+    animation: #{$component}-swap v.motion('spring-default-spatial-duration') linear;
+  }
+
+  // Badges: the large badge sits on the top end corner of the icon, the dot
+  // just off it; expanded, both move to the end of the pill.
   &__badge {
     position: absolute;
-    inset-inline-start: calc(50% + 6px);
+    box-sizing: border-box;
+    inset-inline-start: 54px;
     inset-block-start: 2px;
     min-inline-size: 16px;
     min-block-size: 16px;
     padding-inline: 4px;
-    box-sizing: border-box;
     border-radius: 999px;
     background: t.color('error');
     color: t.color('on-error');
     @include m.typography('label-small');
-    &--dot { inline-size: 6px; block-size: 6px; min-inline-size: 0; min-block-size: 0; padding: 0; inset-inline-start: calc(50% + 10px); inset-block-start: 6px; }
+    transition: inset-inline-start $snap, inset-inline-end $snap, inset-block-start $snap;
+    transition-behavior: allow-discrete;
+    &--dot {
+      inline-size: 6px;
+      block-size: 6px;
+      min-inline-size: 0;
+      min-block-size: 0;
+      padding: 0;
+      inset-inline-start: 58px;
+      inset-block-start: 6px;
+    }
   }
-  &--expanded &__header { align-items: flex-start; padding-inline: 20px; }
-  &--expanded &__items { gap: 0; }
-  &--expanded &__item {
-    flex-direction: row;
-    justify-content: flex-start;
-    gap: 8px;
-    inline-size: 100%;
-    min-block-size: 56px;
-    padding: 0 20px;
-    @include m.typography('label-large');
-  }
-  &--expanded &__content {
-    position: relative;
-    isolation: isolate;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 16px;
-    max-inline-size: 100%;
-    box-sizing: border-box;
-  }
-  &--expanded &__item--active { color: t.color('on-secondary-container'); }
-  &--expanded &__indicator { inset: 0; inline-size: 100%; block-size: 100%; }
-  &--expanded &__icon { block-size: 24px; }
-  &--expanded &__label { text-align: start; min-inline-size: 0; }
-  &--expanded &__badge { position: static; flex-shrink: 0; }
+  &--expanded &__badge { inset-inline-start: auto; inset-inline-end: 36px; inset-block-start: 20px; }
+  &--expanded &__badge--dot { inset-block-start: 25px; }
+
   &--hide-collapsed:not(&--expanded) { display: none; }
+
+  // Modal expanded rail: a native dialog docked to the start edge.
+  // NavigationRailExpandedTokens: surface container, level 2, large corners.
   &--modal {
     position: fixed;
     inset-block: 0;
@@ -158,14 +278,17 @@ $component: '#{base.$prefix}-navigation-rail';
     max-inline-size: calc(100vw - 56px);
     max-block-size: 100dvh;
     block-size: 100dvh;
-    background: t.color('surface-container-low');
-    border-start-end-radius: 28px;
-    border-end-end-radius: 28px;
-    @include m.elevation(1);
+    background: t.color('surface-container');
+    border-start-end-radius: 16px;
+    border-end-end-radius: 16px;
+    transition: inline-size $fast-spatial;
+    @include m.elevation(2);
     &:not([open]) { display: none; }
     &::backdrop { background: t.alpha('scrim', 0.32); }
   }
-  &__item:focus-visible, &__toggle:focus-visible { outline: 2px solid t.color('secondary'); outline-offset: -2px; border-radius: 24px; }
+
+  &__toggle:focus-visible { outline: 2px solid t.color('secondary'); outline-offset: -2px; }
+
   @include m.reduced-motion { &, & *, & *::before, & *::after { transition: none; animation: none; } }
   @include m.high-contrast {
     border-inline-end: 1px solid CanvasText;
@@ -174,6 +297,11 @@ $component: '#{base.$prefix}-navigation-rail';
 }
 
 @keyframes #{$component}-ripple {
-  from { transform: scale(0); opacity: 0.16; }
+  from { transform: scale(0); opacity: v.state('pressed-state-layer-opacity'); }
   to { transform: scale(1); opacity: 0; }
+}
+
+@keyframes #{$component}-swap {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
 }
