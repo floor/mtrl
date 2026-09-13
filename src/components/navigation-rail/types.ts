@@ -40,6 +40,10 @@ export interface NavigationRailConfig extends BaseComponentConfig {
     showToggle?: boolean;
     expandLabel?: string;
     collapseLabel?: string;
+    /** Menu button icon while collapsed. Default: Material Symbols `menu`. */
+    expandIcon?: string;
+    /** Menu button icon while expanded. Default: Material Symbols `menu_open`. */
+    collapseIcon?: string;
     /** Optional application-owned header, such as a FAB. Its lifecycle stays with its owner. */
     header?: HTMLElement;
     ripple?: boolean;

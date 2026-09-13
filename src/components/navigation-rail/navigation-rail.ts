@@ -33,6 +33,20 @@ export default function createNavigationRail(config: NavigationRailConfig = {}):
     const emitter = createEmitter();
     let expanded = !!options.expanded;
     let destroyed = false;
+    // While the rail changes width the label and badge fade out and back in
+    // (the swap keyframes); the class lives for the spring's duration.
+    let switching: ReturnType<typeof setTimeout> | null = null;
+    const SWITCH_DURATION = 450;
+    const endSwitch = (): void => {
+        if (switching !== null) clearTimeout(switching);
+        switching = null;
+        root.classList.remove(cls('--switching'));
+    };
+    const startSwitch = (): void => {
+        endSwitch();
+        root.classList.add(cls('--switching'));
+        switching = setTimeout(endSwitch, SWITCH_DURATION);
+    };
     let connectionObserver: MutationObserver | null = null;
     const dialog = options.layout === 'modal' ? root as HTMLDialogElement : null;
     if (dialog)
@@ -49,7 +63,6 @@ export default function createNavigationRail(config: NavigationRailConfig = {}):
         toggle = document.createElement('button');
         toggle.type = 'button';
         toggle.className = cls('__toggle');
-        toggle.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>';
         header.append(toggle);
     }
     if (options.header)
@@ -63,6 +76,7 @@ export default function createNavigationRail(config: NavigationRailConfig = {}):
         const visible = item.badge !== undefined && item.badge !== false && item.badge !== '';
         if (!visible) {
             badge?.remove();
+            element.classList.remove(cls('__item--badged'));
             element.setAttribute('aria-label', item.label);
             return;
         }
@@ -74,6 +88,7 @@ export default function createNavigationRail(config: NavigationRailConfig = {}):
         }
         badge.classList.toggle(cls('__badge--dot'), item.badge === true);
         badge.textContent = item.badge === true ? '' : String(item.badge);
+        element.classList.toggle(cls('__item--badged'), item.badge !== true);
         element.setAttribute('aria-label', `${item.label}, ${item.badgeLabel || (item.badge === true ? 'New activity' : String(item.badge))}`);
     };
     const updateSelection = (): void => {
@@ -153,6 +168,8 @@ export default function createNavigationRail(config: NavigationRailConfig = {}):
         root.classList.toggle(cls('--expanded'), expanded);
         toggle?.setAttribute('aria-expanded', String(expanded));
         toggle?.setAttribute('aria-label', (expanded ? options.collapseLabel : options.expandLabel)!);
+        if (toggle)
+            toggle.innerHTML = (expanded ? options.collapseIcon : options.expandIcon)!;
         if (dialog) {
             if (expanded)
                 showModal();
@@ -172,6 +189,7 @@ export default function createNavigationRail(config: NavigationRailConfig = {}):
         if (destroyed || expanded === value)
             return api;
         expanded = value;
+        startSwitch();
         synchronize();
         emitter.emit(value ? 'expand' : 'collapse', { expanded: value });
         if (!destroyed) {
@@ -268,6 +286,7 @@ export default function createNavigationRail(config: NavigationRailConfig = {}):
         if (destroyed)
             return;
         destroyed = true;
+        endSwitch();
         connectionObserver?.disconnect();
         connectionObserver = null;
         dialog?.removeEventListener('keydown', modalTab);

@@ -110,3 +110,43 @@ test('press ripples are removed on animation completion and destroy', () => {
     rail.destroy();
     expect(rail.element.querySelector('.mtrl-navigation-rail__ripple')).toBeNull();
 });
+test('menu button swaps between the menu and menu_open icons and accepts custom ones', () => {
+    const rail = make();
+    const toggle = rail.element.querySelector<HTMLElement>('.mtrl-navigation-rail__toggle')!;
+    const collapsedIcon = toggle.innerHTML;
+    expect(collapsedIcon).toContain('<svg');
+    rail.expand();
+    expect(toggle.innerHTML).not.toBe(collapsedIcon);
+    expect(toggle.getAttribute('aria-expanded')).toBe('true');
+    rail.collapse();
+    expect(toggle.innerHTML).toBe(collapsedIcon);
+    const custom = make({ expandIcon: '<i>open</i>', collapseIcon: '<i>close</i>' });
+    const customToggle = custom.element.querySelector<HTMLElement>('.mtrl-navigation-rail__toggle')!;
+    expect(customToggle.innerHTML).toBe('<i>open</i>');
+    custom.expand();
+    expect(customToggle.innerHTML).toBe('<i>close</i>');
+});
+test('expansion marks the rail as switching for the spring duration, not at mount', async () => {
+    const rail = make({ expanded: true });
+    expect(rail.element.classList.contains('mtrl-navigation-rail--switching')).toBe(false);
+    rail.collapse();
+    expect(rail.element.classList.contains('mtrl-navigation-rail--switching')).toBe(true);
+    await new Promise(resolve => setTimeout(resolve, 500));
+    expect(rail.element.classList.contains('mtrl-navigation-rail--switching')).toBe(false);
+    rail.expand();
+    rail.destroy();
+    expect(rail.element.classList.contains('mtrl-navigation-rail--switching')).toBe(false);
+});
+test('items carry a badged class only while they show a large badge', () => {
+    const rail = make();
+    const item = rail.element.querySelector<HTMLElement>('[data-id="home"]')!;
+    expect(item.classList.contains('mtrl-navigation-rail__item--badged')).toBe(false);
+    rail.setBadge('home', 12);
+    expect(item.classList.contains('mtrl-navigation-rail__item--badged')).toBe(true);
+    rail.setBadge('home', true);
+    expect(item.classList.contains('mtrl-navigation-rail__item--badged')).toBe(false);
+    rail.setBadge('home', 3);
+    rail.setBadge('home', undefined);
+    expect(item.classList.contains('mtrl-navigation-rail__item--badged')).toBe(false);
+    expect(item.querySelector('.mtrl-navigation-rail__badge')).toBeNull();
+});
