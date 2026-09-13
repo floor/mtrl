@@ -1,5 +1,6 @@
 // src/core/compose/features/lifecycle.ts
 
+import { getCleanup } from '../cleanup';
 import { createEmitter, Emitter } from '../../state/emitter';
 import { BaseComponent, ElementComponent } from '../component';
 
@@ -129,8 +130,12 @@ export interface LifecycleComponent extends BaseComponent {
  */
 export const withLifecycle = () => 
   <T extends ElementComponent>(component: T): T & LifecycleComponent => {
+    const resources = getCleanup(component);
     let mounted = false;
+    let destroyed = false;
+    const destroyElement = component.destroy?.bind(component);
     const emitter: Emitter = createEmitter();
+    resources.add(() => emitter.clear());
     
     const lifecycle: Lifecycle = {
       // Mount/Unmount state management
@@ -138,7 +143,7 @@ export const withLifecycle = () =>
       onUnmount: (handler: () => void) => emitter.on('unmount', handler),
       
       mount: () => {
-        if (!mounted) {
+        if (!mounted && !destroyed) {
           mounted = true;
           emitter.emit('mount');
         }
@@ -156,10 +161,15 @@ export const withLifecycle = () =>
 
       // Cleanup and destruction
       destroy() {
+        if (destroyed) return;
+        destroyed = true;
         // First trigger unmount
         if (mounted) {
           this.unmount();
         }
+
+        emitter.clear();
+        resources.destroy();
 
         // Clean up all event listeners
         if (hasEvents(component)) {
@@ -183,9 +193,8 @@ export const withLifecycle = () =>
         }
         
         // Remove the main element
-        if (component.element) {
-          component.element.remove();
-        }
+        if (destroyElement) destroyElement();
+        else component.element?.remove();
       }
     };
 

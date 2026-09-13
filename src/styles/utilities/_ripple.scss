@@ -31,12 +31,11 @@ $component: '#{base.$prefix}-ripple';
     will-change: transform, opacity;
     
     // Animation
-    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
-                opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     
     // Active ripple
     &.active {
-      transform: scale(1);
+      animation: #{$component}-expand 0.4s cubic-bezier(0.4, 0, 0.2, 1) both;
       opacity: v.state('hover-state-layer-opacity');
     }
     
@@ -44,6 +43,16 @@ $component: '#{base.$prefix}-ripple';
       opacity: 0;
     }
   }
+}
+
+@keyframes #{$component}-expand {
+  from { transform: scale(0); }
+  to { transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .#{$component}-wave.active { animation: none; transform: scale(1); }
+  .#{$component}-wave { transition: none; }
 }
 
 // Standalone utility for adding ripple to any element

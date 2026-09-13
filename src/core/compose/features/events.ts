@@ -3,6 +3,7 @@
  * @module core/compose/features
  */
 
+import { getCleanup } from '../cleanup';
 import { createEmitter, Emitter } from '../../state/emitter';
 import { BaseComponent } from '../component';
 
@@ -44,11 +45,13 @@ export interface EventComponent extends BaseComponent {
 export const withEvents = () => 
   <T extends BaseComponent>(component: T): T & EventComponent => {
     const emitter: Emitter = createEmitter();
+    const resources = getCleanup(component);
+    resources.add(() => emitter.clear());
 
     return {
       ...component,
       on(event: string, handler: (...args: any[]) => void) {
-        emitter.on(event, handler);
+        if (!resources.destroyed) emitter.on(event, handler);
         return this;
       },
 

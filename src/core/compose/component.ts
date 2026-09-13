@@ -4,6 +4,7 @@
  * @description Core utilities for component composition and creation with built-in mobile support
  */
 
+import { getCleanup, type CleanupScope } from "./cleanup";
 import {
   createElement,
   CreateElementOptions,
@@ -30,6 +31,7 @@ export interface TouchState {
  * Base component interface with prefix utilities
  */
 export interface BaseComponent {
+  resources?: CleanupScope;
   config: Record<string, any>;
   componentName?: string;
   getClass: (name: string) => string;
@@ -83,6 +85,8 @@ export interface WithElementOptions {
  * @param {string} prefix - Prefix to apply to class names
  * @returns {Object} Class name utilities
  */
+const getModifierClass = (base: string, modifier: string): string => `${base}--${modifier}`;
+const getElementClass = (base: string, element: string): string => `${base}-${element}`;
 const withPrefix = (prefix: string) => ({
   /**
    * Gets a prefixed class name
@@ -97,8 +101,7 @@ const withPrefix = (prefix: string) => ({
    * @param {string} modifier - Modifier name
    * @returns {string} Prefixed modifier class
    */
-  getModifierClass: (base: string, modifier: string): string =>
-    `${base}--${modifier}`,
+  getModifierClass,
 
   /**
    * Gets a prefixed element class name
@@ -106,8 +109,7 @@ const withPrefix = (prefix: string) => ({
    * @param {string} element - Element name
    * @returns {string} Prefixed element class
    */
-  getElementClass: (base: string, element: string): string =>
-    `${base}-${element}`,
+  getElementClass,
 });
 
 /**
@@ -159,6 +161,77 @@ export const createBase = (
   },
 });
 
+// Allocate gesture handlers only for interactive elements on touch devices.
+const setupTouch = (element: HTMLElement, base: BaseComponent, options: WithElementOptions): (() => void) => {
+  /**
+   * Handles the start of a touch interaction.
+   */
+  const handleTouchStart = (event: Event): void => {
+    base.updateTouchState(event, "start");
+    element.classList.add(`${base.getClass("touch-active")}`);
+
+    if (options.forwardEvents?.touchstart && "emit" in base && typeof base.emit === "function") {
+      base.emit("touchstart", normalizeEvent(event));
+    }
+  };
+
+  /**
+   * Handles the end of a touch interaction.
+   */
+  const handleTouchEnd = (event: Event): void => {
+    if (!base.touchState.isTouching) return;
+
+    const touchDuration = Date.now() - base.touchState.startTime;
+    element.classList.remove(`${base.getClass("touch-active")}`);
+    base.updateTouchState(event, "end");
+
+    // Emit tap event for short touches
+    if (touchDuration < TOUCH_CONFIG.TAP_THRESHOLD && "emit" in base && typeof base.emit === "function") {
+      base.emit("tap", normalizeEvent(event));
+    }
+
+    if (options.forwardEvents?.touchend && "emit" in base && typeof base.emit === "function") {
+      base.emit("touchend", normalizeEvent(event));
+    }
+  };
+
+  /**
+   * Handles touch movement.
+   */
+  const handleTouchMove = (event: Event): void => {
+    if (!base.touchState.isTouching) return;
+
+    const normalized = normalizeEvent(event);
+    const deltaX = normalized.clientX - base.touchState.startPosition.x;
+    const deltaY = normalized.clientY - base.touchState.startPosition.y;
+
+    // Detect and emit swipe gestures
+    if (
+      Math.abs(deltaX) > TOUCH_CONFIG.SWIPE_THRESHOLD &&
+      "emit" in base && typeof base.emit === "function"
+    ) {
+      base.emit("swipe", {
+        direction: deltaX > 0 ? "right" : "left",
+        deltaX,
+        deltaY,
+      });
+    }
+
+    if (options.forwardEvents?.touchmove && "emit" in base && typeof base.emit === "function") {
+      base.emit("touchmove", { ...normalized, deltaX, deltaY });
+    }
+  };
+
+  element.addEventListener("touchstart", handleTouchStart, PASSIVE_EVENTS);
+  element.addEventListener("touchend", handleTouchEnd);
+  element.addEventListener("touchmove", handleTouchMove, PASSIVE_EVENTS);
+  return () => {
+    element.removeEventListener("touchstart", handleTouchStart);
+    element.removeEventListener("touchend", handleTouchEnd);
+    element.removeEventListener("touchmove", handleTouchMove);
+  };
+};
+
 /**
  * Higher-order function that adds a DOM element to a component
  * @param {WithElementOptions} options - Element creation options
@@ -167,64 +240,7 @@ export const createBase = (
 export const withElement =
   (options: WithElementOptions = {}) =>
   <T extends BaseComponent>(component: T): T & ElementComponent => {
-    /**
-     * Handles the start of a touch interaction.
-     */
-    const handleTouchStart = (event: Event): void => {
-      base.updateTouchState(event, "start");
-      element.classList.add(`${base.getClass("touch-active")}`);
-
-      if (options.forwardEvents?.touchstart && "emit" in component) {
-        (component as any).emit("touchstart", normalizeEvent(event));
-      }
-    };
-
-    /**
-     * Handles the end of a touch interaction.
-     */
-    const handleTouchEnd = (event: Event): void => {
-      if (!base.touchState.isTouching) return;
-
-      const touchDuration = Date.now() - base.touchState.startTime;
-      element.classList.remove(`${base.getClass("touch-active")}`);
-      base.updateTouchState(event, "end");
-
-      // Emit tap event for short touches
-      if (touchDuration < TOUCH_CONFIG.TAP_THRESHOLD && "emit" in component) {
-        (component as any).emit("tap", normalizeEvent(event));
-      }
-
-      if (options.forwardEvents?.touchend && "emit" in component) {
-        (component as any).emit("touchend", normalizeEvent(event));
-      }
-    };
-
-    /**
-     * Handles touch movement.
-     */
-    const handleTouchMove = (event: Event): void => {
-      if (!base.touchState.isTouching) return;
-
-      const normalized = normalizeEvent(event);
-      const deltaX = normalized.clientX - base.touchState.startPosition.x;
-      const deltaY = normalized.clientY - base.touchState.startPosition.y;
-
-      // Detect and emit swipe gestures
-      if (
-        Math.abs(deltaX) > TOUCH_CONFIG.SWIPE_THRESHOLD &&
-        "emit" in component
-      ) {
-        (component as any).emit("swipe", {
-          direction: deltaX > 0 ? "right" : "left",
-          deltaX,
-          deltaY,
-        });
-      }
-
-      if (options.forwardEvents?.touchmove && "emit" in component) {
-        (component as any).emit("touchmove", { ...normalized, deltaX, deltaY });
-      }
-    };
+    const resources = getCleanup(component);
 
     // Get the base component for reference
     const base = component;
@@ -274,12 +290,17 @@ export const withElement =
     // Create the element with appropriate classes
     const element = createElement(elementOptions);
 
-    // Add event listeners only if touch is supported and the component is interactive
-    if (hasTouchSupport() && options.interactive) {
-      element.addEventListener("touchstart", handleTouchStart, PASSIVE_EVENTS);
-      element.addEventListener("touchend", handleTouchEnd);
-      element.addEventListener("touchmove", handleTouchMove, PASSIVE_EVENTS);
-    }
+    const cleanupTouch = hasTouchSupport() && options.interactive
+      ? setupTouch(element, base, options)
+      : undefined;
+
+    resources.add(() => {
+      cleanupTouch?.();
+      base.touchState.activeTarget = null;
+      base.touchState.isTouching = false;
+      removeEventHandlers(element);
+      element.remove();
+    });
 
     return {
       ...component,
@@ -300,16 +321,7 @@ export const withElement =
        * Ensures proper resource cleanup when the component is destroyed.
        */
       destroy(): void {
-        if (hasTouchSupport() && options.interactive) {
-          element.removeEventListener("touchstart", handleTouchStart);
-          element.removeEventListener("touchend", handleTouchEnd);
-          element.removeEventListener("touchmove", handleTouchMove);
-        }
-
-        // Clean up any registered event handlers using our new utility
-        removeEventHandlers(element);
-
-        element.remove();
+        resources.destroy();
       },
     };
   };

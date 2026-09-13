@@ -85,8 +85,13 @@ export const createEventManager = (element: HTMLElement): EventManager => {
    * @param handler - EventListener
    * @returns Unique identifier
    */
-  const createHandlerId = (event: string, handler: EventListener): string =>
-    `${event}_${handler.toString()}`;
+  const identities = new WeakMap<EventListener, number>();
+  let nextIdentity = 0;
+  const createHandlerId = (event: string, handler: EventListener, capture = false): string => {
+    let id = identities.get(handler);
+    if (id === undefined) identities.set(handler, id = ++nextIdentity);
+    return `${event}_${id}_${capture}`;
+  };
 
   /**
    * Wraps an event handler with error boundary and logging
@@ -107,9 +112,10 @@ export const createEventManager = (element: HTMLElement): EventManager => {
    * @param event - Event name
    * @param handler - Event handler
    */
-  const safeRemoveListener = (event: string, handler: EventListener): void => {
+  const safeRemoveListener = (event: string, handler: EventListener, capture = false): void => {
     try {
-      element.removeEventListener(event, handler);
+      if (capture) element.removeEventListener(event, handler, true);
+      else element.removeEventListener(event, handler);
     } catch (error) {
       console.warn(`Failed to remove ${event} listener:`, error);
     }
@@ -124,14 +130,15 @@ export const createEventManager = (element: HTMLElement): EventManager => {
      * @returns EventManager instance for chaining
      */
     on<T extends Event>(event: string, handler: (e: T) => void, options: AddEventListenerOptions = {}): EventManager {
+      const id = createHandlerId(event, handler as EventListener, !!options.capture);
+      if (handlers.has(id)) return this;
       const enhanced = enhanceHandler(handler as EventListener, event);
-      const id = createHandlerId(event, handler as EventListener);
 
       handlers.set(id, {
         original: handler as EventListener,
         enhanced,
         event,
-        options
+        options: { ...options }
       });
 
       element.addEventListener(event, enhanced, options);
@@ -145,12 +152,13 @@ export const createEventManager = (element: HTMLElement): EventManager => {
      * @returns EventManager instance for chaining
      */
     off<T extends Event>(event: string, handler: (e: T) => void): EventManager {
-      const id = createHandlerId(event, handler as EventListener);
-      const stored = handlers.get(id);
-
-      if (stored) {
-        safeRemoveListener(event, stored.enhanced);
-        handlers.delete(id);
+      for (const capture of [false, true]) {
+        const id = createHandlerId(event, handler as EventListener, capture);
+        const stored = handlers.get(id);
+        if (stored) {
+          safeRemoveListener(event, stored.enhanced, capture);
+          handlers.delete(id);
+        }
       }
       return this;
     },
@@ -160,8 +168,8 @@ export const createEventManager = (element: HTMLElement): EventManager => {
      * @returns EventManager instance for chaining
      */
     pause(): EventManager {
-      handlers.forEach(({ enhanced, event }) => {
-        safeRemoveListener(event, enhanced);
+      handlers.forEach(({ enhanced, event, options }) => {
+        safeRemoveListener(event, enhanced, !!options.capture);
       });
       return this;
     },
@@ -181,8 +189,8 @@ export const createEventManager = (element: HTMLElement): EventManager => {
      * Removes all event listeners and cleans up
      */
     destroy(): void {
-      handlers.forEach(({ enhanced, event }) => {
-        safeRemoveListener(event, enhanced);
+      handlers.forEach(({ enhanced, event, options }) => {
+        safeRemoveListener(event, enhanced, !!options.capture);
       });
       handlers.clear();
     },
@@ -203,7 +211,7 @@ export const createEventManager = (element: HTMLElement): EventManager => {
      */
     hasHandler<T extends Event>(event: string, handler: (e: T) => void): boolean {
       const id = createHandlerId(event, handler as EventListener);
-      return handlers.has(id);
+      return handlers.has(id) || handlers.has(createHandlerId(event, handler as EventListener, true));
     }
   };
 };

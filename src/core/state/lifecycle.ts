@@ -70,6 +70,7 @@ export const createLifecycle = (
   managers: LifecycleManagers = {}
 ): LifecycleManager => {
   let mounted = false;
+  let destroyed = false;
   const emitter: Emitter = createEmitter();
 
   return {
@@ -78,7 +79,7 @@ export const createLifecycle = (
     onUnmount: (handler: () => void) => emitter.on('unmount', handler),
     
     mount: () => {
-      if (!mounted) {
+      if (!mounted && !destroyed) {
         mounted = true;
         emitter.emit('mount');
       }
@@ -96,10 +97,14 @@ export const createLifecycle = (
 
     // Cleanup and destruction
     destroy() {
+      if (destroyed) return;
+      destroyed = true;
       // First trigger unmount
       if (mounted) {
         this.unmount();
       }
+
+      emitter.clear();
 
       // Clean up all event listeners
       if (managers.events) {

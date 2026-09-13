@@ -131,10 +131,7 @@ export const withDisabled = <T extends DisabledConfig>(config: T) =>
 
     // Initialize disabled state if configured
     if (config.disabled) {
-      // Use requestAnimationFrame to ensure DOM is ready
-      requestAnimationFrame(() => {
-        disabled.disable();
-      });
+      disabled.disable();
     }
 
     return {
