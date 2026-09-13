@@ -75,6 +75,13 @@ export const withTextLabel =
     const position = config.labelPosition || "start";
     labelElement.className = `${config.prefix}-${config.componentName}-label ${config.prefix}-${config.componentName}-label--${position}`;
     labelElement.textContent = config.label;
+    // the label names the input: without the link a screen reader has no
+    // name for the field and a click on the label focuses nothing
+    const input = (component as { input?: HTMLElement }).input;
+    if (input instanceof HTMLElement) {
+      if (!input.id) input.id = `${config.prefix}-${config.componentName}-${Math.random().toString(36).slice(2, 9)}`;
+      labelElement.htmlFor = input.id;
+    }
 
     if (position === "start") {
       // Insert label as the first child
