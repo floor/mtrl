@@ -457,8 +457,11 @@ $component: "#{base.$prefix}-textfield";
 
     // ===== FILLED VARIANT =====
     &--filled {
+        // the label at rest is on-surface-variant at full strength: faded to
+        // 0.6 it fell to a 2.85:1 contrast on the field's fill, under the
+        // 4.5:1 a 16 px label needs
         .#{$component}-label {
-            opacity: 0.6;
+            opacity: 1;
         }
         .#{$component}-input {
             background-color: t.color("surface-container-highest");

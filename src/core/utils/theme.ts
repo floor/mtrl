@@ -136,9 +136,11 @@ export function getThemeColor(
   return value;
 }
 
-// Cleanup observer when module is unloaded
+// Cleanup observer when the page goes away. pagehide, not unload: an unload
+// listener is deprecated in Chrome, reported as a permissions policy
+// violation, and keeps the page out of the back/forward cache.
 if (typeof window !== 'undefined') {
-  window.addEventListener('unload', () => {
+  window.addEventListener('pagehide', () => {
     if (themeObserver) {
       themeObserver.disconnect();
       themeObserver = null;
