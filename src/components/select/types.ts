@@ -1,4 +1,5 @@
 // src/components/select/types.ts
+import type { MenuColor, MenuVariant } from "../menu/types";
 
 /**
  * Available Select variants
@@ -108,6 +109,10 @@ export interface SelectConfig {
     maxHeight?: string;
     /** Whether the menu flips above the field when there is no room below */
     autoFlip?: boolean;
+    /** The menu's variant: 'vertical' is the M3 expressive menu, items apart in a rounded container */
+    variant?: MenuVariant;
+    /** The vertical variant's colour mapping */
+    color?: MenuColor;
   };
 
   /**
