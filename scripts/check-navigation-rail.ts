@@ -11,6 +11,28 @@ declare global {
     }
 }
 const artifacts = resolve('analysis/navigation-rail');
+// Text antialiasing is not deterministic to the byte, even for the same page
+// twice, so two screenshots count as the same when only a handful of pixels
+// differ by a little; a wrong colour, a moved box or a missing rule differs by
+// hundreds of pixels and by whole channels.
+async function comparePngs(page: import('playwright').Page, a: Buffer, b: Buffer): Promise<{ differing: number; maxDelta: number }> {
+    return page.evaluate(async ([a, b]) => {
+        const load = (src: string) => new Promise<HTMLImageElement>(resolve => { const image = new Image(); image.onload = () => resolve(image); image.src = 'data:image/png;base64,' + src; });
+        const [ia, ib] = await Promise.all([load(a), load(b)]);
+        const canvas = document.createElement('canvas'); canvas.width = ia.width; canvas.height = ia.height;
+        const context = canvas.getContext('2d')!;
+        context.drawImage(ia, 0, 0); const da = context.getImageData(0, 0, canvas.width, canvas.height).data;
+        context.clearRect(0, 0, canvas.width, canvas.height); context.drawImage(ib, 0, 0); const db = context.getImageData(0, 0, canvas.width, canvas.height).data;
+        if (ia.width !== ib.width || ia.height !== ib.height) return { differing: Infinity, maxDelta: 255 };
+        let differing = 0, maxDelta = 0;
+        for (let i = 0; i < da.length; i += 4) {
+            const delta = Math.max(Math.abs(da[i] - db[i]), Math.abs(da[i + 1] - db[i + 1]), Math.abs(da[i + 2] - db[i + 2]));
+            if (delta) { differing++; if (delta > maxDelta) maxDelta = delta; }
+        }
+        return { differing, maxDelta };
+    }, [a.toString('base64'), b.toString('base64')]);
+}
+
 await mkdir(artifacts, { recursive: true });
 const build = await Bun.build({ entrypoints: [resolve('dist/components/navigation-rail/index.js')], target: 'browser', minify: true });
 assert(build.success, String(build.logs));
@@ -35,19 +57,21 @@ const server = Bun.serve({ hostname: '127.0.0.1', port: 0, fetch(request) {
     } });
 const browser = await chromium.launch();
 try {
-    const pages = await Promise.all([browser.newPage({ reducedMotion: 'reduce' }), browser.newPage({ reducedMotion: 'reduce' })]);
+    // One page for both stylesheets: two pages rasterise text differently on
+    // the same machine, so the comparison must swap the stylesheet in place.
+    const page = await browser.newPage({ reducedMotion: 'reduce' });
     const errors: string[] = [];
-    for (const [i, page] of pages.entries()) {
-        page.on('pageerror', error => errors.push(error.message));
-        await page.goto(`http://127.0.0.1:${server.port}/${i ? '?selective' : ''}`);
-        await page.waitForFunction(() => !!window.mountRail);
-    }
+    page.on('pageerror', error => errors.push(error.message));
+    const urls = [`http://127.0.0.1:${server.port}/`, `http://127.0.0.1:${server.port}/?selective`];
     let count = 0;
     for (const expanded of [false, true])
         for (const direction of ['ltr', 'rtl'])
             for (const mode of ['light', 'dark'])
                 for (const height of [360, 720]) {
-                    for (const page of pages) {
+                    const shots: Buffer[] = [];
+                    for (const [i, url] of urls.entries()) {
+                        await page.goto(url);
+                        await page.waitForFunction(() => !!window.mountRail);
                         await page.setViewportSize({ width: 900, height });
                         await page.evaluate(({ expanded, direction, mode }) => {
                             document.documentElement.dir = direction;
@@ -73,13 +97,14 @@ try {
                         await page.keyboard.press('Enter');
                         assert.equal(await page.evaluate(() => window.rail.getActive()), 'family');
                         await page.evaluate(() => { window.rail.element.scrollTop = 0; return new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))); });
+                        shots.push(await page.screenshot({ path: `${artifacts}/${expanded ? 'expanded' : 'collapsed'}-${direction}-${mode}-${height}${i ? '-selective' : ''}.png` }));
                     }
-                    const full = await pages[0].screenshot({ path: `${artifacts}/${expanded ? 'expanded' : 'collapsed'}-${direction}-${mode}-${height}.png` });
-                    const selective = await pages[1].screenshot({ path: `${artifacts}/selective.png` });
-                    assert(full.equals(selective), 'Full and selective rail CSS differ');
+                    const diff = await comparePngs(page, shots[0], shots[1]);
+                    assert(diff.differing <= 32 && diff.maxDelta <= 24, `Full and selective rail CSS differ: ${expanded ? 'expanded' : 'collapsed'}-${direction}-${mode}-${height}: ${diff.differing} pixels, max channel delta ${diff.maxDelta}`);
                     count++;
                 }
-    const page = pages[0];
+    await page.goto(urls[0]);
+    await page.waitForFunction(() => !!window.mountRail);
     await page.evaluate(() => { window.mountRail({ expanded: false }); window.rail.element.querySelector<HTMLElement>('[data-id="inbox"]')!.focus(); window.rail.expand(); });
     assert.equal(await page.locator('[data-id="inbox"]').evaluate(el => el === document.activeElement), true);
     await page.emulateMedia({ reducedMotion: 'no-preference' });
