@@ -1,4 +1,5 @@
 // src/components/extended-fab/_styles.scss
+@use 'sass:map';
 @use '../../styles/abstract/base' as base;
 @use '../../styles/abstract/variables' as v;
 @use '../../styles/abstract/functions' as f;
@@ -6,6 +7,12 @@
 @use '../../styles/abstract/theme' as t;
 
 $component: '#{base.$prefix}-extended-fab';
+
+$sizes: (
+  small: (height: 56px, icon: 24px, label: 'title-medium', padding: 16px, gap: 8px, shape: 'large'),
+  medium: (height: 80px, icon: 28px, label: 'title-large', padding: 26px, gap: 16px, shape: 'large-increased'),
+  large: (height: 96px, icon: 32px, label: 'headline-small', padding: 28px, gap: 20px, shape: 'extra-large'),
+);
 
 .#{$component} {
   // Base styles
@@ -35,18 +42,33 @@ $component: '#{base.$prefix}-extended-fab';
     color
   );
   
-  // Extended FAB dimensions (56dp height, min-width 80dp)
-  height: 56px;
-  min-width: 80px;
-  padding: 0 16px 0 16px; // Left and right padding
-  border-radius: f.get-shape('large'); // 16px corners
-  
+  // Small is the default; modifiers supply the expressive dimensions.
+  height: var(--extended-fab-height, 56px);
+  min-width: var(--extended-fab-height, 56px);
+  padding: 0 var(--extended-fab-padding, 16px);
+  gap: var(--extended-fab-gap, 8px);
+  border-radius: var(--extended-fab-radius, #{f.get-shape('large')});
+
   // Transition for dimension changes
   transition: 
     width 0.3s v.motion('easing-standard'),
     min-width 0.3s v.motion('easing-standard'),
     padding 0.3s v.motion('easing-standard');
   
+  @each $size, $tokens in $sizes {
+    &--#{$size} {
+      --extended-fab-height: #{map.get($tokens, height)};
+      --extended-fab-icon-size: #{map.get($tokens, icon)};
+      --extended-fab-padding: #{map.get($tokens, padding)};
+      --extended-fab-gap: #{map.get($tokens, gap)};
+      --extended-fab-radius: #{f.get-shape(map.get($tokens, shape))};
+
+      .#{$component}-text {
+        @include m.typography(map.get($tokens, label));
+      }
+    }
+  }
+
   // Focus styles
   &:focus {
     outline: none;
@@ -62,28 +84,28 @@ $component: '#{base.$prefix}-extended-fab';
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 24px;
-    height: 24px;
+    width: var(--extended-fab-icon-size, 24px);
+    height: var(--extended-fab-icon-size, 24px);
     flex-shrink: 0;
-    padding: 2px;
+    padding: 0;
     transition: 
       transform 0.3s v.motion('easing-standard'),
       margin 0.3s v.motion('easing-standard');
     
     svg {
-      width: 24px;
-      height: 24px;
+      width: var(--extended-fab-icon-size, 24px);
+      height: var(--extended-fab-icon-size, 24px);
     }
   }
   
   // Text styles
   &-text {
-    @include m.typography('label-large');
+    @include m.typography('title-medium');
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 280px;
-    margin: 0 6px 0 12px; 
+    margin: 0;
     transition: 
       max-width 0.3s v.motion('easing-standard'),
       opacity 0.2s v.motion('easing-standard'),
@@ -98,14 +120,6 @@ $component: '#{base.$prefix}-extended-fab';
   
   &--fluid {
     width: 100%;
-  }
-  
-  // RTL support
-  html[dir="rtl"] & {
-    .#{$component}-icon {
-      margin-right: 0;
-      margin-left: 12px;
-    }
   }
   
   // Expressive container and tone styles; primary-container is the default.
@@ -140,12 +154,14 @@ $component: '#{base.$prefix}-extended-fab';
 
   // Collapsed state
   &--collapsed {
-    width: 56px;
-    min-width: 56px;
+    width: var(--extended-fab-height, 56px);
+    min-width: var(--extended-fab-height, 56px);
+    padding: 0;
+    gap: 0;
     
     .#{$component}-icon {
       margin: 0;
-      transform: scale(1.05);
+      transform: scale(1);
     }
     
     .#{$component}-text {

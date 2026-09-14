@@ -23,6 +23,12 @@ export type ExtendedFabVariant =
   | "surface";
 
 /**
+ * Expressive extended FAB size: small 56dp, medium 80dp, large 96dp.
+ * @category Components
+ */
+export type ExtendedFabSize = "small" | "medium" | "large";
+
+/**
  * Extended FAB width behavior
  *
  * Controls how the Extended FAB's width is calculated.
@@ -64,6 +70,9 @@ export type ExtendedFabPosition =
  * @see https://m3.material.io/components/extended-fab/overview
  */
 export interface ExtendedFabConfig {
+  /** Expressive container, icon and label size. @default 'small' */
+  size?: ExtendedFabSize;
+
   /**
    * Extended FAB variant that determines visual styling
    *

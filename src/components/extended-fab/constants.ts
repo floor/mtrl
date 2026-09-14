@@ -20,6 +20,13 @@ export const EXTENDED_FAB_VARIANTS = {
   SURFACE: 'surface'
 } as const;
 
+/** Expressive extended FAB sizes. */
+export const EXTENDED_FAB_SIZES = {
+  SMALL: 'small',
+  MEDIUM: 'medium',
+  LARGE: 'large'
+} as const;
+
 /**
  * Extended FAB width behavior
  */
