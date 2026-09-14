@@ -56,6 +56,10 @@ export const getElementConfig = (config: FabConfig) => {
     "aria-label": config.ariaLabel || (config.icon ? "action" : undefined),
   };
 
+  if (config.value !== undefined) {
+    attributes.value = config.value;
+  }
+
   // Only add disabled attribute if it's explicitly true
   if (config.disabled === true) {
     attributes.disabled = true;
@@ -82,15 +86,10 @@ export const getElementConfig = (config: FabConfig) => {
     componentClasses.push(`fab--disabled`);
   }
 
-  // Create a new config with our component classes added to className
-  const enhancedConfig = {
-    ...config,
-    className: componentClasses,
-  };
-
-  return createElementConfig(enhancedConfig, {
+  return createElementConfig(config, {
     tag: "button",
     attributes,
+    className: componentClasses,
     forwardEvents: {
       click: (component) => !component.element.disabled,
       focus: true,

@@ -4,6 +4,7 @@ import {
   createElementConfig,
 } from "../../core/config/component";
 import { ExtendedFabConfig } from "./types";
+import { EXTENDED_FAB_CLASSES } from "./constants";
 
 /**
  * Default configuration for the Extended FAB component
@@ -65,6 +66,10 @@ export const getElementConfig = (config: ExtendedFabConfig) => {
       config.ariaLabel || config.text || (config.icon ? "action" : undefined),
   };
 
+  if (config.value !== undefined) {
+    attributes.value = config.value;
+  }
+
   // Build class list
   const classNames = [`${config.prefix}-extended-fab`];
 
@@ -75,6 +80,10 @@ export const getElementConfig = (config: ExtendedFabConfig) => {
 
   // Every size, including the default, carries its expressive size class.
   classNames.push(`${config.prefix}-extended-fab--${config.size || "small"}`);
+
+  if (config.iconPosition === "end") {
+    classNames.push(`${config.prefix}-${EXTENDED_FAB_CLASSES.ICON_END}`);
+  }
 
   // Add width class
   if (config.width) {
