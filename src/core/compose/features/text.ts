@@ -49,11 +49,6 @@ export interface TextConfig {
    * Element to insert text before (optional)
    */
   beforeElement?: HTMLElement;
-  
-  /**
-   * Additional configuration options
-   */
-  [key: string]: any;
 }
 
 /**
@@ -136,7 +131,8 @@ const createText = (element: HTMLElement, config: TextConfig = {}): TextManager 
  * @param config - Configuration object containing text information
  * @returns Function that enhances a component with text capabilities
  */
-export const withText = <T extends TextConfig>(config: T) => 
+// `& object` lets a component config that shares no key with TextConfig through.
+export const withText = <T extends TextConfig & object>(config: T) => 
   <C extends ElementComponent>(component: C): C & TextComponent => {
     // Create the text manager with configuration settings
     const text = createText(component.element, {

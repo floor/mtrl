@@ -7,7 +7,6 @@ import { BaseComponent } from "../component";
  */
 export interface CheckableConfig {
   checked?: boolean;
-  [key: string]: any;
 }
 
 /**
@@ -67,7 +66,8 @@ export interface CheckableComponent extends BaseComponent {
  * @returns Function that enhances a component with checkable functionality
  */
 export const withCheckable =
-  <T extends CheckableConfig>(config: T = {} as T) =>
+  // `& object` lets a component config that shares no key with CheckableConfig through.
+  <T extends CheckableConfig & object>(config: T = {} as T) =>
   <C extends InputComponent>(component: C): C & CheckableComponent => {
     if (!component.input) return component as C & CheckableComponent;
 

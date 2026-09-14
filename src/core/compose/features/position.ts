@@ -22,7 +22,6 @@ export interface PositionConfig {
   position?: string;
   prefix?: string;
   componentName?: string;
-  [key: string]: any;
 }
 
 /**
@@ -56,7 +55,8 @@ export interface PositionComponent extends BaseComponent {
  * @param config - Configuration object containing position information
  * @returns Function that enhances a component with position capabilities
  */
-export const withPosition = <T extends PositionConfig>(config: T) => 
+// `& object` lets a component config that shares no key with PositionConfig through.
+export const withPosition = <T extends PositionConfig & object>(config: T) => 
   <C extends ElementComponent>(component: C): C & PositionComponent => {
     if (!config.position || !component.element) {
       return component as C & PositionComponent;

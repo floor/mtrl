@@ -1,8 +1,11 @@
 // src/core/compose/features/withEvents.ts
 
-import { createEventManager } from "../../state/events";
+import { createEventManager, type EventManagerState } from "../../state/events";
 import { BaseComponent, ElementComponent } from "../component";
 import { getCleanup } from "../cleanup";
+
+// The manager's listener type; this feature's public API takes any Function.
+type Listener = Parameters<EventManagerState["on"]>[1];
 
 /**
  * Event manager interface
@@ -69,7 +72,7 @@ export const withEvents =
        */
       addListeners(listeners: Record<string, Function>) {
         Object.entries(listeners).forEach(([event, handler]) => {
-          events.on(event, handler as any);
+          events.on(event, handler as Listener);
         });
         return this;
       },
@@ -80,7 +83,7 @@ export const withEvents =
        */
       removeListeners(listeners: Record<string, Function>) {
         Object.entries(listeners).forEach(([event, handler]) => {
-          events.off(event, handler as any);
+          events.off(event, handler as Listener);
         });
         return this;
       },
@@ -93,9 +96,9 @@ export const withEvents =
       once(event: string, handler: Function) {
         const wrappedHandler = (e: Event) => {
           handler(e);
-          events.off(event, wrappedHandler as any);
+          events.off(event, wrappedHandler);
         };
-        events.on(event, wrappedHandler as any);
+        events.on(event, wrappedHandler);
         return this;
       },
 
@@ -103,7 +106,7 @@ export const withEvents =
        * Add an event listener
        */
       on(event: string, handler: Function) {
-        events.on(event, handler as any);
+        events.on(event, handler as Listener);
         return this;
       },
 
@@ -111,7 +114,7 @@ export const withEvents =
        * Remove an event listener
        */
       off(event: string, handler: Function) {
-        events.off(event, handler as any);
+        events.off(event, handler as Listener);
         return this;
       },
 

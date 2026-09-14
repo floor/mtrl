@@ -4,7 +4,7 @@
  */
 
 import { getCleanup } from '../cleanup';
-import { createEmitter, Emitter } from '../../state/emitter';
+import { createEmitter, Emitter, EventCallback } from '../../state/emitter';
 import { BaseComponent } from '../component';
 
 /**
@@ -17,7 +17,7 @@ export interface EventComponent extends BaseComponent {
    * @param handler - Event handler
    * @returns Component instance for chaining
    */
-  on(event: string, handler: (...args: any[]) => void): EventComponent;
+  on(event: string, handler: EventCallback): EventComponent;
   
   /**
    * Unsubscribe from an event
@@ -25,7 +25,7 @@ export interface EventComponent extends BaseComponent {
    * @param handler - Event handler
    * @returns Component instance for chaining
    */
-  off(event: string, handler: (...args: any[]) => void): EventComponent;
+  off(event: string, handler: EventCallback): EventComponent;
   
   /**
    * Emit an event
@@ -33,7 +33,7 @@ export interface EventComponent extends BaseComponent {
    * @param data - Event data
    * @returns Component instance for chaining
    */
-  emit(event: string, data?: any): EventComponent;
+  emit(event: string, data?: unknown): EventComponent;
 }
 
 /**
@@ -50,17 +50,17 @@ export const withEvents = () =>
 
     return {
       ...component,
-      on(event: string, handler: (...args: any[]) => void) {
+      on(event: string, handler: EventCallback) {
         if (!resources.destroyed) emitter.on(event, handler);
         return this;
       },
 
-      off(event: string, handler: (...args: any[]) => void) {
+      off(event: string, handler: EventCallback) {
         emitter.off(event, handler);
         return this;
       },
 
-      emit(event: string, data?: any) {
+      emit(event: string, data?: unknown) {
         emitter.emit(event, data);
         return this;
       }
