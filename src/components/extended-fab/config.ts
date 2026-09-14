@@ -15,7 +15,7 @@ import { ExtendedFabConfig } from "./types";
  * @internal
  */
 export const defaultConfig: ExtendedFabConfig = {
-  variant: "primary",
+  variant: "primary-container",
   type: "button",
   ripple: true,
   iconPosition: "start",

@@ -4,13 +4,19 @@
  * FAB variants following Material Design 3 guidelines
  */
 export const FAB_VARIANTS = {
-  /** Uses the primary color, highest emphasis (default) */
+  /** Primary container colour (default) */
+  PRIMARY_CONTAINER: 'primary-container',
+  /** Secondary container colour */
+  SECONDARY_CONTAINER: 'secondary-container',
+  /** Tertiary container colour */
+  TERTIARY_CONTAINER: 'tertiary-container',
+  /** Primary tone colour */
   PRIMARY: 'primary',
-  /** Uses the secondary color, medium emphasis */
+  /** Secondary tone colour */
   SECONDARY: 'secondary',
-  /** Uses the tertiary color, lower emphasis */
+  /** Tertiary tone colour */
   TERTIARY: 'tertiary',
-  /** Uses the surface color with an outline, lowest emphasis */
+  /** @deprecated Use a container or tone style instead. */
   SURFACE: 'surface'
 } as const;
 

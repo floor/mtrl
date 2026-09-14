@@ -25,7 +25,7 @@ $component: '#{base.$prefix}-extended-fab';
   overflow: hidden;
   
   // Extended FAB uses elevation in all variants
-  @include m.elevation(2);
+  @include m.elevation(3);
   
   // Transitions for property changes (separated for performance)
   @include m.motion-transition(
@@ -108,63 +108,36 @@ $component: '#{base.$prefix}-extended-fab';
     }
   }
   
-  // Color variants
-  &--primary {
-    background-color: t.color('primary-container');
-    color: t.color('on-primary-container');
-    
-    &:hover {
-      @include m.state-layer(t.color('on-primary-container'), 'hover');
-    }
-    
-    &:active {
-      @include m.state-layer(t.color('on-primary-container'), 'pressed');
-      @include m.elevation(1);
+  // Expressive container and tone styles; primary-container is the default.
+  @each $role in primary-container, secondary-container, tertiary-container,
+    primary, secondary, tertiary {
+    &--#{$role} {
+      background-color: t.color('#{$role}');
+      color: t.color('on-#{$role}');
     }
   }
 
-  &--secondary {
-    background-color: t.color('secondary-container');
-    color: t.color('on-secondary-container');
-    
-    &:hover {
-      @include m.state-layer(t.color('on-secondary-container'), 'hover');
-    }
-    
-    &:active {
-      @include m.state-layer(t.color('on-secondary-container'), 'pressed');
-      @include m.elevation(1);
-    }
-  }
-  
-  &--tertiary {
-    background-color: t.color('tertiary-container');
-    color: t.color('on-tertiary-container');
-    
-    &:hover {
-      @include m.state-layer(t.color('on-tertiary-container'), 'hover');
-    }
-    
-    &:active {
-      @include m.state-layer(t.color('on-tertiary-container'), 'pressed');
-      @include m.elevation(1);
-    }
-  }
-  
+  // Deprecated surface style retained for existing callers.
   &--surface {
     background-color: t.color('surface');
     color: t.color('primary');
-    
-    &:hover {
-      @include m.state-layer(t.color('primary'), 'hover');
-    }
-    
-    &:active {
-      @include m.state-layer(t.color('primary'), 'pressed');
-      @include m.elevation(1);
-    }
   }
-  
+
+  &:hover {
+    @include m.state-layer(currentColor, 'hover');
+    @include m.elevation(4);
+  }
+
+  &:focus-visible {
+    @include m.state-layer(currentColor, 'focus');
+    @include m.elevation(3);
+  }
+
+  &:active {
+    @include m.state-layer(currentColor, 'pressed');
+    @include m.elevation(3);
+  }
+
   // Collapsed state
   &--collapsed {
     width: 56px;
@@ -205,25 +178,43 @@ $component: '#{base.$prefix}-extended-fab';
   
   // Long-press state
   &--long-press {
-    @include m.state-layer(t.color('on-primary-container'), 'dragged');
-    @include m.elevation(1);
+    @include m.state-layer(currentColor, 'dragged');
+    @include m.elevation(3);
   }
   
-  // Lowered state
-  &--lowered {
+  // Lowered FABs use their own elevation ladder.
+  &.#{$component}--lowered {
     @include m.elevation(1);
-    transform: translateY(1px);
+
+    &:hover {
+      @include m.elevation(2);
+    }
+
+    &:focus-visible,
+    &:active {
+      @include m.elevation(1);
+    }
   }
-  
-  // Disabled state
-  &--disabled,
-  &:disabled {
+
+  // Compatibility state: FAB tokens do not specify disabled styling.
+  &:disabled,
+  &.#{$component}--disabled {
     pointer-events: none;
-    @include m.elevation(0);
-    color: t.alpha('surface', 0.38);
-    background-color: t.alpha('surface', 0.12);
+
+    &,
+    &:hover,
+    &:focus-visible,
+    &:active {
+      @include m.elevation(0);
+      color: t.alpha('on-surface', 0.38);
+      background-color: t.alpha('on-surface', 0.12);
+    }
+
+    &::before {
+      display: none;
+    }
   }
-  
+
   // Positioning utilities
   &--top-right {
     position: fixed;
@@ -275,9 +266,6 @@ $component: '#{base.$prefix}-extended-fab';
       left: 50%;
       transform: translateX(-50%);
       
-      &.#{$component}--lowered {
-        transform: translateX(-50%) translateY(1px);
-      }
     }
   }
   
@@ -287,23 +275,3 @@ $component: '#{base.$prefix}-extended-fab';
     transition-timing-function: v.motion('easing-standard');
   }
 }
-
-
-// FIX: Disabled on dark theme (recommandations do not work as expected)
-html[data-theme-mode=dark] {
-    // Interactive states
-    .#{$component} {
-      &:disabled {
-        color: t.alpha('on-surface-dim', 0.38);
-        background-color: t.alpha('surface-dim', 0.12);
-
-        .#{$component}-text { 
-          opacity: 0.38;
-        }
-        .#{$component}-icon {
-          opacity: 0.38;
-          color: t.alpha('on-surface-dim', 0.12);
-        }
-      }
-    }
-  }
