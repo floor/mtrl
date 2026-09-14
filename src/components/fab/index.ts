@@ -9,7 +9,7 @@
  *
  * Features:
  * - Multiple variants (primary, secondary, tertiary, surface)
- * - Three size options (small, default, large)
+ * - Four size options (small, default, medium, large; small is deprecated)
  * - Configurable positioning
  * - Icon support with customization
  * - Ripple effect on interaction

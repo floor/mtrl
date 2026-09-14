@@ -30,11 +30,12 @@ export type FabVariant =
  *
  * @category Components
  * @remarks
- * - small: 40px diameter, for compact interfaces or secondary actions
+ * - small: 40px container, 24px icon; deprecated in M3 Expressive
  * - default: 56px diameter, for standard primary actions (default)
- * - large: 96px diameter, for emphasis or touch-focused interfaces
+ * - medium: 80px container, 28px icon
+ * - large: 96px container, 32px icon
  */
-export type FabSize = "small" | "default" | "large";
+export type FabSize = "small" | "default" | "medium" | "large";
 
 /**
  * FAB position options
