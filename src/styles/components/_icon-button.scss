@@ -379,15 +379,6 @@ $widths: (
         background-color: transparent;
         color: t.color("on-surface-variant");
 
-        &:hover {
-            color: t.color("on-surface-variant");
-        }
-
-        &:disabled,
-        &.#{$component}--disabled {
-            color: t.alpha("on-surface", 0.38);
-        }
-
         // Toggle selected state
         &.#{$component}--selected {
             color: t.color("primary");
@@ -401,24 +392,10 @@ $widths: (
         background-color: t.color("primary");
         color: t.color("on-primary");
 
-        &::before {
-            background-color: t.color("on-primary");
-        }
-
-        &:disabled,
-        &.#{$component}--disabled {
-            background-color: t.alpha("on-surface", 0.12);
-            color: t.alpha("on-surface", 0.38);
-        }
-
         // Toggle unselected state
         &.#{$component}--toggle:not(.#{$component}--selected) {
-            background-color: t.color("surface-container-highest");
-            color: t.color("primary");
-
-            &::before {
-                background-color: t.color("primary");
-            }
+            background-color: t.color("surface-container");
+            color: t.color("on-surface-variant");
         }
     }
 
@@ -429,24 +406,10 @@ $widths: (
         background-color: t.color("secondary-container");
         color: t.color("on-secondary-container");
 
-        &::before {
-            background-color: t.color("on-secondary-container");
-        }
-
-        &:disabled,
-        &.#{$component}--disabled {
-            background-color: t.alpha("on-surface", 0.12);
-            color: t.alpha("on-surface", 0.38);
-        }
-
-        // Toggle unselected state
-        &.#{$component}--toggle:not(.#{$component}--selected) {
-            background-color: t.color("surface-container-highest");
-            color: t.color("on-surface-variant");
-
-            &::before {
-                background-color: t.color("on-surface-variant");
-            }
+        // Plain and unselected toggles share the tonal container colours.
+        &.#{$component}--selected {
+            background-color: t.color("secondary");
+            color: t.color("on-secondary");
         }
     }
 
@@ -456,27 +419,13 @@ $widths: (
     &--outlined {
         background-color: transparent;
         color: t.color("on-surface-variant");
-        border: 1px solid t.color("outline");
-
-        &::before {
-            background-color: t.color("on-surface-variant");
-        }
-
-        &:disabled,
-        &.#{$component}--disabled {
-            color: t.alpha("on-surface", 0.38);
-            border-color: t.alpha("on-surface", 0.12);
-        }
+        border: 1px solid t.color("outline-variant");
 
         // Toggle selected state
         &.#{$component}--selected {
             background-color: t.color("inverse-surface");
             color: t.color("inverse-on-surface");
             border-color: transparent;
-
-            &::before {
-                background-color: t.color("inverse-on-surface");
-            }
         }
     }
 
@@ -521,33 +470,34 @@ $widths: (
     // Disabled state
     // ---------------------------------------------------------------------------
     &:disabled,
-    &--disabled {
+    &.#{$component}--disabled {
         pointer-events: none;
         cursor: default;
 
+        // Match toggle specificity so disabled colours win in every scheme.
+        &.#{$component}--standard,
+        &.#{$component}--filled,
+        &.#{$component}--tonal,
+        &.#{$component}--outlined {
+            color: t.alpha("on-surface", 0.38);
+        }
+
+        &.#{$component}--filled,
+        &.#{$component}--tonal {
+            background-color: t.alpha("on-surface", 0.1);
+        }
+
+        &.#{$component}--outlined {
+            border-color: t.color("outline-variant");
+
+            &.#{$component}--selected {
+                background-color: t.alpha("on-surface", 0.1);
+                border-color: transparent;
+            }
+        }
+
         &::before {
             display: none;
-        }
-    }
-}
-
-// =============================================================================
-// Dark theme adjustments
-// =============================================================================
-html[data-theme-mode="dark"] {
-    .#{$component} {
-        &:disabled,
-        &.#{$component}--disabled {
-            color: t.alpha("on-surface", 0.38);
-
-            &.#{$component}--filled,
-            &.#{$component}--tonal {
-                background-color: t.alpha("on-surface", 0.12);
-            }
-
-            &.#{$component}--outlined {
-                border-color: t.alpha("on-surface", 0.12);
-            }
         }
     }
 }
