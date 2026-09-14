@@ -30,22 +30,22 @@ export type IconButtonVariant = typeof ICON_BUTTON_VARIANTS[keyof typeof ICON_BU
  *
  * | Size | Container | Icon Size |
  * |------|-----------|-----------|
- * | XS   | 32dp      | 18dp      |
+ * | XS   | 32dp      | 20dp      |
  * | S    | 40dp      | 24dp      |
  * | M    | 56dp      | 24dp      |
- * | L    | 96dp      | 36dp      |
- * | XL   | 136dp     | 48dp      |
+ * | L    | 96dp      | 32dp      |
+ * | XL   | 136dp     | 40dp      |
  */
 export const ICON_BUTTON_SIZES = {
-  /** Extra small - 32px container, 18px icon */
+  /** Extra small - 32px container, 20px icon */
   XS: 'xs',
   /** Small - 40px container, 24px icon (default) */
   S: 's',
   /** Medium - 56px container, 24px icon */
   M: 'm',
-  /** Large - 96px container, 36px icon */
+  /** Large - 96px container, 32px icon */
   L: 'l',
-  /** Extra large - 136px container, 48px icon */
+  /** Extra large - 136px container, 40px icon */
   XL: 'xl'
 } as const;
 
@@ -77,11 +77,11 @@ export type IconButtonShape = typeof ICON_BUTTON_SHAPES[keyof typeof ICON_BUTTON
  *
  * | Size | Narrow | Default | Wide   |
  * |------|--------|---------|--------|
- * | XS   | 28dp   | 32dp    | 36dp   |
- * | S    | 32dp   | 40dp    | 48dp   |
- * | M    | 48dp   | 56dp    | 64dp   |
- * | L    | 80dp   | 96dp    | 112dp  |
- * | XL   | 112dp  | 136dp   | 160dp  |
+ * | XS   | 28dp   | 32dp    | 40dp   |
+ * | S    | 32dp   | 40dp    | 52dp   |
+ * | M    | 48dp   | 56dp    | 72dp   |
+ * | L    | 64dp   | 96dp    | 128dp  |
+ * | XL   | 104dp  | 136dp   | 184dp  |
  */
 export const ICON_BUTTON_WIDTHS = {
   /** Narrow width */
@@ -147,11 +147,11 @@ export const ICON_BUTTON_CORNER_RADIUS = {
  * Icon sizes per button size (in dp)
  */
 export const ICON_BUTTON_ICON_SIZES = {
-  XS: 18,
+  XS: 20,
   S: 24,
   M: 24,
-  L: 36,
-  XL: 48
+  L: 32,
+  XL: 40
 } as const;
 
 /**
@@ -169,9 +169,9 @@ export const ICON_BUTTON_CONTAINER_SIZES = {
  * Width values per size and width variant (in dp)
  */
 export const ICON_BUTTON_WIDTH_VALUES = {
-  XS: { narrow: 28, default: 32, wide: 36 },
-  S: { narrow: 32, default: 40, wide: 48 },
-  M: { narrow: 48, default: 56, wide: 64 },
-  L: { narrow: 80, default: 96, wide: 112 },
-  XL: { narrow: 112, default: 136, wide: 160 }
+  XS: { narrow: 28, default: 32, wide: 40 },
+  S: { narrow: 32, default: 40, wide: 52 },
+  M: { narrow: 48, default: 56, wide: 72 },
+  L: { narrow: 64, default: 96, wide: 128 },
+  XL: { narrow: 104, default: 136, wide: 184 }
 } as const;
