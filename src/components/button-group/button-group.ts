@@ -131,8 +131,13 @@ const createButtonGroup = (config: ButtonGroupConfig = {}): ButtonGroupComponent
       if (toggleState?.isToggle?.()) {
         if (selected) toggleState.select();
         else toggleState.deselect();
+      } else if (typeof (button as any).setSelected === 'function') {
+        button.setSelected(selected);
       } else {
-        button.setSelected?.(selected);
+        // Icon buttons expose select()/deselect() on their public API and
+        // keep toggleState internal.
+        if (selected) (button as any).select?.();
+        else (button as any).deselect?.();
       }
     };
 
