@@ -55,6 +55,10 @@ export const createPositioner = (component, config: MenuConfig) => {
     tempMenu.style.transform = "none";
     tempMenu.style.opacity = "0";
     tempMenu.style.pointerEvents = "none";
+    // Measured at the height it will have: without its max height a long
+    // list measured as tall as every row, never "fit" below the opener,
+    // flipped above it and was clamped to the top of the viewport.
+    if (config.maxHeight) tempMenu.style.maxHeight = config.maxHeight;
     tempMenu.classList.add(`${component.getClass("menu--visible")}`); // Add visible class for proper dimensions
 
     // Apply width to temp menu BEFORE measuring if config specifies 100% width
