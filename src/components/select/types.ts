@@ -94,6 +94,23 @@ export interface SelectConfig {
   required?: boolean;
 
   /**
+   * Options handed to the select's menu. By default the menu lives inside
+   * the select's own element with no height of its own, which suits a short
+   * list in a still surface; a long list, or a select inside a scrolling or
+   * clipping container (a drawer, a sheet), wants the menu in the body with a
+   * max height, so it is neither cropped nor taller than the screen.
+   * @example { container: document.body, maxHeight: "320px" }
+   */
+  menu?: {
+    /** Where the menu is mounted and positioned against; document.body for a menu that escapes a clipping container */
+    container?: HTMLElement | null;
+    /** The menu's max height (a CSS length); the list scrolls inside it */
+    maxHeight?: string;
+    /** Whether the menu flips above the field when there is no room below */
+    autoFlip?: boolean;
+  };
+
+  /**
    * Whether select is disabled
    */
   disabled?: boolean;
