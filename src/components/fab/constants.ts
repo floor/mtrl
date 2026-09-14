@@ -24,10 +24,12 @@ export const FAB_VARIANTS = {
  * FAB size variants
  */
 export const FAB_SIZES = {
-  /** 40px diameter, for compact interfaces or secondary actions */
+  /** @deprecated Small FABs are no longer recommended in M3 Expressive. */
   SMALL: 'small',
   /** 56px diameter, for standard primary actions (default) */
   DEFAULT: 'default',
+  /** 80px diameter with a 28px icon */
+  MEDIUM: 'medium',
   /** 96px diameter, for emphasis or touch-focused interfaces */
   LARGE: 'large'
 } as const;
@@ -58,6 +60,8 @@ export const FAB_CLASSES = {
   LOWERED: 'fab--lowered',
   /** Applied to small FABs */
   SMALL: 'fab--small',
+  /** Applied to medium FABs */
+  MEDIUM: 'fab--medium',
   /** Applied to large FABs */
   LARGE: 'fab--large'
 } as const;
@@ -75,9 +79,10 @@ export const FAB_TYPES = {
  * Default icon sizes based on FAB size
  */
 export const FAB_ICON_SIZES = {
-  SMALL: '20px',
+  SMALL: '24px',
   DEFAULT: '24px',
-  LARGE: '36px'
+  MEDIUM: '28px',
+  LARGE: '32px'
 } as const;
 
 /**

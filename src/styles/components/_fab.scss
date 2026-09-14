@@ -85,18 +85,34 @@ $component: '#{base.$prefix}-fab';
     // Default is already defined in base styles
   }
   
+  &--medium {
+    width: 80px;
+    height: 80px;
+    border-radius: f.get-shape('large-increased');
+
+    .#{$component}-icon {
+      width: 28px;
+      height: 28px;
+
+      svg {
+        width: 28px;
+        height: 28px;
+      }
+    }
+  }
+
   &--large {
     width: 96px;
     height: 96px;
     border-radius: f.get-shape('extra-large');
     
     .#{$component}-icon {
-      width: 36px;
-      height: 36px;
+      width: 32px;
+      height: 32px;
       
       svg {
-        width: 36px;
-        height: 36px;
+        width: 32px;
+        height: 32px;
       }
     }
   }
