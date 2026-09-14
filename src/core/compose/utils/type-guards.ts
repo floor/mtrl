@@ -10,7 +10,7 @@ import { ElementComponent } from '../component';
 export interface ComponentWithLifecycle extends ElementComponent {
   lifecycle: {
     destroy: () => void;
-    [key: string]: any;
+    [key: string]: unknown;
   };
 }
 
@@ -18,16 +18,16 @@ export interface ComponentWithLifecycle extends ElementComponent {
  * Interface for components with emit method
  */
 export interface ComponentWithEmit extends ElementComponent {
-  emit: (event: string, data: any) => any;
+  emit: (event: string, data: unknown) => unknown;
 }
 
 /**
  * Type guard to check if component has lifecycle
  */
-export function hasLifecycle(component: any): component is ComponentWithLifecycle {
+export function hasLifecycle(component: object): component is ComponentWithLifecycle {
   return 'lifecycle' in component && 
-         component.lifecycle && 
          typeof component.lifecycle === 'object' &&
+         component.lifecycle !== null &&
          'destroy' in component.lifecycle &&
          typeof component.lifecycle.destroy === 'function';
 }
@@ -35,6 +35,6 @@ export function hasLifecycle(component: any): component is ComponentWithLifecycl
 /**
  * Type guard to check if component has emit method
  */
-export function hasEmit(component: any): component is ComponentWithEmit {
+export function hasEmit(component: object): component is ComponentWithEmit {
   return 'emit' in component && typeof component.emit === 'function';
 } 
