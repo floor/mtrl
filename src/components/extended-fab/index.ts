@@ -40,6 +40,7 @@ export type {
   ExtendedFabConfig,
   ExtendedFabComponent,
   ExtendedFabVariant,
+  ExtendedFabSize,
   ExtendedFabWidth,
   ExtendedFabPosition
 } from './types';

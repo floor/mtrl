@@ -20,6 +20,7 @@ export const defaultConfig: ExtendedFabConfig = {
   ripple: true,
   iconPosition: "start",
   width: "fixed",
+  size: "small",
 };
 
 /**
@@ -71,6 +72,9 @@ export const getElementConfig = (config: ExtendedFabConfig) => {
   if (config.variant) {
     classNames.push(`${config.prefix}-extended-fab--${config.variant}`);
   }
+
+  // Every size, including the default, carries its expressive size class.
+  classNames.push(`${config.prefix}-extended-fab--${config.size || "small"}`);
 
   // Add width class
   if (config.width) {
