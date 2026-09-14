@@ -133,7 +133,12 @@ const createExtendedFab = (config: ExtendedFabConfig = {}): ExtendedFabComponent
       withElement(getElementConfig(fabConfig)),
       withVariant(fabConfig),
       withIcon(fabConfig),
-      withText(fabConfig),
+      component => withText({
+        ...fabConfig,
+        beforeElement: fabConfig.iconPosition === 'end'
+          ? component.icon.getElement() ?? undefined
+          : undefined,
+      })(component),
       withDisabled(fabConfig),
       withRipple(fabConfig),
       withLifecycle(),
