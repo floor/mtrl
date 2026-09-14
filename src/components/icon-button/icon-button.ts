@@ -114,14 +114,6 @@ const createIconButton = (config: IconButtonConfig = {}): IconButtonComponent =>
       withToggle(baseConfig),
       withRipple(baseConfig),
       withLifecycle(),
-      // Add shape class if specified and not default
-      (component) => {
-        if (baseConfig.shape && baseConfig.shape !== 'round' && component.element) {
-          const className = `${baseConfig.prefix}-${baseConfig.componentName}--${baseConfig.shape}`;
-          component.element.classList.add(className);
-        }
-        return component;
-      },
       // Add width class if specified and not default
       (component) => {
         if (baseConfig.width && baseConfig.width !== 'default' && component.element) {

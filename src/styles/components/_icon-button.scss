@@ -119,15 +119,19 @@ $widths: (
     user-select: none;
     vertical-align: middle;
     appearance: none;
-    overflow: hidden;
+    // Not clipped: the state layer and the ripple clip themselves to the
+    // shape, and the 48dp target of the xs and s sizes must reach outside
+    // the container to take a pointer
+    overflow: visible;
     flex-shrink: 0;
 
     // Default size (s - 40px)
     width: get-size("s", container);
     height: get-size("s", container);
 
-    // Default shape (round - full radius)
-    border-radius: var(--#{base.$prefix}-button-shape, 50%);
+    // Default shape: round is the full shape, a pill on non-square widths,
+    // which the browser gets by scaling 9999px to half the smaller side
+    border-radius: var(--#{base.$prefix}-button-shape, f.get-shape("full"));
 
     // Smooth transitions for shape morphing
     transition:
@@ -264,9 +268,9 @@ $widths: (
     // Shape variants
     // ---------------------------------------------------------------------------
 
-    // Round is default (50% radius)
+    // Round is the default: the full shape
     &--round {
-        border-radius: var(--#{base.$prefix}-button-shape, 50%);
+        border-radius: var(--#{base.$prefix}-button-shape, f.get-shape("full"));
     }
 
     // Square shape with size-specific corner radius
@@ -472,7 +476,7 @@ $widths: (
 
         // Square buttons become round when selected
         &.#{$component}--square:not(:active) {
-            border-radius: var(--#{base.$prefix}-button-shape-selected, 50%);
+            border-radius: var(--#{base.$prefix}-button-shape-selected, f.get-shape("full"));
         }
     }
 

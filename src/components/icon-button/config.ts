@@ -109,8 +109,9 @@ export const getElementConfig = (config: IconButtonConfig) => {
     componentClasses.push(`icon-button--${config.size}`);
   }
 
-  // Add shape class (default is 'round')
-  if (config.shape && config.shape !== "round") {
+  // Add shape class, the default round included: the selected and pressed
+  // shape rules are keyed on it
+  if (config.shape) {
     componentClasses.push(`icon-button--${config.shape}`);
   }
 
