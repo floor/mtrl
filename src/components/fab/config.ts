@@ -15,7 +15,7 @@ import { FabConfig } from "./types";
  * @internal
  */
 export const defaultConfig: FabConfig = {
-  variant: "primary",
+  variant: "primary-container",
   size: "default",
   type: "button",
   ripple: true,

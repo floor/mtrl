@@ -8,12 +8,15 @@
  *
  * @category Components
  * @remarks
- * - primary: Uses the primary color, highest emphasis (default)
- * - secondary: Uses the secondary color, medium emphasis
- * - tertiary: Uses the tertiary color, lower emphasis
- * - surface: Uses the surface color with an outline, lowest emphasis
+ * - primary-container, secondary-container, tertiary-container: container styles
+ * - primary, secondary, tertiary: tone styles
+ * - surface: deprecated; use a container or tone style instead
+ * Default: primary-container.
  */
 export type ExtendedFabVariant =
+  | "primary-container"
+  | "secondary-container"
+  | "tertiary-container"
   | "primary"
   | "secondary"
   | "tertiary"
@@ -66,7 +69,7 @@ export interface ExtendedFabConfig {
    *
    * The color variant affects the Extended FAB's background color, text color, and elevation.
    *
-   * @default 'primary'
+   * @default 'primary-container'
    *
    * @example
    * ```typescript
