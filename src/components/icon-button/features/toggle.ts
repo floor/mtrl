@@ -1,5 +1,6 @@
 // src/components/icon-button/features/toggle.ts
 
+import { getCleanup } from "../../../core/compose/cleanup";
 import { ElementComponent } from "../../../core/compose/component";
 
 /**
@@ -297,19 +298,12 @@ export const withToggle =
 
     if (toggleOnClick) {
       component.element.addEventListener("click", handleClick);
-    }
-
-    // Store cleanup handler if lifecycle exists
-    const originalDestroy = component.lifecycle?.destroy;
-    if (component.lifecycle) {
-      component.lifecycle.destroy = () => {
-        if (toggleOnClick) {
-          component.element.removeEventListener("click", handleClick);
-        }
-        if (originalDestroy) {
-          originalDestroy();
-        }
-      };
+      // The lifecycle feature is composed after this one, so hooking
+      // component.lifecycle here would find nothing; the cleanup registry
+      // runs on destroy whichever feature registered first.
+      getCleanup(component).add(() =>
+        component.element.removeEventListener("click", handleClick),
+      );
     }
 
     return {
