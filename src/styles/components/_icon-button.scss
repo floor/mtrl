@@ -29,33 +29,38 @@ $component: "#{base.$prefix}-icon-button";
 $sizes: (
     "xs": (
         container: 32px,
-        icon: 18px,
+        icon: 20px,
         square-radius: 12px,
         pressed-radius: 8px,
+        outline-width: 1px,
     ),
     "s": (
         container: 40px,
         icon: 24px,
         square-radius: 12px,
         pressed-radius: 8px,
+        outline-width: 1px,
     ),
     "m": (
         container: 56px,
         icon: 24px,
         square-radius: 16px,
         pressed-radius: 12px,
+        outline-width: 1px,
     ),
     "l": (
         container: 96px,
-        icon: 36px,
+        icon: 32px,
         square-radius: 28px,
         pressed-radius: 16px,
+        outline-width: 2px,
     ),
     "xl": (
         container: 136px,
-        icon: 48px,
+        icon: 40px,
         square-radius: 28px,
         pressed-radius: 16px,
+        outline-width: 3px,
     ),
 );
 
@@ -63,27 +68,27 @@ $widths: (
     "xs": (
         narrow: 28px,
         default: 32px,
-        wide: 36px,
+        wide: 40px,
     ),
     "s": (
         narrow: 32px,
         default: 40px,
-        wide: 48px,
+        wide: 52px,
     ),
     "m": (
         narrow: 48px,
         default: 56px,
-        wide: 64px,
+        wide: 72px,
     ),
     "l": (
-        narrow: 80px,
+        narrow: 64px,
         default: 96px,
-        wide: 112px,
+        wide: 128px,
     ),
     "xl": (
-        narrow: 112px,
+        narrow: 104px,
         default: 136px,
-        wide: 160px,
+        wide: 184px,
     ),
 );
 
@@ -208,20 +213,19 @@ $widths: (
             width: get-size("xs", icon);
             height: get-size("xs", icon);
         }
-
-        // Ensure minimum 48px touch target
-        &::after {
-            content: "";
-            position: absolute;
-            width: 48px;
-            height: 48px;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-        }
     }
 
-    // Size S is the default, no additional styles needed
+    // Keep a minimum 48px touch target for both smaller container sizes.
+    &--xs::after,
+    &--s::after {
+        content: "";
+        position: absolute;
+        width: 48px;
+        height: 48px;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
 
     &--m {
         width: get-size("m", container);
@@ -456,7 +460,13 @@ $widths: (
     &--outlined {
         background-color: transparent;
         color: t.color("on-surface-variant");
-        border: 1px solid t.color("outline");
+        border: get-size("s", outline-width) solid t.color("outline");
+
+        @each $size, $config in $sizes {
+            &.#{$component}--#{$size} {
+                border-width: map.get($config, outline-width);
+            }
+        }
 
         &::before {
             background-color: t.color("on-surface-variant");
