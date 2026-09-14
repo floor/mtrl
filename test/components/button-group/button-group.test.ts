@@ -525,6 +525,21 @@ describe("Button group selection (Material 3 kinds)", () => {
     group.destroy();
   });
 
+  it("icon buttons carry their own selected state along with the group's", () => {
+    // Icon buttons expose select()/deselect() on their public API and keep
+    // toggleState internal: the group must drive that API, or the icon of
+    // the previously selected button stays lit.
+    const group = createButtonGroup({ kind: "connected", selection: "single", required: true, buttons: items });
+    expect(group.buttons[0].element.classList.contains("mtrl-icon-button--selected")).toBe(true);
+    group.buttons[1].element.click();
+    expect(group.buttons[1].element.classList.contains("mtrl-icon-button--selected")).toBe(true);
+    expect(group.buttons[0].element.classList.contains("mtrl-icon-button--selected")).toBe(false);
+    group.select("islands");
+    expect(group.buttons[2].element.classList.contains("mtrl-icon-button--selected")).toBe(true);
+    expect(group.buttons[1].element.classList.contains("mtrl-icon-button--selected")).toBe(false);
+    group.destroy();
+  });
+
   it("required: the selected button cannot be deselected", () => {
     const group = createButtonGroup({ kind: "connected", selection: "single", required: true, buttons: items });
     group.buttons[0].element.click();
