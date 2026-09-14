@@ -55,9 +55,10 @@ for (const size of ['xs', 's', 'm', 'l', 'xl'] as const) {
   });
 }
 for (const shape of ['round', 'square'] as const) {
-  test(`${shape} shape class or base style`, () => {
+  test(`${shape} shape class`, () => {
     const button = make({ shape });
     expect(button.element.classList.contains(`${root}--square`)).toBe(shape === 'square');
+    expect(button.element.classList.contains(`${root}--round`)).toBe(shape === 'round');
     expect(button.getShape()).toBe(shape);
   });
 }
@@ -171,4 +172,12 @@ test('destroy removes the toggle click listener from a retained element', () => 
   expect(clicks).toBe(1);
   expect(toggles).toBe(1);
   assertSelected(button, true);
+});
+
+test('a default button carries the round class so the selected morph applies to it', () => {
+  const button = make({ toggle: true });
+  expect(button.element.classList.contains(`${root}--round`)).toBe(true);
+  expect(button.element.classList.contains(`${root}--square`)).toBe(false);
+  button.select();
+  expect(button.element.matches(`.${root}--selected.${root}--round`)).toBe(true);
 });
