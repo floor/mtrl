@@ -157,6 +157,7 @@ export const withMenu =
       closeOnResize: true,
       offset: 0,
       container: component.element,
+      ...(config.menu ?? {}),
     });
 
     // Handle menu selection
