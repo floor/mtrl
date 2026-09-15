@@ -1,5 +1,6 @@
 // src/components/split-button/types.ts
 import type { MenuContent, MenuComponent } from "../menu/types";
+import type { ButtonComponent } from "../button/types";
 
 /** Visual style, the same set the button offers */
 export type SplitButtonVariant = "filled" | "tonal" | "outlined" | "elevated";
@@ -139,13 +140,25 @@ export interface SplitButtonComponent {
   destroy: () => void;
 }
 
+/** What withButtons adds */
+export interface ButtonsFeature {
+  leading: ButtonComponent;
+  trailing: ButtonComponent;
+  leadingElement: HTMLElement;
+  trailingElement: HTMLElement;
+}
+
+/** What withMenu adds: the menu, when the component was given items */
+export interface MenuFeature {
+  menu?: MenuComponent;
+}
+
 /** The component as it passes through the enhancers */
-export interface BaseComponent {
+export interface BaseComponent extends ButtonsFeature, MenuFeature {
   element: HTMLElement;
   emit?: (event: string, data?: unknown) => void;
   on?: (event: string, handler: (...args: unknown[]) => void) => unknown;
   off?: (event: string, handler: (...args: unknown[]) => void) => unknown;
   getClass?: (name: string) => string;
   lifecycle?: { destroy?: () => void };
-  [key: string]: unknown;
 }

@@ -25,6 +25,9 @@ import { formatDate, parseDate } from "./utils";
 import { renderCalendar } from "./render";
 import { createElement } from "../../core/dom/create";
 
+/** The input comes from withElement with tag "input"; this lets it be typed as one */
+const isInputElement = (el: Element): el is HTMLInputElement => el.tagName === "INPUT";
+
 /**
  * Creates a new DatePicker component
  * @param {DatePickerConfig} config - DatePicker configuration object
@@ -283,7 +286,11 @@ const createDatePicker = (
       withElement(getInputConfig(baseConfig))
     )(baseConfig);
 
-    state.input = inputComponent.element;
+    const input = inputComponent.element;
+    if (!isInputElement(input)) {
+      throw new Error("Datepicker input element is not an input");
+    }
+    state.input = input;
     component.element.appendChild(state.input);
 
     // Update input value

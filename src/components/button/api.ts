@@ -38,9 +38,9 @@ interface ComponentWithElements {
   };
   getClass: (name: string) => string;
   componentName?: string;
-  on?: (event: string, handler: Function) => ComponentWithElements;
-  off?: (event: string, handler: Function) => ComponentWithElements;
-  addClass?: (...classes: string[]) => ComponentWithElements;
+  on?: (event: string, handler: Function) => unknown;
+  off?: (event: string, handler: Function) => unknown;
+  addClass?: (...classes: string[]) => unknown;
 
   // Toggle manager (if withToggle was applied)
   toggle?: {

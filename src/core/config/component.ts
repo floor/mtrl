@@ -48,7 +48,7 @@ export const createComponentConfig = <T extends BaseComponentConfig & object>(
   defaults: T,
   userConfig: Partial<T> = {},
   componentName: string,
-): T => {
+): T & { componentName: string; prefix: string } => {
   // Get global defaults for this component (if any)
   const globalDefaults = getComponentDefaults(
     componentName as keyof ComponentConfigMap,

@@ -61,7 +61,7 @@ const createProgressLazy = async (
  */
 export const withProgress =
   (config: ButtonConfig) =>
-  (component: ProgressEnhancedComponent): ProgressEnhancedComponent => {
+  <C extends ProgressEnhancedComponent>(component: C): C => {
     // Skip if no progress config
     if (!config.progress) {
       return component;

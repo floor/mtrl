@@ -278,6 +278,12 @@ export interface SheetComponent {
   destroy: () => void;
   
   /**
+   * Initializes the sheet (DOM structure and event listeners)
+   * @returns The sheet component for chaining
+   */
+  initialize: () => SheetComponent;
+  
+  /**
    * Adds an event listener to the sheet
    * @param event - Event name ('open', 'close', etc.)
    * @param handler - Event handler function

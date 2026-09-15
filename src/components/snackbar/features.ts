@@ -13,7 +13,7 @@ import { durationToMs } from './config';
  * @returns {Function} Higher-order function that adds the action button
  */
 export const withActionButton = (config: SnackbarConfig) =>
-  (component: BaseComponent): BaseComponent => {
+  <C extends BaseComponent>(component: C): C & Pick<BaseComponent, 'action' | 'actionButton'> => {
     if (!config.action) return component;
 
     const prefix = config.prefix || 'mtrl';
@@ -42,7 +42,7 @@ export const withActionButton = (config: SnackbarConfig) =>
  * @returns {Function} Higher-order function that adds the close button
  */
 export const withCloseButton = (config: SnackbarConfig) =>
-  (component: BaseComponent): BaseComponent => {
+  <C extends BaseComponent>(component: C): C & Pick<BaseComponent, 'close' | 'closeButton'> => {
     if (!config.dismissible) return component;
 
     const prefix = config.prefix || 'mtrl';
@@ -74,7 +74,7 @@ export const withCloseButton = (config: SnackbarConfig) =>
  * @returns {Function} Higher-order function that adds timer features
  */
 export const withDismissTimer = (config: SnackbarConfig) =>
-  (component: BaseComponent): BaseComponent => {
+  <C extends BaseComponent>(component: C): C & Required<Pick<BaseComponent, 'timer'>> => {
     const element = component.element;
     let duration = durationToMs(config.duration, Boolean(config.action));
     let timeoutId: ReturnType<typeof setTimeout> | null = null;

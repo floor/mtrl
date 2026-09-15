@@ -126,7 +126,10 @@ export interface LifecycleComponent extends BaseComponent {
  * @returns Function that enhances a component with lifecycle management
  */
 export const withLifecycle = () => 
-  <T extends ElementComponent>(component: T): T & LifecycleComponent => {
+  // The element and its destroy are optional: a component without them still gets a lifecycle.
+  <T extends BaseComponent & Partial<Pick<ElementComponent, 'element' | 'destroy'>>>(
+    component: T
+  ): T & LifecycleComponent => {
     const resources = getCleanup(component);
     let mounted = false;
     let destroyed = false;

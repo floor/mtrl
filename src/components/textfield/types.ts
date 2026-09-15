@@ -264,7 +264,6 @@ export interface BaseComponent {
   config?: {
     prefix?: string;
     componentName?: string;
-    [key: string]: string | number | boolean | undefined;
   };
   getValue?: () => string;
   setValue?: (value: string) => void;
@@ -303,5 +302,4 @@ export interface BaseComponent {
   errorState?: boolean;
   setError?: (error: boolean, message?: string) => void;
   isError?: () => boolean;
-  [key: string]: unknown;
 }

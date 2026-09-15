@@ -46,7 +46,7 @@ interface ApiOptions<T = unknown> {
 /**
  * Component with required elements and methods for API enhancement
  */
-interface ComponentWithElements {
+export interface ComponentWithElements {
   element: HTMLElement;
   on?: (event: string, handler: Function) => unknown;
   off?: (event: string, handler: Function) => unknown;

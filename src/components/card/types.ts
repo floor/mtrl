@@ -493,4 +493,6 @@ export interface ApiOptions {
     /** Destroy callback */
     destroy: () => void;
   };
+  /** The resolved configuration the card was created from */
+  config: CardComponentConfig;
 }

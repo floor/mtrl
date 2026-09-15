@@ -176,5 +176,4 @@ export interface BaseComponent {
   supportingTextElement?: HTMLElement | null;
   setSupportingText?: (text: string, isError?: boolean) => void;
   removeSupportingText?: () => void;
-  [key: string]: unknown;
 }
