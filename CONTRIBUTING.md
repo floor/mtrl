@@ -153,6 +153,32 @@ This separation of the library code (mtrl) and the showcase app (mtrl-app) keeps
 - Use CSS variables for theming
 - Organize styles in the `src/components/*/styles.scss` file
 
+## Distribution checks
+
+After building, check the packed distribution before a release:
+
+```bash
+bun run build
+bun run size:check
+```
+
+The size check packs and installs the local distribution in a temporary directory, checks Node ESM/CommonJS and TypeScript imports, and measures minified consumer bundles with gzip and Brotli. It enforces budgets for individual imports, a form, CSS, and the initial button chunks. Results are saved to `analysis/package-size.json`. It does not rebuild `dist`.
+
+For a second bundler and real-browser checks:
+
+```bash
+node node_modules/playwright/cli.js install chromium
+bun run consumer:check
+```
+
+This builds a packed Vite application and checks tree-shaking, CSS deduplication, and on-demand progress loading. Chromium compares the full and selective stylesheets with screenshots and computed styles across component states, the baseline and ocean themes, light and dark modes, and desktop and mobile widths, and exercises pointer and keyboard interactions. Reports and screenshots are saved to `analysis/browser`; CI runs these checks and uploads the artifacts. The comparisons use the full stylesheet from the same build as their reference, so they test distribution equivalence rather than a separate design baseline.
+
+`scripts/style-manifest.ts` declares the selective style entries and their dependencies. The build rejects missing dependencies and cycles, checks the manifest against Sass's parsed full-stylesheet imports, and verifies the component dependencies retained by tree-shaking, including lazy imports.
+
+`bun run slider:check` covers slider geometry, keyboard, pointer, resize and lifecycle. To compare with a previous build, pass `--reference=<directory>` to `scripts/check-slider.ts`; the directory must contain an ESM `slider.js` exporting `createSlider` and its full `styles.css`. Screenshots and measurements go to `analysis/slider-dom`.
+
+Builds fail on TypeScript or Sass errors. The published ESM is readable and includes declarations; source maps are left out of the package to keep installs small.
+
 ## Pull Request Process
 
 1. Ensure your code follows the style guidelines
