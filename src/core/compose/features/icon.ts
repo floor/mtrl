@@ -59,11 +59,6 @@ export interface IconConfig {
    * Text content (for determining button styling)
    */
   text?: string;
-
-  /**
-   * Additional configuration options
-   */
-  [key: string]: unknown;
 }
 
 /**
@@ -181,7 +176,7 @@ const createIcon = (
  * @returns Function that enhances a component with icon capabilities
  */
 export const withIcon =
-  <T extends IconConfig>(config: T) =>
+  <T extends IconConfig & object>(config: T) =>
   <C extends ElementComponent>(component: C): C & IconComponent => {
     // Create the icon with configuration settings
     const icon = createIcon(component.element, {

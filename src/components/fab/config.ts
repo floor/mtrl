@@ -91,7 +91,8 @@ export const getElementConfig = (config: FabConfig) => {
     attributes,
     className: componentClasses,
     forwardEvents: {
-      click: (component) => !component.element.disabled,
+      click: (component: { element: HTMLButtonElement }) =>
+        !component.element.disabled,
       focus: true,
       blur: true,
     },

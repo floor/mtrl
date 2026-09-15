@@ -99,6 +99,13 @@ export interface IconButtonConfig extends BaseComponentConfig {
   selected?: boolean;
 
   /**
+   * Whether a click flips the selected state of a toggle button. Set to
+   * false when a container (button group) owns the selection.
+   * @default true
+   */
+  toggleOnClick?: boolean;
+
+  /**
    * Additional CSS classes to add to the IconButton
    */
   class?: string;
