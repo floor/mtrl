@@ -2,11 +2,22 @@
 import { TabComponent } from "./types";
 
 /**
+ * Tabs members read by these helpers; each one is checked before use
+ */
+interface TabsHost {
+  element?: HTMLElement;
+  tabs?: TabComponent[];
+  getTabs?: () => TabComponent[];
+  getActiveTab?: () => TabComponent | null;
+  setActiveTab?: (tabOrValue: TabComponent | string) => unknown;
+}
+
+/**
  * Gets the active tab from a component
  * @param component - Component with tabs
  * @returns Active tab or null
  */
-export function getActiveTab(component: any): TabComponent | null {
+export function getActiveTab(component: TabsHost): TabComponent | null {
   // First try the standard method
   if (typeof component.getActiveTab === "function") {
     return component.getActiveTab();
@@ -25,7 +36,7 @@ export function getActiveTab(component: any): TabComponent | null {
  * Updates tab panels based on active tab
  * @param component - Component with tabs
  */
-export function updateTabPanels(component: any): void {
+export function updateTabPanels(component: TabsHost): void {
   // Get active tab using our helper function
   const activeTab = getActiveTab(component);
   if (!activeTab) return;
@@ -56,7 +67,7 @@ export function updateTabPanels(component: any): void {
  * Sets up keyboard navigation for tabs
  * @param component - Tabs component
  */
-export function setupKeyboardNavigation(component: any): void {
+export function setupKeyboardNavigation(component: TabsHost): void {
   // Skip if element is missing
   if (!component.element) return;
 

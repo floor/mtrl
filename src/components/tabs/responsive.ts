@@ -35,6 +35,11 @@ export interface ResponsiveConfig {
 }
 
 /**
+ * Tabs component carrying the resize observer used for cleanup
+ */
+type ResponsiveTabs = TabsComponent & { _resizeObserver?: ResizeObserver };
+
+/**
  * Enhances tabs with responsive behavior
  * @param tabs - The tabs component to enhance
  * @param config - Responsive configuration
@@ -131,13 +136,14 @@ export const setupResponsiveBehavior = (
   resizeObserver.observe(document.body);
   
   // Store the observer on the component for cleanup
-  (tabs as any)._resizeObserver = resizeObserver;
-  
+  const host: ResponsiveTabs = tabs;
+  host._resizeObserver = resizeObserver;
+
   // Enhance destroy method to clean up observer
   const originalDestroy = tabs.destroy;
-  tabs.destroy = function() {
-    if ((this as any)._resizeObserver) {
-      (this as any)._resizeObserver.disconnect();
+  tabs.destroy = function(this: ResponsiveTabs) {
+    if (this._resizeObserver) {
+      this._resizeObserver.disconnect();
     }
     originalDestroy.call(this);
   };

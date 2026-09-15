@@ -29,13 +29,16 @@ interface ComponentWithElements {
   /** Class name helper */
   getClass: (name: string) => string;
   /** Event subscription (optional) */
-  on?: (event: string, handler: Function) => any;
+  on?: (event: string, handler: Function) => unknown;
   /** Event unsubscription (optional) */
-  off?: (event: string, handler: Function) => any;
-  /** Event emission (optional) */
-  emit?: (event: string, data: any) => any;
+  off?: (event: string, handler: Function) => unknown;
+  /** Event emission (optional); returns `this`, the tabs component once spread */
+  emit?: TabsComponent['emit'];
   /** Component configuration */
-  config: Record<string, any>;
+  config: {
+    prefix?: string;
+    variant?: string;
+  };
 }
 
 /**
@@ -45,7 +48,7 @@ interface ComponentWithElements {
  */
 export const withAPI = ({ lifecycle }: ApiOptions) => 
   (component: ComponentWithElements): TabsComponent => ({
-    ...component as any,
+    ...component,
     element: component.element,
     
     /**
