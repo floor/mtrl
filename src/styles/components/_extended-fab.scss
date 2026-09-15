@@ -43,11 +43,11 @@ $sizes: (
   );
   
   // Small is the default; modifiers supply the expressive dimensions.
-  height: var(--extended-fab-height, 56px);
-  min-width: var(--extended-fab-height, 56px);
-  padding: 0 var(--extended-fab-padding, 16px);
-  gap: var(--extended-fab-gap, 8px);
-  border-radius: var(--extended-fab-radius, #{f.get-shape('large')});
+  height: var(--#{base.$prefix}-extended-fab-height, 56px);
+  min-width: var(--#{base.$prefix}-extended-fab-height, 56px);
+  padding: 0 var(--#{base.$prefix}-extended-fab-padding, 16px);
+  gap: var(--#{base.$prefix}-extended-fab-gap, 8px);
+  border-radius: var(--#{base.$prefix}-extended-fab-radius, #{f.get-shape('large')});
 
   // Transition for dimension changes
   transition: 
@@ -57,11 +57,11 @@ $sizes: (
   
   @each $size, $tokens in $sizes {
     &--#{$size} {
-      --extended-fab-height: #{map.get($tokens, height)};
-      --extended-fab-icon-size: #{map.get($tokens, icon)};
-      --extended-fab-padding: #{map.get($tokens, padding)};
-      --extended-fab-gap: #{map.get($tokens, gap)};
-      --extended-fab-radius: #{f.get-shape(map.get($tokens, shape))};
+      --#{base.$prefix}-extended-fab-height: #{map.get($tokens, height)};
+      --#{base.$prefix}-extended-fab-icon-size: #{map.get($tokens, icon)};
+      --#{base.$prefix}-extended-fab-padding: #{map.get($tokens, padding)};
+      --#{base.$prefix}-extended-fab-gap: #{map.get($tokens, gap)};
+      --#{base.$prefix}-extended-fab-radius: #{f.get-shape(map.get($tokens, shape))};
 
       .#{$component}-text {
         @include m.typography(map.get($tokens, label));
@@ -84,8 +84,8 @@ $sizes: (
     display: flex;
     align-items: center;
     justify-content: center;
-    width: var(--extended-fab-icon-size, 24px);
-    height: var(--extended-fab-icon-size, 24px);
+    width: var(--#{base.$prefix}-extended-fab-icon-size, 24px);
+    height: var(--#{base.$prefix}-extended-fab-icon-size, 24px);
     flex-shrink: 0;
     padding: 0;
     transition: 
@@ -93,8 +93,8 @@ $sizes: (
       margin 0.3s v.motion('easing-standard');
     
     svg {
-      width: var(--extended-fab-icon-size, 24px);
-      height: var(--extended-fab-icon-size, 24px);
+      width: var(--#{base.$prefix}-extended-fab-icon-size, 24px);
+      height: var(--#{base.$prefix}-extended-fab-icon-size, 24px);
     }
   }
   
@@ -154,8 +154,8 @@ $sizes: (
 
   // Collapsed state
   &--collapsed {
-    width: var(--extended-fab-height, 56px);
-    min-width: var(--extended-fab-height, 56px);
+    width: var(--#{base.$prefix}-extended-fab-height, 56px);
+    min-width: var(--#{base.$prefix}-extended-fab-height, 56px);
     padding: 0;
     gap: 0;
     

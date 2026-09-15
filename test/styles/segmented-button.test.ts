@@ -42,7 +42,7 @@ describe('segmented button stylesheet', () => {
   });
 
   test('only the ends of the container round off', () => {
-    const round = 'var(--segment-border-radius)';
+    const round = 'var(--mtrl-segmented-button-border-radius)';
     expect(value(`${segment}:first-child`, '--mtrl-button-shape')).toBe(`${round} 0 0 ${round}`);
     expect(value(`${segment}:last-child`, '--mtrl-button-shape')).toBe(`0 ${round} ${round} 0`);
     expect(value(`${segment}:only-child`, '--mtrl-button-shape')).toBe(round);
@@ -51,7 +51,7 @@ describe('segmented button stylesheet', () => {
   test('an end segment keeps its shape while pressed and while selected', () => {
     // The button morphs its corners on press, which would break the container
     // silhouette if the segment did not pin all three hooks
-    const round = 'var(--segment-border-radius)';
+    const round = 'var(--mtrl-segmented-button-border-radius)';
     for (const hook of ['--mtrl-button-shape', '--mtrl-button-shape-pressed', '--mtrl-button-shape-selected']) {
       expect(value(`${segment}:first-child`, hook)).toBe(`${round} 0 0 ${round}`);
       expect(value(`${segment}:last-child`, hook)).toBe(`0 ${round} ${round} 0`);
@@ -59,12 +59,12 @@ describe('segmented button stylesheet', () => {
   });
 
   test('the container rounds to half its height, and density lowers both', () => {
-    expect(value('.mtrl-segmented-button', 'border-radius')).toBe('calc(var(--segment-height) / 2)');
-    expect(value('.mtrl-segmented-button', '--segment-height')).toBe('40px');
-    expect(value('.mtrl-segmented-button--comfortable', '--segment-height')).toBe('36px');
-    expect(value('.mtrl-segmented-button--comfortable', '--segment-border-radius')).toBe('18px');
-    expect(value('.mtrl-segmented-button--compact', '--segment-height')).toBe('32px');
-    expect(value('.mtrl-segmented-button--compact', '--segment-border-radius')).toBe('16px');
+    expect(value('.mtrl-segmented-button', 'border-radius')).toBe('calc(var(--mtrl-segmented-button-height) / 2)');
+    expect(value('.mtrl-segmented-button', '--mtrl-segmented-button-height')).toBe('40px');
+    expect(value('.mtrl-segmented-button--comfortable', '--mtrl-segmented-button-height')).toBe('36px');
+    expect(value('.mtrl-segmented-button--comfortable', '--mtrl-segmented-button-border-radius')).toBe('18px');
+    expect(value('.mtrl-segmented-button--compact', '--mtrl-segmented-button-height')).toBe('32px');
+    expect(value('.mtrl-segmented-button--compact', '--mtrl-segmented-button-border-radius')).toBe('16px');
   });
 
   test('the segment takes over the state layer rather than fighting it', () => {

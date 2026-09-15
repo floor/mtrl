@@ -29,6 +29,8 @@ $component: "#{base.$prefix}-icon-button";
 $sizes: (
     "xs": (
         container: 32px,
+        // Round shape: exactly half the container height. See the base shape.
+        round-radius: 16px,
         icon: 20px,
         square-radius: 12px,
         pressed-radius: 8px,
@@ -36,6 +38,8 @@ $sizes: (
     ),
     "s": (
         container: 40px,
+        // Round shape: exactly half the container height. See the base shape.
+        round-radius: 20px,
         icon: 24px,
         square-radius: 12px,
         pressed-radius: 8px,
@@ -43,6 +47,8 @@ $sizes: (
     ),
     "m": (
         container: 56px,
+        // Round shape: exactly half the container height. See the base shape.
+        round-radius: 28px,
         icon: 24px,
         square-radius: 16px,
         pressed-radius: 12px,
@@ -50,6 +56,8 @@ $sizes: (
     ),
     "l": (
         container: 96px,
+        // Round shape: exactly half the container height. See the base shape.
+        round-radius: 48px,
         icon: 32px,
         square-radius: 28px,
         pressed-radius: 16px,
@@ -57,6 +65,8 @@ $sizes: (
     ),
     "xl": (
         container: 136px,
+        // Round shape: exactly half the container height. See the base shape.
+        round-radius: 68px,
         icon: 40px,
         square-radius: 28px,
         pressed-radius: 16px,
@@ -129,9 +139,14 @@ $widths: (
     width: get-size("s", container);
     height: get-size("s", container);
 
-    // Default shape: round is the full shape, a pill on non-square widths,
-    // which the browser gets by scaling 9999px to half the smaller side
-    border-radius: var(--#{base.$prefix}-button-shape, f.get-shape("full"));
+    // Default shape: round, with the real radius of half the container
+    // height. A 9999px full shape paints the same at rest, but border-radius
+    // animates on the number in the stylesheet, so a morph from 9999px to the
+    // 8dp pressed shape stays above half the height for almost the whole
+    // transition and then snaps square. Half the height interpolates, so the
+    // press reads as a morph. On narrow widths the browser scales the radius
+    // down to half the smaller side, as it did for 9999px.
+    border-radius: var(--#{base.$prefix}-button-shape, get-size("s", round-radius));
 
     // Smooth transitions for shape morphing
     transition:
@@ -268,9 +283,25 @@ $widths: (
     // Shape variants
     // ---------------------------------------------------------------------------
 
-    // Round is the default: the full shape
+    // Round is the default: half the container height per size
     &--round {
-        border-radius: var(--#{base.$prefix}-button-shape, f.get-shape("full"));
+        border-radius: var(--#{base.$prefix}-button-shape, get-size("s", round-radius));
+
+        &.#{$component}--xs {
+            border-radius: var(--#{base.$prefix}-button-shape, get-size("xs", round-radius));
+        }
+
+        &.#{$component}--m {
+            border-radius: var(--#{base.$prefix}-button-shape, get-size("m", round-radius));
+        }
+
+        &.#{$component}--l {
+            border-radius: var(--#{base.$prefix}-button-shape, get-size("l", round-radius));
+        }
+
+        &.#{$component}--xl {
+            border-radius: var(--#{base.$prefix}-button-shape, get-size("xl", round-radius));
+        }
     }
 
     // Square shape with size-specific corner radius
@@ -474,9 +505,25 @@ $widths: (
             }
         }
 
-        // Square buttons become round when selected
+        // Square buttons become round when selected, with the real radius
         &.#{$component}--square:not(:active) {
-            border-radius: var(--#{base.$prefix}-button-shape-selected, f.get-shape("full"));
+            border-radius: var(--#{base.$prefix}-button-shape-selected, get-size("s", round-radius));
+
+            &.#{$component}--xs {
+                border-radius: var(--#{base.$prefix}-button-shape-selected, get-size("xs", round-radius));
+            }
+
+            &.#{$component}--m {
+                border-radius: var(--#{base.$prefix}-button-shape-selected, get-size("m", round-radius));
+            }
+
+            &.#{$component}--l {
+                border-radius: var(--#{base.$prefix}-button-shape-selected, get-size("l", round-radius));
+            }
+
+            &.#{$component}--xl {
+                border-radius: var(--#{base.$prefix}-button-shape-selected, get-size("xl", round-radius));
+            }
         }
     }
 

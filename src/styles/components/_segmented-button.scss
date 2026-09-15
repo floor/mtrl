@@ -32,49 +32,49 @@ $component: "#{base.$prefix}-segmented-button";
     overflow: hidden;
 
     // Density variables with defaults (Material Design 3 standard density)
-    --segment-height: 40px;
-    --segment-padding-x: 24px;
-    --segment-padding-icon-only: 12px;
-    --segment-padding-icon-text-left: 12px;
-    --segment-padding-icon-text-right: 16px;
-    --segment-icon-size: 18px;
-    --segment-text-size: 0.875rem;
-    --segment-border-radius: 20px;
-    --segment-checkmark-size: 18px;
+    --#{base.$prefix}-segmented-button-height: 40px;
+    --#{base.$prefix}-segmented-button-padding-x: 24px;
+    --#{base.$prefix}-segmented-button-padding-icon-only: 12px;
+    --#{base.$prefix}-segmented-button-padding-icon-text-left: 12px;
+    --#{base.$prefix}-segmented-button-padding-icon-text-right: 16px;
+    --#{base.$prefix}-segmented-button-icon-size: 18px;
+    --#{base.$prefix}-segmented-button-text-size: 0.875rem;
+    --#{base.$prefix}-segmented-button-border-radius: 20px;
+    --#{base.$prefix}-segmented-button-checkmark-size: 18px;
 
     // Set height from the CSS variable
-    height: var(--segment-height);
+    height: var(--#{base.$prefix}-segmented-button-height);
     // Adjust border radius based on height
-    border-radius: calc(var(--segment-height) / 2);
+    border-radius: calc(var(--#{base.$prefix}-segmented-button-height) / 2);
 
     // Comfortable density (medium)
     &--comfortable {
-        --segment-height: 36px;
-        --segment-padding-x: 20px;
-        --segment-padding-icon-only: 10px;
-        --segment-padding-icon-text-left: 10px;
-        --segment-padding-icon-text-right: 14px;
-        --segment-icon-size: 18px;
-        --segment-text-size: 0.8125rem;
-        --segment-border-radius: 18px;
-        --segment-checkmark-size: 16px;
+        --#{base.$prefix}-segmented-button-height: 36px;
+        --#{base.$prefix}-segmented-button-padding-x: 20px;
+        --#{base.$prefix}-segmented-button-padding-icon-only: 10px;
+        --#{base.$prefix}-segmented-button-padding-icon-text-left: 10px;
+        --#{base.$prefix}-segmented-button-padding-icon-text-right: 14px;
+        --#{base.$prefix}-segmented-button-icon-size: 18px;
+        --#{base.$prefix}-segmented-button-text-size: 0.8125rem;
+        --#{base.$prefix}-segmented-button-border-radius: 18px;
+        --#{base.$prefix}-segmented-button-checkmark-size: 16px;
 
-        border-radius: var(--segment-border-radius);
+        border-radius: var(--#{base.$prefix}-segmented-button-border-radius);
     }
 
     // Compact density (small)
     &--compact {
-        --segment-height: 32px;
-        --segment-padding-x: 16px;
-        --segment-padding-icon-only: 8px;
-        --segment-padding-icon-text-left: 8px;
-        --segment-padding-icon-text-right: 12px;
-        --segment-icon-size: 16px;
-        --segment-text-size: 0.75rem;
-        --segment-border-radius: 16px;
-        --segment-checkmark-size: 16px;
+        --#{base.$prefix}-segmented-button-height: 32px;
+        --#{base.$prefix}-segmented-button-padding-x: 16px;
+        --#{base.$prefix}-segmented-button-padding-icon-only: 8px;
+        --#{base.$prefix}-segmented-button-padding-icon-text-left: 8px;
+        --#{base.$prefix}-segmented-button-padding-icon-text-right: 12px;
+        --#{base.$prefix}-segmented-button-icon-size: 16px;
+        --#{base.$prefix}-segmented-button-text-size: 0.75rem;
+        --#{base.$prefix}-segmented-button-border-radius: 16px;
+        --#{base.$prefix}-segmented-button-checkmark-size: 16px;
 
-        border-radius: var(--segment-border-radius);
+        border-radius: var(--#{base.$prefix}-segmented-button-border-radius);
     }
 
     // Disabled state for whole component
@@ -101,7 +101,7 @@ $component: "#{base.$prefix}-segmented-button";
         justify-content: center;
 
         // Use CSS variables for dynamic sizing
-        padding: 0 var(--segment-padding-x);
+        padding: 0 var(--#{base.$prefix}-segmented-button-padding-x);
 
         // Corner shapes are handed to the button through its own shape hooks
         // rather than declared over the top of it. The button reads every one
@@ -116,18 +116,18 @@ $component: "#{base.$prefix}-segmented-button";
 
         // Icon-only segments
         &.#{base.$prefix}-button--circular {
-            padding: 0 var(--segment-padding-icon-only);
+            padding: 0 var(--#{base.$prefix}-segmented-button-padding-icon-only);
             flex: 0 0 auto; // Icon-only don't flex
         }
 
         // Segments with both icon and text
         &:has(.#{base.$prefix}-button-icon + .#{base.$prefix}-button-text) {
-            padding: 0 var(--segment-padding-icon-text-right) 0
-                var(--segment-padding-icon-text-left);
+            padding: 0 var(--#{base.$prefix}-segmented-button-padding-icon-text-right) 0
+                var(--#{base.$prefix}-segmented-button-padding-icon-text-left);
         }
 
         // The container is one rounded shape, so only its ends round off
-        $round: var(--segment-border-radius);
+        $round: var(--#{base.$prefix}-segmented-button-border-radius);
 
         // First segment: left corners only
         &:first-child {
@@ -343,8 +343,8 @@ $component: "#{base.$prefix}-segmented-button";
         display: none;
         align-items: center;
         justify-content: center;
-        width: var(--segment-checkmark-size);
-        height: var(--segment-checkmark-size);
+        width: var(--#{base.$prefix}-segmented-button-checkmark-size);
+        height: var(--#{base.$prefix}-segmented-button-checkmark-size);
         margin-right: 8px;
         flex-shrink: 0;
 
@@ -384,7 +384,7 @@ $component: "#{base.$prefix}-segmented-button";
         margin: 0;
         white-space: nowrap;
         @include m.typography("label-large");
-        font-size: var(--segment-text-size);
+        font-size: var(--#{base.$prefix}-segmented-button-text-size);
     }
 
     // Space between icon/checkmark and text
@@ -401,8 +401,8 @@ $component: "#{base.$prefix}-segmented-button";
         flex-shrink: 0;
 
         svg {
-            width: var(--segment-icon-size);
-            height: var(--segment-icon-size);
+            width: var(--#{base.$prefix}-segmented-button-icon-size);
+            height: var(--#{base.$prefix}-segmented-button-icon-size);
         }
     }
 
