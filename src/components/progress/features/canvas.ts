@@ -41,14 +41,24 @@ interface BaseComponent {
     max?: number;
     buffer?: number;
     indeterminate?: boolean;
-    [key: string]: unknown;
+    shape?: ProgressShape;
   };
-  [key: string]: unknown;
+  // Set by withCanvas; the API checks for each before delegating to it
+  ctx?: CanvasRenderingContext2D;
+  setValue?: (value: number, animate?: boolean) => void;
+  setIndeterminate?: (indeterminate: boolean) => void;
+  setThickness?: (thickness: ProgressThickness) => void;
+  setShape?: (shape: ProgressShape) => void;
+  currentShape?: ProgressShape;
+  setSize?: (size: number) => void;
+  getSize?: () => number | undefined;
+  hide?: () => BaseComponent;
+  show?: () => BaseComponent;
+  isVisible?: () => boolean;
 }
 
 export interface CanvasComponent extends BaseComponent {
   canvas: HTMLCanvasElement;
-  ctx?: CanvasRenderingContext2D;
   draw: () => void;
   resize: () => void;
 }
@@ -97,7 +107,7 @@ export const getLinearHeight = (strokeWidth: number, isWavy: boolean): number =>
  */
 export const withCanvas =
   (config: ProgressConfig) =>
-  (component: BaseComponent): CanvasComponent => {
+  <C extends BaseComponent>(component: C): C & CanvasComponent => {
     const isCircular = config.variant === PROGRESS_VARIANTS.CIRCULAR;
     const view = component.element.ownerDocument?.defaultView ?? null;
 
@@ -429,5 +439,5 @@ export const withCanvas =
       ctx: context?.ctx,
       draw,
       resize,
-    } as CanvasComponent;
+    };
   };

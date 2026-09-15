@@ -14,7 +14,22 @@ interface ItemsBaseComponent {
   element: HTMLElement;
   getClass: (name: string) => string;
   emit: (event: string, data?: unknown) => void;
-  [key: string]: unknown;
+}
+
+/**
+ * What withItems adds
+ */
+export interface ItemsFeature {
+  itemsContainer: HTMLElement | null;
+  drawerItems: {
+    setActive: (id: string) => void;
+    getActive: () => string | null;
+    setItems: (items: DrawerItemConfig[]) => void;
+    getItems: () => DrawerItemConfig[];
+    setBadge: (id: string, badge: string) => void;
+    renderItems: () => void;
+    destroy: () => void;
+  };
 }
 
 /**
@@ -110,7 +125,7 @@ const createSectionElement = (
  */
 export const withItems =
   (config: DrawerConfig) =>
-  (component: ItemsBaseComponent): ItemsBaseComponent => {
+  <C extends ItemsBaseComponent>(component: C): C & ItemsFeature => {
     let currentItems: DrawerItemConfig[] = config.items || [];
     let activeId: string | null = null;
     let itemsContainer: HTMLElement | null = null;

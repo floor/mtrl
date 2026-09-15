@@ -1,7 +1,6 @@
 // src/components/tabs/tab-api.ts
-import { TabComponent } from './types';
+import { TabComponent, TabButton } from './types';
 import type { BadgeComponent } from '../badge';
-import type { ButtonComponent } from '../button';
 import createBadge from '../badge';
 
 const TAB_LAYOUT = {
@@ -13,12 +12,6 @@ const TAB_LAYOUT = {
   ICON_AND_TEXT: 'icon-and-text'
 }
 
-/**
- * Button methods the tab delegates to; each one is checked before use
- */
-type TabButton = Partial<
-  Pick<ButtonComponent, 'getValue' | 'setValue' | 'getText' | 'setText' | 'getIcon' | 'setIcon'>
->;
 
 /**
  * API options for a Tab component

@@ -6,7 +6,8 @@
 
 import createButton from "../../button";
 import type { ButtonComponent } from "../../button/types";
-import { BaseComponent, SplitButtonConfig } from "../types";
+import type { ElementComponent } from "../../../core/compose/component";
+import { ButtonsFeature, SplitButtonConfig } from "../types";
 import { SPLIT_BUTTON_CLASSES, SPLIT_BUTTON_CHEVRON } from "../constants";
 
 /**
@@ -16,7 +17,7 @@ import { SPLIT_BUTTON_CLASSES, SPLIT_BUTTON_CHEVRON } from "../constants";
  */
 export const withButtons =
   (config: SplitButtonConfig) =>
-  (component: BaseComponent): BaseComponent => {
+  <C extends ElementComponent>(component: C): C & ButtonsFeature => {
     const prefix = config.prefix || "mtrl";
     const cls = (name: string): string => `${prefix}-${name}`;
 

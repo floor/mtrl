@@ -1,7 +1,10 @@
 // src/components/tabs/tab.ts
 import { pipe } from "../../core/compose";
 import { createBase } from "../../core/compose/component";
+import type { BaseComponent, ElementComponent } from "../../core/compose/component";
 import { withEvents, withLifecycle } from "../../core/compose/features";
+import type { EventComponent, LifecycleComponent } from "../../core/compose/features";
+import type { EventCallback } from "../../core/state/emitter";
 import { TabConfig, TabComponent } from "./types";
 import { TAB_LAYOUT } from "./constants";
 import { createTabConfig } from "./config";
@@ -17,8 +20,11 @@ export const createTab = (config: TabConfig = {}): TabComponent => {
   const baseConfig = createTabConfig(config);
 
   try {
-    // Create base component with events and lifecycle
-    const baseComponent = pipe(
+    // Create base component with events and lifecycle; it takes the button's element below
+    const baseComponent: BaseComponent &
+      EventComponent &
+      LifecycleComponent &
+      Partial<Pick<ElementComponent, "element">> = pipe(
       createBase,
       withEvents(),
       withLifecycle()
@@ -81,6 +87,17 @@ export const createTab = (config: TabConfig = {}): TabComponent => {
       ...baseComponent,
       button,
       element: button.element,
+
+      // Event methods: `this` is the tab the method is called on
+      on(event: string, handler: EventCallback) {
+        baseComponent.on(event, handler);
+        return this;
+      },
+
+      off(event: string, handler: EventCallback) {
+        baseComponent.off(event, handler);
+        return this;
+      },
 
       // Badge support
       badge: null,

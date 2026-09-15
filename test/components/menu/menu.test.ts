@@ -70,6 +70,17 @@ describe('menu', () => {
     expect(rendered[0]!.getAttribute('aria-disabled')).toBe('false');
   });
 
+  test('config.on handlers fire, and any emitted event name can be listened to', async () => {
+    let opens = 0;
+    const menu = createMenu({ opener, items, on: { open: () => opens++ } });
+    await opened(menu);
+    expect(opens).toBe(1);
+    // submenu-opened is emitted by the menu but is not one of the typed events
+    expect(menu.on('submenu-opened', () => {})).toBe(menu);
+    expect(menu.off('submenu-opened', () => {})).toBe(menu);
+    menu.destroy();
+  });
+
   test('a divider is a separator and is not an item', async () => {
     const menu = createMenu({ opener, items: [items[0]!, { type: 'divider' }, items[1]!] });
     await opened(menu);

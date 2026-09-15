@@ -1,5 +1,13 @@
 // src/components/tabs/types.ts
 import type { BadgeComponent } from '../badge';
+import type { ButtonComponent } from '../button/types';
+
+/**
+ * Button methods the tab delegates to; each one is checked before use
+ */
+export type TabButton = Partial<
+  Pick<ButtonComponent, 'getValue' | 'setValue' | 'getText' | 'setText' | 'getIcon' | 'setIcon'>
+>;
 import { TabIndicator } from './indicator';
 
 /**
@@ -284,6 +292,9 @@ export interface TextAPI {
 export interface TabComponent {
   /** The tab's DOM element */
   element: HTMLElement;
+  
+  /** The button the tab is built on */
+  button?: TabButton;
   
   /** The tab's badge component (if any) */
   badge?: BadgeComponent;

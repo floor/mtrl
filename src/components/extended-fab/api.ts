@@ -51,7 +51,16 @@ interface ApiOptions {
  * @internal
  */
 interface ComponentWithElements
-  extends Pick<ExtendedFabComponent, 'disabled' | 'lifecycle' | 'on' | 'off' | 'addClass'> {
+  extends Pick<ExtendedFabComponent, 'disabled' | 'lifecycle'> {
+  /** Subscribes to an event; the API returns the component itself */
+  on: (event: string, handler: Function) => unknown;
+  
+  /** Unsubscribes from an event; the API returns the component itself */
+  off: (event: string, handler: Function) => unknown;
+  
+  /** Adds CSS classes; the API returns the component itself */
+  addClass: (...classes: string[]) => unknown;
+  
   /** The DOM element */
   element: HTMLElement;
   
@@ -187,6 +196,22 @@ export const withAPI = ({ disabled, lifecycle, text, className }: ApiOptions) =>
       });
       component.element.dispatchEvent(event);
       
+      return this;
+    },
+    
+    // Event methods
+    on(event: string, handler: Function) {
+      component.on(event, handler);
+      return this;
+    },
+    
+    off(event: string, handler: Function) {
+      component.off(event, handler);
+      return this;
+    },
+    
+    addClass(...classes: string[]) {
+      component.addClass(...classes);
       return this;
     },
     

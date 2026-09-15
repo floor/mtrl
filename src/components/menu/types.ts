@@ -1,4 +1,5 @@
 // src/components/menu/types.ts
+import type { EventCallback } from "../../core/state/emitter";
 
 /**
  * Menu position options
@@ -445,10 +446,16 @@ export interface MenuComponent {
    * @param handler - Event handler function
    * @returns The menu component for chaining
    */
-  on: <T extends keyof MenuEvents>(
-    event: T,
-    handler: MenuEvents[T],
-  ) => MenuComponent;
+  on<T extends keyof MenuEvents>(event: T, handler: MenuEvents[T]): MenuComponent;
+
+  /**
+   * Adds an event listener for any event the menu emits, such as
+   * 'submenu-opened', 'submenu-closed', 'all-submenus-closed' or 'menu-closing'
+   * @param event - Event name
+   * @param handler - Event handler function
+   * @returns The menu component for chaining
+   */
+  on(event: string, handler: EventCallback): MenuComponent;
 
   /**
    * Removes an event listener from the menu
@@ -456,10 +463,15 @@ export interface MenuComponent {
    * @param handler - Event handler function
    * @returns The menu component for chaining
    */
-  off: <T extends keyof MenuEvents>(
-    event: T,
-    handler: MenuEvents[T],
-  ) => MenuComponent;
+  off<T extends keyof MenuEvents>(event: T, handler: MenuEvents[T]): MenuComponent;
+
+  /**
+   * Removes an event listener for any event the menu emits
+   * @param event - Event name
+   * @param handler - Event handler function
+   * @returns The menu component for chaining
+   */
+  off(event: string, handler: EventCallback): MenuComponent;
 
   /**
    * Destroys the menu component and cleans up resources

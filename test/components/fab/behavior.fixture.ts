@@ -112,6 +112,30 @@ for (const component of ['fab', 'extended-fab'] as const) {
     b.off('click', handler); b.element.click();
     expect(clicks).toBe(1);
   });
+  test(`${component}: on, off and addClass return the component they are called on`, () => {
+    const b = make(); let clicks = 0;
+    const handler = () => clicks++;
+    expect(b.on('click', handler)).toBe(b);
+    b.element.click();
+    expect(clicks).toBe(1);
+    expect(b.off('click', handler)).toBe(b);
+    b.element.click();
+    expect(clicks).toBe(1);
+    expect(b.addClass('x')).toBe(b);
+    expect(b.element.classList.contains('x')).toBe(true);
+  });
+  test(`${component}: on after destroy registers nothing`, () => {
+    const b = make(); let calls = 0;
+    // emit is not part of the public type; it is the events feature the API delegates to
+    const emit = (event: string) => Reflect.apply(Reflect.get(b, 'emit'), b, [event]);
+    b.on('ping', () => calls++);
+    emit('ping');
+    expect(calls).toBe(1);
+    b.destroy();
+    expect(b.on('ping', () => calls++)).toBe(b);
+    emit('ping');
+    expect(calls).toBe(1);
+  });
   test(`${component}: ripple is present by default and can be opted out`, () => {
     expect(make().element.querySelector('.mtrl-ripple')).not.toBeNull();
     expect(make({ ripple: false }).element.querySelector('.mtrl-ripple')).toBeNull();

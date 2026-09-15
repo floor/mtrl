@@ -5,7 +5,20 @@ interface StateBaseComponent {
   element: HTMLElement;
   getClass: (name: string) => string;
   emit: (event: string, data?: unknown) => void;
-  [key: string]: unknown;
+}
+
+/**
+ * What withState adds
+ */
+export interface StateFeature {
+  scrimElement: HTMLElement | null;
+  drawerState: {
+    open: () => void;
+    close: () => void;
+    toggle: () => void;
+    isOpen: () => boolean;
+  };
+  _stateCleanup: () => void;
 }
 
 // Drawer modals share ownership so closing one cannot unlock another.
@@ -55,7 +68,7 @@ function releaseModal(root: HTMLElement): void {
 }
 
 /** Standard drawers remain in the page; modal drawers own focus and background interaction. */
-export const withState = (config: DrawerConfig) => (component: StateBaseComponent): StateBaseComponent => {
+export const withState = (config: DrawerConfig) => <C extends StateBaseComponent>(component: C): C & StateFeature => {
   const root = component.element;
   const doc = root.ownerDocument;
   const isModal = config.variant === "modal";
