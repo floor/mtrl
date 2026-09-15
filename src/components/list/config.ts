@@ -21,6 +21,17 @@ export const defaultConfig: Partial<ListConfig> = {
 };
 
 /**
+ * Item fields the fallback renderer reads for its label
+ */
+interface DefaultListItem {
+  text?: string;
+  title?: string;
+  headline?: string;
+  name?: string;
+  id?: string | number;
+}
+
+/**
  * Creates the base configuration for List component
  * @param {ListConfig} config - User provided configuration
  * @returns {Object} Complete configuration with defaults applied
@@ -37,16 +48,17 @@ export const createBaseConfig = (config: Partial<ListConfig> = {}) => {
     config.items.length > 0 &&
     !config.renderItem
   ) {
-    config.renderItem = (item) => {
+    config.renderItem = (item: DefaultListItem) => {
       const element = document.createElement("div");
       element.className = "mtrl-list-item";
-      element.textContent =
+      element.textContent = String(
         item.text ||
-        item.title ||
-        item.headline ||
-        item.name ||
-        item.id ||
-        String(item);
+          item.title ||
+          item.headline ||
+          item.name ||
+          item.id ||
+          String(item)
+      );
       return element;
     };
   }
