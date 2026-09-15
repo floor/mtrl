@@ -37,8 +37,6 @@ export interface SupportingTextConfig {
    * Component name
    */
   componentName?: string;
-
-  [key: string]: any;
 }
 
 /**
@@ -74,7 +72,8 @@ export interface SupportingTextComponent extends BaseComponent {
  * @returns Function that enhances a component with supporting text
  */
 export const withSupportingText =
-  <T extends SupportingTextConfig>(config: T) =>
+  // `& object` lets a component config that shares no key with SupportingTextConfig through.
+  <T extends SupportingTextConfig & object>(config: T) =>
   <C extends LifecycleElementComponent>(
     component: C
   ): C & SupportingTextComponent => {

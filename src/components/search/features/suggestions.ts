@@ -1,6 +1,6 @@
 // src/components/search/features/suggestions.ts
 
-import { SearchConfig, SearchSuggestion } from "../types";
+import { SearchSuggestion } from "../types";
 import { SEARCH_CLASSES, SEARCH_KEYS, SEARCH_ICONS } from "../constants";
 import { createElement } from "../../../core/dom/create";
 
@@ -8,13 +8,12 @@ import { createElement } from "../../../core/dom/create";
  * Adds suggestion list features to the search component
  * Handles rendering suggestions and keyboard navigation per MD3 specifications
  *
- * @param config Search configuration
  * @returns Component enhancer with suggestions features
  */
-export const withSuggestions = (config: SearchConfig) => (component) => {
+export const withSuggestions = () => (component) => {
   // State
   let highlightedIndex = -1;
-  let currentSuggestions: SearchSuggestion[] = [];
+  const currentSuggestions: SearchSuggestion[] = [];
 
   // Helper to get prefixed class names
   const getClass = (className: string): string => {
@@ -79,7 +78,7 @@ export const withSuggestions = (config: SearchConfig) => (component) => {
 
     // Add icon if present
     if (suggestion.icon) {
-      const iconElement = createElement({
+      createElement({
         tag: "span",
         className: getClass(SEARCH_CLASSES.SUGGESTION_ICON),
         container: item,
@@ -87,7 +86,7 @@ export const withSuggestions = (config: SearchConfig) => (component) => {
       });
     } else {
       // Default history icon for suggestions
-      const iconElement = createElement({
+      createElement({
         tag: "span",
         className: getClass(SEARCH_CLASSES.SUGGESTION_ICON),
         container: item,
@@ -96,7 +95,7 @@ export const withSuggestions = (config: SearchConfig) => (component) => {
     }
 
     // Add text with highlighted match
-    const textElement = createElement({
+    createElement({
       tag: "span",
       className: getClass(SEARCH_CLASSES.SUGGESTION_TEXT),
       container: item,
