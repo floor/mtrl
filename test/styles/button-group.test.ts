@@ -27,8 +27,8 @@ beforeAll(() => {
 
 describe('button group stylesheet', () => {
   test('the group is a flex row spaced by the size gap; buttons follow the container height', () => {
-    expect(value('.mtrl-button-group', 'gap')).toBe('var(--button-group-gap, 12px)');
-    expect(value('.mtrl-button-group > .mtrl-button, .mtrl-button-group > .mtrl-icon-button', 'height')).toBe('var(--button-group-height)');
+    expect(value('.mtrl-button-group', 'gap')).toBe('var(--mtrl-button-group-gap, 12px)');
+    expect(value('.mtrl-button-group > .mtrl-button, .mtrl-button-group > .mtrl-icon-button', 'height')).toBe('var(--mtrl-button-group-height)');
   });
 
   test('buttons keep their own colours: the group paints no containers, borders or dividers', () => {
@@ -40,20 +40,20 @@ describe('button group stylesheet', () => {
 
   test('connected: square inner corners, round outer corners, 4dp pressed inner corners, pill when selected', () => {
     const all = '.mtrl-button-group--connected > .mtrl-button, .mtrl-button-group--connected > .mtrl-icon-button';
-    expect(value(all, '--mtrl-button-shape')).toBe('var(--button-group-inner-corner)');
-    expect(value(all, '--mtrl-button-shape-pressed')).toBe('var(--button-group-pressed-corner)');
-    expect(value(all, '--mtrl-button-shape-selected')).toBe('var(--button-group-radius)');
+    expect(value(all, '--mtrl-button-shape')).toBe('var(--mtrl-button-group-inner-corner)');
+    expect(value(all, '--mtrl-button-shape-pressed')).toBe('var(--mtrl-button-group-pressed-corner)');
+    expect(value(all, '--mtrl-button-shape-selected')).toBe('var(--mtrl-button-group-radius)');
     expect(value('.mtrl-button-group--connected > .mtrl-button-group__button--first', '--mtrl-button-shape'))
-      .toBe('var(--button-group-radius) var(--button-group-inner-corner) var(--button-group-inner-corner) var(--button-group-radius)');
+      .toBe('var(--mtrl-button-group-radius) var(--mtrl-button-group-inner-corner) var(--mtrl-button-group-inner-corner) var(--mtrl-button-group-radius)');
     expect(value('.mtrl-button-group--connected > .mtrl-button-group__button--last', '--mtrl-button-shape-pressed'))
-      .toBe('var(--button-group-pressed-corner) var(--button-group-radius) var(--button-group-radius) var(--button-group-pressed-corner)');
+      .toBe('var(--mtrl-button-group-pressed-corner) var(--mtrl-button-group-radius) var(--mtrl-button-group-radius) var(--mtrl-button-group-pressed-corner)');
     expect(value('.mtrl-button-group--connected.mtrl-button-group--vertical > .mtrl-button-group__button--first', '--mtrl-button-shape'))
-      .toBe('var(--button-group-radius) var(--button-group-radius) var(--button-group-inner-corner) var(--button-group-inner-corner)');
+      .toBe('var(--mtrl-button-group-radius) var(--mtrl-button-group-radius) var(--mtrl-button-group-inner-corner) var(--mtrl-button-group-inner-corner)');
   });
 
   test('square connected groups use the inner corner size outside too', () => {
     const outer = '.mtrl-button-group--connected.mtrl-button-group--square > .mtrl-button-group__button--first, .mtrl-button-group--connected.mtrl-button-group--square > .mtrl-button-group__button--last, .mtrl-button-group--connected.mtrl-button-group--square > .mtrl-button-group__button--single';
-    expect(value(outer, '--mtrl-button-shape')).toBe('var(--button-group-inner-corner)');
+    expect(value(outer, '--mtrl-button-shape')).toBe('var(--mtrl-button-group-inner-corner)');
   });
 
   test('xs and s connected groups keep a 48dp minimum width', () => {

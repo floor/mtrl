@@ -143,8 +143,8 @@ $component: '#{base.$prefix}-slider';
       position: absolute;
       width: 4px;
       height: calc(100% - 8px);
-      // --mtrl-slider-color: the same per-slider override the canvas honours
-      background-color: var(--mtrl-slider-color, #{t.color('primary')});
+      // --#{base.$prefix}-slider-color: the same per-slider override the canvas honours
+      background-color: var(--#{base.$prefix}-slider-color, #{t.color('primary')});
       border-radius: 2px;
       left: 50%;
       top: 50%;
@@ -152,11 +152,11 @@ $component: '#{base.$prefix}-slider';
       transition: background-color 0.15s ease, opacity 0.15s ease, width 0.15s ease;
       
       .#{$component}--secondary & {
-        background-color: var(--mtrl-slider-color, #{t.color('secondary')});
+        background-color: var(--#{base.$prefix}-slider-color, #{t.color('secondary')});
       }
       
       .#{$component}--tertiary & {
-        background-color: var(--mtrl-slider-color, #{t.color('tertiary')});
+        background-color: var(--#{base.$prefix}-slider-color, #{t.color('tertiary')});
       }
       
       .#{$component}--error & {
@@ -183,14 +183,14 @@ $component: '#{base.$prefix}-slider';
     
     // Hover state
     &:hover::before {
-      background-color: var(--mtrl-slider-color, #{t.color('primary')});
+      background-color: var(--#{base.$prefix}-slider-color, #{t.color('primary')});
       
       .#{$component}--secondary & {
-        background-color: var(--mtrl-slider-color, #{t.color('secondary')});
+        background-color: var(--#{base.$prefix}-slider-color, #{t.color('secondary')});
       }
       
       .#{$component}--tertiary & {
-        background-color: var(--mtrl-slider-color, #{t.color('tertiary')});
+        background-color: var(--#{base.$prefix}-slider-color, #{t.color('tertiary')});
       }
       
       .#{$component}--error & {
@@ -205,15 +205,15 @@ $component: '#{base.$prefix}-slider';
     
     // Active state
     &:active::before {
-      background-color: var(--mtrl-slider-color, #{t.color('primary')});
+      background-color: var(--#{base.$prefix}-slider-color, #{t.color('primary')});
       width: 3px; // Shrink width when active for visual feedback
       
       .#{$component}--secondary & {
-        background-color: var(--mtrl-slider-color, #{t.color('secondary')});
+        background-color: var(--#{base.$prefix}-slider-color, #{t.color('secondary')});
       }
       
       .#{$component}--tertiary & {
-        background-color: var(--mtrl-slider-color, #{t.color('tertiary')});
+        background-color: var(--#{base.$prefix}-slider-color, #{t.color('tertiary')});
       }
       
       .#{$component}--error & {

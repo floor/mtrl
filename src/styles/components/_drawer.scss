@@ -8,7 +8,7 @@
 $component: "#{base.$prefix}-drawer";
 
 // Must match DRAWER_DEFAULTS.WIDTH in constants.ts
-// Only used as a CSS fallback if --drawer-width is not set by JS
+// Only used as a CSS fallback if --#{base.$prefix}-drawer-width is not set by JS
 $default-width: 360px;
 
 // ==========================================================================
@@ -115,7 +115,7 @@ $default-width: 360px;
         pointer-events: auto;
         flex-shrink: 0;
         overflow: hidden;
-        // Closed: collapse to 0. --drawer-width is set inline by the JS component.
+        // Closed: collapse to 0. --#{base.$prefix}-drawer-width is set inline by the JS component.
         width: 0;
         transition: width v.motion("duration-short4")
             v.motion("easing-standard");
@@ -128,7 +128,7 @@ $default-width: 360px;
 
         // Open — expand to the concrete width value via custom property
         &.#{$component}--open {
-            width: var(--drawer-width, $default-width);
+            width: var(--#{base.$prefix}-drawer-width, $default-width);
         }
 
         // Border on the end edge (standard variant visual separator)
@@ -195,7 +195,7 @@ $default-width: 360px;
     &__sheet {
         display: flex;
         flex-direction: column;
-        width: var(--drawer-width, $default-width);
+        width: var(--#{base.$prefix}-drawer-width, $default-width);
         max-width: calc(100vw - 56px);
         height: 100%;
         overflow-y: auto;

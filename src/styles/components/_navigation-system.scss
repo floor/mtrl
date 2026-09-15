@@ -1,5 +1,7 @@
 // src/components/navigation/system.scss
 
+@use '../abstract/theme' as t;
+
 // Navigation system specific styles
 // These complement the existing navigation component styles
 
@@ -142,7 +144,7 @@ $nav-animation-function: cubic-bezier(0.4, 0, 0.2, 1);
 .mtrl-nav-system {
   [role="navigation"] {
     &:focus-within {
-      outline: 2px solid var(--mtrl-primary-color, #6200ee);
+      outline: 2px solid t.color('primary');
       outline-offset: -2px;
     }
   }

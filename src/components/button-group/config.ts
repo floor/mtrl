@@ -112,6 +112,7 @@ const DENSITY_STEPS: Record<ButtonGroupDensity, number> = {
  * 4dp per step; the buttons follow the container height.
  */
 export const getSizeStyles = (
+  prefix: string,
   size: ButtonGroupConfig['size'],
   kind: ButtonGroupConfig['kind'],
   density: ButtonGroupDensity = BUTTON_GROUP_DENSITY.DEFAULT
@@ -120,12 +121,12 @@ export const getSizeStyles = (
   const gap = kind === 'connected' ? BUTTON_GROUP_CONNECTED_GAP : tokens.standardGap;
   const height = tokens.height - BUTTON_GROUP_DENSITY_STEP * (DENSITY_STEPS[density] ?? 0);
   return {
-    '--button-group-height': `${height}px`,
-    '--button-group-icon': `${tokens.icon}px`,
-    '--button-group-gap': `${gap}px`,
-    '--button-group-inner-corner': `${tokens.connectedCorner}px`,
-    '--button-group-pressed-corner': `${BUTTON_GROUP_CONNECTED_PRESSED_CORNER}px`,
-    '--button-group-radius': `${height / 2}px`
+    [`--${prefix}-button-group-height`]: `${height}px`,
+    [`--${prefix}-button-group-icon`]: `${tokens.icon}px`,
+    [`--${prefix}-button-group-gap`]: `${gap}px`,
+    [`--${prefix}-button-group-inner-corner`]: `${tokens.connectedCorner}px`,
+    [`--${prefix}-button-group-pressed-corner`]: `${BUTTON_GROUP_CONNECTED_PRESSED_CORNER}px`,
+    [`--${prefix}-button-group-radius`]: `${height / 2}px`
   };
 };
 

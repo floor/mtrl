@@ -12,12 +12,12 @@ $component: '#{base.$prefix}-carousel';
 // Material 3 carousel (m3.material.io carousel specs; Compose Material 3
 // carousel). The component lays the items out from a keyline strategy:
 // each item is translated to its centre and clipped to its visible width
-// (transform, clip-path and --mtrl-carousel-fade are set per item from the
+// (transform, clip-path and --#{base.$prefix}-carousel-fade are set per item from the
 // component). This stylesheet owns everything static: the native scroller,
 // the snap points, the item shell and the text over the image.
 //
-// Custom properties set by the component: --mtrl-carousel-corner (item
-// corner radius, 28dp by default) and --mtrl-carousel-fade per item (1 for
+// Custom properties set by the component: --#{base.$prefix}-carousel-corner (item
+// corner radius, 28dp by default) and --#{base.$prefix}-carousel-fade per item (1 for
 // a large item, 0 for a small one).
 // =============================================================================
 
