@@ -62,7 +62,7 @@ export const withPlacement =
      */
     const updateElementPositions = () => {
       if (destroyed || !component.element || !component.element.isConnected)
-        return component as any;
+        return component;
 
       // Get necessary elements
       const labelEl = component.element.querySelector(
@@ -223,7 +223,7 @@ export const withPlacement =
         component.input.style.paddingRight = `${inputPadding}px`;
       }
 
-      return component as any;
+      return component;
     };
 
     // Set up event listeners for dynamic positioning

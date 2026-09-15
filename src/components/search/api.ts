@@ -7,9 +7,7 @@ import {
   SearchState,
   SearchViewMode,
   SearchSuggestion,
-  SearchTrailingItem,
 } from "./types";
-import { SEARCH_EVENTS } from "./constants";
 
 /**
  * API options interface - structured by feature area
@@ -141,25 +139,25 @@ export const withAPI =
 
       // === Content Management ===
 
-      setLeadingIcon(iconHtml: string) {
+      setLeadingIcon() {
         // TODO: Implement in a separate icons feature if needed
         console.warn("setLeadingIcon: Not yet implemented");
         return this;
       },
 
-      addTrailingItem(item: SearchTrailingItem) {
+      addTrailingItem() {
         // TODO: Implement trailing items management
         console.warn("addTrailingItem: Not yet implemented");
         return this;
       },
 
-      removeTrailingItem(id: string) {
+      removeTrailingItem() {
         // TODO: Implement trailing items management
         console.warn("removeTrailingItem: Not yet implemented");
         return this;
       },
 
-      setTrailingItems(items: SearchTrailingItem[]) {
+      setTrailingItems() {
         // TODO: Implement trailing items management
         console.warn("setTrailingItems: Not yet implemented");
         return this;
