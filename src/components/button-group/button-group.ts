@@ -105,7 +105,7 @@ const createButtonGroup = (config: ButtonGroupConfig = {}): ButtonGroupComponent
 
     // Material 3 size, kind and density tokens (height, gap, corners)
     const applySizeStyles = (density: ButtonGroupDensity) => {
-      Object.entries(getSizeStyles(baseConfig.size, kind, density)).forEach(([prop, value]) => {
+      Object.entries(getSizeStyles(baseConfig.prefix, baseConfig.size, kind, density)).forEach(([prop, value]) => {
         component.element.style.setProperty(prop, value);
       });
     };

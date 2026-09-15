@@ -22,7 +22,7 @@ $component: '#{base.$prefix}-card';
   // which meant every card had to opt out of its own component to sit in a
   // layout. The sizes are still available as modifiers below for the cases
   // that genuinely want them.
-  --card-elevation: 0;
+  --#{base.$prefix}-card-elevation: 0;
   
   // Typography - use mixin
   @include m.typography('body-medium');

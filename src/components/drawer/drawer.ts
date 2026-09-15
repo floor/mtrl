@@ -87,7 +87,7 @@ const createDrawer = (config: DrawerConfig = {}) => {
         sheetEl.className = component.getClass("drawer__sheet");
 
         // Set drawer width as a CSS custom property on the root.
-        // The sheet reads it via var(--drawer-width) in CSS.
+        // The sheet reads it via var(--<prefix>-drawer-width) in CSS.
         // The standard variant also uses it to animate the root width.
         const width = baseConfig.width;
         const widthValue = width
@@ -95,7 +95,7 @@ const createDrawer = (config: DrawerConfig = {}) => {
             ? `${width}px`
             : width
           : `${DRAWER_DEFAULTS.WIDTH}px`;
-        component.element.style.setProperty("--drawer-width", widthValue);
+        component.element.style.setProperty(`--${baseConfig.prefix}-drawer-width`, widthValue);
 
         // Append headline if present
         if (component.headlineElement) {
