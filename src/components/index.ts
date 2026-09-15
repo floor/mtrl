@@ -51,8 +51,6 @@ export { default as createSegmentedButton } from "./segmented-button";
  * @deprecated Since 0.8.0, M3 Expressive replaces segmented buttons with connected button groups. Use {@link createButtonGroup} with `kind: "connected"`.
  */
 export { createSegment } from "./segmented-button/segment";
-/** @deprecated Since 0.8.0. Use createBottomSheet or createSideSheet. */
-export { default as createSheet } from "./sheet";
 export { default as createSlider } from "./slider";
 export { default as createSnackbar } from "./snackbar";
 export { clearSnackbars } from "./snackbar";
@@ -224,9 +222,6 @@ export type {
   SegmentedButtonComponent,
 } from "./segmented-button/types";
 
-// Sheet
-/** @deprecated Since 0.8.0. Use the BottomSheet or SideSheet types. */
-export type { SheetConfig, SheetComponent } from "./sheet/types";
 
 // Slider
 export type {

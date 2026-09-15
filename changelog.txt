@@ -1,6 +1,334 @@
 mtrl — full changelog
 initial commit → latest
-613 commits · Feb 22, 2025 – Mar 30, 2026
+831 commits · Feb 22, 2025 – Sep 15, 2026
+
+
+0.8.0
+
+  The Material 3 expressive release. Components are aligned with the M3
+  expressive tokens, several are new or rebuilt, and the package ships ESM
+  modules with selective stylesheets.
+
+  Breaking changes
+
+  - createSheet, SheetConfig and SheetComponent are removed. The component
+    never worked (open and close threw). Use createBottomSheet or
+    createSideSheet.
+  - FAB and extended FAB: variant 'primary', 'secondary' and 'tertiary' now
+    mean the tone styles (primary on on-primary, and so on). The former look
+    is 'primary-container', 'secondary-container' and 'tertiary-container',
+    and 'primary-container' is the default. 'surface' is deprecated.
+  - Extended FAB: the label uses title-medium at the default small size
+    (was label-large), and iconPosition 'end' now places the icon after the
+    label (it was ignored before).
+  - Segmented button: deprecated in favour of createButtonGroup with
+    kind 'connected'. SegmentedButtonEvent now declares the payload the
+    component sends, { selected, value, oldValue }. Default, comfortable and
+    compact heights are 40, 36 and 32px (4px taller than before).
+  - Slider: decoration is DOM and CSS; the .mtrl-slider-canvas element is
+    gone, so styles targeting it must be updated.
+  - Package: the 'development' export condition that resolved to src is
+    removed; every entry resolves to dist. sideEffects lists the CSS, SCSS
+    and style modules instead of false, so bundlers keep stylesheet imports.
+  - Custom properties: every component custom property is
+    --mtrl-<component>-<name>, with no aliases for the old names. Renamed:
+    --button-group-gap, -height, -icon, -inner-corner, -pressed-corner and
+    -radius to --mtrl-button-group-*; --card-elevation to
+    --mtrl-card-elevation; --checkmark-color to --mtrl-chip-checkmark-color;
+    --drawer-width to --mtrl-drawer-width; --extended-fab-gap, -height,
+    -icon-size, -padding and -radius to --mtrl-extended-fab-*; --item-offset
+    to --mtrl-list-item-offset; --segment-* to --mtrl-segmented-button-*.
+    --mtrl-carousel-corner, --mtrl-carousel-fade, --mtrl-slider-color and
+    --mtrl-slider-on-color keep their names.
+  - Typescale: title-large uses weight 400 (was 500), as M3 specifies. The
+    medium extended FAB, full-screen dialog title, card header title, side
+    sheet title, top app bar headline and h4 follow.
+
+  Added
+
+  - Components: bottom sheet, side sheet, split button, loading indicator,
+    standalone navigation rail (collapsed, expanded, modal), vertical menu
+    variant.
+  - Button: toggle buttons with the M3 selected colours and shape swap,
+    shape hooks, toggleOnClick. Button group: connected kind, single and
+    multi selection, size tokens, labels on the selected button only.
+  - FAB: medium size. Extended FAB: small, medium and large sizes.
+  - Select: menu options that escape a clipping container.
+  - Styles: M3 spring motion tokens; shape scale and typescale as custom
+    properties; selective style entry points (mtrl/styles/*) and themes
+    (mtrl/themes/*); a legacy theme.
+
+  Changed and fixed, by component
+
+  - Button, icon button, button group, split button: sizes, shapes, colours,
+    states and press morph from the M3 tokens; icon button round shapes are
+    pills whose press morph animates, the 48dp target of the two small sizes
+    takes the pointer, and the toggle listener is released on destroy. In a
+    standard button group every neighbour makes room for a pressed button, and
+    connected groups press without flashing square corners.
+  - FAB and extended FAB: elevation 3/4/3/3 (lowered 1/2/1/1), disabled
+    styles from real theme roles, large icon 32px, initial value and user
+    classes kept.
+  - Carousel: rebuilt on the M3 keyline strategy with native scrolling.
+  - Drawer: expressive active indicator, navigation semantics and modal
+    lifecycle. Navigation rail: expressive selection and expansion motion.
+  - Menu, dialog, snackbar, progress, slider, card, textfield: M3 tokens,
+    accessibility and listener cleanup on destroy.
+  - Core: components own their cleanup; setup overhead reduced.
+  - Theme: state layers with color-mix; data-theme observed on <html>.
+  - Package: component barrels re-export their types as types; the exports
+    map describes what is published.
+
+  Tooling
+
+  - CI runs types, tests, build, package size and browser checks on every
+    push and pull request; releases publish to npm with trusted publishing
+    from a version tag.
+
+  → v0.8.0
+
+
+2026-09-15
+
+  fix(button-group): stop the press spring from painting square corners
+  fix(button-group): let every neighbour give way to a pressed button
+  fix(icon-button): animate the press morph by giving round buttons a real radius
+  refactor(styles): one custom property convention, --mtrl-<component>-<name>
+  fix(styles): title-large at the M3 weight
+  docs(readme): the component list and examples match what 0.8 exports
+  feat(sheet)!: remove the deprecated sheet component
+  fix(segmented-button): align event type and density heights
+  docs(segmented-button): deprecate in favour of the connected button group
+  fix(fab, extended-fab): keep the initial value, user classes and end icon position; real-DOM tests replace the mocks
+  feat(extended-fab): small, medium and large sizes with their type styles
+  feat(fab): medium size; large icon and small icon from the tokens
+  fix(fab, extended-fab): elevation, disabled and colour styles from the tokens
+
+  → v0.8.0-next.50
+
+  → v0.8.0-next.49
+
+  → v0.8.0-next.48
+
+  → v0.8.0-next.47
+
+
+2026-09-14
+
+  fix(icon-button): a pill when round, the 48dp target reaches outside, the default shape gets its class
+  fix(icon-button): release the toggle click listener on destroy; real-DOM tests
+  fix(button-group): drive the selected state of icon buttons
+  fix(menu): measure the menu at its max height before placing it
+  feat(select): the menu option carries the menu's variant and colour
+  feat(select): menu options, for a list that must escape a clipping container
+  fix(icon-button): icon sizes, widths and outline widths from the size tokens
+  fix(icon-button): toggle colours, outline and disabled opacity from the tokens
+  fix(ci): compare the rail's full and selective stylesheets in one page, with tolerance
+
+  → v0.8.0-next.46
+
+  → v0.8.0-next.45
+
+  → v0.8.0-next.44
+
+
+2026-09-13
+
+  fix(core): own component cleanup and reduce setup overhead
+  feat(navigation-rail): expressive selection and expansion motion
+  fix(textfield, theme): labels tied to their inputs, at full strength; pagehide over unload
+  feat(navigation-rail): add standalone M3 Expressive rail
+  feat(drawer): expressive active indicator and press ripple
+  fix(drawer): correct navigation semantics and modal lifecycle
+  fix(slider): order Sass declarations before nested rules
+
+  → v0.8.0-next.43
+
+  → v0.8.0-next.42
+
+  → v0.8.0-next.41
+
+  → v0.8.0-next.40
+
+  → v0.8.0-next.39
+
+
+2026-09-11
+
+
+  → v0.8.0-next.38
+
+
+2026-09-10
+
+  fix(textfield): release listeners and cancel pending lifecycle work
+  test(browser): wait for menu focus before visual comparisons
+  perf(slider): replace canvas decoration with DOM and CSS
+  fix(slider): release canvas theme subscriptions on destroy
+  perf(package): preserve ESM modules and add selective styles
+  fix(menu): release listeners and pending work on destroy
+  chore(docs): turn on the TypeDoc check for undocumented API
+  fix(card): size to the layout and follow the per-variant tokens
+  refactor(sheet): deprecate in favour of the bottom and side sheets
+  feat(side-sheet): add the M3 side sheet
+  feat(bottom-sheet): add the M3 bottom sheet
+  fix(menu): inset the vertical container by GroupPadding, not the horizontal one
+  feat(menu): add a gap separator for the vertical variant
+  feat(menu): close the open menu when another one opens
+  docs(types): correct @default annotations that disagree with the code
+  refactor(segmented-button): take corners from the button shape hooks
+  fix(button): animate the press morph by giving round buttons a real radius
+  revert: the eleven topics released as one
+  chore(docs): turn on the TypeDoc check for undocumented API
+  fix(card): size to the layout and follow the per-variant tokens
+  refactor(sheet): deprecate in favour of the bottom and side sheets
+  feat(side-sheet): add the M3 side sheet
+  feat(bottom-sheet): add the M3 bottom sheet
+  fix(menu): inset the vertical container by GroupPadding, not the horizontal one
+  feat(menu): add a gap separator for the vertical variant
+  feat(menu): close the open menu when another one opens
+  docs(types): correct @default annotations that disagree with the code
+  refactor(segmented-button): take corners from the button shape hooks
+  fix(button): animate the press morph by giving round buttons a real radius
+
+  → v0.8.0-next.37
+
+  → v0.8.0-next.36
+
+  → v0.8.0-next.35
+
+  → v0.8.0-next.34
+
+  → v0.8.0-next.33
+
+  → v0.8.0-next.32
+
+  → v0.8.0-next.31
+
+  → v0.8.0-next.30
+
+  → v0.8.0-next.29
+
+  → v0.8.0-next.28
+
+  → v0.8.0-next.27
+
+  → v0.8.0-next.26
+
+  → v0.8.0-next.25
+
+  → v0.8.0-next.24
+
+
+2026-09-08
+
+  fix(menu): the keyboard works inside submenus
+  fix(menu): the focus layer is for keyboard navigation, not every open
+  feat(menu): add the M3 expressive vertical menu
+  feat(menu): the token colours, the M3 measurements, and focus on open
+  fix(split-button): the halves no longer cast a shadow on each other
+  fix(split-button): the corners at the split were being flattened to nothing
+  style(split-button): round the inner corners at the larger sizes
+  feat(split-button): add the M3 expressive split button
+  feat(dialog): fix the accessibility contract and the M3 spacing
+  fix(package): the component barrels re-export their types as types
+
+  → v0.8.0-next.23
+
+  → v0.8.0-next.21
+
+  → v0.8.0-next.20
+
+  → v0.8.0-next.19
+
+  → v0.8.0-next.18
+
+  → v0.8.0-next.17
+
+  → v0.8.0-next.16
+
+  → v0.8.0-next.15
+
+  → v0.8.0-next.14
+
+
+2026-09-07
+
+  feat(progress): align the indicator with the M3 tokens and motion
+  fix(loading-indicator): turn the shapes about their centre of mass
+  feat(loading-indicator): add the M3 expressive loading indicator
+  feat(snackbar): align with the M3 tokens, keep actionable snackbars, announce them
+  chore(ci): pin the runners to bun 1.4, the version we develop on
+  fix(snackbar): a hidden snackbar leaves the page even with no animation
+  fix(snackbar): a message nobody can dismiss no longer silences the rest
+  ci: run the types, the tests and the build on every push and pull request
+  test: benchmarks stop failing the suite when the machine is busy
+  fix(package): the exports map describes what is actually published
+  fix(button): a toggle button carries no elevation
+  fix(styles): emit the shape scale and the typescale as custom properties
+
+  → v0.8.0-next.13
+
+  → v0.8.0-next.12
+
+  → v0.8.0-next.11
+
+  → v0.8.0-next.10
+
+  → v0.8.0-next.5
+
+
+2026-09-06
+
+  ci(release): publish to npm with trusted publishing on a version tag (#4)
+
+
+2026-09-05
+
+  feat(carousel): rebuild on the M3 keyline strategy with native scrolling
+  feat(styles): M3 spring motion tokens; buttons and groups animate on them
+  refactor(button-group): buttons own their styles; M3 spacing, corners and press
+  feat(button): shape hooks for containers and toggleOnClick
+  feat(button): toggle buttons with the M3 selected colours and shape swap
+  fix(styles): focus and pressed state layer opacity 0.10
+  fix(button): align sizes, shapes, colours and states with the M3 button tokens
+  feat(components): export createNavigation and createNavigationSystem
+  style(dialog): format the API module
+  refactor(carousel): slot layout engine and presets ported from vlist
+  fix(themes): legacy secondary on the v3 salmon
+  feat(slider): per-slider colours, M3 sizes, exact canvas width
+  fix(theme): state layers with color-mix
+  fix(button-group): shape, colours and states per the M3 spec
+
+  → v0.8.0-next.4
+
+  → v0.8.0-next.3
+
+  → v0.8.0-next.2
+
+  → v0.8.0-next.1
+
+
+2026-09-04
+
+  feat(button-group): labels shown on the selected button only
+  fix(themes): legacy dark surfaces on the v3 blue-greys
+  fix(theme): observe data-theme on <html> as well as <body>
+  fix(themes): legacy primary container at a real tone
+  feat(themes): legacy theme
+  feat(button-group): connected kind, single and multi selection, size tokens
+
+
+2026-06-18
+
+  feat(snackbar): add configurable queue behavior (queue/replace)
+
+  → v0.7.1
+
+
+2026-04-30
+
+  fix(menu,select): block pointer events on elements behind open dropdown
 
 
 2026-03-30
