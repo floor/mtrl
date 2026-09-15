@@ -258,7 +258,7 @@ export const withInteractiveBehavior = <C extends ElementComponent & EventCompon
     comp.element.addEventListener("mouseenter", () => {
       if (config.variant === CARD_VARIANTS.ELEVATED) {
         comp.element.style.setProperty(
-          "--card-elevation",
+          `--${config.prefix}-card-elevation`,
           String(CARD_ELEVATION_LEVELS.LEVEL2)
         );
       }
@@ -267,7 +267,7 @@ export const withInteractiveBehavior = <C extends ElementComponent & EventCompon
     comp.element.addEventListener("mouseleave", () => {
       if (config.variant === CARD_VARIANTS.ELEVATED) {
         comp.element.style.setProperty(
-          "--card-elevation",
+          `--${config.prefix}-card-elevation`,
           String(CARD_ELEVATION_LEVELS.LEVEL1)
         );
       }
@@ -298,7 +298,7 @@ export const withInteractiveBehavior = <C extends ElementComponent & EventCompon
 
     comp.element.addEventListener("dragstart", (e: DragEvent) => {
       comp.element.style.setProperty(
-        "--card-elevation",
+        `--${config.prefix}-card-elevation`,
         String(CARD_ELEVATION_LEVELS.LEVEL4)
       );
       comp.element.classList.add(`${comp.getClass("card")}--dragging`);
@@ -316,7 +316,7 @@ export const withInteractiveBehavior = <C extends ElementComponent & EventCompon
 
     comp.element.addEventListener("dragend", (e: DragEvent) => {
       comp.element.style.setProperty(
-        "--card-elevation",
+        `--${config.prefix}-card-elevation`,
         String(CARD_ELEVATION_LEVELS.LEVEL1)
       );
       comp.element.classList.remove(`${comp.getClass("card")}--dragging`);

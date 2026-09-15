@@ -155,12 +155,12 @@ export const withElevation = <C extends ElementComponent>(component: C): C => {
   // Set initial elevation based on variant
   if (config.variant === "elevated") {
     component.element.style.setProperty(
-      "--card-elevation",
+      `--${config.prefix}-card-elevation`,
       String(CARD_ELEVATION_LEVELS.LEVEL1),
     );
   } else {
     component.element.style.setProperty(
-      "--card-elevation",
+      `--${config.prefix}-card-elevation`,
       String(CARD_ELEVATION_LEVELS.LEVEL0),
     );
   }

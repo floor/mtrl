@@ -177,7 +177,7 @@ export const withScroll = (config: CarouselConfig) =>
         el.style[vertical ? "height" : "width"] = `${strategy!.itemSize}px`;
         el.style[vertical ? "width" : "height"] = "";
       });
-      element.style.setProperty("--mtrl-carousel-corner", `${cornerRadius}px`);
+      element.style.setProperty(`--${config.prefix}-carousel-corner`, `${cornerRadius}px`);
     };
 
     // ── Placement ───────────────────────────────────────────────
@@ -214,7 +214,7 @@ export const withScroll = (config: CarouselConfig) =>
         el.style.clipPath = vertical
           ? `inset(${inset}px 0 round ${cornerRadius}px)`
           : `inset(0 ${inset}px round ${cornerRadius}px)`;
-        el.style.setProperty("--mtrl-carousel-fade", fade.toFixed(3));
+        el.style.setProperty(`--${config.prefix}-carousel-fade`, fade.toFixed(3));
       }
 
       if (pending !== null) {

@@ -1,9 +1,9 @@
 {
   "name": "mtrl",
-  "version": "0.8.0-next.49",
+  "version": "0.8.0",
   "description": "A functional TypeScript/JavaScript component library with composable architecture based on Material Design 3",
   "author": "floor",
-  "license": "MIT License",
+  "license": "MIT",
   "keywords": [
     "component",
     "library",
@@ -95,6 +95,10 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/floor/mtrl.git"
+  },
+  "homepage": "https://mtrl.app",
+  "bugs": {
+    "url": "https://github.com/floor/mtrl/issues"
   },
   "devDependencies": {
     "@types/bun": "latest",

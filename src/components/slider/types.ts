@@ -52,7 +52,8 @@ export interface SliderConfig extends BaseComponentConfig {
 
   /** Color variant of the slider *
    * A stylesheet can override the drawn colours per slider with the custom
-   * properties --mtrl-slider-color and --mtrl-slider-on-color.
+   * properties `--<prefix>-slider-color` and `--<prefix>-slider-on-color`,
+   * where `<prefix>` is the configured component prefix (mtrl by default).
    */
   color?: SliderColor;
 
