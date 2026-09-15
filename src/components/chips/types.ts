@@ -219,7 +219,7 @@ export interface ChipsConfig {
    * Schema definition for the component structure
    * @internal
    */
-  schema?: any;
+  schema?: unknown;
 
   /**
    * Event handlers for component events
@@ -412,6 +412,19 @@ export interface ChipsComponent {
    * @returns Array of selected chip values
    */
   getSelectedValues: () => (string | null)[];
+
+  /**
+   * Gets the current value - form field compatibility
+   * @returns The first selected value (or null) in single-select mode, the selected values in multi-select mode
+   */
+  getValue: () => string | string[] | null;
+
+  /**
+   * Sets the value by selecting chips by value, without a change event - form field compatibility
+   * @param values - Value or array of values to select; null, undefined or empty clears the selection
+   * @returns The chips instance for chaining
+   */
+  setValue: (values: string | string[] | null | undefined) => ChipsComponent;
 
   /**
    * Selects chips by their values
