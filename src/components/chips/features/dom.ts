@@ -24,7 +24,6 @@ export const withDom =
 
     // Set default values
     const hasLabel = config.label && config.label.trim().length > 0;
-    const labelPosition = config.labelPosition || "start";
 
     // Create optional label element
     let label: HTMLElement | undefined;

@@ -9,7 +9,7 @@ import { BaseComponent, CheckboxComponent, ApiOptions } from "./types";
 export const withAPI =
   ({ disabled, lifecycle, checkable }: ApiOptions) =>
   (component: BaseComponent): CheckboxComponent => ({
-    ...(component as any),
+    ...component,
     element: component.element,
     input: component.input as HTMLInputElement,
 
