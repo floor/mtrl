@@ -46,7 +46,7 @@ export type MenuPosition = (typeof MENU_POSITION)[keyof typeof MENU_POSITION];
  *
  * @category Components
  */
-export interface MenuItem {
+export interface MenuItem<TData = unknown> {
   /**
    * Unique ID for the menu item
    * Required for accessibility and event handling
@@ -92,13 +92,13 @@ export interface MenuItem {
    * Optional array of submenu items
    * Only used when hasSubmenu is true
    */
-  submenu?: MenuItem[];
+  submenu?: MenuItem<TData>[];
 
   /**
    * Additional data to associate with the menu item
    * This can be used for custom behavior in click handlers
    */
-  data?: any;
+  data?: TData;
 }
 
 /**
@@ -147,7 +147,7 @@ export interface MenuGap {
  *
  * @category Components
  */
-export type MenuContent = MenuItem | MenuDivider | MenuGap;
+export type MenuContent<TData = unknown> = MenuItem<TData> | MenuDivider | MenuGap;
 
 /**
  * Configuration interface for the Menu component
@@ -337,15 +337,15 @@ export interface MenuEvent {
  *
  * @category Components
  */
-export interface MenuSelectEvent extends MenuEvent {
+export interface MenuSelectEvent<TData = unknown> extends MenuEvent {
   /** The selected menu item */
-  item: MenuItem;
+  item: MenuItem<TData>;
 
   /** ID of the selected menu item */
   itemId: string;
 
   /** Data associated with the menu item (if any) */
-  itemData?: any;
+  itemData?: TData;
 }
 
 /**

@@ -62,9 +62,10 @@ export interface TrailingIconComponent extends BaseComponent {
  */
 // `& object` lets a component config that shares no key with TrailingIconConfig through.
 export const withTrailingIcon = <T extends TrailingIconConfig & object>(config: T) => 
-  <C extends InputElementComponent>(component: C): C & TrailingIconComponent => {
+  <C extends InputElementComponent>(component: C): C & Partial<TrailingIconComponent> => {
+    // Without trailingIcon configured the component comes back without these members
     if (!config.trailingIcon) {
-      return component as C & TrailingIconComponent;
+      return component;
     }
     
     // Create icon element

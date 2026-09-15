@@ -61,9 +61,10 @@ export interface SuffixTextComponent extends BaseComponent {
  */
 // `& object` lets a component config that shares no key with SuffixTextConfig through.
 export const withSuffixText = <T extends SuffixTextConfig & object>(config: T) => 
-  <C extends LifecycleElementComponent>(component: C): C & SuffixTextComponent => {
+  <C extends LifecycleElementComponent>(component: C): C & Partial<SuffixTextComponent> => {
+    // Without suffixText configured the component comes back without these members
     if (!config.suffixText) {
-      return component as C & SuffixTextComponent;
+      return component;
     }
     
     // Create suffix text element

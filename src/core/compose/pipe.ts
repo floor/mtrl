@@ -269,6 +269,8 @@ export function pipe<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T,
   f19: (arg: S) => T,
   f20: (arg: T) => U
 ): (x: A) => U;
+// A runtime-built array of enhancers that each take and return the same shape
+export function pipe<T>(...fns: Array<(arg: T) => T>): (x: T) => T;
 export function pipe(
   ...fns: Array<(arg: unknown) => unknown>
 ): (x: unknown) => unknown {
@@ -540,6 +542,8 @@ export function compose<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S,
   f2: (arg: B) => C,
   f1: (arg: A) => B
 ): (x: A) => U;
+// A runtime-built array of enhancers that each take and return the same shape
+export function compose<T>(...fns: Array<(arg: T) => T>): (x: T) => T;
 export function compose(
   ...fns: Array<(arg: unknown) => unknown>
 ): (x: unknown) => unknown {

@@ -61,9 +61,10 @@ export interface PrefixTextComponent extends BaseComponent {
  */
 // `& object` lets a component config that shares no key with PrefixTextConfig through.
 export const withPrefixText = <T extends PrefixTextConfig & object>(config: T) => 
-  <C extends LifecycleElementComponent>(component: C): C & PrefixTextComponent => {
+  <C extends LifecycleElementComponent>(component: C): C & Partial<PrefixTextComponent> => {
+    // Without prefixText configured the component comes back without these members
     if (!config.prefixText) {
-      return component as C & PrefixTextComponent;
+      return component;
     }
     
     // Create prefix text element

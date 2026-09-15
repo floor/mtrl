@@ -62,9 +62,10 @@ export interface LeadingIconComponent extends BaseComponent {
  */
 // `& object` lets a component config that shares no key with LeadingIconConfig through.
 export const withLeadingIcon = <T extends LeadingIconConfig & object>(config: T) => 
-  <C extends InputElementComponent>(component: C): C & LeadingIconComponent => {
+  <C extends InputElementComponent>(component: C): C & Partial<LeadingIconComponent> => {
+    // Without leadingIcon configured the component comes back without these members
     if (!config.leadingIcon) {
-      return component as C & LeadingIconComponent;
+      return component;
     }
     
     // Create icon element

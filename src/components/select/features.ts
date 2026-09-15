@@ -11,7 +11,9 @@ import { SelectOption, SelectConfig, BaseComponent } from "./types";
  */
 export const withTextfield =
   (config: SelectConfig) =>
-  (component: BaseComponent): BaseComponent => {
+  <C extends object>(
+    component: C,
+  ): C & Required<Pick<BaseComponent, "element" | "textfield">> => {
     // Get option text from value if provided
     let initialText = "";
     if (config.value) {
@@ -85,6 +87,13 @@ export const withTextfield =
   };
 
 /**
+ * Whether menu item data is a select option. Callers can replace the menu
+ * items through `config.menu`, so the data is not known to be one.
+ */
+const isSelectOption = (value: unknown): value is SelectOption =>
+  typeof value === "object" && value !== null && "id" in value && "text" in value;
+
+/**
  * Recursively processes select options to create menu items
  * Ensures all items have proper data structure
  * @param options The options to process
@@ -123,7 +132,8 @@ const processMenuItems = (options): MenuContent[] => {
  */
 export const withMenu =
   (config: SelectConfig) =>
-  (component: BaseComponent): BaseComponent => {
+  // Without a textfield the component comes back without menu and select
+  <C extends BaseComponent>(component: C): C & Pick<BaseComponent, "menu" | "select"> => {
     if (!component.textfield) {
       console.warn("Cannot add menu: textfield not found");
       return component;
@@ -169,7 +179,7 @@ export const withMenu =
 
       // Safely extract the option data and validate it
       const option = event.item.data;
-      if (!option || !("id" in option) || !("text" in option)) {
+      if (!isSelectOption(option)) {
         console.warn(
           "Invalid menu selection: missing required data properties",
         );
