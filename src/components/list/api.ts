@@ -3,12 +3,12 @@
 /**
  * API configuration options for List component
  */
-interface ApiOptions {
+interface ApiOptions<T = unknown> {
   list: {
     refresh: () => void;
-    getItems: () => any[];
-    getAllItems: () => any[];
-    getVisibleItems: () => any[];
+    getItems: () => T[];
+    getAllItems: () => T[];
+    getVisibleItems: () => T[];
     scrollToItem: (
       itemId: string | number,
       position?: "start" | "center" | "end",
@@ -23,17 +23,17 @@ interface ApiOptions {
     hasNextPage: () => boolean;
   };
   selection: {
-    getSelectedItems: () => any[];
+    getSelectedItems: () => T[];
     getSelectedItemIds: () => string[];
     isItemSelected: (itemId: string | number) => boolean;
-    selectItem: (itemId: string | number) => any;
-    deselectItem: (itemId: string | number) => any;
-    clearSelection: () => any;
-    setSelection: (itemIds: (string | number)[]) => any;
+    selectItem: (itemId: string | number) => unknown;
+    deselectItem: (itemId: string | number) => unknown;
+    clearSelection: () => unknown;
+    setSelection: (itemIds: (string | number)[]) => unknown;
   };
   events: {
-    on: (event: string, handler: Function) => any;
-    off: (event: string, handler: Function) => any;
+    on: (event: string, handler: Function) => unknown;
+    off: (event: string, handler: Function) => unknown;
   };
   lifecycle: {
     destroy: () => void;
@@ -48,8 +48,8 @@ interface ApiOptions {
  */
 interface ComponentWithElements {
   element: HTMLElement;
-  on?: (event: string, handler: Function) => any;
-  off?: (event: string, handler: Function) => any;
+  on?: (event: string, handler: Function) => unknown;
+  off?: (event: string, handler: Function) => unknown;
 }
 
 /**
@@ -58,7 +58,7 @@ interface ComponentWithElements {
  * @returns {Function} Higher-order function that adds API methods to component
  */
 export const withAPI =
-  ({ list, selection, events, lifecycle, config }: ApiOptions) =>
+  <T = unknown>({ list, selection, events, lifecycle, config }: ApiOptions<T>) =>
   (component: ComponentWithElements) => ({
     ...component,
     element: component.element,

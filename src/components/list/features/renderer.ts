@@ -28,7 +28,7 @@ export const withRenderer = (config) => component => {
   /**
    * Default item renderer when none is provided
    */
-  function renderDefaultItem(item, index) {
+  function renderDefaultItem(item) {
     const element = document.createElement('div');
     element.className = LIST_CLASSES.ITEM;
     element.setAttribute('role', 'listitem');
@@ -68,7 +68,7 @@ export const withRenderer = (config) => component => {
       // Create the item element
       const element = userRenderItem 
         ? userRenderItem(item, index)
-        : renderDefaultItem(item, index);
+        : renderDefaultItem(item);
       
       if (!element) return;
       
