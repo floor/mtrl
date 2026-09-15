@@ -45,21 +45,19 @@ export interface InputConfig {
    * Component name for classes
    */
   componentName?: string;
-
-  [key: string]: any;
 }
 
 /**
  * Interface for components with emit capability
  */
 interface ComponentWithEmit extends ElementComponent {
-  emit: (event: string, data: any) => any;
+  emit: (event: string, data: unknown) => unknown;
 }
 
 /**
  * Type guard to check if a component has emit capability
  */
-function hasEmit(component: any): component is ComponentWithEmit {
+function hasEmit(component: object): component is ComponentWithEmit {
   return "emit" in component && typeof component.emit === "function";
 }
 
@@ -88,7 +86,7 @@ export interface InputComponent extends ElementComponent {
   /**
    * Event emission method if available
    */
-  emit?: (event: string, data: any) => InputComponent;
+  emit?: (event: string, data: unknown) => InputComponent;
 }
 
 /**
@@ -99,7 +97,8 @@ export interface InputComponent extends ElementComponent {
  * @returns Function that enhances a component with input functionality
  */
 export const withInput =
-  <T extends InputConfig>(config: T = {} as T) =>
+  // `& object` lets a component config that shares no key with InputConfig through.
+  <T extends InputConfig & object>(config: T = {} as T) =>
   <C extends ElementComponent>(component: C): C & InputComponent => {
     const input = document.createElement("input");
     const name = component.componentName || "component";

@@ -8,7 +8,6 @@ import { ElementComponent } from '../component';
 export interface StyleConfig {
   variant?: string;
   size?: string;
-  [key: string]: any;
 }
 
 /**
@@ -17,7 +16,8 @@ export interface StyleConfig {
  * @param config - Configuration object containing style information
  * @returns Function that enhances a component with style classes
  */
-export const withStyle = <T extends StyleConfig>(config: T = {} as T) => 
+// `& object` lets a component config that shares no key with StyleConfig through.
+export const withStyle = <T extends StyleConfig & object>(config: T = {} as T) => 
   <C extends ElementComponent>(component: C): C => {
     if (config.variant) {
       component.element.classList.add(`${component.getClass('button')}--${config.variant}`);

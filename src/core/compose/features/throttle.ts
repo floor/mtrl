@@ -25,8 +25,6 @@ export interface ThrottleConfig {
       options?: { leading?: boolean; trailing?: boolean };
     }
   >;
-
-  [key: string]: any;
 }
 
 /**
@@ -85,7 +83,8 @@ export interface ThrottleComponent extends BaseComponent {
  * ```
  */
 export const withThrottle =
-  (config: ThrottleConfig = {}) =>
+  // `& object` lets a component config that shares no key with ThrottleConfig through.
+  <T extends ThrottleConfig & object>(config: T = {} as T) =>
   <C extends ElementComponent>(component: C): C & ThrottleComponent => {
     // Store throttled handlers for cleanup
     const throttledHandlers: Record<
