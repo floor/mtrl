@@ -14,7 +14,7 @@ const root = '.mtrl-extended-fab';
 beforeAll(() => { css = compileString("@use 'components/extended-fab';", { loadPaths: ['src/styles'] }).css.replace(/\/\*[\s\S]*?\*\//g, ''); });
 for (const [size, height, icon, padding, gap, radius, fontSize, lineHeight, weight] of [
   ['small',56,24,16,8,16,16,24,500],
-  ['medium',80,28,26,16,20,22,28,500],
+  ['medium',80,28,26,16,20,22,28,400],
   ['large',96,32,28,20,28,24,32,400],
 ] as const) {
   test(`${size}: expressive dimensions and label type`, () => {
