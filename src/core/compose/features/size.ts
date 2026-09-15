@@ -9,7 +9,6 @@ export interface SizeConfig {
   size?: string;
   prefix?: string;
   componentName?: string;
-  [key: string]: any;
 }
 
 /**
@@ -19,7 +18,8 @@ export interface SizeConfig {
  * @returns Function that enhances a component with the size class
  */
 export const withSize =
-  <T extends SizeConfig>(config: T) =>
+  // `& object` lets a component config that shares no key with SizeConfig through.
+  <T extends SizeConfig & object>(config: T) =>
   <C extends ElementComponent>(component: C): C => {
     if (config.size && component.element) {
       // Use config.componentName since we know it's there

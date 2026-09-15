@@ -56,7 +56,7 @@ export interface ThemeConfig {
   /**
    * Theme variants
    */
-  variants: Record<string, any>;
+  variants: Record<string, unknown>;
 }
 
 /**

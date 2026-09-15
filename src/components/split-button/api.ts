@@ -6,8 +6,7 @@ import {
   SplitButtonEvent,
   SplitButtonEventType,
 } from "./types";
-import type { ButtonComponent } from "../button/types";
-import type { MenuComponent, MenuContent } from "../menu/types";
+import type { MenuContent } from "../menu/types";
 import { SPLIT_BUTTON_CLASSES, SPLIT_BUTTON_EVENTS } from "./constants";
 
 interface ApiOptions {
@@ -25,9 +24,7 @@ export const withAPI =
   (component: BaseComponent): SplitButtonComponent => {
     const element = component.element;
     const prefix = config.prefix || "mtrl";
-    const leading = component.leading as ButtonComponent;
-    const trailing = component.trailing as ButtonComponent;
-    const menu = component.menu as MenuComponent | undefined;
+    const { leading, trailing, menu } = component;
     const expandedClass = `${prefix}-${SPLIT_BUTTON_CLASSES.EXPANDED}`;
 
     let expanded = false;

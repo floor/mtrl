@@ -47,7 +47,7 @@ const createSplitButton = (config: SplitButtonConfig = {}): SplitButtonComponent
           config: baseConfig,
           lifecycle: { destroy: comp.lifecycle?.destroy || (() => {}) },
         })(comp)
-    )(baseConfig) as SplitButtonComponent;
+    )(baseConfig);
   } catch (error) {
     console.error(
       "Split button creation error:",

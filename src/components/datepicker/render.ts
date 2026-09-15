@@ -10,9 +10,24 @@ import {
   RANGE_END_CLASS,
   RANGE_MIDDLE_CLASS,
 } from "./types";
-import { CalendarDate } from "./types";
+import type { CalendarDate, CalendarEmit, DatePickerState } from "./types";
 import { generateCalendarDates, generateYearRange } from "./utils";
 import { createElement } from "../../core/dom/create";
+
+/**
+ * State fields and the event emitter the calendar renderers read
+ */
+type RenderParams = Pick<
+  DatePickerState,
+  | "currentView"
+  | "currentMonth"
+  | "currentYear"
+  | "selectedDate"
+  | "rangeEndDate"
+  | "minDate"
+  | "maxDate"
+  | "prefix"
+> & { emit: CalendarEmit };
 
 /**
  * Renders the calendar header with navigation controls
@@ -25,7 +40,10 @@ export const renderHeader = ({
   currentView,
   prefix,
   emit,
-}: any): HTMLElement => {
+}: Pick<
+  RenderParams,
+  "currentMonth" | "currentYear" | "currentView" | "prefix" | "emit"
+>): HTMLElement => {
   const header = createElement({
     tag: "div",
     className: `${prefix}-datepicker-header`,
@@ -178,7 +196,7 @@ export const renderDays = ({
   maxDate,
   prefix,
   emit,
-}: any): HTMLElement => {
+}: Omit<RenderParams, "currentView">): HTMLElement => {
   const daysGrid = createElement({
     tag: "div",
     className: `${prefix}-datepicker-days`,
@@ -246,7 +264,7 @@ export const renderMonthSelection = ({
   currentMonth,
   prefix,
   emit,
-}: any): HTMLElement => {
+}: Pick<RenderParams, "currentMonth" | "prefix" | "emit">): HTMLElement => {
   const monthsGrid = createElement({
     tag: "div",
     className: `${prefix}-datepicker-months`,
@@ -289,7 +307,7 @@ export const renderYearSelection = ({
   currentYear,
   prefix,
   emit,
-}: any): HTMLElement => {
+}: Pick<RenderParams, "currentYear" | "prefix" | "emit">): HTMLElement => {
   const yearsGrid = createElement({
     tag: "div",
     className: `${prefix}-datepicker-years`,
@@ -330,7 +348,10 @@ export const renderYearSelection = ({
  * @param {Object} params - Rendering parameters
  * @returns {HTMLElement} Footer element
  */
-export const renderFooter = ({ prefix, emit }: any): HTMLElement => {
+export const renderFooter = ({
+  prefix,
+  emit,
+}: Pick<RenderParams, "prefix" | "emit">): HTMLElement => {
   const footer = createElement({
     tag: "div",
     className: `${prefix}-datepicker-footer`,
@@ -380,7 +401,10 @@ export const renderFooter = ({ prefix, emit }: any): HTMLElement => {
  * @param {Function} emit - Event emission function
  * @returns {HTMLElement} Rendered calendar
  */
-export const renderCalendar = (state: any, emit: Function): HTMLElement => {
+export const renderCalendar = (
+  state: DatePickerState,
+  emit: CalendarEmit
+): HTMLElement => {
   const {
     prefix,
     currentView,

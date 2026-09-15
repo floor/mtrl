@@ -1,7 +1,33 @@
 // src/components/menu/features/keyboard.ts
 
 import { createMenuTasks } from "./tasks";
-import { MenuItem } from "../types";
+import { MenuItem, MenuContent } from "../types";
+
+/**
+ * Menu state the keyboard handlers read
+ */
+interface KeyboardMenuState {
+  items: MenuContent[];
+}
+
+/**
+ * Menu actions the keyboard handlers call
+ */
+interface KeyboardActions {
+  closeMenu: (event: Event, restoreFocus?: boolean) => void;
+  closeSubmenu: (level: number) => void;
+  findItemById: (id: string) => MenuItem | null;
+  handleSubmenuClick: (
+    item: MenuItem,
+    index: number,
+    itemElement: HTMLElement,
+  ) => void;
+  handleNestedSubmenuClick: (
+    item: MenuItem,
+    index: number,
+    itemElement: HTMLElement,
+  ) => void;
+}
 
 /**
  * Keyboard navigation handler for menus
@@ -143,22 +169,8 @@ export const createKeyboardNavigation = (component) => {
    */
   const handleMenuKeydown = (
     e: KeyboardEvent,
-    state: any,
-    actions: {
-      closeMenu: (event: Event, restoreFocus?: boolean) => void;
-      closeSubmenu: (level: number) => void;
-      findItemById: (id: string) => MenuItem | null;
-      handleSubmenuClick: (
-        item: MenuItem,
-        index: number,
-        itemElement: HTMLElement,
-      ) => void;
-      handleNestedSubmenuClick: (
-        item: MenuItem,
-        index: number,
-        itemElement: HTMLElement,
-      ) => void;
-    },
+    state: KeyboardMenuState,
+    actions: KeyboardActions,
   ): void => {
     // Which menu the key belongs to is read from the element the event came
     // from. It used to come from `state.activeSubmenu`, a field the
@@ -432,8 +444,8 @@ export const createKeyboardNavigation = (component) => {
    */
   const setupKeyboardHandlers = (
     menuElement: HTMLElement,
-    state: any,
-    actions: any,
+    state: KeyboardMenuState,
+    actions: KeyboardActions,
   ) => {
     if (tasks.destroyed) return;
     removeKeyboardHandlers(menuElement);

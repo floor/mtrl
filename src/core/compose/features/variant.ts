@@ -9,7 +9,6 @@ export interface VariantConfig {
   variant?: string;
   prefix?: string;
   componentName?: string;
-  [key: string]: any;
 }
 
 /**
@@ -19,7 +18,8 @@ export interface VariantConfig {
  * @returns Function that enhances a component with the variant class
  */
 export const withVariant =
-  <T extends VariantConfig>(config: T) =>
+  // `& object` lets a component config that shares no key with VariantConfig through.
+  <T extends VariantConfig & object>(config: T) =>
   <C extends ElementComponent>(component: C): C => {
     if (config.variant && component.element) {
       // Use config.componentName since we know it's there

@@ -49,7 +49,6 @@ export interface RippleController {
 export interface RippleFeatureConfig {
   ripple?: boolean;
   rippleConfig?: RippleConfig;
-  [key: string]: any;
 }
 
 /**
@@ -142,7 +141,8 @@ export const createRipple = (config: RippleConfig = {}): RippleController => {
  * @returns Function that enhances a component with ripple effect
  */
 export const withRipple =
-  <T extends RippleFeatureConfig>(config: T) =>
+  // `& object` lets a component config that shares no key with RippleFeatureConfig through.
+  <T extends RippleFeatureConfig & object>(config: T) =>
   <C extends ElementComponent & Partial<LifecycleComponent>>(
     component: C
   ): C & RippleComponent => {

@@ -4,7 +4,7 @@
  * Configuration for component creation
  */
 export interface ComponentConfig {
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 /**
@@ -34,9 +34,10 @@ export interface Component {
  * @param config - Component configuration
  * @returns Basic component structure
  */
-export const createComponent = (config: ComponentConfig = {}): Component => ({
+export const createComponent = (config: object = {}): Component => ({
   element: null,
-  config,
+  // Component configs are interfaces without index signatures; their keys read as unknown.
+  config: config as ComponentConfig,
   setup() {
     return this;
   }

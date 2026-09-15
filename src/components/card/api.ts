@@ -10,9 +10,19 @@ import { BaseComponent, CardComponent, ApiOptions } from './types';
  * @returns {Function} Higher-order function that adds API methods to component
  * @category Components
  */
-export const withAPI = ({ lifecycle }: ApiOptions) => (component: BaseComponent): CardComponent => ({
+/**
+ * The card as the pipe hands it over: the API sets `config` from the options,
+ * and addClass returns the card itself once the API wraps it
+ * @internal
+ */
+type ComponentWithElements = Omit<BaseComponent, 'config' | 'addClass'> & {
+  addClass: (...classes: string[]) => unknown;
+};
+
+export const withAPI = ({ lifecycle, config }: ApiOptions) => (component: ComponentWithElements): CardComponent => ({
   ...component,
   element: component.element,
+  config,
 
   /**
    * Adds content to the card.
@@ -204,6 +214,17 @@ export const withAPI = ({ lifecycle }: ApiOptions) => (component: BaseComponent)
    */
   focus(): CardComponent {
     component.element.focus();
+    return this;
+  },
+
+  /**
+   * Adds CSS classes to the card element.
+   * 
+   * @param classes - One or more class names to add
+   * @returns {CardComponent} The card instance for chaining
+   */
+  addClass(...classes: string[]): CardComponent {
+    component.addClass(...classes);
     return this;
   },
 

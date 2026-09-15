@@ -9,7 +9,11 @@ import {
 } from "../../core/compose/features";
 
 import { withAPI } from "./api";
-import { DatePickerConfig, DatePickerComponent } from "./types";
+import {
+  DatePickerConfig,
+  DatePickerComponent,
+  DatePickerState,
+} from "./types";
 import {
   createBaseConfig,
   getContainerConfig,
@@ -20,6 +24,9 @@ import {
 import { formatDate, parseDate } from "./utils";
 import { renderCalendar } from "./render";
 import { createElement } from "../../core/dom/create";
+
+/** The input comes from withElement with tag "input"; this lets it be typed as one */
+const isInputElement = (el: Element): el is HTMLInputElement => el.tagName === "INPUT";
 
 /**
  * Creates a new DatePicker component
@@ -33,7 +40,7 @@ const createDatePicker = (
 
   try {
     // Initialize state
-    const state: any = {
+    const state: DatePickerState = {
       isOpen: false,
       selectedDate: null,
       rangeEndDate: null,
@@ -77,7 +84,7 @@ const createDatePicker = (
         this.calendarElement.innerHTML = "";
 
         // Render calendar content
-        const calendar = renderCalendar(this, (event, data) => {
+        const calendar = renderCalendar(this, (...[event, data]) => {
           switch (event) {
             case "dateSelected":
               this.handleDateSelection(data.date);
@@ -279,7 +286,11 @@ const createDatePicker = (
       withElement(getInputConfig(baseConfig))
     )(baseConfig);
 
-    state.input = inputComponent.element;
+    const input = inputComponent.element;
+    if (!isInputElement(input)) {
+      throw new Error("Datepicker input element is not an input");
+    }
+    state.input = input;
     component.element.appendChild(state.input);
 
     // Update input value

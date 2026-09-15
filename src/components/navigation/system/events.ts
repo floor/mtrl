@@ -1,6 +1,11 @@
 // src/components/navigation/system/events.ts
 
-import { NavigationSystemState } from "./types";
+import {
+  NavigationSystem,
+  NavigationSystemChangeEvent,
+  NavigationSystemResolvedConfig,
+  NavigationSystemState,
+} from "./types";
 
 /**
  * Registers rail navigation event handlers
@@ -14,17 +19,17 @@ import { NavigationSystemState } from "./types";
  */
 export const registerRailEvents = (
   state: NavigationSystemState,
-  config: any,
+  config: NavigationSystemResolvedConfig,
   updateDrawerContent: (sectionId: string) => void,
   showDrawer: () => void,
   hideDrawer: () => void,
-  systemApi: any
+  systemApi: NavigationSystem
 ): void => {
   const rail = state.rail;
   if (!rail) return;
 
   // Register for change events - will listen for when rail items are clicked
-  rail.on("change", (event: any) => {
+  rail.on("change", (event: NavigationSystemChangeEvent) => {
     // Extract ID from event data
     const id = event?.id;
 
@@ -57,7 +62,7 @@ export const registerRailEvents = (
     }, 50);
   });
 
-  rail.on("mouseover", (event: any) => {
+  rail.on("mouseover", (event: { id?: string }) => {
     const id = event?.id;
 
     // Set rail mouse state
@@ -124,9 +129,9 @@ export const registerRailEvents = (
  */
 export const registerDrawerEvents = (
   state: NavigationSystemState,
-  config: any,
+  config: NavigationSystemResolvedConfig,
   hideDrawer: () => void,
-  systemApi: any
+  systemApi: NavigationSystem
 ): void => {
   const drawer = state.drawer;
   if (!drawer) return;
@@ -134,7 +139,7 @@ export const registerDrawerEvents = (
   // Use the component's native event system
   if (typeof drawer.on === "function") {
     // Handle item selection
-    drawer.on("change", (event: any) => {
+    drawer.on("change", (event: NavigationSystemChangeEvent) => {
       const id = event.id;
 
       state.activeSubsection = id;

@@ -1,6 +1,14 @@
 // src/components/navigation/system/core.ts
 
-import { NavigationSystemState, NavigationItem } from "./types";
+import {
+  NavigationSystem,
+  NavigationSystemComponent,
+  NavigationSystemMobileConfig,
+  NavigationSystemResolvedConfig,
+  NavigationSystemState,
+  NavigationItem,
+} from "./types";
+import { NavItemData } from "../types";
 import { isMobileDevice } from "../../../core/utils/mobile";
 import createNavigation from "../navigation";
 
@@ -35,7 +43,7 @@ export const updateDrawerContent = (
   // Clear existing drawer items first using the API
   const currentItems = state.drawer.getAllItems();
   if (currentItems?.length > 0) {
-    currentItems.forEach((item: any) => {
+    currentItems.forEach((item: NavItemData) => {
       state.drawer.removeItem(item.config.id);
     });
   }
@@ -58,8 +66,8 @@ export const updateDrawerContent = (
  */
 export const createRailNavigation = (
   state: NavigationSystemState,
-  config: any
-): any => {
+  config: NavigationSystemResolvedConfig
+): NavigationSystemComponent => {
   // Build rail items from sections
   const railItems = Object.keys(state.items || {}).map((sectionId) => ({
     id: sectionId,
@@ -90,8 +98,8 @@ export const createRailNavigation = (
  */
 export const createDrawerNavigation = (
   state: NavigationSystemState,
-  config: any
-): any => {
+  config: NavigationSystemResolvedConfig
+): NavigationSystemComponent => {
   // Create the drawer component (initially empty)
   const drawer = createNavigation({
     variant: "drawer",
@@ -122,7 +130,7 @@ export const createDrawerNavigation = (
  */
 export const showDrawer = (
   state: NavigationSystemState,
-  mobileConfig: any
+  mobileConfig: NavigationSystemMobileConfig
 ): void => {
   if (!state.drawer) return;
 
@@ -156,7 +164,7 @@ export const showDrawer = (
  */
 export const hideDrawer = (
   state: NavigationSystemState,
-  mobileConfig: any
+  mobileConfig: NavigationSystemMobileConfig
 ): void => {
   if (!state.drawer) return;
 
@@ -197,10 +205,10 @@ export const isDrawerVisible = (state: NavigationSystemState): boolean => {
  */
 export const checkMobileState = (
   state: NavigationSystemState,
-  mobileConfig: any,
+  mobileConfig: NavigationSystemMobileConfig,
   setupMobileMode: () => void,
   teardownMobileMode: () => void,
-  systemApi: any
+  systemApi: NavigationSystem
 ): void => {
   const prevState = state.isMobile;
   state.isMobile =

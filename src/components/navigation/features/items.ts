@@ -27,7 +27,6 @@ interface NavigationConfig {
   prefix?: string;
   items?: NavItemConfig[];
   debug?: boolean;
-  [key: string]: any;
 }
 
 /**
@@ -58,7 +57,7 @@ function getElementId(
  */
 export const withNavItems =
   (config: NavigationConfig) =>
-  (component: BaseComponent): ItemsComponent => {
+  <C extends BaseComponent>(component: C): C & ItemsComponent => {
     const items = new Map<string, NavItemData>();
     let activeItem: NavItemData | null = null;
     const prefix = config.prefix || "mtrl";

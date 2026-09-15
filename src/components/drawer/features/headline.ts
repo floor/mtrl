@@ -7,7 +7,18 @@ import { DrawerConfig } from "../types";
 interface HeadlineBaseComponent {
   element: HTMLElement;
   getClass: (name: string) => string;
-  [key: string]: unknown;
+}
+
+/**
+ * What withHeadline adds
+ */
+export interface HeadlineFeature {
+  headlineElement: HTMLElement | null;
+  drawerHeadline: {
+    setHeadline: (text: string) => void;
+    getHeadline: () => string;
+    getElement: () => HTMLElement | null;
+  };
 }
 
 /**
@@ -18,7 +29,7 @@ interface HeadlineBaseComponent {
  */
 export const withHeadline =
   (config: DrawerConfig) =>
-  (component: HeadlineBaseComponent): HeadlineBaseComponent => {
+  <C extends HeadlineBaseComponent>(component: C): C & HeadlineFeature => {
     let headlineElement: HTMLElement | null = null;
     let headlineText: string = config.headline || "";
 

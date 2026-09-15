@@ -20,7 +20,7 @@ const isPosition = (value: unknown): value is SnackbarPosition =>
  * @returns {Function} Higher-order function that adds position features
  */
 export const withPosition = (config: PositionConfig) =>
-  (component: BaseComponent): BaseComponent => {
+  <C extends BaseComponent>(component: C): C & Required<Pick<BaseComponent, 'position'>> => {
     const prefix = config.prefix || 'mtrl';
     let position: SnackbarPosition = isPosition(config.position) ? config.position : SNACKBAR_POSITIONS.CENTER;
 

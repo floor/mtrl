@@ -4,6 +4,25 @@ import { createMenuTasks } from "./tasks";
 import { MenuConfig } from "../types";
 
 /**
+ * A component used as the menu opener. It is resolved by its element,
+ * getElement() or input, and follows the menu's open state when it can.
+ */
+interface OpenerComponent {
+  element?: HTMLElement;
+  getElement?: () => HTMLElement;
+  input?: HTMLElement;
+  setActive?: (active: boolean) => void;
+  selected?: boolean;
+  focus?: () => void;
+  blur?: () => void;
+}
+
+/**
+ * What a menu opener can be given as: a selector, an element or a component
+ */
+type OpenerTarget = string | HTMLElement | OpenerComponent;
+
+/**
  * Adds opener functionality to menu component
  * Manages the relationship between menu and its opener element
  *
@@ -38,7 +57,7 @@ const withOpener = (config: MenuConfig) => (component) => {
   // Track opener state
   const state = {
     openerElement: null as HTMLElement,
-    openerComponent: null as any,
+    openerComponent: null as OpenerComponent | null,
     activeClass: "", // Store the appropriate active class based on element type
   };
 
@@ -48,8 +67,8 @@ const withOpener = (config: MenuConfig) => (component) => {
    * or DOM elements directly
    */
   const resolveOpener = (
-    opener: any,
-  ): { element: HTMLElement; component: any } => {
+    opener: OpenerTarget,
+  ): { element: HTMLElement; component: OpenerComponent | null } => {
     if (!opener) return { element: null, component: null };
 
     // Handle string selector
@@ -120,7 +139,7 @@ const withOpener = (config: MenuConfig) => (component) => {
    */
   const setupOpenerEvents = (openerData: {
     element: HTMLElement;
-    component: any;
+    component: OpenerComponent | null;
   }): void => {
     const { element: openerElement, component: openerComponent } = openerData;
 
@@ -456,7 +475,7 @@ const withOpener = (config: MenuConfig) => (component) => {
        * @param opener - New opener element, selector, or component
        * @returns Component for chaining
        */
-      setOpener(opener: any) {
+      setOpener(opener: OpenerTarget) {
         const resolved = resolveOpener(opener);
         if (resolved.element) {
           setupOpenerEvents(resolved);

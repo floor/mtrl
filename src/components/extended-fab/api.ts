@@ -1,5 +1,7 @@
 // src/components/extended-fab/api.ts
 import { ExtendedFabComponent } from './types';
+import type { IconManager } from '../../core/compose/features/icon';
+import type { TextManager } from '../../core/compose/features/text';
 
 /**
  * API configuration options for the Extended FAB component
@@ -31,7 +33,7 @@ interface ApiOptions {
    */
   text: {
     /** Sets text content */
-    setText: (text: string) => any;
+    setText: (text: string) => unknown;
     /** Gets text content */
     getText: () => string;
   };
@@ -48,14 +50,24 @@ interface ApiOptions {
  * @category Components
  * @internal
  */
-interface ComponentWithElements {
+interface ComponentWithElements
+  extends Pick<ExtendedFabComponent, 'disabled' | 'lifecycle'> {
+  /** Subscribes to an event; the API returns the component itself */
+  on: (event: string, handler: Function) => unknown;
+  
+  /** Unsubscribes from an event; the API returns the component itself */
+  off: (event: string, handler: Function) => unknown;
+  
+  /** Adds CSS classes; the API returns the component itself */
+  addClass: (...classes: string[]) => unknown;
+  
   /** The DOM element */
   element: HTMLElement;
   
   /** Icon management */
   icon: {
     /** Sets icon HTML content */
-    setIcon: (html: string) => any;
+    setIcon: (html: string) => IconManager;
     /** Gets icon HTML content */
     getIcon: () => string;
     /** Gets icon DOM element */
@@ -65,7 +77,7 @@ interface ComponentWithElements {
   /** Text management */
   text: {
     /** Sets text content */
-    setText: (text: string) => any;
+    setText: (text: string) => TextManager;
     /** Gets text content */
     getText: () => string;
     /** Gets text DOM element */
@@ -91,7 +103,7 @@ interface ComponentWithElements {
  */
 export const withAPI = ({ disabled, lifecycle, text, className }: ApiOptions) => 
   (component: ComponentWithElements): ExtendedFabComponent => ({
-    ...component as any,
+    ...component,
     element: component.element as HTMLButtonElement,
     
     getValue: () => (component.element as HTMLButtonElement).value,
@@ -184,6 +196,22 @@ export const withAPI = ({ disabled, lifecycle, text, className }: ApiOptions) =>
       });
       component.element.dispatchEvent(event);
       
+      return this;
+    },
+    
+    // Event methods
+    on(event: string, handler: Function) {
+      component.on(event, handler);
+      return this;
+    },
+    
+    off(event: string, handler: Function) {
+      component.off(event, handler);
+      return this;
+    },
+    
+    addClass(...classes: string[]) {
+      component.addClass(...classes);
       return this;
     },
     

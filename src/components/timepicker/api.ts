@@ -13,12 +13,13 @@ import { TIMEPICKER_EVENTS as EVENTS, TIMEPICKER_SELECTORS as SELECTORS } from '
 import { formatTime, padZero } from './utils';
 import { renderTimePicker } from './render';
 import { renderClockDial, getTimeValueFromClick } from './clockdial';
+import type { ElementComponent } from '../../core/compose/component';
 
 interface ApiOptions {
   events: {
-    on: (event: string, handler: Function) => any;
-    off: (event: string, handler: Function) => any;
-    emit: (event: string, data?: any) => any;
+    on: (event: string, handler: Function) => void;
+    off: (event: string, handler: Function) => void;
+    emit: (event: string, data?: unknown) => void;
   };
   lifecycle: {
     destroy: () => void;
@@ -37,7 +38,7 @@ interface ApiOptions {
  * @returns TimePicker component API
  */
 export const createTimePickerAPI = (
-  baseComponent: any,
+  baseComponent: ElementComponent,
   modalElement: HTMLElement,
   dialogElement: HTMLElement,
   timeValue: TimeValue,

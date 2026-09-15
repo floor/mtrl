@@ -13,13 +13,12 @@ import { ChipConfig } from "../types";
 interface BaseComponent {
   element: HTMLElement;
   disabled?: {
-    enable: () => any;
-    disable: () => any;
+    enable: () => void;
+    disable: () => void;
   };
   lifecycle?: {
     destroy: () => void;
   };
-  [key: string]: any;
 }
 
 /**
@@ -45,7 +44,7 @@ export const createBaseConfig = (config: ChipConfig = {}): ChipConfig =>
  */
 export const getElementConfig = (config: ChipConfig) => {
   // Create the attributes object
-  const attributes: Record<string, any> = {
+  const attributes: Record<string, string> = {
     role: "button",
     tabindex: "0",
   };

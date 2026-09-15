@@ -105,7 +105,7 @@ export interface SliderConfig extends BaseComponentConfig {
   prefix?: string;
 
   /** Component schema */
-  schema?: any;
+  schema?: object;
 }
 
 /**
@@ -114,7 +114,7 @@ export interface SliderConfig extends BaseComponentConfig {
  */
 export interface SliderEvent {
   /** The slider component that triggered the event */
-  slider: any;
+  slider: SliderComponent;
 
   /** Current slider value */
   value: number;

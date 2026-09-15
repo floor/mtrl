@@ -269,7 +269,7 @@ export interface DialogButton {
    * Additional button attributes to pass to the button element
    * @example { 'data-id': 'save-button', 'form': 'profile-form' }
    */
-  attributes?: Record<string, any>;
+  attributes?: Record<string, unknown>;
 }
 
 /**

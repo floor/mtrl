@@ -9,7 +9,9 @@ import {
   createCardMedia,
   createCardActions,
 } from "./content";
-import { CardComponent, CardSchema, BaseComponent } from "./types";
+import type { ElementComponent } from "../../core/compose/component";
+import type { EventComponent } from "../../core/compose/features";
+import { CardComponent, CardComponentConfig, CardSchema } from "./types";
 import { CARD_VARIANTS, CARD_ELEVATIONS } from "./constants";
 
 /**
@@ -150,8 +152,8 @@ export const applyInlineConfiguration = (
  * @category Components
  *
  */
-export const createBaseConfig = (config: CardSchema = {}): CardSchema =>
-  createComponentConfig(defaultConfig, config, "card") as CardSchema;
+export const createBaseConfig = (config: CardSchema = {}): CardComponentConfig =>
+  createComponentConfig(defaultConfig, config, "card");
 
 /**
  * Generates element configuration for the Card component.
@@ -219,7 +221,9 @@ export const getElementConfig = (config: CardSchema) => {
  * @category Components
  *
  */
-export const getApiConfig = (comp: any) => ({
+export const getApiConfig = (comp: {
+  lifecycle?: { destroy?: () => void };
+}) => ({
   lifecycle: {
     destroy: () => comp.lifecycle?.destroy?.(),
   },
@@ -239,12 +243,12 @@ export const CARD_ELEVATION_LEVELS = CARD_ELEVATIONS;
  * guidelines. Implements mouse, keyboard, and touch interactions with appropriate
  * visual feedback and accessibility support.
  *
- * @param {BaseComponent} comp - Card component
- * @returns {BaseComponent} Enhanced card component
+ * @param {ElementComponent} comp - Card component
+ * @returns {ElementComponent} Enhanced card component
  * @category Components
  *
  */
-export const withInteractiveBehavior = (comp: BaseComponent): BaseComponent => {
+export const withInteractiveBehavior = <C extends ElementComponent & EventComponent>(comp: C): C => {
   const config = comp.config;
   const isInteractive = config.interactive || config.clickable;
 

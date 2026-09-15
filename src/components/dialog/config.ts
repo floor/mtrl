@@ -45,7 +45,7 @@ export const getElementConfig = (config: DialogConfig) => {
     config.role ||
     (config.size === 'fullscreen' ? 'dialog' : 'alertdialog');
 
-  const attributes: Record<string, any> = {
+  const attributes: Record<string, string | number> = {
     role,
     tabindex: -1
   };
@@ -62,10 +62,9 @@ export const getElementConfig = (config: DialogConfig) => {
 
 /**
  * Generates element configuration for the Dialog overlay
- * @param {DialogConfig} config - Dialog configuration
  * @returns {Object} Element configuration object for overlay
  */
-export const getOverlayConfig = (config: DialogConfig) => {
+export const getOverlayConfig = () => {
   return {
     tag: 'div',
     // The overlay is the scrim: it is decoration, and the dialog inside it

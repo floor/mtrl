@@ -8,20 +8,21 @@
  * Set attributes on an element with performance optimizations
  * Fast path for single attribute, efficient iteration for multiple
  *
- * @param {HTMLElement} element - Element to set attributes on
- * @param {Record<string, any>} attributes - Attributes to set
- * @returns {HTMLElement} The element for chaining
+ * @param {HTMLElement | SVGElement} element - Element to set attributes on
+ * @param {object} attributes - Attributes to set
+ * @returns {HTMLElement | SVGElement} The element for chaining
  */
-export const setAttributes = (
-  element: HTMLElement,
-  attributes: Record<string, any> = {}
-): HTMLElement => {
+export const setAttributes = <E extends HTMLElement | SVGElement>(
+  element: E,
+  attributes: object = {}
+): E => {
   if (!attributes) return element;
+  const values = attributes as Record<string, unknown>;
 
   // Fast path: single attribute - avoid Object.keys overhead
   const keys = Object.keys(attributes);
   if (keys.length === 1) {
-    const value = attributes[keys[0]];
+    const value = values[keys[0]];
     if (value != null) {
       element.setAttribute(keys[0], String(value));
     }
@@ -30,7 +31,7 @@ export const setAttributes = (
 
   // General case: multiple attributes - for...in is faster than Object.entries
   for (const key in attributes) {
-    const value = attributes[key];
+    const value = values[key];
     if (value != null) {
       element.setAttribute(key, String(value));
     }
@@ -63,7 +64,7 @@ export const removeAttributes = (
  * Single pass through operations array for optimal performance
  *
  * @param {HTMLElement} element - Element to modify
- * @param {Array<{action: "set" | "remove", key: string, value?: any}>} operations - Array of attribute operations
+ * @param {Array<{action: "set" | "remove", key: string, value?: unknown}>} operations - Array of attribute operations
  * @returns {HTMLElement} The element for chaining
  */
 export const batchAttributes = (
@@ -71,7 +72,7 @@ export const batchAttributes = (
   operations: Array<{
     action: "set" | "remove";
     key: string;
-    value?: any;
+    value?: unknown;
   }>
 ): HTMLElement => {
   // Process all operations in a single pass for optimal performance

@@ -1,5 +1,13 @@
 // src/components/tabs/types.ts
 import type { BadgeComponent } from '../badge';
+import type { ButtonComponent } from '../button/types';
+
+/**
+ * Button methods the tab delegates to; each one is checked before use
+ */
+export type TabButton = Partial<
+  Pick<ButtonComponent, 'getValue' | 'setValue' | 'getText' | 'setText' | 'getIcon' | 'setIcon'>
+>;
 import { TabIndicator } from './indicator';
 
 /**
@@ -285,6 +293,9 @@ export interface TabComponent {
   /** The tab's DOM element */
   element: HTMLElement;
   
+  /** The button the tab is built on */
+  button?: TabButton;
+  
   /** The tab's badge component (if any) */
   badge?: BadgeComponent;
   
@@ -449,7 +460,7 @@ export interface TabsComponent {
    * @param data - Event data
    * @returns Tabs component for chaining
    */
-  emit?: (event: string, data: any) => TabsComponent;
+  emit?: (event: string, data: unknown) => TabsComponent;
   
   /**
    * Destroys the tabs component and all tabs
@@ -459,7 +470,7 @@ export interface TabsComponent {
   /**
    * Tab click event handler
    */
-  handleTabClick: (event: any, tab: TabComponent) => void;
+  handleTabClick: (event: unknown, tab: TabComponent) => void;
   
   /**
    * Scroll container for scrollable tabs

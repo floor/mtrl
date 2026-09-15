@@ -1,6 +1,7 @@
 // src/components/menu/api.ts
 
-import { MenuComponent, MenuContent, MenuPosition, MenuEvents } from "./types";
+import { MenuComponent, MenuContent, MenuPosition } from "./types";
+import type { EventCallback } from "../../core/state/emitter";
 
 /**
  * API configuration options for menu component
@@ -33,8 +34,8 @@ interface ApiOptions {
     closeAllSubmenus: () => void;
   };
   events?: {
-    on: <T extends keyof MenuEvents>(event: T, handler: MenuEvents[T]) => void;
-    off: <T extends keyof MenuEvents>(event: T, handler: MenuEvents[T]) => void;
+    on: (event: string, handler: EventCallback) => void;
+    off: (event: string, handler: EventCallback) => void;
   };
   lifecycle: {
     destroy: () => void;
@@ -48,8 +49,8 @@ interface ApiOptions {
  */
 interface ComponentWithElements {
   element: HTMLElement;
-  on?: <T extends keyof MenuEvents>(event: T, handler: MenuEvents[T]) => void;
-  off?: <T extends keyof MenuEvents>(event: T, handler: MenuEvents[T]) => void;
+  on?: (event: string, handler: EventCallback) => unknown;
+  off?: (event: string, handler: EventCallback) => unknown;
   emit?: (event: string, data: unknown) => void;
 }
 
@@ -205,7 +206,7 @@ const withAPI =
        * @param handler - Event handler function
        * @returns Menu component for chaining
        */
-      on<T extends keyof MenuEvents>(event: T, handler: MenuEvents[T]) {
+      on(event: string, handler: EventCallback) {
         if (events?.on) {
           events.on(event, handler);
         } else if (component.on) {
@@ -220,7 +221,7 @@ const withAPI =
        * @param handler - Event handler function
        * @returns Menu component for chaining
        */
-      off<T extends keyof MenuEvents>(event: T, handler: MenuEvents[T]) {
+      off(event: string, handler: EventCallback) {
         if (events?.off) {
           events.off(event, handler);
         } else if (component.off) {

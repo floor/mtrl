@@ -90,7 +90,7 @@
     "drawer:check": "bun run scripts/check-drawer.ts",
     "navigation-rail:check": "bun run scripts/check-navigation-rail.ts",
     "core:check": "bun run scripts/check-core.ts",
-    "tooling:check": "tsc --project tsconfig.tools.json --noEmit"
+    "tooling:check": "tsc --project tsconfig.tools.json --noEmit && tsc --project tsconfig.types.json --noEmit"
   },
   "repository": {
     "type": "git",

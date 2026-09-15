@@ -68,7 +68,7 @@ export const getElementConfig = (config: MenuConfig) => {
   }
 
   // Element attributes
-  const attributes: Record<string, any> = {
+  const attributes: Record<string, string> = {
     role: "menu",
     tabindex: "-1",
     "aria-hidden": (!config.visible).toString(),

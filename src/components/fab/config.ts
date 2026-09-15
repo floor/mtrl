@@ -3,7 +3,7 @@ import {
   createComponentConfig,
   createElementConfig,
 } from "../../core/config/component";
-import { FabConfig } from "./types";
+import { FabConfig, FabComponent } from "./types";
 
 /**
  * Default configuration for the FAB component
@@ -51,7 +51,7 @@ export const createBaseConfig = (config: FabConfig = {}): FabConfig =>
  */
 export const getElementConfig = (config: FabConfig) => {
   // Create the attributes object
-  const attributes: Record<string, any> = {
+  const attributes: Record<string, string | boolean | undefined> = {
     type: config.type || "button",
     "aria-label": config.ariaLabel || (config.icon ? "action" : undefined),
   };
@@ -91,7 +91,8 @@ export const getElementConfig = (config: FabConfig) => {
     attributes,
     className: componentClasses,
     forwardEvents: {
-      click: (component) => !component.element.disabled,
+      click: (component: { element: HTMLButtonElement }) =>
+        !component.element.disabled,
       focus: true,
       blur: true,
     },
@@ -111,7 +112,9 @@ export const getElementConfig = (config: FabConfig) => {
  * @category Components
  * @internal
  */
-export const getApiConfig = (comp: any) => ({
+export const getApiConfig = (
+  comp: Pick<FabComponent, "disabled" | "lifecycle" | "getClass">
+) => ({
   disabled: {
     enable: () => comp.disabled.enable(),
     disable: () => comp.disabled.disable(),

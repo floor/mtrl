@@ -1,6 +1,11 @@
 // src/components/navigation/system/state.ts
 
-import { NavigationSystemConfig, NavigationSystemState } from './types';
+import {
+  NavigationSystemConfig,
+  NavigationSystemMobileConfig,
+  NavigationSystemResolvedConfig,
+  NavigationSystemState
+} from './types';
 
 /**
  * Create the initial state for the navigation system
@@ -35,9 +40,7 @@ export const createInitialState = (options: NavigationSystemConfig = {}): Naviga
  * @param options - User-provided configuration
  * @returns Complete configuration with defaults
  */
-export const createConfig = (options: NavigationSystemConfig = {}): Required<Pick<NavigationSystemConfig, 
-  'animateDrawer' | 'showLabelsOnRail' | 'hideDrawerOnClick' | 'expanded' | 
-  'hoverDelay' | 'closeDelay' | 'railOptions' | 'drawerOptions'>> => {
+export const createConfig = (options: NavigationSystemConfig = {}): NavigationSystemResolvedConfig => {
   return {
     // Display options
     animateDrawer: options.animateDrawer !== false,
@@ -61,9 +64,7 @@ export const createConfig = (options: NavigationSystemConfig = {}): Required<Pic
  * @param options - User-provided configuration
  * @returns Mobile-specific configuration
  */
-export const createMobileConfig = (options: NavigationSystemConfig = {}): Required<Pick<NavigationSystemConfig, 
-  'breakpoint' | 'lockBodyScroll' | 'hideOnClickOutside' | 'enableSwipeGestures' | 
-  'optimizeForTouch' | 'overlayClass' | 'closeButtonClass' | 'bodyLockClass'>> => {
+export const createMobileConfig = (options: NavigationSystemConfig = {}): NavigationSystemMobileConfig => {
   return {
     breakpoint: options.breakpoint || 960,
     lockBodyScroll: options.lockBodyScroll !== false,

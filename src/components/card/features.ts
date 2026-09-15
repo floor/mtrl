@@ -1,6 +1,7 @@
 // src/components/card/features.ts
 import { PREFIX } from "../../core/config";
 import { createElement } from "../../core/dom/create";
+import type { ElementComponent } from "../../core/compose/component";
 import {
   BaseComponent,
   CardComponent,
@@ -148,7 +149,7 @@ export const withLoading =
  * )(baseConfig);
  * ```
  */
-export const withElevation = (component: BaseComponent): BaseComponent => {
+export const withElevation = <C extends ElementComponent>(component: C): C => {
   const config = component.config;
 
   // Set initial elevation based on variant

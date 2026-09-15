@@ -3,6 +3,9 @@ import {
   createComponentConfig,
   createElementConfig,
 } from "../../core/config/component";
+import type { DisabledComponent } from "../../core/compose/features/disabled";
+import type { EventComponent } from "../../core/compose/features/events";
+import type { LifecycleComponent } from "../../core/compose/features/lifecycle";
 import { DatePickerConfig, DEFAULT_DATE_FORMAT } from "./types";
 
 /**
@@ -67,7 +70,7 @@ export const getContainerConfig = (config: DatePickerConfig) => {
  */
 export const getInputConfig = (config: DatePickerConfig) => {
   // Create the attributes object
-  const attributes: Record<string, any> = {
+  const attributes: Record<string, string | boolean> = {
     type: "text",
     placeholder: config.placeholder || config.dateFormat,
     autocomplete: "off",
@@ -123,7 +126,9 @@ export const getCalendarConfig = (config: DatePickerConfig) => {
  * @param {Object} comp - Component with features like disabled and lifecycle
  * @returns {Object} API configuration object
  */
-export const getApiConfig = (comp: any) => ({
+export const getApiConfig = (
+  comp: DisabledComponent & LifecycleComponent & EventComponent
+) => ({
   disabled: {
     enable: () => comp.disabled.enable(),
     disable: () => comp.disabled.disable(),

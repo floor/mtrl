@@ -1,4 +1,5 @@
 // src/components/menu/types.ts
+import type { EventCallback } from "../../core/state/emitter";
 
 /**
  * Menu position options
@@ -45,7 +46,7 @@ export type MenuPosition = (typeof MENU_POSITION)[keyof typeof MENU_POSITION];
  *
  * @category Components
  */
-export interface MenuItem {
+export interface MenuItem<TData = unknown> {
   /**
    * Unique ID for the menu item
    * Required for accessibility and event handling
@@ -91,13 +92,13 @@ export interface MenuItem {
    * Optional array of submenu items
    * Only used when hasSubmenu is true
    */
-  submenu?: MenuItem[];
+  submenu?: MenuItem<TData>[];
 
   /**
    * Additional data to associate with the menu item
    * This can be used for custom behavior in click handlers
    */
-  data?: any;
+  data?: TData;
 }
 
 /**
@@ -146,7 +147,7 @@ export interface MenuGap {
  *
  * @category Components
  */
-export type MenuContent = MenuItem | MenuDivider | MenuGap;
+export type MenuContent<TData = unknown> = MenuItem<TData> | MenuDivider | MenuGap;
 
 /**
  * Configuration interface for the Menu component
@@ -336,15 +337,15 @@ export interface MenuEvent {
  *
  * @category Components
  */
-export interface MenuSelectEvent extends MenuEvent {
+export interface MenuSelectEvent<TData = unknown> extends MenuEvent {
   /** The selected menu item */
-  item: MenuItem;
+  item: MenuItem<TData>;
 
   /** ID of the selected menu item */
   itemId: string;
 
   /** Data associated with the menu item (if any) */
-  itemData?: any;
+  itemData?: TData;
 }
 
 /**
@@ -445,10 +446,16 @@ export interface MenuComponent {
    * @param handler - Event handler function
    * @returns The menu component for chaining
    */
-  on: <T extends keyof MenuEvents>(
-    event: T,
-    handler: MenuEvents[T],
-  ) => MenuComponent;
+  on<T extends keyof MenuEvents>(event: T, handler: MenuEvents[T]): MenuComponent;
+
+  /**
+   * Adds an event listener for any event the menu emits, such as
+   * 'submenu-opened', 'submenu-closed', 'all-submenus-closed' or 'menu-closing'
+   * @param event - Event name
+   * @param handler - Event handler function
+   * @returns The menu component for chaining
+   */
+  on(event: string, handler: EventCallback): MenuComponent;
 
   /**
    * Removes an event listener from the menu
@@ -456,10 +463,15 @@ export interface MenuComponent {
    * @param handler - Event handler function
    * @returns The menu component for chaining
    */
-  off: <T extends keyof MenuEvents>(
-    event: T,
-    handler: MenuEvents[T],
-  ) => MenuComponent;
+  off<T extends keyof MenuEvents>(event: T, handler: MenuEvents[T]): MenuComponent;
+
+  /**
+   * Removes an event listener for any event the menu emits
+   * @param event - Event name
+   * @param handler - Event handler function
+   * @returns The menu component for chaining
+   */
+  off(event: string, handler: EventCallback): MenuComponent;
 
   /**
    * Destroys the menu component and cleans up resources

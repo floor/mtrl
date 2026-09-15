@@ -1,6 +1,7 @@
 // src/core/config/component-config.ts
 import { PREFIX } from "../config";
-import { getComponentDefaults } from "./global";
+import { getComponentDefaults, type ComponentConfigMap } from "./global";
+import type { EventCondition } from "../dom/create";
 
 /**
  * Base component configuration interface
@@ -27,30 +28,31 @@ export interface BaseComponentConfig {
   ariaDescribedBy?: string; // ID of element that describes this element
   ariaLabelledBy?: string; // ID of element that labels this element
   ariaHidden?: boolean; // Hide from screen readers
-  [key: string]: any;
 }
 
 /**
  * Creates a base configuration for any component
  * Automatically merges global defaults if available
  *
- * @param {BaseComponentConfig} defaults - Default configuration for the component
- * @param {BaseComponentConfig} userConfig - User provided configuration
+ * @param {T} defaults - Default configuration for the component
+ * @param {Partial<T>} userConfig - User provided configuration
  * @param {string} componentName - The name of the component
- * @returns {BaseComponentConfig} Complete configuration with defaults applied
+ * @returns {T} Complete configuration with defaults applied
  *
  * @example
  * // In button/config.ts
  * export const createBaseConfig = (config: ButtonConfig = {}) =>
  *   createComponentConfig(defaultConfig, config, 'button');
  */
-export const createComponentConfig = (
-  defaults: BaseComponentConfig,
-  userConfig: BaseComponentConfig = {},
+export const createComponentConfig = <T extends BaseComponentConfig & object>(
+  defaults: T,
+  userConfig: Partial<T> = {},
   componentName: string,
-): BaseComponentConfig => {
+): T & { componentName: string; prefix: string } => {
   // Get global defaults for this component (if any)
-  const globalDefaults = getComponentDefaults(componentName as any);
+  const globalDefaults = getComponentDefaults(
+    componentName as keyof ComponentConfigMap,
+  );
 
   // First check for className, fall back to class
   const userClassName =
@@ -158,13 +160,13 @@ export const createElementConfig = (
   config: BaseComponentConfig,
   options: {
     tag: string;
-    attributes?: Record<string, any>;
+    attributes?: Record<string, unknown>;
     className?: string | string[] | null;
     html?: string;
     text?: string;
     forwardEvents?: Record<
       string,
-      boolean | ((component: any, event: Event) => boolean)
+      EventCondition
     >;
     interactive?: boolean;
   },

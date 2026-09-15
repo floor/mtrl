@@ -15,7 +15,7 @@ import { debounce } from '../../utils/performance';
 export interface ComponentWithLifecycle extends ElementComponent {
   lifecycle: {
     destroy: () => void;
-    [key: string]: any;
+    [key: string]: unknown;
   };
 }
 
@@ -31,8 +31,6 @@ export interface DebounceConfig {
     wait: number;
     options?: { leading?: boolean; maxWait?: number };
   }>;
-  
-  [key: string]: any;
 }
 
 /**
@@ -90,7 +88,8 @@ export interface DebounceComponent extends BaseComponent {
  * )(config);
  * ```
  */
-export const withDebounce = (config: DebounceConfig = {}) => 
+// `& object` lets a component config that shares no key with DebounceConfig through.
+export const withDebounce = <T extends DebounceConfig & object>(config: T = {} as T) => 
   <C extends ElementComponent>(component: C): C & DebounceComponent => {
     // Store debounced handlers for cleanup
     const debouncedHandlers: Record<string, {

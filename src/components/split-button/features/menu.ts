@@ -7,7 +7,8 @@
 
 import createMenu from "../../menu";
 import type { MenuComponent, MenuContent } from "../../menu/types";
-import { BaseComponent, SplitButtonConfig } from "../types";
+import type { ElementComponent } from "../../../core/compose/component";
+import { ButtonsFeature, MenuFeature, SplitButtonConfig } from "../types";
 import { SPLIT_BUTTON_DEFAULTS } from "../constants";
 
 /**
@@ -17,10 +18,10 @@ import { SPLIT_BUTTON_DEFAULTS } from "../constants";
  */
 export const withMenu =
   (config: SplitButtonConfig) =>
-  (component: BaseComponent): BaseComponent => {
+  <C extends ElementComponent & ButtonsFeature>(component: C): C & MenuFeature => {
     if (!config.items || config.items.length === 0) return component;
 
-    const trailing = component.trailingElement as HTMLElement;
+    const trailing = component.trailingElement;
 
     // Aligned to the trailing button and 4dp from it, as the guidelines ask.
     // The component opens and closes it, so the menu does not listen to the

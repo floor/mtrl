@@ -35,7 +35,7 @@ export const createBaseConfig = (config: TooltipConfig = {}): TooltipConfig =>
  */
 export const getElementConfig = (config: TooltipConfig) => {
   // Create the attributes object
-  const attributes: Record<string, any> = {
+  const attributes: Record<string, string> = {
     role: "tooltip",
     "aria-hidden": "true",
   };

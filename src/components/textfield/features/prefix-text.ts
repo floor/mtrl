@@ -29,8 +29,6 @@ export interface PrefixTextConfig {
    * Component name
    */
   componentName?: string;
-  
-  [key: string]: any;
 }
 
 /**
@@ -61,10 +59,12 @@ export interface PrefixTextComponent extends BaseComponent {
  * @param config - Configuration with prefix text settings
  * @returns Function that enhances a component with prefix text
  */
-export const withPrefixText = <T extends PrefixTextConfig>(config: T) => 
-  <C extends LifecycleElementComponent>(component: C): C & PrefixTextComponent => {
+// `& object` lets a component config that shares no key with PrefixTextConfig through.
+export const withPrefixText = <T extends PrefixTextConfig & object>(config: T) => 
+  <C extends LifecycleElementComponent>(component: C): C & Partial<PrefixTextComponent> => {
+    // Without prefixText configured the component comes back without these members
     if (!config.prefixText) {
-      return component as any;
+      return component;
     }
     
     // Create prefix text element

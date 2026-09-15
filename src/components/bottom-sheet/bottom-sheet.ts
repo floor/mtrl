@@ -40,7 +40,7 @@ const createBottomSheet = (
     withElement(getElementConfig(baseConfig)),
     withStructure(baseConfig),
     withState(baseConfig),
-    withDrag(baseConfig),
+    withDrag(),
     // lifecycle before the API, so the API's destroy wraps a lifecycle that
     // exists. Composed the other way round, cleanup silently never runs.
     withLifecycle()

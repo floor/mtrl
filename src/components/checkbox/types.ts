@@ -240,16 +240,16 @@ export interface CheckboxComponent {
  */
 export interface ApiOptions {
   disabled: {
-    enable: () => any;
-    disable: () => any;
+    enable: () => void;
+    disable: () => void;
   };
   lifecycle: {
     destroy: () => void;
   };
   checkable: {
-    check: () => any;
-    uncheck: () => any;
-    toggle: () => any;
+    check: () => void;
+    uncheck: () => void;
+    toggle: () => void;
     isChecked: () => boolean;
   };
 }
@@ -263,26 +263,25 @@ export interface BaseComponent {
   element: HTMLElement;
   input?: HTMLInputElement;
   getValue?: () => string;
-  setValue?: (value: string) => any;
-  setIndeterminate?: (state: boolean) => any;
+  setValue?: (value: string) => void;
+  setIndeterminate?: (state: boolean) => void;
   text?: {
-    setText: (content: string) => any;
+    setText: (content: string) => void;
     getText: () => string;
   };
-  on?: (event: string, handler: Function) => any;
-  off?: (event: string, handler: Function) => any;
+  on?: (event: string, handler: Function) => this;
+  off?: (event: string, handler: Function) => this;
   disabled?: {
-    enable: () => any;
-    disable: () => any;
+    enable: () => void;
+    disable: () => void;
   };
   lifecycle?: {
     destroy: () => void;
   };
   checkable?: {
-    check: () => any;
-    uncheck: () => any;
-    toggle: () => any;
+    check: () => void;
+    uncheck: () => void;
+    toggle: () => void;
     isChecked: () => boolean;
   };
-  [key: string]: any;
 }

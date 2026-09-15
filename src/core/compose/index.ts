@@ -32,6 +32,7 @@ export {
 export type { Component } from "./base";
 export type {
   BaseComponent,
+  BaseConfig,
   ElementComponent,
   TouchState,
   WithElementOptions,

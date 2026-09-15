@@ -91,11 +91,6 @@ export const withAPI =
     // Get element references
     const { element, getClass, canvas } = comp;
 
-    // Determine variant once
-    const isCircular = element.classList.contains(
-      getClass(PROGRESS_CLASSES.CIRCULAR),
-    );
-
     // Create event emitter helper
     const emitEvent = (name: string, detail: Record<string, unknown>): void => {
       element.dispatchEvent(new CustomEvent(name, { detail }));

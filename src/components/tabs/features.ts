@@ -9,12 +9,18 @@ interface ComponentBase {
   element: HTMLElement;
   getClass: (name: string) => string;
   scrollContainer?: HTMLElement;
-  emit?: (event: string, data: any) => any;
+  emit?: (event: string, data?: unknown) => unknown;
   destroy?: () => void;
   tabs?: TabComponent[];
-  handleTabClick?: (event: any, tab: TabComponent) => void;
+  handleTabClick?: (event: unknown, tab: TabComponent) => void;
   variant?: string;
 }
+
+/**
+ * Checks whether a click payload can be cancelled like a DOM event
+ */
+const isCancelable = (event: unknown): event is Pick<Event, "preventDefault"> =>
+  !!event && typeof (event as Partial<Event>).preventDefault === "function";
 
 /**
  * Configuration for tabs management feature
@@ -26,8 +32,6 @@ export interface TabsManagementConfig {
   variant?: string;
   /** Component prefix */
   prefix?: string;
-  /** Other configuration properties */
-  [key: string]: any;
 }
 
 /**
@@ -56,7 +60,7 @@ export interface TabsManagementComponent {
  * @returns {Function} Component enhancer with tabs management
  */
 export const withTabsManagement =
-  <T extends TabsManagementConfig>(config: T) =>
+  <T extends TabsManagementConfig & object>(config: T) =>
   <C extends ComponentBase>(component: C): C & TabsManagementComponent => {
     const tabs: TabComponent[] = [];
 
@@ -101,9 +105,9 @@ export const withTabsManagement =
     /**
      * Handles tab click events
      */
-    const handleTabClick = (event: any, tab: TabComponent) => {
+    const handleTabClick = (event: unknown, tab: TabComponent) => {
       // Check if event is a DOM event with preventDefault
-      if (event && typeof event.preventDefault === "function") {
+      if (isCancelable(event)) {
         event.preventDefault();
       }
 
@@ -168,8 +172,6 @@ export const withTabsManagement =
 export interface ScrollableConfig {
   /** Whether tabs are scrollable horizontally */
   scrollable?: boolean;
-  /** Other configuration properties */
-  [key: string]: any;
 }
 
 /**
@@ -186,7 +188,7 @@ export interface ScrollableComponent {
  * @returns {Function} Component enhancer with scrollable container
  */
 export const withScrollable =
-  <T extends ScrollableConfig>(config: T) =>
+  <T extends ScrollableConfig & object>(config: T) =>
   <C extends ComponentBase>(component: C): C & ScrollableComponent => {
     // Skip if scrollable is explicitly false
     if (config.scrollable === false) {
@@ -222,8 +224,6 @@ export const withScrollable =
 export interface DividerConfig {
   /** Whether to show a divider below the tabs */
   showDivider?: boolean;
-  /** Other configuration properties */
-  [key: string]: any;
 }
 
 /**
@@ -232,7 +232,7 @@ export interface DividerConfig {
  * @returns {Function} Component enhancer with divider
  */
 export const withDivider =
-  <T extends DividerConfig>(config: T) =>
+  <T extends DividerConfig & object>(config: T) =>
   <C extends ComponentBase>(component: C): C => {
     // Skip if divider is explicitly disabled
     if (config.showDivider === false) {
@@ -255,6 +255,8 @@ export const withDivider =
 export interface IndicatorFeatureConfig {
   /** Component prefix */
   prefix?: string;
+  /** Tabs variant passed to the indicator */
+  variant?: string;
   /** Width strategy for the indicator */
   widthStrategy?: "fixed" | "dynamic" | "content";
   /** Height of the indicator in pixels */
@@ -318,7 +320,7 @@ export const withIndicator =
         indicatorConfig.animationTiming || "cubic-bezier(0.4, 0, 0.2, 1)",
       color: indicatorConfig.color,
       // Pass the tabs variant to the indicator
-      variant: (config as any).variant ?? "primary",
+      variant: config.variant ?? "primary",
     });
 
     // Find the scroll container and add the indicator to it
@@ -419,7 +421,7 @@ export const withIndicator =
     const originalDestroy = component.destroy || (() => {});
 
     // Override destroy to clean up resources
-    (component as any).destroy = function () {
+    component.destroy = function () {
       indicator.destroy();
       resizeObserver.disconnect();
       mutationObserver.disconnect();

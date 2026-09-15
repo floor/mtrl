@@ -1,6 +1,7 @@
 // src/core/compose/features/badge.ts
 
 import { BaseComponent, ElementComponent } from '../component';
+import type { BadgeComponent as Badge } from '../../../components/badge/types';
 import createBadge from '../../../components/badge';
 import { PREFIX } from '../../config';
 
@@ -22,15 +23,12 @@ export interface BadgeConfig {
     size?: string;
     position?: string;
     max?: number;
-    [key: string]: any;
   };
   
   /**
    * CSS class prefix
    */
   prefix?: string;
-  
-  [key: string]: any;
 }
 
 /**
@@ -40,7 +38,7 @@ export interface BadgeComponent extends BaseComponent {
   /**
    * Badge component instance
    */
-  badge?: any;
+  badge?: Badge;
 }
 
 /**
@@ -50,7 +48,8 @@ export interface BadgeComponent extends BaseComponent {
  * @param {BadgeConfig} config - Badge configuration
  * @returns {Function} Component enhancer with badge functionality
  */
-export const withBadge = <T extends BadgeConfig>(config: T) => 
+// `& object` lets a component config that shares no key with BadgeConfig through.
+export const withBadge = <T extends BadgeConfig & object>(config: T) => 
   <C extends ElementComponent>(component: C): C & BadgeComponent => {
     // Only create badge if content is provided
     if (config.badge === undefined) {

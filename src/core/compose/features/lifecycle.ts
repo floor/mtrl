@@ -10,7 +10,6 @@ import { BaseComponent, ElementComponent } from '../component';
 interface ComponentWithEvents extends ElementComponent {
   events: {
     destroy: () => void;
-    [key: string]: any;
   };
 }
 
@@ -20,7 +19,6 @@ interface ComponentWithEvents extends ElementComponent {
 interface ComponentWithText extends ElementComponent {
   text: {
     getElement: () => HTMLElement | null;
-    [key: string]: any;
   };
 }
 
@@ -30,33 +28,32 @@ interface ComponentWithText extends ElementComponent {
 interface ComponentWithIcon extends ElementComponent {
   icon: {
     getElement: () => HTMLElement | null;
-    [key: string]: any;
   };
 }
 
 /**
  * Type guards for component managers
  */
-function hasEvents(component: any): component is ComponentWithEvents {
+function hasEvents(component: object): component is ComponentWithEvents {
   return 'events' in component && 
-         component.events && 
          typeof component.events === 'object' &&
+         component.events !== null &&
          'destroy' in component.events &&
          typeof component.events.destroy === 'function';
 }
 
-function hasText(component: any): component is ComponentWithText {
+function hasText(component: object): component is ComponentWithText {
   return 'text' in component && 
-         component.text && 
          typeof component.text === 'object' &&
+         component.text !== null &&
          'getElement' in component.text &&
          typeof component.text.getElement === 'function';
 }
 
-function hasIcon(component: any): component is ComponentWithIcon {
+function hasIcon(component: object): component is ComponentWithIcon {
   return 'icon' in component && 
-         component.icon && 
          typeof component.icon === 'object' &&
+         component.icon !== null &&
          'getElement' in component.icon &&
          typeof component.icon.getElement === 'function';
 }
@@ -74,7 +71,7 @@ export interface ComponentManagers {
   icon?: {
     getElement: () => HTMLElement | null;
   };
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 /**
@@ -129,7 +126,10 @@ export interface LifecycleComponent extends BaseComponent {
  * @returns Function that enhances a component with lifecycle management
  */
 export const withLifecycle = () => 
-  <T extends ElementComponent>(component: T): T & LifecycleComponent => {
+  // The element and its destroy are optional: a component without them still gets a lifecycle.
+  <T extends BaseComponent & Partial<Pick<ElementComponent, 'element' | 'destroy'>>>(
+    component: T
+  ): T & LifecycleComponent => {
     const resources = getCleanup(component);
     let mounted = false;
     let destroyed = false;

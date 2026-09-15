@@ -43,11 +43,6 @@ export interface ToggleConfig {
    * Component name for class generation
    */
   componentName?: string;
-
-  /**
-   * Additional configuration options
-   */
-  [key: string]: unknown;
 }
 
 /**
@@ -155,7 +150,7 @@ interface ComponentWithIcon extends ElementComponent {
  * ```
  */
 export const withToggle =
-  <T extends ToggleConfig>(config: T) =>
+  <T extends ToggleConfig & object>(config: T) =>
   <C extends ComponentWithIcon>(component: C): C & ToggleComponent => {
     // If toggle is not enabled, return component with minimal toggle interface
     if (!config.toggle) {

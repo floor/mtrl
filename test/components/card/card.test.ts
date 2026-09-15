@@ -34,6 +34,28 @@ describe('card', () => {
     }
   });
 
+  test('config is the resolved configuration object and stays the same object', () => {
+    const card = createCard({ variant: 'outlined', interactive: true });
+    expect(card.config.variant).toBe('outlined');
+    expect(card.config.componentName).toBe('card');
+    expect(card.config.prefix).toBe('mtrl');
+    const config = card.config;
+    document.body.appendChild(card.element);
+    card.element.dispatchEvent(new MouseEvent('mouseenter'));
+    card.focus();
+    expect(card.config).toBe(config);
+    expect(card.config === card.config).toBe(true);
+  });
+
+  test('addClass returns the card and puts every class on the element', () => {
+    const card = createCard();
+    expect(card.addClass('one')).toBe(card);
+    expect(card.addClass('two', 'three')).toBe(card);
+    for (const name of ['one', 'two', 'three']) {
+      expect(card.element.classList.contains(name)).toBe(true);
+    }
+  });
+
   test('it takes no width of its own', () => {
     // the width belongs to the layout, not to the component
     const card = createCard();

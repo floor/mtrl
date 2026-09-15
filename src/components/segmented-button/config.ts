@@ -7,8 +7,8 @@ import { SEGMENTED_BUTTON_DEFAULTS } from "./constants";
  * Default configuration values for segmented buttons
  * @internal
  */
-export const DEFAULT_CONFIG = {
-  mode: SEGMENTED_BUTTON_DEFAULTS.MODE,
+export const DEFAULT_CONFIG: SegmentedButtonConfig = {
+  mode: SelectionMode.SINGLE,
   ripple: SEGMENTED_BUTTON_DEFAULTS.RIPPLE,
   density: SEGMENTED_BUTTON_DEFAULTS.DENSITY,
 };

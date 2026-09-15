@@ -1,5 +1,5 @@
 // src/components/tabs/tab-api.ts
-import { TabComponent } from './types';
+import { TabComponent, TabButton } from './types';
 import type { BadgeComponent } from '../badge';
 import createBadge from '../badge';
 
@@ -11,6 +11,7 @@ const TAB_LAYOUT = {
   /** Icon and text layout */
   ICON_AND_TEXT: 'icon-and-text'
 }
+
 
 /**
  * API options for a Tab component
@@ -27,7 +28,7 @@ interface ApiOptions {
     destroy: () => void;
   };
   /** The button component (optional) */
-  button?: any;
+  button?: TabButton;
 }
 
 /**
@@ -37,15 +38,21 @@ interface ComponentWithElements {
   /** The DOM element */
   element: HTMLElement;
   /** The button component (optional) */
-  button?: any;
+  button?: TabButton;
   /** The badge component (optional) */
   badge?: BadgeComponent;
   /** Class name helper */
   getClass: (name: string) => string;
   /** Component configuration */
-  config: Record<string, any>;
+  config: {
+    prefix?: string;
+  };
+  /** Event subscription, kept on the returned tab */
+  on: TabComponent['on'];
+  /** Event unsubscription, kept on the returned tab */
+  off: TabComponent['off'];
   /** Event emitter (optional) */
-  emit?: (event: string, data: any) => any;
+  emit?: (event: string, data?: unknown) => unknown;
 }
 
 /**
@@ -59,7 +66,7 @@ export const withTabAPI = ({ disabled, lifecycle, button }: ApiOptions) =>
     const buttonComponent = button || component.button;
     
     return {
-      ...component as any,
+      ...component,
       element: component.element,
       
       /**

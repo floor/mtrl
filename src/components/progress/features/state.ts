@@ -39,7 +39,6 @@ interface ComponentWithLifecycle {
   showLabel?: () => unknown;
   setThickness?: (thickness: number | string) => unknown;
   state?: ProgressState;
-  [key: string]: any;
 }
 
 /**
@@ -50,9 +49,9 @@ interface ComponentWithLifecycle {
  */
 export const withState =
   (config: ProgressConfig) =>
-  (
-    component: ComponentWithLifecycle
-  ): ComponentWithLifecycle & { state: ProgressState } => {
+  <C extends ComponentWithLifecycle>(
+    component: C
+  ): C & { state: ProgressState } => {
     // Apply indeterminate class immediately if needed
     if (config.indeterminate && component.element) {
       addClass(component.element, PROGRESS_CLASSES.INDETERMINATE);

@@ -1,5 +1,6 @@
 // src/components/fab/api.ts
 import { FabComponent } from './types';
+import type { IconManager } from '../../core/compose/features/icon';
 
 /**
  * API configuration options for the FAB component
@@ -38,14 +39,24 @@ interface ApiOptions {
  * @category Components
  * @internal
  */
-interface ComponentWithElements {
+interface ComponentWithElements
+  extends Pick<FabComponent, 'disabled' | 'lifecycle'> {
+  /** Subscribes to an event; the API returns the component itself */
+  on: (event: string, handler: Function) => unknown;
+  
+  /** Unsubscribes from an event; the API returns the component itself */
+  off: (event: string, handler: Function) => unknown;
+  
+  /** Adds CSS classes; the API returns the component itself */
+  addClass: (...classes: string[]) => unknown;
+  
   /** The DOM element */
   element: HTMLElement;
   
   /** Icon management */
   icon: {
     /** Sets icon HTML content */
-    setIcon: (html: string) => any;
+    setIcon: (html: string) => IconManager;
     /** Gets icon HTML content */
     getIcon: () => string;
     /** Gets icon DOM element */
@@ -70,7 +81,7 @@ interface ComponentWithElements {
  */
 export const withAPI = ({ disabled, lifecycle, className }: ApiOptions) => 
   (component: ComponentWithElements): FabComponent => ({
-    ...component as any,
+    ...component,
     element: component.element as HTMLButtonElement,
     
     getValue: () => (component.element as HTMLButtonElement).value,
@@ -128,6 +139,22 @@ export const withAPI = ({ disabled, lifecycle, className }: ApiOptions) =>
     
     raise() {
       component.element.classList.remove(`${className}--lowered`);
+      return this;
+    },
+    
+    // Event methods
+    on(event: string, handler: Function) {
+      component.on(event, handler);
+      return this;
+    },
+    
+    off(event: string, handler: Function) {
+      component.off(event, handler);
+      return this;
+    },
+    
+    addClass(...classes: string[]) {
+      component.addClass(...classes);
       return this;
     },
     

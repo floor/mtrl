@@ -1,6 +1,7 @@
 // src/components/card/card.ts
 import { pipe } from '../../core/compose';
 import { createBase, withElement } from '../../core/compose/component';
+import type { ElementComponent } from '../../core/compose/component';
 import {
   withEvents,
   withVariant,
@@ -8,7 +9,7 @@ import {
   withLifecycle
 } from '../../core/compose/features';
 import { withAPI } from './api';
-import { CardComponent, BaseComponent, CardSchema } from './types';
+import { CardComponent, CardSchema } from './types';
 import { 
   createBaseConfig, 
   getElementConfig, 
@@ -95,12 +96,12 @@ const createCard = (config: CardSchema = {}): CardComponent => {
       withEvents(),
       withElement(getElementConfig(baseConfig)),
       withVariant(baseConfig),
-      baseConfig.clickable ? withRipple(baseConfig) : (c: BaseComponent) => c,
+      baseConfig.clickable ? withRipple(baseConfig) : <C extends ElementComponent>(c: C): C => c,
       withLifecycle(),
       withInteractiveBehavior,
       withElevation,
-      comp => withAPI(getApiConfig(comp))(comp)
-    )(baseConfig) as CardComponent;
+      comp => withAPI({ ...getApiConfig(comp), config: baseConfig })(comp)
+    )(baseConfig);
     
     // Apply any inline configuration
     applyInlineConfiguration(card, processedConfig);

@@ -13,9 +13,6 @@ interface ControllerConfig {
 
   /** Component name */
   componentName?: string;
-
-  /** Additional configuration options */
-  [key: string]: any;
 }
 
 /**
@@ -35,7 +32,7 @@ interface ControllerComponent extends BaseComponent {
  */
 export const withController =
   (config: ControllerConfig) =>
-  (component: BaseComponent): ControllerComponent => {
+  <C extends BaseComponent>(component: C): C & ControllerComponent => {
     const prefix = config.prefix || "mtrl";
 
     /**
@@ -123,7 +120,7 @@ export const withController =
     };
 
     // Create the enhanced component with handleItemClick method
-    const enhancedComponent: ControllerComponent = {
+    const enhancedComponent: C & ControllerComponent = {
       ...component,
 
       /**
