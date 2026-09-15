@@ -126,7 +126,7 @@ export interface ProgressConfig {
    * DOM structure schema
    * @internal
    */
-  schema?: any;
+  schema?: object;
 
   /**
    * Size of the circular progress indicator in dp (only for circular variant)

@@ -1,4 +1,5 @@
 // src/components/loading-indicator/types.ts
+import type { Renderer } from './features/renderer';
 
 /**
  * Configuration options for the loading indicator
@@ -81,5 +82,6 @@ export interface BaseComponent {
   lifecycle?: {
     destroy?: () => void;
   };
-  [key: string]: any;
+  canvas?: HTMLCanvasElement;
+  renderer?: Renderer;
 }

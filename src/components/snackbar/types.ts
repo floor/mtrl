@@ -178,27 +178,26 @@ export interface SnackbarComponent {
  */
 export interface BaseComponent {
   element: HTMLElement;
-  emit?: (event: string, data?: any) => void;
-  on?: (event: string, handler: (...args: any[]) => void) => any;
-  off?: (event: string, handler: (...args: any[]) => void) => any;
+  emit?: (event: string, data?: unknown) => void;
+  on?: (event: string, handler: Function) => unknown;
+  off?: (event: string, handler: Function) => unknown;
   getClass?: (name: string) => string;
   lifecycle?: {
     destroy?: () => void;
   };
   text?: {
-    setText: (text: string) => any;
+    setText: (text: string) => unknown;
     getText: () => string;
   };
   position?: {
     getPosition: () => SnackbarPosition;
-    setPosition: (position: SnackbarPosition) => any;
+    setPosition: (position: SnackbarPosition) => unknown;
   };
   action?: ButtonComponent;
   actionButton?: HTMLElement;
   close?: IconButtonComponent;
   closeButton?: HTMLElement;
   timer?: SnackbarTimer;
-  [key: string]: any;
 }
 
 /**

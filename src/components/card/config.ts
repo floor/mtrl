@@ -219,7 +219,9 @@ export const getElementConfig = (config: CardSchema) => {
  * @category Components
  *
  */
-export const getApiConfig = (comp: any) => ({
+export const getApiConfig = (comp: {
+  lifecycle?: { destroy?: () => void };
+}) => ({
   lifecycle: {
     destroy: () => comp.lifecycle?.destroy?.(),
   },

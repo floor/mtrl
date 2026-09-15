@@ -39,7 +39,6 @@ interface ComponentWithLifecycle {
   showLabel?: () => unknown;
   setThickness?: (thickness: number | string) => unknown;
   state?: ProgressState;
-  [key: string]: any;
 }
 
 /**

@@ -1,6 +1,6 @@
 // src/components/bottom-sheet/features/drag.ts
 
-import { BottomSheetConfig, BottomSheetState } from "../types";
+import { BottomSheetState } from "../types";
 import {
   BOTTOM_SHEET_DEFAULTS,
   BOTTOM_SHEET_EVENTS,
@@ -27,7 +27,7 @@ interface DragComponent {
  * cover the distance.
  */
 export const withDrag =
-  (config: BottomSheetConfig) =>
+  () =>
   <C extends DragComponent>(component: C) => {
     const { structure, state } = component;
     const handle = structure.handle;

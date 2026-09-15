@@ -48,7 +48,7 @@ interface ApiOptions {
   events: {
     on: (event: string, handler: Function) => void;
     off: (event: string, handler: Function) => void;
-    trigger: (event: string, data: any) => void;
+    trigger: (event: string, data: unknown) => void;
   };
   lifecycle: {
     destroy: () => void;
@@ -71,7 +71,7 @@ interface ComponentWithElements {
 export const withAPI =
   (options: ApiOptions) =>
   (component: ComponentWithElements): DialogComponent => ({
-    ...(component as any),
+    ...component,
 
     /**
      * Opens the dialog
