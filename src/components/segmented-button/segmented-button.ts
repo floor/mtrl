@@ -14,6 +14,17 @@ import { createSegment } from './segment';
  * be used for selection and filtering. It supports single or multiple selection modes,
  * configurable density, disabled states, and event handling.
  * 
+ * Migration to {@link createButtonGroup}:
+ * - Use `kind: "connected"`, rename `segments` to `buttons` and `mode` to `selection`.
+ * - For `selection: "single"`, set `required: true` and explicitly mark the first
+ *   enabled button `selected: true` to preserve the old initial selection.
+ * - Replace `getValue()` with `getSelected()` and read change events from `values`.
+ * - Checkmarks and their animation are not automatic; supply `selectedIcon` as needed.
+ * - Density changes height only. Connected groups have 2dp gaps and separate
+ *   selected pills instead of one outlined container.
+ *
+ * @deprecated Since 0.8.0, M3 Expressive replaces segmented buttons with connected button groups. Use {@link createButtonGroup} with `kind: "connected"`.
+ *
  * @param {SegmentedButtonConfig} config - Segmented Button configuration
  * @returns {SegmentedButtonComponent} Segmented Button component instance
  * 
