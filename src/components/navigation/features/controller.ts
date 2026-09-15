@@ -13,9 +13,6 @@ interface ControllerConfig {
 
   /** Component name */
   componentName?: string;
-
-  /** Additional configuration options */
-  [key: string]: any;
 }
 
 /**

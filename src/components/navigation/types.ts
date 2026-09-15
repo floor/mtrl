@@ -265,17 +265,26 @@ export interface BaseComponent {
   element: HTMLElement;
   prefix?: string;
   items?: Map<string, NavItemData>;
-  emit?: (event: string, data: any) => void;
-  on?: (event: string, handler: Function) => any;
-  off?: (event: string, handler: Function) => any;
+  emit?: (event: string, data: unknown) => void;
+  on?: (event: string, handler: Function) => unknown;
+  off?: (event: string, handler: Function) => unknown;
   lifecycle?: {
     destroy: () => void;
   };
   disabled?: {
-    enable: () => any;
-    disable: () => any;
+    enable: () => unknown;
+    disable: () => unknown;
   };
-  [key: string]: any;
+  variant?: string;
+  componentName?: string;
+  addItem?: (config: NavItemConfig) => unknown;
+  removeItem?: (id: string) => unknown;
+  getItem?: (id: string) => NavItemData | undefined;
+  getAllItems?: () => NavItemData[];
+  getActive?: () => NavItemData | null;
+  getItemPath?: (id: string) => string[];
+  setActive?: (id: string) => unknown;
+  handleItemClick?: (id: string) => void;
 }
 
 /**

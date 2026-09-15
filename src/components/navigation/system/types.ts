@@ -1,5 +1,7 @@
 // src/components/navigation/system/types.ts
 
+import type { NavChangeEvent, NavigationComponent, NavigationConfig, NavItemConfig } from "../types";
+
 /**
  * Configuration options for the navigation system
  */
@@ -106,13 +108,27 @@ export interface NavigationSystemConfig {
   /**
    * Additional options for the rail component
    */
-  railOptions?: Record<string, any>;
+  railOptions?: NavigationConfig | Record<string, unknown>;
   
   /**
    * Additional options for the drawer component
    */
-  drawerOptions?: Record<string, any>;
+  drawerOptions?: NavigationConfig | Record<string, unknown>;
 }
+
+/**
+ * Display and timing configuration resolved with defaults
+ */
+export type NavigationSystemResolvedConfig = Required<Pick<NavigationSystemConfig,
+  'animateDrawer' | 'showLabelsOnRail' | 'hideDrawerOnClick' | 'expanded' |
+  'hoverDelay' | 'closeDelay' | 'railOptions' | 'drawerOptions'>>;
+
+/**
+ * Mobile configuration resolved with defaults
+ */
+export type NavigationSystemMobileConfig = Required<Pick<NavigationSystemConfig,
+  'breakpoint' | 'lockBodyScroll' | 'hideOnClickOutside' | 'enableSwipeGestures' |
+  'optimizeForTouch' | 'overlayClass' | 'closeButtonClass' | 'bodyLockClass'>>;
 
 /**
  * Navigation section configuration
@@ -137,7 +153,7 @@ export interface NavigationSection {
 /**
  * Navigation item configuration
  */
-export interface NavigationItem {
+export interface NavigationItem extends NavItemConfig {
   /**
    * Unique identifier for the item
    */
@@ -157,11 +173,16 @@ export interface NavigationItem {
    * Whether the item is currently active
    */
   active?: boolean;
-  
+}
+
+/**
+ * Rail or drawer navigation component managed by the system
+ */
+export interface NavigationSystemComponent extends NavigationComponent {
   /**
-   * Additional properties
+   * Sets the active item; the navigation component currently ignores `silent`
    */
-  [key: string]: any;
+  setActive: (id: string, silent?: boolean) => NavigationComponent;
 }
 
 /**
@@ -171,12 +192,12 @@ export interface NavigationSystemState {
   /**
    * Rail navigation component instance
    */
-  rail: any;
+  rail: NavigationSystemComponent | null;
   
   /**
    * Drawer navigation component instance
    */
-  drawer: any;
+  drawer: NavigationSystemComponent | null;
   
   /**
    * ID of the active section
@@ -270,6 +291,26 @@ export interface ViewChangeEvent {
 }
 
 /**
+ * Section change event data
+ */
+export interface SectionChangeEventData {
+  /**
+   * What triggered the section change
+   */
+  source: 'userClick' | 'programmatic';
+}
+
+/**
+ * Change event emitted by the rail or drawer navigation
+ */
+export interface NavigationSystemChangeEvent extends NavChangeEvent {
+  /**
+   * What triggered the change, such as 'userAction' or 'api'
+   */
+  source?: string;
+}
+
+/**
  * Navigation system API interface
  */
 export interface NavigationSystem {
@@ -294,12 +335,12 @@ export interface NavigationSystem {
   /**
    * Get the rail navigation component
    */
-  getRail(): any;
+  getRail(): NavigationComponent | null;
   
   /**
    * Get the drawer navigation component
    */
-  getDrawer(): any;
+  getDrawer(): NavigationComponent | null;
   
   /**
    * Get the active section ID
@@ -356,12 +397,12 @@ export interface NavigationSystem {
   /**
    * Handler for section changes
    */
-  onSectionChange?: (sectionId: string, eventData: any) => void;
+  onSectionChange?: (sectionId: string, eventData: SectionChangeEventData) => void;
   
   /**
    * Handler for item selection
    */
-  onItemSelect?: (event: any) => void;
+  onItemSelect?: (event: NavigationSystemChangeEvent) => void;
   
   /**
    * Handler for view changes (mobile/desktop)
