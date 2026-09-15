@@ -36,23 +36,14 @@ export type SegmentedButtonEventType = 'change';
  * Event data for segmented button events
  */
 export interface SegmentedButtonEvent {
-  /** The segmented button component that triggered the event */
-  segmentedButton: SegmentedButtonComponent;
-  
-  /** The selected segments */
+  /** The selected segments after the change */
   selected: Segment[];
-  
-  /** Values of the selected segments */
-  values: string[];
-  
-  /** Original DOM event if available */
-  originalEvent: Event | null;
-  
-  /** Function to prevent default behavior */
-  preventDefault: () => void;
-  
-  /** Whether default behavior was prevented */
-  defaultPrevented: boolean;
+
+  /** Values of the selected segments after the change */
+  value: string[];
+
+  /** Values of the selected segments before the change */
+  oldValue: string[];
 }
 
 /**
