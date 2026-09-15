@@ -28,7 +28,7 @@ export type Cancellable<F> = F & { cancel(): void };
  * 
  * window.addEventListener('scroll', throttledScroll);
  */
-export const throttle = <T extends (...args: any[]) => any>(
+export const throttle = <T extends (...args: never[]) => unknown>(
   fn: T,
   wait: number,
   options: { leading?: boolean; trailing?: boolean } = {}
@@ -37,7 +37,7 @@ export const throttle = <T extends (...args: any[]) => any>(
   let previous = 0;
   const { leading = true, trailing = true } = options;
   
-  const throttled = function(this: any, ...args: Parameters<T>): void {
+  const throttled = function(this: unknown, ...args: Parameters<T>): void {
     const now = Date.now();
     
     if (!previous && !leading) {
@@ -94,14 +94,14 @@ export const throttle = <T extends (...args: any[]) => any>(
  *   debouncedSearch(e.target.value);
  * });
  */
-export const debounce = <T extends (...args: any[]) => any>(
+export const debounce = <T extends (...args: never[]) => unknown>(
   fn: T,
   wait: number,
   options: { leading?: boolean; maxWait?: number } = {}
 ): Cancellable<(...args: Parameters<T>) => void> => {
   let timeout: number | null = null;
   let lastArgs: Parameters<T> | null = null;
-  let lastThis: any = null;
+  let lastThis: unknown = null;
   let result: ReturnType<T>;
   let lastCallTime: number | null = null;
   let lastInvokeTime = 0;
@@ -157,7 +157,7 @@ export const debounce = <T extends (...args: any[]) => any>(
   };
   
   // Main debounced function to return
-  const debounced = function(this: any, ...args: Parameters<T>): ReturnType<T> {
+  const debounced = function(this: unknown, ...args: Parameters<T>): ReturnType<T> {
     const time = Date.now();
     const isInvoking = shouldInvoke(time);
     
@@ -217,13 +217,13 @@ export const debounce = <T extends (...args: any[]) => any>(
  * button1.addEventListener('click', initApp);
  * button2.addEventListener('click', initApp);
  */
-export const once = <T extends (...args: any[]) => any>(
+export const once = <T extends (...args: never[]) => unknown>(
   fn: T
 ): ((...args: Parameters<T>) => ReturnType<T>) => {
   let called = false;
   let result: ReturnType<T>;
   
-  return function(this: any, ...args: Parameters<T>): ReturnType<T> {
+  return function(this: unknown, ...args: Parameters<T>): ReturnType<T> {
     if (!called) {
       called = true;
       result = fn.apply(this, args);

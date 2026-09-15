@@ -78,13 +78,13 @@ export interface Store<T> {
  * @param options - Store options
  * @returns State store interface
  */
-export const createStore = <T extends Record<string, any>>(
+export const createStore = <T extends object>(
   initialState: T = {} as T, 
   options: StoreOptions<T> = {}
 ): Store<T> => {
   let state = { ...initialState };
   const emitter: Emitter = createEmitter();
-  const derivedStates = new Map<string, Computation<T, any>>();
+  const derivedStates = new Map<string, Computation<T, unknown>>();
   const middleware = options.middleware || [];
 
   const notifyListeners = (newState: T, oldState: T): void => {
@@ -101,7 +101,7 @@ export const createStore = <T extends Record<string, any>>(
      * @returns Current state
      */
     getState: (): T => {
-      const derivedValues: Record<string, any> = {};
+      const derivedValues: Record<string, unknown> = {};
       derivedStates.forEach((compute, key) => {
         derivedValues[key] = compute(state);
       });
@@ -167,16 +167,16 @@ export const createStore = <T extends Record<string, any>>(
  * @param oldState - Previous state before change
  * @returns Processed state (unchanged in this middleware)
  */
-export const loggingMiddleware = <T extends Record<string, any>>(newState: T, oldState: T): T => {
+export const loggingMiddleware = <T extends object>(newState: T, oldState: T): T => {
   console.log('State change:', { 
     old: oldState, 
     new: newState, 
-    diff: Object.keys(newState).reduce((acc, key) => {
+    diff: (Object.keys(newState) as Array<keyof T & string>).reduce((acc, key) => {
       if (newState[key] !== oldState[key]) {
         acc[key] = { from: oldState[key], to: newState[key] };
       }
       return acc;
-    }, {} as Record<string, { from: any; to: any }>)
+    }, {} as Record<string, { from: unknown; to: unknown }>)
   });
   return newState;
 };
@@ -187,7 +187,7 @@ export const loggingMiddleware = <T extends Record<string, any>>(newState: T, ol
  * @param predicate - Filter predicate function
  * @returns Computation function for derived state
  */
-export const deriveFiltered = <T>(predicate: (value: any, key: string) => boolean) => 
+export const deriveFiltered = <T>(predicate: (value: T, key: string) => boolean) => 
   (state: Record<string, T>): Record<string, T> => 
     Object.keys(state).reduce((acc, key) => {
       if (predicate(state[key], key)) {

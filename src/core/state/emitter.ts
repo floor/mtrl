@@ -6,7 +6,7 @@
 /**
  * Type definition for event callback functions
  */
-export type EventCallback = (...args: any[]) => void;
+export type EventCallback = (...args: never[]) => void;
 
 /**
  * Interface for the event emitter
@@ -32,7 +32,7 @@ export interface Emitter {
    * @param event - Event name
    * @param args - Event arguments
    */
-  emit(event: string, ...args: any[]): void;
+  emit(event: string, ...args: unknown[]): void;
   
   /**
    * Clear all event listeners
@@ -79,9 +79,10 @@ export const createEmitter = (): Emitter => {
      * @param event - Event name
      * @param args - Event arguments
      */
-    emit: (event: string, ...args: any[]): void => {
+    emit: (event: string, ...args: unknown[]): void => {
       const callbacks = events.get(event) || [];
-      callbacks.forEach(cb => cb(...args));
+      // Callbacks declare their own argument types; emit forwards whatever it receives
+      callbacks.forEach(cb => (cb as (...args: unknown[]) => void)(...args));
     },
 
     /**
