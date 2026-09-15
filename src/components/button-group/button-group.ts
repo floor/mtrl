@@ -27,7 +27,8 @@ import {
 import {
   BUTTON_GROUP_DEFAULTS,
   BUTTON_GROUP_DENSITY,
-  BUTTON_GROUP_EXPANDED_RATIO
+  BUTTON_GROUP_EXPANDED_RATIO,
+  BUTTON_GROUP_COMPRESSION_LIMIT
 } from './constants';
 
 /**
@@ -170,11 +171,15 @@ const createButtonGroup = (config: ButtonGroupConfig = {}): ButtonGroupComponent
       // takes all of it from its only neighbour
       const share = expandedRatio * widths[index] / (middle ? 2 : 1);
       let growth = 0;
+      // A neighbour narrows by up to the compression limit, whatever its own
+      // padding: an icon button has none and still gives way. Padding on the
+      // facing side shrinks with it where there is some.
       const compress = (i: number, side: 'paddingLeft' | 'paddingRight') => {
-        const limit = Math.min(share, padding(i, side), widths[i]);
+        const limit = Math.min(share, BUTTON_GROUP_COMPRESSION_LIMIT, widths[i]);
         if (limit <= 0) return;
         buttons[i].element.style.width = `${widths[i] - limit}px`;
-        buttons[i].element.style[side] = `${padding(i, side) - limit}px`;
+        const facing = padding(i, side);
+        if (facing > 0) buttons[i].element.style[side] = `${Math.max(0, facing - limit)}px`;
         growth += limit;
       };
       if (previous >= 0) compress(previous, 'paddingRight');
