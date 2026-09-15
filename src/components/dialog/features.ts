@@ -1,8 +1,9 @@
 // src/components/dialog/features.ts (partial updated code)
 
 import { getOverlayConfig } from "./config";
-import { DialogConfig, DialogButton } from "./types";
+import { DialogConfig, DialogButton, DialogComponent } from "./types";
 import createButton from "../button";
+import type { ButtonComponent } from "../button/types";
 import { createDivider } from "../divider"; // Import the divider component
 import { addClass, removeClass } from "../../core/dom/classes";
 
@@ -31,7 +32,7 @@ export const withStructure = (config: DialogConfig) => (component) => {
   const contentId = `${uid}-content`;
 
   // Create the overlay element
-  const overlayConfig = getOverlayConfig(config);
+  const overlayConfig = getOverlayConfig();
   const overlay = document.createElement(overlayConfig.tag || "div");
 
   // Add overlay classes
@@ -334,7 +335,10 @@ export const withDivider = () => (component) => {
 const addButton = (
   footer: HTMLElement,
   buttonConfig: DialogButton,
-  component: any,
+  component: DialogComponent & {
+    emit?: (event: string, data?: unknown) => void;
+    _buttons?: { config: DialogButton; instance: ButtonComponent }[];
+  },
 ) => {
   const {
     text,

@@ -1,4 +1,5 @@
 // src/components/card/types.ts
+import type { ButtonConfig as BaseButtonConfig } from "../button/types";
 
 /**
  * Card variant types following Material Design 3 guidelines.
@@ -26,15 +27,13 @@ export type CardElevationLevel = 0 | 1 | 2 | 4;
  * @interface ButtonConfig
  * @category Components
  */
-export interface ButtonConfig {
+export interface ButtonConfig extends Omit<BaseButtonConfig, "variant"> {
   /** Button text content */
   text?: string;
   /** Button variant (text, outlined, filled, etc.) */
   variant?: string;
   /** Button icon HTML content */
   icon?: string;
-  /** Additional button properties passed to button component */
-  [key: string]: any;
 }
 
 /**
@@ -232,7 +231,7 @@ export interface BaseComponent {
   /** Add CSS class(es) */
   addClass: (...classes: string[]) => BaseComponent;
   /** Emit an event */
-  emit?: (event: string, data?: any) => void;
+  emit?: (event: string, data?: unknown) => void;
   /** Component configuration */
   config: CardComponentConfig;
   /** Touch state for touch interactions */

@@ -5,7 +5,6 @@ import {
   createElementConfig,
 } from "../../core/config/component";
 import { ProgressConfig, ProgressThickness, ProgressShape } from "./types";
-import { getCircularSize } from "./features/canvas";
 import {
   PROGRESS_CLASSES,
   PROGRESS_VARIANTS,
@@ -60,7 +59,7 @@ export const getElementConfig = (config: ProgressConfig) => {
 
   // Create the attributes object. The label says what is loading, as the M3
   // accessibility guidance asks.
-  const attributes: Record<string, any> = {
+  const attributes: Record<string, string> = {
     role: "progressbar",
     "aria-label": config.ariaLabel || PROGRESS_DEFAULTS.LABEL,
     "aria-valuemin": "0",

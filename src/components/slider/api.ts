@@ -8,17 +8,17 @@ import { SliderSize } from "./constants";
  */
 interface ApiOptions {
   slider: {
-    setValue: (value: number, triggerEvent?: boolean) => any;
+    setValue: (value: number, triggerEvent?: boolean) => unknown;
     getValue: () => number;
-    setSecondValue: (value: number, triggerEvent?: boolean) => any;
+    setSecondValue: (value: number, triggerEvent?: boolean) => unknown;
     getSecondValue: () => number | null;
-    setMin: (min: number) => any;
+    setMin: (min: number) => unknown;
     getMin: () => number;
-    setMax: (max: number) => any;
+    setMax: (max: number) => unknown;
     getMax: () => number;
-    setStep: (step: number) => any;
+    setStep: (step: number) => unknown;
     getStep: () => number;
-    regenerateTicks: () => any;
+    regenerateTicks: () => unknown;
   };
   disabled: {
     enable: () => void;
@@ -60,7 +60,7 @@ export const withAPI =
   (options: ApiOptions) =>
   (component: { element: HTMLElement }): SliderComponent => {
     return {
-      ...(component as any),
+      ...component,
 
       // Element access
       element: component.element,
