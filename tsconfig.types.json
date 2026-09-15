@@ -1,0 +1,8 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "include": ["test/types/pipe.fixture.ts"],
+  "exclude": ["node_modules"]
+}
