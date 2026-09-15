@@ -4,7 +4,7 @@ import { createBase, withElement } from '../../core/compose/component';
 import { withEvents, withLifecycle } from '../../core/compose/features';
 import { createEmitter } from '../../core/state/emitter';
 import { SegmentedButtonConfig, SegmentedButtonComponent, SelectionMode, Density, Segment } from './types';
-import { createBaseConfig, getContainerConfig, getDensityStyles } from './config';
+import { createBaseConfig, getContainerConfig } from './config';
 import { createSegment } from './segment';
 
 /**
@@ -68,7 +68,6 @@ const createSegmentedButton = (config: SegmentedButtonConfig = {}): SegmentedBut
   // Process configuration
   const baseConfig = createBaseConfig(config);
   const mode = baseConfig.mode || SelectionMode.SINGLE;
-  const density = baseConfig.density || Density.DEFAULT;
   const emitter = createEmitter();
   
   try {
@@ -79,12 +78,6 @@ const createSegmentedButton = (config: SegmentedButtonConfig = {}): SegmentedBut
       withElement(getContainerConfig(baseConfig)),
       withLifecycle()
     )(baseConfig);
-    
-    // Apply density styles
-    const densityStyles = getDensityStyles(density as string);
-    Object.entries(densityStyles).forEach(([prop, value]) => {
-      component.element.style.setProperty(prop, value);
-    });
     
     // Create segments
     const segments: Segment[] = [];
@@ -205,11 +198,6 @@ const createSegmentedButton = (config: SegmentedButtonConfig = {}): SegmentedBut
       // Update data attribute
       component.element.setAttribute('data-density', newDensity);
       
-      // Apply density styles
-      const densityStyles = getDensityStyles(newDensity);
-      Object.entries(densityStyles).forEach(([prop, value]) => {
-        component.element.style.setProperty(prop, value);
-      });
     };
     
     // Create the component API

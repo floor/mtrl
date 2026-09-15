@@ -58,36 +58,6 @@ export const getContainerConfig = (config: SegmentedButtonConfig) => {
 };
 
 /**
- * Gets density-specific sizing and spacing values
- * @param {string} density - The density level
- * @returns {Object} CSS variables with sizing values
- * @internal
- */
-export const getDensityStyles = (density: string): Record<string, string> => {
-  switch (density) {
-    case Density.COMPACT:
-      return {
-        "--segment-padding": "4px 8px",
-        "--segment-height": "28px",
-        "--segment-font-size": "0.8125rem",
-      };
-    case Density.COMFORTABLE:
-      return {
-        "--segment-padding": "6px 12px",
-        "--segment-height": "32px",
-        "--segment-font-size": "0.875rem",
-      };
-    case Density.DEFAULT:
-    default:
-      return {
-        "--segment-padding": "8px 16px",
-        "--segment-height": "36px",
-        "--segment-font-size": "0.875rem",
-      };
-  }
-};
-
-/**
  * Generates configuration for a segment element
  * @param {Object} segment - Segment configuration
  * @param {string} prefix - Component prefix
