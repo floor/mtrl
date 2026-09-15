@@ -6,26 +6,30 @@
  */
 
 import { ButtonConfig } from '../../components/button/types';
+import type { CardSchema } from '../../components/card/types';
+import type { CheckboxConfig } from '../../components/checkbox/types';
+import type { ChipConfig } from '../../components/chips/types';
+import type { DialogConfig } from '../../components/dialog/types';
 import type { NavigationRailConfig } from '../../components/navigation-rail/types';
+import type { SliderConfig } from '../../components/slider/types';
+import type { SwitchConfig } from '../../components/switch/types';
 import { TextfieldConfig } from '../../components/textfield/types';
 // Import other component configs as needed
 
 /**
  * Component configuration map
  * Add new components here as they support global config
- * 
- * For components not yet integrated, use Partial<any> as a placeholder
  */
 export interface ComponentConfigMap {
   "navigation-rail"?: Partial<NavigationRailConfig>;
   button?: Partial<ButtonConfig>;
   textfield?: Partial<TextfieldConfig>;
-  checkbox?: Partial<any>;
-  switch?: Partial<any>;
-  slider?: Partial<any>;
-  card?: Partial<any>;
-  chip?: Partial<any>;
-  dialog?: Partial<any>;
+  checkbox?: Partial<CheckboxConfig>;
+  switch?: Partial<SwitchConfig>;
+  slider?: Partial<SliderConfig>;
+  card?: Partial<CardSchema>;
+  chip?: Partial<ChipConfig>;
+  dialog?: Partial<DialogConfig>;
   // Add other components as needed
 }
 

@@ -13,16 +13,36 @@ import { addClass } from "./classes";
 export type EventHandler = (event: Event) => void;
 
 /**
- * Event condition type
- */
-export type EventCondition =
-  | boolean
-  | ((context: any, event: Event) => boolean);
-
-/**
  * Element type that can be either HTMLElement or SVGElement
  */
 export type DOMElement = HTMLElement | SVGElement;
+
+/**
+ * Component context passed to created elements for event forwarding
+ */
+export interface ElementContext {
+  /** Emits forwarded events */
+  emit?(
+    event: string,
+    data: { event: Event; element: DOMElement; originalEvent: Event },
+  ): void;
+  /** Subscribes to events */
+  on?(event: string, handler: (...args: unknown[]) => void): unknown;
+}
+
+/**
+ * Event condition type
+ * Declared through a method signature so conditions typed for a specific
+ * component or event subtype stay assignable under strictFunctionTypes
+ */
+export type EventCondition =
+  | boolean
+  | {
+      condition(
+        context: ElementContext & { element: DOMElement },
+        event: Event,
+      ): boolean;
+    }["condition"];
 
 /**
  * Options for element creation with comprehensive configuration
@@ -68,15 +88,13 @@ export interface CreateElementOptions {
   /** CSS classes that will NOT be prefixed - added as-is to the element */
   rawClass?: string | string[];
   /** HTML attributes */
-  attributes?: Record<string, any>;
+  attributes?: object;
   /** Events to forward when component has emit method */
   forwardEvents?: Record<string, EventCondition>;
   /** Callback after element creation */
-  onCreate?: (element: HTMLElement, context?: any) => void;
+  onCreate?(element: HTMLElement, context?: ElementContext): void;
   /** Component context */
-  context?: any;
-  /** Additional attributes via spread */
-  [key: string]: any;
+  context?: ElementContext & object;
 }
 
 /**
@@ -85,7 +103,7 @@ export interface CreateElementOptions {
 export interface CreateSVGElementOptions
   extends Omit<CreateElementOptions, "container" | "onCreate"> {
   container?: DOMElement | null;
-  onCreate?: (element: SVGElement, context?: any) => void;
+  onCreate?(element: SVGElement, context?: ElementContext): void;
 }
 
 /**
@@ -94,34 +112,6 @@ export interface CreateSVGElementOptions
 export interface EventHandlerStorage {
   [eventName: string]: EventHandler;
 }
-
-/**
- * SVG element tags
- */
-const SVG_TAGS = [
-  "svg",
-  "circle",
-  "ellipse",
-  "line",
-  "path",
-  "polygon",
-  "polyline",
-  "rect",
-  "g",
-  "text",
-  "tspan",
-  "textPath",
-  "defs",
-  "clipPath",
-  "mask",
-  "pattern",
-  "marker",
-  "linearGradient",
-  "radialGradient",
-  "stop",
-  "use",
-  "foreignObject",
-];
 
 const RESERVED_OPTIONS: Record<string, unknown> = {
   __proto__: null,
@@ -160,11 +150,11 @@ const PASSIVE_TOUCH_EVENTS = new Set(["touchstart", "touchmove"]);
 const setupEventForwarding = (
   element: HTMLElement | SVGElement,
   forwardEvents: Record<string, EventCondition>,
-  context: any,
+  context: ElementContext | undefined,
 ): void => {
   if (!forwardEvents || (!context?.emit && !context?.on)) return;
 
-  (element as any).__eventHandlers = {};
+  element.__eventHandlers = {};
 
   for (const nativeEvent in forwardEvents) {
     const eventConfig = forwardEvents[nativeEvent];
@@ -187,7 +177,7 @@ const setupEventForwarding = (
       }
     };
 
-    (element as any).__eventHandlers[nativeEvent] = handler;
+    element.__eventHandlers[nativeEvent] = handler;
 
     // Use passive listeners for touch events to avoid scroll-blocking warnings
     const options = PASSIVE_TOUCH_EVENTS.has(nativeEvent)
@@ -235,12 +225,12 @@ class ElementPool {
   }
 
   private cleanElement(element: HTMLElement): void {
-    const handlers = (element as any).__eventHandlers;
+    const handlers = element.__eventHandlers;
     if (handlers) {
       for (const event in handlers) {
         element.removeEventListener(event, handlers[event]);
       }
-      delete (element as any).__eventHandlers;
+      delete element.__eventHandlers;
     }
 
     element.className = "";
@@ -329,7 +319,7 @@ export const createElement = (
   // Apply other attributes from options spread (rest parameters)
   for (const key in options) {
     if (!(key in RESERVED_OPTIONS)) {
-      const value = options[key];
+      const value = options[key as keyof CreateElementOptions];
       if (value != null) {
         element.setAttribute(key, String(value));
       }
@@ -399,7 +389,7 @@ export const createSVGElement = (
 
   if (options.text) element.textContent = options.text;
   if (options.id) element.id = options.id;
-  if (options.attributes) setAttributes(element as any, options.attributes);
+  if (options.attributes) setAttributes(element, options.attributes);
   if (options.forwardEvents)
     setupEventForwarding(element, options.forwardEvents, options.context);
   if (options.container) options.container.appendChild(element);
@@ -415,12 +405,12 @@ export const createSVGElement = (
 export const removeEventHandlers = (
   element: HTMLElement | SVGElement,
 ): void => {
-  const handlers = (element as any).__eventHandlers;
+  const handlers = element.__eventHandlers;
   if (handlers) {
     for (const event in handlers) {
       element.removeEventListener(event, handlers[event]);
     }
-    delete (element as any).__eventHandlers;
+    delete element.__eventHandlers;
   }
 };
 

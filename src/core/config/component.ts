@@ -1,6 +1,6 @@
 // src/core/config/component-config.ts
 import { PREFIX } from "../config";
-import { getComponentDefaults } from "./global";
+import { getComponentDefaults, type ComponentConfigMap } from "./global";
 
 /**
  * Base component configuration interface
@@ -50,7 +50,9 @@ export const createComponentConfig = (
   componentName: string,
 ): BaseComponentConfig => {
   // Get global defaults for this component (if any)
-  const globalDefaults = getComponentDefaults(componentName as any);
+  const globalDefaults = getComponentDefaults(
+    componentName as keyof ComponentConfigMap,
+  );
 
   // First check for className, fall back to class
   const userClassName =
@@ -158,7 +160,7 @@ export const createElementConfig = (
   config: BaseComponentConfig,
   options: {
     tag: string;
-    attributes?: Record<string, any>;
+    attributes?: Record<string, unknown>;
     className?: string | string[] | null;
     html?: string;
     text?: string;
