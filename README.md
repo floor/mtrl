@@ -1,411 +1,193 @@
-# mtrl Library
+# mtrl
 
-> **Project Status:** mtrl is in active development with TypeScript support! The core architecture and components are established, with more features on the roadmap. We welcome early adopters and contributors who want to help shape mtrl's future!
+Material Design 3 components for the web, written in TypeScript with zero dependencies.
 
-mtrl is a lightweight, composable TypeScript/JavaScript component library inspired by Material Design principles. Built with zero dependencies, mtrl provides a robust foundation for creating modern web interfaces with an emphasis on performance, type safety, and accessibility.
+mtrl implements the M3 expressive update: component sizes, shapes, colours and spring motion follow the Material 3 tokens. Each component is a plain function that returns a DOM element and a small API, so mtrl works with any framework or none. The documentation site, [mtrl.app](https://mtrl.app), shows every component with live examples.
 
-## Understanding mtrl
+## Quick start
 
-mtrl (pronounced "material") takes its inspiration from Material Design while providing a flexible, framework-agnostic implementation.
-
-### Design Philosophy
-
-mtrl is built on several core principles:
-
-1. **Composition Over Inheritance**: Components are constructed through functional composition with full type safety.
-2. **Zero Dependencies**: The entire library is built with vanilla TypeScript, ensuring minimal bundle size and maximum compatibility.
-3. **Material Design Inspiration**: While inspired by Material Design, mtrl provides flexibility in styling and behavior.
-4. **Accessibility First**: Built-in accessibility features ensure your applications are usable by everyone.
-5. **TypeScript First**: Comprehensive type definitions for better developer experience and code reliability.
-
-## Core Components
-
-mtrl provides a comprehensive set of components, each following Material Design principles:
-
-```typescript
-import { createButton, createTextfield } from "mtrl";
-
-// Create a material button with ripple effect
-const button = createButton({
-  text: "Submit",
-  variant: "filled",
-  ripple: true,
-  class: "custom-button",
-});
-
-// className will be: mtrl-button mtrl-button--filled custom-button
+```bash
+npm install mtrl
 ```
 
-### Component List
+```typescript
+import 'mtrl/styles';
+import { createButton, createTextfield } from 'mtrl';
+
+const name = createTextfield({ label: 'Name' });
+const save = createButton({ text: 'Save', variant: 'filled' });
+save.disabled.disable();
+
+name.on('input', ({ value }: { value: string }) => {
+  if (value.trim()) save.disabled.enable();
+  else save.disabled.disable();
+});
+
+save.on('click', () => {
+  console.log('Saved', name.getValue());
+});
+
+document.body.append(name.element, save.element);
+
+// When the view goes away, release listeners and DOM
+name.destroy();
+save.destroy();
+```
+
+`mtrl/styles` loads every component and theme. For a smaller bundle, import only what you use (see [Styles](#styles)).
+
+## Components
 
 Every component is created by a `create*` function exported from `mtrl`, and renders with `mtrl-` prefixed classes.
 
 - **Actions:** `createButton`, `createButtonGroup`, `createSplitButton`, `createIconButton`, `createFab`, `createExtendedFab`
-- **Selection and input:** `createCheckbox`, `createChip`, `createRadios`, `createSwitch`, `createSlider`, `createSelect`, `createTextfield`, `createSearch`, `createDatePicker`, `createTimePicker`
-- **Navigation:** `createNavigationRail`, `createDrawer`, `createTabs`, `createTopAppBar`, `createBottomAppBar`, `createMenu`, `createNavigation`, `createNavigationSystem`
-- **Containment:** `createCard`, `createCarousel`, `createList`, `createDivider`, `createDialog`, `createBottomSheet`, `createSideSheet`
+- **Selection and input:** `createCheckbox`, `createChips` and `createChip`, `createRadios`, `createSwitch`, `createSlider`, `createSelect`, `createTextfield`, `createSearch`, `createDatePicker`, `createTimePicker`
+- **Navigation:** `createNavigationRail`, `createDrawer`, `createTabs` and `createTab`, `createTopAppBar`, `createBottomAppBar`, `createMenu`, `createNavigation`, `createNavigationSystem`
+- **Containment:** `createCard` with `createCardHeader`, `createCardContent`, `createCardMedia` and `createCardActions`, `createCarousel`, `createList`, `createDivider`, `createDialog`, `createBottomSheet`, `createSideSheet`
 - **Communication:** `createSnackbar`, `createTooltip`, `createBadge`, `createProgress`, `createLoadingIndicator`
-- **Deprecated:** `createSegmentedButton` and `createSegment`, replaced by `createButtonGroup` with `kind: "connected"`
+- **Deprecated:** `createSegmentedButton` and `createSegment`, replaced by `createButtonGroup` with `kind: 'connected'`
 
-The documentation site, [mtrl.app](https://mtrl.app), shows each component with live examples.
+Virtual scrolling and data-driven lists live in [mtrl-addons](https://github.com/floor/mtrl-addons).
 
-## Installation
+## Styles
 
-```bash
-# Using npm
-npm install mtrl
-
-# Using yarn
-yarn add mtrl
-
-# Using bun
-bun add mtrl
-```
-
-## Tree-Shaking Optimized Imports
-
-mtrl publishes ESM modules so application bundlers can remove unused exports and
-split dynamic imports. The root and direct component imports use the same modules.
-CommonJS remains available through `require('mtrl')`.
-
-### Import Patterns
-
-| Import Type | Path |
-|-------------|------|
-| Component creators | `import { createButton } from 'mtrl'` |
-| Button constants | `import { BUTTON_VARIANTS } from 'mtrl/components/button/constants'` |
-| Slider constants | `import { SLIDER_SIZES } from 'mtrl/components/slider/constants'` |
-| Card constants | `import { CARD_VARIANTS } from 'mtrl/components/card/constants'` |
-| Direct component import | `import createButton from 'mtrl/components/button'` |
-| Core utilities | `import { addClass, removeClass } from 'mtrl/core/dom'` |
-
-### Example
-
-```typescript
-// ✅ Optimal - only imports what you need
-import { createButton } from 'mtrl';
-import { BUTTON_VARIANTS, BUTTON_SIZES } from 'mtrl/components/button/constants';
-
-const button = createButton({
-  text: 'Submit',
-  variant: BUTTON_VARIANTS.FILLED,
-  size: BUTTON_SIZES.L
-});
-
-// ✅ Also optimal - direct component import
-import createSlider from 'mtrl/components/slider';
-import { SLIDER_COLORS } from 'mtrl/components/slider/constants';
-
-const slider = createSlider({
-  color: SLIDER_COLORS.PRIMARY
-});
-```
-
-**Note:** Constants are NOT exported from main entry points. Always import them from the component's constants file.
-
-### Selective styles
-
-The full stylesheet remains available:
+Import the full stylesheet once:
 
 ```typescript
 import 'mtrl/styles';
 ```
 
-For smaller applications, import the base once, followed by the components you use:
+Or import the base once, followed by the components you use:
 
 ```typescript
 import 'mtrl/styles/base';
 import 'mtrl/styles/button';
 import 'mtrl/styles/textfield';
 
-// Optional: alternate themes and utility classes
+// Optional: an alternate theme and the utility classes
 import 'mtrl/themes/ocean';
 import 'mtrl/styles/utilities';
 ```
 
-The base includes the baseline light/dark theme, tokens, reset, typography, and
-ripple styles. Selective style entry points are JavaScript modules that import
-their CSS and dependencies (for example, button imports progress; select imports
-textfield and menu). Use a CSS-capable application bundler to resolve and
-deduplicate these imports. Their ordered `mtrl` cascade layers preserve component
-overrides even when a bundler reorders CSS chunks. Unlayered application CSS can
-override these library styles. Load optional themes after the base.
-Choose either the full stylesheet or selective imports to avoid
-duplicating styles. DatePicker remains available through the full stylesheet;
-it has no separate style entry while in development.
+The base includes the baseline theme in light and dark, the tokens, a reset, typography and the ripple. Each selective entry imports what it depends on (the select brings the text field and the menu), so use a CSS-capable bundler to resolve and deduplicate them. Choose either the full stylesheet or selective imports, not both. The date picker has no selective entry yet; it is in the full stylesheet.
 
-Button progress and card action buttons retain their dynamic imports in ESM.
-Enable code splitting in your application build to load those features on demand.
-The CommonJS compatibility bundle includes them eagerly.
+Library styles sit in ordered `mtrl` cascade layers, so unlayered application CSS overrides them without specificity battles.
 
-Slider decoration uses DOM tracks and CSS backgrounds for ticks; it no longer
-creates a canvas or subscribes to theme changes. Its public slider API and
-accessible handles remain. Themes and per-slider colour overrides apply through
-CSS. Custom styling that targets the former `.mtrl-slider-canvas` element must be
-updated. Run `bun run slider:check` after building for slider geometry, keyboard,
-pointer, resize, and lifecycle checks. For comparison with a previous canvas
-build, pass `--reference=/path/to/reference` to `scripts/check-slider.ts`; that
-directory must contain an ESM `slider.js` exporting `createSlider` and its full
-`styles.css`. Comparison screenshots and measurements go to `analysis/slider-dom`.
-CSS rounded corners differ slightly from the previous canvas curves.
+### Themes
 
-### Checking distribution size
+The baseline theme applies by default and follows the system light or dark preference. Choose a theme and mode on the root element:
 
-```bash
-bun run build
-bun run size:check
+```html
+<html data-theme="ocean" data-theme-mode="dark">
 ```
-
-The size check packs and installs the local distribution in a temporary directory,
-checks Node ESM/CommonJS and TypeScript imports, and measures minified consumer
-bundles with gzip and Brotli. It enforces budgets for individual imports, a form,
-CSS, and the initial button chunks. Results are saved to
-`analysis/package-size.json`. Run it after building; it does not rebuild dist.
-
-For a second bundler and real-browser checks:
-
-```bash
-node node_modules/playwright/cli.js install chromium
-bun run consumer:check
-```
-
-This builds a packed Vite application and checks tree-shaking, CSS deduplication,
-and on-demand progress loading. Chromium compares full and selective CSS with
-screenshots and computed styles across component states, baseline/ocean themes,
-light/dark modes, and desktop/mobile widths. It also exercises pointer and keyboard
-interactions. Reports and screenshots are saved to `analysis/browser`; CI runs
-these checks and uploads the artifacts. Comparisons use the full stylesheet from
-the same build as their reference, so they test distribution equivalence rather
-than establish a separate design baseline.
-
-`scripts/style-manifest.ts` declares selective entries and their dependencies.
-The build rejects missing dependencies and cycles, checks the manifest against
-Sass's parsed full-stylesheet imports, and verifies component dependencies retained
-by tree-shaking, including lazy imports. Vite and Playwright are development-only
-dependencies, pinned along with the existing tools in `bun.lock`.
-
-Builds fail on TypeScript or Sass errors. Published ESM is readable and includes
-declarations; source maps are omitted from the package to reduce installation size.
-
-## Component Architecture
-
-Let's look at how mtrl components are constructed:
 
 ```typescript
-// Example of a button component creation
-const button = createButton({
-  prefix: "mtrl", // The library's prefix
-  componentName: "button", // Component identifier
-  variant: "filled", // Visual variant
-  text: "Click me", // Button text
-  ripple: true, // Enable ripple effect
-});
+document.documentElement.dataset.theme = 'ocean';
+document.documentElement.dataset.themeMode = 'dark';
 ```
 
-### The Composition System
+Available themes: `baseline`, `ocean`, `desert`, `forest`, `sunset`, `spring`, `summer`, `autumn`, `winter`, `brownbeige`, `browngreen`, `sageivory`, `tealcaramel`, `material`, `legacy` and `highcontrast`. With selective styles, import the theme's entry, for example `mtrl/themes/ocean`.
 
-mtrl uses a pipe-based composition system with full type safety for building components:
+### Custom properties
 
-```typescript
-// Internal component creation
-const createButton = (config: ButtonConfig): ButtonComponent => {
-  return pipe(
-    createBase, // Base component structure
-    withEvents(), // Event handling capability
-    withElement({
-      // DOM element creation
-      tag: "button",
-      componentName: "button",
-      prefix: "mtrl",
-    }),
-    withVariant(config), // Visual variant support
-    withText(config), // Text content management
-    withIcon(config), // Icon support
-    withRipple(config) // Ripple animation
-  )(config);
-};
-```
-
-### TypeScript Integration
-
-mtrl provides comprehensive TypeScript definitions:
-
-```typescript
-// An excerpt of the button's public interface
-export interface ButtonComponent {
-  element: HTMLButtonElement;
-  text: TextAPI;
-  icon: IconAPI;
-  disabled: { enable: () => void; disable: () => void; isDisabled: () => boolean };
-  lifecycle: { destroy: () => void };
-  getValue: () => string;
-  setValue: (value: string) => ButtonComponent;
-  getVariant: () => ButtonVariant | string;
-  setVariant: (variant: ButtonVariant | string) => ButtonComponent;
-  getSize: () => ButtonSize | string;
-  setSize: (size: ButtonSize | string) => ButtonComponent;
-  // …
-}
-```
-
-### CSS Classes
-
-mtrl follows a consistent class naming convention:
-
-```css
-.mtrl-component                /* Base component class */
-/* Base component class */
-.mtrl-component--variant      /* Variant modifier */
-.mtrl-component--state        /* State modifier (disabled, focused) */
-.mtrl-component-element; /* Child element */
-```
-
-## State Management
-
-mtrl provides several approaches to state management:
-
-### Local Component State
-
-```typescript
-const textfield = createTextfield({
-  label: "Username",
-});
-
-textfield.on("input", ({ value }) => {
-  console.log("Current value:", value);
-});
-
-textfield.setValue("New value");
-```
-
-Virtual scrolling and data-driven lists are not part of mtrl; they live in [mtrl-addons](https://github.com/floor/mtrl-addons).
-
-## Customization
-
-### Creating Custom Components
-
-Extend mtrl by creating custom components with full type safety:
-
-```typescript
-import { pipe, createBase, withEvents, withElement } from "mtrl/core/compose";
-import type { ElementComponent } from "mtrl/core/compose";
-
-interface CustomCardConfig {
-  title?: string;
-  class?: string;
-}
-
-interface CustomCardComponent extends ElementComponent {
-  setContent: (content: string) => CustomCardComponent;
-}
-
-const createCustomCard = (config: CustomCardConfig): CustomCardComponent => {
-  return pipe(
-    createBase,
-    withEvents(),
-    withElement({
-      tag: "div",
-      componentName: "card",
-      prefix: "mtrl",
-    }),
-    // Add custom features
-    (component) => ({
-      ...component,
-      setContent(content: string) {
-        component.element.innerHTML = content;
-        return this;
-      },
-    })
-  )(config);
-};
-```
-
-### Styling
-
-mtrl components take their colours from the theme's custom properties, so overriding a role restyles every component that uses it:
+Components read the theme's colour roles, so overriding a role restyles every component that uses it:
 
 ```css
 :root {
   --mtrl-sys-color-primary: #6750a4;
-  --mtrl-sys-color-surface: #fffbfe;
-  --mtrl-sys-color-on-surface: #1c1b1f;
+  --mtrl-sys-color-on-primary: #ffffff;
 }
 ```
 
-## Best Practices
+The type scale and shape scale are custom properties too (`--mtrl-sys-typescale-*`, `--mtrl-sys-shape-*`). Component hooks follow one convention, `--mtrl-<component>-<name>`:
 
-### Performance
+```css
+.brand-slider {
+  --mtrl-slider-color: #006a6a;
+  --mtrl-slider-on-color: #ffffff;
+}
+```
 
-mtrl is designed with performance in mind:
+## Imports and tree-shaking
 
-- Minimal DOM operations
-- Efficient event handling
-- Automatic cleanup of resources
-- Lazy initialization of features
+mtrl publishes ESM with type declarations, so bundlers drop unused exports and split dynamic imports. CommonJS remains available through `require('mtrl')`.
 
-### Type Safety
+| Import | Path |
+|--------|------|
+| Component creators | `import { createButton } from 'mtrl'` |
+| One component directly | `import createSlider from 'mtrl/components/slider'` |
+| Component constants | `import { BUTTON_VARIANTS } from 'mtrl/components/button/constants'` |
+| Core utilities | `import { addClass, removeClass } from 'mtrl/core/dom'` |
 
-mtrl leverages TypeScript for better developer experience:
+Constants are not exported from the root; import them from the component's `constants` entry:
 
-- Clear component interfaces
-- Type-safe method chaining
-- Intelligent code completion
-- Compile-time error checking
-- Self-documenting code
+```typescript
+import { createButton } from 'mtrl';
+import { BUTTON_VARIANTS, BUTTON_SIZES } from 'mtrl/components/button/constants';
 
-### Accessibility
+const button = createButton({
+  text: 'Submit',
+  variant: BUTTON_VARIANTS.FILLED,
+  size: BUTTON_SIZES.L,
+});
+```
 
-Built-in accessibility features include:
+Button progress and card actions load on demand; enable code splitting in your build to keep them out of the initial chunk.
 
-- ARIA attributes management
-- Keyboard navigation
-- Focus management
-- Screen reader support
+## Building your own components
 
-## Browser Support
+Components are composed from small features with `pipe`. The same building blocks are public:
 
-mtrl supports modern browsers:
+```typescript
+import { pipe, createBase, withEvents, withElement } from 'mtrl/core/compose';
+import type { ElementComponent } from 'mtrl/core/compose';
 
-- Chrome (latest)
-- Firefox (latest)
-- Safari (latest)
-- Edge (latest)
+interface NoteConfig {
+  text?: string;
+}
+
+interface NoteComponent extends ElementComponent {
+  setText: (text: string) => NoteComponent;
+}
+
+const createNote = (config: NoteConfig): NoteComponent =>
+  pipe(
+    createBase,
+    withEvents(),
+    withElement({ tag: 'div', componentName: 'note' }),
+    (component) => ({
+      ...component,
+      setText(text: string) {
+        component.element.textContent = text;
+        return this;
+      },
+    })
+  )(config);
+```
+
+The element gets the `mtrl-note` class, `withEvents` adds `on`, `off` and `emit`, and `destroy()` removes the element. Add `withLifecycle()` from `mtrl/core/compose/features` when features need to register cleanup.
+
+## Upgrading from 0.7
+
+0.8.0 aligns the components with Material 3 expressive, and some of that changes the API or the styles:
+
+- `createSheet` is removed; use `createBottomSheet` or `createSideSheet`.
+- FAB and extended FAB: `variant: 'primary'`, `'secondary'` and `'tertiary'` are now the tone styles; the former look is `'primary-container'` (the default), `'secondary-container'` and `'tertiary-container'`.
+- `createSegmentedButton` is deprecated in favour of `createButtonGroup({ kind: 'connected' })`; its heights are now 40, 36 and 32px by density.
+- Component custom properties are renamed to `--mtrl-<component>-<name>`, for example `--drawer-width` to `--mtrl-drawer-width` and `--item-offset` to `--mtrl-list-item-offset`.
+- `title-large` uses weight 400, as M3 specifies.
+- The slider draws with DOM and CSS; styles for `.mtrl-slider-canvas` no longer apply.
+
+The full list, with every renamed property, is in [changelog.txt](changelog.txt).
+
+## Browser support
+
+Current Chrome, Edge, Firefox and Safari. The spring motion uses CSS `linear()` easing (Safari 17.2 or later); older browsers render every component but skip those transitions.
 
 ## Contributing
 
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+Contributions are welcome. [CONTRIBUTING.md](CONTRIBUTING.md) covers the development setup, conventions and the distribution checks; [TESTING.md](TESTING.md) covers the test suite.
 
 ## License
 
-mtrl is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Testing
-
-mtrl comes with a comprehensive test suite using Bun's test runner. The tests are written in TypeScript and use JSDOM for DOM testing.
-
-```bash
-# Run all tests
-bun test
-
-# Run tests in watch mode
-bun test --watch
-
-# Run tests with coverage report
-bun test --coverage
-
-# Run tests with UI
-bun test --watch --ui
-
-# Run a specific test file
-bun test test/components/button.test.ts
-```
-
-For more details on writing and running tests, see our [Testing Guide](TESTING.md).
-
-## Documentation
-
-For detailed API documentation, examples, and guides, visit our [documentation site](https://mtrl.app).
-
----
-
-This library is designed to provide a solid foundation for building modern web interfaces with TypeScript while maintaining flexibility for custom implementations. For questions, issues, or contributions, please visit our GitHub repository.
+MIT, see [LICENSE](LICENSE).
