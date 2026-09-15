@@ -12,13 +12,13 @@ export { normalizeClasses } from "./classes";
  */
 export const createElement = <T extends HTMLElement>(
   tag: string,
-  attributes: Record<string, any> = {}
+  attributes: Record<string, unknown> = {}
 ): T => {
   const element = document.createElement(tag) as T;
 
   Object.entries(attributes).forEach(([key, value]) => {
     if (key === "className") {
-      element.className = value;
+      element.className = value as string;
     } else if (key === "style" && typeof value === "object") {
       Object.assign(element.style, value);
     } else if (key === "data" && typeof value === "object") {
@@ -35,7 +35,7 @@ export const createElement = <T extends HTMLElement>(
       });
     } else if (key.startsWith("on") && typeof value === "function") {
       const eventName = key.slice(2).toLowerCase();
-      element.addEventListener(eventName, value);
+      element.addEventListener(eventName, value as EventListener);
     } else if (value !== null && value !== undefined) {
       element.setAttribute(key, String(value));
     }
