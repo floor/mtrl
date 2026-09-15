@@ -603,11 +603,11 @@ describe("Button group selection (Material 3 kinds)", () => {
 
   it("size and kind tokens are exposed as custom properties", () => {
     const group = createButtonGroup({ kind: "connected", size: "m", buttons: items.slice(0, 2) });
-    expect(group.element.style.getPropertyValue("--button-group-height")).toBe("56px");
-    expect(group.element.style.getPropertyValue("--button-group-gap")).toBe("2px");
-    expect(group.element.style.getPropertyValue("--button-group-inner-corner")).toBe("8px");
+    expect(group.element.style.getPropertyValue("--mtrl-button-group-height")).toBe("56px");
+    expect(group.element.style.getPropertyValue("--mtrl-button-group-gap")).toBe("2px");
+    expect(group.element.style.getPropertyValue("--mtrl-button-group-inner-corner")).toBe("8px");
     const standard = createButtonGroup({ kind: "standard", size: "xs", buttons: items.slice(0, 2) });
-    expect(standard.element.style.getPropertyValue("--button-group-gap")).toBe("18px");
+    expect(standard.element.style.getPropertyValue("--mtrl-button-group-gap")).toBe("18px");
     group.destroy();
     standard.destroy();
   });
@@ -635,11 +635,11 @@ describe("Button group selection (Material 3 kinds)", () => {
 
   it("density lowers the container height by 4dp per step", () => {
     const group = createButtonGroup({ size: "s", density: "compact", buttons: [{ text: "A" }] });
-    expect(group.element.style.getPropertyValue("--button-group-height")).toBe("32px");
+    expect(group.element.style.getPropertyValue("--mtrl-button-group-height")).toBe("32px");
     group.setDensity("comfortable");
-    expect(group.element.style.getPropertyValue("--button-group-height")).toBe("36px");
+    expect(group.element.style.getPropertyValue("--mtrl-button-group-height")).toBe("36px");
     group.setDensity("default");
-    expect(group.element.style.getPropertyValue("--button-group-height")).toBe("40px");
+    expect(group.element.style.getPropertyValue("--mtrl-button-group-height")).toBe("40px");
   });
 
   it("a pressed button in a standard group widens by 15% and its neighbours narrow", () => {

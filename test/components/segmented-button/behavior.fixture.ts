@@ -134,7 +134,7 @@ for (const density of [Density.DEFAULT, Density.COMFORTABLE, Density.COMPACT]) {
   test(`initial ${density} density is reflected in classes and API`, () => {
     const group = make({ density });
     expect(group.getDensity()).toBe(density); expect(group.element.getAttribute('data-density')).toBe(density);
-    expect(Array.from(group.element.style).filter(name => name.startsWith('--segment-'))).toEqual([]);
+    expect(Array.from(group.element.style).filter(name => name.startsWith('--segment-') || name.startsWith('--mtrl-segmented-button-'))).toEqual([]);
     for (const modifier of [Density.COMFORTABLE, Density.COMPACT]) {
       expect(group.element.classList.contains(`mtrl-segmented-button--${modifier}`)).toBe(modifier === density);
     }
@@ -145,7 +145,7 @@ test('setDensity replaces the previous density class', () => {
   const group = make();
   for (const density of [Density.COMPACT, Density.COMFORTABLE, Density.DEFAULT]) {
     expect(group.setDensity(density)).toBe(group); expect(group.getDensity()).toBe(density);
-    expect(Array.from(group.element.style).filter(name => name.startsWith('--segment-'))).toEqual([]);
+    expect(Array.from(group.element.style).filter(name => name.startsWith('--segment-') || name.startsWith('--mtrl-segmented-button-'))).toEqual([]);
     for (const modifier of [Density.COMFORTABLE, Density.COMPACT]) {
       expect(group.element.classList.contains(`mtrl-segmented-button--${modifier}`)).toBe(modifier === density);
     }

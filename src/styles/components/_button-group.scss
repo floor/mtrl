@@ -30,9 +30,9 @@ $shape: '--#{base.$prefix}-button-shape';
 //   corners (4/8/8/16/20dp by size), 4dp inner corners while pressed; a
 //   selected button becomes a full pill
 //
-// The component sets --button-group-height, --button-group-icon,
-// --button-group-gap, --button-group-inner-corner,
-// --button-group-pressed-corner and --button-group-radius.
+// The component sets --#{base.$prefix}-button-group-height, --#{base.$prefix}-button-group-icon,
+// --#{base.$prefix}-button-group-gap, --#{base.$prefix}-button-group-inner-corner,
+// --#{base.$prefix}-button-group-pressed-corner and --#{base.$prefix}-button-group-radius.
 // =============================================================================
 
 .#{$component} {
@@ -40,14 +40,14 @@ $shape: '--#{base.$prefix}-button-shape';
   display: inline-flex;
   flex-direction: row;
   align-items: center;
-  gap: var(--button-group-gap, 12px);
+  gap: var(--#{base.$prefix}-button-group-gap, 12px);
 
-  --button-group-height: 40px;
-  --button-group-icon: 20px;
-  --button-group-gap: 12px;
-  --button-group-inner-corner: 8px;
-  --button-group-pressed-corner: 4px;
-  --button-group-radius: 20px;
+  --#{base.$prefix}-button-group-height: 40px;
+  --#{base.$prefix}-button-group-icon: 20px;
+  --#{base.$prefix}-button-group-gap: 12px;
+  --#{base.$prefix}-button-group-inner-corner: 8px;
+  --#{base.$prefix}-button-group-pressed-corner: 4px;
+  --#{base.$prefix}-button-group-radius: 20px;
 
   &--vertical {
     flex-direction: column;
@@ -58,7 +58,7 @@ $shape: '--#{base.$prefix}-button-shape';
   > .#{$icon-button} {
     margin: 0;
     flex-shrink: 0;
-    height: var(--button-group-height);
+    height: var(--#{base.$prefix}-button-group-height);
     // Size and shape changes ride the fast spatial spring, colours the
     // default effects spring (ButtonGroup and ToggleButton animation specs)
     transition:
@@ -74,7 +74,7 @@ $shape: '--#{base.$prefix}-button-shape';
 
   // Density lowers the height; a round icon button keeps its aspect
   > .#{$icon-button} {
-    width: var(--button-group-height);
+    width: var(--#{base.$prefix}-button-group-height);
   }
 
   &--equal-width {
@@ -94,35 +94,35 @@ $shape: '--#{base.$prefix}-button-shape';
   &--connected {
     > .#{$button},
     > .#{$icon-button} {
-      #{$shape}: var(--button-group-inner-corner);
-      #{$shape}-pressed: var(--button-group-pressed-corner);
-      #{$shape}-selected: var(--button-group-radius);
+      #{$shape}: var(--#{base.$prefix}-button-group-inner-corner);
+      #{$shape}-pressed: var(--#{base.$prefix}-button-group-pressed-corner);
+      #{$shape}-selected: var(--#{base.$prefix}-button-group-radius);
     }
 
     > .#{$component}__button--first {
-      #{$shape}: var(--button-group-radius) var(--button-group-inner-corner) var(--button-group-inner-corner) var(--button-group-radius);
-      #{$shape}-pressed: var(--button-group-radius) var(--button-group-pressed-corner) var(--button-group-pressed-corner) var(--button-group-radius);
+      #{$shape}: var(--#{base.$prefix}-button-group-radius) var(--#{base.$prefix}-button-group-inner-corner) var(--#{base.$prefix}-button-group-inner-corner) var(--#{base.$prefix}-button-group-radius);
+      #{$shape}-pressed: var(--#{base.$prefix}-button-group-radius) var(--#{base.$prefix}-button-group-pressed-corner) var(--#{base.$prefix}-button-group-pressed-corner) var(--#{base.$prefix}-button-group-radius);
     }
 
     > .#{$component}__button--last {
-      #{$shape}: var(--button-group-inner-corner) var(--button-group-radius) var(--button-group-radius) var(--button-group-inner-corner);
-      #{$shape}-pressed: var(--button-group-pressed-corner) var(--button-group-radius) var(--button-group-radius) var(--button-group-pressed-corner);
+      #{$shape}: var(--#{base.$prefix}-button-group-inner-corner) var(--#{base.$prefix}-button-group-radius) var(--#{base.$prefix}-button-group-radius) var(--#{base.$prefix}-button-group-inner-corner);
+      #{$shape}-pressed: var(--#{base.$prefix}-button-group-pressed-corner) var(--#{base.$prefix}-button-group-radius) var(--#{base.$prefix}-button-group-radius) var(--#{base.$prefix}-button-group-pressed-corner);
     }
 
     > .#{$component}__button--single {
-      #{$shape}: var(--button-group-radius);
-      #{$shape}-pressed: var(--button-group-radius);
+      #{$shape}: var(--#{base.$prefix}-button-group-radius);
+      #{$shape}-pressed: var(--#{base.$prefix}-button-group-radius);
     }
 
     &.#{$component}--vertical {
       > .#{$component}__button--first {
-        #{$shape}: var(--button-group-radius) var(--button-group-radius) var(--button-group-inner-corner) var(--button-group-inner-corner);
-        #{$shape}-pressed: var(--button-group-radius) var(--button-group-radius) var(--button-group-pressed-corner) var(--button-group-pressed-corner);
+        #{$shape}: var(--#{base.$prefix}-button-group-radius) var(--#{base.$prefix}-button-group-radius) var(--#{base.$prefix}-button-group-inner-corner) var(--#{base.$prefix}-button-group-inner-corner);
+        #{$shape}-pressed: var(--#{base.$prefix}-button-group-radius) var(--#{base.$prefix}-button-group-radius) var(--#{base.$prefix}-button-group-pressed-corner) var(--#{base.$prefix}-button-group-pressed-corner);
       }
 
       > .#{$component}__button--last {
-        #{$shape}: var(--button-group-inner-corner) var(--button-group-inner-corner) var(--button-group-radius) var(--button-group-radius);
-        #{$shape}-pressed: var(--button-group-pressed-corner) var(--button-group-pressed-corner) var(--button-group-radius) var(--button-group-radius);
+        #{$shape}: var(--#{base.$prefix}-button-group-inner-corner) var(--#{base.$prefix}-button-group-inner-corner) var(--#{base.$prefix}-button-group-radius) var(--#{base.$prefix}-button-group-radius);
+        #{$shape}-pressed: var(--#{base.$prefix}-button-group-pressed-corner) var(--#{base.$prefix}-button-group-pressed-corner) var(--#{base.$prefix}-button-group-radius) var(--#{base.$prefix}-button-group-radius);
       }
     }
 
@@ -131,8 +131,8 @@ $shape: '--#{base.$prefix}-button-shape';
       > .#{$component}__button--first,
       > .#{$component}__button--last,
       > .#{$component}__button--single {
-        #{$shape}: var(--button-group-inner-corner);
-        #{$shape}-pressed: var(--button-group-pressed-corner);
+        #{$shape}: var(--#{base.$prefix}-button-group-inner-corner);
+        #{$shape}-pressed: var(--#{base.$prefix}-button-group-pressed-corner);
       }
     }
 
@@ -153,8 +153,8 @@ $shape: '--#{base.$prefix}-button-shape';
   &--labels-selected {
     > .#{$button} {
       gap: 0;
-      min-width: var(--button-group-height);
-      padding: 0 calc((var(--button-group-height) - var(--button-group-icon)) / 2);
+      min-width: var(--#{base.$prefix}-button-group-height);
+      padding: 0 calc((var(--#{base.$prefix}-button-group-height) - var(--#{base.$prefix}-button-group-icon)) / 2);
 
       .#{$button}-text {
         display: inline-block;

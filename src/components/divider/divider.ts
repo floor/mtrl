@@ -35,7 +35,7 @@ import { DividerComponent } from "./types";
  * });
  *
  * // Later, change the divider's appearance
- * divider.setColor('var(--md-sys-color-outline)');
+ * divider.setColor('var(--mtrl-sys-color-outline)');
  * divider.setThickness(1);
  * divider.setVariant('inset');
  * ```

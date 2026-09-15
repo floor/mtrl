@@ -273,8 +273,8 @@ $placeholder-animation-speed: 1.5s !default;
 
     // APZ-friendly positioning using CSS custom properties
     // This prevents Firefox scroll-linked effects warnings
-    --item-offset: 0px;
-    transform: translateY(var(--item-offset)) translateZ(0);
+    --#{base.$prefix}-list-item-offset: 0px;
+    transform: translateY(var(--#{base.$prefix}-list-item-offset)) translateZ(0);
     will-change: transform;
     contain: layout style;
 

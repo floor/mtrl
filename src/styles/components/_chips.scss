@@ -323,7 +323,7 @@ $container: "#{base.$prefix}-chips";
             padding-left: 8px;
             background-color: t.color("secondary-container");
             color: t.color("on-secondary-container");
-            --checkmark-color: currentColor; // Will inherit from text color
+            --#{base.$prefix}-chip-checkmark-color: currentColor; // Will inherit from text color
             border: none;
             .#{$component}-leading-icon {
                 color: t.color("on-secondary-container");
@@ -335,7 +335,7 @@ $container: "#{base.$prefix}-chips";
                 display: inline-block;
                 width: 18px;
                 height: 18px;
-                background-color: var(--checkmark-color);
+                background-color: var(--#{base.$prefix}-chip-checkmark-color);
                 mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z'/%3E%3C/svg%3E");
                 mask-position: center;
                 mask-repeat: no-repeat;
