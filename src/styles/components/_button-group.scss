@@ -35,6 +35,21 @@ $shape: '--#{base.$prefix}-button-shape';
 // --#{base.$prefix}-button-group-pressed-corner and --#{base.$prefix}-button-group-radius.
 // =============================================================================
 
+// Transitions of a button in the group; the corner shape rides $radius-spring
+@function group-button-transition($radius-spring) {
+  $effects: v.motion('spring-default-effects-duration') v.motion('spring-default-effects-easing');
+  $spatial: v.motion('spring-fast-spatial-duration') v.motion('spring-fast-spatial-easing');
+  @return
+    background-color $effects,
+    color $effects,
+    box-shadow $effects,
+    border-color $effects,
+    border-radius v.motion('#{$radius-spring}-duration') v.motion('#{$radius-spring}-easing'),
+    width $spatial,
+    padding $spatial,
+    gap $spatial;
+}
+
 .#{$component} {
   position: relative;
   display: inline-flex;
@@ -61,15 +76,20 @@ $shape: '--#{base.$prefix}-button-shape';
     height: var(--#{base.$prefix}-button-group-height);
     // Size and shape changes ride the fast spatial spring, colours the
     // default effects spring (ButtonGroup and ToggleButton animation specs)
-    transition:
-      background-color v.motion('spring-default-effects-duration') v.motion('spring-default-effects-easing'),
-      color v.motion('spring-default-effects-duration') v.motion('spring-default-effects-easing'),
-      box-shadow v.motion('spring-default-effects-duration') v.motion('spring-default-effects-easing'),
-      border-color v.motion('spring-default-effects-duration') v.motion('spring-default-effects-easing'),
-      border-radius v.motion('spring-fast-spatial-duration') v.motion('spring-fast-spatial-easing'),
-      width v.motion('spring-fast-spatial-duration') v.motion('spring-fast-spatial-easing'),
-      padding v.motion('spring-fast-spatial-duration') v.motion('spring-fast-spatial-easing'),
-      gap v.motion('spring-fast-spatial-duration') v.motion('spring-fast-spatial-easing');
+    transition: group-button-transition('spring-fast-spatial');
+  }
+
+  // A press moves the corners toward the smallest shape in the group, the 4dp
+  // pressed corner of a connected group, from as far as the 68dp pill of a
+  // selected xl button. The fast spatial spring overshoots by 9.4%, about 6dp
+  // over that range, which drove the corner below zero: square corners for a
+  // few frames. A transition takes its timing from the state it enters, so
+  // the press alone takes the default spatial spring (1.5% overshoot, under
+  // 1dp at any size). Release and selection keep the fast spring: their
+  // overshoot lands above a larger shape, where it cannot paint wrong.
+  > .#{$button}:active,
+  > .#{$icon-button}:active {
+    transition: group-button-transition('spring-default-spatial');
   }
 
   // Density lowers the height; a round icon button keeps its aspect
