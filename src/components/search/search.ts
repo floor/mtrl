@@ -58,7 +58,7 @@ const createSearch = (config: SearchConfig = {}): SearchComponent => {
       withStructure(baseConfig),
       withStates(baseConfig),
       withInput(baseConfig),
-      withSuggestions(baseConfig),
+      withSuggestions(),
       withLifecycle(),
     )(baseConfig);
 

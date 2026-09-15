@@ -21,8 +21,6 @@ export interface ErrorConfig {
    * Component name
    */
   componentName?: string;
-
-  [key: string]: any;
 }
 
 /**
@@ -63,7 +61,8 @@ export interface ErrorComponent extends BaseComponent {
  * @returns Function that enhances a component with error state
  */
 export const withError =
-  <T extends ErrorConfig>(config: T) =>
+  // `& object` lets a component config that shares no key with ErrorConfig through.
+  <T extends ErrorConfig & object>(config: T) =>
   <C extends ComponentWithSupportingText>(component: C): C & ErrorComponent => {
     const PREFIX = config.prefix || "mtrl";
     const COMPONENT = config.componentName || "textfield";

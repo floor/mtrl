@@ -9,7 +9,11 @@ import {
 } from "../../core/compose/features";
 
 import { withAPI } from "./api";
-import { DatePickerConfig, DatePickerComponent } from "./types";
+import {
+  DatePickerConfig,
+  DatePickerComponent,
+  DatePickerState,
+} from "./types";
 import {
   createBaseConfig,
   getContainerConfig,
@@ -33,7 +37,7 @@ const createDatePicker = (
 
   try {
     // Initialize state
-    const state: any = {
+    const state: DatePickerState = {
       isOpen: false,
       selectedDate: null,
       rangeEndDate: null,
@@ -77,7 +81,7 @@ const createDatePicker = (
         this.calendarElement.innerHTML = "";
 
         // Render calendar content
-        const calendar = renderCalendar(this, (event, data) => {
+        const calendar = renderCalendar(this, (...[event, data]) => {
           switch (event) {
             case "dateSelected":
               this.handleDateSelection(data.date);

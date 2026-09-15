@@ -16,7 +16,7 @@ type ComponentWithDensity = BaseComponent & {
   };
   updateElementPositions?: () => void;
   schedulePositionUpdate?: () => void;
-  setError?: (error: boolean, message?: string) => any;
+  setError?: (error: boolean, message?: string) => void;
   isError?: () => boolean;
 };
 

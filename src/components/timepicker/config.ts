@@ -4,6 +4,9 @@ import {
   createComponentConfig,
   createElementConfig,
 } from "../../core/config/component";
+import type { EventCallback } from "../../core/state/emitter";
+import type { EventComponent } from "../../core/compose/features/events";
+import type { LifecycleComponent } from "../../core/compose/features/lifecycle";
 import { TimePickerConfig } from "./types";
 import {
   TIME_PICKER_TYPE,
@@ -120,11 +123,11 @@ export const getDialogConfig = (config: TimePickerConfig) => {
  * @param {Object} comp - Component with events and lifecycle features
  * @returns {Object} API configuration object
  */
-export const getApiConfig = (comp: any) => ({
+export const getApiConfig = (comp: EventComponent & LifecycleComponent) => ({
   events: {
-    on: (event: string, handler: Function) => comp.on(event, handler),
-    off: (event: string, handler: Function) => comp.off(event, handler),
-    emit: (event: string, data?: any) => comp.emit(event, data),
+    on: (event: string, handler: EventCallback) => comp.on(event, handler),
+    off: (event: string, handler: EventCallback) => comp.off(event, handler),
+    emit: (event: string, data?: unknown) => comp.emit(event, data),
   },
   lifecycle: {
     destroy: () => comp.lifecycle.destroy(),

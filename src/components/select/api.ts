@@ -1,5 +1,5 @@
 // src/components/select/api.ts
-import { SelectComponent, ApiOptions, SelectOption } from "./types";
+import { SelectComponent, ApiOptions, SelectOption, BaseComponent } from "./types";
 
 /**
  * Enhances a select component with API methods
@@ -9,7 +9,7 @@ import { SelectComponent, ApiOptions, SelectOption } from "./types";
  */
 export const withAPI =
   (options: ApiOptions) =>
-  (component: any): SelectComponent => ({
+  (component: BaseComponent): SelectComponent => ({
     ...component,
     element: component.element,
     textfield: component.textfield,

@@ -30,8 +30,6 @@ export interface TrailingIconConfig {
    * Component name
    */
   componentName?: string;
-  
-  [key: string]: any;
 }
 
 /**
@@ -62,10 +60,11 @@ export interface TrailingIconComponent extends BaseComponent {
  * @param config - Configuration with trailing icon settings
  * @returns Function that enhances a component with trailing icon
  */
-export const withTrailingIcon = <T extends TrailingIconConfig>(config: T) => 
+// `& object` lets a component config that shares no key with TrailingIconConfig through.
+export const withTrailingIcon = <T extends TrailingIconConfig & object>(config: T) => 
   <C extends InputElementComponent>(component: C): C & TrailingIconComponent => {
     if (!config.trailingIcon) {
-      return component as any;
+      return component as C & TrailingIconComponent;
     }
     
     // Create icon element
