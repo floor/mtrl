@@ -8,6 +8,7 @@ import { getCleanup, type CleanupScope } from "./cleanup";
 import {
   createElement,
   CreateElementOptions,
+  EventCondition,
   removeEventHandlers,
 } from "../dom/create";
 import {
@@ -28,11 +29,20 @@ export interface TouchState {
 }
 
 /**
+ * Config keys the base component and withElement read
+ */
+export interface BaseConfig {
+  componentName?: string;
+  prefix?: string;
+  parent?: HTMLElement | string;
+}
+
+/**
  * Base component interface with prefix utilities
  */
 export interface BaseComponent {
   resources?: CleanupScope;
-  config: Record<string, any>;
+  config: BaseConfig & Record<string, unknown>;
   componentName?: string;
   getClass: (name: string) => string;
   getModifierClass: (base: string, modifier: string) => string;
@@ -56,7 +66,7 @@ export interface ElementComponent extends BaseComponent {
 export interface WithElementOptions {
   tag?: string;
   componentName?: string;
-  attributes?: Record<string, any>;
+  attributes?: Record<string, unknown>;
   className?: string | string[];
   // Common HTML attributes
   id?: string; // Element ID
@@ -72,10 +82,7 @@ export interface WithElementOptions {
   ariaDescribedBy?: string; // ID of element that describes this element
   ariaLabelledBy?: string; // ID of element that labels this element
   ariaHidden?: boolean; // Hide from screen readers
-  forwardEvents?: Record<
-    string,
-    boolean | ((component: any, event: Event) => boolean)
-  >;
+  forwardEvents?: Record<string, EventCondition>;
   interactive?: boolean;
   parent?: HTMLElement | string;
 }
@@ -120,9 +127,10 @@ const withPrefix = (prefix: string) => ({
  * @returns {BaseComponent} Base component with prefix utilities
  */
 export const createBase = (
-  config: Record<string, any> = {},
+  config: BaseConfig & object = {},
 ): BaseComponent => ({
-  config,
+  // Component configs are interfaces without index signatures; their other keys read as unknown.
+  config: config as BaseComponent["config"],
   componentName: config.componentName,
   ...withPrefix(config.prefix || "mtrl"),
 
@@ -246,7 +254,8 @@ export const withElement =
     const base = component;
 
     // Check for parent in component config
-    let parent = component.config.parent || options.parent;
+    let parent: HTMLElement | string | null | undefined =
+      component.config.parent || options.parent;
 
     // Handle string selectors
     if (typeof parent === "string") {
