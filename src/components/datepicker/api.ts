@@ -1,5 +1,8 @@
 // src/components/datepicker/api.ts
-import { DatePickerComponent, ApiOptions } from "./types";
+import type { ElementComponent } from "../../core/compose/component";
+import type { DisabledComponent } from "../../core/compose/features/disabled";
+import type { LifecycleComponent } from "../../core/compose/features/lifecycle";
+import { DatePickerComponent, DatePickerState, ApiOptions } from "./types";
 import { formatDate, parseDate, addMonths } from "./utils";
 
 /**
@@ -10,8 +13,10 @@ import { formatDate, parseDate, addMonths } from "./utils";
  * @internal This is an internal utility for the DatePicker component
  */
 export const withAPI =
-  (state: any, { disabled, lifecycle, events }: ApiOptions) =>
-  (component: any): DatePickerComponent => {
+  (state: DatePickerState, { disabled, lifecycle, events }: ApiOptions) =>
+  (
+    component: ElementComponent & DisabledComponent & LifecycleComponent
+  ): DatePickerComponent => {
     // Calendar navigation API
     const calendar = {
       goToDate(date: Date): void {
@@ -84,7 +89,7 @@ export const withAPI =
     };
 
     return {
-      ...(component as any),
+      ...component,
       element: component.element,
       input: state.input,
       calendar,
