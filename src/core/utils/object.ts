@@ -5,7 +5,7 @@
  * @param value - The value to check
  * @returns true if the value is a plain object
  */
-export const isObject = (value: unknown): value is Record<string, any> => {
+export const isObject = (value: unknown): value is Record<string, unknown> => {
   return Boolean(
     value &&
     typeof value === 'object' &&
@@ -19,19 +19,19 @@ export const isObject = (value: unknown): value is Record<string, any> => {
  * @param path - The property path (e.g. 'user.address.street')
  * @returns The value at the specified path or undefined if not found
  */
-export const byString = <T extends Record<string, any>, R = any>(obj: T, path: string): R | undefined => {
+export const byString = <T extends object, R = unknown>(obj: T, path: string): R | undefined => {
   // Convert indexes to properties
   const normalizedPath = path.replace(/\[(\w+)\]/g, '.$1');
   // Strip a leading dot
   const cleanPath = normalizedPath.replace(/^\./, '');
   const keys = cleanPath.split('.');
   
-  let result: any = obj;
+  let result: unknown = obj;
   
   for (let i = 0, n = keys.length; i < n; ++i) {
     const key = keys[i];
-    if (key in result) {
-      result = result[key];
+    if (key in (result as object)) {
+      result = (result as Record<string, unknown>)[key];
     } else {
       return undefined;
     }

@@ -15,7 +15,6 @@ export interface LifecycleManagers {
   icon?: {
     getElement: () => HTMLElement | null;
   };
-  [key: string]: any;
 }
 
 /**

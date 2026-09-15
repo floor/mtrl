@@ -32,7 +32,7 @@ export interface ValidationRule {
   /**
    * Allowed values (enum)
    */
-  enum?: any[];
+  enum?: unknown[];
   
   /**
    * Minimum string length
@@ -47,12 +47,12 @@ export interface ValidationRule {
   /**
    * Default value
    */
-  default?: any;
+  default?: unknown;
   
   /**
    * Custom validator function
    */
-  validator?: (value: any) => boolean | string;
+  validator?(value: unknown): boolean | string;
 }
 
 /**
@@ -68,42 +68,43 @@ export type ValidationSchema = Record<string, ValidationRule>;
  * @throws Error if validation fails
  */
 export const validateConfig = (
-  config: Record<string, any>, 
+  config: object, 
   schema: ValidationSchema
 ): void => {
   const errors: string[] = [];
+  const values = config as Record<string, unknown>;
 
   Object.entries(schema).forEach(([key, rule]) => {
     // Check required fields
-    if (rule.required && config[key] === undefined) {
+    if (rule.required && values[key] === undefined) {
       errors.push(`Missing required field: ${key}`);
     }
 
-    if (config[key] !== undefined) {
+    if (values[key] !== undefined) {
       // Check type if value exists
       if (rule.type) {
-        const actualType = typeof config[key];
+        const actualType = typeof values[key];
         if (actualType !== rule.type) {
           errors.push(`Invalid type for ${key}: expected ${rule.type}, got ${actualType}`);
         }
       }
 
       // Check numbers
-      if (typeof config[key] === 'number') {
-        if (rule.minimum !== undefined && config[key] < rule.minimum) {
+      if (typeof values[key] === 'number') {
+        if (rule.minimum !== undefined && values[key] < rule.minimum) {
           errors.push(`Value for ${key} is too small: minimum is ${rule.minimum}`);
         }
-        if (rule.maximum !== undefined && config[key] > rule.maximum) {
+        if (rule.maximum !== undefined && values[key] > rule.maximum) {
           errors.push(`Value for ${key} is too large: maximum is ${rule.maximum}`);
         }
       }
 
       // Check strings
-      if (typeof config[key] === 'string') {
-        if (rule.minLength !== undefined && config[key].length < rule.minLength) {
+      if (typeof values[key] === 'string') {
+        if (rule.minLength !== undefined && values[key].length < rule.minLength) {
           errors.push(`String for ${key} is too short: minimum length is ${rule.minLength}`);
         }
-        if (rule.maxLength !== undefined && config[key].length > rule.maxLength) {
+        if (rule.maxLength !== undefined && values[key].length > rule.maxLength) {
           errors.push(`String for ${key} is too long: maximum length is ${rule.maxLength}`);
         }
         if (rule.pattern) {
@@ -111,7 +112,7 @@ export const validateConfig = (
             ? rule.pattern 
             : new RegExp(rule.pattern);
           
-          if (!pattern.test(config[key])) {
+          if (!pattern.test(values[key])) {
             errors.push(`Invalid format for ${key}: must match pattern ${pattern}`);
           }
         }
@@ -119,14 +120,14 @@ export const validateConfig = (
 
       // Check allowed values
       if (rule.enum) {
-        if (!rule.enum.includes(config[key])) {
+        if (!rule.enum.includes(values[key])) {
           errors.push(`Invalid value for ${key}. Must be one of: ${rule.enum.join(', ')}`);
         }
       }
 
       // Custom validator
       if (rule.validator) {
-        const result = rule.validator(config[key]);
+        const result = rule.validator(values[key]);
         if (result === false) {
           errors.push(`Invalid value for ${key}`);
         } else if (typeof result === 'string') {
@@ -149,7 +150,7 @@ export const validateConfig = (
  * @returns Validation result (true if valid, error message if invalid)
  */
 export const validateValue = (
-  value: any, 
+  value: unknown, 
   rule: ValidationRule
 ): true | string => {
   // Check required
@@ -218,11 +219,11 @@ export const validateValue = (
  * @param schema - Validation schema with defaults
  * @returns Configuration with defaults applied
  */
-export const applyDefaults = <T extends Record<string, any>>(
+export const applyDefaults = <T extends object>(
   config: T, 
   schema: ValidationSchema
 ): T => {
-  const result = { ...config } as Record<string, any>;
+  const result = { ...config } as Record<string, unknown>;
 
   Object.entries(schema).forEach(([key, rule]) => {
     if (result[key] === undefined && rule.default !== undefined) {
