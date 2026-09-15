@@ -15,7 +15,8 @@ import {
   ButtonGroupEvent,
   ButtonGroupChangeEvent,
   ButtonGroupKind,
-  ButtonGroupSelection
+  ButtonGroupSelection,
+  ButtonGroupItemConfig
 } from './types';
 import { ButtonComponent } from '../button/types';
 import {
@@ -29,6 +30,23 @@ import {
   BUTTON_GROUP_DENSITY,
   BUTTON_GROUP_EXPANDED_RATIO
 } from './constants';
+
+/**
+ * A button or icon button in the group, with the item config and index the
+ * group attaches to it. Icon buttons expose select()/deselect() on their API;
+ * buttons may carry toggleState.
+ */
+type GroupButton = ButtonComponent & {
+  _groupConfig?: ButtonGroupItemConfig;
+  _groupIndex?: number;
+  toggleState?: {
+    isToggle?: () => boolean;
+    select: () => void;
+    deselect: () => void;
+  };
+  select?: () => void;
+  deselect?: () => void;
+};
 
 /**
  * Creates a new Button Group component
@@ -112,32 +130,32 @@ const createButtonGroup = (config: ButtonGroupConfig = {}): ButtonGroupComponent
     applySizeStyles(currentDensity);
 
     // Create buttons
-    const buttons: ButtonComponent[] = [];
+    const buttons: GroupButton[] = [];
     const buttonConfigs = baseConfig.buttons || [];
     const totalButtons = buttonConfigs.length;
 
-    const valueOf = (button: ButtonComponent): string => {
-      const config = (button as any)._groupConfig;
-      return String(config?.value ?? config?.id ?? (button as any)._groupIndex);
+    const valueOf = (button: GroupButton): string => {
+      const config = button._groupConfig;
+      return String(config?.value ?? config?.id ?? button._groupIndex);
     };
 
     // The buttons carry the M3 toggle colours and shapes themselves; the group
     // only owns which of them is selected.
-    const applySelectedState = (button: ButtonComponent, selected: boolean) => {
+    const applySelectedState = (button: GroupButton, selected: boolean) => {
       const selectedClass = `${baseConfig.prefix}-button-group__button--selected`;
       button.element.classList.toggle(selectedClass, selected);
       button.element.setAttribute('aria-pressed', String(selected));
-      const toggleState = (button as any).toggleState;
+      const toggleState = button.toggleState;
       if (toggleState?.isToggle?.()) {
         if (selected) toggleState.select();
         else toggleState.deselect();
-      } else if (typeof (button as any).setSelected === 'function') {
+      } else if (typeof button.setSelected === 'function') {
         button.setSelected(selected);
       } else {
         // Icon buttons expose select()/deselect() on their public API and
         // keep toggleState internal.
-        if (selected) (button as any).select?.();
-        else (button as any).deselect?.();
+        if (selected) button.select?.();
+        else button.deselect?.();
       }
     };
 
@@ -237,14 +255,14 @@ const createButtonGroup = (config: ButtonGroupConfig = {}): ButtonGroupComponent
             toggleOnClick: false,
             selectedIcon: buttonConfig.selectedIcon,
             variant: resolvedConfig.variant === 'text' ? 'standard' : resolvedConfig.variant
-          } as any)
+          })
         : createButton({
             ...resolvedConfig,
             toggle: selectable,
             toggleOnClick: false
-          })) as unknown as ButtonComponent;
-      (button as any)._groupConfig = buttonConfig;
-      (button as any)._groupIndex = index;
+          })) as unknown as GroupButton;
+      button._groupConfig = buttonConfig;
+      button._groupIndex = index;
       if (selectable) {
         button.element.setAttribute('aria-pressed', 'false');
       }
@@ -297,7 +315,7 @@ const createButtonGroup = (config: ButtonGroupConfig = {}): ButtonGroupComponent
     // Initial selection, without events
     if (selection !== 'none') {
       buttons.forEach(button => {
-        const config = (button as any)._groupConfig;
+        const config = button._groupConfig;
         if (config?.selected && (selection === 'multi' || selectedValues.size === 0)) {
           selectedValues.add(valueOf(button));
           applySelectedState(button, true);
@@ -373,7 +391,7 @@ const createButtonGroup = (config: ButtonGroupConfig = {}): ButtonGroupComponent
 
       getButtonById(id: string) {
         return buttons.find(button => {
-          const config = (button as any)._groupConfig;
+          const config = button._groupConfig;
           return config?.id === id || config?.value === id;
         });
       },
@@ -409,7 +427,7 @@ const createButtonGroup = (config: ButtonGroupConfig = {}): ButtonGroupComponent
         component.element.classList.remove(`${baseConfig.prefix}-button-group--disabled`);
         buttons.forEach(button => {
           // Only enable if not individually disabled
-          const config = (button as any)._groupConfig;
+          const config = button._groupConfig;
           if (!config?.disabled) {
             button.enable();
           }

@@ -1,4 +1,5 @@
 // src/components/fab/types.ts
+import type { IconManager } from "../../core/compose/features/icon";
 
 /**
  * FAB variants following Material Design 3 guidelines
@@ -371,7 +372,7 @@ export interface FabComponent {
    */
   icon: {
     /** Sets the icon HTML content */
-    setIcon: (html: string) => any;
+    setIcon: (html: string) => IconManager;
     /** Gets the current icon HTML content */
     getIcon: () => string;
     /** Gets the icon DOM element */

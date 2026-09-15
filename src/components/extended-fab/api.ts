@@ -1,5 +1,7 @@
 // src/components/extended-fab/api.ts
 import { ExtendedFabComponent } from './types';
+import type { IconManager } from '../../core/compose/features/icon';
+import type { TextManager } from '../../core/compose/features/text';
 
 /**
  * API configuration options for the Extended FAB component
@@ -31,7 +33,7 @@ interface ApiOptions {
    */
   text: {
     /** Sets text content */
-    setText: (text: string) => any;
+    setText: (text: string) => unknown;
     /** Gets text content */
     getText: () => string;
   };
@@ -48,14 +50,15 @@ interface ApiOptions {
  * @category Components
  * @internal
  */
-interface ComponentWithElements {
+interface ComponentWithElements
+  extends Pick<ExtendedFabComponent, 'disabled' | 'lifecycle' | 'on' | 'off' | 'addClass'> {
   /** The DOM element */
   element: HTMLElement;
   
   /** Icon management */
   icon: {
     /** Sets icon HTML content */
-    setIcon: (html: string) => any;
+    setIcon: (html: string) => IconManager;
     /** Gets icon HTML content */
     getIcon: () => string;
     /** Gets icon DOM element */
@@ -65,7 +68,7 @@ interface ComponentWithElements {
   /** Text management */
   text: {
     /** Sets text content */
-    setText: (text: string) => any;
+    setText: (text: string) => TextManager;
     /** Gets text content */
     getText: () => string;
     /** Gets text DOM element */
@@ -91,7 +94,7 @@ interface ComponentWithElements {
  */
 export const withAPI = ({ disabled, lifecycle, text, className }: ApiOptions) => 
   (component: ComponentWithElements): ExtendedFabComponent => ({
-    ...component as any,
+    ...component,
     element: component.element as HTMLButtonElement,
     
     getValue: () => (component.element as HTMLButtonElement).value,

@@ -1,23 +1,43 @@
 // src/components/button/features/progress.ts
 import type { ProgressConfig, ProgressComponent } from "../../progress/types";
 import { addClass, removeClass } from "../../../core/dom";
-import { ButtonConfig } from "../types";
+import { ButtonConfig, IconAPI } from "../types";
 
 /**
  * Component with progress capabilities
  */
 interface ProgressEnhancedComponent {
   element: HTMLElement;
-  icon?: any;
+  icon?: IconAPI;
   getClass: (name: string) => string;
   progress?: ProgressComponent;
   disabled?: {
     enable: () => void;
     disable: () => void;
   };
-  setText?: (text: string) => any;
+  lifecycle?: {
+    destroy: () => void;
+  };
+  setText?: (text: string) => unknown;
   getText?: () => string;
-  [key: string]: any;
+  showProgress?: () => Promise<ProgressEnhancedComponent>;
+  showProgressSync?: () => ProgressEnhancedComponent;
+  hideProgress?: () => Promise<ProgressEnhancedComponent>;
+  hideProgressSync?: () => ProgressEnhancedComponent;
+  setProgress?: (value: number) => Promise<ProgressEnhancedComponent>;
+  setProgressSync?: (value: number) => ProgressEnhancedComponent;
+  setIndeterminate?: (
+    indeterminate: boolean
+  ) => Promise<ProgressEnhancedComponent>;
+  setIndeterminateSync?: (indeterminate: boolean) => ProgressEnhancedComponent;
+  setLoading?: (
+    loading: boolean,
+    text?: string
+  ) => Promise<ProgressEnhancedComponent>;
+  setLoadingSync?: (
+    loading: boolean,
+    text?: string
+  ) => ProgressEnhancedComponent;
 }
 
 /**
@@ -55,7 +75,10 @@ export const withProgress =
       typeof config.progress === "boolean"
         ? { variant: "circular", size: 20, thickness: 2, indeterminate: true }
         : (() => {
-            const { on, ...restConfig } = config.progress as any;
+            // Event handlers may ride along with the progress config
+            const { on, ...restConfig } = config.progress as ProgressConfig & {
+              on?: Record<string, Function>;
+            };
             if (on) {
               progressEventHandlers = on;
             }

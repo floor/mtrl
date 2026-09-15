@@ -31,7 +31,11 @@ const withController = (config: MenuConfig) => (component) => {
 
   // Create event helpers
   const eventHelpers = {
-    triggerEvent(eventName: string, data: any = {}, originalEvent?: Event) {
+    triggerEvent(
+      eventName: string,
+      data: Record<string, unknown> = {},
+      originalEvent?: Event,
+    ) {
       const eventData = {
         menu: state.component,
         ...data,

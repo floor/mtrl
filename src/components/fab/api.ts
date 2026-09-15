@@ -1,5 +1,6 @@
 // src/components/fab/api.ts
 import { FabComponent } from './types';
+import type { IconManager } from '../../core/compose/features/icon';
 
 /**
  * API configuration options for the FAB component
@@ -38,14 +39,15 @@ interface ApiOptions {
  * @category Components
  * @internal
  */
-interface ComponentWithElements {
+interface ComponentWithElements
+  extends Pick<FabComponent, 'disabled' | 'lifecycle' | 'on' | 'off' | 'addClass'> {
   /** The DOM element */
   element: HTMLElement;
   
   /** Icon management */
   icon: {
     /** Sets icon HTML content */
-    setIcon: (html: string) => any;
+    setIcon: (html: string) => IconManager;
     /** Gets icon HTML content */
     getIcon: () => string;
     /** Gets icon DOM element */
@@ -70,7 +72,7 @@ interface ComponentWithElements {
  */
 export const withAPI = ({ disabled, lifecycle, className }: ApiOptions) => 
   (component: ComponentWithElements): FabComponent => ({
-    ...component as any,
+    ...component,
     element: component.element as HTMLButtonElement,
     
     getValue: () => (component.element as HTMLButtonElement).value,
