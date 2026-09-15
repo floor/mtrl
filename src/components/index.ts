@@ -43,7 +43,13 @@ export { default as createSplitButton } from "./split-button";
 export { default as createRadios } from "./radios";
 export { default as createSearch } from "./search";
 export { default as createSelect } from "./select";
+/**
+ * @deprecated Since 0.8.0, M3 Expressive replaces segmented buttons with connected button groups. Use {@link createButtonGroup} with `kind: "connected"`.
+ */
 export { default as createSegmentedButton } from "./segmented-button";
+/**
+ * @deprecated Since 0.8.0, M3 Expressive replaces segmented buttons with connected button groups. Use {@link createButtonGroup} with `kind: "connected"`.
+ */
 export { createSegment } from "./segmented-button/segment";
 /** @deprecated Since 0.8.0. Use createBottomSheet or createSideSheet. */
 export { default as createSheet } from "./sheet";
