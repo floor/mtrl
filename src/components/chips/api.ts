@@ -1,5 +1,5 @@
 // src/components/chips/api.ts
-import { ChipsComponent, ChipComponent } from "./types";
+import { ChipsComponent, ChipComponent, ChipConfig } from "./types";
 
 /**
  * API options interface - structured by feature area
@@ -9,7 +9,7 @@ interface ApiOptions {
     multiSelect: boolean;
   };
   chips: {
-    addChip: (chipConfig: any) => ChipComponent;
+    addChip: (chipConfig: ChipConfig) => ChipComponent;
     removeChip: (chipOrIndex: ChipComponent | number) => void;
     getChips: () => ChipComponent[];
     getSelectedChips: () => ChipComponent[];
@@ -19,15 +19,15 @@ interface ApiOptions {
     scrollToChip: (chipOrIndex: ChipComponent | number) => void;
   };
   layout: {
-    setScrollable: (isScrollable: boolean) => any;
+    setScrollable: (isScrollable: boolean) => void;
     isScrollable: () => boolean;
-    setVertical: (isVertical: boolean) => any;
+    setVertical: (isVertical: boolean) => void;
     isVertical: () => boolean;
   };
   label: {
-    setText: (text: string) => any;
+    setText: (text: string) => void;
     getText: () => string;
-    setPosition: (position: "start" | "end") => any;
+    setPosition: (position: "start" | "end") => void;
     getPosition: () => string;
   };
   keyboard: {
@@ -53,7 +53,7 @@ export const withAPI =
   (options: ApiOptions) =>
   (component: { element: HTMLElement }): ChipsComponent => {
     return {
-      ...(component as any),
+      ...component,
 
       // Element access
       element: component.element,

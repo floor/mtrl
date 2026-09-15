@@ -4,12 +4,12 @@ import { ApiOptions, ChipComponent, ChipVariant } from "./types";
 interface ComponentWithElements {
   element: HTMLElement;
   text?: {
-    setText: (content: string) => any;
+    setText: (content: string) => void;
     getText: () => string;
     getElement: () => HTMLElement | null;
   };
   icon?: {
-    setIcon: (html: string) => any;
+    setIcon: (html: string) => void;
     getIcon: () => string;
     getElement: () => HTMLElement | null;
   };
@@ -58,7 +58,7 @@ export const withAPI =
     }
 
     return {
-      ...(component as any),
+      ...component,
       element: component.element,
 
       getValue() {
