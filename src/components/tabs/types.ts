@@ -449,7 +449,7 @@ export interface TabsComponent {
    * @param data - Event data
    * @returns Tabs component for chaining
    */
-  emit?: (event: string, data: any) => TabsComponent;
+  emit?: (event: string, data: unknown) => TabsComponent;
   
   /**
    * Destroys the tabs component and all tabs
@@ -459,7 +459,7 @@ export interface TabsComponent {
   /**
    * Tab click event handler
    */
-  handleTabClick: (event: any, tab: TabComponent) => void;
+  handleTabClick: (event: unknown, tab: TabComponent) => void;
   
   /**
    * Scroll container for scrollable tabs
