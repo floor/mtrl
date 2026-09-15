@@ -1,4 +1,6 @@
 // src/components/extended-fab/types.ts
+import type { IconManager } from "../../core/compose/features/icon";
+import type { TextManager } from "../../core/compose/features/text";
 
 /**
  * Extended FAB variants following Material Design 3 guidelines
@@ -436,7 +438,7 @@ export interface ExtendedFabComponent {
    */
   icon: {
     /** Sets the icon HTML content */
-    setIcon: (html: string) => any;
+    setIcon: (html: string) => IconManager;
     /** Gets the current icon HTML content */
     getIcon: () => string;
     /** Gets the icon DOM element */
@@ -450,7 +452,7 @@ export interface ExtendedFabComponent {
    */
   text: {
     /** Sets the text content */
-    setText: (text: string) => any;
+    setText: (text: string) => TextManager;
     /** Gets the current text content */
     getText: () => string;
     /** Gets the text DOM element */
