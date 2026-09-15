@@ -390,8 +390,63 @@ export interface ApiOptions {
     destroy: () => void;
   };
   events: {
-    on: (event: string, handler: Function) => any;
-    off: (event: string, handler: Function) => any;
-    emit: (event: string, data: any) => any;
+    on: (event: string, handler: Function) => void;
+    off: (event: string, handler: Function) => void;
+    emit: (event: string, data: unknown) => void;
   };
 }
+
+/**
+ * Internal state shared by the datepicker, its API and the calendar renderer
+ * @internal
+ */
+export interface DatePickerState {
+  isOpen: boolean;
+  selectedDate: Date | null;
+  rangeEndDate: Date | null;
+  currentView: DatePickerView | string;
+  currentMonth: number;
+  currentYear: number;
+  minDate: Date | null;
+  maxDate: Date | null;
+  dateFormat: string;
+  variant: DatePickerVariant | string;
+  selectionMode: DatePickerSelectionMode | string;
+  closeOnSelect: boolean;
+  prefix: string;
+  calendarElement: HTMLElement | null;
+  input: HTMLInputElement | null;
+  outsideClickHandler?: EventListener;
+  updateInputValue(): void;
+  updateCalendar(): void;
+  handleDateSelection(date: Date): void;
+  prevMonth(): void;
+  nextMonth(): void;
+  prevYear(): void;
+  nextYear(): void;
+  render(): void;
+}
+
+/**
+ * Events the calendar renderer emits, each with its payload
+ * @internal
+ */
+export type CalendarEventArgs =
+  | ["dateSelected", { date: Date }]
+  | ["monthSelected", { month: number }]
+  | ["yearSelected", { year: number }]
+  | ["viewChange", { view: DatePickerView }]
+  | ["prevMonth", undefined?]
+  | ["nextMonth", undefined?]
+  | ["prevYear", undefined?]
+  | ["nextYear", undefined?]
+  | ["prevYearRange", undefined?]
+  | ["nextYearRange", undefined?]
+  | ["cancel", undefined?]
+  | ["confirm", undefined?];
+
+/**
+ * Emits a calendar event to the datepicker
+ * @internal
+ */
+export type CalendarEmit = (...args: CalendarEventArgs) => void;
