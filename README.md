@@ -23,7 +23,7 @@ mtrl is built on several core principles:
 mtrl provides a comprehensive set of components, each following Material Design principles:
 
 ```typescript
-import { createButton, createTextField } from "mtrl";
+import { createButton, createTextfield } from "mtrl";
 
 // Create a material button with ripple effect
 const button = createButton({
@@ -38,15 +38,16 @@ const button = createButton({
 
 ### Component List
 
-Each component follows the `mtrl-` prefix convention:
+Every component is created by a `create*` function exported from `mtrl`, and renders with `mtrl-` prefixed classes.
 
-- `mtrl-button` - Material buttons with ripple effects
-- `mtrl-textfield` - Text input components
-- `mtrl-switch` - Toggle switches
-- `mtrl-navigation` - Navigation components
-- `mtrl-list` - List components with selection
-- `mtrl-snackbar` - Toast notifications
-- `mtrl-container` - Layout containers
+- **Actions:** `createButton`, `createButtonGroup`, `createSplitButton`, `createIconButton`, `createFab`, `createExtendedFab`
+- **Selection and input:** `createCheckbox`, `createChip`, `createRadios`, `createSwitch`, `createSlider`, `createSelect`, `createTextfield`, `createSearch`, `createDatePicker`, `createTimePicker`
+- **Navigation:** `createNavigationRail`, `createDrawer`, `createTabs`, `createTopAppBar`, `createBottomAppBar`, `createMenu`, `createNavigation`, `createNavigationSystem`
+- **Containment:** `createCard`, `createCarousel`, `createList`, `createDivider`, `createDialog`, `createBottomSheet`, `createSideSheet`
+- **Communication:** `createSnackbar`, `createTooltip`, `createBadge`, `createProgress`, `createLoadingIndicator`
+- **Deprecated:** `createSegmentedButton` and `createSegment`, replaced by `createButtonGroup` with `kind: "connected"`
+
+The documentation site, [mtrl.app](https://mtrl.app), shows each component with live examples.
 
 ## Installation
 
@@ -88,7 +89,7 @@ import { BUTTON_VARIANTS, BUTTON_SIZES } from 'mtrl/components/button/constants'
 const button = createButton({
   text: 'Submit',
   variant: BUTTON_VARIANTS.FILLED,
-  size: BUTTON_SIZES.LARGE
+  size: BUTTON_SIZES.L
 });
 
 // ✅ Also optimal - direct component import
@@ -230,25 +231,20 @@ const createButton = (config: ButtonConfig): ButtonComponent => {
 mtrl provides comprehensive TypeScript definitions:
 
 ```typescript
-// Component interfaces for better developer experience
-export interface ButtonComponent
-  extends BaseComponent,
-    ElementComponent,
-    TextComponent,
-    IconComponent,
-    DisabledComponent,
-    LifecycleComponent {
-  // Button-specific properties and methods
+// An excerpt of the button's public interface
+export interface ButtonComponent {
+  element: HTMLButtonElement;
+  text: TextAPI;
+  icon: IconAPI;
+  disabled: { enable: () => void; disable: () => void; isDisabled: () => boolean };
+  lifecycle: { destroy: () => void };
   getValue: () => string;
   setValue: (value: string) => ButtonComponent;
-  enable: () => ButtonComponent;
-  disable: () => ButtonComponent;
-  setText: (content: string) => ButtonComponent;
-  getText: () => string;
-  setIcon: (icon: string) => ButtonComponent;
-  getIcon: () => string;
-  destroy: () => void;
-  updateCircularStyle: () => void;
+  getVariant: () => ButtonVariant | string;
+  setVariant: (variant: ButtonVariant | string) => ButtonComponent;
+  getSize: () => ButtonSize | string;
+  setSize: (size: ButtonSize | string) => ButtonComponent;
+  // …
 }
 ```
 
@@ -271,55 +267,18 @@ mtrl provides several approaches to state management:
 ### Local Component State
 
 ```typescript
-const textField = createTextField({
+const textfield = createTextfield({
   label: "Username",
 });
 
-textField.on("input", ({ value }) => {
+textfield.on("input", ({ value }) => {
   console.log("Current value:", value);
 });
 
-textField.setValue("New value");
+textfield.setValue("New value");
 ```
 
-### Collection Management
-
-For managing lists and datasets:
-
-```typescript
-const collection = new Collection<User>({
-  transform: (item) => ({
-    ...item,
-    displayName: `${item.firstName} ${item.lastName}`,
-  }),
-});
-
-collection.subscribe(({ event, data }) => {
-  console.log(`Collection ${event}:`, data);
-});
-```
-
-## Data Integration
-
-mtrl provides adapters for different data sources:
-
-```typescript
-// MongoDB adapter
-const mongoAdapter = createMongoAdapter({
-  uri: "mongodb://localhost:27017",
-  dbName: "mtrl-app",
-  collection: "users",
-});
-
-// Route adapter for REST APIs
-const routeAdapter = createRouteAdapter({
-  base: "/api",
-  endpoints: {
-    list: "/users",
-    create: "/users",
-  },
-});
-```
+Virtual scrolling and data-driven lists are not part of mtrl; they live in [mtrl-addons](https://github.com/floor/mtrl-addons).
 
 ## Customization
 
@@ -328,6 +287,9 @@ const routeAdapter = createRouteAdapter({
 Extend mtrl by creating custom components with full type safety:
 
 ```typescript
+import { pipe, createBase, withEvents, withElement } from "mtrl/core/compose";
+import type { ElementComponent } from "mtrl/core/compose";
+
 interface CustomCardConfig {
   title?: string;
   class?: string;
@@ -360,14 +322,13 @@ const createCustomCard = (config: CustomCardConfig): CustomCardComponent => {
 
 ### Styling
 
-mtrl components can be styled through CSS custom properties:
+mtrl components take their colours from the theme's custom properties, so overriding a role restyles every component that uses it:
 
 ```css
 :root {
-  --mtrl-primary: #6200ee;
-  --mtrl-surface: #ffffff;
-  --mtrl-on-surface: #000000;
-  --mtrl-elevation-1: 0 2px 4px rgba(0, 0, 0, 0.2);
+  --mtrl-sys-color-primary: #6750a4;
+  --mtrl-sys-color-surface: #fffbfe;
+  --mtrl-sys-color-on-surface: #1c1b1f;
 }
 ```
 
@@ -412,7 +373,7 @@ mtrl supports modern browsers:
 
 ## Contributing
 
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details and our [Migration Guide](MIGRATION-GUIDE.md) for TypeScript information.
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
 
 ## License
 
