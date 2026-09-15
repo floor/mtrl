@@ -137,6 +137,7 @@ export const withText = <T extends TextConfig & object>(config: T) =>
     // Create the text manager with configuration settings
     const text = createText(component.element, {
       prefix: config.prefix,
+      beforeElement: config.beforeElement,
       componentName: config.componentName || 'component'
     });
 
