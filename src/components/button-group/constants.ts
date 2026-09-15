@@ -109,6 +109,15 @@ export const BUTTON_GROUP_CONNECTED_MIN_WIDTH = 48;
  */
 export const BUTTON_GROUP_EXPANDED_RATIO = 0.15;
 
+/**
+ * The most a neighbour gives up when a button in a standard group is pressed:
+ * the trailing content padding of a button (Compose ButtonGroup compression
+ * limit, ButtonDefaults.ContentPadding end, BaselineButtonTokens.TrailingSpace).
+ * It applies to every neighbour, so an icon button with no padding still makes
+ * room for the pressed button.
+ */
+export const BUTTON_GROUP_COMPRESSION_LIMIT = 24;
+
 /** Density reduces the container height by 4dp per step */
 export const BUTTON_GROUP_DENSITY_STEP = 4;
 

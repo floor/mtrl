@@ -661,7 +661,7 @@ describe("Button group selection (Material 3 kinds)", () => {
     expect(group.buttons[0].element.style.paddingRight).toBe("");
   });
 
-  it("the compression of a neighbour stops at its facing padding; an end button takes all its growth from one side", () => {
+  it("a neighbour narrows past its own padding; an end button takes all its growth from one side", () => {
     const group = createButtonGroup({ buttons: [{ text: "A" }, { text: "B" }] });
     document.body.appendChild(group.element);
     group.buttons.forEach((b) => {
@@ -669,10 +669,57 @@ describe("Button group selection (Material 3 kinds)", () => {
       b.element.style.padding = "0 4px";
     });
     group.buttons[0].element.dispatchEvent(new dom.window.Event("pointerdown", { bubbles: true }));
-    // 15% of 100 would be 15, the neighbour only has 4px of padding to give
-    expect(group.buttons[1].element.style.width).toBe("96px");
+    // 15% of 100 is 15, under the 24dp limit: the neighbour gives all of it,
+    // its 4px of facing padding goes to zero and the rest comes off its width
+    expect(group.buttons[1].element.style.width).toBe("85px");
     expect(group.buttons[1].element.style.paddingLeft).toBe("0px");
-    expect(group.buttons[0].element.style.width).toBe("104px");
+    expect(group.buttons[0].element.style.width).toBe("115px");
+    document.dispatchEvent(new dom.window.Event("pointerup"));
+  });
+
+  it("icon buttons, which have no padding, still make room for a pressed neighbour", () => {
+    const icon = '<svg viewBox="0 0 24 24"></svg>';
+    const group = createButtonGroup({
+      buttons: [
+        { icon, ariaLabel: "A" },
+        { icon, ariaLabel: "B" },
+        { icon, ariaLabel: "C" },
+      ],
+    });
+    document.body.appendChild(group.element);
+    group.buttons.forEach((b) => {
+      b.element.getBoundingClientRect = () => ({ width: 40, height: 40 } as DOMRect);
+      // the icon button stylesheet gives no padding; JSDOM does not load it
+      b.element.style.padding = "0px";
+    });
+    // the end button takes 15% of 40 from its only neighbour
+    group.buttons[2].element.dispatchEvent(new dom.window.Event("pointerdown", { bubbles: true }));
+    expect(group.buttons[2].element.style.width).toBe("46px");
+    expect(group.buttons[1].element.style.width).toBe("34px");
+    // no padding to give: the group leaves it as the stylesheet set it
+    expect(group.buttons[1].element.style.paddingRight).toBe("0px");
+    document.dispatchEvent(new dom.window.Event("pointerup"));
+    // a middle button shares its growth between both neighbours
+    group.buttons[1].element.dispatchEvent(new dom.window.Event("pointerdown", { bubbles: true }));
+    expect(group.buttons[1].element.style.width).toBe("46px");
+    expect(group.buttons[0].element.style.width).toBe("37px");
+    expect(group.buttons[2].element.style.width).toBe("37px");
+    document.dispatchEvent(new dom.window.Event("pointerup"));
+    expect(group.buttons.map((b) => b.element.style.width)).toEqual(["", "", ""]);
+  });
+
+  it("a neighbour gives up no more than the 24dp compression limit", () => {
+    const group = createButtonGroup({ buttons: [{ text: "A" }, { text: "B" }] });
+    document.body.appendChild(group.element);
+    group.buttons.forEach((b) => {
+      b.element.getBoundingClientRect = () => ({ width: 200, height: 40 } as DOMRect);
+      b.element.style.padding = "0 30px";
+    });
+    group.buttons[0].element.dispatchEvent(new dom.window.Event("pointerdown", { bubbles: true }));
+    // 15% of 200 would be 30
+    expect(group.buttons[1].element.style.width).toBe("176px");
+    expect(group.buttons[1].element.style.paddingLeft).toBe("6px");
+    expect(group.buttons[0].element.style.width).toBe("224px");
     document.dispatchEvent(new dom.window.Event("pointerup"));
   });
 
