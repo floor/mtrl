@@ -1,6 +1,6 @@
 // src/components/navigation/system/mobile.ts
 
-import { NavigationSystemState } from './types';
+import { NavigationSystemMobileConfig, NavigationSystemState } from './types';
 import { 
   hasTouchSupport, 
   normalizeEvent,
@@ -18,7 +18,7 @@ import {
  */
 export const createOverlay = (
   state: NavigationSystemState, 
-  mobileConfig: any, 
+  mobileConfig: NavigationSystemMobileConfig, 
   hideDrawer: () => void
 ): HTMLElement => {
   if (state.overlayElement) return state.overlayElement;
@@ -47,7 +47,7 @@ export const createOverlay = (
  */
 export const createCloseButton = (
   state: NavigationSystemState, 
-  mobileConfig: any, 
+  mobileConfig: NavigationSystemMobileConfig, 
   hideDrawer: () => void
 ): HTMLElement | null => {
   if (!state.drawer || state.closeButtonElement) return null;
@@ -98,7 +98,7 @@ export const createCloseButton = (
  */
 export const setupMobileMode = (
   state: NavigationSystemState, 
-  mobileConfig: any, 
+  mobileConfig: NavigationSystemMobileConfig, 
   hideDrawer: () => void,
   isDrawerVisible: () => boolean
 ): void => {
@@ -133,7 +133,7 @@ export const setupMobileMode = (
  */
 export const setupOutsideClickHandling = (
   state: NavigationSystemState, 
-  mobileConfig: any, 
+  mobileConfig: NavigationSystemMobileConfig, 
   hideDrawer: () => void,
   isDrawerVisible: () => boolean
 ): void => {
@@ -260,7 +260,7 @@ export const setupTouchGestures = (
  */
 export const teardownMobileMode = (
   state: NavigationSystemState, 
-  mobileConfig: any
+  mobileConfig: NavigationSystemMobileConfig
 ): void => {
   // Hide overlay
   if (state.overlayElement) {

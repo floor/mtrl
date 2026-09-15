@@ -27,7 +27,6 @@ interface NavigationConfig {
   prefix?: string;
   items?: NavItemConfig[];
   debug?: boolean;
-  [key: string]: any;
 }
 
 /**
