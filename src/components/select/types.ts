@@ -1,5 +1,6 @@
 // src/components/select/types.ts
-import type { MenuColor, MenuVariant } from "../menu/types";
+import type { MenuColor, MenuComponent, MenuVariant } from "../menu/types";
+import type { TextfieldComponent } from "../textfield/types";
 
 /**
  * Available Select variants
@@ -52,7 +53,7 @@ export interface SelectOption {
   /**
    * Additional data associated with the option
    */
-  data?: any;
+  data?: unknown;
 }
 
 /**
@@ -183,12 +184,12 @@ export interface SelectComponent {
   /**
    * The textfield component
    */
-  textfield: any;
+  textfield: TextfieldComponent;
 
   /**
    * The menu component
    */
-  menu: any;
+  menu: MenuComponent;
 
   /**
    * Gets the select's current value (selected option id)
@@ -377,27 +378,44 @@ export interface SelectEvents {
 export interface ApiOptions {
   select: {
     getValue: () => string | null;
-    setValue: (value: string | null | undefined) => any;
-    clear: () => any;
+    setValue: (value: string | null | undefined) => void;
+    clear: () => void;
     getText: () => string;
     getSelectedOption: () => SelectOption | null;
     getOptions: () => SelectOption[];
-    setOptions: (options: SelectOption[]) => any;
-    open: () => any;
-    close: () => any;
+    setOptions: (options: SelectOption[]) => void;
+    open: () => void;
+    close: () => void;
     isOpen: () => boolean;
   };
   events?: {
-    on: <T extends string>(event: T, handler: (event: any) => void) => any;
-    off: <T extends string>(event: T, handler: (event: any) => void) => any;
+    on: <T extends keyof SelectEvents>(event: T, handler: SelectEvents[T]) => void;
+    off: <T extends keyof SelectEvents>(event: T, handler: SelectEvents[T]) => void;
   };
   disabled: {
-    enable: () => any;
-    disable: () => any;
+    enable: () => void;
+    disable: () => void;
   };
   lifecycle: {
     destroy: () => void;
   };
+}
+
+/**
+ * Select controller added by the menu feature
+ * @internal
+ */
+export interface SelectController {
+  getValue: () => string | null;
+  setValue: (value: string | null | undefined) => BaseComponent;
+  clear: () => BaseComponent;
+  getText: () => string;
+  getSelectedOption: () => SelectOption | null;
+  getOptions: () => SelectOption[];
+  setOptions: (options: SelectOption[]) => BaseComponent;
+  open: (event?: Event, interactionType?: "mouse" | "keyboard") => BaseComponent;
+  close: (event?: Event) => BaseComponent;
+  isOpen: () => boolean;
 }
 
 /**
@@ -406,17 +424,17 @@ export interface ApiOptions {
  */
 export interface BaseComponent {
   element: HTMLElement;
-  textfield?: any;
-  menu?: any;
-  on?: (event: string, handler: Function) => any;
-  off?: (event: string, handler: Function) => any;
-  emit?: (event: string, data: any) => void;
+  textfield?: TextfieldComponent;
+  menu?: MenuComponent;
+  select?: SelectController;
+  on?: (event: string, handler: Function) => void;
+  off?: (event: string, handler: Function) => void;
+  emit?: (event: string, data?: unknown) => void;
   disabled?: {
-    enable: () => any;
-    disable: () => any;
+    enable: () => void;
+    disable: () => void;
   };
   lifecycle?: {
     destroy: () => void;
   };
-  [key: string]: any;
 }
