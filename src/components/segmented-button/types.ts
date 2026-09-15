@@ -3,6 +3,7 @@
 /**
  * Segmented button selection mode
  * @category Components
+ * @deprecated Since 0.8.0, M3 Expressive replaces segmented buttons with connected button groups. Use {@link createButtonGroup} with `kind: "connected"`.
  */
 export enum SelectionMode {
   /** Only one segment can be selected at a time */
@@ -15,6 +16,7 @@ export enum SelectionMode {
  * Density options for segmented button
  * Controls the overall sizing and spacing of the component.
  * @category Components
+ * @deprecated Since 0.8.0, M3 Expressive replaces segmented buttons with connected button groups. Use {@link createButtonGroup} with `kind: "connected"`.
  */
 export enum Density {
   /** Default size with standard spacing */
@@ -56,6 +58,7 @@ export interface SegmentedButtonEvent {
 /**
  * Configuration for a single segment within a segmented button
  * @category Components
+ * @deprecated Since 0.8.0, M3 Expressive replaces segmented buttons with connected button groups. Use {@link createButtonGroup} with `kind: "connected"`.
  */
 export interface SegmentConfig {
   /**
@@ -101,6 +104,7 @@ export interface SegmentConfig {
 /**
  * Configuration interface for the Segmented Button component
  * @category Components
+ * @deprecated Since 0.8.0, M3 Expressive replaces segmented buttons with connected button groups. Use {@link createButtonGroup} with `kind: "connected"`.
  */
 export interface SegmentedButtonConfig {
   /**
@@ -171,6 +175,7 @@ export interface SegmentedButtonConfig {
 /**
  * Interface for a segment within a segmented button
  * @category Components
+ * @deprecated Since 0.8.0, M3 Expressive replaces segmented buttons with connected button groups. Use {@link createButtonGroup} with `kind: "connected"`.
  */
 export interface Segment {
   /** The segment's DOM element */
@@ -210,6 +215,7 @@ export interface Segment {
 /**
  * Segmented Button component interface
  * @category Components
+ * @deprecated Since 0.8.0, M3 Expressive replaces segmented buttons with connected button groups. Use {@link createButtonGroup} with `kind: "connected"`.
  */
 export interface SegmentedButtonComponent {
   /** The component's container DOM element */
