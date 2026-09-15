@@ -4,7 +4,7 @@ import { createBase, withElement } from '../../core/compose/component';
 import { withEvents, withLifecycle } from '../../core/compose/features';
 import { createEmitter } from '../../core/state/emitter';
 import { SegmentedButtonConfig, SegmentedButtonComponent, SelectionMode, Density, Segment } from './types';
-import { createBaseConfig, getContainerConfig, getDensityStyles } from './config';
+import { createBaseConfig, getContainerConfig } from './config';
 import { createSegment } from './segment';
 
 /**
@@ -14,6 +14,17 @@ import { createSegment } from './segment';
  * be used for selection and filtering. It supports single or multiple selection modes,
  * configurable density, disabled states, and event handling.
  * 
+ * Migration to {@link createButtonGroup}:
+ * - Use `kind: "connected"`, rename `segments` to `buttons` and `mode` to `selection`.
+ * - For `selection: "single"`, set `required: true` and explicitly mark the first
+ *   enabled button `selected: true` to preserve the old initial selection.
+ * - Replace `getValue()` with `getSelected()` and read change events from `values`.
+ * - Checkmarks and their animation are not automatic; supply `selectedIcon` as needed.
+ * - Density changes height only. Connected groups have 2dp gaps and separate
+ *   selected pills instead of one outlined container.
+ *
+ * @deprecated Since 0.8.0, M3 Expressive replaces segmented buttons with connected button groups. Use {@link createButtonGroup} with `kind: "connected"`.
+ *
  * @param {SegmentedButtonConfig} config - Segmented Button configuration
  * @returns {SegmentedButtonComponent} Segmented Button component instance
  * 
@@ -57,7 +68,6 @@ const createSegmentedButton = (config: SegmentedButtonConfig = {}): SegmentedBut
   // Process configuration
   const baseConfig = createBaseConfig(config);
   const mode = baseConfig.mode || SelectionMode.SINGLE;
-  const density = baseConfig.density || Density.DEFAULT;
   const emitter = createEmitter();
   
   try {
@@ -68,12 +78,6 @@ const createSegmentedButton = (config: SegmentedButtonConfig = {}): SegmentedBut
       withElement(getContainerConfig(baseConfig)),
       withLifecycle()
     )(baseConfig);
-    
-    // Apply density styles
-    const densityStyles = getDensityStyles(density as string);
-    Object.entries(densityStyles).forEach(([prop, value]) => {
-      component.element.style.setProperty(prop, value);
-    });
     
     // Create segments
     const segments: Segment[] = [];
@@ -194,11 +198,6 @@ const createSegmentedButton = (config: SegmentedButtonConfig = {}): SegmentedBut
       // Update data attribute
       component.element.setAttribute('data-density', newDensity);
       
-      // Apply density styles
-      const densityStyles = getDensityStyles(newDensity);
-      Object.entries(densityStyles).forEach(([prop, value]) => {
-        component.element.style.setProperty(prop, value);
-      });
     };
     
     // Create the component API

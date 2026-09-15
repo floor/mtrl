@@ -23,8 +23,6 @@ export interface TrackConfig {
    * Custom icon HTML or 'none'
    */
   icon?: string;
-  
-  [key: string]: any;
 }
 
 /**

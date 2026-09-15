@@ -25,8 +25,6 @@ export interface TextLabelConfig {
    * Component name for class generation
    */
   componentName?: string;
-
-  [key: string]: any;
 }
 
 /**
@@ -67,7 +65,8 @@ export interface LabelComponent extends BaseComponent {
  * @returns Function that enhances a component with a label
  */
 export const withTextLabel =
-  <T extends TextLabelConfig>(config: T = {} as T) =>
+  // `& object` lets a component config that shares no key with TextLabelConfig through.
+  <T extends TextLabelConfig & object>(config: T = {} as T) =>
   <C extends ElementComponent>(component: C): C & LabelComponent => {
     if (!config.label) return component as C & LabelComponent;
 

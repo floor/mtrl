@@ -56,8 +56,6 @@ export interface TextInputConfig {
    * Placeholder attribute
    */
   placeholder?: string;
-
-  [key: string]: any;
 }
 
 /**
@@ -107,7 +105,7 @@ export interface TextInputComponent extends ElementComponent {
   /**
    * Event emission method if available
    */
-  emit?: (event: string, data: any) => TextInputComponent;
+  emit?: (event: string, data: unknown) => TextInputComponent;
 }
 
 /**
@@ -117,7 +115,8 @@ export interface TextInputComponent extends ElementComponent {
  * @returns Function that enhances a component with text input capabilities
  */
 export const withTextInput =
-  <T extends TextInputConfig>(config: T = {} as T) =>
+  // `& object` lets a component config that shares no key with TextInputConfig through.
+  <T extends TextInputConfig & object>(config: T = {} as T) =>
   <C extends ElementComponent>(component: C): C & TextInputComponent => {
     const isMultiline = config.multiline || config.type === "multiline";
     const input = document.createElement(isMultiline ? "textarea" : "input") as

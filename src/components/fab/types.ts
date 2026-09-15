@@ -8,12 +8,19 @@
  *
  * @category Components
  * @remarks
- * - primary: Uses the primary color, highest emphasis (default)
- * - secondary: Uses the secondary color, medium emphasis
- * - tertiary: Uses the tertiary color, lower emphasis
- * - surface: Uses the surface color with an outline, lowest emphasis
+ * - primary-container, secondary-container, tertiary-container: container styles
+ * - primary, secondary, tertiary: tone styles
+ * - surface: deprecated; use a container or tone style instead
+ * Default: primary-container.
  */
-export type FabVariant = "primary" | "secondary" | "tertiary" | "surface";
+export type FabVariant =
+  | "primary-container"
+  | "secondary-container"
+  | "tertiary-container"
+  | "primary"
+  | "secondary"
+  | "tertiary"
+  | "surface";
 
 /**
  * FAB size variants
@@ -23,11 +30,12 @@ export type FabVariant = "primary" | "secondary" | "tertiary" | "surface";
  *
  * @category Components
  * @remarks
- * - small: 40px diameter, for compact interfaces or secondary actions
+ * - small: 40px container, 24px icon; deprecated in M3 Expressive
  * - default: 56px diameter, for standard primary actions (default)
- * - large: 96px diameter, for emphasis or touch-focused interfaces
+ * - medium: 80px container, 28px icon
+ * - large: 96px container, 32px icon
  */
-export type FabSize = "small" | "default" | "large";
+export type FabSize = "small" | "default" | "medium" | "large";
 
 /**
  * FAB position options
@@ -64,7 +72,7 @@ export interface FabConfig {
    *
    * The color variant affects the FAB's background color, icon color, and elevation.
    *
-   * @default 'primary'
+   * @default 'primary-container'
    *
    * @example
    * ```typescript

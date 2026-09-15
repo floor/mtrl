@@ -8,7 +8,7 @@ interface ComponentWithInput extends ElementComponent {
 }
 
 // Type guard to check if component has a disableable input
-function hasDisableableInput(component: any): component is ComponentWithInput {
+function hasDisableableInput(component: object): component is ComponentWithInput {
   return 'input' in component && 
          component.input instanceof HTMLElement &&
          ('disabled' in component.input);
@@ -20,7 +20,6 @@ function hasDisableableInput(component: any): component is ComponentWithInput {
 export interface DisabledConfig {
   disabled?: boolean;
   componentName?: string;
-  [key: string]: any;
 }
 
 /**
@@ -65,7 +64,8 @@ export interface DisabledComponent extends BaseComponent {
  * @param config - Configuration object
  * @returns Function that enhances a component with disabled state management
  */
-export const withDisabled = <T extends DisabledConfig>(config: T) => 
+// `& object` lets a component config that shares no key with DisabledConfig through.
+export const withDisabled = <T extends DisabledConfig & object>(config: T) => 
   <C extends ElementComponent>(component: C): C & DisabledComponent => {
     // Get the disabled class based on component name
     const disabledClass = `${component.getClass(config.componentName || component.componentName || 'component')}--disabled`;

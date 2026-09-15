@@ -1,4 +1,5 @@
 // src/components/extended-fab/_styles.scss
+@use 'sass:map';
 @use '../../styles/abstract/base' as base;
 @use '../../styles/abstract/variables' as v;
 @use '../../styles/abstract/functions' as f;
@@ -6,6 +7,12 @@
 @use '../../styles/abstract/theme' as t;
 
 $component: '#{base.$prefix}-extended-fab';
+
+$sizes: (
+  small: (height: 56px, icon: 24px, label: 'title-medium', padding: 16px, gap: 8px, shape: 'large'),
+  medium: (height: 80px, icon: 28px, label: 'title-large', padding: 26px, gap: 16px, shape: 'large-increased'),
+  large: (height: 96px, icon: 32px, label: 'headline-small', padding: 28px, gap: 20px, shape: 'extra-large'),
+);
 
 .#{$component} {
   // Base styles
@@ -25,7 +32,7 @@ $component: '#{base.$prefix}-extended-fab';
   overflow: hidden;
   
   // Extended FAB uses elevation in all variants
-  @include m.elevation(2);
+  @include m.elevation(3);
   
   // Transitions for property changes (separated for performance)
   @include m.motion-transition(
@@ -35,18 +42,33 @@ $component: '#{base.$prefix}-extended-fab';
     color
   );
   
-  // Extended FAB dimensions (56dp height, min-width 80dp)
-  height: 56px;
-  min-width: 80px;
-  padding: 0 16px 0 16px; // Left and right padding
-  border-radius: f.get-shape('large'); // 16px corners
-  
+  // Small is the default; modifiers supply the expressive dimensions.
+  height: var(--extended-fab-height, 56px);
+  min-width: var(--extended-fab-height, 56px);
+  padding: 0 var(--extended-fab-padding, 16px);
+  gap: var(--extended-fab-gap, 8px);
+  border-radius: var(--extended-fab-radius, #{f.get-shape('large')});
+
   // Transition for dimension changes
   transition: 
     width 0.3s v.motion('easing-standard'),
     min-width 0.3s v.motion('easing-standard'),
     padding 0.3s v.motion('easing-standard');
   
+  @each $size, $tokens in $sizes {
+    &--#{$size} {
+      --extended-fab-height: #{map.get($tokens, height)};
+      --extended-fab-icon-size: #{map.get($tokens, icon)};
+      --extended-fab-padding: #{map.get($tokens, padding)};
+      --extended-fab-gap: #{map.get($tokens, gap)};
+      --extended-fab-radius: #{f.get-shape(map.get($tokens, shape))};
+
+      .#{$component}-text {
+        @include m.typography(map.get($tokens, label));
+      }
+    }
+  }
+
   // Focus styles
   &:focus {
     outline: none;
@@ -62,28 +84,28 @@ $component: '#{base.$prefix}-extended-fab';
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 24px;
-    height: 24px;
+    width: var(--extended-fab-icon-size, 24px);
+    height: var(--extended-fab-icon-size, 24px);
     flex-shrink: 0;
-    padding: 2px;
+    padding: 0;
     transition: 
       transform 0.3s v.motion('easing-standard'),
       margin 0.3s v.motion('easing-standard');
     
     svg {
-      width: 24px;
-      height: 24px;
+      width: var(--extended-fab-icon-size, 24px);
+      height: var(--extended-fab-icon-size, 24px);
     }
   }
   
   // Text styles
   &-text {
-    @include m.typography('label-large');
+    @include m.typography('title-medium');
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 280px;
-    margin: 0 6px 0 12px; 
+    margin: 0;
     transition: 
       max-width 0.3s v.motion('easing-standard'),
       opacity 0.2s v.motion('easing-standard'),
@@ -100,79 +122,46 @@ $component: '#{base.$prefix}-extended-fab';
     width: 100%;
   }
   
-  // RTL support
-  html[dir="rtl"] & {
-    .#{$component}-icon {
-      margin-right: 0;
-      margin-left: 12px;
-    }
-  }
-  
-  // Color variants
-  &--primary {
-    background-color: t.color('primary-container');
-    color: t.color('on-primary-container');
-    
-    &:hover {
-      @include m.state-layer(t.color('on-primary-container'), 'hover');
-    }
-    
-    &:active {
-      @include m.state-layer(t.color('on-primary-container'), 'pressed');
-      @include m.elevation(1);
+  // Expressive container and tone styles; primary-container is the default.
+  @each $role in primary-container, secondary-container, tertiary-container,
+    primary, secondary, tertiary {
+    &--#{$role} {
+      background-color: t.color('#{$role}');
+      color: t.color('on-#{$role}');
     }
   }
 
-  &--secondary {
-    background-color: t.color('secondary-container');
-    color: t.color('on-secondary-container');
-    
-    &:hover {
-      @include m.state-layer(t.color('on-secondary-container'), 'hover');
-    }
-    
-    &:active {
-      @include m.state-layer(t.color('on-secondary-container'), 'pressed');
-      @include m.elevation(1);
-    }
-  }
-  
-  &--tertiary {
-    background-color: t.color('tertiary-container');
-    color: t.color('on-tertiary-container');
-    
-    &:hover {
-      @include m.state-layer(t.color('on-tertiary-container'), 'hover');
-    }
-    
-    &:active {
-      @include m.state-layer(t.color('on-tertiary-container'), 'pressed');
-      @include m.elevation(1);
-    }
-  }
-  
+  // Deprecated surface style retained for existing callers.
   &--surface {
     background-color: t.color('surface');
     color: t.color('primary');
-    
-    &:hover {
-      @include m.state-layer(t.color('primary'), 'hover');
-    }
-    
-    &:active {
-      @include m.state-layer(t.color('primary'), 'pressed');
-      @include m.elevation(1);
-    }
   }
-  
+
+  &:hover {
+    @include m.state-layer(currentColor, 'hover');
+    @include m.elevation(4);
+  }
+
+  &:focus-visible {
+    @include m.state-layer(currentColor, 'focus');
+    @include m.elevation(3);
+  }
+
+  &:active {
+    @include m.state-layer(currentColor, 'pressed');
+    @include m.elevation(3);
+  }
+
   // Collapsed state
   &--collapsed {
-    width: 56px;
-    min-width: 56px;
+    width: var(--extended-fab-height, 56px);
+    min-width: var(--extended-fab-height, 56px);
+    padding: 0;
+    gap: 0;
     
     .#{$component}-icon {
       margin: 0;
-      transform: scale(1.05);
+      transform: scale(1);
     }
     
     .#{$component}-text {
@@ -205,25 +194,43 @@ $component: '#{base.$prefix}-extended-fab';
   
   // Long-press state
   &--long-press {
-    @include m.state-layer(t.color('on-primary-container'), 'dragged');
-    @include m.elevation(1);
+    @include m.state-layer(currentColor, 'dragged');
+    @include m.elevation(3);
   }
   
-  // Lowered state
-  &--lowered {
+  // Lowered FABs use their own elevation ladder.
+  &.#{$component}--lowered {
     @include m.elevation(1);
-    transform: translateY(1px);
+
+    &:hover {
+      @include m.elevation(2);
+    }
+
+    &:focus-visible,
+    &:active {
+      @include m.elevation(1);
+    }
   }
-  
-  // Disabled state
-  &--disabled,
-  &:disabled {
+
+  // Compatibility state: FAB tokens do not specify disabled styling.
+  &:disabled,
+  &.#{$component}--disabled {
     pointer-events: none;
-    @include m.elevation(0);
-    color: t.alpha('surface', 0.38);
-    background-color: t.alpha('surface', 0.12);
+
+    &,
+    &:hover,
+    &:focus-visible,
+    &:active {
+      @include m.elevation(0);
+      color: t.alpha('on-surface', 0.38);
+      background-color: t.alpha('on-surface', 0.12);
+    }
+
+    &::before {
+      display: none;
+    }
   }
-  
+
   // Positioning utilities
   &--top-right {
     position: fixed;
@@ -275,9 +282,6 @@ $component: '#{base.$prefix}-extended-fab';
       left: 50%;
       transform: translateX(-50%);
       
-      &.#{$component}--lowered {
-        transform: translateX(-50%) translateY(1px);
-      }
     }
   }
   
@@ -287,23 +291,3 @@ $component: '#{base.$prefix}-extended-fab';
     transition-timing-function: v.motion('easing-standard');
   }
 }
-
-
-// FIX: Disabled on dark theme (recommandations do not work as expected)
-html[data-theme-mode=dark] {
-    // Interactive states
-    .#{$component} {
-      &:disabled {
-        color: t.alpha('on-surface-dim', 0.38);
-        background-color: t.alpha('surface-dim', 0.12);
-
-        .#{$component}-text { 
-          opacity: 0.38;
-        }
-        .#{$component}-icon {
-          opacity: 0.38;
-          color: t.alpha('on-surface-dim', 0.12);
-        }
-      }
-    }
-  }

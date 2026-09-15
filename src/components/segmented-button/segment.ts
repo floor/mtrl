@@ -27,6 +27,7 @@ const createCheckmarkElement = (prefix: string, icon?: string): HTMLElement => {
  * - Icon + text segments: Replace icon with checkmark when selected
  * - Icon-only segments: Do NOT show checkmark (icon remains unchanged)
  *
+ * @deprecated Since 0.8.0, M3 Expressive replaces segmented buttons with connected button groups. Use {@link createButtonGroup} with `kind: "connected"`.
  * @param {SegmentConfig} config - Segment configuration
  * @param {HTMLElement} container - Container element
  * @param {string} prefix - Component prefix

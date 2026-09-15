@@ -8,16 +8,25 @@
  *
  * @category Components
  * @remarks
- * - primary: Uses the primary color, highest emphasis (default)
- * - secondary: Uses the secondary color, medium emphasis
- * - tertiary: Uses the tertiary color, lower emphasis
- * - surface: Uses the surface color with an outline, lowest emphasis
+ * - primary-container, secondary-container, tertiary-container: container styles
+ * - primary, secondary, tertiary: tone styles
+ * - surface: deprecated; use a container or tone style instead
+ * Default: primary-container.
  */
 export type ExtendedFabVariant =
+  | "primary-container"
+  | "secondary-container"
+  | "tertiary-container"
   | "primary"
   | "secondary"
   | "tertiary"
   | "surface";
+
+/**
+ * Expressive extended FAB size: small 56dp, medium 80dp, large 96dp.
+ * @category Components
+ */
+export type ExtendedFabSize = "small" | "medium" | "large";
 
 /**
  * Extended FAB width behavior
@@ -61,12 +70,15 @@ export type ExtendedFabPosition =
  * @see https://m3.material.io/components/extended-fab/overview
  */
 export interface ExtendedFabConfig {
+  /** Expressive container, icon and label size. @default 'small' */
+  size?: ExtendedFabSize;
+
   /**
    * Extended FAB variant that determines visual styling
    *
    * The color variant affects the Extended FAB's background color, text color, and elevation.
    *
-   * @default 'primary'
+   * @default 'primary-container'
    *
    * @example
    * ```typescript
