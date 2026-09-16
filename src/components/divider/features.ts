@@ -98,12 +98,17 @@ export const withInset = (config: DividerConfig) =>
         
         component.element.style.marginLeft = `${insetStart}px`;
         component.element.style.marginRight = `${insetEnd}px`;
+        // withOrientation set 100%; with margins added that overflows the parent,
+        // so let the box shrink to what the insets leave.
+        component.element.style.width = "auto";
       } else {
         const insetStart = config.insetStart !== undefined ? config.insetStart : 16;
         const insetEnd = config.insetEnd !== undefined ? config.insetEnd : (variant === 'middle-inset' ? 16 : 0);
         
         component.element.style.marginTop = `${insetStart}px`;
         component.element.style.marginBottom = `${insetEnd}px`;
+        // As above, on the cross axis.
+        component.element.style.height = "auto";
       }
     }
     

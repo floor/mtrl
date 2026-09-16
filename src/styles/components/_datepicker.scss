@@ -59,7 +59,7 @@ $component: '#{base.$prefix}-datepicker';
     margin-top: 8px;
     background-color: t.color('surface-container-high');
     border-radius: v.shape('large');
-    box-shadow: v.elevation('level3');
+    box-shadow: v.elevation('level-3');
     overflow: hidden;
     
     &-content {

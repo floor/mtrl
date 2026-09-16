@@ -67,6 +67,7 @@
 @use "./components/navigation" as navigation;
 @use "./components/navigation-rail" as navigation-rail;
 @use "./components/list" as list;
+@use "./components/tooltip" as tooltip;
 
 @use "./utilities/ripple" as ripple;
 @use "./utilities/layout" as layout;
