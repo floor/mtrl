@@ -12,7 +12,12 @@ $component: '#{base.$prefix}-checkbox';
   display: inline-flex;
   align-items: center;
   position: relative;
-  min-height: 40px;
+  // 48dp minimum interactive size: MDC minTouchTargetSize, Compose
+  // minimumInteractiveComponentSize(). Compose has no checkbox token for it. The input
+  // below is absolute at 100%/100%, so the hit area follows this box; min-width covers
+  // the unlabelled case, where the content is only the 18px icon.
+  min-height: 48px;
+  min-width: 48px;
   padding: 4px 0;
   user-select: none;
 
