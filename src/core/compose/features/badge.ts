@@ -58,7 +58,7 @@ export const withBadge = <T extends BadgeConfig & object>(config: T) =>
     
     // Create badge configuration
     const badgeConfig = {
-      content: config.badge,
+      label: config.badge,
       standalone: false,
       target: component.element,
       ...config.badgeConfig || {},

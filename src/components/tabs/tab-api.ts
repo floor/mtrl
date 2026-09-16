@@ -185,7 +185,7 @@ export const withTabAPI = ({ disabled, lifecycle, button }: ApiOptions) =>
         if (!component.badge) {
           // Create badge on demand if it doesn't exist
           const badgeConfig = {
-            content,
+            label: content,
             standalone: false,
             target: component.element,
             prefix: component.config.prefix

@@ -180,7 +180,7 @@ export const createTab = (config: TabConfig = {}): TabComponent => {
       setBadge(content) {
         if (!this.badge) {
           const badgeConfig = {
-            content,
+            label: content,
             standalone: false,
             target: this.element,
             prefix: baseConfig.prefix,
