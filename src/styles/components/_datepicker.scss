@@ -92,7 +92,7 @@ $component: '#{base.$prefix}-datepicker';
     
     &:focus {
       outline: none;
-      background-color: t.alpha('on-surface', 0.12);
+      background-color: t.alpha('on-surface', v.state('focus-state-layer-opacity'));
     }
   }
   
@@ -120,7 +120,7 @@ $component: '#{base.$prefix}-datepicker';
     
     &:focus {
       outline: none;
-      background-color: t.alpha('on-surface', 0.12);
+      background-color: t.alpha('on-surface', v.state('focus-state-layer-opacity'));
     }
     
     svg {
@@ -170,7 +170,7 @@ $component: '#{base.$prefix}-datepicker';
     
     &:focus {
       outline: none;
-      background-color: t.alpha('on-surface', 0.12);
+      background-color: t.alpha('on-surface', v.state('focus-state-layer-opacity'));
     }
     
     &.outside-month {
@@ -242,7 +242,7 @@ $component: '#{base.$prefix}-datepicker';
     
     &:focus {
       outline: none;
-      background-color: t.alpha('on-surface', 0.12);
+      background-color: t.alpha('on-surface', v.state('focus-state-layer-opacity'));
     }
     
     &.selected {

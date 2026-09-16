@@ -227,7 +227,7 @@ $component: "#{base.$prefix}-dialog";
 
         &:focus {
             outline: none;
-            background-color: t.alpha("on-surface", 0.12);
+            background-color: t.alpha("on-surface", v.state("focus-state-layer-opacity"));
         }
 
         &:focus-visible {
@@ -236,7 +236,7 @@ $component: "#{base.$prefix}-dialog";
         }
 
         &:active {
-            background-color: t.alpha("on-surface", 0.12);
+            background-color: t.alpha("on-surface", v.state("pressed-state-layer-opacity"));
         }
 
         svg {

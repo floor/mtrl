@@ -73,7 +73,7 @@ $component: '#{base.$prefix}-radios';
     
     // Focus styles
     &:focus ~ .#{$component}-label .#{$component}-ripple {
-      background-color: t.alpha('primary', 0.12);
+      background-color: t.alpha('primary', v.state('focus-state-layer-opacity'));
     }
     
     // Checked styles

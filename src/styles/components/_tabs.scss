@@ -223,7 +223,7 @@ $container: "#{base.$prefix}-tabs";
             // Pressed state for active tabs
             &:active,
             &.#{$component}--pressed {
-                background-color: t.alpha("primary", 0.12);
+                background-color: t.alpha("primary", v.state("pressed-state-layer-opacity"));
                 border-radius: 5px 5px 0 0;
             }
         }
@@ -250,7 +250,7 @@ $container: "#{base.$prefix}-tabs";
             // Pressed state for inactive tabs
             &:active,
             &.#{$component}--pressed {
-                background-color: t.alpha("on-surface-variant", 0.12);
+                background-color: t.alpha("on-surface-variant", v.state("pressed-state-layer-opacity"));
                 border-radius: 5px 5px 0 0;
             }
         }
@@ -282,7 +282,7 @@ $container: "#{base.$prefix}-tabs";
             // Pressed state for active tabs - secondary
             &:active,
             &.#{$component}--pressed {
-                background-color: t.alpha("on-surface", 0.12);
+                background-color: t.alpha("on-surface", v.state("pressed-state-layer-opacity"));
             }
         }
 
@@ -308,7 +308,7 @@ $container: "#{base.$prefix}-tabs";
             // Pressed state for inactive tabs - secondary
             &:active,
             &.#{$component}--pressed {
-                background-color: t.alpha("on-surface-variant", 0.12);
+                background-color: t.alpha("on-surface-variant", v.state("pressed-state-layer-opacity"));
                 border-radius: 5px 5px 0 0;
             }
         }
