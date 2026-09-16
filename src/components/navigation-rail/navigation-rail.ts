@@ -6,6 +6,7 @@ import { createEmitter } from '../../core/state/emitter';
 import { mountRailRipple } from './ripple';
 import { createBaseConfig } from './config';
 import type { NavigationRailConfig, NavigationRailComponent, NavigationRailItemConfig } from './types';
+import { safeUrl } from '../../core/utils/url';
 const copyItems = (items: NavigationRailItemConfig[]): NavigationRailItemConfig[] => {
     const ids = new Set<string>();
     let selected = false;
@@ -111,7 +112,7 @@ export default function createNavigationRail(config: NavigationRailConfig = {}):
             const element = document.createElement(item.href ? 'a' : 'button');
             if (item.href) {
                 if (!item.disabled)
-                    element.setAttribute("href", item.href);
+                    element.setAttribute("href", safeUrl(item.href));
                 else {
                     element.setAttribute('role', 'link');
                     element.tabIndex = -1;

@@ -6,6 +6,7 @@ export { getInheritedBackground } from './background';
 export { throttle, debounce, once } from './performance';
 export { getThemeColor } from './theme';
 export { colorToRGBA } from './color';
+export { isSafeUrl, safeUrl, URL_ATTRIBUTES } from './url';
 
 /**
  * Creates a transformer that only runs if a condition is met
