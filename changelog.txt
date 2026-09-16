@@ -3,6 +3,93 @@ initial commit → latest
 835 commits · Feb 22, 2025 – Sep 15, 2026
 
 
+0.9.0
+
+  The M3 audit release. Every component that had never been checked against
+  its Material 3 tokens was audited, and the findings that were defects
+  rather than drift are fixed. Nothing here is a new API: it is the library
+  doing what its own tokens already said.
+
+  Visible changes
+
+  - Tabs: the stylesheet addressed classes the component never emits, so the
+    icon sizing, the label rules, the icon-only label hiding and the badge
+    offsets were all inert. They apply now, and tab icons are 24dp rather
+    than the button's 20px. The active indicator is 3dp in both variants and
+    takes the primary colour (the secondary variant was 2px and on-surface),
+    a tab paints one state layer instead of two, a non-scrollable row shares
+    its width evenly, and a scrollable row is padded 52dp at both edges.
+  - Tooltip: no tooltip CSS shipped at all. The stylesheet was registered in
+    neither the full bundle nor the selective manifest, so every consumer got
+    a working component with no styling. It ships now.
+  - Checkbox: the interactive size is 48dp, up from a 40px row that had no
+    minimum width, so an unlabelled checkbox was as wide as its 18px icon.
+  - Checkbox, radios and switch: disabled states use the per-role tokens
+    instead of one opacity over the whole control. The switch's disabled
+    track is 12% and its selected handle is Surface at full opacity; radios
+    no longer compound two dimmers to roughly 23% against a specified 38%.
+  - State layers: seventeen rules across chips, datepicker, dialog, radios,
+    tabs and timepicker used 0.12, the Material 2 figure, where M3 specifies
+    0.08 hover and 0.10 focus and pressed. 0.12 is kept where M3 asks for it,
+    on disabled containers and on selected container fills.
+
+  Fixed
+
+  - Badge: a badge created through a tab or through withBadge rendered empty,
+    because the hosts passed content where the config reads label.
+  - Date picker: the calendar surface had no shadow. v.elevation('level3')
+    missed the hyphenated map key, so Sass dropped the declaration outright.
+  - Divider: an inset divider overflowed its parent, having been given
+    margins on top of width 100%.
+  - Date picker: the outside-click listener is taken off the document on
+    destroy.
+
+  Internal
+
+  - No ESLint findings in src, and lint runs in CI. pipe and compose are
+    typed with overloads, guarded by a compile-fail fixture proving the rest
+    overload cannot swallow a mismatched pipe.
+  - The touch-target mixin states its offsets rather than over-constraining
+    them; the over-constrained form anchored the target off-centre under RTL.
+
+  → v0.9.0
+
+2026-09-16
+
+  fix(tabs): indicator height, colours and the fixed form follow the tokens
+  fix(checkbox): meet the 48dp interactive size
+  fix(styles): disabled states use the per-role tokens
+  fix(tabs): target the classes the component actually emits
+  fix(styles): state layers read the M3 constants instead of 0.12
+  chore(size): make room for the tooltip stylesheet that now ships
+  fix(badge): render the label when a host creates the badge
+  fix(divider): stop inset dividers overflowing their parent
+  fix(tooltip): ship the stylesheet
+  fix(datepicker): restore the calendar's elevation
+  fix(datepicker): take the outside-click listener off the document on destroy
+
+2026-09-15
+
+  ci: run ESLint on every push and pull request
+  test(core): check the pipe and compose overloads at the type level
+  refactor(components): type the select, textfield and datepicker pipes
+  refactor(core): type pipe and compose with overloads
+  refactor(core): type the component config without an index signature
+  refactor(textfield, search): type the text field features and drop unused search code
+  refactor(datepicker, timepicker): type the date and time pickers without any
+  refactor(core): type dom and config without any
+  refactor(core): type state and utils without any
+  refactor(components): type slider, snackbar, dialog, progress and card without any
+  refactor(list): type the list items without any
+  refactor(components): type button group, buttons, FABs and menu without any
+  refactor(tabs): type the tabs features without any
+  refactor(navigation): type the navigation system without any
+  refactor(checkbox,chips): type the checkbox and chips APIs without any
+  refactor(select): type the select config and API without any
+  refactor(core): type the base component and type guards without any
+  refactor(core): type the compose features without any
+
+
 0.8.0
 
   The Material 3 expressive release. Components are aligned with the M3
