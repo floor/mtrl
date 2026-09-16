@@ -1,6 +1,6 @@
 mtrl — full changelog
 initial commit → latest
-895 commits · Feb 22, 2025 – Sep 16, 2026
+902 commits · Feb 22, 2025 – Sep 16, 2026
 
 
 0.9.1
