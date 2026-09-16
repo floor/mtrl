@@ -255,7 +255,7 @@ $component: '#{base.$prefix}-time-picker';
       }
       
       &:active {
-        background-color: t.alpha('on-surface', 0.12);
+        background-color: t.alpha('on-surface', v.state('pressed-state-layer-opacity'));
       }
     }
     
@@ -331,7 +331,7 @@ $component: '#{base.$prefix}-time-picker';
     }
     
     &:active {
-      background-color: t.alpha('on-surface', 0.12);
+      background-color: t.alpha('on-surface', v.state('pressed-state-layer-opacity'));
     }
     
     svg {
@@ -373,7 +373,7 @@ $component: '#{base.$prefix}-time-picker';
     }
     
     &:active {
-      background-color: t.alpha('primary', 0.12);
+      background-color: t.alpha('primary', v.state('pressed-state-layer-opacity'));
     }
   }
   
