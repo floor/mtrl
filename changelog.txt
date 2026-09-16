@@ -3,6 +3,57 @@ initial commit → latest
 895 commits · Feb 22, 2025 – Sep 16, 2026
 
 
+0.9.1
+
+  A security patch. Five places rendered untrusted input as markup, or assigned a
+  URL without checking its scheme. Component configuration is frequently
+  CMS-shaped, so none of these values are reliably author-controlled.
+
+  Fixed
+
+  - Card: text was interpolated into innerHTML, so an app binding comments or CMS
+    copy to it had an XSS sink with no way to opt out. It is set as text now. The
+    html option is untouched: that is the documented markup path, and text was
+    never documented as accepting markup.
+  - Search: the suggestion label and the query were wrapped in <strong> as a
+    string and fed to innerHTML. The highlight is built from text nodes now. The
+    exploitable case was a suggestion that did not match the query, where the text
+    was passed through unchanged.
+  - Carousel and navigation rail: the slide buttonUrl, the slide image and the
+    destination href accepted javascript: URLs, which turn a styled control into
+    one that runs script when a user clicks it.
+  - createElement: the options spread wrote every unreserved key as an attribute,
+    so spreading CMS-shaped props could attach onclick or onerror. Keys matching
+    /^on[a-z]/i are refused; listeners belong on forwardEvents or addEventListener.
+  - Attributes: href, src and action are scheme-checked at every path that sets
+    them, not at the call sites — the single-attribute fast path, the
+    multi-attribute loop, the batched operations, and a fourth setter in
+    core/dom/utils that also attached on* keys as real listeners.
+
+  Added
+
+  - safeUrl and isSafeUrl in core utils, an allowlist of http, https, mailto, tel,
+    ftp and sms. Relative URLs, fragments and query-only URLs have no scheme and
+    pass, since they cannot execute. A refused URL yields an empty string, leaving
+    an inert control rather than breaking the page around it.
+
+  Not changed
+
+  - The carousel's content option still accepts a string of markup. That is
+    documented behaviour with a node alternative beside it, so narrowing it is a
+    breaking change rather than a fix, and it waits for a version that can carry
+    one.
+
+  → v0.9.1
+
+
+2026-09-16
+
+  chore(size): the slider budget makes room for the URL allowlist
+  fix(components): text is rendered as text, and URLs are checked
+  fix(core): the DOM helpers refuse handlers and check URL schemes
+  feat(core): a URL scheme allowlist
+
 0.9.0
 
   The M3 audit release. Every component that had never been checked against
