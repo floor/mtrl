@@ -6,6 +6,7 @@
 
 import { setAttributes } from "./attributes";
 import { addClass } from "./classes";
+import { safeUrl, URL_ATTRIBUTES } from "../utils/url";
 
 /**
  * Event handler function type
@@ -112,6 +113,11 @@ export interface CreateSVGElementOptions
 export interface EventHandlerStorage {
   [eventName: string]: EventHandler;
 }
+
+/**
+ * Attribute names that install an event handler. Refused by the options spread.
+ */
+const EVENT_HANDLER_ATTRIBUTE = /^on[a-z]/i;
 
 const RESERVED_OPTIONS: Record<string, unknown> = {
   __proto__: null,
@@ -316,12 +322,18 @@ export const createElement = (
     setAttributes(element, options.attributes);
   }
 
-  // Apply other attributes from options spread (rest parameters)
+  // Apply other attributes from options spread (rest parameters).
+  // Event-handler attributes are refused: spreading CMS-shaped props must not be able to
+  // attach onclick or onerror. Listeners belong on forwardEvents or addEventListener.
   for (const key in options) {
-    if (!(key in RESERVED_OPTIONS)) {
+    if (!(key in RESERVED_OPTIONS) && !EVENT_HANDLER_ATTRIBUTE.test(key)) {
       const value = options[key as keyof CreateElementOptions];
       if (value != null) {
-        element.setAttribute(key, String(value));
+        const text = String(value);
+        element.setAttribute(
+          key,
+          URL_ATTRIBUTES.has(key.toLowerCase()) ? safeUrl(text) : text
+        );
       }
     }
   }

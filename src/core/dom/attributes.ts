@@ -1,3 +1,4 @@
+import { safeUrl, URL_ATTRIBUTES } from "../utils/url";
 // src/core/dom/attributes.ts
 /**
  * @module core/dom
@@ -19,12 +20,17 @@ export const setAttributes = <E extends HTMLElement | SVGElement>(
   if (!attributes) return element;
   const values = attributes as Record<string, unknown>;
 
+  // href, src and action are scheme-checked wherever they are set, so a javascript:
+  // URL cannot become a styled control that runs script on click.
+  const attributeValue = (key: string, value: unknown): string =>
+    URL_ATTRIBUTES.has(key.toLowerCase()) ? safeUrl(String(value)) : String(value);
+
   // Fast path: single attribute - avoid Object.keys overhead
   const keys = Object.keys(attributes);
   if (keys.length === 1) {
     const value = values[keys[0]];
     if (value != null) {
-      element.setAttribute(keys[0], String(value));
+      element.setAttribute(keys[0], attributeValue(keys[0], value));
     }
     return element;
   }
@@ -33,7 +39,7 @@ export const setAttributes = <E extends HTMLElement | SVGElement>(
   for (const key in attributes) {
     const value = values[key];
     if (value != null) {
-      element.setAttribute(key, String(value));
+      element.setAttribute(key, attributeValue(key, value));
     }
   }
 
@@ -79,7 +85,10 @@ export const batchAttributes = (
   for (let i = 0; i < operations.length; i++) {
     const op = operations[i];
     if (op.action === "set" && op.value != null) {
-      element.setAttribute(op.key, String(op.value));
+      element.setAttribute(
+        op.key,
+        URL_ATTRIBUTES.has(op.key.toLowerCase()) ? safeUrl(String(op.value)) : String(op.value)
+      );
     } else if (op.action === "remove") {
       element.removeAttribute(op.key);
     }

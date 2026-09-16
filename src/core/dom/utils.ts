@@ -1,3 +1,4 @@
+import { safeUrl, URL_ATTRIBUTES } from "../utils/url";
 // src/core/dom/utils.ts
 
 // Import optimized normalizeClasses from classes module
@@ -36,8 +37,14 @@ export const createElement = <T extends HTMLElement>(
     } else if (key.startsWith("on") && typeof value === "function") {
       const eventName = key.slice(2).toLowerCase();
       element.addEventListener(eventName, value as EventListener);
+    } else if (key.startsWith("on")) {
+      // An `on*` key whose value is not a function would otherwise be written as an
+      // attribute, which is an inline handler. Listeners go through the branch above.
     } else if (value !== null && value !== undefined) {
-      element.setAttribute(key, String(value));
+      element.setAttribute(
+        key,
+        URL_ATTRIBUTES.has(key.toLowerCase()) ? safeUrl(String(value)) : String(value)
+      );
     }
   });
 
