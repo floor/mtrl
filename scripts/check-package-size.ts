@@ -91,7 +91,11 @@ try {
   const fixtures = [
     { name: "addClass", code: "export { addClass } from 'mtrl';", gzip: 900 },
     { name: "button", code: "export { createButton } from 'mtrl';", gzip: 15000 },
-    { name: "slider", code: "export { createSlider } from 'mtrl';", gzip: 11000 },
+    // The URL scheme allowlist is reached through core/dom, so every bundle that builds
+    // an element carries it: +260 here, +256 button, +267 rail, +260 textfield, +243 form,
+    // measured against 0.9.0. The slider simply had the least headroom (10,934 of 11,000).
+    // all-js is 1,353 smaller, the shared code deduplicating across the barrel.
+    { name: "slider", code: "export { createSlider } from 'mtrl';", gzip: 11500 },
     { name: "navigation-rail", code: "export { createNavigationRail } from 'mtrl';", gzip: 7000 },
     { name: "navigation-rail-css", code: "import 'mtrl/styles/base'; import 'mtrl/styles/navigation-rail';", gzip: 6500 },
     { name: "textfield", code: "export { createTextfield } from 'mtrl';", gzip: 8500 },
