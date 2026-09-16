@@ -141,7 +141,9 @@ $container: "#{base.$prefix}-tabs";
     }
 
     // Tab Icon (3. Icon - optional)
-    &-icon {
+    // The icon element the button builds carries mtrl-icon + mtrl-button-icon; a
+    // nested &-icon would concatenate onto the compound root and match nothing.
+    .#{base.$prefix}-button-icon {
         display: flex;
         align-items: center;
         justify-content: center;
@@ -157,44 +159,40 @@ $container: "#{base.$prefix}-tabs";
 
     // Ensure proper vertical spacing for icon and text
     &--icon-and-text {
-        .#{$component}-icon {
+        .#{base.$prefix}-button-icon {
             margin-bottom: 4px;
         }
     }
 
     // Tab Text (4. Label)
-    &-text {
+    .#{base.$prefix}-button-text {
         @include m.truncate;
         max-width: 100%;
         text-align: center;
         line-height: 1.2;
-
-        .#{$component}--icon-only & {
-            @include m.visually-hidden;
-        }
     }
 
-    // Badge positioning (2. Badge - optional)
-    .#{base.$prefix}-badge-wrapper {
-        .#{base.$prefix}-badge {
-            // Position for different tab layouts
-            &--top-right {
-                .#{$component}--icon-only & {
-                    top: 4px;
-                    right: 4px;
-                }
+    // The modifier is on the tab root, so the label is a descendant of &, not of a
+    // second tab.
+    &--icon-only .#{base.$prefix}-button-text {
+        @include m.visually-hidden;
+    }
 
-                .#{$component}--text-only & {
-                    top: 8px;
-                    right: 8px;
-                }
+    // Badge positioning (2. Badge - optional). The layout modifier is on the tab
+    // itself, so these hang off &, not off a nested tab.
+    &--icon-only .#{base.$prefix}-badge-wrapper .#{base.$prefix}-badge--top-right {
+        top: 4px;
+        right: 4px;
+    }
 
-                .#{$component}--icon-and-text & {
-                    top: 4px;
-                    right: calc(50% - 20px);
-                }
-            }
-        }
+    &--text-only .#{base.$prefix}-badge-wrapper .#{base.$prefix}-badge--top-right {
+        top: 8px;
+        right: 8px;
+    }
+
+    &--icon-and-text .#{base.$prefix}-badge-wrapper .#{base.$prefix}-badge--top-right {
+        top: 4px;
+        right: calc(50% - 20px);
     }
 
     // ACTIVE TAB STATES - PRIMARY VARIANT
@@ -203,7 +201,7 @@ $container: "#{base.$prefix}-tabs";
         &--active {
             color: t.color("primary");
             border-radius: 0;
-            .#{$component}-icon {
+            .#{base.$prefix}-button-icon {
                 color: t.color("primary");
             }
 
@@ -262,7 +260,7 @@ $container: "#{base.$prefix}-tabs";
         &--active {
             color: t.color("on-surface");
             border-radius: 0;
-            .#{$component}-icon {
+            .#{base.$prefix}-button-icon {
                 color: t.color("on-surface");
             }
 
@@ -314,27 +312,10 @@ $container: "#{base.$prefix}-tabs";
         }
     }
 
-    // Ripple effect styling
-    .#{$component}-ripple {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        overflow: hidden;
-        border-radius: inherit;
-        pointer-events: none;
-
-        .ripple {
-            position: absolute;
-            border-radius: 50%;
-            transform: scale(0);
-            pointer-events: none;
-            background-color: currentColor;
-            opacity: 0.1;
-            transform-origin: center;
-        }
-    }
+    // No ripple rules here: the ripple feature appends .mtrl-ripple with
+    // .mtrl-ripple-wave children, both styled by the ripple utility in the base
+    // bundle. What stood here addressed .mtrl-button.mtrl-tab-ripple and a bare
+    // .ripple, neither of which is ever emitted, and duplicated the utility besides.
 }
 
 // Tab panel styles
