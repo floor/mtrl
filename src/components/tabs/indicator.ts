@@ -55,7 +55,10 @@ const DEFAULT_CONFIG: TabIndicatorConfig = {
   animationTiming: 'cubic-bezier(0.4, 0, 0.2, 1)',
   visible: true,
   prefix: 'mtrl',
-  variant: 'primary'
+  variant: 'primary',
+  // PrimaryNavigationTabTokens.ActiveIndicatorHeight, which TabRowDefaults.SecondaryIndicator
+  // also takes (TabRow.kt:1080), so both variants are 3dp.
+  height: 3
 };
 
 /**
@@ -74,6 +77,8 @@ export const createTabIndicator = (config: TabIndicatorConfig = {}): TabIndicato
   element.style.transition = `transform ${mergedConfig.animationDuration}ms ${mergedConfig.animationTiming}, 
                              width ${mergedConfig.animationDuration}ms ${mergedConfig.animationTiming}`;
   element.style.width = `${mergedConfig.fixedWidth}px`; // Set initial width
+  // The option was accepted and never read, so the stylesheet's hardcoded heights won.
+  element.style.height = `${mergedConfig.height}px`;
   
   // Set initial visibility
   if (!mergedConfig.visible) {
@@ -101,7 +106,8 @@ export const createTabIndicator = (config: TabIndicatorConfig = {}): TabIndicato
                         tab.element.querySelector(`.${prefix}-button-text`);
       
       if (textElement) {
-        return textElement.clientWidth;
+        // maxOf(contentWidth, 24.dp) — TabRow.kt:461
+        return Math.max(textElement.clientWidth, 24);
       }
       
       // Fallback to dynamic if text element not found
