@@ -33,20 +33,20 @@ export const withSuggestions = () => (component) => {
   /**
    * Highlights text that matches the current search query
    */
-  const highlightMatch = (text: string, query: string): string => {
-    if (!query) return text;
+  const highlightMatch = (text: string, query: string): Node[] => {
+    if (!query) return [document.createTextNode(text)];
 
-    const lowerText = text.toLowerCase();
-    const lowerQuery = query.toLowerCase();
-    const matchIndex = lowerText.indexOf(lowerQuery);
+    const matchIndex = text.toLowerCase().indexOf(query.toLowerCase());
+    if (matchIndex === -1) return [document.createTextNode(text)];
 
-    if (matchIndex === -1) return text;
+    const strong = document.createElement("strong");
+    strong.textContent = text.slice(matchIndex, matchIndex + query.length);
 
-    const beforeMatch = text.slice(0, matchIndex);
-    const match = text.slice(matchIndex, matchIndex + query.length);
-    const afterMatch = text.slice(matchIndex + query.length);
-
-    return `${beforeMatch}<strong>${match}</strong>${afterMatch}`;
+    return [
+      document.createTextNode(text.slice(0, matchIndex)),
+      strong,
+      document.createTextNode(text.slice(matchIndex + query.length)),
+    ];
   };
 
   /**
@@ -95,12 +95,14 @@ export const withSuggestions = () => (component) => {
     }
 
     // Add text with highlighted match
-    createElement({
+    // Nodes, not markup: the query and the suggestion label are both untrusted, and
+    // this fed them through `html` into innerHTML.
+    const label = createElement({
       tag: "span",
       className: getClass(SEARCH_CLASSES.SUGGESTION_TEXT),
       container: item,
-      html: highlightMatch(suggestion.text, query),
     });
+    label.append(...highlightMatch(suggestion.text, query));
 
     return item;
   };

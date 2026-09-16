@@ -4,6 +4,7 @@ import { pipe } from '../../core/compose';
 import { createBase, withElement } from '../../core/compose/component';
 import { createElement } from '../../core/dom/create';
 import { CardContentConfig, CardHeaderConfig, CardMediaConfig, CardActionsConfig } from './types';
+import { safeUrl } from '../../core/utils/url';
 
 // Constants for content padding
 export const CARD_CONTENT_PADDING = true;
@@ -53,12 +54,15 @@ export const createCardContent = (config: CardContentConfig = {}): HTMLElement =
       })
     )(baseConfig);
 
-    // Explicitly set the innerHTML for more reliable rendering
+    // `html` is the explicit markup path and stays as it is. `text` is text: it was
+    // interpolated into innerHTML, so any caller binding user or CMS copy to it had an
+    // XSS sink with no way to opt out.
     if (config.html) {
       content.element.innerHTML = config.html;
     } else if (config.text) {
-      // Wrap text in paragraph for proper formatting
-      content.element.innerHTML = `<p>${config.text}</p>`;
+      const paragraph = document.createElement("p");
+      paragraph.textContent = config.text;
+      content.element.appendChild(paragraph);
     }
 
     // Add children if provided
@@ -318,7 +322,7 @@ export const createCardMedia = (config: CardMediaConfig = {}): HTMLElement => {
     // Otherwise create an image if src is provided
     else if (config.src) {
       const img = document.createElement('img');
-      img.src = config.src;
+      img.src = safeUrl(config.src);
       img.className = `${PREFIX}-card-media-img`;
       
       // Ensure alt text is always provided for accessibility

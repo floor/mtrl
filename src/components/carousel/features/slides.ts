@@ -5,6 +5,7 @@
 // positions are set by the scroll feature.
 
 import { CarouselConfig, CarouselSlide, SlidesAPI } from "../types";
+import { safeUrl } from "../../../core/utils/url";
 
 export interface SlidesComponent {
   element: HTMLElement;
@@ -53,7 +54,7 @@ export const withSlides = (config: CarouselConfig) => <C extends { element: HTML
     if (slide.image) {
       const img = document.createElement("img");
       img.className = `${prefix}__image`;
-      img.src = slide.image;
+      img.src = safeUrl(slide.image);
       img.alt = slide.alt ?? slide.title ?? "";
       img.draggable = false;
       el.appendChild(img);
@@ -77,7 +78,7 @@ export const withSlides = (config: CarouselConfig) => <C extends { element: HTML
         const button = document.createElement("a");
         button.className = `${prefix}__button`;
         button.textContent = slide.buttonText;
-        if (slide.buttonUrl) button.href = slide.buttonUrl;
+        if (slide.buttonUrl) button.href = safeUrl(slide.buttonUrl);
         content.appendChild(button);
       }
       el.appendChild(content);
