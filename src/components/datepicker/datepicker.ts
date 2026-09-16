@@ -330,14 +330,16 @@ const createDatePicker = (
       event.stopPropagation();
     });
 
-    // Handle outside clicks
-    document.addEventListener("click", (event) => {
+    // Handle outside clicks. The handler is kept on the state so destroy()
+    // can take it off the document; an anonymous listener outlived the picker.
+    state.outsideClickHandler = (event: Event) => {
       if (state.isOpen && !component.element.contains(event.target as Node)) {
         state.isOpen = false;
         state.render();
         component.emit("close", { value: state.selectedDate });
       }
-    });
+    };
+    document.addEventListener("click", state.outsideClickHandler);
 
     // Enhance with API
     return withAPI(state, getApiConfig(component))(component);
