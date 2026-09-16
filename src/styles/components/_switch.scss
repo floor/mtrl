@@ -71,7 +71,7 @@ $component: '#{base.$prefix}-switch';
     background-color: t.color('surface-container-highest');
     border: 2px solid t.color('outline');
     @include m.motion-transition(background-color, border-color, outline);
-    
+
     // Ripple effect (consistent size for both hover and press)
     &::after {
       content: '';
@@ -101,7 +101,7 @@ $component: '#{base.$prefix}-switch';
     border-radius: 50%;
     background-color: t.color('outline');
     transform: translateX(0);
-    transition: transform v.motion('duration-medium1') cubic-bezier(0.2, 1.4, 0.35, 1), 
+    transition: transform v.motion('duration-medium1') cubic-bezier(0.2, 1.4, 0.35, 1),
                 background-color v.motion('duration-medium1') v.motion('easing-emphasized'),
                 width v.motion('duration-medium1') v.motion('easing-emphasized'),
                 height v.motion('duration-medium1') v.motion('easing-emphasized'),
@@ -122,7 +122,7 @@ $component: '#{base.$prefix}-switch';
       transform: scale(0);
       transition: all v.motion('duration-short4') v.motion('easing-emphasized');
       color: t.color('primary');
-      
+
       svg {
         width: 14px;
         height: 14px;
@@ -134,7 +134,7 @@ $component: '#{base.$prefix}-switch';
   &-helper {
     @include m.typography('body-medium');
     color: t.color('on-surface-variant');
-    
+
     &--error {
       color: t.color('error');
     }
@@ -145,12 +145,12 @@ $component: '#{base.$prefix}-switch';
     &-container {
       flex-direction: row;
     }
-    
+
     &-content {
       margin-left: 12px;
       margin-right: 0;
     }
-    
+
     // Adjust thumb movement for RTL layout
     &--checked .#{$component}-thumb {
       transform: translateX(-20px);
@@ -162,7 +162,7 @@ $component: '#{base.$prefix}-switch';
     .#{$component}-track {
       background-color: t.color('primary');
       border-color: t.color('primary');
-      
+
       &::after {
         transform: translateX(14px);
       }
@@ -196,29 +196,39 @@ $component: '#{base.$prefix}-switch';
     }
   }
 
-  // Disabled state
+  // Disabled state. SwitchTokens splits these: DisabledTrackOpacity is 0.12, while
+  // the handle carries its own alpha — DisabledUnselectedHandleOpacity 0.38 over
+  // OnSurface, and DisabledSelectedHandleOpacity 1.0 over Surface. A single opacity on
+  // the track cascaded onto the handle, so no part matched its token.
   &--disabled {
     pointer-events: none;
+
     .#{$component}-track {
-      opacity: 0.38;
+      background-color: t.alpha('on-surface', 0.12);
+      border-color: t.alpha('on-surface', 0.12);
     }
-    
+
+    .#{$component}-thumb {
+      background-color: t.alpha('on-surface', 0.38);
+    }
+
     .#{$component}-label, .#{$component}-helper {
-      opacity: 0.38;
+      color: t.alpha('on-surface', 0.38);
+      opacity: 1;
     }
-    
-    // Specific styles for disabled + checked
+
+    // Selected: the track keeps 0.12, and the handle is Surface at full opacity.
     &.#{$component}--checked {
       .#{$component}-track {
-        background-color: t.color('outline');
-        border-color: t.color('outline');
-        opacity: 0.38;
+        background-color: t.alpha('on-surface', 0.12);
+        border-color: transparent;
       }
-      
+
       .#{$component}-thumb {
-        background-color: t.color('surface-dim');
+        background-color: t.color('surface');
+
         &-icon {
-          color: t.color('on-surface');
+          color: t.alpha('on-surface', 0.38);
         }
       }
     }
@@ -239,19 +249,19 @@ $component: '#{base.$prefix}-switch';
         .#{$component}-thumb {
           background-color: t.color('on-surface-variant');
         }
-        
+
         &::after {
           background-color: t.color('on-surface');
           opacity: v.state('hover-state-layer-opacity');
           transform: translateX(-6px);
         }
       }
-      
+
       .#{$component}-input:active ~ .#{$component}-track::after {
         opacity: v.state('pressed-state-layer-opacity');
       }
     }
-    
+
     // Hover/active states for checked
     &.#{$component}--checked {
       .#{$component}-input:hover ~ .#{$component}-track,
@@ -262,7 +272,7 @@ $component: '#{base.$prefix}-switch';
           transform: translateX(14px);
         }
       }
-      
+
       .#{$component}-input:active ~ .#{$component}-track::after {
         opacity: v.state('pressed-state-layer-opacity');
       }
@@ -275,7 +285,7 @@ $component: '#{base.$prefix}-switch';
       top: 0;
       left: 0;
     }
-    
+
     &.#{$component}--checked .#{$component}-input:active ~ .#{$component}-track .#{$component}-thumb {
       left: 0;
     }
@@ -294,12 +304,12 @@ $component: '#{base.$prefix}-switch';
     .#{$component}-track {
       border-width: 2px;
     }
-    
+
     &--checked .#{$component}-track {
       border-color: currentColor;
     }
   }
-  
+
   // Touch target for better mobile experience
   // @include m.touch-target;
 }

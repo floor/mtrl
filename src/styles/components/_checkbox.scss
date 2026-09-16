@@ -135,12 +135,27 @@ $component: '#{base.$prefix}-checkbox';
     }
   }
 
-  // Disabled state
+  // Disabled state. Per role, not a blanket opacity: CheckboxTokens gives the
+  // unselected outline and the selected container OnSurface at 0.38, and the selected
+  // checkmark Surface at full opacity.
   &--disabled {
-    opacity: 0.38;
-    
     .#{$component}-input {
       cursor: not-allowed;
+    }
+
+    .#{$component}-icon {
+      background-color: transparent;
+      border-color: t.alpha('on-surface', 0.38);
+    }
+
+    .#{$component}-input:checked ~ .#{$component}-icon {
+      background-color: t.alpha('on-surface', 0.38);
+      border-color: t.alpha('on-surface', 0.38);
+      color: t.color('surface');
+    }
+
+    .#{$component}-label {
+      color: t.alpha('on-surface', 0.38);
     }
   }
 
@@ -180,7 +195,7 @@ $component: '#{base.$prefix}-checkbox';
       border-radius: 50%;
       background-color: t.color('on-surface');
     }
-    
+
     // Hover state
     .#{$component}-input:hover ~ .#{$component}-icon::before {
       opacity: v.state('hover-state-layer-opacity');
@@ -212,7 +227,7 @@ $component: '#{base.$prefix}-checkbox';
       border-width: 2px;
     }
   }
-  
+
   // Touch target
   // @include m.touch-target;
 }
@@ -222,7 +237,7 @@ $component: '#{base.$prefix}-checkbox';
   display: flex;
   flex-direction: column;
   gap: 8px;
-  
+
   &--horizontal {
     flex-direction: row;
     gap: 16px;
