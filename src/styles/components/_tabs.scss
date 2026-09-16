@@ -28,8 +28,9 @@ $container: "#{base.$prefix}-tabs";
 
         // Primary indicator specific styling
         .#{$container}-indicator {
-            height: 4px;
-            border-radius: 3px 3px 0 0;
+            // Height comes from the indicator's own option, defaulting to
+            // ActiveIndicatorHeight = 3dp; ActiveIndicatorShape is a 3px corner.
+            border-radius: 3px;
             background-color: t.color("primary");
         }
     }
@@ -38,10 +39,25 @@ $container: "#{base.$prefix}-tabs";
         min-height: 48px;
         // Tab indicator styling for secondary variant
         .#{$container}-indicator {
-            height: 2px;
+            // TabRowDefaults.SecondaryIndicator takes the primary token for both the
+            // height and the colour (TabRow.kt:1080-1081).
             border-radius: 0;
-            background-color: t.color("on-surface");
+            background-color: t.color("primary");
         }
+    }
+
+    // A tab is built on a text button, which paints its own ::before state layer in
+    // currentColor. The tab paints its own per-variant layer below, so the button's
+    // would stack a second one over it. Keep the tab's.
+    .#{$component}::before {
+        content: none;
+    }
+
+    // Fixed form: Compose divides the row evenly (tabRowWidth / tabCount,
+    // TabRow.kt:443-447). Without `scrollable` the component never builds a scroll
+    // container, so the tabs are direct children of the root.
+    &:not(&--scrollable) > .#{$component} {
+        flex: 1;
     }
 
     // Scrollable container
@@ -50,6 +66,10 @@ $container: "#{base.$prefix}-tabs";
 
         .#{$container}-scroll {
             display: flex;
+            // ScrollableTabRowEdgeStartPadding, applied at both edges: TabRow.kt:239
+            // documents it as the padding between the starting and ending edge and the
+            // tabs inside the row.
+            padding-inline: 52px;
             overflow-x: auto;
             scrollbar-width: none; // Firefox
             -ms-overflow-style: none; // IE and Edge
