@@ -302,7 +302,11 @@ $icons: (
   &::after {
     content: '';
     position: absolute;
-    inset: 50%;
+    // Not `inset: 50%`: with width and height also set that box is over-constrained,
+    // and the ignored offset is the inline-start one under RTL, which anchors the
+    // target off-centre. Two offsets plus the translate say it unambiguously.
+    top: 50%;
+    inset-inline-start: 50%;
     width: $size;
     height: $size;
     transform: translate(-50%, -50%);
