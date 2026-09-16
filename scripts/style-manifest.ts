@@ -34,6 +34,7 @@ export const componentStyles: Record<string, { source: string; dependencies: str
   "navigation-rail": { source: "components/navigation-rail", dependencies: [] },
   navigation: { source: "components/navigation", dependencies: [] },
   list: { source: "components/list", dependencies: [] },
+  tooltip: { source: "components/tooltip", dependencies: [] },
 };
 
 // Full-bundle-only until the component is finished. Its files are not modified.
