@@ -101,7 +101,9 @@ try {
     { name: "select-css", code: "import 'mtrl/styles/base'; import 'mtrl/styles/select';", gzip: 8000 },
     { name: "slider-css", code: "import 'mtrl/styles/base'; import 'mtrl/styles/slider';", gzip: 6500 },
     // The .43 rail-motion baseline is 47,117 bytes; core ripple adds about 20 bytes.
-    { name: "full-css", code: "import 'mtrl/styles';", gzip: 47500 },
+    // The tooltip stylesheet adds 486 (measured): it was authored but registered in no
+    // bundle, so every budget before this one was set with its CSS missing, not excluded.
+    { name: "full-css", code: "import 'mtrl/styles';", gzip: 48200 },
   ];
   for (const fixture of fixtures) {
     const entry = join(temporary, `${fixture.name}.ts`);
