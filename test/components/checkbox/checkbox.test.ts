@@ -73,6 +73,13 @@ describe('checkbox', () => {
     expect(checkbox.isChecked()).toBe(true);
   });
 
+  test('the name follows setLabel: no aria-label repeating the old text outranks the label', () => {
+    const checkbox = mount({ label: 'Accept' });
+    checkbox.setLabel('Agree');
+    expect(checkbox.input.hasAttribute('aria-label')).toBe(false);
+    expect(checkbox.input.labels?.[0]?.textContent).toBe('Agree');
+  });
+
   test('getLabel() reads the rendered label, and setLabel() changes it', () => {
     const checkbox = mount({ label: 'Remember me' });
     expect(checkbox.getLabel()).toBe('Remember me');
