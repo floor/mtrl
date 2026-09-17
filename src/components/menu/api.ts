@@ -22,7 +22,7 @@ interface ApiOptions {
     getItems: () => MenuContent[];
     setPosition: (position: MenuPosition) => void;
     getPosition: () => MenuPosition;
-    setSelected: (itemId: string) => void;
+    setSelected: (itemId: string | null) => void;
     getSelected: () => string | null;
   };
   opener: {
@@ -187,7 +187,7 @@ const withAPI =
        * @param itemId - ID of the menu item to mark as selected
        * @returns Menu component for chaining
        */
-      setSelected(itemId: string) {
+      setSelected(itemId: string | null) {
         menu.setSelected(itemId);
         return this;
       },

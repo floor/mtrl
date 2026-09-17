@@ -22,7 +22,7 @@ export const createElement = <T extends HTMLElement>(
       element.className = value as string;
     } else if (key === "style" && typeof value === "object") {
       Object.assign(element.style, value);
-    } else if (key === "data" && typeof value === "object") {
+    } else if (key === "data" && value && typeof value === "object") {
       Object.entries(value).forEach(([dataKey, dataValue]) => {
         element.dataset[dataKey] = String(dataValue);
       });

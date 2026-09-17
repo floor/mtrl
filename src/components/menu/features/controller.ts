@@ -64,7 +64,7 @@ const withController = (config: MenuConfig) => (component) => {
   /**
    * Gets the opener element from config
    */
-  const getOpenerElement = (): HTMLElement => {
+  const getOpenerElement = (): HTMLElement | null => {
     // First try to get the resolved opener from the opener feature
     if (component.opener && typeof component.opener.getOpener === "function") {
       return component.opener.getOpener();
@@ -291,7 +291,7 @@ const withController = (config: MenuConfig) => (component) => {
 
       // Search in submenu items
       if ("submenu" in item && Array.isArray((item as MenuItem).submenu)) {
-        for (const subItem of (item as MenuItem).submenu) {
+        for (const subItem of (item as MenuItem).submenu ?? []) {
           if ("id" in subItem && subItem.id === id) {
             return subItem as MenuItem;
           }
