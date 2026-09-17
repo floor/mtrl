@@ -170,6 +170,9 @@ const withOpener = (config: MenuConfig) => (component) => {
       openerElement.addEventListener("blur", handleOpenerBlur);
     }
 
+    // A listbox popup belongs to a combobox, which carries its own ARIA
+    if (config.listbox) return;
+
     // Add ARIA attributes
     openerElement.setAttribute("aria-haspopup", "true");
     openerElement.setAttribute("aria-expanded", "false");
@@ -447,14 +450,14 @@ const withOpener = (config: MenuConfig) => (component) => {
 
   // Listen for menu state changes to update opener
   component.on("open", () => {
-    if (state.openerElement) {
+    if (state.openerElement && !config.listbox) {
       state.openerElement.setAttribute("aria-expanded", "true");
       setOpenerActive(true);
     }
   });
 
   component.on("close", (event) => {
-    if (state.openerElement) {
+    if (state.openerElement && !config.listbox) {
       // Always update ARIA attributes
       state.openerElement.setAttribute("aria-expanded", "false");
       setOpenerActive(false);

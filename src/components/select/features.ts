@@ -126,6 +126,232 @@ const processMenuItems = (options): MenuContent[] => {
 };
 
 /**
+ * Makes the select's input a select-only combobox over the menu's listbox
+ * (WAI-ARIA Authoring Practices, "Select-Only Combobox"). Focus never leaves
+ * the input: the active option is marked with a class and named by
+ * aria-activedescendant, and every key is handled here.
+ */
+const setupCombobox = (
+  component: BaseComponent,
+  menu: NonNullable<BaseComponent["menu"]>,
+  state: { options: SelectOption[]; selectedOption: SelectOption | null },
+  choose: (option: SelectOption, originalEvent?: Event) => void,
+  prefix: string,
+): void => {
+  const input = component.textfield.input as HTMLInputElement;
+  const field = component.textfield.element;
+  const activeClass = `${prefix}-menu-item--active`;
+  const TYPEAHEAD_DELAY = 500;
+  const PAGE = 10;
+
+  input.setAttribute("role", "combobox");
+  input.setAttribute("aria-haspopup", "listbox");
+  input.setAttribute("aria-expanded", "false");
+
+  let active: HTMLElement | null = null;
+  let pending: "selected" | "first" | "last" = "selected";
+  let buffer = "";
+  let bufferTimer: ReturnType<typeof setTimeout> | null = null;
+
+  const options = (): HTMLElement[] =>
+    Array.from(menu.element.querySelectorAll<HTMLElement>('[role="option"]'));
+  const enabled = (): HTMLElement[] =>
+    options().filter((option) => option.getAttribute("aria-disabled") !== "true");
+  const optionFor = (element: HTMLElement | null): SelectOption | undefined =>
+    element
+      ? state.options.find((option) => String(option.id) === element.getAttribute("data-id"))
+      : undefined;
+
+  const setActive = (element: HTMLElement | null): void => {
+    active = element;
+    options().forEach((option) => option.classList.toggle(activeClass, option === element));
+    if (element) {
+      input.setAttribute("aria-activedescendant", element.id);
+      element.scrollIntoView?.({ block: "nearest" });
+    } else {
+      input.removeAttribute("aria-activedescendant");
+    }
+  };
+
+  // Where the active option starts when the listbox opens
+  const placeActive = (): void => {
+    const list = enabled();
+    if (!list.length) return setActive(null);
+    if (pending === "first") return setActive(list[0]);
+    if (pending === "last") return setActive(list[list.length - 1]);
+    const selectedId = state.selectedOption ? String(state.selectedOption.id) : null;
+    setActive(list.find((option) => option.getAttribute("data-id") === selectedId) ?? list[0]);
+  };
+
+  const open = (start: "selected" | "first" | "last", event?: Event): void => {
+    pending = start;
+    menu.open(event, "keyboard");
+  };
+
+  const close = (event?: Event): void => {
+    // Focus is already on the input, and after Tab it has moved on
+    menu.close(event, false);
+  };
+
+  // Select the active option and close
+  const commit = (event?: Event): void => {
+    const option = optionFor(active);
+    if (option) choose(option, event);
+    close(event);
+  };
+
+  const move = (index: number): void => {
+    const list = enabled();
+    if (!list.length) return;
+    setActive(list[Math.max(0, Math.min(index, list.length - 1))]);
+  };
+
+  // Typing moves to the next option starting with what was typed
+  const typeahead = (key: string): boolean => {
+    if (bufferTimer) clearTimeout(bufferTimer);
+    bufferTimer = setTimeout(() => {
+      buffer = "";
+      bufferTimer = null;
+    }, TYPEAHEAD_DELAY);
+    buffer += key.toLowerCase();
+    const list = enabled();
+    const start = active ? list.indexOf(active) + (buffer.length === 1 ? 1 : 0) : 0;
+    const ordered = [...list.slice(start), ...list.slice(0, start)];
+    const match = ordered.find((option) =>
+      (option.textContent || "").trim().toLowerCase().startsWith(buffer),
+    );
+    if (match) setActive(match);
+    return !!match;
+  };
+
+  menu.on("open", () => {
+    input.setAttribute("aria-expanded", "true");
+    const connect = () => {
+      const list = menu.element.querySelector('[role="listbox"]');
+      if (list?.id) input.setAttribute("aria-controls", list.id);
+      placeActive();
+    };
+    // The menu renders its options on the next task after it is created
+    if (options().length) connect();
+    else setTimeout(connect, 0);
+  });
+
+  menu.on("close", () => {
+    input.setAttribute("aria-expanded", "false");
+    input.removeAttribute("aria-controls");
+    setActive(null);
+    pending = "selected";
+  });
+
+  input.addEventListener("keydown", (e: KeyboardEvent) => {
+    if (input.disabled) return;
+    const isOpen = menu.isOpen();
+    const list = enabled();
+    const index = active ? list.indexOf(active) : -1;
+
+    if (e.altKey && e.key === "ArrowDown") {
+      e.preventDefault();
+      if (!isOpen) open("selected", e);
+      return;
+    }
+    if (e.altKey && e.key === "ArrowUp") {
+      e.preventDefault();
+      if (isOpen) commit(e);
+      return;
+    }
+
+    switch (e.key) {
+      case "ArrowDown":
+        e.preventDefault();
+        if (!isOpen) open("selected", e);
+        else move(index + 1);
+        return;
+      case "ArrowUp":
+        e.preventDefault();
+        if (!isOpen) open("selected", e);
+        else move(index - 1);
+        return;
+      case "Home":
+        e.preventDefault();
+        if (!isOpen) open("first", e);
+        else move(0);
+        return;
+      case "End":
+        e.preventDefault();
+        if (!isOpen) open("last", e);
+        else move(list.length - 1);
+        return;
+      case "PageDown":
+        if (!isOpen) return;
+        e.preventDefault();
+        move(index + PAGE);
+        return;
+      case "PageUp":
+        if (!isOpen) return;
+        e.preventDefault();
+        move(index - PAGE);
+        return;
+      case "Enter":
+        e.preventDefault();
+        if (isOpen) commit(e);
+        else open("selected", e);
+        return;
+      case "Escape":
+        if (!isOpen) return;
+        e.preventDefault();
+        close(e);
+        return;
+      case "Tab":
+        // The active option is chosen and focus moves on as usual
+        if (isOpen) commit(e);
+        return;
+      default:
+        break;
+    }
+
+    // Space selects, unless it continues a search already being typed
+    if (e.key === " " && !buffer) {
+      e.preventDefault();
+      if (isOpen) commit(e);
+      else open("selected", e);
+      return;
+    }
+
+    if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      e.preventDefault();
+      if (!isOpen) {
+        open("selected", e);
+        // The options are placed once the listbox has opened
+        setTimeout(() => typeahead(e.key), 0);
+      } else {
+        typeahead(e.key);
+      }
+    }
+  });
+
+  // A press anywhere on the field, its label or icon included, puts focus on
+  // the combobox, as a native select does
+  field.addEventListener("mousedown", (e: MouseEvent) => {
+    if (input.disabled || menu.element.contains(e.target as Node) || e.target === input) return;
+    e.preventDefault();
+    input.focus();
+  });
+
+  // A press on the field opens or closes the listbox; a press inside the
+  // listbox is the option's own
+  field.addEventListener("click", (e: MouseEvent) => {
+    if (input.disabled || menu.element.contains(e.target as Node)) return;
+    if (menu.isOpen()) close(e);
+    else open("selected", e);
+  });
+
+  // Focus leaving the select closes the listbox without choosing
+  input.addEventListener("blur", (e: FocusEvent) => {
+    if (menu.isOpen() && !field.contains(e.relatedTarget as Node)) close(e);
+  });
+};
+
+/**
  * Creates a menu for the select component
  * @param config - Select configuration
  * @returns Function that enhances a component with menu functionality
@@ -155,6 +381,12 @@ export const withMenu =
     // Convert options to menu items with proper recursive processing
     const menuItems = processMenuItems(state.options);
 
+    // A select whose options are flat is a WAI-ARIA select-only combobox: the
+    // input keeps focus and owns the keyboard, and the popup is a listbox whose
+    // active option the input points at. Options with submenus cannot live in a
+    // listbox, so such a select stays a menu button.
+    const listbox = !state.options.some((option) => option && option.hasSubmenu);
+
     const menu = createMenu({
       opener: component.textfield,
       items: menuItems,
@@ -167,8 +399,36 @@ export const withMenu =
       closeOnResize: true,
       offset: 0,
       container: component.element,
+      ...(listbox ? { manualOpen: true, listbox: true, closeOnEscape: false } : {}),
       ...(config.menu ?? {}),
     });
+
+    // Selecting an option, by pointer or by key
+    const choose = (option: SelectOption, originalEvent?: Event) => {
+      state.selectedOption = option;
+
+      // Update textfield
+      component.textfield.setValue(option.text);
+
+      // Update the selected state in the menu
+      menu.setSelected(option.id);
+
+      // Emit change event
+      if (component.emit) {
+        const changeEvent = {
+          select: component,
+          value: option.id,
+          text: option.text,
+          option,
+          originalEvent,
+          preventDefault: () => {
+            changeEvent.defaultPrevented = true;
+          },
+          defaultPrevented: false,
+        };
+        component.emit("change", changeEvent);
+      }
+    };
 
     // Handle menu selection
     menu.on("select", (event) => {
@@ -186,32 +446,15 @@ export const withMenu =
         return;
       }
 
-      state.selectedOption = option;
-
-      // Update textfield
-      component.textfield.setValue(option.text);
-
-      // Update the selected state in the menu
-      menu.setSelected(option.id);
-
-      // Emit change event
-      if (component.emit) {
-        component.emit("change", {
-          select: component,
-          value: option.id,
-          text: option.text,
-          option,
-          originalEvent: event.originalEvent,
-          preventDefault: () => {
-            event.defaultPrevented = true;
-          },
-          defaultPrevented: false,
-        });
-      }
+      choose(option, event.originalEvent);
     });
 
-    // Add keyboard event listener for textfield
-    component.textfield.element.addEventListener("keydown", (e) => {
+    if (listbox) {
+      setupCombobox(component, menu, state, choose, config.prefix || "mtrl");
+    }
+
+    // Add keyboard event listener for textfield (menu-button selects only)
+    if (!listbox) component.textfield.element.addEventListener("keydown", (e) => {
       if (component.textfield.input.disabled) return;
 
       // Handle keyboard-based open

@@ -57,7 +57,8 @@ describe('menu stylesheet', () => {
   test('the focus layer is for keyboard navigation only', () => {
     // Focus moves into the menu however it was opened, so a plain `:focus`
     // marked the first item the moment the menu appeared under the pointer
-    expect(value('.mtrl-menu-item:focus-visible::before', 'opacity')).toBe('0.1');
+    // the active option of a listbox, which keeps focus on its combobox, wears the same layer
+    expect(value('.mtrl-menu-item:focus-visible::before, .mtrl-menu-item--active::before', 'opacity')).toBe('0.1');
     expect(value('.mtrl-menu-item:focus::before', 'opacity')).toBeUndefined();
     expect(value('.mtrl-menu-item:focus', 'outline')).toBe('none');
     // the hover and pressed layers are unaffected
@@ -111,7 +112,7 @@ describe('menu stylesheet', () => {
       expect(value('.mtrl-menu--vertical .mtrl-menu-item', 'padding')).toBe('8px 16px');
       // 4dp at rest, 12dp once it is touched
       expect(value('.mtrl-menu--vertical .mtrl-menu-item', 'border-radius')).toBe('4px');
-      const active = '.mtrl-menu--vertical .mtrl-menu-item:hover, .mtrl-menu--vertical .mtrl-menu-item:focus-visible, .mtrl-menu--vertical .mtrl-menu-item:active';
+      const active = '.mtrl-menu--vertical .mtrl-menu-item:hover, .mtrl-menu--vertical .mtrl-menu-item:focus-visible, .mtrl-menu--vertical .mtrl-menu-item--active, .mtrl-menu--vertical .mtrl-menu-item:active';
       expect(value(active, 'border-radius')).toBe('12px');
       expect(value('.mtrl-menu--vertical .mtrl-menu-item--selected', 'border-radius')).toBe('12px');
       // and the ends of the column round outwards

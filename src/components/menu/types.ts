@@ -268,6 +268,16 @@ export interface MenuConfig {
   manualOpen?: boolean;
 
   /**
+   * Renders the menu as the listbox popup of a combobox (WAI-ARIA select-only
+   * combobox): the list is `role="listbox"` and each item `role="option"` with
+   * its own id, focus stays with the combobox, which owns the keyboard and
+   * points at the active option with `aria-activedescendant`, and the opener
+   * gets no ARIA from the menu. Pair it with `manualOpen`.
+   * @default false
+   */
+  listbox?: boolean;
+
+  /**
    * When true, renders a compact menu with smaller items and tighter spacing.
    * Useful in dense UIs like toolbars and action bars where the standard
    * 48px item height is too large.
@@ -371,9 +381,11 @@ export interface MenuComponent {
   /**
    * Closes the menu
    * @param event - Optional event that triggered the close
+   * @param restoreFocus - Whether focus returns to the opener (default true)
+   * @param skipAnimation - Whether to close without the exit animation
    * @returns The menu component for chaining
    */
-  close: (event?: Event) => MenuComponent;
+  close: (event?: Event, restoreFocus?: boolean, skipAnimation?: boolean) => MenuComponent;
 
   /**
    * Toggles the menu's open state
