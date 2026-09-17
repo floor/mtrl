@@ -126,7 +126,7 @@ describe('dialog', () => {
     last.focus();
     last.dispatchEvent(new dom.window.KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true }));
     expect(document.activeElement).toBe(first);
-    first.dispatchEvent(new dom.window.KeyboardEvent('keydown', { key: 'Tab', key: 'Tab', shiftKey: true, bubbles: true, cancelable: true }));
+    first.dispatchEvent(new dom.window.KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true, cancelable: true }));
     expect(document.activeElement).toBe(last);
   });
 

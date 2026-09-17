@@ -6,7 +6,7 @@ import { PREFIX } from '../../../src/core/config';
 
 // Setup jsdom environment
 let dom: JSDOM;
-let window: Window;
+let window: JSDOM['window'];
 let document: Document;
 let originalGlobalDocument: any;
 let originalGlobalWindow: any;
@@ -28,7 +28,7 @@ beforeAll(() => {
   
   // Set globals to use jsdom
   global.document = document;
-  global.window = window;
+  global.window = window as unknown as Window & typeof globalThis;
   global.Element = window.Element;
   global.HTMLElement = window.HTMLElement;
 });

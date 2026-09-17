@@ -55,7 +55,7 @@ describe('withSize', () => {
         size
       };
       
-      const enhanced = withSize(config)(testComponent);
+      const enhanced = withSize(config)(testComponent as any);
       
       expect(enhanced.element.classList.contains(`${PREFIX}-button--${size}`)).toBe(true);
     });
@@ -72,7 +72,7 @@ describe('withSize', () => {
       size: 'large'
     };
     
-    const enhanced = withSize(config)(componentWithoutElement);
+    const enhanced = withSize(config)(componentWithoutElement as any);
     
     // Should return the same component
     expect(enhanced).toBe(componentWithoutElement);
@@ -109,7 +109,7 @@ describe('withSize', () => {
         size: 'large'
       };
       
-      const enhanced = withSize(config)(testComponent);
+      const enhanced = withSize(config)(testComponent as any);
       
       expect(enhanced.element.classList.contains(`${PREFIX}-${componentName}--large`)).toBe(true);
     });

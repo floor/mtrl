@@ -147,6 +147,6 @@ test('maxWait rescheduling leaves no orphaned debounce timer', async () => {
 });
 test('ripple integrates with a custom lifecycle without a resource scope', () => {
   const base = { ...createBase(), element: document.createElement('div'), destroy() {}, lifecycle: { destroy() {} } };
-  const component = withRipple({ ripple: true })(base); press(component.element);
+  const component = withRipple({ ripple: true })(base as any); press(component.element);
   component.lifecycle.destroy(); released();
 });

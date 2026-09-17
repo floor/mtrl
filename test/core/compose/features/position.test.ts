@@ -103,7 +103,7 @@ describe('withPosition', () => {
         position: positionValue
       };
       
-      const enhanced = withPosition(config)(testComponent);
+      const enhanced = withPosition(config)(testComponent as any);
       
       expect(enhanced.element.classList.contains(`${PREFIX}-tooltip--${positionValue}`)).toBe(true);
       expect(enhanced.position.getPosition()).toBe(positionValue);
@@ -136,7 +136,7 @@ describe('withPosition', () => {
       position: 'top'
     };
     
-    const enhanced = withPosition(config)(componentWithoutElement);
+    const enhanced = withPosition(config)(componentWithoutElement as any);
     
     // Should just return the original component
     expect(enhanced).toBe(componentWithoutElement);

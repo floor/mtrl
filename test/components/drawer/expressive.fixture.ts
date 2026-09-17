@@ -44,10 +44,10 @@ test('re-rendering and destroying release the ripples', () => {
   const d = make();
   const [home] = buttons(d);
   d.setItems([{ id: 'a', label: 'A' }]);
-  expect(home.__rippleContainer).toBeUndefined();
+  expect((home as HTMLElement & { __rippleContainer?: unknown }).__rippleContainer).toBeUndefined();
   const [a] = buttons(d);
   expect(a.querySelector('.mtrl-ripple')).not.toBeNull();
   d.destroy(); drawers.pop();
-  expect(a.__rippleContainer).toBeUndefined();
+  expect((a as HTMLElement & { __rippleContainer?: unknown }).__rippleContainer).toBeUndefined();
   expect(a.querySelector('.mtrl-ripple')).toBeNull();
 });

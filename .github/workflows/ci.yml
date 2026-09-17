@@ -30,6 +30,8 @@ jobs:
         run: bun run lint
       - name: Test file naming
         run: bun run test:naming
+      - name: Test types
+        run: bun run test:types
       - name: Tests
         run: bun test
       - name: Build
