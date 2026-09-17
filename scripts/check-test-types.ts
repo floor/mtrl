@@ -38,7 +38,6 @@ const DRIFTED = [
   "test/components/drawer.test.ts",
   "test/components/list.test.ts",
   "test/components/navigation.test.ts",
-  "test/components/search.test.ts",
   "test/components/select.test.ts",
   "test/components/slider.test.ts",
   "test/components/tabs.test.ts",
