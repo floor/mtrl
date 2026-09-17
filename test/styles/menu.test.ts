@@ -79,10 +79,12 @@ describe('menu stylesheet', () => {
     expect(value('.mtrl-menu-divider', 'background-color')).toBe('var(--mtrl-sys-color-outline-variant)');
   });
 
-  test('it fades in with a scale, and reduced motion drops the scale quietly', () => {
-    expect(value('.mtrl-menu', 'transform')).toBe('scale(0.8)');
-    expect(value('.mtrl-menu--visible', 'transform')).toBe('scale(1)');
-    expect(css).not.toContain('scaleY(');
+  test('it grows in height, closes the same way in reverse, and reduced motion drops the movement quietly', () => {
+    expect(value('.mtrl-menu', 'transform')).toBe('scaleY(0)');
+    expect(value('.mtrl-menu--visible', 'transform')).toBe('scaleY(1)');
+    // one transition for both directions
+    expect(value('.mtrl-menu', 'transition')).toBe('transform 250ms cubic-bezier(0.3, 0, 0, 1), opacity 250ms cubic-bezier(0.3, 0, 0, 1)');
+    expect(value('.mtrl-menu--visible', 'transition')).toBeUndefined();
     expect(css).not.toContain('!important');
     expect(css).toMatch(/prefers-reduced-motion: reduce\)\s*\{[\s\S]{0,300}?transform: none;/);
   });
