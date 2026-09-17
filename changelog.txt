@@ -3,6 +3,32 @@ initial commit → latest
 914 commits · Feb 22, 2025 – Sep 17, 2026
 
 
+0.9.4
+
+  Fixed
+
+  - Components no longer put their name on the root element. createElement wrote
+    name onto whatever it built, so the root of most components carried it on a
+    div, nav, aside or span, where the attribute is invalid. For checkbox,
+    switch, textfield, select, datepicker and radios, both the root and the input
+    were named, so form.querySelector('[name="x"]') and getElementsByName found
+    the component's root before the control that submits the value. name is now
+    written only on elements HTML defines it for; components whose root is a
+    button keep it.
+  - Switch: SWITCH_DEFAULTS.LABEL_POSITION said end while a switch with no
+    labelPosition rendered its label at the start. The label leads, as in M3
+    settings rows, so the constant is now START and the switch reads its default
+    from it. No switch changes appearance; code that passed the constant
+    explicitly will now see its label at the start.
+
+  Removed
+
+  - SWITCH_LABEL_POSITION in switch/types.ts, an unused duplicate of
+    SWITCH_LABEL_POSITIONS that was never exported from the package.
+
+  → v0.9.4
+
+
 0.9.3
 
   A patch from porting component tests off their mocks. The switch and checkbox
