@@ -28,6 +28,13 @@ export type Computation<T, R> = (state: T) => R;
 export type Updater<T> = (state: T) => T;
 
 /**
+ * What derive() returns: call it to remove the derived value, or read the
+ * value, typed, through get(). getState() carries derived values at runtime
+ * but its type is the base state, so this is the typed way to read one.
+ */
+export type DerivedState<R> = (() => void) & { get: () => R };
+
+/**
  * State store interface
  */
 export interface Store<T> {
@@ -35,7 +42,7 @@ export interface Store<T> {
    * Gets current state including derived values
    * @returns Current state
    */
-  getState: () => T;
+  getState: <D extends object = Record<never, never>>() => T & D;
   
   /**
    * Updates state
@@ -56,7 +63,7 @@ export interface Store<T> {
    * @param computation - Function to compute derived value
    * @returns Function to remove derived state
    */
-  derive: <K extends string, R>(key: K, computation: Computation<T, R>) => () => void;
+  derive: <K extends string, R>(key: K, computation: Computation<T, R>) => DerivedState<R>;
   
   /**
    * Selects a specific slice of state
@@ -100,12 +107,12 @@ export const createStore = <T extends object>(
      * Gets current state including derived values
      * @returns Current state
      */
-    getState: (): T => {
+    getState: <D extends object = Record<never, never>>(): T & D => {
       const derivedValues: Record<string, unknown> = {};
       derivedStates.forEach((compute, key) => {
         derivedValues[key] = compute(state);
       });
-      return { ...state, ...derivedValues };
+      return { ...state, ...derivedValues } as T & D;
     },
 
     /**
@@ -136,11 +143,12 @@ export const createStore = <T extends object>(
      * @param computation - Function to compute derived value
      * @returns Function to remove derived state
      */
-    derive: <K extends string, R>(key: K, computation: Computation<T, R>): (() => void) => {
+    derive: <K extends string, R>(key: K, computation: Computation<T, R>): DerivedState<R> => {
       derivedStates.set(key, computation);
-      return () => {
+      const remove = () => {
         derivedStates.delete(key);
       };
+      return Object.assign(remove, { get: () => computation(state) });
     },
 
     /**
