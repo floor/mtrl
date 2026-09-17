@@ -59,9 +59,34 @@ describe('switch', () => {
 
   test('a label renders its text and names the input; no label renders no label element', () => {
     const labelled = mount({ label: 'Wi-Fi' });
-    expect(labelled.element.querySelector('label')?.textContent).toBe('Wi-Fi');
-    expect(labelled.input.getAttribute('aria-label')).toBe('Wi-Fi');
+    const label = labelled.element.querySelector('label')!;
+    expect(label.textContent).toBe('Wi-Fi');
+    expect(labelled.input.id).not.toBe('');
+    expect(label.htmlFor).toBe(labelled.input.id);
+    expect(Array.from(labelled.input.labels ?? [])).toEqual([label]);
     expect(mount().element.querySelector('label')).toBeNull();
+  });
+
+  // F9: the label was created before the input existed, so it linked to
+  // nothing; a click on it did nothing and it named nothing
+  test('clicking the label toggles the switch', () => {
+    const s = mount({ label: 'Wi-Fi' });
+    s.element.querySelector('label')!.click();
+    expect(s.isChecked()).toBe(true);
+    s.element.querySelector('label')!.click();
+    expect(s.isChecked()).toBe(false);
+  });
+
+  test('the name follows setLabel: no aria-label repeating the old text outranks the label', () => {
+    const s = mount({ label: 'Wi-Fi' });
+    s.setLabel('Bluetooth');
+    expect(s.input.hasAttribute('aria-label')).toBe(false);
+    expect(s.input.labels?.[0]?.textContent).toBe('Bluetooth');
+  });
+
+  test('an ariaLabel that differs from the label is kept, and one alone still names the input', () => {
+    expect(mount({ label: 'Wi-Fi', ariaLabel: 'Wireless network' }).input.getAttribute('aria-label')).toBe('Wireless network');
+    expect(mount({ ariaLabel: 'Wireless network' }).input.getAttribute('aria-label')).toBe('Wireless network');
   });
 
   // The published default once said end while a switch rendered its label at

@@ -68,9 +68,11 @@ export const getElementConfig = (config: MenuConfig) => {
   }
 
   // Element attributes
+  // As a listbox popup the surface is only a container: the list inside is
+  // the listbox, and nothing in it takes focus
   const attributes: Record<string, string> = {
-    role: "menu",
-    tabindex: "-1",
+    role: config.listbox ? "presentation" : "menu",
+    ...(config.listbox ? {} : { tabindex: "-1" }),
     "aria-hidden": (!config.visible).toString(),
     style: Object.entries(styles)
       .map(([key, value]) => `${key}: ${value}`)

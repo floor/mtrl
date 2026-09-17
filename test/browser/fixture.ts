@@ -81,10 +81,14 @@ try {
   if (params.get("state") === "open") {
     // Opening positions the menu after 20 ms and focuses it 100 ms later.
     // A fixed 100 ms fixture delay can capture either side of that focus change.
+    // A listbox popup never takes focus: it has settled once its combobox
+    // points at an option inside it, whether or not the combobox has focus.
     const deadline = performance.now() + 5000;
     while (true) {
       const menu = document.querySelector(".mtrl-menu--visible");
+      const active = document.querySelector("[aria-activedescendant]")?.getAttribute("aria-activedescendant");
       if (menu?.contains(document.activeElement)) break;
+      if (active && menu?.querySelector(`[id="${active}"]`)) break;
       if (performance.now() > deadline) throw new Error("Open menu did not receive initial focus");
       await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
     }

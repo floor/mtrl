@@ -158,6 +158,58 @@ describe('textfield', () => {
     expect(field.element.classList.contains('mtrl-textfield--error')).toBe(true);
   });
 
+  // F8: the supporting text and the error were only seen. Nothing tied the
+  // text to the input or marked the input invalid, so a screen reader heard
+  // neither the hint nor the validation
+  test('supporting text describes the input, and stops once removed', () => {
+    const field = mount({ label: 'Email', supportingText: 'We never share it' });
+    const describedBy = () => (field.input.getAttribute('aria-describedby') || '').split(' ').filter(Boolean);
+    expect(describedBy()).toHaveLength(1);
+    expect(document.getElementById(describedBy()[0])?.textContent).toBe('We never share it');
+
+    field.setSupportingText('Work address');
+    expect(document.getElementById(describedBy()[0])?.textContent).toBe('Work address');
+
+    field.removeSupportingText();
+    expect(field.input.hasAttribute('aria-describedby')).toBe(false);
+  });
+
+  test('a description set by the page survives the supporting text coming and going', () => {
+    const field = mount({ label: 'Email' });
+    field.input.setAttribute('aria-describedby', 'page-hint');
+    field.setSupportingText('Helper');
+    expect(field.input.getAttribute('aria-describedby')?.split(' ')).toContain('page-hint');
+    field.removeSupportingText();
+    expect(field.input.getAttribute('aria-describedby')).toBe('page-hint');
+  });
+
+  test('an error marks the input invalid and its message describes it; ending it clears both', () => {
+    const field = mount({ label: 'Email', supportingText: 'We never share it' });
+    expect(field.input.hasAttribute('aria-invalid')).toBe(false);
+
+    field.setError(true, 'Invalid email');
+    expect(field.input.getAttribute('aria-invalid')).toBe('true');
+    const id = field.input.getAttribute('aria-describedby')!;
+    expect(document.getElementById(id)?.textContent).toBe('Invalid email');
+
+    field.setError(false);
+    expect(field.input.hasAttribute('aria-invalid')).toBe(false);
+    expect(document.getElementById(field.input.getAttribute('aria-describedby')!)?.textContent).toBe('We never share it');
+  });
+
+  test('an error from config marks the input invalid', () => {
+    const field = mount({ label: 'x', error: true, supportingText: 'Required' });
+    expect(field.input.getAttribute('aria-invalid')).toBe('true');
+    expect(document.getElementById(field.input.getAttribute('aria-describedby')!)?.textContent).toBe('Required');
+  });
+
+  test('two fields describe themselves with their own text', () => {
+    const a = mount({ label: 'A', supportingText: 'First' });
+    const b = mount({ label: 'B', supportingText: 'Second' });
+    expect(a.input.getAttribute('aria-describedby')).not.toBe(b.input.getAttribute('aria-describedby'));
+    expect(document.getElementById(b.input.getAttribute('aria-describedby')!)?.textContent).toBe('Second');
+  });
+
   test('icon, prefix and suffix slots from config render, and can be removed', () => {
     const field = mount({ label: 'Price', leadingIcon: ICON, trailingIcon: ICON, prefixText: '$', suffixText: 'kg' });
     const slot = (name: string) => field.element.querySelector(`.mtrl-textfield-${name}`);

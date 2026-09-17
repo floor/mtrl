@@ -27,8 +27,9 @@ const createSwitch = (config: SwitchConfig = {}): SwitchComponent => {
       createBase,
       withEvents(), // Move events first to ensure system is available
       withElement(getElementConfig(baseConfig)),
-      withTextLabel(baseConfig),
       withInput(baseConfig),
+      // after the input: the label links itself to an input that exists
+      withTextLabel(baseConfig),
       withTrack(baseConfig),
       withSupportingText(baseConfig),
       withCheckable(baseConfig),

@@ -250,6 +250,8 @@ export const withProgress =
       if (loading && !isLoading) {
         originalText = readLabel() ?? "";
         isLoading = true;
+        // Tell assistive technology the button is working, not merely disabled
+        component.element.setAttribute("aria-busy", "true");
         await component.showProgress();
         // Call disable on the internal disabled manager
         if (component.disabled?.disable) {
@@ -258,6 +260,7 @@ export const withProgress =
         if (text) writeLabel(text);
       } else if (!loading && isLoading) {
         isLoading = false;
+        component.element.removeAttribute("aria-busy");
         await component.hideProgress();
         // Call enable on the internal disabled manager
         if (component.disabled?.enable) {

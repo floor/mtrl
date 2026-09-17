@@ -12,8 +12,8 @@
 // target described by the tooltip, and overwrote any existing description on
 // the new one.
 //
-// Deliberately not asserted: Escape does not dismiss the tooltip and its
-// content cannot be hovered (F20, the accessibility domain).
+// Escape dismisses it and the pointer can rest on it (F20, WCAG 1.4.13):
+// before, nothing handled Escape and the tooltip ignored the pointer.
 import { describe, test, expect, beforeEach } from 'bun:test';
 import { JSDOM } from 'jsdom';
 const dom = new JSDOM('<!DOCTYPE html><html><body></body></html>', { url: 'http://localhost/', pretendToBeVisual: true });
@@ -160,5 +160,45 @@ describe('tooltip', () => {
     tooltip.destroy();
     expect(document.body.contains(tooltip.element)).toBe(false);
     expect(target.hasAttribute('aria-describedby')).toBe(false);
+  });
+
+  test('Escape hides a shown tooltip at once without moving focus', async () => {
+    const tooltip = createTooltip({ text: 'Save the file', target, showDelay: 0 });
+    target.focus();
+    focus(target);
+    await wait(10);
+    expect(tooltip.isVisible()).toBe(true);
+    document.dispatchEvent(new dom.window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    expect(tooltip.isVisible()).toBe(false);
+    expect(tooltip.element.getAttribute('aria-hidden')).toBe('true');
+    expect(document.activeElement).toBe(target);
+  });
+
+  test('Escape is not listened for while the tooltip is hidden, nor after destroy', async () => {
+    const tooltip = createTooltip({ text: 'x', target, showDelay: 0, hideDelay: 0 });
+    hover(target);
+    await wait(10);
+    leave(target);
+    await wait(10);
+    const seen: boolean[] = [];
+    const original = tooltip.hide;
+    tooltip.hide = (...args) => { seen.push(true); return original.apply(tooltip, args); };
+    document.dispatchEvent(new dom.window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    expect(seen).toEqual([]);
+    tooltip.destroy();
+  });
+
+  test('moving the pointer from the target onto the tooltip keeps it shown', async () => {
+    const tooltip = createTooltip({ text: 'Save the file', target, showDelay: 0, hideDelay: 50 });
+    hover(target);
+    await wait(10);
+    leave(target);
+    hover(tooltip.element);
+    await wait(80);
+    expect(tooltip.isVisible()).toBe(true);
+
+    leave(tooltip.element);
+    await wait(80);
+    expect(tooltip.isVisible()).toBe(false);
   });
 });

@@ -121,7 +121,8 @@ export const withInput =
       required: config.required,
       disabled: config.disabled,
       value: config.value || "on",
-      "aria-label": config.label || config.ariaLabel,
+      // an explicit ariaLabel is a choice; the label text is only a fallback
+      "aria-label": config.ariaLabel || config.label,
     };
 
     Object.entries(attributes).forEach(([key, value]) => {
