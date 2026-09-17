@@ -20,6 +20,11 @@ interface ProgressEnhancedComponent {
   };
   setText?: (text: string) => unknown;
   getText?: () => string;
+  /** The label manager withText installs; the setText/getText above only exist after withAPI. */
+  text?: {
+    setText: (text: string) => unknown;
+    getText: () => string;
+  };
   showProgress?: () => Promise<ProgressEnhancedComponent>;
   showProgressSync?: () => ProgressEnhancedComponent;
   hideProgress?: () => Promise<ProgressEnhancedComponent>;
@@ -229,21 +234,28 @@ export const withProgress =
       return component;
     };
 
+    // This feature runs before withAPI, so the component it sees carries the
+    // label as the `text` manager from withText, not the setText/getText the API
+    // adds later on a separate object. Reading only those left every label swap
+    // below unreachable: setLoading(true, "Saving") kept the old label and never
+    // restored it. Prefer the manager; fall back for components built otherwise.
+    const readLabel = (): string | undefined =>
+      component.text ? component.text.getText() : component.getText?.();
+    const writeLabel = (value: string): void => {
+      if (component.text) component.text.setText(value);
+      else component.setText?.(value);
+    };
+
     component.setLoading = async function (loading: boolean, text?: string) {
       if (loading && !isLoading) {
-        // Store original text if we have setText method
-        if (component.setText && component.getText) {
-          originalText = component.getText();
-        }
+        originalText = readLabel() ?? "";
         isLoading = true;
         await component.showProgress();
         // Call disable on the internal disabled manager
         if (component.disabled?.disable) {
           component.disabled.disable();
         }
-        if (text && component.setText) {
-          component.setText(text);
-        }
+        if (text) writeLabel(text);
       } else if (!loading && isLoading) {
         isLoading = false;
         await component.hideProgress();
@@ -251,11 +263,8 @@ export const withProgress =
         if (component.disabled?.enable) {
           component.disabled.enable();
         }
-        if (text && component.setText) {
-          component.setText(text);
-        } else if (originalText && component.setText) {
-          component.setText(originalText);
-        }
+        if (text) writeLabel(text);
+        else if (originalText) writeLabel(originalText);
       }
       return component;
     };
