@@ -48,10 +48,8 @@ $component: "#{base.$prefix}-dialog";
 // (dialog/internal/animations.ts): the surface grows in height, 35% to 100%
 // over 500ms emphasized, while the dialog slides down into place and the
 // headline, content and actions fade in one after another. Closing takes
-// 150ms on emphasized accelerate. The growth is a clip on the dialog, from
-// its top, so nothing paints below the surface's edge and the text never
-// reflows; the clip reaches past the box to leave room for the shadow.
-$clip-room: 48px;
+// 150ms on emphasized accelerate. The growth is a scale of the dialog's
+// height from its top, the motion the menu opens with.
 
 .#{$component} {
     position: relative;
@@ -64,13 +62,12 @@ $clip-room: 48px;
     margin: auto;
     @include m.elevation(3);
 
-    // Hidden: the top 35% of the surface, lifted slightly, not yet painted
-    clip-path: inset(-#{$clip-room} -#{$clip-room} 65% -#{$clip-room});
-    transform: translateY(-50px);
+    // Hidden: 35% of its height, lifted slightly, not yet painted
+    transform-origin: top center;
+    transform: translateY(-50px) scaleY(0.35);
     opacity: 0;
     pointer-events: none;
     transition:
-        clip-path v.motion("duration-short3") v.motion("easing-emphasized-accelerate"),
         transform v.motion("duration-short3") v.motion("easing-emphasized-accelerate"),
         opacity v.motion("duration-short1") linear v.motion("duration-short2");
 
@@ -84,12 +81,10 @@ $clip-room: 48px;
 
     // Visible state
     &--visible {
-        clip-path: inset(-#{$clip-room} -#{$clip-room} -#{$clip-room} -#{$clip-room});
-        transform: translateY(0);
+        transform: translateY(0) scaleY(1);
         opacity: 1;
         pointer-events: auto;
         transition:
-            clip-path v.motion("duration-long2") v.motion("easing-emphasized"),
             transform v.motion("duration-long2") v.motion("easing-emphasized"),
             opacity v.motion("duration-short1") linear;
 
@@ -145,21 +140,21 @@ $clip-room: 48px;
         }
     }
 
-    // The variants change where the dialog comes from; the surface grows in
-    // height either way, which is the M3 motion
+    // The variants change where the dialog comes from; it grows in height
+    // either way, which is the M3 motion
     &--slide-up {
-        transform: translateY(24px);
+        transform: translateY(24px) scaleY(0.35);
 
         &.#{$component}--visible {
-            transform: translateY(0);
+            transform: translateY(0) scaleY(1);
         }
     }
 
     &--slide-down {
-        transform: translateY(-24px);
+        transform: translateY(-24px) scaleY(0.35);
 
         &.#{$component}--visible {
-            transform: translateY(0);
+            transform: translateY(0) scaleY(1);
         }
     }
 
@@ -435,7 +430,6 @@ $clip-room: 48px;
     .#{$component}--slide-down,
     .#{$component}--fullscreen {
         transform: none;
-        clip-path: none;
     }
 }
 

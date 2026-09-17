@@ -65,12 +65,11 @@ describe('dialog stylesheet', () => {
   });
 
   test('it grows into place, and reduced motion drops the movement without shouting', () => {
-    // material-web slides the dialog down 50px as its surface grows from the
-    // top; the growth is a clip, so nothing paints below the surface's edge
-    expect(value('.mtrl-dialog', 'transform')).toBe('translateY(-50px)');
-    expect(value('.mtrl-dialog', 'clip-path')).toBe('inset(-48px -48px 65% -48px)');
-    expect(value('.mtrl-dialog--visible', 'transform')).toBe('translateY(0)');
-    expect(value('.mtrl-dialog--visible', 'clip-path')).toBe('inset(-48px -48px -48px -48px)');
+    // material-web slides the dialog down 50px as its surface grows from
+    // 35% of its height; here the growth is a scale from the top, as the menu
+    expect(value('.mtrl-dialog', 'transform')).toBe('translateY(-50px) scaleY(0.35)');
+    expect(value('.mtrl-dialog', 'transform-origin')).toBe('top center');
+    expect(value('.mtrl-dialog--visible', 'transform')).toBe('translateY(0) scaleY(1)');
     expect(css).not.toContain('scaleY(0)');
     expect(css).not.toContain('!important');
     expect(css).toMatch(/prefers-reduced-motion: reduce\)\s*\{[\s\S]{0,400}?transform: none;/);
