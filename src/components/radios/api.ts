@@ -24,11 +24,9 @@ interface ComponentWithRadio {
   enableOption: (value: string) => void;
   disableOption: (value: string) => void;
   getClass: (name: string) => string;
-  events: {
-    on: (event: string, handler: Function) => void;
-    off: (event: string, handler: Function) => void;
-    emit?: (event: string, data: unknown) => void;
-  };
+  on: (event: string, handler: Function) => void;
+  off: (event: string, handler: Function) => void;
+  emit?: (event: string, data: unknown) => void;
 }
 
 /**
@@ -38,34 +36,8 @@ interface ComponentWithRadio {
  * @internal This is an internal utility for the Radios component
  */
 export const withAPI =
-  ({ disabled, lifecycle }: ApiOptions) =>
+  ({ lifecycle }: ApiOptions) =>
   (component: ComponentWithRadio): RadiosComponent => {
-    // Ensure component has events
-    if (!component.events) {
-      component.events = {
-        on: (event: string, handler: Function) => {
-          component.element.addEventListener(event, ((e: CustomEvent) =>
-            handler(e.detail)) as EventListener);
-        },
-        off: (event: string, handler: Function) => {
-          component.element.removeEventListener(
-            event,
-            handler as EventListener
-          );
-        },
-        emit: (event: string, data: unknown) => {
-          const customEvent = new CustomEvent(event, { detail: data });
-          component.element.dispatchEvent(customEvent);
-        },
-      };
-    } else if (!component.events.emit) {
-      // Add emit method if not present
-      component.events.emit = (event, data) => {
-        const customEvent = new CustomEvent(event, { detail: data });
-        component.element.dispatchEvent(customEvent);
-      };
-    }
-
     const radiosComponent: RadiosComponent = {
       element: component.element,
       radios: component.radios,
@@ -93,13 +65,16 @@ export const withAPI =
         return this;
       },
 
+      // The radio-level enable/disable reach every input and restore options
+      // disabled on their own. The core disabled manager this used to call only
+      // styled the root: the group looked disabled and every radio stayed usable.
       enable() {
-        disabled.enable();
+        component.enable();
         return this;
       },
 
       disable() {
-        disabled.disable();
+        component.disable();
         return this;
       },
 
@@ -114,12 +89,12 @@ export const withAPI =
       },
 
       on(event: string, handler: Function) {
-        component.events.on(event, handler);
+        component.on(event, handler);
         return this;
       },
 
       off(event: string, handler: Function) {
-        component.events.off(event, handler);
+        component.off(event, handler);
         return this;
       },
 

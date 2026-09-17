@@ -107,24 +107,15 @@ export const withRadio = (config: RadiosConfig) => (component) => {
           }
         });
         
-        // Safely emit change event if events exist
-        if (component.events && typeof component.events.emit === 'function') {
-          component.events.emit('change', {
-            value: option.value,
-            originalEvent: e,
-            option
-          });
-        } else if (typeof component.on === 'function') {
-          // Fallback to trigger handlers directly if they were registered with on()
-          const changeEvent = new CustomEvent('change', {
-            detail: {
-              value: option.value,
-              originalEvent: e,
-              option
-            }
-          });
-          component.element.dispatchEvent(changeEvent);
-        }
+        // Through the emitter withEvents installed. This used to dispatch a DOM
+        // CustomEvent named "change" on the root, where the native change event
+        // from the input also bubbles, so every selection reached handlers twice
+        // -- once with this payload and once with undefined.
+        component.emit?.('change', {
+          value: option.value,
+          originalEvent: e,
+          option
+        });
       }
     };
     
@@ -195,22 +186,6 @@ export const withRadio = (config: RadiosConfig) => (component) => {
     config.options.forEach(option => addOption(option));
   }
   
-  // Create events object if it doesn't exist
-  if (!component.events) {
-    component.events = {
-      on: (event, handler) => {
-        component.element.addEventListener(event, (e) => handler(e.detail));
-      },
-      off: (event, handler) => {
-        component.element.removeEventListener(event, handler);
-      },
-      emit: (event, data) => {
-        const customEvent = new CustomEvent(event, { detail: data });
-        component.element.dispatchEvent(customEvent);
-      }
-    };
-  }
-  
   // Return enhanced component
   return {
     ...component,
@@ -219,10 +194,13 @@ export const withRadio = (config: RadiosConfig) => (component) => {
     getValue: () => selectedValue,
     
     setValue: (value: string) => {
-      selectedValue = value;
+      // A value no option carries checks nothing, so it selects nothing:
+      // getValue() must not report a selection the group does not show.
+      const known = radios.some(radio => radio.config.value === value);
+      selectedValue = known ? value : '';
       
       radios.forEach(radio => {
-        radio.input.checked = radio.config.value === value;
+        radio.input.checked = known && radio.config.value === value;
       });
       
       return component;
