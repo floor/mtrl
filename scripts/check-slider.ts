@@ -22,7 +22,10 @@ const bundle = await Bun.build({ entrypoints: [resolve("src/components/slider/in
 assert(bundle.success, String(bundle.logs));
 const js = await bundle.outputs[0].text();
 const size = { raw: Buffer.byteLength(js), gzip: gzipSync(js, { level: 9 }).length };
-assert(size.gzip < 11000, `Slider JS exceeds 11,000 gzip bytes: ${size.gzip}`);
+// The package budget for the slider (check-package-size.ts) moved to 11,500 when the URL
+// allowlist reached every bundle; this copy stayed at 11,000, 17 bytes above the slider
+// (10,983), until linking a label to its input (#67) added 19 and crossed it at 11,002.
+assert(size.gzip < 11500, `Slider JS exceeds 11,500 gzip bytes: ${size.gzip}`);
 const server = Bun.serve({ hostname: "127.0.0.1", port: 0, async fetch(request) {
   const url = new URL(request.url);
   if (url.pathname === "/slider.js") return new Response(js, { headers: { "Content-Type": "text/javascript" } });
