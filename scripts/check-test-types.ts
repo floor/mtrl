@@ -30,7 +30,6 @@ import { execFileSync } from "node:child_process";
 /** Suites that assert against in-file mocks which have drifted (F6). */
 const DRIFTED = [
   "test/components/badge.test.ts",
-  "test/components/bottom-app-bar.test.ts",
   "test/components/card.test.ts",
   "test/components/chip.test.ts",
   "test/components/datepicker.test.ts",
@@ -42,7 +41,6 @@ const DRIFTED = [
   "test/components/slider.test.ts",
   "test/components/textfield.test.ts",
   "test/components/timepicker.test.ts",
-  "test/components/top-app-bar.test.ts",
 ];
 
 const EXCLUDED = new Set(DRIFTED);

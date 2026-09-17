@@ -87,13 +87,11 @@ export const createBottomAppBar = (
         // Scrolling down - hide the bottom bar
         if (isVisible) {
           bottomBar.hide();
-          componentConfig.onVisibilityChange?.(false);
         }
       } else if (currentScrollY < prevScrollY - 10) {
         // Scrolling up - show the bottom bar
         if (!isVisible) {
           bottomBar.show();
-          componentConfig.onVisibilityChange?.(true);
         }
       }
 
@@ -113,6 +111,14 @@ export const createBottomAppBar = (
 
   const bottomBar: BottomAppBar = {
     ...withLifecycleComponent,
+
+    // destroy() goes through the lifecycle. The one spread in above comes from
+    // withElement and only removes the element, so the scroll listener this bar
+    // registers -- removed in lifecycle.destroy -- stayed on window and kept
+    // calling back after the bar was gone.
+    destroy() {
+      withLifecycleComponent.lifecycle.destroy();
+    },
 
     addAction(button: HTMLElement) {
       actionsContainer.appendChild(button);
@@ -134,11 +140,17 @@ export const createBottomAppBar = (
       return this;
     },
 
+    // onVisibilityChange is documented as firing when visibility changes. It
+    // used to be called only from the auto-hide scroll handler, so show() and
+    // hide() changed visibility silently. It is called here, once, and only when
+    // the state actually changes.
     show() {
       this.element.classList.remove(
         `${component.getClass("bottom-app-bar")}--hidden`
       );
+      const changed = !isVisible;
       isVisible = true;
+      if (changed) componentConfig.onVisibilityChange?.(true);
       return this;
     },
 
@@ -146,7 +158,9 @@ export const createBottomAppBar = (
       this.element.classList.add(
         `${component.getClass("bottom-app-bar")}--hidden`
       );
+      const changed = isVisible;
       isVisible = false;
+      if (changed) componentConfig.onVisibilityChange?.(false);
       return this;
     },
 
