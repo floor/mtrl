@@ -3,6 +3,7 @@ import { ButtonComponent } from "./types";
 import { addClass } from "../../core";
 import { ProgressComponent } from "../progress/types";
 
+import { setHTML } from "../../core/dom/html";
 /**
  * API configuration options for button component
  * @category Components
@@ -218,7 +219,7 @@ export const withAPI =
           // Create new icon element when re-adding
           const newIconElement = document.createElement("span");
           newIconElement.className = `${component.getClass("button-icon")}`;
-          newIconElement.innerHTML = icon;
+          setHTML(newIconElement, icon);
 
           // Insert at the beginning of button
           if (component.element.firstChild) {
@@ -238,7 +239,7 @@ export const withAPI =
           // Update existing icon without creating a new one
           const iconElement = component.icon.getElement();
           if (iconElement) {
-            iconElement.innerHTML = icon;
+            setHTML(iconElement, icon);
           }
         }
 

@@ -8,6 +8,7 @@ import {
   SEARCH_ICONS,
 } from "../constants";
 
+import { setHTML } from "../../../core/dom/html";
 /**
  * Adds state management features to the search component
  * Handles bar ↔ view transitions per MD3 specifications
@@ -47,7 +48,7 @@ export const withStates = (config: SearchConfig) => (component) => {
 
     // Update leading icon to back arrow
     if (structure?.leadingIcon) {
-      structure.leadingIcon.innerHTML = SEARCH_ICONS.BACK;
+      setHTML(structure.leadingIcon, SEARCH_ICONS.BACK);
       structure.leadingIcon.setAttribute("aria-label", "Go back");
     }
 
@@ -103,8 +104,7 @@ export const withStates = (config: SearchConfig) => (component) => {
 
     // Update leading icon to search icon
     if (structure?.leadingIcon) {
-      structure.leadingIcon.innerHTML =
-        config.leadingIcon || SEARCH_ICONS.SEARCH;
+      setHTML(structure.leadingIcon, config.leadingIcon || SEARCH_ICONS.SEARCH);
       structure.leadingIcon.setAttribute("aria-label", "Search");
     }
 

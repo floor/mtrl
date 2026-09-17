@@ -2,6 +2,7 @@
 
 import { BaseComponent, ElementComponent } from "../component";
 
+import { setHTML } from "../../dom/html";
 /**
  * Icon manager interface
  */
@@ -109,7 +110,7 @@ const createIcon = (
       iconEl.classList.add(`${PREFIX}-icon--${config.iconSize}`);
     }
 
-    iconEl.innerHTML = html;
+    setHTML(iconEl, html);
     return iconEl;
   };
 
@@ -146,7 +147,7 @@ const createIcon = (
         }
       } else if (iconElement && html) {
         // Update existing icon
-        iconElement.innerHTML = html;
+        setHTML(iconElement, html);
       }
       return this;
     },

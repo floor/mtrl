@@ -5,6 +5,7 @@
 
 import { BaseComponent, ElementComponent } from '../component';
 
+import { setHTML } from "../../dom/html";
 /**
  * Configuration for track feature
  */
@@ -68,7 +69,7 @@ export const withTrack = <T extends TrackConfig>(config: T) =>
     if (config.icon !== 'none') {
       const icon = document.createElement('span');
       icon.className = `${config.prefix}-${config.componentName}-thumb-icon`;
-      icon.innerHTML = config.icon || DEFAULT_ICON;
+      setHTML(icon, config.icon || DEFAULT_ICON);
       thumb.appendChild(icon);
     }
 

@@ -7,6 +7,7 @@ import { mountRailRipple } from './ripple';
 import { createBaseConfig } from './config';
 import type { NavigationRailConfig, NavigationRailComponent, NavigationRailItemConfig } from './types';
 import { safeUrl } from '../../core/utils/url';
+import { setHTML } from "../../core/dom/html";
 const copyItems = (items: NavigationRailItemConfig[]): NavigationRailItemConfig[] => {
     const ids = new Set<string>();
     let selected = false;
@@ -101,7 +102,7 @@ export default function createNavigationRail(config: NavigationRailConfig = {}):
             else
                 element.removeAttribute('aria-current');
             const icon = element.querySelector<HTMLElement>(`.${cls('__icon')}`)!;
-            icon.innerHTML = item.active && item.activeIcon ? item.activeIcon : item.icon;
+            setHTML(icon, item.active && item.activeIcon ? item.activeIcon : item.icon);
         }
     };
     const render = (): void => {
@@ -170,7 +171,7 @@ export default function createNavigationRail(config: NavigationRailConfig = {}):
         toggle?.setAttribute('aria-expanded', String(expanded));
         toggle?.setAttribute('aria-label', (expanded ? options.collapseLabel : options.expandLabel)!);
         if (toggle)
-            toggle.innerHTML = (expanded ? options.collapseIcon : options.expandIcon)!;
+            setHTML(toggle, (expanded ? options.collapseIcon : options.expandIcon)!);
         if (dialog) {
             if (expanded)
                 showModal();

@@ -2,6 +2,7 @@
 import { NavItemConfig } from './types';
 import { NAV_CLASSES } from './constants';
 
+import { setHTML } from "../../core/dom/html";
 /**
  * Creates an expand/collapse icon element
  * @param {string} prefix - CSS class prefix
@@ -10,11 +11,11 @@ import { NAV_CLASSES } from './constants';
 export const createExpandIcon = (prefix: string): HTMLElement => {
   const icon = document.createElement('span');
   icon.className = `${prefix}-${NAV_CLASSES.EXPAND_ICON}`;
-  icon.innerHTML = `
+  setHTML(icon, `
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
       <polyline points="9 18 15 12 9 6"></polyline>
     </svg>
-  `;
+  `);
   return icon;
 };
 
@@ -104,7 +105,7 @@ export const createNavItem = (
   if (config.icon) {
     const icon = document.createElement('span');
     icon.className = `${prefix}-${NAV_CLASSES.ICON}`;
-    icon.innerHTML = config.icon;
+    setHTML(icon, config.icon);
     itemElement.appendChild(icon);
   }
 

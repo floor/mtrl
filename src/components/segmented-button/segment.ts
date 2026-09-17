@@ -4,6 +4,7 @@ import createButton from "../button";
 import { SegmentConfig, Segment } from "./types";
 import { DEFAULT_CHECKMARK_ICON } from "./constants";
 
+import { setHTML } from "../../core/dom/html";
 /**
  * Creates the checkmark element for selected segments
  * MD3 spec: Selected text-only segments show checkmark before text
@@ -15,7 +16,7 @@ import { DEFAULT_CHECKMARK_ICON } from "./constants";
 const createCheckmarkElement = (prefix: string, icon?: string): HTMLElement => {
   const checkmark = document.createElement("span");
   checkmark.className = `${prefix}-segment-checkmark`;
-  checkmark.innerHTML = icon || DEFAULT_CHECKMARK_ICON;
+  setHTML(checkmark, icon || DEFAULT_CHECKMARK_ICON);
   return checkmark;
 };
 
