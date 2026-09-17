@@ -54,12 +54,14 @@ describe('State Store', () => {
   test('should create derived state', () => {
     const store = createStore({ count: 0 });
     
-    store.derive('doubleCount', state => state.count * 2);
+    const doubleCount = store.derive('doubleCount', state => state.count * 2);
     store.setState({ count: 3 });
     
-    // derive() merges its value into getState() at runtime, but the declared
-    // return type is still the base state, so the derived key needs naming here.
-    const state = store.getState() as { count: number; doubleCount: number };
+    // N3: the derived value is typed through the accessor derive() returns,
+    // and getState() can name the derived keys it carries
+    const value: number = doubleCount.get();
+    expect(value).toBe(6);
+    const state = store.getState<{ doubleCount: number }>();
     expect(state.count).toBe(3);
     expect(state.doubleCount).toBe(6);
   });
@@ -68,10 +70,10 @@ describe('State Store', () => {
     const store = createStore({ count: 0 });
     
     const removeDerived = store.derive('doubleCount', state => state.count * 2);
-    expect((store.getState() as { doubleCount?: number }).doubleCount).toBe(0);
+    expect(store.getState<{ doubleCount?: number }>().doubleCount).toBe(0);
     
     removeDerived();
-    expect((store.getState() as { doubleCount?: number }).doubleCount).toBeUndefined();
+    expect(store.getState<{ doubleCount?: number }>().doubleCount).toBeUndefined();
   });
   
   test('should select a slice of state', () => {

@@ -72,6 +72,8 @@ try {
   // Check declaration resolution using strict NodeNext semantics.
   const typeFixture = join(temporary, "types.ts");
   await writeFile(typeFixture, `
+    import 'mtrl/styles';
+    import 'mtrl/styles/button';
     import { createButton, type ButtonConfig, type NavigationRailConfig, type NavigationRailComponent } from 'mtrl';
     import rail from 'mtrl/components/navigation-rail';
     const railConfig: NavigationRailConfig = { expanded: true, layout: 'modal', items: [] };
@@ -86,6 +88,9 @@ try {
   `);
   await run(["node", resolve("node_modules/typescript/bin/tsc"), typeFixture,
     "--noEmit", "--strict", "--module", "NodeNext", "--moduleResolution", "NodeNext",
+    // Side-effect imports are unchecked by default; this is the setting under
+    // which `import 'mtrl/styles'` needs its types condition
+    "--noUncheckedSideEffectImports",
     "--target", "ES2020", "--types", "node", "--typeRoots", resolve("node_modules/@types")]);
 
   const fixtures = [
