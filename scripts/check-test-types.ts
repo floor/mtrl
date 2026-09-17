@@ -35,7 +35,6 @@ const DRIFTED = [
   "test/components/divider.test.ts",
   "test/components/drawer.test.ts",
   "test/components/list.test.ts",
-  "test/components/slider.test.ts",
   "test/components/timepicker.test.ts",
 ];
 

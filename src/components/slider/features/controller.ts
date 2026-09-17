@@ -2,6 +2,7 @@
 import { SLIDER_EVENTS } from "../types";
 import { SliderConfig } from "../types";
 import { SLIDER_MEASUREMENTS } from "../constants";
+import { defaultConfig } from "../config";
 import { createHandlers } from "./handlers";
 
 /**
@@ -177,8 +178,23 @@ export const withController = (config: SliderConfig) => (component) => {
     }
 
     // Update ARIA attributes
-    if (handle) {
-      handle.setAttribute("aria-valuenow", String(state.value));
+    updateHandleAria(handle, state.value);
+    if (config.range && secondHandle && state.secondValue !== null) {
+      updateHandleAria(secondHandle, state.secondValue);
+    }
+  };
+
+  /**
+   * Syncs a handle's current value attributes; aria-valuetext only
+   * carries a custom valueFormatter's text (the default adds nothing).
+   */
+  const updateHandleAria = (handleElement: HTMLElement, value: number) => {
+    handleElement.setAttribute("aria-valuenow", String(value));
+    if (
+      config.valueFormatter &&
+      config.valueFormatter !== defaultConfig.valueFormatter
+    ) {
+      handleElement.setAttribute("aria-valuetext", config.valueFormatter(value));
     }
   };
 
