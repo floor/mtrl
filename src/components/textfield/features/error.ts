@@ -28,6 +28,7 @@ export interface ErrorConfig {
  */
 interface ComponentWithSupportingText extends ElementComponent {
   setSupportingText?: (text: string, isError?: boolean) => void;
+  removeSupportingText?: () => void;
   supportingTextElement?: HTMLElement | null;
 }
 
@@ -69,6 +70,10 @@ export const withError =
 
     // Track error state
     let errorState = config.error || false;
+    // The supporting text an error message displaced, so ending the error can put
+    // it back. Without this, setError(false) re-applied whatever was showing --
+    // the error message itself -- as ordinary helper text.
+    let displacedText: string | null = null;
 
     // Apply initial error state if configured
     if (errorState) {
@@ -91,11 +96,20 @@ export const withError =
         // If message is provided and component has supporting text capability
         if (message !== undefined && component.setSupportingText) {
           if (message) {
+            if (error && displacedText === null) {
+              displacedText = component.supportingTextElement?.textContent ?? "";
+            }
             component.setSupportingText(message, error);
           } else if (!error) {
             // Clear supporting text if removing error with empty message
             component.setSupportingText("", false);
+            displacedText = null;
           }
+        } else if (!error && displacedText !== null && component.setSupportingText) {
+          // Ending an error that replaced the helper text: restore what was there.
+          if (displacedText) component.setSupportingText(displacedText, false);
+          else component.removeSupportingText?.();
+          displacedText = null;
         } else if (
           component.supportingTextElement &&
           component.setSupportingText
