@@ -604,20 +604,16 @@ export const withVisibility = () => (component) => {
       if (component.overlay && !component.overlay.parentNode) {
         const container = component.structure.container || document.body;
         container.appendChild(component.overlay);
-        // An element inserted and made visible in the same frame has no state
-        // to animate from, so the scrim appeared at once while it faded on the
-        // way out. Reading a layout value paints the closed state first.
-        void component.overlay.offsetHeight;
       }
 
-      // Show the overlay
-      addClass(
-        component.overlay,
-        `${component.getClass("dialog-overlay")}--visible`,
-      );
-
-      // Show the dialog
+      // Show the overlay and the dialog together, in a later task: an element
+      // inserted and made visible in the same task has no state to animate
+      // from, so the scrim appeared at once while it faded on the way out
       setTimeout(() => {
+        addClass(
+          component.overlay,
+          `${component.getClass("dialog-overlay")}--visible`,
+        );
         addClass(component.element, `${component.getClass("dialog")}--visible`);
 
         // Setup focus trap and events
