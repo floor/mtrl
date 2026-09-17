@@ -1,10 +1,12 @@
 // src/components/tooltip/api.ts
 import {
   TooltipComponent,
+  TooltipConfig,
   TOOLTIP_POSITIONS,
   TooltipPosition,
   DEFAULT_OFFSET,
 } from "./types";
+import { TOOLTIP_DEFAULTS } from "./constants";
 
 interface ApiOptions {
   lifecycle: {
@@ -28,14 +30,32 @@ export const withAPI =
   (component: ComponentWithElements): TooltipComponent => {
     // Set up internal state
     let target: HTMLElement | null = null;
-    let position: TooltipPosition = TOOLTIP_POSITIONS.BOTTOM;
+    // Read from the component's config. These were constants, so position,
+    // showDelay, hideDelay, showOnHover and showOnFocus -- all documented
+    // options -- had no effect, and getPosition() reported bottom whatever the
+    // tooltip was created with.
+    const config = (component as { config?: Partial<TooltipConfig> }).config ?? {};
+    let position = (config.position ?? TOOLTIP_DEFAULTS.POSITION) as TooltipPosition;
     let isVisible = false;
     let showTimer: number | null = null;
     let hideTimer: number | null = null;
-    const showDelay = 300;
-    const hideDelay = 100;
-    const showOnFocus = true;
-    const showOnHover = true;
+    const showDelay = config.showDelay ?? TOOLTIP_DEFAULTS.SHOW_DELAY;
+    const hideDelay = config.hideDelay ?? TOOLTIP_DEFAULTS.HIDE_DELAY;
+    const showOnFocus = config.showOnFocus !== false;
+    const showOnHover = config.showOnHover !== false;
+
+    // aria-describedby is a list. Add and remove only this tooltip's id, so an
+    // existing description survives and a previous target stops pointing here.
+    const describe = (el: HTMLElement) => {
+      const ids = (el.getAttribute("aria-describedby") ?? "").split(/\s+/).filter(Boolean);
+      if (!ids.includes(component.element.id)) ids.push(component.element.id);
+      el.setAttribute("aria-describedby", ids.join(" "));
+    };
+    const undescribe = (el: HTMLElement) => {
+      const ids = (el.getAttribute("aria-describedby") ?? "").split(/\s+/).filter((id) => id && id !== component.element.id);
+      if (ids.length) el.setAttribute("aria-describedby", ids.join(" "));
+      else el.removeAttribute("aria-describedby");
+    };
 
     // Create arrow element
     const arrowElement = document.createElement("div");
@@ -287,6 +307,7 @@ export const withAPI =
         // Remove events from old target
         if (target) {
           removeTargetEvents(target);
+          undescribe(target);
         }
 
         // Set new target
@@ -294,7 +315,7 @@ export const withAPI =
         this.target = newTarget;
 
         // Set target's aria attributes
-        target.setAttribute("aria-describedby", component.element.id);
+        describe(target);
 
         // Add events to new target
         addTargetEvents(target);
@@ -420,7 +441,7 @@ export const withAPI =
         // Remove target events
         if (target) {
           removeTargetEvents(target);
-          target.removeAttribute("aria-describedby");
+          undescribe(target);
         }
 
         // Remove window events

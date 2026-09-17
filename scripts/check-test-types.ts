@@ -44,7 +44,6 @@ const DRIFTED = [
   "test/components/tabs.test.ts",
   "test/components/textfield.test.ts",
   "test/components/timepicker.test.ts",
-  "test/components/tooltip.test.ts",
   "test/components/top-app-bar.test.ts",
 ];
 
