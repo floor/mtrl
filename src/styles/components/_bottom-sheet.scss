@@ -1,5 +1,6 @@
 // src/styles/components/_bottom-sheet.scss
 @use "../abstract/base" as base;
+@use "../abstract/functions" as f;
 @use "../abstract/variables" as v;
 @use "../abstract/mixins" as m;
 @use "../abstract/theme" as t;
@@ -39,9 +40,11 @@ $component: "#{base.$prefix}-bottom-sheet";
         background-color: t.alpha("scrim", 0.32);
         opacity: 0;
         visibility: hidden;
+        // Compose's ModalBottomSheet fades its scrim on default effects both
+        // ways; it leaves the accessibility tree once the fade is done
         transition:
-            opacity v.motion("duration-medium1") v.motion("easing-emphasized"),
-            visibility v.motion("duration-medium1") v.motion("easing-emphasized");
+            m.spring(opacity, default-effects),
+            visibility 0s linear m.spring-duration(default-effects);
     }
 
     // The sheet itself
@@ -61,11 +64,16 @@ $component: "#{base.$prefix}-bottom-sheet";
         // CornerExtraLargeTop: the bottom edge meets the screen, so it is square
         border-start-start-radius: v.shape("extra-large");
         border-start-end-radius: v.shape("extra-large");
-        @include m.elevation(1); // DockedStandardContainerElevation
+        // Level 1 (DockedStandardContainerElevation), plus a shadow of the
+        // sheet's own colour below it to cover the gap the spring's overshoot
+        // opens at the bottom edge
+        box-shadow: f.get-elevation(1), 0 m.$sheet-overshoot-guard 0 0 t.color("surface-container-low");
 
-        // Hidden by default: translated fully out of view
+        // Hidden by default: translated fully out of view. Compose's
+        // BottomSheet shows on the default spatial spring and hides on fast
+        // effects
         transform: translateY(100%);
-        transition: transform v.motion("duration-medium2") v.motion("easing-emphasized");
+        transition: m.spring(transform, fast-effects);
 
         &:focus {
             outline: none;
@@ -123,11 +131,13 @@ $component: "#{base.$prefix}-bottom-sheet";
             // the page (BottomSheetDefaults.SheetPeekHeight and its content)
             transform: translateY(0);
             max-height: 50%;
+            transition: m.spring(transform, default-spatial);
         }
 
         .#{$component}-scrim {
             opacity: 1;
             visibility: visible;
+            transition: m.spring(opacity, default-effects), visibility 0s;
         }
     }
 
@@ -135,6 +145,7 @@ $component: "#{base.$prefix}-bottom-sheet";
         .#{$component}-container {
             transform: translateY(0);
             max-height: 100%;
+            transition: m.spring(transform, default-spatial);
             // level with the top of the screen, the corners square off
             // (DockedMinimizedContainerShape is CornerNone)
             &:where(.#{$component}--full-height *) {
@@ -146,6 +157,7 @@ $component: "#{base.$prefix}-bottom-sheet";
         .#{$component}-scrim {
             opacity: 1;
             visibility: visible;
+            transition: m.spring(opacity, default-effects), visibility 0s;
         }
     }
 
@@ -160,7 +172,11 @@ $component: "#{base.$prefix}-bottom-sheet";
 
     @include m.reduced-motion {
         .#{$component}-container,
-        .#{$component}-scrim {
+        .#{$component}-scrim,
+        &--partial .#{$component}-container,
+        &--partial .#{$component}-scrim,
+        &--expanded .#{$component}-container,
+        &--expanded .#{$component}-scrim {
             transition: none;
         }
     }

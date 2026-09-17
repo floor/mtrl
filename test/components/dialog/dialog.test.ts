@@ -205,4 +205,45 @@ describe('dialog', () => {
     expect(document.body.contains(overlay)).toBe(false);
     expect(document.body.style.overflow).toBe('');
   });
+
+  // The stylesheet closes on the fast effects spring (175ms) and opens on the
+  // default spatial spring (450ms); see test/styles/sheet-motion.test.ts
+  test('a closing dialog stays on the page until its fade has finished', async () => {
+    const dialog = createDialog({ title: 'Delete file?', buttons });
+    await opened(dialog);
+    const overlay = dialog.element.parentElement!;
+    const seen: string[] = [];
+    dialog.on('afterclose', () => seen.push('afterclose'));
+    dialog.close();
+    await after(150);
+    expect(document.body.contains(overlay)).toBe(true);
+    expect(seen).toEqual([]);
+    await after(60);
+    expect(document.body.contains(overlay)).toBe(false);
+    expect(seen).toEqual(['afterclose']);
+  });
+
+  test('afteropen waits for the opening spring to settle', async () => {
+    const dialog = createDialog({ title: 'Delete file?', buttons });
+    const seen: string[] = [];
+    dialog.on('afteropen', () => seen.push('afteropen'));
+    dialog.open();
+    await after(300);
+    expect(seen).toEqual([]);
+    await after(200);
+    expect(seen).toEqual(['afteropen']);
+    dialog.close();
+  });
+
+  test('a configured animationDuration still sets both waits', async () => {
+    const dialog = createDialog({ title: 'Delete file?', buttons, animationDuration: 40 });
+    const seen: string[] = [];
+    dialog.on('afteropen', () => seen.push('afteropen'));
+    dialog.on('afterclose', () => seen.push('afterclose'));
+    dialog.open();
+    await after(80);
+    dialog.close();
+    await after(60);
+    expect(seen).toEqual(['afteropen', 'afterclose']);
+  });
 });

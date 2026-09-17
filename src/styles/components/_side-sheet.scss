@@ -1,5 +1,6 @@
 // src/styles/components/_side-sheet.scss
 @use "../abstract/base" as base;
+@use "../abstract/functions" as f;
 @use "../abstract/variables" as v;
 @use "../abstract/mixins" as m;
 @use "../abstract/theme" as t;
@@ -35,9 +36,11 @@ $component: "#{base.$prefix}-side-sheet";
         background-color: t.alpha("scrim", 0.32);
         opacity: 0;
         visibility: hidden;
+        // Closing fades on fast effects, and the scrim leaves the
+        // accessibility tree only once the fade is done
         transition:
-            opacity v.motion("duration-medium1") v.motion("easing-emphasized"),
-            visibility v.motion("duration-medium1") v.motion("easing-emphasized");
+            m.spring(opacity, fast-effects),
+            visibility 0s linear m.spring-duration(fast-effects);
     }
 
     &-container {
@@ -49,7 +52,10 @@ $component: "#{base.$prefix}-side-sheet";
         box-sizing: border-box;
         pointer-events: auto;
         color: t.color("on-surface");
-        transition: transform v.motion("duration-medium2") v.motion("easing-emphasized");
+        // Motion follows the drawer, the closest Compose surface: open on the
+        // default spatial spring, which M3 names for surfaces that partly
+        // cover the screen, and close on fast effects
+        transition: m.spring(transform, fast-effects);
 
         &:focus {
             outline: none;
@@ -123,12 +129,29 @@ $component: "#{base.$prefix}-side-sheet";
             background-color: t.color("surface");
             pointer-events: auto;
         }
+
+        // Cover the gap the spring's overshoot opens at the docked edge
+        &.#{$component}--end .#{$component}-container {
+            box-shadow: m.$sheet-overshoot-guard 0 0 0 t.color("surface");
+        }
+
+        &.#{$component}--start .#{$component}-container {
+            box-shadow: (-1 * m.$sheet-overshoot-guard) 0 0 0 t.color("surface");
+        }
     }
 
     &--modal {
         .#{$component}-container {
             background-color: t.color("surface-container-low");
             @include m.elevation(1);
+        }
+
+        &.#{$component}--end .#{$component}-container {
+            box-shadow: f.get-elevation(1), m.$sheet-overshoot-guard 0 0 0 t.color("surface-container-low");
+        }
+
+        &.#{$component}--start .#{$component}-container {
+            box-shadow: f.get-elevation(1), (-1 * m.$sheet-overshoot-guard) 0 0 0 t.color("surface-container-low");
         }
     }
 
@@ -158,17 +181,23 @@ $component: "#{base.$prefix}-side-sheet";
     &--open {
         .#{$component}-container {
             transform: translateX(0);
+            transition: m.spring(transform, default-spatial);
         }
 
+        // Opacity past 1 is clamped, so the scrim takes the sheet's timing
+        // without overshooting
         .#{$component}-scrim {
             opacity: 1;
             visibility: visible;
+            transition: m.spring(opacity, default-spatial), visibility 0s;
         }
     }
 
     @include m.reduced-motion {
         .#{$component}-container,
-        .#{$component}-scrim {
+        .#{$component}-scrim,
+        &--open .#{$component}-container,
+        &--open .#{$component}-scrim {
             transition: none;
         }
     }

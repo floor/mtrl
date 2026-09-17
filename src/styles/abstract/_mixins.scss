@@ -71,6 +71,32 @@ $icons: (
 }
 
 // Motion
+//
+// One transition on an M3 Expressive spring token: `spring(transform,
+// default-spatial)`. Spatial springs move position, size and shape and may
+// overshoot; effects springs change opacity and colour and never do.
+// A delay lets a property wait for another transition, such as visibility
+// flipping to hidden only once a fade has finished.
+@function spring($property, $token, $delay: null) {
+  $transition: $property v.motion('spring-#{$token}-duration') v.motion('spring-#{$token}-easing');
+  @if $delay {
+    $transition: list.append($transition, $delay);
+  }
+  @return $transition;
+}
+
+// How long a spring token takes to settle, for delays tied to it.
+@function spring-duration($token) {
+  @return v.motion('spring-#{$token}-duration');
+}
+
+// Sheets that slide in on a spatial spring overshoot their resting place, so
+// for a moment a gap would open between the sheet and the screen edge it is
+// docked to. Compose stretches the sheet over that gap; a solid shadow of the
+// sheet's own colour, extended past the docked edge, covers it without a scale.
+// The spring overshoots by about 1.5% of the distance travelled.
+$sheet-overshoot-guard: 32px;
+
 @mixin motion-transition($properties...) {
   $transitions: ();
   @each $prop in $properties {

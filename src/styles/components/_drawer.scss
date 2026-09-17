@@ -27,9 +27,14 @@ $default-width: 360px;
     &--open {
         pointer-events: auto;
 
+        // Motion follows Compose's ModalNavigationDrawer: the sheet opens on
+        // the default spatial spring and closes on fast effects, and the scrim's
+        // opacity rides with the sheet. Opacity past 1 is clamped, so the scrim
+        // takes the spatial timing without overshooting.
         .#{$component}__sheet {
             transform: translateX(0);
             visibility: visible;
+            transition: m.spring(transform, default-spatial);
         }
 
         .#{$component}__scrim {
@@ -38,6 +43,7 @@ $default-width: 360px;
 
         .#{$component}__scrim--visible {
             opacity: 1;
+            transition: m.spring(opacity, default-spatial);
         }
     }
 
@@ -117,18 +123,40 @@ $default-width: 360px;
         overflow: hidden;
         // Closed: collapse to 0. --#{base.$prefix}-drawer-width is set inline by the JS component.
         width: 0;
-        transition: width v.motion("duration-short4")
-            v.motion("easing-standard");
+        // Compose's DismissibleNavigationDrawer: open on the default spatial
+        // spring, close on fast effects
+        transition: m.spring(width, fast-effects);
 
         .#{$component}__sheet {
             position: relative;
             background-color: t.color("surface");
             @include m.elevation(0);
+            // While the width overshoots, the sheet stretches with it rather
+            // than leaving a strip between its edge and the page
+            min-width: 100%;
+        }
+
+        // The growing width is the slide: the sheet hangs from the edge facing
+        // the page, so it follows that edge without a transform of its own. A
+        // transform on the same spring would carry the sheet off the screen
+        // edge while it overshoots, where the root clips anything covering the gap.
+        &.#{$component}--start .#{$component}__sheet {
+            align-self: flex-end;
+        }
+
+        &.#{$component}--end .#{$component}__sheet {
+            align-self: flex-start;
+        }
+
+        &.#{$component} .#{$component}__sheet,
+        &.#{$component}--open .#{$component}__sheet {
+            transform: none;
         }
 
         // Open — expand to the concrete width value via custom property
         &.#{$component}--open {
             width: var(--#{base.$prefix}-drawer-width, $default-width);
+            transition: m.spring(width, default-spatial);
         }
 
         // Border on the end edge (standard variant visual separator)
@@ -186,6 +214,25 @@ $default-width: 360px;
             background-color: t.color("surface-container-low");
             @include m.elevation(1);
         }
+
+        // Cover the gap the spring's overshoot opens at the docked edge
+        &.#{$component}--start .#{$component}__sheet {
+            box-shadow: f.get-elevation(1), (-1 * m.$sheet-overshoot-guard) 0 0 0 t.color("surface-container-low");
+        }
+
+        &.#{$component}--end .#{$component}__sheet {
+            box-shadow: f.get-elevation(1), m.$sheet-overshoot-guard 0 0 0 t.color("surface-container-low");
+        }
+
+        @include m.rtl {
+            &.#{$component}--start .#{$component}__sheet {
+                box-shadow: f.get-elevation(1), m.$sheet-overshoot-guard 0 0 0 t.color("surface-container-low");
+            }
+
+            &.#{$component}--end .#{$component}__sheet {
+                box-shadow: f.get-elevation(1), (-1 * m.$sheet-overshoot-guard) 0 0 0 t.color("surface-container-low");
+            }
+        }
     }
 
     // ========================================================================
@@ -202,7 +249,7 @@ $default-width: 360px;
         overflow-x: hidden;
         box-sizing: border-box;
         padding: 12px 0;
-        @include m.motion-transition(transform);
+        transition: m.spring(transform, fast-effects);
 
         // Smooth scrollbar
         scrollbar-width: thin;
@@ -223,7 +270,7 @@ $default-width: 360px;
         opacity: 0;
         pointer-events: none;
         z-index: -1;
-        @include m.motion-transition(opacity);
+        transition: m.spring(opacity, fast-effects);
     }
 
     // ========================================================================
@@ -555,12 +602,18 @@ $default-width: 360px;
     // ========================================================================
 
     @include m.reduced-motion {
-        &--standard { transition: none; }
-        &__sheet {
+        &--standard,
+        &--standard.#{$component}--open {
             transition: none;
         }
 
-        &__scrim {
+        &__sheet,
+        &--open .#{$component}__sheet {
+            transition: none;
+        }
+
+        &__scrim,
+        &--open .#{$component}__scrim--visible {
             transition: none;
         }
 
