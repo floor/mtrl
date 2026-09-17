@@ -28,6 +28,8 @@ jobs:
         run: bun run ts:check
       - name: Lint
         run: bun run lint
+      - name: Test file naming
+        run: bun run test:naming
       - name: Tests
         run: bun test
       - name: Build
