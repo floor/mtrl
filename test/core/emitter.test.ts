@@ -138,4 +138,35 @@ describe('Event Emitter', () => {
       emitter.emit('nonexistent');
     }).not.toThrow();
   });
+
+  // F24: callbacks ran in a bare forEach, so one that threw aborted every
+  // later listener; on unmount that stopped teardown part-way
+  test('a throwing listener is reported and does not stop the others', () => {
+    const emitter = createEmitter();
+    const seen: string[] = [];
+    const reported: unknown[] = [];
+    const error = console.error;
+    console.error = (...args: unknown[]) => { reported.push(args); };
+    try {
+      emitter.on('unmount', () => { seen.push('first'); });
+      emitter.on('unmount', () => { throw new Error('boom'); });
+      emitter.on('unmount', () => { seen.push('third'); });
+      expect(() => emitter.emit('unmount')).not.toThrow();
+    } finally {
+      console.error = error;
+    }
+    expect(seen).toEqual(['first', 'third']);
+    expect(reported).toHaveLength(1);
+    expect(String(reported[0])).toContain('unmount');
+  });
+
+  test('a listener that removes itself while emitting does not skip the next one', () => {
+    const emitter = createEmitter();
+    const seen: string[] = [];
+    const off = emitter.on('x', () => { seen.push('a'); off(); });
+    emitter.on('x', () => { seen.push('b'); });
+    emitter.emit('x');
+    emitter.emit('x');
+    expect(seen).toEqual(['a', 'b', 'b']);
+  });
 });

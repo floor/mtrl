@@ -81,8 +81,18 @@ export const createEmitter = (): Emitter => {
      */
     emit: (event: string, ...args: unknown[]): void => {
       const callbacks = events.get(event) || [];
-      // Callbacks declare their own argument types; emit forwards whatever it receives
-      callbacks.forEach(cb => (cb as (...args: unknown[]) => void)(...args));
+      // Each listener runs on its own: one that throws is reported and the
+      // rest still run. Before, a throwing consumer aborted every later
+      // listener, and on the lifecycle's unmount that stopped teardown
+      // part-way and leaked DOM.
+      callbacks.forEach(cb => {
+        try {
+          // Callbacks declare their own argument types; emit forwards whatever it receives
+          (cb as (...args: unknown[]) => void)(...args);
+        } catch (error) {
+          console.error(`A listener for "${event}" threw:`, error);
+        }
+      });
     },
 
     /**
