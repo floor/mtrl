@@ -3,6 +3,59 @@ initial commit → latest
 956 commits · Feb 22, 2025 – Sep 17, 2026
 
 
+0.9.6
+
+  The accessibility release, with the motion the review found on the way.
+
+  Fixed
+
+  - Switch: the label was never linked to its input, so clicking it did
+    nothing. Switch and checkbox also carried an aria-label copied from the
+    label text, which outranked the label and went stale after setLabel();
+    it is dropped, and an explicit ariaLabel now wins over the label text.
+  - Textfield: supporting text describes the input through aria-describedby,
+    keeping ids the page set, and the input is aria-invalid while the field
+    is in error. Select, built on textfield, gets the same.
+  - Tabs: arrow keys move between tabs, skipping disabled ones and wrapping,
+    Home and End reach the ends, and left and right follow the reading
+    direction. Only the active tab is a tab stop; the stop follows the
+    selection and added or removed tabs. Up and Down are left to the page.
+  - Tooltip: Escape hides it without moving focus, and the pointer can rest
+    on it (WCAG 1.4.13); leaving it hides after hideDelay.
+  - Button: a loading button is aria-busy.
+  - Select: a select with flat options is a select-only combobox. The input
+    is role="combobox" with aria-expanded, keeps focus and owns the keyboard
+    (arrows, Home, End, PageUp, PageDown, Enter, Space, Escape, Tab,
+    type-to-find); the popup is a listbox of options named through
+    aria-activedescendant. A select whose options have submenus keeps the
+    menu button.
+
+  Changed
+
+  - Motion durations were 1.5 to 2 times their M3 tokens; short3 was 250ms
+    where the token is 150ms. Every duration token now carries its M3 value,
+    with medium3, medium4, long3, long4 and extra-long1 to 4 added, and
+    easing-emphasized, which equalled easing-standard, is now the emphasized
+    curve. Every component that uses the tokens is quicker as a result.
+  - Drawer, side sheet and bottom sheet open on the expressive spatial spring
+    and close on the fast effects spring, as Compose does, with the scrim
+    following the sheet and a guard over the overshoot at the docked edge.
+  - Dialog: the scrim fades in, the dialog grows in height from 35% over
+    500ms on emphasized while its headline, content and actions fade in one
+    after another, and it closes in 150ms on emphasized accelerate, as
+    material-web does. It used to appear and vanish at once.
+  - Menu: closing runs the opening motion in reverse.
+
+  Added
+
+  - Menu: a listbox option renders it as the listbox popup of a combobox,
+    for select and for any consumer building one.
+  - Dialog: afteropen and afterclose, and the overlay's removal, wait for the
+    motion (500 and 150ms) unless animationDuration is set.
+
+  → v0.9.6
+
+
 0.9.5
 
   A patch from porting component tests off their mocks. Fourteen suites had
