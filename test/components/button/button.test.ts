@@ -7,8 +7,8 @@
 // This replaces test/components/button.test.ts, which asserted against a mock
 // defined in its own file and covered eight behaviours. Porting it found no
 // defect in what the button does, but two gaps recorded as findings: a button
-// in its loading state never sets aria-busy, and the stylesheet's --icon-only
-// rules are unreachable because nothing adds that class.
+// in its loading state never set aria-busy (N14, now asserted below), and the
+// stylesheet's --icon-only rules are unreachable because nothing adds that class.
 //
 // Deliberately not asserted, because each is open and a test would bless it:
 // an icon-only button gets no accessible name unless ariaLabel is given (F10);
@@ -165,6 +165,16 @@ describe('button', () => {
     await button.setLoading(false);
     expect(button.element.disabled).toBe(false);
     expect(button.getText()).toBe('Save');
+  });
+
+  // N14: loading only disabled the button, which says nothing about why
+  test('a loading button is busy, and stops being busy when loading ends', async () => {
+    const button = mount({ text: 'Save', progress: true });
+    expect(button.element.hasAttribute('aria-busy')).toBe(false);
+    await button.setLoading(true);
+    expect(button.element.getAttribute('aria-busy')).toBe('true');
+    await button.setLoading(false);
+    expect(button.element.hasAttribute('aria-busy')).toBe(false);
   });
 
   test('destroy removes the element', () => {
