@@ -3,6 +3,36 @@ initial commit → latest
 906 commits · Feb 22, 2025 – Sep 17, 2026
 
 
+0.9.3
+
+  A patch from porting component tests off their mocks. The switch and checkbox
+  suites had asserted against copies of the components defined in the test
+  files, and each copy implemented the methods that were broken in the real one.
+
+  Fixed
+
+  - Switch and checkbox: setLabel() and getLabel() read a key the component
+    never had, so getLabel() returned an empty string even for a rendered label
+    and setLabel() changed nothing.
+  - Switch: supportingTextElement was a value captured when the component was
+    created, so it went on reporting the old element after setSupportingText()
+    or removeSupportingText(). It reads the live element now.
+  - Checkbox: the indeterminate class was set separately from the input's
+    indeterminate state and drifted from it. From config the state was set but
+    not the class; after a user click cleared the state, the class stayed. The
+    class now follows the input.
+
+  Tests
+
+  - The test tree is type-checked in CI. Its configuration had never run, and
+    two local declarations of bun:test had typed every assertion as any. The
+    component suites that still test mocks are listed by name, and the list can
+    only shrink.
+  - Switch and checkbox are tested against the real components.
+
+  → v0.9.3
+
+
 0.9.2
 
   A test-integrity patch. Two core suites had never run, and running them found
