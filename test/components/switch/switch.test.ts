@@ -11,9 +11,7 @@
 //
 // Deliberately not asserted here, because each is an open finding and a test
 // would bless the current behaviour: the label is not associated with the
-// input (F9); a custom class gains the library prefix (F11); and with no
-// labelPosition the label renders at the start, while the published
-// SWITCH_DEFAULTS.LABEL_POSITION says end.
+// input (F9), and a custom class gains the library prefix (F11).
 import { describe, test, expect, beforeEach, mock } from 'bun:test';
 import { JSDOM } from 'jsdom';
 const dom = new JSDOM('<!DOCTYPE html><html><body></body></html>', { url: 'http://localhost/', pretendToBeVisual: true });
@@ -33,6 +31,7 @@ g.getComputedStyle = dom.window.getComputedStyle.bind(dom.window);
 g.requestAnimationFrame = (cb: FrameRequestCallback) => setTimeout(() => cb(Date.now()), 0);
 
 import createSwitch from '../../../src/components/switch';
+import { SWITCH_DEFAULTS } from '../../../src/components/switch/constants';
 
 beforeEach(() => { document.body.innerHTML = ''; });
 
@@ -63,6 +62,16 @@ describe('switch', () => {
     expect(labelled.element.querySelector('label')?.textContent).toBe('Wi-Fi');
     expect(labelled.input.getAttribute('aria-label')).toBe('Wi-Fi');
     expect(mount().element.querySelector('label')).toBeNull();
+  });
+
+  // The published default once said end while a switch rendered its label at
+  // the start. The label leads, as in M3 settings rows, and the constant is
+  // what the component reads, so the two are asserted together.
+  test('with no position the label leads, and that default is the published one', () => {
+    const s = mount({ label: 'Wi-Fi' });
+    expect(SWITCH_DEFAULTS.LABEL_POSITION).toBe('start');
+    expect(s.element.classList.contains(`mtrl-switch--label-${SWITCH_DEFAULTS.LABEL_POSITION}`)).toBe(true);
+    expect(s.element.querySelector('label')?.classList.contains('mtrl-switch-label--start')).toBe(true);
   });
 
   test('an explicit label position is reflected in the root class', () => {

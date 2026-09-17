@@ -50,8 +50,8 @@ export const SWITCH_DEFAULTS = {
   DISABLED: false,
   /** Default required state */
   REQUIRED: false,
-  /** Default label position */
-  LABEL_POSITION: SWITCH_LABEL_POSITIONS.END,
+  /** Default label position: the label leads and the switch trails, as in M3 settings rows */
+  LABEL_POSITION: SWITCH_LABEL_POSITIONS.START,
   /** Default input value */
   VALUE: 'on'
 } as const;

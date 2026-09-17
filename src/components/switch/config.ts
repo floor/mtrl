@@ -4,6 +4,7 @@ import {
   createElementConfig,
 } from "../../core/config/component";
 import { SwitchConfig, BaseComponent, ApiOptions } from "./types";
+import { SWITCH_DEFAULTS } from "./constants";
 
 /**
  * Default configuration for the Switch component
@@ -11,6 +12,9 @@ import { SwitchConfig, BaseComponent, ApiOptions } from "./types";
 export const defaultConfig: SwitchConfig = {
   prefix: "mtrl",
   componentName: "switch",
+  // Read from the published constant, so the documented default and the
+  // rendered one cannot disagree again.
+  labelPosition: SWITCH_DEFAULTS.LABEL_POSITION,
 };
 
 /**
