@@ -221,18 +221,9 @@ export const withMenu =
       ) {
         e.preventDefault();
 
-        // Open menu with keyboard interaction
+        // Open menu with keyboard interaction. The open event is emitted from
+        // the menu's own open handler below, for every way of opening.
         menu.open(e, "keyboard");
-
-        // Emit open event
-        if (component.emit) {
-          component.emit("open", {
-            select: component,
-            originalEvent: e,
-            preventDefault: () => {},
-            defaultPrevented: false,
-          });
-        }
       } else if (e.key === "Escape" && menu.isOpen()) {
         e.preventDefault();
         menu.close(e);
@@ -241,6 +232,18 @@ export const withMenu =
 
     // Update textfield styling when menu opens/closes
     menu.on("open", () => {
+      // open was emitted only on the keyboard path, so opening by click or by
+      // open() reported nothing, while close fired for every path. Emit it here,
+      // beside close, so each opening is reported exactly once.
+      if (component.emit) {
+        component.emit("open", {
+          select: component,
+          originalEvent: null,
+          preventDefault: () => {},
+          defaultPrevented: false,
+        });
+      }
+
       // Add open class to the select component
       component.textfield.element.classList.add(
         `${config.prefix || "mtrl"}-select--open`,
