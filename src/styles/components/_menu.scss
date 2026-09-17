@@ -29,26 +29,21 @@ $component: "#{$prefix}-menu";
     flex-direction: column;
     opacity: 0;
     transform-origin: top center;
-    // A menu grows in height from its anchor and shrinks back to about a
-    // third of it, which is what material-web animates (menu/internal/menu.ts:
-    // height 0 to full over 500ms emphasized, back to 35% over 150ms on
-    // emphasized accelerate). Opening ran that way and closing did not: it
-    // scaled down evenly and was taken out of the page part-way through.
+    // A fade with a slight scale, as menus enter in M3; the vertical squash
+    // this replaced is not one of its patterns
+    transform: scale(0.8);
     pointer-events: none;
 
+    // Material Design 3 standard animation curve for menus
     transition:
-        height v.motion("duration-short3") v.motion("easing-emphasized-accelerate"),
-        top v.motion("duration-short3") v.motion("easing-emphasized-accelerate"),
-        opacity v.motion("duration-short1") linear v.motion("duration-short2");
+        transform v.motion("duration-medium1") v.motion("easing-emphasized"),
+        opacity v.motion("duration-medium1") v.motion("easing-emphasized");
 
     // Visible state
     &--visible {
         opacity: 1;
+        transform: scale(1);
         pointer-events: auto;
-        transition:
-            height v.motion("duration-long2") v.motion("easing-emphasized"),
-            top v.motion("duration-long2") v.motion("easing-emphasized"),
-            opacity v.motion("duration-short1") linear;
     }
 
     // Position variations with appropriate transform origins
