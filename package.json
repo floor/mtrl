@@ -73,6 +73,7 @@
     "test": "bun test",
     "test:naming": "bun run scripts/check-test-naming.ts",
     "test:types": "bun run scripts/check-test-types.ts",
+    "strict:check": "bun run scripts/check-strict-null.ts",
     "bench": "MTRL_BENCH=1 bun test test/benchmarks/",
     "test:watch": "bun test --watch",
     "test:coverage": "bun test --coverage",

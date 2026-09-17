@@ -176,10 +176,13 @@ export const createElementConfig = (
   const optionsClasses = options.className;
 
   // Combine all classes
+  // The guard narrows the array to strings: a plain Boolean filter keeps the
+  // element type, so under strictNullChecks every component's element config
+  // failed to type-check against withElement
   const combinedClassNames = [
     ...(Array.isArray(configClasses) ? configClasses : [configClasses]),
     ...(Array.isArray(optionsClasses) ? optionsClasses : [optionsClasses]),
-  ].filter(Boolean);
+  ].filter((name): name is string => Boolean(name));
 
   // Set up element attributes
   const elementAttributes = options.attributes || {};
