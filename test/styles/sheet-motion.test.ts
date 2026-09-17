@@ -12,7 +12,8 @@
 // spring for surfaces that partly cover the screen. Compose dialogs take their
 // motion from the window, so the dialog keeps MDC-Android's shape of motion
 // (grow from 0.8 and fade in, fade out) on the matching springs, fading as one
-// with its overlay on default effects, as ModalBottomSheet fades its scrim.
+// with its overlay: in on default effects, as ModalBottomSheet fades its scrim,
+// out on MDC-Android's own dialog exit curve.
 //
 // The springs overshoot, so every sliding sheet carries a solid shadow of its
 // own colour past the edge it docks to, where the overshoot would open a gap.
@@ -150,23 +151,35 @@ describe('dialog', () => {
   });
 
   test('closing, it holds its opacity and scale until the overlay has faded out', () => {
-    expect(value('dialog', '.mtrl-dialog', 'transition')).toBe('opacity 0s linear 250ms, transform 0s linear 250ms');
+    expect(value('dialog', '.mtrl-dialog', 'transition')).toBe('opacity 0s linear 200ms, transform 0s linear 200ms');
   });
 
-  test('the overlay, scrim and dialog together, fades on default effects both ways', () => {
+  // An effects spring is fastest in its first frames: the dialog was at 40% two
+  // frames into the fade and read as a cut. MDC-Android's dialog exit holds and
+  // then goes.
+  test('the overlay fades in on default effects and out on emphasized accelerate', () => {
     expect(value('dialog', '.mtrl-dialog-overlay--visible', 'transition')).toBe(`${on('opacity', 'default-effects')}, visibility 0s`);
-    expect(value('dialog', '.mtrl-dialog-overlay', 'transition')).toBe(`${on('opacity', 'default-effects')}, visibility 0s linear 250ms`);
+    expect(value('dialog', '.mtrl-dialog-overlay', 'transition')).toBe('opacity 200ms cubic-bezier(0.3, 0, 0.8, 0.15), visibility 0s linear 200ms');
   });
 });
 
-describe('no sheet keeps the old curves', () => {
-  test('none of the four uses the emphasized curve or the fixed motion durations for opening or closing', () => {
-    for (const name of ['drawer', 'side-sheet', 'bottom-sheet', 'dialog']) {
+describe('the sheets keep no fixed-duration curve', () => {
+  test('drawer, side sheet and bottom sheet move only on springs', () => {
+    for (const name of ['drawer', 'side-sheet', 'bottom-sheet']) {
       const transitions = Array.from(sheets[name].matchAll(/transition:\s*([^;]+);/g), (m) => m[1])
         .filter((t) => /\b(transform|opacity|width|visibility)\b/.test(t));
       for (const transition of transitions) {
         expect(transition, `${name}: ${transition.slice(0, 60)}`).not.toContain('cubic-bezier');
       }
     }
+  });
+
+  // The dialog is the exception, and only when it closes: Compose has no dialog
+  // motion, and MDC-Android's exit curve is what makes the fade read as a fade
+  test('the dialog springs everywhere except its exit', () => {
+    const transitions = Array.from(sheets.dialog.matchAll(/transition:\s*([^;]+);/g), (m) => m[1])
+      .filter((t) => /\b(transform|opacity|visibility)\b/.test(t));
+    const eased = transitions.filter((t) => t.includes('cubic-bezier'));
+    expect(eased).toEqual(['opacity 200ms cubic-bezier(0.3, 0, 0.8, 0.15), visibility 0s linear 200ms']);
   });
 });

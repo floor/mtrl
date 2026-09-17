@@ -27,12 +27,18 @@ $component: "#{base.$prefix}-dialog";
     box-sizing: border-box;
 
     // The overlay holds the dialog, so its fade is the dialog's fade: the scrim
-    // and the dialog come and go together on default effects, as Compose's
-    // ModalBottomSheet fades its scrim both ways. The overlay leaves the
-    // accessibility tree once the fade is done.
+    // and the dialog come and go together. It leaves the accessibility tree
+    // once the fade is done.
+    //
+    // In on default effects, as Compose's ModalBottomSheet fades its scrim.
+    // Out on MDC-Android's dialog exit (m3_motion_fade_exit): emphasized
+    // accelerate, which holds before it goes. An effects spring is
+    // near-exponential, fastest in its first frames, and a dialog closing on
+    // one reads as a cut rather than a fade. MDC's exit is 150ms; mtrl's
+    // duration scale is off M3's, so this takes the nearest token.
     transition:
-        m.spring(opacity, default-effects),
-        visibility 0s linear m.spring-duration(default-effects);
+        opacity v.motion("duration-short2") v.motion("easing-emphasized-accelerate"),
+        visibility 0s linear v.motion("duration-short2");
 
     &--visible {
         opacity: 1;
@@ -69,8 +75,8 @@ $component: "#{base.$prefix}-dialog";
     // gone within three frames. Closing, the dialog holds its opacity and
     // scale until the overlay has faded out.
     transition:
-        opacity 0s linear m.spring-duration(default-effects),
-        transform 0s linear m.spring-duration(default-effects);
+        opacity 0s linear v.motion("duration-short2"),
+        transform 0s linear v.motion("duration-short2");
 
     // Visible state
     &--visible {

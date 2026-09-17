@@ -407,10 +407,10 @@ export const withVisibility = () => (component) => {
 
   // How long the events after opening and closing wait, unless configured:
   // the stylesheet grows the dialog on the default spatial spring and fades the
-  // overlay out on default effects (spring-default-spatial-duration and
-  // spring-default-effects-duration)
+  // overlay out over duration-short2 (spring-default-spatial-duration, and
+  // MDC-Android's dialog exit)
   const openDuration = component.config.animationDuration ?? 450;
-  const closeDuration = component.config.animationDuration ?? 250;
+  const closeDuration = component.config.animationDuration ?? 200;
 
   // Helper functions to handle focus trap
   const focusableElements =
