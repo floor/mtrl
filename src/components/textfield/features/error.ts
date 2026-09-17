@@ -27,6 +27,7 @@ export interface ErrorConfig {
  * Component with supporting text capabilities (if available)
  */
 interface ComponentWithSupportingText extends ElementComponent {
+  input?: HTMLInputElement | HTMLTextAreaElement;
   setSupportingText?: (text: string, isError?: boolean) => void;
   removeSupportingText?: () => void;
   supportingTextElement?: HTMLElement | null;
@@ -75,10 +76,19 @@ export const withError =
     // the error message itself -- as ordinary helper text.
     let displacedText: string | null = null;
 
+    // The error class is only seen; aria-invalid is what a screen reader
+    // announces with the field, together with the message it describes
+    const markInvalid = (invalid: boolean): void => {
+      if (!component.input) return;
+      if (invalid) component.input.setAttribute("aria-invalid", "true");
+      else component.input.removeAttribute("aria-invalid");
+    };
+
     // Apply initial error state if configured
     if (errorState) {
       component.element.classList.add(`${PREFIX}-${COMPONENT}--error`);
     }
+    markInvalid(errorState);
 
     return {
       ...component,
@@ -92,6 +102,7 @@ export const withError =
           `${PREFIX}-${COMPONENT}--error`,
           error
         );
+        markInvalid(error);
 
         // If message is provided and component has supporting text capability
         if (message !== undefined && component.setSupportingText) {

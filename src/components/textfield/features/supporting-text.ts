@@ -9,10 +9,24 @@ import {
  * Extended element component with lifecycle
  */
 interface LifecycleElementComponent extends ElementComponent {
+  input?: HTMLInputElement | HTMLTextAreaElement;
   lifecycle?: {
     destroy: () => void;
   };
 }
+
+/** Adds one id to an ARIA id list, keeping the ids already there */
+const addIdRef = (element: Element, attribute: string, id: string): void => {
+  const ids = (element.getAttribute(attribute) || "").split(/\s+/).filter(Boolean);
+  if (!ids.includes(id)) element.setAttribute(attribute, [...ids, id].join(" "));
+};
+
+/** Removes one id from an ARIA id list, and the attribute once it is empty */
+const removeIdRef = (element: Element, attribute: string, id: string): void => {
+  const ids = (element.getAttribute(attribute) || "").split(/\s+/).filter((ref) => ref && ref !== id);
+  if (ids.length) element.setAttribute(attribute, ids.join(" "));
+  else element.removeAttribute(attribute);
+};
 
 /**
  * Configuration for supporting text feature
@@ -80,6 +94,14 @@ export const withSupportingText =
     const PREFIX = config.prefix || "mtrl";
     const COMPONENT = config.componentName || "textfield";
     let supportingElement: HTMLElement | null = null;
+    // One id for the supporting text, whichever element currently shows it,
+    // so the input's description follows the text as it is replaced
+    const supportingId = `${PREFIX}-${COMPONENT}-supporting-${Math.random().toString(36).slice(2, 9)}`;
+    const describe = (element: HTMLElement | null): void => {
+      if (!component.input) return;
+      if (element) addIdRef(component.input, "aria-describedby", supportingId);
+      else removeIdRef(component.input, "aria-describedby", supportingId);
+    };
 
     // Helper function to create supporting text element
     const createSupportingElement = (
@@ -88,6 +110,7 @@ export const withSupportingText =
     ): HTMLElement => {
       const element = document.createElement("div");
       element.className = `${PREFIX}-${COMPONENT}-helper`;
+      element.id = supportingId;
       element.textContent = text;
 
       if (isError) {
@@ -105,6 +128,7 @@ export const withSupportingText =
         config.error
       );
       component.element.appendChild(supportingElement);
+      describe(supportingElement);
     }
 
     // Add lifecycle integration if available
@@ -139,6 +163,7 @@ export const withSupportingText =
           this.supportingTextElement = null;
           component.element.classList.remove(`${PREFIX}-${COMPONENT}--error`);
         }
+        describe(supportingElement);
 
         return this;
       },
@@ -149,6 +174,7 @@ export const withSupportingText =
           supportingElement = null;
           this.supportingTextElement = null;
           component.element.classList.remove(`${PREFIX}-${COMPONENT}--error`);
+          describe(null);
         }
         return this;
       },
