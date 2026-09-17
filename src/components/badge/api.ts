@@ -39,7 +39,6 @@ interface ComponentWithElements {
   };
   getClass: (name: string) => string;
   addClass: (...classes: string[]) => ComponentWithElements;
-  removeClass: (...classes: string[]) => ComponentWithElements;
   on: (event: string, handler: Function) => ComponentWithElements;
   off: (event: string, handler: Function) => ComponentWithElements;
 }
@@ -247,8 +246,10 @@ export const withAPI =
         // Update accessibility attributes
         if (variant === VARIANT_SMALL) {
           component.element.textContent = "";
+          component.element.removeAttribute("role");
           component.element.setAttribute("aria-hidden", "true");
         } else {
+          component.element.removeAttribute("aria-hidden");
           component.element.setAttribute("role", "status");
 
           // Restore label for large badges
@@ -371,7 +372,7 @@ export const withAPI =
         return badgeComponent;
       },
       removeClass: (...classes: string[]) => {
-        component.removeClass(...classes);
+        component.element.classList.remove(...classes.filter(Boolean));
         return badgeComponent;
       },
       on: (event: string, handler: Function) => {
