@@ -896,6 +896,21 @@ const createStatefulComponent = (config: Config): HTMLElement => {
 - `test/types/` - TypeScript type tests
 - `test/utils/` - Test utilities and helpers
 
+## Floor Agents
+
+`.agents/agents.yaml` is the agent manifest: the gate (the thirteen CI steps, run on a clean
+export of the exact commit), the private sources (`../../docs/projects/mtrl`, denied to any
+provider the manifest does not trust), one implementer (Grok, through Cursor) and a review
+committee (Claude, Codex, Grok). `floor-agents run --issue <n>` hands an issue to the
+implementer on a worktree under `.agents/worktrees/`; the engine verifies and publishes the
+tree, and the PR carries the agent's report and the check results. `floor-agents doctor
+--config .agents/agents.yaml` checks the setup without running anything.
+
+The boundary is at publication: an agent writes code and proposes it; a merge of a green,
+reviewed PR within the current release domain is the coordinator's call; an npm publish, a
+tag, a contract change or a behaviour decision is Dr Jones's. Worktrees and run state live
+under `.agents/` and are not versioned; the manifest is.
+
 ## Prohibited Actions
 
 **❌ NEVER do these:**
