@@ -232,6 +232,23 @@ export const withAPI =
     // Event handlers
     const handleTargetMouseEnter = () => api.show();
     const handleTargetMouseLeave = () => api.hide();
+
+    // WCAG 1.4.13: the pointer can move from the target onto the tooltip and
+    // rest there without it disappearing, and leaving the tooltip hides it as
+    // leaving the target does
+    const handleTooltipMouseEnter = () => {
+      if (isVisible && hideTimer !== null) api.show(true);
+    };
+    const handleTooltipMouseLeave = () => {
+      if (isVisible) api.hide();
+    };
+    component.element.addEventListener("mouseenter", handleTooltipMouseEnter);
+    component.element.addEventListener("mouseleave", handleTooltipMouseLeave);
+
+    // WCAG 1.4.13: Escape dismisses the tooltip without moving focus
+    const handleDocumentKeydown = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && isVisible) api.hide(true);
+    };
     const handleTargetFocus = () => api.show();
     const handleTargetBlur = () => api.hide();
 
@@ -356,6 +373,7 @@ export const withAPI =
           // Add resize listener
           window.addEventListener("resize", handleWindowResize);
           window.addEventListener("scroll", handleWindowScroll);
+          document.addEventListener("keydown", handleDocumentKeydown);
         };
 
         if (immediate) {
@@ -390,6 +408,7 @@ export const withAPI =
           // Remove resize and scroll listeners
           window.removeEventListener("resize", handleWindowResize);
           window.removeEventListener("scroll", handleWindowScroll);
+          document.removeEventListener("keydown", handleDocumentKeydown);
         };
 
         if (immediate) {
@@ -447,6 +466,9 @@ export const withAPI =
         // Remove window events
         window.removeEventListener("resize", handleWindowResize);
         window.removeEventListener("scroll", handleWindowScroll);
+        document.removeEventListener("keydown", handleDocumentKeydown);
+        component.element.removeEventListener("mouseenter", handleTooltipMouseEnter);
+        component.element.removeEventListener("mouseleave", handleTooltipMouseLeave);
 
         // Remove from DOM
         if (component.element.parentNode) {
