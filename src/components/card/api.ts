@@ -61,31 +61,37 @@ export const withAPI = ({ lifecycle, config }: ApiOptions) => (component: Compon
    * ```
    */
   setHeader(headerElement: HTMLElement): CardComponent {
-    if (headerElement && headerElement.classList.contains(`${component.getClass('card')}-header`)) {
-      // Remove existing header if present
-      const existingHeader = component.element.querySelector(`.${component.getClass('card')}-header`);
+    const card = component.getClass('card');
+    if (headerElement && headerElement.classList.contains(`${card}-header`)) {
+      const title = (header: Element | null) =>
+        header?.querySelector(`.${card}-header-title`)?.id || null;
+
+      // Remove existing header if present, and the name it gave the card
+      const existingHeader = component.element.querySelector(`.${card}-header`);
       if (existingHeader) {
+        const previous = title(existingHeader);
+        if (previous && component.element.getAttribute('aria-labelledby') === previous) {
+          component.element.removeAttribute('aria-labelledby');
+        }
         existingHeader.remove();
       }
 
-      // Look for media element
-      const mediaElement = component.element.querySelector(`.${component.getClass('card')}-media`);
-      
-      if (mediaElement) {
-        // If media exists, insert after the LAST media element
-        // Find all media elements
-        const mediaElements = component.element.querySelectorAll(`.${component.getClass('card')}-media`);
-        const lastMedia = mediaElements[mediaElements.length - 1];
-        
-        // Insert after the last media element
-        if (lastMedia.nextSibling) {
-          component.element.insertBefore(headerElement, lastMedia.nextSibling);
-        } else {
-          component.element.appendChild(headerElement);
-        }
-      } else {
-        // No media, insert at the beginning
-        component.element.insertBefore(headerElement, component.element.firstChild);
+      // The header follows the media at the top of the card; media added at the
+      // bottom stays below it.
+      let before = component.element.firstElementChild;
+      while (before && before.classList.contains(`${card}-media`)) {
+        before = before.nextElementSibling;
+      }
+      component.element.insertBefore(headerElement, before);
+
+      // Name the card with its title unless it already has a name
+      const titleId = title(headerElement);
+      if (
+        titleId &&
+        !component.element.hasAttribute('aria-labelledby') &&
+        !component.element.hasAttribute('aria-label')
+      ) {
+        component.element.setAttribute('aria-labelledby', titleId);
       }
     }
     return this;
