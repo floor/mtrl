@@ -15,8 +15,7 @@ $component: "#{base.$prefix}-dialog";
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: t.alpha("scrim", 0.32);
-    opacity: 0;
+    background-color: transparent;
     visibility: hidden;
     z-index: v.z-index("modal");
     display: flex;
@@ -26,19 +25,32 @@ $component: "#{base.$prefix}-dialog";
     padding: 24px;
     box-sizing: border-box;
 
-    // MD3 standard animation for overlay
+    // The scrim fades on its own colour rather than on opacity: the dialog is
+    // its child, so fading the layer faded the dialog with it, and the two
+    // opacities multiplied into what read as a cut.
+    // material-web animates the scrim linearly, 500ms in and 150ms out
+    // (dialog/internal/animations.ts).
     transition:
-        opacity v.motion("duration-medium1") v.motion("easing-emphasized"),
-        visibility v.motion("duration-medium1") v.motion("easing-emphasized");
+        background-color v.motion("duration-short3") linear,
+        visibility 0s linear v.motion("duration-short3");
 
     &--visible {
-        opacity: 1;
+        background-color: t.alpha("scrim", 0.32);
         visibility: visible;
+        transition: background-color v.motion("duration-long2") linear, visibility 0s;
     }
 }
 
 // Dialog container
 // MD3: surface-container-high, 28dp corners, elevation 3
+//
+// Motion follows material-web, the Material web implementation
+// (dialog/internal/animations.ts): the surface grows in height, 35% to 100%
+// over 500ms emphasized, while the dialog slides down into place and the
+// headline, content and actions fade in one after another. Closing takes
+// 150ms on emphasized accelerate. The growth is a scale of the dialog's
+// height from its top, the motion the menu opens with.
+
 .#{$component} {
     position: relative;
     background-color: t.color("surface-container-high");
@@ -50,24 +62,43 @@ $component: "#{base.$prefix}-dialog";
     margin: auto;
     @include m.elevation(3);
 
-    // Hidden as a scaled-down, transparent container; it fades in to full size
+    // Hidden: 35% of its height, lifted slightly, not yet painted
+    transform-origin: top center;
+    transform: translateY(-50px) scaleY(0.35);
     opacity: 0;
-    transform-origin: center center;
-    // Dialogs fade in with a slight scale; the vertical squash this replaced
-    // is not an M3 pattern
-    transform: scale(0.8);
     pointer-events: none;
-
-    // MD3 emphasized easing for dialogs
     transition:
-        transform v.motion("duration-medium1") v.motion("easing-emphasized"),
-        opacity v.motion("duration-medium1") v.motion("easing-emphasized");
+        transform v.motion("duration-short3") v.motion("easing-emphasized-accelerate"),
+        opacity v.motion("duration-short1") linear v.motion("duration-short2");
+
+    // Its contents fade with the surface, and lead it on the way out
+    .#{$component}-header,
+    .#{$component}-content,
+    .#{$component}-footer {
+        opacity: 0;
+        transition: opacity v.motion("duration-short2") linear;
+    }
 
     // Visible state
     &--visible {
+        transform: translateY(0) scaleY(1);
         opacity: 1;
-        transform: scale(1);
         pointer-events: auto;
+        transition:
+            transform v.motion("duration-long2") v.motion("easing-emphasized"),
+            opacity v.motion("duration-short1") linear;
+
+        // The headline and content follow the surface, the actions last
+        .#{$component}-header,
+        .#{$component}-content {
+            opacity: 1;
+            transition: opacity v.motion("duration-medium1") linear v.motion("duration-short1");
+        }
+
+        .#{$component}-footer {
+            opacity: 1;
+            transition: opacity v.motion("duration-medium2") linear v.motion("duration-short3");
+        }
     }
 
     // Size variants
@@ -102,16 +133,6 @@ $component: "#{base.$prefix}-dialog";
         margin: 0;
         border-radius: 0;
         transform-origin: center center;
-
-        transform: scale(0.9);
-
-        &.#{$component}--visible {
-            transform: scale(1);
-        }
-    }
-
-    // Animation variants with appropriate transform origins
-    &--slide-up {
         transform: translateY(24px);
 
         &.#{$component}--visible {
@@ -119,11 +140,21 @@ $component: "#{base.$prefix}-dialog";
         }
     }
 
-    &--slide-down {
-        transform: translateY(-24px);
+    // The variants change where the dialog comes from; it grows in height
+    // either way, which is the M3 motion
+    &--slide-up {
+        transform: translateY(24px) scaleY(0.35);
 
         &.#{$component}--visible {
-            transform: translateY(0);
+            transform: translateY(0) scaleY(1);
+        }
+    }
+
+    &--slide-down {
+        transform: translateY(-24px) scaleY(0.35);
+
+        &.#{$component}--visible {
+            transform: translateY(0) scaleY(1);
         }
     }
 
@@ -135,7 +166,7 @@ $component: "#{base.$prefix}-dialog";
         }
     }
 
-    // Scale animation variant (original behavior)
+    // The basic dialog of the previous spec: a scale rather than a slide
     &--scale {
         transform-origin: center center;
         transform: scale(0.8);
@@ -386,7 +417,9 @@ $component: "#{base.$prefix}-dialog";
 // Accessibility - Reduced motion preference support
 @include m.reduced-motion {
     .#{$component},
-    .#{$component}-overlay {
+    .#{$component}--visible,
+    .#{$component}-overlay,
+    .#{$component}-overlay--visible {
         transition: opacity v.motion("duration-short2") linear;
     }
 

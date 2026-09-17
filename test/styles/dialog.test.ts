@@ -64,9 +64,12 @@ describe('dialog stylesheet', () => {
     expect(value('.mtrl-dialog--fullscreen .mtrl-dialog-header-title', 'text-align')).toBe('start');
   });
 
-  test('it fades in with a scale, and reduced motion drops the scale without shouting', () => {
-    expect(value('.mtrl-dialog', 'transform')).toBe('scale(0.8)');
-    expect(value('.mtrl-dialog--visible', 'transform')).toBe('scale(1)');
+  test('it grows into place, and reduced motion drops the movement without shouting', () => {
+    // material-web slides the dialog down 50px as its surface grows from
+    // 35% of its height; here the growth is a scale from the top, as the menu
+    expect(value('.mtrl-dialog', 'transform')).toBe('translateY(-50px) scaleY(0.35)');
+    expect(value('.mtrl-dialog', 'transform-origin')).toBe('top center');
+    expect(value('.mtrl-dialog--visible', 'transform')).toBe('translateY(0) scaleY(1)');
     expect(css).not.toContain('scaleY(0)');
     expect(css).not.toContain('!important');
     expect(css).toMatch(/prefers-reduced-motion: reduce\)\s*\{[\s\S]{0,400}?transform: none;/);
@@ -74,7 +77,9 @@ describe('dialog stylesheet', () => {
 
   test('the scrim covers the window and sits under the modal layer', () => {
     expect(value('.mtrl-dialog-overlay', 'position')).toBe('fixed');
-    expect(value('.mtrl-dialog-overlay', 'background-color')).toContain('var(--mtrl-sys-color-scrim');
+    // the scrim fades on its colour, not on opacity: the dialog is its child
+    expect(value('.mtrl-dialog-overlay', 'background-color')).toBe('transparent');
+    expect(value('.mtrl-dialog-overlay--visible', 'background-color')).toContain('var(--mtrl-sys-color-scrim');
     expect(value('.mtrl-dialog-overlay', 'z-index')).toBe('1000');
   });
 });

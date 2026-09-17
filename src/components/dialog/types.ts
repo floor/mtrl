@@ -190,8 +190,9 @@ export interface DialogConfig {
   zIndex?: number;
   
   /** 
-   * Duration of open/close animations in milliseconds
-   * @default 150
+   * How long `afteropen` and `afterclose` wait after opening and closing, in
+   * milliseconds, and when a closed dialog leaves the DOM. By default they
+   * follow the stylesheet: 450 after opening, 200 after closing.
    */
   animationDuration?: number;
   

@@ -29,9 +29,10 @@ $component: "#{$prefix}-menu";
     flex-direction: column;
     opacity: 0;
     transform-origin: top center;
-    // A fade with a slight scale, as menus enter in M3; the vertical squash
-    // this replaced is not one of its patterns
-    transform: scale(0.8);
+    // The menu grows in height from its anchor when it opens, and closing is
+    // the same motion in reverse: the closed state is the height it opens
+    // from, on the same duration and curve
+    transform: scaleY(0);
     pointer-events: none;
 
     // Material Design 3 standard animation curve for menus
@@ -42,7 +43,7 @@ $component: "#{$prefix}-menu";
     // Visible state
     &--visible {
         opacity: 1;
-        transform: scale(1);
+        transform: scaleY(1);
         pointer-events: auto;
     }
 

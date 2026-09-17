@@ -405,8 +405,11 @@ export const withVisibility = () => (component) => {
   // Initial state
   const isOpen = component.config.open === true;
 
-  // Setup animation duration
-  const animationDuration = component.config.animationDuration || 150;
+  // How long the events after opening and closing wait, unless configured:
+  // the stylesheet grows the surface over duration-long2 and closes it over
+  // duration-short3 (material-web dialog/internal/animations.ts)
+  const openDuration = component.config.animationDuration ?? 500;
+  const closeDuration = component.config.animationDuration ?? 150;
 
   // Helper functions to handle focus trap
   const focusableElements =
@@ -603,14 +606,14 @@ export const withVisibility = () => (component) => {
         container.appendChild(component.overlay);
       }
 
-      // Show the overlay
-      addClass(
-        component.overlay,
-        `${component.getClass("dialog-overlay")}--visible`,
-      );
-
-      // Show the dialog
+      // Show the overlay and the dialog together, in a later task: an element
+      // inserted and made visible in the same task has no state to animate
+      // from, so the scrim appeared at once while it faded on the way out
       setTimeout(() => {
+        addClass(
+          component.overlay,
+          `${component.getClass("dialog-overlay")}--visible`,
+        );
         addClass(component.element, `${component.getClass("dialog")}--visible`);
 
         // Setup focus trap and events
@@ -623,7 +626,7 @@ export const withVisibility = () => (component) => {
 
           setTimeout(() => {
             component.emit(DIALOG_EVENTS.AFTER_OPEN, { dialog: component });
-          }, animationDuration);
+          }, openDuration);
         }
       }, 10);
     },
@@ -680,7 +683,7 @@ export const withVisibility = () => (component) => {
         if (typeof component.emit === "function") {
           component.emit(DIALOG_EVENTS.AFTER_CLOSE, { dialog: component });
         }
-      }, animationDuration);
+      }, closeDuration);
     },
 
     toggle(open?: boolean) {

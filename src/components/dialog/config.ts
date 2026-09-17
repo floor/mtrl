@@ -19,7 +19,6 @@ export const defaultConfig: DialogConfig = {
   autofocus: true,
   trapFocus: true,
   divider: false,  // Default to no divider
-  animationDuration: 150,
   buttons: []
 };
 
