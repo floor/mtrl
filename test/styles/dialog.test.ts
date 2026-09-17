@@ -24,13 +24,10 @@ beforeAll(() => {
 
 describe('dialog stylesheet', () => {
   test('the container is surface-container-high at level 3 with a 28dp corner', () => {
-    // The surface is painted by ::before, which is what grows in height while
-    // the dialog opens, so the text inside never reflows
-    expect(value('.mtrl-dialog::before', 'background-color')).toBe('var(--mtrl-sys-color-surface-container-high)');
+    expect(value('.mtrl-dialog', 'background-color')).toBe('var(--mtrl-sys-color-surface-container-high)');
     expect(value('.mtrl-dialog', 'color')).toBe('var(--mtrl-sys-color-on-surface)');
     expect(value('.mtrl-dialog', 'border-radius')).toBe('28px');
-    expect(value('.mtrl-dialog::before', 'border-radius')).toBe('inherit');
-    expect(value('.mtrl-dialog::before', 'box-shadow')).toBe('0px 1px 3px rgba(0, 0, 0, 0.3), 0px 4px 8px 3px rgba(0, 0, 0, 0.15)');
+    expect(value('.mtrl-dialog', 'box-shadow')).toBe('0px 1px 3px rgba(0, 0, 0, 0.3), 0px 4px 8px 3px rgba(0, 0, 0, 0.15)');
     expect(value('.mtrl-dialog', 'min-width')).toBe('280px');
     expect(value('.mtrl-dialog', 'max-width')).toBe('560px');
   });
@@ -68,11 +65,12 @@ describe('dialog stylesheet', () => {
   });
 
   test('it grows into place, and reduced motion drops the movement without shouting', () => {
-    // material-web slides the dialog down 50px as its surface grows
+    // material-web slides the dialog down 50px as its surface grows from the
+    // top; the growth is a clip, so nothing paints below the surface's edge
     expect(value('.mtrl-dialog', 'transform')).toBe('translateY(-50px)');
-    expect(value('.mtrl-dialog::before', 'height')).toBe('35%');
+    expect(value('.mtrl-dialog', 'clip-path')).toBe('inset(-48px -48px 65% -48px)');
     expect(value('.mtrl-dialog--visible', 'transform')).toBe('translateY(0)');
-    expect(value('.mtrl-dialog--visible .mtrl-dialog::before', 'height') ?? value('.mtrl-dialog--visible::before', 'height')).toBe('100%');
+    expect(value('.mtrl-dialog--visible', 'clip-path')).toBe('inset(-48px -48px -48px -48px)');
     expect(css).not.toContain('scaleY(0)');
     expect(css).not.toContain('!important');
     expect(css).toMatch(/prefers-reduced-motion: reduce\)\s*\{[\s\S]{0,400}?transform: none;/);

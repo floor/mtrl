@@ -148,18 +148,16 @@ describe('dialog', () => {
   // reverses it over 150ms on emphasized accelerate. Fading the dialog itself
   // as well as its overlay multiplied the two opacities: a closing dialog was
   // at 4% within 42ms, measured in Chromium on mtrl.app.
-  test('the surface grows in height, and the dialog slides into place', () => {
-    expect(value('dialog', '.mtrl-dialog::before', 'height')).toBe('35%');
-    expect(value('dialog', '.mtrl-dialog--visible::before', 'height')).toBe('100%');
+  test('the surface grows in height from the top, and the dialog slides into place', () => {
+    expect(value('dialog', '.mtrl-dialog', 'clip-path')).toBe('inset(-48px -48px 65% -48px)');
+    expect(value('dialog', '.mtrl-dialog--visible', 'clip-path')).toBe('inset(-48px -48px -48px -48px)');
     expect(value('dialog', '.mtrl-dialog', 'transform')).toBe('translateY(-50px)');
     expect(value('dialog', '.mtrl-dialog--visible', 'transform')).toBe('translateY(0)');
   });
 
   test('it grows on emphasized over 500ms and closes on emphasized accelerate over 150ms', () => {
-    expect(value('dialog', '.mtrl-dialog--visible', 'transition')).toBe('transform 500ms cubic-bezier(0.3, 0, 0, 1)');
-    expect(value('dialog', '.mtrl-dialog--visible::before', 'transition')).toBe('height 500ms cubic-bezier(0.3, 0, 0, 1), opacity 50ms linear');
-    expect(value('dialog', '.mtrl-dialog', 'transition')).toBe('transform 150ms cubic-bezier(0.3, 0, 0.8, 0.15)');
-    expect(value('dialog', '.mtrl-dialog::before', 'transition')).toBe('height 150ms cubic-bezier(0.3, 0, 0.8, 0.15), opacity 50ms linear 100ms');
+    expect(value('dialog', '.mtrl-dialog--visible', 'transition')).toBe('clip-path 500ms cubic-bezier(0.3, 0, 0, 1), transform 500ms cubic-bezier(0.3, 0, 0, 1), opacity 50ms linear');
+    expect(value('dialog', '.mtrl-dialog', 'transition')).toBe('clip-path 150ms cubic-bezier(0.3, 0, 0.8, 0.15), transform 150ms cubic-bezier(0.3, 0, 0.8, 0.15), opacity 50ms linear 100ms');
   });
 
   test('the headline and content follow the surface, the actions last', () => {

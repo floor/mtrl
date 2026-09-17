@@ -48,40 +48,31 @@ $component: "#{base.$prefix}-dialog";
 // (dialog/internal/animations.ts): the surface grows in height, 35% to 100%
 // over 500ms emphasized, while the dialog slides down into place and the
 // headline, content and actions fade in one after another. Closing takes
-// 150ms on emphasized accelerate. The surface is painted by ::before, so
-// growing it never reflows the text inside.
+// 150ms on emphasized accelerate. The growth is a clip on the dialog, from
+// its top, so nothing paints below the surface's edge and the text never
+// reflows; the clip reaches past the box to leave room for the shadow.
+$clip-room: 48px;
+
 .#{$component} {
     position: relative;
-    background-color: transparent;
+    background-color: t.color("surface-container-high");
     color: t.color("on-surface");
     border-radius: v.shape("extra-large"); // 28dp corner radius
     max-width: 560px;
     min-width: 280px;
     width: 100%;
     margin: auto;
+    @include m.elevation(3);
 
-    // The surface: what grows
-    &::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 35%;
-        background-color: t.color("surface-container-high");
-        border-radius: inherit;
-        @include m.elevation(3);
-        opacity: 0;
-        z-index: -1;
-        transition:
-            height v.motion("duration-short3") v.motion("easing-emphasized-accelerate"),
-            opacity v.motion("duration-short1") linear v.motion("duration-short2");
-    }
-
-    // Hidden as a container that has not grown yet, lifted slightly
+    // Hidden: the top 35% of the surface, lifted slightly, not yet painted
+    clip-path: inset(-#{$clip-room} -#{$clip-room} 65% -#{$clip-room});
     transform: translateY(-50px);
+    opacity: 0;
     pointer-events: none;
-    transition: transform v.motion("duration-short3") v.motion("easing-emphasized-accelerate");
+    transition:
+        clip-path v.motion("duration-short3") v.motion("easing-emphasized-accelerate"),
+        transform v.motion("duration-short3") v.motion("easing-emphasized-accelerate"),
+        opacity v.motion("duration-short1") linear v.motion("duration-short2");
 
     // Its contents fade with the surface, and lead it on the way out
     .#{$component}-header,
@@ -93,17 +84,14 @@ $component: "#{base.$prefix}-dialog";
 
     // Visible state
     &--visible {
+        clip-path: inset(-#{$clip-room} -#{$clip-room} -#{$clip-room} -#{$clip-room});
         transform: translateY(0);
+        opacity: 1;
         pointer-events: auto;
-        transition: transform v.motion("duration-long2") v.motion("easing-emphasized");
-
-        &::before {
-            height: 100%;
-            opacity: 1;
-            transition:
-                height v.motion("duration-long2") v.motion("easing-emphasized"),
-                opacity v.motion("duration-short1") linear;
-        }
+        transition:
+            clip-path v.motion("duration-long2") v.motion("easing-emphasized"),
+            transform v.motion("duration-long2") v.motion("easing-emphasized"),
+            opacity v.motion("duration-short1") linear;
 
         // The headline and content follow the surface, the actions last
         .#{$component}-header,
@@ -447,6 +435,7 @@ $component: "#{base.$prefix}-dialog";
     .#{$component}--slide-down,
     .#{$component}--fullscreen {
         transform: none;
+        clip-path: none;
     }
 }
 
