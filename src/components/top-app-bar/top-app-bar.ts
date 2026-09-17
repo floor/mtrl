@@ -279,6 +279,14 @@ export const createTopAppBar = (config: TopAppBarConfig = {}): TopAppBar => {
   const topAppBar: TopAppBar = {
     ...withLifecycleComponent,
 
+    // destroy() goes through the lifecycle. The one spread in above comes from
+    // withElement and only removes the element, so the scroll listener this bar
+    // registers -- removed in lifecycle.destroy -- stayed on window and kept
+    // calling back after the bar was gone.
+    destroy() {
+      withLifecycleComponent.lifecycle.destroy();
+    },
+
     setTitle(title: string) {
       headlineElement.textContent = title;
       return this;
