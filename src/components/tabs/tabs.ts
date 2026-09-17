@@ -12,7 +12,7 @@ import {
 import { createTabsConfig, getTabsElementConfig } from './config';
 import { TabsConfig, TabsComponent } from './types';
 import { addTabStateStyles } from './state';
-import { setupKeyboardNavigation } from './utils';
+import { setupKeyboardNavigation, syncTabStops } from './utils';
 
 /**
  * Creates a new Tabs component following MD3 guidelines
@@ -67,6 +67,18 @@ const createTabs = (config: TabsConfig = {}): TabsComponent => {
     
     // Set up keyboard navigation
     setupKeyboardNavigation(component);
+
+    // Whatever changes which tab is active, or which tabs exist, moves the
+    // single tab stop with it
+    component.on('change', () => syncTabStops(component));
+    for (const method of ['addTab', 'add', 'removeTab', 'setActiveTab'] as const) {
+      const original = component[method] as (...args: unknown[]) => unknown;
+      (component as unknown as Record<string, unknown>)[method] = (...args: unknown[]) => {
+        const result = original.apply(component, args);
+        syncTabStops(component);
+        return result;
+      };
+    }
     
     return component;
   } catch (error) {

@@ -170,3 +170,107 @@ describe('tabs', () => {
     expect(document.body.contains(tabs.element)).toBe(false);
   });
 });
+
+// F17: the arrow-key handler returned unless the key landed on the tablist
+// itself, which is never focused, so arrows did nothing and every tab was its
+// own tab stop (WAI-ARIA tabs pattern: one stop, arrows move between tabs)
+describe('tabs keyboard', () => {
+  const key = (element: HTMLElement, name: string) => {
+    const event = new dom.window.KeyboardEvent('keydown', { key: name, bubbles: true, cancelable: true });
+    element.dispatchEvent(event);
+    return event;
+  };
+  const stops = (tabs: ReturnType<typeof createTabs>) =>
+    tabs.getTabs().map((tab) => tab.element.getAttribute('tabindex'));
+
+  const FOUR = () => [
+    { text: 'Flights', value: 'flights', state: 'active' },
+    { text: 'Trips', value: 'trips' },
+    { text: 'Explore', value: 'explore', disabled: true },
+    { text: 'Hotels', value: 'hotels' },
+  ];
+
+  test('only the active tab is a tab stop', () => {
+    const tabs = mount();
+    expect(stops(tabs)).toEqual(['-1', '0', '-1']);
+  });
+
+  test('with no active tab, the first enabled tab is the stop', () => {
+    const tabs = mount({ tabs: [{ text: 'A', value: 'a', disabled: true }, { text: 'B', value: 'b' }, { text: 'C', value: 'c' }] });
+    expect(stops(tabs)).toEqual(['-1', '0', '-1']);
+  });
+
+  test('arrows move focus and selection, skip disabled tabs and wrap', () => {
+    const tabs = mount({ tabs: FOUR() });
+    const seen: string[] = [];
+    tabs.on('change', (event: { value: string }) => seen.push(event.value));
+    const flights = byValue(tabs, 'flights').element;
+    flights.focus();
+
+    expect(key(flights, 'ArrowRight').defaultPrevented).toBe(true);
+    expect(document.activeElement).toBe(byValue(tabs, 'trips').element);
+    expect(tabs.getActiveTab()?.getValue()).toBe('trips');
+
+    key(byValue(tabs, 'trips').element, 'ArrowRight');
+    expect(document.activeElement).toBe(byValue(tabs, 'hotels').element);
+
+    key(byValue(tabs, 'hotels').element, 'ArrowRight');
+    expect(document.activeElement).toBe(flights);
+
+    key(flights, 'ArrowLeft');
+    expect(document.activeElement).toBe(byValue(tabs, 'hotels').element);
+    expect(seen).toEqual(['trips', 'hotels', 'flights', 'hotels']);
+  });
+
+  test('Home and End reach the first and last enabled tab', () => {
+    const tabs = mount({ tabs: FOUR() });
+    const trips = byValue(tabs, 'trips').element;
+    trips.focus();
+    key(trips, 'End');
+    expect(document.activeElement).toBe(byValue(tabs, 'hotels').element);
+    key(byValue(tabs, 'hotels').element, 'Home');
+    expect(document.activeElement).toBe(byValue(tabs, 'flights').element);
+  });
+
+  test('the tab stop follows the selection, by key, click or code', () => {
+    const tabs = mount({ tabs: FOUR() });
+    const flights = byValue(tabs, 'flights').element;
+    flights.focus();
+    key(flights, 'ArrowRight');
+    expect(stops(tabs)).toEqual(['-1', '0', '-1', '-1']);
+
+    byValue(tabs, 'hotels').element.click();
+    expect(stops(tabs)).toEqual(['-1', '-1', '-1', '0']);
+
+    tabs.setActiveTab('flights');
+    expect(stops(tabs)).toEqual(['0', '-1', '-1', '-1']);
+  });
+
+  test('a tab added later joins the arrow order without becoming a tab stop', () => {
+    const tabs = mount({ tabs: FOUR() });
+    tabs.addTab({ text: 'Cars', value: 'cars' });
+    expect(byValue(tabs, 'cars').element.getAttribute('tabindex')).toBe('-1');
+    const hotels = byValue(tabs, 'hotels').element;
+    hotels.focus();
+    key(hotels, 'ArrowRight');
+    expect(document.activeElement).toBe(byValue(tabs, 'cars').element);
+  });
+
+  test('other keys are left alone', () => {
+    const tabs = mount({ tabs: FOUR() });
+    const flights = byValue(tabs, 'flights').element;
+    flights.focus();
+    expect(key(flights, 'ArrowDown').defaultPrevented).toBe(false);
+    expect(key(flights, 'a').defaultPrevented).toBe(false);
+    expect(tabs.getActiveTab()?.getValue()).toBe('flights');
+  });
+
+  test('in a right-to-left page, ArrowLeft moves to the next tab', () => {
+    const tabs = mount({ tabs: FOUR() });
+    tabs.element.style.direction = 'rtl';
+    const flights = byValue(tabs, 'flights').element;
+    flights.focus();
+    key(flights, 'ArrowLeft');
+    expect(document.activeElement).toBe(byValue(tabs, 'trips').element);
+  });
+});
