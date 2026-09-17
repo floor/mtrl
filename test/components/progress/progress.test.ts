@@ -112,6 +112,25 @@ describe('progress', () => {
     expect(progress.element.classList.contains('mtrl-progress--indeterminate')).toBe(false);
   });
 
+  // The root is a div, which carries no `disabled` property, so withDisabled
+  // could only record the state as a class and an attribute — while
+  // isDisabled() read the property alone and answered false forever. progress
+  // publishes that manager directly (api.ts: `isDisabled: options.disabled.isDisabled`),
+  // so a disabled indicator reported itself enabled, and toggling never came back.
+  test('disable() is visible to isDisabled(), and toggles back', () => {
+    const progress = createProgress({});
+    expect(progress.element.tagName).toBe('DIV');
+    expect(progress.isDisabled()).toBe(false);
+
+    progress.disable();
+    expect(progress.isDisabled()).toBe(true);
+    expect(progress.element.classList.contains('mtrl-progress--disabled')).toBe(true);
+
+    progress.enable();
+    expect(progress.isDisabled()).toBe(false);
+    expect(progress.element.classList.contains('mtrl-progress--disabled')).toBe(false);
+  });
+
   test('linear: the canvas is as tall as the track, 10px when it waves', () => {
     sized(null, 240);
     const flat = createProgress({});

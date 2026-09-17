@@ -125,7 +125,17 @@ export const withDisabled = <T extends DisabledConfig & object>(config: T) =>
         
         // Check if element itself is disabled
         const interactiveElement = component.element as HTMLButtonElement;
-        return ('disabled' in interactiveElement) && interactiveElement.disabled;
+        if ('disabled' in interactiveElement) {
+          return interactiveElement.disabled;
+        }
+
+        // A root that is not a form element carries no `disabled` property, so
+        // the attribute `disable()` writes is the only record of the state.
+        // Without this, `disable()` writes state `isDisabled()` cannot read —
+        // and `toggle()`, which branches on it, disables and never enables
+        // again. Reaches any div-rooted component that publishes the manager;
+        // `progress` hands `isDisabled` straight to consumers.
+        return component.element.hasAttribute('disabled');
       }
     };
 
