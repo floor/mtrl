@@ -133,13 +133,14 @@ const processMenuItems = (options): MenuContent[] => {
  */
 const setupCombobox = (
   component: BaseComponent,
+  textfield: NonNullable<BaseComponent["textfield"]>,
   menu: NonNullable<BaseComponent["menu"]>,
   state: { options: SelectOption[]; selectedOption: SelectOption | null },
   choose: (option: SelectOption, originalEvent?: Event) => void,
   prefix: string,
 ): void => {
-  const input = component.textfield.input as HTMLInputElement;
-  const field = component.textfield.element;
+  const input = textfield.input as HTMLInputElement;
+  const field = textfield.element;
   const activeClass = `${prefix}-menu-item--active`;
   const TYPEAHEAD_DELAY = 500;
   const PAGE = 10;
@@ -364,18 +365,19 @@ export const withMenu =
       console.warn("Cannot add menu: textfield not found");
       return component;
     }
+    const textfield = component.textfield;
 
     // Initialize state
     const state = {
       options: config.options || [],
-      selectedOption: null as SelectOption,
+      selectedOption: null as SelectOption | null,
     };
 
     // Find initial selected option
     if (config.value) {
       state.selectedOption = state.options.find(
         (opt) => opt.id === config.value,
-      );
+      ) ?? null;
     }
 
     // Convert options to menu items with proper recursive processing
@@ -408,7 +410,7 @@ export const withMenu =
       state.selectedOption = option;
 
       // Update textfield
-      component.textfield.setValue(option.text);
+      textfield.setValue(option.text);
 
       // Update the selected state in the menu
       menu.setSelected(option.id);
@@ -450,12 +452,12 @@ export const withMenu =
     });
 
     if (listbox) {
-      setupCombobox(component, menu, state, choose, config.prefix || "mtrl");
+      setupCombobox(component, textfield, menu, state, choose, config.prefix || "mtrl");
     }
 
     // Add keyboard event listener for textfield (menu-button selects only)
-    if (!listbox) component.textfield.element.addEventListener("keydown", (e) => {
-      if (component.textfield.input.disabled) return;
+    if (!listbox) textfield.element.addEventListener("keydown", (e) => {
+      if (textfield.input.disabled) return;
 
       // Handle keyboard-based open
       if (
@@ -488,21 +490,21 @@ export const withMenu =
       }
 
       // Add open class to the select component
-      component.textfield.element.classList.add(
+      textfield.element.classList.add(
         `${config.prefix || "mtrl"}-select--open`,
       );
 
       // Add focused class to the textfield
       const PREFIX = config.prefix || "mtrl";
-      component.textfield.element.classList.add(`${PREFIX}-textfield--focused`);
+      textfield.element.classList.add(`${PREFIX}-textfield--focused`);
 
       // If using the filled variant, we need to add focus styles
       if (
-        component.textfield.element.classList.contains(
+        textfield.element.classList.contains(
           `${PREFIX}-textfield--filled`,
         )
       ) {
-        component.textfield.element.classList.add(
+        textfield.element.classList.add(
           `${PREFIX}-textfield--filled-focused`,
         );
       }
@@ -510,7 +512,7 @@ export const withMenu =
 
     menu.on("close", (event) => {
       // Remove open class from the select component
-      component.textfield.element.classList.remove(
+      textfield.element.classList.remove(
         `${config.prefix || "mtrl"}-select--open`,
       );
 
@@ -519,33 +521,33 @@ export const withMenu =
       setTimeout(() => {
         const PREFIX = config.prefix || "mtrl";
         const isFocused =
-          document.activeElement === component.textfield.input ||
-          component.textfield.element.contains(document.activeElement);
+          document.activeElement === textfield.input ||
+          textfield.element.contains(document.activeElement);
 
         // Update styling based on actual focus state
         if (isFocused) {
-          component.textfield.element.classList.add(
+          textfield.element.classList.add(
             `${PREFIX}-textfield--focused`,
           );
           if (
-            component.textfield.element.classList.contains(
+            textfield.element.classList.contains(
               `${PREFIX}-textfield--filled`,
             )
           ) {
-            component.textfield.element.classList.add(
+            textfield.element.classList.add(
               `${PREFIX}-textfield--filled-focused`,
             );
           }
         } else {
-          component.textfield.element.classList.remove(
+          textfield.element.classList.remove(
             `${PREFIX}-textfield--focused`,
           );
           if (
-            component.textfield.element.classList.contains(
+            textfield.element.classList.contains(
               `${PREFIX}-textfield--filled`,
             )
           ) {
-            component.textfield.element.classList.remove(
+            textfield.element.classList.remove(
               `${PREFIX}-textfield--filled-focused`,
             );
           }
@@ -587,7 +589,7 @@ export const withMenu =
           // Handle null/undefined/empty string as clear
           if (value === null || value === undefined || value === "") {
             state.selectedOption = null;
-            component.textfield.setValue("");
+            textfield.setValue("");
             menu.setSelected(null);
             return component;
           }
@@ -597,7 +599,7 @@ export const withMenu =
           );
           if (option && "text" in option) {
             state.selectedOption = option;
-            component.textfield.setValue(option.text);
+            textfield.setValue(option.text);
             menu.setSelected(option.id);
           }
           return component;
@@ -605,7 +607,7 @@ export const withMenu =
 
         clear: () => {
           state.selectedOption = null;
-          component.textfield.setValue("");
+          textfield.setValue("");
           menu.setSelected(null);
           return component;
         },
@@ -623,14 +625,13 @@ export const withMenu =
           menu.setItems(menuItems);
 
           // If previously selected option is no longer available, clear selection
+          const selected = state.selectedOption;
           if (
-            state.selectedOption &&
-            !options.find(
-              (opt) => "id" in opt && opt.id === state.selectedOption.id,
-            )
+            selected &&
+            !options.find((opt) => "id" in opt && opt.id === selected.id)
           ) {
             state.selectedOption = null;
-            component.textfield.setValue("");
+            textfield.setValue("");
           }
 
           return component;

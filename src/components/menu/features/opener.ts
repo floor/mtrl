@@ -56,7 +56,7 @@ const withOpener = (config: MenuConfig) => (component) => {
 
   // Track opener state
   const state = {
-    openerElement: null as HTMLElement,
+    openerElement: null as HTMLElement | null,
     openerComponent: null as OpenerComponent | null,
     activeClass: "", // Store the appropriate active class based on element type
   };
@@ -68,7 +68,7 @@ const withOpener = (config: MenuConfig) => (component) => {
    */
   const resolveOpener = (
     opener: OpenerTarget,
-  ): { element: HTMLElement; component: OpenerComponent | null } => {
+  ): { element: HTMLElement | null; component: OpenerComponent | null } => {
     if (!opener) return { element: null, component: null };
 
     // Handle string selector
@@ -242,12 +242,10 @@ const withOpener = (config: MenuConfig) => (component) => {
     if (!state.openerElement) return;
 
     // Case 1: Component with focus method
-    if (
-      state.openerComponent &&
-      typeof state.openerComponent.focus === "function"
-    ) {
+    const openerComponent = state.openerComponent;
+    if (openerComponent && typeof openerComponent.focus === "function") {
       tasks.requestAnimationFrame(() => {
-        state.openerComponent.focus();
+        openerComponent.focus!();
       });
       return;
     }
@@ -256,19 +254,22 @@ const withOpener = (config: MenuConfig) => (component) => {
 
     // Case 2: Component with input that can be focused (like textfield)
     if (
-      state.openerComponent &&
-      "input" in state.openerComponent &&
-      state.openerComponent.input instanceof HTMLElement
+      openerComponent &&
+      "input" in openerComponent &&
+      openerComponent.input instanceof HTMLElement
     ) {
+      const input = openerComponent.input;
       tasks.requestAnimationFrame(() => {
-        state.openerComponent.input.focus();
+        input.focus();
       });
       return;
     }
 
     // Case 3: Default - focus the element directly
+    const openerElement = state.openerElement;
+    if (!openerElement) return;
     tasks.requestAnimationFrame(() => {
-      state.openerElement.focus();
+      openerElement.focus();
     });
   };
 
@@ -434,7 +435,7 @@ const withOpener = (config: MenuConfig) => (component) => {
 
   // Initialize with provided opener
   const { element, component: openerComponent } = resolveOpener(config.opener);
-  setupOpenerEvents({ element, component: openerComponent });
+  if (element) setupOpenerEvents({ element, component: openerComponent });
 
   // Register with lifecycle if available
   if (component.lifecycle) {
@@ -481,7 +482,7 @@ const withOpener = (config: MenuConfig) => (component) => {
       setOpener(opener: OpenerTarget) {
         const resolved = resolveOpener(opener);
         if (resolved.element) {
-          setupOpenerEvents(resolved);
+          setupOpenerEvents({ element: resolved.element, component: resolved.component });
         }
         return component;
       },

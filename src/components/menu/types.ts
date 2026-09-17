@@ -444,7 +444,7 @@ export interface MenuComponent {
    * @param itemId - ID of the menu item to mark as selected
    * @returns The menu component for chaining
    */
-  setSelected: (itemId: string) => MenuComponent;
+  setSelected: (itemId: string | null) => MenuComponent;
 
   /**
    * Gets the currently selected menu item's ID

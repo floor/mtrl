@@ -12,8 +12,10 @@ export const withAPI =
   (component: BaseComponent): SelectComponent => ({
     ...component,
     element: component.element,
-    textfield: component.textfield,
-    menu: component.menu,
+    // withMenu warns and returns early without a textfield, so a select that
+    // reaches the API has both
+    textfield: component.textfield!,
+    menu: component.menu!,
 
     getValue: options.select.getValue,
 
