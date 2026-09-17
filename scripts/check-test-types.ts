@@ -31,7 +31,6 @@ import { execFileSync } from "node:child_process";
 const DRIFTED = [
   "test/components/badge.test.ts",
   "test/components/bottom-app-bar.test.ts",
-  "test/components/button.test.ts",
   "test/components/card.test.ts",
   "test/components/chip.test.ts",
   "test/components/datepicker.test.ts",
