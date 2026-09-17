@@ -42,6 +42,9 @@ $arrow-size: 8px;
   &--visible {
     opacity: 0.9;
     transform: scale(1);
+    // A shown tooltip can be hovered, so a pointer can rest on its content
+    // (WCAG 1.4.13); hidden, it still lets clicks through
+    pointer-events: auto;
   }
   
   // Variants
