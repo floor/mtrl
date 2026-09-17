@@ -328,10 +328,15 @@ export const withSuggestions = () => (component) => {
     });
   };
 
-  // Initialize keyboard navigation after structure is ready
+  // Initialize keyboard navigation after structure is ready. Suggestions given
+  // in config were stored and never drawn -- rendering only happened inside the
+  // public setSuggestions() -- so draw them here too, and again whenever the
+  // view opens, so the open list always shows the current suggestions.
   setTimeout(() => {
     setupKeyboardNavigation();
+    if (getSuggestions().length > 0) renderSuggestions();
   }, 0);
+  component.on?.("expand", () => renderSuggestions());
 
   // Return enhanced component with suggestions features
   return {
