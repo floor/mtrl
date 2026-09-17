@@ -5,7 +5,7 @@
  */
 
 import { spawn } from 'node:child_process';
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { argv } from 'process';
 
 // Configuration
@@ -102,7 +102,7 @@ function showErrorContext(filePath: string, line: number): void {
     }
     
     console.log('---------------------------------------------');
-  } catch (err) {
+  } catch {
     console.log(`Could not read file: ${filePath}`);
   }
 }

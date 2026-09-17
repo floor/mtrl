@@ -6,22 +6,17 @@
     "moduleResolution": "bundler",
     "noEmit": true,
     "declaration": false,
-    "types": ["bun"]
+    "types": [
+      "bun"
+    ]
   },
   "include": [
     "build.ts",
-    "scripts/build-modules.ts",
-    "scripts/build-styles.ts",
-    "scripts/style-manifest.ts",
-    "scripts/package-fixture.ts",
-    "scripts/check-package-size.ts",
-    "scripts/check-consumer.ts",
-    "scripts/check-slider.ts",
-    "scripts/check-drawer.ts",
-    "scripts/check-navigation-rail.ts",
-    "scripts/check-core.ts",
+    "scripts/**/*.ts",
     "test/build/style-manifest.test.ts",
     "test/browser/fixture.ts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules"
+  ]
 }

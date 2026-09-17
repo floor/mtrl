@@ -148,7 +148,7 @@ try {
   const byPath = new Map(split.outputs.map(output => [output.path, output]));
   const initial = new Set<string>();
   const deferred = new Set<string>();
-  async function visit(path: string) {
+  const visit = async function visit(path: string) {
     if (initial.has(path)) return;
     initial.add(path);
     const output = byPath.get(path);
