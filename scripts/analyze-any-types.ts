@@ -25,10 +25,12 @@ try {
   const anyErrors: AnyTypeError[] = [];
 
   // Extract any type errors
-  results.forEach((fileResult: any) => {
+  interface LintMessage { ruleId: string | null; line: number; column: number; message: string }
+  interface LintResult { filePath: string; messages: LintMessage[] }
+  (results as LintResult[]).forEach((fileResult) => {
     fileResult.messages
-      .filter((msg: any) => msg.ruleId === "@typescript-eslint/no-explicit-any")
-      .forEach((msg: any) => {
+      .filter((msg) => msg.ruleId === "@typescript-eslint/no-explicit-any")
+      .forEach((msg) => {
         const filePath = fileResult.filePath;
         const fileContent = fs.readFileSync(filePath, "utf-8");
         const lines = fileContent.split("\n");

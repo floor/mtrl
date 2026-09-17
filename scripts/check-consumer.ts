@@ -50,7 +50,7 @@ try {
     const outputs = (Array.isArray(result) ? result : [result]).flatMap(output => output.output);
     const chunks = outputs.filter(output => output.type === "chunk");
     const initial = new Set<string>();
-    function visit(filename: string) {
+    const visit = function visit(filename: string) {
       if (initial.has(filename)) return;
       initial.add(filename);
       const chunk = chunks.find(chunk => chunk.fileName === filename);
@@ -106,7 +106,7 @@ try {
   });
   const manifest: Manifest = JSON.parse(await readFile(join(outDir, ".vite/manifest.json"), "utf8"));
   await writeFile(join(artifacts, "vite-manifest.json"), JSON.stringify(manifest, null, 2));
-  function assets(entry: string, kind: "static" | "dynamic") {
+  const assets = function assets(entry: string, kind: "static" | "dynamic") {
     const result = new Set<string>();
     const seen = new Set<string>();
     function visit(key: string) {
@@ -155,7 +155,7 @@ try {
   assert(lazyDeferred.some(file => requested.has(file)), "Lazy progress was not requested on click");
   await lazyPage.close();
 
-  async function snapshot(page: Page) {
+  const snapshot = async function snapshot(page: Page) {
     return page.evaluate(() => [...document.body.querySelectorAll("*")].filter(el => !["SCRIPT", "STYLE"].includes(el.tagName)).map(el => {
       const rect = el.getBoundingClientRect();
       const styles = (pseudo?: string) => {

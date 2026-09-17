@@ -7,12 +7,10 @@
 import { spawn } from 'node:child_process';
 import { readFile, writeFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
-import { join } from 'node:path';
 import { argv } from 'process';
 
 // Configuration
 const FOCUS_FILE = argv[2]; // Optional file path from command line
-const FOCUS_ERROR_TYPE = argv[3]; // Optional error type to focus on
 
 // Regular expression to extract file paths and error information
 const FILE_ERROR_REGEX = /^([^(]+)\((\d+),(\d+)\): error TS(\d+): (.+)$/;
