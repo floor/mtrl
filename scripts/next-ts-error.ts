@@ -102,7 +102,7 @@ function showErrorContext(filePath: string, line: number): void {
     }
     
     console.log('---------------------------------------------');
-  } catch (err) {
+  } catch {
     console.log(`Could not read file: ${filePath}`);
   }
 }

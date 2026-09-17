@@ -69,7 +69,7 @@
     "dev": "bun --watch server.js",
     "build": "bun run build.ts",
     "prepublishOnly": "bun run build",
-    "lint": "bunx eslint src --ext .ts,.tsx",
+    "lint": "bunx eslint src scripts build.ts --ext .ts,.tsx",
     "lint:fix": "bunx eslint src --ext .ts,.tsx --fix",
     "format": "bunx prettier --write .",
     "format:check": "bunx prettier --check .",

@@ -185,8 +185,6 @@ async function analyzeOrphanedFunctions() {
   const underused: FunctionInfo[] = [];
 
   usageInfo.functions.forEach((func, name) => {
-    const usageCount = usageInfo.usages.get(name)?.size ?? 0;
-
     // Don't count the file where it's defined
     const externalUsageCount = Array.from(
       usageInfo.usages.get(name) ?? []
@@ -248,7 +246,7 @@ async function analyzeOrphanedFunctions() {
     } else {
       console.log("✅ No circular dependencies found!");
     }
-  } catch (error) {
+  } catch {
     console.log("✅ No circular dependencies found!");
   }
 
