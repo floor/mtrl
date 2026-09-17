@@ -107,7 +107,10 @@ try {
     // The .43 rail-motion baseline is 47,117 bytes; core ripple adds about 20 bytes.
     // The tooltip stylesheet adds 486 (measured): it was authored but registered in no
     // bundle, so every budget before this one was set with its CSS missing, not excluded.
-    { name: "full-css", code: "import 'mtrl/styles';", gzip: 48200 },
+    // Moving drawer, side sheet, bottom sheet and dialog onto the expressive springs adds
+    // 530 (measured, 47,908 to 48,438 at 0c2d347): each open and close state spells out
+    // its spring's linear() curve, and the copies sit too far apart for gzip to share.
+    { name: "full-css", code: "import 'mtrl/styles';", gzip: 48700 },
   ];
   for (const fixture of fixtures) {
     const entry = join(temporary, `${fixture.name}.ts`);
