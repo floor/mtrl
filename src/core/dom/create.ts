@@ -119,6 +119,18 @@ export interface EventHandlerStorage {
  */
 const EVENT_HANDLER_ATTRIBUTE = /^on[a-z]/i;
 
+/**
+ * Elements whose `name` means something: form-associated elements, plus the
+ * few others HTML defines it for. On any other tag the attribute is invalid,
+ * and worse than inert -- `form.querySelector('[name="x"]')` and
+ * `document.getElementsByName` find a component's root div before the input
+ * that actually submits the value.
+ */
+const NAMEABLE_TAGS = new Set([
+  "button", "fieldset", "form", "iframe", "img", "input",
+  "map", "meta", "object", "output", "select", "slot", "textarea",
+]);
+
 const RESERVED_OPTIONS: Record<string, unknown> = {
   __proto__: null,
   tag: true,
@@ -279,7 +291,9 @@ export const createElement = (
 
   // Common HTML attributes
   if (options.id) element.id = options.id;
-  if (options.name) element.setAttribute("name", options.name);
+  if (options.name && NAMEABLE_TAGS.has(element.tagName.toLowerCase())) {
+    element.setAttribute("name", options.name);
+  }
   if (options.title) element.title = options.title;
   if (options.tabIndex !== undefined) element.tabIndex = options.tabIndex;
 
