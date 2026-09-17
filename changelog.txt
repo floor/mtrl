@@ -3,6 +3,66 @@ initial commit → latest
 921 commits · Feb 22, 2025 – Sep 17, 2026
 
 
+0.9.5
+
+  A patch from porting component tests off their mocks. Fourteen suites had
+  asserted against copies of the components written in the test files; each
+  now drives the real component, and nearly every port found a defect the copy
+  had hidden.
+
+  Fixed
+
+  - Button: setLoading(true, text) kept the old label and stored nothing to
+    restore, so setLoading(false) could not bring it back.
+  - Radios: disable() styled the group as disabled while every radio stayed
+    usable. Change handlers ran twice per selection, the second time with no
+    payload, and off() removed nothing. setValue() with a value no option
+    carries now clears the selection instead of reporting a value nothing shows.
+  - Tooltip: position, showDelay, hideDelay, showOnHover and showOnFocus were
+    ignored in favour of fixed defaults. The tooltip also overwrote or removed a
+    target's existing aria-describedby and left an old target described after
+    setTarget(); it now adds and removes only its own id.
+  - Search: suggestions passed in config were never rendered, and the
+    onExpand and onCollapse callbacks were never called.
+  - Tabs: change handlers ran twice per click, setActiveTab() selected a
+    disabled tab, and handlers passed as config.on were never registered.
+  - Top and bottom app bars: destroy() left the window scroll listener in
+    place, so a destroyed bar kept calling onScroll or onVisibilityChange. The
+    bottom bar's show() and hide() did not call onVisibilityChange.
+  - Textfield: readonly was ignored, so a readonly field stayed editable.
+    setError(false) left the error message showing as helper text; the helper
+    text it displaced is now restored.
+  - Select: the open event fired only when opening from the keyboard, and
+    open() opened a disabled select.
+  - Slider: in a range slider the second handle kept announcing its initial
+    value after setSecondValue() or keyboard input. A valueFormatter now reaches
+    assistive technology through aria-valuetext.
+  - Badge: setVariant() kept the ARIA of the variant it left, so a small badge
+    switched to large stayed aria-hidden and its count was never announced.
+    removeClass() threw.
+  - Divider: every setter worked only from the state the divider was created
+    with. Getters went stale after setOrientation() and setVariant(), switching
+    back left both modifier classes, setInset() did nothing after setVariant(),
+    setThickness() sized the wrong axis after setOrientation(), and an inset set
+    later overflowed its parent. A vertical divider now carries
+    aria-orientation="vertical".
+  - Card: aria: { role } was written as an aria-role attribute and left the
+    card with no role. A header title never named its card, and every title
+    shared one id; titles now get unique ids and setHeader() labels the card
+    unless it already has a name. setHeader() placed the header below the
+    content on a card with media at the bottom.
+
+  Tests
+
+  - Button, radios, tooltip, search, tabs, both app bars, textfield, select,
+    slider, badge, divider, card and drawer are tested against the real
+    components, and navigation, which is deprecated, keeps a smoke test of what
+    mtrl.app uses. Only chips, list, time picker and date picker still test
+    mocks; they wait for M3 conformance work before their behaviour is tested.
+
+  → v0.9.5
+
+
 0.9.4
 
   Fixed
