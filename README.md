@@ -167,6 +167,26 @@ const createNote = (config: NoteConfig): NoteComponent =>
 
 The element gets the `mtrl-note` class, `withEvents` adds `on`, `off` and `emit`, and `destroy()` removes the element. Add `withLifecycle()` from `mtrl/core/compose/features` when features need to register cleanup.
 
+## Markup and sanitizing
+
+Icons and `content` options are markup strings, written with `innerHTML`. Every such write goes through one sink, so you can decide once how markup is treated. Set a policy when the strings can come from users or a CMS, or when your page enforces Trusted Types:
+
+```typescript
+import { configureHTML } from 'mtrl';
+
+// A sanitizer
+configureHTML({ sanitize: (html) => DOMPurify.sanitize(html) });
+
+// Trusted Types: under `require-trusted-types-for 'script'` a plain string
+// assignment throws, so return a TrustedHTML from a policy your CSP allows
+const policy = window.trustedTypes.createPolicy('mtrl', {
+  createHTML: (html) => DOMPurify.sanitize(html),
+});
+configureHTML({ sanitize: (html) => policy.createHTML(html) });
+```
+
+The policy sees every string, the library's own icons included; a `TrustedHTML` value passed as an icon or content skips it. With no policy set, markup is written as it is. Text options (`text`, a card's `text`) never go through `innerHTML`.
+
 ## Upgrading from 0.7
 
 0.8.0 aligns the components with Material 3 expressive, and some of that changes the API or the styles:

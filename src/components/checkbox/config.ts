@@ -5,6 +5,7 @@ import {
 } from "../../core/config/component";
 import { CheckboxConfig, BaseComponent, ApiOptions } from "./types";
 
+import { setHTML } from "../../core/dom/html";
 /**
  * Default configuration for the Checkbox component
  */
@@ -42,11 +43,11 @@ export const withCheckIcon =
   (component: BaseComponent): BaseComponent => {
     const icon = document.createElement("span");
     icon.className = `${config.prefix}-checkbox-icon`;
-    icon.innerHTML = `
+    setHTML(icon, `
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
       <path d="M9.55 14.6L6.35 11.4l-1.9 1.9L9.55 18.4l10.9-10.9-1.9-1.9z"/>
     </svg>
-  `;
+  `);
 
     component.element.appendChild(icon);
     return component;

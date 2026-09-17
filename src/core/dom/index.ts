@@ -20,3 +20,6 @@ export {
 
 export { createEventManager } from "./events";
 export type { EventManager } from "./events";
+
+export { setHTML, configureHTML, getHTMLPolicy } from "./html";
+export type { HTMLPolicy, HTMLInput, TrustedHTMLLike } from "./html";

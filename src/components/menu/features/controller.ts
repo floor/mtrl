@@ -4,6 +4,7 @@ import { createMenuTasks } from "./tasks";
 import { MenuConfig, MenuItem, MenuDivider, MenuSelectEvent } from "../types";
 import { menuOpened, menuClosed } from "./registry";
 
+import { setHTML } from "../../../core/dom/html";
 /**
  * Adds controller functionality to the menu component
  * Manages state, rendering, positioning, and event handling
@@ -136,7 +137,7 @@ const withController = (config: MenuConfig) => (component) => {
     if (item.icon) {
       const iconElement = document.createElement("span");
       iconElement.className = `${component.getClass("menu-item-icon")}`;
-      iconElement.innerHTML = item.icon;
+      setHTML(iconElement, item.icon);
       contentContainer.appendChild(iconElement);
     }
 
@@ -274,7 +275,7 @@ const withController = (config: MenuConfig) => (component) => {
     });
 
     // Clear and append
-    component.element.innerHTML = "";
+    component.element.replaceChildren();
     component.element.appendChild(menuList);
   };
 

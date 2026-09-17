@@ -127,7 +127,7 @@ export const createBottomAppBar = (
 
     addFab(fab: HTMLElement) {
       // Clear existing FAB if any
-      fabContainer.innerHTML = "";
+      fabContainer.replaceChildren();
 
       // Add the new FAB
       fabContainer.appendChild(fab);

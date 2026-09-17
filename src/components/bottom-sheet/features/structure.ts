@@ -3,6 +3,7 @@
 import { BottomSheetConfig } from "../types";
 import { BOTTOM_SHEET_CLASSES, BOTTOM_SHEET_VARIANTS } from "../constants";
 
+import { setHTML } from "../../../core/dom/html";
 /**
  * Builds the parts of the sheet and puts the whole thing on the page.
  *
@@ -77,7 +78,7 @@ export const withStructure =
     if (config.content instanceof HTMLElement) {
       content.appendChild(config.content);
     } else if (typeof config.content === "string") {
-      content.innerHTML = config.content;
+      setHTML(content, config.content);
     }
     container.appendChild(content);
 
@@ -95,9 +96,9 @@ export const withStructure =
 
         /** Replaces the body */
         setContent(next: string | HTMLElement): void {
-          content.innerHTML = "";
+          content.replaceChildren();
           if (next instanceof HTMLElement) content.appendChild(next);
-          else content.innerHTML = next;
+          else setHTML(content, next);
         },
 
         /** Replaces the headline, adding one if the sheet had none */

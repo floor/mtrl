@@ -1,6 +1,7 @@
 // src/components/tabs/scroll-indicators.ts
 import { TabsComponent } from './types';
 
+import { setHTML } from "../../core/dom/html";
 /**
  * Configuration for scroll indicators
  */
@@ -51,12 +52,12 @@ export const addScrollIndicators = (
     const leftButton = document.createElement('button');
     leftButton.className = `${tabs.getClass('tabs')}-scroll-button ${tabs.getClass('tabs')}-scroll-button--left`;
     leftButton.setAttribute('aria-label', 'Scroll tabs left');
-    leftButton.innerHTML = '<svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>';
+    setHTML(leftButton, '<svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>');
     
     const rightButton = document.createElement('button');
     rightButton.className = `${tabs.getClass('tabs')}-scroll-button ${tabs.getClass('tabs')}-scroll-button--right`;
     rightButton.setAttribute('aria-label', 'Scroll tabs right');
-    rightButton.innerHTML = '<svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>';
+    setHTML(rightButton, '<svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>');
     
     tabs.element.appendChild(leftButton);
     tabs.element.appendChild(rightButton);

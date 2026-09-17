@@ -81,7 +81,7 @@ const createDatePicker = (
         if (!this.isOpen || !this.calendarElement) return;
 
         // Clear existing content
-        this.calendarElement.innerHTML = "";
+        this.calendarElement.replaceChildren();
 
         // Render calendar content
         const calendar = renderCalendar(this, (...[event, data]) => {

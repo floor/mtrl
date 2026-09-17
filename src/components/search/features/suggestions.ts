@@ -132,7 +132,7 @@ export const withSuggestions = () => (component) => {
     const query = component.input?.getValue?.() || "";
 
     // Clear existing content
-    suggestionsList.innerHTML = "";
+    suggestionsList.replaceChildren();
 
     if (suggestions.length === 0) {
       return;
@@ -180,7 +180,7 @@ export const withSuggestions = () => (component) => {
   const clearRenderedSuggestions = (): void => {
     const suggestionsList = component.structure?.suggestionsList;
     if (suggestionsList) {
-      suggestionsList.innerHTML = "";
+      suggestionsList.replaceChildren();
     }
     highlightedIndex = -1;
   };

@@ -8,6 +8,7 @@ import { setAttributes } from "./attributes";
 import { addClass } from "./classes";
 import { safeUrl, URL_ATTRIBUTES } from "../utils/url";
 
+import { setHTML } from "./html";
 /**
  * Event handler function type
  */
@@ -217,7 +218,7 @@ class ElementPool {
     if (pool?.length) {
       const element = pool.pop()!;
       element.className = "";
-      element.innerHTML = "";
+      element.replaceChildren();
       element.removeAttribute("id");
       Object.keys(element.dataset).forEach(
         (key) => delete element.dataset[key],
@@ -252,7 +253,7 @@ class ElementPool {
     }
 
     element.className = "";
-    element.innerHTML = "";
+    element.replaceChildren();
     element.removeAttribute("id");
     Object.keys(element.dataset).forEach((key) => delete element.dataset[key]);
     element.parentNode?.removeChild(element);
@@ -286,7 +287,7 @@ export const createElement = (
   const element = document.createElement(options.tag || "div");
 
   // Apply basic properties first for optimal performance
-  if (options.html) element.innerHTML = options.html;
+  if (options.html) setHTML(element, options.html);
   else if (options.text) element.textContent = options.text;
 
   // Common HTML attributes
@@ -375,7 +376,7 @@ export const createElementPooled = (
   const element = getElementPool().acquire(options.tag || "div");
 
   // Apply properties similar to createElement but skip creating new element
-  if (options.html) element.innerHTML = options.html;
+  if (options.html) setHTML(element, options.html);
   else if (options.text) element.textContent = options.text;
   if (options.id) element.id = options.id;
 

@@ -7,6 +7,7 @@ import {
   RippleController,
 } from "../../../core/compose/features/ripple";
 
+import { setHTML } from "../../../core/dom/html";
 /**
  * Component shape expected by withItems
  */
@@ -62,7 +63,7 @@ const createItemElement = (
   if (item.icon) {
     const iconEl = document.createElement("span");
     iconEl.className = getClass("drawer__item-icon");
-    iconEl.innerHTML = item.icon;
+    setHTML(iconEl, item.icon);
     iconEl.setAttribute("aria-hidden", "true");
     el.appendChild(iconEl);
   }
@@ -157,7 +158,7 @@ export const withItems =
 
       // Clear existing items
       unmountRipples();
-      itemsContainer.innerHTML = "";
+      itemsContainer.replaceChildren();
 
       let navIndex = 0;
 

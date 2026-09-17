@@ -7,6 +7,7 @@
 import { CarouselConfig, CarouselSlide, SlidesAPI } from "../types";
 import { safeUrl } from "../../../core/utils/url";
 
+import { setHTML } from "../../../core/dom/html";
 export interface SlidesComponent {
   element: HTMLElement;
   getClass: (name: string) => string;
@@ -47,7 +48,7 @@ export const withSlides = (config: CarouselConfig) => <C extends { element: HTML
   const fill = (el: HTMLElement, slide: CarouselSlide): void => {
     el.replaceChildren();
     if (slide.content !== undefined) {
-      if (typeof slide.content === "string") el.innerHTML = slide.content;
+      if (typeof slide.content === "string") setHTML(el, slide.content);
       else el.appendChild(slide.content);
       return;
     }

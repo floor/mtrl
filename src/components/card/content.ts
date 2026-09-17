@@ -6,6 +6,7 @@ import { createElement } from '../../core/dom/create';
 import { CardContentConfig, CardHeaderConfig, CardMediaConfig, CardActionsConfig } from './types';
 import { safeUrl } from '../../core/utils/url';
 
+import { setHTML } from "../../core/dom/html";
 // Constants for content padding
 export const CARD_CONTENT_PADDING = true;
 
@@ -60,7 +61,7 @@ export const createCardContent = (config: CardContentConfig = {}): HTMLElement =
     // interpolated into innerHTML, so any caller binding user or CMS copy to it had an
     // XSS sink with no way to opt out.
     if (config.html) {
-      content.element.innerHTML = config.html;
+      setHTML(content.element, config.html);
     } else if (config.text) {
       const paragraph = document.createElement("p");
       paragraph.textContent = config.text;

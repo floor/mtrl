@@ -1,6 +1,7 @@
 // src/components/chip/api.ts
 import { ApiOptions, ChipComponent, ChipVariant } from "./types";
 
+import { setHTML } from "../../../core/dom/html";
 interface ComponentWithElements {
   element: HTMLElement;
   text?: {
@@ -211,7 +212,7 @@ export const withAPI =
         }
 
         if (leadingIconElement) {
-          leadingIconElement.innerHTML = icon || "";
+          setHTML(leadingIconElement, icon || "");
 
           // Remove the element if icon is empty
           if (!icon && leadingIconElement.parentNode) {
@@ -248,7 +249,7 @@ export const withAPI =
         }
 
         if (trailingIconElement) {
-          trailingIconElement.innerHTML = icon || "";
+          setHTML(trailingIconElement, icon || "");
 
           // Remove the element if icon is empty
           if (!icon && trailingIconElement.parentNode) {

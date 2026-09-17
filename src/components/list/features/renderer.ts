@@ -2,6 +2,7 @@
 
 import { LIST_CLASSES, LIST_EVENTS } from '../constants';
 
+import { setHTML } from "../../../core/dom/html";
 /**
  * Adds item rendering capabilities to a component
  * Renders static data directly without virtual scrolling or complex management
@@ -52,10 +53,10 @@ export const withRenderer = (config) => component => {
    */
   const renderAllItems = () => {
     // Clear existing content
-    listContainer.innerHTML = '';
+    listContainer.replaceChildren();
     
     if (!items || items.length === 0) {
-      listContainer.innerHTML = '<div class="mtrl-list-empty">No items</div>';
+      setHTML(listContainer, '<div class="mtrl-list-empty">No items</div>');
       return;
     }
     
@@ -139,7 +140,7 @@ export const withRenderer = (config) => component => {
   if (component.lifecycle?.destroy) {
     const originalDestroy = component.lifecycle.destroy;
     component.lifecycle.destroy = () => {
-      listContainer.innerHTML = '';
+      listContainer.replaceChildren();
       originalDestroy();
     };
   }

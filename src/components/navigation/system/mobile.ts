@@ -8,6 +8,7 @@ import {
   TOUCH_TARGETS 
 } from '../../../core/utils/mobile';
 
+import { setHTML } from "../../../core/dom/html";
 /**
  * Creates and appends overlay element for mobile
  *
@@ -55,12 +56,12 @@ export const createCloseButton = (
   state.closeButtonElement = document.createElement('button');
   state.closeButtonElement.className = mobileConfig.closeButtonClass;
   state.closeButtonElement.setAttribute('aria-label', 'Close navigation');
-  state.closeButtonElement.innerHTML = `
+  setHTML(state.closeButtonElement, `
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
       <line x1="18" y1="6" x2="6" y2="18"></line>
       <line x1="6" y1="6" x2="18" y2="18"></line>
     </svg>
-  `;
+  `);
   
   // Handle click event
   state.closeButtonElement.addEventListener('click', () => {

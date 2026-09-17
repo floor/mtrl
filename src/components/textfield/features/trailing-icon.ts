@@ -2,6 +2,7 @@
 
 import { BaseComponent, ElementComponent } from '../../../core/compose/component';
 
+import { setHTML } from "../../../core/dom/html";
 /**
  * Extended element component with input field
  */
@@ -72,7 +73,7 @@ export const withTrailingIcon = <T extends TrailingIconConfig & object>(config: 
     const PREFIX = config.prefix || 'mtrl';
     const iconElement = document.createElement('span');
     iconElement.className = `${PREFIX}-${config.componentName || 'textfield'}-trailing-icon`;
-    iconElement.innerHTML = config.trailingIcon;
+    setHTML(iconElement, config.trailingIcon);
     
     // Add trailing icon to the component
     component.element.appendChild(iconElement);
@@ -99,7 +100,7 @@ export const withTrailingIcon = <T extends TrailingIconConfig & object>(config: 
       trailingIcon: iconElement,
       
       setTrailingIcon(html: string) {
-        iconElement.innerHTML = html;
+        setHTML(iconElement, html);
         return this;
       },
       

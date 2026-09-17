@@ -7,6 +7,7 @@ import type { ButtonComponent } from "../button/types";
 import { createDivider } from "../divider"; // Import the divider component
 import { addClass, removeClass } from "../../core/dom/classes";
 
+import { setHTML } from "../../core/dom/html";
 const DIALOG_EVENTS = {
   OPEN: "open",
   CLOSE: "close",
@@ -87,12 +88,12 @@ export const withStructure = (config: DialogConfig) => (component) => {
       const closeButton = document.createElement("button");
       closeButton.classList.add(component.getClass("dialog-header-close"));
       closeButton.setAttribute("aria-label", "Close dialog");
-      closeButton.innerHTML = `
+      setHTML(closeButton, `
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <line x1="18" y1="6" x2="6" y2="18"></line>
           <line x1="6" y1="6" x2="18" y2="18"></line>
         </svg>
-      `;
+      `);
 
       // Close button click handler with event-based communication
       closeButton.addEventListener("click", (e) => {
@@ -117,7 +118,7 @@ export const withStructure = (config: DialogConfig) => (component) => {
     content.id = contentId;
 
     if (config.content) {
-      content.innerHTML = config.content;
+      setHTML(content, config.content);
     }
 
     return content;
@@ -808,7 +809,7 @@ export const withContent = () => (component) => {
        * @param content Content HTML
        */
       setContent(content: string) {
-        contentElement.innerHTML = content;
+        setHTML(contentElement, content);
       },
 
       /**

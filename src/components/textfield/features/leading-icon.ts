@@ -2,6 +2,7 @@
 
 import { BaseComponent, ElementComponent } from '../../../core/compose/component';
 
+import { setHTML } from "../../../core/dom/html";
 /**
  * Extended element component with input field
  */
@@ -72,7 +73,7 @@ export const withLeadingIcon = <T extends LeadingIconConfig & object>(config: T)
     const PREFIX = config.prefix || 'mtrl';
     const iconElement = document.createElement('span');
     iconElement.className = `${PREFIX}-${config.componentName || 'textfield'}-leading-icon`;
-    iconElement.innerHTML = config.leadingIcon;
+    setHTML(iconElement, config.leadingIcon);
     
     // Add leading icon to the component
     component.element.appendChild(iconElement);
@@ -110,7 +111,7 @@ export const withLeadingIcon = <T extends LeadingIconConfig & object>(config: T)
       leadingIcon: iconElement,
       
       setLeadingIcon(html: string) {
-        iconElement.innerHTML = html;
+        setHTML(iconElement, html);
         return this;
       },
       

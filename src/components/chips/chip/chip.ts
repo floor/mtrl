@@ -12,6 +12,7 @@ import { withAPI } from "./api";
 import { ChipConfig, ChipComponent } from "../types";
 import { createBaseConfig, getElementConfig, getApiConfig } from "./config";
 
+import { setHTML } from "../../../core/dom/html";
 /**
  * Creates a new Chip component
  * @param {ChipConfig} config - Chip configuration
@@ -45,7 +46,7 @@ const createChip = (config: ChipConfig = {}): ChipComponent => {
     if (config.leadingIcon || config.icon) {
       const leadingIconElement = document.createElement("span");
       leadingIconElement.className = `${chip.getClass("chip")}-leading-icon`;
-      leadingIconElement.innerHTML = config.leadingIcon || config.icon || "";
+      setHTML(leadingIconElement, config.leadingIcon || config.icon || "");
       contentContainer.appendChild(leadingIconElement);
     }
 
@@ -61,7 +62,7 @@ const createChip = (config: ChipConfig = {}): ChipComponent => {
     if (config.trailingIcon) {
       const trailingIconElement = document.createElement("span");
       trailingIconElement.className = `${chip.getClass("chip")}-trailing-icon`;
-      trailingIconElement.innerHTML = config.trailingIcon;
+      setHTML(trailingIconElement, config.trailingIcon);
 
       // Add click handler for trailing icon
       if (config.onTrailingIconClick) {
