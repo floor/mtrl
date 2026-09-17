@@ -84,3 +84,8 @@ temp/
 docs/api/
 docs/dist/
 demo/
+
+# Floor Agents: the manifest is versioned; worktrees and run state beside it are not.
+# Excluding the directory itself would make the negation unreachable.
+.agents/*
+!.agents/agents.yaml

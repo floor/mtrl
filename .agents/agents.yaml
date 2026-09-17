@@ -1,0 +1,218 @@
+# mtrl — agent manifest
+#
+# The root of resolution: agents find this by convention in the checkout they
+# already have, and it names everything else. An issue may describe this file,
+# but where they disagree, this wins.
+#
+# It declares WHERE things are and WHO may do what. It is not a TODO: item
+# status lives in the sources below, never here.
+
+name: "mtrl"
+
+project:
+  name: "mtrl"
+  root: ".."                  # relative to this file, so the repository root
+  repo: "mtrl"
+  baseBranch: "main"          # mtrl integrates on main; releases are tags cut from it
+  language: "typescript"
+  runtime: "bun"
+
+  setup:
+    - name: Install dependencies
+      command: [bun, install, --frozen-lockfile]
+    # The four browser checks below drive Chromium through Playwright. The
+    # install is idempotent and cached under ~/Library/Caches, which the project
+    # sandbox may write.
+    - name: Install Chromium for Playwright
+      command: [bunx, playwright, install, chromium]
+      timeoutMs: 600000
+
+  # The gate, declared rather than remembered: the thirteen steps of ci.yml, in
+  # its order. Every one must pass on a clean export of the exact commit before
+  # anything merges.
+  verification:
+    - name: Typecheck
+      command: [bun, run, "ts:check"]
+    - name: Lint
+      command: [bun, run, lint]
+    - name: Test naming
+      command: [bun, run, "test:naming"]
+    - name: Test types
+      command: [bun, run, "test:types"]
+    - name: Tests
+      command: [bun, test]
+    - name: Build
+      command: [bun, run, build]
+    - name: Tooling typecheck
+      command: [bun, run, "tooling:check"]
+    - name: Package size
+      command: [bun, run, "size:check"]
+    - name: Consumer check
+      command: [bun, run, "consumer:check"]
+      timeoutMs: 600000
+    - name: Slider check
+      command: [bun, run, "slider:check"]
+      timeoutMs: 600000
+    - name: Drawer check
+      command: [bun, run, "drawer:check"]
+      timeoutMs: 600000
+    - name: Navigation rail check
+      command: [bun, run, "navigation-rail:check"]
+      timeoutMs: 600000
+
+  conventions:
+    semicolons: true
+    quotes: "double"
+    indent: 2
+    modules: "esm"
+
+  structure:
+    frontend: "src/"
+    tests: "test/"
+
+# ── Sources ────────────────────────────────────────────────────────
+#
+# Paths are relative to this file: `../../docs` is the sibling docs checkout
+# (private). A source without `visibility` counts as private. Only the paths
+# named here are denied to untrusted providers; a source may be a directory.
+
+sources:
+  todo:
+    path: "../../docs/projects/mtrl/todo.md"    # the private TODO the page is built from
+    format: "markdown"
+    visibility: "private"
+
+  reviews:
+    path: "../../docs/projects/mtrl/reviews"    # review findings, one file per review
+    format: "markdown"
+    visibility: "private"
+
+  narrative:
+    path: "../../docs/activity/2026/material.md"
+    format: "markdown"
+    visibility: "private"
+
+# ── Related projects ───────────────────────────────────────────────
+
+relatedProjects:
+  - repo: "mtrl-app"
+    role: "documentation hub and showcase"
+    visibility: "public"
+  - repo: "mtrl-addons"
+    role: "extensions"
+    visibility: "public"
+
+# ── Promotion ──────────────────────────────────────────────────────
+#
+# A TODO is private; a TODO can become an issue. Mechanical, never an agent's
+# judgement: only the user-facing half crosses.
+
+promotion:
+  target: "floor/mtrl"
+  publicFields: [finding, evidence, severity, area]
+  privateFields: [claimedBy, claimedAt, notes, verdict]
+  labels:
+    severity: { blocking: "blocking", critical: "critical", suggestion: "enhancement" }
+    area: "area/{value}"
+
+agents:
+  - id: cto
+    name: "Claude"
+    promptTemplate: "../../agents/agents/cto.md"
+    llm:
+      provider: claude-code
+      model: opus
+    capabilities: [read_code, create_pr, review_rfc]
+    autonomy: T1
+    # Coordinates, reviews, merges green proven PRs within the current release
+    # domain. Never publishes to npm, tags, or changes a contract without Dr Jones.
+
+  # ── Implementer ─────────────────────────────────────────────────
+  #
+  # `run` hands an issue to the agent whose id is a label on it, and otherwise to
+  # the first agent here with write_code. It runs on a worktree under
+  # .agents/worktrees inside an implementer sandbox: it may write that worktree
+  # and nothing else, and the engine verifies and publishes the tree.
+
+  - id: grok-dev
+    name: "Grok"
+    promptTemplate: "../../agents/agents/frontend-dev.md"
+    llm:
+      # `provider` names the transport, never the model's vendor. Grok comes
+      # through the Cursor CLI, billed to the Cursor subscription.
+      provider: cursor
+      # Effort is part of the identifier: cursor-grok-4.6-{low,medium,high,xhigh}.
+      model: cursor-grok-4.6-high
+    capabilities: [read_code, write_code, write_tests, create_pr]
+    autonomy: T1
+    # The four Playwright checks make this gate slower than vlist's; the turn
+    # budget below covers a component-wide change with its tests.
+    timeoutMs: 2400000
+    # Completion is decided by `verification` against the worktree diff, never
+    # by what the agent says it did.
+
+  # ── Committee ───────────────────────────────────────────────────
+  #
+  # The agents with `vote` review proposals and vote, each inside a reviewer
+  # sandbox: it reads the repository and cannot write to it.
+
+  - id: claude
+    name: "Claude"
+    promptTemplate: "../../agents/agents/claude-reviewer.md"
+    llm:
+      provider: claude-code
+      model: opus
+      temperature: 0.3
+      maxTokens: 32000
+    capabilities: [read_code, review_rfc, vote]
+    autonomy: T1
+
+  - id: codex                 # GPT, through the Codex CLI
+    name: "Codex"
+    external: true
+    promptTemplate: "../../agents/agents/codex-reviewer.md"
+    llm:
+      provider: codex-cli
+      model: local
+    capabilities: [review_rfc, vote]
+    autonomy: T1
+
+  - id: grok
+    name: "Grok"
+    external: true
+    promptTemplate: "../../agents/agents/grok-reviewer.md"
+    llm:
+      provider: cursor
+      model: cursor-grok-4.6-high
+    capabilities: [review_rfc, vote]
+    autonomy: T1
+
+# ── Guardrails ─────────────────────────────────────────────────────
+#
+# Whatever an agent reads becomes part of a prompt sent to its provider, so
+# privateSourceProviders lists the companies trusted with private material.
+# Enforced by the operating system: an agent on any other provider (codex-cli,
+# today) runs in a sandbox that denies each private source path.
+
+guardrails:
+  maxFilesPerTask: 30
+  maxFileSizeBytes: 204800
+  blockedPaths:
+    - ".env*"
+    - "*.pem"
+    - "*.key"
+    - ".github/workflows/*"
+    - "package.json"
+    - "bun.lock"
+    - ".gitignore"
+    - ".npmrc"
+  privateSourceProviders: [claude-code, lmstudio, cursor]
+
+# ── Record ─────────────────────────────────────────────────────────
+#
+# Append-only events; the query index is rebuilt from this and never authoritative.
+
+record:
+  format: "jsonl"
+  path: "../../docs/activity/2026/material-events.jsonl"
+  events: [claimed, promoted, pr_opened, review_passed, review_rejected, status_changed]
