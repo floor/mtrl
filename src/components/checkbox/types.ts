@@ -265,7 +265,7 @@ export interface BaseComponent {
   getValue?: () => string;
   setValue?: (value: string) => void;
   setIndeterminate?: (state: boolean) => void;
-  text?: {
+  label?: {
     setText: (content: string) => void;
     getText: () => string;
   };

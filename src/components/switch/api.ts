@@ -73,16 +73,20 @@ export const withAPI =
 
     // Label management
     setLabel(text: string): SwitchComponent {
-      component.text?.setText(text);
+      component.label?.setText(text);
       return this;
     },
 
     getLabel(): string {
-      return component.text?.getText() || "";
+      return component.label?.getText() || "";
     },
 
-    // Supporting text management (if present)
-    supportingTextElement: component.supportingTextElement || null,
+    // Supporting text management (if present). A getter, not a copy: the
+    // element is created and removed after the API object exists, and a
+    // snapshot taken here would go on reporting whatever was there at creation.
+    get supportingTextElement(): HTMLElement | null {
+      return component.supportingTextElement || null;
+    },
     setSupportingText(text: string, isError?: boolean): SwitchComponent {
       if (component.setSupportingText) {
         component.setSupportingText(text, isError);

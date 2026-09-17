@@ -154,7 +154,7 @@ export interface BaseComponent {
   input?: HTMLInputElement;
   getValue?: () => string;
   setValue?: (value: string) => void;
-  text?: {
+  label?: {
     setText: (content: string) => void;
     getText: () => string;
   };
