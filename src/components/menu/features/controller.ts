@@ -19,6 +19,15 @@ const withController = (config: MenuConfig) => (component) => {
 
   const tasks = createMenuTasks();
 
+  // As the listbox of a combobox, options need ids the combobox can point at
+  // with aria-activedescendant, and nothing inside may take focus from it
+  const listbox = config.listbox === true;
+  const optionIdPrefix = `${component.getClass("menu")}-${Math.random().toString(36).slice(2, 9)}`;
+  if (listbox) {
+    // Pressing an option would otherwise move focus off the combobox
+    component.element.addEventListener("mousedown", (e: MouseEvent) => e.preventDefault());
+  }
+
   // Initialize state
   const state = {
     visible: config.visible || false,
@@ -89,8 +98,13 @@ const withController = (config: MenuConfig) => (component) => {
     const itemClass = `${component.getClass("menu-item")}`;
 
     itemElement.className = itemClass;
-    itemElement.setAttribute("role", "menuitem");
-    itemElement.setAttribute("tabindex", "-1"); // Set to -1 by default, will update when needed
+    if (listbox) {
+      itemElement.setAttribute("role", "option");
+      itemElement.id = `${optionIdPrefix}-option-${index}`;
+    } else {
+      itemElement.setAttribute("role", "menuitem");
+      itemElement.setAttribute("tabindex", "-1"); // Set to -1 by default, will update when needed
+    }
     itemElement.setAttribute("data-id", item.id);
     itemElement.setAttribute("data-index", index.toString());
 
@@ -219,7 +233,8 @@ const withController = (config: MenuConfig) => (component) => {
   const renderMenuItems = (): void => {
     const menuList = document.createElement("ul");
     menuList.className = `${component.getClass("menu-list")}`;
-    menuList.setAttribute("role", "menu");
+    menuList.setAttribute("role", listbox ? "listbox" : "menu");
+    if (listbox) menuList.id = `${optionIdPrefix}-listbox`;
 
     // A gap separates groups rather than drawing a line across one surface, so
     // the items on either side of it go into their own list. Everything else
@@ -428,8 +443,9 @@ const withController = (config: MenuConfig) => (component) => {
       // Add visible class to start the CSS transition
       component.element.classList.add(`${component.getClass("menu--visible")}`);
 
-      // Step 4: Set up initial focus based on interaction type
-      tasks.setTimeout(() => {
+      // Step 4: Set up initial focus based on interaction type. A listbox
+      // leaves focus on its combobox.
+      if (!listbox) tasks.setTimeout(() => {
         if (component.keyboard && component.keyboard.handleInitialFocus) {
           component.keyboard.handleInitialFocus(
             component.element,
@@ -467,8 +483,9 @@ const withController = (config: MenuConfig) => (component) => {
           document.addEventListener("click", handleDocumentClick);
         }
 
-        // Add other document events normally
-        if (config.closeOnEscape) {
+        // Add other document events normally. A listbox's combobox handles
+        // every key, Escape included.
+        if (config.closeOnEscape && !listbox) {
           document.addEventListener("keydown", handleDocumentKeydown);
         }
         window.addEventListener("resize", handleWindowResize, {
@@ -694,8 +711,9 @@ const withController = (config: MenuConfig) => (component) => {
     // Set up menu structure
     renderMenuItems();
 
-    // Set up keyboard navigation if available
-    if (component.keyboard && component.keyboard.setupKeyboardHandlers) {
+    // Set up keyboard navigation if available. A listbox's options never take
+    // focus, so they get no tab stops and no handlers: the combobox owns the keys.
+    if (!listbox && component.keyboard && component.keyboard.setupKeyboardHandlers) {
       component.keyboard.setupKeyboardHandlers(component.element, state, {
         closeMenu,
         closeSubmenu: component.submenu ? component.submenu.closeSubmenu : null,
@@ -723,7 +741,7 @@ const withController = (config: MenuConfig) => (component) => {
       if (config.closeOnClickOutside) {
         document.addEventListener("click", handleDocumentClick);
       }
-      if (config.closeOnEscape) {
+      if (config.closeOnEscape && !listbox) {
         document.addEventListener("keydown", handleDocumentKeydown);
       }
       window.addEventListener("resize", handleWindowResize);

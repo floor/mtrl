@@ -568,3 +568,32 @@ describe('the gap separator', () => {
     expect(groups(menu)[0]!.querySelectorAll('.mtrl-menu-item').length).toBe(2);
   });
 });
+
+// The listbox popup of a select-only combobox (F18): options with ids, no focus
+// taken from the opener, no ARIA or keys added to it, no document key handling
+describe('menu as a listbox', () => {
+  test('renders a listbox of options, leaves focus and the opener alone', async () => {
+    const menu = createMenu({ opener, items, listbox: true, manualOpen: true });
+    await opened(menu);
+    const list = menu.element.querySelector('[role="listbox"]')!;
+    expect(list).not.toBeNull();
+    expect(list.id).not.toBe('');
+    expect(menu.element.getAttribute('role')).toBe('presentation');
+    expect(menu.element.hasAttribute('tabindex')).toBe(false);
+    const options = menuItems(menu);
+    expect(options.map((option) => option.getAttribute('role'))).toEqual(['option', 'option', 'option', 'option']);
+    expect(options.every((option) => option.id && !option.hasAttribute('tabindex'))).toBe(true);
+    expect(document.activeElement).toBe(opener);
+    expect(opener.hasAttribute('aria-haspopup')).toBe(false);
+    expect(opener.hasAttribute('aria-expanded')).toBe(false);
+
+    // keys are the combobox's to handle
+    opener.dispatchEvent(new dom.window.KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+    await after(50);
+    expect(document.activeElement).toBe(opener);
+
+    const press = new dom.window.MouseEvent('mousedown', { bubbles: true, cancelable: true });
+    options[0].dispatchEvent(press);
+    expect(press.defaultPrevented).toBe(true);
+  });
+});

@@ -122,7 +122,8 @@ $component: "#{$prefix}-menu";
             outline: none;
         }
 
-        &:focus-visible {
+        &:focus-visible,
+            &--active {
             @include m.state-layer(t.color("on-surface"), "focus");
         }
 
@@ -186,7 +187,8 @@ $component: "#{$prefix}-menu";
                 @include m.state-layer(t.color("on-secondary-container"), "hover");
             }
 
-            &:focus-visible {
+            &:focus-visible,
+            &.#{$component}-item--active {
                 @include m.state-layer(t.color("on-secondary-container"), "focus");
             }
 
@@ -386,6 +388,7 @@ $component: "#{$prefix}-menu";
             // The shape is the state: 4dp at rest, 12dp once it is touched
             &:hover,
             &:focus-visible,
+            &--active,
             &:active {
                 border-radius: v.shape("medium");
             }
@@ -410,7 +413,8 @@ $component: "#{$prefix}-menu";
                     @include m.state-layer(var(--#{$prefix}-menu-selected-label), "hover");
                 }
 
-                &:focus-visible {
+                &:focus-visible,
+            &.#{$component}-item--active {
                     @include m.state-layer(var(--#{$prefix}-menu-selected-label), "focus");
                 }
 
