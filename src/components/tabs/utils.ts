@@ -10,6 +10,7 @@ interface TabsHost {
   getTabs?: () => TabComponent[];
   getActiveTab?: () => TabComponent | null;
   setActiveTab?: (tabOrValue: TabComponent | string) => unknown;
+  handleTabClick?: (event: unknown, tab: TabComponent) => void;
 }
 
 /**
@@ -64,39 +65,61 @@ export function updateTabPanels(component: TabsHost): void {
 }
 
 /**
+ * Gives the tablist a single tab stop: the active tab, or the first enabled
+ * one when none is active. Every other tab takes tabindex -1 and is reached
+ * with the arrow keys (WAI-ARIA tabs pattern).
+ * @param component - Tabs component
+ */
+export function syncTabStops(component: TabsHost): void {
+  if (typeof component.getTabs !== "function") return;
+  const tabs = component.getTabs();
+  const enabled = tabs.filter((tab) => !(tab.element as HTMLButtonElement).disabled);
+  const active = getActiveTab(component);
+  const stop = active && enabled.includes(active) ? active : enabled[0];
+  tabs.forEach((tab) => tab.element.setAttribute("tabindex", tab === stop ? "0" : "-1"));
+}
+
+/**
  * Sets up keyboard navigation for tabs
  * @param component - Tabs component
  */
 export function setupKeyboardNavigation(component: TabsHost): void {
   // Skip if element is missing
   if (!component.element) return;
+  const tablist = component.element;
 
-  component.element.addEventListener("keydown", (event: KeyboardEvent) => {
-    // Only handle arrow keys when tabs container has focus
-    if (event.target !== event.currentTarget) return;
+  syncTabStops(component);
 
-    // Skip if getTabs or setActiveTab don't exist
-    if (
-      typeof component.getTabs !== "function" ||
-      typeof component.setActiveTab !== "function"
-    )
-      return;
+  tablist.addEventListener("keydown", (event: KeyboardEvent) => {
+    // The key lands on the focused tab, never on the tablist itself
+    const tabElement = (event.target as Element | null)?.closest?.('[role="tab"]');
+    if (!tabElement || !tablist.contains(tabElement)) return;
 
-    const tabs = component.getTabs();
-    const currentTab = getActiveTab(component);
-    const currentIndex = currentTab ? tabs.indexOf(currentTab) : -1;
+    if (typeof component.getTabs !== "function") return;
 
-    let newIndex = currentIndex;
+    // Disabled tabs are skipped rather than focused
+    const tabs = component
+      .getTabs()
+      .filter((tab) => !(tab.element as HTMLButtonElement).disabled);
+    const currentIndex = tabs.findIndex((tab) => tab.element === tabElement);
+    if (currentIndex === -1) return;
+
+    // Left and right follow the reading direction
+    const rtl = getComputedStyle(tablist).direction === "rtl";
+    const last = tabs.length - 1;
+    let newIndex: number;
 
     switch (event.key) {
       case "ArrowRight":
-      case "ArrowDown":
-        newIndex = currentIndex < tabs.length - 1 ? currentIndex + 1 : 0;
+        newIndex = rtl
+          ? (currentIndex > 0 ? currentIndex - 1 : last)
+          : (currentIndex < last ? currentIndex + 1 : 0);
         break;
 
       case "ArrowLeft":
-      case "ArrowUp":
-        newIndex = currentIndex > 0 ? currentIndex - 1 : tabs.length - 1;
+        newIndex = rtl
+          ? (currentIndex < last ? currentIndex + 1 : 0)
+          : (currentIndex > 0 ? currentIndex - 1 : last);
         break;
 
       case "Home":
@@ -104,18 +127,24 @@ export function setupKeyboardNavigation(component: TabsHost): void {
         break;
 
       case "End":
-        newIndex = tabs.length - 1;
+        newIndex = last;
         break;
 
       default:
         return; // Don't handle other keys
     }
 
-    // If a new tab should be focused
-    if (newIndex !== currentIndex && tabs[newIndex]) {
-      event.preventDefault();
-      tabs[newIndex].element.focus();
-      component.setActiveTab(tabs[newIndex]);
+    event.preventDefault();
+    const target = tabs[newIndex];
+    if (target === tabs[currentIndex]) return;
+
+    // Focus follows the key and selects, through the same path as a click
+    target.element.focus();
+    if (typeof component.handleTabClick === "function") {
+      component.handleTabClick(null, target);
+    } else if (typeof component.setActiveTab === "function") {
+      component.setActiveTab(target);
     }
+    syncTabStops(component);
   });
 }
