@@ -175,8 +175,10 @@ export const getElementConfig = (config: CardSchema) => {
     // Add all ARIA attributes from config
     Object.entries(config.aria).forEach(([key, value]) => {
       if (value !== undefined) {
-        // Convert attribute name to aria-* format if not already
-        const attrName = key.startsWith("aria-") ? key : `aria-${key}`;
+        // Convert attribute name to aria-* format if not already; role is
+        // not an aria-* attribute.
+        const attrName =
+          key === "role" || key.startsWith("aria-") ? key : `aria-${key}`;
         ariaAttributes[attrName] = value;
       }
     });

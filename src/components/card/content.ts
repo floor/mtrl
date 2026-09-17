@@ -9,6 +9,8 @@ import { safeUrl } from '../../core/utils/url';
 // Constants for content padding
 export const CARD_CONTENT_PADDING = true;
 
+let headerCount = 0;
+
 /**
  * Creates a card content component
  * 
@@ -131,7 +133,8 @@ export const createCardHeader = (config: CardHeaderConfig = {}): HTMLElement => 
       container: header.element
     });
 
-    // Add title if provided
+    // Add title if provided. The id is unique so setHeader can name the card
+    // with it.
     if (config.title) {
       createElement({
         tag: 'h3',
@@ -139,15 +142,9 @@ export const createCardHeader = (config: CardHeaderConfig = {}): HTMLElement => 
         text: config.title,
         container: textContainer,
         attributes: {
-          id: `${header.element.id || 'card-header'}-title`
+          id: `${header.element.id || `card-header-${++headerCount}`}-title`
         }
       });
-
-      // Link the title ID to the card for accessibility if parent card exists
-      const parentCard = header.element.closest(`.${PREFIX}-card`);
-      if (parentCard && !parentCard.hasAttribute('aria-labelledby')) {
-        parentCard.setAttribute('aria-labelledby', `${header.element.id || 'card-header'}-title`);
-      }
     }
 
     // Add subtitle if provided
