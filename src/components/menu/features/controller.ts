@@ -416,7 +416,8 @@ const withController = (config: MenuConfig) => (component) => {
         `${component.getClass("menu--visible")}`,
       );
       component.element.setAttribute("aria-hidden", "true");
-      component.element.style.height = "0px";
+      // Not the height: the menu is positioned before it is animated, and
+      // positioning reads the element's size to work out its max-height
       component.element.style.opacity = "0";
 
       // Add to DOM - use container if provided, otherwise use document.body
