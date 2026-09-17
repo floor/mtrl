@@ -3,233 +3,111 @@ import { BaseComponent, ElementComponent } from '../../core/compose';
 import { DividerConfig } from './config';
 import { DividerComponent } from './types';
 
+type Orientation = 'horizontal' | 'vertical';
+type Variant = 'full-width' | 'inset' | 'middle-inset';
+
+const ORIENTATIONS: Orientation[] = ['horizontal', 'vertical'];
+const VARIANTS: Variant[] = ['full-width', 'inset', 'middle-inset'];
+const DEFAULT_INSET = 16;
+
 /**
- * Adds orientation functionality to divider
- * 
- * Higher-order function that enhances a component with the ability to be
- * oriented horizontally (default) or vertically. Controls the appropriate
- * CSS classes and dimensional styling based on orientation.
- * 
- * @param config - Divider configuration
- * @returns Function that enhances a component with orientation capabilities
- * 
- * @internal
+ * Renders the divider from its config, which holds the current orientation,
+ * variant, thickness and insets. Every setter updates the config and calls this,
+ * so no setter can leave the classes, sizes or margins of an earlier state.
  */
-export const withOrientation = (config: DividerConfig) => 
+const applyLayout = (component: ElementComponent & BaseComponent, config: DividerConfig) => {
+  const { element } = component;
+  const base = component.getClass('divider');
+  const orientation = config.orientation || 'horizontal';
+  const variant = config.variant || 'full-width';
+  const thickness = config.thickness || 1;
+  const horizontal = orientation === 'horizontal';
+
+  ORIENTATIONS.forEach(name => element.classList.toggle(`${base}--${name}`, name === orientation));
+  VARIANTS.forEach(name => element.classList.toggle(`${base}--${name}`, name === variant));
+
+  // An <hr> is a horizontal separator unless told otherwise.
+  if (horizontal) element.removeAttribute('aria-orientation');
+  else element.setAttribute('aria-orientation', 'vertical');
+
+  const style = element.style;
+  style.marginLeft = style.marginRight = style.marginTop = style.marginBottom = '';
+
+  const cross = horizontal ? 'height' : 'width';
+  const main = horizontal ? 'width' : 'height';
+  style[cross] = `${thickness}px`;
+  style[main] = '100%';
+
+  if (variant !== 'full-width') {
+    const insetStart = config.insetStart !== undefined ? config.insetStart : DEFAULT_INSET;
+    const insetEnd = config.insetEnd !== undefined
+      ? config.insetEnd
+      : (variant === 'middle-inset' ? DEFAULT_INSET : 0);
+    style[horizontal ? 'marginLeft' : 'marginTop'] = `${insetStart}px`;
+    style[horizontal ? 'marginRight' : 'marginBottom'] = `${insetEnd}px`;
+    // 100% plus margins overflows the parent, so let the box shrink to what
+    // the insets leave.
+    style[main] = 'auto';
+  }
+};
+
+export const withOrientation = (config: DividerConfig) =>
   <C extends ElementComponent & BaseComponent>(component: C): C & Partial<DividerComponent> => {
-    const orientation = config.orientation || 'horizontal';
-    
-    // Apply the orientation class
-    component.element.classList.add(`${component.getClass('divider')}--${orientation}`);
-    
-    // Set styles based on orientation and thickness
-    const thickness = config.thickness || 1;
-    
-    if (orientation === 'horizontal') {
-      component.element.style.height = `${thickness}px`;
-      component.element.style.width = '100%';
-    } else {
-      component.element.style.width = `${thickness}px`;
-      component.element.style.height = '100%';
-    }
-    
+    applyLayout(component, config);
+
     return {
       ...component,
-      
+
       getOrientation() {
-        return orientation;
+        return config.orientation || 'horizontal';
       },
-      
-      setOrientation(newOrientation: 'horizontal' | 'vertical') {
-        // Remove existing orientation class
-        component.element.classList.remove(`${component.getClass('divider')}--${orientation}`);
-        
-        // Add new orientation class
-        component.element.classList.add(`${component.getClass('divider')}--${newOrientation}`);
-        
-        // Update styles
-        if (newOrientation === 'horizontal') {
-          component.element.style.height = `${thickness}px`;
-          component.element.style.width = '100%';
-          
-          // Reset vertical styles
-          component.element.style.marginTop = '';
-          component.element.style.marginBottom = '';
-        } else {
-          component.element.style.width = `${thickness}px`;
-          component.element.style.height = '100%';
-          
-          // Reset horizontal styles
-          component.element.style.marginLeft = '';
-          component.element.style.marginRight = '';
-        }
-        
+
+      setOrientation(newOrientation: Orientation) {
+        config.orientation = newOrientation;
+        applyLayout(component, config);
         return this as unknown as DividerComponent;
       }
     };
   };
 
-/**
- * Adds inset functionality to divider
- * 
- * Higher-order function that enhances a component with the ability to have
- * customized inset spacing. Supports three variants (full-width, inset, middle-inset)
- * and allows fine-grained control over start and end insets.
- * 
- * Insets are applied as margins in the appropriate direction based on orientation:
- * - For horizontal dividers: left/right margins
- * - For vertical dividers: top/bottom margins
- * 
- * @param config - Divider configuration
- * @returns Function that enhances a component with inset capabilities
- * 
- * @internal
- */
-export const withInset = (config: DividerConfig) => 
-  <C extends ElementComponent & Partial<DividerComponent>>(component: C): C & Partial<DividerComponent> => {
-    const variant = config.variant || 'full-width';
-    const orientation = config.orientation || 'horizontal';
-    
-    // Apply inset styles based on variant
-    if (variant === 'inset' || variant === 'middle-inset') {
-      if (orientation === 'horizontal') {
-        const insetStart = config.insetStart !== undefined ? config.insetStart : 16;
-        const insetEnd = config.insetEnd !== undefined ? config.insetEnd : (variant === 'middle-inset' ? 16 : 0);
-        
-        component.element.style.marginLeft = `${insetStart}px`;
-        component.element.style.marginRight = `${insetEnd}px`;
-        // withOrientation set 100%; with margins added that overflows the parent,
-        // so let the box shrink to what the insets leave.
-        component.element.style.width = "auto";
-      } else {
-        const insetStart = config.insetStart !== undefined ? config.insetStart : 16;
-        const insetEnd = config.insetEnd !== undefined ? config.insetEnd : (variant === 'middle-inset' ? 16 : 0);
-        
-        component.element.style.marginTop = `${insetStart}px`;
-        component.element.style.marginBottom = `${insetEnd}px`;
-        // As above, on the cross axis.
-        component.element.style.height = "auto";
-      }
+export const withInset = (config: DividerConfig) =>
+  <C extends ElementComponent & BaseComponent & Partial<DividerComponent>>(component: C): C & Partial<DividerComponent> => ({
+    ...component,
+
+    getVariant() {
+      return config.variant || 'full-width';
+    },
+
+    setVariant(newVariant: Variant) {
+      config.variant = newVariant;
+      applyLayout(component, config);
+      return this as unknown as DividerComponent;
+    },
+
+    setInset(insetStart?: number, insetEnd?: number) {
+      if (insetStart !== undefined) config.insetStart = insetStart;
+      if (insetEnd !== undefined) config.insetEnd = insetEnd;
+      applyLayout(component, config);
+      return this as unknown as DividerComponent;
     }
-    
-    return {
-      ...component,
-      
-      getVariant() {
-        return variant as 'full-width' | 'inset' | 'middle-inset';
-      },
-      
-      setVariant(newVariant: 'full-width' | 'inset' | 'middle-inset') {
-        // Remove existing variant class
-        component.element.classList.remove(`${component.getClass('divider')}--${variant}`);
-        
-        // Add new variant class
-        component.element.classList.add(`${component.getClass('divider')}--${newVariant}`);
-        
-        // Update styles
-        const currentOrientation = component.getOrientation ? component.getOrientation() : orientation;
-        
-        if (newVariant === 'full-width') {
-          if (currentOrientation === 'horizontal') {
-            component.element.style.marginLeft = '';
-            component.element.style.marginRight = '';
-          } else {
-            component.element.style.marginTop = '';
-            component.element.style.marginBottom = '';
-          }
-        } else {
-          const insetStart = config.insetStart !== undefined ? config.insetStart : 16;
-          const insetEnd = config.insetEnd !== undefined ? config.insetEnd : (newVariant === 'middle-inset' ? 16 : 0);
-          
-          if (currentOrientation === 'horizontal') {
-            component.element.style.marginLeft = `${insetStart}px`;
-            component.element.style.marginRight = `${insetEnd}px`;
-          } else {
-            component.element.style.marginTop = `${insetStart}px`;
-            component.element.style.marginBottom = `${insetEnd}px`;
-          }
-        }
-        
-        return this as unknown as DividerComponent;
-      },
-      
-      setInset(insetStart?: number, insetEnd?: number) {
-        const currentOrientation = component.getOrientation ? component.getOrientation() : orientation;
-        const currentVariant = component.getVariant ? component.getVariant() : variant;
-        
-        if (currentVariant !== 'full-width') {
-          if (currentOrientation === 'horizontal') {
-            if (insetStart !== undefined) {
-              component.element.style.marginLeft = `${insetStart}px`;
-            }
-            
-            if (insetEnd !== undefined) {
-              component.element.style.marginRight = `${insetEnd}px`;
-            }
-          } else {
-            if (insetStart !== undefined) {
-              component.element.style.marginTop = `${insetStart}px`;
-            }
-            
-            if (insetEnd !== undefined) {
-              component.element.style.marginBottom = `${insetEnd}px`;
-            }
-          }
-        }
-        
-        return this as unknown as DividerComponent;
-      }
-    };
-  };
+  });
 
-/**
- * Adds style customization to divider
- * 
- * Higher-order function that enhances a component with visual customization
- * capabilities, including:
- * - Custom thickness (height for horizontal, width for vertical dividers)
- * - Custom colors (background-color CSS property)
- * 
- * These styling options allow dividers to be visually adapted to different
- * design requirements while maintaining Material Design principles.
- * 
- * @param config - Divider configuration
- * @returns Function that enhances a component with style capabilities
- * 
- * @internal
- */
-export const withStyle = (config: DividerConfig) => 
-  <C extends ElementComponent & Partial<DividerComponent>>(component: C): C & Partial<DividerComponent> => {
+export const withStyle = (config: DividerConfig) =>
+  <C extends ElementComponent & BaseComponent & Partial<DividerComponent>>(component: C): C & Partial<DividerComponent> => {
     // Apply custom color if provided
     if (config.color) {
       component.element.style.backgroundColor = config.color;
     }
-    
-    // Apply thickness
-    const thickness = config.thickness || 1;
-    const orientation = config.orientation || 'horizontal';
-    
-    if (orientation === 'horizontal') {
-      component.element.style.height = `${thickness}px`;
-    } else {
-      component.element.style.width = `${thickness}px`;
-    }
-    
+
     return {
       ...component,
-      
+
       setThickness(newThickness: number) {
-        const currentOrientation = component.getOrientation ? component.getOrientation() : orientation;
-        
-        if (currentOrientation === 'horizontal') {
-          component.element.style.height = `${newThickness}px`;
-        } else {
-          component.element.style.width = `${newThickness}px`;
-        }
-        
+        config.thickness = newThickness;
+        applyLayout(component, config);
         return this as unknown as DividerComponent;
       },
-      
+
       setColor(color: string) {
         component.element.style.backgroundColor = color;
         return this as unknown as DividerComponent;
