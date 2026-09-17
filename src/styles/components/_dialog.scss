@@ -26,11 +26,13 @@ $component: "#{base.$prefix}-dialog";
     padding: 24px;
     box-sizing: border-box;
 
-    // The scrim fades in on default effects and out on fast effects, and
-    // leaves the accessibility tree once the fade is done
+    // The overlay holds the dialog, so its fade is the dialog's fade: the scrim
+    // and the dialog come and go together on default effects, as Compose's
+    // ModalBottomSheet fades its scrim both ways. The overlay leaves the
+    // accessibility tree once the fade is done.
     transition:
-        m.spring(opacity, fast-effects),
-        visibility 0s linear m.spring-duration(fast-effects);
+        m.spring(opacity, default-effects),
+        visibility 0s linear m.spring-duration(default-effects);
 
     &--visible {
         opacity: 1;
@@ -62,20 +64,20 @@ $component: "#{base.$prefix}-dialog";
 
     // MDC-Android's dialog grows from 0.8 while fading in, and only fades
     // out. On M3 Expressive springs: the growth takes the default spatial
-    // spring and the fade default effects; closing fades on fast effects, and
-    // the scale resets only once the dialog is invisible
+    // spring, and the fade is the overlay's, which holds the dialog. Fading
+    // the dialog as well multiplied the two, so a closing dialog was all but
+    // gone within three frames. Closing, the dialog holds its opacity and
+    // scale until the overlay has faded out.
     transition:
-        m.spring(opacity, fast-effects),
-        transform 0s linear m.spring-duration(fast-effects);
+        opacity 0s linear m.spring-duration(default-effects),
+        transform 0s linear m.spring-duration(default-effects);
 
     // Visible state
     &--visible {
         opacity: 1;
         transform: scale(1);
         pointer-events: auto;
-        transition:
-            m.spring(transform, default-spatial),
-            m.spring(opacity, default-effects);
+        transition: m.spring(transform, default-spatial), opacity 0s;
     }
 
     // Size variants

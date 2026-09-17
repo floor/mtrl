@@ -11,7 +11,8 @@
 // the surface it shares a shape with; m3.material.io names the default spatial
 // spring for surfaces that partly cover the screen. Compose dialogs take their
 // motion from the window, so the dialog keeps MDC-Android's shape of motion
-// (grow from 0.8 and fade in, fade out) on the matching springs.
+// (grow from 0.8 and fade in, fade out) on the matching springs, fading as one
+// with its overlay on default effects, as ModalBottomSheet fades its scrim.
 //
 // The springs overshoot, so every sliding sheet carries a solid shadow of its
 // own colour past the edge it docks to, where the overshoot would open a gap.
@@ -141,17 +142,20 @@ describe('bottom sheet', () => {
 });
 
 describe('dialog', () => {
-  test('grows on the spatial spring and fades in on default effects', () => {
-    expect(value('dialog', '.mtrl-dialog--visible', 'transition')).toBe(`${on('transform', 'default-spatial')}, ${on('opacity', 'default-effects')}`);
+  // The overlay holds the dialog, so the overlay's fade is the dialog's. Both
+  // fading multiplied the two opacities: a closing dialog was at 4% within
+  // 42ms, measured in Chromium on mtrl.app.
+  test('grows on the spatial spring and takes its fade from the overlay', () => {
+    expect(value('dialog', '.mtrl-dialog--visible', 'transition')).toBe(`${on('transform', 'default-spatial')}, opacity 0s`);
   });
 
-  test('fades out on fast effects and resets its scale only once invisible', () => {
-    expect(value('dialog', '.mtrl-dialog', 'transition')).toBe(`${on('opacity', 'fast-effects')}, transform 0s linear 175ms`);
+  test('closing, it holds its opacity and scale until the overlay has faded out', () => {
+    expect(value('dialog', '.mtrl-dialog', 'transition')).toBe('opacity 0s linear 250ms, transform 0s linear 250ms');
   });
 
-  test('the scrim fades in on default effects and out on fast effects', () => {
+  test('the overlay, scrim and dialog together, fades on default effects both ways', () => {
     expect(value('dialog', '.mtrl-dialog-overlay--visible', 'transition')).toBe(`${on('opacity', 'default-effects')}, visibility 0s`);
-    expect(value('dialog', '.mtrl-dialog-overlay', 'transition')).toBe(`${on('opacity', 'fast-effects')}, visibility 0s linear 175ms`);
+    expect(value('dialog', '.mtrl-dialog-overlay', 'transition')).toBe(`${on('opacity', 'default-effects')}, visibility 0s linear 250ms`);
   });
 });
 

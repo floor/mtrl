@@ -206,8 +206,9 @@ describe('dialog', () => {
     expect(document.body.style.overflow).toBe('');
   });
 
-  // The stylesheet closes on the fast effects spring (175ms) and opens on the
-  // default spatial spring (450ms); see test/styles/sheet-motion.test.ts
+  // The stylesheet fades the overlay out on the default effects spring (250ms)
+  // and grows the dialog on the default spatial spring (450ms); see
+  // test/styles/sheet-motion.test.ts
   test('a closing dialog stays on the page until its fade has finished', async () => {
     const dialog = createDialog({ title: 'Delete file?', buttons });
     await opened(dialog);
@@ -215,7 +216,7 @@ describe('dialog', () => {
     const seen: string[] = [];
     dialog.on('afterclose', () => seen.push('afterclose'));
     dialog.close();
-    await after(150);
+    await after(220);
     expect(document.body.contains(overlay)).toBe(true);
     expect(seen).toEqual([]);
     await after(60);

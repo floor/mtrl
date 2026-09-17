@@ -406,10 +406,11 @@ export const withVisibility = () => (component) => {
   const isOpen = component.config.open === true;
 
   // How long the events after opening and closing wait, unless configured:
-  // the stylesheet opens on the default spatial spring and closes on fast
-  // effects (spring-default-spatial-duration and spring-fast-effects-duration)
+  // the stylesheet grows the dialog on the default spatial spring and fades the
+  // overlay out on default effects (spring-default-spatial-duration and
+  // spring-default-effects-duration)
   const openDuration = component.config.animationDuration ?? 450;
-  const closeDuration = component.config.animationDuration ?? 175;
+  const closeDuration = component.config.animationDuration ?? 250;
 
   // Helper functions to handle focus trap
   const focusableElements =
