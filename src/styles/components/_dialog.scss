@@ -15,8 +15,7 @@ $component: "#{base.$prefix}-dialog";
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: t.alpha("scrim", 0.32);
-    opacity: 0;
+    background-color: transparent;
     visibility: hidden;
     z-index: v.z-index("modal");
     display: flex;
@@ -26,64 +25,97 @@ $component: "#{base.$prefix}-dialog";
     padding: 24px;
     box-sizing: border-box;
 
-    // The overlay holds the dialog, so its fade is the dialog's fade: the scrim
-    // and the dialog come and go together. It leaves the accessibility tree
-    // once the fade is done.
-    //
-    // In on default effects, as Compose's ModalBottomSheet fades its scrim.
-    // Out on MDC-Android's dialog exit (m3_motion_fade_exit): emphasized
-    // accelerate, which holds before it goes. An effects spring is
-    // near-exponential, fastest in its first frames, and a dialog closing on
-    // one reads as a cut rather than a fade. MDC's exit is 150ms; mtrl's
-    // duration scale is off M3's, so this takes the nearest token.
+    // The scrim fades on its own colour rather than on opacity: the dialog is
+    // its child, so fading the layer faded the dialog with it, and the two
+    // opacities multiplied into what read as a cut.
+    // material-web animates the scrim linearly, 500ms in and 150ms out
+    // (dialog/internal/animations.ts).
     transition:
-        opacity v.motion("duration-short2") v.motion("easing-emphasized-accelerate"),
-        visibility 0s linear v.motion("duration-short2");
+        background-color v.motion("duration-short3") linear,
+        visibility 0s linear v.motion("duration-short3");
 
     &--visible {
-        opacity: 1;
+        background-color: t.alpha("scrim", 0.32);
         visibility: visible;
-        transition: m.spring(opacity, default-effects), visibility 0s;
+        transition: background-color v.motion("duration-long2") linear, visibility 0s;
     }
 }
 
 // Dialog container
 // MD3: surface-container-high, 28dp corners, elevation 3
+//
+// Motion follows material-web, the Material web implementation
+// (dialog/internal/animations.ts): the surface grows in height, 35% to 100%
+// over 500ms emphasized, while the dialog slides down into place and the
+// headline, content and actions fade in one after another. Closing takes
+// 150ms on emphasized accelerate. The surface is painted by ::before, so
+// growing it never reflows the text inside.
 .#{$component} {
     position: relative;
-    background-color: t.color("surface-container-high");
+    background-color: transparent;
     color: t.color("on-surface");
     border-radius: v.shape("extra-large"); // 28dp corner radius
     max-width: 560px;
     min-width: 280px;
     width: 100%;
     margin: auto;
-    @include m.elevation(3);
 
-    // Hidden as a scaled-down, transparent container; it fades in to full size
-    opacity: 0;
-    transform-origin: center center;
-    // Dialogs fade in with a slight scale; the vertical squash this replaced
-    // is not an M3 pattern
-    transform: scale(0.8);
+    // The surface: what grows
+    &::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 35%;
+        background-color: t.color("surface-container-high");
+        border-radius: inherit;
+        @include m.elevation(3);
+        opacity: 0;
+        z-index: -1;
+        transition:
+            height v.motion("duration-short3") v.motion("easing-emphasized-accelerate"),
+            opacity v.motion("duration-short1") linear v.motion("duration-short2");
+    }
+
+    // Hidden as a container that has not grown yet, lifted slightly
+    transform: translateY(-50px);
     pointer-events: none;
+    transition: transform v.motion("duration-short3") v.motion("easing-emphasized-accelerate");
 
-    // MDC-Android's dialog grows from 0.8 while fading in, and only fades
-    // out. On M3 Expressive springs: the growth takes the default spatial
-    // spring, and the fade is the overlay's, which holds the dialog. Fading
-    // the dialog as well multiplied the two, so a closing dialog was all but
-    // gone within three frames. Closing, the dialog holds its opacity and
-    // scale until the overlay has faded out.
-    transition:
-        opacity 0s linear v.motion("duration-short2"),
-        transform 0s linear v.motion("duration-short2");
+    // Its contents fade with the surface, and lead it on the way out
+    .#{$component}-header,
+    .#{$component}-content,
+    .#{$component}-footer {
+        opacity: 0;
+        transition: opacity v.motion("duration-short2") linear;
+    }
 
     // Visible state
     &--visible {
-        opacity: 1;
-        transform: scale(1);
+        transform: translateY(0);
         pointer-events: auto;
-        transition: m.spring(transform, default-spatial), opacity 0s;
+        transition: transform v.motion("duration-long2") v.motion("easing-emphasized");
+
+        &::before {
+            height: 100%;
+            opacity: 1;
+            transition:
+                height v.motion("duration-long2") v.motion("easing-emphasized"),
+                opacity v.motion("duration-short1") linear;
+        }
+
+        // The headline and content follow the surface, the actions last
+        .#{$component}-header,
+        .#{$component}-content {
+            opacity: 1;
+            transition: opacity v.motion("duration-medium1") linear v.motion("duration-short1");
+        }
+
+        .#{$component}-footer {
+            opacity: 1;
+            transition: opacity v.motion("duration-medium2") linear v.motion("duration-short3");
+        }
     }
 
     // Size variants
@@ -118,15 +150,15 @@ $component: "#{base.$prefix}-dialog";
         margin: 0;
         border-radius: 0;
         transform-origin: center center;
-
-        transform: scale(0.9);
+        transform: translateY(24px);
 
         &.#{$component}--visible {
-            transform: scale(1);
+            transform: translateY(0);
         }
     }
 
-    // Animation variants with appropriate transform origins
+    // The variants change where the dialog comes from; the surface grows in
+    // height either way, which is the M3 motion
     &--slide-up {
         transform: translateY(24px);
 
@@ -151,7 +183,7 @@ $component: "#{base.$prefix}-dialog";
         }
     }
 
-    // Scale animation variant (original behavior)
+    // The basic dialog of the previous spec: a scale rather than a slide
     &--scale {
         transform-origin: center center;
         transform: scale(0.8);

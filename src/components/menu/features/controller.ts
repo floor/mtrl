@@ -19,6 +19,23 @@ const withController = (config: MenuConfig) => (component) => {
 
   const tasks = createMenuTasks();
 
+  // A menu grows in height from its anchor and shrinks back to about a third
+  // of it, which is material-web's menu motion (menu/internal/menu.ts): 500ms
+  // emphasized open, 150ms emphasized accelerate closed. The height is
+  // animated rather than the scale, so the items inside are revealed rather
+  // than squashed; a menu that opens upward keeps its foot against its anchor
+  // by moving its top with the height.
+  const OPEN_MS = 500;
+  const CLOSE_MS = 150;
+  const CLOSED_HEIGHT = 0.35;
+  const opensUpward = (): boolean =>
+    ["position-top", "position-top-start", "position-top-end"].some((name) =>
+      component.element.classList.contains(`${component.getClass("menu")}--${name}`),
+    );
+  const clearHeight = (): void => {
+    component.element.style.height = "";
+  };
+
   // Initialize state
   const state = {
     visible: config.visible || false,
@@ -399,7 +416,7 @@ const withController = (config: MenuConfig) => (component) => {
         `${component.getClass("menu--visible")}`,
       );
       component.element.setAttribute("aria-hidden", "true");
-      component.element.style.transform = "scaleY(0)";
+      component.element.style.height = "0px";
       component.element.style.opacity = "0";
 
       // Add to DOM - use container if provided, otherwise use document.body
@@ -418,15 +435,28 @@ const withController = (config: MenuConfig) => (component) => {
       // Set attributes for accessibility
       component.element.setAttribute("aria-hidden", "false");
 
-      // Remove the inline styles we added
-      component.element.style.transform = "";
+      // Measure the menu at its full height, then grow into it
+      component.element.style.height = "";
       component.element.style.opacity = "";
+      const fullHeight = component.element.offsetHeight;
+      const upward = opensUpward();
+      const restingTop = parseFloat(component.element.style.top || "0");
 
-      // Force a reflow before adding the visible class
+      component.element.style.height = "0px";
+      if (upward) component.element.style.top = `${restingTop + fullHeight}px`;
+
+      // Force a reflow so the closed state is what the transition starts from
       void component.element.getBoundingClientRect();
 
       // Add visible class to start the CSS transition
       component.element.classList.add(`${component.getClass("menu--visible")}`);
+      component.element.style.height = `${fullHeight}px`;
+      if (upward) component.element.style.top = `${restingTop}px`;
+
+      // Once it has grown, let the menu size itself again
+      tasks.setTimeout(() => {
+        if (state.visible) clearHeight();
+      }, OPEN_MS);
 
       // Step 4: Set up initial focus based on interaction type
       tasks.setTimeout(() => {
@@ -506,11 +536,21 @@ const withController = (config: MenuConfig) => (component) => {
       // Update state
       state.visible = false;
 
-      // Set attributes
+      // Set attributes, and shrink from the height it currently has
       component.element.setAttribute("aria-hidden", "true");
+      const openHeight = component.element.offsetHeight;
+      const upward = opensUpward();
+      const openTop = parseFloat(component.element.style.top || "0");
+      component.element.style.height = `${openHeight}px`;
+      void component.element.getBoundingClientRect();
+
       component.element.classList.remove(
         `${component.getClass("menu--visible")}`,
       );
+      component.element.style.height = `${openHeight * CLOSED_HEIGHT}px`;
+      if (upward) {
+        component.element.style.top = `${openTop + openHeight * (1 - CLOSED_HEIGHT)}px`;
+      }
 
       // Remove document events
       document.removeEventListener("click", handleDocumentClick);
@@ -532,7 +572,9 @@ const withController = (config: MenuConfig) => (component) => {
         if (component.element.parentNode && !state.visible) {
           component.element.parentNode.removeChild(component.element);
         }
-      }, 300); // Match the animation duration in CSS
+        if (!state.visible) clearHeight();
+        // The closing shrink is duration-short3; the wait clears it
+      }, CLOSE_MS + 50);
     }, 50);
   };
 

@@ -215,7 +215,7 @@ describe('dialog', () => {
     const seen: string[] = [];
     dialog.on('afterclose', () => seen.push('afterclose'));
     dialog.close();
-    await after(170);
+    await after(120);
     expect(document.body.contains(overlay)).toBe(true);
     expect(seen).toEqual([]);
     await after(60);
@@ -223,14 +223,14 @@ describe('dialog', () => {
     expect(seen).toEqual(['afterclose']);
   });
 
-  test('afteropen waits for the opening spring to settle', async () => {
+  test('afteropen waits for the surface to finish growing', async () => {
     const dialog = createDialog({ title: 'Delete file?', buttons });
     const seen: string[] = [];
     dialog.on('afteropen', () => seen.push('afteropen'));
     dialog.open();
-    await after(300);
+    await after(400);
     expect(seen).toEqual([]);
-    await after(200);
+    await after(160);
     expect(seen).toEqual(['afteropen']);
     dialog.close();
   });

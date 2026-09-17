@@ -24,10 +24,13 @@ beforeAll(() => {
 
 describe('dialog stylesheet', () => {
   test('the container is surface-container-high at level 3 with a 28dp corner', () => {
-    expect(value('.mtrl-dialog', 'background-color')).toBe('var(--mtrl-sys-color-surface-container-high)');
+    // The surface is painted by ::before, which is what grows in height while
+    // the dialog opens, so the text inside never reflows
+    expect(value('.mtrl-dialog::before', 'background-color')).toBe('var(--mtrl-sys-color-surface-container-high)');
     expect(value('.mtrl-dialog', 'color')).toBe('var(--mtrl-sys-color-on-surface)');
     expect(value('.mtrl-dialog', 'border-radius')).toBe('28px');
-    expect(value('.mtrl-dialog', 'box-shadow')).toBe('0px 1px 3px rgba(0, 0, 0, 0.3), 0px 4px 8px 3px rgba(0, 0, 0, 0.15)');
+    expect(value('.mtrl-dialog::before', 'border-radius')).toBe('inherit');
+    expect(value('.mtrl-dialog::before', 'box-shadow')).toBe('0px 1px 3px rgba(0, 0, 0, 0.3), 0px 4px 8px 3px rgba(0, 0, 0, 0.15)');
     expect(value('.mtrl-dialog', 'min-width')).toBe('280px');
     expect(value('.mtrl-dialog', 'max-width')).toBe('560px');
   });
@@ -64,9 +67,12 @@ describe('dialog stylesheet', () => {
     expect(value('.mtrl-dialog--fullscreen .mtrl-dialog-header-title', 'text-align')).toBe('start');
   });
 
-  test('it fades in with a scale, and reduced motion drops the scale without shouting', () => {
-    expect(value('.mtrl-dialog', 'transform')).toBe('scale(0.8)');
-    expect(value('.mtrl-dialog--visible', 'transform')).toBe('scale(1)');
+  test('it grows into place, and reduced motion drops the movement without shouting', () => {
+    // material-web slides the dialog down 50px as its surface grows
+    expect(value('.mtrl-dialog', 'transform')).toBe('translateY(-50px)');
+    expect(value('.mtrl-dialog::before', 'height')).toBe('35%');
+    expect(value('.mtrl-dialog--visible', 'transform')).toBe('translateY(0)');
+    expect(value('.mtrl-dialog--visible .mtrl-dialog::before', 'height') ?? value('.mtrl-dialog--visible::before', 'height')).toBe('100%');
     expect(css).not.toContain('scaleY(0)');
     expect(css).not.toContain('!important');
     expect(css).toMatch(/prefers-reduced-motion: reduce\)\s*\{[\s\S]{0,400}?transform: none;/);
@@ -74,7 +80,9 @@ describe('dialog stylesheet', () => {
 
   test('the scrim covers the window and sits under the modal layer', () => {
     expect(value('.mtrl-dialog-overlay', 'position')).toBe('fixed');
-    expect(value('.mtrl-dialog-overlay', 'background-color')).toContain('var(--mtrl-sys-color-scrim');
+    // the scrim fades on its colour, not on opacity: the dialog is its child
+    expect(value('.mtrl-dialog-overlay', 'background-color')).toBe('transparent');
+    expect(value('.mtrl-dialog-overlay--visible', 'background-color')).toContain('var(--mtrl-sys-color-scrim');
     expect(value('.mtrl-dialog-overlay', 'z-index')).toBe('1000');
   });
 });

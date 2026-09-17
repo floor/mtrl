@@ -79,9 +79,13 @@ describe('menu stylesheet', () => {
     expect(value('.mtrl-menu-divider', 'background-color')).toBe('var(--mtrl-sys-color-outline-variant)');
   });
 
-  test('it fades in with a scale, and reduced motion drops the scale quietly', () => {
-    expect(value('.mtrl-menu', 'transform')).toBe('scale(0.8)');
-    expect(value('.mtrl-menu--visible', 'transform')).toBe('scale(1)');
+  // A menu grows in height from its anchor and shrinks back to a third of it
+  // (material-web menu/internal/menu.ts). The height is animated, not the
+  // scale: scaling squashes the items rather than revealing them.
+  test('it grows in height and shrinks back, and reduced motion drops the movement quietly', () => {
+    expect(value('.mtrl-menu', 'transition')).toBe('height 150ms cubic-bezier(0.3, 0, 0.8, 0.15), top 150ms cubic-bezier(0.3, 0, 0.8, 0.15), opacity 50ms linear 100ms');
+    expect(value('.mtrl-menu--visible', 'transition')).toBe('height 500ms cubic-bezier(0.3, 0, 0, 1), top 500ms cubic-bezier(0.3, 0, 0, 1), opacity 50ms linear');
+    expect(value('.mtrl-menu', 'overflow')).toBe('hidden');
     expect(css).not.toContain('scaleY(');
     expect(css).not.toContain('!important');
     expect(css).toMatch(/prefers-reduced-motion: reduce\)\s*\{[\s\S]{0,300}?transform: none;/);

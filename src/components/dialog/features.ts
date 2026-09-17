@@ -406,11 +406,10 @@ export const withVisibility = () => (component) => {
   const isOpen = component.config.open === true;
 
   // How long the events after opening and closing wait, unless configured:
-  // the stylesheet grows the dialog on the default spatial spring and fades the
-  // overlay out over duration-short2 (spring-default-spatial-duration, and
-  // MDC-Android's dialog exit)
-  const openDuration = component.config.animationDuration ?? 450;
-  const closeDuration = component.config.animationDuration ?? 200;
+  // the stylesheet grows the surface over duration-long2 and closes it over
+  // duration-short3 (material-web dialog/internal/animations.ts)
+  const openDuration = component.config.animationDuration ?? 500;
+  const closeDuration = component.config.animationDuration ?? 150;
 
   // Helper functions to handle focus trap
   const focusableElements =
@@ -605,6 +604,10 @@ export const withVisibility = () => (component) => {
       if (component.overlay && !component.overlay.parentNode) {
         const container = component.structure.container || document.body;
         container.appendChild(component.overlay);
+        // An element inserted and made visible in the same frame has no state
+        // to animate from, so the scrim appeared at once while it faded on the
+        // way out. Reading a layout value paints the closed state first.
+        void component.overlay.offsetHeight;
       }
 
       // Show the overlay

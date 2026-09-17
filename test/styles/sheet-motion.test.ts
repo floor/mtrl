@@ -143,23 +143,35 @@ describe('bottom sheet', () => {
 });
 
 describe('dialog', () => {
-  // The overlay holds the dialog, so the overlay's fade is the dialog's. Both
-  // fading multiplied the two opacities: a closing dialog was at 4% within
-  // 42ms, measured in Chromium on mtrl.app.
-  test('grows on the spatial spring and takes its fade from the overlay', () => {
-    expect(value('dialog', '.mtrl-dialog--visible', 'transition')).toBe(`${on('transform', 'default-spatial')}, opacity 0s`);
+  // material-web (dialog/internal/animations.ts) grows the surface from 35% to
+  // 100% over 500ms emphasized while the dialog slides down into place, and
+  // reverses it over 150ms on emphasized accelerate. Fading the dialog itself
+  // as well as its overlay multiplied the two opacities: a closing dialog was
+  // at 4% within 42ms, measured in Chromium on mtrl.app.
+  test('the surface grows in height, and the dialog slides into place', () => {
+    expect(value('dialog', '.mtrl-dialog::before', 'height')).toBe('35%');
+    expect(value('dialog', '.mtrl-dialog--visible::before', 'height')).toBe('100%');
+    expect(value('dialog', '.mtrl-dialog', 'transform')).toBe('translateY(-50px)');
+    expect(value('dialog', '.mtrl-dialog--visible', 'transform')).toBe('translateY(0)');
   });
 
-  test('closing, it holds its opacity and scale until the overlay has faded out', () => {
-    expect(value('dialog', '.mtrl-dialog', 'transition')).toBe('opacity 0s linear 200ms, transform 0s linear 200ms');
+  test('it grows on emphasized over 500ms and closes on emphasized accelerate over 150ms', () => {
+    expect(value('dialog', '.mtrl-dialog--visible', 'transition')).toBe('transform 500ms cubic-bezier(0.3, 0, 0, 1)');
+    expect(value('dialog', '.mtrl-dialog--visible::before', 'transition')).toBe('height 500ms cubic-bezier(0.3, 0, 0, 1), opacity 50ms linear');
+    expect(value('dialog', '.mtrl-dialog', 'transition')).toBe('transform 150ms cubic-bezier(0.3, 0, 0.8, 0.15)');
+    expect(value('dialog', '.mtrl-dialog::before', 'transition')).toBe('height 150ms cubic-bezier(0.3, 0, 0.8, 0.15), opacity 50ms linear 100ms');
   });
 
-  // An effects spring is fastest in its first frames: the dialog was at 40% two
-  // frames into the fade and read as a cut. MDC-Android's dialog exit holds and
-  // then goes.
-  test('the overlay fades in on default effects and out on emphasized accelerate', () => {
-    expect(value('dialog', '.mtrl-dialog-overlay--visible', 'transition')).toBe(`${on('opacity', 'default-effects')}, visibility 0s`);
-    expect(value('dialog', '.mtrl-dialog-overlay', 'transition')).toBe('opacity 200ms cubic-bezier(0.3, 0, 0.8, 0.15), visibility 0s linear 200ms');
+  test('the headline and content follow the surface, the actions last', () => {
+    expect(value('dialog', '.mtrl-dialog--visible .mtrl-dialog-header, .mtrl-dialog--visible .mtrl-dialog-content', 'transition')).toBe('opacity 250ms linear 50ms');
+    expect(value('dialog', '.mtrl-dialog--visible .mtrl-dialog-footer', 'transition')).toBe('opacity 300ms linear 150ms');
+  });
+
+  // The dialog is the overlay's child, so the scrim fades on its colour
+  test('the scrim fades on its own colour, 500ms in and 150ms out', () => {
+    expect(value('dialog', '.mtrl-dialog-overlay', 'background-color')).toBe('transparent');
+    expect(value('dialog', '.mtrl-dialog-overlay--visible', 'transition')).toBe('background-color 500ms linear, visibility 0s');
+    expect(value('dialog', '.mtrl-dialog-overlay', 'transition')).toBe('background-color 150ms linear, visibility 0s linear 150ms');
   });
 });
 
@@ -174,12 +186,10 @@ describe('the sheets keep no fixed-duration curve', () => {
     }
   });
 
-  // The dialog is the exception, and only when it closes: Compose has no dialog
-  // motion, and MDC-Android's exit curve is what makes the fade read as a fade
-  test('the dialog springs everywhere except its exit', () => {
-    const transitions = Array.from(sheets.dialog.matchAll(/transition:\s*([^;]+);/g), (m) => m[1])
-      .filter((t) => /\b(transform|opacity|visibility)\b/.test(t));
-    const eased = transitions.filter((t) => t.includes('cubic-bezier'));
-    expect(eased).toEqual(['opacity 200ms cubic-bezier(0.3, 0, 0.8, 0.15), visibility 0s linear 200ms']);
+  // The dialog does not move on springs at all: Compose has no dialog motion,
+  // and material-web's own dialog animations are the web source for it
+  test('the dialog takes material-web\'s curves, not the springs', () => {
+    const transitions = Array.from(sheets.dialog.matchAll(/transition:\s*([^;]+);/g), (m) => m[1]);
+    expect(transitions.some((t) => t.includes('linear('))).toBe(false);
   });
 });
