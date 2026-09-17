@@ -41,7 +41,14 @@ select {
   font: inherit;
 }
 
-// Remove all animations, transitions and smooth scrolling for people who prefer not to see them
+// For people who prefer reduced motion, movement stops and fades stay.
+// WCAG 2.3.3 is about motion: things that move, grow or slide. A short
+// cross-fade is what platforms put in its place, and a dialog or menu that
+// cuts in and out with no fade at all is harder to follow, not easier. So
+// transitions are limited to the properties that fade, and anything else a
+// component transitions (transform, height, position, clip) changes at once.
+// The fades keep the duration their component gave them. Components' own
+// reduced-motion rules still apply on top of this.
 @media (prefers-reduced-motion: reduce) {
   html:focus-within {
     scroll-behavior: auto;
@@ -52,7 +59,7 @@ select {
   *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+    transition-property: opacity, color, background-color, border-color, outline-color, box-shadow, visibility !important;
     scroll-behavior: auto !important;
   }
 }

@@ -72,6 +72,9 @@ try {
                     for (const [i, url] of urls.entries()) {
                         await page.goto(url);
                         await page.waitForFunction(() => !!window.mountRail);
+                        // The comparison is of static styling, and reduced motion keeps fades, so
+                        // transitions are switched off on both pages before anything is captured
+                        await page.addStyleTag({ content: '*, *::before, *::after { transition: none !important; }' });
                         await page.setViewportSize({ width: 900, height });
                         await page.evaluate(({ expanded, direction, mode }) => {
                             document.documentElement.dir = direction;

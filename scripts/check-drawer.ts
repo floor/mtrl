@@ -63,7 +63,9 @@ try {
     scenes++;
   }
   await page.evaluate(() => window.mountDrawer({ variant: 'standard', open: true }));
-  assert.equal(await page.locator('.mtrl-drawer').evaluate(el => getComputedStyle(el).transitionProperty), 'none');
+  // Reduced motion stops movement and keeps fades: nothing that moves or resizes the drawer may transition
+  const reduced = await page.locator('.mtrl-drawer').evaluate(el => getComputedStyle(el).transitionProperty);
+  assert(!/transform|width|height|top|left|inset/.test(reduced), `Drawer still moves under reduced motion: ${reduced}`);
   await page.click('#outside');
   assert.equal(await page.locator('#outside').evaluate(el => el === document.activeElement), true);
   await page.evaluate(() => window.mountDrawer({ variant: 'modal' }));
