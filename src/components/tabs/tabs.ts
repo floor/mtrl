@@ -58,6 +58,13 @@ const createTabs = (config: TabsConfig = {}): TabsComponent => {
       comp => withAPI(getApiConfig(comp))(comp)
     )(baseConfig);
     
+    // Handlers passed as config.on were documented and never registered.
+    if (config.on) {
+      Object.entries(config.on).forEach(([event, handler]) => {
+        if (typeof handler === 'function') component.on(event, handler);
+      });
+    }
+    
     // Set up keyboard navigation
     setupKeyboardNavigation(component);
     

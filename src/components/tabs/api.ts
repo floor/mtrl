@@ -77,15 +77,15 @@ export const withAPI = ({ lifecycle }: ApiOptions) =>
       const targetContainer = component.tabsContainer;
       targetContainer.appendChild(tab.element);
       
-      // Add click handler with robust event handling
+      // One listener: on() when the tab has it, the DOM otherwise. Both at once
+      // ran handleTabClick twice per click.
       if (tab.on && typeof tab.on === 'function') {
         tab.on('click', (event) => component.handleTabClick(event, tab));
+      } else {
+        tab.element.addEventListener('click', (event) => {
+          component.handleTabClick(event, tab);
+        });
       }
-      
-      // Add direct DOM event handler as a fallback
-      tab.element.addEventListener('click', (event) => {
-        component.handleTabClick(event, tab);
-      });
       
       return tab;
     },
@@ -100,14 +100,14 @@ export const withAPI = ({ lifecycle }: ApiOptions) =>
       const targetContainer = component.tabsContainer;
       targetContainer.appendChild(tab.element);
       
-      // Add click handler via API and direct DOM event
+      // One listener: on() when the tab has it, the DOM otherwise.
       if (tab.on && typeof tab.on === 'function') {
         tab.on('click', (event) => component.handleTabClick(event, tab));
+      } else {
+        tab.element.addEventListener('click', (event) => {
+          component.handleTabClick(event, tab);
+        });
       }
-      
-      tab.element.addEventListener('click', (event) => {
-        component.handleTabClick(event, tab);
-      });
       
       return this;
     },
@@ -135,6 +135,10 @@ export const withAPI = ({ lifecycle }: ApiOptions) =>
         : tabOrValue;
         
       if (!targetTab) return this;
+      
+      // A disabled tab cannot be selected by code any more than by a click. A tab
+      // exposes no disabled manager, so read the button it is rendered as.
+      if ((targetTab.element as HTMLButtonElement).disabled) return this;
       
       // Deactivate all tabs first
       component.tabs.forEach(tab => tab.deactivate());

@@ -111,12 +111,9 @@ export const withTabsManagement =
         event.preventDefault();
       }
 
-      // Skip if tab is disabled
-      if (
-        tab.disabled &&
-        tab.disabled.isDisabled &&
-        tab.disabled.isDisabled()
-      ) {
+      // Skip if tab is disabled. A tab exposes no disabled manager, so the check
+      // this replaces never matched; read the button the tab is rendered as.
+      if ((tab.element as HTMLButtonElement).disabled) {
         return;
       }
 
@@ -146,14 +143,17 @@ export const withTabsManagement =
 
     // Add click handlers to existing tabs
     tabs.forEach((tab) => {
-      // Add event listener directly and via API if available
+      // One listener. A tab forwards its button's click through on(); adding a
+      // DOM listener as well ran handleTabClick twice per click, so every
+      // selection emitted change twice. The DOM listener is only for tabs
+      // without on().
       if (tab.on && typeof tab.on === "function") {
         tab.on("click", (event) => handleTabClick(event, tab));
+      } else {
+        tab.element.addEventListener("click", (event) =>
+          handleTabClick(event, tab)
+        );
       }
-      // Also add direct DOM event listener as a fallback
-      tab.element.addEventListener("click", (event) =>
-        handleTabClick(event, tab)
-      );
     });
 
     return {
@@ -338,12 +338,9 @@ export const withIndicator =
 
     // Replace tab click handler to ensure indicator updates
     component.handleTabClick = function (event, tab) {
-      // Skip if tab is disabled
-      if (
-        tab.disabled &&
-        tab.disabled.isDisabled &&
-        tab.disabled.isDisabled()
-      ) {
+      // Skip if tab is disabled. A tab exposes no disabled manager, so the check
+      // this replaces never matched; read the button the tab is rendered as.
+      if ((tab.element as HTMLButtonElement).disabled) {
         return;
       }
 
