@@ -39,6 +39,9 @@ export const withAPI =
     },
 
     open(interactionType: "mouse" | "keyboard" = "mouse"): SelectComponent {
+      // A disabled select does not open. The click and keyboard paths already
+      // checked this; open() did not, so code could open a disabled select.
+      if (component.textfield?.input?.disabled) return this;
       if (component.menu && typeof component.menu.open === "function") {
         component.menu.open(undefined, interactionType);
       } else {
