@@ -74,6 +74,9 @@ export async function buildStyles(outdir: string, banner: string) {
   await mkdir(`${outdir}/styles`, { recursive: true });
   await mkdir(`${outdir}/themes`, { recursive: true });
   await writeFile(`${outdir}/styles.css`, `${banner}\n${full.css}\n`);
+  // `import 'mtrl/styles'` resolves through the types condition under NodeNext,
+  // as the per-component entries do
+  await writeFile(`${outdir}/styles.d.ts`, "export {};\n");
   await emit("styles/base", baseStyles);
   await emit("styles/utilities", utilityStyles);
   for (const [name, entry] of Object.entries(componentStyles)) {
