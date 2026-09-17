@@ -380,7 +380,7 @@ export const createPositioner = (component, config: MenuConfig) => {
    */
   const positionMenu = (openerElement: HTMLElement): void => {
     if (!openerElement || !component.element) return;
-    positionElement(component.element, openerElement, config.position, false);
+    positionElement(component.element, openerElement, config.position ?? "bottom-start", false);
   };
 
   /**

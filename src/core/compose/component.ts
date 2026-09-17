@@ -275,7 +275,7 @@ export const withElement =
         ...(Array.isArray(options.className)
           ? options.className
           : [options.className]),
-      ].filter(Boolean),
+      ].filter((name): name is string => Boolean(name)),
       attributes: options.attributes || {},
       // Common HTML attributes
       id: options.id,

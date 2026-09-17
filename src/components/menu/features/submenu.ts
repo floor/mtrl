@@ -28,8 +28,8 @@ const withSubmenu = (config: MenuConfig) => (component) => {
 
   // Initialize submenu state
   const state = {
-    activeSubmenu: null as HTMLElement,
-    activeSubmenuItem: null as HTMLElement,
+    activeSubmenu: null as HTMLElement | null,
+    activeSubmenuItem: null as HTMLElement | null,
     submenuLevel: 0, // Track nesting level of submenus
     activeSubmenus: [] as Array<{
       element: HTMLElement;
@@ -37,10 +37,10 @@ const withSubmenu = (config: MenuConfig) => (component) => {
       level: number;
       isOpening: boolean; // Track if submenu is in opening transition
     }>,
-    submenuTimer: null,
+    submenuTimer: null as ReturnType<typeof setTimeout> | null,
     hoverIntent: {
-      timer: null,
-      activeItem: null,
+      timer: null as ReturnType<typeof setTimeout> | null,
+      activeItem: null as HTMLElement | null,
     },
     component,
   };
@@ -277,7 +277,7 @@ const withSubmenu = (config: MenuConfig) => (component) => {
       ? parseInt(
           itemElement
             .closest(`.${component.getClass("menu--submenu")}`)
-            .getAttribute("data-level") || "0",
+            ?.getAttribute("data-level") || "0",
           10
         ) + 1
       : 1;
@@ -322,7 +322,7 @@ const withSubmenu = (config: MenuConfig) => (component) => {
     submenuList.className = `${component.getClass("menu-list")}`;
 
     // Create submenu items
-    const submenuItems = [];
+    const submenuItems: HTMLElement[] = [];
 
     // Use event to get menu items created properly
     component.emit("create-menu-items", {
@@ -458,7 +458,7 @@ const withSubmenu = (config: MenuConfig) => (component) => {
     clearSubmenuTimer();
 
     // Find submenus at or deeper than the specified level
-    const submenuIndicesToRemove = [];
+    const submenuIndicesToRemove: number[] = [];
 
     // Identify which submenus to remove, working from deepest level first
     for (let i = state.activeSubmenus.length - 1; i >= 0; i--) {

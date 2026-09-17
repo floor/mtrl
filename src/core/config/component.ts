@@ -161,7 +161,7 @@ export const createElementConfig = (
   options: {
     tag: string;
     attributes?: Record<string, unknown>;
-    className?: string | string[] | null;
+    className?: string | (string | null | undefined)[] | null;
     html?: string;
     text?: string;
     forwardEvents?: Record<

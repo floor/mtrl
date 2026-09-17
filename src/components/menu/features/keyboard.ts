@@ -317,7 +317,7 @@ export const createKeyboardNavigation = (component) => {
           ) {
             const itemElement = items[focusedItemIndex];
             const itemIndex = parseInt(
-              itemElement.getAttribute("data-index"),
+              itemElement.getAttribute("data-index") ?? "0",
               10,
             );
             const parentMenu = itemElement.closest(
@@ -326,7 +326,7 @@ export const createKeyboardNavigation = (component) => {
             const parentItemId = parentMenu?.getAttribute("data-parent-item");
 
             // Find the parent item in the items array to get its submenu
-            const parentItem = actions.findItemById(parentItemId);
+            const parentItem = parentItemId ? actions.findItemById(parentItemId) : null;
             if (parentItem && parentItem.submenu) {
               const itemData = parentItem.submenu[itemIndex] as MenuItem;
               actions.handleNestedSubmenuClick(
@@ -347,7 +347,7 @@ export const createKeyboardNavigation = (component) => {
             // Get the correct menu item data
             const itemElement = items[focusedItemIndex];
             const itemIndex = parseInt(
-              itemElement.getAttribute("data-index"),
+              itemElement.getAttribute("data-index") ?? "0",
               10,
             );
             const itemData = state.items[itemIndex] as MenuItem;
