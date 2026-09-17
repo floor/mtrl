@@ -1,17 +1,25 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
+    "target": "ES2022",
     "noImplicitAny": false,
     "skipLibCheck": true,
     "allowJs": true,
     "checkJs": false,
-    "noStrictGenericChecks": true,
     "strictNullChecks": false,
     "strictFunctionTypes": false,
     "strictPropertyInitialization": false,
-    "types": ["bun-types"],
-    "typeRoots": ["./test/types", "./node_modules/@types"]
+    // `bun`, not `bun-types`: tsconfig.tools.json resolves it this way and
+    // runs in CI today. The previous typeRoots override excluded
+    // node_modules, so the type library was never found and tsc stopped
+    // before reading a single test file.
+    "types": ["bun"]
   },
   "include": ["test/**/*", "src/**/*", "test/types/**/*"],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules",
+    // Imports the built package, so it only resolves after a build.
+    // tsconfig.tools.json type-checks it in CI once dist/ exists.
+    "test/browser/fixture.ts"
+  ]
 }

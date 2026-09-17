@@ -83,7 +83,7 @@ describe('withCheckable', () => {
       element: document.createElement('div')
     };
 
-    const enhanced = withCheckable()(componentWithoutInput);
+    const enhanced = withCheckable()(componentWithoutInput as any);
 
     expect(enhanced).toBe(componentWithoutInput);
     expect(enhanced.checkable).toBeUndefined();
@@ -174,7 +174,7 @@ describe('withCheckable', () => {
     };
     componentWithoutEmit.input.type = 'checkbox';
 
-    const enhanced = withCheckable()(componentWithoutEmit);
+    const enhanced = withCheckable()(componentWithoutEmit as any);
 
     // Should not throw when methods are called
     expect(() => enhanced.checkable.check()).not.toThrow();

@@ -59,8 +59,8 @@ describe('icon button geometry tokens', () => {
     test(`${row.size}: public constants match the token dimensions`, () => {
       expect(ICON_BUTTON_CONTAINER_SIZES[key]).toBe(row.container);
       expect(ICON_BUTTON_ICON_SIZES[key]).toBe(row.icon);
-      expect(ICON_BUTTON_WIDTH_VALUES[key]).toEqual({ narrow: row.widths[0], default: row.widths[1], wide: row.widths[2] });
-      expect(ICON_BUTTON_CORNER_RADIUS[key]).toEqual({ square: row.square, pressed: row.pressed });
+      expect(ICON_BUTTON_WIDTH_VALUES[key] as Record<string, number>).toEqual({ narrow: row.widths[0], default: row.widths[1], wide: row.widths[2] });
+      expect(ICON_BUTTON_CORNER_RADIUS[key] as Record<string, number>).toEqual({ square: row.square, pressed: row.pressed });
     });
   }
 

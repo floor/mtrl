@@ -77,7 +77,7 @@ describe('withStyle', () => {
         variant
       };
       
-      const enhanced = withStyle(config)(testComponent);
+      const enhanced = withStyle(config)(testComponent as any);
       
       expect(enhanced.element.classList.contains(`${PREFIX}-button--${variant}`)).toBe(true);
     });
@@ -97,7 +97,7 @@ describe('withStyle', () => {
         size
       };
       
-      const enhanced = withStyle(config)(testComponent);
+      const enhanced = withStyle(config)(testComponent as any);
       
       expect(enhanced.element.classList.contains(`${PREFIX}-button--${size}`)).toBe(true);
     });

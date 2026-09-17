@@ -74,7 +74,7 @@ dom.window.HTMLCanvasElement.prototype.getContext = function (this: HTMLCanvasEl
 
 import createProgress from '../../../src/components/progress';
 
-const shapes = (p: { canvas: unknown }): Shape[] => recordings.get(p.canvas as HTMLCanvasElement) ?? [];
+const shapes = (p: { canvas?: unknown }): Shape[] => recordings.get(p.canvas as HTMLCanvasElement) ?? [];
 // JSDOM lays nothing out: give every element the width a browser would
 let elementWidth = 200;
 dom.window.HTMLElement.prototype.getBoundingClientRect = function () {

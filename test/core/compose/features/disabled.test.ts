@@ -39,7 +39,7 @@ describe('withDisabled', () => {
     // Override requestAnimationFrame to run immediately
     const originalRAF = window.requestAnimationFrame;
     window.requestAnimationFrame = (callback) => {
-      callback();
+      callback(0);
       return 0;
     };
     

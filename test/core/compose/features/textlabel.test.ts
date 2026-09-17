@@ -68,7 +68,7 @@ describe("withTextLabel", () => {
       prefix: PREFIX,
       componentName: "checkbox",
       label: "Test Label",
-      labelPosition: "end",
+      labelPosition: "end" as const,
     };
 
     const enhanced = withTextLabel(config)(component);
@@ -112,10 +112,10 @@ describe("withTextLabel", () => {
       prefix: PREFIX,
       componentName: "slider",
       label: "Slider Label",
-      labelPosition: "end",
+      labelPosition: "end" as const,
     };
 
-    const enhanced = withTextLabel(config)(sliderComponent);
+    const enhanced = withTextLabel(config)(sliderComponent as any);
 
     // For slider, the labelPosition shouldn't add a class
     expect(
@@ -123,6 +123,6 @@ describe("withTextLabel", () => {
     ).toBe(false);
 
     // But the label should still be correctly positioned
-    expect(sliderComponent.element.lastChild.tagName).toBe("LABEL");
+    expect((sliderComponent.element.lastChild as Element).tagName).toBe("LABEL");
   });
 });

@@ -123,15 +123,10 @@ declare global {
   }
 }
 
-// Provide types for Bun test module
-declare module 'bun:test' {
-  export const describe: (name: string, fn: () => void) => void;
-  export const test: (name: string, fn: () => void | Promise<void>) => void;
-  export const expect: any;
-  export const beforeEach: (fn: () => void | Promise<void>) => void;
-  export const afterEach: (fn: () => void | Promise<void>) => void;
-  export const beforeAll: (fn: () => void | Promise<void>) => void;
-  export const afterAll: (fn: () => void | Promise<void>) => void;
-  export const mock: any;
-  export const spyOn: (object: any, method: string) => any;
-} 
+// No `declare module 'bun:test'` here, and none in a sibling .d.ts either.
+// Two hand-written copies of it used to shadow the real @types/bun: `expect`
+// and `mock` were declared `any`, so all 3,873 assertions and 82 mock() calls
+// in this tree type-checked against nothing, while a 2-argument `test`
+// signature rejected the valid 3-argument form that bun accepts and two
+// segmented-button suites use. They hid real errors and invented false ones at
+// once. The real types come from `"types": ["bun"]` in tsconfig.test.json.

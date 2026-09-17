@@ -4,7 +4,7 @@ import { JSDOM } from 'jsdom';
 
 // Setup for DOM testing environment
 let dom: JSDOM;
-let window: Window;
+let window: JSDOM['window'];
 let document: Document;
 let originalGlobalDocument: any;
 let originalGlobalWindow: any;
@@ -32,7 +32,7 @@ const MOCK_TOUCH_CONFIG = {
 
 const MOCK_PASSIVE_EVENTS = { passive: true };
 
-const mockRemoveEventHandlers = mock(() => {});
+const mockRemoveEventHandlers = mock((_element: HTMLElement) => {});
 
 // Mock createElement to avoid actual DOM creation in tests
 const mockCreateElement = mock((options) => {
@@ -146,7 +146,7 @@ beforeAll(() => {
   
   // Set globals to use jsdom
   global.document = document;
-  global.window = window;
+  global.window = window as unknown as Window & typeof globalThis;
   global.Element = window.Element;
   global.HTMLElement = window.HTMLElement;
   global.Event = window.Event;
@@ -376,7 +376,7 @@ describe('Core Component Module', () => {
       
       // Spy on removeChild
       const removeChildSpy = mock(() => {});
-      document.body.removeChild = removeChildSpy;
+      document.body.removeChild = removeChildSpy as unknown as typeof document.body.removeChild;
       
       // Call destroy
       enhancedComponent.destroy();
