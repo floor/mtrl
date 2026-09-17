@@ -80,6 +80,11 @@ export const withTextLabel =
     if (input instanceof HTMLElement) {
       if (!input.id) input.id = `${config.prefix}-${config.componentName}-${Math.random().toString(36).slice(2, 9)}`;
       labelElement.htmlFor = input.id;
+      // An aria-label copied from the same text would outrank the label and
+      // go stale when the label changes; a different one was chosen, so it stays
+      if (input.getAttribute("aria-label") === config.label) {
+        input.removeAttribute("aria-label");
+      }
     }
 
     if (position === "start") {
