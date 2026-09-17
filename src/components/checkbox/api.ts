@@ -78,12 +78,12 @@ export const withAPI =
 
     // Label management
     setLabel(text: string): CheckboxComponent {
-      component.text?.setText(text);
+      component.label?.setText(text);
       return this;
     },
 
     getLabel(): string {
-      return component.text?.getText() || "";
+      return component.label?.getText() || "";
     },
 
     // Event handling
