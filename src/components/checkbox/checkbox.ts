@@ -47,15 +47,30 @@ import {
 const enhanceWithCheckable = (component: BaseComponent & InputComponent, config: CheckboxConfig): BaseComponent => {
   const enhanced = withCheckable(config)(component);
 
+  // The class is derived from the input, never set on its own. The input is the
+  // only thing a browser keeps current: a user click clears `indeterminate`
+  // natively, and setting the property from config does not touch the class.
+  // Toggling the class separately let the two drift in both directions.
+  const syncIndeterminate = () => {
+    enhanced.element.classList.toggle(
+      `${config.prefix}-checkbox--indeterminate`,
+      enhanced.input.indeterminate,
+    );
+  };
+
   // Set initial indeterminate state if specified in config
   if (config.indeterminate) {
     enhanced.input.indeterminate = true;
   }
+  syncIndeterminate();
+
+  // A click has already cleared the property by the time change is emitted.
+  enhanced.on?.('change', syncIndeterminate);
 
   // Add method to control indeterminate state
   enhanced.setIndeterminate = (state: boolean) => {
     enhanced.input.indeterminate = state;
-    enhanced.element.classList.toggle(`${config.prefix}-checkbox--indeterminate`, state);
+    syncIndeterminate();
     return enhanced;
   };
 

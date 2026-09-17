@@ -33,7 +33,6 @@ const DRIFTED = [
   "test/components/bottom-app-bar.test.ts",
   "test/components/button.test.ts",
   "test/components/card.test.ts",
-  "test/components/checkbox.test.ts",
   "test/components/chip.test.ts",
   "test/components/datepicker.test.ts",
   "test/components/divider.test.ts",
