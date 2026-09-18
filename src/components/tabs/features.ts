@@ -32,6 +32,8 @@ export interface TabsManagementConfig {
   variant?: string;
   /** Component prefix */
   prefix?: string;
+  /** Id shared by this tablist's tabs */
+  groupId?: string;
 }
 
 /**
@@ -75,6 +77,7 @@ export const withTabsManagement =
           ...tabConfig,
           prefix: config.prefix,
           variant: tabConfig.variant || config.variant,
+          groupId: tabConfig.groupId || config.groupId,
         };
 
         // Create the tab
@@ -129,6 +132,7 @@ export const withTabsManagement =
       // Update tab panels
       updateTabPanels({
         tabs,
+        getTabs,
         getActiveTab: () => tabs.find((t) => t.isActive()) || null,
       });
 
@@ -154,6 +158,12 @@ export const withTabsManagement =
           handleTabClick(event, tab)
         );
       }
+    });
+
+    updateTabPanels({
+      tabs,
+      getTabs,
+      getActiveTab,
     });
 
     return {

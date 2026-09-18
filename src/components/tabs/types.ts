@@ -127,6 +127,12 @@ export interface TabConfig {
    * Tab value attribute for identifying the selected tab
    */
   value?: string;
+
+  /**
+   * Id shared by tabs in the same tablist, used to prefix tab and panel ids.
+   * Inherited from the tabs group when omitted; generated for a standalone tab.
+   */
+  groupId?: string;
   
   /** 
    * Whether to enable ripple effect
@@ -201,6 +207,12 @@ export interface TabsConfig {
    * @default 'mtrl'
    */
   prefix?: string;
+
+  /**
+   * Id shared by this tablist's tabs so two groups can use the same values
+   * without colliding. Generated when omitted.
+   */
+  groupId?: string;
   
   /**
    * Event handlers configuration

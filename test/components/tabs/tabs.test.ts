@@ -14,11 +14,6 @@
 //   "as a fallback", so the click handler ran twice;
 // - setActiveTab() selected a disabled tab, which a click refuses;
 // - handlers passed as config.on were documented and never registered.
-//
-// Deliberately not asserted, because each is open: arrow keys do not move
-// between tabs and every tab is its own tab stop (F17); and each tab points
-// aria-controls at a tabpanel id nothing creates, built from its value alone,
-// so two groups sharing a value share ids.
 import { describe, test, expect, beforeEach, mock } from 'bun:test';
 import { JSDOM } from 'jsdom';
 const dom = new JSDOM('<!DOCTYPE html><html><body></body></html>', { url: 'http://localhost/', pretendToBeVisual: true });
@@ -168,6 +163,67 @@ describe('tabs', () => {
     const tabs = mount();
     tabs.destroy();
     expect(document.body.contains(tabs.element)).toBe(false);
+  });
+});
+
+describe('tabs panels', () => {
+  const ids = (tabs: ReturnType<typeof createTabs>) =>
+    tabs.getTabs().map((tab) => tab.element.id);
+
+  const panel = (id: string, labelledBy?: string) => {
+    const element = document.createElement('div');
+    element.setAttribute('role', 'tabpanel');
+    element.id = id;
+    if (labelledBy) element.setAttribute('aria-labelledby', labelledBy);
+    document.body.append(element);
+    return element;
+  };
+
+  test('two tab groups with the same values have no duplicate ids', () => {
+    const one = mount();
+    const two = mount();
+    const all = [...ids(one), ...ids(two)];
+    expect(all.every(Boolean)).toBe(true);
+    expect(new Set(all).size).toBe(all.length);
+    expect(ids(one)).not.toEqual(ids(two));
+  });
+
+  test('a tab without a panel carries no aria-controls', () => {
+    const tabs = mount({ groupId: 'nav' });
+    for (const tab of tabs.getTabs()) {
+      expect(tab.element.hasAttribute('aria-controls')).toBe(false);
+    }
+  });
+
+  test('a tab points aria-controls at a panel whose id matches', () => {
+    panel('tabpanel-nav-trips');
+    const tabs = mount({ groupId: 'nav' });
+    expect(byValue(tabs, 'trips').element.getAttribute('aria-controls')).toBe('tabpanel-nav-trips');
+    expect(byValue(tabs, 'flights').element.hasAttribute('aria-controls')).toBe(false);
+    expect(byValue(tabs, 'flights').element.id).toBe('tab-nav-flights');
+  });
+
+  test('a panel labelled by a tab is controlled even with a custom id', () => {
+    const tabs = mount({ groupId: 'nav' });
+    const tab = byValue(tabs, 'trips');
+    expect(tab.element.hasAttribute('aria-controls')).toBe(false);
+    panel('custom-trips', tab.element.id);
+    tab.element.click();
+    expect(tab.element.getAttribute('aria-controls')).toBe('custom-trips');
+  });
+
+  test('activating a tab only shows panels registered to its group', () => {
+    const aTrips = panel('tabpanel-a-trips');
+    const bTrips = panel('tabpanel-b-trips');
+    const a = mount({ groupId: 'a' });
+    const b = mount({ groupId: 'b' });
+    expect(aTrips.hasAttribute('hidden')).toBe(false);
+    expect(bTrips.hasAttribute('hidden')).toBe(false);
+    expect(b.getActiveTab()?.getValue()).toBe('trips');
+
+    byValue(a, 'flights').element.click();
+    expect(aTrips.hasAttribute('hidden')).toBe(true);
+    expect(bTrips.hasAttribute('hidden')).toBe(false);
   });
 });
 

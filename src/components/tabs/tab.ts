@@ -8,6 +8,7 @@ import type { EventCallback } from "../../core/state/emitter";
 import { TabConfig, TabComponent } from "./types";
 import { TAB_LAYOUT } from "./constants";
 import { createTabConfig } from "./config";
+import { allocateTabsGroupId, applyTabIdentity } from "./utils";
 import createButton from "../button";
 import createBadge from "../badge";
 
@@ -59,14 +60,12 @@ export const createTab = (config: TabConfig = {}): TabComponent => {
       baseConfig.state === "active" ? "true" : "false"
     );
 
-    // For better accessibility
-    if (baseConfig.value) {
-      baseComponent.element.setAttribute("id", `tab-${baseConfig.value}`);
-      baseComponent.element.setAttribute(
-        "aria-controls",
-        `tabpanel-${baseConfig.value}`
-      );
-    }
+    const groupId = baseConfig.groupId || allocateTabsGroupId();
+    applyTabIdentity(
+      baseComponent.element,
+      groupId,
+      baseConfig.value || ""
+    );
 
     // Add active state if specified in config
     if (baseConfig.state === "active") {
@@ -110,11 +109,7 @@ export const createTab = (config: TabConfig = {}): TabComponent => {
       setValue(value) {
         const safeValue = value || "";
         button.setValue(safeValue);
-
-        // Update accessibility attributes
-        this.element.setAttribute("id", `tab-${safeValue}`);
-        this.element.setAttribute("aria-controls", `tabpanel-${safeValue}`);
-
+        applyTabIdentity(this.element, groupId, safeValue);
         return this;
       },
 
