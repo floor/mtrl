@@ -130,7 +130,8 @@ export interface CheckboxComponent {
   getValue: () => boolean;
 
   /**
-   * Sets the checkbox's checked state
+   * Sets the checkbox's checked state.
+   * Clears indeterminate, as a user click does.
    * @param value - Boolean or string ("true"/"false"/"1"/"0") value
    * @returns Checkbox component for method chaining
    */
@@ -150,19 +151,22 @@ export interface CheckboxComponent {
   setValueAttribute: (value: string) => CheckboxComponent;
 
   /**
-   * Checks the checkbox (sets checked=true)
+   * Checks the checkbox (sets checked=true).
+   * Clears indeterminate, as a user click does.
    * @returns Checkbox component for method chaining
    */
   check: () => CheckboxComponent;
 
   /**
-   * Unchecks the checkbox (sets checked=false)
+   * Unchecks the checkbox (sets checked=false).
+   * Clears indeterminate, as a user click does.
    * @returns Checkbox component for method chaining
    */
   uncheck: () => CheckboxComponent;
 
   /**
-   * Toggles the checkbox's checked state
+   * Toggles the checkbox's checked state.
+   * Clears indeterminate, as a user click does.
    * @returns Checkbox component for method chaining
    */
   toggle: () => CheckboxComponent;
