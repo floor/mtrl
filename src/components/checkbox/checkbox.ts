@@ -74,6 +74,33 @@ const enhanceWithCheckable = (component: BaseComponent & InputComponent, config:
     return enhanced;
   };
 
+  // Programmatic check/uncheck/toggle (and setValue, which uses them) must
+  // clear mixed state the way a click does. A caller who wants mixed sets it
+  // afterwards with setIndeterminate(true).
+  const clearIndeterminate = () => {
+    if (enhanced.input.indeterminate) {
+      enhanced.input.indeterminate = false;
+      syncIndeterminate();
+    }
+  };
+
+  const { checkable } = enhanced;
+  if (checkable) {
+    const { check, uncheck, toggle } = checkable;
+    checkable.check = () => {
+      clearIndeterminate();
+      return check.call(checkable);
+    };
+    checkable.uncheck = () => {
+      clearIndeterminate();
+      return uncheck.call(checkable);
+    };
+    checkable.toggle = () => {
+      clearIndeterminate();
+      return toggle.call(checkable);
+    };
+  }
+
   return enhanced as unknown as BaseComponent;
 };
 

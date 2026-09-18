@@ -14,9 +14,8 @@
 //
 // Deliberately not asserted, because each is open and a test would bless it:
 // the `variant` option, which changes nothing although CHECKBOX_VARIANTS is
-// exported (M3 defines no checkbox variants); a custom class gaining the
-// library prefix (F11); and whether check() should clear indeterminate, which
-// today it does not.
+// exported (M3 defines no checkbox variants); and a custom class gaining the
+// library prefix (F11).
 import { describe, test, expect, beforeEach, mock } from 'bun:test';
 import { JSDOM } from 'jsdom';
 const dom = new JSDOM('<!DOCTYPE html><html><body></body></html>', { url: 'http://localhost/', pretendToBeVisual: true });
@@ -163,6 +162,68 @@ describe('checkbox', () => {
     expect(checkbox.input.indeterminate).toBe(false);
     expect(indeterminateClass(checkbox)).toBe(false);
     expect(checkbox.isChecked()).toBe(true);
+  });
+
+  test('check() on an indeterminate checkbox clears mixed state', () => {
+    const checkbox = mount({ indeterminate: true });
+    const changes = mock((_event: unknown) => {});
+    checkbox.on('change', changes);
+    checkbox.check();
+    expect(checkbox.isChecked()).toBe(true);
+    expect(checkbox.input.indeterminate).toBe(false);
+    expect(indeterminateClass(checkbox)).toBe(false);
+    expect(changes).toHaveBeenCalledTimes(1);
+  });
+
+  test('uncheck() on an indeterminate checkbox clears mixed state', () => {
+    const checkbox = mount({ checked: true, indeterminate: true });
+    const changes = mock((_event: unknown) => {});
+    checkbox.on('change', changes);
+    checkbox.uncheck();
+    expect(checkbox.isChecked()).toBe(false);
+    expect(checkbox.input.indeterminate).toBe(false);
+    expect(indeterminateClass(checkbox)).toBe(false);
+    expect(changes).toHaveBeenCalledTimes(1);
+  });
+
+  test('setValue on an indeterminate checkbox clears mixed state', () => {
+    const on = mount({ indeterminate: true });
+    const onChanges = mock((_event: unknown) => {});
+    on.on('change', onChanges);
+    on.setValue(true);
+    expect(on.isChecked()).toBe(true);
+    expect(on.input.indeterminate).toBe(false);
+    expect(indeterminateClass(on)).toBe(false);
+    expect(onChanges).toHaveBeenCalledTimes(1);
+
+    const off = mount({ checked: true, indeterminate: true });
+    const offChanges = mock((_event: unknown) => {});
+    off.on('change', offChanges);
+    off.setValue(false);
+    expect(off.isChecked()).toBe(false);
+    expect(off.input.indeterminate).toBe(false);
+    expect(indeterminateClass(off)).toBe(false);
+    expect(offChanges).toHaveBeenCalledTimes(1);
+  });
+
+  test('toggle() on an indeterminate checkbox clears mixed state', () => {
+    const checkbox = mount({ indeterminate: true });
+    const changes = mock((_event: unknown) => {});
+    checkbox.on('change', changes);
+    checkbox.toggle();
+    expect(checkbox.isChecked()).toBe(true);
+    expect(checkbox.input.indeterminate).toBe(false);
+    expect(indeterminateClass(checkbox)).toBe(false);
+    expect(changes).toHaveBeenCalledTimes(1);
+  });
+
+  test('setIndeterminate after check() restores mixed state', () => {
+    const checkbox = mount();
+    checkbox.check();
+    checkbox.setIndeterminate(true);
+    expect(checkbox.isChecked()).toBe(true);
+    expect(checkbox.input.indeterminate).toBe(true);
+    expect(indeterminateClass(checkbox)).toBe(true);
   });
 
   test('disable and enable reach the input and the class', () => {
