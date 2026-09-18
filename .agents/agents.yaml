@@ -209,15 +209,12 @@ agents:
     capabilities: [review_rfc, vote]
     autonomy: T1
 
-  - id: grok
-    name: "Grok"
-    external: true
-    promptTemplate: "../../agents/agents/grok-reviewer.md"
-    llm:
-      provider: cursor
-      model: cursor-grok-4.6-high
-    capabilities: [review_rfc, vote]
-    autonomy: T1
+  # Grok does not sit on the committee while Grok is the implementer (Dr Jones,
+  # 2026-09-18): a model reviewing its own PR adds little, and its review bridge
+  # timed out at the 300 s gateway limit in three of four reviews, which set the
+  # floor of every cycle. Claude, Codex and Gemini review. The engine rule that
+  # would let it keep its RFC vote — a member never reviews a PR written by its
+  # own model — is a Linear task; until then the seat is removed.
 
   - id: gemini
     name: "Gemini"
