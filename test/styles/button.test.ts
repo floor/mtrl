@@ -203,6 +203,10 @@ describe('button stylesheet: states', () => {
   test('progress no longer forces a shape or padding', () => {
     expect(css).not.toMatch(/--progress[^{]*\{[^}]*border-radius/);
   });
+
+  test('icon-only is not a button style: that action is an icon button', () => {
+    expect(css).not.toMatch(/mtrl-button--icon-only/);
+  });
 });
 
 describe('button stylesheet: toggle buttons (ToggleButtonDefaults)', () => {

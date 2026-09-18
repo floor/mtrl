@@ -160,10 +160,6 @@ $content-color: (
 
   &-text {
     @include m.truncate;
-
-    .#{$component}--icon-only & {
-      @include m.visually-hidden;
-    }
   }
 
   // ---------------------------------------------------------------------------
@@ -467,15 +463,8 @@ $content-color: (
   }
 
   // ---------------------------------------------------------------------------
-  // Icon-only and circular buttons (kept for the icon-button family)
+  // Circular buttons
   // ---------------------------------------------------------------------------
-  &--icon-only {
-    min-width: v.button('height-s');
-    width: v.button('height-s');
-    padding: 0;
-    border-radius: 50%;
-  }
-
   &--circular {
     flex: none !important;
     border-radius: 50%;

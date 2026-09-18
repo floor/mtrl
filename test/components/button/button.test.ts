@@ -8,7 +8,9 @@
 // defined in its own file and covered eight behaviours. Porting it found no
 // defect in what the button does, but two gaps recorded as findings: a button
 // in its loading state never set aria-busy (N14, now asserted below), and the
-// stylesheet's --icon-only rules are unreachable because nothing adds that class.
+// stylesheet's --icon-only rules were unreachable because nothing added that
+// class (N15, now asserted below: the rules are gone, and createButton does
+// not invent an --icon-only modifier).
 //
 // Deliberately not asserted, because each is open and a test would bless it:
 // an icon-only button gets no accessible name unless ariaLabel is given (F10);
@@ -109,6 +111,13 @@ describe('button', () => {
     expect(button.element.getAttribute('aria-label')).toBe('Close');
     button.setAriaLabel('Dismiss');
     expect(button.element.getAttribute('aria-label')).toBe('Dismiss');
+  });
+
+  // N15: --icon-only was styled but never applied. An icon-only action is an
+  // icon button; createButton does not grow that modifier to match the CSS.
+  test('an icon without text is not an icon-only button', () => {
+    expect(has(mount({ icon: ICON, ariaLabel: 'Close' }), 'icon-only')).toBe(false);
+    expect(has(mount({ text: 'Add', icon: ICON }), 'icon-only')).toBe(false);
   });
 
   test('type and value reach the element', () => {
