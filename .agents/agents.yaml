@@ -168,6 +168,21 @@ agents:
     # Completion is decided by `verification` against the worktree diff, never
     # by what the agent says it did.
 
+  # A second implementer, on trial (Dr Jones, 2026-09-18): 32 issues are due on
+  # the 21st and one implementer is the bottleneck. `run` hands an issue to the
+  # agent whose id is a label on it, so an issue labelled `gemini-dev` goes here
+  # and everything else stays with Grok. Same sandbox, same gate, same committee.
+  - id: gemini-dev
+    name: "Gemini"
+    promptTemplate: "../../agents/agents/frontend-dev.md"
+    llm:
+      # The Antigravity CLI (`agy`) on the Google AI Pro subscription.
+      provider: antigravity
+      model: gemini-3.1-pro-high
+    capabilities: [read_code, write_code, write_tests, create_pr]
+    autonomy: T1
+    timeoutMs: 2400000
+
   # ── Committee ───────────────────────────────────────────────────
   #
   # The agents with `vote` review proposals and vote, each inside a reviewer
@@ -238,7 +253,10 @@ guardrails:
     - "bun.lock"
     - ".gitignore"
     - ".npmrc"
-  privateSourceProviders: [claude-code, lmstudio, cursor]
+  # antigravity added 2026-09-18 by Dr Jones's decision: Gemini, through the
+  # Antigravity CLI on his Google AI Pro account (telemetry off), may read the
+  # private record like Claude and Grok — same trust class as cursor.
+  privateSourceProviders: [claude-code, lmstudio, cursor, antigravity]
 
 # ── Record ─────────────────────────────────────────────────────────
 #
