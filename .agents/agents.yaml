@@ -70,6 +70,23 @@ project:
     frontend: "src/"
     tests: "test/"
 
+# ── Tasks ──────────────────────────────────────────────────────────
+#
+# Where the work lives: Linear, team FLO, project mtrl (Dr Jones, 2026-09-18).
+# One queue for the findings and the TODOs, visible as it moves, that a person
+# can add to directly; its comments are the discussion an agent reads. The API
+# key is in .agents/.env, never here. `run --issue FLO-99` reads the issue by
+# key; `watch` takes an issue as soon as it carries one of the labels below. A
+# PR references a task as `Refs FLO-99` and never repeats its text — the
+# tracker is private, the repository is not.
+
+tasks:
+  source: linear
+  labels: [agent]
+  linear:
+    team: FLO
+    project: mtrl
+
 # ── Sources ────────────────────────────────────────────────────────
 #
 # Paths are relative to this file: `../../docs` is the sibling docs checkout
