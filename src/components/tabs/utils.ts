@@ -33,28 +33,107 @@ export function getActiveTab(component: TabsHost): TabComponent | null {
   return null;
 }
 
+/** Counter for generated tab-group ids */
+let nextTabsGroupId = 0;
+
+/**
+ * Allocates a unique id for a tab group so two tablists can share values
+ * @returns Generated group id
+ */
+export function allocateTabsGroupId(): string {
+  return `tabs-${++nextTabsGroupId}`;
+}
+
+/**
+ * Tab element id for a value inside a group
+ * @param groupId - Tab group id
+ * @param value - Tab value
+ * @returns Element id
+ */
+function tabIdFor(groupId: string, value: string): string {
+  return `tab-${groupId}-${value}`;
+}
+
+/**
+ * Finds a tabpanel registered to this tab: labelled by its id, or carrying
+ * the conventional `tabpanel-{groupId}-{value}` id.
+ * @param tab - Tab element
+ * @returns Registered panel or null
+ */
+const findRegisteredPanel = (tab: HTMLElement): Element | null => {
+  const tabId = tab.id;
+  if (!tabId) return null;
+
+  const panels = document.querySelectorAll('[role="tabpanel"]');
+  for (let i = 0; i < panels.length; i++) {
+    const panel = panels[i];
+    if (panel.getAttribute("aria-labelledby") === tabId) {
+      return panel;
+    }
+  }
+
+  if (tabId.startsWith("tab-")) {
+    const panel = document.getElementById(`tabpanel-${tabId.slice(4)}`);
+    if (panel && panel.getAttribute("role") === "tabpanel") {
+      return panel;
+    }
+  }
+
+  return null;
+};
+
+/**
+ * Points `aria-controls` at a registered panel, and only then.
+ * @param element - Tab element
+ */
+export function syncTabControls(element: HTMLElement): void {
+  const panel = findRegisteredPanel(element);
+  if (panel && panel.id) {
+    element.setAttribute("aria-controls", panel.id);
+  } else {
+    element.removeAttribute("aria-controls");
+  }
+}
+
+/**
+ * Sets a unique per-group tab id and wires `aria-controls` if a panel exists
+ * @param element - Tab element
+ * @param groupId - Tab group id
+ * @param value - Tab value
+ */
+export function applyTabIdentity(
+  element: HTMLElement,
+  groupId: string,
+  value: string,
+): void {
+  if (!value) {
+    element.removeAttribute("id");
+    element.removeAttribute("aria-controls");
+    return;
+  }
+  element.setAttribute("id", tabIdFor(groupId, value));
+  syncTabControls(element);
+}
+
 /**
  * Updates tab panels based on active tab
  * @param component - Component with tabs
  */
 export function updateTabPanels(component: TabsHost): void {
-  // Get active tab using our helper function
+  const tabs =
+    typeof component.getTabs === "function"
+      ? component.getTabs()
+      : Array.isArray(component.tabs)
+        ? component.tabs
+        : [];
   const activeTab = getActiveTab(component);
-  if (!activeTab) return;
 
-  // Make sure getValue exists
-  if (typeof activeTab.getValue !== "function") return;
+  tabs.forEach((tab) => {
+    syncTabControls(tab.element);
+    const panel = findRegisteredPanel(tab.element);
+    if (!panel) return;
 
-  const activeValue = activeTab.getValue();
-
-  // Find all tab panels in the document
-  const tabPanels = document.querySelectorAll(`[role="tabpanel"]`);
-
-  tabPanels.forEach((panel) => {
-    // Get the associated tab value
-    const forTab = panel.getAttribute("aria-labelledby")?.replace("tab-", "");
-
-    if (forTab === activeValue) {
+    if (tab === activeTab) {
       panel.removeAttribute("hidden");
       panel.setAttribute("tabindex", "0");
     } else {

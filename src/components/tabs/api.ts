@@ -1,6 +1,7 @@
 // src/components/tabs/api.ts
 import { TabsComponent, TabComponent, TabConfig } from './types';
 import { createTab } from './tab';
+import { updateTabPanels, syncTabControls } from './utils';
 
 /**
  * API options for a Tabs component
@@ -38,6 +39,7 @@ interface ComponentWithElements {
   config: {
     prefix?: string;
     variant?: string;
+    groupId?: string;
   };
 }
 
@@ -59,7 +61,8 @@ export const withAPI = ({ lifecycle }: ApiOptions) =>
       const mergedConfig = {
         ...config,
         prefix: component.config.prefix,
-        variant: config.variant || component.config.variant
+        variant: config.variant || component.config.variant,
+        groupId: config.groupId || component.config.groupId
       };
       
       // Ensure value is set if not provided
@@ -76,6 +79,7 @@ export const withAPI = ({ lifecycle }: ApiOptions) =>
       // Add to DOM
       const targetContainer = component.tabsContainer;
       targetContainer.appendChild(tab.element);
+      syncTabControls(tab.element);
       
       // One listener: on() when the tab has it, the DOM otherwise. Both at once
       // ran handleTabClick twice per click.
@@ -99,6 +103,7 @@ export const withAPI = ({ lifecycle }: ApiOptions) =>
       // Add tab to DOM
       const targetContainer = component.tabsContainer;
       targetContainer.appendChild(tab.element);
+      syncTabControls(tab.element);
       
       // One listener: on() when the tab has it, the DOM otherwise.
       if (tab.on && typeof tab.on === 'function') {
@@ -145,6 +150,12 @@ export const withAPI = ({ lifecycle }: ApiOptions) =>
       
       // Activate the target tab
       targetTab.activate();
+
+      updateTabPanels({
+        tabs: component.tabs,
+        getTabs: () => [...component.tabs],
+        getActiveTab: () => component.tabs.find(tab => tab.isActive()) || null,
+      });
       
       // Emit change event
       if (component.emit) {

@@ -1,8 +1,9 @@
 // src/components/tabs/config.ts
 import { createComponentConfig } from "../../core/config/component";
 import { withElement } from "../../core/compose/component";
-import { TabConfig } from "./types";
+import { TabConfig, TabsConfig } from "./types";
 import { TAB_STATES, TABS_DEFAULTS } from "./constants";
+import { allocateTabsGroupId } from "./utils";
 
 /**
  * Default configuration for a Tab
@@ -23,8 +24,17 @@ export const defaultTabsConfig = {
   componentName: "tabs",
 };
 
-export const createTabsConfig = (config = {}) =>
-  createComponentConfig(defaultTabsConfig, config, "tabs");
+export const createTabsConfig = (config: TabsConfig = {}) => {
+  const merged = createComponentConfig(
+    defaultTabsConfig,
+    config as Partial<typeof defaultTabsConfig>,
+    "tabs",
+  );
+  return {
+    ...merged,
+    groupId: config.groupId || allocateTabsGroupId(),
+  };
+};
 
 /**
  * Creates the base configuration for a Tab
