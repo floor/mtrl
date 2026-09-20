@@ -1,7 +1,7 @@
 // src/components/select/features.ts
 import createTextfield from "../textfield";
 import createMenu from "../menu";
-import { MenuItem, MenuContent, MenuPosition } from "../menu/types";
+import { MenuItem, MenuContent, MenuDivider, MenuPosition } from "../menu/types";
 import { SelectOption, SelectConfig, BaseComponent } from "./types";
 
 /**
@@ -49,7 +49,10 @@ export const withTextfield =
 
     // Prevent typing in the input while keeping normal focus/visual behavior
     if (textfield.input) {
-      textfield.input.addEventListener("keydown", (e) => {
+      // Annotated, because `input` is HTMLInputElement | HTMLTextAreaElement
+      // and addEventListener over a union falls back to the EventTarget
+      // signature, which types the event as a plain Event.
+      textfield.input.addEventListener("keydown", (e: KeyboardEvent) => {
         // Allow navigation keys to propagate (they're handled by the menu)
         const allowedKeys = [
           "Tab",
@@ -99,9 +102,21 @@ const isSelectOption = (value: unknown): value is SelectOption =>
  * @param options The options to process
  * @returns Properly structured menu items
  */
-const processMenuItems = (options): MenuContent[] => {
-  return options.map((option) => {
-    if ("type" in option && option.type === "divider") {
+/**
+ * A divider rather than an option.
+ *
+ * Written as a guard rather than inline: `"type" in option && ...` narrows the
+ * branch it is true in, but leaves the union intact in the branch after it,
+ * so every field read below would still see MenuDivider.
+ */
+const isDivider = (option: SelectOption | MenuDivider): option is MenuDivider =>
+  "type" in option && option.type === "divider";
+
+const processMenuItems = (
+  options: Array<SelectOption | MenuDivider>
+): MenuContent[] => {
+  return options.map((option): MenuContent => {
+    if (isDivider(option)) {
       return option; // Just pass dividers through
     }
 
