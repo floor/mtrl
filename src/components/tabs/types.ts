@@ -354,10 +354,10 @@ export interface TabComponent {
   updateLayoutStyle: () => void;
   
   /** Adds an event listener to the tab */
-  on: (event: string, handler: Function) => TabComponent;
+  on(event: string, handler: Function): this;
   
   /** Removes an event listener from the tab */
-  off: (event: string, handler: Function) => TabComponent;
+  off(event: string, handler: Function): this;
   
   /** Destroys the tab component and cleans up resources */
   destroy: () => void;
@@ -444,7 +444,7 @@ export interface TabsComponent {
    * @param handler - Event handler
    * @returns Tabs component for chaining
    */
-  on: (event: string, handler: Function) => TabsComponent;
+  on(event: string, handler: Function): this;
   
   /**
    * Removes an event listener
@@ -452,7 +452,7 @@ export interface TabsComponent {
    * @param handler - Event handler
    * @returns Tabs component for chaining
    */
-  off: (event: string, handler: Function) => TabsComponent;
+  off(event: string, handler: Function): this;
   
   /**
    * Emit an event
@@ -460,7 +460,7 @@ export interface TabsComponent {
    * @param data - Event data
    * @returns Tabs component for chaining
    */
-  emit?: (event: string, data: unknown) => TabsComponent;
+  emit?(event: string, data: unknown): this;
   
   /**
    * Destroys the tabs component and all tabs

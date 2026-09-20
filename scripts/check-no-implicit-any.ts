@@ -36,8 +36,6 @@ const PENDING = [
   "src/components/slider/config.ts",
   "src/components/slider/features/controller.ts",
   "src/components/slider/features/handlers.ts",
-  "src/components/tabs/api.ts",
-  "src/components/tabs/config.ts",
   "src/components/timepicker/render.ts",
 ];
 

@@ -33,7 +33,7 @@ interface ComponentWithElements {
   /** Event unsubscription (optional) */
   off?: (event: string, handler: Function) => unknown;
   /** Event emission (optional); returns `this`, the tabs component once spread */
-  emit?: TabsComponent['emit'];
+  emit?(event: string, data: unknown): this;
   /** Component configuration */
   config: {
     prefix?: string;
@@ -80,7 +80,7 @@ export const withAPI = ({ lifecycle }: ApiOptions) =>
       // One listener: on() when the tab has it, the DOM otherwise. Both at once
       // ran handleTabClick twice per click.
       if (tab.on && typeof tab.on === 'function') {
-        tab.on('click', (event) => component.handleTabClick(event, tab));
+        tab.on('click', (event: Event) => component.handleTabClick(event, tab));
       } else {
         tab.element.addEventListener('click', (event) => {
           component.handleTabClick(event, tab);
@@ -102,7 +102,7 @@ export const withAPI = ({ lifecycle }: ApiOptions) =>
       
       // One listener: on() when the tab has it, the DOM otherwise.
       if (tab.on && typeof tab.on === 'function') {
-        tab.on('click', (event) => component.handleTabClick(event, tab));
+        tab.on('click', (event: Event) => component.handleTabClick(event, tab));
       } else {
         tab.element.addEventListener('click', (event) => {
           component.handleTabClick(event, tab);
@@ -204,6 +204,20 @@ export const withAPI = ({ lifecycle }: ApiOptions) =>
     },
     
     /**
+     * Emits an event.
+     *
+     * Declared here rather than left to the spread for the same reason as `on`
+     * and `off` above. The runtime was always right -- the spread copies the
+     * method, and calling it on the tabs component binds `this` to the tabs
+     * component -- but a spread does not carry the `this` type with it, so the
+     * declaration said one thing and the object did another.
+     */
+    emit(event: string, data: unknown) {
+      component.emit?.(event, data);
+      return this;
+    },
+
+    /**
      * Destroys the tabs component
      */
     destroy() {
@@ -221,7 +235,7 @@ export const withAPI = ({ lifecycle }: ApiOptions) =>
  * @param {Object} comp - Component with lifecycle feature
  * @returns {Object} API configuration object
  */
-export const getApiConfig = (comp) => ({
+export const getApiConfig = (comp: ApiOptions): ApiOptions => ({
   lifecycle: {
     destroy: () => comp.lifecycle.destroy()
   }
