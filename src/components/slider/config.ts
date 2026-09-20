@@ -4,7 +4,8 @@ import {
   createElementConfig,
 } from "../../core/config/component";
 import { SliderConfig } from "./types";
-import { SLIDER_DEFAULTS } from "./constants";
+import type { ApiOptions } from "./api";
+import { SLIDER_DEFAULTS, SliderSize } from "./constants";
 
 /**
  * Default configuration for the Slider component
@@ -103,7 +104,37 @@ export const getElementConfig = (config: SliderConfig) => {
  * @param {Object} comp - Component with slider features
  * @returns {Object} API configuration object
  */
-export const getApiConfig = (comp) => ({
+/**
+ * What getApiConfig reads off the slider.
+ *
+ * Every key is a sub-object one of the features installs, and each is optional
+ * here for the reason the forwarding below uses `?.`: this is written to
+ * tolerate a feature that did not install. `setSize`/`getSize` sit on the
+ * component rather than under `appearance`, which is where withStates puts
+ * them.
+ */
+interface SliderApiHost {
+  // The controller installs every one of these, so the slice is whole. Only
+  // `slider` itself is optional, which is what the `?.` below is for: this is
+  // written to tolerate the controller not having run.
+  slider?: ApiOptions["slider"];
+  disabled?: { enable?: () => void; disable?: () => void; isDisabled?: () => boolean };
+  appearance?: {
+    setColor?: (color: string) => void;
+    getColor?: () => string;
+    showTicks?: (show: boolean) => void;
+    showCurrentValue?: (show: boolean) => void;
+  };
+  setSize?: (size: SliderSize) => void;
+  getSize?: () => string;
+  label?: { setText?: (text: string) => void; getText?: () => string };
+  icon?: { setIcon?: (html: string) => void; getIcon?: () => string };
+  on?: (event: string, handler: Function) => unknown;
+  off?: (event: string, handler: Function) => unknown;
+  lifecycle?: { destroy?: () => void };
+}
+
+export const getApiConfig = (comp: SliderApiHost): ApiOptions => ({
   slider: {
     setValue: (v, t) => comp.slider?.setValue(v, t),
     getValue: () => comp.slider?.getValue() ?? 0,

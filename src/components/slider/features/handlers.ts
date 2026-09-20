@@ -1,6 +1,12 @@
 // src/components/slider/features/handlers.ts
 import { SLIDER_EVENTS } from "../types";
-import { SliderConfig } from "../types";
+import {
+  SliderConfig,
+  SliderEventHelpers,
+  SliderState,
+  SliderPointerEvent,
+  SliderUiRenderer,
+} from "../types";
 
 /**
  * Create consolidated event handlers for slider component (mouse, touch, keyboard)
@@ -11,16 +17,28 @@ import { SliderConfig } from "../types";
  * @param eventHelpers Event helper methods
  * @returns Event handlers for all slider interactions
  */
+/**
+ * The x coordinate of whichever kind of pointer event this is.
+ *
+ * `"touches" in e` is a real type guard where `e.type.includes("touch")` is
+ * only a string test, so the branches below could not be narrowed. Every
+ * caller is a down or a move, where the touch list is non-empty.
+ */
+const clientXOf = (e: SliderPointerEvent): number =>
+  "touches" in e ? e.touches[0].clientX : e.clientX;
+
 export const createHandlers = (
   config: SliderConfig,
-  state,
-  uiRenderer,
-  eventHelpers,
+  state: SliderState,
+  uiRenderer: Partial<SliderUiRenderer>,
+  eventHelpers: SliderEventHelpers,
 ) => {
   // Get required elements from structure (with fallbacks)
   // Check both direct component properties (from withDom) and components object (legacy)
-  const components = state.component?.components || {};
-  const component = state.component || {};
+  // `|| {}` on the component was dead -- the controller always sets it -- and
+  // the empty object made every lookup below a union no property existed on.
+  const components = state.component.components || {};
+  const component = state.component;
 
   // Extract needed components from both locations for backward compatibility
   const container = component.container || components.container || null;
@@ -34,8 +52,8 @@ export const createHandlers = (
   // Get required helper methods (with fallbacks)
   const {
     getValueFromPosition = () => 0,
-    roundToStep = (value) => value,
-    clamp = (value) => value,
+    roundToStep = (value: number) => value,
+    clamp = (value: number) => value,
     showValueBubble = () => {},
     render = () => {},
   } = uiRenderer;
@@ -48,7 +66,7 @@ export const createHandlers = (
   const DRAG_THRESHOLD = 3;
 
   // Last focused handle tracker for keyboard navigation
-  let lastFocusedHandle = null;
+  let lastFocusedHandle: HTMLElement | null = null;
 
   // Bubble management
   const clearBubbleHideTimer = () => {
@@ -64,12 +82,12 @@ export const createHandlers = (
     if (secondValueBubble) showValueBubble(secondValueBubble, false);
   };
 
-  const showActiveBubble = (bubble) => {
+  const showActiveBubble = (bubble: HTMLElement | null) => {
     hideAllBubbles();
     if (bubble && config.showValue) showValueBubble(bubble, true);
   };
 
-  const hideActiveBubble = (bubble, delay = 0) => {
+  const hideActiveBubble = (bubble: HTMLElement | null, delay = 0) => {
     clearBubbleHideTimer();
     if (!bubble || !config.showValue) return;
 
@@ -105,7 +123,7 @@ export const createHandlers = (
       const focusClass = state.component.getClass("slider-handle--focused");
       state.component.element
         .querySelectorAll(`.${focusClass}`)
-        .forEach((el) => {
+        .forEach((el: Element) => {
           el.classList.remove(focusClass);
         });
 
@@ -127,7 +145,10 @@ export const createHandlers = (
   /**
    * Handle mouse/touch down on a handle
    */
-  const handleHandleMouseDown = (e, isSecondHandle = false) => {
+  const handleHandleMouseDown = (
+    e: SliderPointerEvent,
+    isSecondHandle = false,
+  ) => {
     // Check if disabled
     if (
       !state.component ||
@@ -146,7 +167,7 @@ export const createHandlers = (
     clearKeyboardFocus();
 
     // Capture initial position
-    initialX = e.type.includes("touch") ? e.touches[0].clientX : e.clientX;
+    initialX = clientXOf(e);
 
     // Setup drag state
     state.dragging = false;
@@ -171,7 +192,7 @@ export const createHandlers = (
   /**
    * Handle mouse/touch down on the track
    */
-  const handleTrackMouseDown = (e) => {
+  const handleTrackMouseDown = (e: SliderPointerEvent) => {
     // Check if disabled
     if (
       !state.component ||
@@ -192,9 +213,7 @@ export const createHandlers = (
     let isSecondHandle = false;
 
     try {
-      const position = e.type.includes("touch")
-        ? e.touches[0].clientX
-        : e.clientX;
+      const position = clientXOf(e);
 
       // Calculate value at click position and apply constraints
       let newValue = getValueFromPosition(position);
@@ -238,7 +257,7 @@ export const createHandlers = (
     state.activeBubble = isSecondHandle ? secondValueBubble : valueBubble;
 
     // Store the initial position
-    initialX = e.type.includes("touch") ? e.touches[0].clientX : e.clientX;
+    initialX = clientXOf(e);
 
     // For centered sliders, delay starting drag to allow animation
     if (config.centered && !config.range) {
@@ -282,15 +301,13 @@ export const createHandlers = (
   /**
    * Handle mouse/touch move during drag
    */
-  const handleMouseMove = (e) => {
+  const handleMouseMove = (e: SliderPointerEvent) => {
     if (!state.activeHandle || !container) return;
     e.preventDefault();
 
     try {
       // Get current position
-      const currentX = e.type.includes("touch")
-        ? e.touches[0].clientX
-        : e.clientX;
+      const currentX = clientXOf(e);
 
       // Determine if we've started a real drag
       if (
@@ -359,7 +376,7 @@ export const createHandlers = (
   /**
    * Handle mouse/touch up after drag
    */
-  const handleMouseUp = (e) => {
+  const handleMouseUp = (e: SliderPointerEvent) => {
     if (!state.activeHandle) return;
     e.preventDefault();
 
@@ -392,12 +409,16 @@ export const createHandlers = (
   /**
    * Handle keyboard input
    */
-  const handleKeyDown = (e, isSecondHandle = false) => {
+  const handleKeyDown = (e: KeyboardEvent, isSecondHandle = false) => {
     if (state.component.disabled && state.component.disabled.isDisabled())
       return;
 
     const step = state.step || 1;
     let newValue = isSecondHandle ? state.secondValue : state.value;
+    // `range: true` with no `secondValue` gives a second handle and a null
+    // second value. There is nothing to move, and arithmetic on null would
+    // have produced a value out of nowhere.
+    if (newValue === null) return;
     const stepSize = e.shiftKey ? step * 10 : step;
 
     // Handle tab key separately
@@ -476,7 +497,7 @@ export const createHandlers = (
   /**
    * Handle focus events
    */
-  const handleFocus = (e, isSecondHandle = false) => {
+  const handleFocus = (e: FocusEvent, isSecondHandle = false) => {
     if (state.component.disabled && state.component.disabled.isDisabled())
       return;
 
@@ -488,6 +509,7 @@ export const createHandlers = (
       hideAllBubbles();
     }
 
+    if (!currentHandle) return;
     lastFocusedHandle = currentHandle;
 
     // Add focus class and show bubble
@@ -503,8 +525,9 @@ export const createHandlers = (
   /**
    * Handle blur events
    */
-  const handleBlur = (e, isSecondHandle = false) => {
+  const handleBlur = (e: FocusEvent, isSecondHandle = false) => {
     const handleElement = isSecondHandle ? secondHandle : handle;
+    if (!handleElement) return;
     handleElement.classList.remove(
       `${state.component.getClass("slider-handle")}--focused`,
     );
@@ -524,9 +547,9 @@ export const createHandlers = (
    * Set up all event listeners
    */
   const setupEventListeners = () => {
-    if (!state.component || !handle) {
+    if (!handle || !container) {
       console.warn(
-        "Cannot set up event listeners: missing component or handle",
+        "Cannot set up event listeners: missing container or handle",
       );
       return;
     }

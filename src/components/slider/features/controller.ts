@@ -1,6 +1,13 @@
 // src/components/slider/features/controller.ts
 import { SLIDER_EVENTS } from "../types";
-import { SliderConfig } from "../types";
+import {
+  SliderConfig,
+  SliderEventHelpers,
+  SliderState,
+  SliderElements,
+  SliderStateComponent,
+  SliderUiRenderer,
+} from "../types";
 import { SLIDER_MEASUREMENTS } from "../constants";
 import { defaultConfig } from "../config";
 import { createHandlers } from "./handlers";
@@ -13,15 +20,16 @@ import { setFormValue } from "../../../core/dom/form-value";
  * @param config Slider configuration
  * @returns Component enhancer with slider controller functionality
  */
-export const withController = (config: SliderConfig) => (component) => {
-  // Ensure component has required properties
-  if (!component.element) {
-    console.warn("Cannot initialize slider controller: missing element");
-    return component;
-  }
-
+export const withController =
+  (config: SliderConfig) =>
+  // Generic, so the accumulated pipeline type survives to whatever follows.
+  // There used to be a `if (!component.element)` guard here, warning and
+  // returning the component untouched: withElement runs before this in the
+  // only pipe that calls it, so it could not fire, and an early return makes
+  // the return type a union that collapses to C.
+  <C extends SliderStateComponent>(component: C) => {
   // Initialize state with current config
-  const state = {
+  const state: SliderState = {
     component,
     value: config.value !== undefined ? config.value : 0,
     secondValue: config.secondValue !== undefined ? config.secondValue : null,
@@ -36,8 +44,8 @@ export const withController = (config: SliderConfig) => (component) => {
   };
 
   // Create event helpers
-  const eventHelpers = {
-    triggerEvent(eventName, originalEvent = null) {
+  const eventHelpers: SliderEventHelpers = {
+    triggerEvent(eventName: string, originalEvent: Event | null = null) {
       const eventData = {
         slider: state.component,
         value: state.value,
@@ -61,12 +69,10 @@ export const withController = (config: SliderConfig) => (component) => {
   /**
    * Gets required components from state, safely handling missing components
    */
-  const getComponents = () => {
-    // Return empty object if component is missing
-    if (!state.component) {
-      return {};
-    }
-
+  const getComponents = (): SliderElements => {
+    // The `if (!state.component) return {}` that used to open this could not
+    // fire -- the controller is handed the component -- and the empty object
+    // made the return a union that no caller could destructure.
     // Get components from both direct properties (withDom) and components object (legacy)
     const components = state.component.components || {};
     const component = state.component;
@@ -87,7 +93,7 @@ export const withController = (config: SliderConfig) => (component) => {
    * Calculates percentage position for a value
    * Maps from value space (min-max) to percentage space (0-100)
    */
-  const getPercentage = (value) => {
+  const getPercentage = (value: number): number => {
     const range = state.max - state.min;
     return range === 0 ? 0 : ((value - state.min) / range) * 100;
   };
@@ -102,7 +108,7 @@ export const withController = (config: SliderConfig) => (component) => {
    * Gets slider value from a position on the track
    * Maps from pixel position to slider value
    */
-  const getValueFromPosition = (position) => {
+  const getValueFromPosition = (position: number): number => {
     const components = getComponents();
     const { handle, container } = components;
 
@@ -134,7 +140,7 @@ export const withController = (config: SliderConfig) => (component) => {
    * Rounds a value to the nearest step
    * Used for discrete sliders
    */
-  const roundToStep = (value) => {
+  const roundToStep = (value: number): number => {
     const step = state.step;
     if (!step || step <= 0) return value;
 
@@ -146,7 +152,8 @@ export const withController = (config: SliderConfig) => (component) => {
    * Clamps a value between min and max
    * Ensures values stay within valid range
    */
-  const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+  const clamp = (value: number, min = state.min, max = state.max): number =>
+    Math.min(Math.max(value, min), max);
 
   /**
    * Updates handle and bubble positions
@@ -221,7 +228,10 @@ export const withController = (config: SliderConfig) => (component) => {
    * Shows or hides value bubble
    * Controls visibility for value indicators
    */
-  const showValueBubble = (bubbleElement, show) => {
+  const showValueBubble = (
+    bubbleElement: HTMLElement | null,
+    show: boolean,
+  ): void => {
     if (!bubbleElement || !config.showValue) return;
 
     const bubbleClass = state.component.getClass("slider-value");
@@ -274,7 +284,7 @@ export const withController = (config: SliderConfig) => (component) => {
   };
 
   // Create UI renderer interface for event handlers
-  const uiRenderer = {
+  const uiRenderer: SliderUiRenderer = {
     getPercentage,
     getValueFromPosition,
     roundToStep,
@@ -349,7 +359,7 @@ export const withController = (config: SliderConfig) => (component) => {
        * @param triggerEvent Whether to trigger change event
        * @returns Slider controller for chaining
        */
-      setValue(value, triggerEvent = true) {
+      setValue(value: number, triggerEvent = true) {
         const newValue = clamp(value, state.min, state.max);
 
         state.value = newValue;
@@ -376,7 +386,7 @@ export const withController = (config: SliderConfig) => (component) => {
        * @param triggerEvent Whether to trigger change event
        * @returns Slider controller for chaining
        */
-      setSecondValue(value, triggerEvent = true) {
+      setSecondValue(value: number, triggerEvent = true) {
         if (!config.range) return this;
 
         const newValue = clamp(value, state.min, state.max);
@@ -403,7 +413,7 @@ export const withController = (config: SliderConfig) => (component) => {
        * @param min New minimum value
        * @returns Slider controller for chaining
        */
-      setMin(min) {
+      setMin(min: number) {
         state.min = min;
 
         // Update ARIA attributes on handles
@@ -448,7 +458,7 @@ export const withController = (config: SliderConfig) => (component) => {
        * @param max New maximum value
        * @returns Slider controller for chaining
        */
-      setMax(max) {
+      setMax(max: number) {
         state.max = max;
 
         // Update ARIA attributes on handles
@@ -493,7 +503,7 @@ export const withController = (config: SliderConfig) => (component) => {
        * @param step New step size
        * @returns Slider controller for chaining
        */
-      setStep(step) {
+      setStep(step: number) {
         state.step = step;
         render();
 
