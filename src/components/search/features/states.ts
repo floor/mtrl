@@ -1,6 +1,11 @@
 // src/components/search/features/states.ts
 
-import { SearchConfig, SearchState, SearchViewMode } from "../types";
+import {
+  SearchConfig,
+  SearchState,
+  SearchStructure,
+  SearchViewMode,
+} from "../types";
 import {
   SEARCH_STATES,
   SEARCH_VIEW_MODES,
@@ -16,7 +21,20 @@ import { setHTML } from "../../../core/dom/html";
  * @param config Search configuration
  * @returns Component enhancer with state management features
  */
-export const withStates = (config: SearchConfig) => (component) => {
+/** What this feature reads off the component it is handed. */
+interface StatesHost {
+  element: HTMLElement;
+  getClass: (name: string) => string;
+  structure?: SearchStructure;
+  emit?: (event: string, data: unknown) => unknown;
+}
+
+export const withStates =
+  (config: SearchConfig) =>
+  // Generic, so the accumulated pipeline type survives to the features after
+  // this one. A concrete parameter type would erase it — the defect fixed in
+  // textfield's withDensity (#109).
+  <C extends StatesHost>(component: C) => {
   // Initialize state
   let currentState: SearchState = config.initialState || SEARCH_STATES.BAR;
   let currentViewMode: SearchViewMode =
