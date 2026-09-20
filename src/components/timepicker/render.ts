@@ -97,8 +97,9 @@ export const renderTimePicker = (
   minutesInputContainer.appendChild(minutesInput);
   inputContainer.appendChild(minutesInputContainer);
 
-  // Add seconds if enabled
-  let secondsInput;
+  // Add seconds if enabled. Undefined when they are off, which every reader
+  // below already checks for -- the type says so now.
+  let secondsInput: HTMLInputElement | undefined;
   if (config.showSeconds) {
     const secondsSeparator = document.createElement("div");
     secondsSeparator.className = `${config.prefix}-time-picker-separator`;
