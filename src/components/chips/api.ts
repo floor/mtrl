@@ -109,7 +109,13 @@ export const withAPI =
           options.chips &&
           typeof options.chips.getSelectedValues === "function"
         ) {
-          const values = options.chips.getSelectedValues();
+          // A chip may carry no value, so getSelectedValues can contain
+          // nulls. This method is documented for form-field compatibility and
+          // declared `string | string[] | null`, so a valueless chip
+          // contributes nothing rather than a null nobody could submit.
+          const values = options.chips
+            .getSelectedValues()
+            .filter((value): value is string => value !== null);
           // For single-select mode, return first value as string (or null if none)
           if (!options.config?.multiSelect) {
             return values.length > 0 ? values[0] : null;
