@@ -23,7 +23,6 @@ const PENDING = [
   "src/components/navigation/system/core.ts",
   "src/components/navigation/system/events.ts",
   "src/components/navigation/system/mobile.ts",
-  "src/components/textfield/config.ts",
   "src/components/timepicker/api.ts",
   "src/components/timepicker/render.ts",
   "src/components/timepicker/timepicker.ts",
