@@ -26,6 +26,12 @@ export const withStates = (config: SliderConfig) => (component) => {
     }, 0);
   }
 
+  const setFieldsDisabled = (disabled: boolean) => {
+    for (const field of component.formFields ?? []) {
+      if (field) field.disabled = disabled;
+    }
+  };
+
   /**
    * Disables the component
    */
@@ -45,6 +51,9 @@ export const withStates = (config: SliderConfig) => (component) => {
       secondHandle.tabIndex = -1;
       secondHandle.setAttribute("aria-disabled", "true");
     }
+
+    // A disabled control submits nothing, which is what a disabled slider means.
+    setFieldsDisabled(true);
 
     // Redraw track with disabled colors
     if (component.renderTracks) {
@@ -71,6 +80,8 @@ export const withStates = (config: SliderConfig) => (component) => {
       secondHandle.tabIndex = 0;
       secondHandle.setAttribute("aria-disabled", "false");
     }
+
+    setFieldsDisabled(false);
 
     // Redraw track with enabled colors
     if (component.renderTracks) {

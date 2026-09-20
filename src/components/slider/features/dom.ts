@@ -1,5 +1,6 @@
 import { createElement } from "../../../core/dom/create";
 import { setStyles } from "../../../core/dom/utils";
+import { createFormValue } from "../../../core/dom/form-value";
 import { SliderConfig } from "../types";
 import { ElementComponent } from "../../../core/compose/component";
 
@@ -20,6 +21,7 @@ export const withDom =
     valueBubble: HTMLElement;
     secondHandle?: HTMLElement;
     secondValueBubble?: HTMLElement;
+    formFields: (HTMLInputElement | null)[] | null;
     getContainer: () => HTMLElement;
     getHandle: () => HTMLElement;
     getValueBubble: () => HTMLElement;
@@ -158,6 +160,24 @@ export const withDom =
       });
     }
 
+    // A slider renders no form control of its own, so without these it
+    // submits nothing. Nothing is created unless the slider is named; a range
+    // slider submits both ends, as `name` and `name-end`.
+    const name = config.name;
+    const formFields = name
+      ? [
+          createFormValue(component.element, name, String(value), isDisabled),
+          config.range
+            ? createFormValue(
+                component.element,
+                `${name}-end`,
+                String(config.secondValue ?? max),
+                isDisabled,
+              )
+            : null,
+        ]
+      : null;
+
     // Return enhanced component with inner elements
     return {
       ...component,
@@ -166,6 +186,7 @@ export const withDom =
       valueBubble,
       secondHandle,
       secondValueBubble,
+      formFields,
 
       // Add DOM query methods for compatibility
       getContainer: () => container,
