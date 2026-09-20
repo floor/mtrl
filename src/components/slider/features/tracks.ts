@@ -54,7 +54,29 @@ interface VisualState {
 }
 
 /** Decorative tracks and ticks. Handles and controller retain interaction ownership. */
-export const withTracks = (config: SliderConfig) => (component) => {
+/** What this feature reads off the component it is handed. */
+interface TracksHost {
+  getClass: (name: string) => string;
+  // withDom installs it before withTracks runs.
+  container: HTMLElement;
+  handle?: HTMLElement;
+  secondHandle?: HTMLElement;
+  // Required, not optional: withStates installs appearance and withLifecycle
+  // runs before both, so by the time withTracks is applied they are there.
+  // setColor is reassigned here, wrapping the original, so it is writable.
+  appearance: { setColor: (color: SliderColor) => void };
+  getSize?: () => SliderSize;
+  setSize?: (size: SliderSize) => void;
+  renderTracks?: (state?: unknown) => void;
+  lifecycle: { destroy: () => void };
+}
+
+export const withTracks =
+  (config: SliderConfig) =>
+  // Generic, so the accumulated pipeline type survives to the features after
+  // this one. A concrete parameter type would erase it — the defect fixed in
+  // textfield's withDensity (#109).
+  <C extends TracksHost>(component: C) => {
   const container: HTMLElement = component.container;
   const element = (name: string, parent: HTMLElement) => {
     const node = document.createElement("div");

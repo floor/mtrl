@@ -23,7 +23,18 @@ import { createElement } from "../../../core/dom/create";
  * @param config Search configuration
  * @returns Component enhancer with DOM structure
  */
-export const withStructure = (config: SearchConfig) => (component) => {
+/** What this feature reads off the component it is handed. */
+interface StructureHost {
+  element: HTMLElement;
+  getClass: (name: string) => string;
+}
+
+export const withStructure =
+  (config: SearchConfig) =>
+  // Generic, so the accumulated pipeline type survives to the features after
+  // this one. A concrete parameter type would erase it — the defect fixed in
+  // textfield's withDensity (#109).
+  <C extends StructureHost>(component: C) => {
   const isDisabled = config.disabled === true;
   const initialState = config.initialState || SEARCH_STATES.BAR;
   const isViewState = initialState === SEARCH_STATES.VIEW;

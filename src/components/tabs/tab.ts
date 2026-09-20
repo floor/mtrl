@@ -96,7 +96,7 @@ export const createTab = (config: TabConfig = {}): TabComponent => {
     }
 
     // Forward button events to our component
-    button.on("click", (event) => {
+    button.on("click", (event: unknown) => {
       if (baseComponent.emit) {
         baseComponent.emit("click", event);
       }

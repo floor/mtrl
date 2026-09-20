@@ -5,6 +5,7 @@ import {
 } from "../../core/config/component";
 import { TooltipConfig } from "./types";
 import { TOOLTIP_DEFAULTS } from "./constants";
+import type { LifecycleComponent } from "../../core/compose/features/lifecycle";
 
 /**
  * Default configuration for the Tooltip component
@@ -62,7 +63,7 @@ export const getElementConfig = (config: TooltipConfig) => {
  * @param {Object} comp - Component with lifecycle feature
  * @returns {Object} API configuration object
  */
-export const getApiConfig = (comp) => ({
+export const getApiConfig = (comp: LifecycleComponent) => ({
   lifecycle: {
     destroy: () => comp.lifecycle.destroy(),
   },

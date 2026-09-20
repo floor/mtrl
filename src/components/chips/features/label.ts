@@ -7,7 +7,19 @@ import { ChipsConfig } from '../types';
  * @param config Chips configuration
  * @returns Component enhancer that adds label functionality
  */
-export const withChipsLabel = (config: ChipsConfig) => component => {
+/** What this feature reads off the component it is handed. */
+interface LabelHost {
+  element: HTMLElement;
+  getClass: (name: string) => string;
+  components?: Record<string, HTMLElement | undefined>;
+}
+
+export const withChipsLabel =
+  (config: ChipsConfig) =>
+  // Generic, so the accumulated pipeline type survives to the features after
+  // this one. A concrete parameter type would erase it — the defect fixed in
+  // textfield's withDensity (#109).
+  <C extends LabelHost>(component: C) => {
   // Track current label state
   const state = {
     text: config.label || '',

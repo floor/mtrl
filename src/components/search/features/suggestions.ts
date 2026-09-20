@@ -10,7 +10,31 @@ import { createElement } from "../../../core/dom/create";
  *
  * @returns Component enhancer with suggestions features
  */
-export const withSuggestions = () => (component) => {
+/** What this feature reads off the component it is handed. */
+interface SuggestionsHost {
+  getClass: (name: string) => string;
+  // The input *feature's* API, not the element. Typed from what
+  // search/features/input returns, so the two cannot drift.
+  input?: {
+    getValue: () => string;
+    getSuggestions: () => SearchSuggestion[];
+    selectSuggestion: (suggestion: SearchSuggestion | string) => void;
+  };
+  structure?: Record<string, HTMLElement | undefined>;
+  // The subset of search/features/states this file drives.
+  states?: {
+    collapse: () => void;
+    isExpanded: () => boolean;
+  };
+  on?: (event: string, handler: (...args: never[]) => void) => unknown;
+}
+
+export const withSuggestions =
+  () =>
+  // Generic, so the accumulated pipeline type survives to the features after
+  // this one. A concrete parameter type would erase it — the defect fixed in
+  // textfield's withDensity (#109).
+  <C extends SuggestionsHost>(component: C) => {
   // State
   let highlightedIndex = -1;
   const currentSuggestions: SearchSuggestion[] = [];

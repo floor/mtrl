@@ -4,6 +4,8 @@ import {
   createElementConfig,
 } from "../../core/config/component";
 import { RadiosConfig } from "./types";
+import type { DisabledComponent } from "../../core/compose/features/disabled";
+import type { LifecycleComponent } from "../../core/compose/features/lifecycle";
 
 /**
  * Default configuration for the Radios component
@@ -44,7 +46,9 @@ export const getElementConfig = (config: RadiosConfig) => {
  * @param {Object} comp - Component with disabled and lifecycle features
  * @returns {Object} API configuration object
  */
-export const getApiConfig = (comp) => ({
+export const getApiConfig = (
+  comp: DisabledComponent & LifecycleComponent,
+) => ({
   disabled: {
     enable: () => comp.disabled.enable(),
     disable: () => comp.disabled.disable(),

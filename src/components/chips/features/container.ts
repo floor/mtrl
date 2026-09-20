@@ -7,7 +7,18 @@ import { ChipsConfig } from '../types';
  * @param config Chips configuration
  * @returns Component enhancer that adds container layout functionality
  */
-export const withContainer = (config: ChipsConfig) => component => {
+/** What this feature reads off the component it is handed. */
+interface ContainerHost {
+  element: HTMLElement;
+  getClass: (name: string) => string;
+}
+
+export const withContainer =
+  (config: ChipsConfig) =>
+  // Generic, so the accumulated pipeline type survives to the features after
+  // this one. A concrete parameter type would erase it — the defect fixed in
+  // textfield's withDensity (#109).
+  <C extends ContainerHost>(component: C) => {
   // Track current layout state
   const state = {
     scrollable: config.scrollable === true,
