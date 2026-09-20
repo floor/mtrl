@@ -64,6 +64,9 @@ export const renderTimePicker = (
   hoursInput.max = config.format === TIME_FORMAT.MILITARY ? "23" : "12";
   hoursInput.value = padZero(displayHours);
   hoursInput.setAttribute("data-type", "hour");
+  // M3 names these fields "Hour" and "Minute" for assistive technology. They
+  // had no label at all, so a screen reader announced only the role.
+  hoursInput.setAttribute("aria-label", "Hour");
   hoursInput.setAttribute("inputmode", "numeric");
   hoursInput.setAttribute("pattern", "[0-9]*");
 
@@ -87,6 +90,7 @@ export const renderTimePicker = (
   minutesInput.max = "59";
   minutesInput.value = padZero(timeValue.minutes);
   minutesInput.setAttribute("data-type", "minute");
+  minutesInput.setAttribute("aria-label", "Minute");
   minutesInput.setAttribute("inputmode", "numeric");
   minutesInput.setAttribute("pattern", "[0-9]*");
 
@@ -111,6 +115,7 @@ export const renderTimePicker = (
     secondsInput.max = "59";
     secondsInput.value = padZero(timeValue.seconds || 0);
     secondsInput.setAttribute("data-type", "second");
+    secondsInput.setAttribute("aria-label", "Second");
     secondsInput.setAttribute("inputmode", "numeric");
     secondsInput.setAttribute("pattern", "[0-9]*");
 
@@ -175,6 +180,12 @@ export const renderTimePicker = (
   canvas.height = TIMEPICKER_DIAL.DIAMETER;
   canvas.style.width = `${TIMEPICKER_DIAL.DIAMETER}px`;
   canvas.style.height = `${TIMEPICKER_DIAL.DIAMETER}px`;
+  // Hidden from assistive technology on purpose. The dial is a pointer
+  // convenience drawn into a canvas, which cannot expose a button per number;
+  // the hour and minute inputs are present in both modes and set the same
+  // value, so they are the accessible route (M3: manual entry through text
+  // input rather than exclusively the dial).
+  canvas.setAttribute("aria-hidden", "true");
   dialContainer.appendChild(canvas);
 
   // Create actions container
@@ -185,11 +196,14 @@ export const renderTimePicker = (
   // Create type toggle button
   const toggleTypeButton = document.createElement("button");
   toggleTypeButton.className = `${config.prefix}-time-picker-toggle-type`;
+  // Without this a button defaults to type="submit", and this one sits inside
+  // whatever form the picker was placed in. Cancel and confirm already set it.
+  toggleTypeButton.setAttribute("type", "button");
   toggleTypeButton.setAttribute(
     "aria-label",
     config.type === TIME_PICKER_TYPE.DIAL
-      ? "Switch to keyboard input"
-      : "Switch to dial selector"
+      ? "Toggle input picker"
+      : "Toggle dial picker"
   );
   setHTML(toggleTypeButton,
     config.type === TIME_PICKER_TYPE.DIAL
@@ -239,11 +253,13 @@ export const renderTimePicker = (
       // Switch to dial mode
       dialContainer.style.display = "block";
       setHTML(toggleTypeButton, config.keyboardIcon || TIMEPICKER_ICONS.KEYBOARD);
-      toggleTypeButton.setAttribute("aria-label", "Switch to keyboard input");
+      toggleTypeButton.setAttribute("aria-label", "Toggle input picker");
 
-      // Set focus on dial
       setTimeout(() => {
-        canvas.focus();
+        // No focus call here. A canvas is not focusable, so the previous
+        // `canvas.focus()` did nothing, and making it focusable would promise
+        // a keyboard interaction the dial does not have. Focus stays on the
+        // toggle, which is where the person pressed.
 
         // Apply active state to hour input by default
         const hourElements = container.querySelectorAll(
@@ -274,7 +290,7 @@ export const renderTimePicker = (
       // Switch to input mode
       dialContainer.style.display = "none";
       setHTML(toggleTypeButton, config.clockIcon || TIMEPICKER_ICONS.CLOCK);
-      toggleTypeButton.setAttribute("aria-label", "Switch to dial selector");
+      toggleTypeButton.setAttribute("aria-label", "Toggle dial picker");
 
       // Focus on hours input
       setTimeout(() => {
