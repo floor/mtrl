@@ -56,6 +56,14 @@ export interface TimePickerConfig {
   value?: string;
 
   /**
+   * Form field name. A time picker renders no form control of its own, so it
+   * submits nothing unless this is set; with it, a hidden input on the
+   * picker's element carries the current time as 24-hour `HH:mm` — or
+   * `HH:mm:ss` when `showSeconds` is on — whatever format the picker displays.
+   */
+  name?: string;
+
+  /**
    * Type of time picker to display
    * @default TIME_PICKER_TYPE.DIAL
    */

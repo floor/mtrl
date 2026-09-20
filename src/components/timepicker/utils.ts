@@ -264,3 +264,24 @@ export const isTimeWithinConstraints = (
 
   return true;
 };
+
+/**
+ * Formats a time for submission in a form: 24-hour `HH:mm`, or `HH:mm:ss`
+ * when the picker shows seconds.
+ *
+ * Separate from `formatTime` on purpose. What a form submits should not change
+ * because the picker happens to display 12-hour time, and `formatTime` appends
+ * seconds whenever the value carries them — which it always does, since the
+ * picker stores 0 when seconds are hidden.
+ *
+ * @param timeValue - Current time value, whose hours are 24-hour
+ * @param showSeconds - Whether the picker shows seconds
+ * @returns The value to submit
+ */
+export const formatFormValue = (
+  timeValue: TimeValue,
+  showSeconds: boolean
+): string => {
+  const base = `${padZero(timeValue.hours)}:${padZero(timeValue.minutes)}`;
+  return showSeconds ? `${base}:${padZero(timeValue.seconds ?? 0)}` : base;
+};

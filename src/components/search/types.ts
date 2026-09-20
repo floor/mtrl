@@ -99,6 +99,13 @@ export interface SearchConfig {
   /** Initial input value */
   value?: string;
 
+  /**
+   * Form field name. Set on the text input itself, so the search takes part
+   * in a surrounding form and its value appears in `FormData`. Without it the
+   * search submits nothing.
+   */
+  name?: string;
+
   /** Custom leading icon HTML (replaces default search icon) */
   leadingIcon?: string;
 

@@ -14,7 +14,8 @@ import { createBaseConfig, getContainerConfig, getApiConfig } from "./config";
 import { TIMEPICKER_Z_INDEX as Z_INDEX } from "./constants";
 import { createTimePickerAPI } from "./api";
 import { renderTimePicker } from "./render";
-import { parseTime } from "./utils";
+import { parseTime, formatFormValue } from "./utils";
+import { createFormValue } from "../../core/dom/form-value";
 
 /**
  * Creates a new TimePicker component
@@ -91,6 +92,16 @@ const createTimePicker = (
     // Render initial time picker content
     renderTimePicker(dialogElement, timeValue, baseConfig);
 
+    // A time picker renders no form control of its own, so without this it
+    // submits nothing. It lives on the component's own element rather than in
+    // the dialog, which is portaled to the body and outside any form. Always
+    // 24-hour, whatever the picker displays.
+    const formValue = createFormValue(
+      baseComponent.element,
+      baseConfig.name,
+      formatFormValue(timeValue, baseConfig.showSeconds === true)
+    );
+
     // Create time picker API
     const timePicker = createTimePickerAPI(
       baseComponent,
@@ -98,7 +109,8 @@ const createTimePicker = (
       dialogElement,
       timeValue,
       baseConfig,
-      getApiConfig(baseComponent)
+      getApiConfig(baseComponent),
+      formValue
     );
 
     // Open time picker if initially open
