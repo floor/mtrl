@@ -64,21 +64,23 @@ function getThemeColors(prefix: string): ThemeColors {
     styles.getPropertyValue(`--${prefix}-sys-color-on-surface`).trim() ||
     "#1C1B1F";
 
-  // Get RGB values for primary (for alpha calculations)
-  const primaryRgb =
-    styles.getPropertyValue(`--${prefix}-sys-color-primary-rgb`).trim() ||
-    "103, 80, 164";
-
   // Get RGB values for on-surface (for alpha calculations)
   const onSurfaceRgb =
     styles.getPropertyValue(`--${prefix}-sys-color-on-surface-rgb`).trim() ||
     "28, 27, 31";
 
   // Create background with alpha
-  const bgColor = `rgba(${onSurfaceRgb}, 0.05)`;
+  // M3 TimePickerTokens.ClockDialColor is SurfaceContainerHighest, not a wash
+  // of on-surface. The 5% tint it replaced had no token behind it.
+  const bgColor =
+    styles.getPropertyValue(`--${prefix}-sys-color-surface-container-highest`).trim() ||
+    `rgba(${onSurfaceRgb}, 0.05)`;
 
   // Create selected background with alpha
-  const selectedBgColor = `rgba(${primaryRgb}, 0.1)`;
+  // ClockDialSelectorHandleContainerColor is Primary — a solid disc. At 10%
+  // it was nearly invisible, and the number on it was drawn primary too, so
+  // the selected value was primary on primary.
+  const selectedBgColor = primaryColor;
 
   return {
     primaryColor,
@@ -203,7 +205,7 @@ const drawHourNumbers12 = (
 
     // Draw number text - same size for all, only color changes for selected
     ctx.font = `16px Roboto, Arial, sans-serif`;
-    ctx.fillStyle = isSelected ? colors.primaryColor : colors.onSurfaceColor;
+    ctx.fillStyle = isSelected ? colors.onPrimaryColor : colors.onSurfaceColor;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText(hour.toString(), x, y + 2);
@@ -241,7 +243,7 @@ const drawHourNumbers24 = (
 
     // Draw number text - same size for all
     ctx.font = `16px Roboto, Arial, sans-serif`;
-    ctx.fillStyle = isSelected ? colors.primaryColor : colors.onSurfaceColor;
+    ctx.fillStyle = isSelected ? colors.onPrimaryColor : colors.onSurfaceColor;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText(hour.toString(), x, y + 2);
@@ -268,7 +270,7 @@ const drawHourNumbers24 = (
 
     // Draw number text - same size but slightly smaller for inner ring
     ctx.font = `14px Roboto, Arial, sans-serif`;
-    ctx.fillStyle = isSelected ? colors.primaryColor : colors.onSurfaceColor;
+    ctx.fillStyle = isSelected ? colors.onPrimaryColor : colors.onSurfaceColor;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText(padZero(displayHour), x, y + 2);
@@ -306,7 +308,7 @@ const drawMinuteNumbers = (
 
     // Draw number text - same size for all
     ctx.font = `16px Roboto, Arial, sans-serif`;
-    ctx.fillStyle = isSelected ? colors.primaryColor : colors.onSurfaceColor;
+    ctx.fillStyle = isSelected ? colors.onPrimaryColor : colors.onSurfaceColor;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText(padZero(i), x, y);
