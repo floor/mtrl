@@ -29,7 +29,12 @@ interface DensityComponent {
  */
 export const withDensity =
   (config: DensityConfig) =>
-  (component: DensityComponent): DensityComponent => {
+  // Generic, like every sibling feature. Declared as `DensityComponent` it
+  // collapsed the accumulated pipeline type to its own shape, so everything
+  // applied before it — withLifecycle among them — was erased from the type
+  // of everything after. It mutates and returns the same object, so this is
+  // what it was already doing.
+  <C extends DensityComponent>(component: C): C => {
     const PREFIX = config.prefix || "mtrl";
     const COMPONENT = config.componentName || "textfield";
     const density = config.density || "default";

@@ -3,7 +3,9 @@ import {
   createComponentConfig,
   createElementConfig,
 } from "../../core/config/component";
-import { TextfieldConfig, BaseComponent, ApiOptions } from "./types";
+import { TextfieldConfig, ApiOptions } from "./types";
+import type { DisabledComponent } from "../../core/compose/features/disabled";
+import type { LifecycleComponent } from "../../core/compose/features/lifecycle";
 import { TEXTFIELD_DEFAULTS } from "./constants";
 
 /**
@@ -37,16 +39,18 @@ export const getElementConfig = (config: TextfieldConfig) =>
 
 /**
  * Creates API configuration for the Textfield component
- * @param {BaseComponent} comp - Component with disabled and lifecycle features
+ * @param comp - Component with the disabled and lifecycle features applied
  * @returns {ApiOptions} API configuration object
  */
-export const getApiConfig = (comp: BaseComponent): ApiOptions => ({
+export const getApiConfig = (
+  comp: DisabledComponent & LifecycleComponent,
+): ApiOptions => ({
   disabled: {
-    enable: comp.disabled?.enable,
-    disable: comp.disabled?.disable,
+    enable: comp.disabled.enable,
+    disable: comp.disabled.disable,
   },
   lifecycle: {
-    destroy: comp.lifecycle?.destroy,
+    destroy: comp.lifecycle.destroy,
   },
 });
 
