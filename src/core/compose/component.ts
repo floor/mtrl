@@ -34,7 +34,9 @@ export interface TouchState {
 export interface BaseConfig {
   componentName?: string;
   prefix?: string;
-  parent?: HTMLElement | string;
+  // Null, because BaseComponentConfig admits it and withElement reads this
+  // with `||`, which treats null as "no parent" exactly as undefined is.
+  parent?: HTMLElement | string | null;
 }
 
 /**
