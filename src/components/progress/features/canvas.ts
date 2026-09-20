@@ -177,7 +177,6 @@ export const withCanvas =
       if (!ctx) return false;
       context = { canvas, ctx, width: 0, height: 0, pixelRatio: view?.devicePixelRatio || 1 };
       measure();
-      component.ctx = ctx;
       return true;
     };
 
@@ -433,10 +432,15 @@ export const withCanvas =
       },
     };
 
+    // No `ctx` here. It was a snapshot taken at return time, so it was
+    // undefined for good whenever initialize() had to defer to the next frame
+    // — and the retry's `component.ctx = ctx` wrote to the object this spread
+    // had already copied, which nothing holds. Nothing read it either, in this
+    // repo or in mtrl-app, so it is gone rather than repaired. The context
+    // lives in the `context` closure, which draw() and resize() use.
     return {
       ...component,
       canvas,
-      ctx: context?.ctx,
       draw,
       resize,
     };

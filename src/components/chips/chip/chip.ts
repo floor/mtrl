@@ -64,11 +64,13 @@ const createChip = (config: ChipConfig = {}): ChipComponent => {
       trailingIconElement.className = `${chip.getClass("chip")}-trailing-icon`;
       setHTML(trailingIconElement, config.trailingIcon);
 
-      // Add click handler for trailing icon
-      if (config.onTrailingIconClick) {
+      // Add click handler for trailing icon. Captured, because the guard
+      // cannot narrow inside a listener that runs later.
+      const onTrailingIconClick = config.onTrailingIconClick;
+      if (onTrailingIconClick) {
         trailingIconElement.addEventListener("click", (e) => {
           e.stopPropagation(); // Prevent chip click event
-          config.onTrailingIconClick(chip as unknown as ChipComponent);
+          onTrailingIconClick(chip as unknown as ChipComponent);
         });
       }
 

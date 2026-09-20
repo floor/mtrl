@@ -13,7 +13,7 @@ export const defaultConfig: ChipsConfig = {
   scrollable: false,
   vertical: false,
   multiSelect: false,
-  onChange: null,
+  onChange: undefined,
   selector: null,
   labelPosition: "start",
 };
