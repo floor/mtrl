@@ -10,10 +10,11 @@ import {
   TIME_PERIOD
 } from './types';
 import { TIMEPICKER_EVENTS as EVENTS, TIMEPICKER_SELECTORS as SELECTORS } from './constants';
-import { formatTime, padZero } from './utils';
+import { formatTime, padZero, formatFormValue } from './utils';
 import { renderTimePicker } from './render';
 import { renderClockDial, getTimeValueFromClick } from './clockdial';
 import type { ElementComponent } from '../../core/compose/component';
+import { setFormValue } from '../../core/dom/form-value';
 
 interface ApiOptions {
   events: {
@@ -43,8 +44,20 @@ export const createTimePickerAPI = (
   dialogElement: HTMLElement,
   timeValue: TimeValue,
   config: TimePickerConfig,
-  options: ApiOptions
+  options: ApiOptions,
+  formValue: HTMLInputElement | null = null
 ): TimePickerComponent => {
+  /**
+   * Redraws the dialog and keeps the submitted value in step.
+   *
+   * Every path that changes the time redraws, so this is the one place the
+   * hidden input has to follow — rather than nine call sites that would
+   * drift apart.
+   */
+  const render = () => {
+    renderTimePicker(dialogElement, timeValue, config);
+    setFormValue(formValue, formatFormValue(timeValue, config.showSeconds === true));
+  };
   // Track open state
   let isOpen = !!config.isOpen;
   
@@ -92,7 +105,7 @@ export const createTimePickerAPI = (
       // Force re-render to ensure canvas is drawn after dialog is visible
       // This ensures the canvas has proper dimensions for rendering
       setTimeout(() => {
-        renderTimePicker(dialogElement, timeValue, config);
+        render();
       }, 50);
       
       // Emit open event
@@ -173,7 +186,7 @@ export const createTimePickerAPI = (
         timeValue.period = hours >= 12 ? TIME_PERIOD.PM : TIME_PERIOD.AM;
         
         // Re-render time picker
-        renderTimePicker(dialogElement, timeValue, config);
+        render();
         
         // Emit change event
         options.events.emit(EVENTS.CHANGE, this.getValue());
@@ -203,7 +216,7 @@ export const createTimePickerAPI = (
       dialogElement.classList.add(`${config.prefix}-time-picker-dialog--${type}`);
       
       // Re-render time picker
-      renderTimePicker(dialogElement, timeValue, config);
+      render();
       
       return this;
     },
@@ -235,7 +248,7 @@ export const createTimePickerAPI = (
       }
       
       // Re-render time picker
-      renderTimePicker(dialogElement, timeValue, config);
+      render();
       
       // Emit change event
       options.events.emit(EVENTS.CHANGE, this.getValue());
@@ -261,7 +274,7 @@ export const createTimePickerAPI = (
       dialogElement.classList.add(`${config.prefix}-time-picker-dialog--${orientation}`);
       
       // Re-render time picker
-      renderTimePicker(dialogElement, timeValue, config);
+      render();
       
       return this;
     },
@@ -279,7 +292,7 @@ export const createTimePickerAPI = (
         titleElement.textContent = title;
       } else {
         // Re-render to add title
-        renderTimePicker(dialogElement, timeValue, config);
+        render();
       }
       
       return this;
@@ -355,7 +368,7 @@ export const createTimePickerAPI = (
         if (timeValue.hours >= 12) {
           timeValue.hours -= 12;
         }
-        renderTimePicker(dialogElement, timeValue, config);
+        render();
         options.events.emit(EVENTS.CHANGE, timePickerAPI.getValue());
         
         // Call onChange callback if provided
@@ -371,7 +384,7 @@ export const createTimePickerAPI = (
         if (timeValue.hours < 12) {
           timeValue.hours += 12;
         }
-        renderTimePicker(dialogElement, timeValue, config);
+        render();
         options.events.emit(EVENTS.CHANGE, timePickerAPI.getValue());
         
         // Call onChange callback if provided
@@ -567,7 +580,7 @@ export const createTimePickerAPI = (
     }
     
     // Re-render time picker with updated values
-    renderTimePicker(dialogElement, timeValue, config);
+    render();
     
     // Emit change event
     options.events.emit(EVENTS.CHANGE, timePickerAPI.getValue());

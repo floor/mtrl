@@ -112,6 +112,11 @@ export const withStructure = (config: SearchConfig) => (component) => {
     inputAttributes.value = value;
   }
 
+  // On the input, not the root: a name on a div submits nothing.
+  if (config.name) {
+    inputAttributes.name = config.name;
+  }
+
   if (isDisabled) {
     inputAttributes.disabled = "disabled";
   }
