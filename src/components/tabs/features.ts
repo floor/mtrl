@@ -301,7 +301,15 @@ export interface IndicatorComponent {
  */
 export const withIndicator =
   <T extends IndicatorFeatureConfig>(config: T) =>
-  <C extends ComponentBase & { tabs: TabComponent[] }>(
+  <
+    C extends ComponentBase & {
+      tabs: TabComponent[];
+      // Required, not optional: this feature wraps the handler, and
+      // withTabsManagement installs it earlier in the pipe. Reading it off an
+      // optional member meant a click could call undefined.
+      handleTabClick: (event: unknown, tab: TabComponent) => void;
+    },
+  >(
     component: C
   ): C & IndicatorComponent => {
     // Create indicator with proper config

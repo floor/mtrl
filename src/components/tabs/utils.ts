@@ -24,9 +24,11 @@ export function getActiveTab(component: TabsHost): TabComponent | null {
     return component.getActiveTab();
   }
 
-  // Fallback: check if component has tabs array
+  // Fallback: check if component has tabs array. `find` yields undefined when
+  // nothing matches, and this function promises null — a caller comparing
+  // `=== null` would otherwise have been wrong about "no active tab".
   if (Array.isArray(component.tabs)) {
-    return component.tabs.find((tab) => tab.isActive && tab.isActive());
+    return component.tabs.find((tab) => tab.isActive && tab.isActive()) ?? null;
   }
 
   // If all else fails, return null
