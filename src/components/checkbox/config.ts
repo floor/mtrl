@@ -3,7 +3,7 @@ import {
   createComponentConfig,
   createElementConfig,
 } from "../../core/config/component";
-import { CheckboxConfig, BaseComponent, ApiOptions } from "./types";
+import { CheckboxConfig, BaseComponent, ApiComponent, ApiOptions } from "./types";
 
 import { setHTML } from "../../core/dom/html";
 /**
@@ -70,22 +70,22 @@ export const withLabelPosition =
 
 /**
  * Creates API configuration for the Checkbox component
- * @param {BaseComponent} comp - Component with disabled, lifecycle, and checkable features
+ * @param {ApiComponent} comp - Component with disabled, lifecycle, and checkable features
  * @returns {ApiOptions} API configuration object
  */
-export const getApiConfig = (comp: BaseComponent): ApiOptions => ({
+export const getApiConfig = (comp: ApiComponent): ApiOptions => ({
   disabled: {
-    enable: comp.disabled?.enable,
-    disable: comp.disabled?.disable,
+    enable: comp.disabled.enable,
+    disable: comp.disabled.disable,
   },
   lifecycle: {
-    destroy: comp.lifecycle?.destroy,
+    destroy: comp.lifecycle.destroy,
   },
   checkable: {
-    check: comp.checkable?.check,
-    uncheck: comp.checkable?.uncheck,
-    toggle: comp.checkable?.toggle,
-    isChecked: comp.checkable?.isChecked,
+    check: comp.checkable.check,
+    uncheck: comp.checkable.uncheck,
+    toggle: comp.checkable.toggle,
+    isChecked: comp.checkable.isChecked,
   },
 });
 

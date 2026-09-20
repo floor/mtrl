@@ -169,3 +169,15 @@ export interface BaseComponent {
   setSupportingText?: (text: string, isError?: boolean) => void;
   removeSupportingText?: () => void;
 }
+
+/**
+ * Component as it reaches the API step of the pipeline.
+ *
+ * `BaseComponent` marks the feature controllers optional because a component
+ * part-way through the pipeline has not got them yet. By the time
+ * `getApiConfig` runs, withCheckable, withDisabled and withLifecycle have all
+ * been applied, so they are there.
+ * @internal
+ */
+export type ApiComponent = BaseComponent &
+  Required<Pick<BaseComponent, "checkable" | "disabled" | "lifecycle">>;
