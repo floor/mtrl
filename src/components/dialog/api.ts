@@ -10,7 +10,12 @@ import {
 } from "./types";
 import { removeClass } from "../../core/dom/classes";
 
-interface ApiOptions {
+/**
+ * What withAPI needs handed to it. Exported because getApiConfig in config.ts
+ * builds exactly this, and the features install exactly its sub-objects -- so
+ * one description serves all three rather than three that can drift.
+ */
+export interface ApiOptions {
   visibility: {
     open: () => void;
     close: () => void;

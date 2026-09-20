@@ -247,3 +247,69 @@ describe('dialog', () => {
     expect(seen).toEqual(['afteropen', 'afterclose']);
   });
 });
+
+// A handler can refuse a close by calling preventDefault on beforeclose. That
+// is the documented way to hold a dialog open for a validation or an "are you
+// sure", and nothing covered it -- which is also how a console.log sat on the
+// path, printing on an ordinary refusal, until FLO-114 typed this file.
+describe('refusing a close', () => {
+  test('preventDefault on beforeclose keeps the dialog open', async () => {
+    const dialog = createDialog({ title: 'Edit', content: 'Body' });
+    await opened(dialog);
+
+    dialog.on('beforeclose', (event: { preventDefault: () => void }) => {
+      event.preventDefault();
+    });
+    dialog.close();
+    await after(400);
+
+    expect(dialog.isOpen()).toBe(true);
+    expect(document.body.contains(dialog.element)).toBe(true);
+  });
+
+  test('and no close event follows, since it did not close', async () => {
+    const dialog = createDialog({ title: 'Edit', content: 'Body' });
+    await opened(dialog);
+    const closes: unknown[] = [];
+    dialog.on('close', (event: unknown) => closes.push(event));
+
+    dialog.on('beforeclose', (event: { preventDefault: () => void }) => {
+      event.preventDefault();
+    });
+    dialog.close();
+    await after(400);
+
+    expect(closes).toHaveLength(0);
+  });
+
+  test('a handler that does not refuse lets it close as usual', async () => {
+    const dialog = createDialog({ title: 'Edit', content: 'Body' });
+    await opened(dialog);
+    let sawBeforeClose = false;
+    dialog.on('beforeclose', () => { sawBeforeClose = true; });
+
+    dialog.close();
+    await after(400);
+
+    expect(sawBeforeClose).toBe(true);
+    expect(dialog.isOpen()).toBe(false);
+  });
+
+  test('and a refusal can be lifted, so the next close goes through', async () => {
+    const dialog = createDialog({ title: 'Edit', content: 'Body' });
+    await opened(dialog);
+    let refuse = true;
+    dialog.on('beforeclose', (event: { preventDefault: () => void }) => {
+      if (refuse) event.preventDefault();
+    });
+
+    dialog.close();
+    await after(400);
+    expect(dialog.isOpen()).toBe(true);
+
+    refuse = false;
+    dialog.close();
+    await after(400);
+    expect(dialog.isOpen()).toBe(false);
+  });
+});

@@ -4,6 +4,7 @@ import {
   createElementConfig
 } from '../../core/config/component';
 import { DialogConfig } from './types';
+import type { ApiOptions } from './api';
 
 /**
  * Default configuration for the Dialog component
@@ -74,11 +75,26 @@ export const getOverlayConfig = () => {
 };
 
 /**
- * Creates API configuration for the Dialog component
- * @param {Object} comp - Component with dialog features
- * @returns {Object} API configuration object
+ * What getApiConfig reads off the dialog.
+ *
+ * Every key but `events` is a sub-object one of the features installs, under
+ * the same name and with the same members withAPI consumes -- so the shape is
+ * ApiOptions minus the part this function assembles itself. The setters are
+ * typed as returning void because that is all this reads of them; a feature
+ * returning the component still satisfies it.
  */
-export const getApiConfig = (comp) => ({
+type DialogFeatureHost = Omit<ApiOptions, "events"> & {
+  on: (event: string, handler: Function) => unknown;
+  off: (event: string, handler: Function) => unknown;
+  emit: (event: string, data: unknown) => unknown;
+};
+
+/**
+ * Creates API configuration for the Dialog component
+ * @param {DialogFeatureHost} comp - Component with dialog features
+ * @returns {ApiOptions} API configuration object
+ */
+export const getApiConfig = (comp: DialogFeatureHost): ApiOptions => ({
   visibility: {
     open: () => comp.visibility.open(),
     close: () => comp.visibility.close(),

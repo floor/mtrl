@@ -1,9 +1,18 @@
 // src/components/dialog/features.ts (partial updated code)
 
 import { getOverlayConfig } from "./config";
-import { DialogConfig, DialogButton, DialogComponent } from "./types";
+import {
+  DialogConfig,
+  DialogButton,
+  DialogButtonRecord,
+  DialogComponent,
+  DialogConfirmOptions,
+  DialogFeatureComponent,
+  DialogStructure,
+  DialogStructured,
+} from "./types";
+import type { ApiOptions } from "./api";
 import createButton from "../button";
-import type { ButtonComponent } from "../button/types";
 import { createDivider } from "../divider"; // Import the divider component
 import type { DividerComponent } from "../divider/types";
 import { addClass, removeClass } from "../../core/dom/classes";
@@ -26,7 +35,11 @@ const DIALOG_EVENTS = {
 /** Ids for the elements that name and describe a dialog */
 let dialogCount = 0;
 
-export const withStructure = (config: DialogConfig) => (component) => {
+export const withStructure =
+  (config: DialogConfig) =>
+  <C extends DialogFeatureComponent>(
+    component: C,
+  ): C & { overlay: HTMLElement; structure: DialogStructure } => {
   // The headline names the dialog and the supporting text describes it, so
   // both need an id to point at (M3 dialog accessibility, "Labeling elements")
   const uid = `${component.getClass("dialog")}-${++dialogCount}`;
@@ -252,7 +265,11 @@ export const withStructure = (config: DialogConfig) => (component) => {
  * Add methods to manage dividers
  * @returns Component enhancer with divider management features
  */
-export const withDivider = () => (component) => {
+export const withDivider =
+  () =>
+  <C extends DialogStructured>(
+    component: C,
+  ): C & Pick<ApiOptions, "divider"> => {
   return {
     ...component,
     divider: {
@@ -261,7 +278,7 @@ export const withDivider = () => (component) => {
        * @param show Whether to show the dividers
        * @returns Component instance for chaining
        */
-      toggleDivider(show) {
+      toggleDivider(show: boolean) {
         // Handle header divider
         if (show && !component.structure.headerDivider) {
           // Create and add header divider
@@ -337,9 +354,13 @@ export const withDivider = () => (component) => {
 const addButton = (
   footer: HTMLElement,
   buttonConfig: DialogButton,
-  component: DialogComponent & {
-    emit?: (event: string, data?: unknown) => void;
-    _buttons?: { config: DialogButton; instance: ButtonComponent }[];
+  // Not DialogComponent: this runs from withStructure, the first feature in
+  // the pipe, so the dialog does not have its API yet. What it touches is emit
+  // and _buttons, and saying so is what stops the next reader assuming the
+  // rest is there. (The `dialog` handed to a button's own onClick has the same
+  // problem and is a real defect -- FLO-236.)
+  component: DialogFeatureComponent & {
+    _buttons?: DialogButtonRecord[];
   },
 ) => {
   const {
@@ -358,13 +379,19 @@ const addButton = (
   });
 
   // Button click handler with event-based communication
-  button.on("click", (event) => {
+  button.on("click", (event: MouseEvent) => {
     let shouldClose = closeDialog;
 
     // Call onClick handler if provided
     if (typeof onClick === "function") {
       try {
-        const result = onClick(event, component);
+        // The cast is a known lie, and it is here rather than hidden in the
+        // parameter type so that it is findable. DialogButton.onClick is
+        // documented as receiving the dialog; what it receives is the
+        // component as withStructure had it, with none of the public API on
+        // it -- no close(), no isOpen(). That is FLO-236, and fixing it is a
+        // decision about where the indirection lives, not a local change.
+        const result = onClick(event, component as unknown as DialogComponent);
         if (result === false) {
           shouldClose = false;
         }
@@ -403,7 +430,11 @@ const addButton = (
  * Add visibility control to dialog
  * @returns Component enhancer with visibility features
  */
-export const withVisibility = () => (component) => {
+export const withVisibility =
+  () =>
+  <C extends DialogStructured>(
+    component: C,
+  ): C & Pick<ApiOptions, "visibility" | "focus"> => {
   // Initial state
   const isOpen = component.config.open === true;
 
@@ -651,7 +682,6 @@ export const withVisibility = () => (component) => {
 
       // If event was prevented, don't close
       if (beforeCloseEvent.defaultPrevented) {
-        console.log("Dialog close prevented by event handler");
         return;
       }
 
@@ -727,7 +757,11 @@ export const withVisibility = () => (component) => {
  * Adds content management features to dialog
  * @returns Component enhancer with content features
  */
-export const withContent = () => (component) => {
+export const withContent =
+  () =>
+  <C extends DialogStructured>(
+    component: C,
+  ): C & Pick<ApiOptions, "content"> => {
   const headerElement = component.structure.header;
   const contentElement = component.structure.content;
   const footerElement = component.structure.footer;
@@ -750,7 +784,7 @@ export const withContent = () => (component) => {
           titleElement.classList.add(component.getClass("dialog-header-title"));
           headerElement
             .querySelector(`.${component.getClass("dialog-header-content")}`)
-            .appendChild(titleElement);
+            ?.appendChild(titleElement);
         }
 
         if (titleElement) {
@@ -786,7 +820,7 @@ export const withContent = () => (component) => {
           );
           headerElement
             .querySelector(`.${component.getClass("dialog-header-content")}`)
-            .appendChild(subtitleElement);
+            ?.appendChild(subtitleElement);
         }
 
         if (subtitleElement) {
@@ -852,14 +886,22 @@ export const withContent = () => (component) => {
  * Adds button management features to dialog
  * @returns Component enhancer with button features
  */
-export const withButtons = () => (component) => {
+export const withButtons =
+  () =>
+  <C extends DialogStructured>(
+    component: C,
+  ): C & Pick<ApiOptions, "buttons"> & { _buttons: DialogButtonRecord[] } => {
   // Initialize buttons array if not already done
   if (!component._buttons) {
     component._buttons = [];
   }
+  // Named in the returned object as well as mutated above, so the type says
+  // what the code guarantees rather than leaving it optional downstream.
+  const buttonRecords = component._buttons;
 
   return {
     ...component,
+    _buttons: buttonRecords,
     buttons: {
       /**
        * Adds a button to the dialog footer
@@ -897,26 +939,26 @@ export const withButtons = () => (component) => {
       removeButton(indexOrText: number | string) {
         if (typeof indexOrText === "number") {
           // Remove by index
-          if (indexOrText >= 0 && indexOrText < component._buttons.length) {
-            const button = component._buttons[indexOrText];
+          if (indexOrText >= 0 && indexOrText < buttonRecords.length) {
+            const button = buttonRecords[indexOrText];
             button.instance.destroy();
-            component._buttons.splice(indexOrText, 1);
+            buttonRecords.splice(indexOrText, 1);
           }
         } else {
           // Remove by text
-          const index = component._buttons.findIndex(
+          const index = buttonRecords.findIndex(
             (button) => button.config.text === indexOrText,
           );
 
           if (index !== -1) {
-            const button = component._buttons[index];
+            const button = buttonRecords[index];
             button.instance.destroy();
-            component._buttons.splice(index, 1);
+            buttonRecords.splice(index, 1);
           }
         }
 
         // If no buttons left, remove footer
-        if (component._buttons.length === 0 && component.structure.footer) {
+        if (buttonRecords.length === 0 && component.structure.footer) {
           component.element.removeChild(component.structure.footer);
           component.structure.footer = null;
         }
@@ -927,7 +969,7 @@ export const withButtons = () => (component) => {
        * @returns Array of button configurations
        */
       getButtons() {
-        return component._buttons.map((button) => button.config);
+        return buttonRecords.map((button) => button.config);
       },
 
       /**
@@ -935,7 +977,10 @@ export const withButtons = () => (component) => {
        * @param alignment Footer alignment
        */
       setFooterAlignment(alignment: string) {
-        if (!component.structure.footer) return;
+        const footer = component.structure.footer;
+        // Captured: the guard below narrows here, but property narrowing does
+        // not reach inside the callbacks that follow.
+        if (!footer) return;
 
         // Define all possible alignments
         const ALL_ALIGNMENTS = ["right", "left", "center", "space-between"];
@@ -944,7 +989,7 @@ export const withButtons = () => (component) => {
         ALL_ALIGNMENTS.forEach((align) => {
           if (align !== "right") {
             removeClass(
-              component.structure.footer,
+              footer,
               `${component.getClass("dialog-footer")}--${align}`,
             );
           }
@@ -953,7 +998,7 @@ export const withButtons = () => (component) => {
         // Add new alignment class if not right (default)
         if (alignment !== "right") {
           addClass(
-            component.structure.footer,
+            footer,
             `${component.getClass("dialog-footer")}--${alignment}`,
           );
         }
@@ -966,7 +1011,11 @@ export const withButtons = () => (component) => {
  * Adds size management features to dialog
  * @returns Component enhancer with size features
  */
-export const withSize = () => (component) => {
+export const withSize =
+  () =>
+  <C extends DialogStructured>(
+    component: C,
+  ): C & Pick<ApiOptions, "size"> => {
   return {
     ...component,
     size: {
@@ -1008,10 +1057,19 @@ export const withSize = () => (component) => {
  * Adds confirmation dialog features
  * @returns Component enhancer with confirm feature
  */
-export const withConfirm = () => (component) => {
+export const withConfirm =
+  () =>
+  // The other features' sub-objects, every one of them installed before this
+  // runs. Named through ApiOptions so there is one description of them.
+  <C extends DialogStructured &
+    Omit<ApiOptions, "events" | "lifecycle"> & {
+      _buttons: DialogButtonRecord[];
+    }>(
+    component: C,
+  ) => {
   return {
     ...component,
-    confirm(options) {
+    confirm(options: DialogConfirmOptions): Promise<boolean> {
       return new Promise((resolve) => {
         const {
           title = "Confirm",
