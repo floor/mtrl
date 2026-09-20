@@ -8,7 +8,11 @@ import type { EventCallback } from "../../core/state/emitter";
  * @category Components
  * @internal
  */
-interface ApiOptions {
+/**
+ * What withAPI needs handed to it. Exported because getApiConfig in config.ts
+ * builds exactly this, so one description serves both.
+ */
+export interface ApiOptions {
   menu: {
     open: (event?: Event, interactionType?: "mouse" | "keyboard") => void;
     close: (

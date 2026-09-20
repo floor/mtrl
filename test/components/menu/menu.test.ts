@@ -597,3 +597,39 @@ describe('menu as a listbox', () => {
     expect(press.defaultPrevented).toBe(true);
   });
 });
+
+// Every MenuComponent method documented as returning the menu does. Pinned
+// because FLO-114 declared the *feature-level* commands as returning void --
+// they hand back the pre-controller component, which nothing reads -- and the
+// public layer is what actually chains. The two are separate, and list's
+// api.ts had exactly this confusion the wrong way round (#125).
+describe('the chaining methods hand back the menu', () => {
+  const chainers: Array<[string, (menu: ReturnType<typeof createMenu>) => unknown]> = [
+    ['open', (menu) => menu.open()],
+    ['close', (menu) => menu.close()],
+    ['setItems', (menu) => menu.setItems(items)],
+    ['setPosition', (menu) => menu.setPosition('bottom-start')],
+    ['setSelected', (menu) => menu.setSelected('cut')],
+    ['on', (menu) => menu.on('open', () => {})],
+    ['off', (menu) => menu.off('open', () => {})],
+  ];
+
+  for (const [name, call] of chainers) {
+    test(`${name} returns the menu itself`, () => {
+      const menu = createMenu({ opener, items });
+
+      expect(call(menu)).toBe(menu);
+    });
+  }
+
+  test('so a chain keeps the whole API', () => {
+    const menu = createMenu({ opener, items });
+
+    const chained = menu.setItems(items).setPosition('bottom-start');
+
+    for (const method of ['open', 'close', 'isOpen', 'getItems', 'getSelected'] as const) {
+      expect(typeof chained[method]).toBe('function');
+    }
+    expect(chained.getItems()).toHaveLength(items.length);
+  });
+});
