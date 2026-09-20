@@ -136,7 +136,19 @@ export const withLifecycle = () =>
     const destroyElement = component.destroy?.bind(component);
     const emitter: Emitter = createEmitter();
     resources.add(() => emitter.clear());
-    
+
+    // Standalone rather than a method: around twenty feature wrappers save
+    // `lifecycle.destroy` and call it back as a plain function, which leaves
+    // `this` undefined. Closing over `unmount` keeps destroy independent of
+    // its receiver, so it works however it is called.
+    const unmount = () => {
+      if (mounted) {
+        mounted = false;
+        emitter.emit('unmount');
+        emitter.clear();
+      }
+    };
+
     const lifecycle: Lifecycle = {
       // Mount/Unmount state management
       onMount: (handler: () => void) => emitter.on('mount', handler),
@@ -149,24 +161,16 @@ export const withLifecycle = () =>
         }
       },
 
-      unmount: () => {
-        if (mounted) {
-          mounted = false;
-          emitter.emit('unmount');
-          emitter.clear();
-        }
-      },
+      unmount,
 
       isMounted: () => mounted,
 
       // Cleanup and destruction
-      destroy() {
+      destroy: () => {
         if (destroyed) return;
         destroyed = true;
         // First trigger unmount
-        if (mounted) {
-          this.unmount();
-        }
+        unmount();
 
         emitter.clear();
         resources.destroy();
