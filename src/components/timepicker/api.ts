@@ -2,7 +2,7 @@
 
 import { 
   TimePickerComponent, 
-  TimePickerConfig, 
+  ResolvedTimePickerConfig, 
   TimeValue,
   TIME_PICKER_TYPE,
   TIME_PICKER_ORIENTATION,
@@ -43,7 +43,7 @@ export const createTimePickerAPI = (
   modalElement: HTMLElement,
   dialogElement: HTMLElement,
   timeValue: TimeValue,
-  config: TimePickerConfig,
+  config: ResolvedTimePickerConfig,
   options: ApiOptions,
   formValue: HTMLInputElement | null = null
 ): TimePickerComponent => {

@@ -1,7 +1,7 @@
 // src/components/timepicker/render.ts
 
 import {
-  TimePickerConfig,
+  ResolvedTimePickerConfig,
   TimeValue,
   TIME_PICKER_TYPE,
   TIME_FORMAT,
@@ -22,7 +22,7 @@ import { setHTML } from "../../core/dom/html";
 export const renderTimePicker = (
   container: HTMLElement,
   timeValue: TimeValue,
-  config: TimePickerConfig,
+  config: ResolvedTimePickerConfig,
   onTimeChange?: (key: "hours" | "minutes" | "seconds", value: number) => void
 ): void => {
   // Clear container content
