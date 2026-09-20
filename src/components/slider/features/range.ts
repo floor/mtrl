@@ -8,7 +8,19 @@ import { createElement } from '../../../core/dom/create';
  * @param config Slider configuration
  * @returns Component enhancer that adds range slider to structure
  */
-export const withRange = (config: SliderConfig) => component => {
+/** What this feature reads off the component it is handed. */
+interface RangeHost {
+  schema?: unknown;
+  getClass: (name: string) => string;
+}
+
+export const withRange =
+  (config: SliderConfig) =>
+  // Generic, so the accumulated pipeline type survives. Annotating the
+  // parameter with a concrete shape instead would erase everything applied
+  // before this feature from the type of everything after it — the defect
+  // fixed in textfield's withDensity (#109).
+  <C extends RangeHost>(component: C): C => {
   // If not a range slider or missing structure definition, return unmodified
   if (!config.range || !config.secondValue || !component.schema) {
     return component;

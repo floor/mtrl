@@ -148,7 +148,7 @@ export const withTabsManagement =
       // selection emitted change twice. The DOM listener is only for tabs
       // without on().
       if (tab.on && typeof tab.on === "function") {
-        tab.on("click", (event) => handleTabClick(event, tab));
+        tab.on("click", (event: unknown) => handleTabClick(event, tab));
       } else {
         tab.element.addEventListener("click", (event) =>
           handleTabClick(event, tab)

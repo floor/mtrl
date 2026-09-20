@@ -10,7 +10,24 @@ import { SliderConfig } from "../types";
  * @param config Slider configuration
  * @returns Component enhancer with state management features
  */
-export const withStates = (config: SliderConfig) => (component) => {
+/** What this feature reads off the component it is handed. */
+interface StatesHost {
+  element: HTMLElement;
+  getClass: (name: string) => string;
+  handle?: HTMLElement;
+  secondHandle?: HTMLElement;
+  structure?: Record<string, HTMLElement | undefined>;
+  formFields?: (HTMLInputElement | null)[] | null;
+  renderTracks?: (state?: unknown) => void;
+  lifecycle?: { destroy: () => void };
+}
+
+export const withStates =
+  (config: SliderConfig) =>
+  // Generic, so the accumulated pipeline type survives to the features after
+  // this one. A concrete parameter type would erase it — the defect fixed in
+  // textfield's withDensity (#109).
+  <C extends StatesHost>(component: C) => {
   const handle = component.handle ?? component.structure?.handle;
   const secondHandle = component.secondHandle ?? component.structure?.secondHandle;
 

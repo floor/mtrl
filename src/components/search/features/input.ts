@@ -28,7 +28,40 @@ const normalizeSuggestions = (
  * @param config Search configuration
  * @returns Component enhancer with input features
  */
-export const withInput = (config: SearchConfig) => (component) => {
+/** What this feature reads off the component it is handed. */
+interface InputHost {
+  getClass: (name: string) => string;
+  structure?: Record<string, HTMLElement | undefined> & {
+    input?: HTMLInputElement;
+  };
+  // Mirrors what search/features/states actually returns, rather than only
+  // the members this file happens to call — typing against the producer is
+  // what stops the two drifting. Required, because withStates runs before
+  // withInput in the pipe.
+  states: {
+    expand: () => void;
+    collapse: () => void;
+    getState: () => string;
+    isExpanded: () => boolean;
+    setViewMode: (mode: string) => void;
+    getViewMode: () => string;
+    updatePopulatedState: (hasValue: boolean) => void;
+    updateFocusedState: (isFocused: boolean) => void;
+  };
+  disabled?: {
+    enable: () => void;
+    disable: () => void;
+    isDisabled: () => boolean;
+  };
+  emit?: (event: string, data?: unknown) => unknown;
+}
+
+export const withInput =
+  (config: SearchConfig) =>
+  // Generic, so the accumulated pipeline type survives to the features after
+  // this one. A concrete parameter type would erase it — the defect fixed in
+  // textfield's withDensity (#109).
+  <C extends InputHost>(component: C) => {
   // Initialize state
   let currentValue = config.value || "";
   let currentPlaceholder = config.placeholder || "Search";
