@@ -84,7 +84,7 @@ export interface TopAppBar extends ElementComponent {
    * @param {string} title - Title text
    * @returns {TopAppBar} TopAppBar instance for chaining
    */
-  setTitle: (title: string) => TopAppBar;
+  setTitle(title: string): this;
   
   /**
    * Gets the current title
@@ -97,28 +97,28 @@ export interface TopAppBar extends ElementComponent {
    * @param {HTMLElement} element - Element to add to the leading section
    * @returns {TopAppBar} TopAppBar instance for chaining
    */
-  addLeadingElement: (element: HTMLElement) => TopAppBar;
+  addLeadingElement(element: HTMLElement): this;
   
   /**
    * Adds a trailing action icon or element
    * @param {HTMLElement} element - Element to add to the trailing section
    * @returns {TopAppBar} TopAppBar instance for chaining
    */
-  addTrailingElement: (element: HTMLElement) => TopAppBar;
+  addTrailingElement(element: HTMLElement): this;
   
   /**
    * Changes the top app bar type
    * @param {TopAppBarType} type - New app bar type
    * @returns {TopAppBar} TopAppBar instance for chaining
    */
-  setType: (type: TopAppBarType) => TopAppBar;
+  setType(type: TopAppBarType): this;
   
   /**
    * Manually sets the scrolled state
    * @param {boolean} scrolled - Whether to show the scrolled state
    * @returns {TopAppBar} TopAppBar instance for chaining
    */
-  setScrollState: (scrolled: boolean) => TopAppBar;
+  setScrollState(scrolled: boolean): this;
   
   /**
    * Gets the headline element

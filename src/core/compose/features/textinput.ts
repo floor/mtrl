@@ -64,9 +64,18 @@ export interface TextInputConfig {
 }
 
 /**
- * Component with text input capabilities
+ * What withTextInput adds to a component.
+ *
+ * Declared apart from TextInputComponent because the enhancer returns
+ * `C & TextInputFeature`, and C -- the component being enhanced -- already
+ * carries the element half. Naming the whole of TextInputComponent on the way
+ * out is what narrowed `addClass` back to a bare ElementComponent. It has to be
+ * its own interface rather than a Pick of TextInputComponent: an indexed access
+ * binds `this` to the type being indexed, so the methods below would report
+ * TextInputComponent and the polymorphism would be lost at the step that needs
+ * it.
  */
-export interface TextInputComponent extends ElementComponent {
+export interface TextInputFeature {
   /**
    * Input element
    */
@@ -77,7 +86,7 @@ export interface TextInputComponent extends ElementComponent {
    * @param value - Value to set
    * @returns Component instance for chaining
    */
-  setValue: (value: string) => TextInputComponent;
+  setValue(value: string): this;
 
   /**
    * Gets the current input value
@@ -91,27 +100,32 @@ export interface TextInputComponent extends ElementComponent {
    * @param value - Attribute value
    * @returns Component instance for chaining
    */
-  setAttribute: (name: string, value: string) => TextInputComponent;
+  setAttribute(name: string, value: string): this;
 
   /**
    * Gets an attribute from the input
    * @param name - Attribute name
    * @returns Attribute value
    */
-  getAttribute: (name: string) => string | null;
+  getAttribute(name: string): string | null;
 
   /**
    * Removes an attribute from the input
    * @param name - Attribute name
    * @returns Component instance for chaining
    */
-  removeAttribute: (name: string) => TextInputComponent;
+  removeAttribute(name: string): this;
 
   /**
    * Event emission method if available
    */
-  emit?: (event: string, data: unknown) => TextInputComponent;
+  emit?(event: string, data: unknown): this;
 }
+
+/**
+ * Component with text input element and related methods
+ */
+export interface TextInputComponent extends ElementComponent, TextInputFeature {}
 
 /**
  * Enhances a component with text input functionality
@@ -122,7 +136,7 @@ export interface TextInputComponent extends ElementComponent {
 export const withTextInput =
   // `& object` lets a component config that shares no key with TextInputConfig through.
   <T extends TextInputConfig & object>(config: T = {} as T) =>
-  <C extends ElementComponent>(component: C): C & TextInputComponent => {
+  <C extends ElementComponent>(component: C): C & TextInputFeature => {
     const isMultiline = config.multiline || config.type === "multiline";
     const input = document.createElement(isMultiline ? "textarea" : "input") as
       | HTMLInputElement

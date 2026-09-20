@@ -54,9 +54,9 @@ const createBaseComponent = (): ElementComponent => {
     getClass: (name: string) => `${PREFIX}-${name}`,
     getModifierClass: (base: string, modifier: string) => `${base}--${modifier}`,
     getElementClass: (base: string, element: string) => `${base}__${element}`,
-    addClass: (...classes: string[]) => {
+    addClass(...classes: string[]) {
       classes.filter(Boolean).forEach(cls => element.classList.add(cls));
-      return component;
+      return this;
     },
     destroy: () => {
       if (element.parentNode) {
@@ -94,6 +94,13 @@ const createComponentWithLifecycle = (): ElementComponent & LifecycleComponent =
   
   return {
     ...component,
+    // A spread copies `addClass` but not the `this` it returns, so the copy
+    // still reports the component it was built from. Re-declaring it here is
+    // what makes this object the one a chain ends on.
+    addClass(...classes: string[]) {
+      component.addClass(...classes);
+      return this;
+    },
     lifecycle: {
       mount: mountMock,
       destroy: destroyMock,

@@ -1,7 +1,11 @@
 // src/components/divider/features.ts
 import { BaseComponent, ElementComponent } from '../../core/compose';
 import { DividerConfig } from './config';
-import { DividerComponent } from './types';
+// Each enhancer adds one slice, so the slice is what it declares. Naming the
+// whole interface -- as `Partial<DividerComponent>`, which is what these used
+// to return -- claims members the enhancer does not add, and forced every
+// setter below to cast its own `this` back to the finished component.
+import { DividerOrientation, DividerInset, DividerStyle } from './types';
 
 type Orientation = 'horizontal' | 'vertical';
 type Variant = 'full-width' | 'inset' | 'middle-inset';
@@ -52,7 +56,7 @@ const applyLayout = (component: ElementComponent & BaseComponent, config: Divide
 };
 
 export const withOrientation = (config: DividerConfig) =>
-  <C extends ElementComponent & BaseComponent>(component: C): C & Partial<DividerComponent> => {
+  <C extends ElementComponent & BaseComponent>(component: C): C & DividerOrientation => {
     applyLayout(component, config);
 
     return {
@@ -65,13 +69,13 @@ export const withOrientation = (config: DividerConfig) =>
       setOrientation(newOrientation: Orientation) {
         config.orientation = newOrientation;
         applyLayout(component, config);
-        return this as unknown as DividerComponent;
+        return this;
       }
     };
   };
 
 export const withInset = (config: DividerConfig) =>
-  <C extends ElementComponent & BaseComponent & Partial<DividerComponent>>(component: C): C & Partial<DividerComponent> => ({
+  <C extends ElementComponent & BaseComponent & DividerOrientation>(component: C): C & DividerInset => ({
     ...component,
 
     getVariant() {
@@ -81,19 +85,19 @@ export const withInset = (config: DividerConfig) =>
     setVariant(newVariant: Variant) {
       config.variant = newVariant;
       applyLayout(component, config);
-      return this as unknown as DividerComponent;
+      return this;
     },
 
     setInset(insetStart?: number, insetEnd?: number) {
       if (insetStart !== undefined) config.insetStart = insetStart;
       if (insetEnd !== undefined) config.insetEnd = insetEnd;
       applyLayout(component, config);
-      return this as unknown as DividerComponent;
+      return this;
     }
   });
 
 export const withStyle = (config: DividerConfig) =>
-  <C extends ElementComponent & BaseComponent & Partial<DividerComponent>>(component: C): C & Partial<DividerComponent> => {
+  <C extends ElementComponent & BaseComponent & DividerOrientation & DividerInset>(component: C): C & DividerStyle => {
     // Apply custom color if provided
     if (config.color) {
       component.element.style.backgroundColor = config.color;
@@ -105,12 +109,12 @@ export const withStyle = (config: DividerConfig) =>
       setThickness(newThickness: number) {
         config.thickness = newThickness;
         applyLayout(component, config);
-        return this as unknown as DividerComponent;
+        return this;
       },
 
       setColor(color: string) {
         component.element.style.backgroundColor = color;
-        return this as unknown as DividerComponent;
+        return this;
       }
     };
   };
