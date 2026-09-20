@@ -19,15 +19,10 @@ import { execFileSync } from "node:child_process";
 
 /** Files with strictNullChecks errors left to fix (F14). */
 const PENDING = [
-  "src/components/bottom-app-bar/bottom-app-bar.ts",
   "src/components/button/button.ts",
   "src/components/chips/api.ts",
   "src/components/chips/chip/chip.ts",
   "src/components/chips/config.ts",
-  "src/components/datepicker/api.ts",
-  "src/components/datepicker/config.ts",
-  "src/components/datepicker/datepicker.ts",
-  "src/components/datepicker/utils.ts",
   "src/components/drawer/drawer.ts",
   "src/components/icon-button/icon-button.ts",
   "src/components/navigation-rail/navigation-rail.ts",
@@ -36,8 +31,6 @@ const PENDING = [
   "src/components/navigation/system/events.ts",
   "src/components/navigation/system/mobile.ts",
   "src/components/progress/features/canvas.ts",
-  "src/components/segmented-button/segment.ts",
-  "src/components/segmented-button/segmented-button.ts",
   "src/components/slider/slider.ts",
   "src/components/tabs/features.ts",
   "src/components/tabs/tab.ts",
@@ -46,8 +39,6 @@ const PENDING = [
   "src/components/timepicker/api.ts",
   "src/components/timepicker/render.ts",
   "src/components/timepicker/timepicker.ts",
-  "src/components/tooltip/api.ts",
-  "src/components/top-app-bar/top-app-bar.ts",
 ];
 
 const EXCLUDED = new Set(PENDING);

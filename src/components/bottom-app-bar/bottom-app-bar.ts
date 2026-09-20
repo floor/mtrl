@@ -53,7 +53,7 @@ export const createBottomAppBar = (
         ? `${component.getClass("bottom-app-bar")}--fab-center`
         : "",
       componentConfig.class,
-    ],
+    ].filter((name): name is string => Boolean(name)),
     attributes: {
       role: "toolbar",
       "aria-label": "Bottom app bar",

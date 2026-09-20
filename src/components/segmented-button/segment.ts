@@ -1,7 +1,7 @@
 // src/components/segmented-button/segment.ts
 
 import createButton from "../button";
-import { SegmentConfig, Segment } from "./types";
+import { SegmentConfig, Segment, SegmentedButtonConfig } from "./types";
 import { DEFAULT_CHECKMARK_ICON } from "./constants";
 
 import { setHTML } from "../../core/dom/html";
@@ -42,7 +42,13 @@ export const createSegment = (
   container: HTMLElement,
   prefix: string,
   groupDisabled = false,
-  options = { ripple: true, rippleConfig: {} },
+  // Typed from the group's own config, whose members are optional: the caller
+  // forwards `baseConfig.ripple` and `baseConfig.rippleConfig` straight
+  // through, and either may be absent.
+  options: Pick<SegmentedButtonConfig, "ripple" | "rippleConfig"> = {
+    ripple: true,
+    rippleConfig: {},
+  },
 ): Segment => {
   const isDisabled = groupDisabled || config.disabled;
   const originalIcon = config.icon;
@@ -114,7 +120,7 @@ export const createSegment = (
     if (isIconOnly) {
       // Icon-only: Never show checkmark, icon stays the same (per MD3)
       // No action needed
-    } else if (hasIcon && hasText) {
+    } else if (originalIcon && hasText) {
       // Icon + text: Swap between original icon and checkmark
       if (selected) {
         button.setIcon(checkmarkIcon);

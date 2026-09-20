@@ -8,7 +8,7 @@ import {
   withLifecycle,
 } from "../../core/compose/features";
 
-import { withAPI } from "./api";
+import { withAPI, isReadyForApi } from "./api";
 import {
   DatePickerConfig,
   DatePickerComponent,
@@ -342,6 +342,9 @@ const createDatePicker = (
     document.addEventListener("click", state.outsideClickHandler);
 
     // Enhance with API
+    if (!isReadyForApi(state)) {
+      throw new Error("DatePicker input or outside-click handler is missing");
+    }
     return withAPI(state, getApiConfig(component))(component);
   } catch (error) {
     console.error("DatePicker creation error:", error);

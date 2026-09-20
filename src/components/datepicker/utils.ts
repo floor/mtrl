@@ -158,7 +158,13 @@ export const generateCalendarDates = (
 ): CalendarDate[] => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  
+
+  // A bare `(minDate && …) || (maxDate && …)` yields null when both bounds are
+  // absent, so isDisabled was declared boolean while carrying null. Falsy
+  // either way, but a consumer testing `=== false` would have been wrong.
+  const outOfRange = (date: Date): boolean =>
+    Boolean((minDate && date < minDate) || (maxDate && date > maxDate));
+
   const result: CalendarDate[] = [];
   
   // Calculate days needed from previous month
@@ -168,9 +174,7 @@ export const generateCalendarDates = (
   // Add days from previous month
   for (let i = firstDay - 1; i >= 0; i--) {
     const date = new Date(year, month - 1, daysInPrevMonth - i);
-    const isDisabled = 
-      (minDate && date < minDate) || 
-      (maxDate && date > maxDate);
+    const isDisabled = outOfRange(date);
     
     result.push({
       date,
@@ -187,9 +191,7 @@ export const generateCalendarDates = (
   for (let i = 1; i <= daysInMonth; i++) {
     const date = new Date(year, month, i);
     const isSelected = selectedDate ? isSameDay(date, selectedDate) : false;
-    const isDisabled = 
-      (minDate && date < minDate) || 
-      (maxDate && date > maxDate);
+    const isDisabled = outOfRange(date);
     
     const calendarDate: CalendarDate = {
       date,
@@ -217,9 +219,7 @@ export const generateCalendarDates = (
   
   for (let i = 1; i <= remainingDays; i++) {
     const date = new Date(year, month + 1, i);
-    const isDisabled = 
-      (minDate && date < minDate) || 
-      (maxDate && date > maxDate);
+    const isDisabled = outOfRange(date);
     
     result.push({
       date,

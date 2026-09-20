@@ -20,18 +20,35 @@ export const defaultConfig: DatePickerConfig = {
 };
 
 /**
+ * Configuration as it leaves `createBaseConfig`.
+ *
+ * `DatePickerConfig` marks these optional because a caller may omit them.
+ * Once the defaults have been merged and `closeOnSelect` derived from the
+ * variant, they are all present — and the state the component builds from
+ * this declares them non-optional. Saying so here is what lets that hold
+ * without a cast.
+ */
+export type ResolvedDatePickerConfig = DatePickerConfig &
+  Required<
+    Pick<
+      DatePickerConfig,
+      "variant" | "initialView" | "selectionMode" | "dateFormat" | "closeOnSelect"
+    >
+  >;
+
+/**
  * Creates the base configuration for DatePicker component
  * @param {DatePickerConfig} config - User provided configuration
- * @returns {DatePickerConfig} Complete configuration with defaults applied
+ * @returns {ResolvedDatePickerConfig} Complete configuration with defaults applied
  */
 export const createBaseConfig = (
   config: DatePickerConfig = {}
-): DatePickerConfig => {
+): ResolvedDatePickerConfig => {
   const baseConfig = createComponentConfig(
     defaultConfig,
     config,
     "datepicker"
-  ) as DatePickerConfig;
+  ) as ResolvedDatePickerConfig;
 
   // Set closeOnSelect default based on variant
   if (baseConfig.closeOnSelect === undefined) {
@@ -68,7 +85,7 @@ export const getContainerConfig = (config: DatePickerConfig) => {
  * @param {DatePickerConfig} config - DatePicker configuration
  * @returns {Object} Element configuration object for input field
  */
-export const getInputConfig = (config: DatePickerConfig) => {
+export const getInputConfig = (config: ResolvedDatePickerConfig) => {
   // Create the attributes object
   const attributes: Record<string, string | boolean> = {
     type: "text",
@@ -100,7 +117,7 @@ export const getInputConfig = (config: DatePickerConfig) => {
  * @param {DatePickerConfig} config - DatePicker configuration
  * @returns {Object} Element configuration object for calendar container
  */
-export const getCalendarConfig = (config: DatePickerConfig) => {
+export const getCalendarConfig = (config: ResolvedDatePickerConfig) => {
   return createElementConfig(config, {
     tag: "div",
     attributes: {

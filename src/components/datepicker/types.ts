@@ -428,6 +428,21 @@ export interface DatePickerState {
 }
 
 /**
+ * State as it reaches the API step.
+ *
+ * `DatePickerState` marks these loose because the state object is built before
+ * the DOM is. By the time `withAPI` runs, the factory has created the input
+ * (throwing if it is not one) and installed the outside-click handler, so both
+ * are there — and the public `input` is declared non-optional.
+ * @category Components
+ * @internal
+ */
+export type DatePickerApiState = DatePickerState & {
+  input: HTMLInputElement;
+  outsideClickHandler: EventListener;
+};
+
+/**
  * Events the calendar renderer emits, each with its payload
  * @internal
  */
