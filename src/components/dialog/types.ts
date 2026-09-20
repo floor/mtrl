@@ -1,4 +1,6 @@
 // src/components/dialog/types.ts
+import type { ButtonComponent } from "../button/types";
+import type { DividerComponent } from "../divider/types";
 
 /**
  * Dialog size types - determines the width and height of the dialog
@@ -312,6 +314,75 @@ export interface DialogEvent {
  * 
  * @category Components
  */
+/**
+ * The elements withStructure builds and hangs off the component.
+ *
+ * @category Components
+ * @internal
+ */
+export interface DialogStructure {
+  /** Always built by withStructure, whatever the config */
+  header: HTMLElement;
+  /** Always built by withStructure, whatever the config */
+  content: HTMLElement;
+  /** Only when the dialog has buttons, and set back to null when the last goes */
+  footer: HTMLElement | null;
+  /** Divider components, not elements: the code reaches for `.element` on them */
+  headerDivider: DividerComponent | null;
+  footerDivider: DividerComponent | null;
+  container: HTMLElement;
+}
+
+/**
+ * A footer button as the dialog keeps it: the live button component and the
+ * config it was built from. `getButtons()` hands back the configs, which is
+ * why the public type is DialogButton and this one is not.
+ *
+ * @category Components
+ * @internal
+ */
+export interface DialogButtonRecord {
+  instance: ButtonComponent;
+  config: DialogButton;
+}
+
+/**
+ * What a dialog feature needs from the component it is handed.
+ *
+ * The dialog pipe is createBase, withEvents, withElement, then these -- so the
+ * element and the emitter are both installed before any feature runs.
+ * `structure` and `overlay` come from withStructure, which is the first of
+ * them, so everything after it can count on them; they are optional here
+ * because withStructure itself is handed a component without them.
+ *
+ * @category Components
+ * @internal
+ */
+export interface DialogFeatureComponent {
+  element: HTMLElement;
+  config: DialogConfig & Record<string, unknown>;
+  getClass: (name: string) => string;
+  on: (event: string, handler: Function) => unknown;
+  emit: (event: string, data?: unknown) => unknown;
+  _buttons?: DialogButtonRecord[];
+}
+
+/**
+ * A dialog that has been through withStructure.
+ *
+ * withStructure is the first feature in the pipe and the only one handed a
+ * component without these, so every feature after it can count on them. Two
+ * host types rather than one with optionals: the optionals would have every
+ * later feature checking for something that is always there.
+ *
+ * @category Components
+ * @internal
+ */
+export interface DialogStructured extends DialogFeatureComponent {
+  overlay: HTMLElement;
+  structure: DialogStructure;
+}
+
 export interface DialogComponent {
   /** 
    * The dialog's root DOM element 
