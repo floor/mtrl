@@ -130,36 +130,32 @@ export const renderTimePicker = (
 
   // Add period selector for 12-hour format
   if (config.format === TIME_FORMAT.AMPM) {
+    // AM and PM are one choice with two options, so M3 gives them the radio
+    // role in a list rather than two independent toggle buttons. The practical
+    // difference is what a person is told: "AM, radio button, 1 of 2,
+    // selected" rather than "AM, button, pressed", and one tab stop with
+    // arrows rather than two tab stops.
     const periodContainer = document.createElement("div");
     periodContainer.className = `${config.prefix}-time-picker-period`;
+    periodContainer.setAttribute("role", "radiogroup");
+    periodContainer.setAttribute("aria-label", "AM or PM");
 
-    const amPeriod = document.createElement("div");
-    amPeriod.className = `${config.prefix}-time-picker-period-am ${
-      timeValue.period === TIME_PERIOD.AM
-        ? `${config.prefix}-time-picker-period--selected`
-        : ""
-    }`;
-    amPeriod.textContent = TIME_PERIOD.AM;
-    amPeriod.setAttribute("role", "button");
-    amPeriod.setAttribute("tabindex", "0");
-    amPeriod.setAttribute(
-      "aria-pressed",
-      timeValue.period === TIME_PERIOD.AM ? "true" : "false"
-    );
+    /** One option. Only the selected one is in the tab order. */
+    const createPeriodOption = (period: TIME_PERIOD): HTMLElement => {
+      const selected = timeValue.period === period;
+      const option = document.createElement("div");
+      option.className = `${config.prefix}-time-picker-period-${period.toLowerCase()} ${
+        selected ? `${config.prefix}-time-picker-period--selected` : ""
+      }`;
+      option.textContent = period;
+      option.setAttribute("role", "radio");
+      option.setAttribute("aria-checked", selected ? "true" : "false");
+      option.setAttribute("tabindex", selected ? "0" : "-1");
+      return option;
+    };
 
-    const pmPeriod = document.createElement("div");
-    pmPeriod.className = `${config.prefix}-time-picker-period-pm ${
-      timeValue.period === TIME_PERIOD.PM
-        ? `${config.prefix}-time-picker-period--selected`
-        : ""
-    }`;
-    pmPeriod.textContent = TIME_PERIOD.PM;
-    pmPeriod.setAttribute("role", "button");
-    pmPeriod.setAttribute("tabindex", "0");
-    pmPeriod.setAttribute(
-      "aria-pressed",
-      timeValue.period === TIME_PERIOD.PM ? "true" : "false"
-    );
+    const amPeriod = createPeriodOption(TIME_PERIOD.AM);
+    const pmPeriod = createPeriodOption(TIME_PERIOD.PM);
 
     periodContainer.appendChild(amPeriod);
     periodContainer.appendChild(pmPeriod);
@@ -485,7 +481,10 @@ export const renderTimePicker = (
         )
         .forEach((el) => {
           el.classList.remove(`${config.prefix}-time-picker-period--selected`);
-          el.setAttribute("aria-pressed", "false");
+          el.setAttribute("aria-checked", "false");
+          // Out of the tab order: a radiogroup is one stop, and the selected
+          // option is the one Tab reaches.
+          el.setAttribute("tabindex", "-1");
         });
 
       const selectedPeriod = container.querySelector(
@@ -495,7 +494,8 @@ export const renderTimePicker = (
         selectedPeriod.classList.add(
           `${config.prefix}-time-picker-period--selected`
         );
-        selectedPeriod.setAttribute("aria-pressed", "true");
+        selectedPeriod.setAttribute("aria-checked", "true");
+        selectedPeriod.setAttribute("tabindex", "0");
       }
 
       // Update dial if visible
@@ -524,26 +524,53 @@ export const renderTimePicker = (
       `.${config.prefix}-time-picker-period-pm`
     );
 
-    // `role="button"` with `tabindex="0"` promises a keyboard user that Enter
-    // and Space activate this. Only click was wired, so a person who reached
-    // AM or PM with Tab could focus it and had no way to choose it.
-    const activateOn = (
+    /**
+     * Wires one option of the radiogroup.
+     *
+     * Enter and Space still select it, because they were wired in #97 and
+     * people press them whatever the role says. The arrows are what the radio
+     * role adds: in a group they move the selection, and the focus goes with
+     * it. With two options every arrow lands on the other one.
+     */
+    const wirePeriod = (
       element: Element | null,
       period: (typeof TIME_PERIOD)[keyof typeof TIME_PERIOD],
+      other: (typeof TIME_PERIOD)[keyof typeof TIME_PERIOD],
     ): void => {
       if (!element) return;
+
       element.addEventListener("click", () => handlePeriodChange(period));
+
       element.addEventListener("keydown", (event) => {
         const key = (event as KeyboardEvent).key;
-        if (key !== "Enter" && key !== " " && key !== "Spacebar") return;
-        // Space would otherwise scroll the page out from under the picker.
-        event.preventDefault();
-        handlePeriodChange(period);
+
+        if (key === "Enter" || key === " " || key === "Spacebar") {
+          // Space would otherwise scroll the page out from under the picker.
+          event.preventDefault();
+          handlePeriodChange(period);
+          return;
+        }
+
+        if (
+          key === "ArrowLeft" ||
+          key === "ArrowRight" ||
+          key === "ArrowUp" ||
+          key === "ArrowDown"
+        ) {
+          event.preventDefault();
+          handlePeriodChange(other);
+          // The selection carries focus with it, which is what makes the group
+          // a single tab stop rather than a trap.
+          const moved = container.querySelector(
+            `.${config.prefix}-time-picker-period-${other.toLowerCase()}`,
+          );
+          if (moved instanceof HTMLElement) moved.focus();
+        }
       });
     };
 
-    activateOn(amPeriodElement, TIME_PERIOD.AM);
-    activateOn(pmPeriodElement, TIME_PERIOD.PM);
+    wirePeriod(amPeriodElement, TIME_PERIOD.AM, TIME_PERIOD.PM);
+    wirePeriod(pmPeriodElement, TIME_PERIOD.PM, TIME_PERIOD.AM);
   }
 
   // Set up the clock dial interaction
