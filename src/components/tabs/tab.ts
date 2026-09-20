@@ -5,6 +5,7 @@ import type { BaseComponent, ElementComponent } from "../../core/compose/compone
 import { withEvents, withLifecycle } from "../../core/compose/features";
 import type { EventComponent, LifecycleComponent } from "../../core/compose/features";
 import type { EventCallback } from "../../core/state/emitter";
+import type { BadgeComponent } from "../badge";
 import { TabConfig, TabComponent } from "./types";
 import { TAB_LAYOUT } from "./constants";
 import { createTabConfig } from "./config";
@@ -118,8 +119,9 @@ export const createTab = (config: TabConfig = {}): TabComponent => {
         return this;
       },
 
-      // Badge support
-      badge: null,
+      // Badge support. Undefined rather than null: `badge?: BadgeComponent`
+      // is what the type says, and every read here is a truthiness check.
+      badge: undefined as BadgeComponent | undefined,
 
       // Tab state methods
       getValue() {
