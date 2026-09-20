@@ -50,6 +50,14 @@ export interface SliderConfig extends BaseComponentConfig {
   /** Whether the slider is disabled */
   disabled?: boolean;
 
+  /**
+   * Form field name. A slider renders no form control of its own, so it
+   * submits nothing unless this is set; with it, a hidden input inside the
+   * slider carries the current value. A range slider submits two fields,
+   * `name` and `name-end`. A disabled slider submits neither.
+   */
+  name?: string;
+
   /** Color variant of the slider *
    * A stylesheet can override the drawn colours per slider with the custom
    * properties `--<prefix>-slider-color` and `--<prefix>-slider-on-color`,

@@ -4,6 +4,7 @@ import { SliderConfig } from "../types";
 import { SLIDER_MEASUREMENTS } from "../constants";
 import { defaultConfig } from "../config";
 import { createHandlers } from "./handlers";
+import { setFormValue } from "../../../core/dom/form-value";
 
 /**
  * Add controller functionality to slider component
@@ -251,6 +252,16 @@ export const withController = (config: SliderConfig) => (component) => {
     try {
       updateHandlePositions();
       updateValueBubbles();
+
+      // Every path that moves the slider ends here — drag, keyboard, both
+      // setters whether or not they trigger an event, and min/max clamping —
+      // so this is the one place the submitted value has to be kept in step.
+      if (component.formFields) {
+        setFormValue(component.formFields[0], String(state.value));
+        if (state.secondValue !== null) {
+          setFormValue(component.formFields[1], String(state.secondValue));
+        }
+      }
 
       // Trigger track redraw if available
       if (component.renderTracks) {

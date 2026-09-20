@@ -100,7 +100,14 @@ try {
     // an element carries it: +260 here, +256 button, +267 rail, +260 textfield, +243 form,
     // measured against 0.9.0. The slider simply had the least headroom (10,934 of 11,000).
     // all-js is 1,353 smaller, the shared code deduplicating across the barrel.
-    { name: "slider", code: "export { createSlider } from 'mtrl';", gzip: 11500 },
+    // Taking part in forms (N12) adds 187: a hidden input carrying the value,
+    // two of them for a range slider, kept in step inside render(). Measured
+    // 11,468 to 11,655 at 0.9.8. Four redesigns recovered 11 bytes between
+    // them — returning the input rather than an object of closures, writing
+    // only the content attribute, going through the shared createElement
+    // (which cost 5 more), and one formFields property rather than two — so
+    // the feature costs what it costs.
+    { name: "slider", code: "export { createSlider } from 'mtrl';", gzip: 11700 },
     { name: "navigation-rail", code: "export { createNavigationRail } from 'mtrl';", gzip: 7000 },
     { name: "navigation-rail-css", code: "import 'mtrl/styles/base'; import 'mtrl/styles/navigation-rail';", gzip: 6500 },
     { name: "textfield", code: "export { createTextfield } from 'mtrl';", gzip: 8500 },
