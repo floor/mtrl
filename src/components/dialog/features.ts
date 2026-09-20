@@ -5,6 +5,7 @@ import { DialogConfig, DialogButton, DialogComponent } from "./types";
 import createButton from "../button";
 import type { ButtonComponent } from "../button/types";
 import { createDivider } from "../divider"; // Import the divider component
+import type { DividerComponent } from "../divider/types";
 import { addClass, removeClass } from "../../core/dom/classes";
 
 import { setHTML } from "../../core/dom/html";
@@ -192,8 +193,8 @@ export const withStructure = (config: DialogConfig) => (component) => {
   component.element.appendChild(header);
 
   // Create divider elements if configured
-  let headerDivider = null;
-  let footerDivider = null;
+  let headerDivider: DividerComponent | null = null;
+  let footerDivider: DividerComponent | null = null;
 
   if (config.divider) {
     // Add header divider (between header and content)

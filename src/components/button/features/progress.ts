@@ -118,7 +118,7 @@ export const withProgress =
 
           // Attach event handlers if any were provided
           Object.entries(progressEventHandlers).forEach(([event, handler]) => {
-            progress!.on(event, handler);
+            p.on(event, handler);
           });
 
           // Store progress reference
@@ -145,8 +145,11 @@ export const withProgress =
       return component.element.firstChild;
     };
 
-    // Add progress methods that lazy-load the progress component
-    component.showProgress = async function () {
+    // Add progress methods that lazy-load the progress component. Each is held
+    // in a local first: the interface marks them optional because they only
+    // exist once this feature has run, and the wrappers below call the local,
+    // which is always there.
+    const showProgress = async (): Promise<C> => {
       const p = await ensureProgress();
 
       if (p.element) {
@@ -176,14 +179,15 @@ export const withProgress =
       }
       return component;
     };
+    component.showProgress = showProgress;
 
     // Synchronous wrapper for convenience
-    component.showProgressSync = function () {
-      component.showProgress();
+    component.showProgressSync = (): C => {
+      void showProgress();
       return component;
     };
 
-    component.hideProgress = async function () {
+    const hideProgress = async (): Promise<C> => {
       // If progress hasn't been created yet, just return
       if (!progress) return component;
 
@@ -203,34 +207,37 @@ export const withProgress =
 
       return component;
     };
+    component.hideProgress = hideProgress;
 
     // Synchronous wrapper
-    component.hideProgressSync = function () {
-      component.hideProgress();
+    component.hideProgressSync = (): C => {
+      void hideProgress();
       return component;
     };
 
-    component.setProgress = async function (value: number) {
+    const setProgress = async (value: number): Promise<C> => {
       const p = await ensureProgress();
       p.setValue(value);
       return component;
     };
+    component.setProgress = setProgress;
 
     // Synchronous wrapper
-    component.setProgressSync = function (value: number) {
-      component.setProgress(value);
+    component.setProgressSync = (value: number): C => {
+      void setProgress(value);
       return component;
     };
 
-    component.setIndeterminate = async function (indeterminate: boolean) {
+    const setIndeterminate = async (indeterminate: boolean): Promise<C> => {
       const p = await ensureProgress();
       p.setIndeterminate(indeterminate);
       return component;
     };
+    component.setIndeterminate = setIndeterminate;
 
     // Synchronous wrapper
-    component.setIndeterminateSync = function (indeterminate: boolean) {
-      component.setIndeterminate(indeterminate);
+    component.setIndeterminateSync = (indeterminate: boolean): C => {
+      void setIndeterminate(indeterminate);
       return component;
     };
 
@@ -246,13 +253,13 @@ export const withProgress =
       else component.setText?.(value);
     };
 
-    component.setLoading = async function (loading: boolean, text?: string) {
+    const setLoading = async (loading: boolean, text?: string): Promise<C> => {
       if (loading && !isLoading) {
         originalText = readLabel() ?? "";
         isLoading = true;
         // Tell assistive technology the button is working, not merely disabled
         component.element.setAttribute("aria-busy", "true");
-        await component.showProgress();
+        await showProgress();
         // Call disable on the internal disabled manager
         if (component.disabled?.disable) {
           component.disabled.disable();
@@ -261,7 +268,7 @@ export const withProgress =
       } else if (!loading && isLoading) {
         isLoading = false;
         component.element.removeAttribute("aria-busy");
-        await component.hideProgress();
+        await hideProgress();
         // Call enable on the internal disabled manager
         if (component.disabled?.enable) {
           component.disabled.enable();
@@ -271,10 +278,11 @@ export const withProgress =
       }
       return component;
     };
+    component.setLoading = setLoading;
 
     // Synchronous wrapper - most commonly used
-    component.setLoadingSync = function (loading: boolean, text?: string) {
-      component.setLoading(loading, text);
+    component.setLoadingSync = (loading: boolean, text?: string): C => {
+      void setLoading(loading, text);
       return component;
     };
 
@@ -294,9 +302,7 @@ export const withProgress =
 
     // If showProgress is true, initialize immediately
     if (config.showProgress) {
-      ensureProgress().then(() => {
-        component.showProgress();
-      });
+      void ensureProgress().then(() => showProgress());
     }
 
     return component;

@@ -48,7 +48,7 @@ export const createCardContent = (config: CardContentConfig = {}): HTMLElement =
         className: [
           config.class,
           config.padding === false ? `${PREFIX}-card-content--no-padding` : null
-        ],
+        ].filter((name): name is string => Boolean(name)),
         attributes: {
           'role': 'region',
           // Add explicit style attributes to ensure visibility
@@ -240,7 +240,7 @@ export const createCardActions = (config: CardActionsConfig = {}): HTMLElement =
           config.fullBleed ? `${PREFIX}-card-actions--full-bleed` : null,
           config.vertical ? `${PREFIX}-card-actions--vertical` : null,
           config.align ? `${PREFIX}-card-actions--${config.align}` : null
-        ],
+        ].filter((name): name is string => Boolean(name)),
         attributes: {
           'role': 'group' // Semantically group actions together
         }
@@ -309,7 +309,7 @@ export const createCardMedia = (config: CardMediaConfig = {}): HTMLElement => {
           config.class,
           config.aspectRatio ? `${PREFIX}-card-media--${config.aspectRatio.replace(':', '-')}` : null,
           config.contain ? `${PREFIX}-card-media--contain` : null
-        ]
+        ].filter((name): name is string => Boolean(name))
       })
     )(baseConfig);
 

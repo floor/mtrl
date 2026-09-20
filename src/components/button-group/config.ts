@@ -36,18 +36,17 @@ export const DEFAULT_CONFIG: Partial<ButtonGroupConfig> = {
 
 /**
  * Creates the base configuration for Button Group component
+ *
+ * The return type keeps what createComponentConfig guarantees: componentName
+ * and prefix are always filled in, so callers building class names from them
+ * do not have to treat them as missing.
+ *
  * @param {ButtonGroupConfig} config - User provided configuration
- * @returns {ButtonGroupConfig} Complete configuration with defaults applied
+ * @returns Complete configuration with defaults applied
  * @internal
  */
-export const createBaseConfig = (
-  config: ButtonGroupConfig = {}
-): ButtonGroupConfig =>
-  createComponentConfig(
-    DEFAULT_CONFIG,
-    config,
-    'button-group'
-  ) as ButtonGroupConfig;
+export const createBaseConfig = (config: ButtonGroupConfig = {}) =>
+  createComponentConfig(DEFAULT_CONFIG, config, 'button-group');
 
 /**
  * Generates element configuration for the Button Group container
@@ -94,7 +93,7 @@ export const getContainerConfig = (config: ButtonGroupConfig) => {
         ? `${config.prefix}-button-group--density-${density}`
         : null,
       config.equalWidth ? `${config.prefix}-button-group--equal-width` : null
-    ],
+    ].filter((name): name is string => Boolean(name)),
     interactive: true
   };
 };
@@ -140,7 +139,7 @@ export const getSizeStyles = (
  * @internal
  */
 export const getButtonConfig = (
-  buttonConfig: ButtonGroupConfig['buttons'][number],
+  buttonConfig: NonNullable<ButtonGroupConfig['buttons']>[number],
   index: number,
   total: number,
   groupConfig: ButtonGroupConfig

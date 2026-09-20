@@ -40,11 +40,12 @@ import {
  * 
  * @param {BaseComponent & InputComponent} component - The component to enhance
  * @param {CheckboxConfig} config - Configuration options
- * @returns {BaseComponent} The enhanced component
+ * @returns The component with checkable state, inferred so the rest of the
+ *   pipeline keeps the features already on it
  * @category Components
  * @internal
  */
-const enhanceWithCheckable = (component: BaseComponent & InputComponent, config: CheckboxConfig): BaseComponent => {
+const enhanceWithCheckable = (component: BaseComponent & InputComponent, config: CheckboxConfig) => {
   const enhanced = withCheckable(config)(component);
 
   // The class is derived from the input, never set on its own. The input is the
@@ -101,7 +102,7 @@ const enhanceWithCheckable = (component: BaseComponent & InputComponent, config:
     };
   }
 
-  return enhanced as unknown as BaseComponent;
+  return enhanced;
 };
 
 /**

@@ -66,7 +66,7 @@ export const getElementConfig = (config: FabConfig) => {
   }
 
   // Create component-specific classes that don't need prefixing (they already include the prefix)
-  const componentClasses = [];
+  const componentClasses: string[] = [];
 
   // Add size class
   componentClasses.push(`fab--${config.size || "default"}`);

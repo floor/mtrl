@@ -71,16 +71,16 @@ const ensureSwitchStructure = (
   component: ElementComponent,
   prefix: string,
   componentName: string
-) => {
+): { container: HTMLElement; contentWrapper: HTMLElement } => {
   const PREFIX = prefix || "mtrl";
   const COMPONENT = componentName || "switch";
 
   // Create or find container
-  let container = component.element.querySelector(
+  const existingContainer = component.element.querySelector<HTMLElement>(
     `.${PREFIX}-${COMPONENT}-container`
   );
-  if (!container) {
-    container = document.createElement("div");
+  if (!existingContainer) {
+    const container = document.createElement("div");
     container.className = `${PREFIX}-${COMPONENT}-container`;
 
     // Find input and track to move them to container
@@ -92,7 +92,7 @@ const ensureSwitchStructure = (
     );
 
     // Gather all elements except container
-    const elementsToMove = [];
+    const elementsToMove: Element[] = [];
     if (input) elementsToMove.push(input);
     if (track) elementsToMove.push(track);
 
@@ -121,7 +121,7 @@ const ensureSwitchStructure = (
   }
 
   // Container exists, find or create content wrapper
-  let contentWrapper = component.element.querySelector(
+  let contentWrapper = component.element.querySelector<HTMLElement>(
     `.${PREFIX}-${COMPONENT}-content`
   );
   if (!contentWrapper) {
@@ -137,10 +137,10 @@ const ensureSwitchStructure = (
     }
 
     // Insert content wrapper at beginning of container
-    container.insertBefore(contentWrapper, container.firstChild);
+    existingContainer.insertBefore(contentWrapper, existingContainer.firstChild);
   }
 
-  return { container, contentWrapper };
+  return { container: existingContainer, contentWrapper };
 };
 
 /**
@@ -162,7 +162,7 @@ export const withSupportingText =
     );
 
     // Create supporting text element if needed
-    let supportingElement = null;
+    let supportingElement: HTMLElement | null = null;
     if (config.supportingText) {
       supportingElement = document.createElement("div");
       supportingElement.className = `${PREFIX}-${COMPONENT}-helper`;
