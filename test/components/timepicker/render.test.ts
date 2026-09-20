@@ -61,7 +61,9 @@ function picker(hours = 10, minutes = 30, period: string = TIME_PERIOD.AM) {
   };
 }
 
-const pressed = (el: HTMLElement) => el.getAttribute("aria-pressed");
+// AM/PM are radios in a group (FLO-233), so the selected state is
+// aria-checked. It was aria-pressed while they were toggle buttons.
+const pressed = (el: HTMLElement) => el.getAttribute("aria-checked");
 const key = (el: HTMLElement, k: string) =>
   el.dispatchEvent(new dom.window.KeyboardEvent("keydown", { key: k, bubbles: true, cancelable: true }));
 
@@ -99,7 +101,9 @@ describe("time picker period selection", () => {
     expect(event.defaultPrevented).toBe(true);
   });
 
-  test("a key that is not Enter or Space does nothing", () => {
+  // Arrows now move the selection, so this pins a key that is neither an
+  // activation nor a navigation key.
+  test("a key that neither activates nor navigates does nothing", () => {
     const p = picker();
     key(p.pm, "a");
     expect(pressed(p.pm)).toBe("false");
