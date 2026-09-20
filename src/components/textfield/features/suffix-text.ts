@@ -60,47 +60,76 @@ export interface SuffixTextComponent extends BaseComponent {
  * @returns Function that enhances a component with suffix text
  */
 // `& object` lets a component config that shares no key with SuffixTextConfig through.
-export const withSuffixText = <T extends SuffixTextConfig & object>(config: T) => 
+export const withSuffixText = <T extends SuffixTextConfig & object>(config: T) =>
   <C extends LifecycleElementComponent>(component: C): C & Partial<SuffixTextComponent> => {
-    // Without suffixText configured the component comes back without these members
-    if (!config.suffixText) {
-      return component;
-    }
-    
-    // Create suffix text element
+    // The label offsets this feature used to write on a timer are gone:
+    // `placement.ts` owns label positioning and accounts for an icon and a
+    // prefix together, which the hardcoded 44px did not. `api.ts` already
+    // schedules a placement update after every one of these calls.
     const PREFIX = config.prefix || 'mtrl';
-    const suffixElement = document.createElement('span');
-    suffixElement.className = `${PREFIX}-${config.componentName || 'textfield'}-suffix`;
-    suffixElement.textContent = config.suffixText;
-    
-    // Add suffix text to the component
-    component.element.appendChild(suffixElement);
-    
-    // Add suffix class to the component
-    component.element.classList.add(`${PREFIX}-${config.componentName || 'textfield'}--with-suffix`);
-    
-    // Add lifecycle integration
+    const NAME = config.componentName || 'textfield';
+
+    // The slot is created when it is first needed, not only when the option was
+    // set at creation. The setters used to exist only on a component configured
+    // with this slot, so `setSuffixText()` on a plain field did nothing at all
+    // and said nothing about it.
+    let slot: HTMLElement | null = null;
+
+    const ensureSlot = (): HTMLElement => {
+      if (slot && slot.parentNode) return slot;
+      const element = document.createElement('span');
+      element.className = `${PREFIX}-${NAME}-suffix`;
+      component.element.appendChild(element);
+      component.element.classList.add(`${PREFIX}-${NAME}--with-suffix`);
+      slot = element;
+      return element;
+    };
+
+    const detachSlot = (): void => {
+      slot?.remove();
+      // Clearing the closure reference is the point: it used to keep pointing
+      // at the detached node, so a later `setSuffixText()` wrote into an element
+      // that was no longer in the document and nothing appeared.
+      slot = null;
+      component.element.classList.remove(`${PREFIX}-${NAME}--with-suffix`);
+    };
+
+    const write = (element: HTMLElement, value: string): void => {
+      element.textContent = value;
+    };
+
+    if (config.suffixText) {
+      write(ensureSlot(), config.suffixText);
+    }
+
     if ('lifecycle' in component && component.lifecycle?.destroy) {
-      const originalDestroy = component.lifecycle.destroy as Function;
+      const originalDestroy = component.lifecycle.destroy as () => void;
       component.lifecycle.destroy = () => {
-        suffixElement.remove();
+        slot?.remove();
+        slot = null;
         originalDestroy.call(component.lifecycle);
       };
     }
 
     return {
       ...component,
-      suffixTextElement: suffixElement,
-      
+      // A plain property, not an accessor. These features are composed by
+      // piping `{...component}` through each one, and a spread invokes a
+      // getter and copies its value — so an accessor defined here is gone
+      // by the time the next feature has spread it. The setters keep this
+      // in step through `this`, which at call time is the finished object.
+      // Whatever the creation option produced, if it produced anything.
+      suffixTextElement: slot,
+
       setSuffixText(text: string) {
-        suffixElement.textContent = text;
+        this.suffixTextElement = ensureSlot();
+        write(this.suffixTextElement, text);
         return this;
       },
-      
+
       removeSuffixText() {
-        if (suffixElement.parentNode) {
-          suffixElement.remove();
-          component.element.classList.remove(`${PREFIX}-${config.componentName || 'textfield'}--with-suffix`);
+        if (slot) {
+          detachSlot();
           this.suffixTextElement = null;
         }
         return this;

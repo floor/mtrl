@@ -103,7 +103,15 @@ export const withAPI =
     },
 
     // Leading icon management (if present)
-    leadingIcon: component.leadingIcon || null,
+    // A live read, not a snapshot. This used to be captured once when the
+    // API object was built, so it still named the element the field was
+    // created with — or null — however many times the slot had been set or
+    // removed since. This object is the final return and is not spread
+    // again, so an accessor survives here where it would not in the
+    // feature pipe.
+    get leadingIcon() {
+      return component.leadingIcon ?? null;
+    },
     setLeadingIcon(html: string): TextfieldComponent {
       if (component.setLeadingIcon) {
         component.setLeadingIcon(html);
@@ -127,7 +135,15 @@ export const withAPI =
     },
 
     // Trailing icon management (if present)
-    trailingIcon: component.trailingIcon || null,
+    // A live read, not a snapshot. This used to be captured once when the
+    // API object was built, so it still named the element the field was
+    // created with — or null — however many times the slot had been set or
+    // removed since. This object is the final return and is not spread
+    // again, so an accessor survives here where it would not in the
+    // feature pipe.
+    get trailingIcon() {
+      return component.trailingIcon ?? null;
+    },
     setTrailingIcon(html: string): TextfieldComponent {
       if (component.setTrailingIcon) {
         component.setTrailingIcon(html);
@@ -167,7 +183,15 @@ export const withAPI =
     },
 
     // Prefix text management (if present)
-    prefixTextElement: component.prefixTextElement || null,
+    // A live read, not a snapshot. This used to be captured once when the
+    // API object was built, so it still named the element the field was
+    // created with — or null — however many times the slot had been set or
+    // removed since. This object is the final return and is not spread
+    // again, so an accessor survives here where it would not in the
+    // feature pipe.
+    get prefixTextElement() {
+      return component.prefixTextElement ?? null;
+    },
     setPrefixText(text: string): TextfieldComponent {
       if (component.setPrefixText) {
         component.setPrefixText(text);
@@ -191,7 +215,15 @@ export const withAPI =
     },
 
     // Suffix text management (if present)
-    suffixTextElement: component.suffixTextElement || null,
+    // A live read, not a snapshot. This used to be captured once when the
+    // API object was built, so it still named the element the field was
+    // created with — or null — however many times the slot had been set or
+    // removed since. This object is the final return and is not spread
+    // again, so an accessor survives here where it would not in the
+    // feature pipe.
+    get suffixTextElement() {
+      return component.suffixTextElement ?? null;
+    },
     setSuffixText(text: string): TextfieldComponent {
       if (component.setSuffixText) {
         component.setSuffixText(text);

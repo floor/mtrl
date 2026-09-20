@@ -254,4 +254,78 @@ describe('textfield', () => {
     field.destroy();
     expect(document.body.contains(field.element)).toBe(false);
   });
+
+  // FLO-105 — the icon, prefix and suffix setters used to do nothing unless the
+  // slot had been configured at creation, and after a remove they wrote into a
+  // node that was no longer in the document. Both were silent: no error, no
+  // element, nothing to tell a caller their code had not worked.
+
+  const SLOTS = [
+    { name: 'leading icon', set: 'setLeadingIcon', remove: 'removeLeadingIcon', prop: 'leadingIcon', selector: '-leading-icon', value: ICON, read: (el: HTMLElement) => el.innerHTML },
+    { name: 'trailing icon', set: 'setTrailingIcon', remove: 'removeTrailingIcon', prop: 'trailingIcon', selector: '-trailing-icon', value: ICON, read: (el: HTMLElement) => el.innerHTML },
+    { name: 'prefix', set: 'setPrefixText', remove: 'removePrefixText', prop: 'prefixTextElement', selector: '-prefix', value: '$', read: (el: HTMLElement) => el.textContent },
+    { name: 'suffix', set: 'setSuffixText', remove: 'removeSuffixText', prop: 'suffixTextElement', selector: '-suffix', value: 'kg', read: (el: HTMLElement) => el.textContent },
+  ] as const;
+
+  // The input carries `…-input--with-leading-icon`, which contains the slot
+  // name as a substring, so a loose [class*=] match picks the input instead of
+  // the slot. Match the slot's own class, which has no modifier in it.
+  const slotEl = (field: { element: HTMLElement }, selector: string) =>
+    ([...field.element.children] as HTMLElement[]).find(
+      (el) => el.className.endsWith(selector) && !el.className.includes('--'),
+    ) ?? null;
+
+  for (const slot of SLOTS) {
+    test(`${slot.set} creates the ${slot.name} on a field that never configured one`, () => {
+      const field = mount({ label: 'Plain' }) as any;
+      expect(slotEl(field, slot.selector)).toBeNull();
+
+      const returned = field[slot.set](slot.value);
+
+      const el = slotEl(field, slot.selector);
+      expect(el).not.toBeNull();
+      expect(slot.read(el!)).toContain(typeof slot.value === 'string' && slot.value.startsWith('<') ? 'svg' : slot.value);
+      // The setters chain, like every other setter on this component.
+      expect(returned).toBe(field);
+    });
+
+    test(`${slot.set} works again after ${slot.remove}`, () => {
+      const configured = slot.set === 'setLeadingIcon' ? { leadingIcon: ICON }
+        : slot.set === 'setTrailingIcon' ? { trailingIcon: ICON }
+        : slot.set === 'setPrefixText' ? { prefixText: 'a' }
+        : { suffixText: 'a' };
+      const field = mount({ label: 'Configured', ...configured }) as any;
+      expect(slotEl(field, slot.selector)).not.toBeNull();
+
+      field[slot.remove]();
+      expect(slotEl(field, slot.selector)).toBeNull();
+      expect(field[slot.prop]).toBeNull();
+
+      field[slot.set](slot.value);
+      const el = slotEl(field, slot.selector);
+      expect(el).not.toBeNull();
+      // Not merely present: the element in the document is the one written to.
+      expect(field[slot.prop]).toBe(el);
+    });
+  }
+
+  test('a removed slot drops its modifier class, and setting it again restores it', () => {
+    const field = mount({ label: 'x', leadingIcon: ICON }) as any;
+    const withIcon = [...field.element.classList].find((c) => c.endsWith('--with-leading-icon'));
+    expect(withIcon).toBeDefined();
+
+    field.removeLeadingIcon();
+    expect([...field.element.classList].some((c) => c.endsWith('--with-leading-icon'))).toBe(false);
+
+    field.setLeadingIcon(ICON);
+    expect([...field.element.classList].some((c) => c.endsWith('--with-leading-icon'))).toBe(true);
+  });
+
+  test('the four slots coexist on one field created without any of them', () => {
+    const field = mount({ label: 'x' }) as any;
+    field.setLeadingIcon(ICON).setTrailingIcon(ICON).setPrefixText('$').setSuffixText('kg');
+    for (const slot of SLOTS) {
+      expect(slotEl(field, slot.selector)).not.toBeNull();
+    }
+  });
 });
