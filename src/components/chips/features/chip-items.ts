@@ -7,9 +7,17 @@ import { ChipsConfig } from "../types";
  * @param config Chips configuration
  * @returns Component enhancer that adds chip items functionality
  */
-export const withChipItems = (config: ChipsConfig) => (component) => {
+/** What this feature reads off the component it is handed. */
+interface ChipItemsHost {
+  onCreated?: () => void;
+}
+
+export const withChipItems =
+  (config: ChipsConfig) =>
+  // Generic, so the accumulated pipeline type survives (see #109).
+  <C extends ChipItemsHost>(component: C) => {
   // Chip instances stored in component state
-  const chipInstances = [];
+  const chipInstances: unknown[] = [];
 
   return {
     ...component,

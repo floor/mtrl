@@ -194,7 +194,7 @@ export const withAPI =
      * @param {Function} handler - Event handler
      * @returns {Object} Component instance for chaining
      */
-    on: (event, handler) => {
+    on: (event: string, handler: (...args: never[]) => void) => {
       events.on(event, handler);
       return component;
     },
@@ -205,7 +205,7 @@ export const withAPI =
      * @param {Function} handler - Event handler
      * @returns {Object} Component instance for chaining
      */
-    off: (event, handler) => {
+    off: (event: string, handler: (...args: never[]) => void) => {
       events.off(event, handler);
       return component;
     },
