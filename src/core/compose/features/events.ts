@@ -17,7 +17,10 @@ export interface EventComponent extends BaseComponent {
    * @param handler - Event handler
    * @returns Component instance for chaining
    */
-  on(event: string, handler: EventCallback): EventComponent;
+  // `this`, not EventComponent: these return the component they were
+  // called on, which by then carries every feature applied so far.
+  // Declared as the narrow interface, chaining threw the rest away.
+  on(event: string, handler: EventCallback): this;
   
   /**
    * Unsubscribe from an event
@@ -25,7 +28,7 @@ export interface EventComponent extends BaseComponent {
    * @param handler - Event handler
    * @returns Component instance for chaining
    */
-  off(event: string, handler: EventCallback): EventComponent;
+  off(event: string, handler: EventCallback): this;
   
   /**
    * Emit an event
@@ -33,7 +36,7 @@ export interface EventComponent extends BaseComponent {
    * @param data - Event data
    * @returns Component instance for chaining
    */
-  emit(event: string, data?: unknown): EventComponent;
+  emit(event: string, data?: unknown): this;
 }
 
 /**
