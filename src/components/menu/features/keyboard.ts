@@ -1,7 +1,7 @@
 // src/components/menu/features/keyboard.ts
 
 import { createMenuTasks } from "./tasks";
-import { MenuItem, MenuContent } from "../types";
+import { MenuItem, MenuContent, MenuFeatureHost } from "../types";
 
 /**
  * Menu state the keyboard handlers read
@@ -33,7 +33,7 @@ interface KeyboardActions {
  * Keyboard navigation handler for menus
  * Manages focus management and keyboard interactions for accessibility
  */
-export const createKeyboardNavigation = (component) => {
+export const createKeyboardNavigation = (component: MenuFeatureHost) => {
   const tasks = createMenuTasks();
 
   // Track tab navigation state
@@ -502,7 +502,10 @@ export const createKeyboardNavigation = (component) => {
  * @param config - Menu configuration
  * @returns Component enhancer with keyboard navigation functionality
  */
-const withKeyboard = () => (component) => {
+const withKeyboard =
+  () =>
+  // Generic, so the accumulated pipeline type survives (see #109).
+  <C extends MenuFeatureHost>(component: C) => {
   if (!component.element) {
     return component;
   }

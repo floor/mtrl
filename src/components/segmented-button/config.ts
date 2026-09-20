@@ -1,6 +1,6 @@
 // src/components/segmented-button/config.ts
 import { createComponentConfig } from "../../core/config/component";
-import { SegmentedButtonConfig, SelectionMode, Density } from "./types";
+import { SegmentedButtonConfig, SegmentConfig, SelectionMode, Density } from "./types";
 import { SEGMENTED_BUTTON_DEFAULTS } from "./constants";
 
 /**
@@ -62,7 +62,11 @@ export const getContainerConfig = (config: SegmentedButtonConfig) => {
  * @returns {Object} Element configuration for the segment
  * @internal
  */
-export const getSegmentConfig = (segment, prefix, groupDisabled = false) => {
+export const getSegmentConfig = (
+  segment: SegmentConfig,
+  prefix: string,
+  groupDisabled = false,
+) => {
   const isDisabled = groupDisabled || segment.disabled;
 
   // We use button as our base class, but add segment-specific classes for states

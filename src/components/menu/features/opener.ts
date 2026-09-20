@@ -1,7 +1,7 @@
 // src/components/menu/features/opener.ts
 
 import { createMenuTasks } from "./tasks";
-import { MenuConfig } from "../types";
+import { MenuConfig, MenuFeatureHost } from "../types";
 
 /**
  * A component used as the menu opener. It is resolved by its element,
@@ -29,7 +29,10 @@ type OpenerTarget = string | HTMLElement | OpenerComponent;
  * @param config - Menu configuration
  * @returns Component enhancer with opener management functionality
  */
-const withOpener = (config: MenuConfig) => (component) => {
+const withOpener =
+  (config: MenuConfig) =>
+  // Generic, so the accumulated pipeline type survives (see #109).
+  <C extends MenuFeatureHost>(component: C) => {
   if (!component.element) {
     console.warn("Cannot initialize menu opener: missing element");
     return component;
@@ -457,7 +460,7 @@ const withOpener = (config: MenuConfig) => (component) => {
     }
   });
 
-  component.on("close", (event) => {
+  component.on("close", (event: { restoreFocus?: boolean }) => {
     if (state.openerElement && !config.listbox) {
       // Always update ARIA attributes
       state.openerElement.setAttribute("aria-expanded", "false");
