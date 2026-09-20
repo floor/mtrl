@@ -67,9 +67,9 @@ export const withAPI =
      * Refreshes the list display
      * @returns {Promise<Object>} Promise that resolves with component
      */
-    refresh: async () => {
+    async refresh() {
       list.refresh();
-      return component;
+      return this;
     },
 
     /**
@@ -154,9 +154,9 @@ export const withAPI =
      * @param {string|number} itemId - Item ID to select
      * @returns {Object} Component instance for chaining
      */
-    selectItem: (itemId: string | number) => {
+    selectItem(itemId: string | number) {
       selection.selectItem(itemId);
-      return component;
+      return this;
     },
 
     /**
@@ -164,18 +164,18 @@ export const withAPI =
      * @param {string|number} itemId - Item ID to deselect
      * @returns {Object} Component instance for chaining
      */
-    deselectItem: (itemId: string | number) => {
+    deselectItem(itemId: string | number) {
       selection.deselectItem(itemId);
-      return component;
+      return this;
     },
 
     /**
      * Clears all selections
      * @returns {Object} Component instance for chaining
      */
-    clearSelection: () => {
+    clearSelection() {
       selection.clearSelection();
-      return component;
+      return this;
     },
 
     /**
@@ -183,9 +183,9 @@ export const withAPI =
      * @param {Array} itemIds - Item IDs to select
      * @returns {Object} Component instance for chaining
      */
-    setSelection: (itemIds: (string | number)[]) => {
+    setSelection(itemIds: (string | number)[]) {
       selection.setSelection(itemIds);
-      return component;
+      return this;
     },
 
     /**
@@ -194,9 +194,9 @@ export const withAPI =
      * @param {Function} handler - Event handler
      * @returns {Object} Component instance for chaining
      */
-    on: (event: string, handler: (...args: never[]) => void) => {
+    on(event: string, handler: (...args: never[]) => void) {
       events.on(event, handler);
-      return component;
+      return this;
     },
 
     /**
@@ -205,9 +205,9 @@ export const withAPI =
      * @param {Function} handler - Event handler
      * @returns {Object} Component instance for chaining
      */
-    off: (event: string, handler: (...args: never[]) => void) => {
+    off(event: string, handler: (...args: never[]) => void) {
       events.off(event, handler);
-      return component;
+      return this;
     },
 
     /**

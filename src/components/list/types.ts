@@ -68,6 +68,109 @@ export interface ListConfig<T = unknown> {
 }
 
 /**
+ * What the list reads off an item.
+ *
+ * `ListConfig` is generic in its item type and consumers keep that, but the
+ * renderer and the selection feature both reach into an item for the same few
+ * optional fields -- an id to target it by, and one of four names for its
+ * label. This is that shape, written down once so the two features agree.
+ *
+ * @category Components
+ */
+export interface ListItem {
+  id?: string | number;
+  text?: string;
+  title?: string;
+  headline?: string;
+  name?: string;
+  /** Selected at creation, which withSelection seeds its set from */
+  selected?: boolean;
+}
+
+/**
+ * What withRenderer installs at `component.list`.
+ *
+ * Most of it is the paging surface a virtual list would have; a rendered list
+ * has every item in the DOM already, so those are the no-ops below rather than
+ * an absence, and the shape stays the one mtrl-addons implements for real.
+ *
+ * @category Components
+ * @internal
+ */
+export interface ListRenderer<T = ListItem> {
+  getItems: () => T[];
+  getAllItems: () => T[];
+  getVisibleItems: () => T[];
+  refresh: () => void;
+  scrollToItem: (
+    itemId: string | number,
+    position?: ScrollPosition,
+    animate?: boolean
+  ) => void;
+  scrollToIndex: (
+    index: number,
+    position?: ScrollPosition,
+    animate?: boolean
+  ) => void;
+  loadNext: () => Promise<{ hasNext: boolean; items: T[] }>;
+  loadPage: () => Promise<{ hasNext: boolean; items: T[] }>;
+  loadPrevious: () => Promise<{ hasPrev: boolean; items: T[] }>;
+  scrollNext: () => Promise<{ hasNext: boolean; items: T[] }>;
+  scrollPrevious: () => Promise<{ hasPrev: boolean; items: T[] }>;
+  scrollToItemById: (
+    itemId: string | number,
+    position?: ScrollPosition,
+    animate?: boolean
+  ) => Promise<void>;
+  onCollectionChange: () => () => void;
+  onPageChange: () => () => void;
+  getCurrentPage: () => number;
+  getPageSize: () => number;
+  getCollection: () => null;
+  isApiMode: () => boolean;
+  isLoading: () => boolean;
+  hasNextPage: () => boolean;
+}
+
+/** Where a scrolled-to item lands in the viewport */
+export type ScrollPosition = "start" | "center" | "end";
+
+/**
+ * What withSelection installs. Present whether or not selection is tracked --
+ * with `trackSelection` off the feature returns no-op versions rather than
+ * nothing, so a caller never has to check before calling.
+ *
+ * @category Components
+ * @internal
+ */
+export interface ListSelection<T = ListItem> {
+  getSelectedItems: () => T[];
+  getSelectedItemIds: () => string[];
+  isItemSelected: (itemId: string | number) => boolean;
+  selectItem(itemId: string | number): this;
+  deselectItem(itemId: string | number): this;
+  clearSelection(): this;
+  setSelection(itemIds: (string | number)[]): this;
+}
+
+/**
+ * What a list feature needs from the component it is handed.
+ *
+ * The list pipe is createBase, withEvents, withElement, then these -- so the
+ * element is there before any feature runs. `list` is optional because
+ * withSelection reads it and withRenderer is what puts it there.
+ *
+ * @category Components
+ * @internal
+ */
+export interface ListFeatureHost {
+  element: HTMLElement;
+  emit?: (event: string, data: unknown) => unknown;
+  lifecycle?: { destroy: () => void };
+  list?: ListRenderer;
+}
+
+/**
  * Selection event data
  * @interface SelectEvent
  */
