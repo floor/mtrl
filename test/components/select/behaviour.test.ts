@@ -172,3 +172,57 @@ describe('select', () => {
     expect(document.querySelector('.mtrl-menu')).toBeNull();
   });
 });
+
+// The input is readonly, which stops a caret edit, but a select also installs a
+// keydown handler that refuses printable keys outright while letting the keys
+// the menu needs through. Only the passing-through half was covered -- that
+// ArrowDown opens the menu -- so the refusing half had no test, and it is the
+// half that keeps a select from behaving like a text field.
+describe('typing into the select', () => {
+  const press = (select: { element: HTMLElement }, key: string) => {
+    const event = new dom.window.KeyboardEvent('keydown', {
+      key,
+      bubbles: true,
+      cancelable: true,
+    });
+    inputOf(select).dispatchEvent(event);
+    return event;
+  };
+
+  for (const key of ['a', 'Z', '1', '-']) {
+    test(`a printable key (${key}) is refused`, async () => {
+      const select = await mount();
+
+      expect(press(select, key).defaultPrevented).toBe(true);
+    });
+  }
+
+  // Only Tab and Escape reach the browser. The other keys on the guard's
+  // allow-list are let past it and then claimed by setupCombobox, which drives
+  // the listbox with them -- an arrow that also scrolled the page would be the
+  // bug. So "allowed" means allowed past *this* handler, not unprevented.
+  for (const key of ['Tab', 'Escape']) {
+    test(`${key} reaches the browser`, async () => {
+      const select = await mount();
+
+      expect(press(select, key).defaultPrevented).toBe(false);
+    });
+  }
+
+  for (const key of ['ArrowDown', 'ArrowUp', 'Enter', ' ', 'Home', 'End']) {
+    test(`${key === ' ' ? 'Space' : key} is claimed by the combobox`, async () => {
+      const select = await mount();
+
+      expect(press(select, key).defaultPrevented).toBe(true);
+    });
+  }
+
+  test('and the value is unchanged after a refused key', async () => {
+    const select = await mount({ value: 'm' });
+
+    press(select, 'x');
+
+    expect(inputOf(select).value).toBe('Medium');
+    expect(select.getValue()).toBe('m');
+  });
+});
