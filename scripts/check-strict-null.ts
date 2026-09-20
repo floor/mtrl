@@ -18,12 +18,7 @@
 import { execFileSync } from "node:child_process";
 
 /** Files with strictNullChecks errors left to fix (F14). */
-const PENDING = [
-  "src/components/navigation/features/items.ts",
-  "src/components/navigation/system/core.ts",
-  "src/components/navigation/system/events.ts",
-  "src/components/navigation/system/mobile.ts",
-];
+const PENDING: string[] = [];
 
 const EXCLUDED = new Set(PENDING);
 
