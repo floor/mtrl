@@ -20,7 +20,6 @@ import { execFileSync } from "node:child_process";
 
 /** Files with noImplicitAny errors left to fix (F14). */
 const PENDING = [
-  "src/components/badge/features.ts",
   "src/components/chips/config.ts",
   "src/components/chips/features/controller.ts",
   "src/components/dialog/config.ts",

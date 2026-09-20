@@ -1,4 +1,5 @@
 // src/components/badge/types.ts
+import { ElementComponent } from '../../core/compose/component';
 
 /**
  * Badge variant types - determines the badge size and appearance
@@ -109,6 +110,45 @@ export interface BadgeConfig {
    * @internal
    */
   componentName?: string;
+}
+
+/**
+ * The visibility control withVisibility installs on a badge.
+ *
+ * Named because three places need the same shape: the feature that builds it,
+ * getApiConfig that forwards it, and withAPI that wraps it.
+ *
+ * @category Components
+ * @internal
+ */
+export interface BadgeVisibility {
+  /** Shows the badge */
+  show: () => void;
+  /** Hides the badge */
+  hide: () => void;
+  /** Toggles badge visibility, or forces it when given a flag */
+  toggle: (visible?: boolean) => void;
+  /** Whether the badge is currently visible */
+  isVisible: () => boolean;
+}
+
+/**
+ * What a badge feature enhancer needs from the component it is handed.
+ *
+ * The badge pipe is createBase, withEvents, withElement, then these features --
+ * so the element half is installed before any of them runs, which is why
+ * `element` and `getClass` are required rather than optional.
+ *
+ * `config` is the badge's own config: createBase keeps the type it was created
+ * with, so a feature reading `config.variant` gets BadgeVariant and not
+ * `unknown`. `wrapper` is written by withAttachment, not read by it.
+ *
+ * @category Components
+ * @internal
+ */
+export interface BadgeFeatureHost extends ElementComponent {
+  config: BadgeConfig & Record<string, unknown>;
+  wrapper?: HTMLElement;
 }
 
 /**
