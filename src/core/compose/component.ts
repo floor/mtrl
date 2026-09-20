@@ -128,11 +128,14 @@ const withPrefix = (prefix: string) => ({
  * @param {Object} config - Component configuration
  * @returns {BaseComponent} Base component with prefix utilities
  */
-export const createBase = (
-  config: BaseConfig & object = {},
-): BaseComponent => ({
-  // Component configs are interfaces without index signatures; their other keys read as unknown.
-  config: config as BaseComponent["config"],
+export const createBase = <T extends BaseConfig & object = BaseConfig & object>(
+  config: T = {} as T,
+): BaseComponent & { config: T } => ({
+  // Generic over the config, so a component keeps the type it was created
+  // with. Declared as BaseComponent it was widened to a Record here, and
+  // every reader downstream saw `unknown` for its own options — which is why
+  // the hand-written pre-API interfaces could never match (FLO-235).
+  config: config as BaseComponent["config"] & T,
   componentName: config.componentName,
   ...withPrefix(config.prefix || "mtrl"),
 
