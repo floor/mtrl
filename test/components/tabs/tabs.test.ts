@@ -274,3 +274,69 @@ describe('tabs keyboard', () => {
     expect(document.activeElement).toBe(byValue(tabs, 'trips').element);
   });
 });
+
+// N27 — every tab used to carry `aria-controls="tabpanel-<value>"` whether or
+// not such a panel existed. The component creates no panels; a page supplies
+// them. So unless the page happened to provide one, assistive technology was
+// handed a relationship pointing at nothing.
+
+describe('tabs panel linking', () => {
+  const panel = (value: string) => {
+    const el = document.createElement('div');
+    el.id = `tabpanel-${value}`;
+    el.setAttribute('role', 'tabpanel');
+    el.setAttribute('aria-labelledby', `tab-${value}`);
+    document.body.append(el);
+    return el;
+  };
+
+  test('a tab with no panel carries no aria-controls', () => {
+    const tabs = mount();
+    for (const tab of tabs.getTabs()) {
+      expect(tab.element.hasAttribute('aria-controls')).toBe(false);
+    }
+  });
+
+  test('a tab whose panel exists points at it', () => {
+    panel('trips');
+    const tabs = mount();
+    expect(byValue(tabs, 'trips').element.getAttribute('aria-controls')).toBe('tabpanel-trips');
+    // and the ones still without a panel stay unlinked
+    expect(byValue(tabs, 'flights').element.hasAttribute('aria-controls')).toBe(false);
+  });
+
+  test('a panel added after the tabs is linked when the panels update', () => {
+    const tabs = mount();
+    expect(byValue(tabs, 'trips').element.hasAttribute('aria-controls')).toBe(false);
+
+    panel('trips');
+    // Re-activating runs the panel update, which is where linking happens.
+    byValue(tabs, 'trips').element.click();
+
+    expect(byValue(tabs, 'trips').element.getAttribute('aria-controls')).toBe('tabpanel-trips');
+  });
+
+  test('a tab that loses its panel drops the reference rather than dangling', () => {
+    const el = panel('trips');
+    const tabs = mount();
+    expect(byValue(tabs, 'trips').element.getAttribute('aria-controls')).toBe('tabpanel-trips');
+
+    el.remove();
+    byValue(tabs, 'trips').element.click();
+
+    expect(byValue(tabs, 'trips').element.hasAttribute('aria-controls')).toBe(false);
+  });
+
+  test('setValue does not invent a panel reference', () => {
+    const tabs = mount();
+    const tab = byValue(tabs, 'flights');
+    tab.setValue('renamed');
+    expect(tab.element.getAttribute('id')).toBe('tab-renamed');
+    expect(tab.element.hasAttribute('aria-controls')).toBe(false);
+
+    panel('renamed');
+    tab.setValue('renamed');
+    expect(tab.element.getAttribute('aria-controls')).toBe('tabpanel-renamed');
+  });
+});
+

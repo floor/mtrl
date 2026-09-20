@@ -50,9 +50,14 @@ export function updateTabPanels(component: TabsHost): void {
   // Find all tab panels in the document
   const tabPanels = document.querySelectorAll(`[role="tabpanel"]`);
 
+  // Which values actually have a panel in the document right now. A page
+  // supplies the panels, so this is the only place that knows.
+  const linked = new Set<string>();
+
   tabPanels.forEach((panel) => {
     // Get the associated tab value
     const forTab = panel.getAttribute("aria-labelledby")?.replace("tab-", "");
+    if (forTab) linked.add(forTab);
 
     if (forTab === activeValue) {
       panel.removeAttribute("hidden");
@@ -62,6 +67,31 @@ export function updateTabPanels(component: TabsHost): void {
       panel.setAttribute("tabindex", "-1");
     }
   });
+
+  // Point each tab at its panel, and only at a panel that exists. A tab whose
+  // panel the page never supplied carries no `aria-controls` rather than a
+  // reference that resolves to nothing. Panels added after the tabs are linked
+  // here, which is why this cannot be decided once at creation.
+  // Callers pass either the component or a plain `{ tabs, getActiveTab }`
+  // literal — `features.ts` does the latter — so read the tabs from whichever
+  // shape arrived rather than assuming the richer one.
+  const allTabs =
+    typeof component.getTabs === "function"
+      ? component.getTabs()
+      : (component as { tabs?: unknown[] }).tabs ?? [];
+
+  {
+    for (const tab of allTabs as Array<{ getValue?: () => string; element?: HTMLElement }>) {
+      if (typeof tab?.getValue !== "function" || !tab.element) continue;
+      const value = tab.getValue();
+      const panelId = `tabpanel-${value}`;
+      if (linked.has(value) && document.getElementById(panelId)) {
+        tab.element.setAttribute("aria-controls", panelId);
+      } else {
+        tab.element.removeAttribute("aria-controls");
+      }
+    }
+  }
 }
 
 /**

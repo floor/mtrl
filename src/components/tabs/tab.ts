@@ -16,6 +16,23 @@ import createBadge from "../badge";
  * @param {TabConfig} config - Tab configuration object
  * @returns {TabComponent} Tab component instance
  */
+/**
+ * Point a tab at its panel, but only when that panel exists.
+ *
+ * The component creates no panels; a page supplies them. Writing
+ * `aria-controls` regardless left every tab referencing an id that resolves to
+ * nothing, which assistive technology reports as a broken relationship. When
+ * the panel appears later, `updateTabPanels` links it then.
+ */
+function linkPanel(element: HTMLElement, value: string): void {
+  const panelId = `tabpanel-${value}`;
+  if (typeof document !== "undefined" && document.getElementById(panelId)) {
+    element.setAttribute("aria-controls", panelId);
+  } else {
+    element.removeAttribute("aria-controls");
+  }
+}
+
 export const createTab = (config: TabConfig = {}): TabComponent => {
   const baseConfig = createTabConfig(config);
 
@@ -62,10 +79,12 @@ export const createTab = (config: TabConfig = {}): TabComponent => {
     // For better accessibility
     if (baseConfig.value) {
       baseComponent.element.setAttribute("id", `tab-${baseConfig.value}`);
-      baseComponent.element.setAttribute(
-        "aria-controls",
-        `tabpanel-${baseConfig.value}`
-      );
+      // `aria-controls` is linked by `updateTabPanels` once a panel with that
+      // id is actually in the document. It used to be written here
+      // unconditionally, so every tab pointed at a panel the component never
+      // creates — a dangling reference unless the page happened to supply one,
+      // which is an ARIA conformance break rather than a cosmetic detail.
+      linkPanel(baseComponent.element, baseConfig.value);
     }
 
     // Add active state if specified in config
@@ -113,7 +132,7 @@ export const createTab = (config: TabConfig = {}): TabComponent => {
 
         // Update accessibility attributes
         this.element.setAttribute("id", `tab-${safeValue}`);
-        this.element.setAttribute("aria-controls", `tabpanel-${safeValue}`);
+        linkPanel(this.element, safeValue);
 
         return this;
       },
