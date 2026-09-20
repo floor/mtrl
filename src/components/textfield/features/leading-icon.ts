@@ -62,75 +62,78 @@ export interface LeadingIconComponent extends BaseComponent {
  * @returns Function that enhances a component with leading icon
  */
 // `& object` lets a component config that shares no key with LeadingIconConfig through.
-export const withLeadingIcon = <T extends LeadingIconConfig & object>(config: T) => 
+export const withLeadingIcon = <T extends LeadingIconConfig & object>(config: T) =>
   <C extends InputElementComponent>(component: C): C & Partial<LeadingIconComponent> => {
-    // Without leadingIcon configured the component comes back without these members
-    if (!config.leadingIcon) {
-      return component;
-    }
-    
-    // Create icon element
+    // The label offsets this feature used to write on a timer are gone:
+    // `placement.ts` owns label positioning and accounts for an icon and a
+    // prefix together, which the hardcoded 44px did not. `api.ts` already
+    // schedules a placement update after every one of these calls.
     const PREFIX = config.prefix || 'mtrl';
-    const iconElement = document.createElement('span');
-    iconElement.className = `${PREFIX}-${config.componentName || 'textfield'}-leading-icon`;
-    setHTML(iconElement, config.leadingIcon);
-    
-    // Add leading icon to the component
-    component.element.appendChild(iconElement);
-    
-    // Add leading-icon class to the component
-    component.element.classList.add(`${PREFIX}-${config.componentName || 'textfield'}--with-leading-icon`);
-    
-    // When there's a leading icon, adjust input padding
-    if (component.input) {
-      component.input.classList.add(`${PREFIX}-${config.componentName || 'textfield'}-input--with-leading-icon`);
+    const NAME = config.componentName || 'textfield';
+
+    // The slot is created when it is first needed, not only when the option was
+    // set at creation. The setters used to exist only on a component that had
+    // been configured with an icon, so `setLeadingIcon()` on a plain field was
+    // a no-op that returned nothing and reported nothing.
+    let iconElement: HTMLElement | null = null;
+
+    const ensureIcon = (): HTMLElement => {
+      if (iconElement && iconElement.parentNode) return iconElement;
+      const element = document.createElement('span');
+      element.className = `${PREFIX}-${NAME}-leading-icon`;
+      component.element.appendChild(element);
+      component.element.classList.add(`${PREFIX}-${NAME}--with-leading-icon`);
+      if (component.input) {
+        component.input.classList.add(`${PREFIX}-${NAME}-input--with-leading-icon`);
+      }
+      iconElement = element;
+      return element;
+    };
+
+    const detachIcon = (): void => {
+      iconElement?.remove();
+      // Clearing the closure reference is the point: it used to keep pointing
+      // at the detached node, so a later `setLeadingIcon()` wrote into an
+      // element that was no longer in the document and nothing appeared.
+      iconElement = null;
+      component.element.classList.remove(`${PREFIX}-${NAME}--with-leading-icon`);
+      if (component.input) {
+        component.input.classList.remove(`${PREFIX}-${NAME}-input--with-leading-icon`);
+      }
+    };
+
+    if (config.leadingIcon) {
+      setHTML(ensureIcon(), config.leadingIcon);
     }
-    
-    // Add lifecycle integration if available
+
     if ('lifecycle' in component && component.lifecycle?.destroy) {
       const originalDestroy = component.lifecycle.destroy;
       component.lifecycle.destroy = () => {
-        clearTimeout(initialPosition);
-        iconElement.remove();
+        iconElement?.remove();
+        iconElement = null;
         originalDestroy.call(component.lifecycle);
       };
     }
-    
-    // Update label position based on icon
-    const initialPosition = setTimeout(() => {
-      const labelEl = component.element.querySelector(`.${PREFIX}-${config.componentName || 'textfield'}-label`);
-      if (labelEl) {
-        if (!component.element.classList.contains(`${PREFIX}-${config.componentName || 'textfield'}--with-prefix`)) {
-          (labelEl as HTMLElement).style.left = '44px';
-        }
-      }
-    }, 10);
 
     return {
       ...component,
+      // A plain property, not an accessor. These features are composed by
+      // piping `{...component}` through each one, and a spread invokes a
+      // getter and copies its value — so an accessor defined here is gone
+      // by the time the next feature has spread it. The setters keep this
+      // in step through `this`, which at call time is the finished object.
+      // Whatever the creation option produced, if it produced anything.
       leadingIcon: iconElement,
-      
+
       setLeadingIcon(html: string) {
-        setHTML(iconElement, html);
+        this.leadingIcon = ensureIcon();
+        setHTML(this.leadingIcon, html);
         return this;
       },
-      
+
       removeLeadingIcon() {
-        if (iconElement.parentNode) {
-          iconElement.remove();
-          component.element.classList.remove(`${PREFIX}-${config.componentName || 'textfield'}--with-leading-icon`);
-          if (component.input) {
-            component.input.classList.remove(`${PREFIX}-${config.componentName || 'textfield'}-input--with-leading-icon`);
-          }
-          
-          // Reset label position if no prefix
-          if (!component.element.classList.contains(`${PREFIX}-${config.componentName || 'textfield'}--with-prefix`)) {
-            const labelEl = component.element.querySelector(`.${PREFIX}-${config.componentName || 'textfield'}-label`);
-            if (labelEl) {
-              (labelEl as HTMLElement).style.left = '';
-            }
-          }
-          
+        if (iconElement) {
+          detachIcon();
           this.leadingIcon = null;
         }
         return this;
