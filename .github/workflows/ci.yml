@@ -28,6 +28,8 @@ jobs:
         run: bun run ts:check
       - name: Strict null checks (ratchet)
         run: bun run strict:check
+      - name: No implicit any (ratchet)
+        run: bun run implicit:check
       - name: Lint
         run: bun run lint
       - name: Test file naming
