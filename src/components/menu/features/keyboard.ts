@@ -95,13 +95,22 @@ export const createKeyboardNavigation = (component) => {
     const parentId = menuElement.getAttribute("data-parent-item");
     if (!parentId) return null;
     const level = parseInt(menuElement.getAttribute("data-level") || "1", 10);
+    // Submenus live on document.body, so they have to be found there — but
+    // only this menu's. Matching on level alone returned the first submenu at
+    // that level on the page, which with two menus open is the wrong one.
+    const owner = component.element.id;
+    const ownerFilter = owner ? `[data-owner="${owner}"]` : "";
     const scope =
       level <= 1
         ? component.element
         : document.querySelector(
-            `.${component.getClass("menu--submenu")}[data-level="${level - 1}"]`
+            `.${component.getClass(
+              "menu--submenu"
+            )}${ownerFilter}[data-level="${level - 1}"]`
           );
-    return ((scope ?? document).querySelector(
+    // Falling back to `document` was the same defect in miniature: it searched
+    // every menu on the page for the parent item.
+    return ((scope ?? component.element).querySelector(
       `.${component.getClass("menu-item")}[data-id="${parentId}"]`
     ) ?? null) as HTMLElement | null;
   };
