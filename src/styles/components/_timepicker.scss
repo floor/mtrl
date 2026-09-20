@@ -116,9 +116,11 @@ $component: '#{base.$prefix}-time-picker';
   }
   
   // Title
+  // M3 TimePickerTokens: HeadlineFont is LabelMedium, HeadlineColor is
+  // OnSurfaceVariant. The colour already matched; the type scale did not.
   &-title {
     padding: 24px 24px 16px;
-    @include m.typography('title-small');
+    @include m.typography('label-medium');
     color: t.color('on-surface-variant');
   }
   
@@ -162,8 +164,13 @@ $component: '#{base.$prefix}-time-picker';
     background: transparent;
     cursor: pointer;
     
+    // TimeSelectorSelectedContainerColor is PrimaryContainer and its label
+    // OnPrimaryContainer. Only the text colour changed before, so the active
+    // field was signalled by a tint rather than the filled container M3
+    // describes.
     &[data-active="true"] {
-      color: t.color('primary');
+      background-color: t.color('primary-container');
+      color: t.color('on-primary-container');
     }
     
     // Style for HTML input elements
@@ -196,9 +203,11 @@ $component: '#{base.$prefix}-time-picker';
     
     // When in dial mode, add highlighting for active element
     &:not([type="number"]) {
+      // Same pair as the numeric field above: the selected time selector is a
+      // filled PrimaryContainer, not a 10% primary tint.
       &[data-active="true"] {
-        color: t.color('primary');
-        background-color: t.alpha('primary', 0.1);
+        color: t.color('on-primary-container');
+        background-color: t.color('primary-container');
         border-radius: f.get-shape('small');
       }
       
@@ -225,7 +234,8 @@ $component: '#{base.$prefix}-time-picker';
     background-color: t.color('surface-container-highest');
     border-radius: f.get-shape('small');
     overflow: hidden;
-    border: 1px solid t.color('outline-variant');
+    // PeriodSelectorOutlineColor is Outline, not OutlineVariant.
+    border: 1px solid t.color('outline');
     margin-left: 16px;
     
     &-am,
@@ -238,6 +248,9 @@ $component: '#{base.$prefix}-time-picker';
       padding: 8px;
       cursor: pointer;
       @include m.typography('title-medium');
+      // PeriodSelectorUnselectedLabelTextColor. It was inherited before, so an
+      // unselected period took the dialog's on-surface.
+      color: t.color('on-surface-variant');
       
       // Improve touch target sizes on mobile
       @media (max-width: 599px) {
@@ -259,12 +272,15 @@ $component: '#{base.$prefix}-time-picker';
       }
     }
     
+    // PeriodSelectorSelectedContainerColor is TertiaryContainer and its label
+    // OnTertiaryContainer. The primary pair it used belongs to the time
+    // selector, which is why AM/PM and the hour field looked alike.
     &--selected {
-      background-color: t.color('primary-container');
-      color: t.color('on-primary-container');
+      background-color: t.color('tertiary-container');
+      color: t.color('on-tertiary-container');
       
       &:hover {
-        background-color: t.color('primary-container');
+        background-color: t.color('tertiary-container');
       }
     }
   }
