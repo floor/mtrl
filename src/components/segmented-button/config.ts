@@ -19,14 +19,11 @@ export const DEFAULT_CONFIG: SegmentedButtonConfig = {
  * @returns {SegmentedButtonConfig} Complete configuration with defaults applied
  * @internal
  */
-export const createBaseConfig = (
-  config: SegmentedButtonConfig = {}
-): SegmentedButtonConfig =>
-  createComponentConfig(
-    DEFAULT_CONFIG,
-    config,
-    "segmented-button"
-  ) as SegmentedButtonConfig;
+export const createBaseConfig = (config: SegmentedButtonConfig = {}) =>
+  // No cast: it discarded the `componentName` and `prefix` that
+  // createComponentConfig guarantees, which put `prefix` back to optional and
+  // left every `${config.prefix}-...` template holding "undefined-".
+  createComponentConfig(DEFAULT_CONFIG, config, "segmented-button");
 
 /**
  * Generates element configuration for the Segmented Button container
@@ -52,7 +49,7 @@ export const getContainerConfig = (config: SegmentedButtonConfig) => {
       density !== Density.DEFAULT
         ? `${config.prefix}-segmented-button--${density}`
         : null,
-    ],
+    ].filter((name): name is string => Boolean(name)),
     interactive: true,
   };
 };

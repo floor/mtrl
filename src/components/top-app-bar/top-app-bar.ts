@@ -14,6 +14,7 @@ import {
 
 import { createConfig } from "./config";
 import { TopAppBarConfig, TopAppBarType } from "./types";
+import { TOP_APP_BAR_DEFAULTS } from "./constants";
 
 /**
  * Top app bar component interface
@@ -137,7 +138,7 @@ export const createTopAppBar = (config: TopAppBarConfig = {}): TopAppBar => {
       classes.push(`${component.getClass("top-app-bar")}--compressible`);
     }
 
-    return classes.filter(Boolean);
+    return classes.filter((name): name is string => Boolean(name));
   };
 
   // Apply Element enhancer
@@ -190,7 +191,8 @@ export const createTopAppBar = (config: TopAppBarConfig = {}): TopAppBar => {
   // Handle scrolling behavior if enabled
   if (componentConfig.scrollable) {
     const handleScroll = () => {
-      const shouldBeScrolled = window.scrollY > componentConfig.scrollThreshold;
+      const shouldBeScrolled =
+        window.scrollY > (componentConfig.scrollThreshold ?? TOP_APP_BAR_DEFAULTS.SCROLL_THRESHOLD);
 
       if (isScrolled !== shouldBeScrolled) {
         isScrolled = shouldBeScrolled;

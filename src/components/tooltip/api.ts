@@ -264,13 +264,28 @@ export const withAPI =
         // Create a text node
         const contentNode = document.createTextNode(text);
 
-        // Clear existing content
-        while (component.element.firstChild !== arrowElement) {
+        // Clear existing content, stopping at the arrow.
+        //
+        // firstChild reaches null when the arrow is no longer a child, which
+        // is what happens to any tooltip whose element has been emptied. The
+        // loop then called removeChild(null) and threw; guarding it alone only
+        // moves the throw to insertBefore, since the arrow it anchors to is
+        // gone too. So the anchor is checked as well, and the text is appended
+        // when there is nothing to insert before. The arrow is not recreated:
+        // whatever removed it meant to.
+        while (
+          component.element.firstChild &&
+          component.element.firstChild !== arrowElement
+        ) {
           component.element.removeChild(component.element.firstChild);
         }
 
         // Add new content before the arrow
-        component.element.insertBefore(contentNode, arrowElement);
+        if (arrowElement.parentNode === component.element) {
+          component.element.insertBefore(contentNode, arrowElement);
+        } else {
+          component.element.appendChild(contentNode);
+        }
 
         // Update position if visible
         if (isVisible) {

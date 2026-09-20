@@ -2,7 +2,12 @@
 import type { ElementComponent } from "../../core/compose/component";
 import type { DisabledComponent } from "../../core/compose/features/disabled";
 import type { LifecycleComponent } from "../../core/compose/features/lifecycle";
-import { DatePickerComponent, DatePickerState, ApiOptions } from "./types";
+import {
+  DatePickerComponent,
+  DatePickerState,
+  DatePickerApiState,
+  ApiOptions,
+} from "./types";
 import { formatDate, parseDate, addMonths } from "./utils";
 
 /**
@@ -12,8 +17,18 @@ import { formatDate, parseDate, addMonths } from "./utils";
  * @returns {Function} Higher-order function that adds API methods to component
  * @internal This is an internal utility for the DatePicker component
  */
+/**
+ * The API's precondition, checked rather than asserted: the factory creates the
+ * input and installs the outside-click handler before it builds the API, and
+ * this verifies that at runtime instead of casting past it.
+ */
+export const isReadyForApi = (
+  state: DatePickerState,
+): state is DatePickerApiState =>
+  state.input !== null && state.outsideClickHandler !== undefined;
+
 export const withAPI =
-  (state: DatePickerState, { disabled, lifecycle, events }: ApiOptions) =>
+  (state: DatePickerApiState, { disabled, lifecycle, events }: ApiOptions) =>
   (
     component: ElementComponent & DisabledComponent & LifecycleComponent
   ): DatePickerComponent => {
