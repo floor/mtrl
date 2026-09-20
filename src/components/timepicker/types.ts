@@ -201,6 +201,36 @@ export interface TimePickerConfig {
 }
 
 /**
+ * Configuration as it leaves `createBaseConfig`.
+ *
+ * `TimePickerConfig` marks these optional because a caller may omit them.
+ * Once the defaults have been merged they are all present, and everything
+ * downstream — the renderer, the clock dial, the API — reads them as such.
+ * Saying so here is what lets that hold without each reader guessing.
+ * @category Components
+ * @internal
+ */
+export type ResolvedTimePickerConfig = TimePickerConfig &
+  Required<
+    Pick<
+      TimePickerConfig,
+      | "type"
+      | "format"
+      | "orientation"
+      | "showSeconds"
+      | "closeOnSelect"
+      | "minuteStep"
+      | "secondStep"
+      | "cancelText"
+      | "confirmText"
+      | "isOpen"
+      | "clockIcon"
+      | "keyboardIcon"
+      | "prefix"
+    >
+  >;
+
+/**
  * Time value object
  * @category Components
  */

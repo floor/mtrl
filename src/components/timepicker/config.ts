@@ -7,7 +7,7 @@ import {
 import type { EventCallback } from "../../core/state/emitter";
 import type { EventComponent } from "../../core/compose/features/events";
 import type { LifecycleComponent } from "../../core/compose/features/lifecycle";
-import { TimePickerConfig } from "./types";
+import { TimePickerConfig, ResolvedTimePickerConfig } from "./types";
 import {
   TIME_PICKER_TYPE,
   TIME_PICKER_ORIENTATION,
@@ -36,23 +36,28 @@ export const defaultConfig: TimePickerConfig = {
 /**
  * Creates the base configuration for TimePicker component
  * @param {TimePickerConfig} config - User provided configuration
- * @returns {TimePickerConfig} Complete configuration with defaults applied
+ * @returns {ResolvedTimePickerConfig} Complete configuration with defaults applied
  */
 export const createBaseConfig = (
   config: TimePickerConfig = {}
-): TimePickerConfig =>
+): ResolvedTimePickerConfig =>
+  // The assertion states what merging `defaultConfig` guarantees: every field
+  // named in ResolvedTimePickerConfig has a default, so all of them are set by
+  // the time this returns. The compiler cannot see that through the generic
+  // merge, and the previous `as TimePickerConfig` threw the guarantee away —
+  // which is why fifty reads downstream had to cope with `undefined`.
   createComponentConfig(
     defaultConfig,
     config,
     "time-picker"
-  ) as TimePickerConfig;
+  ) as ResolvedTimePickerConfig;
 
 /**
  * Generates element configuration for the TimePicker container
  * @param {TimePickerConfig} config - TimePicker configuration
  * @returns {Object} Element configuration object for withElement
  */
-export const getContainerConfig = (config: TimePickerConfig) => {
+export const getContainerConfig = (config: ResolvedTimePickerConfig) => {
   return createElementConfig(config, {
     tag: "div",
     attributes: {
@@ -77,7 +82,7 @@ export const getContainerConfig = (config: TimePickerConfig) => {
  * @param {TimePickerConfig} config - TimePicker configuration
  * @returns {Object} Element configuration object for withElement
  */
-export const getModalConfig = (config: TimePickerConfig) => {
+export const getModalConfig = (config: ResolvedTimePickerConfig) => {
   return createElementConfig(config, {
     tag: "div",
     attributes: {
@@ -102,7 +107,7 @@ export const getModalConfig = (config: TimePickerConfig) => {
  * @param {TimePickerConfig} config - TimePicker configuration
  * @returns {Object} Element configuration object for withElement
  */
-export const getDialogConfig = (config: TimePickerConfig) => {
+export const getDialogConfig = (config: ResolvedTimePickerConfig) => {
   return createElementConfig(config, {
     tag: "div",
     className: [
