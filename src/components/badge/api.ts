@@ -4,6 +4,8 @@ import {
   BadgeColor,
   BadgeVariant,
   BadgePosition,
+  BadgeFeatureHost,
+  BadgeVisibility,
 } from "./types";
 import { formatBadgeLabel } from "./config";
 
@@ -13,34 +15,32 @@ import { formatBadgeLabel } from "./config";
  * @internal
  */
 interface ApiOptions {
-  visibility: {
-    show: () => void;
-    hide: () => void;
-    toggle: (visible?: boolean) => void;
-    isVisible: () => boolean;
-  };
+  visibility: BadgeVisibility;
   lifecycle: {
     destroy: () => void;
   };
 }
 
 /**
- * Component with required elements and methods for API enhancement
+ * What withAPI needs from the component it wraps: everything a badge feature
+ * needs, plus the events withEvents installs.
+ *
+ * This was a hand-written interface that described `config` as three optional
+ * properties. All-optional made it a weak type, so the real component -- whose
+ * config is the badge's own -- had "no properties in common" with it, and
+ * `addClass` was declared as returning the interface itself, which is the
+ * narrowing #120 removed from the source.
+ *
  * @category Components
  * @internal
  */
-interface ComponentWithElements {
-  element: HTMLElement;
-  wrapper?: HTMLElement;
-  config: {
-    max?: number;
-    label?: string | number;
-    variant?: string;
-  };
-  getClass: (name: string) => string;
-  addClass: (...classes: string[]) => ComponentWithElements;
-  on: (event: string, handler: Function) => ComponentWithElements;
-  off: (event: string, handler: Function) => ComponentWithElements;
+interface ComponentWithElements extends BadgeFeatureHost {
+  // `Function` rather than EventCallback, because that is what BadgeComponent's
+  // own on/off accept and this only forwards them -- narrowing here would
+  // reject the handler the public interface already promised to take. The
+  // repo-wide widening of these signatures is its own piece of work.
+  on(event: string, handler: Function): this;
+  off(event: string, handler: Function): this;
 }
 
 // Common variant constants for internal use

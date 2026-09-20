@@ -18,6 +18,12 @@ import { withEvents } from "../../src/core/compose/features/events";
 import { withTextInput } from "../../src/core/compose/features/textinput";
 import type { ElementComponent } from "../../src/core/compose/component";
 import { withOrientation, withInset, withStyle } from "../../src/components/divider/features";
+import { withVariant, withMax, withVisibility } from "../../src/components/badge/features";
+import type {
+  BadgeConfig,
+  BadgeFeatureHost,
+  BadgeVisibility,
+} from "../../src/components/badge/types";
 
 /** true when A and B are the same type */
 type Equals<A, B> =
@@ -89,4 +95,27 @@ export const dividerSetterReturnsTheComponent: Equals<
 export const dividerSetterKeepsLaterFeatures: Has<
   ReturnType<(typeof divider)["setOrientation"]>,
   { setColor: unknown; setInset: unknown }
+> = true;
+
+// Badge's enhancers were written as `component => ...` with no annotation, so
+// every one of them returned `any` and the whole pipe after them was untyped.
+// They are generic in their host now. What these assert is that a feature hands
+// back what it was given -- which an untyped enhancer cannot promise, because
+// `any` is equal to nothing under Equals.
+const badgeHost = pipe(
+  createBase,
+  withElement({ tag: "span", componentName: "badge" }),
+)({ componentName: "badge", prefix: "mtrl", variant: "large" } as BadgeConfig &
+  Record<string, unknown>);
+
+export const badgeVariantKeepsItsHost: Equals<
+  ReturnType<typeof withVariant>,
+  <C extends BadgeFeatureHost>(component: C) => C
+> = true;
+
+const badge = withVisibility()(withMax({})(withVariant({})(badgeHost)));
+
+export const badgeKeepsItsHostAndGainsVisibility: Equals<
+  typeof badge,
+  typeof badgeHost & { visibility: BadgeVisibility }
 > = true;

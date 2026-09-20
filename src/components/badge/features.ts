@@ -1,5 +1,5 @@
 // src/components/badge/features.ts
-import { BadgeConfig } from './types';
+import { BadgeConfig, BadgeFeatureHost, BadgeVisibility } from './types';
 import { formatBadgeLabel } from './config';
 
 // Common badge variants
@@ -16,7 +16,7 @@ const POSITION_TOP_RIGHT = 'top-right';
  * Higher-order function that adds visibility control features to a component
  * @returns {Function} Component enhancer with visibility features
  */
-export const withVisibility = () => component => {
+export const withVisibility = () => <C extends BadgeFeatureHost>(component: C): C & { visibility: BadgeVisibility } => {
   // Get config values
   const visible = component.config.visible !== false; // Default to true if not specified
   
@@ -72,7 +72,7 @@ export const withVisibility = () => component => {
  * @param {BadgeConfig} config - Badge configuration
  * @returns {Function} Component enhancer with variant features
  */
-export const withVariant = (config: BadgeConfig) => component => {
+export const withVariant = (config: BadgeConfig) => <C extends BadgeFeatureHost>(component: C): C => {
   // Get variant from config with fallback to default
   const variant = config.variant || VARIANT_LARGE;
   
@@ -103,7 +103,7 @@ export const withVariant = (config: BadgeConfig) => component => {
  * @param {BadgeConfig} config - Badge configuration
  * @returns {Function} Component enhancer with color features
  */
-export const withColor = (config: BadgeConfig) => component => {
+export const withColor = (config: BadgeConfig) => <C extends BadgeFeatureHost>(component: C): C => {
   // Get color from config with fallback to default
   const color = config.color || COLOR_ERROR;
   
@@ -118,7 +118,7 @@ export const withColor = (config: BadgeConfig) => component => {
  * @param {BadgeConfig} config - Badge configuration
  * @returns {Function} Component enhancer with positioning features
  */
-export const withPosition = (config: BadgeConfig) => component => {
+export const withPosition = (config: BadgeConfig) => <C extends BadgeFeatureHost>(component: C): C => {
   // Get position from config with fallback to default
   const position = config.position || POSITION_TOP_RIGHT;
   
@@ -138,7 +138,7 @@ export const withPosition = (config: BadgeConfig) => component => {
  * @param {BadgeConfig} config - Badge configuration
  * @returns {Function} Component enhancer with max value features
  */
-export const withMax = (config: BadgeConfig) => component => {
+export const withMax = (config: BadgeConfig) => <C extends BadgeFeatureHost>(component: C): C => {
   // Skip if no max is defined or for small badges
   if (config.max === undefined || config.variant === VARIANT_SMALL) {
     return component;
@@ -166,7 +166,7 @@ export const withMax = (config: BadgeConfig) => component => {
  * @param {BadgeConfig} config - Badge configuration
  * @returns {Function} Component enhancer with attachment features
  */
-export const withAttachment = (config: BadgeConfig) => component => {
+export const withAttachment = (config: BadgeConfig) => <C extends BadgeFeatureHost>(component: C): C => {
   // Skip if no target is provided
   if (!config.target) {
     return component;
