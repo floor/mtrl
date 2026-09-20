@@ -1,6 +1,6 @@
 // src/components/search/features/suggestions.ts
 
-import { SearchSuggestion } from "../types";
+import { SearchStructure, SearchSuggestion } from "../types";
 import { SEARCH_CLASSES, SEARCH_KEYS, SEARCH_ICONS } from "../constants";
 import { createElement } from "../../../core/dom/create";
 
@@ -20,7 +20,9 @@ interface SuggestionsHost {
     getSuggestions: () => SearchSuggestion[];
     selectSuggestion: (suggestion: SearchSuggestion | string) => void;
   };
-  structure?: Record<string, HTMLElement | undefined>;
+  // SearchStructure, not a loose record: the record said
+  // `HTMLElement | undefined` where the real thing has `HTMLElement | null`.
+  structure?: SearchStructure;
   // The subset of search/features/states this file drives.
   states?: {
     collapse: () => void;

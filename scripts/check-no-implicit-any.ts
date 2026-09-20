@@ -25,7 +25,6 @@ const PENDING = [
   "src/components/menu/config.ts",
   "src/components/menu/features/controller.ts",
   "src/components/menu/features/submenu.ts",
-  "src/components/search/features/states.ts",
   "src/components/slider/config.ts",
   "src/components/slider/features/controller.ts",
   "src/components/slider/features/handlers.ts",

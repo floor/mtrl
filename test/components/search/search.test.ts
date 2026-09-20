@@ -207,3 +207,51 @@ describe('search', () => {
     expect(document.body.contains(search.element)).toBe(false);
   });
 });
+
+// The focused state had no coverage at all -- not one mention of focus in this
+// file before FLO-114 typed withStates. It is one of the four state methods
+// the input feature drives, and the only one nothing reached.
+describe('the focused state', () => {
+  const focusClass = 'mtrl-search--focused';
+  const focus = (search: { element: HTMLElement }) =>
+    inputOf(search).dispatchEvent(new dom.window.FocusEvent('focus', { bubbles: true }));
+  const blur = (search: { element: HTMLElement }) =>
+    inputOf(search).dispatchEvent(new dom.window.FocusEvent('blur', { bubbles: true }));
+
+  test('focusing the input marks the search focused, and blurring clears it', async () => {
+    const search = await mount({ expandOnFocus: false, collapseOnBlur: false });
+
+    expect(search.element.classList.contains(focusClass)).toBe(false);
+
+    focus(search);
+    expect(search.element.classList.contains(focusClass)).toBe(true);
+
+    blur(search);
+    expect(search.element.classList.contains(focusClass)).toBe(false);
+  });
+
+  test('focus and blur are reported as events', async () => {
+    const search = await mount({ expandOnFocus: false, collapseOnBlur: false });
+    const seen: string[] = [];
+    search.on('focus', () => seen.push('focus'));
+    search.on('blur', () => seen.push('blur'));
+
+    focus(search);
+    blur(search);
+
+    expect(seen).toEqual(['focus', 'blur']);
+  });
+
+  // The class and the expansion are separate: expandOnFocus drives one, the
+  // focused state the other, and a search that does not expand is still
+  // focused.
+  test('the focused state is set whether or not the search expands', async () => {
+    const expanding = await mount({ expandOnFocus: true, collapseOnBlur: false });
+
+    focus(expanding);
+    await tick(30);
+
+    expect(expanding.element.classList.contains(focusClass)).toBe(true);
+    expect(expanding.isExpanded()).toBe(true);
+  });
+});

@@ -1,6 +1,6 @@
 // src/components/search/features/input.ts
 
-import { SearchConfig, SearchSuggestion } from "../types";
+import { SearchConfig, SearchStructure, SearchSuggestion } from "../types";
 import { SEARCH_CLASSES, SEARCH_EVENTS } from "../constants";
 
 /**
@@ -31,9 +31,11 @@ const normalizeSuggestions = (
 /** What this feature reads off the component it is handed. */
 interface InputHost {
   getClass: (name: string) => string;
-  structure?: Record<string, HTMLElement | undefined> & {
-    input?: HTMLInputElement;
-  };
+  // SearchStructure, not a loose record of elements. The record said
+  // `HTMLElement | undefined` where the real thing has `HTMLElement | null`,
+  // so what withStructure produces did not satisfy it -- which is what stopped
+  // the pipe binding C here once the stage before was typed.
+  structure?: SearchStructure;
   // Mirrors what search/features/states actually returns, rather than only
   // the members this file happens to call — typing against the producer is
   // what stops the two drifting. Required, because withStates runs before
