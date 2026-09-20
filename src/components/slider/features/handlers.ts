@@ -94,19 +94,30 @@ export const createHandlers = (
         `${state.component.getClass("slider-handle")}--focused`,
       );
 
-    // Clear global focus indicators
+    // Clear any focus indicator this slider still carries.
+    //
+    // This used to sweep the whole document, which stripped the focus ring
+    // from every other slider on the page: touching one slider made a keyboard
+    // user lose the indicator telling them where they were in another. It is
+    // also redundant for this slider's own handles, which the two lines above
+    // already clear.
     try {
       const focusClass = state.component.getClass("slider-handle--focused");
-      document.querySelectorAll(`.${focusClass}`).forEach((el) => {
-        el.classList.remove(focusClass);
-      });
+      state.component.element
+        .querySelectorAll(`.${focusClass}`)
+        .forEach((el) => {
+          el.classList.remove(focusClass);
+        });
 
+      // Only blur a handle belonging to this slider. Blurring on the strength
+      // of a class name alone took focus off another component's handle.
+      const active = document.activeElement as HTMLElement | null;
       if (
-        document.activeElement?.classList.contains(
-          state.component.getClass("slider-handle"),
-        )
+        active &&
+        state.component.element.contains(active) &&
+        active.classList.contains(state.component.getClass("slider-handle"))
       ) {
-        (document.activeElement as HTMLElement).blur();
+        active.blur();
       }
     } catch (error) {
       console.warn("Error clearing keyboard focus:", error);

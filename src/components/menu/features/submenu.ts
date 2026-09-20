@@ -314,6 +314,20 @@ const withSubmenu = (config: MenuConfig) => (component) => {
     submenuElement.setAttribute("data-level", currentLevel.toString());
     submenuElement.setAttribute("data-parent-item", item.id);
 
+    // A submenu is appended to document.body, so it cannot be found by walking
+    // down from the menu that owns it. Record the owner here, or a lookup by
+    // level alone finds the first submenu on the page — which belongs to
+    // whichever menu opened first, not necessarily this one.
+    //
+    // The id is generated the same way opener.ts does when it needs one, so a
+    // menu with an opener and a menu without both carry a stable id.
+    let ownerId = component.element.id;
+    if (!ownerId) {
+      ownerId = `menu-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+      component.element.id = ownerId;
+    }
+    submenuElement.setAttribute("data-owner", ownerId);
+
     // Increase z-index for each level of submenu
     submenuElement.style.zIndex = `${1000 + currentLevel * 10}`;
 
