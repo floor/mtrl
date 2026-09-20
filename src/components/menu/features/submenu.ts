@@ -1,7 +1,7 @@
 // src/components/menu/features/submenu.ts
 
 import { createMenuTasks } from "./tasks";
-import { MenuConfig, MenuItem } from "../types";
+import { MenuConfig, MenuItem, MenuFeatureHost } from "../types";
 
 /**
  * Adds submenu functionality to the menu component
@@ -10,7 +10,10 @@ import { MenuConfig, MenuItem } from "../types";
  * @param config - Menu configuration
  * @returns Component enhancer with submenu functionality
  */
-const withSubmenu = (config: MenuConfig) => (component) => {
+const withSubmenu =
+  (config: MenuConfig) =>
+  // Generic, so the accumulated pipeline type survives (see #109).
+  <C extends MenuFeatureHost>(component: C) => {
   if (!component.element) {
     console.warn("Cannot initialize menu submenu: missing element");
     return component;

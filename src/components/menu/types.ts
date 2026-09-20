@@ -502,3 +502,61 @@ export interface MenuEvents {
   close: (event: MenuEvent) => void;
   select: (event: MenuSelectEvent) => void;
 }
+
+/**
+ * The menu as its own features see it, part-way through the pipe.
+ *
+ * One shared shape rather than five near-identical ones, because the features
+ * enhance the same object in sequence. `element`, `getClass` and `lifecycle`
+ * are required: withElement and withLifecycle run before any of them. The
+ * rest are optional because they are installed by siblings, and which have
+ * run depends on where in the pipe you are.
+ *
+ * @category Components
+ * @internal
+ */
+export interface MenuFeatureHost {
+  element: HTMLElement;
+  getClass: (name: string) => string;
+  lifecycle: { destroy: () => void };
+  // Required: withEvents() is the first step of the menu pipe, before
+  // withElement, so both are installed by the time any feature runs.
+  emit: (event: string, data?: unknown) => unknown;
+  on: (event: string, handler: (...args: never[]) => void) => unknown;
+  menu?: {
+    open: (...args: unknown[]) => unknown;
+    close: (...args: unknown[]) => unknown;
+    toggle: (...args: unknown[]) => unknown;
+    isOpen: () => boolean;
+    getItems: () => unknown[];
+    setItems: (items: unknown[]) => unknown;
+    getSelected: () => unknown;
+    setSelected: (value: unknown) => unknown;
+    getPosition: () => string;
+    setPosition: (position: unknown) => unknown;
+  };
+  opener?: {
+    getOpener: () => HTMLElement | null;
+    setOpener: (opener: unknown) => unknown;
+  };
+  position?: {
+    positionMenu: (...args: unknown[]) => unknown;
+    positionSubmenu: (...args: unknown[]) => unknown;
+  };
+  keyboard?: {
+    setupKeyboardHandlers: (...args: unknown[]) => unknown;
+    removeKeyboardHandlers: (...args: unknown[]) => unknown;
+    handleMenuKeydown: (...args: unknown[]) => unknown;
+    handleInitialFocus: (...args: unknown[]) => unknown;
+  };
+  submenu?: {
+    handleSubmenuClick: (...args: unknown[]) => unknown;
+    handleSubmenuHover: (...args: unknown[]) => unknown;
+    handleSubmenuLeave: (...args: unknown[]) => unknown;
+    handleNestedSubmenuClick: (...args: unknown[]) => unknown;
+    closeSubmenu: (...args: unknown[]) => unknown;
+    closeAllSubmenus: (...args: unknown[]) => unknown;
+    hasOpenSubmenu: () => boolean;
+    getActiveSubmenus: () => Array<{ element: HTMLElement }>;
+  };
+}

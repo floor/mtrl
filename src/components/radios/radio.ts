@@ -6,7 +6,18 @@ import { RadiosConfig, RadioOptionConfig, RadioItem } from './types';
  * @param {RadiosConfig} config - Configuration with radio options
  * @returns {Function} Higher-order function that adds radio to component
  */
-export const withRadio = (config: RadiosConfig) => (component) => {
+/** What this feature reads off the component it is handed. */
+interface RadioHost {
+  element: HTMLElement;
+  getClass: (name: string) => string;
+  emit?: (event: string, data?: unknown) => unknown;
+}
+
+export const withRadio =
+  (config: RadiosConfig) =>
+  // Generic, so the accumulated pipeline type survives to the features after
+  // this one (see textfield's withDensity, #109).
+  <C extends RadioHost>(component: C) => {
   const radios: RadioItem[] = [];
   const radiosClass = component.getClass('radios');
   let selectedValue = config.value || '';
@@ -96,7 +107,7 @@ export const withRadio = (config: RadiosConfig) => (component) => {
     radioContainer.appendChild(label);
     
     // Add change event listener
-    const handleChange = (e) => {
+    const handleChange = (e: Event) => {
       if (input.checked) {
         selectedValue = option.value;
         

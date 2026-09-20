@@ -1,7 +1,7 @@
 // src/components/menu/features/controller.ts
 
 import { createMenuTasks } from "./tasks";
-import { MenuConfig, MenuItem, MenuDivider, MenuSelectEvent } from "../types";
+import { MenuConfig, MenuItem, MenuDivider, MenuContent, MenuFeatureHost } from "../types";
 import { menuOpened, menuClosed } from "./registry";
 
 import { setHTML } from "../../../core/dom/html";
@@ -12,7 +12,10 @@ import { setHTML } from "../../../core/dom/html";
  * @param config - Menu configuration
  * @returns Component enhancer with menu controller functionality
  */
-const withController = (config: MenuConfig) => (component) => {
+const withController =
+  (config: MenuConfig) =>
+  // Generic, so the accumulated pipeline type survives (see #109).
+  <C extends MenuFeatureHost>(component: C) => {
   if (!component.element) {
     console.warn("Cannot initialize menu controller: missing element");
     return component;
@@ -41,9 +44,12 @@ const withController = (config: MenuConfig) => (component) => {
 
   // Create event helpers
   const eventHelpers = {
-    triggerEvent(
+    // Generic over the payload, so a caller's data is part of the returned
+    // type. Declared as a plain Record it was erased, and the callers had to
+    // cast their own data back in.
+    triggerEvent<TData extends Record<string, unknown>>(
       eventName: string,
-      data: Record<string, unknown> = {},
+      data: TData = {} as TData,
       originalEvent?: Event,
     ) {
       const eventData = {
@@ -335,7 +341,11 @@ const withController = (config: MenuConfig) => (component) => {
         itemData: item.data,
       },
       e,
-    ) as MenuSelectEvent;
+    );
+    // No cast to MenuSelectEvent: that type declares `menu: MenuComponent`,
+    // and part-way through the pipe this component is not one yet. The cast
+    // was asserting past that. Only defaultPrevented is read here, and the
+    // inferred type has it.
 
     // Close menu if needed
     if (config.closeOnSelect && !selectEvent.defaultPrevented) {
@@ -751,7 +761,16 @@ const withController = (config: MenuConfig) => (component) => {
   };
 
   // Handle create-menu-items events for submenu feature
-  component.on("create-menu-items", (event) => {
+  component.on(
+    "create-menu-items",
+    // The payload submenu.ts emits: a submenu's items, where to put them, and
+    // a callback taking just the created element.
+    (event: {
+      items: MenuContent[];
+      container: HTMLElement;
+      level?: number;
+      onItemCreated?: (element: HTMLElement) => void;
+    }) => {
     const { items, container, onItemCreated } = event;
 
     items.forEach((item, index) => {

@@ -1,12 +1,15 @@
 // src/components/menu/features/position.ts
 
-import { MenuConfig } from "../types";
+import { MenuConfig, MenuFeatureHost } from "../types";
 
 /**
  * Menu position helper
  * Provides functions for positioning menus and submenus
  */
-export const createPositioner = (component, config: MenuConfig) => {
+export const createPositioner = (
+  component: MenuFeatureHost,
+  config: MenuConfig,
+) => {
   /**
    * Positions the menu relative to its opener
    * Ensures the menu maintains proper spacing from viewport edges
@@ -420,7 +423,10 @@ export const createPositioner = (component, config: MenuConfig) => {
  * @param config - Menu configuration options
  * @returns Component enhancer with positioning functionality
  */
-const withPosition = (config: MenuConfig) => (component) => {
+const withPosition =
+  (config: MenuConfig) =>
+  // Generic, so the accumulated pipeline type survives (see #109).
+  <C extends MenuFeatureHost>(component: C) => {
   // Do nothing if no element
   if (!component.element) {
     return component;

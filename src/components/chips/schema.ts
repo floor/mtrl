@@ -8,9 +8,12 @@ import { ChipsConfig } from "./types";
  * @param config Chips configuration
  * @returns Structure schema object
  */
-export function createChipsSchema(component, config: ChipsConfig) {
+export function createChipsSchema(
+  component: { getClass: (name: string) => string },
+  config: ChipsConfig,
+) {
   // Get prefixed class names
-  const getClass = (className) => component.getClass(className);
+  const getClass = (className: string) => component.getClass(className);
 
   // Set default values
   const scrollable = config.scrollable === true;
