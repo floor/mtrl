@@ -58,7 +58,6 @@ const CONFIGS: Record<string, Record<string, unknown>> = {
   createCarousel: { slides: [{ image: "a.png" }] },
   createChips: { chips: [{ text: "One" }] },
   createList: { items: [{ id: "1", text: "One" }] },
-  createNavigation: { items: [{ id: "a", label: "A" }] },
   createNavigationRail: { items: [{ id: "a", label: "A", icon: "<svg></svg>" }] },
   createRadios: { name: "r", options: [{ value: "a", label: "A" }] },
   createSegmentedButton: { segments: [{ text: "A" }] },
@@ -78,7 +77,6 @@ const NOT_A_COMPONENT: Record<string, string> = {
   createCardContent: "builds card content, returns no component",
   createCardHeader: "builds card content, returns no component",
   createCardMedia: "builds card content, returns no component",
-  createNavigationSystem: "coordinates navigation components, owns no element",
   createSegment: "a part of segmented-button, not constructed on its own",
 };
 
