@@ -1,6 +1,13 @@
 // src/components/list/features/renderer.ts
 
 import { LIST_CLASSES, LIST_EVENTS } from '../constants';
+import type {
+  ListConfig,
+  ListFeatureHost,
+  ListItem,
+  ListRenderer,
+  ScrollPosition,
+} from '../types';
 
 import { setHTML } from "../../../core/dom/html";
 /**
@@ -10,12 +17,14 @@ import { setHTML } from "../../../core/dom/html";
  * @param config - Configuration options
  * @returns Function that enhances a component with item rendering capabilities
  */
-export const withRenderer = (config) => component => {
-  if (!component.element) {
-    console.warn('Cannot initialize list renderer: missing element');
-    return component;
-  }
-
+export const withRenderer =
+  (config: ListConfig<ListItem>) =>
+  <C extends ListFeatureHost>(component: C): C & { list: ListRenderer } => {
+  // There used to be a `if (!component.element)` guard here that warned and
+  // returned the component untouched. withElement runs before this in the only
+  // pipe that calls it, so it could not fire -- and had it fired it would have
+  // handed back a component with no `list`, which withSelection and withAPI
+  // both read. The host type requires the element instead.
   const items = config.items || [];
   const userRenderItem = config.renderItem;
   
@@ -29,7 +38,7 @@ export const withRenderer = (config) => component => {
   /**
    * Default item renderer when none is provided
    */
-  function renderDefaultItem(item) {
+  function renderDefaultItem(item: ListItem): HTMLElement {
     const element = document.createElement('div');
     element.className = LIST_CLASSES.ITEM;
     element.setAttribute('role', 'listitem');
@@ -40,7 +49,9 @@ export const withRenderer = (config) => component => {
     
     const text = document.createElement('div');
     text.className = 'mtrl-list-item-text';
-    text.textContent = item.text || item.title || item.headline || item.name || item.id || String(item);
+    text.textContent = String(
+      item.text || item.title || item.headline || item.name || item.id || item
+    );
     
     content.appendChild(text);
     element.appendChild(content);
@@ -63,7 +74,7 @@ export const withRenderer = (config) => component => {
     // Create document fragment for efficient DOM manipulation
     const fragment = document.createDocumentFragment();
     
-    items.forEach((item, index) => {
+    items.forEach((item: ListItem, index: number) => {
       if (item == null) return;
       
       // Create the item element
@@ -83,7 +94,7 @@ export const withRenderer = (config) => component => {
       }
       
       // Add data-id for selection targeting (use index as fallback)
-      const itemId = item?.id || String(index);
+      const itemId = String(item?.id || index);
       if (!element.hasAttribute('data-id')) {
         element.setAttribute('data-id', itemId);
       }
@@ -101,14 +112,16 @@ export const withRenderer = (config) => component => {
       hasPrev: false,
       component
     });
-    
-    console.log(`📋 Rendered ${items.length} items directly`);
   };
 
   /**
    * Scroll to a specific item by ID
    */
-  const scrollToItem = (itemId, position = 'start', animate = false) => {
+  const scrollToItem = (
+    itemId: string | number,
+    position: ScrollPosition = 'start',
+    animate = false
+  ): void => {
     const element = listContainer.querySelector(`[data-id="${itemId}"]`);
     if (element) {
       element.scrollIntoView({ 
@@ -121,7 +134,11 @@ export const withRenderer = (config) => component => {
   /**
    * Scroll to a specific index
    */
-  const scrollToIndex = (index, position = 'start', animate = false) => {
+  const scrollToIndex = (
+    index: number,
+    position: ScrollPosition = 'start',
+    animate = false
+  ): void => {
     if (index < 0 || index >= items.length) return;
     
     const element = listContainer.children[index];
@@ -165,7 +182,11 @@ export const withRenderer = (config) => component => {
       loadPrevious: () => Promise.resolve({ hasPrev: false, items: [] }),
       scrollNext: () => Promise.resolve({ hasNext: false, items: [] }),
       scrollPrevious: () => Promise.resolve({ hasPrev: false, items: [] }),
-      scrollToItemById: (itemId, position, animate) => {
+      scrollToItemById: (
+        itemId: string | number,
+        position?: ScrollPosition,
+        animate?: boolean
+      ) => {
         scrollToItem(itemId, position, animate);
         return Promise.resolve();
       },

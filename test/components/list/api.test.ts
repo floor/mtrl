@@ -239,3 +239,57 @@ describe('list public API', () => {
     expect(second.getAllItems()).toHaveLength(3);
   });
 });
+
+// Every method ListComponent declares as returning ListComponent used to hand
+// back the component as withAPI received it -- the pipeline object, which has
+// the features but not the public API built on top of them. So a chain lost
+// seven methods after one hop, and `list.selectItem('ada').refresh()` threw.
+// They return `this` now.
+describe('the chaining methods hand back the list', () => {
+  const chainers: Array<[string, (list: ListComponent<Person>) => unknown]> = [
+    ['selectItem', (list) => list.selectItem('ada')],
+    ['deselectItem', (list) => list.deselectItem('ada')],
+    ['clearSelection', (list) => list.clearSelection()],
+    ['setSelection', (list) => list.setSelection(['alan'])],
+    ['on', (list) => list.on('select', () => {})],
+    ['off', (list) => list.off('select', () => {})],
+  ];
+
+  for (const [name, call] of chainers) {
+    test(`${name} returns the list itself`, () => {
+      const list = mount();
+
+      expect(call(list)).toBe(list);
+    });
+  }
+
+  test('so a chain keeps every method it started with', () => {
+    const list = mount();
+
+    const chained = list.selectItem('ada') as ListComponent<Person>;
+
+    // These seven are what withAPI adds on top of the features, and they are
+    // exactly what a chain used to drop.
+    for (const method of [
+      'refresh', 'getAllItems', 'getVisibleItems',
+      'scrollToItem', 'scrollToIndex', 'isLoading', 'hasNextPage',
+    ] as const) {
+      expect(typeof chained[method]).toBe('function');
+    }
+  });
+
+  test('and the call it was chained off still did its work', () => {
+    const list = mount();
+
+    const chained = list.selectItem('ada').setSelection(['alan', 'grace']) as ListComponent<Person>;
+
+    expect(chained.getSelectedItemIds().sort()).toEqual(['alan', 'grace']);
+    expect(list.getSelectedItemIds().sort()).toEqual(['alan', 'grace']);
+  });
+
+  test('refresh resolves to the list, which is what its Promise type says', async () => {
+    const list = mount();
+
+    await expect(list.refresh()).resolves.toBe(list);
+  });
+});

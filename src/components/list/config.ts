@@ -5,12 +5,18 @@ import {
   createElementConfig as coreCreateElementConfig,
 } from "../../core/config/component";
 import { LIST_CLASSES } from "./constants";
-import { ListConfig } from "./types";
+import type {
+  ListConfig,
+  ListFeatureHost,
+  ListItem,
+  ListRenderer,
+  ListSelection,
+} from "./types";
 
 /**
  * Default configuration for the List component
  */
-export const defaultConfig: Partial<ListConfig> = {
+export const defaultConfig: Partial<ListConfig<ListItem>> = {
   // Static data
   items: [],
 
@@ -21,22 +27,13 @@ export const defaultConfig: Partial<ListConfig> = {
 };
 
 /**
- * Item fields the fallback renderer reads for its label
- */
-interface DefaultListItem {
-  text?: string;
-  title?: string;
-  headline?: string;
-  name?: string;
-  id?: string | number;
-}
-
-/**
  * Creates the base configuration for List component
  * @param {ListConfig} config - User provided configuration
  * @returns {Object} Complete configuration with defaults applied
  */
-export const createBaseConfig = (config: Partial<ListConfig> = {}) => {
+export const createBaseConfig = (
+  config: Partial<ListConfig<ListItem>> = {}
+): ListConfig<ListItem> => {
   // Validate required props
   if (!Array.isArray(config.items) && !config.renderItem) {
     throw new Error("List requires either items array or renderItem function");
@@ -48,7 +45,7 @@ export const createBaseConfig = (config: Partial<ListConfig> = {}) => {
     config.items.length > 0 &&
     !config.renderItem
   ) {
-    config.renderItem = (item: DefaultListItem) => {
+    config.renderItem = (item: ListItem) => {
       const element = document.createElement("div");
       element.className = "mtrl-list-item";
       element.textContent = String(
@@ -63,8 +60,12 @@ export const createBaseConfig = (config: Partial<ListConfig> = {}) => {
     };
   }
 
-  // Create component config with defaults
-  return createComponentConfig(defaultConfig, config, "list");
+  // `items` is optional on ListConfig and required by both features, and the
+  // merge always supplies it because defaultConfig sets `items: []`. Written
+  // as a fallback rather than an assertion, so the invariant is made true here
+  // instead of asserted about code somewhere else.
+  const merged = createComponentConfig(defaultConfig, config, "list");
+  return { ...merged, items: merged.items ?? [] };
 };
 
 /**
@@ -72,8 +73,8 @@ export const createBaseConfig = (config: Partial<ListConfig> = {}) => {
  * @param {Object} config - List configuration
  * @returns {Object} Element configuration object for withElement
  */
-export const getElementConfig = (config) => {
-  const attributes = {
+export const getElementConfig = (config: ListConfig<ListItem>) => {
+  const attributes: Record<string, string> = {
     role: "list",
     tabindex: "0",
   };
@@ -101,7 +102,19 @@ export const getElementConfig = (config) => {
  * @param {Object} config - Base configuration
  * @returns {Object} API configuration object
  */
-export const getApiConfig = (component, config) => ({
+export const getApiConfig = (
+  // `list` and `lifecycle` are required, not optional as they are on
+  // ListFeatureHost: withRenderer and withLifecycle both run before this in
+  // the pipe, so by the time an API config is built they are there.
+  component: ListFeatureHost &
+    ListSelection & {
+      list: ListRenderer;
+      lifecycle: { destroy: () => void };
+      on: (event: string, handler: Function) => unknown;
+      off: (event: string, handler: Function) => unknown;
+    },
+  config: ListConfig<ListItem>
+) => ({
   list: {
     refresh: component.list?.refresh,
     getItems: component.list?.getItems,
@@ -126,7 +139,7 @@ export const getApiConfig = (component, config) => ({
     off: component.off,
   },
   lifecycle: {
-    destroy: component.lifecycle?.destroy,
+    destroy: component.lifecycle.destroy,
   },
   config: {
     animate: config?.animate,

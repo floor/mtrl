@@ -22,8 +22,6 @@ const createList = (config = {}) => {
     // Process the configuration with defaults
     const baseConfig = createBaseConfig(config);
 
-    console.log(`📋 Creating list with ${baseConfig.items?.length || 0} items`);
-
     // Create the component through functional composition
     const component = pipe(
       createBase,
