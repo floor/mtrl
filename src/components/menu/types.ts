@@ -515,6 +515,81 @@ export interface MenuEvents {
  * @category Components
  * @internal
  */
+/**
+ * What withController installs at `component.menu`.
+ *
+ * The commands return the component they were handed, which is the
+ * pre-controller one; nothing reads it and the API layer discards it. Declared
+ * void for the same reason as MenuOpenerApi -- so the feature's generic does
+ * not appear in its own return type, which is what stopped the pipe binding C
+ * at that stage.
+ *
+ * @category Components
+ * @internal
+ */
+export interface MenuControllerApi {
+  open: (event?: Event, interactionType?: "mouse" | "keyboard") => void;
+  close: (
+    event?: Event,
+    restoreFocus?: boolean,
+    skipAnimation?: boolean
+  ) => void;
+  toggle: (event?: Event, interactionType?: "mouse" | "keyboard") => void;
+  isOpen: () => boolean;
+  getItems: () => MenuContent[];
+  setItems: (items: MenuContent[]) => void;
+  getSelected: () => string | null;
+  setSelected: (value: string | null) => void;
+  getPosition: () => MenuPosition;
+  setPosition: (position: MenuPosition) => void;
+}
+
+/**
+ * A component that can act as a menu's opener: anything that exposes an
+ * element through `element`, `getElement()` or `input`, and follows the menu's
+ * open state when it can.
+ *
+ * @category Components
+ * @internal
+ */
+export interface OpenerComponent {
+  element?: HTMLElement;
+  getElement?: () => HTMLElement;
+  input?: HTMLElement;
+  setActive?: (active: boolean) => void;
+  selected?: boolean;
+  focus?: () => void;
+  blur?: () => void;
+}
+
+/**
+ * What a menu opener can be given as: a selector, an element or a component
+ *
+ * @category Components
+ * @internal
+ */
+export type OpenerTarget = string | HTMLElement | OpenerComponent;
+
+/**
+ * What withOpener installs at `component.opener`.
+ *
+ * The three setters return the component they were handed, which is the
+ * pre-opener one and so not useful for chaining; nothing reads it, and the API
+ * layer discards it. Declared `void` so the value is not promised, and so the
+ * feature's generic does not appear in its own return type -- which is what
+ * stopped the pipe binding C at that stage.
+ *
+ * @category Components
+ * @internal
+ */
+export interface MenuOpenerApi {
+  setOpener: (opener: OpenerTarget) => void;
+  getOpener: () => HTMLElement | null;
+  getOpenerComponent: () => OpenerComponent | null;
+  setActive: (active: boolean) => void;
+  focus: () => void;
+}
+
 export interface MenuFeatureHost {
   element: HTMLElement;
   getClass: (name: string) => string;
@@ -523,22 +598,10 @@ export interface MenuFeatureHost {
   // withElement, so both are installed by the time any feature runs.
   emit: (event: string, data?: unknown) => unknown;
   on: (event: string, handler: (...args: never[]) => void) => unknown;
-  menu?: {
-    open: (...args: unknown[]) => unknown;
-    close: (...args: unknown[]) => unknown;
-    toggle: (...args: unknown[]) => unknown;
-    isOpen: () => boolean;
-    getItems: () => unknown[];
-    setItems: (items: unknown[]) => unknown;
-    getSelected: () => unknown;
-    setSelected: (value: unknown) => unknown;
-    getPosition: () => string;
-    setPosition: (position: unknown) => unknown;
-  };
-  opener?: {
-    getOpener: () => HTMLElement | null;
-    setOpener: (opener: unknown) => unknown;
-  };
+  // Paired with `on`: withEvents installs both, and getApiConfig forwards both.
+  off: (event: string, handler: (...args: never[]) => void) => unknown;
+  menu?: MenuControllerApi;
+  opener?: MenuOpenerApi;
   position?: {
     positionMenu: (...args: unknown[]) => unknown;
     positionSubmenu: (...args: unknown[]) => unknown;

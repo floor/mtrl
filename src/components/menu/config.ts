@@ -4,7 +4,8 @@ import {
   createComponentConfig,
   createElementConfig,
 } from "../../core/config/component";
-import { MenuConfig } from "./types";
+import { MenuConfig, MenuFeatureHost } from "./types";
+import type { ApiOptions } from "./api";
 import { MENU_DEFAULTS, MENU_CLASSES } from "./constants";
 
 /**
@@ -107,7 +108,14 @@ export const getElementConfig = (config: MenuConfig) => {
  * @category Components
  * @internal
  */
-export const getApiConfig = (component) => ({
+// `menu` and `opener` are optional on MenuFeatureHost because the features
+// that install them are handed a component without them. By the time an API
+// config is built, withController and withOpener have both run -- so this
+// requires them, and the forwarding below needs no optional chaining for them.
+type MenuApiHost = MenuFeatureHost &
+  Required<Pick<MenuFeatureHost, "menu" | "opener">>;
+
+export const getApiConfig = (component: MenuApiHost): ApiOptions => ({
   menu: {
     open: (event, interactionType) =>
       component.menu?.open(event, interactionType),
@@ -116,16 +124,20 @@ export const getApiConfig = (component) => ({
     toggle: (event, interactionType) =>
       component.menu?.toggle(event, interactionType),
     isOpen: () => component.menu?.isOpen() || false,
-    setItems: (items) => component.menu?.setItems(items),
-    getItems: () => component.menu?.getItems() || [],
-    setPosition: (position) => component.menu?.setPosition(position),
-    getPosition: () => component.menu?.getPosition(),
-    setSelected: (itemId) => component.menu?.setSelected(itemId),
-    getSelected: () => component.menu?.getSelected(),
+    setItems: (items) => component.menu.setItems(items),
+    getItems: () => component.menu.getItems(),
+    setPosition: (position) => component.menu.setPosition(position),
+    getPosition: () => component.menu.getPosition(),
+    setSelected: (itemId) => component.menu.setSelected(itemId),
+    getSelected: () => component.menu.getSelected(),
   },
   opener: {
-    setOpener: (opener) => component.opener?.setOpener(opener),
-    getOpener: () => component.opener?.getOpener(),
+    setOpener: (opener) => component.opener.setOpener(opener),
+    // The cast is a known lie, kept where it is findable. The opener element
+    // is null until one is set, and MenuComponent.getOpener is declared
+    // `() => HTMLElement`. Making that honest is a public signature change, so
+    // it is a decision rather than a fix -- noted on FLO-114.
+    getOpener: () => component.opener.getOpener() as HTMLElement,
   },
   submenu: {
     hasOpenSubmenu: () => component.submenu?.hasOpenSubmenu() || false,

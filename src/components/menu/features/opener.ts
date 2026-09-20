@@ -1,26 +1,20 @@
 // src/components/menu/features/opener.ts
 
 import { createMenuTasks } from "./tasks";
-import { MenuConfig, MenuFeatureHost } from "../types";
+import {
+  MenuConfig,
+  MenuFeatureHost,
+  MenuOpenerApi,
+  OpenerComponent,
+  OpenerTarget,
+} from "../types";
 
 /**
  * A component used as the menu opener. It is resolved by its element,
  * getElement() or input, and follows the menu's open state when it can.
  */
-interface OpenerComponent {
-  element?: HTMLElement;
-  getElement?: () => HTMLElement;
-  input?: HTMLElement;
-  setActive?: (active: boolean) => void;
-  selected?: boolean;
-  focus?: () => void;
-  blur?: () => void;
-}
-
-/**
- * What a menu opener can be given as: a selector, an element or a component
- */
-type OpenerTarget = string | HTMLElement | OpenerComponent;
+// OpenerComponent and OpenerTarget moved to ../types, so MenuOpenerApi
+// there can name them.
 
 /**
  * Adds opener functionality to menu component
@@ -32,12 +26,12 @@ type OpenerTarget = string | HTMLElement | OpenerComponent;
 const withOpener =
   (config: MenuConfig) =>
   // Generic, so the accumulated pipeline type survives (see #109).
-  <C extends MenuFeatureHost>(component: C) => {
-  if (!component.element) {
-    console.warn("Cannot initialize menu opener: missing element");
-    return component;
-  }
-
+  <C extends MenuFeatureHost>(component: C): C & { opener: MenuOpenerApi } => {
+  // There used to be a `if (!component.element)` guard here, warning and
+  // returning the component untouched. withElement runs before this in the
+  // only pipe that calls it, so it could not fire -- and it made the return
+  // type a union of enhanced and not, which collapsed to C and erased this
+  // feature from the pipeline type. The host type requires the element.
   const tasks = createMenuTasks();
 
   // Track keyboard navigation state

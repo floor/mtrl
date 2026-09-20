@@ -1,7 +1,15 @@
 // src/components/menu/features/controller.ts
 
 import { createMenuTasks } from "./tasks";
-import { MenuConfig, MenuItem, MenuDivider, MenuContent, MenuFeatureHost } from "../types";
+import {
+  MenuConfig,
+  MenuItem,
+  MenuDivider,
+  MenuContent,
+  MenuControllerApi,
+  MenuFeatureHost,
+  MenuPosition,
+} from "../types";
 import { menuOpened, menuClosed } from "./registry";
 
 import { setHTML } from "../../../core/dom/html";
@@ -15,12 +23,12 @@ import { setHTML } from "../../../core/dom/html";
 const withController =
   (config: MenuConfig) =>
   // Generic, so the accumulated pipeline type survives (see #109).
-  <C extends MenuFeatureHost>(component: C) => {
-  if (!component.element) {
-    console.warn("Cannot initialize menu controller: missing element");
-    return component;
-  }
-
+  <C extends MenuFeatureHost>(component: C): C & { menu: MenuControllerApi } => {
+  // There used to be a `if (!component.element)` guard here, warning and
+  // returning the component untouched. withElement runs before this in the
+  // only pipe that calls it, so it could not fire -- and it made the return
+  // type a union of enhanced and not, which collapsed to C and erased this
+  // feature from the pipeline type. The host type requires the element.
   const tasks = createMenuTasks();
 
   // As the listbox of a combobox, options need ids the combobox can point at
@@ -838,7 +846,7 @@ const withController =
 
       isOpen: () => state.visible,
 
-      setItems: (items) => {
+      setItems: (items: MenuContent[]) => {
         state.items = items;
         renderMenuItems();
         return component;
@@ -846,7 +854,7 @@ const withController =
 
       getItems: () => state.items,
 
-      setPosition: (position) => {
+      setPosition: (position: MenuPosition) => {
         state.position = position;
         if (state.visible) {
           const openerElement = getOpenerElement();

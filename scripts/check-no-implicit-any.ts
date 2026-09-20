@@ -22,9 +22,6 @@ import { execFileSync } from "node:child_process";
 const PENDING = [
   "src/components/chips/config.ts",
   "src/components/chips/features/controller.ts",
-  "src/components/menu/config.ts",
-  "src/components/menu/features/controller.ts",
-  "src/components/menu/features/submenu.ts",
   "src/components/slider/config.ts",
   "src/components/slider/features/controller.ts",
   "src/components/slider/features/handlers.ts",

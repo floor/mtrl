@@ -14,11 +14,11 @@ const withSubmenu =
   (config: MenuConfig) =>
   // Generic, so the accumulated pipeline type survives (see #109).
   <C extends MenuFeatureHost>(component: C) => {
-  if (!component.element) {
-    console.warn("Cannot initialize menu submenu: missing element");
-    return component;
-  }
-
+  // There used to be a `if (!component.element)` guard here, warning and
+  // returning the component untouched. withElement runs before this in the
+  // only pipe that calls it, so it could not fire -- and it made the return
+  // type a union of enhanced and not, which collapsed to C and erased this
+  // feature from the pipeline type. The host type requires the element.
   const tasks = createMenuTasks();
 
   // Includes elements fading out after they leave activeSubmenus.
@@ -346,7 +346,7 @@ const withSubmenu =
       items: item.submenu,
       container: submenuList,
       level: currentLevel,
-      onItemCreated: (itemElement) => {
+      onItemCreated: (itemElement: HTMLElement) => {
         if (
           !itemElement.classList.contains(
             `${component.getClass("menu-item--disabled")}`
