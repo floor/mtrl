@@ -15,9 +15,9 @@ export function createTestComponent(element?: HTMLElement): ElementComponent {
     getClass: (name: string = '') => `${PREFIX}-${name}`,
     getModifierClass: (base: string, modifier: string) => `${base}--${modifier}`,
     getElementClass: (base: string, element: string) => `${base}__${element}`,
-    addClass: (...classes: string[]) => {
+    addClass(...classes: string[]) {
       classes.filter(Boolean).forEach(cls => el.classList.add(cls));
-      return component;
+      return this;
     },
     destroy: () => {
       if (el.parentNode) {
@@ -55,6 +55,13 @@ export function createComponentWithLifecycle(): ElementComponent & LifecycleComp
   
   return {
     ...component,
+    // A spread copies `addClass` but not the `this` it returns, so the copy
+    // still reports the component it was built from. Re-declaring it here is
+    // what makes this object the one a chain ends on.
+    addClass(...classes: string[]) {
+      component.addClass(...classes);
+      return this;
+    },
     lifecycle: {
       mount: () => { isMounted.value = true; },
       destroy: () => { isMounted.value = false; },
@@ -79,16 +86,23 @@ export function createInputComponent(): InputComponent {
   const input = document.createElement('input');
   component.element.appendChild(input);
   
-  const inputComponent = {
+  const inputComponent: InputComponent = {
     ...component,
+    // A spread copies `addClass` but not the `this` it returns, so the copy
+    // still reports the component it was built from. Re-declaring it here is
+    // what makes this object the one a chain ends on.
+    addClass(...classes: string[]) {
+      component.addClass(...classes);
+      return this;
+    },
     input,
     getValue: () => input.value,
-    setValue: (value: string) => {
+    setValue(value: string) {
       input.value = value;
-      return inputComponent;
+      return this;
     }
   };
-  
+
   return inputComponent;
 }
 

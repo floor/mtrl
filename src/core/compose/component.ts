@@ -58,7 +58,7 @@ export interface BaseComponent {
  */
 export interface ElementComponent extends BaseComponent {
   element: HTMLElement;
-  addClass: (...classes: string[]) => ElementComponent;
+  addClass(...classes: string[]): this;
   destroy: () => void;
 }
 
@@ -323,9 +323,12 @@ export const withElement =
       /**
        * Adds CSS classes to the element
        * @param {...string} classes - CSS classes to add
-       * @returns {ElementComponent} Component instance for chaining
+       * @returns Component instance for chaining. Left to infer: `this` is not
+       *   an available annotation in an object literal, and naming
+       *   ElementComponent here is the narrowing the declaration above exists
+       *   to undo.
        */
-      addClass(...classes: string[]): ElementComponent {
+      addClass(...classes: string[]) {
         element.classList.add(...classes.filter(Boolean));
         return this;
       },

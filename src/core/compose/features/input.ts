@@ -62,9 +62,17 @@ function hasEmit(component: object): component is ComponentWithEmit {
 }
 
 /**
- * Component with input element and related methods
+ * What withInput adds to a component.
+ *
+ * Declared apart from InputComponent because the enhancer returns
+ * `C & InputFeature`, and C -- the component being enhanced -- already carries
+ * the element half. Naming the whole of InputComponent on the way out is what
+ * narrowed `addClass` back to a bare ElementComponent. It has to be its own
+ * interface rather than a Pick of InputComponent: an indexed access binds
+ * `this` to the type being indexed, so the methods below would report
+ * InputComponent and the polymorphism would be lost at the step that needs it.
  */
-export interface InputComponent extends ElementComponent {
+export interface InputFeature {
   /**
    * Input element
    */
@@ -81,13 +89,18 @@ export interface InputComponent extends ElementComponent {
    * @param value - New value to set
    * @returns Component instance for chaining
    */
-  setValue: (value: string) => InputComponent;
+  setValue(value: string): this;
 
   /**
    * Event emission method if available
    */
-  emit?: (event: string, data: unknown) => InputComponent;
+  emit?(event: string, data: unknown): this;
 }
+
+/**
+ * Component with input element and related methods
+ */
+export interface InputComponent extends ElementComponent, InputFeature {}
 
 /**
  * Creates an input element and adds it to a component
@@ -99,7 +112,7 @@ export interface InputComponent extends ElementComponent {
 export const withInput =
   // `& object` lets a component config that shares no key with InputConfig through.
   <T extends InputConfig & object>(config: T = {} as T) =>
-  <C extends ElementComponent>(component: C): C & InputComponent => {
+  <C extends ElementComponent>(component: C): C & InputFeature => {
     const input = document.createElement("input");
     const name = component.componentName || "component";
     input.type = "checkbox";

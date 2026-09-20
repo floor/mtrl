@@ -112,6 +112,14 @@ export const createBottomAppBar = (
   const bottomBar: BottomAppBar = {
     ...withLifecycleComponent,
 
+    // Spreading a component copies `addClass` but not the `this` it returns:
+    // the copy still reports the pipeline object it was built on, not this bar.
+    // Re-declaring it here is what puts the bar back on the end of a chain.
+    addClass(...classes: string[]) {
+      withLifecycleComponent.addClass(...classes);
+      return this;
+    },
+
     // destroy() goes through the lifecycle. The one spread in above comes from
     // withElement and only removes the element, so the scroll listener this bar
     // registers -- removed in lifecycle.destroy -- stayed on window and kept

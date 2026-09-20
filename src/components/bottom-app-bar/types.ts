@@ -79,26 +79,26 @@ export interface BottomAppBar extends ElementComponent {
    * @param {HTMLElement} button - Button element to add
    * @returns {BottomAppBar} BottomAppBar instance for chaining
    */
-  addAction: (button: HTMLElement) => BottomAppBar;
+  addAction(button: HTMLElement): this;
   
   /**
    * Adds a floating action button to the bottom bar
    * @param {HTMLElement} fab - FAB element to add
    * @returns {BottomAppBar} BottomAppBar instance for chaining
    */
-  addFab: (fab: HTMLElement) => BottomAppBar;
+  addFab(fab: HTMLElement): this;
   
   /**
    * Shows the bottom bar
    * @returns {BottomAppBar} BottomAppBar instance for chaining
    */
-  show: () => BottomAppBar;
+  show(): this;
   
   /**
    * Hides the bottom bar
    * @returns {BottomAppBar} BottomAppBar instance for chaining
    */
-  hide: () => BottomAppBar;
+  hide(): this;
   
   /**
    * Checks if the bottom bar is visible

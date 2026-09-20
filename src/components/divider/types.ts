@@ -2,14 +2,15 @@
 import { BaseComponent, ElementComponent } from '../../core/compose';
 
 /**
- * Divider component interface
- * 
- * Represents a Material Design 3 divider that separates content into distinct sections.
- * Provides methods for configuring the appearance, orientation, and inset behavior.
- * 
- * @category Components
+ * The three slices of a divider, one per enhancer in features.ts.
+ *
+ * Each is its own interface rather than a Pick of DividerComponent: an indexed
+ * access binds `this` to the type being indexed, so a setter reached through a
+ * Pick reports the whole DividerComponent instead of the component it was
+ * called on -- which is the defect these setters used to paper over with
+ * `return this as unknown as DividerComponent`.
  */
-export interface DividerComponent extends BaseComponent, ElementComponent {
+export interface DividerOrientation {
   /**
    * Gets current orientation of the divider
    * 
@@ -21,7 +22,7 @@ export interface DividerComponent extends BaseComponent, ElementComponent {
    * const orientation = divider.getOrientation(); // Returns 'horizontal' by default
    * ```
    */
-  getOrientation: () => 'horizontal' | 'vertical';
+  getOrientation(): 'horizontal' | 'vertical';
   
   /**
    * Sets orientation of the divider
@@ -38,8 +39,11 @@ export interface DividerComponent extends BaseComponent, ElementComponent {
    * divider.setOrientation('vertical');
    * ```
    */
-  setOrientation: (orientation: 'horizontal' | 'vertical') => DividerComponent;
-  
+  setOrientation(orientation: 'horizontal' | 'vertical'): this;
+}
+
+/** The inset slice. See DividerOrientation for why these are split. */
+export interface DividerInset {
   /**
    * Gets current variant of the divider
    * 
@@ -50,7 +54,7 @@ export interface DividerComponent extends BaseComponent, ElementComponent {
    * const variant = divider.getVariant(); // Returns 'full-width' by default
    * ```
    */
-  getVariant: () => 'full-width' | 'inset' | 'middle-inset';
+  getVariant(): 'full-width' | 'inset' | 'middle-inset';
   
   /**
    * Sets variant of the divider
@@ -72,7 +76,7 @@ export interface DividerComponent extends BaseComponent, ElementComponent {
    * divider.setVariant('middle-inset');
    * ```
    */
-  setVariant: (variant: 'full-width' | 'inset' | 'middle-inset') => DividerComponent;
+  setVariant(variant: 'full-width' | 'inset' | 'middle-inset'): this;
   
   /**
    * Sets custom inset values for the divider
@@ -91,8 +95,11 @@ export interface DividerComponent extends BaseComponent, ElementComponent {
    * divider.setInset(24, 8); // 24px from start, 8px from end
    * ```
    */
-  setInset: (insetStart?: number, insetEnd?: number) => DividerComponent;
-  
+  setInset(insetStart?: number, insetEnd?: number): this;
+}
+
+/** The style slice. See DividerOrientation for why these are split. */
+export interface DividerStyle {
   /**
    * Sets thickness of the divider
    * 
@@ -108,7 +115,7 @@ export interface DividerComponent extends BaseComponent, ElementComponent {
    * divider.setThickness(2);
    * ```
    */
-  setThickness: (thickness: number) => DividerComponent;
+  setThickness(thickness: number): this;
   
   /**
    * Sets custom color for the divider
@@ -128,5 +135,21 @@ export interface DividerComponent extends BaseComponent, ElementComponent {
    * divider.setColor('rgba(0, 0, 0, 0.12)');
    * ```
    */
-  setColor: (color: string) => DividerComponent;
+  setColor(color: string): this;
 }
+
+/**
+ * Divider component interface
+ *
+ * Represents a Material Design 3 divider that separates content into distinct
+ * sections. Provides methods for configuring the appearance, orientation, and
+ * inset behavior.
+ *
+ * @category Components
+ */
+export interface DividerComponent
+  extends BaseComponent,
+    ElementComponent,
+    DividerOrientation,
+    DividerInset,
+    DividerStyle {}
