@@ -7,7 +7,7 @@ import { addClass } from "../../../core/dom";
 /**
  * Progress component state
  */
-interface ProgressState {
+export interface ProgressState {
   value: number;
   max: number;
   buffer: number;
@@ -15,6 +15,12 @@ interface ProgressState {
   thickness: number | string; // Allow both number and string for thickness
   shape: ProgressShape;
   labelFormatter: (value: number, max: number) => string;
+  /**
+   * The value before the last setValue. Written by the API and read by nothing
+   * -- the canvas animates from its own interpolated value. Kept because it is
+   * observable on `component.state`; a candidate for the FLO-123 sweep.
+   */
+  previousValue?: number;
   label?: HTMLElement;
   showLabel?: boolean;
 }
@@ -22,7 +28,7 @@ interface ProgressState {
 /**
  * Component with lifecycle methods and canvas drawing
  */
-interface ComponentWithLifecycle {
+export interface ComponentWithLifecycle {
   element: HTMLElement;
   canvas?: HTMLCanvasElement;
   draw?: () => void;

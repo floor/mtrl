@@ -5,6 +5,7 @@ import {
   createElementConfig,
 } from "../../core/config/component";
 import { ProgressConfig, ProgressThickness, ProgressShape } from "./types";
+import type { ComponentWithLifecycle, ProgressState } from "./features/state";
 import {
   PROGRESS_CLASSES,
   PROGRESS_VARIANTS,
@@ -96,22 +97,33 @@ export const getElementConfig = (config: ProgressConfig) => {
 };
 
 /**
+ * What getApiConfig reads off the progress component.
+ *
+ * `state` is required, not optional as it is on ComponentWithLifecycle, and
+ * that is the invariant the pipe guarantees: withState assigns it
+ * unconditionally and runs before this. There used to be a fallback here that
+ * built a state when `comp.state` was missing -- unreachable, and wrong if it
+ * had ever run, because it ignored the config and would have reset value, max,
+ * thickness and shape to defaults. Requiring the type is how the invariant gets
+ * written down instead of guessed at.
+ */
+type ProgressApiHost = ComponentWithLifecycle & {
+  state: ProgressState;
+  /** Required for the same reason as `state`: createBase installs it. */
+  getClass: (name: string) => string;
+  /** Mirrors state.label, for consumers that read it off the component */
+  label?: HTMLElement;
+  disabled?: {
+    enable?: () => void;
+    disable?: () => void;
+    isDisabled?: () => boolean;
+  };
+};
+
+/**
  * Creates API configuration for the Progress component
  */
-export const getApiConfig = (comp) => {
-  // Use component's state directly
-  if (!comp.state) {
-    comp.state = {
-      value: 0,
-      max: 100,
-      buffer: 0,
-      indeterminate: false,
-      thickness: "thin",
-      shape: PROGRESS_DEFAULTS.SHAPE,
-      labelFormatter: (v, m) => `${Math.round((v / m) * 100)}%`,
-    };
-  }
-
+export const getApiConfig = (comp: ProgressApiHost) => {
   return {
     value: {
       getValue: () => comp.state.value,
@@ -148,8 +160,14 @@ export const getApiConfig = (comp) => {
       },
     },
     disabled: {
-      enable: () => comp.disabled?.enable?.() || undefined,
-      disable: () => comp.disabled?.disable?.() || undefined,
+      // `?.() || undefined` tested a void return for truthiness and meant
+      // exactly the call on its own.
+      enable: () => {
+        comp.disabled?.enable?.();
+      },
+      disable: () => {
+        comp.disabled?.disable?.();
+      },
       isDisabled: () => comp.disabled?.isDisabled?.() || false,
     },
     label: {
@@ -173,7 +191,7 @@ export const getApiConfig = (comp) => {
           comp.label = undefined;
         }
       },
-      format: (formatter) => {
+      format: (formatter: (value: number, max: number) => string) => {
         comp.state.labelFormatter = formatter;
       },
       formatter: comp.state.labelFormatter,
@@ -220,7 +238,9 @@ export const getApiConfig = (comp) => {
       isIndeterminate: () => comp.state.indeterminate,
     },
     lifecycle: {
-      destroy: () => comp.lifecycle?.destroy?.() || undefined,
+      destroy: () => {
+        comp.lifecycle?.destroy?.();
+      },
     },
   };
 };

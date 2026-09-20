@@ -273,3 +273,44 @@ describe('progress', () => {
     expect(frames.length).toBe(0);
   });
 });
+
+// The API reads the state withState built from the config. getApiConfig used to
+// carry a fallback that built a state of its own when `comp.state` was missing
+// -- unreachable, since withState assigns it unconditionally and runs first,
+// and wrong if it had ever run, because it ignored the config: max would have
+// become 100, thickness thin and shape flat whatever was asked for. The host
+// type requires `state` now, so the fallback is gone and this is what says the
+// configured values are the ones in play.
+describe('the configured state is the state the API reports', () => {
+  test('a max other than 100 is the one values are clamped and reported against', () => {
+    const progress = createProgress({ value: 30, max: 200 });
+
+    expect(progress.getValue()).toBe(30);
+    expect(progress.element.getAttribute('aria-valuemax')).toBe('200');
+
+    // 150 is over the default max and inside this one.
+    progress.setValue(150, false);
+    expect(progress.getValue()).toBe(150);
+
+    progress.setValue(500, false);
+    expect(progress.getValue()).toBe(200);
+  });
+
+  test('a configured thickness and shape survive creation', () => {
+    const progress = createProgress({ value: 50, thickness: 'thick', shape: 'wavy' });
+
+    expect(progress.getThickness()).toBe(8);
+    expect(progress.getShape()).toBe('wavy');
+  });
+
+  test('a configured formatter is the one the label uses', () => {
+    const progress = createProgress({
+      value: 3,
+      max: 9,
+      showLabel: true,
+      labelFormatter: (v: number, m: number) => `${v}/${m}`,
+    });
+
+    expect(progress.element.querySelector('.mtrl-progress__label')?.textContent).toBe('3/9');
+  });
+});
