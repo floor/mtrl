@@ -246,17 +246,17 @@ export const renderTimePicker = (
         canvas.focus();
 
         // Apply active state to hour input by default
-        const hourElements = document.querySelectorAll(
+        const hourElements = container.querySelectorAll(
           `.${config.prefix}-time-picker-hours`
         );
         hourElements.forEach((el) => el.setAttribute("data-active", "true"));
 
-        const minuteElements = document.querySelectorAll(
+        const minuteElements = container.querySelectorAll(
           `.${config.prefix}-time-picker-minutes`
         );
         minuteElements.forEach((el) => el.setAttribute("data-active", "false"));
 
-        const secondElements = document.querySelectorAll(
+        const secondElements = container.querySelectorAll(
           `.${config.prefix}-time-picker-seconds`
         );
         secondElements.forEach((el) => el.setAttribute("data-active", "false"));
@@ -463,7 +463,7 @@ export const renderTimePicker = (
       }
 
       // Update period selectors
-      document
+      container
         .querySelectorAll(
           `.${config.prefix}-time-picker-period-am, .${config.prefix}-time-picker-period-pm`
         )
@@ -472,7 +472,7 @@ export const renderTimePicker = (
           el.setAttribute("aria-pressed", "false");
         });
 
-      const selectedPeriod = document.querySelector(
+      const selectedPeriod = container.querySelector(
         `.${config.prefix}-time-picker-period-${period.toLowerCase()}`
       );
       if (selectedPeriod) {
@@ -501,24 +501,33 @@ export const renderTimePicker = (
 
   // Add event listeners for period selectors
   if (config.format === TIME_FORMAT.AMPM) {
-    const amPeriodElement = document.querySelector(
+    const amPeriodElement = container.querySelector(
       `.${config.prefix}-time-picker-period-am`
     );
-    const pmPeriodElement = document.querySelector(
+    const pmPeriodElement = container.querySelector(
       `.${config.prefix}-time-picker-period-pm`
     );
 
-    if (amPeriodElement) {
-      amPeriodElement.addEventListener("click", () => {
-        handlePeriodChange(TIME_PERIOD.AM);
+    // `role="button"` with `tabindex="0"` promises a keyboard user that Enter
+    // and Space activate this. Only click was wired, so a person who reached
+    // AM or PM with Tab could focus it and had no way to choose it.
+    const activateOn = (
+      element: Element | null,
+      period: (typeof TIME_PERIOD)[keyof typeof TIME_PERIOD],
+    ): void => {
+      if (!element) return;
+      element.addEventListener("click", () => handlePeriodChange(period));
+      element.addEventListener("keydown", (event) => {
+        const key = (event as KeyboardEvent).key;
+        if (key !== "Enter" && key !== " " && key !== "Spacebar") return;
+        // Space would otherwise scroll the page out from under the picker.
+        event.preventDefault();
+        handlePeriodChange(period);
       });
-    }
+    };
 
-    if (pmPeriodElement) {
-      pmPeriodElement.addEventListener("click", () => {
-        handlePeriodChange(TIME_PERIOD.PM);
-      });
-    }
+    activateOn(amPeriodElement, TIME_PERIOD.AM);
+    activateOn(pmPeriodElement, TIME_PERIOD.PM);
   }
 
   // Set up the clock dial interaction
