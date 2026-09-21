@@ -10,6 +10,7 @@ import {
   SearchState,
   SearchViewMode,
 } from "./types";
+import type { EventCallback } from "../../core/state/emitter";
 import {
   SEARCH_STATES,
   SEARCH_VIEW_MODES,
@@ -105,8 +106,12 @@ interface InternalComponent {
   suggestions?: {
     render?: () => void;
   };
-  on?: (event: string, handler: Function) => void;
-  off?: (event: string, handler: Function) => void;
+  // `EventCallback`, not `Function`. This host is handed the component the
+  // pipe has built, whose `on` takes an EventCallback; `Function` is a
+  // supertype of it, so the host promises to call a handler with anything
+  // and cannot accept one that takes a typed payload. FLO-114.
+  on?: (event: string, handler: EventCallback) => void;
+  off?: (event: string, handler: EventCallback) => void;
   lifecycle?: {
     destroy?: () => void;
   };
@@ -160,8 +165,8 @@ export const getApiConfig = (comp: InternalComponent) => ({
 
   // Events
   events: {
-    on: (e: string, h: Function) => comp.on?.(e, h),
-    off: (e: string, h: Function) => comp.off?.(e, h),
+    on: (e: string, h: EventCallback) => comp.on?.(e, h),
+    off: (e: string, h: EventCallback) => comp.off?.(e, h),
   },
 
   // Lifecycle

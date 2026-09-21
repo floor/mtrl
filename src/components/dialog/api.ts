@@ -9,6 +9,7 @@ import {
   DialogEventType,
 } from "./types";
 import { removeClass } from "../../core/dom/classes";
+import type { EventCallback } from "../../core/state/emitter";
 
 /**
  * What withAPI needs handed to it. Exported because getApiConfig in config.ts
@@ -51,8 +52,8 @@ export interface ApiOptions {
     hasDivider: () => boolean;
   };
   events: {
-    on: (event: string, handler: Function) => void;
-    off: (event: string, handler: Function) => void;
+    on: (event: string, handler: EventCallback) => void;
+    off: (event: string, handler: EventCallback) => void;
     trigger: (event: string, data: unknown) => void;
   };
   lifecycle: {

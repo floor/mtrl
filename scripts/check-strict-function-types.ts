@@ -38,18 +38,15 @@ import { execFileSync } from "node:child_process";
 
 /** Files with strictFunctionTypes errors left to fix (F14). */
 const PENDING: string[] = [
-  "src/components/card/card.ts",
   "src/components/carousel/carousel.ts",
   "src/components/checkbox/checkbox.ts",
   "src/components/chips/chips.ts",
   "src/components/datepicker/datepicker.ts",
-  "src/components/dialog/dialog.ts",
   "src/components/drawer/drawer.ts",
   "src/components/extended-fab/extended-fab.ts",
   "src/components/icon-button/icon-button.ts",
   "src/components/progress/progress.ts",
   "src/components/radios/radios.ts",
-  "src/components/search/search.ts",
   "src/components/switch/switch.ts",
   "src/components/textfield/textfield.ts",
   "src/components/timepicker/timepicker.ts",
