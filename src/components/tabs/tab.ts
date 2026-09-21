@@ -1,4 +1,5 @@
 // src/components/tabs/tab.ts
+import { syncTabControls, tabIdFor } from "./utils";
 import { pipe } from "../../core/compose";
 import { createBase } from "../../core/compose/component";
 import type { BaseComponent, ElementComponent } from "../../core/compose/component";
@@ -25,14 +26,7 @@ import createBadge from "../badge";
  * nothing, which assistive technology reports as a broken relationship. When
  * the panel appears later, `updateTabPanels` links it then.
  */
-function linkPanel(element: HTMLElement, value: string): void {
-  const panelId = `tabpanel-${value}`;
-  if (typeof document !== "undefined" && document.getElementById(panelId)) {
-    element.setAttribute("aria-controls", panelId);
-  } else {
-    element.removeAttribute("aria-controls");
-  }
-}
+
 
 export const createTab = (config: TabConfig = {}): TabComponent => {
   const baseConfig = createTabConfig(config);
@@ -79,13 +73,18 @@ export const createTab = (config: TabConfig = {}): TabComponent => {
 
     // For better accessibility
     if (baseConfig.value) {
-      baseComponent.element.setAttribute("id", `tab-${baseConfig.value}`);
+      // The group id makes this unique across tablists. Without it two
+      // groups sharing a value produced duplicate ids. FLO-229.
+      baseComponent.element.setAttribute(
+        "id",
+        tabIdFor(baseConfig.groupId ?? "", baseConfig.value)
+      );
       // `aria-controls` is linked by `updateTabPanels` once a panel with that
       // id is actually in the document. It used to be written here
       // unconditionally, so every tab pointed at a panel the component never
       // creates — a dangling reference unless the page happened to supply one,
       // which is an ARIA conformance break rather than a cosmetic detail.
-      linkPanel(baseComponent.element, baseConfig.value);
+      syncTabControls(baseComponent.element);
     }
 
     // Add active state if specified in config
@@ -133,8 +132,11 @@ export const createTab = (config: TabConfig = {}): TabComponent => {
         button.setValue(safeValue);
 
         // Update accessibility attributes
-        this.element.setAttribute("id", `tab-${safeValue}`);
-        linkPanel(this.element, safeValue);
+        this.element.setAttribute(
+          "id",
+          tabIdFor(baseConfig.groupId ?? "", safeValue)
+        );
+        syncTabControls(this.element);
 
         return this;
       },
