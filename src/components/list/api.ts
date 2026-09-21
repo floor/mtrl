@@ -1,5 +1,7 @@
 // src/components/list/api.ts
 
+import type { EventCallback } from "../../core/state/emitter";
+
 /**
  * API configuration options for List component
  */
@@ -32,8 +34,8 @@ interface ApiOptions<T = unknown> {
     setSelection: (itemIds: (string | number)[]) => unknown;
   };
   events: {
-    on: (event: string, handler: Function) => unknown;
-    off: (event: string, handler: Function) => unknown;
+    on: (event: string, handler: EventCallback) => unknown;
+    off: (event: string, handler: EventCallback) => unknown;
   };
   lifecycle: {
     destroy: () => void;
@@ -48,8 +50,8 @@ interface ApiOptions<T = unknown> {
  */
 export interface ComponentWithElements {
   element: HTMLElement;
-  on?: (event: string, handler: Function) => unknown;
-  off?: (event: string, handler: Function) => unknown;
+  on?: (event: string, handler: EventCallback) => unknown;
+  off?: (event: string, handler: EventCallback) => unknown;
 }
 
 /**
