@@ -65,13 +65,13 @@ $component: '#{base.$prefix}-slider';
       margin-left: 48px;
     }
 
-    .#{$component}-container {
+    .#{$component}__container {
       margin-left: 48px;
     }
   }
 
   // Slider container - holds all the slider elements
-  &-container {
+  &__container {
     position: relative;
     height: 40px;
     display: flex;
@@ -91,29 +91,29 @@ $component: '#{base.$prefix}-slider';
     --#{base.$prefix}-slider-inactive-opacity: 0.12;
     --#{base.$prefix}-slider-tick-opacity: 0.06;
   }
-  &-visual { position: absolute; inset: 0; pointer-events: none; }
-  &-track { position: absolute; top: 50%; width: 100%; transform: translateY(-50%); overflow: hidden; }
-  &-segment {
+  &__visual { position: absolute; inset: 0; pointer-events: none; }
+  &__track { position: absolute; top: 50%; width: 100%; transform: translateY(-50%); overflow: hidden; }
+  &__segment {
     position: absolute; height: 100%; border-radius: 3px;
     background: var(--#{base.$prefix}-slider-track-color); opacity: var(--#{base.$prefix}-slider-inactive-opacity);
     transition: left 0.225s cubic-bezier(0.4, 0, 0.2, 1), width 0.225s cubic-bezier(0.4, 0, 0.2, 1);
     &--active { opacity: var(--#{base.$prefix}-slider-active-opacity); }
   }
-  &-ticks {
+  &__ticks {
     position: absolute; inset: 0; color: var(--#{base.$prefix}-slider-track-color); opacity: var(--#{base.$prefix}-slider-tick-opacity);
     background-image: radial-gradient(circle at center, currentColor 2px, transparent 2px);
     background-repeat: repeat-x;
     &--active { color: var(--#{base.$prefix}-slider-tick-color); opacity: var(--#{base.$prefix}-slider-active-opacity); }
   }
-  &-dot { position: absolute; right: 5px; top: calc(50% - 2px); width: 4px; height: 4px;
+  &__dot { position: absolute; right: 5px; top: calc(50% - 2px); width: 4px; height: 4px;
     border-radius: 50%; background: var(--#{base.$prefix}-slider-track-color); opacity: var(--#{base.$prefix}-slider-active-opacity); }
-  &--dragging &-segment { transition: none; }
+  &--dragging &__segment { transition: none; }
   @media (prefers-reduced-motion: reduce) {
-    &-segment, &-handle, &-value { transition: none !important; }
+    &__segment, &__handle, &__value { transition: none !important; }
   }
 
   // Handle - updated with T-shape and proper focus styles
-  &-handle {
+  &__handle {
     position: absolute;
     top: 50%;
     transform: translate(-50%, -50%);
@@ -224,20 +224,20 @@ $component: '#{base.$prefix}-slider';
 
   // Range slider styles
   &--range {
-    .#{$component}-handle {
+    .#{$component}__handle {
       &:nth-of-type(1) {
         z-index: 3;
       }
     }
     
     // In range mode, both dots should be visible
-    .#{$component}-dot {
+    .#{$component}__dot {
       z-index: 2;
     }
   }
   
   // Value bubble - shows current value during interaction
-  &-value {
+  &__value {
     position: absolute;
     top: -40px;
     left: 0;
@@ -264,7 +264,7 @@ $component: '#{base.$prefix}-slider';
   &--disabled {
 
     // Disabled state
-    .#{$component}-handle {
+    .#{$component}__handle {
       cursor: default;
       pointer-events: none;
       
@@ -278,7 +278,7 @@ $component: '#{base.$prefix}-slider';
 
   // Discrete slider with steps
   &--discrete {
-    .#{$component}-tick {
+    .#{$component}__tick {
       width: 4px;
       height: 4px;
     }
@@ -287,8 +287,8 @@ $component: '#{base.$prefix}-slider';
   // For dragging state - visual feedback
   &--dragging {
     // No transitions during dragging for responsive feel
-    .#{$component}-handle,
-    .#{$component}-value {
+    .#{$component}__handle,
+    .#{$component}__value {
       transition: none;
     }
   }

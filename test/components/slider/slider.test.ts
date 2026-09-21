@@ -81,7 +81,7 @@ describe('slider handle', () => {
     const slider = await mount({ value: 42, valueFormatter: (v) => `${v}%` });
     const [handle] = handles(slider);
     expect(handle.getAttribute('aria-valuetext')).toBe('42%');
-    expect(slider.element.querySelector('.mtrl-slider-value')?.textContent).toBe('42%');
+    expect(slider.element.querySelector('.mtrl-slider__value')?.textContent).toBe('42%');
 
     slider.setValue(60);
     expect(handle.getAttribute('aria-valuetext')).toBe('60%');
@@ -246,7 +246,7 @@ describe('slider appearance', () => {
 
   test('size comes from config and setSize resizes the track and handle', async () => {
     const slider = await mount({ size: 'L' });
-    const track = slider.element.querySelector<HTMLElement>('.mtrl-slider-track')!;
+    const track = slider.element.querySelector<HTMLElement>('.mtrl-slider__track')!;
     const [handle] = handles(slider);
     expect(slider.getSize()).toBe('L');
     expect(track.style.height).toBe('56px');
@@ -260,7 +260,7 @@ describe('slider appearance', () => {
 
   test('ticks show only on a discrete slider', async () => {
     const slider = await mount({ step: 10 });
-    const ticks = () => Array.from(slider.element.querySelectorAll<HTMLElement>('.mtrl-slider-ticks'));
+    const ticks = () => Array.from(slider.element.querySelectorAll<HTMLElement>('.mtrl-slider__ticks'));
     expect(ticks().length).toBeGreaterThan(0);
     expect(ticks().every((t) => t.hidden)).toBe(true);
     slider.showTicks(true);

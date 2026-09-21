@@ -77,7 +77,7 @@ try {
       const centers = [...document.querySelectorAll('[role="slider"]')].map(handle => {
         const rect = handle.getBoundingClientRect(); return rect.x + rect.width / 2;
       });
-      return [...document.querySelectorAll('.mtrl-slider-segment')].every(segment => {
+      return [...document.querySelectorAll('.mtrl-slider__segment')].every(segment => {
         const rect = segment.getBoundingClientRect();
         return rect.width < 0.1 || centers.every(center => rect.right <= center - 5.8 || rect.left >= center + 5.8);
       });
@@ -107,11 +107,11 @@ try {
   assert.equal(await handle.getAttribute("aria-valuenow"), "30");
   await page.keyboard.press("End"); assert.equal(await handle.getAttribute("aria-valuenow"), "100");
   await page.keyboard.press("Home"); assert.equal(await handle.getAttribute("aria-valuenow"), "0");
-  const box = await page.locator(".mtrl-slider-container").boundingBox(); assert(box);
+  const box = await page.locator(".mtrl-slider__container").boundingBox(); assert(box);
   await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
   assert.equal(await handle.getAttribute("aria-valuenow"), "50");
   await page.evaluate(() => { const s = window.slider; s.setColor("secondary"); s.setSize("XL"); s.showTicks(true); s.setStep(5); });
-  assert(await page.locator(".mtrl-slider-ticks").first().isVisible());
+  assert(await page.locator(".mtrl-slider__ticks").first().isVisible());
   await page.evaluate(() => { (document.querySelector("#host") as HTMLElement).style.width = "96px"; });
   await page.waitForTimeout(50);
   const resized = await handle.boundingBox(); assert(resized);
