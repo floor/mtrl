@@ -1,4 +1,5 @@
 // src/components/textfield/types.ts
+import type { EventCallback } from "../../core/state/emitter";
 
 /**
  * Available Textfield variants
@@ -129,6 +130,26 @@ export interface TextfieldConfig {
   componentName?: string;
 }
 
+/** Payload emitted by native input/change and autofill detection. */
+export interface TextfieldValuePayload {
+  value: string;
+  isEmpty: boolean;
+  isAutofilled: boolean;
+}
+
+/** Focus and blur report whether the input is empty, without a native event. */
+export interface TextfieldFocusPayload {
+  isEmpty: boolean;
+}
+
+/** Events emitted by the text input feature. setValue() is silent. */
+export interface TextfieldEvents {
+  input: (payload: TextfieldValuePayload) => void;
+  change: (payload: TextfieldValuePayload) => void;
+  focus: (payload: TextfieldFocusPayload) => void;
+  blur: (payload: TextfieldFocusPayload) => void;
+}
+
 /**
  * Textfield component interface
  */
@@ -226,11 +247,11 @@ export interface TextfieldComponent {
   /** Gets the current density setting */
   getDensity: () => string;
 
-  /** Adds event listener */
-  on: (event: string, handler: Function) => TextfieldComponent;
+  /** Subscribes to input state events; keyboard events use input.addEventListener. */
+  on: <K extends keyof TextfieldEvents>(event: K, handler: TextfieldEvents[K]) => TextfieldComponent;
 
   /** Removes event listener */
-  off: (event: string, handler: Function) => TextfieldComponent;
+  off: <K extends keyof TextfieldEvents>(event: K, handler: TextfieldEvents[K]) => TextfieldComponent;
 
   /** Enables the textfield */
   enable: () => TextfieldComponent;
@@ -290,8 +311,8 @@ export interface BaseComponent {
   setSuffixText?: (text: string) => void;
   removeSuffixText?: () => void;
   updateElementPositions?: () => void;
-  on?: (event: string, handler: Function) => void;
-  off?: (event: string, handler: Function) => void;
+  on?: (event: string, handler: EventCallback) => void;
+  off?: (event: string, handler: EventCallback) => void;
   disabled?: {
     enable: () => void;
     disable: () => void;

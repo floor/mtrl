@@ -38,7 +38,7 @@ g.requestAnimationFrame = (cb: FrameRequestCallback) => setTimeout(() => cb(Date
 g.cancelAnimationFrame = () => {};
 g.ResizeObserver = class { observe() {} disconnect() {} unobserve() {} };
 
-import createTextfield from '../../../src/components/textfield';
+import createTextfield, { type TextfieldValuePayload, type TextfieldFocusPayload } from '../../../src/components/textfield';
 
 const ICON = '<svg viewBox="0 0 24 24"><path d="M0 0h24v24H0z"/></svg>';
 
@@ -329,3 +329,81 @@ describe('textfield', () => {
     }
   });
 });
+
+
+// FLO-114: exercise the actual emitter for both input elements supported by the factory.
+for (const inputType of ['text', 'multiline'] as const) {
+  describe(`textfield ${inputType} event contract`, () => {
+    test('native input and change report the value, empty state and autofill flag', () => {
+      const field = mount({ type: inputType });
+      const inputs = mock((_payload: TextfieldValuePayload) => {});
+      const changes = mock((_payload: TextfieldValuePayload) => {});
+      try {
+        expect(field.on('input', inputs).on('change', changes)).toBe(field);
+        type(field, 'Ada');
+        field.input.dispatchEvent(new dom.window.Event('change', { bubbles: true }));
+        expect(inputs.mock.calls).toEqual([[{ value: 'Ada', isEmpty: false, isAutofilled: false }]]);
+        // JSDOM can match the autofill pseudo-class without browser autofill.
+        const autofilled = field.input.matches(':-webkit-autofill');
+        expect(changes.mock.calls).toEqual([[{ value: 'Ada', isEmpty: false, isAutofilled: autofilled }]]);
+        type(field, '');
+        expect(inputs.mock.calls[1]).toEqual([{ value: '', isEmpty: true, isAutofilled: false }]);
+        field.setValue('Grace');
+        expect(field.getValue()).toBe('Grace');
+        expect(inputs).toHaveBeenCalledTimes(2);
+        expect(changes).toHaveBeenCalledTimes(1);
+        expect(field.off('input', inputs).off('change', changes)).toBe(field);
+        type(field, 'unsubscribed');
+        field.input.dispatchEvent(new dom.window.Event('change'));
+        expect(inputs).toHaveBeenCalledTimes(2);
+        expect(changes).toHaveBeenCalledTimes(1);
+      } finally { field.destroy(); }
+    });
+
+    test('focus and blur report only the empty state and can be unsubscribed', () => {
+      const field = mount({ type: inputType });
+      const focus = mock((_payload: TextfieldFocusPayload) => {});
+      const blur = mock((_payload: TextfieldFocusPayload) => {});
+      try {
+        field.on('focus', focus).on('blur', blur);
+        field.input.focus();
+        field.setValue('Ada');
+        field.input.blur();
+        expect(focus.mock.calls).toEqual([[{ isEmpty: true }]]);
+        expect(blur.mock.calls).toEqual([[{ isEmpty: false }]]);
+        field.off('focus', focus).off('blur', blur);
+        field.input.focus();
+        field.input.blur();
+        expect(focus).toHaveBeenCalledTimes(1);
+        expect(blur).toHaveBeenCalledTimes(1);
+      } finally { field.destroy(); }
+    });
+
+    test('autofill detection emits the same value payload with isAutofilled true', () => {
+      const field = mount({ type: inputType });
+      const inputs = mock((_payload: TextfieldValuePayload) => {});
+      try {
+        field.on('input', inputs);
+        field.input.value = 'Autofilled';
+        // Exercise the existing computed-background detection with a DOM animation event.
+        field.input.style.backgroundColor = 'rgb(250, 255, 189)';
+        const animation = new dom.window.Event('animationstart');
+        Object.defineProperty(animation, 'animationName', { value: 'onAutoFillStart' });
+        field.input.dispatchEvent(animation);
+        expect(inputs.mock.calls).toEqual([[{ value: 'Autofilled', isEmpty: false, isAutofilled: true }]]);
+      } finally { field.destroy(); }
+    });
+
+    test('destroy clears emitter subscriptions even on a retained input', () => {
+      const field = mount({ type: inputType });
+      const handler = mock(() => {});
+      field.on('input', handler).on('change', handler).on('focus', handler).on('blur', handler);
+      const input = field.input;
+      field.destroy();
+      for (const name of ['input', 'change', 'focus', 'blur']) {
+        input.dispatchEvent(new dom.window.Event(name));
+      }
+      expect(handler).not.toHaveBeenCalled();
+    });
+  });
+}
