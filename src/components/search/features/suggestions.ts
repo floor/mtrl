@@ -18,7 +18,13 @@ interface SuggestionsHost {
   input?: {
     getValue: () => string;
     getSuggestions: () => SearchSuggestion[];
-    selectSuggestion: (suggestion: SearchSuggestion | string) => void;
+    // `SearchSuggestion`, not `SearchSuggestion | string`. The producer in
+    // features/input.ts takes only the object, and the one call site below
+    // passes an element of `getSuggestions()`, which is `SearchSuggestion[]`.
+    // A host declaring the wider union promises to hand the producer a plain
+    // string, which it cannot take -- contravariant and unsound, and the
+    // second of the two roots behind search's cascade. FLO-114.
+    selectSuggestion: (suggestion: SearchSuggestion) => void;
   };
   // SearchStructure, not a loose record: the record said
   // `HTMLElement | undefined` where the real thing has `HTMLElement | null`.

@@ -49,7 +49,6 @@ const PENDING: string[] = [
   "src/components/icon-button/icon-button.ts",
   "src/components/progress/progress.ts",
   "src/components/radios/radios.ts",
-  "src/components/search/search.ts",
   "src/components/switch/switch.ts",
   "src/components/textfield/textfield.ts",
   "src/components/timepicker/timepicker.ts",
