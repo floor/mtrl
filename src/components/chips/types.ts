@@ -377,6 +377,42 @@ export interface ChipComponent {
  * Chips component interface
  * @category Components
  */
+/**
+ * What a chips feature needs from the component it is handed.
+ *
+ * The chips pipe is createBase, withEvents, withElement, withContainer,
+ * withChipItems, withDom, then the controller -- so the element and the
+ * emitter are installed before it runs, and `chipContainer` and
+ * `chipInstances` come from the two features just above it.
+ *
+ * @category Components
+ * @internal
+ */
+export interface ChipsFeatureComponent {
+  element: HTMLElement;
+  getClass: (name: string) => string;
+  emit?: (event: string, data: unknown) => unknown;
+  /** withDom builds this; the controller appends chips to it */
+  chipContainer?: HTMLElement;
+  /**
+   * withChipItems keeps the live chips here. Required, because it runs before
+   * the controller in the only pipe that builds one, and the controller reads
+   * it on every path.
+   */
+  chipInstances: ChipComponent[];
+  /** withContainer installs this whole, so the members are not optional in it */
+  layout?: { isVertical: () => boolean; isScrollable: () => boolean };
+  lifecycle?: { destroy?: () => void };
+}
+
+/**
+ * The handlers the chips controller keeps per event name.
+ *
+ * @category Components
+ * @internal
+ */
+export type ChipsEventListeners = Record<string, Array<(...args: unknown[]) => void>>;
+
 export interface ChipsComponent {
   /** The chips container's DOM element */
   element: HTMLElement;

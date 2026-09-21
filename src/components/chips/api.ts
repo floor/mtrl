@@ -4,12 +4,22 @@ import { ChipsComponent, ChipComponent, ChipConfig } from "./types";
 /**
  * API options interface - structured by feature area
  */
-interface ApiOptions {
+/**
+ * What withAPI needs handed to it. Exported because getApiConfig in config.ts
+ * builds exactly this, so one description serves both.
+ */
+export interface ApiOptions {
   config: {
     multiSelect: boolean;
   };
   chips: {
-    addChip: (chipConfig: ChipConfig) => ChipComponent;
+    /**
+     * Null when the controller is not there to make one. withAPI discards the
+     * value and hands back the chips container, so nothing downstream reads
+     * it -- but the declaration said ChipComponent, which getApiConfig's own
+     * fallback could not satisfy.
+     */
+    addChip: (chipConfig: ChipConfig) => ChipComponent | null;
     removeChip: (chipOrIndex: ChipComponent | number) => void;
     getChips: () => ChipComponent[];
     getSelectedChips: () => ChipComponent[];
