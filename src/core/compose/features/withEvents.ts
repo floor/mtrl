@@ -49,8 +49,8 @@ export interface EnhancedEventManager {
  */
 export interface EnhancedEventComponent extends BaseComponent {
   events: EnhancedEventManager;
-  on: (event: string, handler: Function) => EnhancedEventComponent;
-  off: (event: string, handler: Function) => EnhancedEventComponent;
+  on(event: string, handler: Function): this;
+  off(event: string, handler: Function): this;
 }
 
 /**
@@ -132,7 +132,17 @@ export const withEvents =
     return {
       ...component,
       events: enhancedEvents,
-      on: enhancedEvents.on.bind(enhancedEvents),
-      off: enhancedEvents.off.bind(enhancedEvents),
+      // Declared as returning the component, and `.bind` returned the manager.
+      // Bivariance hid it; strictBindCallApply types `.bind` precisely and the
+      // disagreement surfaces. The contract is the promise, so the runtime
+      // keeps it -- the same correction as core's own withEvents in #119.
+      on(event: string, handler: Function) {
+        enhancedEvents.on(event, handler);
+        return this;
+      },
+      off(event: string, handler: Function) {
+        enhancedEvents.off(event, handler);
+        return this;
+      },
     };
   };

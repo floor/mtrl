@@ -12,14 +12,24 @@
     "sourceMap": true,
     "resolveJsonModule": true,
     "jsx": "preserve",
-    "noImplicitAny": false,
+    "noImplicitAny": true,
     "allowJs": true,
     "noErrorTruncation": true,
     "noEmitOnError": false,
     "downlevelIteration": true,
     "ignoreDeprecations": "5.0",
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "strictNullChecks": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "alwaysStrict": true,
+    "useUnknownInCatchVariables": true
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "test/**/*"]
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "test/**/*"
+  ]
 }
