@@ -42,7 +42,6 @@ const PENDING: string[] = [
   "src/components/checkbox/checkbox.ts",
   "src/components/chips/chips.ts",
   "src/components/datepicker/datepicker.ts",
-  "src/components/dialog/dialog.ts",
   "src/components/drawer/drawer.ts",
   "src/components/extended-fab/extended-fab.ts",
   "src/components/fab/fab.ts",

@@ -5,6 +5,7 @@ import {
 } from '../../core/config/component';
 import { DialogConfig } from './types';
 import type { ApiOptions } from './api';
+import type { EventCallback } from '../../core/state/emitter';
 
 /**
  * Default configuration for the Dialog component
@@ -84,8 +85,8 @@ export const getOverlayConfig = () => {
  * returning the component still satisfies it.
  */
 type DialogFeatureHost = Omit<ApiOptions, "events"> & {
-  on: (event: string, handler: Function) => unknown;
-  off: (event: string, handler: Function) => unknown;
+  on: (event: string, handler: EventCallback) => unknown;
+  off: (event: string, handler: EventCallback) => unknown;
   emit: (event: string, data: unknown) => unknown;
 };
 
