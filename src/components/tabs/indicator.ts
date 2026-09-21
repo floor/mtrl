@@ -73,7 +73,7 @@ export const createTabIndicator = (config: TabIndicatorConfig = {}): TabIndicato
   
   // Create indicator element
   const element = document.createElement('div');
-  element.className = `${prefix}-tabs-indicator`;
+  element.className = `${prefix}-tabs__indicator`;
   element.style.transition = `transform ${mergedConfig.animationDuration}ms ${mergedConfig.animationTiming}, 
                              width ${mergedConfig.animationDuration}ms ${mergedConfig.animationTiming}`;
   element.style.width = `${mergedConfig.fixedWidth}px`; // Set initial width

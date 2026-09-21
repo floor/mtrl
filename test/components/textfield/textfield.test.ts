@@ -49,7 +49,7 @@ const mount = (config: Parameters<typeof createTextfield>[0] = {}) => {
   document.body.append(field.element);
   return field;
 };
-const helper = (field: { element: HTMLElement }) => field.element.querySelector('.mtrl-textfield-helper');
+const helper = (field: { element: HTMLElement }) => field.element.querySelector('.mtrl-textfield__helper');
 const type = (field: { input: HTMLInputElement | HTMLTextAreaElement }, text: string) => {
   field.input.value = text;
   field.input.dispatchEvent(new dom.window.Event('input', { bubbles: true }));
@@ -136,13 +136,13 @@ describe('textfield', () => {
     expect(field.isError()).toBe(true);
     expect(field.element.classList.contains('mtrl-textfield--error')).toBe(true);
     expect(helper(field)?.textContent).toBe('Invalid email');
-    expect(helper(field)?.classList.contains('mtrl-textfield-helper--error')).toBe(true);
+    expect(helper(field)?.classList.contains('mtrl-textfield__helper--error')).toBe(true);
 
     field.setError(false);
     expect(field.isError()).toBe(false);
     expect(field.element.classList.contains('mtrl-textfield--error')).toBe(false);
     expect(helper(field)?.textContent).toBe('We never share it');
-    expect(helper(field)?.classList.contains('mtrl-textfield-helper--error')).toBe(false);
+    expect(helper(field)?.classList.contains('mtrl-textfield__helper--error')).toBe(false);
   });
 
   test('ending an error on a field that had no helper text removes the message', () => {
@@ -212,7 +212,7 @@ describe('textfield', () => {
 
   test('icon, prefix and suffix slots from config render, and can be removed', () => {
     const field = mount({ label: 'Price', leadingIcon: ICON, trailingIcon: ICON, prefixText: '$', suffixText: 'kg' });
-    const slot = (name: string) => field.element.querySelector(`.mtrl-textfield-${name}`);
+    const slot = (name: string) => field.element.querySelector(`.mtrl-textfield__${name}`);
     expect(slot('leading-icon')).not.toBeNull();
     expect(slot('trailing-icon')).not.toBeNull();
     expect(slot('prefix')?.textContent).toBe('$');
@@ -261,10 +261,10 @@ describe('textfield', () => {
   // element, nothing to tell a caller their code had not worked.
 
   const SLOTS = [
-    { name: 'leading icon', set: 'setLeadingIcon', remove: 'removeLeadingIcon', prop: 'leadingIcon', selector: '-leading-icon', value: ICON, read: (el: HTMLElement) => el.innerHTML },
-    { name: 'trailing icon', set: 'setTrailingIcon', remove: 'removeTrailingIcon', prop: 'trailingIcon', selector: '-trailing-icon', value: ICON, read: (el: HTMLElement) => el.innerHTML },
-    { name: 'prefix', set: 'setPrefixText', remove: 'removePrefixText', prop: 'prefixTextElement', selector: '-prefix', value: '$', read: (el: HTMLElement) => el.textContent },
-    { name: 'suffix', set: 'setSuffixText', remove: 'removeSuffixText', prop: 'suffixTextElement', selector: '-suffix', value: 'kg', read: (el: HTMLElement) => el.textContent },
+    { name: 'leading icon', set: 'setLeadingIcon', remove: 'removeLeadingIcon', prop: 'leadingIcon', selector: '__leading-icon', value: ICON, read: (el: HTMLElement) => el.innerHTML },
+    { name: 'trailing icon', set: 'setTrailingIcon', remove: 'removeTrailingIcon', prop: 'trailingIcon', selector: '__trailing-icon', value: ICON, read: (el: HTMLElement) => el.innerHTML },
+    { name: 'prefix', set: 'setPrefixText', remove: 'removePrefixText', prop: 'prefixTextElement', selector: '__prefix', value: '$', read: (el: HTMLElement) => el.textContent },
+    { name: 'suffix', set: 'setSuffixText', remove: 'removeSuffixText', prop: 'suffixTextElement', selector: '__suffix', value: 'kg', read: (el: HTMLElement) => el.textContent },
   ] as const;
 
   // The input carries `…-input--with-leading-icon`, which contains the slot

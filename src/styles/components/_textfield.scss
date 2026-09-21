@@ -54,7 +54,7 @@ $component: "#{base.$prefix}-textfield";
     }
 
     // Input element
-    &-input {
+    &__input {
         @include m.typography("body-large");
         @include m.shape("extra-small");
         padding: 13px 16px;
@@ -108,7 +108,7 @@ $component: "#{base.$prefix}-textfield";
     }
 
     // Prefix text
-    &-prefix {
+    &__prefix {
         @include m.typography("body-large");
         position: absolute;
         left: 12px;
@@ -126,7 +126,7 @@ $component: "#{base.$prefix}-textfield";
     }
 
     // Suffix text
-    &-suffix {
+    &__suffix {
         @include m.typography("body-large");
         position: absolute;
         right: 16px;
@@ -144,7 +144,7 @@ $component: "#{base.$prefix}-textfield";
     }
 
     // Leading icon
-    &-leading-icon {
+    &__leading-icon {
         opacity: 0.85;
         position: absolute;
         left: 12px;
@@ -168,7 +168,7 @@ $component: "#{base.$prefix}-textfield";
     }
 
     // Trailing icon
-    &-trailing-icon {
+    &__trailing-icon {
         opacity: 0.85;
         position: absolute;
         right: 12px;
@@ -199,14 +199,14 @@ $component: "#{base.$prefix}-textfield";
             left: 48px;
         }
 
-        .#{$component}-input {
+        .#{$component}__input {
             // Default value - will be overridden by JS for precise padding
             padding-left: 48px;
         }
     }
 
     &--with-suffix {
-        .#{$component}-input {
+        .#{$component}__input {
             // Default value - will be overridden by JS for precise padding
             padding-right: 48px;
         }
@@ -218,13 +218,13 @@ $component: "#{base.$prefix}-textfield";
             left: 44px;
         }
 
-        .#{$component}-input {
+        .#{$component}__input {
             padding-left: 44px;
         }
 
         // If there's also a prefix, adjust positions
         &.#{$component}--with-prefix {
-            .#{$component}-prefix {
+            .#{$component}__prefix {
                 left: 44px;
             }
 
@@ -233,7 +233,7 @@ $component: "#{base.$prefix}-textfield";
                 left: 76px;
             }
 
-            .#{$component}-input {
+            .#{$component}__input {
                 // Default value - will be overridden by JS for precise padding
                 padding-left: 76px;
             }
@@ -241,17 +241,17 @@ $component: "#{base.$prefix}-textfield";
     }
 
     &--with-trailing-icon {
-        .#{$component}-input {
+        .#{$component}__input {
             padding-right: 44px;
         }
 
         // If there's also a suffix, adjust positions
         &.#{$component}--with-suffix {
-            .#{$component}-suffix {
+            .#{$component}__suffix {
                 right: 44px;
             }
 
-            .#{$component}-input {
+            .#{$component}__input {
                 // Default value - will be overridden by JS for precise padding
                 padding-right: 76px;
             }
@@ -266,17 +266,17 @@ $component: "#{base.$prefix}-textfield";
             color: t.color("error");
         }
 
-        .#{$component}-leading-icon,
-        .#{$component}-trailing-icon,
-        .#{$component}-prefix,
-        .#{$component}-suffix {
+        .#{$component}__leading-icon,
+        .#{$component}__trailing-icon,
+        .#{$component}__prefix,
+        .#{$component}__suffix {
             color: t.color("error");
         }
     }
 
     // Disabled state
     &--disabled {
-        .#{$component}-input {
+        .#{$component}__input {
             opacity: 0.38;
             border-color: t.color("on-surface");
             background-color: t.alpha("on-surface", 0.04);
@@ -288,34 +288,34 @@ $component: "#{base.$prefix}-textfield";
             opacity: 0.38;
         }
 
-        .#{$component}-leading-icon,
-        .#{$component}-trailing-icon,
-        .#{$component}-prefix,
-        .#{$component}-suffix {
+        .#{$component}__leading-icon,
+        .#{$component}__trailing-icon,
+        .#{$component}__prefix,
+        .#{$component}__suffix {
             color: t.color("on-surface");
             opacity: 0.38;
         }
     }
 
     // Disabled state - legacy support for direct input disabled
-    &-input:disabled {
+    &__input:disabled {
         opacity: 0.38;
         border-color: t.color("on-surface");
         background-color: t.alpha("on-surface", 0.04);
         pointer-events: none;
 
         & ~ .#{$component}__label,
-        & ~ .#{$component}-leading-icon,
-        & ~ .#{$component}-trailing-icon,
-        & ~ .#{$component}-prefix,
-        & ~ .#{$component}-suffix {
+        & ~ .#{$component}__leading-icon,
+        & ~ .#{$component}__trailing-icon,
+        & ~ .#{$component}__prefix,
+        & ~ .#{$component}__suffix {
             color: t.color("on-surface");
             opacity: 0.38;
         }
     }
 
     // Helper text / Supporting text
-    &-helper {
+    &__helper {
         @include m.typography("body-small");
         position: absolute;
         bottom: -18px;
@@ -329,7 +329,7 @@ $component: "#{base.$prefix}-textfield";
     }
 
     // Required indicator
-    &-required {
+    &__required {
         color: t.color("error");
         margin-left: 4px;
     }
@@ -340,10 +340,10 @@ $component: "#{base.$prefix}-textfield";
             transition: none;
         }
 
-        &-prefix,
-        &-suffix,
-        &-leading-icon,
-        &-trailing-icon {
+        &__prefix,
+        &__suffix,
+        &__leading-icon,
+        &__trailing-icon {
             transition: none;
         }
     }
@@ -356,27 +356,27 @@ $component: "#{base.$prefix}-textfield";
             transform-origin: right top;
         }
 
-        &-required {
+        &__required {
             margin-left: 0;
             margin-right: 4px;
         }
 
-        &-prefix {
+        &__prefix {
             left: auto;
             right: 16px;
         }
 
-        &-suffix {
+        &__suffix {
             right: auto;
             left: 16px;
         }
 
-        &-leading-icon {
+        &__leading-icon {
             left: auto;
             right: 12px;
         }
 
-        &-trailing-icon {
+        &__trailing-icon {
             right: auto;
             left: 12px;
         }
@@ -388,7 +388,7 @@ $component: "#{base.$prefix}-textfield";
                 right: 48px;
             }
 
-            .#{$component}-input {
+            .#{$component}__input {
                 padding-left: 16px;
                 // Default value - will be overridden by JS for precise padding
                 padding-right: 48px;
@@ -396,7 +396,7 @@ $component: "#{base.$prefix}-textfield";
         }
 
         &--with-suffix {
-            .#{$component}-input {
+            .#{$component}__input {
                 padding-right: 16px;
                 // Default value - will be overridden by JS for precise padding
                 padding-left: 48px;
@@ -409,13 +409,13 @@ $component: "#{base.$prefix}-textfield";
                 right: 44px;
             }
 
-            .#{$component}-input {
+            .#{$component}__input {
                 padding-left: 16px;
                 padding-right: 44px;
             }
 
             &.#{$component}--with-prefix {
-                .#{$component}-prefix {
+                .#{$component}__prefix {
                     left: auto;
                     right: 44px;
                 }
@@ -426,7 +426,7 @@ $component: "#{base.$prefix}-textfield";
                     right: 76px;
                 }
 
-                .#{$component}-input {
+                .#{$component}__input {
                     padding-left: 16px;
                     // Default value - will be overridden by JS for precise padding
                     padding-right: 76px;
@@ -435,18 +435,18 @@ $component: "#{base.$prefix}-textfield";
         }
 
         &--with-trailing-icon {
-            .#{$component}-input {
+            .#{$component}__input {
                 padding-right: 16px;
                 padding-left: 44px;
             }
 
             &.#{$component}--with-suffix {
-                .#{$component}-suffix {
+                .#{$component}__suffix {
                     right: auto;
                     left: 44px;
                 }
 
-                .#{$component}-input {
+                .#{$component}__input {
                     padding-right: 16px;
                     // Default value - will be overridden by JS for precise padding
                     padding-left: 76px;
@@ -463,7 +463,7 @@ $component: "#{base.$prefix}-textfield";
         .#{$component}__label {
             opacity: 1;
         }
-        .#{$component}-input {
+        .#{$component}__input {
             background-color: t.color("surface-container-highest");
             padding: 20px 16px 7px;
             border-bottom: 1px solid t.color("outline");
@@ -511,7 +511,7 @@ $component: "#{base.$prefix}-textfield";
         }
 
         // CSS-only fallback for when input has value (works without JS)
-        .#{$component}-input:not(:placeholder-shown) ~ .#{$component}__label {
+        .#{$component}__input:not(:placeholder-shown) ~ .#{$component}__label {
             transform: translateY(-95%) scale(0.75);
         }
 
@@ -520,8 +520,8 @@ $component: "#{base.$prefix}-textfield";
         &.mtrl-textfield--with-suffix {
             &:not(.#{$component}--empty),
             &.#{$component}--focused {
-                .#{$component}-prefix,
-                .#{$component}-suffix {
+                .#{$component}__prefix,
+                .#{$component}__suffix {
                     top: 34px; // Align with input text when focused or populated
                 }
             }
@@ -554,27 +554,27 @@ $component: "#{base.$prefix}-textfield";
             border-bottom-color: t.alpha("on-surface", 0.38);
             pointer-events: none;
 
-            .#{$component}-input {
+            .#{$component}__input {
                 background-color: t.alpha("on-surface", 0.04);
             }
         }
 
         // Prefix/suffix adjustments for filled variant
         &.#{$component}--with-prefix {
-            .#{$component}-prefix {
+            .#{$component}__prefix {
                 top: 28px; // Align with input text in filled variant - default state
             }
         }
 
         &.#{$component}--with-suffix {
-            .#{$component}-suffix {
+            .#{$component}__suffix {
                 top: 28px; // Align with input text in filled variant - default state
             }
         }
 
         // Icon adjustments for filled variant
         &.#{$component}--with-leading-icon {
-            .#{$component}-input {
+            .#{$component}__input {
                 padding: 20px 16px 7px 44px;
             }
 
@@ -582,7 +582,7 @@ $component: "#{base.$prefix}-textfield";
                 left: 44px;
             }
 
-            .#{$component}-leading-icon {
+            .#{$component}__leading-icon {
                 top: 28px;
             }
         }
@@ -598,11 +598,11 @@ $component: "#{base.$prefix}-textfield";
         }
 
         &.#{$component}--with-trailing-icon {
-            .#{$component}-input {
+            .#{$component}__input {
                 padding-right: 44px;
             }
 
-            .#{$component}-trailing-icon {
+            .#{$component}__trailing-icon {
                 top: 28px;
             }
         }
@@ -615,7 +615,7 @@ $component: "#{base.$prefix}-textfield";
             }
 
             &.#{$component}--with-leading-icon {
-                .#{$component}-input {
+                .#{$component}__input {
                     padding: 20px 44px 7px 16px;
                 }
 
@@ -626,7 +626,7 @@ $component: "#{base.$prefix}-textfield";
             }
 
             &.#{$component}--with-trailing-icon {
-                .#{$component}-input {
+                .#{$component}__input {
                     padding-right: 16px;
                     padding-left: 44px;
                 }
@@ -640,7 +640,7 @@ $component: "#{base.$prefix}-textfield";
         border-radius: f.get-shape("extra-small");
         @include m.motion-transition(border-color);
 
-        .#{$component}-input {
+        .#{$component}__input {
             background-color: transparent;
             padding: 12px 15px 13px;
             border: 1px solid t.color("outline");
@@ -698,7 +698,7 @@ $component: "#{base.$prefix}-textfield";
         }
 
         // CSS-only fallback for when input has value (works without JS)
-        .#{$component}-input:not(:placeholder-shown) ~ .#{$component}__label {
+        .#{$component}__input:not(:placeholder-shown) ~ .#{$component}__label {
             padding: 0 4px;
             transform: translateY(-147%) scale(0.75);
             left: 14px;
@@ -745,20 +745,20 @@ $component: "#{base.$prefix}-textfield";
 
         // Prefix/suffix vertical alignment for outlined variant
         &.#{$component}--with-prefix {
-            .#{$component}-prefix {
+            .#{$component}__prefix {
                 top: 50%; // Centered vertically in outlined variant
             }
         }
 
         &.#{$component}--with-suffix {
-            .#{$component}-suffix {
+            .#{$component}__suffix {
                 top: 50%; // Centered vertically in outlined variant
             }
         }
 
         // Icon adjustments for outlined variant
         &.#{$component}--with-leading-icon {
-            .#{$component}-input {
+            .#{$component}__input {
                 padding-left: 44px;
             }
 
@@ -775,7 +775,7 @@ $component: "#{base.$prefix}-textfield";
         }
 
         &.#{$component}--with-trailing-icon {
-            .#{$component}-input {
+            .#{$component}__input {
                 padding-right: 44px;
             }
         }
@@ -797,7 +797,7 @@ $component: "#{base.$prefix}-textfield";
             }
 
             &.#{$component}--with-leading-icon {
-                .#{$component}-input {
+                .#{$component}__input {
                     padding-left: 16px;
                     padding-right: 44px;
                 }
@@ -816,7 +816,7 @@ $component: "#{base.$prefix}-textfield";
             }
 
             &.#{$component}--with-trailing-icon {
-                .#{$component}-input {
+                .#{$component}__input {
                     padding-right: 16px;
                     padding-left: 44px;
                 }
@@ -826,15 +826,15 @@ $component: "#{base.$prefix}-textfield";
 
     // Multiline styles
     &--multiline {
-        .#{$component}-input {
+        .#{$component}__input {
             min-height: 100px;
             height: auto;
             resize: vertical;
             padding-top: 12px;
         }
 
-        .#{$component}-prefix,
-        .#{$component}-suffix {
+        .#{$component}__prefix,
+        .#{$component}__suffix {
             top: 28px;
         }
 
@@ -844,16 +844,16 @@ $component: "#{base.$prefix}-textfield";
     }
 
     // Support for multiline inputs
-    &-input[type="multiline"] {
+    &__input[type="multiline"] {
         min-height: 100px;
         height: auto; // Allow height to adjust based on content
         max-height: none; // Remove max-height constraint from regular inputs
         flex-shrink: 1; // Allow some shrinking for multiline
 
-        & ~ .#{$component}-leading-icon,
-        & ~ .#{$component}-trailing-icon,
-        & ~ .#{$component}-prefix,
-        & ~ .#{$component}-suffix {
+        & ~ .#{$component}__leading-icon,
+        & ~ .#{$component}__trailing-icon,
+        & ~ .#{$component}__prefix,
+        & ~ .#{$component}__suffix {
             top: 20px;
             transform: none;
         }
@@ -862,7 +862,7 @@ $component: "#{base.$prefix}-textfield";
     // ===== DENSITY VARIANTS =====
     // Compact density (40px height)
     &--density-compact {
-        .#{$component}-input {
+        .#{$component}__input {
             height: 40px;
             padding: 8px 16px;
             @include m.typography("body-medium"); // Slightly smaller text
@@ -874,8 +874,8 @@ $component: "#{base.$prefix}-textfield";
         }
 
         // Adjust icon positions for compact height
-        .#{$component}-leading-icon,
-        .#{$component}-trailing-icon {
+        .#{$component}__leading-icon,
+        .#{$component}__trailing-icon {
             width: 20px;
             height: 20px;
 
@@ -886,14 +886,14 @@ $component: "#{base.$prefix}-textfield";
         }
 
         // Adjust prefix/suffix position for compact
-        .#{$component}-prefix,
-        .#{$component}-suffix {
+        .#{$component}__prefix,
+        .#{$component}__suffix {
             @include m.typography("body-medium");
         }
 
         // Filled variant with compact density
         &.#{$component}--filled {
-            .#{$component}-input {
+            .#{$component}__input {
                 padding: 12px 16px 4px; // Adjusted for filled variant
             }
 
@@ -908,23 +908,23 @@ $component: "#{base.$prefix}-textfield";
             &.mtrl-textfield--with-suffix {
                 &:not(.#{$component}--empty),
                 &.#{$component}--focused {
-                    .#{$component}-prefix,
-                    .#{$component}-suffix {
+                    .#{$component}__prefix,
+                    .#{$component}__suffix {
                         top: 22px; // Adjusted for compact filled variant
                     }
                 }
             }
 
             // Adjust icons for filled compact
-            .#{$component}-leading-icon,
-            .#{$component}-trailing-icon {
+            .#{$component}__leading-icon,
+            .#{$component}__trailing-icon {
                 top: 20px; // Adjusted for compact filled
             }
         }
 
         // Outlined variant with compact density
         &.#{$component}--outlined {
-            .#{$component}-input {
+            .#{$component}__input {
                 padding: 9px 15px 8px;
             }
 
@@ -937,7 +937,7 @@ $component: "#{base.$prefix}-textfield";
 
         // Multiline with compact density
         &.#{$component}--multiline {
-            .#{$component}-input {
+            .#{$component}__input {
                 min-height: 40px;
                 padding: 8px 16px;
             }
@@ -949,12 +949,12 @@ $component: "#{base.$prefix}-textfield";
                 left: 40px; // Reduced from 44px
             }
 
-            .#{$component}-input {
+            .#{$component}__input {
                 padding-left: 40px;
             }
 
             &.#{$component}--with-prefix {
-                .#{$component}-prefix {
+                .#{$component}__prefix {
                     left: 40px;
                 }
 
@@ -962,23 +962,23 @@ $component: "#{base.$prefix}-textfield";
                     left: 68px; // Adjusted for compact
                 }
 
-                .#{$component}-input {
+                .#{$component}__input {
                     padding-left: 68px;
                 }
             }
         }
 
         &.#{$component}--with-trailing-icon {
-            .#{$component}-input {
+            .#{$component}__input {
                 padding-right: 40px;
             }
 
             &.#{$component}--with-suffix {
-                .#{$component}-suffix {
+                .#{$component}__suffix {
                     right: 40px;
                 }
 
-                .#{$component}-input {
+                .#{$component}__input {
                     padding-right: 68px;
                 }
             }
@@ -992,13 +992,13 @@ $component: "#{base.$prefix}-textfield";
                     right: 40px;
                 }
 
-                .#{$component}-input {
+                .#{$component}__input {
                     padding-left: 16px;
                     padding-right: 40px;
                 }
 
                 &.#{$component}--with-prefix {
-                    .#{$component}-prefix {
+                    .#{$component}__prefix {
                         left: auto;
                         right: 40px;
                     }
@@ -1008,7 +1008,7 @@ $component: "#{base.$prefix}-textfield";
                         right: 68px;
                     }
 
-                    .#{$component}-input {
+                    .#{$component}__input {
                         padding-left: 16px;
                         padding-right: 68px;
                     }
@@ -1016,18 +1016,18 @@ $component: "#{base.$prefix}-textfield";
             }
 
             &.#{$component}--with-trailing-icon {
-                .#{$component}-input {
+                .#{$component}__input {
                     padding-right: 16px;
                     padding-left: 40px;
                 }
 
                 &.#{$component}--with-suffix {
-                    .#{$component}-suffix {
+                    .#{$component}__suffix {
                         right: auto;
                         left: 40px;
                     }
 
-                    .#{$component}-input {
+                    .#{$component}__input {
                         padding-right: 16px;
                         padding-left: 68px;
                     }

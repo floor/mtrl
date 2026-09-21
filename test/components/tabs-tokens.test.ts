@@ -66,7 +66,7 @@ describe('the tab indicator carries its token height', () => {
   });
 
   test('the stylesheet no longer hardcodes a competing height', () => {
-    for (const variant of [/tabs--primary .*-indicator$/, /tabs--secondary .*-indicator$/]) {
+    for (const variant of [/tabs--primary .*__indicator$/, /tabs--secondary .*__indicator$/]) {
       expect(decl(bodyOf(variant), 'height')).toBeUndefined();
     }
   });
@@ -74,14 +74,14 @@ describe('the tab indicator carries its token height', () => {
 
 describe('the indicator colour and shape follow the tokens', () => {
   test('both variants use the primary active-indicator colour', () => {
-    const primary = decl(bodyOf(/tabs--primary .*-indicator$/), 'background-color');
-    const secondary = decl(bodyOf(/tabs--secondary .*-indicator$/), 'background-color');
+    const primary = decl(bodyOf(/tabs--primary .*__indicator$/), 'background-color');
+    const secondary = decl(bodyOf(/tabs--secondary .*__indicator$/), 'background-color');
     expect(primary).toBe('var(--mtrl-sys-color-primary)');
     expect(secondary).toBe('var(--mtrl-sys-color-primary)');
   });
 
   test('the primary indicator takes a 3px corner on every side', () => {
-    expect(decl(bodyOf(/tabs--primary .*-indicator$/), 'border-radius')).toBe('3px');
+    expect(decl(bodyOf(/tabs--primary .*__indicator$/), 'border-radius')).toBe('3px');
   });
 });
 
@@ -106,24 +106,24 @@ describe('the fixed form and the scrollable edges', () => {
   });
 
   test('the fixed-form rule targets direct children, since no scroll container is built', () => {
-    // withScrollable returns early when scrollable is false, so .mtrl-tabs-scroll does
+    // withScrollable returns early when scrollable is false, so .mtrl-tabs__scroll does
     // not exist in that form; a rule keyed on it would match nothing.
     const fixed = rules.find((r) => /:not\(.*--scrollable\) > /.test(r.selector));
     expect(fixed?.selector).not.toContain('tabs-scroll');
   });
 
   test('the scroll container is padded at both edges', () => {
-    expect(decl(bodyOf(/--scrollable .*-scroll$/), 'padding-inline')).toBe('52px');
+    expect(decl(bodyOf(/--scrollable .*__scroll$/), 'padding-inline')).toBe('52px');
   });
 
   test('a scrollable tabs component still builds its scroll container', () => {
     const tabs = createTabs({ tabs: [{ text: 'One', value: 'one' }], scrollable: true });
-    expect(tabs.element.querySelector('.mtrl-tabs-scroll')).not.toBeNull();
+    expect(tabs.element.querySelector('.mtrl-tabs__scroll')).not.toBeNull();
   });
 
   test('a fixed tabs component does not, so the tabs are direct children', () => {
     const tabs = createTabs({ tabs: [{ text: 'One', value: 'one' }], scrollable: false });
-    expect(tabs.element.querySelector('.mtrl-tabs-scroll')).toBeNull();
+    expect(tabs.element.querySelector('.mtrl-tabs__scroll')).toBeNull();
     expect(tabs.element.querySelector(':scope > button.mtrl-tab')).not.toBeNull();
   });
 });

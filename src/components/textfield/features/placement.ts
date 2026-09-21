@@ -69,10 +69,10 @@ export const withPlacement =
         `.${PREFIX}-${COMPONENT}__label`
       ) as HTMLElement;
       const prefixEl = component.element.querySelector(
-        `.${PREFIX}-${COMPONENT}-prefix`
+        `.${PREFIX}-${COMPONENT}__prefix`
       );
       const suffixEl = component.element.querySelector(
-        `.${PREFIX}-${COMPONENT}-suffix`
+        `.${PREFIX}-${COMPONENT}__suffix`
       );
 
       // Get component states

@@ -218,7 +218,7 @@ export const withScrollable =
 
     // Create container for tabs that can scroll
     const scrollContainer = document.createElement("div");
-    scrollContainer.className = `${component.getClass("tabs")}-scroll`;
+    scrollContainer.className = `${component.getClass("tabs")}__scroll`;
 
     // Move any existing children to scroll container
     while (component.element.firstChild) {
@@ -257,7 +257,7 @@ export const withDivider =
 
     // Create the divider element
     const divider = document.createElement("div");
-    divider.className = `${component.getClass("tabs")}-divider`;
+    divider.className = `${component.getClass("tabs")}__divider`;
 
     // Add the divider to the main element
     component.element.appendChild(divider);

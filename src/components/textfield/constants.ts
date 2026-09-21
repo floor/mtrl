@@ -110,7 +110,7 @@ export const TEXTFIELD_CLASSES = {
   /** Root element class */
   ROOT: "textfield",
   /** Input element class */
-  INPUT: "textfield-input",
+  INPUT: "textfield__input",
   /** Label element class */
   LABEL: "textfield__label",
   /** Container element class */
@@ -134,9 +134,9 @@ export const TEXTFIELD_CLASSES = {
   /** Supporting text error class */
   SUPPORTING_TEXT_ERROR: "textfield-supporting-text--error",
   /** Leading icon class */
-  LEADING_ICON: "textfield-leading-icon",
+  LEADING_ICON: "textfield__leading-icon",
   /** Trailing icon class */
-  TRAILING_ICON: "textfield-trailing-icon",
+  TRAILING_ICON: "textfield__trailing-icon",
   /** Prefix text class */
   PREFIX_TEXT: "textfield-prefix-text",
   /** Suffix text class */

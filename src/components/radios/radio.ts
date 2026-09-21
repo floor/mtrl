@@ -41,14 +41,14 @@ export const withRadio =
   const createRadioItem = (option: RadioOptionConfig): RadioItem => {
     // Create container
     const radioContainer = document.createElement('div');
-    radioContainer.classList.add(`${radiosClass}-item`);
+    radioContainer.classList.add(`${radiosClass}__item`);
     
     // Create input
     const input = document.createElement('input');
     input.type = 'radio';
     input.name = config.name;
     input.value = option.value;
-    input.classList.add(`${radiosClass}-input`);
+    input.classList.add(`${radiosClass}__input`);
     
     // Set checked state if value matches
     if (selectedValue === option.value) {
@@ -58,25 +58,25 @@ export const withRadio =
     // Set disabled state if needed
     if (config.disabled || option.disabled) {
       input.disabled = true;
-      radioContainer.classList.add(`${radiosClass}-item--disabled`);
+      radioContainer.classList.add(`${radiosClass}__item--disabled`);
     }
     
     // Create label
     const label = document.createElement('label');
-    label.classList.add(`${radiosClass}-label`);
+    label.classList.add(`${radiosClass}__label`);
     
     // Create a container for the radio visual
     const radioControl = document.createElement('span');
-    radioControl.classList.add(`${radiosClass}-control`);
+    radioControl.classList.add(`${radiosClass}__control`);
     
     // Create the radio circle
     const radioCircle = document.createElement('span');
-    radioCircle.classList.add(`${radiosClass}-circle`);
+    radioCircle.classList.add(`${radiosClass}__circle`);
     
     // Add ripple container if ripple is enabled
     if (config.ripple !== false) {
       const rippleContainer = document.createElement('span');
-      rippleContainer.classList.add(`${radiosClass}-ripple`);
+      rippleContainer.classList.add(`${radiosClass}__ripple`);
       radioControl.appendChild(rippleContainer);
     }
     
@@ -85,12 +85,12 @@ export const withRadio =
     
     // Create text span
     const textSpan = document.createElement('span');
-    textSpan.classList.add(`${radiosClass}-text`);
+    textSpan.classList.add(`${radiosClass}__text`);
     textSpan.textContent = option.label;
     
     // Set label position
     if (option.labelBefore) {
-      label.classList.add(`${radiosClass}-label--before`);
+      label.classList.add(`${radiosClass}__label--before`);
       label.appendChild(textSpan);
       label.appendChild(radioControl);
     } else {
@@ -240,7 +240,7 @@ export const withRadio =
       radios.forEach(radio => {
         radio.input.disabled = radio.config.disabled || false;
         if (!radio.config.disabled) {
-          radio.element.classList.remove(`${radiosClass}-item--disabled`);
+          radio.element.classList.remove(`${radiosClass}__item--disabled`);
         }
       });
       
@@ -252,7 +252,7 @@ export const withRadio =
       
       radios.forEach(radio => {
         radio.input.disabled = true;
-        radio.element.classList.add(`${radiosClass}-item--disabled`);
+        radio.element.classList.add(`${radiosClass}__item--disabled`);
       });
       
       return component;
@@ -266,7 +266,7 @@ export const withRadio =
         radio.input.disabled = component.element.classList.contains(`${radiosClass}--disabled`);
         
         if (!radio.input.disabled) {
-          radio.element.classList.remove(`${radiosClass}-item--disabled`);
+          radio.element.classList.remove(`${radiosClass}__item--disabled`);
         }
       }
       
@@ -279,7 +279,7 @@ export const withRadio =
       if (radio) {
         radio.config.disabled = true;
         radio.input.disabled = true;
-        radio.element.classList.add(`${radiosClass}-item--disabled`);
+        radio.element.classList.add(`${radiosClass}__item--disabled`);
       }
       
       return component;
