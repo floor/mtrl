@@ -34,8 +34,8 @@
  * });
  *
  * // Listen for toggle events
- * favoriteButton.on('toggle', (e) => {
- *   console.log('Selected:', e.detail.selected);
+ * favoriteButton.element.addEventListener('toggle', () => {
+ *   console.log('Selected:', favoriteButton.isSelected());
  * });
  *
  * // Attach to DOM
@@ -50,6 +50,7 @@ export { default, default as createIconButton } from './icon-button';
 export type {
   IconButtonConfig,
   IconButtonComponent,
+  IconButtonEvents,
   IconAPI,
   ToggleManager
 } from './types';
