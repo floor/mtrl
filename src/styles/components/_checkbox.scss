@@ -67,7 +67,7 @@ $component: '#{base.$prefix}-checkbox';
   }
 
   // Label styling
-  &-label {
+  &__label {
     @include m.typography('body-large');
     margin-left: 12px;
     color: t.color('on-surface');
@@ -75,7 +75,7 @@ $component: '#{base.$prefix}-checkbox';
 
   // Label position variants
   &--label-start {
-    .#{$component}-label {
+    .#{$component}__label {
       margin-left: 0;
       margin-right: 12px;
     }
@@ -84,7 +84,7 @@ $component: '#{base.$prefix}-checkbox';
   &--label-end {
     flex-direction: row;
 
-    .#{$component}-label {
+    .#{$component}__label {
       margin-left: 12px;
       margin-right: 0;
     }
@@ -93,14 +93,14 @@ $component: '#{base.$prefix}-checkbox';
   // RTL support
   @include m.rtl {
     &--label-start {
-      .#{$component}-label {
+      .#{$component}__label {
         margin-left: 12px;
         margin-right: 0;
       }
     }
 
     &--label-end {
-      .#{$component}-label {
+      .#{$component}__label {
         margin-left: 0;
         margin-right: 12px;
       }
@@ -159,7 +159,7 @@ $component: '#{base.$prefix}-checkbox';
       color: t.color('surface');
     }
 
-    .#{$component}-label {
+    .#{$component}__label {
       color: t.alpha('on-surface', 0.38);
     }
   }

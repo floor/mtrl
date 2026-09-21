@@ -78,7 +78,10 @@ const createText = (element: HTMLElement, config: TextConfig = {}): TextManager 
    */
   const createElement = (content: string): HTMLElement => {
     const span = document.createElement('span');
-    span.className = `${PREFIX}-${config.componentName || 'component'}-text`;
+    // BEM, as with withIcon and withTextLabel: this text belongs to whichever
+    // component applied the feature -- button, extended-fab or snackbar.
+    // FLO-120.
+    span.className = `${PREFIX}-${config.componentName || 'component'}__text`;
     span.textContent = content;
     return span;
   };

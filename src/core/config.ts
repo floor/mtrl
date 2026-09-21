@@ -26,7 +26,7 @@ export const getModifierClass = (baseClass: string, modifier: string): string =>
  * @param element - Element name
  * @returns Element class name
  */
-export const getElementClass = (baseClass: string, element: string): string => `${baseClass}-${element}`;
+export const getElementClass = (baseClass: string, element: string): string => `${baseClass}__${element}`;
 
 
 /**

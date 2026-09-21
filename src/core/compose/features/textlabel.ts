@@ -72,7 +72,10 @@ export const withTextLabel =
 
     const labelElement = document.createElement("label");
     const position = config.labelPosition || "start";
-    labelElement.className = `${config.prefix}-${config.componentName}-label ${config.prefix}-${config.componentName}-label--${position}`;
+    // BEM, for the same reason as withIcon: this label belongs to whichever
+    // component applied the feature -- checkbox, slider, switch or
+    // textfield. FLO-120.
+    labelElement.className = `${config.prefix}-${config.componentName}__label ${config.prefix}-${config.componentName}__label--${position}`;
     labelElement.textContent = config.label;
     // the label names the input: without the link a screen reader has no
     // name for the field and a click on the label focuses nothing

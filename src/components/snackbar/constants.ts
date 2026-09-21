@@ -131,7 +131,7 @@ export const SNACKBAR_CLASSES = {
   DISMISSIBLE: 'snackbar--dismissible',
   /** The action is too wide to sit beside the text */
   ACTION_BELOW: 'snackbar--action-below',
-  TEXT: 'snackbar-text',
+  TEXT: 'snackbar__text',
   ACTION: 'snackbar-action',
   CLOSE: 'snackbar-close'
 } as const;

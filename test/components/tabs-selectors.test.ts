@@ -82,8 +82,8 @@ describe('tabs: the stylesheet targets classes the component emits', () => {
   test('the icon and label children carry the button classes the rules now target', () => {
     const tabs = build();
     const tab = tabs.element.querySelector('button') as HTMLElement;
-    expect(tab.querySelector('.mtrl-button-icon')).not.toBeNull();
-    expect(tab.querySelector('.mtrl-button-text')).not.toBeNull();
+    expect(tab.querySelector('.mtrl-button__icon')).not.toBeNull();
+    expect(tab.querySelector('.mtrl-button__text')).not.toBeNull();
     // and not the ones the dead rules assumed
     expect(tab.querySelector('.mtrl-tab-icon')).toBeNull();
     expect(tab.querySelector('.mtrl-tab-text')).toBeNull();
@@ -91,14 +91,14 @@ describe('tabs: the stylesheet targets classes the component emits', () => {
 
   test('the icon rule matches a real icon element', () => {
     const tabs = build();
-    const icon = tabs.element.querySelector('.mtrl-button-icon') as HTMLElement;
-    const rule = selectors().find((s) => s.endsWith('.mtrl-button-icon') && s.includes('mtrl-tab'));
+    const icon = tabs.element.querySelector('.mtrl-button__icon') as HTMLElement;
+    const rule = selectors().find((s) => s.endsWith('.mtrl-button__icon') && s.includes('mtrl-tab'));
     expect(rule).toBeDefined();
     expect(icon).not.toBeNull();
   });
 
   test('the icon-only label rule hangs off the tab itself', () => {
-    const iconOnly = selectors().filter((s) => /mtrl-tab--icon-only .*button-text/.test(s));
+    const iconOnly = selectors().filter((s) => /mtrl-tab--icon-only .*button__text/.test(s));
     expect(iconOnly.length).toBeGreaterThan(0);
     for (const selector of iconOnly) {
       // one tab in the chain, not two

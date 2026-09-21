@@ -59,7 +59,7 @@ describe('withText (additional tests)', () => {
     
     const textElement = enhanced.text.getElement();
     expect(textElement).not.toBeNull();
-    expect(textElement.className).toBe('custom-prefix-custom-component-text');
+    expect(textElement.className).toBe('custom-prefix-custom-component__text');
     expect(textElement.textContent).toBe('Test text');
   });
   
@@ -74,7 +74,7 @@ describe('withText (additional tests)', () => {
     
     const textElement = enhanced.text.getElement();
     expect(textElement).not.toBeNull();
-    expect(textElement.className).toBe('mtrl-custom-component-text');
+    expect(textElement.className).toBe('mtrl-custom-component__text');
   });
   
   test('should use "component" as default type if componentName not provided', () => {
@@ -87,6 +87,6 @@ describe('withText (additional tests)', () => {
     
     const textElement = enhanced.text.getElement();
     expect(textElement).not.toBeNull();
-    expect(textElement.className).toBe('mtrl-component-text');
+    expect(textElement.className).toBe('mtrl-component__text');
   });
 });

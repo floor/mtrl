@@ -627,7 +627,7 @@ describe("Button group selection (Material 3 kinds)", () => {
     });
     expect(group.element.classList.contains("mtrl-button-group--labels-selected")).toBe(true);
     expect(group.element.getAttribute("data-labels")).toBe("selected");
-    expect(group.buttons[1].element.querySelector(".mtrl-button-text")?.textContent).toBe("Beta");
+    expect(group.buttons[1].element.querySelector(".mtrl-button__text")?.textContent).toBe("Beta");
     expect(group.buttons[0].element.classList.contains("mtrl-button-group__button--selected")).toBe(true);
     const plain = createButtonGroup({ buttons: [{ text: "x", value: "x" }] });
     expect(plain.element.getAttribute("data-labels")).toBe("always");

@@ -35,7 +35,7 @@ $component: '#{base.$prefix}-switch';
   }
 
   // Label
-  &-label {
+  &__label {
     @include m.typography('title-medium');
     font-size: 18px;
     color: t.color('on-surface');
@@ -212,7 +212,7 @@ $component: '#{base.$prefix}-switch';
       background-color: t.alpha('on-surface', 0.38);
     }
 
-    .#{$component}-label, .#{$component}-helper {
+    .#{$component}__label, .#{$component}-helper {
       color: t.alpha('on-surface', 0.38);
       opacity: 1;
     }

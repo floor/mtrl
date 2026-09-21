@@ -37,7 +37,7 @@ describe('icon button geometry tokens', () => {
           const widthSelector = width === 'default' ? sizeSelector : `${root}--${width}${suffix}`;
           expect(value(widthSelector, 'width')).toBe(`${row.widths[index]}px`);
           expect(value(sizeSelector, 'height')).toBe(`${row.container}px`);
-          for (const iconSelector of ['.mtrl-icon', `${root}-icon`]) {
+          for (const iconSelector of ['.mtrl-icon', `${root}__icon`]) {
             expect(value(`${sizeSelector} ${iconSelector}`, 'width')).toBe(`${row.icon}px`);
             expect(value(`${sizeSelector} ${iconSelector}`, 'height')).toBe(`${row.icon}px`);
           }

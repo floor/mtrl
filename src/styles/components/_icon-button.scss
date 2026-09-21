@@ -205,7 +205,7 @@ $widths: (
     // ---------------------------------------------------------------------------
     &__icon,
     .#{base.$prefix}-icon,
-    .#{$component}-icon {
+    .#{$component}__icon {
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -228,7 +228,7 @@ $widths: (
         height: get-size("xs", container);
 
         .#{base.$prefix}-icon,
-        .#{$component}-icon {
+        .#{$component}__icon {
             width: get-size("xs", icon);
             height: get-size("xs", icon);
         }
@@ -251,7 +251,7 @@ $widths: (
         height: get-size("m", container);
 
         .#{base.$prefix}-icon,
-        .#{$component}-icon {
+        .#{$component}__icon {
             width: get-size("m", icon);
             height: get-size("m", icon);
         }
@@ -262,7 +262,7 @@ $widths: (
         height: get-size("l", container);
 
         .#{base.$prefix}-icon,
-        .#{$component}-icon {
+        .#{$component}__icon {
             width: get-size("l", icon);
             height: get-size("l", icon);
         }
@@ -273,7 +273,7 @@ $widths: (
         height: get-size("xl", container);
 
         .#{base.$prefix}-icon,
-        .#{$component}-icon {
+        .#{$component}__icon {
             width: get-size("xl", icon);
             height: get-size("xl", icon);
         }

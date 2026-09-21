@@ -106,7 +106,7 @@ $content-color: (
     background-color: t.alpha('on-surface', 0.1);
     box-shadow: none;
 
-    .#{$component}-icon {
+    .#{$component}__icon {
       color: t.alpha('on-surface-variant', 0.38);
     }
   }
@@ -124,7 +124,7 @@ $content-color: (
   }
 
   // Icon
-  &-icon {
+  &__icon {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -139,7 +139,7 @@ $content-color: (
   }
 
   // Progress indicator: takes the icon slot
-  &-progress {
+  &__progress {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -158,7 +158,7 @@ $content-color: (
     }
   }
 
-  &-text {
+  &__text {
     @include m.truncate;
   }
 
@@ -172,9 +172,9 @@ $content-color: (
       gap: v.button('icon-gap-#{$size}');
       @include m.typography(map.get($label-typescale, $size));
 
-      .#{$component}-icon,
-      .#{$component}-progress,
-      .#{$component}-progress.#{base.$prefix}-progress {
+      .#{$component}__icon,
+      .#{$component}__progress,
+      .#{$component}__progress.#{base.$prefix}-progress {
         width: v.button('icon-size-#{$size}');
         height: v.button('icon-size-#{$size}');
       }
@@ -200,7 +200,7 @@ $content-color: (
   &--s.#{$component}--icon {
     padding-left: v.button('padding-icon');
 
-    &:has(.#{$component}-icon--end) {
+    &:has(.#{$component}__icon--end) {
       padding-left: v.button('padding-s');
       padding-right: v.button('padding-icon');
     }
@@ -333,7 +333,7 @@ $content-color: (
     &.#{$component}--icon {
       padding: 0 v.button('padding-s') 0 v.button('padding-horizontal-small');
 
-      &:has(.#{$component}-icon--end) {
+      &:has(.#{$component}__icon--end) {
         padding: 0 v.button('padding-horizontal-small') 0 v.button('padding-s');
       }
     }
@@ -494,7 +494,7 @@ $content-color: (
       }
     }
 
-    .#{$component}-text {
+    .#{$component}__text {
       display: none;
     }
 
@@ -504,7 +504,7 @@ $content-color: (
   }
 
   // Progress showing while disabled (loading state)
-  &[disabled].#{$component}--progress .#{$component}-progress {
+  &[disabled].#{$component}--progress .#{$component}__progress {
     opacity: 0.7;
   }
 }

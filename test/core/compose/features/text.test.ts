@@ -51,7 +51,7 @@ describe('withText', () => {
     
     const textElement = enhanced.text.getElement();
     expect(textElement).not.toBeNull();
-    expect(textElement.className).toBe('mtrl-button-text');
+    expect(textElement.className).toBe('mtrl-button__text');
   });
   
   test('should use "component" as default type if componentName not provided', () => {
@@ -64,7 +64,7 @@ describe('withText', () => {
     
     const textElement = enhanced.text.getElement();
     expect(textElement).not.toBeNull();
-    expect(textElement.className).toBe('mtrl-component-text');
+    expect(textElement.className).toBe('mtrl-component__text');
   });
   
   test('should pass correct parameters to createText', () => {
@@ -78,7 +78,7 @@ describe('withText', () => {
     
     const textElement = enhanced.text.getElement();
     expect(textElement).not.toBeNull();
-    expect(textElement.className).toBe('custom-checkbox-text');
+    expect(textElement.className).toBe('custom-checkbox__text');
     expect(textElement.textContent).toBe('Test text');
   });
   
@@ -93,7 +93,7 @@ describe('withText', () => {
     
     const textElement = enhanced.text.getElement();
     expect(textElement).not.toBeNull();
-    expect(textElement.className).toBe('mtrl-button-text');
+    expect(textElement.className).toBe('mtrl-button__text');
   });
   
   test('should fallback to "component" if componentName is missing', () => {
@@ -106,7 +106,7 @@ describe('withText', () => {
     
     const textElement = enhanced.text.getElement();
     expect(textElement).not.toBeNull();
-    expect(textElement.className).toBe('mtrl-component-text');
+    expect(textElement.className).toBe('mtrl-component__text');
   });
   
   test('should set initial text if provided in config', () => {

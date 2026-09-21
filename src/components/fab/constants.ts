@@ -55,7 +55,7 @@ export const FAB_CLASSES = {
   /** Root element class */
   ROOT: 'fab',
   /** Class for the icon container */
-  ICON: 'fab-icon',
+  ICON: 'fab__icon',
   /** Applied when FAB is lowered (pressed state) */
   LOWERED: 'fab--lowered',
   /** Applied to small FABs */

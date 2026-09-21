@@ -155,7 +155,7 @@ test('setDensity replaces the previous density class', () => {
 test('text-only segments insert a checkmark before the label', () => {
   const group = make({ mode: SelectionMode.MULTI }); const element = group.segments[0].element;
   const mark = element.querySelector('.mtrl-segment-checkmark')!;
-  const label = element.querySelector('.mtrl-button-text')!;
+  const label = element.querySelector('.mtrl-button__text')!;
   expect(mark.querySelector('svg')).not.toBeNull(); expect(mark.nextElementSibling).toBe(label);
   group.select('day'); expect(element.classList.contains('mtrl-segment--selected')).toBe(true);
   group.deselect('day'); expect(element.classList.contains('mtrl-segment--selected')).toBe(false);

@@ -96,7 +96,7 @@ describe('switch', () => {
     const s = mount({ label: 'Wi-Fi' });
     expect(SWITCH_DEFAULTS.LABEL_POSITION).toBe('start');
     expect(s.element.classList.contains(`mtrl-switch--label-${SWITCH_DEFAULTS.LABEL_POSITION}`)).toBe(true);
-    expect(s.element.querySelector('label')?.classList.contains('mtrl-switch-label--start')).toBe(true);
+    expect(s.element.querySelector('label')?.classList.contains('mtrl-switch__label--start')).toBe(true);
   });
 
   test('an explicit label position is reflected in the root class', () => {

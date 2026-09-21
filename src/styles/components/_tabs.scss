@@ -173,8 +173,8 @@ $container: "#{base.$prefix}-tabs";
 
     // Tab Icon (3. Icon - optional)
     // The icon element the button builds carries mtrl-icon + mtrl-button__icon; a
-    // nested &-icon would concatenate onto the compound root and match nothing.
-    .#{base.$prefix}-button-icon {
+    // nested &__icon would concatenate onto the compound root and match nothing.
+    .#{base.$prefix}-button__icon {
         display: flex;
         align-items: center;
         justify-content: center;
@@ -190,13 +190,13 @@ $container: "#{base.$prefix}-tabs";
 
     // Ensure proper vertical spacing for icon and text
     &--icon-and-text {
-        .#{base.$prefix}-button-icon {
+        .#{base.$prefix}-button__icon {
             margin-bottom: 4px;
         }
     }
 
     // Tab Text (4. Label)
-    .#{base.$prefix}-button-text {
+    .#{base.$prefix}-button__text {
         @include m.truncate;
         max-width: 100%;
         text-align: center;
@@ -205,7 +205,7 @@ $container: "#{base.$prefix}-tabs";
 
     // The modifier is on the tab root, so the label is a descendant of &, not of a
     // second tab.
-    &--icon-only .#{base.$prefix}-button-text {
+    &--icon-only .#{base.$prefix}-button__text {
         @include m.visually-hidden;
     }
 
@@ -232,7 +232,7 @@ $container: "#{base.$prefix}-tabs";
         &--active {
             color: t.color("primary");
             border-radius: 0;
-            .#{base.$prefix}-button-icon {
+            .#{base.$prefix}-button__icon {
                 color: t.color("primary");
             }
 
@@ -291,7 +291,7 @@ $container: "#{base.$prefix}-tabs";
         &--active {
             color: t.color("on-surface");
             border-radius: 0;
-            .#{base.$prefix}-button-icon {
+            .#{base.$prefix}-button__icon {
                 color: t.color("on-surface");
             }
 

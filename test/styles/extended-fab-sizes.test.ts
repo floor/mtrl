@@ -22,9 +22,9 @@ for (const [size, height, icon, padding, gap, radius, fontSize, lineHeight, weig
     for (const [name, expected] of [['height', height], ['icon-size', icon], ['padding', padding], ['gap', gap], ['radius', radius]]) {
       expect(value(selector, `--mtrl-extended-fab-${name}`)).toBe(`${expected}px`);
     }
-    expect(value(`${selector} ${root}-text`, 'font-size')).toBe(`${fontSize}px`);
-    expect(value(`${selector} ${root}-text`, 'line-height')).toBe(`${lineHeight}px`);
-    expect(value(`${selector} ${root}-text`, 'font-weight')).toBe(String(weight));
+    expect(value(`${selector} ${root}__text`, 'font-size')).toBe(`${fontSize}px`);
+    expect(value(`${selector} ${root}__text`, 'line-height')).toBe(`${lineHeight}px`);
+    expect(value(`${selector} ${root}__text`, 'font-weight')).toBe(String(weight));
     expect(EXTENDED_FAB_SIZES[size.toUpperCase() as keyof typeof EXTENDED_FAB_SIZES]).toBe(size);
   });
 }
@@ -33,16 +33,16 @@ test('small is the configuration default and fallback geometry', () => {
   expect(value(root, 'height')).toBe('var(--mtrl-extended-fab-height, 56px)');
   expect(value(root, 'padding')).toBe('0 var(--mtrl-extended-fab-padding, 16px)');
   expect(value(root, 'gap')).toBe('var(--mtrl-extended-fab-gap, 8px)');
-  expect(value(`${root}-text`, 'font-size')).toBe('16px');
-  expect(value(`${root}-text`, 'margin')).toBe('0');
+  expect(value(`${root}__text`, 'font-size')).toBe('16px');
+  expect(value(`${root}__text`, 'margin')).toBe('0');
   expect(css).not.toContain('margin-left: 12px');
 });
 test('icon wrapper and SVG follow the size without extra padding', () => {
-  for (const selector of [`${root}-icon`, `${root}-icon svg`]) {
+  for (const selector of [`${root}__icon`, `${root}__icon svg`]) {
     expect(value(selector, 'width')).toBe('var(--mtrl-extended-fab-icon-size, 24px)');
     expect(value(selector, 'height')).toBe('var(--mtrl-extended-fab-icon-size, 24px)');
   }
-  expect(value(`${root}-icon`, 'padding')).toBe('0');
+  expect(value(`${root}__icon`, 'padding')).toBe('0');
 });
 test('collapsed uses the corresponding FAB box with no residual spacing or icon scaling', () => {
   const selector = `${root}--collapsed`;
@@ -50,7 +50,7 @@ test('collapsed uses the corresponding FAB box with no residual spacing or icon 
   expect(value(selector, 'min-width')).toBe('var(--mtrl-extended-fab-height, 56px)');
   expect(value(selector, 'padding')).toBe('0');
   expect(value(selector, 'gap')).toBe('0');
-  expect(value(`${selector} ${root}-icon`, 'transform')).toBe('scale(1)');
-  expect(value(`${selector} ${root}-text`, 'width')).toBe('0');
-  expect(value(`${selector} ${root}-text`, 'opacity')).toBe('0');
+  expect(value(`${selector} ${root}__icon`, 'transform')).toBe('scale(1)');
+  expect(value(`${selector} ${root}__text`, 'width')).toBe('0');
+  expect(value(`${selector} ${root}__text`, 'opacity')).toBe('0');
 });

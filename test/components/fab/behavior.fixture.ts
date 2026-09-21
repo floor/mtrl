@@ -182,7 +182,7 @@ test('extended FAB: text and collapse/expand update the real DOM and emit events
   const b = attach(createExtendedFab({ icon, text: 'Create' }));
   expect(b.getText()).toBe('Create');
   expect(b.setText('Save')).toBe(b);
-  expect(b.element.querySelector('.mtrl-extended-fab-text')?.textContent).toBe('Save');
+  expect(b.element.querySelector('.mtrl-extended-fab__text')?.textContent).toBe('Save');
   const events: string[] = [];
   b.element.addEventListener('collapse', () => events.push('collapse'));
   b.element.addEventListener('expand', () => events.push('expand'));
@@ -223,8 +223,8 @@ for (const position of ['start', 'end'] as const) {
     const b = attach(createExtendedFab({ icon, text: 'Create', iconPosition: position }));
     expect(b.element.classList.contains('mtrl-extended-fab--icon-end')).toBe(position === 'end');
     const children = Array.from(b.element.children).filter(el => !el.classList.contains('mtrl-ripple'));
-    const iconIndex = children.indexOf(b.element.querySelector('.mtrl-extended-fab-icon')!);
-    const textIndex = children.indexOf(b.element.querySelector('.mtrl-extended-fab-text')!);
+    const iconIndex = children.indexOf(b.element.querySelector('.mtrl-extended-fab__icon')!);
+    const textIndex = children.indexOf(b.element.querySelector('.mtrl-extended-fab__text')!);
     expect(iconIndex).toBeGreaterThanOrEqual(0);
     expect(textIndex).toBeGreaterThanOrEqual(0);
     expect(iconIndex < textIndex).toBe(position === 'start');
@@ -235,14 +235,14 @@ test('extended FAB: text added later stays before an end icon', () => {
   const b = attach(createExtendedFab({ icon, iconPosition: 'end' }));
   b.setText('Create');
   const children = Array.from(b.element.children);
-  expect(children.indexOf(b.element.querySelector('.mtrl-extended-fab-text')!))
-    .toBeLessThan(children.indexOf(b.element.querySelector('.mtrl-extended-fab-icon')!));
+  expect(children.indexOf(b.element.querySelector('.mtrl-extended-fab__text')!))
+    .toBeLessThan(children.indexOf(b.element.querySelector('.mtrl-extended-fab__icon')!));
 });
 
 test('extended FAB: an end icon added later follows existing text', () => {
   const b = attach(createExtendedFab({ text: 'Create', iconPosition: 'end' }));
   b.setIcon(icon);
   const children = Array.from(b.element.children);
-  expect(children.indexOf(b.element.querySelector('.mtrl-extended-fab-text')!))
-    .toBeLessThan(children.indexOf(b.element.querySelector('.mtrl-extended-fab-icon')!));
+  expect(children.indexOf(b.element.querySelector('.mtrl-extended-fab__text')!))
+    .toBeLessThan(children.indexOf(b.element.querySelector('.mtrl-extended-fab__icon')!));
 });

@@ -68,9 +68,9 @@ export const EXTENDED_FAB_CLASSES = {
   /** Root element class */
   ROOT: 'extended-fab',
   /** Class for the icon container */
-  ICON: 'extended-fab-icon',
+  ICON: 'extended-fab__icon',
   /** Class for the text container */
-  TEXT: 'extended-fab-text',
+  TEXT: 'extended-fab__text',
   /** Applied to fixed width FABs */
   FIXED: 'extended-fab--fixed',
   /** Applied to fluid width FABs */

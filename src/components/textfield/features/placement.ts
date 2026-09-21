@@ -66,7 +66,7 @@ export const withPlacement =
 
       // Get necessary elements
       const labelEl = component.element.querySelector(
-        `.${PREFIX}-${COMPONENT}-label`
+        `.${PREFIX}-${COMPONENT}__label`
       ) as HTMLElement;
       const prefixEl = component.element.querySelector(
         `.${PREFIX}-${COMPONENT}-prefix`

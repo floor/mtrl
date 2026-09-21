@@ -36,7 +36,7 @@ $component: "#{base.$prefix}-textfield";
     // align-self: flex-start; // Prevents growing to fill the container's height
     flex: 0 0 auto; // Don't grow or shrink; keep natural size
     // Label
-    &-label {
+    &__label {
         @include m.typography("body-large");
         user-select: none;
         position: absolute;
@@ -83,7 +83,7 @@ $component: "#{base.$prefix}-textfield";
             -webkit-text-fill-color: t.color("on-surface");
             transition: background-color 5000s ease-in-out 0s; // Long transition to keep the background
 
-            & ~ .#{$component}-label {
+            & ~ .#{$component}__label {
                 transform: translateY(-95%) scale(0.75);
                 background-color: t.color("surface");
             }
@@ -93,7 +93,7 @@ $component: "#{base.$prefix}-textfield";
         &:autofill {
             color: t.color("on-surface");
 
-            & ~ .#{$component}-label {
+            & ~ .#{$component}__label {
                 transform: translateY(-95%) scale(0.75);
                 background-color: t.color("surface");
             }
@@ -101,7 +101,7 @@ $component: "#{base.$prefix}-textfield";
 
         // Non-empty input should also float the label
         &:not(:placeholder-shown) {
-            & ~ .#{$component}-label {
+            & ~ .#{$component}__label {
                 transform: translateY(-95%) scale(0.75);
             }
         }
@@ -194,7 +194,7 @@ $component: "#{base.$prefix}-textfield";
     // Adjustments when prefix/suffix are present - base case styling
     // JavaScript will handle dynamic sizing, these are fallbacks
     &--with-prefix {
-        .#{$component}-label {
+        .#{$component}__label {
             // Default value - will be overridden by JS for precise positioning
             left: 48px;
         }
@@ -214,7 +214,7 @@ $component: "#{base.$prefix}-textfield";
 
     // Adjustments when icons are present
     &--with-leading-icon {
-        .#{$component}-label {
+        .#{$component}__label {
             left: 44px;
         }
 
@@ -228,7 +228,7 @@ $component: "#{base.$prefix}-textfield";
                 left: 44px;
             }
 
-            .#{$component}-label {
+            .#{$component}__label {
                 // Default value - will be overridden by JS for precise positioning
                 left: 76px;
             }
@@ -262,7 +262,7 @@ $component: "#{base.$prefix}-textfield";
     &--error {
         border-color: t.color("error");
 
-        .#{$component}-label {
+        .#{$component}__label {
             color: t.color("error");
         }
 
@@ -283,7 +283,7 @@ $component: "#{base.$prefix}-textfield";
             pointer-events: none;
         }
 
-        .#{$component}-label {
+        .#{$component}__label {
             color: t.color("on-surface");
             opacity: 0.38;
         }
@@ -304,7 +304,7 @@ $component: "#{base.$prefix}-textfield";
         background-color: t.alpha("on-surface", 0.04);
         pointer-events: none;
 
-        & ~ .#{$component}-label,
+        & ~ .#{$component}__label,
         & ~ .#{$component}-leading-icon,
         & ~ .#{$component}-trailing-icon,
         & ~ .#{$component}-prefix,
@@ -336,7 +336,7 @@ $component: "#{base.$prefix}-textfield";
 
     // Accessibility
     @include m.reduced-motion {
-        &-label {
+        &__label {
             transition: none;
         }
 
@@ -350,7 +350,7 @@ $component: "#{base.$prefix}-textfield";
 
     // RTL support
     @include m.rtl {
-        &-label {
+        &__label {
             left: auto;
             right: 16px;
             transform-origin: right top;
@@ -382,7 +382,7 @@ $component: "#{base.$prefix}-textfield";
         }
 
         &--with-prefix {
-            .#{$component}-label {
+            .#{$component}__label {
                 left: auto;
                 // Default value - will be overridden by JS for precise positioning
                 right: 48px;
@@ -404,7 +404,7 @@ $component: "#{base.$prefix}-textfield";
         }
 
         &--with-leading-icon {
-            .#{$component}-label {
+            .#{$component}__label {
                 left: auto;
                 right: 44px;
             }
@@ -420,7 +420,7 @@ $component: "#{base.$prefix}-textfield";
                     right: 44px;
                 }
 
-                .#{$component}-label {
+                .#{$component}__label {
                     left: auto;
                     // Default value - will be overridden by JS for precise positioning
                     right: 76px;
@@ -460,7 +460,7 @@ $component: "#{base.$prefix}-textfield";
         // the label at rest is on-surface-variant at full strength: faded to
         // 0.6 it fell to a 2.85:1 contrast on the field's fill, under the
         // 4.5:1 a 16 px label needs
-        .#{$component}-label {
+        .#{$component}__label {
             opacity: 1;
         }
         .#{$component}-input {
@@ -476,14 +476,14 @@ $component: "#{base.$prefix}-textfield";
                 border-radius: f.get-shape("extra-small")
                     f.get-shape("extra-small") 0 0;
 
-                & ~ .#{$component}-label {
+                & ~ .#{$component}__label {
                     transform: translateY(-95%) scale(0.75);
                     color: t.color("on-surface-variant");
                 }
             }
 
             &:autofill {
-                & ~ .#{$component}-label {
+                & ~ .#{$component}__label {
                     transform: translateY(-95%) scale(0.75);
                     color: t.color("on-surface-variant");
                 }
@@ -504,14 +504,14 @@ $component: "#{base.$prefix}-textfield";
         }
 
         // Populated field (not empty) or focused field label position
-        &:not(.#{$component}--empty) .#{$component}-label,
-        &.#{$component}--focused .#{$component}-label {
+        &:not(.#{$component}--empty) .#{$component}__label,
+        &.#{$component}--focused .#{$component}__label {
             transform: translateY(-95%) scale(0.75);
             // Don't specify left position here - let JS handle it
         }
 
         // CSS-only fallback for when input has value (works without JS)
-        .#{$component}-input:not(:placeholder-shown) ~ .#{$component}-label {
+        .#{$component}-input:not(:placeholder-shown) ~ .#{$component}__label {
             transform: translateY(-95%) scale(0.75);
         }
 
@@ -528,7 +528,7 @@ $component: "#{base.$prefix}-textfield";
         }
         // Focus state
         &.#{$component}--focused {
-            .#{$component}-label {
+            .#{$component}__label {
                 color: t.color("primary");
             }
 
@@ -544,7 +544,7 @@ $component: "#{base.$prefix}-textfield";
                 background-color: t.color("error");
             }
 
-            .#{$component}-label {
+            .#{$component}__label {
                 color: t.color("error");
             }
         }
@@ -578,7 +578,7 @@ $component: "#{base.$prefix}-textfield";
                 padding: 20px 16px 7px 44px;
             }
 
-            .#{$component}-label {
+            .#{$component}__label {
                 left: 44px;
             }
 
@@ -588,8 +588,8 @@ $component: "#{base.$prefix}-textfield";
         }
 
         // Populated field (not empty) or focused field label position
-        &:not(.#{$component}--empty) .#{$component}-label,
-        &.#{$component}--focused .#{$component}-label {
+        &:not(.#{$component}--empty) .#{$component}__label,
+        &.#{$component}--focused .#{$component}__label {
             // Important change: For outlined variant, when focused/populated
             // we want to reset the left position back to default (or to JS calculated equivalent)
             // to handle the label moving up above the field
@@ -609,7 +609,7 @@ $component: "#{base.$prefix}-textfield";
 
         // RTL support
         @include m.rtl {
-            .#{$component}-label {
+            .#{$component}__label {
                 left: auto;
                 right: 16px;
             }
@@ -619,7 +619,7 @@ $component: "#{base.$prefix}-textfield";
                     padding: 20px 44px 7px 16px;
                 }
 
-                .#{$component}-label {
+                .#{$component}__label {
                     left: auto;
                     right: 44px;
                 }
@@ -650,21 +650,21 @@ $component: "#{base.$prefix}-textfield";
             &:-webkit-autofill {
                 border-radius: f.get-shape("extra-small");
 
-                & ~ .#{$component}-label {
+                & ~ .#{$component}__label {
                     background-color: t.color("surface");
                     transform: translateY(-145%) scale(0.75);
                 }
             }
 
             &:autofill {
-                & ~ .#{$component}-label {
+                & ~ .#{$component}__label {
                     background-color: t.color("surface");
                     transform: translateY(-145%) scale(0.75);
                 }
             }
         }
 
-        .#{$component}-label {
+        .#{$component}__label {
             opacity: 0.5;
             background-color: inherit;
             padding: 0 4px;
@@ -685,8 +685,8 @@ $component: "#{base.$prefix}-textfield";
         }
 
         // Populated field (not empty) or focused field label position
-        &:not(.#{$component}--empty) .#{$component}-label,
-        &.#{$component}--focused .#{$component}-label {
+        &:not(.#{$component}--empty) .#{$component}__label,
+        &.#{$component}--focused .#{$component}__label {
             padding: 0 4px;
             opacity: 1;
             transform: translateY(-147%) scale(0.75);
@@ -698,7 +698,7 @@ $component: "#{base.$prefix}-textfield";
         }
 
         // CSS-only fallback for when input has value (works without JS)
-        .#{$component}-input:not(:placeholder-shown) ~ .#{$component}-label {
+        .#{$component}-input:not(:placeholder-shown) ~ .#{$component}__label {
             padding: 0 4px;
             transform: translateY(-147%) scale(0.75);
             left: 14px;
@@ -717,7 +717,7 @@ $component: "#{base.$prefix}-textfield";
             //   }
             // }
 
-            .#{$component}-label {
+            .#{$component}__label {
                 color: t.color("primary");
             }
         }
@@ -729,7 +729,7 @@ $component: "#{base.$prefix}-textfield";
                 border: 2px solid t.color("error");
             }
 
-            .#{$component}-label {
+            .#{$component}__label {
                 color: t.color("error");
             }
         }
@@ -762,14 +762,14 @@ $component: "#{base.$prefix}-textfield";
                 padding-left: 44px;
             }
 
-            .#{$component}-label {
+            .#{$component}__label {
                 left: 44px;
             }
 
             // Important change: For outlined variant, when focused/populated
             // we still reset to 12px position (default)
-            &:not(.#{$component}--empty) .#{$component}-label,
-            &.#{$component}--focused .#{$component}-label {
+            &:not(.#{$component}--empty) .#{$component}__label,
+            &.#{$component}--focused .#{$component}__label {
                 left: 14px;
             }
         }
@@ -782,17 +782,17 @@ $component: "#{base.$prefix}-textfield";
 
         // RTL support
         @include m.rtl {
-            &:not(.#{$component}--empty) .#{$component}-label,
-            &.#{$component}--focused .#{$component}-label {
+            &:not(.#{$component}--empty) .#{$component}__label,
+            &.#{$component}--focused .#{$component}__label {
                 left: auto;
                 right: 12px;
             }
 
-            &.#{$component}--focused .#{$component}-label {
+            &.#{$component}--focused .#{$component}__label {
                 right: 12px;
             }
 
-            &.#{$component}--error .#{$component}-label {
+            &.#{$component}--error .#{$component}__label {
                 right: 12px;
             }
 
@@ -802,13 +802,13 @@ $component: "#{base.$prefix}-textfield";
                     padding-right: 44px;
                 }
 
-                .#{$component}-label {
+                .#{$component}__label {
                     left: auto;
                     right: 44px;
                 }
 
-                &:not(.#{$component}--empty) .#{$component}-label,
-                &.#{$component}--focused .#{$component}-label {
+                &:not(.#{$component}--empty) .#{$component}__label,
+                &.#{$component}--focused .#{$component}__label {
                     // Reset to default value for focused state
                     right: 12px;
                     left: auto;
@@ -838,7 +838,7 @@ $component: "#{base.$prefix}-textfield";
             top: 28px;
         }
 
-        .#{$component}-label {
+        .#{$component}__label {
             top: 24px;
         }
     }
@@ -869,7 +869,7 @@ $component: "#{base.$prefix}-textfield";
         }
 
         // Adjust label position for compact
-        .#{$component}-label {
+        .#{$component}__label {
             @include m.typography("body-medium");
         }
 
@@ -898,8 +898,8 @@ $component: "#{base.$prefix}-textfield";
             }
 
             // Populated/focused label position
-            &:not(.#{$component}--empty) .#{$component}-label,
-            &.#{$component}--focused .#{$component}-label {
+            &:not(.#{$component}--empty) .#{$component}__label,
+            &.#{$component}--focused .#{$component}__label {
                 transform: translateY(-90%) scale(0.75); // Adjusted for compact height
             }
 
@@ -929,8 +929,8 @@ $component: "#{base.$prefix}-textfield";
             }
 
             // Focused/populated position
-            &:not(.#{$component}--empty) .#{$component}-label,
-            &.#{$component}--focused .#{$component}-label {
+            &:not(.#{$component}--empty) .#{$component}__label,
+            &.#{$component}--focused .#{$component}__label {
                 transform: translateY(-130%) scale(0.75); // Same as default, scale is important
             }
         }
@@ -945,7 +945,7 @@ $component: "#{base.$prefix}-textfield";
 
         // Adjust element positions for compact with icons
         &.#{$component}--with-leading-icon {
-            .#{$component}-label {
+            .#{$component}__label {
                 left: 40px; // Reduced from 44px
             }
 
@@ -958,7 +958,7 @@ $component: "#{base.$prefix}-textfield";
                     left: 40px;
                 }
 
-                .#{$component}-label {
+                .#{$component}__label {
                     left: 68px; // Adjusted for compact
                 }
 
@@ -987,7 +987,7 @@ $component: "#{base.$prefix}-textfield";
         // RTL adjustments for compact density
         @include m.rtl {
             &.#{$component}--with-leading-icon {
-                .#{$component}-label {
+                .#{$component}__label {
                     left: auto;
                     right: 40px;
                 }
@@ -1003,7 +1003,7 @@ $component: "#{base.$prefix}-textfield";
                         right: 40px;
                     }
 
-                    .#{$component}-label {
+                    .#{$component}__label {
                         left: auto;
                         right: 68px;
                     }

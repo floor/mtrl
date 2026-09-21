@@ -227,7 +227,7 @@ export const withAPI =
         } else if (!buttonComponent.hasIcon()) {
           // Create new icon element when re-adding
           const newIconElement = document.createElement("span");
-          newIconElement.className = `${component.getClass("button-icon")}`;
+          newIconElement.className = `${component.getClass("button__icon")}`;
           setHTML(newIconElement, icon);
 
           // Insert at the beginning of button

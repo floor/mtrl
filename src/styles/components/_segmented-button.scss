@@ -121,7 +121,7 @@ $component: "#{base.$prefix}-segmented-button";
         }
 
         // Segments with both icon and text
-        &:has(.#{base.$prefix}-button-icon + .#{base.$prefix}-button-text) {
+        &:has(.#{base.$prefix}-button__icon + .#{base.$prefix}-button__text) {
             padding: 0 var(--#{base.$prefix}-segmented-button-padding-icon-text-right) 0
                 var(--#{base.$prefix}-segmented-button-padding-icon-text-left);
         }
@@ -328,7 +328,7 @@ $component: "#{base.$prefix}-segmented-button";
         }
 
         // Selected segment icon color
-        .#{base.$prefix}-button-icon {
+        .#{base.$prefix}-button__icon {
             color: t.color("on-secondary-container");
         }
     }
@@ -380,7 +380,7 @@ $component: "#{base.$prefix}-segmented-button";
     // TEXT AND ICON STYLES
     // ==========================================================================
 
-    .#{base.$prefix}-button-text {
+    .#{base.$prefix}-button__text {
         margin: 0;
         white-space: nowrap;
         @include m.typography("label-large");
@@ -388,13 +388,13 @@ $component: "#{base.$prefix}-segmented-button";
     }
 
     // Space between icon/checkmark and text
-    .#{base.$prefix}-button-icon + .#{base.$prefix}-button-text,
-    .#{base.$prefix}-segment-checkmark + .#{base.$prefix}-button-text {
+    .#{base.$prefix}-button__icon + .#{base.$prefix}-button__text,
+    .#{base.$prefix}-segment-checkmark + .#{base.$prefix}-button__text {
         margin-left: 8px;
     }
 
     // Icon sizing
-    .#{base.$prefix}-button-icon {
+    .#{base.$prefix}-button__icon {
         display: flex;
         align-items: center;
         justify-content: center;

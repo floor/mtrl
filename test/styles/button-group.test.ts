@@ -68,9 +68,9 @@ describe('button group stylesheet', () => {
 
   test('labels shown on the selected button only', () => {
     expect(value('.mtrl-button-group--labels-selected > .mtrl-button', 'gap')).toBe('0');
-    expect(value('.mtrl-button-group--labels-selected > .mtrl-button .mtrl-button-text', 'max-width')).toBe('0');
+    expect(value('.mtrl-button-group--labels-selected > .mtrl-button .mtrl-button__text', 'max-width')).toBe('0');
     expect(value('.mtrl-button-group--labels-selected > .mtrl-button-group__button--selected', 'gap')).toBe('8px');
-    expect(value('.mtrl-button-group--labels-selected > .mtrl-button-group__button--selected .mtrl-button-text', 'max-width')).toBe('12em');
+    expect(value('.mtrl-button-group--labels-selected > .mtrl-button-group__button--selected .mtrl-button__text', 'max-width')).toBe('12em');
   });
 
   test('size and shape changes ride the fast spatial spring, colours the effects spring', () => {
@@ -82,6 +82,6 @@ describe('button group stylesheet', () => {
   });
 
   test('a collapsing label clips instead of showing an ellipsis', () => {
-    expect(value('.mtrl-button-group--labels-selected > .mtrl-button .mtrl-button-text', 'text-overflow')).toBe('clip');
+    expect(value('.mtrl-button-group--labels-selected > .mtrl-button .mtrl-button__text', 'text-overflow')).toBe('clip');
   });
 });
