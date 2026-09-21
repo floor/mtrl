@@ -45,10 +45,10 @@ for (const [role, size, height, tracking, weight] of scale) {
 
 for (const selector of [
   'h4', '.mtrl-card-header-title', '.mtrl-dialog--fullscreen .mtrl-dialog__header-title',
-  '.mtrl-extended-fab--medium .mtrl-extended-fab__text', '.mtrl-side-sheet-title',
-  '.mtrl-top-app-bar-headline',
-  '.mtrl-top-app-bar--scrolled.mtrl-top-app-bar--medium.mtrl-top-app-bar--compressible .mtrl-top-app-bar-headline',
-  '.mtrl-top-app-bar--scrolled.mtrl-top-app-bar--large.mtrl-top-app-bar--compressible .mtrl-top-app-bar-headline',
+  '.mtrl-extended-fab--medium .mtrl-extended-fab__text', '.mtrl-side-sheet__title',
+  '.mtrl-top-app-bar__headline',
+  '.mtrl-top-app-bar--scrolled.mtrl-top-app-bar--medium.mtrl-top-app-bar--compressible .mtrl-top-app-bar__headline',
+  '.mtrl-top-app-bar--scrolled.mtrl-top-app-bar--large.mtrl-top-app-bar--compressible .mtrl-top-app-bar__headline',
 ]) {
   test(`${selector}: title-large consumers use regular 22px/28px`, () => {
     expect(value(selector, 'font-weight')).toBe('400');

@@ -153,7 +153,7 @@ $content-color: (
       transition: opacity v.motion('duration-short2') v.motion('easing-standard');
     }
 
-    .#{base.$prefix}-progress-canvas {
+    .#{base.$prefix}-progress__canvas {
       color: currentColor;
     }
   }

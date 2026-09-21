@@ -30,7 +30,7 @@ $component: "#{base.$prefix}-side-sheet";
         pointer-events: auto;
     }
 
-    &-scrim {
+    &__scrim {
         position: absolute;
         inset: 0;
         background-color: t.alpha("scrim", 0.32);
@@ -43,7 +43,7 @@ $component: "#{base.$prefix}-side-sheet";
             visibility 0s linear m.spring-duration(fast-effects);
     }
 
-    &-container {
+    &__container {
         position: relative;
         height: 100%;
         max-width: 400px; // side sheet specs, container maximum width
@@ -68,7 +68,7 @@ $component: "#{base.$prefix}-side-sheet";
     }
 
     // 24dp either side, 12dp between the elements along the top
-    &-header {
+    &__header {
         flex: 0 0 auto;
         display: flex;
         align-items: center;
@@ -78,7 +78,7 @@ $component: "#{base.$prefix}-side-sheet";
         box-sizing: border-box;
     }
 
-    &-title {
+    &__title {
         margin: 0;
         flex: 1 1 auto;
         min-width: 0;
@@ -87,7 +87,7 @@ $component: "#{base.$prefix}-side-sheet";
     }
 
     // 16dp on the icon side, per the specs' start padding with an icon
-    &-close {
+    &__close {
         flex: 0 0 auto;
         display: inline-flex;
         align-items: center;
@@ -110,7 +110,7 @@ $component: "#{base.$prefix}-side-sheet";
         }
     }
 
-    &-content {
+    &__content {
         flex: 1 1 auto;
         min-height: 0;
         overflow-y: auto;
@@ -125,32 +125,32 @@ $component: "#{base.$prefix}-side-sheet";
     &--standard {
         pointer-events: none;
 
-        .#{$component}-container {
+        .#{$component}__container {
             background-color: t.color("surface");
             pointer-events: auto;
         }
 
         // Cover the gap the spring's overshoot opens at the docked edge
-        &.#{$component}--end .#{$component}-container {
+        &.#{$component}--end .#{$component}__container {
             box-shadow: m.$sheet-overshoot-guard 0 0 0 t.color("surface");
         }
 
-        &.#{$component}--start .#{$component}-container {
+        &.#{$component}--start .#{$component}__container {
             box-shadow: (-1 * m.$sheet-overshoot-guard) 0 0 0 t.color("surface");
         }
     }
 
     &--modal {
-        .#{$component}-container {
+        .#{$component}__container {
             background-color: t.color("surface-container-low");
             @include m.elevation(1);
         }
 
-        &.#{$component}--end .#{$component}-container {
+        &.#{$component}--end .#{$component}__container {
             box-shadow: f.get-elevation(1), m.$sheet-overshoot-guard 0 0 0 t.color("surface-container-low");
         }
 
-        &.#{$component}--start .#{$component}-container {
+        &.#{$component}--start .#{$component}__container {
             box-shadow: f.get-elevation(1), (-1 * m.$sheet-overshoot-guard) 0 0 0 t.color("surface-container-low");
         }
     }
@@ -161,7 +161,7 @@ $component: "#{base.$prefix}-side-sheet";
     &--end {
         justify-content: flex-end;
 
-        .#{$component}-container {
+        .#{$component}__container {
             border-start-start-radius: v.shape("large");
             border-end-start-radius: v.shape("large");
             transform: translateX(100%);
@@ -171,7 +171,7 @@ $component: "#{base.$prefix}-side-sheet";
     &--start {
         justify-content: flex-start;
 
-        .#{$component}-container {
+        .#{$component}__container {
             border-start-end-radius: v.shape("large");
             border-end-end-radius: v.shape("large");
             transform: translateX(-100%);
@@ -179,14 +179,14 @@ $component: "#{base.$prefix}-side-sheet";
     }
 
     &--open {
-        .#{$component}-container {
+        .#{$component}__container {
             transform: translateX(0);
             transition: m.spring(transform, default-spatial);
         }
 
         // Opacity past 1 is clamped, so the scrim takes the sheet's timing
         // without overshooting
-        .#{$component}-scrim {
+        .#{$component}__scrim {
             opacity: 1;
             visibility: visible;
             transition: m.spring(opacity, default-spatial), visibility 0s;
@@ -194,10 +194,10 @@ $component: "#{base.$prefix}-side-sheet";
     }
 
     @include m.reduced-motion {
-        .#{$component}-container,
-        .#{$component}-scrim,
-        &--open .#{$component}-container,
-        &--open .#{$component}-scrim {
+        .#{$component}__container,
+        .#{$component}__scrim,
+        &--open .#{$component}__container,
+        &--open .#{$component}__scrim {
             transition: none;
         }
     }

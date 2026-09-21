@@ -51,12 +51,12 @@ export const BOTTOM_SHEET_DEFAULTS = {
  */
 export const BOTTOM_SHEET_CLASSES = {
   ROOT: "bottom-sheet",
-  SCRIM: "bottom-sheet-scrim",
-  CONTAINER: "bottom-sheet-container",
-  HANDLE: "bottom-sheet-handle",
-  HEADER: "bottom-sheet-header",
-  TITLE: "bottom-sheet-title",
-  CONTENT: "bottom-sheet-content",
+  SCRIM: "bottom-sheet__scrim",
+  CONTAINER: "bottom-sheet__container",
+  HANDLE: "bottom-sheet__handle",
+  HEADER: "bottom-sheet__header",
+  TITLE: "bottom-sheet__title",
+  CONTENT: "bottom-sheet__content",
 } as const;
 
 /**

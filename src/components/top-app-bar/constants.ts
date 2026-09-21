@@ -65,15 +65,15 @@ export const TOP_APP_BAR_CLASSES = {
   /** Fixed state class */
   FIXED: 'top-app-bar--fixed',
   /** Row container class */
-  ROW: 'top-app-bar-row',
+  ROW: 'top-app-bar__row',
   /** Section container class */
-  SECTION: 'top-app-bar-section',
+  SECTION: 'top-app-bar__section',
   /** Leading section class */
-  SECTION_LEADING: 'top-app-bar-section--leading',
+  SECTION_LEADING: 'top-app-bar__section--leading',
   /** Headline section class */
-  SECTION_HEADLINE: 'top-app-bar-section--headline',
+  SECTION_HEADLINE: 'top-app-bar__section--headline',
   /** Trailing section class */
-  SECTION_TRAILING: 'top-app-bar-section--trailing',
+  SECTION_TRAILING: 'top-app-bar__section--trailing',
   /** Title element class */
-  TITLE: 'top-app-bar-title'
+  TITLE: 'top-app-bar__title'
 } as const;

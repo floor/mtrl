@@ -109,36 +109,36 @@ describe('drawer', () => {
 
 describe('side sheet', () => {
   test('opens on the spatial spring and closes on fast effects, scrim with it', () => {
-    expect(value('side-sheet', '.mtrl-side-sheet--open .mtrl-side-sheet-container', 'transition')).toBe(on('transform', 'default-spatial'));
-    expect(value('side-sheet', '.mtrl-side-sheet-container', 'transition')).toBe(on('transform', 'fast-effects'));
-    expect(value('side-sheet', '.mtrl-side-sheet--open .mtrl-side-sheet-scrim', 'transition')).toBe(`${on('opacity', 'default-spatial')}, visibility 0s`);
-    expect(value('side-sheet', '.mtrl-side-sheet-scrim', 'transition')).toBe(`${on('opacity', 'fast-effects')}, visibility 0s linear 175ms`);
+    expect(value('side-sheet', '.mtrl-side-sheet--open .mtrl-side-sheet__container', 'transition')).toBe(on('transform', 'default-spatial'));
+    expect(value('side-sheet', '.mtrl-side-sheet__container', 'transition')).toBe(on('transform', 'fast-effects'));
+    expect(value('side-sheet', '.mtrl-side-sheet--open .mtrl-side-sheet__scrim', 'transition')).toBe(`${on('opacity', 'default-spatial')}, visibility 0s`);
+    expect(value('side-sheet', '.mtrl-side-sheet__scrim', 'transition')).toBe(`${on('opacity', 'fast-effects')}, visibility 0s linear 175ms`);
   });
 
   test('both variants cover the overshoot gap at their edge', () => {
-    expect(value('side-sheet', '.mtrl-side-sheet--standard.mtrl-side-sheet--end .mtrl-side-sheet-container', 'box-shadow')).toBe('32px 0 0 0 var(--mtrl-sys-color-surface)');
-    expect(value('side-sheet', '.mtrl-side-sheet--standard.mtrl-side-sheet--start .mtrl-side-sheet-container', 'box-shadow')).toBe('-32px 0 0 0 var(--mtrl-sys-color-surface)');
-    expect(value('side-sheet', '.mtrl-side-sheet--modal.mtrl-side-sheet--end .mtrl-side-sheet-container', 'box-shadow')).toEndWith(', 32px 0 0 0 var(--mtrl-sys-color-surface-container-low)');
-    expect(value('side-sheet', '.mtrl-side-sheet--modal.mtrl-side-sheet--start .mtrl-side-sheet-container', 'box-shadow')).toEndWith(', -32px 0 0 0 var(--mtrl-sys-color-surface-container-low)');
+    expect(value('side-sheet', '.mtrl-side-sheet--standard.mtrl-side-sheet--end .mtrl-side-sheet__container', 'box-shadow')).toBe('32px 0 0 0 var(--mtrl-sys-color-surface)');
+    expect(value('side-sheet', '.mtrl-side-sheet--standard.mtrl-side-sheet--start .mtrl-side-sheet__container', 'box-shadow')).toBe('-32px 0 0 0 var(--mtrl-sys-color-surface)');
+    expect(value('side-sheet', '.mtrl-side-sheet--modal.mtrl-side-sheet--end .mtrl-side-sheet__container', 'box-shadow')).toEndWith(', 32px 0 0 0 var(--mtrl-sys-color-surface-container-low)');
+    expect(value('side-sheet', '.mtrl-side-sheet--modal.mtrl-side-sheet--start .mtrl-side-sheet__container', 'box-shadow')).toEndWith(', -32px 0 0 0 var(--mtrl-sys-color-surface-container-low)');
   });
 
   test('reduced motion stops the open transitions too', () => {
-    expect(reducedMotion('side-sheet')).toMatch(/\.mtrl-side-sheet--open \.mtrl-side-sheet-container[^{]*\{\s*transition: none;/);
+    expect(reducedMotion('side-sheet')).toMatch(/\.mtrl-side-sheet--open \.mtrl-side-sheet__container[^{]*\{\s*transition: none;/);
   });
 });
 
 describe('bottom sheet', () => {
   test('shows on the spatial spring in either open state and hides on fast effects', () => {
     for (const state of ['partial', 'expanded']) {
-      expect(value('bottom-sheet', `.mtrl-bottom-sheet--${state} .mtrl-bottom-sheet-container`, 'transition')).toBe(on('transform', 'default-spatial'));
-      expect(value('bottom-sheet', `.mtrl-bottom-sheet--${state} .mtrl-bottom-sheet-scrim`, 'transition')).toBe(`${on('opacity', 'default-effects')}, visibility 0s`);
+      expect(value('bottom-sheet', `.mtrl-bottom-sheet--${state} .mtrl-bottom-sheet__container`, 'transition')).toBe(on('transform', 'default-spatial'));
+      expect(value('bottom-sheet', `.mtrl-bottom-sheet--${state} .mtrl-bottom-sheet__scrim`, 'transition')).toBe(`${on('opacity', 'default-effects')}, visibility 0s`);
     }
-    expect(value('bottom-sheet', '.mtrl-bottom-sheet-container', 'transition')).toBe(on('transform', 'fast-effects'));
-    expect(value('bottom-sheet', '.mtrl-bottom-sheet-scrim', 'transition')).toBe(`${on('opacity', 'default-effects')}, visibility 0s linear 250ms`);
+    expect(value('bottom-sheet', '.mtrl-bottom-sheet__container', 'transition')).toBe(on('transform', 'fast-effects'));
+    expect(value('bottom-sheet', '.mtrl-bottom-sheet__scrim', 'transition')).toBe(`${on('opacity', 'default-effects')}, visibility 0s linear 250ms`);
   });
 
   test('reduced motion stops the open transitions too', () => {
-    expect(reducedMotion('bottom-sheet')).toMatch(/\.mtrl-bottom-sheet--expanded \.mtrl-bottom-sheet-container[^{]*\{\s*transition: none;/);
+    expect(reducedMotion('bottom-sheet')).toMatch(/\.mtrl-bottom-sheet--expanded \.mtrl-bottom-sheet__container[^{]*\{\s*transition: none;/);
   });
 });
 

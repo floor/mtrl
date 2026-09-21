@@ -70,15 +70,15 @@ describe('side sheet', () => {
 
   test('a modal sheet has a scrim and is a dialog; a standard one is complementary', () => {
     const modal = make({ variant: 'modal' });
-    expect(modal.element.querySelector('.mtrl-side-sheet-scrim')?.isConnected).toBe(true);
-    const container = modal.element.querySelector('.mtrl-side-sheet-container')!;
+    expect(modal.element.querySelector('.mtrl-side-sheet__scrim')?.isConnected).toBe(true);
+    const container = modal.element.querySelector('.mtrl-side-sheet__container')!;
     expect(container.getAttribute('role')).toBe('dialog');
     expect(container.getAttribute('aria-modal')).toBe('true');
 
     const standard = make({ variant: 'standard' });
-    expect(standard.element.querySelector('.mtrl-side-sheet-scrim')).toBeNull();
+    expect(standard.element.querySelector('.mtrl-side-sheet__scrim')).toBeNull();
     expect(
-      standard.element.querySelector('.mtrl-side-sheet-container')!.getAttribute('role')
+      standard.element.querySelector('.mtrl-side-sheet__container')!.getAttribute('role')
     ).toBe('complementary');
   });
 
@@ -90,7 +90,7 @@ describe('side sheet', () => {
   test('the close button closes it and carries a name', () => {
     const sheet = make({ title: 'Filters' });
     sheet.open();
-    const close = sheet.element.querySelector('.mtrl-side-sheet-close') as HTMLButtonElement;
+    const close = sheet.element.querySelector('.mtrl-side-sheet__close') as HTMLButtonElement;
     expect(close.getAttribute('aria-label')).toBe('Close');
     expect(close.type).toBe('button');
 
@@ -99,13 +99,13 @@ describe('side sheet', () => {
   });
 
   test('the close button can be left out', () => {
-    expect(make({ closeButton: false }).element.querySelector('.mtrl-side-sheet-close')).toBeNull();
+    expect(make({ closeButton: false }).element.querySelector('.mtrl-side-sheet__close')).toBeNull();
   });
 
   test('the scrim and Escape close it, unless told not to', () => {
     const sheet = make();
     sheet.open();
-    (sheet.element.querySelector('.mtrl-side-sheet-scrim') as HTMLElement)
+    (sheet.element.querySelector('.mtrl-side-sheet__scrim') as HTMLElement)
       .dispatchEvent(new MouseEvent('click', { bubbles: true }));
     expect(sheet.isOpen()).toBe(false);
 
@@ -116,7 +116,7 @@ describe('side sheet', () => {
 
     const sticky = make({ closeOnScrimClick: false, closeOnEscape: false });
     sticky.open();
-    (sticky.element.querySelector('.mtrl-side-sheet-scrim') as HTMLElement)
+    (sticky.element.querySelector('.mtrl-side-sheet__scrim') as HTMLElement)
       .dispatchEvent(new MouseEvent('click', { bubbles: true }));
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     expect(sticky.isOpen()).toBe(true);
@@ -124,32 +124,32 @@ describe('side sheet', () => {
 
   test('a title names the sheet, before and after creation', () => {
     const sheet = make({ title: 'Filters' });
-    const container = sheet.element.querySelector('.mtrl-side-sheet-container')!;
-    const title = sheet.element.querySelector('.mtrl-side-sheet-title')!;
+    const container = sheet.element.querySelector('.mtrl-side-sheet__container')!;
+    const title = sheet.element.querySelector('.mtrl-side-sheet__title')!;
     expect(title.textContent).toBe('Filters');
     expect(container.getAttribute('aria-labelledby')).toBe(title.id);
 
     const later = make({ closeButton: false });
     later.setTitle('Added later');
-    const laterContainer = later.element.querySelector('.mtrl-side-sheet-container')!;
-    const laterTitle = later.element.querySelector('.mtrl-side-sheet-title')!;
+    const laterContainer = later.element.querySelector('.mtrl-side-sheet__container')!;
+    const laterTitle = later.element.querySelector('.mtrl-side-sheet__title')!;
     expect(laterTitle.textContent).toBe('Added later');
     expect(laterContainer.getAttribute('aria-labelledby')).toBe(laterTitle.id);
   });
 
   test('width is applied and capped', () => {
-    const container = make().element.querySelector('.mtrl-side-sheet-container') as HTMLElement;
+    const container = make().element.querySelector('.mtrl-side-sheet__container') as HTMLElement;
     expect(container.style.width).toBe('256px');
     expect(container.style.maxWidth).toBe('400px');
 
-    const wide = make({ width: 320, maxWidth: 360 }).element.querySelector('.mtrl-side-sheet-container') as HTMLElement;
+    const wide = make({ width: 320, maxWidth: 360 }).element.querySelector('.mtrl-side-sheet__container') as HTMLElement;
     expect(wide.style.width).toBe('320px');
     expect(wide.style.maxWidth).toBe('360px');
   });
 
   test('content can be markup or an element, and can be replaced', () => {
     const sheet = make({ content: '<p>First</p>' });
-    const content = sheet.element.querySelector('.mtrl-side-sheet-content')!;
+    const content = sheet.element.querySelector('.mtrl-side-sheet__content')!;
     expect(content.textContent).toBe('First');
 
     const replacement = document.createElement('span');

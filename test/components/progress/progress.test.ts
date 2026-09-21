@@ -97,7 +97,7 @@ describe('progress', () => {
     expect(el.getAttribute('aria-valuemax')).toBe('100');
     expect(el.getAttribute('aria-valuenow')).toBe('42');
     const canvas = el.querySelector('canvas')!;
-    expect(canvas.classList.contains('mtrl-progress-canvas')).toBe(true);
+    expect(canvas.classList.contains('mtrl-progress__canvas')).toBe(true);
     expect(canvas.getAttribute('aria-hidden')).toBe('true');
     expect(createProgress({}).element.getAttribute('aria-label')).toBe('Loading');
   });

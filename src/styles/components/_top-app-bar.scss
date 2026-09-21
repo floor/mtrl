@@ -31,7 +31,7 @@ $component: '#{base.$prefix}-top-app-bar';
     height 0.3s ease-in-out;
   
   // Container for the headline
-  &-headline {
+  &__headline {
     flex: 1;
     display: flex;
     align-items: center;
@@ -49,14 +49,14 @@ $component: '#{base.$prefix}-top-app-bar';
   }
   
   // Leading section (usually navigation icon)
-  &-leading {
+  &__leading {
     display: flex;
     align-items: center;
     margin-right: 24px;
   }
   
   // Trailing section (usually action icons)
-  &-trailing {
+  &__trailing {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -65,7 +65,7 @@ $component: '#{base.$prefix}-top-app-bar';
   
   // Center-aligned top app bar
   &--center {
-    .#{$component}-headline {
+    .#{$component}__headline {
       position: absolute;
       left: 50%;
       transform: translateX(-50%);
@@ -82,7 +82,7 @@ $component: '#{base.$prefix}-top-app-bar';
     justify-content: space-between;
     padding: 0;
     
-    .#{$component}-row {
+    .#{$component}__row {
       display: flex;
       align-items: center;
       width: 100%;
@@ -93,7 +93,7 @@ $component: '#{base.$prefix}-top-app-bar';
       }
     }
     
-    .#{$component}-headline {
+    .#{$component}__headline {
       margin-bottom: 24px;
       margin-left: 16px;
       @include m.typography('headline-small');
@@ -108,7 +108,7 @@ $component: '#{base.$prefix}-top-app-bar';
     justify-content: space-between;
     padding: 0;
     
-    .#{$component}-row {
+    .#{$component}__row {
       display: flex;
       align-items: center;
       width: 100%;
@@ -119,7 +119,7 @@ $component: '#{base.$prefix}-top-app-bar';
       }
     }
     
-    .#{$component}-headline {
+    .#{$component}__headline {
       margin-bottom: 28px;
       margin-left: 16px;
       @include m.typography('headline-medium');
@@ -139,17 +139,17 @@ $component: '#{base.$prefix}-top-app-bar';
       align-items: center;
       padding: 0 16px;
       
-      .#{$component}-row {
+      .#{$component}__row {
         display: none;
       }
       
-      .#{$component}-headline {
+      .#{$component}__headline {
         margin: 0;
         @include m.typography('title-large');
       }
       
       // Fix for headline that is inside row in medium/large
-      .#{$component}-row:nth-child(2) {
+      .#{$component}__row:nth-child(2) {
         display: flex;
         flex: 1;
         margin: 0;
@@ -160,26 +160,26 @@ $component: '#{base.$prefix}-top-app-bar';
   
   // RTL Support
   [dir="rtl"] & {
-    .#{$component}-leading {
+    .#{$component}__leading {
       margin-right: 0;
       margin-left: 24px;
     }
     
-    .#{$component}-trailing {
+    .#{$component}__trailing {
       margin-left: 0;
       margin-right: auto;
     }
     
     &--medium,
     &--large {
-      .#{$component}-headline {
+      .#{$component}__headline {
         margin-left: 0;
         margin-right: 16px;
       }
     }
     
     &--center {
-      .#{$component}-headline {
+      .#{$component}__headline {
         left: auto;
         right: 50%;
         transform: translateX(50%);
@@ -192,17 +192,17 @@ $component: '#{base.$prefix}-top-app-bar';
     // Reduce side padding slightly on small screens
     padding: 0 12px;
     
-    .#{$component}-leading {
+    .#{$component}__leading {
       margin-right: 16px;
     }
     
-    .#{$component}-trailing {
+    .#{$component}__trailing {
       gap: 4px;
     }
     
     // Make icon buttons slightly smaller
-    .#{$component}-leading,
-    .#{$component}-trailing {
+    .#{$component}__leading,
+    .#{$component}__trailing {
       button {
         padding: 8px;
       }
@@ -213,7 +213,7 @@ $component: '#{base.$prefix}-top-app-bar';
   @include m.reduced-motion {
     transition-duration: 0.01ms;
     
-    .#{$component}-headline {
+    .#{$component}__headline {
       transition-duration: 0.01ms;
     }
   }

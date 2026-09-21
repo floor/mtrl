@@ -47,14 +47,14 @@ export const SIDE_SHEET_DEFAULTS = {
  */
 export const SIDE_SHEET_CLASSES = {
   ROOT: "side-sheet",
-  SCRIM: "side-sheet-scrim",
-  CONTAINER: "side-sheet-container",
-  HEADER: "side-sheet-header",
-  TITLE: "side-sheet-title",
-  CLOSE: "side-sheet-close",
-  DIVIDER: "side-sheet-divider",
-  CONTENT: "side-sheet-content",
-  ACTIONS: "side-sheet-actions",
+  SCRIM: "side-sheet__scrim",
+  CONTAINER: "side-sheet__container",
+  HEADER: "side-sheet__header",
+  TITLE: "side-sheet__title",
+  CLOSE: "side-sheet__close",
+  DIVIDER: "side-sheet__divider",
+  CONTENT: "side-sheet__content",
+  ACTIONS: "side-sheet__actions",
 } as const;
 
 /**

@@ -415,7 +415,7 @@ export const withMenu =
       items: menuItems,
       position: (config.placement || "bottom-start") as MenuPosition,
       width: "100%",
-      class: "select-menu",
+      class: "select__menu",
       closeOnSelect: true,
       closeOnClickOutside: true,
       closeOnEscape: true,

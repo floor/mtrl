@@ -102,16 +102,16 @@ describe('bottom sheet', () => {
 
   test('a modal sheet has a scrim and is a dialog; a standard one is neither', () => {
     const modal = make({ variant: 'modal' });
-    const scrim = modal.element.querySelector('.mtrl-bottom-sheet-scrim');
-    const container = modal.element.querySelector('.mtrl-bottom-sheet-container')!;
+    const scrim = modal.element.querySelector('.mtrl-bottom-sheet__scrim');
+    const container = modal.element.querySelector('.mtrl-bottom-sheet__container')!;
     expect(scrim).not.toBeNull();
     expect(container.getAttribute('role')).toBe('dialog');
     expect(container.getAttribute('aria-modal')).toBe('true');
 
     const standard = make({ variant: 'standard' });
-    expect(standard.element.querySelector('.mtrl-bottom-sheet-scrim')).toBeNull();
+    expect(standard.element.querySelector('.mtrl-bottom-sheet__scrim')).toBeNull();
     expect(
-      standard.element.querySelector('.mtrl-bottom-sheet-container')!.getAttribute('role')
+      standard.element.querySelector('.mtrl-bottom-sheet__container')!.getAttribute('role')
     ).toBe('region');
   });
 
@@ -119,20 +119,20 @@ describe('bottom sheet', () => {
     // the previous sheet inserted its scrim through a parent that did not
     // exist yet, so no modal sheet ever had an overlay
     const sheet = make({ variant: 'modal' });
-    const scrim = sheet.element.querySelector('.mtrl-bottom-sheet-scrim');
+    const scrim = sheet.element.querySelector('.mtrl-bottom-sheet__scrim');
     expect(scrim?.isConnected).toBe(true);
   });
 
   test('clicking the scrim closes a modal sheet, unless told not to', () => {
     const sheet = make({ variant: 'modal' });
     sheet.open();
-    (sheet.element.querySelector('.mtrl-bottom-sheet-scrim') as HTMLElement)
+    (sheet.element.querySelector('.mtrl-bottom-sheet__scrim') as HTMLElement)
       .dispatchEvent(new MouseEvent('click', { bubbles: true }));
     expect(sheet.isOpen()).toBe(false);
 
     const sticky = make({ variant: 'modal', closeOnScrimClick: false });
     sticky.open();
-    (sticky.element.querySelector('.mtrl-bottom-sheet-scrim') as HTMLElement)
+    (sticky.element.querySelector('.mtrl-bottom-sheet__scrim') as HTMLElement)
       .dispatchEvent(new MouseEvent('click', { bubbles: true }));
     expect(sticky.isOpen()).toBe(true);
   });
@@ -151,8 +151,8 @@ describe('bottom sheet', () => {
 
   test('a title names the sheet for assistive technology', () => {
     const sheet = make({ title: 'Share this file' });
-    const container = sheet.element.querySelector('.mtrl-bottom-sheet-container')!;
-    const title = sheet.element.querySelector('.mtrl-bottom-sheet-title')!;
+    const container = sheet.element.querySelector('.mtrl-bottom-sheet__container')!;
+    const title = sheet.element.querySelector('.mtrl-bottom-sheet__title')!;
     expect(title.textContent).toBe('Share this file');
     expect(container.getAttribute('aria-labelledby')).toBe(title.id);
     expect(title.id).not.toBe('');
@@ -160,25 +160,25 @@ describe('bottom sheet', () => {
 
   test('a title added later is announced too', () => {
     const sheet = make();
-    expect(sheet.element.querySelector('.mtrl-bottom-sheet-title')).toBeNull();
+    expect(sheet.element.querySelector('.mtrl-bottom-sheet__title')).toBeNull();
 
     sheet.setTitle('Added later');
-    const container = sheet.element.querySelector('.mtrl-bottom-sheet-container')!;
-    const title = sheet.element.querySelector('.mtrl-bottom-sheet-title')!;
+    const container = sheet.element.querySelector('.mtrl-bottom-sheet__container')!;
+    const title = sheet.element.querySelector('.mtrl-bottom-sheet__title')!;
     expect(title.textContent).toBe('Added later');
     expect(container.getAttribute('aria-labelledby')).toBe(title.id);
   });
 
   test('the drag handle is there by default and can be turned off', () => {
-    expect(make().element.querySelector('.mtrl-bottom-sheet-handle')).not.toBeNull();
+    expect(make().element.querySelector('.mtrl-bottom-sheet__handle')).not.toBeNull();
     expect(
-      make({ dragHandle: false }).element.querySelector('.mtrl-bottom-sheet-handle')
+      make({ dragHandle: false }).element.querySelector('.mtrl-bottom-sheet__handle')
     ).toBeNull();
   });
 
   test('content can be markup or an element, and can be replaced', () => {
     const sheet = make({ content: '<p>First</p>' });
-    const content = sheet.element.querySelector('.mtrl-bottom-sheet-content')!;
+    const content = sheet.element.querySelector('.mtrl-bottom-sheet__content')!;
     expect(content.textContent).toBe('First');
 
     const replacement = document.createElement('span');
@@ -189,9 +189,9 @@ describe('bottom sheet', () => {
   });
 
   test('the max width is applied, so it does not stretch across a desktop', () => {
-    const container = make().element.querySelector('.mtrl-bottom-sheet-container') as HTMLElement;
+    const container = make().element.querySelector('.mtrl-bottom-sheet__container') as HTMLElement;
     expect(container.style.maxWidth).toBe('640px');
-    const narrow = make({ maxWidth: 400 }).element.querySelector('.mtrl-bottom-sheet-container') as HTMLElement;
+    const narrow = make({ maxWidth: 400 }).element.querySelector('.mtrl-bottom-sheet__container') as HTMLElement;
     expect(narrow.style.maxWidth).toBe('400px');
   });
 

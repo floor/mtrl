@@ -35,8 +35,8 @@ describe('progress stylesheet', () => {
   });
 
   test('the canvas is a block that never overflows its container', () => {
-    expect(value('.mtrl-progress-canvas', 'display')).toBe('block');
-    expect(value('.mtrl-progress-canvas', 'max-width')).toBe('100%');
+    expect(value('.mtrl-progress__canvas', 'display')).toBe('block');
+    expect(value('.mtrl-progress__canvas', 'max-width')).toBe('100%');
     // no line box under the canvas
     expect(value('.mtrl-progress', 'line-height')).toBe('0');
   });

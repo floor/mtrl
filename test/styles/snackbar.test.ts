@@ -44,9 +44,9 @@ describe('snackbar stylesheet', () => {
   });
 
   test('action: inverse-primary text button, 8dp from the text and from the edge, no case change', () => {
-    expect(value('.mtrl-snackbar .mtrl-button.mtrl-snackbar-action', 'color')).toBe('var(--mtrl-sys-color-inverse-primary)');
-    expect(value('.mtrl-snackbar .mtrl-button.mtrl-snackbar-action:hover::before', 'background-color')).toBe('var(--mtrl-sys-color-inverse-primary)');
-    expect(value('.mtrl-snackbar .mtrl-button.mtrl-snackbar-action:hover::before', 'opacity')).toBe('0.08');
+    expect(value('.mtrl-snackbar .mtrl-button.mtrl-snackbar__action', 'color')).toBe('var(--mtrl-sys-color-inverse-primary)');
+    expect(value('.mtrl-snackbar .mtrl-button.mtrl-snackbar__action:hover::before', 'background-color')).toBe('var(--mtrl-sys-color-inverse-primary)');
+    expect(value('.mtrl-snackbar .mtrl-button.mtrl-snackbar__action:hover::before', 'opacity')).toBe('0.08');
     expect(value('.mtrl-snackbar--with-action', 'padding-inline-end')).toBe('8px');
     expect(value('.mtrl-snackbar--with-action .mtrl-snackbar__text, .mtrl-snackbar--dismissible .mtrl-snackbar__text', 'padding-inline-end')).toBe('8px');
     expect(css).not.toContain('text-transform');
@@ -54,14 +54,14 @@ describe('snackbar stylesheet', () => {
   });
 
   test('close icon: inverse-on-surface, flush with the edge', () => {
-    expect(value('.mtrl-snackbar .mtrl-icon-button.mtrl-snackbar-close', 'color')).toBe('var(--mtrl-sys-color-inverse-on-surface)');
+    expect(value('.mtrl-snackbar .mtrl-icon-button.mtrl-snackbar__close', 'color')).toBe('var(--mtrl-sys-color-inverse-on-surface)');
     expect(value('.mtrl-snackbar--dismissible', 'padding-inline-end')).toBe('0');
   });
 
   test('a long action goes below the text, aligned to the end', () => {
     expect(value('.mtrl-snackbar--action-below', 'flex-wrap')).toBe('wrap');
     expect(value('.mtrl-snackbar--action-below .mtrl-snackbar__text', 'flex-basis')).toBe('100%');
-    expect(value('.mtrl-snackbar--action-below .mtrl-snackbar-action', 'margin-inline-start')).toBe('auto');
+    expect(value('.mtrl-snackbar--action-below .mtrl-snackbar__action', 'margin-inline-start')).toBe('auto');
   });
 
   test('enters with a fade and a scale on the fast springs; reduced motion keeps the fade', () => {
