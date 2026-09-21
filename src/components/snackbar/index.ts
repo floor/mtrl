@@ -7,6 +7,7 @@ export type {
   SnackbarConfig,
   SnackbarComponent,
   SnackbarEvent,
+  SnackbarEvents,
   SnackbarPosition,
   SnackbarDuration,
   SnackbarCloseReason,
