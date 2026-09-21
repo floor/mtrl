@@ -127,12 +127,14 @@ export const withAPI =
     };
 
     // The leading button carries the action
-    leading.on("click", (event: Event) => {
+    // Same payload/event confusion as dialog and button-group: this stored
+    // the whole payload in `originalEvent`, which is declared `Event`.
+    leading.on("click", ({ originalEvent: event }) => {
       emit(SPLIT_BUTTON_EVENTS.CLICK, { originalEvent: event });
     });
 
     // The trailing button opens and closes what it opens
-    trailing.on("click", (event: Event) => {
+    trailing.on("click", ({ originalEvent: event }) => {
       setExpanded(!expanded, event);
     });
 

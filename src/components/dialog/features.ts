@@ -379,7 +379,10 @@ const addButton = (
   });
 
   // Button click handler with event-based communication
-  button.on("click", (event: MouseEvent) => {
+  // The forwarder hands a { event, element, originalEvent } payload, not the
+  // DOM event itself. Destructured, so what reaches the declared contract
+  // below is the event it says it takes. FLO-114.
+  button.on("click", ({ originalEvent: event }) => {
     let shouldClose = closeDialog;
 
     // Call onClick handler if provided

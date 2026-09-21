@@ -274,7 +274,12 @@ const createButtonGroup = (config: ButtonGroupConfig = {}): ButtonGroupComponent
       button.element.addEventListener('pointerdown', () => {
         if (!button.disabled?.isDisabled()) pressExpand(index);
       });
-      button.on('click', (originalEvent: Event) => {
+      // The forwarder hands a { event, element, originalEvent } payload, not
+      // the DOM event. This read the whole payload and stored it as
+      // `ButtonGroupEvent.originalEvent`, which is declared `Event` -- so the
+      // field held a plain object and `.target` or `.preventDefault()` on it
+      // did nothing. Destructured now, which is what the declared type says.
+      button.on('click', ({ originalEvent }) => {
         if (!button.disabled?.isDisabled()) {
           const groupEvent: ButtonGroupEvent = {
             buttonGroup: buttonGroup,
@@ -295,7 +300,7 @@ const createButtonGroup = (config: ButtonGroupConfig = {}): ButtonGroupComponent
           }
         }
       });
-      button.on('focus', (originalEvent: Event) => {
+      button.on('focus', ({ originalEvent }) => {
         const groupEvent: ButtonGroupEvent = {
           buttonGroup: buttonGroup,
           button: button,
@@ -304,7 +309,7 @@ const createButtonGroup = (config: ButtonGroupConfig = {}): ButtonGroupComponent
         };
         emitter.emit('focus', groupEvent);
       });
-      button.on('blur', (originalEvent: Event) => {
+      button.on('blur', ({ originalEvent }) => {
         const groupEvent: ButtonGroupEvent = {
           buttonGroup: buttonGroup,
           button: button,

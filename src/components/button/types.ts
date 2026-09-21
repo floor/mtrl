@@ -209,6 +209,42 @@ export interface TextAPI {
  * Button component interface
  * @category Components
  */
+/**
+ * What a forwarded DOM event hands a button listener.
+ *
+ * The button does not emit events of its own: `click`, `focus` and `blur` are
+ * native events forwarded from its element by `forwardEvents` in config.ts,
+ * and the forwarder wraps each one in this shape.
+ */
+export interface ButtonEventPayload<E extends Event = Event> {
+  /** The DOM event that triggered the forward. */
+  event: E;
+  /** The button's root element, which is the element listened on. */
+  element: HTMLElement;
+  /** The same DOM event as `event`; both names have always been provided. */
+  originalEvent: E;
+}
+
+/**
+ * The events a button reports, and what each hands its handler.
+ *
+ * `on` and `off` are generic over these keys, so a misspelled event name is a
+ * compile error rather than a listener that never fires, and a handler's
+ * payload is typed rather than `any`. FLO-114.
+ *
+ * Only these three exist. `mount` and `unmount` are *not* here: the lifecycle
+ * feature keeps its own emitter and exposes them as `lifecycle.onMount` and
+ * `lifecycle.onUnmount`, so they never reach `component.on`.
+ */
+export interface ButtonEvents {
+  /** The button was clicked. Not forwarded while the button is disabled. */
+  click: (payload: ButtonEventPayload<MouseEvent>) => void;
+  /** The button took focus. */
+  focus: (payload: ButtonEventPayload<FocusEvent>) => void;
+  /** The button lost focus. */
+  blur: (payload: ButtonEventPayload<FocusEvent>) => void;
+}
+
 export interface ButtonComponent {
   /** The button's DOM element */
   element: HTMLButtonElement;
@@ -368,19 +404,25 @@ export interface ButtonComponent {
 
   /**
    * Adds an event listener to the button
-   * @param event - Event name ('click', 'focus', etc.)
-   * @param handler - Event handler function
+   * @param event - One of the events in {@link ButtonEvents}
+   * @param handler - Receives the payload declared for that event
    * @returns The button component for chaining
    */
-  on: (event: string, handler: Function) => ButtonComponent;
+  on: <K extends keyof ButtonEvents>(
+    event: K,
+    handler: ButtonEvents[K]
+  ) => ButtonComponent;
 
   /**
    * Removes an event listener from the button
-   * @param event - Event name
-   * @param handler - Event handler function
+   * @param event - One of the events in {@link ButtonEvents}
+   * @param handler - The same handler that was passed to `on`
    * @returns The button component for chaining
    */
-  off: (event: string, handler: Function) => ButtonComponent;
+  off: <K extends keyof ButtonEvents>(
+    event: K,
+    handler: ButtonEvents[K]
+  ) => ButtonComponent;
 
   /**
    * Adds CSS classes to the button element
