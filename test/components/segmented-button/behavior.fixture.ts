@@ -69,7 +69,9 @@ test('single mode switches selection and keeps it on a second click', () => {
 test('single select and deselect retain the last selection and emit only changes', () => {
   const group = make(); const events = changes(group);
   expect(group.select('month')).toBe(group);
-  group.select('month').select('missing').deselect('month').deselect('day').deselect('missing');
+  // `select('missing')` used to be a no-op and now clears the selection
+  // (FLO-106); it is covered in test/components/selection-values.test.ts.
+  group.select('month').deselect('month').deselect('day').deselect('missing');
   expectSelection(group, ['month']); expect(events).toHaveLength(1);
   expect(events[0]).toEqual({ selected: [group.segments[2]], value: ['month'], oldValue: ['day'] });
 });
@@ -85,7 +87,8 @@ test('multi mode starts empty and clicks independently toggle segments', () => {
 
 test('multi select and deselect emit exact payloads only for changes', () => {
   const group = make({ mode: SelectionMode.MULTI }); const events = changes(group);
-  group.select('day').select('day').select('month').select('missing');
+  // `select('missing')` now clears rather than doing nothing (FLO-106).
+  group.select('day').select('day').select('month');
   expect(group.deselect('day')).toBe(group);
   group.deselect('day').deselect('missing');
   expectSelection(group, ['month']); expect(events).toHaveLength(3);
@@ -98,18 +101,22 @@ test('multi mode preserves initially selected segments', () => {
   expectSelection(group, ['day', 'week']);
 });
 
-test('disabled group blocks clicks and programmatic selection until enabled', () => {
+// FLO-106 split this in two: `disabled` blocks the user, not the application,
+// so a click is still refused and `select()` is not. Disabling the whole group
+// disables every segment, so the rule reaches it the same way.
+test('a disabled group blocks clicks but not programmatic selection', () => {
   const group = make({ mode: SelectionMode.MULTI }); const events = changes(group);
   expect(group.disable()).toBe(group);
   expect(group.element.classList.contains('mtrl-segmented-button--disabled')).toBe(true);
   for (const segment of group.segments) {
     expect(segment.isDisabled()).toBe(true); expect(segment.element.hasAttribute('disabled')).toBe(true);
   }
-  click(group, 0); group.select('week'); expect(events).toHaveLength(0); expectSelection(group, []);
+  click(group, 0); expect(events).toHaveLength(0); expectSelection(group, []);
+  group.select('week'); expectSelection(group, ['week']); expect(events).toHaveLength(1);
   expect(group.enable()).toBe(group);
   expect(group.element.classList.contains('mtrl-segmented-button--disabled')).toBe(false);
   expect(group.segments.every(segment => !segment.isDisabled())).toBe(true);
-  click(group, 1); expectSelection(group, ['week']); expect(events).toHaveLength(1);
+  click(group, 0); expectSelection(group, ['day', 'week']); expect(events).toHaveLength(2);
 });
 
 test('group enable preserves configured individual disabled state', () => {
@@ -120,14 +127,23 @@ test('group enable preserves configured individual disabled state', () => {
   click(group, 0); click(group, 1); expectSelection(group, ['week']);
 });
 
-test('per-segment disable and enable gate clicks and selection', () => {
+test('per-segment disable gates clicks but not programmatic selection', () => {
   const group = make({ mode: SelectionMode.MULTI }); const events = changes(group);
   expect(group.disableSegment('day')).toBe(group);
-  click(group, 0); group.select('day'); expectSelection(group, []); expect(events).toHaveLength(0);
-  expect(group.enableSegment('day')).toBe(group); click(group, 0);
-  group.disableSegment('day').deselect('day'); expectSelection(group, ['day']);
-  group.enableSegment('day').deselect('day'); expectSelection(group, []);
-  expect(events).toHaveLength(2);
+
+  // The user cannot.
+  click(group, 0); expectSelection(group, []); expect(events).toHaveLength(0);
+
+  // The application can, since FLO-106.
+  group.select('day'); expectSelection(group, ['day']); expect(events).toHaveLength(1);
+
+  // `deselect` still refuses while the segment is disabled. That asymmetry is
+  // outside the FLO-106 decision, which is about setting a value, and is
+  // recorded on the issue rather than changed here.
+  group.deselect('day'); expectSelection(group, ['day']);
+
+  expect(group.enableSegment('day')).toBe(group);
+  group.deselect('day'); expectSelection(group, []); expect(events).toHaveLength(2);
 });
 
 for (const density of [Density.DEFAULT, Density.COMFORTABLE, Density.COMPACT]) {

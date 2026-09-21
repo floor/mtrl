@@ -6,6 +6,7 @@ import { createEmitter } from '../../core/state/emitter';
 import { SegmentedButtonConfig, SegmentedButtonComponent, SelectionMode, Density, Segment } from './types';
 import { createBaseConfig, getContainerConfig } from './config';
 import { createSegment } from './segment';
+import { warnUnknownValue } from '../../core/utils/warn';
 
 /**
  * Creates a new Segmented Button component
@@ -213,18 +214,14 @@ const createSegmentedButton = (config: SegmentedButtonConfig = {}): SegmentedBut
       
       select(value) {
         const segment = findSegmentByValue(value);
-        if (segment && !segment.isDisabled()) {
+
+        // A value no segment carries clears the selection, the same as native
+        // `<select>` setting selectedIndex = -1. This used to keep the
+        // previous selection and say nothing. FLO-106.
+        if (!segment) {
           const oldValue = getSelectedValues();
-          
-          if (mode === SelectionMode.SINGLE) {
-            // Deselect all other segments
-            segments.forEach(s => s.setSelected(s === segment));
-          } else {
-            // Just select this segment
-            segment.setSelected(true);
-          }
-          
-          // Emit change event
+          segments.forEach(s => s.setSelected(false));
+          warnUnknownValue('segmented button', value);
           const newValue = getSelectedValues();
           if (oldValue.join(',') !== newValue.join(',')) {
             emitter.emit('change', {
@@ -233,6 +230,32 @@ const createSegmentedButton = (config: SegmentedButtonConfig = {}): SegmentedBut
               oldValue
             });
           }
+          return this;
+        }
+
+        // A disabled segment *can* be selected by code. `disabled` blocks the
+        // user, not the application: a form restored from saved data must be
+        // able to show a value that is currently disabled. The
+        // `!segment.isDisabled()` guard that used to stand here refused.
+        // FLO-106.
+        const oldValue = getSelectedValues();
+
+        if (mode === SelectionMode.SINGLE) {
+          // Deselect all other segments
+          segments.forEach(s => s.setSelected(s === segment));
+        } else {
+          // Just select this segment
+          segment.setSelected(true);
+        }
+
+        // Emit change event
+        const newValue = getSelectedValues();
+        if (oldValue.join(',') !== newValue.join(',')) {
+          emitter.emit('change', {
+            selected: getSelected(),
+            value: newValue,
+            oldValue
+          });
         }
         return this;
       },
