@@ -16,7 +16,8 @@ export interface InputComponent extends BaseComponent {
   element: HTMLElement;
   input: HTMLInputElement;
   emit?: (event: string, data: unknown) => unknown;
-  on?: (event: string, handler: Function) => unknown;
+  /** This feature only subscribes to change and does not read its payload. */
+  on?: (event: "change", handler: () => void) => unknown;
 }
 
 /**

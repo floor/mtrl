@@ -39,7 +39,6 @@ import { execFileSync } from "node:child_process";
 /** Files with strictFunctionTypes errors left to fix (F14). */
 const PENDING: string[] = [
   "src/components/carousel/carousel.ts",
-  "src/components/checkbox/checkbox.ts",
   "src/components/chips/chips.ts",
   "src/components/datepicker/datepicker.ts",
   "src/components/drawer/drawer.ts",
