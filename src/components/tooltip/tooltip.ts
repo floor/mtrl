@@ -4,7 +4,7 @@ import { pipe } from '../../core/compose';
 import { createBase, withElement } from '../../core/compose/component';
 import { withLifecycle } from '../../core/compose/features';
 import { withAPI } from './api';
-import { TooltipConfig } from './types';
+import { TooltipConfig, TooltipComponent } from './types';
 import { createBaseConfig, getElementConfig, getApiConfig } from './config';
 
 /**
@@ -20,7 +20,7 @@ const createTooltipId = (): string => {
  * @param {TooltipConfig} config - Tooltip configuration object
  * @returns {TooltipComponent} Tooltip component instance
  */
-const createTooltip = (config: TooltipConfig = {}) => {
+const createTooltip = (config: TooltipConfig = {}): TooltipComponent => {
   const baseConfig = createBaseConfig(config);
 
   try {

@@ -14,7 +14,7 @@ import {
 import { withProgress } from "./features/progress";
 import { withToggle } from "./features/toggle";
 import { withAPI } from "./api";
-import { ButtonConfig } from "./types";
+import { ButtonConfig, ButtonComponent } from "./types";
 import { createBaseConfig, getElementConfig, getApiConfig } from "./config";
 
 /**
@@ -79,7 +79,7 @@ import { createBaseConfig, getElementConfig, getApiConfig } from "./config";
  *
  * @category Components
  */
-const createButton = (config: ButtonConfig = {}) => {
+const createButton = (config: ButtonConfig = {}): ButtonComponent => {
   const baseConfig = createBaseConfig(config);
   try {
     const button = pipe(

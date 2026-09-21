@@ -1,5 +1,11 @@
 // src/components/chips/features/controller.ts
-import { ChipsConfig, ChipComponent } from "../types";
+import {
+  ChipsConfig,
+  ChipComponent,
+  ChipConfig,
+  ChipsEventListeners,
+  ChipsFeatureComponent,
+} from "../types";
 import createChip from "../chip/chip";
 import { CHIPS_EVENTS } from "../constants";
 
@@ -10,15 +16,16 @@ import { CHIPS_EVENTS } from "../constants";
  * @param config Chips configuration
  * @returns Component enhancer with chips controller functionality
  */
-export const withController = (config: ChipsConfig) => (component) => {
-  // Ensure component has required properties
-  if (!component.element) {
-    console.warn("Cannot initialize chips controller: missing element");
-    return component;
-  }
-
+export const withController =
+  (config: ChipsConfig) =>
+  // Generic, so the accumulated pipeline type survives. There used to be a
+  // `if (!component.element)` guard here, warning and returning the component
+  // untouched: withElement runs before this in the only pipe that calls it, so
+  // it could not fire, and an early return makes the return type a union that
+  // collapses to C.
+  <C extends ChipsFeatureComponent>(component: C) => {
   // Store event listeners
-  const eventListeners = {
+  const eventListeners: ChipsEventListeners = {
     change: [],
     add: [],
     remove: [],
@@ -32,9 +39,11 @@ export const withController = (config: ChipsConfig) => (component) => {
    * @param {string} eventName - Name of the event to trigger
    * @param {any[]} args - Arguments to pass to the handlers
    */
-  const dispatchEvent = (eventName, ...args) => {
+  const dispatchEvent = (eventName: string, ...args: unknown[]) => {
     if (eventListeners[eventName]) {
-      eventListeners[eventName].forEach((handler) => handler(...args));
+      eventListeners[eventName].forEach((handler: (...a: unknown[]) => void) =>
+        handler(...args),
+      );
     }
   };
 
@@ -98,7 +107,7 @@ export const withController = (config: ChipsConfig) => (component) => {
    * Handles keyboard navigation between chips
    * @param {KeyboardEvent} event - Keyboard event
    */
-  const handleKeyboardNavigation = (event) => {
+  const handleKeyboardNavigation = (event: KeyboardEvent) => {
     if (component.chipInstances.length === 0) return;
 
     // Only handle arrow keys, Enter, and Space
@@ -200,7 +209,7 @@ export const withController = (config: ChipsConfig) => (component) => {
    * Scrolls the chips container to make a specific chip visible
    * @param {ChipComponent|number} chipOrIndex - Chip instance or index to scroll to
    */
-  const scrollToChip = (chipOrIndex) => {
+  const scrollToChip = (chipOrIndex: ChipComponent | number) => {
     const isScrollable = component.layout && component.layout.isScrollable();
     if (!isScrollable) return;
 
@@ -252,7 +261,7 @@ export const withController = (config: ChipsConfig) => (component) => {
    * @param {Object} chipConfig - Configuration for the chip
    * @returns {ChipComponent} The created chip instance
    */
-  const addChip = (chipConfig) => {
+  const addChip = (chipConfig: ChipConfig): ChipComponent => {
     // Create chip with managedSelection flag to prevent double-toggle
     // The controller handles all selection logic via its own click handler
     const chipInstance = createChip({
@@ -309,7 +318,7 @@ export const withController = (config: ChipsConfig) => (component) => {
    * Removes a chip from the chips container
    * @param {ChipComponent|number} chipOrIndex - Chip instance or index to remove
    */
-  const removeChip = (chipOrIndex) => {
+  const removeChip = (chipOrIndex: ChipComponent | number) => {
     const index =
       typeof chipOrIndex === "number"
         ? chipOrIndex
@@ -365,7 +374,7 @@ export const withController = (config: ChipsConfig) => (component) => {
    * @param {boolean} triggerEvent - Whether to trigger change event (default: true)
    */
   const selectByValue = (
-    values,
+    values: string | string[],
     triggerEvent = true,
     exclusive = !config.multiSelect,
   ) => {
@@ -376,7 +385,11 @@ export const withController = (config: ChipsConfig) => (component) => {
       // First handle deselection if exclusive mode
       component.chipInstances.forEach((chip: ChipComponent) => {
         const chipValue = chip.getValue();
-        const shouldSelect = valueArray.includes(chipValue);
+        // A chip with no value matches no requested value. The null check is
+        // what the runtime already did -- includes on a string[] never matches
+        // null -- said in the type.
+        const shouldSelect =
+          chipValue !== null && valueArray.includes(chipValue);
         if (!shouldSelect && chip.isSelected()) {
           chip.setSelected(false);
           chip.element.classList.remove(
@@ -391,7 +404,8 @@ export const withController = (config: ChipsConfig) => (component) => {
     // Then handle selection
     component.chipInstances.forEach((chip: ChipComponent) => {
       const chipValue = chip.getValue();
-      const shouldSelect = valueArray.includes(chipValue);
+      const shouldSelect =
+        chipValue !== null && valueArray.includes(chipValue);
       if (shouldSelect && !chip.isSelected()) {
         chip.setSelected(true);
         chip.element.classList.add(`${component.getClass("chip")}--selected`);
@@ -497,7 +511,7 @@ export const withController = (config: ChipsConfig) => (component) => {
       disable: disableKeyboardNavigation,
     },
     // Event management
-    on(event, handler) {
+    on(event: string, handler: (...args: unknown[]) => void) {
       if (!eventListeners[event]) {
         eventListeners[event] = [];
       }
@@ -505,7 +519,7 @@ export const withController = (config: ChipsConfig) => (component) => {
       eventListeners[event].push(handler);
       return this;
     },
-    off(event, handler) {
+    off(event: string, handler: (...args: unknown[]) => void) {
       if (eventListeners[event]) {
         const index = eventListeners[event].indexOf(handler);
         if (index !== -1) {
