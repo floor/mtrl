@@ -17,7 +17,7 @@
  * - Large badge: positioned 14dp (height) x 12dp (width) from container edge
  */
 $component: '#{base.$prefix}-badge';
-$wrapper: '#{base.$prefix}-badge-wrapper';
+$wrapper: '#{base.$prefix}-badge__wrapper';
 
 // Wrapper styles to establish positioning context
 .#{$wrapper} {
