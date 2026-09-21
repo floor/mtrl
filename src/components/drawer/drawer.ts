@@ -8,7 +8,7 @@ import {
 } from "../../core/compose/features";
 import { withItems, withState, withHeadline } from "./features";
 import { withAPI } from "./api";
-import { DrawerConfig } from "./types";
+import { DrawerConfig, DrawerComponent } from "./types";
 import { createBaseConfig, getElementConfig, getApiConfig } from "./config";
 import { DRAWER_DEFAULTS } from "./constants";
 
@@ -68,7 +68,7 @@ import { DRAWER_DEFAULTS } from "./constants";
  *
  * @category Components
  */
-const createDrawer = (config: DrawerConfig = {}) => {
+const createDrawer = (config: DrawerConfig = {}): DrawerComponent => {
   const baseConfig = createBaseConfig(config);
 
   try {

@@ -253,6 +253,11 @@ describe('the chaining methods hand back the list', () => {
     ['setSelection', (list) => list.setSelection(['alan'])],
     ['on', (list) => list.on('select', () => {})],
     ['off', (list) => list.off('select', () => {})],
+    // These two were missed when the other seven were fixed in #125, and
+    // annotating the factory's return type in FLO-113 is what surfaced them:
+    // the declared ListComponent could not be satisfied while they handed back
+    // the pipeline object.
+    ['scrollToItem', (list) => { wireScrollIntoView(list); return list.scrollToItem('ada'); }],
   ];
 
   for (const [name, call] of chainers) {
@@ -291,5 +296,22 @@ describe('the chaining methods hand back the list', () => {
     const list = mount();
 
     await expect(list.refresh()).resolves.toBe(list);
+  });
+
+  test('scrollToIndex resolves to the list, as its Promise type says', async () => {
+    const list = mount();
+    wireScrollIntoView(list);
+
+    await expect(list.scrollToIndex(1)).resolves.toBe(list);
+  });
+
+  test('and a scroll can be chained off, which is the point of returning it', () => {
+    const list = mount();
+    wireScrollIntoView(list);
+
+    const chained = list.scrollToItem('ada') as ListComponent<Person>;
+
+    expect(typeof chained.getSelectedItemIds).toBe('function');
+    expect(chained.getAllItems()).toHaveLength(3);
   });
 });
