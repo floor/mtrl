@@ -1,9 +1,10 @@
 // src/components/textfield/api.ts
-import {
+import type {
   BaseComponent,
   TextfieldComponent,
   ApiOptions,
   TextfieldVariant,
+  TextfieldEvents,
 } from "./types";
 
 /**
@@ -298,12 +299,12 @@ export const withAPI =
     },
 
     // Event handling
-    on(event: string, handler: Function): TextfieldComponent {
+    on<K extends keyof TextfieldEvents>(event: K, handler: TextfieldEvents[K]): TextfieldComponent {
       component.on?.(event, handler);
       return this;
     },
 
-    off(event: string, handler: Function): TextfieldComponent {
+    off<K extends keyof TextfieldEvents>(event: K, handler: TextfieldEvents[K]): TextfieldComponent {
       component.off?.(event, handler);
       return this;
     },

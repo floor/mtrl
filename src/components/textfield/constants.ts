@@ -52,7 +52,7 @@ export const TEXTFIELD_TYPES = {
  * @category Components
  */
 export const TEXTFIELD_EVENTS = {
-  /** Fired when textfield value changes */
+  /** Emitted on native input change; setValue() is silent */
   CHANGE: "change",
   /** Fired during input */
   INPUT: "input",
@@ -60,11 +60,11 @@ export const TEXTFIELD_EVENTS = {
   FOCUS: "focus",
   /** Fired when textfield loses focus */
   BLUR: "blur",
-  /** Fired when enter key is pressed */
+  /** Legacy name, not emitted; listen for keydown on the input and check key === "Enter" */
   ENTER: "enter",
-  /** Fired when a key is pressed down */
+  /** Native input event only; not emitted through on() */
   KEYDOWN: "keydown",
-  /** Fired when a key is released */
+  /** Native input event only; not emitted through on() */
   KEYUP: "keyup",
 } as const;
 

@@ -52,8 +52,8 @@ import { createBaseConfig, getElementConfig, getApiConfig } from "./config";
  * });
  *
  * // Add event listener
- * currencyField.on('input', (e) => {
- *   console.log('Amount entered:', e.target.value);
+ * currencyField.on('input', ({ value }) => {
+ *   console.log('Amount entered:', value);
  * });
  */
 const createTextfield = (config: TextfieldConfig = {}): TextfieldComponent => {
