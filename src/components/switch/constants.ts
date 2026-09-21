@@ -31,11 +31,11 @@ export const SWITCH_STATES = {
  * @category Components
  */
 export const SWITCH_EVENTS = {
-  /** Fired when switch is checked */
+  /** Emitted when the checked state changes. */
   CHANGE: 'change',
-  /** Fired when switch receives focus */
+  /** Native input focus event; listen on the input, not the switch emitter. */
   FOCUS: 'focus',
-  /** Fired when switch loses focus */
+  /** Native input blur event; listen on the input, not the switch emitter. */
   BLUR: 'blur'
 } as const;
 

@@ -13,7 +13,9 @@ export {
 // Export types
 export type { 
   SwitchConfig, 
-  SwitchComponent
+  SwitchComponent,
+  SwitchEvents,
+  SwitchChangePayload
 } from './types'
 
 // Export features
