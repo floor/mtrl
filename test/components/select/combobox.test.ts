@@ -90,7 +90,7 @@ describe('select as a combobox', () => {
     // the selected option is where the active option starts
     expect(activeText(input)).toBe('Medium');
     expect(document.getElementById(input.getAttribute('aria-activedescendant')!)?.getAttribute('aria-selected')).toBe('true');
-    expect(document.getElementById(input.getAttribute('aria-activedescendant')!)?.classList.contains('mtrl-menu-item--active')).toBe(true);
+    expect(document.getElementById(input.getAttribute('aria-activedescendant')!)?.classList.contains('mtrl-menu__item--active')).toBe(true);
   });
 
   test('arrows move the active option without wrapping, skipping disabled options', async () => {

@@ -162,7 +162,7 @@ const setupCombobox = (
 ): void => {
   const input = textfield.input as HTMLInputElement;
   const field = textfield.element;
-  const activeClass = `${prefix}-menu-item--active`;
+  const activeClass = `${prefix}-menu__item--active`;
   const TYPEAHEAD_DELAY = 500;
   const PAGE = 10;
 

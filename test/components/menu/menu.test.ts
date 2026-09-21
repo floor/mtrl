@@ -52,7 +52,7 @@ afterEach(() => {
 });
 
 const menuItems = (menu: { element: HTMLElement }): HTMLElement[] =>
-  Array.from(menu.element.querySelectorAll('.mtrl-menu-item'));
+  Array.from(menu.element.querySelectorAll('.mtrl-menu__item'));
 
 describe('menu', () => {
   test('renders a menu of menuitems, each labelled by its own text', async () => {
@@ -86,7 +86,7 @@ describe('menu', () => {
     await opened(menu);
     const separator = menu.element.querySelector('[role="separator"]');
     expect(separator).not.toBeNull();
-    expect(separator!.classList.contains('mtrl-menu-item')).toBe(false);
+    expect(separator!.classList.contains('mtrl-menu__item')).toBe(false);
     expect(menuItems(menu).length).toBe(2);
   });
 
@@ -135,7 +135,7 @@ describe('menu', () => {
     // "Disabled menu items can receive focus but aren't selectable"
     press('ArrowDown');
     expect(document.activeElement).toBe(rendered[2]);
-    expect(rendered[2]!.classList.contains('mtrl-menu-item--disabled')).toBe(true);
+    expect(rendered[2]!.classList.contains('mtrl-menu__item--disabled')).toBe(true);
     press('ArrowUp');
     expect(document.activeElement).toBe(rendered[1]);
     press('End');
@@ -294,13 +294,13 @@ describe('the expressive vertical menu', () => {
     });
     await opened(menu);
     const [withText, without] = menuItems(menu) as [HTMLElement, HTMLElement];
-    const label = withText.querySelector('.mtrl-menu-item-label');
+    const label = withText.querySelector('.mtrl-menu__item-label');
     expect(label).not.toBeNull();
-    expect(label!.querySelector('.mtrl-menu-item-text')!.textContent).toBe('Share');
-    expect(label!.querySelector('.mtrl-menu-item-supporting')!.textContent).toBe('Anyone with the link');
+    expect(label!.querySelector('.mtrl-menu__item-text')!.textContent).toBe('Share');
+    expect(label!.querySelector('.mtrl-menu__item-supporting')!.textContent).toBe('Anyone with the link');
     // an item without it keeps the simpler markup
-    expect(without.querySelector('.mtrl-menu-item-label')).toBeNull();
-    expect(without.querySelector('.mtrl-menu-item-text')!.textContent).toBe('Copy');
+    expect(without.querySelector('.mtrl-menu__item-label')).toBeNull();
+    expect(without.querySelector('.mtrl-menu__item-text')!.textContent).toBe('Copy');
   });
 
   test('a submenu takes its parent\'s variant, and the pair shows which is active', async () => {
@@ -526,7 +526,7 @@ describe('the gap separator', () => {
   ];
 
   const groups = (menu: { element: HTMLElement }) =>
-    menu.element.querySelectorAll('.mtrl-menu-group');
+    menu.element.querySelectorAll('.mtrl-menu__group');
 
   const press = (key: string) =>
     (document.activeElement as HTMLElement).dispatchEvent(
@@ -538,15 +538,15 @@ describe('the gap separator', () => {
     await opened(menu);
 
     expect(groups(menu).length).toBe(2);
-    expect(groups(menu)[0]!.querySelectorAll('.mtrl-menu-item').length).toBe(2);
-    expect(groups(menu)[1]!.querySelectorAll('.mtrl-menu-item').length).toBe(1);
+    expect(groups(menu)[0]!.querySelectorAll('.mtrl-menu__item').length).toBe(2);
+    expect(groups(menu)[1]!.querySelectorAll('.mtrl-menu__item').length).toBe(1);
   });
 
   test('a menu without gaps keeps its flat list', async () => {
     const menu = createMenu({ opener, items, variant: 'vertical' });
     await opened(menu);
     expect(groups(menu).length).toBe(0);
-    expect(menu.element.querySelectorAll('.mtrl-menu-item').length).toBe(items.length);
+    expect(menu.element.querySelectorAll('.mtrl-menu__item').length).toBe(items.length);
   });
 
   test('the grouping is presentational, so the items stay menuitems in order', async () => {
@@ -558,7 +558,7 @@ describe('the gap separator', () => {
       expect(group.querySelector('ul')!.getAttribute('role')).toBe('none');
     }
 
-    const found = Array.from(menu.element.querySelectorAll('.mtrl-menu-item'));
+    const found = Array.from(menu.element.querySelectorAll('.mtrl-menu__item'));
     expect(found.map((el) => el.textContent?.trim())).toEqual(['View', 'Copy', 'Upload']);
     expect(found.every((el) => el.getAttribute('role') === 'menuitem')).toBe(true);
   });
@@ -567,7 +567,7 @@ describe('the gap separator', () => {
     const menu = createMenu({ opener, items: gapped, variant: 'vertical' });
     await opened(menu);
 
-    const all = Array.from(menu.element.querySelectorAll('.mtrl-menu-item')) as HTMLElement[];
+    const all = Array.from(menu.element.querySelectorAll('.mtrl-menu__item')) as HTMLElement[];
     all[1]!.focus();
     press('ArrowDown');
     await after(100);
@@ -589,7 +589,7 @@ describe('the gap separator', () => {
     });
     await opened(menu);
 
-    const last = menu.element.querySelectorAll('.mtrl-menu-item')[2] as HTMLElement;
+    const last = menu.element.querySelectorAll('.mtrl-menu__item')[2] as HTMLElement;
     last.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     await after(200);
     // the index into the items array counts the gap, as it counts a divider
@@ -611,8 +611,8 @@ describe('the gap separator', () => {
     await opened(menu);
 
     expect(groups(menu).length).toBe(2);
-    expect(menu.element.querySelectorAll('.mtrl-menu-divider').length).toBe(1);
-    expect(groups(menu)[0]!.querySelectorAll('.mtrl-menu-item').length).toBe(2);
+    expect(menu.element.querySelectorAll('.mtrl-menu__divider').length).toBe(1);
+    expect(groups(menu)[0]!.querySelectorAll('.mtrl-menu__item').length).toBe(2);
   });
 });
 

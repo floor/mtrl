@@ -336,7 +336,7 @@ const withSubmenu =
 
     // Create submenu list
     const submenuList = document.createElement("ul");
-    submenuList.className = `${component.getClass("menu-list")}`;
+    submenuList.className = `${component.getClass("menu__list")}`;
 
     // Create submenu items
     const submenuItems: HTMLElement[] = [];
@@ -349,7 +349,7 @@ const withSubmenu =
       onItemCreated: (itemElement: HTMLElement) => {
         if (
           !itemElement.classList.contains(
-            `${component.getClass("menu-item--disabled")}`
+            `${component.getClass("menu__item--disabled")}`
           )
         ) {
           submenuItems.push(itemElement);

@@ -110,7 +110,7 @@ const withController =
    */
   const createMenuItem = (item: MenuItem, index: number): HTMLElement => {
     const itemElement = document.createElement("li");
-    const itemClass = `${component.getClass("menu-item")}`;
+    const itemClass = `${component.getClass("menu__item")}`;
 
     itemElement.className = itemClass;
     if (listbox) {
@@ -145,29 +145,29 @@ const withController =
 
     // Create content container for flexible layout
     const contentContainer = document.createElement("span");
-    contentContainer.className = `${component.getClass("menu-item-content")}`;
+    contentContainer.className = `${component.getClass("menu__item-content")}`;
 
     // Add icon if provided
     if (item.icon) {
       const iconElement = document.createElement("span");
-      iconElement.className = `${component.getClass("menu-item-icon")}`;
+      iconElement.className = `${component.getClass("menu__item-icon")}`;
       setHTML(iconElement, item.icon);
       contentContainer.appendChild(iconElement);
     }
 
     // Add text
     const textElement = document.createElement("span");
-    textElement.className = `${component.getClass("menu-item-text")}`;
+    textElement.className = `${component.getClass("menu__item-text")}`;
     textElement.textContent = item.text;
 
     if (item.supportingText) {
       // A label and a line under it: the two stack, so they go in their own
       // box rather than beside the icon and the trailing text
       const labelElement = document.createElement("span");
-      labelElement.className = `${component.getClass("menu-item-label")}`;
+      labelElement.className = `${component.getClass("menu__item-label")}`;
       const supportingElement = document.createElement("span");
       supportingElement.className = `${component.getClass(
-        "menu-item-supporting",
+        "menu__item-supporting",
       )}`;
       supportingElement.textContent = item.supportingText;
       labelElement.appendChild(textElement);
@@ -180,7 +180,7 @@ const withController =
     // Add shortcut if provided
     if (item.shortcut) {
       const shortcutElement = document.createElement("span");
-      shortcutElement.className = `${component.getClass("menu-item-shortcut")}`;
+      shortcutElement.className = `${component.getClass("menu__item-shortcut")}`;
       shortcutElement.textContent = item.shortcut;
       contentContainer.appendChild(shortcutElement);
     }
@@ -233,7 +233,7 @@ const withController =
    */
   const createDivider = (divider: MenuDivider, index: number): HTMLElement => {
     const dividerElement = document.createElement("li");
-    dividerElement.className = `${component.getClass("menu-divider")}`;
+    dividerElement.className = `${component.getClass("menu__divider")}`;
     dividerElement.setAttribute("role", "separator");
     dividerElement.setAttribute("data-index", index.toString());
 
@@ -249,7 +249,7 @@ const withController =
    */
   const renderMenuItems = (): void => {
     const menuList = document.createElement("ul");
-    menuList.className = `${component.getClass("menu-list")}`;
+    menuList.className = `${component.getClass("menu__list")}`;
     menuList.setAttribute("role", listbox ? "listbox" : "menu");
     if (listbox) menuList.id = `${optionIdPrefix}-listbox`;
 
@@ -263,7 +263,7 @@ const withController =
 
     const startGroup = (): void => {
       const group = document.createElement("li");
-      group.className = `${component.getClass("menu-group")}`;
+      group.className = `${component.getClass("menu__group")}`;
       group.setAttribute("role", "none");
 
       const list = document.createElement("ul");
@@ -372,7 +372,7 @@ const withController =
 
     // Get all menu items
     const menuItems = component.element.querySelectorAll(
-      `.${component.getClass("menu-item")}`,
+      `.${component.getClass("menu__item")}`,
     ) as NodeListOf<HTMLElement>;
 
     // Update selected state for each item
@@ -380,10 +380,10 @@ const withController =
       const currentItemId = item.getAttribute("data-id");
 
       if (currentItemId === itemId) {
-        item.classList.add(`${component.getClass("menu-item--selected")}`);
+        item.classList.add(`${component.getClass("menu__item--selected")}`);
         item.setAttribute("aria-selected", "true");
       } else {
-        item.classList.remove(`${component.getClass("menu-item--selected")}`);
+        item.classList.remove(`${component.getClass("menu__item--selected")}`);
         item.setAttribute("aria-selected", "false");
       }
     });
@@ -479,7 +479,7 @@ const withController =
           // the first arrow press lands on the first item
           const items = Array.from(
             component.element.querySelectorAll(
-              `.${component.getClass("menu-item")}`,
+              `.${component.getClass("menu__item")}`,
             ),
           ) as HTMLElement[];
 
@@ -772,7 +772,7 @@ const withController =
       if ("type" in item && item.type === "gap") {
         // Submenus are a single surface; a gap there is spacing
         element = document.createElement("li");
-        element.className = `${component.getClass("menu-gap")}`;
+        element.className = `${component.getClass("menu__gap")}`;
         element.setAttribute("role", "none");
       } else if ("type" in item && item.type === "divider") {
         element = createDivider(item, index);
