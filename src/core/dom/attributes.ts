@@ -20,6 +20,12 @@ export const setAttributes = <E extends HTMLElement | SVGElement>(
   if (!attributes) return element;
   const values = attributes as Record<string, unknown>;
 
+  // `style` is refused here. Writing it as an attribute takes a whole CSS
+  // string, so one interpolated value can carry further declarations -- the
+  // same injection route closed on createElement's own style option in
+  // FLO-111. Leaving it open here would be a door beside a locked one.
+  // Inline styles go through `style`, which assigns per property.
+
   // href, src and action are scheme-checked wherever they are set, so a javascript:
   // URL cannot become a styled control that runs script on click.
   const attributeValue = (key: string, value: unknown): string =>
@@ -29,7 +35,7 @@ export const setAttributes = <E extends HTMLElement | SVGElement>(
   const keys = Object.keys(attributes);
   if (keys.length === 1) {
     const value = values[keys[0]];
-    if (value != null) {
+    if (value != null && keys[0] !== "style") {
       element.setAttribute(keys[0], attributeValue(keys[0], value));
     }
     return element;
@@ -38,7 +44,7 @@ export const setAttributes = <E extends HTMLElement | SVGElement>(
   // General case: multiple attributes - for...in is faster than Object.entries
   for (const key in attributes) {
     const value = values[key];
-    if (value != null) {
+    if (value != null && key !== "style") {
       element.setAttribute(key, attributeValue(key, value));
     }
   }
@@ -84,7 +90,9 @@ export const batchAttributes = (
   // Process all operations in a single pass for optimal performance
   for (let i = 0; i < operations.length; i++) {
     const op = operations[i];
-    if (op.action === "set" && op.value != null) {
+    // `style` is refused here too, for the reason given on setAttributes:
+    // the attribute takes a whole CSS string and the style option does not.
+    if (op.action === "set" && op.value != null && op.key !== "style") {
       element.setAttribute(
         op.key,
         URL_ATTRIBUTES.has(op.key.toLowerCase()) ? safeUrl(String(op.value)) : String(op.value)

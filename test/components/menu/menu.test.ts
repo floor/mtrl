@@ -210,6 +210,53 @@ describe('menu', () => {
   });
 });
 
+// Regression cover for the FLO-111 migration, which moved these off the style
+// *attribute* and onto the style option.
+//
+// The attribute took a joined string built with
+// `Object.entries(styles).map(([k, v]) => `${k}: ${v}`)`, and CSS text has no
+// camelCase, so the parser dropped `maxHeight: 300px` whole -- in JSDOM and in
+// Chromium alike. That looked like a live defect and is not one: the
+// positioning feature sets `menuElement.style.maxHeight` from the same config
+// when the menu opens (features/position.ts:311), so the option has always
+// worked and only the attribute copy of it was dead. `width` was carried by
+// the attribute and is now carried by the option.
+//
+// These pin both, so that whichever route supplies them stays wired. They
+// pass against the pre-change source too, which is the honest description of
+// them: regression cover for a refactor, not proof of a fix.
+describe('the size options reach the element', () => {
+  test('maxHeight is applied', async () => {
+    const menu = createMenu({ opener, items, maxHeight: '300px' });
+    await opened(menu);
+
+    expect(menu.element.style.maxHeight).toBe('300px');
+  });
+
+  test('width is applied', async () => {
+    const menu = createMenu({ opener, items, width: '200px' });
+    await opened(menu);
+
+    expect(menu.element.style.width).toBe('200px');
+  });
+
+  test('both together, and neither crowds the other out', async () => {
+    const menu = createMenu({ opener, items, width: '200px', maxHeight: '300px' });
+    await opened(menu);
+
+    expect(menu.element.style.width).toBe('200px');
+    expect(menu.element.style.maxHeight).toBe('300px');
+  });
+
+  test('a menu given neither carries no size of its own', async () => {
+    const menu = createMenu({ opener, items });
+    await opened(menu);
+
+    expect(menu.element.style.width).toBe('');
+    expect(menu.element.style.maxHeight).toBe('');
+  });
+});
+
 describe('the expressive vertical menu', () => {
   test('is opt-in: a plain menu is still the baseline one', async () => {
     const menu = createMenu({ opener, items });

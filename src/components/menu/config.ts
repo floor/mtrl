@@ -75,13 +75,15 @@ export const getElementConfig = (config: MenuConfig) => {
     role: config.listbox ? "presentation" : "menu",
     ...(config.listbox ? {} : { tabindex: "-1" }),
     "aria-hidden": (!config.visible).toString(),
-    style: Object.entries(styles)
-      .map(([key, value]) => `${key}: ${value}`)
-      .join(";"),
   };
 
   return createElementConfig(config, {
     tag: "div",
+    // Styles go through the style option, not the style attribute. The
+    // attribute took a joined string, and CSS text has no camelCase, so
+    // `maxHeight` was dropped there by the parser -- harmlessly, because
+    // features/position.ts applies config.maxHeight on open. FLO-111.
+    style: styles,
     attributes,
     className: [
       config.visible ? MENU_CLASSES.VISIBLE : null,
