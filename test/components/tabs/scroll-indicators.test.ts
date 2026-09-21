@@ -86,7 +86,7 @@ const mount = (config: Record<string, unknown> = {}): TabsComponent => {
 };
 
 const scrollerOf = (tabs: TabsComponent): HTMLElement => {
-  const scroller = tabs.element.querySelector(`.${tabs.getClass('tabs')}-scroll`);
+  const scroller = tabs.element.querySelector(`.${tabs.getClass('tabs')}__scroll`);
   if (!(scroller instanceof HTMLElement)) {
     throw new Error('expected a scroll container');
   }
@@ -133,11 +133,11 @@ const enhance = (tabs: TabsComponent, config: ScrollIndicatorConfig = {}): void 
 };
 
 const indicators = (tabs: TabsComponent): HTMLElement[] =>
-  Array.from(tabs.element.querySelectorAll(`.${tabs.getClass('tabs')}-scroll-indicator`));
+  Array.from(tabs.element.querySelectorAll(`.${tabs.getClass('tabs')}__scroll-indicator`));
 
 const indicator = (tabs: TabsComponent, side: 'left' | 'right'): HTMLElement => {
   const el = tabs.element.querySelector(
-    `.${tabs.getClass('tabs')}-scroll-indicator--${side}`,
+    `.${tabs.getClass('tabs')}__scroll-indicator--${side}`,
   );
   if (!(el instanceof HTMLElement)) {
     throw new Error(`expected a ${side} indicator`);
@@ -147,7 +147,7 @@ const indicator = (tabs: TabsComponent, side: 'left' | 'right'): HTMLElement => 
 
 const button = (tabs: TabsComponent, side: 'left' | 'right'): HTMLButtonElement => {
   const el = tabs.element.querySelector(
-    `.${tabs.getClass('tabs')}-scroll-button--${side}`,
+    `.${tabs.getClass('tabs')}__scroll-button--${side}`,
   );
   if (!(el instanceof HTMLButtonElement)) {
     throw new Error(`expected a ${side} scroll button`);
@@ -173,10 +173,10 @@ describe('addScrollIndicators', () => {
     expect(indicators(first)).toHaveLength(2);
     expect(indicators(second)).toHaveLength(2);
     expect(indicator(first, 'left').className).toContain(
-      `${first.getClass('tabs')}-scroll-indicator--fade`,
+      `${first.getClass('tabs')}__scroll-indicator--fade`,
     );
     expect(indicator(second, 'right').className).toContain(
-      `${second.getClass('tabs')}-scroll-indicator--fade`,
+      `${second.getClass('tabs')}__scroll-indicator--fade`,
     );
     expect(first.element.contains(indicator(second, 'left'))).toBe(false);
     expect(second.element.contains(indicator(first, 'right'))).toBe(false);
@@ -206,10 +206,10 @@ describe('addScrollIndicators', () => {
     enhance(tabs, { appearance: 'shadow' });
 
     expect(indicator(tabs, 'left').classList.contains(
-      `${tabs.getClass('tabs')}-scroll-indicator--shadow`,
+      `${tabs.getClass('tabs')}__scroll-indicator--shadow`,
     )).toBe(true);
     expect(indicator(tabs, 'right').classList.contains(
-      `${tabs.getClass('tabs')}-scroll-indicator--fade`,
+      `${tabs.getClass('tabs')}__scroll-indicator--fade`,
     )).toBe(false);
   });
 

@@ -109,12 +109,12 @@ export const withSupportingText =
       isError = false
     ): HTMLElement => {
       const element = document.createElement("div");
-      element.className = `${PREFIX}-${COMPONENT}-helper`;
+      element.className = `${PREFIX}-${COMPONENT}__helper`;
       element.id = supportingId;
       element.textContent = text;
 
       if (isError) {
-        element.classList.add(`${PREFIX}-${COMPONENT}-helper--error`);
+        element.classList.add(`${PREFIX}-${COMPONENT}__helper--error`);
         component.element.classList.add(`${PREFIX}-${COMPONENT}--error`);
       }
 

@@ -94,7 +94,7 @@ export const withTrailingIcon = <T extends TrailingIconConfig & object>(config: 
     const ensureSlot = (): HTMLElement => {
       if (slot && slot.parentNode) return slot;
       const element = document.createElement('span');
-      element.className = `${PREFIX}-${NAME}-trailing-icon`;
+      element.className = `${PREFIX}-${NAME}__trailing-icon`;
       component.element.appendChild(element);
       component.element.classList.add(`${PREFIX}-${NAME}--with-trailing-icon`);
       if (component.input) {

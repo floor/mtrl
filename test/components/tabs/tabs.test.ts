@@ -144,15 +144,15 @@ describe('tabs', () => {
     const primary = mount();
     expect(primary.element.classList.contains('mtrl-tabs--primary')).toBe(true);
     expect(primary.element.classList.contains('mtrl-tabs--scrollable')).toBe(true);
-    expect(primary.element.querySelector('.mtrl-tabs-divider')).not.toBeNull();
+    expect(primary.element.querySelector('.mtrl-tabs__divider')).not.toBeNull();
 
     expect(mount({ variant: 'secondary' }).element.classList.contains('mtrl-tabs--secondary')).toBe(true);
-    expect(mount({ showDivider: false }).element.querySelector('.mtrl-tabs-divider')).toBeNull();
+    expect(mount({ showDivider: false }).element.querySelector('.mtrl-tabs__divider')).toBeNull();
     expect(mount({ scrollable: false }).element.classList.contains('mtrl-tabs--scrollable')).toBe(false);
   });
 
   test('an active-tab indicator is rendered', () => {
-    expect(mount().element.querySelector('.mtrl-tabs-indicator')).not.toBeNull();
+    expect(mount().element.querySelector('.mtrl-tabs__indicator')).not.toBeNull();
   });
 
   test('off() removes a handler', () => {

@@ -73,24 +73,24 @@ describe('disabled states use the per-role tokens', () => {
   });
 
   test('switch: the track is 12%, which is its own token, not the handle 38%', () => {
-    const track = find('switch', /\.mtrl-switch--disabled .mtrl-switch-track$/)[0];
+    const track = find('switch', /\.mtrl-switch--disabled .mtrl-switch__track$/)[0];
     expect(declaration(track, 'background-color')).toBe(onSurface(12));
     expect(declaration(track, 'border-color')).toBe(onSurface(12));
     expect(declaration(track, 'opacity')).toBeUndefined();
   });
 
   test('switch: the unselected handle is on-surface 38%', () => {
-    const thumb = find('switch', /\.mtrl-switch--disabled .mtrl-switch-thumb$/)[0];
+    const thumb = find('switch', /\.mtrl-switch--disabled .mtrl-switch__thumb$/)[0];
     expect(declaration(thumb, 'background-color')).toBe(onSurface(38));
   });
 
   test('switch: the selected handle is surface at full opacity, not faded to 38%', () => {
-    const checkedThumb = find('switch', /--disabled.*--checked .mtrl-switch-thumb$/)[0];
+    const checkedThumb = find('switch', /--disabled.*--checked .mtrl-switch__thumb$/)[0];
     expect(declaration(checkedThumb, 'background-color')).toBe('var(--mtrl-sys-color-surface)');
   });
 
   test('switch: the selected disabled track keeps 12% rather than the enabled outline role', () => {
-    const checkedTrack = find('switch', /--disabled.*--checked .mtrl-switch-track$/)[0];
+    const checkedTrack = find('switch', /--disabled.*--checked .mtrl-switch__track$/)[0];
     expect(declaration(checkedTrack, 'background-color')).toBe(onSurface(12));
   });
 });

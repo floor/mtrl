@@ -92,7 +92,7 @@ export const withSuffixText = <T extends SuffixTextConfig & object>(config: T) =
     const ensureSlot = (): HTMLElement => {
       if (slot && slot.parentNode) return slot;
       const element = document.createElement('span');
-      element.className = `${PREFIX}-${NAME}-suffix`;
+      element.className = `${PREFIX}-${NAME}__suffix`;
       component.element.appendChild(element);
       component.element.classList.add(`${PREFIX}-${NAME}--with-suffix`);
       slot = element;

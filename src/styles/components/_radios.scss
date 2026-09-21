@@ -16,7 +16,7 @@ $component: '#{base.$prefix}-radios';
   &--vertical {
     flex-direction: column;
 
-    .#{$component}-item {
+    .#{$component}__item {
       margin-bottom: 12px;
 
       &:last-child {
@@ -31,7 +31,7 @@ $component: '#{base.$prefix}-radios';
     flex-wrap: wrap;
     align-items: flex-start;
 
-    .#{$component}-item {
+    .#{$component}__item {
       margin-right: 16px;
 
       &:last-child {
@@ -48,7 +48,7 @@ $component: '#{base.$prefix}-radios';
   }
 
   // Radio item
-  &-item {
+  &__item {
     position: relative;
     display: inline-flex;
     align-items: center;
@@ -56,14 +56,14 @@ $component: '#{base.$prefix}-radios';
     &--disabled {
       cursor: not-allowed;
 
-      .#{$component}-label {
+      .#{$component}__label {
         cursor: not-allowed;
       }
     }
   }
 
   // Radio input
-  &-input {
+  &__input {
     position: absolute;
     opacity: 0;
     height: 0;
@@ -72,13 +72,13 @@ $component: '#{base.$prefix}-radios';
     padding: 0;
 
     // Focus styles
-    &:focus ~ .#{$component}-label .#{$component}-ripple {
+    &:focus ~ .#{$component}__label .#{$component}__ripple {
       background-color: t.alpha('primary', v.state('focus-state-layer-opacity'));
     }
 
     // Checked styles
-    &:checked ~ .#{$component}-label {
-      .#{$component}-circle {
+    &:checked ~ .#{$component}__label {
+      .#{$component}__circle {
         border-color: t.color('primary');
         border-width: 1.5px;
 
@@ -90,8 +90,8 @@ $component: '#{base.$prefix}-radios';
     }
 
     // Disabled styles
-    &:disabled ~ .#{$component}-label {
-      .#{$component}-circle {
+    &:disabled ~ .#{$component}__label {
+      .#{$component}__circle {
         border-color: t.alpha('on-surface', 0.38);
 
         &:after {
@@ -99,14 +99,14 @@ $component: '#{base.$prefix}-radios';
         }
       }
 
-      .#{$component}-text {
+      .#{$component}__text {
         color: t.alpha('on-surface', 0.38);
       }
     }
   }
 
   // Radio label
-  &-label {
+  &__label {
     position: relative;
     display: inline-flex;
     align-items: center;
@@ -120,7 +120,7 @@ $component: '#{base.$prefix}-radios';
     &--before {
       flex-direction: row-reverse;
 
-      .#{$component}-text {
+      .#{$component}__text {
         margin-right: 12px;
         margin-left: 0;
       }
@@ -128,7 +128,7 @@ $component: '#{base.$prefix}-radios';
   }
 
   // Radio control
-  &-control {
+  &__control {
     position: relative;
     display: inline-flex;
     align-items: center;
@@ -139,7 +139,7 @@ $component: '#{base.$prefix}-radios';
   }
 
   // Radio circle
-  &-circle {
+  &__circle {
     position: relative;
     width: 20px;
     height: 20px;
@@ -164,7 +164,7 @@ $component: '#{base.$prefix}-radios';
   }
 
   // Ripple effect
-  &-ripple {
+  &__ripple {
     position: absolute;
     top: 0;
     left: 0;
@@ -174,13 +174,13 @@ $component: '#{base.$prefix}-radios';
     transition: background-color 0.15s ease;
 
     // Apply ripple effect on hover
-    .#{$component}-input:not(:disabled) ~ .#{$component}-label:hover & {
+    .#{$component}__input:not(:disabled) ~ .#{$component}__label:hover & {
       background-color: t.alpha('primary', 0.08);
     }
   }
 
   // Radio text
-  &-text {
+  &__text {
     margin-left: 8px;
     line-height: 1.2;
   }

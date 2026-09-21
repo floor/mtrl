@@ -47,8 +47,8 @@ afterAll(() => { dom.window.close(); });
 
 describe("a decoration given in the config is there at creation", () => {
   const cases: Array<[string, string, string]> = [
-    ["leadingIcon", "leadingIcon", "textfield-leading-icon"],
-    ["trailingIcon", "trailingIcon", "textfield-trailing-icon"],
+    ["leadingIcon", "leadingIcon", "textfield__leading-icon"],
+    ["trailingIcon", "trailingIcon", "textfield__trailing-icon"],
   ];
 
   for (const [option, member, className] of cases) {

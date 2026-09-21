@@ -16,6 +16,7 @@
 
 import { describe, test, expect } from "bun:test";
 import { compileString } from "sass";
+import { readFileSync } from "node:fs";
 
 const compile = (component: string): string =>
   compileString(`@use 'components/${component}';`, {
@@ -33,6 +34,24 @@ const MIGRATED: Record<string, string[]> = {
   "top-app-bar": ["headline", "leading", "trailing", "row"],
   "side-sheet": ["scrim", "container", "header", "title", "close", "content"],
   "bottom-sheet": ["scrim", "container", "handle", "header", "title", "content"],
+
+  // Wave 4.
+  radios: ["item", "input", "label", "control", "circle", "ripple", "text"],
+  textfield: [
+    "input",
+    "prefix",
+    "suffix",
+    "leading-icon",
+    "trailing-icon",
+    "helper",
+    "required",
+  ],
+  // `thumb-icon` is not written anywhere as `&-thumb-icon`: in the stylesheet
+  // `&-icon` is nested inside `&-thumb`, so renaming only the parent is what
+  // produces it. Pinned here because that is easy to "fix" into
+  // `__thumb__icon` by someone tidying the child too.
+  switch: ["container", "content", "input", "track", "thumb", "thumb-icon", "helper"],
+  tabs: ["divider", "indicator", "scroll", "scroll-indicator", "scroll-button"],
 };
 
 const defines = (css: string, className: string): boolean =>
@@ -78,5 +97,29 @@ describe("migrated element classes", () => {
     const css = compile("tooltip");
     expect(defines(css, "mtrl-tooltip__arrow")).toBe(true);
     expect(defines(css, "mtrl-tooltip-arrow")).toBe(false);
+  });
+
+  // The tabs stylesheet carries two blocks: `mtrl-tabs` is the container and
+  // `mtrl-button.mtrl-tab` the individual tab. Only the container's elements
+  // were migrated, so the tab keeps its own spelling -- a sweep that took the
+  // whole file would rename this too, and it is not an element of `tabs`.
+  test("the individual tab is its own block, not an element of tabs", () => {
+    const css = compile("tabs");
+    expect(defines(css, "mtrl-tab")).toBe(true);
+    expect(defines(css, "mtrl-tabs__tab")).toBe(false);
+  });
+
+  // `mtrl-ripple` is a block of its own, built by the core ripple feature and
+  // styled by whichever component hosts it. radios has an *element* that
+  // happens to share the word, and driving the rename by element name alone
+  // rewrote the core one too on the first pass here -- caught by the suite,
+  // not by reading. There is no ripple stylesheet to compile, so the core
+  // spelling is pinned where it is actually written.
+  test("the core ripple keeps its own block name", () => {
+    expect(defines(compile("radios"), "mtrl-radios__ripple")).toBe(true);
+
+    const core = readFileSync("src/core/compose/features/ripple.ts", "utf8");
+    expect(core).toContain("`${PREFIX}-ripple`");
+    expect(core).not.toContain("`${PREFIX}__ripple`");
   });
 });

@@ -64,17 +64,17 @@ export const SWITCH_CLASSES = {
   /** Root element class */
   ROOT: 'switch',
   /** Container element class */
-  CONTAINER: 'switch-container',
+  CONTAINER: 'switch__container',
   /** Content wrapper class */
-  CONTENT: 'switch-content',
+  CONTENT: 'switch__content',
   /** Label element class */
   LABEL: 'switch__label',
   /** Input element class */
-  INPUT: 'switch-input',
+  INPUT: 'switch__input',
   /** Track element class */
-  TRACK: 'switch-track',
+  TRACK: 'switch__track',
   /** Thumb element class */
-  THUMB: 'switch-thumb',
+  THUMB: 'switch__thumb',
   /** Label at start position class */
   LABEL_START: 'switch--label-start',
   /** Label at end position class */
@@ -86,9 +86,9 @@ export const SWITCH_CLASSES = {
   /** Error state class */
   ERROR: 'switch--error',
   /** Helper/supporting text class */
-  HELPER: 'switch-helper',
+  HELPER: 'switch__helper',
   /** Error helper text class */
-  HELPER_ERROR: 'switch-helper--error',
+  HELPER_ERROR: 'switch__helper--error',
   /** Focus state class */
   FOCUSED: 'switch--focused'
 } as const;

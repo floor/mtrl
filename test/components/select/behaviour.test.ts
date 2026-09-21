@@ -55,7 +55,7 @@ const mount = async (config: Record<string, unknown> = {}) => {
   return select;
 };
 const inputOf = (select: { element: HTMLElement }) => select.element.querySelector('input')!;
-const helper = (select: { element: HTMLElement }) => select.element.querySelector('.mtrl-textfield-helper');
+const helper = (select: { element: HTMLElement }) => select.element.querySelector('.mtrl-textfield__helper');
 
 describe('select', () => {
   test('its readonly input carries the name and shows the selected option', async () => {
