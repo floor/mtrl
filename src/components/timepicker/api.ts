@@ -80,7 +80,16 @@ export const createTimePickerAPI = (
     element: baseComponent.element,
     modalElement,
     dialogElement,
-    isOpen,
+
+    // A getter, not a copy. `isOpen` was read off the closure once, at the
+    // moment this object was built, so the property never moved off its
+    // initial value however many times the picker was opened -- while the
+    // closure the methods read stayed correct, which is why open, close and
+    // toggle all behaved and only the reported state was wrong.
+    get isOpen() {
+      return isOpen;
+    },
+
     
     open() {
       if (isOpen) return this;

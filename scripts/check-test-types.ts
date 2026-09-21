@@ -32,7 +32,6 @@ const DRIFTED = [
   "test/components/chip.test.ts",
   "test/components/datepicker.test.ts",
   "test/components/list.test.ts",
-  "test/components/timepicker.test.ts",
 ];
 
 const EXCLUDED = new Set(DRIFTED);
