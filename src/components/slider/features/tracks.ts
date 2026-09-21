@@ -67,7 +67,11 @@ interface TracksHost {
   appearance: { setColor: (color: SliderColor) => void };
   getSize?: () => SliderSize;
   setSize?: (size: SliderSize) => void;
-  renderTracks?: (state?: unknown) => void;
+  // VisualState, not unknown: the producer below takes one, and under
+  // strictFunctionTypes a host promising to call it with anything cannot
+  // accept that. VisualState is declared in this file, which is the same
+  // place the producer lives. FLO-114.
+  renderTracks?: (state?: VisualState) => void;
   lifecycle: { destroy: () => void };
 }
 
