@@ -1,6 +1,7 @@
 // src/components/dialog/types.ts
 import type { ButtonComponent } from "../button/types";
 import type { DividerComponent } from "../divider/types";
+import type { EventCallback } from "../../core/state/emitter";
 
 /**
  * Dialog size types - determines the width and height of the dialog
@@ -362,7 +363,7 @@ export interface DialogFeatureComponent {
   element: HTMLElement;
   config: DialogConfig & Record<string, unknown>;
   getClass: (name: string) => string;
-  on: (event: string, handler: Function) => unknown;
+  on: (event: string, handler: EventCallback) => unknown;
   emit: (event: string, data?: unknown) => unknown;
   _buttons?: DialogButtonRecord[];
 }
