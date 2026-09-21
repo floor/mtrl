@@ -89,6 +89,11 @@ export interface CreateElementOptions {
   /** CSS classes (will be automatically prefixed with 'mtrl-') - alias for class */
   className?: string | string[];
   /** CSS classes that will NOT be prefixed - added as-is to the element */
+  /**
+   * @deprecated Since FLO-117 `class` and `className` are not prefixed either,
+   * so this option does the same thing as those. It is kept for the release
+   * that changes the behaviour and will be removed in 1.0.0.
+   */
   rawClass?: string | string[];
   /** HTML attributes */
   attributes?: object;

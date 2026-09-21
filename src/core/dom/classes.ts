@@ -4,10 +4,11 @@
  * @description DOM manipulation utilities optimized for performance
  */
 
-import { PREFIX } from "../config";
-
-// Constant for prefix with dash for better performance
-const PREFIX_WITH_DASH = `${PREFIX}-`;
+// These helpers take class names exactly as given. They used to prefix every
+// name with `mtrl-`, which meant a consumer's `class: "custom-button"` landed
+// as `mtrl-custom-button` and could not be styled by the name they wrote.
+// Prefixing belongs to `getClass()`, which internal code already uses at the
+// call site. FLO-117.
 
 // Cache for frequently used class combinations to avoid repeated processing
 const classCache = new Map<string, string[]>();
@@ -119,9 +120,7 @@ export const addClass = (
   if (classes.length === 1 && typeof classes[0] === "string") {
     const cls = classes[0];
     if (cls && !cls.includes(" ")) {
-      const prefixed = cls.startsWith(PREFIX_WITH_DASH)
-        ? cls
-        : PREFIX_WITH_DASH + cls;
+      const prefixed = cls;
       // Safety check: ensure no spaces were introduced by prefixing
       if (!prefixed.includes(" ")) {
         element.classList.add(prefixed);
@@ -133,9 +132,7 @@ export const addClass = (
   // Full processing for complex cases
   const normalized = normalizeClasses(...classes);
   for (const cls of normalized) {
-    const prefixed = cls.startsWith(PREFIX_WITH_DASH)
-      ? cls
-      : PREFIX_WITH_DASH + cls;
+    const prefixed = cls;
 
     // Safety check: ensure no spaces in class token (prevents DOMTokenList errors)
     if (prefixed.includes(" ")) {
@@ -177,9 +174,7 @@ export const removeClass = (
   if (classes.length === 1 && typeof classes[0] === "string") {
     const cls = classes[0];
     if (cls && !cls.includes(" ")) {
-      const prefixed = cls.startsWith(PREFIX_WITH_DASH)
-        ? cls
-        : PREFIX_WITH_DASH + cls;
+      const prefixed = cls;
       // Safety check: ensure no spaces were introduced by prefixing
       if (!prefixed.includes(" ")) {
         element.classList.remove(prefixed);
@@ -191,9 +186,7 @@ export const removeClass = (
   // Full processing for complex cases
   const normalized = normalizeClasses(...classes);
   for (const cls of normalized) {
-    const prefixed = cls.startsWith(PREFIX_WITH_DASH)
-      ? cls
-      : PREFIX_WITH_DASH + cls;
+    const prefixed = cls;
 
     // Safety check: ensure no spaces in class token
     if (prefixed.includes(" ")) {
@@ -231,9 +224,7 @@ export const toggleClass = (
   if (classes.length === 1 && typeof classes[0] === "string") {
     const cls = classes[0];
     if (cls && !cls.includes(" ")) {
-      const prefixed = cls.startsWith(PREFIX_WITH_DASH)
-        ? cls
-        : PREFIX_WITH_DASH + cls;
+      const prefixed = cls;
       // Safety check: ensure no spaces were introduced by prefixing
       if (!prefixed.includes(" ")) {
         element.classList.toggle(prefixed);
@@ -245,9 +236,7 @@ export const toggleClass = (
   // Full processing for complex cases
   const normalized = normalizeClasses(...classes);
   for (const cls of normalized) {
-    const prefixed = cls.startsWith(PREFIX_WITH_DASH)
-      ? cls
-      : PREFIX_WITH_DASH + cls;
+    const prefixed = cls;
 
     // Safety check: ensure no spaces in class token
     if (prefixed.includes(" ")) {
@@ -288,9 +277,7 @@ export const hasClass = (
   if (classes.length === 1 && typeof classes[0] === "string") {
     const cls = classes[0];
     if (cls && !cls.includes(" ")) {
-      const prefixed = cls.startsWith(PREFIX_WITH_DASH)
-        ? cls
-        : PREFIX_WITH_DASH + cls;
+      const prefixed = cls;
       // Safety check: ensure no spaces were introduced by prefixing
       if (!prefixed.includes(" ")) {
         return element.classList.contains(prefixed);
@@ -301,9 +288,7 @@ export const hasClass = (
   // Full processing for complex cases
   const normalized = normalizeClasses(...classes);
   for (const cls of normalized) {
-    const prefixed = cls.startsWith(PREFIX_WITH_DASH)
-      ? cls
-      : PREFIX_WITH_DASH + cls;
+    const prefixed = cls;
 
     // Safety check: ensure no spaces in class token
     if (prefixed.includes(" ")) {
