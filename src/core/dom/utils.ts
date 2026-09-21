@@ -1,3 +1,4 @@
+import { omitsAttribute } from "../utils/attributes";
 import { safeUrl, URL_ATTRIBUTES } from "../utils/url";
 // src/core/dom/utils.ts
 
@@ -40,7 +41,7 @@ export const createElement = <T extends HTMLElement>(
     } else if (key.startsWith("on")) {
       // An `on*` key whose value is not a function would otherwise be written as an
       // attribute, which is an inline handler. Listeners go through the branch above.
-    } else if (value !== null && value !== undefined) {
+    } else if (value !== null && value !== undefined && !omitsAttribute(key, value)) {
       element.setAttribute(
         key,
         URL_ATTRIBUTES.has(key.toLowerCase()) ? safeUrl(String(value)) : String(value)
