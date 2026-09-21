@@ -1,6 +1,6 @@
 // src/components/slider/api.ts
-import { SliderComponent, SliderEvent } from "./types";
-import { SLIDER_COLORS, SLIDER_EVENTS } from "./types";
+import { SliderColor, SliderComponent, SliderEvent } from "./types";
+import { SLIDER_EVENTS } from "./types";
 import { SliderSize } from "./constants";
 
 /**
@@ -30,7 +30,9 @@ export interface ApiOptions {
     isDisabled: () => boolean;
   };
   appearance: {
-    setColor: (color: string) => void;
+    // SliderColor, not string: the appearance feature accepts only the four
+    // colour names, and a host declaring `string` cannot take it. FLO-114.
+    setColor: (color: SliderColor) => void;
     getColor: () => string;
     setSize: (size: SliderSize) => void;
     getSize: () => string;
@@ -133,9 +135,11 @@ export const withAPI =
 
       // Appearance management
       setColor(
-        color:
-          | keyof typeof SLIDER_COLORS
-          | (typeof SLIDER_COLORS)[keyof typeof SLIDER_COLORS]
+        // SliderColor. This accepted the uppercase keys of SLIDER_COLORS too,
+        // which neither the public SliderComponent.setColor nor the
+        // implementation in features/states.ts has ever taken -- so a caller
+        // typed against the component could not reach this branch anyway.
+        color: SliderColor
       ) {
         options.appearance.setColor(color);
         return this;

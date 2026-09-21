@@ -301,8 +301,15 @@ export const withTextInput =
       }
     });
 
-    // Listen for animation events that indicate autofill (webkit browsers)
-    input.addEventListener("animationstart", (e: AnimationEvent) => {
+    // Listen for animation events that indicate autofill (webkit browsers).
+    // Narrowed to HTMLElement first: `input` is HTMLInputElement |
+    // HTMLTextAreaElement, and addEventListener over a union falls back to
+    // the EventTarget signature that types the event as a plain Event.
+    // Annotating the parameter AnimationEvent was the previous answer and is
+    // unsound -- a listener requiring one cannot be registered where any
+    // Event may arrive. The event name picks the type instead. FLO-114.
+    const animationTarget: HTMLElement = input;
+    animationTarget.addEventListener("animationstart", (e) => {
       if (
         e.animationName === "onAutoFillStart" ||
         e.animationName?.includes("autofill")

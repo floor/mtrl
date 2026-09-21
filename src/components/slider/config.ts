@@ -6,7 +6,7 @@ import {
   createComponentConfig,
   createElementConfig,
 } from "../../core/config/component";
-import { SliderConfig } from "./types";
+import { SliderColor, SliderConfig } from "./types";
 import type { ApiOptions } from "./api";
 import { SLIDER_DEFAULTS, SliderSize } from "./constants";
 
@@ -123,7 +123,7 @@ interface SliderApiHost {
   slider?: ApiOptions["slider"];
   disabled?: { enable?: () => void; disable?: () => void; isDisabled?: () => boolean };
   appearance?: {
-    setColor?: (color: string) => void;
+    setColor?: (color: SliderColor) => void;
     getColor?: () => string;
     showTicks?: (show: boolean) => void;
     showCurrentValue?: (show: boolean) => void;
