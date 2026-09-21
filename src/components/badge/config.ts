@@ -124,6 +124,34 @@ export const getApiConfig = (comp: {
  * formatBadgeLabel("New") // "New"
  * formatBadgeLabel("VeryLong") // "Very" (truncated)
  */
+/**
+ * Whether a formatted label has nothing worth showing.
+ *
+ * A badge is a count, and a count of nothing is not news -- so an empty label
+ * and a zero are both hidden. The setter has always done this; creation did
+ * not, so `createBadge({ label: 0 })` was visible while `setLabel(0)` on the
+ * same badge hid it. One rule now, used by both. FLO-108.
+ */
+export const isEmptyBadgeLabel = (formattedLabel: string): boolean =>
+  formattedLabel === "" || formattedLabel === "0";
+
+/**
+ * Whether {@link formatBadgeLabel} truncated the label to `max+`.
+ *
+ * Asked of the same value the formatter reads, rather than of its type. Both
+ * callers used to require `typeof label === "number"`, so `"1250"` with a max
+ * of 999 rendered "999+" without the overflow class that 1250 received --
+ * the formatter has always used `Number(label)`. FLO-108.
+ */
+export const isBadgeOverflow = (
+  label: string | number,
+  max?: number
+): boolean => {
+  if (max === undefined || label === "" || label === null) return false;
+  const numeric = Number(label);
+  return !Number.isNaN(numeric) && numeric > max;
+};
+
 export const formatBadgeLabel = (
   label: string | number,
   max?: number

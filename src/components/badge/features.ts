@@ -1,6 +1,6 @@
 // src/components/badge/features.ts
 import { BadgeConfig, BadgeFeatureHost, BadgeVisibility } from './types';
-import { formatBadgeLabel } from './config';
+import { formatBadgeLabel, isBadgeOverflow, isEmptyBadgeLabel } from './config';
 
 // Common badge variants
 const VARIANT_SMALL = 'small';
@@ -19,9 +19,16 @@ const POSITION_TOP_RIGHT = 'top-right';
 export const withVisibility = () => <C extends BadgeFeatureHost>(component: C): C & { visibility: BadgeVisibility } => {
   // Get config values
   const visible = component.config.visible !== false; // Default to true if not specified
-  
-  // Initialize visibility state based on config
-  if (!visible) {
+
+  // A badge is a count, and a count of nothing is not news. setLabel has
+  // always hidden an empty or zero label; creation did not, so
+  // createBadge({ label: 0 }) was visible while setLabel(0) on the same badge
+  // hid it. Same helper both sides now. FLO-108.
+  const nothingToShow = isEmptyBadgeLabel(
+    formatBadgeLabel(component.config.label ?? "", component.config.max)
+  );
+
+  if (!visible || nothingToShow) {
     component.element.classList.add(`${component.getClass('badge')}--invisible`);
   }
   
@@ -125,8 +132,10 @@ export const withPosition = (config: BadgeConfig) => <C extends BadgeFeatureHost
   // Apply position class
   component.element.classList.add(`${component.getClass('badge')}--${position}`);
   
-  // If there's a target, add positioned class
-  if (config.target) {
+  // Positioned only when the badge can actually be attached. A target with no
+  // parent cannot be wrapped -- withAttachment builds the wrapper and drops it
+  // -- so the badge would have claimed a position it never took. FLO-108.
+  if (config.target && config.target.parentNode) {
     component.element.classList.add(`${component.getClass('badge')}--positioned`);
   }
   
@@ -147,13 +156,14 @@ export const withMax = (config: BadgeConfig) => <C extends BadgeFeatureHost>(com
   // Store max value in config for later use
   component.config.max = config.max;
   
-  // Apply max formatting if needed
-  if (config.label !== undefined && config.label !== '') {
+  // Overflow, from the same helper the setter uses, so the two cannot drift
+  // apart again. Visibility is decided in withVisibility, which runs for
+  // every badge -- this feature returns early when there is no max. FLO-108.
+  if (config.label !== undefined) {
     const formattedLabel = formatBadgeLabel(config.label, config.max);
     component.element.textContent = formattedLabel;
-    
-    // Add overflow class if label was truncated
-    if (typeof config.label === 'number' && config.label > config.max) {
+
+    if (isBadgeOverflow(config.label, config.max)) {
       component.element.classList.add(`${component.getClass('badge')}--overflow`);
     }
   }

@@ -164,6 +164,91 @@ describe('badge visibility', () => {
   });
 });
 
+// FLO-108. Creation and the setters disagreed about the same badge. Measured
+// before the fix, at 600px in JSDOM:
+//
+//   label 0     created hidden=false   setLabel(0)     hidden=true
+//   label ""    created hidden=false   setLabel("")    hidden=true
+//   label "0"   created hidden=false   setLabel("0")   hidden=true
+//   "1250" max 999  created overflow=false   setLabel overflow=false
+//                   -- while 1250 as a number got the class, and both
+//                      rendered "999+", because formatBadgeLabel has always
+//                      used Number(label)
+//
+// The rules live in config.ts now and both sides call them, so the two cannot
+// drift apart again.
+describe('a badge says the same thing however it was set', () => {
+  const EMPTY: Array<string | number> = [0, '', '0'];
+
+  for (const label of EMPTY) {
+    test(`${JSON.stringify(label)} is hidden at creation, as it is by setLabel`, () => {
+      const created = createBadge({ label } as never);
+      const set = createBadge({ label: 5 } as never);
+      set.setLabel(label);
+
+      expect(has(created, 'invisible')).toBe(true);
+      expect(has(set, 'invisible')).toBe(true);
+    });
+  }
+
+  test('a badge with no label at all is hidden too', () => {
+    expect(has(createBadge({} as never), 'invisible')).toBe(true);
+  });
+
+  for (const label of [5, 'hi'] as Array<string | number>) {
+    test(`${JSON.stringify(label)} is shown both ways`, () => {
+      const created = createBadge({ label } as never);
+      const set = createBadge({ label: 1 } as never);
+      set.setLabel(label);
+
+      expect(has(created, 'invisible')).toBe(false);
+      expect(has(set, 'invisible')).toBe(false);
+    });
+  }
+
+  // The overflow class asked about the label's *type*; the formatter asks
+  // about its value. A numeric string rendered "999+" and looked like an
+  // ordinary label.
+  for (const label of [1250, '1250'] as Array<string | number>) {
+    test(`${JSON.stringify(label)} over max is marked overflow both ways`, () => {
+      const created = createBadge({ label, max: 999 } as never);
+      const set = createBadge({ label: 1, max: 999 } as never);
+      set.setLabel(label);
+
+      expect(created.element.textContent).toBe('999+');
+      expect(set.element.textContent).toBe('999+');
+      expect(has(created, 'overflow')).toBe(true);
+      expect(has(set, 'overflow')).toBe(true);
+    });
+  }
+
+  test('a label under max is not marked overflow', () => {
+    expect(has(createBadge({ label: 42, max: 999 } as never), 'overflow')).toBe(false);
+    expect(has(createBadge({ label: '42', max: 999 } as never), 'overflow')).toBe(false);
+  });
+
+  // withAttachment builds a wrapper and replaces the target with it. With no
+  // parent there is nothing to replace, so the wrapper was dropped and the
+  // badge kept a position it never took.
+  test('a target outside the document is not claimed as positioned', () => {
+    const detached = document.createElement('button');
+
+    const badge = createBadge({ label: 3, target: detached } as never);
+
+    expect(has(badge, 'positioned')).toBe(false);
+    expect((badge as unknown as { wrapper?: HTMLElement }).wrapper).toBeUndefined();
+  });
+
+  test('a target in the document still is', () => {
+    const { target } = mountTarget();
+
+    const badge = createBadge({ label: 3, target } as never);
+
+    expect(has(badge, 'positioned')).toBe(true);
+    expect((badge as unknown as { wrapper?: HTMLElement }).wrapper).toBeDefined();
+  });
+});
+
 describe('badge appearance', () => {
   test('setColor and setPosition swap their modifiers', () => {
     const badge = createBadge({ label: 1 });
