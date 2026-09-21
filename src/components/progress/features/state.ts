@@ -1,7 +1,7 @@
 // src/components/progress/features/state.ts - Canvas-compatible state management
 
 import { PREFIX } from "../../../core";
-import { ProgressConfig, ProgressShape } from "../types";
+import { ProgressConfig, ProgressShape, ProgressThickness } from "../types";
 import { PROGRESS_CLASSES, PROGRESS_SHAPES } from "../constants";
 import { addClass } from "../../../core/dom";
 
@@ -38,7 +38,8 @@ export interface ComponentWithLifecycle {
   setBuffer?: (buffer: number) => unknown;
   setShape?: (shape: ProgressShape) => unknown;
   showLabel?: () => unknown;
-  setThickness?: (thickness: number | string) => unknown;
+  // The canvas accepts the public presets or a pixel count, not arbitrary strings.
+  setThickness?: (thickness: ProgressThickness) => unknown;
   state?: ProgressState;
 }
 
