@@ -133,6 +133,50 @@ describe('snackbar', () => {
     expect(focused.state).toBe('hidden');
   });
 
+  // FLO-114 gave snackbar a typed event map, which declares four events. A
+  // map is a claim about what exists, and `open`, `action` and `dismiss` had
+  // no runtime coverage at all -- only `close` did. So the claim is checked
+  // here: each of the four arrives, once, carrying the documented payload.
+  test('all four mapped events fire, with the payload the map declares', () => {
+    const seen: string[] = [];
+    const payloads: SnackbarEvent[] = [];
+    const record = (name: string) => (event: SnackbarEvent) => {
+      seen.push(name);
+      payloads.push(event);
+    };
+
+    const snackbar = createSnackbar({ message: 'Deleted', action: 'Undo' });
+    snackbar.on('open', record('open'));
+    snackbar.on('close', record('close'));
+    snackbar.on('action', record('action'));
+    snackbar.on('dismiss', record('dismiss'));
+
+    snackbar.show();
+    expect(seen).toEqual(['open']);
+
+    snackbar.actionButton!.click();
+    // The action click reports the action, then closes: `dismiss` fires
+    // alongside `close`, which is what the queue listens to.
+    expect(seen).toEqual(['open', 'action', 'close', 'dismiss']);
+
+    // Only the closing pair carries a reason; every payload carries the
+    // nullable DOM event the map declares.
+    const byName = Object.fromEntries(seen.map((name, i) => [name, payloads[i]]));
+    expect(byName.close.reason).toBe('action');
+    expect(byName.dismiss.reason).toBe('action');
+    expect(byName.open.reason).toBeUndefined();
+    expect(byName.action.originalEvent).not.toBeNull();
+
+    // off removes a handler registered through the generic signature.
+    const later: string[] = [];
+    const handler = () => later.push('open');
+    const second = createSnackbar({ message: 'Again' });
+    second.on('open', handler);
+    second.off('open', handler);
+    second.show();
+    expect(later).toEqual([]);
+  });
+
   test('the action fires the callback and closes the snackbar', () => {
     const reasons: string[] = [];
     let acted = 0;
