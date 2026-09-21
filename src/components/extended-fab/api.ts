@@ -1,5 +1,6 @@
 // src/components/extended-fab/api.ts
-import { ExtendedFabComponent } from './types';
+import { ExtendedFabComponent, ExtendedFabEvents } from './types';
+import type { EventCallback } from '../../core/state/emitter';
 import type { IconManager } from '../../core/compose/features/icon';
 import type { TextManager } from '../../core/compose/features/text';
 
@@ -53,10 +54,10 @@ interface ApiOptions {
 interface ComponentWithElements
   extends Pick<ExtendedFabComponent, 'disabled' | 'lifecycle'> {
   /** Subscribes to an event; the API returns the component itself */
-  on: (event: string, handler: Function) => unknown;
+  on: (event: string, handler: EventCallback) => unknown;
   
   /** Unsubscribes from an event; the API returns the component itself */
-  off: (event: string, handler: Function) => unknown;
+  off: (event: string, handler: EventCallback) => unknown;
   
   /** Adds CSS classes; the API returns the component itself */
   addClass: (...classes: string[]) => unknown;
@@ -200,13 +201,13 @@ export const withAPI = ({ disabled, lifecycle, text, className }: ApiOptions) =>
     },
     
     // Event methods
-    on(event: string, handler: Function) {
-      component.on(event, handler);
+    on<K extends keyof ExtendedFabEvents>(event: K, handler: ExtendedFabEvents[K]) {
+      component.on(event, handler as EventCallback);
       return this;
     },
     
-    off(event: string, handler: Function) {
-      component.off(event, handler);
+    off<K extends keyof ExtendedFabEvents>(event: K, handler: ExtendedFabEvents[K]) {
+      component.off(event, handler as EventCallback);
       return this;
     },
     
