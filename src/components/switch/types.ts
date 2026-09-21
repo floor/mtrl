@@ -1,4 +1,5 @@
 // src/components/switch/types.ts
+import type { EventCallback } from "../../core/state/emitter";
 
 export type SwitchPosition = "center" | "start" | "end";
 
@@ -54,6 +55,21 @@ export interface SwitchConfig {
   [key: string]: unknown;
 }
 
+/** A checked-state change from the native input or a programmatic setter. */
+export interface SwitchChangePayload {
+  /** The new checked state. */
+  checked: boolean;
+  /** The input's HTML value attribute, not the boolean checked state. */
+  value: string;
+  /** Present for input-driven changes; absent for check/uncheck/toggle/setValue. */
+  nativeEvent?: Event;
+}
+
+/** Emitter events. Native input clicks/focus are not forwarded. */
+export interface SwitchEvents {
+  change: (payload: SwitchChangePayload) => void;
+}
+
 /**
  * Switch component interface
  */
@@ -103,11 +119,11 @@ export interface SwitchComponent {
   /** Removes supporting text */
   removeSupportingText: () => SwitchComponent;
 
-  /** Adds event listener */
-  on: (event: string, handler: Function) => SwitchComponent;
+  /** Subscribes to checked-state changes; native input events use input.addEventListener. */
+  on: <K extends keyof SwitchEvents>(event: K, handler: SwitchEvents[K]) => SwitchComponent;
 
   /** Removes event listener */
-  off: (event: string, handler: Function) => SwitchComponent;
+  off: <K extends keyof SwitchEvents>(event: K, handler: SwitchEvents[K]) => SwitchComponent;
 
   /** Enables the switch */
   enable: () => SwitchComponent;
@@ -150,8 +166,8 @@ export interface BaseComponent {
     setText: (content: string) => void;
     getText: () => string;
   };
-  on?: (event: string, handler: Function) => void;
-  off?: (event: string, handler: Function) => void;
+  on?: (event: string, handler: EventCallback) => void;
+  off?: (event: string, handler: EventCallback) => void;
   disabled?: {
     enable: () => void;
     disable: () => void;

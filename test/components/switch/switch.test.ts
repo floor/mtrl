@@ -157,6 +157,65 @@ describe('switch', () => {
     expect(changes.mock.calls[0][0].checked).toBe(true);
   });
 
+  test('input changes carry the original change event, including keyboard activation', () => {
+    const control = mount({ value: 'accepted' });
+    const payloads: Array<{ checked: boolean; value: string; nativeEvent?: Event }> = [];
+    const nativeEvents: Event[] = [];
+    control.on('change', payload => payloads.push(payload));
+    control.input.addEventListener('change', event => nativeEvents.push(event));
+    control.input.click();
+    const keydown = new dom.window.KeyboardEvent('keydown', { key: 'Enter', bubbles: true });
+    control.input.dispatchEvent(keydown);
+    expect(payloads).toHaveLength(2);
+    expect(payloads.map(payload => payload.checked)).toEqual([true, false]);
+    payloads.forEach((payload, index) => {
+      expect(payload.value).toBe('accepted');
+      expect(payload.nativeEvent).toBe(nativeEvents[index]);
+      expect(payload.nativeEvent?.type).toBe('change');
+      expect(payload.nativeEvent?.target).toBe(control.input);
+    });
+    expect(payloads[1].nativeEvent).not.toBe(keydown);
+    control.destroy();
+  });
+
+  test('programmatic changes carry checked and HTML value without a native event', () => {
+    const control = mount({ value: 'accepted' });
+    const payloads: Array<{ checked: boolean; value: string; nativeEvent?: Event }> = [];
+    control.on('change', payload => payloads.push(payload));
+    control.check();
+    control.check();
+    control.uncheck();
+    control.toggle();
+    control.setValue(false);
+    expect(payloads).toEqual([
+      { checked: true, value: 'accepted' },
+      { checked: false, value: 'accepted' },
+      { checked: true, value: 'accepted' },
+      { checked: false, value: 'accepted' },
+    ]);
+    control.destroy();
+  });
+
+  test('subscriptions chain, unsubscribe, suppress disabled clicks and stop after destroy', () => {
+    const control = mount({ disabled: true });
+    let changes = 0;
+    const handler = () => changes++;
+    expect(control.on('change', handler)).toBe(control);
+    control.input.click();
+    expect(changes).toBe(0);
+    control.enable();
+    control.input.click();
+    expect(changes).toBe(1);
+    expect(control.off('change', handler)).toBe(control);
+    control.toggle();
+    expect(changes).toBe(1);
+    control.on('change', handler);
+    control.destroy();
+    control.on('change', handler);
+    control.toggle();
+    expect(changes).toBe(1);
+  });
+
   test('setValue accepts booleans and the strings "true" and "1"', () => {
     const s = mount();
     s.setValue(true); expect(s.getValue()).toBe(true);

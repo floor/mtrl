@@ -1,5 +1,6 @@
 // src/components/switch/api.ts
-import { BaseComponent, SwitchComponent, ApiOptions } from "./types";
+import type { BaseComponent, SwitchComponent, SwitchEvents, ApiOptions } from "./types";
+import type { EventCallback } from "../../core/state/emitter";
 
 /**
  * Enhances switch component with API methods
@@ -102,13 +103,13 @@ export const withAPI =
     },
 
     // Event handling
-    on(event: string, handler: Function): SwitchComponent {
-      component.on?.(event, handler);
+    on<K extends keyof SwitchEvents>(event: K, handler: SwitchEvents[K]): SwitchComponent {
+      component.on?.(event, handler as EventCallback);
       return this;
     },
 
-    off(event: string, handler: Function): SwitchComponent {
-      component.off?.(event, handler);
+    off<K extends keyof SwitchEvents>(event: K, handler: SwitchEvents[K]): SwitchComponent {
+      component.off?.(event, handler as EventCallback);
       return this;
     },
 
