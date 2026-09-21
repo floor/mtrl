@@ -1,5 +1,6 @@
 // src/components/tabs/api.ts
 import { TabsComponent, TabComponent, TabConfig } from './types';
+import type { EventCallback } from "../../core/state/emitter";
 import { createTab } from './tab';
 
 /**
@@ -29,9 +30,9 @@ interface ComponentWithElements {
   /** Class name helper */
   getClass: (name: string) => string;
   /** Event subscription (optional) */
-  on?: (event: string, handler: Function) => unknown;
+  on?: (event: string, handler: EventCallback) => unknown;
   /** Event unsubscription (optional) */
-  off?: (event: string, handler: Function) => unknown;
+  off?: (event: string, handler: EventCallback) => unknown;
   /** Event emission (optional); returns `this`, the tabs component once spread */
   emit?(event: string, data: unknown): this;
   /** Component configuration */
@@ -186,7 +187,7 @@ export const withAPI = ({ lifecycle }: ApiOptions) =>
     /**
      * Adds an event listener
      */
-    on(event: string, handler: Function) {
+    on(event: string, handler: EventCallback) {
       if (component.on) {
         component.on(event, handler);
       }
@@ -196,7 +197,7 @@ export const withAPI = ({ lifecycle }: ApiOptions) =>
     /**
      * Removes an event listener
      */
-    off(event: string, handler: Function) {
+    off(event: string, handler: EventCallback) {
       if (component.off) {
         component.off(event, handler);
       }
