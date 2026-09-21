@@ -119,6 +119,21 @@ export interface RadioItem {
   destroy: () => void;
 }
 
+/** Selection or unknown-value clearing reported by the radio group. */
+export interface RadiosChangePayload {
+  /** Selected value, or an empty string when an unknown value clears selection. */
+  value: string;
+  /** Native input change event; undefined for programmatic clearing. */
+  originalEvent: Event | undefined;
+  /** Selected option, or null when an unknown value clears selection. */
+  option: RadioOptionConfig | null;
+}
+
+/** Group emitter events. Native input focus, blur and click are not forwarded. */
+export interface RadiosEvents {
+  change: (payload: RadiosChangePayload) => void;
+}
+
 /**
  * Radios component interface
  * @category Components
@@ -210,10 +225,10 @@ export interface RadiosComponent {
   /**
    * Adds an event listener to the radios component
    * @param event - Event name ('change')
-   * @param handler - Event handler function
+   * @param handler - Receives value, the selected option or null, and the original event if present
    * @returns The radios component for chaining
    */
-  on: (event: string, handler: Function) => RadiosComponent;
+  on: <K extends keyof RadiosEvents>(event: K, handler: RadiosEvents[K]) => RadiosComponent;
   
   /**
    * Removes an event listener from the radios component
@@ -221,5 +236,5 @@ export interface RadiosComponent {
    * @param handler - Event handler function
    * @returns The radios component for chaining
    */
-  off: (event: string, handler: Function) => RadiosComponent;
+  off: <K extends keyof RadiosEvents>(event: K, handler: RadiosEvents[K]) => RadiosComponent;
 }

@@ -43,7 +43,6 @@ const PENDING: string[] = [
   "src/components/datepicker/datepicker.ts",
   "src/components/drawer/drawer.ts",
   "src/components/progress/progress.ts",
-  "src/components/radios/radios.ts",
   "src/components/switch/switch.ts",
   "src/components/textfield/textfield.ts",
   "src/components/timepicker/timepicker.ts",
