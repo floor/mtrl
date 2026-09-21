@@ -98,44 +98,6 @@ export const createComponentConfig = <T extends BaseComponentConfig & object>(
   return config;
 };
 
-/**
- * Creates a class name with proper prefixing
- *
- * @param {string} componentName - The name of the component
- * @param {string} [element] - Optional element name for BEM notation
- * @param {string} [modifier] - Optional modifier name for BEM notation
- * @returns {string} Properly formatted class name
- *
- * @example
- * // Returns 'mtrl-button'
- * createClassName('button');
- *
- * // Returns 'mtrl-button__icon'
- * createClassName('button', 'icon');
- *
- * // Returns 'mtrl-button--primary'
- * createClassName('button', null, 'primary');
- *
- * // Returns 'mtrl-button__icon--small'
- * createClassName('button', 'icon', 'small');
- */
-export const createClassName = (
-  componentName: string,
-  element?: string | null,
-  modifier?: string | null,
-): string => {
-  let className = `${PREFIX}-${componentName}`;
-
-  if (element) {
-    className += `__${element}`;
-  }
-
-  if (modifier) {
-    className += `--${modifier}`;
-  }
-
-  return className;
-};
 
 /**
  * Processes class names for an element, handling arrays, nulls and conditional classes

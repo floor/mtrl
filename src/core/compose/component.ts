@@ -98,7 +98,7 @@ export interface WithElementOptions {
  * @returns {Object} Class name utilities
  */
 const getModifierClass = (base: string, modifier: string): string => `${base}--${modifier}`;
-const getElementClass = (base: string, element: string): string => `${base}-${element}`;
+const getElementClass = (base: string, element: string): string => `${base}__${element}`;
 const withPrefix = (prefix: string) => ({
   /**
    * Gets a prefixed class name

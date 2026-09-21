@@ -43,7 +43,7 @@ describe("withTextLabel", () => {
     expect(labelElement).not.toBeNull();
     expect(labelElement.textContent).toBe("Test Label");
     expect(labelElement.className).toBe(
-      `${PREFIX}-checkbox-label ${PREFIX}-checkbox-label--start`,
+      `${PREFIX}-checkbox__label ${PREFIX}-checkbox__label--start`,
     );
   });
 

@@ -64,5 +64,5 @@ export const CHECKBOX_CLASSES = {
   /** The visual checkbox icon */
   ICON: 'checkbox-icon',
   /** The text label associated with the checkbox */
-  LABEL: 'checkbox-label'
+  LABEL: 'checkbox__label'
 } as const;

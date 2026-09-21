@@ -102,7 +102,7 @@ const ensureSwitchStructure = (
 
     // Find label and move to content
     const label = component.element.querySelector(
-      `.${PREFIX}-${COMPONENT}-label`
+      `.${PREFIX}-${COMPONENT}__label`
     );
     if (label) {
       contentWrapper.appendChild(label);
@@ -130,7 +130,7 @@ const ensureSwitchStructure = (
 
     // Find label to move to content
     const label = component.element.querySelector(
-      `.${PREFIX}-${COMPONENT}-label`
+      `.${PREFIX}-${COMPONENT}__label`
     );
     if (label) {
       contentWrapper.appendChild(label);

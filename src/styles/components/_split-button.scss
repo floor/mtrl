@@ -113,7 +113,7 @@ $gap: 2px;
 
         // The icon sits in the button's icon wrapper, which has a size of its
         // own; the split button's chevron is bigger than a button icon
-        .#{$button}-icon {
+        .#{$button}__icon {
           width: map.get($spec, "icon");
           height: map.get($spec, "icon");
         }

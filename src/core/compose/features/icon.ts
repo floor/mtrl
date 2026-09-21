@@ -94,10 +94,13 @@ const createIcon = (
     const iconEl = document.createElement("span");
     iconEl.className = `${PREFIX}-icon`;
 
-    // Add component-specific class
+    // Add component-specific class. BEM: this is the component's icon
+    // element, and it is emitted for every component applying withIcon --
+    // button, extended-fab, fab, icon-button and slider -- so the name is
+    // settled here rather than five times over. FLO-120.
     const componentClass = `${PREFIX}-${
       config.componentName || "component"
-    }-icon`;
+    }__icon`;
     iconEl.classList.add(componentClass);
 
     // Add position class if specified

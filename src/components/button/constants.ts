@@ -70,8 +70,8 @@ export const BUTTON_TYPES = {
  */
 export const BUTTON_CLASSES = {
   ROOT: "button",
-  ICON: "button-icon",
-  TEXT: "button-text",
+  ICON: "button__icon",
+  TEXT: "button__text",
   ACTIVE: "button-active",
   DISABLED: "button-disabled",
 } as const;

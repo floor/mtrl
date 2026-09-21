@@ -34,7 +34,7 @@ $component: '#{base.$prefix}-slider';
   }
   
   // Label styles
-  &-label {
+  &__label {
     display: block;
     font-size: 18px;
     font-weight: 400;
@@ -43,7 +43,7 @@ $component: '#{base.$prefix}-slider';
   }
   
   // Icon positioning
-  &-icon {
+  &__icon {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -61,7 +61,7 @@ $component: '#{base.$prefix}-slider';
   
   // When slider has icon at end position
   &--icon {
-    .#{$component}-label {
+    .#{$component}__label {
       margin-left: 48px;
     }
 

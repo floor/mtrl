@@ -38,9 +38,9 @@ describe('snackbar stylesheet', () => {
   test('text: body-medium, two lines at most, 14dp above and below', () => {
     expect(value('.mtrl-snackbar', 'font-size')).toBe('14px');
     expect(value('.mtrl-snackbar', 'line-height')).toBe('20px');
-    expect(value('.mtrl-snackbar-text', 'margin')).toBe('14px 0');
-    expect(value('.mtrl-snackbar-text', 'overflow')).toBe('hidden');
-    expect(value('.mtrl-snackbar-text', '-webkit-line-clamp')).toBe('2');
+    expect(value('.mtrl-snackbar__text', 'margin')).toBe('14px 0');
+    expect(value('.mtrl-snackbar__text', 'overflow')).toBe('hidden');
+    expect(value('.mtrl-snackbar__text', '-webkit-line-clamp')).toBe('2');
   });
 
   test('action: inverse-primary text button, 8dp from the text and from the edge, no case change', () => {
@@ -48,7 +48,7 @@ describe('snackbar stylesheet', () => {
     expect(value('.mtrl-snackbar .mtrl-button.mtrl-snackbar-action:hover::before', 'background-color')).toBe('var(--mtrl-sys-color-inverse-primary)');
     expect(value('.mtrl-snackbar .mtrl-button.mtrl-snackbar-action:hover::before', 'opacity')).toBe('0.08');
     expect(value('.mtrl-snackbar--with-action', 'padding-inline-end')).toBe('8px');
-    expect(value('.mtrl-snackbar--with-action .mtrl-snackbar-text, .mtrl-snackbar--dismissible .mtrl-snackbar-text', 'padding-inline-end')).toBe('8px');
+    expect(value('.mtrl-snackbar--with-action .mtrl-snackbar__text, .mtrl-snackbar--dismissible .mtrl-snackbar__text', 'padding-inline-end')).toBe('8px');
     expect(css).not.toContain('text-transform');
     expect(css).not.toMatch(/rgb\(138, 180, 248\)/);
   });
@@ -60,7 +60,7 @@ describe('snackbar stylesheet', () => {
 
   test('a long action goes below the text, aligned to the end', () => {
     expect(value('.mtrl-snackbar--action-below', 'flex-wrap')).toBe('wrap');
-    expect(value('.mtrl-snackbar--action-below .mtrl-snackbar-text', 'flex-basis')).toBe('100%');
+    expect(value('.mtrl-snackbar--action-below .mtrl-snackbar__text', 'flex-basis')).toBe('100%');
     expect(value('.mtrl-snackbar--action-below .mtrl-snackbar-action', 'margin-inline-start')).toBe('auto');
   });
 

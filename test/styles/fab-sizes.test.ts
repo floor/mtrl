@@ -19,7 +19,7 @@ for (const [size, container, icon, radius] of [
     expect(value(root, 'width')).toBe(`${container}px`);
     expect(value(root, 'height')).toBe(`${container}px`);
     expect(value(root, 'border-radius')).toBe(`${radius}px`);
-    const iconRoot = size === 'default' ? '.mtrl-fab-icon' : `${root} .mtrl-fab-icon`;
+    const iconRoot = size === 'default' ? '.mtrl-fab__icon' : `${root} .mtrl-fab__icon`;
     for (const selector of [iconRoot, `${iconRoot} svg`]) {
       expect(value(selector, 'width')).toBe(`${icon}px`);
       expect(value(selector, 'height')).toBe(`${icon}px`);

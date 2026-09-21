@@ -87,7 +87,7 @@ export const createSegment = (
   if (isTextOnly) {
     checkmarkElement = createCheckmarkElement(prefix, checkmarkIcon);
     // Insert checkmark at the beginning of button content
-    const textElement = button.element.querySelector(`.${prefix}-button-text`);
+    const textElement = button.element.querySelector(`.${prefix}-button__text`);
     if (textElement) {
       textElement.parentNode?.insertBefore(checkmarkElement, textElement);
     } else {

@@ -118,7 +118,7 @@ describe('button', () => {
     const button = mount({ text: 'Save' });
     expect(button.element.tagName).toBe('BUTTON');
     expect(button.element.getAttribute('type')).toBe('button');
-    expect(button.element.querySelector('.mtrl-button-text')?.textContent).toBe('Save');
+    expect(button.element.querySelector('.mtrl-button__text')?.textContent).toBe('Save');
     expect([button.getVariant(), button.getSize(), button.getShape()]).toEqual(['filled', 's', 'round']);
     expect(has(button, 'filled') && has(button, 's') && has(button, 'round')).toBe(true);
   });

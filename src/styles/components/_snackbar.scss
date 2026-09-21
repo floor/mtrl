@@ -75,7 +75,7 @@ $margin: 16px;
   // ---------------------------------------------------------------------------
   // Vertical spacing is margin, not padding: the two-line clamp clips at the
   // padding box, so a third line would show through padding.
-  &-text {
+  &__text {
     @include m.truncate(2);
     flex: 1 1 auto;
     min-width: 0;
@@ -83,8 +83,8 @@ $margin: 16px;
     overflow-wrap: anywhere;
   }
 
-  &--with-action &-text,
-  &--dismissible &-text {
+  &--with-action &__text,
+  &--dismissible &__text {
     padding-inline-end: 8px;
   }
 
@@ -145,7 +145,7 @@ $margin: 16px;
     flex-wrap: wrap;
     padding-bottom: 4px;
 
-    .#{$component}-text {
+    .#{$component}__text {
       flex-basis: 100%;
       padding-inline-end: 16px;
     }

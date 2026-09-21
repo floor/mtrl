@@ -112,7 +112,7 @@ export const TEXTFIELD_CLASSES = {
   /** Input element class */
   INPUT: "textfield-input",
   /** Label element class */
-  LABEL: "textfield-label",
+  LABEL: "textfield__label",
   /** Container element class */
   CONTAINER: "textfield-container",
   /** Filled variant class */
@@ -128,7 +128,7 @@ export const TEXTFIELD_CLASSES = {
   /** Required indicator class */
   REQUIRED: "textfield--required",
   /** Floating label class */
-  LABEL_FLOATING: "textfield-label--floating",
+  LABEL_FLOATING: "textfield__label--floating",
   /** Supporting text class */
   SUPPORTING_TEXT: "textfield-supporting-text",
   /** Supporting text error class */

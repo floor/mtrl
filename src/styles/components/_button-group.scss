@@ -176,7 +176,7 @@ $shape: '--#{base.$prefix}-button-shape';
       min-width: var(--#{base.$prefix}-button-group-height);
       padding: 0 calc((var(--#{base.$prefix}-button-group-height) - var(--#{base.$prefix}-button-group-icon)) / 2);
 
-      .#{$button}-text {
+      .#{$button}__text {
         display: inline-block;
         max-width: 0;
         opacity: 0;
@@ -193,7 +193,7 @@ $shape: '--#{base.$prefix}-button-shape';
       gap: v.button('icon-gap-s');
       padding: 0 v.button('padding-s');
 
-      .#{$button}-text {
+      .#{$button}__text {
         max-width: 12em;
         opacity: 1;
       }

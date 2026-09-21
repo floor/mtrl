@@ -45,7 +45,7 @@ describe('snackbar', () => {
     expect(el.classList.contains('mtrl-snackbar')).toBe(true);
     expect(el.classList.contains('mtrl-snackbar--center')).toBe(true);
     expect(el.getAttribute('role')).toBe('status');
-    expect(el.querySelector('.mtrl-snackbar-text')!.textContent).toBe('Saved');
+    expect(el.querySelector('.mtrl-snackbar__text')!.textContent).toBe('Saved');
     expect(el.querySelector('.mtrl-snackbar-action')).toBeNull();
     expect(el.querySelector('.mtrl-snackbar-close')).toBeNull();
     expect(snackbar.getMessage()).toBe('Saved');

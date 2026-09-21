@@ -68,7 +68,7 @@ export const SWITCH_CLASSES = {
   /** Content wrapper class */
   CONTENT: 'switch-content',
   /** Label element class */
-  LABEL: 'switch-label',
+  LABEL: 'switch__label',
   /** Input element class */
   INPUT: 'switch-input',
   /** Track element class */

@@ -51,7 +51,7 @@ $component: '#{base.$prefix}-fab';
   border-radius: f.get-shape('large');
   
   // Icon sizing
-  &-icon {
+  &__icon {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -70,7 +70,7 @@ $component: '#{base.$prefix}-fab';
     height: 40px;
     border-radius: f.get-shape('medium');
     
-    .#{$component}-icon {
+    .#{$component}__icon {
       width: 24px;
       height: 24px;
       
@@ -90,7 +90,7 @@ $component: '#{base.$prefix}-fab';
     height: 80px;
     border-radius: f.get-shape('large-increased');
 
-    .#{$component}-icon {
+    .#{$component}__icon {
       width: 28px;
       height: 28px;
 
@@ -106,7 +106,7 @@ $component: '#{base.$prefix}-fab';
     height: 96px;
     border-radius: f.get-shape('extra-large');
     
-    .#{$component}-icon {
+    .#{$component}__icon {
       width: 32px;
       height: 32px;
       

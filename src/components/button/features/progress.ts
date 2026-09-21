@@ -111,7 +111,7 @@ export const withProgress =
           progress = p;
 
           // Add button-specific class to the progress element
-          addClass(progress.element, component.getClass("button-progress"));
+          addClass(progress.element, component.getClass("button__progress"));
 
           // Initially hide progress
           progress.element.style.display = "none";
@@ -135,7 +135,7 @@ export const withProgress =
     const getProgressInsertionPoint = () => {
       // Try to insert after icon if it exists
       const iconElement = component.element.querySelector(
-        `.${component.getClass("button-icon")}`
+        `.${component.getClass("button__icon")}`
       );
       if (iconElement && iconElement.nextSibling) {
         return iconElement.nextSibling;
@@ -171,7 +171,7 @@ export const withProgress =
 
         // Hide the icon if it exists
         const iconElement = component.element.querySelector(
-          `.${component.getClass("button-icon")}`
+          `.${component.getClass("button__icon")}`
         );
         if (iconElement instanceof HTMLElement) {
           iconElement.style.display = "none";
@@ -199,7 +199,7 @@ export const withProgress =
 
       // Show the icon again if it exists
       const iconElement = component.element.querySelector(
-        `.${component.getClass("button-icon")}`
+        `.${component.getClass("button__icon")}`
       );
       if (iconElement instanceof HTMLElement) {
         iconElement.style.display = "";

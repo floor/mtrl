@@ -63,7 +63,7 @@ $sizes: (
       --#{base.$prefix}-extended-fab-gap: #{map.get($tokens, gap)};
       --#{base.$prefix}-extended-fab-radius: #{f.get-shape(map.get($tokens, shape))};
 
-      .#{$component}-text {
+      .#{$component}__text {
         @include m.typography(map.get($tokens, label));
       }
     }
@@ -80,7 +80,7 @@ $sizes: (
   }
   
   // Icon styles
-  &-icon {
+  &__icon {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -99,7 +99,7 @@ $sizes: (
   }
   
   // Text styles
-  &-text {
+  &__text {
     @include m.typography('title-medium');
     white-space: nowrap;
     overflow: hidden;
@@ -159,12 +159,12 @@ $sizes: (
     padding: 0;
     gap: 0;
     
-    .#{$component}-icon {
+    .#{$component}__icon {
       margin: 0;
       transform: scale(1);
     }
     
-    .#{$component}-text {
+    .#{$component}__text {
       opacity: 0;
       max-width: 0;
       width: 0;
@@ -179,11 +179,11 @@ $sizes: (
   
   &:not(.#{$component}--collapsed) {
     // Ensure the icon scales smoothly
-    .#{$component}-icon {
+    .#{$component}__icon {
       transform: scale(1);
     }
     
-    .#{$component}-text {
+    .#{$component}__text {
       transition: 
         width 0.25s v.motion('easing-expand'),
         max-width 0.25s v.motion('easing-expand'),

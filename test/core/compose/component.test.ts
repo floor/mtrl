@@ -71,7 +71,10 @@ const createBase = (config: Record<string, any> = {}) => ({
   componentName: config.componentName,
   getClass: (name: string): string => `${config.prefix || 'mtrl'}-${name}`,
   getModifierClass: (base: string, modifier: string): string => `${base}--${modifier}`,
-  getElementClass: (base: string, element: string): string => `${base}-${element}`,
+  // Mirrors the real getElementClass, which emits BEM since FLO-120. This
+  // stub is why the assertion below passed against a dash for so long: the
+  // test was checking its own copy, not the function (F6).
+  getElementClass: (base: string, element: string): string => `${base}__${element}`,
   touchState: {
     startTime: 0,
     startPosition: { x: 0, y: 0 },
@@ -198,7 +201,7 @@ describe('Core Component Module', () => {
       
       expect(component.getClass('button')).toBe('mtrl-button');
       expect(component.getModifierClass('mtrl-button', 'primary')).toBe('mtrl-button--primary');
-      expect(component.getElementClass('mtrl-button', 'icon')).toBe('mtrl-button-icon');
+      expect(component.getElementClass('mtrl-button', 'icon')).toBe('mtrl-button__icon');
     });
     
     test('should initialize touch state', () => {

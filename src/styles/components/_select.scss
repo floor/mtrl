@@ -69,7 +69,7 @@ $component: "#{base.$prefix}-select";
                 opacity: 1; // Show the active indicator
             }
 
-            .#{base.$prefix}-textfield-label {
+            .#{base.$prefix}-textfield__label {
                 color: t.color("primary");
             }
 
@@ -85,7 +85,7 @@ $component: "#{base.$prefix}-select";
                 border-color: t.color("primary");
             }
 
-            .#{base.$prefix}-textfield-label {
+            .#{base.$prefix}-textfield__label {
                 color: t.color("primary");
             }
         }
@@ -186,14 +186,14 @@ $component: "#{base.$prefix}-select";
     // Variant adjustments
     &--filled {
         // Specific adjustments for filled variant
-        .#{base.$prefix}-textfield-label {
+        .#{base.$prefix}-textfield__label {
             // Adjust label position for filled select
         }
     }
 
     &--outlined {
         // Specific adjustments for outlined variant
-        .#{base.$prefix}-textfield-label {
+        .#{base.$prefix}-textfield__label {
             // Adjust label position for outlined select
         }
     }

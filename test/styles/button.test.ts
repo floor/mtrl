@@ -54,7 +54,7 @@ describe('button stylesheet: sizes (ButtonXSmall…XLargeTokens.kt)', () => {
       expect(declaration(block, 'padding')).toBe(expected.padding);
       expect(declaration(block, 'gap')).toBe(expected.gap);
       expect(declaration(block, 'font-size')).toBe(expected.font);
-      expect(value(`.mtrl-button--${size} .mtrl-button-icon, .mtrl-button--${size} .mtrl-button-progress, .mtrl-button--${size} .mtrl-button-progress.mtrl-progress`, 'width')).toBe(expected.icon);
+      expect(value(`.mtrl-button--${size} .mtrl-button__icon, .mtrl-button--${size} .mtrl-button__progress, .mtrl-button--${size} .mtrl-button__progress.mtrl-progress`, 'width')).toBe(expected.icon);
     });
   }
 
