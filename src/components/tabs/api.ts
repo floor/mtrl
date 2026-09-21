@@ -1,5 +1,6 @@
 // src/components/tabs/api.ts
 import { TabsComponent, TabComponent, TabConfig } from './types';
+import { warnUnknownValue } from '../../core/utils/warn';
 import type { EventCallback } from "../../core/state/emitter";
 import { createTab } from './tab';
 
@@ -135,18 +136,33 @@ export const withAPI = ({ lifecycle }: ApiOptions) =>
         ? component.tabs.find(tab => tab.getValue() === tabOrValue)
         : tabOrValue;
         
-      if (!targetTab) return this;
-      
-      // A disabled tab cannot be selected by code any more than by a click. A tab
-      // exposes no disabled manager, so read the button it is rendered as.
-      if ((targetTab.element as HTMLButtonElement).disabled) return this;
-      
+      // A value no tab carries clears the selection, the same as native
+      // `<select>` setting selectedIndex = -1, and warns outside production.
+      // It used to return with the previous tab still active, which is
+      // indistinguishable from a typo. FLO-106.
+      if (!targetTab) {
+        if (typeof tabOrValue === 'string') {
+          component.tabs.forEach(tab => tab.deactivate());
+          warnUnknownValue('tabs', tabOrValue);
+          if (component.emit) {
+            component.emit('change', { tab: null, value: null });
+          }
+        }
+        return this;
+      }
+
+      // A disabled tab *can* be selected by code. `disabled` blocks the user,
+      // not the application: a form restored from saved data must be able to
+      // show a value that is currently disabled, which is how native select
+      // and radio inputs behave. The guard that used to stand here refused,
+      // making tabs the odd one out of the four. FLO-106.
+
       // Deactivate all tabs first
       component.tabs.forEach(tab => tab.deactivate());
-      
+
       // Activate the target tab
       targetTab.activate();
-      
+
       // Emit change event
       if (component.emit) {
         component.emit('change', {
@@ -154,7 +170,7 @@ export const withAPI = ({ lifecycle }: ApiOptions) =>
           value: targetTab.getValue()
         });
       }
-      
+
       return this;
     },
     

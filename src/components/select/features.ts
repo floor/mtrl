@@ -3,6 +3,7 @@ import createTextfield from "../textfield";
 import createMenu from "../menu";
 import { MenuItem, MenuContent, MenuDivider, MenuPosition } from "../menu/types";
 import { SelectOption, SelectConfig, BaseComponent } from "./types";
+import { warnUnknownValue } from "../../core/utils/warn";
 
 /**
  * Creates a textfield for the select component
@@ -622,6 +623,30 @@ export const withMenu =
             state.selectedOption = option;
             textfield.setValue(option.text);
             menu.setSelected(option.id);
+            return component;
+          }
+
+          // A value no option carries clears the selection, the same as
+          // native `<select>` setting selectedIndex = -1. This used to keep
+          // the previous selection and say nothing, so a typo left the select
+          // showing a value the caller had not asked for. FLO-106.
+          state.selectedOption = null;
+          textfield.setValue("");
+          menu.setSelected(null);
+          warnUnknownValue("select", value);
+          if (component.emit) {
+            const changeEvent = {
+              select: component,
+              value: null,
+              text: "",
+              option: null,
+              originalEvent: undefined,
+              preventDefault: () => {
+                changeEvent.defaultPrevented = true;
+              },
+              defaultPrevented: false,
+            };
+            component.emit("change", changeEvent);
           }
           return component;
         },

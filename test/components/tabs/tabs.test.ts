@@ -107,14 +107,25 @@ describe('tabs', () => {
     expect(changes).toHaveBeenCalledTimes(2);
   });
 
-  test('a disabled tab is selected neither by a click nor by setActiveTab', () => {
+  // FLO-106 changed half of what this test used to assert. `disabled` blocks
+  // the user, not the application, so a click still refuses and setActiveTab
+  // no longer does -- a form restored from saved data has to be able to show a
+  // value that is currently disabled. The rule is shared with radios, select
+  // and segmented button, and lives in docs/maintenance/selection-values.md.
+  test('a disabled tab refuses a click but is selected by setActiveTab', () => {
     const tabs = mount();
     const changes = mock((_event: unknown) => {});
     tabs.on('change', changes);
+
     byValue(tabs, 'explore').element.click();
-    tabs.setActiveTab('explore');
     expect(tabs.getActiveTab()?.getValue()).toBe('trips');
     expect(changes).not.toHaveBeenCalled();
+
+    tabs.setActiveTab('explore');
+    expect(tabs.getActiveTab()?.getValue()).toBe('explore');
+    expect(changes).toHaveBeenCalledTimes(1);
+    // Still disabled to the user afterwards.
+    expect((byValue(tabs, 'explore').element as HTMLButtonElement).disabled).toBe(true);
   });
 
   test('addTab appends a working tab, whose click also emits change once', () => {
