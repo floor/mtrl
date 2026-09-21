@@ -48,8 +48,13 @@ try {
     dom.window.HTMLCanvasElement.prototype.getContext = () => null;
     const b = button({ text: 'Save', variant: BUTTON_VARIANTS.FILLED });
     document.body.append(b.element);
+    // FLO-117: addClass takes the name as given. This asserts it from the
+    // packaged build, which is where a consumer meets it.
     addClass(b.element, 'smoke');
-    assert(b.element.classList.contains('mtrl-smoke'));
+    assert(b.element.classList.contains('smoke'));
+    assert(!b.element.classList.contains('mtrl-smoke'));
+    // The component's own classes still carry the prefix, via getClass.
+    assert(b.element.classList.contains('mtrl-button'));
     assert(b.element.textContent.includes('Save'));
     const navigation = rail({ items: [{ id: 'home', label: 'Home', icon: '<svg></svg>' }] });
     document.body.append(navigation.element); navigation.expand(); assert(navigation.isExpanded()); navigation.destroy();
@@ -107,7 +112,16 @@ try {
     // only the content attribute, going through the shared createElement
     // (which cost 5 more), and one formFields property rather than two — so
     // the feature costs what it costs.
-    { name: "slider", code: "export { createSlider } from 'mtrl';", gzip: 11700 },
+    // The boolean-attribute predicate (FLO-240) is reached through core/dom in
+    // the same way the URL allowlist is, so every bundle that builds an element
+    // carries it: +71 here, +79 button, +85 rail, +77 textfield, +87 form,
+    // +107 all-js, measured against 73cbb0c. Slider again had the least
+    // headroom (11,652 of 11,700) and was the only fixture to cross its budget.
+    // Most of the cost is the eight attribute names themselves; an array with
+    // includes() in place of the Set measured 3 bytes worse, so this is close
+    // to what the check costs. Writing disabled="false" for disabled: false
+    // disabled the control, which is not a trade worth 71 bytes to keep.
+    { name: "slider", code: "export { createSlider } from 'mtrl';", gzip: 11750 },
     { name: "navigation-rail", code: "export { createNavigationRail } from 'mtrl';", gzip: 7000 },
     { name: "navigation-rail-css", code: "import 'mtrl/styles/base'; import 'mtrl/styles/navigation-rail';", gzip: 6500 },
     { name: "textfield", code: "export { createTextfield } from 'mtrl';", gzip: 8500 },

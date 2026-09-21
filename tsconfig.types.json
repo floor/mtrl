@@ -3,6 +3,6 @@
   "compilerOptions": {
     "noEmit": true
   },
-  "include": ["test/types/pipe.fixture.ts", "test/types/component.fixture.ts", "test/types/tabs-event.fixture.ts"],
+  "include": ["test/types/pipe.fixture.ts", "test/types/component.fixture.ts", "test/types/select-events.fixture.ts", "test/types/tabs-event.fixture.ts"],
   "exclude": ["node_modules"]
 }

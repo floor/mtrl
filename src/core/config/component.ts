@@ -12,7 +12,12 @@ export interface BaseComponentConfig {
   prefix?: string;
   class?: string | string[]; // Support both string and array
   className?: string | string[]; // Alternative to class
-  rawClass?: string | string[]; // Classes that should not be prefixed
+  /**
+   * @deprecated Since FLO-117 `class` and `className` are not prefixed either,
+   * so this option does the same thing as those. It is kept for the release
+   * that changes the behaviour and will be removed in 1.0.0.
+   */
+  rawClass?: string | string[];
   parent?: HTMLElement | string | null; // Parent element to append to (element or selector)
   // Common HTML attributes
   id?: string; // Element ID

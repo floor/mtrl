@@ -78,7 +78,9 @@ describe('drawer creation', () => {
     expect(drawer.element.classList.contains('mtrl-drawer--open')).toBe(true);
     expect(drawer.element.classList.contains('mtrl-drawer--end')).toBe(true);
     expect(drawer.element.classList.contains('mtrl-drawer--dense')).toBe(true);
-    expect(drawer.element.classList.contains('mtrl-extra')).toBe(true);
+    expect(drawer.element.classList.contains('extra')).toBe(true);
+    // FLO-117: the consumer's class is no longer rewritten.
+    expect(drawer.element.classList.contains('mtrl-extra')).toBe(false);
     expect(drawer.element.style.getPropertyValue('--mtrl-drawer-width')).toBe('20rem');
     expect(make({ width: 280 }).element.style.getPropertyValue('--mtrl-drawer-width')).toBe('280px');
   });

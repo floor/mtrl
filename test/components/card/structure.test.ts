@@ -153,7 +153,7 @@ describe('card structure order', () => {
     card.setActions(createCardActions({ class: 'first' }));
     card.setActions(createCardActions({ class: 'second' }));
     expect(card.element.querySelectorAll('.mtrl-card-actions')).toHaveLength(1);
-    expect(card.element.lastElementChild?.classList.contains('mtrl-second')).toBe(true);
+    expect(card.element.lastElementChild?.classList.contains('second')).toBe(true);
   });
 
   test('addContent and addMedia ignore elements of the wrong kind', () => {

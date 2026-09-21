@@ -4,6 +4,7 @@
  * @description DOM manipulation utilities
  */
 
+import { omitsAttribute } from "../utils/attributes";
 import { setAttributes } from "./attributes";
 import { addClass } from "./classes";
 import { safeUrl, URL_ATTRIBUTES } from "../utils/url";
@@ -93,6 +94,11 @@ export interface CreateElementOptions {
   /** CSS classes (will be automatically prefixed with 'mtrl-') - alias for class */
   className?: string | string[];
   /** CSS classes that will NOT be prefixed - added as-is to the element */
+  /**
+   * @deprecated Since FLO-117 `class` and `className` are not prefixed either,
+   * so this option does the same thing as those. It is kept for the release
+   * that changes the behaviour and will be removed in 1.0.0.
+   */
   rawClass?: string | string[];
   /** HTML attributes */
   attributes?: object;
@@ -349,7 +355,9 @@ export const createElement = (
   for (const key in options) {
     if (!(key in RESERVED_OPTIONS) && !EVENT_HANDLER_ATTRIBUTE.test(key)) {
       const value = options[key as keyof CreateElementOptions];
-      if (value != null) {
+      // A boolean attribute given `false` is left off: the parser reads any
+      // value, "false" included, as the attribute being present. FLO-240.
+      if (value != null && !omitsAttribute(key, value)) {
         const text = String(value);
         element.setAttribute(
           key,

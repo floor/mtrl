@@ -1,3 +1,4 @@
+import { omitsAttribute } from "../utils/attributes";
 import { safeUrl, URL_ATTRIBUTES } from "../utils/url";
 // src/core/dom/attributes.ts
 /**
@@ -35,7 +36,11 @@ export const setAttributes = <E extends HTMLElement | SVGElement>(
   const keys = Object.keys(attributes);
   if (keys.length === 1) {
     const value = values[keys[0]];
-    if (value != null && keys[0] !== "style") {
+    if (
+      value != null &&
+      keys[0] !== "style" &&
+      !omitsAttribute(keys[0], value)
+    ) {
       element.setAttribute(keys[0], attributeValue(keys[0], value));
     }
     return element;
@@ -44,7 +49,7 @@ export const setAttributes = <E extends HTMLElement | SVGElement>(
   // General case: multiple attributes - for...in is faster than Object.entries
   for (const key in attributes) {
     const value = values[key];
-    if (value != null && key !== "style") {
+    if (value != null && key !== "style" && !omitsAttribute(key, value)) {
       element.setAttribute(key, attributeValue(key, value));
     }
   }
@@ -92,7 +97,12 @@ export const batchAttributes = (
     const op = operations[i];
     // `style` is refused here too, for the reason given on setAttributes:
     // the attribute takes a whole CSS string and the style option does not.
-    if (op.action === "set" && op.value != null && op.key !== "style") {
+    if (
+      op.action === "set" &&
+      op.value != null &&
+      op.key !== "style" &&
+      !omitsAttribute(op.key, op.value)
+    ) {
       element.setAttribute(
         op.key,
         URL_ATTRIBUTES.has(op.key.toLowerCase()) ? safeUrl(String(op.value)) : String(op.value)
