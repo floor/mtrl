@@ -1,4 +1,5 @@
 // src/components/snackbar/types.ts
+import type { EventCallback } from '../../core/state/emitter';
 import type { ButtonComponent } from '../button/types';
 import type { IconButtonComponent } from '../icon-button/types';
 
@@ -50,6 +51,29 @@ export interface SnackbarEvent {
 
   /** Original DOM event if there was one */
   originalEvent: Event | null;
+}
+
+/**
+ * What each snackbar event hands its handler.
+ *
+ * FLO-114. `on`/`off` are generic over these keys rather than taking a
+ * `SnackbarEventType` and one payload type for all four, so a handler is
+ * checked against the event it is registered for. The four payloads are the
+ * same shape today; the map is what makes them able to differ -- `reason` is
+ * only ever set on `close` and `dismiss`, and narrowing those two is now a
+ * local change rather than a new signature.
+ *
+ * @interface SnackbarEvents
+ */
+export interface SnackbarEvents {
+  /** The snackbar is on screen */
+  open: (event: SnackbarEvent) => void;
+  /** The snackbar is leaving; the event carries the reason */
+  close: (event: SnackbarEvent) => void;
+  /** The action button was clicked */
+  action: (event: SnackbarEvent) => void;
+  /** Fired with `close`; the queue listens to it */
+  dismiss: (event: SnackbarEvent) => void;
 }
 
 /**
@@ -164,10 +188,16 @@ export interface SnackbarComponent {
   getPosition: () => SnackbarPosition;
 
   /** Adds event listener */
-  on: (event: SnackbarEventType, handler: (event: SnackbarEvent) => void) => SnackbarComponent;
+  on: <K extends keyof SnackbarEvents>(
+    event: K,
+    handler: SnackbarEvents[K]
+  ) => SnackbarComponent;
 
   /** Removes event listener */
-  off: (event: SnackbarEventType, handler: (event: SnackbarEvent) => void) => SnackbarComponent;
+  off: <K extends keyof SnackbarEvents>(
+    event: K,
+    handler: SnackbarEvents[K]
+  ) => SnackbarComponent;
 
   /** Destroys the snackbar component and cleans up resources */
   destroy: () => void;
@@ -179,8 +209,13 @@ export interface SnackbarComponent {
 export interface BaseComponent {
   element: HTMLElement;
   emit?: (event: string, data?: unknown) => void;
-  on?: (event: string, handler: Function) => unknown;
-  off?: (event: string, handler: Function) => unknown;
+  // `EventCallback`, not `Function`. This host is handed the component the
+  // pipe has built so far, whose `on` takes an EventCallback -- and `Function`
+  // is a supertype of that, so under strictFunctionTypes a host promising to
+  // call a handler with anything cannot accept one that takes a typed payload.
+  // That is what stopped the pipe in snackbar.ts:37 resolving. FLO-114.
+  on?: (event: string, handler: EventCallback) => unknown;
+  off?: (event: string, handler: EventCallback) => unknown;
   getClass?: (name: string) => string;
   lifecycle?: {
     destroy?: () => void;

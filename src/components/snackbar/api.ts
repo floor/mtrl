@@ -1,8 +1,10 @@
 // src/components/snackbar/api.ts
+import type { EventCallback } from '../../core/state/emitter';
 import {
   BaseComponent,
   SnackbarComponent,
   SnackbarEvent,
+  SnackbarEvents,
   SnackbarEventType,
   SnackbarCloseReason,
   SnackbarDuration,
@@ -232,8 +234,8 @@ export const withAPI =
        * @param {Function} handler - Event handler
        * @returns {SnackbarComponent} Component instance for chaining
        */
-      on(event: SnackbarEventType, handler: (event: SnackbarEvent) => void): SnackbarComponent {
-        component.on?.(event, handler);
+      on<K extends keyof SnackbarEvents>(event: K, handler: SnackbarEvents[K]): SnackbarComponent {
+        component.on?.(event, handler as EventCallback);
         return this;
       },
 
@@ -243,8 +245,8 @@ export const withAPI =
        * @param {Function} handler - Event handler
        * @returns {SnackbarComponent} Component instance for chaining
        */
-      off(event: SnackbarEventType, handler: (event: SnackbarEvent) => void): SnackbarComponent {
-        component.off?.(event, handler);
+      off<K extends keyof SnackbarEvents>(event: K, handler: SnackbarEvents[K]): SnackbarComponent {
+        component.off?.(event, handler as EventCallback);
         return this;
       },
 
