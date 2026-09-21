@@ -323,22 +323,33 @@ describe('slider events and destroy', () => {
 // coverage -- and it is the shape where the keyboard handler had a null to do
 // arithmetic on. FLO-114 gave it a guard; these say what the guard preserves.
 describe('a range slider given no second value', () => {
-  test('still has two handles, and the second has no value', async () => {
+  // withDom always rendered the second handle at max; the controller's state
+  // said null. So the picture and the screen reader said 20 to 100 while
+  // getSecondValue() said there was no second value, and the keyboard computed
+  // `null + step` and sent the handle to 1. The state follows the DOM now.
+  test('defaults the second value to max, which is where the handle already was', async () => {
     const slider = await mount({ range: true, value: 20 });
 
     expect(handles(slider)).toHaveLength(2);
-    expect(slider.getSecondValue()).toBeNull();
+    expect(slider.getSecondValue()).toBe(100);
   });
 
-  test('the keyboard leaves the second handle alone rather than inventing a value', async () => {
+  test('the handle it renders agrees with the value it reports', async () => {
+    const slider = await mount({ range: true, value: 20, max: 50 });
+    const [, second] = handles(slider);
+
+    expect(slider.getSecondValue()).toBe(50);
+    expect(second.getAttribute('aria-valuenow')).toBe('50');
+  });
+
+  test('the keyboard moves it from max rather than inventing a value', async () => {
     const slider = await mount({ range: true, value: 20 });
     const [, second] = handles(slider);
 
-    key(second, 'ArrowRight');
-    key(second, 'ArrowUp');
-    key(second, 'End');
+    key(second, 'ArrowLeft');
 
-    expect(slider.getSecondValue()).toBeNull();
+    expect(slider.getSecondValue()).toBe(99);
+    expect(second.getAttribute('aria-valuenow')).toBe('99');
   });
 
   test('the first handle still moves', async () => {
@@ -348,17 +359,20 @@ describe('a range slider given no second value', () => {
     key(first, 'ArrowRight');
 
     expect(slider.getValue()).toBe(21);
-    expect(slider.getSecondValue()).toBeNull();
   });
 
-  test('and setSecondValue gives it one, after which the keyboard works', async () => {
-    const slider = await mount({ range: true, value: 20 });
-    const [, second] = handles(slider);
+  test('an explicit second value is untouched by the default', async () => {
+    const slider = await mount({ range: true, value: 20, secondValue: 80 });
 
-    slider.setSecondValue(80);
     expect(slider.getSecondValue()).toBe(80);
+  });
 
-    key(second, 'ArrowLeft');
-    expect(slider.getSecondValue()).toBe(79);
+  // The default is for range sliders only: a single slider has no second
+  // handle, so there is nothing for a second value to describe.
+  test('a slider that is not a range still reports no second value', async () => {
+    const slider = await mount({ value: 20 });
+
+    expect(handles(slider)).toHaveLength(1);
+    expect(slider.getSecondValue()).toBeNull();
   });
 });

@@ -29,12 +29,24 @@ export const withController =
   // the return type a union that collapses to C.
   <C extends SliderStateComponent>(component: C) => {
   // Initialize state with current config
+  const max = config.max !== undefined ? config.max : 100;
   const state: SliderState = {
     component,
     value: config.value !== undefined ? config.value : 0,
-    secondValue: config.secondValue !== undefined ? config.secondValue : null,
+    // A range slider's second value defaults to max, which is what withDom
+    // already renders the second handle at. The two disagreed: the handle went
+    // up with `aria-valuenow="100"` while the state said null, so the component
+    // gave three answers at once -- the picture said 20 to 100, the screen
+    // reader said 20 to 100, and getSecondValue() said there was no second
+    // value. Outside a range there is genuinely no second handle, so null.
+    secondValue:
+      config.secondValue !== undefined
+        ? config.secondValue
+        : config.range
+          ? max
+          : null,
     min: config.min !== undefined ? config.min : 0,
-    max: config.max !== undefined ? config.max : 100,
+    max,
     step: config.step !== undefined ? config.step : 1,
     dragging: false,
     pressed: false, // Track if handle is pressed (mouse down)
