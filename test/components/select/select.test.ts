@@ -32,7 +32,7 @@ const options = [
 ];
 
 const menuItems = (root: HTMLElement): HTMLElement[] =>
-  Array.from(root.querySelectorAll<HTMLElement>('.mtrl-menu-item'));
+  Array.from(root.querySelectorAll<HTMLElement>('.mtrl-menu__item'));
 
 beforeEach(() => {
   document.body.innerHTML = '';

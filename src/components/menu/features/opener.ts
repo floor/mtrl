@@ -332,7 +332,7 @@ const withOpener =
           // Wait for menu to open and grab the last item
           tasks.setTimeout(() => {
             const items = component.element.querySelectorAll(
-              `.${component.getClass("menu-item")}:not(.${component.getClass("menu-item--disabled")})`,
+              `.${component.getClass("menu__item")}:not(.${component.getClass("menu__item--disabled")})`,
             ) as NodeListOf<HTMLElement>;
 
             if (items.length > 0) {

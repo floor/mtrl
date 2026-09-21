@@ -126,7 +126,7 @@ $component: "#{base.$prefix}-select";
         overflow-y: auto;
         max-width: initial;
 
-        .#{base.$prefix}-menu-item {
+        .#{base.$prefix}-menu__item {
             min-height: 3rem;
 
             // Selected state
@@ -218,11 +218,11 @@ $component: "#{base.$prefix}-select";
     overflow-y: auto;
     max-width: 460px;
 
-    // .#{base.$prefix}-menu-list {
+    // .#{base.$prefix}-menu__list {
     //   padding: 8px 0;
     // }
 
-    // .#{base.$prefix}-menu-item {
+    // .#{base.$prefix}-menu__item {
     //   padding: 0 16px;
     //   height: 48px;
     //   display: flex;
@@ -251,7 +251,7 @@ $component: "#{base.$prefix}-select";
     //   }
     // }
 
-    // .#{base.$prefix}-menu-divider {
+    // .#{base.$prefix}-menu__divider {
     //   height: 1px;
     //   margin: 8px 0;
     //   background-color: t.color('outline-variant');

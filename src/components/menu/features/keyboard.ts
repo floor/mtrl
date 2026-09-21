@@ -90,7 +90,7 @@ export const createKeyboardNavigation = (component: MenuFeatureHost) => {
     // Falling back to `document` was the same defect in miniature: it searched
     // every menu on the page for the parent item.
     return ((scope ?? component.element).querySelector(
-      `.${component.getClass("menu-item")}[data-id="${parentId}"]`
+      `.${component.getClass("menu__item")}[data-id="${parentId}"]`
     ) ?? null) as HTMLElement | null;
   };
 
@@ -102,7 +102,7 @@ export const createKeyboardNavigation = (component: MenuFeatureHost) => {
    */
   const menuItems = (menuElement: HTMLElement): HTMLElement[] =>
     Array.from(
-      menuElement.querySelectorAll(`.${component.getClass("menu-item")}`)
+      menuElement.querySelectorAll(`.${component.getClass("menu__item")}`)
     ) as HTMLElement[];
 
   /**
@@ -215,7 +215,7 @@ export const createKeyboardNavigation = (component: MenuFeatureHost) => {
       // Find matching item
       const matchIndex = items.findIndex((item) => {
         const textElement = item.querySelector(
-          `.${component.getClass("menu-item-text")}`,
+          `.${component.getClass("menu__item-text")}`,
         );
         const text = textElement?.textContent?.toLowerCase() || "";
         return text.startsWith(typeaheadBuffer);
@@ -228,7 +228,7 @@ export const createKeyboardNavigation = (component: MenuFeatureHost) => {
         const lastChar = typeaheadBuffer.slice(-1);
         const singleCharMatch = items.findIndex((item) => {
           const textElement = item.querySelector(
-            `.${component.getClass("menu-item-text")}`,
+            `.${component.getClass("menu__item-text")}`,
           );
           const text = textElement?.textContent?.toLowerCase() || "";
           return text.startsWith(lastChar);
@@ -300,7 +300,7 @@ export const createKeyboardNavigation = (component: MenuFeatureHost) => {
           if (
             focusedItemIndex >= 0 &&
             items[focusedItemIndex].classList.contains(
-              `${component.getClass("menu-item--submenu")}`,
+              `${component.getClass("menu__item--submenu")}`,
             )
           ) {
             const itemElement = items[focusedItemIndex];
@@ -329,7 +329,7 @@ export const createKeyboardNavigation = (component: MenuFeatureHost) => {
           if (
             focusedItemIndex >= 0 &&
             items[focusedItemIndex].classList.contains(
-              `${component.getClass("menu-item--submenu")}`,
+              `${component.getClass("menu__item--submenu")}`,
             )
           ) {
             // Get the correct menu item data
@@ -439,8 +439,8 @@ export const createKeyboardNavigation = (component: MenuFeatureHost) => {
     removeKeyboardHandlers(menuElement);
     // Make all menu items focusable via keyboard navigation
     const items = menuElement.querySelectorAll(
-      `.${component.getClass("menu-item")}:not(.${component.getClass(
-        "menu-item--disabled",
+      `.${component.getClass("menu__item")}:not(.${component.getClass(
+        "menu__item--disabled",
       )})`,
     ) as NodeListOf<HTMLElement>;
     items.forEach((item) => {

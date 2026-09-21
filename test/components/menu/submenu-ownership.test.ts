@@ -54,7 +54,7 @@ const openMenu = async () => {
 };
 
 const itemsOf = (menu: { element: HTMLElement }) =>
-  [...menu.element.querySelectorAll(".mtrl-menu-item")] as HTMLElement[];
+  [...menu.element.querySelectorAll(".mtrl-menu__item")] as HTMLElement[];
 
 const submenus = () => [...document.querySelectorAll(".mtrl-menu--submenu")] as HTMLElement[];
 

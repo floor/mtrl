@@ -63,7 +63,7 @@ $component: "#{$prefix}-menu";
     // A run of items between gaps. The element is presentational: it exists so
     // a gap can split the menu into separate surfaces in the vertical variant.
     // A standard menu is one surface, so here a group is only spacing.
-    &-group {
+    &__group {
         display: block;
         list-style: none;
 
@@ -73,13 +73,13 @@ $component: "#{$prefix}-menu";
             list-style: none;
         }
 
-        + .#{$component}-group {
+        + .#{$component}__group {
             margin-top: 8px;
         }
     }
 
     // List container
-    &-list {
+    &__list {
         margin: 0;
         padding: 0;
         list-style: none;
@@ -91,7 +91,7 @@ $component: "#{$prefix}-menu";
     }
 
     // Menu items
-    &-item {
+    &__item {
         @include m.typography("label-large");
         @include m.flex-row;
 
@@ -189,7 +189,7 @@ $component: "#{$prefix}-menu";
             }
 
             &:focus-visible,
-            &.#{$component}-item--active {
+            &.#{$component}__item--active {
                 @include m.state-layer(t.color("on-secondary-container"), "focus");
             }
 
@@ -197,8 +197,8 @@ $component: "#{$prefix}-menu";
                 @include m.state-layer(t.color("on-secondary-container"), "pressed");
             }
 
-            .#{$component}-item-icon,
-            .#{$component}-item-shortcut {
+            .#{$component}__item-icon,
+            .#{$component}__item-shortcut {
                 color: inherit;
             }
 
@@ -274,14 +274,14 @@ $component: "#{$prefix}-menu";
     }
 
     // Divider
-    &-divider {
+    &__divider {
         height: 1px;
         margin: 8px 0;
         background-color: t.color("outline-variant");
     }
 
     // Accessibility
-    @include m.focus-ring(".#{$component}-item:focus-visible");
+    @include m.focus-ring(".#{$component}__item:focus-visible");
 
     // Reduced motion preference support
     @include m.reduced-motion {
@@ -297,11 +297,11 @@ $component: "#{$prefix}-menu";
     @include m.high-contrast {
         border: 1px solid CurrentColor;
 
-        .#{$component}-divider {
+        .#{$component}__divider {
             background-color: CurrentColor;
         }
 
-        .#{$component}-item--disabled {
+        .#{$component}__item--disabled {
             opacity: 1;
             color: GrayText;
         }
@@ -311,7 +311,7 @@ $component: "#{$prefix}-menu";
     &--dense {
         padding: 4px 0;
 
-        .#{$component}-item {
+        .#{$component}__item {
             @include m.typography("body-medium");
             min-height: 32px;
             padding: 4px 12px;
@@ -327,7 +327,7 @@ $component: "#{$prefix}-menu";
             }
         }
 
-        .#{$component}-divider {
+        .#{$component}__divider {
             margin: 4px 0;
         }
     }
@@ -367,13 +367,13 @@ $component: "#{$prefix}-menu";
             --#{$prefix}-menu-selected-label: #{t.color("on-tertiary")};
         }
 
-        .#{$component}-list {
+        .#{$component}__list {
             display: flex;
             flex-direction: column;
             gap: 2px; // SegmentedGap
         }
 
-        .#{$component}-item {
+        .#{$component}__item {
             @include m.typography("body-large");
             min-height: 44px; // SegmentedMenuTokens.Item
             padding: 8px 16px; // ItemTopSpace / ItemLeadingSpace
@@ -415,7 +415,7 @@ $component: "#{$prefix}-menu";
                 }
 
                 &:focus-visible,
-            &.#{$component}-item--active {
+            &.#{$component}__item--active {
                     @include m.state-layer(var(--#{$prefix}-menu-selected-label), "focus");
                 }
 
@@ -462,9 +462,9 @@ $component: "#{$prefix}-menu";
             }
 
             &--selected {
-                .#{$component}-item-icon,
-                .#{$component}-item-shortcut,
-                .#{$component}-item-supporting {
+                .#{$component}__item-icon,
+                .#{$component}__item-shortcut,
+                .#{$component}__item-supporting {
                     color: inherit;
                 }
             }
@@ -473,7 +473,7 @@ $component: "#{$prefix}-menu";
         // A grouped menu separates its runs of items two ways, as the spec
         // shows: a divider line across one surface, or a gap
         // (m3.material.io menu guidelines, "Gaps & dividers")
-        .#{$component}-divider {
+        .#{$component}__divider {
             margin: 6px 0;
         }
     }
@@ -490,7 +490,7 @@ $component: "#{$prefix}-menu";
     // The group hugs its items more tightly than the whole-menu container
     // does, which is what keeps a gap from reading as a chasm.
     // -------------------------------------------------------------------------
-    &--vertical:has(.#{$component}-group) {
+    &--vertical:has(.#{$component}__group) {
         background-color: transparent;
         box-shadow: none;
         padding: 0;
@@ -501,13 +501,13 @@ $component: "#{$prefix}-menu";
         // off square.
         overflow: visible;
 
-        .#{$component}-list {
+        .#{$component}__list {
             overflow: visible;
             // the separator is the 2dp the variant already puts between items
             gap: 2px;
         }
 
-        .#{$component}-group {
+        .#{$component}__group {
             background-color: var(--#{$prefix}-menu-container);
             padding: 4px; // GroupPadding
             @include m.elevation(2);
@@ -529,7 +529,7 @@ $component: "#{$prefix}-menu";
             }
 
             // its own margin would add to the list gap
-            + .#{$component}-group {
+            + .#{$component}__group {
                 margin-top: 0;
             }
 
@@ -573,7 +573,7 @@ $component: "#{$prefix}-menu";
             transform-origin: bottom right;
         }
 
-        .#{$component}-item {
+        .#{$component}__item {
             &--submenu {
                 padding-right: 16px;
                 padding-left: 48px;

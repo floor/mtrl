@@ -106,7 +106,7 @@ test("destroy releases document listeners and cancels Tab detection and typeahea
   const menu = make();
   tick();
   document.dispatchEvent(new KeyboardEvent("keydown", { key: "Tab" }));
-  menu.element.querySelector(".mtrl-menu-item")!.dispatchEvent(new KeyboardEvent("keydown", { key: "a", bubbles: true }));
+  menu.element.querySelector(".mtrl-menu__item")!.dispatchEvent(new KeyboardEvent("keydown", { key: "a", bubbles: true }));
   expect(pending.size).toBeGreaterThanOrEqual(3);
   menu.destroy();
   released();
@@ -139,13 +139,13 @@ test("destroy removes opening and fading submenu elements and their handlers", (
     tick();
     menu.open();
     tick(); tick();
-    const item = menu.element.querySelector(".mtrl-menu-item") as HTMLElement;
+    const item = menu.element.querySelector(".mtrl-menu__item") as HTMLElement;
     item.focus();
     item.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }));
     expect(document.querySelector(".mtrl-menu--submenu")).not.toBeNull();
     tick();
     if (close) {
-      document.querySelector(".mtrl-menu--submenu .mtrl-menu-item")!.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+      document.querySelector(".mtrl-menu--submenu .mtrl-menu__item")!.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
     }
     menu.destroy();
     released();
@@ -159,7 +159,7 @@ test("destroy cancels hover intent, Tab blur, and queued focus restoration", () 
     menu.open();
     tick(); tick(); tick();
     if (action === "hover") {
-      menu.element.querySelector(".mtrl-menu-item")!.dispatchEvent(new MouseEvent("mouseenter"));
+      menu.element.querySelector(".mtrl-menu__item")!.dispatchEvent(new MouseEvent("mouseenter"));
     } else if (action === "tab-blur") {
       document.dispatchEvent(new KeyboardEvent("keydown", { key: "Tab" }));
       opener.dispatchEvent(new dom.window.FocusEvent("blur"));
