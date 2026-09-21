@@ -1,4 +1,5 @@
 // src/components/button/api.ts
+import type { ButtonEvents } from "./types";
 import { ButtonComponent } from "./types";
 import { addClass } from "../../core";
 import { ProgressComponent } from "../progress/types";
@@ -39,8 +40,16 @@ interface ComponentWithElements {
   };
   getClass: (name: string) => string;
   componentName?: string;
-  on?: (event: string, handler: Function) => unknown;
-  off?: (event: string, handler: Function) => unknown;
+  // Narrowed with the public signature in types.ts: a host promising to call
+  // a handler with anything cannot accept one that takes a typed payload.
+  on?: <K extends keyof ButtonEvents>(
+    event: K,
+    handler: ButtonEvents[K]
+  ) => unknown;
+  off?: <K extends keyof ButtonEvents>(
+    event: K,
+    handler: ButtonEvents[K]
+  ) => unknown;
   addClass?: (...classes: string[]) => unknown;
 
   // Toggle manager (if withToggle was applied)
@@ -106,14 +115,14 @@ export const withAPI =
       lifecycle,
       getClass: component.getClass,
 
-      on: (event: string, handler: Function) => {
+      on: <K extends keyof ButtonEvents>(event: K, handler: ButtonEvents[K]) => {
         if (component.on) {
           component.on(event, handler);
         }
         return buttonComponent;
       },
 
-      off: (event: string, handler: Function) => {
+      off: <K extends keyof ButtonEvents>(event: K, handler: ButtonEvents[K]) => {
         if (component.off) {
           component.off(event, handler);
         }

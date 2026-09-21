@@ -32,6 +32,24 @@ beforeEach(() => {
   document.body.innerHTML = '';
 });
 
+// Same defect as button-group, from the same cause: the leading button's
+// click handler read its argument as the DOM event, so `originalEvent` --
+// declared `Event | null` -- held the forwarded payload object. FLO-114.
+describe('the click it reports carries a real DOM event', () => {
+  test('originalEvent is an Event, not the forwarded payload', () => {
+    const split = createSplitButton({ text: 'Watch later' });
+    document.body.append(split.element);
+    let seen: any;
+    split.on('click', (e: any) => { seen = e; });
+
+    split.leadingElement.click();
+
+    expect(seen.originalEvent instanceof Event).toBe(true);
+    expect(seen.originalEvent.type).toBe('click');
+    expect((seen.originalEvent as any).originalEvent).toBeUndefined();
+  });
+});
+
 describe('split button', () => {
   test('is a group of two buttons: the action and the one that opens more', () => {
     const split = createSplitButton({ text: 'Watch later', groupLabel: 'Watch options' });

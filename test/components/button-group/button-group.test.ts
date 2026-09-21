@@ -493,6 +493,40 @@ describe("Button Group Component", () => {
   });
 });
 
+// `ButtonGroupEvent.originalEvent` is declared `Event`. It held the button's
+// forwarded payload object instead -- `{ event, element, originalEvent }` --
+// because the handler read its argument as though it were the DOM event.
+// So `.target`, `.preventDefault()` and everything else on it were absent,
+// and the declared type said otherwise. Found by typing button's event map
+// (FLO-114); nothing here asserted the field's contents before.
+describe("the event a group reports carries a real DOM event", () => {
+  it("originalEvent is an Event, not the forwarded payload", () => {
+    const group = createButtonGroup({ buttons: [{ text: "A", value: "a" }] });
+    document.body.appendChild(group.element);
+    let seen: any;
+    group.on("click", (e: any) => { seen = e; });
+
+    (group.element.querySelector("button") as HTMLElement).click();
+
+    expect(seen.originalEvent instanceof Event).toBe(true);
+    expect(seen.originalEvent.type).toBe("click");
+    // The shape it used to hold, named so a regression is unmistakable.
+    expect((seen.originalEvent as any).originalEvent).toBeUndefined();
+  });
+
+  it("and the rest of the group event still describes the button", () => {
+    const group = createButtonGroup({ buttons: [{ text: "A", value: "a" }, { text: "B", value: "b" }] });
+    document.body.appendChild(group.element);
+    let seen: any;
+    group.on("click", (e: any) => { seen = e; });
+
+    (group.element.querySelectorAll("button")[1] as HTMLElement).click();
+
+    expect(seen.index).toBe(1);
+    expect(seen.button.element).toBe(group.element.querySelectorAll("button")[1]);
+  });
+});
+
 describe("Button group selection (Material 3 kinds)", () => {
   const items = [
     { value: "explore", icon: "<svg></svg>", ariaLabel: "Explore", selected: true },

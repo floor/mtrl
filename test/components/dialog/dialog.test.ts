@@ -252,6 +252,31 @@ describe('dialog', () => {
 // is the documented way to hold a dialog open for a validation or an "are you
 // sure", and nothing covered it -- which is also how a console.log sat on the
 // path, printing on an ordinary refusal, until FLO-114 typed this file.
+// `DialogButton.onClick` is declared `(event: MouseEvent, dialog) => ...`.
+// It was handed the button's forwarded payload object instead, because the
+// handler inside features.ts read its argument as the DOM event. Third
+// instance of the same defect, all found by typing button's event map
+// (FLO-114) -- see also the button-group and split-button suites.
+describe('a dialog button hands its onClick a real MouseEvent', () => {
+  test('the first argument is the DOM event, not the forwarded payload', async () => {
+    let seen: any;
+    const dialog = createDialog({
+      title: 'Edit',
+      content: 'Body',
+      buttons: [{ text: 'Save', onClick: (event: unknown) => { seen = event; } }],
+    });
+    await opened(dialog);
+
+    const save = Array.from(dialog.element.querySelectorAll('button'))
+      .find((b) => b.textContent?.includes('Save')) as HTMLElement;
+    save.click();
+
+    expect(seen instanceof Event).toBe(true);
+    expect(seen.type).toBe('click');
+    expect(seen.originalEvent).toBeUndefined();
+  });
+});
+
 describe('refusing a close', () => {
   test('preventDefault on beforeclose keeps the dialog open', async () => {
     const dialog = createDialog({ title: 'Edit', content: 'Body' });

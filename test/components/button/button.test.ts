@@ -60,6 +60,59 @@ const mount = (config: Parameters<typeof createButton>[0] = {}) => {
 const has = (button: { element: HTMLElement }, modifier: string) =>
   button.element.classList.contains(`mtrl-button--${modifier}`);
 
+// What a forwarded event hands a listener. Nothing asserted this, which is
+// how four call sites in the repository came to read the payload as though it
+// were the DOM event -- see FLO-114 and the button-group, split-button and
+// dialog suites. The typed event map makes that a compile error now; this
+// pins the runtime shape the map describes.
+describe('what a forwarded event hands a listener', () => {
+  test('click receives a payload, not the event', () => {
+    const button = mount({ text: 'Save' });
+    let payload: any;
+    button.on('click', (p) => { payload = p; });
+
+    button.element.click();
+
+    expect(payload).toBeDefined();
+    expect(payload instanceof Event).toBe(false);
+    expect(Object.keys(payload).sort()).toEqual(['element', 'event', 'originalEvent']);
+  });
+
+  test('and originalEvent on it is the real DOM event', () => {
+    const button = mount({ text: 'Save' });
+    let payload: any;
+    button.on('click', (p) => { payload = p; });
+
+    button.element.click();
+
+    expect(payload.originalEvent instanceof Event).toBe(true);
+    expect(payload.originalEvent.type).toBe('click');
+    expect(payload.element).toBe(button.element);
+  });
+
+  test('focus and blur carry the same shape', () => {
+    const button = mount({ text: 'Save' });
+    const seen: string[] = [];
+    button.on('focus', ({ originalEvent }) => seen.push(originalEvent.type));
+    button.on('blur', ({ originalEvent }) => seen.push(originalEvent.type));
+
+    button.element.dispatchEvent(new dom.window.FocusEvent('focus'));
+    button.element.dispatchEvent(new dom.window.FocusEvent('blur'));
+
+    expect(seen).toEqual(['focus', 'blur']);
+  });
+
+  test('a disabled button forwards no click', () => {
+    const button = mount({ text: 'Save', disabled: true });
+    let called = false;
+    button.on('click', () => { called = true; });
+
+    button.element.click();
+
+    expect(called).toBe(false);
+  });
+});
+
 describe('button', () => {
   test('is a type="button" element with its text, filled, small and round by default', () => {
     const button = mount({ text: 'Save' });
