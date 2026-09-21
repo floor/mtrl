@@ -131,8 +131,6 @@ export const getApiConfig = (comp: ProgressApiHost) => {
         if (comp.state) {
           // Clamp value between 0 and max
           const clampedValue = Math.max(0, Math.min(comp.state.max, value));
-          // Store the previous value for animation
-          comp.state.previousValue = comp.state.value;
           // Update the state value
           comp.state.value = clampedValue;
           // Update label if it exists

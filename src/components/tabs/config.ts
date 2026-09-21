@@ -1,7 +1,7 @@
 // src/components/tabs/config.ts
 import { createComponentConfig } from "../../core/config/component";
 import { BaseComponent, ElementComponent, withElement } from "../../core/compose/component";
-import { TabConfig, TabComponent, TabsConfig } from "./types";
+import { TabConfig, TabsConfig } from "./types";
 import { TAB_STATES, TABS_DEFAULTS } from "./constants";
 
 /**
@@ -57,31 +57,3 @@ export const getTabsElementConfig = (config: TabsConfig) => {
   return <C extends BaseComponent>(component: C): C & ElementComponent =>
     withElement(elementConfig)(component);
 };
-
-/**
- * What getTabApiConfig reads off a tab. The three members are TabComponent's
- * own, optional there because a tab is assembled in steps; by the time an API
- * config is built they are present, so this requires the two it calls through.
- *
- * A Pick is safe here only because none of these members return `this` -- an
- * indexed access would bind it to TabComponent and lose the polymorphism.
- */
-type TabApiHost = Required<Pick<TabComponent, "disabled" | "lifecycle">> &
-  Pick<TabComponent, "button">;
-
-/**
- * Creates API configuration for the Tab component
- * @param {TabApiHost} comp - Component with disabled and lifecycle features
- * @returns {Object} API configuration object
- */
-export const getTabApiConfig = (comp: TabApiHost) => ({
-  disabled: {
-    enable: () => comp.disabled.enable(),
-    disable: () => comp.disabled.disable(),
-    isDisabled: () => comp.disabled.isDisabled && comp.disabled.isDisabled(),
-  },
-  lifecycle: {
-    destroy: () => comp.lifecycle.destroy(),
-  },
-  button: comp.button,
-});
