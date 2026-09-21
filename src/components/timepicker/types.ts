@@ -1,4 +1,32 @@
 // src/components/timepicker/types.ts
+import type { ForwardedEventPayload } from "../../core/dom";
+import type { NormalizedEvent } from "../../core/utils/mobile";
+
+/** Normalized touch-end event emitted by the interactive root on touch devices. */
+export type TimePickerTapPayload = NormalizedEvent;
+
+/** Horizontal swipe emitted by the interactive root on touch devices. */
+export interface TimePickerSwipePayload {
+  direction: "left" | "right";
+  deltaX: number;
+  deltaY: number;
+}
+
+/** Events emitted by the picker API and its interactive root. */
+export interface TimePickerEvents {
+  /** The current display string returned by getValue(), not the submitted form value. */
+  change: (value: string) => void;
+  /** The confirmed display string returned by getValue(). */
+  confirm: (value: string) => void;
+  open: () => void;
+  close: () => void;
+  cancel: () => void;
+  /** Root events; the dialog is portaled outside the root and does not bubble here. */
+  click: (payload: ForwardedEventPayload<MouseEvent, HTMLElement>) => void;
+  keydown: (payload: ForwardedEventPayload<KeyboardEvent, HTMLElement>) => void;
+  tap: (payload: TimePickerTapPayload) => void;
+  swipe: (payload: TimePickerSwipePayload) => void;
+}
 
 /**
  * Time picker display type
@@ -362,7 +390,7 @@ export interface TimePickerComponent {
    * @param handler - Event handler function
    * @returns The time picker component for chaining
    */
-  on: (event: string, handler: Function) => TimePickerComponent;
+  on: <K extends keyof TimePickerEvents>(event: K, handler: TimePickerEvents[K]) => TimePickerComponent;
 
   /**
    * Removes an event listener from the time picker
@@ -370,5 +398,5 @@ export interface TimePickerComponent {
    * @param handler - Event handler function
    * @returns The time picker component for chaining
    */
-  off: (event: string, handler: Function) => TimePickerComponent;
+  off: <K extends keyof TimePickerEvents>(event: K, handler: TimePickerEvents[K]) => TimePickerComponent;
 }

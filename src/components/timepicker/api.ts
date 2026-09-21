@@ -13,13 +13,15 @@ import { TIMEPICKER_EVENTS as EVENTS, TIMEPICKER_SELECTORS as SELECTORS } from '
 import { formatTime, padZero, formatFormValue } from './utils';
 import { renderTimePicker } from './render';
 import { renderClockDial, getTimeValueFromClick } from './clockdial';
+import type { TimePickerEvents } from './types';
+import type { EventCallback } from '../../core/state/emitter';
 import type { ElementComponent } from '../../core/compose/component';
 import { setFormValue } from '../../core/dom/form-value';
 
 interface ApiOptions {
   events: {
-    on: (event: string, handler: Function) => void;
-    off: (event: string, handler: Function) => void;
+    on: (event: string, handler: EventCallback) => void;
+    off: (event: string, handler: EventCallback) => void;
     emit: (event: string, data?: unknown) => void;
   };
   lifecycle: {
@@ -326,12 +328,12 @@ export const createTimePickerAPI = (
       options.lifecycle.destroy();
     },
     
-    on(event: string, handler: Function) {
+    on<K extends keyof TimePickerEvents>(event: K, handler: TimePickerEvents[K]) {
       options.events.on(event, handler);
       return this;
     },
     
-    off(event: string, handler: Function) {
+    off<K extends keyof TimePickerEvents>(event: K, handler: TimePickerEvents[K]) {
       options.events.off(event, handler);
       return this;
     }
