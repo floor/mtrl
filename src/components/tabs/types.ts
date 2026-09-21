@@ -470,7 +470,7 @@ export interface TabsComponent {
   /**
    * Tab click event handler
    */
-  handleTabClick: (event: unknown, tab: TabComponent) => void;
+  handleTabClick: (event: Event | null, tab: TabComponent) => void;
   
   /**
    * Scroll container for scrollable tabs

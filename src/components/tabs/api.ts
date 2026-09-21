@@ -23,7 +23,7 @@ interface ComponentWithElements {
   /** Container for tabs */
   tabsContainer: HTMLElement;
   /** Tab click handler */
-  handleTabClick: (event: Event, tab: TabComponent) => void;
+  handleTabClick: (event: Event | null, tab: TabComponent) => void;
   /** Scroll container (optional) */
   scrollContainer?: HTMLElement;
   /** Class name helper */
