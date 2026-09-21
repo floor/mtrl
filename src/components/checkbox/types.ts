@@ -302,3 +302,15 @@ export interface BaseComponent {
  */
 export type ApiComponent = BaseComponent &
   Required<Pick<BaseComponent, "checkable" | "disabled" | "lifecycle">>;
+
+
+/**
+ * Registers CheckboxConfig with the global defaults map, so
+ * `setComponentDefaults("checkbox", ...)` is typed without core
+ * importing anything from this component. FLO-115.
+ */
+declare module "../../core/config/global" {
+  interface ComponentConfigMap {
+    checkbox?: Partial<CheckboxConfig>;
+  }
+}

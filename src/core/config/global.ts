@@ -5,32 +5,17 @@
  * without adding complexity or performance overhead.
  */
 
-import { ButtonConfig } from '../../components/button/types';
-import type { CardSchema } from '../../components/card/types';
-import type { CheckboxConfig } from '../../components/checkbox/types';
-import type { ChipConfig } from '../../components/chips/types';
-import type { DialogConfig } from '../../components/dialog/types';
-import type { NavigationRailConfig } from '../../components/navigation-rail/types';
-import type { SliderConfig } from '../../components/slider/types';
-import type { SwitchConfig } from '../../components/switch/types';
-import { TextfieldConfig } from '../../components/textfield/types';
-// Import other component configs as needed
-
-/**
- * Component configuration map
- * Add new components here as they support global config
- */
+// Empty on purpose: this is a registry that components augment, and the
+// rule's suggested alternatives (`object`, `unknown`) cannot be augmented.
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ComponentConfigMap {
-  "navigation-rail"?: Partial<NavigationRailConfig>;
-  button?: Partial<ButtonConfig>;
-  textfield?: Partial<TextfieldConfig>;
-  checkbox?: Partial<CheckboxConfig>;
-  switch?: Partial<SwitchConfig>;
-  slider?: Partial<SliderConfig>;
-  card?: Partial<CardSchema>;
-  chip?: Partial<ChipConfig>;
-  dialog?: Partial<DialogConfig>;
-  // Add other components as needed
+  // Deliberately empty. Each component adds its own key by augmenting this
+  // interface from its own types.ts, so core imports nothing from components
+  // -- mtrl-addons builds on core, and core importing leaf component types
+  // was a layering inversion. FLO-115.
+  //
+  // A component's key exists only when that component is imported, which is
+  // the right answer for a tree-shaken build rather than a gap.
 }
 
 /**

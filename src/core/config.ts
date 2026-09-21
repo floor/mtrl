@@ -28,16 +28,6 @@ export const getModifierClass = (baseClass: string, modifier: string): string =>
  */
 export const getElementClass = (baseClass: string, element: string): string => `${baseClass}-${element}`;
 
-/**
- * Component type identifiers
- */
-export enum COMPONENTS {
-  BUTTON = 'button',
-  TEXTFIELD = 'textfield',
-  CONTAINER = 'container',
-  SNACKBAR = 'snackbar',
-  SWITCH = 'switch'
-}
 
 /**
  * Theme configuration interface
@@ -111,13 +101,6 @@ export interface StateComponentConfig extends ComponentConfig {
 // The types they returned -- ComponentConfig, ThemedComponentConfig and the
 // rest -- stay: those are in the barrel and are public.
 
-export enum STATES {
-  DISABLED = 'disabled',
-  FOCUSED = 'focused',
-  ACTIVE = 'active',
-  LOADING = 'loading',
-  ERROR = 'error'
-}
 
 /**
  * CSS class generation utilities

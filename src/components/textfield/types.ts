@@ -303,3 +303,15 @@ export interface BaseComponent {
   setError?: (error: boolean, message?: string) => void;
   isError?: () => boolean;
 }
+
+
+/**
+ * Registers TextfieldConfig with the global defaults map, so
+ * `setComponentDefaults("textfield", ...)` is typed without core
+ * importing anything from this component. FLO-115.
+ */
+declare module "../../core/config/global" {
+  interface ComponentConfigMap {
+    textfield?: Partial<TextfieldConfig>;
+  }
+}

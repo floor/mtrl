@@ -250,12 +250,16 @@ const createButtonGroup = (config: ButtonGroupConfig = {}): ButtonGroupComponent
         baseConfig
       );
       const selectable = selection !== 'none';
-      const iconOnly = Boolean(buttonConfig.icon) && !buttonConfig.text;
+      // Narrowed on `!text` rather than a boolean, so the union in
+      // ButtonGroupItemConfig picks the member that requires ariaLabel --
+      // which is exactly the case that becomes an icon button. A boolean
+      // flag would carry no type information and the label could be absent.
       // Icon-only items are icon buttons (the Material spec allows both in a
       // group); they carry their own toggle state and selected icon.
-      const button = (iconOnly
+      const button = (buttonConfig.text === undefined && buttonConfig.icon
         ? createIconButton({
             ...resolvedConfig,
+            ariaLabel: buttonConfig.ariaLabel,
             toggle: selectable,
             toggleOnClick: false,
             selectedIcon: buttonConfig.selectedIcon,

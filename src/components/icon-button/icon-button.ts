@@ -99,7 +99,7 @@ import { createBaseConfig, getElementConfig, getApiConfig } from './config';
  *
  * @category Components
  */
-const createIconButton = (config: IconButtonConfig = {}): IconButtonComponent => {
+const createIconButton = (config: IconButtonConfig): IconButtonComponent => {
   const baseConfig = createBaseConfig(config);
 
   try {

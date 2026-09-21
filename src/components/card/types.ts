@@ -496,3 +496,14 @@ export interface ApiOptions {
   /** The resolved configuration the card was created from */
   config: CardComponentConfig;
 }
+
+/**
+ * Registers CardSchema with the global defaults map, so
+ * `setComponentDefaults("card", ...)` is typed without core
+ * importing anything from this component. FLO-115.
+ */
+declare module "../../core/config/global" {
+  interface ComponentConfigMap {
+    card?: Partial<CardSchema>;
+  }
+}

@@ -251,7 +251,12 @@ export interface FabConfig {
    * });
    * ```
    */
-  ariaLabel?: string;
+  /**
+   * Accessible name. Required: an icon-only control has no text for a screen
+   * reader to announce, so without this it is just "button" (WCAG 4.1.2).
+   * FLO-110.
+   */
+  ariaLabel: string;
 
   /**
    * Whether to enable ripple effect

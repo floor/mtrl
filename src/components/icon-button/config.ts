@@ -26,7 +26,7 @@ import {
  * @category Components
  * @internal
  */
-export const defaultConfig: IconButtonConfig = {
+export const defaultConfig: Partial<IconButtonConfig> = {
   variant: ICON_BUTTON_VARIANTS.STANDARD,
   size: ICON_BUTTON_SIZES.S,
   shape: ICON_BUTTON_SHAPES.ROUND,
@@ -57,7 +57,7 @@ export const defaultConfig: IconButtonConfig = {
  * @internal
  */
 export const createBaseConfig = (
-  config: IconButtonConfig = {},
+  config: IconButtonConfig,
 ): IconButtonConfig =>
   createComponentConfig(
     defaultConfig,

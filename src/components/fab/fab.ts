@@ -55,7 +55,7 @@ import { createBaseConfig, getElementConfig, getApiConfig } from './config';
  * fab.setPosition('bottom-left');
  * ```
  */
-const createFab = (config: FabConfig = {}): FabComponent => {
+const createFab = (config: FabConfig): FabComponent => {
   const fabConfig = createBaseConfig(config);
 
   try {

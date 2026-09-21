@@ -27,7 +27,7 @@ for (const [size, container, icon, radius] of [
     const key = size.toUpperCase() as keyof typeof FAB_SIZES;
     expect(FAB_SIZES[key]).toBe(size);
     expect(FAB_ICON_SIZES[key]).toBe(`${icon}px`);
-    const config = createBaseConfig({ size });
+    const config = createBaseConfig({ size, ariaLabel: 'Compose' });
     expect(JSON.stringify(getElementConfig(config))).toContain(`fab--${size}`);
   });
 }
