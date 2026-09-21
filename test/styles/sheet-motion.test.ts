@@ -160,15 +160,15 @@ describe('dialog', () => {
   });
 
   test('the headline and content follow the surface, the actions last', () => {
-    expect(value('dialog', '.mtrl-dialog--visible .mtrl-dialog-header, .mtrl-dialog--visible .mtrl-dialog-content', 'transition')).toBe('opacity 250ms linear 50ms');
-    expect(value('dialog', '.mtrl-dialog--visible .mtrl-dialog-footer', 'transition')).toBe('opacity 300ms linear 150ms');
+    expect(value('dialog', '.mtrl-dialog--visible .mtrl-dialog__header, .mtrl-dialog--visible .mtrl-dialog__content', 'transition')).toBe('opacity 250ms linear 50ms');
+    expect(value('dialog', '.mtrl-dialog--visible .mtrl-dialog__footer', 'transition')).toBe('opacity 300ms linear 150ms');
   });
 
   // The dialog is the overlay's child, so the scrim fades on its colour
   test('the scrim fades on its own colour, 500ms in and 150ms out', () => {
-    expect(value('dialog', '.mtrl-dialog-overlay', 'background-color')).toBe('transparent');
-    expect(value('dialog', '.mtrl-dialog-overlay--visible', 'transition')).toBe('background-color 500ms linear, visibility 0s');
-    expect(value('dialog', '.mtrl-dialog-overlay', 'transition')).toBe('background-color 150ms linear, visibility 0s linear 150ms');
+    expect(value('dialog', '.mtrl-dialog__overlay', 'background-color')).toBe('transparent');
+    expect(value('dialog', '.mtrl-dialog__overlay--visible', 'transition')).toBe('background-color 500ms linear, visibility 0s');
+    expect(value('dialog', '.mtrl-dialog__overlay', 'transition')).toBe('background-color 150ms linear, visibility 0s linear 150ms');
   });
 });
 

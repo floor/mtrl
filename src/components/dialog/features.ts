@@ -51,7 +51,7 @@ export const withStructure =
   const overlay = document.createElement(overlayConfig.tag || "div");
 
   // Add overlay classes
-  overlay.classList.add(component.getClass("dialog-overlay"));
+  overlay.classList.add(component.getClass("dialog__overlay"));
 
   // Set overlay attributes safely
   if (
@@ -77,15 +77,15 @@ export const withStructure =
   // Create internal structure
   const createHeader = () => {
     const header = document.createElement("div");
-    header.classList.add(component.getClass("dialog-header"));
+    header.classList.add(component.getClass("dialog__header"));
 
     const headerContent = document.createElement("div");
-    headerContent.classList.add(component.getClass("dialog-header-content"));
+    headerContent.classList.add(component.getClass("dialog__header-content"));
     header.appendChild(headerContent);
 
     if (config.title) {
       const title = document.createElement("h2");
-      title.classList.add(component.getClass("dialog-header-title"));
+      title.classList.add(component.getClass("dialog__header-title"));
       title.id = titleId;
       title.textContent = config.title;
       headerContent.appendChild(title);
@@ -93,14 +93,14 @@ export const withStructure =
 
     if (config.subtitle) {
       const subtitle = document.createElement("p");
-      subtitle.classList.add(component.getClass("dialog-header-subtitle"));
+      subtitle.classList.add(component.getClass("dialog__header-subtitle"));
       subtitle.textContent = config.subtitle;
       headerContent.appendChild(subtitle);
     }
 
     if (showCloseButton) {
       const closeButton = document.createElement("button");
-      closeButton.classList.add(component.getClass("dialog-header-close"));
+      closeButton.classList.add(component.getClass("dialog__header-close"));
       closeButton.setAttribute("aria-label", "Close dialog");
       setHTML(closeButton, `
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -128,7 +128,7 @@ export const withStructure =
 
   const createContent = () => {
     const content = document.createElement("div");
-    content.classList.add(component.getClass("dialog-content"));
+    content.classList.add(component.getClass("dialog__content"));
     content.id = contentId;
 
     if (config.content) {
@@ -140,12 +140,12 @@ export const withStructure =
 
   const createFooter = () => {
     const footer = document.createElement("div");
-    footer.classList.add(component.getClass("dialog-footer"));
+    footer.classList.add(component.getClass("dialog__footer"));
 
     // Apply footer alignment
     const alignment = config.footerAlignment || "right";
     if (alignment !== "right") {
-      addClass(footer, `${component.getClass("dialog-footer")}--${alignment}`);
+      addClass(footer, `${component.getClass("dialog__footer")}--${alignment}`);
     }
 
     // Add buttons if provided
@@ -161,7 +161,7 @@ export const withStructure =
   const createDividerElement = () => {
     const divider = createDivider({
       variant: "full-width",
-      class: component.getClass("dialog-divider"),
+      class: component.getClass("dialog__divider"),
     });
     return divider;
   };
@@ -213,7 +213,7 @@ export const withStructure =
     // Add header divider (between header and content)
     headerDivider = createDividerElement();
     headerDivider.element.classList.add(
-      component.getClass("dialog-header-divider"),
+      component.getClass("dialog__header-divider"),
     );
     component.element.appendChild(headerDivider.element);
 
@@ -221,7 +221,7 @@ export const withStructure =
     if (footer) {
       footerDivider = createDividerElement();
       footerDivider.element.classList.add(
-        component.getClass("dialog-footer-divider"),
+        component.getClass("dialog__footer-divider"),
       );
     }
   }
@@ -285,8 +285,8 @@ export const withDivider =
           const headerDivider = createDivider({
             variant: "full-width",
             class: `${component.getClass(
-              "dialog-divider",
-            )} ${component.getClass("dialog-header-divider")}`,
+              "dialog__divider",
+            )} ${component.getClass("dialog__header-divider")}`,
           });
 
           // Insert after header, before content
@@ -305,8 +305,8 @@ export const withDivider =
             const footerDivider = createDivider({
               variant: "full-width",
               class: `${component.getClass(
-                "dialog-divider",
-              )} ${component.getClass("dialog-footer-divider")}`,
+                "dialog__divider",
+              )} ${component.getClass("dialog__footer-divider")}`,
             });
 
             // Insert before footer
@@ -602,7 +602,7 @@ export const withVisibility =
   if (isOpen) {
     addClass(
       component.overlay,
-      `${component.getClass("dialog-overlay")}--visible`,
+      `${component.getClass("dialog__overlay")}--visible`,
     );
     addClass(component.element, `${component.getClass("dialog")}--visible`);
 
@@ -648,7 +648,7 @@ export const withVisibility =
       setTimeout(() => {
         addClass(
           component.overlay,
-          `${component.getClass("dialog-overlay")}--visible`,
+          `${component.getClass("dialog__overlay")}--visible`,
         );
         addClass(component.element, `${component.getClass("dialog")}--visible`);
 
@@ -691,7 +691,7 @@ export const withVisibility =
       // Get class names
       const dialogVisibleClass = `${component.getClass("dialog")}--visible`;
       const overlayVisibleClass = `${component.getClass(
-        "dialog-overlay",
+        "dialog__overlay",
       )}--visible`;
 
       // Remove dialog visible class
@@ -778,15 +778,15 @@ export const withContent =
        */
       setTitle(title: string) {
         let titleElement = headerElement.querySelector(
-          `.${component.getClass("dialog-header-title")}`,
+          `.${component.getClass("dialog__header-title")}`,
         );
 
         if (!titleElement && title) {
           // Create title element if it doesn't exist
           titleElement = document.createElement("h2");
-          titleElement.classList.add(component.getClass("dialog-header-title"));
+          titleElement.classList.add(component.getClass("dialog__header-title"));
           headerElement
-            .querySelector(`.${component.getClass("dialog-header-content")}`)
+            .querySelector(`.${component.getClass("dialog__header-content")}`)
             ?.appendChild(titleElement);
         }
 
@@ -801,7 +801,7 @@ export const withContent =
        */
       getTitle() {
         const titleElement = headerElement.querySelector(
-          `.${component.getClass("dialog-header-title")}`,
+          `.${component.getClass("dialog__header-title")}`,
         );
         return titleElement ? titleElement.textContent || "" : "";
       },
@@ -812,17 +812,17 @@ export const withContent =
        */
       setSubtitle(subtitle: string) {
         let subtitleElement = headerElement.querySelector(
-          `.${component.getClass("dialog-header-subtitle")}`,
+          `.${component.getClass("dialog__header-subtitle")}`,
         );
 
         if (!subtitleElement && subtitle) {
           // Create subtitle element if it doesn't exist
           subtitleElement = document.createElement("p");
           subtitleElement.classList.add(
-            component.getClass("dialog-header-subtitle"),
+            component.getClass("dialog__header-subtitle"),
           );
           headerElement
-            .querySelector(`.${component.getClass("dialog-header-content")}`)
+            .querySelector(`.${component.getClass("dialog__header-content")}`)
             ?.appendChild(subtitleElement);
         }
 
@@ -837,7 +837,7 @@ export const withContent =
        */
       getSubtitle() {
         const subtitleElement = headerElement.querySelector(
-          `.${component.getClass("dialog-header-subtitle")}`,
+          `.${component.getClass("dialog__header-subtitle")}`,
         );
         return subtitleElement ? subtitleElement.textContent || "" : "";
       },
@@ -916,14 +916,14 @@ export const withButtons =
 
         if (!footer) {
           footer = document.createElement("div");
-          footer.classList.add(component.getClass("dialog-footer"));
+          footer.classList.add(component.getClass("dialog__footer"));
 
           // Apply footer alignment
           const alignment = component.config.footerAlignment || "right";
           if (alignment !== "right") {
             addClass(
               footer,
-              `${component.getClass("dialog-footer")}--${alignment}`,
+              `${component.getClass("dialog__footer")}--${alignment}`,
             );
           }
 
@@ -993,7 +993,7 @@ export const withButtons =
           if (align !== "right") {
             removeClass(
               footer,
-              `${component.getClass("dialog-footer")}--${align}`,
+              `${component.getClass("dialog__footer")}--${align}`,
             );
           }
         });
@@ -1002,7 +1002,7 @@ export const withButtons =
         if (alignment !== "right") {
           addClass(
             footer,
-            `${component.getClass("dialog-footer")}--${alignment}`,
+            `${component.getClass("dialog__footer")}--${alignment}`,
           );
         }
       },

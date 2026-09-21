@@ -69,23 +69,23 @@ export const DIALOG_CLASSES = {
   /** Root dialog element */
   ROOT: 'dialog',
   /** Overlay background */
-  OVERLAY: 'dialog-overlay',
+  OVERLAY: 'dialog__overlay',
   /** Dialog container */
-  CONTAINER: 'dialog-container',
+  CONTAINER: 'dialog__container',
   /** Dialog header */
-  HEADER: 'dialog-header',
+  HEADER: 'dialog__header',
   /** Dialog title */
-  TITLE: 'dialog-title',
+  TITLE: 'dialog__title',
   /** Dialog subtitle */
-  SUBTITLE: 'dialog-subtitle',
+  SUBTITLE: 'dialog__subtitle',
   /** Close button */
-  CLOSE_BUTTON: 'dialog-close-button',
+  CLOSE_BUTTON: 'dialog__close-button',
   /** Dialog content */
-  CONTENT: 'dialog-content',
+  CONTENT: 'dialog__content',
   /** Dialog footer */
-  FOOTER: 'dialog-footer',
+  FOOTER: 'dialog__footer',
   /** Dialog divider */
-  DIVIDER: 'dialog-divider',
+  DIVIDER: 'dialog__divider',
   /** Added when dialog is open */
   OPEN: 'dialog--open',
   /** Added when dialog is animating */

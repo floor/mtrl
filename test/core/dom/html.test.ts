@@ -90,9 +90,9 @@ describe('the policy reaches every component sink', () => {
   test('dialog content, from config and from setContent', () => {
     configureHTML({ sanitize: (html) => html.replace('<script>bad</script>', '') });
     const dialog = createDialog({ title: 'T', content: '<p>ok</p><script>bad</script>' });
-    expect(dialog.element.querySelector('.mtrl-dialog-content')?.innerHTML).toBe('<p>ok</p>');
+    expect(dialog.element.querySelector('.mtrl-dialog__content')?.innerHTML).toBe('<p>ok</p>');
     dialog.setContent('<p>later</p><script>bad</script>');
-    expect(dialog.element.querySelector('.mtrl-dialog-content')?.innerHTML).toBe('<p>later</p>');
+    expect(dialog.element.querySelector('.mtrl-dialog__content')?.innerHTML).toBe('<p>later</p>');
   });
 
   test('menu item icons', async () => {
