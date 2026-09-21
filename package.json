@@ -94,6 +94,7 @@
     "size:check": "bun run scripts/check-package-size.ts",
     "classes:check": "bun run scripts/check-class-names.ts",
     "consumer:check": "bun run scripts/check-consumer.ts",
+    "tabs:check": "bun run scripts/check-tabs.ts",
     "slider:check": "bun run scripts/check-slider.ts",
     "drawer:check": "bun run scripts/check-drawer.ts",
     "navigation-rail:check": "bun run scripts/check-navigation-rail.ts",
