@@ -175,6 +175,28 @@ const RESERVED_OPTIONS: Record<string, unknown> = {
 const PASSIVE_TOUCH_EVENTS = new Set(["touchstart", "touchmove"]);
 
 /**
+ * What `forwardEvents` hands the component's emitter.
+ *
+ * One shape for every forwarded native event, emitted by `forwardEventsTo`
+ * below as `{ event, element, originalEvent: event }`. Eleven components
+ * configure `forwardEvents`, so this lives here rather than being redeclared
+ * per component: FLO-114 gives each component a typed event map, and without
+ * a shared payload that would mean the same three fields written out again in
+ * every one of them.
+ *
+ * `event` and `originalEvent` are the same object. Both names have always
+ * been provided and consumers use both, so neither is removed here.
+ */
+export interface ForwardedEventPayload<E extends Event = Event> {
+  /** The DOM event that triggered the forward. */
+  event: E;
+  /** The element the listener is attached to, which is the component root. */
+  element: HTMLElement;
+  /** The same DOM event as `event`. */
+  originalEvent: E;
+}
+
+/**
  * Set up event forwarding for an element
  */
 const setupEventForwarding = (

@@ -1,7 +1,7 @@
 // src/core/dom/index.ts
 
 export { createElement, createSVGElement } from "./create";
-export type { CreateElementOptions } from "./create";
+export type { CreateElementOptions, ForwardedEventPayload } from "./create";
 
 export {
   setAttributes,

@@ -1,5 +1,6 @@
 // src/components/fab/types.ts
 import type { IconManager } from "../../core/compose/features/icon";
+import type { ForwardedEventPayload } from "../../core/dom/create";
 
 /**
  * FAB variants following Material Design 3 guidelines
@@ -362,6 +363,27 @@ export interface FabConfig {
  *
  * @category Components
  */
+/**
+ * The events a FAB reports, and what each hands its handler.
+ *
+ * Exactly the three its `forwardEvents` config forwards -- `click`, `focus`
+ * and `blur`, see config.ts. `mount` and `unmount` are deliberately absent:
+ * the lifecycle feature keeps its own emitter and exposes them as
+ * `lifecycle.onMount` / `onUnmount`, so they never arrive through `on`.
+ *
+ * `on` and `off` are generic over these keys, so a misspelled event name is a
+ * compile error rather than a listener that never fires, and the handler's
+ * payload is typed rather than `Function`'s implicit `any`. FLO-114.
+ */
+export interface FabEvents {
+  /** The FAB was clicked. Not forwarded while the FAB is disabled. */
+  click: (payload: ForwardedEventPayload<MouseEvent>) => void;
+  /** The FAB took focus. */
+  focus: (payload: ForwardedEventPayload<FocusEvent>) => void;
+  /** The FAB lost focus. */
+  blur: (payload: ForwardedEventPayload<FocusEvent>) => void;
+}
+
 export interface FabComponent {
   /**
    * The FAB's DOM element
@@ -603,7 +625,7 @@ export interface FabComponent {
    * });
    * ```
    */
-  on: (event: string, handler: Function) => FabComponent;
+  on: <K extends keyof FabEvents>(event: K, handler: FabEvents[K]) => FabComponent;
 
   /**
    * Removes an event listener from the FAB
@@ -621,7 +643,7 @@ export interface FabComponent {
    * fab.off('click', handler);
    * ```
    */
-  off: (event: string, handler: Function) => FabComponent;
+  off: <K extends keyof FabEvents>(event: K, handler: FabEvents[K]) => FabComponent;
 
   /**
    * Adds CSS classes to the FAB element

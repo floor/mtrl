@@ -1,5 +1,6 @@
 // src/components/fab/api.ts
-import { FabComponent } from './types';
+import { FabComponent, FabEvents } from './types';
+import type { EventCallback } from '../../core/state/emitter';
 import type { IconManager } from '../../core/compose/features/icon';
 
 /**
@@ -41,11 +42,16 @@ interface ApiOptions {
  */
 interface ComponentWithElements
   extends Pick<FabComponent, 'disabled' | 'lifecycle'> {
+  // `EventCallback`, not `Function`. This host is handed the component the
+  // pipe has built, whose `on` takes an EventCallback, and `Function` is a
+  // supertype of that -- so under strictFunctionTypes a host promising to
+  // call a handler with anything cannot accept one taking a typed payload.
+  // That is what stopped the pipe in fab.ts:71 resolving. FLO-114.
   /** Subscribes to an event; the API returns the component itself */
-  on: (event: string, handler: Function) => unknown;
+  on: (event: string, handler: EventCallback) => unknown;
   
   /** Unsubscribes from an event; the API returns the component itself */
-  off: (event: string, handler: Function) => unknown;
+  off: (event: string, handler: EventCallback) => unknown;
   
   /** Adds CSS classes; the API returns the component itself */
   addClass: (...classes: string[]) => unknown;
@@ -143,13 +149,13 @@ export const withAPI = ({ disabled, lifecycle, className }: ApiOptions) =>
     },
     
     // Event methods
-    on(event: string, handler: Function) {
-      component.on(event, handler);
+    on<K extends keyof FabEvents>(event: K, handler: FabEvents[K]) {
+      component.on(event, handler as EventCallback);
       return this;
     },
     
-    off(event: string, handler: Function) {
-      component.off(event, handler);
+    off<K extends keyof FabEvents>(event: K, handler: FabEvents[K]) {
+      component.off(event, handler as EventCallback);
       return this;
     },
     
