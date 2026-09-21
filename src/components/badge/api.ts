@@ -1,4 +1,5 @@
 // src/components/badge/api.ts
+import { isBadgeOverflow, isEmptyBadgeLabel } from "./config";
 import {
   BadgeComponent,
   BadgeColor,
@@ -104,18 +105,14 @@ export const withAPI =
         component.element.classList.remove(
           `${component.getClass("badge")}--overflow`
         );
-        if (
-          typeof label === "number" &&
-          component.config.max !== undefined &&
-          label > component.config.max
-        ) {
+        if (isBadgeOverflow(label, component.config.max)) {
           component.element.classList.add(
             `${component.getClass("badge")}--overflow`
           );
         }
 
         // Toggle visibility based on whether label is empty
-        if (formattedLabel === "" || formattedLabel === "0") {
+        if (isEmptyBadgeLabel(formattedLabel)) {
           badgeComponent.hide();
         } else {
           badgeComponent.show();
