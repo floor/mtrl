@@ -317,3 +317,48 @@ describe('slider events and destroy', () => {
     expect(seen).toEqual([]);
   });
 });
+
+// `range: true` without a `secondValue` builds two handles and leaves the
+// second value null. Every range test above supplies one, so this shape had no
+// coverage -- and it is the shape where the keyboard handler had a null to do
+// arithmetic on. FLO-114 gave it a guard; these say what the guard preserves.
+describe('a range slider given no second value', () => {
+  test('still has two handles, and the second has no value', async () => {
+    const slider = await mount({ range: true, value: 20 });
+
+    expect(handles(slider)).toHaveLength(2);
+    expect(slider.getSecondValue()).toBeNull();
+  });
+
+  test('the keyboard leaves the second handle alone rather than inventing a value', async () => {
+    const slider = await mount({ range: true, value: 20 });
+    const [, second] = handles(slider);
+
+    key(second, 'ArrowRight');
+    key(second, 'ArrowUp');
+    key(second, 'End');
+
+    expect(slider.getSecondValue()).toBeNull();
+  });
+
+  test('the first handle still moves', async () => {
+    const slider = await mount({ range: true, value: 20 });
+    const [first] = handles(slider);
+
+    key(first, 'ArrowRight');
+
+    expect(slider.getValue()).toBe(21);
+    expect(slider.getSecondValue()).toBeNull();
+  });
+
+  test('and setSecondValue gives it one, after which the keyboard works', async () => {
+    const slider = await mount({ range: true, value: 20 });
+    const [, second] = handles(slider);
+
+    slider.setSecondValue(80);
+    expect(slider.getSecondValue()).toBe(80);
+
+    key(second, 'ArrowLeft');
+    expect(slider.getSecondValue()).toBe(79);
+  });
+});

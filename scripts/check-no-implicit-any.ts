@@ -19,11 +19,11 @@
 import { execFileSync } from "node:child_process";
 
 /** Files with noImplicitAny errors left to fix (F14). */
-const PENDING = [
-  "src/components/slider/config.ts",
-  "src/components/slider/features/controller.ts",
-  "src/components/slider/features/handlers.ts",
-];
+// Empty: every file that had noImplicitAny errors has been typed. The list
+// stays, and so does the staleness check below, because the point of a ratchet
+// is that it cannot be added to -- a new file with implicit anys fails here
+// rather than being appended.
+const PENDING: string[] = [];
 
 const EXCLUDED = new Set(PENDING);
 

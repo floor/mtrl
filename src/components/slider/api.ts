@@ -6,7 +6,11 @@ import { SliderSize } from "./constants";
 /**
  * API options interface - structured by feature area
  */
-interface ApiOptions {
+/**
+ * What withAPI needs handed to it. Exported because getApiConfig in config.ts
+ * builds exactly this, so one description serves both.
+ */
+export interface ApiOptions {
   slider: {
     setValue: (value: number, triggerEvent?: boolean) => unknown;
     getValue: () => number;
