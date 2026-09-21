@@ -38,6 +38,7 @@ export { default, default as createFab } from "./fab";
 export type {
   FabConfig,
   FabComponent,
+  FabEvents,
   FabVariant,
   FabSize,
   FabPosition,

@@ -147,14 +147,54 @@ for (const component of ['fab', 'extended-fab'] as const) {
     const b = make(); let calls = 0;
     // emit is not part of the public type; it is the events feature the API delegates to
     const emit = (event: string) => Reflect.apply(Reflect.get(b, 'emit'), b, [event]);
-    b.on('ping', () => calls++);
-    emit('ping');
+    // A real event name rather than an invented one: FLO-114 made `on` generic
+    // over the component's event map, so `'ping'` is no longer a key. The
+    // subject here is destroy, not the name -- the event is emitted by hand
+    // either way, so `'focus'` tests exactly what `'ping'` did.
+    b.on('focus', () => calls++);
+    emit('focus');
     expect(calls).toBe(1);
     b.destroy();
-    expect(b.on('ping', () => calls++)).toBe(b);
-    emit('ping');
+    expect(b.on('focus', () => calls++)).toBe(b);
+    emit('focus');
     expect(calls).toBe(1);
   });
+  // FLO-114 gave the FAB a typed event map declaring click, focus and blur,
+  // each carrying `{ event, element, originalEvent }` from the core
+  // forwarder. A map is a claim about what exists and what it hands over;
+  // only `click` firing was covered before, and the payload shape not at all.
+  test(`${component}: all three mapped events fire, carrying the forwarded payload`, () => {
+    const b = make();
+    const seen: string[] = [];
+    const payloads: Array<{ event: Event; element: HTMLElement; originalEvent: Event }> = [];
+    const record = (name: string) => (payload: { event: Event; element: HTMLElement; originalEvent: Event }) => {
+      seen.push(name);
+      payloads.push(payload);
+    };
+
+    b.on('click', record('click'));
+    b.on('focus', record('focus'));
+    b.on('blur', record('blur'));
+
+    b.element.click();
+    b.element.dispatchEvent(new window.FocusEvent('focus'));
+    b.element.dispatchEvent(new window.FocusEvent('blur'));
+
+    expect(seen).toEqual(['click', 'focus', 'blur']);
+
+    // Every payload carries the element it was listened on, and `event` and
+    // `originalEvent` are the same object -- both names are provided, and a
+    // consumer reading either gets the DOM event.
+    for (const payload of payloads) {
+      expect(payload.element).toBe(b.element);
+      expect(payload.originalEvent).toBe(payload.event);
+      expect(payload.event).toBeInstanceOf(window.Event);
+    }
+    expect(payloads[0].event.type).toBe('click');
+    expect(payloads[1].event.type).toBe('focus');
+    expect(payloads[2].event.type).toBe('blur');
+  });
+
   test(`${component}: ripple is present by default and can be opted out`, () => {
     expect(make().element.querySelector('.mtrl-ripple')).not.toBeNull();
     expect(make({ ripple: false }).element.querySelector('.mtrl-ripple')).toBeNull();
