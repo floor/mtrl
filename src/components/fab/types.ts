@@ -377,11 +377,11 @@ export interface FabConfig {
  */
 export interface FabEvents {
   /** The FAB was clicked. Not forwarded while the FAB is disabled. */
-  click: (payload: ForwardedEventPayload<MouseEvent>) => void;
+  click: (payload: ForwardedEventPayload<MouseEvent, HTMLButtonElement>) => void;
   /** The FAB took focus. */
-  focus: (payload: ForwardedEventPayload<FocusEvent>) => void;
+  focus: (payload: ForwardedEventPayload<FocusEvent, HTMLButtonElement>) => void;
   /** The FAB lost focus. */
-  blur: (payload: ForwardedEventPayload<FocusEvent>) => void;
+  blur: (payload: ForwardedEventPayload<FocusEvent, HTMLButtonElement>) => void;
 }
 
 export interface FabComponent {

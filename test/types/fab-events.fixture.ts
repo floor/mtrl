@@ -40,7 +40,7 @@ type ClickPayload = Parameters<Parameters<typeof fab.on<"click">>[1]>[0];
 
 export const clickCarriesAMouseEvent: Equals<
   ClickPayload,
-  ForwardedEventPayload<MouseEvent>
+  ForwardedEventPayload<MouseEvent, HTMLButtonElement>
 > = true;
 
 // The payload is not the DOM event; it carries one. Reading it as the event
@@ -56,7 +56,17 @@ export const originalEventIsTheDomEvent: Equals<
 // silently accepted by them.
 export const focusCarriesAFocusEvent: Equals<
   Parameters<Parameters<typeof fab.on<"focus">>[1]>[0],
-  ForwardedEventPayload<FocusEvent>
+  ForwardedEventPayload<FocusEvent, HTMLButtonElement>
+> = true;
+
+export const clickCarriesTheButtonRoot: Equals<
+  ClickPayload["element"],
+  HTMLButtonElement
+> = true;
+
+export const blurCarriesTheButtonRoot: Equals<
+  Parameters<FabEvents["blur"]>[0]["element"],
+  HTMLButtonElement
 > = true;
 
 // --- what the map rejects -------------------------------------------------

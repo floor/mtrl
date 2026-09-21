@@ -25,10 +25,7 @@ export type DOMElement = HTMLElement | SVGElement;
  */
 export interface ElementContext {
   /** Emits forwarded events */
-  emit?(
-    event: string,
-    data: { event: Event; element: DOMElement; originalEvent: Event },
-  ): void;
+  emit?(event: string, data: ForwardedEventPayload): void;
   /** Subscribes to events */
   on?(event: string, handler: (...args: unknown[]) => void): unknown;
 }
@@ -177,7 +174,7 @@ const PASSIVE_TOUCH_EVENTS = new Set(["touchstart", "touchmove"]);
 /**
  * What `forwardEvents` hands the component's emitter.
  *
- * One shape for every forwarded native event, emitted by `forwardEventsTo`
+ * One shape for every forwarded native event, emitted by `setupEventForwarding`
  * below as `{ event, element, originalEvent: event }`. Eleven components
  * configure `forwardEvents`, so this lives here rather than being redeclared
  * per component: FLO-114 gives each component a typed event map, and without
@@ -186,12 +183,17 @@ const PASSIVE_TOUCH_EVENTS = new Set(["touchstart", "touchmove"]);
  *
  * `event` and `originalEvent` are the same object. Both names have always
  * been provided and consumers use both, so neither is removed here.
+ * The default root covers HTML and SVG; component event maps can specialize
+ * it to their actual element type.
  */
-export interface ForwardedEventPayload<E extends Event = Event> {
+export interface ForwardedEventPayload<
+  E extends Event = Event,
+  TElement extends DOMElement = DOMElement,
+> {
   /** The DOM event that triggered the forward. */
   event: E;
   /** The element the listener is attached to, which is the component root. */
-  element: HTMLElement;
+  element: TElement;
   /** The same DOM event as `event`. */
   originalEvent: E;
 }
