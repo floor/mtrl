@@ -100,57 +100,17 @@ export interface StateComponentConfig extends ComponentConfig {
   getStateClass: (state: string) => string | null;
 }
 
-/**
- * Creates a component configuration object
- * @param type - Component type
- * @returns Component configuration interface
- */
-export const createComponentConfig = (type: string): ComponentConfig => {
-  const baseClass = `${PREFIX}-${type}`;
+// `createComponentConfig` was here, and so was `createThemedComponent` below.
+//
+// Neither was in the core barrel and nothing imported them, so neither was
+// reachable from the package or from inside it. The name was also taken twice:
+// the live `createComponentConfig` is in core/config/component.ts, has 44
+// callers and is what `mtrl` exports. Two functions under one name, one of
+// them dead, is the duplication F27 names.
+//
+// The types they returned -- ComponentConfig, ThemedComponentConfig and the
+// rest -- stay: those are in the barrel and are public.
 
-  // Create the base config object
-  const config: ComponentConfig = {
-    prefix: PREFIX,
-    type,
-    baseClass,
-
-    // Class name generators
-    getClass: () => baseClass,
-    getModifierClass: (modifier) => `${baseClass}--${modifier}`,
-    getElementClass: (element) => `${baseClass}-${element}`,
-
-    // Theme support
-    withTheme: (theme) => ({
-      ...config,
-      theme,
-      getThemeClass: (variant) => `${baseClass}--theme-${theme}-${variant}`,
-      getCssVariables: () => ({}) // Empty implementation as placeholder
-    }),
-
-    // Variant support
-    withVariants: (...variants) => ({
-      ...config,
-      variants,
-      hasVariant: (variant) => variants.includes(variant),
-      getVariantClass: (variant) =>
-        variants.includes(variant) ? `${baseClass}--${variant}` : null
-    }),
-
-    // State support
-    withStates: (...states) => ({
-      ...config,
-      states,
-      getStateClass: (state) =>
-        states.includes(state) ? `${baseClass}--state-${state}` : null
-    })
-  };
-
-  return config;
-};
-
-/**
- * Common component states
- */
 export enum STATES {
   DISABLED = 'disabled',
   FOCUSED = 'focused',
@@ -184,30 +144,4 @@ export const classNames = {
    */
   join: (...classes: (string | undefined | null | false)[]): string => 
     classes.filter(Boolean).join(' ')
-};
-
-/**
- * Creates a themed component configuration
- * @param type - Component type
- * @param theme - Theme configuration
- * @returns Themed component configuration
- */
-export const createThemedComponent = (type: string, theme: ThemeConfig): ThemedComponentConfig => {
-  const config = createComponentConfig(type);
-
-  return {
-    ...config,
-    theme: theme.name,
-
-    // Theme-specific class generators
-    getThemeClass: (variant) =>
-      `${config.getClass()}--theme-${theme.name}${variant ? `-${variant}` : ''}`,
-
-    // Theme CSS variables
-    getCssVariables: () =>
-      Object.entries(theme.variables).reduce((acc, [key, value]) => ({
-        ...acc,
-        [`--${PREFIX}-${type}-${key}`]: value
-      }), {} as Record<string, string>)
-  };
 };
