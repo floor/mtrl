@@ -1,5 +1,6 @@
 // src/core/compose/features/input.ts
 
+import { omitsAttribute } from "../../utils/attributes";
 import { ElementComponent } from "../component";
 
 /**
@@ -139,7 +140,9 @@ export const withInput =
     };
 
     Object.entries(attributes).forEach(([key, value]) => {
-      if (value !== null && value !== undefined) {
+      // `false` on a boolean attribute fell through to String(value) below
+      // and wrote "false", which is present and therefore true. FLO-240.
+      if (value !== null && value !== undefined && !omitsAttribute(key, value)) {
         if (key === "disabled" && value === true) {
           input.disabled = true;
           input.setAttribute("disabled", "true");

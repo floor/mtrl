@@ -12,14 +12,22 @@ export interface BaseComponentConfig {
   prefix?: string;
   class?: string | string[]; // Support both string and array
   className?: string | string[]; // Alternative to class
-  rawClass?: string | string[]; // Classes that should not be prefixed
+  /**
+   * @deprecated Since FLO-117 `class` and `className` are not prefixed either,
+   * so this option does the same thing as those. It is kept for the release
+   * that changes the behaviour and will be removed in 1.0.0.
+   */
+  rawClass?: string | string[];
   parent?: HTMLElement | string | null; // Parent element to append to (element or selector)
   // Common HTML attributes
   id?: string; // Element ID
   name?: string; // Form element name
   title?: string; // Tooltip text (native browser tooltip on hover)
   tabIndex?: number; // Keyboard navigation order (-1 to remove from tab order, 0+ for custom order)
-  style?: string | Partial<CSSStyleDeclaration>; // Inline styles (string or object)
+  // Inline styles. Object only: a style string is written verbatim to the
+  // style attribute, so one interpolated value can carry extra declarations
+  // (FLO-111). Assigning per property confines a value to that property.
+  style?: Partial<CSSStyleDeclaration>;
   // Data attributes
   data?: Record<string, string>; // Data attributes (e.g., { name: 'value' } → data-name="value")
   // ARIA attributes for accessibility
@@ -162,6 +170,14 @@ export const createElementConfig = (
     tag: string;
     attributes?: Record<string, unknown>;
     className?: string | (string | null | undefined)[] | null;
+    /**
+     * Styles the component computes for itself, as properties. Merged under
+     * `config.style`, so a consumer's own style still wins. Added with
+     * FLO-111: menu built these into the style *attribute* as a joined
+     * string, where CSS text has no camelCase and `maxHeight` was silently
+     * dropped by the parser.
+     */
+    style?: Partial<CSSStyleDeclaration>;
     html?: string;
     text?: string;
     forwardEvents?: Record<
@@ -198,7 +214,10 @@ export const createElementConfig = (
     name: config.name,
     title: config.title,
     tabIndex: config.tabIndex,
-    style: config.style,
+    style:
+      options.style || config.style
+        ? { ...options.style, ...config.style }
+        : undefined,
     // Data attributes
     data: config.data,
     // ARIA attributes

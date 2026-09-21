@@ -49,10 +49,16 @@ export const withTextfield =
 
     // Prevent typing in the input while keeping normal focus/visual behavior
     if (textfield.input) {
-      // Annotated, because `input` is HTMLInputElement | HTMLTextAreaElement
-      // and addEventListener over a union falls back to the EventTarget
-      // signature, which types the event as a plain Event.
-      textfield.input.addEventListener("keydown", (e: KeyboardEvent) => {
+      // `input` is HTMLInputElement | HTMLTextAreaElement, and
+      // addEventListener over a union falls back to the EventTarget
+      // signature, which types the event as a plain Event. Annotating the
+      // parameter `KeyboardEvent` was the previous answer and is unsound:
+      // under strictFunctionTypes a listener that requires a KeyboardEvent
+      // cannot be registered where any Event may arrive. Narrowing the
+      // receiver to their common HTMLElement picks the typed overload
+      // instead, so `e` is a KeyboardEvent because the event name says so.
+      const input: HTMLElement = textfield.input;
+      input.addEventListener("keydown", (e) => {
         // Allow navigation keys to propagate (they're handled by the menu)
         const allowedKeys = [
           "Tab",

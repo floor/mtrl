@@ -1,4 +1,7 @@
 // src/components/slider/config.ts
+// Class names are written out in full. The class helpers no longer add the
+// `mtrl-` prefix for you (FLO-117), so a modifier built here carries it.
+import { PREFIX } from "../../core/config";
 import {
   createComponentConfig,
   createElementConfig,
@@ -55,18 +58,18 @@ export const getElementConfig = (config: SliderConfig) => {
   const classes = [
     "slider",
     config.class,
-    config.disabled ? "slider--disabled" : "",
+    config.disabled ? `${PREFIX}-slider--disabled` : "",
     config.size && config.size !== "XS"
-      ? `slider--${
+      ? `${PREFIX}-slider--${
           typeof config.size === "string"
             ? config.size.toLowerCase()
             : config.size
         }`
       : "",
-    config.color && config.color !== "primary" ? `slider--${config.color}` : "",
-    config.range ? "slider--range" : "",
-    config.centered ? "slider--centered" : "",
-    config.icon ? "slider--icon" : "",
+    config.color && config.color !== "primary" ? `${PREFIX}-slider--${config.color}` : "",
+    config.range ? `${PREFIX}-slider--range` : "",
+    config.centered ? `${PREFIX}-slider--centered` : "",
+    config.icon ? `${PREFIX}-slider--icon` : "",
   ]
     .filter(Boolean)
     .join(" ");

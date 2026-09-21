@@ -1,5 +1,6 @@
 // src/components/progress/api.ts - Canvas-based API
 
+import { PREFIX } from "../../core";
 import { ProgressComponent, ProgressThickness, ProgressShape } from "./types";
 import {
   PROGRESS_CLASSES,
@@ -120,10 +121,10 @@ export const withAPI =
     // animation in the canvas feature
     const handleIndeterminateState = (indeterminate: boolean): void => {
       if (indeterminate) {
-        addClass(element, PROGRESS_CLASSES.INDETERMINATE);
+        addClass(element, `${PREFIX}-${PROGRESS_CLASSES.INDETERMINATE}`);
         element.removeAttribute("aria-valuenow");
       } else {
-        removeClass(element, PROGRESS_CLASSES.INDETERMINATE);
+        removeClass(element, `${PREFIX}-${PROGRESS_CLASSES.INDETERMINATE}`);
         element.setAttribute(
           "aria-valuenow",
           options.value.getValue().toString(),

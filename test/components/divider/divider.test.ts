@@ -52,7 +52,9 @@ describe('divider creation', () => {
 
   test('applies a custom class and color', () => {
     const divider = createDivider({ class: 'extra', color: 'rgb(255, 0, 0)' });
-    expect(divider.element.classList.contains('mtrl-extra')).toBe(true);
+    expect(divider.element.classList.contains('extra')).toBe(true);
+    // FLO-117: the consumer's class is no longer rewritten.
+    expect(divider.element.classList.contains('mtrl-extra')).toBe(false);
     expect(divider.element.style.backgroundColor).toBe('rgb(255, 0, 0)');
   });
 

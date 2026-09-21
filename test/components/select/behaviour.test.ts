@@ -178,6 +178,65 @@ describe('select', () => {
 // the menu needs through. Only the passing-through half was covered -- that
 // ArrowDown opens the menu -- so the refusing half had no test, and it is the
 // half that keeps a select from behaving like a text field.
+// What the three events hand their handlers. `SelectEvents` has been typed
+// since before FLO-114, but nothing asserted that the payloads actually match
+// it -- and one of them does not.
+describe('what open, close and change hand a handler', () => {
+  test('change carries the value and text of the chosen option', async () => {
+    const select = await mount();
+    let payload: any;
+    select.on('change', (event: any) => { payload = event; });
+
+    select.open();
+    await wait(50);
+    [...document.querySelectorAll<HTMLElement>('[role="menuitem"], [role="option"]')]
+      .find((item) => item.textContent?.trim() === 'Medium')!.click();
+    await wait(30);
+
+    expect(payload.value).toBe('m');
+    expect(payload.text).toBe('Medium');
+  });
+
+  test('open and close carry the documented keys', async () => {
+    const select = await mount();
+    const seen: Record<string, any> = {};
+    select.on('open', (event: any) => { seen.open = event; });
+    select.on('close', (event: any) => { seen.close = event; });
+
+    select.open();
+    await wait(50);
+    select.close();
+    await wait(300);
+
+    for (const key of ['open', 'close']) {
+      expect(Object.keys(seen[key]).sort())
+        .toEqual(['defaultPrevented', 'originalEvent', 'preventDefault', 'select']);
+    }
+  });
+
+  // FLO-236, pinned rather than endorsed. `SelectEvent.select` is declared
+  // `SelectComponent`, and a consumer writing `event.select.getValue()` would
+  // reasonably expect that to work. What arrives is the component as the
+  // pipeline had it when the feature emitted, with none of the public API on
+  // it -- so the call is a TypeError. These assertions record today's
+  // behaviour so it cannot drift further unnoticed; when FLO-236 is settled
+  // they fail and should be updated to whatever is decided.
+  test('but .select is the pipeline component, not the select -- FLO-236', async () => {
+    const select = await mount();
+    let payload: any;
+    select.on('open', (event: any) => { payload = event; });
+
+    select.open();
+    await wait(50);
+
+    expect(payload.select).not.toBe(select);
+    expect(payload.select.getValue).toBeUndefined();
+    expect(payload.select.open).toBeUndefined();
+    // It does carry the element, which is why the gap has gone unnoticed.
+    expect(payload.select.element).toBe(select.element);
+  });
+});
+
 describe('typing into the select', () => {
   const press = (select: { element: HTMLElement }, key: string) => {
     const event = new dom.window.KeyboardEvent('keydown', {
