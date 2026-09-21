@@ -91,14 +91,14 @@ export const withAPI =
      * @param {boolean} animate - Whether to animate the scroll
      * @returns {Object} Component instance for chaining
      */
-    scrollToItem: (
+    scrollToItem(
       itemId: string | number,
       position?: "start" | "center" | "end",
       animate?: boolean
-    ) => {
+    ) {
       const shouldAnimate = animate !== undefined ? animate : config?.animate || false;
       list.scrollToItem(itemId, position, shouldAnimate);
-      return component;
+      return this;
     },
 
     /**
@@ -108,14 +108,14 @@ export const withAPI =
      * @param {boolean} animate - Whether to animate the scroll
      * @returns {Promise<Object>} Promise that resolves when scroll is complete
      */
-    scrollToIndex: async (
+    async scrollToIndex(
       index: number,
       position?: "start" | "center" | "end",
       animate?: boolean
-    ) => {
+    ) {
       const shouldAnimate = animate !== undefined ? animate : config?.animate || false;
       list.scrollToIndex(index, position, shouldAnimate);
-      return component;
+      return this;
     },
 
     /**

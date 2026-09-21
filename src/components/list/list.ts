@@ -6,6 +6,7 @@ import { withEvents, withLifecycle } from "../../core/compose/features";
 import { withRenderer, withSelection } from "./features";
 import { withAPI } from "./api";
 import { createBaseConfig, getElementConfig, getApiConfig } from "./config";
+import type { ListComponent, ListConfig, ListItem } from "./types";
 
 /**
  * Creates a new List component
@@ -14,10 +15,12 @@ import { createBaseConfig, getElementConfig, getApiConfig } from "./config";
  * with built-in selection capabilities. For virtual scrolling and complex
  * data management, use the VirtualList component from mtrl-addons.
  *
- * @param {Object} config - Configuration options for the list
- * @returns {Object} List component instance
+ * @param config - Configuration options for the list
+ * @returns List component instance
  */
-const createList = (config = {}) => {
+const createList = (
+  config: Partial<ListConfig<ListItem>> = {},
+): ListComponent<ListItem> => {
   try {
     // Process the configuration with defaults
     const baseConfig = createBaseConfig(config);
