@@ -427,8 +427,20 @@ export interface BaseComponent {
   textfield?: TextfieldComponent;
   menu?: MenuComponent;
   select?: SelectController;
-  on?: (event: string, handler: Function) => void;
-  off?: (event: string, handler: Function) => void;
+  // Narrowed to match the public signature above. `handler: Function` is a
+  // wider supertype of what the component actually accepts, and under
+  // strictFunctionTypes a host promising to call a handler with anything
+  // cannot take one that accepts a typed payload -- which is what made the
+  // pipe in select.ts fail to resolve, typing every stage after it `unknown`.
+  // FLO-114.
+  on?: <T extends keyof SelectEvents>(
+    event: T,
+    handler: SelectEvents[T]
+  ) => void;
+  off?: <T extends keyof SelectEvents>(
+    event: T,
+    handler: SelectEvents[T]
+  ) => void;
   emit?: (event: string, data?: unknown) => void;
   disabled?: {
     enable: () => void;
