@@ -320,18 +320,111 @@ describe('tabs keyboard', () => {
 // them. So unless the page happened to provide one, assistive technology was
 // handed a relationship pointing at nothing.
 
+// FLO-229. A tab's id was `tab-<value>`, so two tablists sharing a value
+// produced duplicate ids -- and `updateTabPanels` resolved panels with
+// `document.querySelectorAll('[role="tabpanel"]')`, matching by stripping
+// `tab-` off each panel's aria-labelledby. So the groups did not merely
+// collide on ids: each showed and hid the other's panels. That is a visible
+// defect, not only an accessibility one, and it is what these cover.
+describe('two tab groups on one page do not reach into each other', () => {
+  const panelFor = (groupId: string, value: string) => {
+    const el = document.createElement('div');
+    el.id = `tabpanel-${groupId}-${value}`;
+    el.setAttribute('role', 'tabpanel');
+    el.setAttribute('aria-labelledby', `tab-${groupId}-${value}`);
+    document.body.append(el);
+    return el;
+  };
+
+  test('their tabs have different ids even when the values match', () => {
+    const left = mount({ groupId: 'left' });
+    const right = mount({ groupId: 'right' });
+
+    expect(byValue(left, 'trips').element.id).toBe('tab-left-trips');
+    expect(byValue(right, 'trips').element.id).toBe('tab-right-trips');
+  });
+
+  test('an allocated group id is unique per tablist', () => {
+    const first = mount();
+    const second = mount();
+
+    const a = byValue(first, 'trips').element.id;
+    const b = byValue(second, 'trips').element.id;
+
+    expect(a).not.toBe(b);
+    expect(a.startsWith('tab-tabs-')).toBe(true);
+  });
+
+  test('each tab points at its own group\'s panel', () => {
+    panelFor('left', 'trips');
+    panelFor('right', 'trips');
+    const left = mount({ groupId: 'left' });
+    const right = mount({ groupId: 'right' });
+    byValue(left, 'trips').element.click();
+    byValue(right, 'trips').element.click();
+
+    expect(byValue(left, 'trips').element.getAttribute('aria-controls'))
+      .toBe('tabpanel-left-trips');
+    expect(byValue(right, 'trips').element.getAttribute('aria-controls'))
+      .toBe('tabpanel-right-trips');
+  });
+
+  // The defect proper: activating a tab in one group used to hide the other
+  // group's panel of the same value.
+  //
+  // Driven by clicking rather than setActiveTab, because panels are updated
+  // on the click path only -- the public setActiveTab deactivates, activates
+  // and emits `change` without ever calling updateTabPanels. That is a
+  // separate gap, pre-existing, and recorded on FLO-229; a test written
+  // through setActiveTab would pass here while asserting nothing.
+  test('clicking a tab in one group leaves the other group\'s panel alone', () => {
+    const leftTrips = panelFor('left', 'trips');
+    const rightTrips = panelFor('right', 'trips');
+    const left = mount({ groupId: 'left' });
+    const right = mount({ groupId: 'right' });
+
+    byValue(right, 'trips').element.click();
+    expect(rightTrips.hasAttribute('hidden')).toBe(false);
+
+    byValue(left, 'trips').element.click();
+    expect(leftTrips.hasAttribute('hidden')).toBe(false);
+
+    byValue(left, 'flights').element.click();
+
+    expect(leftTrips.hasAttribute('hidden')).toBe(true);
+    expect(rightTrips.hasAttribute('hidden')).toBe(false);
+  });
+
+  test('a panel belonging to no group on the page is not touched at all', () => {
+    const orphan = panelFor('nobody', 'trips');
+    const tabs = mount({ groupId: 'left' });
+
+    byValue(tabs, 'trips').element.click();
+
+    expect(orphan.hasAttribute('hidden')).toBe(false);
+    expect(orphan.hasAttribute('tabindex')).toBe(false);
+  });
+});
+
 describe('tabs panel linking', () => {
+  // FLO-229: ids carry the group, so `tab-g-trips` and `tabpanel-g-trips`.
+  // The group is pinned here rather than allocated, which is what a page does
+  // when it writes the panels itself.
+  const GROUP = 'g';
+  const mountGrouped = (config: Record<string, unknown> = {}) =>
+    mount({ groupId: GROUP, ...config });
+
   const panel = (value: string) => {
     const el = document.createElement('div');
-    el.id = `tabpanel-${value}`;
+    el.id = `tabpanel-${GROUP}-${value}`;
     el.setAttribute('role', 'tabpanel');
-    el.setAttribute('aria-labelledby', `tab-${value}`);
+    el.setAttribute('aria-labelledby', `tab-${GROUP}-${value}`);
     document.body.append(el);
     return el;
   };
 
   test('a tab with no panel carries no aria-controls', () => {
-    const tabs = mount();
+    const tabs = mountGrouped();
     for (const tab of tabs.getTabs()) {
       expect(tab.element.hasAttribute('aria-controls')).toBe(false);
     }
@@ -339,27 +432,27 @@ describe('tabs panel linking', () => {
 
   test('a tab whose panel exists points at it', () => {
     panel('trips');
-    const tabs = mount();
-    expect(byValue(tabs, 'trips').element.getAttribute('aria-controls')).toBe('tabpanel-trips');
+    const tabs = mountGrouped();
+    expect(byValue(tabs, 'trips').element.getAttribute('aria-controls')).toBe(`tabpanel-${GROUP}-trips`);
     // and the ones still without a panel stay unlinked
     expect(byValue(tabs, 'flights').element.hasAttribute('aria-controls')).toBe(false);
   });
 
   test('a panel added after the tabs is linked when the panels update', () => {
-    const tabs = mount();
+    const tabs = mountGrouped();
     expect(byValue(tabs, 'trips').element.hasAttribute('aria-controls')).toBe(false);
 
     panel('trips');
     // Re-activating runs the panel update, which is where linking happens.
     byValue(tabs, 'trips').element.click();
 
-    expect(byValue(tabs, 'trips').element.getAttribute('aria-controls')).toBe('tabpanel-trips');
+    expect(byValue(tabs, 'trips').element.getAttribute('aria-controls')).toBe(`tabpanel-${GROUP}-trips`);
   });
 
   test('a tab that loses its panel drops the reference rather than dangling', () => {
     const el = panel('trips');
-    const tabs = mount();
-    expect(byValue(tabs, 'trips').element.getAttribute('aria-controls')).toBe('tabpanel-trips');
+    const tabs = mountGrouped();
+    expect(byValue(tabs, 'trips').element.getAttribute('aria-controls')).toBe(`tabpanel-${GROUP}-trips`);
 
     el.remove();
     byValue(tabs, 'trips').element.click();
@@ -368,15 +461,15 @@ describe('tabs panel linking', () => {
   });
 
   test('setValue does not invent a panel reference', () => {
-    const tabs = mount();
+    const tabs = mountGrouped();
     const tab = byValue(tabs, 'flights');
     tab.setValue('renamed');
-    expect(tab.element.getAttribute('id')).toBe('tab-renamed');
+    expect(tab.element.getAttribute('id')).toBe(`tab-${GROUP}-renamed`);
     expect(tab.element.hasAttribute('aria-controls')).toBe(false);
 
     panel('renamed');
     tab.setValue('renamed');
-    expect(tab.element.getAttribute('aria-controls')).toBe('tabpanel-renamed');
+    expect(tab.element.getAttribute('aria-controls')).toBe(`tabpanel-${GROUP}-renamed`);
   });
 });
 

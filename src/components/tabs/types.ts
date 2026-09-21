@@ -69,6 +69,14 @@ export interface TabChangeEventData {
  * @category Components
  */
 export interface TabConfig {
+  /**
+   * Id of the tab group this tab belongs to. Set by the group when it builds
+   * its tabs; a tab created on its own gets an empty one, which still yields
+   * a stable id. It is what makes tab ids unique across tablists. FLO-229.
+   * @internal
+   */
+  groupId?: string;
+
   /** 
    * Tab state that determines if it's the active destination
    * @default 'inactive'
@@ -168,6 +176,14 @@ export interface TabConfig {
  * @category Components
  */
 export interface TabsConfig {
+  /**
+   * Id for this tab group, used to build each tab's element id as
+   * `tab-<groupId>-<value>` and to find panels as
+   * `tabpanel-<groupId>-<value>`. Allocated automatically when omitted; pin
+   * it when a page needs ids that survive a re-render. FLO-229.
+   */
+  groupId?: string;
+
   /**
    * Tabs variant (primary or secondary)
    * @default 'primary'
