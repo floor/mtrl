@@ -36,7 +36,16 @@ export interface LeadingIconConfig {
 /**
  * Component with leading icon capabilities
  */
-export interface LeadingIconComponent extends BaseComponent {
+/**
+ * What this feature installs.
+ *
+ * Declared apart from LeadingIconComponent because the enhancer returns
+ * `C & LeadingIconFeature`: C already carries the base half, and naming the whole
+ * interface made the return `C & Partial<LeadingIconComponent>`, which widened
+ * `leadingIcon` to include undefined and put the setters' `this` at odds with
+ * the property they assign.
+ */
+export interface LeadingIconFeature {
   /**
    * Leading icon element
    */
@@ -57,13 +66,18 @@ export interface LeadingIconComponent extends BaseComponent {
 }
 
 /**
+ * Component with leadingicon capabilities
+ */
+export interface LeadingIconComponent extends BaseComponent, LeadingIconFeature {}
+
+/**
  * Adds leading icon to a textfield component
  * @param config - Configuration with leading icon settings
  * @returns Function that enhances a component with leading icon
  */
 // `& object` lets a component config that shares no key with LeadingIconConfig through.
 export const withLeadingIcon = <T extends LeadingIconConfig & object>(config: T) =>
-  <C extends InputElementComponent>(component: C): C & Partial<LeadingIconComponent> => {
+  <C extends InputElementComponent>(component: C): C & LeadingIconFeature => {
     // The label offsets this feature used to write on a timer are gone:
     // `placement.ts` owns label positioning and accounts for an icon and a
     // prefix together, which the hardcoded 44px did not. `api.ts` already

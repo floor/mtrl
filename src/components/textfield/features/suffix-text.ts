@@ -34,7 +34,16 @@ export interface SuffixTextConfig {
 /**
  * Component with suffix text capabilities
  */
-export interface SuffixTextComponent extends BaseComponent {
+/**
+ * What this feature installs.
+ *
+ * Declared apart from SuffixTextComponent because the enhancer returns
+ * `C & SuffixTextFeature`: C already carries the base half, and naming the whole
+ * interface made the return `C & Partial<SuffixTextComponent>`, which widened
+ * `suffixTextElement` to include undefined and put the setters' `this` at odds with
+ * the property they assign.
+ */
+export interface SuffixTextFeature {
   /**
    * Suffix text element
    */
@@ -55,13 +64,18 @@ export interface SuffixTextComponent extends BaseComponent {
 }
 
 /**
+ * Component with suffixtext capabilities
+ */
+export interface SuffixTextComponent extends BaseComponent, SuffixTextFeature {}
+
+/**
  * Adds suffix text to a textfield component
  * @param config - Configuration with suffix text settings
  * @returns Function that enhances a component with suffix text
  */
 // `& object` lets a component config that shares no key with SuffixTextConfig through.
 export const withSuffixText = <T extends SuffixTextConfig & object>(config: T) =>
-  <C extends LifecycleElementComponent>(component: C): C & Partial<SuffixTextComponent> => {
+  <C extends LifecycleElementComponent>(component: C): C & SuffixTextFeature => {
     // The label offsets this feature used to write on a timer are gone:
     // `placement.ts` owns label positioning and accounts for an icon and a
     // prefix together, which the hardcoded 44px did not. `api.ts` already
