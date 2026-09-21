@@ -1,5 +1,5 @@
 // src/components/chips/features/chip-items.ts
-import { ChipsConfig, ChipComponent } from "../types";
+import { ChipsConfig, ChipComponent, ChipConfig } from "../types";
 
 /**
  * Adds chip item management to chips component
@@ -17,6 +17,18 @@ import { ChipsConfig, ChipComponent } from "../types";
  * stage reject its own input. withElement runs before this, so requiring it
  * costs nothing and says what the pipe already guarantees.
  */
+/**
+ * What `onCreated` reaches for through `this` when it runs.
+ *
+ * `chips` is installed by withController, which composes *after* this feature,
+ * so it is not on what this returns — but `onCreated` fires later still, by
+ * which time the finished component has it. The `?.` at the call site was
+ * already saying that; this says it to the checker.
+ */
+interface ChipItemsCaller {
+  chips?: { addChip?: (chipConfig: ChipConfig) => unknown };
+}
+
 interface ChipItemsHost {
   element: HTMLElement;
   onCreated?: () => void;
@@ -34,7 +46,7 @@ export const withChipItems =
     chipInstances,
 
     // When DOM is created, add initial chips
-    onCreated() {
+    onCreated(this: ChipItemsCaller) {
       if (typeof component.onCreated === "function") {
         component.onCreated();
       }

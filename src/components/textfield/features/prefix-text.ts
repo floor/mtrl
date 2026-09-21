@@ -34,7 +34,16 @@ export interface PrefixTextConfig {
 /**
  * Component with prefix text capabilities
  */
-export interface PrefixTextComponent extends BaseComponent {
+/**
+ * What this feature installs.
+ *
+ * Declared apart from PrefixTextComponent because the enhancer returns
+ * `C & PrefixTextFeature`: C already carries the base half, and naming the whole
+ * interface made the return `C & Partial<PrefixTextComponent>`, which widened
+ * `prefixTextElement` to include undefined and put the setters' `this` at odds with
+ * the property they assign.
+ */
+export interface PrefixTextFeature {
   /**
    * Prefix text element
    */
@@ -55,13 +64,18 @@ export interface PrefixTextComponent extends BaseComponent {
 }
 
 /**
+ * Component with prefixtext capabilities
+ */
+export interface PrefixTextComponent extends BaseComponent, PrefixTextFeature {}
+
+/**
  * Adds prefix text to a textfield component
  * @param config - Configuration with prefix text settings
  * @returns Function that enhances a component with prefix text
  */
 // `& object` lets a component config that shares no key with PrefixTextConfig through.
 export const withPrefixText = <T extends PrefixTextConfig & object>(config: T) =>
-  <C extends LifecycleElementComponent>(component: C): C & Partial<PrefixTextComponent> => {
+  <C extends LifecycleElementComponent>(component: C): C & PrefixTextFeature => {
     // The label offsets this feature used to write on a timer are gone:
     // `placement.ts` owns label positioning and accounts for an icon and a
     // prefix together, which the hardcoded 44px did not. `api.ts` already

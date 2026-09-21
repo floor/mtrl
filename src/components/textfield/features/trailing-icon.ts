@@ -36,7 +36,16 @@ export interface TrailingIconConfig {
 /**
  * Component with trailing icon capabilities
  */
-export interface TrailingIconComponent extends BaseComponent {
+/**
+ * What this feature installs.
+ *
+ * Declared apart from TrailingIconComponent because the enhancer returns
+ * `C & TrailingIconFeature`: C already carries the base half, and naming the whole
+ * interface made the return `C & Partial<TrailingIconComponent>`, which widened
+ * `trailingIcon` to include undefined and put the setters' `this` at odds with
+ * the property they assign.
+ */
+export interface TrailingIconFeature {
   /**
    * Trailing icon element
    */
@@ -57,13 +66,18 @@ export interface TrailingIconComponent extends BaseComponent {
 }
 
 /**
+ * Component with trailingicon capabilities
+ */
+export interface TrailingIconComponent extends BaseComponent, TrailingIconFeature {}
+
+/**
  * Adds trailing icon to a textfield component
  * @param config - Configuration with trailing icon settings
  * @returns Function that enhances a component with trailing icon
  */
 // `& object` lets a component config that shares no key with TrailingIconConfig through.
 export const withTrailingIcon = <T extends TrailingIconConfig & object>(config: T) =>
-  <C extends InputElementComponent>(component: C): C & Partial<TrailingIconComponent> => {
+  <C extends InputElementComponent>(component: C): C & TrailingIconFeature => {
     // The label offsets this feature used to write on a timer are gone:
     // `placement.ts` owns label positioning and accounts for an icon and a
     // prefix together, which the hardcoded 44px did not. `api.ts` already

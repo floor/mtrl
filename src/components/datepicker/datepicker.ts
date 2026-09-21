@@ -192,7 +192,10 @@ const createDatePicker = (
         component.emit("change", {
           value: this.selectedDate,
           rangeEndDate: this.rangeEndDate,
-          formattedValue: this.input.value,
+          // Guarded like every other reader of `this.input` in this file --
+          // line 61 returns early on it. This one did not, so a change emitted
+          // before the input exists would have thrown inside the emit.
+          formattedValue: this.input?.value ?? "",
         });
       },
 
@@ -228,17 +231,20 @@ const createDatePicker = (
 
       render(): void {
         // Show/hide calendar
-        if (this.calendarElement) {
+        // Captured: the guard narrows here, but property narrowing does not
+        // reach inside the timeout callback below.
+        const calendar = this.calendarElement;
+        if (calendar) {
           if (this.isOpen) {
-            this.calendarElement.style.display = "block";
+            calendar.style.display = "block";
             this.updateCalendar();
 
             // Focus on the calendar
             setTimeout(() => {
-              this.calendarElement.focus();
+              calendar.focus();
             }, 10);
           } else {
-            this.calendarElement.style.display = "none";
+            calendar.style.display = "none";
           }
         }
       },

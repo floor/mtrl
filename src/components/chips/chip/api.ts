@@ -180,7 +180,10 @@ export const withAPI =
         return textElement ? textElement.textContent || "" : "";
       },
 
-      setIcon(icon: string) {
+      // An explicit `this`, because a method of an object literal does not
+      // pick up the arrow's return annotation: without it `this` is `{}` and
+      // the alias cannot see the method it forwards to.
+      setIcon(this: ChipComponent, icon: string) {
         return this.setLeadingIcon(icon);
       },
 
@@ -282,7 +285,7 @@ export const withAPI =
         return this;
       },
 
-      toggleSelected() {
+      toggleSelected(this: ChipComponent) {
         return this.setSelected(!isSelected);
       },
 
