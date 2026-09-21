@@ -1,5 +1,6 @@
 // src/components/slider/api.ts
 import { SliderColor, SliderComponent, SliderEvent } from "./types";
+import type { EventCallback } from "../../core/state/emitter";
 import { SLIDER_EVENTS } from "./types";
 import { SliderSize } from "./constants";
 
@@ -48,8 +49,8 @@ export interface ApiOptions {
     getIcon: () => string;
   };
   events: {
-    on: (event: string, handler: Function) => void;
-    off: (event: string, handler: Function) => void;
+    on: (event: string, handler: EventCallback) => void;
+    off: (event: string, handler: EventCallback) => void;
   };
   lifecycle: {
     destroy: () => void;
