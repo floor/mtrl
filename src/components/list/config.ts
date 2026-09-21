@@ -1,5 +1,7 @@
 // src/components/list/config.ts
 
+import type { EventCallback } from "../../core/state/emitter";
+
 import {
   createComponentConfig,
   createElementConfig as coreCreateElementConfig,
@@ -110,8 +112,8 @@ export const getApiConfig = (
     ListSelection & {
       list: ListRenderer;
       lifecycle: { destroy: () => void };
-      on: (event: string, handler: Function) => unknown;
-      off: (event: string, handler: Function) => unknown;
+      on: (event: string, handler: EventCallback) => unknown;
+      off: (event: string, handler: EventCallback) => unknown;
     },
   config: ListConfig<ListItem>
 ) => ({
