@@ -34,11 +34,7 @@ export type {
   Updater,
 } from "./state/store";
 
-export { createLifecycle } from "./state/lifecycle";
-export type { LifecycleManager, LifecycleManagers } from "./state/lifecycle";
 
-export { createDisabled } from "./state/disabled";
-export type { DisabledState } from "./state/disabled";
 
 // Renamed to avoid conflict with DOM's createEventManager
 export { createEventManager as createStateEventManager } from './state/events';
@@ -53,8 +49,6 @@ export * from "./canvas";
 // Config and constants
 export {
   PREFIX,
-  COMPONENTS,
-  STATES,
   classNames,
   getComponentClass,
   getModifierClass,

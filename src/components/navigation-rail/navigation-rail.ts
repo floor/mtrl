@@ -1,3 +1,4 @@
+import { PREFIX } from "../../core/config";
 import { pipe } from '../../core/compose/pipe';
 import { createBase, withElement } from '../../core/compose/component';
 import { withLifecycle } from '../../core/compose/features/lifecycle';
@@ -72,7 +73,7 @@ export default function createNavigationRail(config: NavigationRailConfig = {}):
     if (header.childElementCount)
         root.append(header);
     root.append(destinations);
-    root.style.setProperty(`--${options.prefix}-navigation-rail-expanded-width`, `${options.expandedWidth}px`);
+    root.style.setProperty(`--${PREFIX}-navigation-rail-expanded-width`, `${options.expandedWidth}px`);
     const updateBadge = (item: NavigationRailItemConfig, element: HTMLElement): void => {
         let badge = element.querySelector<HTMLElement>(`.${cls('__badge')}`);
         const visible = item.badge !== undefined && item.badge !== false && item.badge !== '';

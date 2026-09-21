@@ -511,3 +511,15 @@ export interface ButtonComponent {
    */
   setLoadingSync?: (loading: boolean, text?: string) => ButtonComponent;
 }
+
+
+/**
+ * Registers ButtonConfig with the global defaults map, so
+ * `setComponentDefaults("button", ...)` is typed without core
+ * importing anything from this component. FLO-115.
+ */
+declare module "../../core/config/global" {
+  interface ComponentConfigMap {
+    button?: Partial<ButtonConfig>;
+  }
+}

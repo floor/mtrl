@@ -361,3 +361,15 @@ export interface SliderComponent {
   /** Destroys the slider component and cleans up resources */
   destroy: () => void;
 }
+
+
+/**
+ * Registers SliderConfig with the global defaults map, so
+ * `setComponentDefaults("slider", ...)` is typed without core
+ * importing anything from this component. FLO-115.
+ */
+declare module "../../core/config/global" {
+  interface ComponentConfigMap {
+    slider?: Partial<SliderConfig>;
+  }
+}

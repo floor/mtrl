@@ -70,3 +70,15 @@ export interface NavigationRailComponent {
         destroy: () => void;
     };
 }
+
+
+/**
+ * Registers NavigationRailConfig with the global defaults map, so
+ * `setComponentDefaults("navigation-rail", ...)` is typed without core
+ * importing anything from this component. FLO-115.
+ */
+declare module "../../core/config/global" {
+  interface ComponentConfigMap {
+    "navigation-rail"?: Partial<NavigationRailConfig>;
+  }
+}

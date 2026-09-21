@@ -33,7 +33,7 @@ for (const component of ['fab', 'extended-fab']) {
     test('default configuration and base CSS use primary-container', () => {
       const config = component === 'fab' ? fabConfig : extendedConfig;
       const constants = component === 'fab' ? FAB_VARIANTS : EXTENDED_FAB_VARIANTS;
-      expect(config().variant).toBe('primary-container');
+      expect(config({ ariaLabel: 'Compose' }).variant).toBe('primary-container');
       expect(Object.values(constants) as string[]).toEqual(variants);
       expect(value(root, 'background-color')).toBe(colour('primary-container'));
       expect(value(root, 'color')).toBe(colour('on-primary-container'));

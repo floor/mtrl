@@ -9,7 +9,12 @@ import type { EventCondition } from "../dom/create";
  */
 export interface BaseComponentConfig {
   componentName?: string;
-  prefix?: string;
+  // No `prefix`. It was accepted here and then overwritten with the PREFIX
+  // constant in the force-these-values block below, so a consumer could set
+  // it and nothing would change. The prefix is fixed at build time: the class
+  // helpers read it from a module constant, and honouring a per-instance
+  // prefix would mean threading it through the hottest path in the library.
+  // FLO-118. It reopens at 3.0.0 with the `mtrl` to `material` rename.
   class?: string | string[]; // Support both string and array
   className?: string | string[]; // Alternative to class
   /**

@@ -553,3 +553,15 @@ export interface ChipsComponent {
    */
   off: (event: string, handler: Function) => ChipsComponent;
 }
+
+
+/**
+ * Registers ChipConfig with the global defaults map, so
+ * `setComponentDefaults("chip", ...)` is typed without core
+ * importing anything from this component. FLO-115.
+ */
+declare module "../../core/config/global" {
+  interface ComponentConfigMap {
+    chip?: Partial<ChipConfig>;
+  }
+}

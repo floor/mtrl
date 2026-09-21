@@ -37,6 +37,25 @@ for (const component of ['fab', 'extended-fab'] as const) {
     expect(b.element.classList.contains(`${root}--${component === 'fab' ? 'default' : 'small'}`)).toBe(true);
     expect(b.element.getAttribute('aria-label')).toBe('Create');
   });
+  // FLO-110. config.ts used to read
+  // `config.ariaLabel || (config.icon ? "action" : undefined)`, so a FAB
+  // built without a label got the name "action" -- enough to pass axe and
+  // Lighthouse while telling a screen-reader user nothing. The fallback is
+  // gone, and the type now requires a label, so this asserts what happens to
+  // an untyped caller who ignores that.
+  test(`${component}: no manufactured name when the label is left out`, () => {
+    const b = attach(
+      component === 'fab'
+        ? createFab({ icon } as never)
+        : createExtendedFab({ icon, text: 'Create' } as never),
+    );
+
+    expect(b.element.getAttribute('aria-label')).not.toBe('action');
+    if (component === 'fab') {
+      expect(b.element.hasAttribute('aria-label')).toBe(false);
+    }
+  });
+
   for (const variant of variants) {
     test(`${component}: ${variant} colour class`, () => {
       const b = make({ variant });

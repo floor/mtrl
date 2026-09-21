@@ -79,7 +79,7 @@ export interface ButtonGroupEvent {
  * Extends ButtonConfig but omits properties controlled by the group
  * @category Components
  */
-export interface ButtonGroupItemConfig extends Omit<ButtonConfig, "variant"> {
+interface ButtonGroupItemBase extends Omit<ButtonConfig, "variant"> {
   /**
    * Unique identifier for the button
    * If not provided, index will be used
@@ -99,7 +99,9 @@ export interface ButtonGroupItemConfig extends Omit<ButtonConfig, "variant"> {
   icon?: string;
 
   /**
-   * Accessible label (required for icon-only buttons)
+   * Accessible label. See {@link ButtonGroupItemConfig}: optional on an item
+   * that has text, required on an icon-only one.
+   *
    * @example 'Toggle bold'
    */
   ariaLabel?: string;
@@ -129,6 +131,23 @@ export interface ButtonGroupItemConfig extends Omit<ButtonConfig, "variant"> {
  * Configuration interface for the Button Group component
  * @category Components
  */
+/**
+ * A button in a group.
+ *
+ * Whether an item renders as an icon button is decided at render time from
+ * this config -- an item with an icon and no text becomes one -- so whether
+ * its accessible label is optional depends on the same config. A text item
+ * takes its name from the text; an icon-only item has nothing else to take it
+ * from, and without a label announces as "button" (WCAG 4.1.2).
+ *
+ * Expressed as a union rather than a flat required field, because requiring
+ * it on text items too is over-broad -- it would make 67 call sites in this
+ * component's own tests pass a label that duplicates the text. FLO-110.
+ */
+export type ButtonGroupItemConfig =
+  | (ButtonGroupItemBase & { text: string })
+  | (ButtonGroupItemBase & { text?: undefined; ariaLabel: string });
+
 export interface ButtonGroupConfig {
   /**
    * Array of button configurations

@@ -181,3 +181,15 @@ export interface BaseComponent {
  */
 export type ApiComponent = BaseComponent &
   Required<Pick<BaseComponent, "checkable" | "disabled" | "lifecycle">>;
+
+
+/**
+ * Registers SwitchConfig with the global defaults map, so
+ * `setComponentDefaults("switch", ...)` is typed without core
+ * importing anything from this component. FLO-115.
+ */
+declare module "../../core/config/global" {
+  interface ComponentConfigMap {
+    switch?: Partial<SwitchConfig>;
+  }
+}

@@ -17,7 +17,7 @@ import { FabConfig, FabComponent } from "./types";
  * @category Components
  * @internal
  */
-export const defaultConfig: FabConfig = {
+export const defaultConfig: Partial<FabConfig> = {
   variant: "primary-container",
   size: "default",
   type: "button",
@@ -36,7 +36,7 @@ export const defaultConfig: FabConfig = {
  * @category Components
  * @internal
  */
-export const createBaseConfig = (config: FabConfig = {}): FabConfig =>
+export const createBaseConfig = (config: FabConfig): FabConfig =>
   createComponentConfig(defaultConfig, config, "fab") as FabConfig;
 
 /**
@@ -56,7 +56,10 @@ export const getElementConfig = (config: FabConfig) => {
   // Create the attributes object
   const attributes: Record<string, string | boolean | undefined> = {
     type: config.type || "button",
-    "aria-label": config.ariaLabel || (config.icon ? "action" : undefined),
+    // No fallback. This used to be `|| (config.icon ? "action" : undefined)`,
+    // which gave every unlabelled FAB the name "action" -- enough to pass axe
+    // and Lighthouse while telling a screen-reader user nothing. FLO-110.
+    "aria-label": config.ariaLabel,
   };
 
   if (config.value !== undefined) {
