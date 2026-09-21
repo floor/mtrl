@@ -3,6 +3,17 @@
 import { LIST_CLASSES, LIST_EVENTS } from "../constants";
 import { addClass, hasClass, removeClass } from "../../../core/dom";
 import { PREFIX } from "../../../core";
+
+/**
+ * The selected-item class, prefixed once.
+ *
+ * `LIST_CLASSES.SELECTED` is stored bare, and this file used to mix two ways
+ * of dealing with that: `addClass` was left to prefix it, while the
+ * querySelectors below prefixed it by hand. The class helpers no longer
+ * prefix anything (FLO-117), so there is one spelling now and both routes use
+ * it.
+ */
+const SELECTED_CLASS = `${PREFIX}-${LIST_CLASSES.SELECTED}`;
 import type {
   ListConfig,
   ListFeatureHost,
@@ -87,10 +98,10 @@ export const withSelection =
       const itemId = el.getAttribute("data-id");
       const isSelected = itemId !== null && selectedItems.has(itemId);
 
-      if (isSelected && !hasClass(el as HTMLElement, LIST_CLASSES.SELECTED)) {
-        addClass(el as HTMLElement, LIST_CLASSES.SELECTED);
-      } else if (!isSelected && hasClass(el as HTMLElement, LIST_CLASSES.SELECTED)) {
-        removeClass(el as HTMLElement, LIST_CLASSES.SELECTED);
+      if (isSelected && !hasClass(el as HTMLElement, SELECTED_CLASS)) {
+        addClass(el as HTMLElement, SELECTED_CLASS);
+      } else if (!isSelected && hasClass(el as HTMLElement, SELECTED_CLASS)) {
+        removeClass(el as HTMLElement, SELECTED_CLASS);
       }
     });
   };
@@ -147,24 +158,24 @@ export const withSelection =
     if (config.multiSelect) {
       if (selectedItems.has(itemId)) {
         selectedItems.delete(itemId);
-        removeClass(itemElement as HTMLElement, LIST_CLASSES.SELECTED);
+        removeClass(itemElement as HTMLElement, SELECTED_CLASS);
       } else {
         selectedItems.add(itemId);
-        addClass(itemElement as HTMLElement, LIST_CLASSES.SELECTED);
+        addClass(itemElement as HTMLElement, SELECTED_CLASS);
       }
     } else {
       // Single-select mode
-      const isCurrentlySelected = hasClass(itemElement as HTMLElement, LIST_CLASSES.SELECTED);
+      const isCurrentlySelected = hasClass(itemElement as HTMLElement, SELECTED_CLASS);
 
       // Clear all previous selections
-      const prevSelected = component.element.querySelectorAll(`.${PREFIX}-${LIST_CLASSES.SELECTED}`);
-      prevSelected.forEach((el) => removeClass(el as HTMLElement, LIST_CLASSES.SELECTED));
+      const prevSelected = component.element.querySelectorAll(`.${SELECTED_CLASS}`);
+      prevSelected.forEach((el) => removeClass(el as HTMLElement, SELECTED_CLASS));
       selectedItems.clear();
 
       // Add new selection if not already selected
       if (!isCurrentlySelected) {
         selectedItems.add(itemId);
-        addClass(itemElement as HTMLElement, LIST_CLASSES.SELECTED);
+        addClass(itemElement as HTMLElement, SELECTED_CLASS);
       }
     }
   };
@@ -184,10 +195,10 @@ export const withSelection =
     // Update DOM if element is visible
     const itemElement = component.element.querySelector(`[data-id="${stringId}"]`);
     if (itemElement) {
-      if (selected && !hasClass(itemElement as HTMLElement, LIST_CLASSES.SELECTED)) {
-        addClass(itemElement as HTMLElement, LIST_CLASSES.SELECTED);
-      } else if (!selected && hasClass(itemElement as HTMLElement, LIST_CLASSES.SELECTED)) {
-        removeClass(itemElement as HTMLElement, LIST_CLASSES.SELECTED);
+      if (selected && !hasClass(itemElement as HTMLElement, SELECTED_CLASS)) {
+        addClass(itemElement as HTMLElement, SELECTED_CLASS);
+      } else if (!selected && hasClass(itemElement as HTMLElement, SELECTED_CLASS)) {
+        removeClass(itemElement as HTMLElement, SELECTED_CLASS);
       }
     }
   };
@@ -234,8 +245,8 @@ export const withSelection =
       if (selectedItems.size > 0) {
         selectedItems.clear();
         component.element
-          .querySelectorAll(`.${PREFIX}-${LIST_CLASSES.SELECTED}`)
-          .forEach((el: Element) => removeClass(el as HTMLElement, LIST_CLASSES.SELECTED));
+          .querySelectorAll(`.${SELECTED_CLASS}`)
+          .forEach((el: Element) => removeClass(el as HTMLElement, SELECTED_CLASS));
       }
       return this;
     },

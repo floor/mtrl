@@ -60,7 +60,7 @@ describe('badge defaults', () => {
     expect(has(badge, 'primary')).toBe(true);
     expect(has(badge, 'error')).toBe(false);
     expect(has(badge, 'bottom-left')).toBe(true);
-    expect(badge.element.classList.contains('mtrl-extra')).toBe(true);
+    expect(badge.element.classList.contains('extra')).toBe(true);
   });
 });
 

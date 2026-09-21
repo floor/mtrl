@@ -1,4 +1,7 @@
 // src/components/fab/config.ts
+// Class names are written out in full. The class helpers no longer add the
+// `mtrl-` prefix for you (FLO-117), so a modifier built here carries it.
+import { PREFIX } from "../../core/config";
 import {
   createComponentConfig,
   createElementConfig,
@@ -69,21 +72,21 @@ export const getElementConfig = (config: FabConfig) => {
   const componentClasses: string[] = [];
 
   // Add size class
-  componentClasses.push(`fab--${config.size || "default"}`);
+  componentClasses.push(`${PREFIX}-fab--${config.size || "default"}`);
 
   // Add animation class if specified
   if (config.animate) {
-    componentClasses.push(`fab--animate-enter`);
+    componentClasses.push(`${PREFIX}-fab--animate-enter`);
   }
 
   // Add position class if specified
   if (config.position) {
-    componentClasses.push(`fab--${config.position}`);
+    componentClasses.push(`${PREFIX}-fab--${config.position}`);
   }
 
   // Add disabled class if specified
   if (config.disabled === true) {
-    componentClasses.push(`fab--disabled`);
+    componentClasses.push(`${PREFIX}-fab--disabled`);
   }
 
   return createElementConfig(config, {

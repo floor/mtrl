@@ -64,8 +64,8 @@ for (const component of ['fab', 'extended-fab'] as const) {
   });
   test(`${component}: className arrays combine with component classes`, () => {
     const b = make({ className: ['first', 'second'], size: 'large' });
-    expect(b.element.classList.contains('mtrl-first')).toBe(true);
-    expect(b.element.classList.contains('mtrl-second')).toBe(true);
+    expect(b.element.classList.contains('first')).toBe(true);
+    expect(b.element.classList.contains('second')).toBe(true);
     expect(b.element.classList.contains(`${root}--large`)).toBe(true);
   });
   test(`${component}: replaces the actual icon content`, () => {
@@ -142,7 +142,7 @@ for (const component of ['fab', 'extended-fab'] as const) {
   });
   test(`${component}: custom and animation classes`, () => {
     const b = make({ class: 'custom-action', animate: true });
-    expect(b.element.classList.contains('mtrl-custom-action'), b.element.className).toBe(true);
+    expect(b.element.classList.contains('custom-action'), b.element.className).toBe(true);
     expect(b.element.classList.contains(`${root}--animate-enter`)).toBe(true);
     b.addClass('highlight');
     expect(b.element.classList.contains('highlight')).toBe(true);

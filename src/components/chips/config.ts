@@ -1,4 +1,7 @@
 // src/components/chips/config.ts
+// Class names are written out in full. The class helpers no longer add the
+// `mtrl-` prefix for you (FLO-117), so a modifier built here carries it.
+import { PREFIX } from "../../core/config";
 import {
   createComponentConfig,
   createElementConfig,
@@ -51,10 +54,10 @@ export const getElementConfig = (config: ChipsConfig) => {
   const classes = [
     "chips",
     config.class,
-    scrollable ? "chips--scrollable" : "",
-    vertical ? "chips--vertical" : "",
-    hasLabel ? "chips--with-label" : "",
-    hasLabel && labelPosition === "end" ? "chips--label-end" : "",
+    scrollable ? `${PREFIX}-chips--scrollable` : "",
+    vertical ? `${PREFIX}-chips--vertical` : "",
+    hasLabel ? `${PREFIX}-chips--with-label` : "",
+    hasLabel && labelPosition === "end" ? `${PREFIX}-chips--label-end` : "",
   ]
     .filter(Boolean)
     .join(" ");

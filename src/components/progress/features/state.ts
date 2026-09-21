@@ -1,5 +1,6 @@
 // src/components/progress/features/state.ts - Canvas-compatible state management
 
+import { PREFIX } from "../../../core";
 import { ProgressConfig, ProgressShape } from "../types";
 import { PROGRESS_CLASSES, PROGRESS_SHAPES } from "../constants";
 import { addClass } from "../../../core/dom";
@@ -54,7 +55,7 @@ export const withState =
   ): C & { state: ProgressState } => {
     // Apply indeterminate class immediately if needed
     if (config.indeterminate && component.element) {
-      addClass(component.element, PROGRESS_CLASSES.INDETERMINATE);
+      addClass(component.element, `${PREFIX}-${PROGRESS_CLASSES.INDETERMINATE}`);
       component.element.removeAttribute("aria-valuenow");
     }
 

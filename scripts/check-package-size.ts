@@ -48,8 +48,13 @@ try {
     dom.window.HTMLCanvasElement.prototype.getContext = () => null;
     const b = button({ text: 'Save', variant: BUTTON_VARIANTS.FILLED });
     document.body.append(b.element);
+    // FLO-117: addClass takes the name as given. This asserts it from the
+    // packaged build, which is where a consumer meets it.
     addClass(b.element, 'smoke');
-    assert(b.element.classList.contains('mtrl-smoke'));
+    assert(b.element.classList.contains('smoke'));
+    assert(!b.element.classList.contains('mtrl-smoke'));
+    // The component's own classes still carry the prefix, via getClass.
+    assert(b.element.classList.contains('mtrl-button'));
     assert(b.element.textContent.includes('Save'));
     const navigation = rail({ items: [{ id: 'home', label: 'Home', icon: '<svg></svg>' }] });
     document.body.append(navigation.element); navigation.expand(); assert(navigation.isExpanded()); navigation.destroy();

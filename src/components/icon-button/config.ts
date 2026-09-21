@@ -1,5 +1,8 @@
 // src/components/icon-button/config.ts
 
+// Class names are written out in full. The class helpers no longer add the
+// `mtrl-` prefix for you (FLO-117), so a modifier built here carries it.
+import { PREFIX } from "../../core/config";
 import {
   createComponentConfig,
   createElementConfig,
@@ -106,33 +109,33 @@ export const getElementConfig = (config: IconButtonConfig) => {
 
   // Add size class (default is 's')
   if (config.size && config.size !== "s") {
-    componentClasses.push(`icon-button--${config.size}`);
+    componentClasses.push(`${PREFIX}-icon-button--${config.size}`);
   }
 
   // Add shape class, the default round included: the selected and pressed
   // shape rules are keyed on it
   if (config.shape) {
-    componentClasses.push(`icon-button--${config.shape}`);
+    componentClasses.push(`${PREFIX}-icon-button--${config.shape}`);
   }
 
   // Add width class (default is 'default')
   if (config.width && config.width !== "default") {
-    componentClasses.push(`icon-button--${config.width}`);
+    componentClasses.push(`${PREFIX}-icon-button--${config.width}`);
   }
 
   // Add toggle class if in toggle mode
   if (config.toggle) {
-    componentClasses.push("icon-button--toggle");
+    componentClasses.push(`${PREFIX}-icon-button--toggle`);
   }
 
   // Add selected class if initially selected
   if (config.toggle && config.selected) {
-    componentClasses.push("icon-button--selected");
+    componentClasses.push(`${PREFIX}-icon-button--selected`);
   }
 
   // Add disabled class if disabled
   if (config.disabled === true) {
-    componentClasses.push("icon-button--disabled");
+    componentClasses.push(`${PREFIX}-icon-button--disabled`);
   }
 
   // Merge user-provided class/className with component classes
