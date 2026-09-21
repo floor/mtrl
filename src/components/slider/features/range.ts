@@ -56,7 +56,7 @@ export const withRange =
       creator: createElement,
       options: {
         tag: 'div',
-        className: getClass('slider-handle'),
+        className: getClass('slider__handle'),
         attributes: {
           role: 'slider',
           'aria-valuemin': String(min),
@@ -80,7 +80,7 @@ export const withRange =
       creator: createElement,
       options: {
         tag: 'div',
-        className: getClass('slider-value'),
+        className: getClass('slider__value'),
         attributes: {
           'aria-hidden': 'true',
           'data-handle-index': '1'

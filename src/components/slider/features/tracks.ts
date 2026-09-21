@@ -78,19 +78,23 @@ export const withTracks =
   // textfield's withDensity (#109).
   <C extends TracksHost>(component: C) => {
   const container: HTMLElement = component.container;
-  const element = (name: string, parent: HTMLElement) => {
+  // The class is passed whole rather than assembled from a fragment. It was
+  // `getClass(\`slider-${name}\`)`, which meant none of these five classes
+  // appeared anywhere a reader -- or classes:check -- could find them, while
+  // every call site passed a literal anyway.
+  const element = (className: string, parent: HTMLElement) => {
     const node = document.createElement("div");
-    node.className = component.getClass(`slider-${name}`);
+    node.className = component.getClass(className);
     parent.append(node);
     return node;
   };
-  const visual = element("visual", container);
+  const visual = element("slider__visual", container);
   visual.setAttribute("aria-hidden", "true");
-  const track = element("track", visual);
-  const segments = Array.from({ length: 3 }, () => element("segment", track));
-  const ticks = [element("ticks", visual), element("ticks", visual)];
-  ticks[1].classList.add(component.getClass("slider-ticks--active"));
-  const dot = element("dot", visual);
+  const track = element("slider__track", visual);
+  const segments = Array.from({ length: 3 }, () => element("slider__segment", track));
+  const ticks = [element("slider__ticks", visual), element("slider__ticks", visual)];
+  ticks[1].classList.add(component.getClass("slider__ticks--active"));
+  const dot = element("slider__dot", visual);
   let destroyed = false;
   let size = config.size ?? "XS";
   let state: VisualState = {
@@ -142,7 +146,7 @@ export const withTracks =
       const [start, end, active] = parts[index] ?? [0, 0, false];
       segment.style.left = `${start}px`;
       segment.style.width = `${Math.max(0, end - start)}px`;
-      segment.classList.toggle(component.getClass("slider-segment--active"), active);
+      segment.classList.toggle(component.getClass("slider__segment--active"), active);
     });
     const discrete = !!config.ticks && state.step > 0 && state.max > state.min;
     ticks.forEach(tick => { tick.hidden = !discrete; });

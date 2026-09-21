@@ -105,11 +105,11 @@ export const createHandlers = (
     // Clear local focus indicators
     if (handle)
       handle.classList.remove(
-        `${state.component.getClass("slider-handle")}--focused`,
+        `${state.component.getClass("slider__handle")}--focused`,
       );
     if (secondHandle)
       secondHandle.classList.remove(
-        `${state.component.getClass("slider-handle")}--focused`,
+        `${state.component.getClass("slider__handle")}--focused`,
       );
 
     // Clear any focus indicator this slider still carries.
@@ -120,7 +120,7 @@ export const createHandlers = (
     // also redundant for this slider's own handles, which the two lines above
     // already clear.
     try {
-      const focusClass = state.component.getClass("slider-handle--focused");
+      const focusClass = state.component.getClass("slider__handle--focused");
       state.component.element
         .querySelectorAll(`.${focusClass}`)
         .forEach((el: Element) => {
@@ -133,7 +133,7 @@ export const createHandlers = (
       if (
         active &&
         state.component.element.contains(active) &&
-        active.classList.contains(state.component.getClass("slider-handle"))
+        active.classList.contains(state.component.getClass("slider__handle"))
       ) {
         active.blur();
       }
@@ -514,7 +514,7 @@ export const createHandlers = (
 
     // Add focus class and show bubble
     currentHandle.classList.add(
-      `${state.component.getClass("slider-handle")}--focused`,
+      `${state.component.getClass("slider__handle")}--focused`,
     );
     showActiveBubble(isSecondHandle ? secondValueBubble : valueBubble);
     state.activeBubble = isSecondHandle ? secondValueBubble : valueBubble;
@@ -529,7 +529,7 @@ export const createHandlers = (
     const handleElement = isSecondHandle ? secondHandle : handle;
     if (!handleElement) return;
     handleElement.classList.remove(
-      `${state.component.getClass("slider-handle")}--focused`,
+      `${state.component.getClass("slider__handle")}--focused`,
     );
 
     // Only hide bubble if not tabbing to another handle

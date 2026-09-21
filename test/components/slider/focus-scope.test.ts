@@ -35,7 +35,7 @@ g.ResizeObserver = class { observe() {} disconnect() {} unobserve() {} };
 
 import createSlider from "../../../src/components/slider";
 
-const HANDLE = "mtrl-slider-handle";
+const HANDLE = "mtrl-slider__handle";
 const FOCUSED = `${HANDLE}--focused`;
 
 /** A mounted slider whose listeners are attached. */

@@ -44,7 +44,7 @@ export const withDom =
     // Create the slider container inside the main element
     const container = createElement({
       tag: "div",
-      className: getClass("slider-container"),
+      className: getClass("slider__container"),
       container: component.element,
     });
 
@@ -77,7 +77,7 @@ export const withDom =
 
     const handle = createElement({
       tag: "div",
-      className: getClass("slider-handle"),
+      className: getClass("slider__handle"),
       attributes: handleAttributes,
       container: container,
     });
@@ -90,7 +90,7 @@ export const withDom =
     // Create the value bubble (kept as DOM for text rendering)
     const valueBubble = createElement({
       tag: "div",
-      className: getClass("slider-value"),
+      className: getClass("slider__value"),
       attributes: {
         "aria-hidden": "true",
         "data-handle-index": "0",
@@ -132,7 +132,7 @@ export const withDom =
 
       secondHandle = createElement({
         tag: "div",
-        className: getClass("slider-handle"),
+        className: getClass("slider__handle"),
         attributes: secondHandleAttributes,
         container: container,
       });
@@ -145,7 +145,7 @@ export const withDom =
       // Create the second value bubble
       secondValueBubble = createElement({
         tag: "div",
-        className: getClass("slider-value"),
+        className: getClass("slider__value"),
         attributes: {
           "aria-hidden": "true",
           "data-handle-index": "1",

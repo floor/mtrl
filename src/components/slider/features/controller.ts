@@ -246,7 +246,7 @@ export const withController =
   ): void => {
     if (!bubbleElement || !config.showValue) return;
 
-    const bubbleClass = state.component.getClass("slider-value");
+    const bubbleClass = state.component.getClass("slider__value");
     bubbleElement.classList[show ? "add" : "remove"](`${bubbleClass}--visible`);
   };
 
