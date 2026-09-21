@@ -75,7 +75,10 @@ export interface WithElementOptions {
   name?: string; // Form element name
   title?: string; // Tooltip text (native browser tooltip on hover)
   tabIndex?: number; // Keyboard navigation order (-1 to remove from tab order, 0+ for custom order)
-  style?: string | Partial<CSSStyleDeclaration>; // Inline styles (string or object)
+  // Inline styles. Object only: a style string is written verbatim to the
+  // style attribute, so one interpolated value can carry extra declarations
+  // (FLO-111). Assigning per property confines a value to that property.
+  style?: Partial<CSSStyleDeclaration>;
   // Data attributes
   data?: Record<string, string>; // Data attributes (e.g., { name: 'value' } → data-name="value")
   // ARIA attributes for accessibility

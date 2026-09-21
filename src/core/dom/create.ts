@@ -69,7 +69,12 @@ export interface CreateElementOptions {
   /** Keyboard navigation order (-1 to remove from tab order, 0+ for custom order) */
   tabIndex?: number;
   /** Inline styles (string or object) */
-  style?: string | Partial<CSSStyleDeclaration>;
+  /**
+   * Inline styles. Object only: a style string is written verbatim to the
+   * style attribute, so one interpolated value can carry extra declarations
+   * (FLO-111). Assigning per property confines a value to that property.
+   */
+  style?: Partial<CSSStyleDeclaration>;
   // Data attributes
   /** Dataset attributes (e.g., { name: 'value' } → data-name="value") */
   data?: Record<string, string>;
@@ -304,13 +309,14 @@ export const createElement = (
   if (options.title) element.title = options.title;
   if (options.tabIndex !== undefined) element.tabIndex = options.tabIndex;
 
-  // Inline styles (string or object)
+  // Inline styles, by property. A string form existed here and was written
+  // straight through with setAttribute("style", ...), which let a single
+  // interpolated value carry any number of further declarations -- enough to
+  // build a full-viewport overlay out of what a caller thought was a colour.
+  // The CSSOM property setter parses one value and drops it if it does not
+  // fit, so this route cannot be widened the same way. FLO-111.
   if (options.style) {
-    if (typeof options.style === "string") {
-      element.setAttribute("style", options.style);
-    } else {
-      Object.assign(element.style, options.style);
-    }
+    Object.assign(element.style, options.style);
   }
 
   // ARIA attributes

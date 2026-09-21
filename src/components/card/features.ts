@@ -1,5 +1,17 @@
 // src/components/card/features.ts
 import { PREFIX } from "../../core/config";
+
+/**
+ * Off-screen but still in the accessibility tree, for the two buttons that
+ * give swipe actions a keyboard route. Declared once, as an object: the style
+ * option takes properties, not a string (FLO-111).
+ */
+const HIDDEN_ACTION_STYLE = {
+  position: "absolute",
+  left: "-9999px",
+  top: "-9999px",
+  visibility: "hidden",
+} as const;
 import { createElement } from "../../core/dom/create";
 import type { ElementComponent } from "../../core/compose/component";
 import {
@@ -368,11 +380,9 @@ export const withSwipeable =
       className: `${PREFIX}-card-swipe-left-action`,
       text: "Swipe Left Action",
       container: component.element,
-      attributes: {
-        "aria-label": "Perform swipe left action",
-        style:
-          "position: absolute; left: -9999px; top: -9999px; visibility: hidden;", // Visually hidden but accessible
-      },
+      attributes: { "aria-label": "Perform swipe left action" },
+      // Visually hidden but accessible
+      style: HIDDEN_ACTION_STYLE,
     }) as HTMLButtonElement;
 
     const rightActionButton = createElement({
@@ -380,11 +390,9 @@ export const withSwipeable =
       className: `${PREFIX}-card-swipe-right-action`,
       text: "Swipe Right Action",
       container: component.element,
-      attributes: {
-        "aria-label": "Perform swipe right action",
-        style:
-          "position: absolute; left: -9999px; top: -9999px; visibility: hidden;", // Visually hidden but accessible
-      },
+      attributes: { "aria-label": "Perform swipe right action" },
+      // Visually hidden but accessible
+      style: HIDDEN_ACTION_STYLE,
     }) as HTMLButtonElement;
 
     // Add keyboard handlers to the hidden buttons
