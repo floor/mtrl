@@ -86,6 +86,9 @@ test('a plain button has no pressed state and clicking does not select it', () =
 test('toggle clicks flip aria-pressed, the selected class and DOM toggle events', () => {
   const button = make({ toggle: true });
   const states: boolean[] = [];
+  let emitterToggles = 0;
+  // Observe the emitter through the untyped runtime boundary: toggle is DOM-only.
+  Reflect.apply(Reflect.get(button, 'on'), button, ['toggle', () => emitterToggles++]);
   button.element.addEventListener('toggle', event => states.push((event as CustomEvent).detail.selected));
   expect(button.isToggle()).toBe(true);
   expect(button.element.classList.contains(`${root}--toggle`)).toBe(true);
@@ -95,6 +98,46 @@ test('toggle clicks flip aria-pressed, the selected class and DOM toggle events'
   button.element.click();
   assertSelected(button, false);
   expect(states).toEqual([true, false]);
+  expect(emitterToggles).toBe(0);
+});
+
+test('mapped events carry the original native event and button root, and off removes them', () => {
+  const button = make();
+  const seen: Array<{ event: Event; originalEvent: Event; element: HTMLElement }> = [];
+  const record = (payload: { event: Event; originalEvent: Event; element: HTMLElement }) => {
+    seen.push(payload);
+  };
+  const events = [
+    new dom.window.MouseEvent('click'),
+    new dom.window.FocusEvent('focus'),
+    new dom.window.FocusEvent('blur'),
+  ];
+  expect(button.on('click', record)).toBe(button);
+  expect(button.on('focus', record)).toBe(button);
+  expect(button.on('blur', record)).toBe(button);
+  events.forEach(event => button.element.dispatchEvent(event));
+  expect(seen).toHaveLength(3);
+  seen.forEach((payload, index) => {
+    expect(payload.event).toBe(events[index]);
+    expect(payload.originalEvent).toBe(events[index]);
+    expect(payload.element).toBe(button.element);
+  });
+  expect(button.off('click', record)).toBe(button);
+  expect(button.off('focus', record)).toBe(button);
+  expect(button.off('blur', record)).toBe(button);
+  events.forEach(event => button.element.dispatchEvent(event));
+  expect(seen).toHaveLength(3);
+});
+
+test('disabled clicks are not forwarded, and enable restores forwarding', () => {
+  const button = make({ disabled: true });
+  let clicks = 0;
+  button.on('click', () => clicks++);
+  button.element.dispatchEvent(new dom.window.MouseEvent('click'));
+  expect(clicks).toBe(0);
+  button.enable();
+  button.element.click();
+  expect(clicks).toBe(1);
 });
 
 test('selectedIcon swaps into the real DOM and deselection restores the original', () => {

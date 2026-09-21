@@ -1,5 +1,6 @@
 // src/components/icon-button/types.ts
 
+import type { ForwardedEventPayload } from "../../core/dom";
 import { BaseComponentConfig } from '../../core/config/component';
 import {
   IconButtonVariant,
@@ -231,6 +232,19 @@ export interface ToggleManager {
 }
 
 /**
+ * Native events forwarded through the icon button's emitter.
+ * Toggle notifications are DOM-only events: listen on `element` for those.
+ */
+export interface IconButtonEvents {
+  /** Clicks are not forwarded while the button is disabled. */
+  click: (payload: ForwardedEventPayload<MouseEvent, HTMLButtonElement>) => void;
+  /** The button took focus. */
+  focus: (payload: ForwardedEventPayload<FocusEvent, HTMLButtonElement>) => void;
+  /** The button lost focus. */
+  blur: (payload: ForwardedEventPayload<FocusEvent, HTMLButtonElement>) => void;
+}
+
+/**
  * IconButton component interface
  * @category Components
  */
@@ -411,11 +425,14 @@ export interface IconButtonComponent {
 
   /**
    * Adds an event listener to the IconButton
-   * @param event - Event name ('click', 'focus', etc.)
-   * @param handler - Event handler function
+   * @param event - Forwarded event name: 'click', 'focus', or 'blur'
+   * @param handler - Receives the native event and button root in a payload
    * @returns The IconButton component for chaining
    */
-  on: (event: string, handler: Function) => IconButtonComponent;
+  on: <K extends keyof IconButtonEvents>(
+    event: K,
+    handler: IconButtonEvents[K],
+  ) => IconButtonComponent;
 
   /**
    * Removes an event listener from the IconButton
@@ -423,7 +440,10 @@ export interface IconButtonComponent {
    * @param handler - Event handler function
    * @returns The IconButton component for chaining
    */
-  off: (event: string, handler: Function) => IconButtonComponent;
+  off: <K extends keyof IconButtonEvents>(
+    event: K,
+    handler: IconButtonEvents[K],
+  ) => IconButtonComponent;
 
   /**
    * Adds CSS classes to the IconButton element

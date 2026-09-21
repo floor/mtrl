@@ -1,6 +1,7 @@
 // src/components/icon-button/api.ts
 
-import { IconButtonComponent } from "./types";
+import type { IconButtonComponent, IconButtonEvents } from "./types";
+import type { EventCallback } from "../../core/state/emitter";
 import {
   IconButtonVariant,
   IconButtonSize,
@@ -76,9 +77,9 @@ interface ComponentWithElements {
   /** Component name */
   componentName?: string;
 
-  /** Event listener methods */
-  on?: (event: string, handler: Function) => unknown;
-  off?: (event: string, handler: Function) => unknown;
+  /** The factory always composes withEvents before exposing this API. */
+  on: (event: string, handler: EventCallback) => unknown;
+  off: (event: string, handler: EventCallback) => unknown;
 
   /** Class manipulation */
   addClass?: (...classes: string[]) => unknown;
@@ -298,24 +299,13 @@ export const withAPI =
         lifecycle.destroy();
       },
 
-      on(event: string, handler: Function) {
-        if (component.on) {
-          component.on(event, handler);
-        } else {
-          component.element.addEventListener(event, handler as EventListener);
-        }
+      on<K extends keyof IconButtonEvents>(event: K, handler: IconButtonEvents[K]) {
+        component.on(event, handler as EventCallback);
         return iconButtonComponent;
       },
 
-      off(event: string, handler: Function) {
-        if (component.off) {
-          component.off(event, handler);
-        } else {
-          component.element.removeEventListener(
-            event,
-            handler as EventListener,
-          );
-        }
+      off<K extends keyof IconButtonEvents>(event: K, handler: IconButtonEvents[K]) {
+        component.off(event, handler as EventCallback);
         return iconButtonComponent;
       },
 
