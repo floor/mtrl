@@ -12,15 +12,22 @@ interface ComponentBase {
   emit?: (event: string, data?: unknown) => unknown;
   destroy?: () => void;
   tabs?: TabComponent[];
-  handleTabClick?: (event: unknown, tab: TabComponent) => void;
+  handleTabClick?: (event: Event | null, tab: TabComponent) => void;
   variant?: string;
 }
 
 /**
- * Checks whether a click payload can be cancelled like a DOM event
+ * Narrows a click payload to a real DOM event.
+ *
+ * Keyboard activation in `utils.ts` calls `handleTabClick(null, tab)` on
+ * purpose -- it routes an arrow key through the same path as a click, and
+ * there is no event to cancel. That null is what this guard is for, so the
+ * signature says so rather than taking `unknown`. The `preventDefault` check
+ * stays because the payload arrives through the emitter, which is not yet
+ * typed per event (FLO-114).
  */
-const isCancelable = (event: unknown): event is Pick<Event, "preventDefault"> =>
-  !!event && typeof (event as Partial<Event>).preventDefault === "function";
+const isCancelable = (event: Event | null): event is Event =>
+  !!event && typeof event.preventDefault === "function";
 
 /**
  * Configuration for tabs management feature
@@ -45,7 +52,7 @@ export interface TabsManagementComponent {
   tabsContainer: HTMLElement;
 
   /** Tab click handler */
-  handleTabClick: (event: Event, tab: TabComponent) => void;
+  handleTabClick: (event: Event | null, tab: TabComponent) => void;
 
   /** Get all tabs */
   getTabs?: () => TabComponent[];
@@ -105,7 +112,7 @@ export const withTabsManagement =
     /**
      * Handles tab click events
      */
-    const handleTabClick = (event: unknown, tab: TabComponent) => {
+    const handleTabClick = (event: Event | null, tab: TabComponent) => {
       // Check if event is a DOM event with preventDefault
       if (isCancelable(event)) {
         event.preventDefault();
@@ -148,7 +155,7 @@ export const withTabsManagement =
       // selection emitted change twice. The DOM listener is only for tabs
       // without on().
       if (tab.on && typeof tab.on === "function") {
-        tab.on("click", (event: unknown) => handleTabClick(event, tab));
+        tab.on("click", (event: Event) => handleTabClick(event, tab));
       } else {
         tab.element.addEventListener("click", (event) =>
           handleTabClick(event, tab)
@@ -307,7 +314,7 @@ export const withIndicator =
       // Required, not optional: this feature wraps the handler, and
       // withTabsManagement installs it earlier in the pipe. Reading it off an
       // optional member meant a click could call undefined.
-      handleTabClick: (event: unknown, tab: TabComponent) => void;
+      handleTabClick: (event: Event | null, tab: TabComponent) => void;
     },
   >(
     component: C

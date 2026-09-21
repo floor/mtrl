@@ -10,7 +10,7 @@ interface TabsHost {
   getTabs?: () => TabComponent[];
   getActiveTab?: () => TabComponent | null;
   setActiveTab?: (tabOrValue: TabComponent | string) => unknown;
-  handleTabClick?: (event: unknown, tab: TabComponent) => void;
+  handleTabClick?: (event: Event | null, tab: TabComponent) => void;
 }
 
 /**

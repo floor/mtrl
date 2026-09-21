@@ -222,6 +222,46 @@ describe('tabs keyboard', () => {
     expect(seen).toEqual(['trips', 'hotels', 'flights', 'hotels']);
   });
 
+  // Keyboard activation goes through handleTabClick, the same path a click
+  // takes -- but there is no DOM event to cancel, so utils.ts passes null.
+  // That is why the handler is typed `(event: Event | null, tab)` rather than
+  // `Event`, and why `isCancelable` guards before calling preventDefault.
+  // Without the guard this path throws on null and the tab never activates.
+  test('an arrow key activates through the click path, with no event to cancel', () => {
+    const tabs = mount({ tabs: FOUR() });
+    const seen: string[] = [];
+    tabs.on('change', (event: { value: string }) => seen.push(event.value));
+    const flights = byValue(tabs, 'flights').element;
+    flights.focus();
+
+    expect(() => key(flights, 'ArrowRight')).not.toThrow();
+
+    expect(tabs.getActiveTab()?.getValue()).toBe('trips');
+    expect(seen).toEqual(['trips']);
+  });
+
+  // The same handler, reached directly with no event. A consumer holding the
+  // component can call it, and the null case is part of what it accepts.
+  test('handleTabClick activates a tab when called with no event', () => {
+    const tabs = mount({ tabs: FOUR() });
+    const hotels = byValue(tabs, 'hotels');
+
+    expect(() => tabs.handleTabClick(null, hotels)).not.toThrow();
+
+    expect(tabs.getActiveTab()?.getValue()).toBe('hotels');
+  });
+
+  // And a real event still gets cancelled, which is the other half of the
+  // union -- a guard that simply skipped preventDefault would pass the two
+  // tests above and lose this.
+  test('a real keyboard event is still cancelled', () => {
+    const tabs = mount({ tabs: FOUR() });
+    const flights = byValue(tabs, 'flights').element;
+    flights.focus();
+
+    expect(key(flights, 'ArrowRight').defaultPrevented).toBe(true);
+  });
+
   test('Home and End reach the first and last enabled tab', () => {
     const tabs = mount({ tabs: FOUR() });
     const trips = byValue(tabs, 'trips').element;
