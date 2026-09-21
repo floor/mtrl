@@ -1,33 +1,12 @@
 // src/components/menu/features/keyboard.ts
 
 import { createMenuTasks } from "./tasks";
-import { MenuItem, MenuContent, MenuFeatureHost } from "../types";
-
-/**
- * Menu state the keyboard handlers read
- */
-interface KeyboardMenuState {
-  items: MenuContent[];
-}
-
-/**
- * Menu actions the keyboard handlers call
- */
-interface KeyboardActions {
-  closeMenu: (event: Event, restoreFocus?: boolean) => void;
-  closeSubmenu: (level: number) => void;
-  findItemById: (id: string) => MenuItem | null;
-  handleSubmenuClick: (
-    item: MenuItem,
-    index: number,
-    itemElement: HTMLElement,
-  ) => void;
-  handleNestedSubmenuClick: (
-    item: MenuItem,
-    index: number,
-    itemElement: HTMLElement,
-  ) => void;
-}
+import {
+  KeyboardActions,
+  KeyboardMenuState,
+  MenuFeatureHost,
+  MenuItem,
+} from "../types";
 
 /**
  * Keyboard navigation handler for menus
@@ -338,7 +317,7 @@ export const createKeyboardNavigation = (component: MenuFeatureHost) => {
             const parentItem = parentItemId ? actions.findItemById(parentItemId) : null;
             if (parentItem && parentItem.submenu) {
               const itemData = parentItem.submenu[itemIndex] as MenuItem;
-              actions.handleNestedSubmenuClick(
+              actions.handleNestedSubmenuClick?.(
                 itemData,
                 itemIndex,
                 itemElement,
@@ -362,7 +341,7 @@ export const createKeyboardNavigation = (component: MenuFeatureHost) => {
             const itemData = state.items[itemIndex] as MenuItem;
 
             // Open submenu
-            actions.handleSubmenuClick(itemData, itemIndex, itemElement);
+            actions.handleSubmenuClick?.(itemData, itemIndex, itemElement);
           }
         }
         break;
@@ -379,7 +358,7 @@ export const createKeyboardNavigation = (component: MenuFeatureHost) => {
               menuElement.getAttribute("data-level") || "1",
               10,
             );
-            actions.closeSubmenu(currentLevel);
+            actions.closeSubmenu?.(currentLevel);
             if (parentItem) parentItem.focus();
           }
         }
@@ -397,7 +376,7 @@ export const createKeyboardNavigation = (component: MenuFeatureHost) => {
               menuElement.getAttribute("data-level") || "1",
               10,
             );
-            actions.closeSubmenu(currentLevel);
+            actions.closeSubmenu?.(currentLevel);
             if (parentItem) parentItem.focus();
           }
         } else {

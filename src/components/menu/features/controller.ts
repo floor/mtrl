@@ -215,9 +215,11 @@ const withController =
           }
         });
 
-        itemElement.addEventListener("mouseleave", (e) => {
+        // handleSubmenuLeave takes no parameters -- the event was being
+        // passed and silently discarded.
+        itemElement.addEventListener("mouseleave", () => {
           if (component.submenu) {
-            component.submenu.handleSubmenuLeave(e);
+            component.submenu.handleSubmenuLeave();
           }
         });
       }
@@ -653,16 +655,10 @@ const withController =
         if (component.keyboard && component.keyboard.handleMenuKeydown) {
           component.keyboard.handleMenuKeydown(e, state, {
             closeMenu,
-            closeSubmenu: component.submenu
-              ? component.submenu.closeSubmenu
-              : null,
+            closeSubmenu: component.submenu?.closeSubmenu,
             findItemById,
-            handleSubmenuClick: component.submenu
-              ? component.submenu.handleSubmenuClick
-              : null,
-            handleNestedSubmenuClick: component.submenu
-              ? component.submenu.handleNestedSubmenuClick
-              : null,
+            handleSubmenuClick: component.submenu?.handleSubmenuClick,
+            handleNestedSubmenuClick: component.submenu?.handleNestedSubmenuClick,
           });
         } else if (e.key === "Escape") {
           e.preventDefault();
@@ -673,16 +669,10 @@ const withController =
         if (component.keyboard && component.keyboard.handleMenuKeydown) {
           component.keyboard.handleMenuKeydown(e, state, {
             closeMenu,
-            closeSubmenu: component.submenu
-              ? component.submenu.closeSubmenu
-              : null,
+            closeSubmenu: component.submenu?.closeSubmenu,
             findItemById,
-            handleSubmenuClick: component.submenu
-              ? component.submenu.handleSubmenuClick
-              : null,
-            handleNestedSubmenuClick: component.submenu
-              ? component.submenu.handleNestedSubmenuClick
-              : null,
+            handleSubmenuClick: component.submenu?.handleSubmenuClick,
+            handleNestedSubmenuClick: component.submenu?.handleNestedSubmenuClick,
           });
         }
       }
@@ -735,14 +725,10 @@ const withController =
     if (!listbox && component.keyboard && component.keyboard.setupKeyboardHandlers) {
       component.keyboard.setupKeyboardHandlers(component.element, state, {
         closeMenu,
-        closeSubmenu: component.submenu ? component.submenu.closeSubmenu : null,
+        closeSubmenu: component.submenu?.closeSubmenu,
         findItemById,
-        handleSubmenuClick: component.submenu
-          ? component.submenu.handleSubmenuClick
-          : null,
-        handleNestedSubmenuClick: component.submenu
-          ? component.submenu.handleNestedSubmenuClick
-          : null,
+        handleSubmenuClick: component.submenu?.handleSubmenuClick,
+        handleNestedSubmenuClick: component.submenu?.handleNestedSubmenuClick,
       });
     }
 

@@ -527,6 +527,37 @@ export interface MenuEvents {
  * @category Components
  * @internal
  */
+/**
+ * Menu state the keyboard handlers read.
+ *
+ * Declared here rather than in features/keyboard.ts so the host below can
+ * name it: a host that types its manager methods needs their parameter types
+ * in scope. FLO-114.
+ */
+export interface KeyboardMenuState {
+  items: MenuContent[];
+}
+
+/** Menu actions the keyboard handlers call. */
+export interface KeyboardActions {
+  closeMenu: (event: Event, restoreFocus?: boolean) => void;
+  findItemById: (id: string) => MenuItem | null;
+  // Optional, and called through `?.`: the controller supplies these from
+  // `component.submenu`, which the host declares optional because features
+  // earlier in the pipe run before withSubmenu installs it.
+  closeSubmenu?: (level: number) => void;
+  handleSubmenuClick?: (
+    item: MenuItem,
+    index: number,
+    itemElement: HTMLElement
+  ) => void;
+  handleNestedSubmenuClick?: (
+    item: MenuItem,
+    index: number,
+    itemElement: HTMLElement
+  ) => void;
+}
+
 export interface MenuControllerApi {
   open: (event?: Event, interactionType?: "mouse" | "keyboard") => void;
   close: (
@@ -602,23 +633,56 @@ export interface MenuFeatureHost {
   off: (event: string, handler: (...args: never[]) => void) => unknown;
   menu?: MenuControllerApi;
   opener?: MenuOpenerApi;
+  // These twelve were `(...args: unknown[]) => unknown`. That is wider than
+  // any of the producers, and under strictFunctionTypes a host promising to
+  // call a method with anything cannot accept one that takes typed
+  // parameters -- which is what made the pipe in menu.ts fail to resolve and
+  // typed every stage after it `unknown`. The signatures below are taken
+  // from the implementations in features/, not invented. FLO-114.
   position?: {
-    positionMenu: (...args: unknown[]) => unknown;
-    positionSubmenu: (...args: unknown[]) => unknown;
+    positionMenu: (openerElement: HTMLElement) => void;
+    positionSubmenu: (
+      submenuElement: HTMLElement,
+      parentItemElement: HTMLElement,
+      level?: number
+    ) => void;
   };
   keyboard?: {
-    setupKeyboardHandlers: (...args: unknown[]) => unknown;
-    removeKeyboardHandlers: (...args: unknown[]) => unknown;
-    handleMenuKeydown: (...args: unknown[]) => unknown;
-    handleInitialFocus: (...args: unknown[]) => unknown;
+    setupKeyboardHandlers: (
+      menuElement: HTMLElement,
+      state: KeyboardMenuState,
+      actions: KeyboardActions
+    ) => void;
+    removeKeyboardHandlers: (element: HTMLElement) => void;
+    handleMenuKeydown: (
+      e: KeyboardEvent,
+      state: KeyboardMenuState,
+      actions: KeyboardActions
+    ) => void;
+    handleInitialFocus: (
+      menuElement: HTMLElement,
+      interactionType: "keyboard" | "mouse"
+    ) => void;
   };
   submenu?: {
-    handleSubmenuClick: (...args: unknown[]) => unknown;
-    handleSubmenuHover: (...args: unknown[]) => unknown;
-    handleSubmenuLeave: (...args: unknown[]) => unknown;
-    handleNestedSubmenuClick: (...args: unknown[]) => unknown;
-    closeSubmenu: (...args: unknown[]) => unknown;
-    closeAllSubmenus: (...args: unknown[]) => unknown;
+    handleSubmenuClick: (
+      item: MenuItem,
+      index: number,
+      itemElement: HTMLElement
+    ) => void;
+    handleSubmenuHover: (
+      item: MenuItem,
+      index: number,
+      itemElement: HTMLElement
+    ) => void;
+    handleSubmenuLeave: () => void;
+    handleNestedSubmenuClick: (
+      item: MenuItem,
+      index: number,
+      itemElement: HTMLElement
+    ) => void;
+    closeSubmenu: (level: number) => void;
+    closeAllSubmenus: () => void;
     hasOpenSubmenu: () => boolean;
     getActiveSubmenus: () => Array<{ element: HTMLElement }>;
   };
