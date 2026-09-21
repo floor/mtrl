@@ -128,6 +128,65 @@ describe('checkbox', () => {
     expect(changes.mock.calls[0][0].checked).toBe(true);
   });
 
+  test('input changes carry the original change event, including keyboard activation', () => {
+    const checkbox = mount({ value: 'accepted' });
+    const payloads: Array<{ checked: boolean; value: string; nativeEvent?: Event }> = [];
+    const nativeEvents: Event[] = [];
+    checkbox.on('change', payload => payloads.push(payload));
+    checkbox.input.addEventListener('change', event => nativeEvents.push(event));
+    checkbox.input.click();
+    const keydown = new dom.window.KeyboardEvent('keydown', { key: 'Enter', bubbles: true });
+    checkbox.input.dispatchEvent(keydown);
+    expect(payloads).toHaveLength(2);
+    expect(payloads.map(payload => payload.checked)).toEqual([true, false]);
+    payloads.forEach((payload, index) => {
+      expect(payload.value).toBe('accepted');
+      expect(payload.nativeEvent).toBe(nativeEvents[index]);
+      expect(payload.nativeEvent?.type).toBe('change');
+      expect(payload.nativeEvent?.target).toBe(checkbox.input);
+    });
+    expect(payloads[1].nativeEvent).not.toBe(keydown);
+    checkbox.destroy();
+  });
+
+  test('programmatic changes carry checked and HTML value without a native event', () => {
+    const checkbox = mount({ value: 'accepted' });
+    const payloads: Array<{ checked: boolean; value: string; nativeEvent?: Event }> = [];
+    checkbox.on('change', payload => payloads.push(payload));
+    checkbox.check();
+    checkbox.check();
+    checkbox.uncheck();
+    checkbox.toggle();
+    checkbox.setValue(false);
+    expect(payloads).toEqual([
+      { checked: true, value: 'accepted' },
+      { checked: false, value: 'accepted' },
+      { checked: true, value: 'accepted' },
+      { checked: false, value: 'accepted' },
+    ]);
+    checkbox.destroy();
+  });
+
+  test('subscriptions chain, unsubscribe, suppress disabled clicks and stop after destroy', () => {
+    const checkbox = mount({ disabled: true });
+    let changes = 0;
+    const handler = () => changes++;
+    expect(checkbox.on('change', handler)).toBe(checkbox);
+    checkbox.input.click();
+    expect(changes).toBe(0);
+    checkbox.enable();
+    checkbox.input.click();
+    expect(changes).toBe(1);
+    expect(checkbox.off('change', handler)).toBe(checkbox);
+    checkbox.toggle();
+    expect(changes).toBe(1);
+    checkbox.on('change', handler);
+    checkbox.destroy();
+    checkbox.on('change', handler);
+    checkbox.toggle();
+    expect(changes).toBe(1);
+  });
+
   test('setValue accepts booleans and the strings "true" and "1"; the value attribute is separate', () => {
     const checkbox = mount({ value: 'yes' });
     checkbox.setValue('1'); expect(checkbox.getValue()).toBe(true);

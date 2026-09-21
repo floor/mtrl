@@ -17,6 +17,8 @@ export { default } from './checkbox';
 export type { 
   CheckboxConfig, 
   CheckboxComponent, 
+  CheckboxEvents,
+  CheckboxChangePayload,
   CheckboxVariant, 
   CheckboxLabelPosition
 } from './types';

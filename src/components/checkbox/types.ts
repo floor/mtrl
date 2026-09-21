@@ -1,4 +1,5 @@
 // src/components/checkbox/types.ts
+import type { EventCallback } from "../../core/state/emitter";
 
 /**
  * Checkbox variant types - controls the visual style of the checkbox
@@ -105,6 +106,21 @@ export interface CheckboxConfig {
   componentName?: string;
 }
 
+/** A checked-state change from the native input or a programmatic setter. */
+export interface CheckboxChangePayload {
+  /** The new checked state. */
+  checked: boolean;
+  /** The input's HTML value attribute, not the boolean checked state. */
+  value: string;
+  /** Present for input-driven changes; absent for check/uncheck/toggle/setValue. */
+  nativeEvent?: Event;
+}
+
+/** Events emitted by the checkbox API. DOM clicks/focus are not forwarded. */
+export interface CheckboxEvents {
+  change: (payload: CheckboxChangePayload) => void;
+}
+
 /**
  * Checkbox component interface
  *
@@ -202,13 +218,13 @@ export interface CheckboxComponent {
 
   /**
    * Adds an event listener to the checkbox
-   * @param event - Event name ('change', 'click', etc.)
-   * @param handler - Event handler function
+   * @param event - 'change'; listen on input for native click/focus events
+   * @param handler - Receives checked state, HTML value, and an optional native event
    * @returns Checkbox component for method chaining
    * @example
-   * checkbox.on('change', (e) => console.log('Checkbox state:', e.target.checked));
+   * checkbox.on('change', (e) => console.log('Checkbox state:', e.checked));
    */
-  on: (event: string, handler: Function) => CheckboxComponent;
+  on: <K extends keyof CheckboxEvents>(event: K, handler: CheckboxEvents[K]) => CheckboxComponent;
 
   /**
    * Removes an event listener from the checkbox
@@ -216,7 +232,7 @@ export interface CheckboxComponent {
    * @param handler - Event handler function
    * @returns Checkbox component for method chaining
    */
-  off: (event: string, handler: Function) => CheckboxComponent;
+  off: <K extends keyof CheckboxEvents>(event: K, handler: CheckboxEvents[K]) => CheckboxComponent;
 
   /**
    * Enables the checkbox, making it interactive
@@ -273,8 +289,8 @@ export interface BaseComponent {
     setText: (content: string) => void;
     getText: () => string;
   };
-  on?: (event: string, handler: Function) => this;
-  off?: (event: string, handler: Function) => this;
+  on?: (event: string, handler: EventCallback) => this;
+  off?: (event: string, handler: EventCallback) => this;
   disabled?: {
     enable: () => void;
     disable: () => void;

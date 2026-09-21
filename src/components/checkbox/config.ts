@@ -40,7 +40,7 @@ export const getElementConfig = (config: CheckboxConfig) =>
  */
 export const withCheckIcon =
   (config: CheckboxConfig) =>
-  (component: BaseComponent): BaseComponent => {
+  <C extends BaseComponent>(component: C): C => {
     const icon = document.createElement("span");
     icon.className = `${config.prefix}-checkbox__icon`;
     setHTML(icon, `
@@ -59,7 +59,7 @@ export const withCheckIcon =
  */
 export const withLabelPosition =
   (config: CheckboxConfig) =>
-  (component: BaseComponent): BaseComponent => {
+  <C extends BaseComponent>(component: C): C => {
     const position = config.labelPosition || "end";
     const positionClass = `${config.prefix}-checkbox--label-${position}`;
 

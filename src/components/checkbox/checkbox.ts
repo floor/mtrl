@@ -45,7 +45,7 @@ import {
  * @category Components
  * @internal
  */
-const enhanceWithCheckable = (component: BaseComponent & InputComponent, config: CheckboxConfig) => {
+const enhanceWithCheckable = <C extends BaseComponent & InputComponent>(component: C, config: CheckboxConfig) => {
   const enhanced = withCheckable(config)(component);
 
   // The class is derived from the input, never set on its own. The input is the
@@ -138,7 +138,7 @@ const enhanceWithCheckable = (component: BaseComponent & InputComponent, config:
  * 
  * // Add event listener
  * checkbox.on('change', (e) => {
- *   console.log('Checkbox changed:', e.target.checked);
+ *   console.log('Checkbox changed:', e.checked);
  * });
  * 
  * @example
@@ -171,7 +171,7 @@ const createCheckbox = (config: CheckboxConfig = {}): CheckboxComponent => {
       withCheckIcon(baseConfig),                             // Checkbox icon
       withTextLabel(baseConfig as TextLabelConfig),          // Text label
       withLabelPosition(baseConfig),                         // Label positioning
-      component => enhanceWithCheckable(component as BaseComponent & InputComponent, baseConfig), // Checkable state
+      component => enhanceWithCheckable(component, baseConfig), // Checkable state
       withDisabled(baseConfig),                              // Disabled state
       withLifecycle(),                                       // Lifecycle management
       comp => withAPI(getApiConfig(comp))(comp)              // Public API
