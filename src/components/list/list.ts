@@ -39,7 +39,7 @@ const createList = (
     return component;
   } catch (error) {
     console.error("List creation error:", error);
-    throw new Error(`Failed to create list: ${error.message}`);
+    throw new Error(`Failed to create list: ${(error as Error).message}`);
   }
 };
 

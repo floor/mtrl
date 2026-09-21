@@ -129,7 +129,10 @@ export const debounce = <T extends (...args: never[]) => unknown>(
     lastArgs = lastThis = null;
     lastInvokeTime = time;
     
-    result = fn.apply(thisArg, args);
+    // `fn` is `T`, so this genuinely returns `ReturnType<T>`; TypeScript
+    // cannot prove it through the generic once strictBindCallApply types
+    // `apply` precisely, and widens to unknown.
+    result = fn.apply(thisArg, args) as ReturnType<T>;
     return result;
   };
   
@@ -226,7 +229,10 @@ export const once = <T extends (...args: never[]) => unknown>(
   return function(this: unknown, ...args: Parameters<T>): ReturnType<T> {
     if (!called) {
       called = true;
-      result = fn.apply(this, args);
+      // `fn` is `T`, so this genuinely returns `ReturnType<T>`; TypeScript
+      // cannot prove it through the generic once strictBindCallApply types
+      // `apply` precisely, and widens to unknown.
+      result = fn.apply(this, args) as ReturnType<T>;
     }
     
     return result;

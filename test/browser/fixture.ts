@@ -22,7 +22,10 @@ const cases: Record<string, () => unknown> = {
     }
     const loading = createButton({ text: "Upload", progress: { indeterminate: false, value: 40 } });
     add(loading);
-    return loading.showProgress();
+    // Optional on ButtonComponent: present because this button was made with
+    // a progress config. Guarded rather than asserted -- the fixture should not
+    // out-claim the type.
+    return loading.showProgress?.();
   },
   textfield() {
     add(createTextfield({ label: "Name", value: "Ada", variant: "outlined" }));
