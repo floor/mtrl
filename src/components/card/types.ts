@@ -222,8 +222,15 @@ export interface CardMediaConfig {
 export interface BaseComponent {
   /** The DOM element */
   element: HTMLElement;
+  // The name is required, as it is on the component this host is handed:
+  // core declares `getClass: (name: string) => string` and implements it as
+  // `${prefix}-${name}`, so a call with no name returns "mtrl-undefined".
+  // Card was the only place declaring the optional form, and under
+  // strictFunctionTypes a host promising to accept a call with no argument
+  // cannot take a function that requires one -- which is what stopped the
+  // pipe in card.ts:103 resolving. FLO-114.
   /** Get class name with prefix */
-  getClass: (name?: string) => string;
+  getClass: (name: string) => string;
   /** Get modifier class */
   getModifierClass: (base: string, modifier: string) => string;
   /** Get element class */
