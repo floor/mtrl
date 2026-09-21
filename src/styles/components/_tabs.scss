@@ -27,7 +27,7 @@ $container: "#{base.$prefix}-tabs";
         }
 
         // Primary indicator specific styling
-        .#{$container}-indicator {
+        .#{$container}__indicator {
             // Height comes from the indicator's own option, defaulting to
             // ActiveIndicatorHeight = 3dp; ActiveIndicatorShape is a 3px corner.
             border-radius: 3px;
@@ -38,7 +38,7 @@ $container: "#{base.$prefix}-tabs";
     &--secondary {
         min-height: 48px;
         // Tab indicator styling for secondary variant
-        .#{$container}-indicator {
+        .#{$container}__indicator {
             // TabRowDefaults.SecondaryIndicator takes the primary token for both the
             // height and the colour (TabRow.kt:1080-1081).
             border-radius: 0;
@@ -75,7 +75,7 @@ $container: "#{base.$prefix}-tabs";
     &--scrollable {
         overflow: hidden;
 
-        .#{$container}-scroll {
+        .#{$container}__scroll {
             display: flex;
             // ScrollableTabRowEdgeStartPadding, applied at both edges: TabRow.kt:239
             // documents it as the padding between the starting and ending edge and the
@@ -92,7 +92,7 @@ $container: "#{base.$prefix}-tabs";
     }
 
     // Container divider (5. Divider)
-    &-divider {
+    &__divider {
         position: absolute;
         bottom: 0;
         left: 0;
@@ -104,7 +104,7 @@ $container: "#{base.$prefix}-tabs";
     }
 
     // Tab indicator styling - base styles
-    &-indicator {
+    &__indicator {
         position: absolute;
         bottom: 1px;
         transition:
@@ -360,7 +360,7 @@ $container: "#{base.$prefix}-tabs";
 
 // Scroll indicators
 .#{$container} {
-    &-scroll-indicator {
+    &__scroll-indicator {
         position: absolute;
         top: 0;
         bottom: 0;
@@ -393,19 +393,19 @@ $container: "#{base.$prefix}-tabs";
         }
 
         &--shadow {
-            &.#{$container}-scroll-indicator--left {
+            &.#{$container}__scroll-indicator--left {
                 box-shadow: 2px 0 4px -2px rgba(0, 0, 0, 0.2);
                 background: none;
             }
 
-            &.#{$container}-scroll-indicator--right {
+            &.#{$container}__scroll-indicator--right {
                 box-shadow: -2px 0 4px -2px rgba(0, 0, 0, 0.2);
                 background: none;
             }
         }
     }
 
-    &-scroll-button {
+    &__scroll-button {
         position: absolute;
         top: 50%;
         transform: translateY(-50%);

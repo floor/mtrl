@@ -92,7 +92,7 @@ export const withPrefixText = <T extends PrefixTextConfig & object>(config: T) =
     const ensureSlot = (): HTMLElement => {
       if (slot && slot.parentNode) return slot;
       const element = document.createElement('span');
-      element.className = `${PREFIX}-${NAME}-prefix`;
+      element.className = `${PREFIX}-${NAME}__prefix`;
       component.element.appendChild(element);
       component.element.classList.add(`${PREFIX}-${NAME}--with-prefix`);
       slot = element;

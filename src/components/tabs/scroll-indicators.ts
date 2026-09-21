@@ -32,17 +32,17 @@ export const addScrollIndicators = (
   if (!enabled) return;
   
   // Find scroll container
-  const scrollContainer = tabs.element.querySelector(`.${tabs.getClass('tabs')}-scroll`);
+  const scrollContainer = tabs.element.querySelector(`.${tabs.getClass('tabs')}__scroll`);
   if (!scrollContainer) return;
   
   // Add indicator elements
   const leftIndicator = document.createElement('div');
-  leftIndicator.className = `${tabs.getClass('tabs')}-scroll-indicator ${tabs.getClass('tabs')}-scroll-indicator--left`;
-  leftIndicator.classList.add(`${tabs.getClass('tabs')}-scroll-indicator--${appearance}`);
+  leftIndicator.className = `${tabs.getClass('tabs')}__scroll-indicator ${tabs.getClass('tabs')}__scroll-indicator--left`;
+  leftIndicator.classList.add(`${tabs.getClass('tabs')}__scroll-indicator--${appearance}`);
   
   const rightIndicator = document.createElement('div');
-  rightIndicator.className = `${tabs.getClass('tabs')}-scroll-indicator ${tabs.getClass('tabs')}-scroll-indicator--right`;
-  rightIndicator.classList.add(`${tabs.getClass('tabs')}-scroll-indicator--${appearance}`);
+  rightIndicator.className = `${tabs.getClass('tabs')}__scroll-indicator ${tabs.getClass('tabs')}__scroll-indicator--right`;
+  rightIndicator.classList.add(`${tabs.getClass('tabs')}__scroll-indicator--${appearance}`);
   
   tabs.element.appendChild(leftIndicator);
   tabs.element.appendChild(rightIndicator);
@@ -50,12 +50,12 @@ export const addScrollIndicators = (
   // Add buttons if requested
   if (showButtons) {
     const leftButton = document.createElement('button');
-    leftButton.className = `${tabs.getClass('tabs')}-scroll-button ${tabs.getClass('tabs')}-scroll-button--left`;
+    leftButton.className = `${tabs.getClass('tabs')}__scroll-button ${tabs.getClass('tabs')}__scroll-button--left`;
     leftButton.setAttribute('aria-label', 'Scroll tabs left');
     setHTML(leftButton, '<svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>');
     
     const rightButton = document.createElement('button');
-    rightButton.className = `${tabs.getClass('tabs')}-scroll-button ${tabs.getClass('tabs')}-scroll-button--right`;
+    rightButton.className = `${tabs.getClass('tabs')}__scroll-button ${tabs.getClass('tabs')}__scroll-button--right`;
     rightButton.setAttribute('aria-label', 'Scroll tabs right');
     setHTML(rightButton, '<svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>');
     
@@ -92,8 +92,8 @@ export const addScrollIndicators = (
     
     // Update button states if present
     if (showButtons) {
-      const leftButton = tabs.element.querySelector(`.${tabs.getClass('tabs')}-scroll-button--left`) as HTMLButtonElement;
-      const rightButton = tabs.element.querySelector(`.${tabs.getClass('tabs')}-scroll-button--right`) as HTMLButtonElement;
+      const leftButton = tabs.element.querySelector(`.${tabs.getClass('tabs')}__scroll-button--left`) as HTMLButtonElement;
+      const rightButton = tabs.element.querySelector(`.${tabs.getClass('tabs')}__scroll-button--right`) as HTMLButtonElement;
       
       if (leftButton) {
         leftButton.disabled = scrollLeft <= 0;
@@ -133,8 +133,8 @@ export const addScrollIndicators = (
     }
     
     if (showButtons) {
-      const leftButton = tabs.element.querySelector(`.${tabs.getClass('tabs')}-scroll-button--left`);
-      const rightButton = tabs.element.querySelector(`.${tabs.getClass('tabs')}-scroll-button--right`);
+      const leftButton = tabs.element.querySelector(`.${tabs.getClass('tabs')}__scroll-button--left`);
+      const rightButton = tabs.element.querySelector(`.${tabs.getClass('tabs')}__scroll-button--right`);
       
       if (leftButton && leftButton.parentNode) {
         leftButton.parentNode.removeChild(leftButton);

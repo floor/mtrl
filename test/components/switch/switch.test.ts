@@ -47,7 +47,7 @@ describe('switch', () => {
     expect(s.element.classList.contains('mtrl-switch')).toBe(true);
     expect(s.input.type).toBe('checkbox');
     expect(s.input.getAttribute('role')).toBe('switch');
-    expect(s.element.querySelector('.mtrl-switch-track .mtrl-switch-thumb')).not.toBeNull();
+    expect(s.element.querySelector('.mtrl-switch__track .mtrl-switch__thumb')).not.toBeNull();
   });
 
   test('form attributes reach the input', () => {
@@ -189,9 +189,9 @@ describe('switch', () => {
     expect(s.supportingTextElement).toBeNull();
 
     s.setSupportingText('Required', true);
-    const helper = s.element.querySelector('.mtrl-switch-helper');
+    const helper = s.element.querySelector('.mtrl-switch__helper');
     expect(helper?.textContent).toBe('Required');
-    expect(helper?.classList.contains('mtrl-switch-helper--error')).toBe(true);
+    expect(helper?.classList.contains('mtrl-switch__helper--error')).toBe(true);
     expect(s.element.classList.contains('mtrl-switch--error')).toBe(true);
     expect(s.supportingTextElement).toBe(helper as HTMLElement);
 
@@ -199,7 +199,7 @@ describe('switch', () => {
     expect(s.element.classList.contains('mtrl-switch--error')).toBe(false);
 
     s.removeSupportingText();
-    expect(s.element.querySelector('.mtrl-switch-helper')).toBeNull();
+    expect(s.element.querySelector('.mtrl-switch__helper')).toBeNull();
     expect(s.supportingTextElement).toBeNull();
   });
 

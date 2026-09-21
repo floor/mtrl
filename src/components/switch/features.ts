@@ -77,11 +77,11 @@ const ensureSwitchStructure = (
 
   // Create or find container
   const existingContainer = component.element.querySelector<HTMLElement>(
-    `.${PREFIX}-${COMPONENT}-container`
+    `.${PREFIX}-${COMPONENT}__container`
   );
   if (!existingContainer) {
     const container = document.createElement("div");
-    container.className = `${PREFIX}-${COMPONENT}-container`;
+    container.className = `${PREFIX}-${COMPONENT}__container`;
 
     // Find input and track to move them to container
     const input = component.element.querySelector(
@@ -165,11 +165,11 @@ export const withSupportingText =
     let supportingElement: HTMLElement | null = null;
     if (config.supportingText) {
       supportingElement = document.createElement("div");
-      supportingElement.className = `${PREFIX}-${COMPONENT}-helper`;
+      supportingElement.className = `${PREFIX}-${COMPONENT}__helper`;
       supportingElement.textContent = config.supportingText;
 
       if (config.error) {
-        supportingElement.classList.add(`${PREFIX}-${COMPONENT}-helper--error`);
+        supportingElement.classList.add(`${PREFIX}-${COMPONENT}__helper--error`);
         component.element.classList.add(`${PREFIX}-${COMPONENT}--error`);
       }
 
@@ -207,7 +207,7 @@ export const withSupportingText =
         if (!supportingElement) {
           // Create if it doesn't exist
           supportingElement = document.createElement("div");
-          supportingElement.className = `${PREFIX}-${COMPONENT}-helper`;
+          supportingElement.className = `${PREFIX}-${COMPONENT}__helper`;
           contentWrapper.appendChild(supportingElement);
           this.supportingTextElement = supportingElement;
         }
@@ -216,7 +216,7 @@ export const withSupportingText =
 
         // Handle error state
         supportingElement.classList.toggle(
-          `${PREFIX}-${COMPONENT}-helper--error`,
+          `${PREFIX}-${COMPONENT}__helper--error`,
           isError
         );
         component.element.classList.toggle(

@@ -115,11 +115,11 @@ export const TABS_CLASSES = {
   /** Root element with scrollable tabs */
   SCROLLABLE: 'tabs--scrollable',
   /** Scroll container element */
-  SCROLL: 'tabs-scroll',
+  SCROLL: 'tabs__scroll',
   /** Divider element */
-  DIVIDER: 'tabs-divider',
+  DIVIDER: 'tabs__divider',
   /** Indicator element */
-  INDICATOR: 'tabs-indicator'
+  INDICATOR: 'tabs__indicator'
 } as const;
 
 /**

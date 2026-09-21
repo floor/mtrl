@@ -97,8 +97,8 @@ try {
         tops: tabs.map((t) => Math.round(t.getBoundingClientRect().top)),
         lefts: tabs.map((t) => Math.round(t.getBoundingClientRect().left)),
         widths: tabs.map((t) => Math.round(t.getBoundingClientRect().width)),
-        dividerPosition: at(".mtrl-tabs-divider"),
-        indicatorPosition: at(".mtrl-tabs-indicator"),
+        dividerPosition: at(".mtrl-tabs__divider"),
+        indicatorPosition: at(".mtrl-tabs__indicator"),
       };
     });
   };

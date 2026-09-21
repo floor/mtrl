@@ -28,14 +28,14 @@ $component: "#{base.$prefix}-select";
     @include m.motion-transition(border-color, background-color, box-shadow);
 
     // Ensure the textfield input works with our select
-    .#{base.$prefix}-textfield-input {
+    .#{base.$prefix}-textfield__input {
         cursor: pointer;
         pointer-events: none; // Let clicks pass through to the container
         caret-color: transparent; // Hide text cursor since it's not editable
     }
 
     // Trailing icon (dropdown arrow)
-    .#{base.$prefix}-textfield-trailing-icon {
+    .#{base.$prefix}-textfield__trailing-icon {
         pointer-events: auto; // Allow clicks on the icon
         cursor: pointer;
         transform: translateY(-50%); // Keep vertical centering
@@ -74,7 +74,7 @@ $component: "#{base.$prefix}-select";
             }
 
             // Fix for filled variant positioning
-            .#{base.$prefix}-textfield-trailing-icon {
+            .#{base.$prefix}-textfield__trailing-icon {
                 top: 28px; // Match the filled textfield's icon positioning
             }
         }
@@ -91,7 +91,7 @@ $component: "#{base.$prefix}-select";
         }
 
         // Apply rotation to SVG instead of the container for better positioning
-        .#{base.$prefix}-textfield-trailing-icon {
+        .#{base.$prefix}-textfield__trailing-icon {
             color: t.color("primary");
 
             svg {
@@ -106,15 +106,15 @@ $component: "#{base.$prefix}-select";
         opacity: 0.38;
         cursor: default;
 
-        .#{base.$prefix}-textfield-input,
-        .#{base.$prefix}-textfield-trailing-icon {
+        .#{base.$prefix}-textfield__input,
+        .#{base.$prefix}-textfield__trailing-icon {
             cursor: default;
         }
     }
 
     // Error state
     &--error {
-        .#{base.$prefix}-textfield-trailing-icon {
+        .#{base.$prefix}-textfield__trailing-icon {
             color: t.color("error");
         }
     }
@@ -164,7 +164,7 @@ $component: "#{base.$prefix}-select";
             height: v.textfield("height-small");
         }
 
-        .#{base.$prefix}-textfield-input {
+        .#{base.$prefix}-textfield__input {
             height: v.textfield("height-small");
             padding-top: 8px;
             padding-bottom: 8px;
@@ -176,7 +176,7 @@ $component: "#{base.$prefix}-select";
             height: v.textfield("height-large");
         }
 
-        .#{base.$prefix}-textfield-input {
+        .#{base.$prefix}-textfield__input {
             height: v.textfield("height-large");
             padding-top: 16px;
             padding-bottom: 16px;
@@ -200,13 +200,13 @@ $component: "#{base.$prefix}-select";
 
     // Focus styles
     &:focus-within {
-        .#{base.$prefix}-textfield-trailing-icon {
+        .#{base.$prefix}-textfield__trailing-icon {
             color: t.color("primary");
         }
     }
 
     // Helper text positioning
-    .#{base.$prefix}-textfield-helper {
+    .#{base.$prefix}-textfield__helper {
         margin-top: 4px;
     }
 }

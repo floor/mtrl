@@ -17,7 +17,7 @@ $component: '#{base.$prefix}-switch';
   user-select: none;
 
   // Container for switch and label
-  &-container {
+  &__container {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
@@ -27,7 +27,7 @@ $component: '#{base.$prefix}-switch';
   }
 
   // Content wrapper
-  &-content {
+  &__content {
     display: flex;
     flex-direction: column;
     flex-grow: 1;
@@ -42,7 +42,7 @@ $component: '#{base.$prefix}-switch';
   }
 
   // Input (visually hidden but accessible)
-  &-input {
+  &__input {
     position: absolute;
     opacity: 0;
     width: 100%;
@@ -56,14 +56,14 @@ $component: '#{base.$prefix}-switch';
     }
 
     // Focus indicator
-    &:focus-visible ~ .#{$component}-track {
+    &:focus-visible ~ .#{$component}__track {
       outline: 2px solid t.color('primary');
       outline-offset: 2px;
     }
   }
 
   // Switch track (background bar)
-  &-track {
+  &__track {
     position: relative;
     min-width: 52px;
     height: 32px;
@@ -92,7 +92,7 @@ $component: '#{base.$prefix}-switch';
   }
 
   // Switch thumb (slider)
-  &-thumb {
+  &__thumb {
     position: absolute;
     top: 6px;
     left: 6px;
@@ -131,7 +131,7 @@ $component: '#{base.$prefix}-switch';
   }
 
   // Supporting text
-  &-helper {
+  &__helper {
     @include m.typography('body-medium');
     color: t.color('on-surface-variant');
 
@@ -142,24 +142,24 @@ $component: '#{base.$prefix}-switch';
 
   // RTL support
   @include m.rtl {
-    &-container {
+    &__container {
       flex-direction: row;
     }
 
-    &-content {
+    &__content {
       margin-left: 12px;
       margin-right: 0;
     }
 
     // Adjust thumb movement for RTL layout
-    &--checked .#{$component}-thumb {
+    &--checked .#{$component}__thumb {
       transform: translateX(-20px);
     }
   }
 
   // Checked state
   &--checked {
-    .#{$component}-track {
+    .#{$component}__track {
       background-color: t.color('primary');
       border-color: t.color('primary');
 
@@ -168,7 +168,7 @@ $component: '#{base.$prefix}-switch';
       }
     }
 
-    .#{$component}-thumb {
+    .#{$component}__thumb {
       background-color: t.color('on-primary');
       transform: translateX(20px);
       width: 24px;
@@ -184,14 +184,14 @@ $component: '#{base.$prefix}-switch';
   }
 
   &--dense {
-    .#{$component}-container {
+    .#{$component}__container {
       min-height: initial;
     }
   }
 
   // Error state
   &--error {
-    .#{$component}-track {
+    .#{$component}__track {
       border-color: t.color('error');
     }
   }
@@ -203,28 +203,28 @@ $component: '#{base.$prefix}-switch';
   &--disabled {
     pointer-events: none;
 
-    .#{$component}-track {
+    .#{$component}__track {
       background-color: t.alpha('on-surface', 0.12);
       border-color: t.alpha('on-surface', 0.12);
     }
 
-    .#{$component}-thumb {
+    .#{$component}__thumb {
       background-color: t.alpha('on-surface', 0.38);
     }
 
-    .#{$component}__label, .#{$component}-helper {
+    .#{$component}__label, .#{$component}__helper {
       color: t.alpha('on-surface', 0.38);
       opacity: 1;
     }
 
     // Selected: the track keeps 0.12, and the handle is Surface at full opacity.
     &.#{$component}--checked {
-      .#{$component}-track {
+      .#{$component}__track {
         background-color: t.alpha('on-surface', 0.12);
         border-color: transparent;
       }
 
-      .#{$component}-thumb {
+      .#{$component}__thumb {
         background-color: t.color('surface');
 
         &-icon {
@@ -237,16 +237,16 @@ $component: '#{base.$prefix}-switch';
   // Interactive states for enabled switches
   &:not(.#{$component}--disabled) {
     // Remove track hover effects
-    .#{$component}-input:hover + .#{$component}-track::before,
-    .#{$component}-input:active + .#{$component}-track::before {
+    .#{$component}__input:hover + .#{$component}__track::before,
+    .#{$component}__input:active + .#{$component}__track::before {
       display: none;
     }
 
     // Handle hover and active states for both unchecked
     &:not(.#{$component}--checked) {
-      .#{$component}-input:hover ~ .#{$component}-track,
-      .#{$component}-input:active ~ .#{$component}-track {
-        .#{$component}-thumb {
+      .#{$component}__input:hover ~ .#{$component}__track,
+      .#{$component}__input:active ~ .#{$component}__track {
+        .#{$component}__thumb {
           background-color: t.color('on-surface-variant');
         }
 
@@ -257,15 +257,15 @@ $component: '#{base.$prefix}-switch';
         }
       }
 
-      .#{$component}-input:active ~ .#{$component}-track::after {
+      .#{$component}__input:active ~ .#{$component}__track::after {
         opacity: v.state('pressed-state-layer-opacity');
       }
     }
 
     // Hover/active states for checked
     &.#{$component}--checked {
-      .#{$component}-input:hover ~ .#{$component}-track,
-      .#{$component}-input:active ~ .#{$component}-track {
+      .#{$component}__input:hover ~ .#{$component}__track,
+      .#{$component}__input:active ~ .#{$component}__track {
         &::after {
           background-color: t.color('primary');
           opacity: v.state('hover-state-layer-opacity');
@@ -273,39 +273,39 @@ $component: '#{base.$prefix}-switch';
         }
       }
 
-      .#{$component}-input:active ~ .#{$component}-track::after {
+      .#{$component}__input:active ~ .#{$component}__track::after {
         opacity: v.state('pressed-state-layer-opacity');
       }
     }
 
     // Expand thumb on press for both checked and unchecked
-    .#{$component}-input:active ~ .#{$component}-track .#{$component}-thumb {
+    .#{$component}__input:active ~ .#{$component}__track .#{$component}__thumb {
       width: 28px;
       height: 28px;
       top: 0;
       left: 0;
     }
 
-    &.#{$component}--checked .#{$component}-input:active ~ .#{$component}-track .#{$component}-thumb {
+    &.#{$component}--checked .#{$component}__input:active ~ .#{$component}__track .#{$component}__thumb {
       left: 0;
     }
   }
 
   // Accessibility
   @include m.reduced-motion {
-    .#{$component}-track,
-    .#{$component}-thumb,
-    .#{$component}-thumb-icon {
+    .#{$component}__track,
+    .#{$component}__thumb,
+    .#{$component}__thumb-icon {
       transition: none;
     }
   }
 
   @include m.high-contrast {
-    .#{$component}-track {
+    .#{$component}__track {
       border-width: 2px;
     }
 
-    &--checked .#{$component}-track {
+    &--checked .#{$component}__track {
       border-color: currentColor;
     }
   }

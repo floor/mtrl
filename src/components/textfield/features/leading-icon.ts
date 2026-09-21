@@ -94,7 +94,7 @@ export const withLeadingIcon = <T extends LeadingIconConfig & object>(config: T)
     const ensureIcon = (): HTMLElement => {
       if (iconElement && iconElement.parentNode) return iconElement;
       const element = document.createElement('span');
-      element.className = `${PREFIX}-${NAME}-leading-icon`;
+      element.className = `${PREFIX}-${NAME}__leading-icon`;
       component.element.appendChild(element);
       component.element.classList.add(`${PREFIX}-${NAME}--with-leading-icon`);
       if (component.input) {

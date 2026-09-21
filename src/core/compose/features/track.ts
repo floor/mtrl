@@ -59,16 +59,16 @@ const DEFAULT_ICON = `
 export const withTrack = <T extends TrackConfig>(config: T) => 
   <C extends ElementComponent>(component: C): C & TrackComponent => {
     const track = document.createElement('span');
-    track.className = `${config.prefix}-${config.componentName}-track`;
+    track.className = `${config.prefix}-${config.componentName}__track`;
 
     const thumb = document.createElement('span');
-    thumb.className = `${config.prefix}-${config.componentName}-thumb`;
+    thumb.className = `${config.prefix}-${config.componentName}__thumb`;
     track.appendChild(thumb);
 
     // Add icon inside thumb if provided or use default
     if (config.icon !== 'none') {
       const icon = document.createElement('span');
-      icon.className = `${config.prefix}-${config.componentName}-thumb-icon`;
+      icon.className = `${config.prefix}-${config.componentName}__thumb-icon`;
       setHTML(icon, config.icon || DEFAULT_ICON);
       thumb.appendChild(icon);
     }
