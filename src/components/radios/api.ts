@@ -1,5 +1,6 @@
 // src/components/radios/api.ts
-import { RadiosComponent, RadioItem, RadioOptionConfig } from "./types";
+import type { RadiosComponent, RadiosEvents, RadioItem, RadioOptionConfig } from "./types";
+import type { EventCallback } from "../../core/state/emitter";
 
 interface ApiOptions {
   disabled: {
@@ -24,8 +25,8 @@ interface ComponentWithRadio {
   enableOption: (value: string) => void;
   disableOption: (value: string) => void;
   getClass: (name: string) => string;
-  on: (event: string, handler: Function) => void;
-  off: (event: string, handler: Function) => void;
+  on: (event: string, handler: EventCallback) => void;
+  off: (event: string, handler: EventCallback) => void;
   emit?: (event: string, data: unknown) => void;
 }
 
@@ -88,13 +89,13 @@ export const withAPI =
         return this;
       },
 
-      on(event: string, handler: Function) {
-        component.on(event, handler);
+      on<K extends keyof RadiosEvents>(event: K, handler: RadiosEvents[K]) {
+        component.on(event, handler as EventCallback);
         return this;
       },
 
-      off(event: string, handler: Function) {
-        component.off(event, handler);
+      off<K extends keyof RadiosEvents>(event: K, handler: RadiosEvents[K]) {
+        component.off(event, handler as EventCallback);
         return this;
       },
 

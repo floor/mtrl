@@ -64,9 +64,9 @@ export const RADIO_SIZES = {
 export const RADIO_EVENTS = {
   /** Fired when a radio button is selected */
   CHANGE: 'change',
-  /** Fired when a radio is focused */
+  /** Native input focus event; listen on the input, not the group emitter. */
   FOCUS: 'focus',
-  /** Fired when a radio loses focus */
+  /** Native input blur event; listen on the input, not the group emitter. */
   BLUR: 'blur'
 } as const;
 

@@ -103,6 +103,56 @@ describe('radios', () => {
     expect(changes).not.toHaveBeenCalled();
   });
 
+  test('native selection carries the exact option and change event', () => {
+    const radios = mount();
+    const payloads: Array<{ value: string; option: { value: string; label: string } | null; originalEvent: Event | undefined }> = [];
+    const nativeEvents: Event[] = [];
+    const handler = (payload: typeof payloads[number]) => payloads.push(payload);
+    expect(radios.on('change', handler)).toBe(radios);
+    const selected = radios.radios[0];
+    selected.input.addEventListener('change', event => nativeEvents.push(event));
+    selected.input.click();
+    expect(payloads).toHaveLength(1);
+    expect(payloads[0].value).toBe('s');
+    expect(payloads[0].option).toBe(selected.config);
+    expect(payloads[0].originalEvent).toBe(nativeEvents[0]);
+    expect(payloads[0].originalEvent?.type).toBe('change');
+    expect(payloads[0].originalEvent?.target).toBe(selected.input);
+    expect(radios.off('change', handler)).toBe(radios);
+    input(radios, 'm').click();
+    expect(payloads).toHaveLength(1);
+    radios.destroy();
+  });
+
+  test('programmatic clearing reports null option and undefined originalEvent', () => {
+    const radios = mount();
+    const payloads: Array<{ value: string; option: { value: string; label: string } | null; originalEvent: Event | undefined }> = [];
+    radios.on('change', payload => payloads.push(payload));
+    radios.setValue('s');
+    expect(payloads).toEqual([]);
+    radios.setValue('missing');
+    expect(payloads).toEqual([{ value: '', option: null, originalEvent: undefined }]);
+    expect(Object.hasOwn(payloads[0], 'originalEvent')).toBe(true);
+    radios.destroy();
+  });
+
+  test('disabled clicks and retained inputs after destroy do not emit change', () => {
+    const radios = mount({ disabled: true });
+    const selected = radios.radios[0].input;
+    let changes = 0;
+    const handler = () => changes++;
+    radios.on('change', handler);
+    selected.click();
+    expect(changes).toBe(0);
+    radios.enable();
+    selected.click();
+    expect(changes).toBe(1);
+    radios.destroy();
+    radios.on('change', handler);
+    selected.dispatchEvent(new dom.window.Event('change', { bubbles: true }));
+    expect(changes).toBe(1);
+  });
+
   test('setValue checks the matching input and unchecks the others', () => {
     const radios = mount({ value: 's' });
     radios.setValue('m');
