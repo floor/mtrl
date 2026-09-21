@@ -56,6 +56,17 @@ $container: "#{base.$prefix}-tabs";
     // Fixed form: Compose divides the row evenly (tabRowWidth / tabCount,
     // TabRow.kt:443-447). Without `scrollable` the component never builds a scroll
     // container, so the tabs are direct children of the root.
+    //
+    // Which is why the direction has to be row here. The container is column
+    // so that a scroll container sits above the divider, and with no scroll
+    // container the tabs inherited that and stacked vertically -- `flex: 1`
+    // below was dividing the height rather than the row the comment above
+    // describes. The divider and the indicator are both absolutely
+    // positioned, so neither depends on the container's direction. FLO-241.
+    &:not(&--scrollable) {
+        flex-direction: row;
+    }
+
     &:not(&--scrollable) > .#{$component} {
         flex: 1;
     }

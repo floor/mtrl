@@ -53,6 +53,8 @@ jobs:
         run: node node_modules/playwright/cli.js install --with-deps chromium
       - name: Vite and browser regression checks
         run: bun run consumer:check
+      - name: Tabs layout checks
+        run: bun run tabs:check
       - name: Slider rendering and interaction checks
         run: bun run slider:check
       - name: Drawer rendering and accessibility checks
