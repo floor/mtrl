@@ -306,7 +306,7 @@ export const withAPI =
         // We'll handle removal directly rather than calling this.close()
         // to avoid animation delay in critical cleanup
         const dialogVisibleClass = `${component.getClass("dialog")}--visible`;
-        const overlayVisibleClass = `${component.getClass("dialog-overlay")}--visible`;
+        const overlayVisibleClass = `${component.getClass("dialog__overlay")}--visible`;
 
         // Remove visibility classes using core utilities
         removeClass(component.element, dialogVisibleClass);

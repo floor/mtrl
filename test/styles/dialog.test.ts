@@ -39,29 +39,29 @@ describe('dialog stylesheet', () => {
   });
 
   test('24dp round the edge, 16dp title to body, 24dp body to actions', () => {
-    expect(value('.mtrl-dialog-header', 'padding')).toBe('24px 24px 16px 24px');
-    expect(value('.mtrl-dialog-content', 'padding')).toBe('0 24px');
-    expect(value('.mtrl-dialog-footer', 'padding')).toBe('24px 24px 24px 24px');
+    expect(value('.mtrl-dialog__header', 'padding')).toBe('24px 24px 16px 24px');
+    expect(value('.mtrl-dialog__content', 'padding')).toBe('0 24px');
+    expect(value('.mtrl-dialog__footer', 'padding')).toBe('24px 24px 24px 24px');
     // a dialog with no actions still keeps its 24dp underneath
-    expect(value('.mtrl-dialog-content:last-child', 'padding-bottom')).toBe('24px');
-    expect(value('.mtrl-dialog-footer', 'gap')).toBe('8px');
+    expect(value('.mtrl-dialog__content:last-child', 'padding-bottom')).toBe('24px');
+    expect(value('.mtrl-dialog__footer', 'gap')).toBe('8px');
   });
 
   test('the headline, the supporting text and the icon take their roles', () => {
-    expect(value('.mtrl-dialog-header-title', 'color')).toBe('var(--mtrl-sys-color-on-surface)');
-    expect(value('.mtrl-dialog-header-title', 'font-size')).toBe('24px');
-    expect(value('.mtrl-dialog-content', 'color')).toBe('var(--mtrl-sys-color-on-surface-variant)');
-    expect(value('.mtrl-dialog-icon', 'color')).toBe('var(--mtrl-sys-color-secondary)');
-    expect(value('.mtrl-dialog-icon svg, .mtrl-dialog-icon .mtrl-dialog-icon-content', 'width')).toBe('24px');
+    expect(value('.mtrl-dialog__header-title', 'color')).toBe('var(--mtrl-sys-color-on-surface)');
+    expect(value('.mtrl-dialog__header-title', 'font-size')).toBe('24px');
+    expect(value('.mtrl-dialog__content', 'color')).toBe('var(--mtrl-sys-color-on-surface-variant)');
+    expect(value('.mtrl-dialog__icon', 'color')).toBe('var(--mtrl-sys-color-secondary)');
+    expect(value('.mtrl-dialog__icon svg, .mtrl-dialog__icon .mtrl-dialog__icon-content', 'width')).toBe('24px');
   });
 
   test('a full-screen dialog has a 56dp header and action bar and no corner', () => {
     expect(value('.mtrl-dialog--fullscreen', 'border-radius')).toBe('0');
-    expect(value('.mtrl-dialog--fullscreen .mtrl-dialog-header', 'min-height')).toBe('56px');
-    expect(value('.mtrl-dialog--fullscreen .mtrl-dialog-footer', 'min-height')).toBe('56px');
+    expect(value('.mtrl-dialog--fullscreen .mtrl-dialog__header', 'min-height')).toBe('56px');
+    expect(value('.mtrl-dialog--fullscreen .mtrl-dialog__footer', 'min-height')).toBe('56px');
     // the close affordance leads
-    expect(value('.mtrl-dialog--fullscreen .mtrl-dialog-header-close', 'order')).toBe('-1');
-    expect(value('.mtrl-dialog--fullscreen .mtrl-dialog-header-title', 'text-align')).toBe('start');
+    expect(value('.mtrl-dialog--fullscreen .mtrl-dialog__header-close', 'order')).toBe('-1');
+    expect(value('.mtrl-dialog--fullscreen .mtrl-dialog__header-title', 'text-align')).toBe('start');
   });
 
   test('it grows into place, and reduced motion drops the movement without shouting', () => {
@@ -76,10 +76,10 @@ describe('dialog stylesheet', () => {
   });
 
   test('the scrim covers the window and sits under the modal layer', () => {
-    expect(value('.mtrl-dialog-overlay', 'position')).toBe('fixed');
+    expect(value('.mtrl-dialog__overlay', 'position')).toBe('fixed');
     // the scrim fades on its colour, not on opacity: the dialog is its child
-    expect(value('.mtrl-dialog-overlay', 'background-color')).toBe('transparent');
-    expect(value('.mtrl-dialog-overlay--visible', 'background-color')).toContain('var(--mtrl-sys-color-scrim');
-    expect(value('.mtrl-dialog-overlay', 'z-index')).toBe('1000');
+    expect(value('.mtrl-dialog__overlay', 'background-color')).toBe('transparent');
+    expect(value('.mtrl-dialog__overlay--visible', 'background-color')).toContain('var(--mtrl-sys-color-scrim');
+    expect(value('.mtrl-dialog__overlay', 'z-index')).toBe('1000');
   });
 });

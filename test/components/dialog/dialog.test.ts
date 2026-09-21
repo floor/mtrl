@@ -63,7 +63,7 @@ describe('dialog', () => {
     expect(el.getAttribute('tabindex')).toBe('-1');
 
     const overlay = el.parentElement!;
-    expect(overlay.classList.contains('mtrl-dialog-overlay')).toBe(true);
+    expect(overlay.classList.contains('mtrl-dialog__overlay')).toBe(true);
     expect(overlay.hasAttribute('role')).toBe(false);
     expect(overlay.hasAttribute('aria-modal')).toBe(false);
   });
@@ -85,15 +85,15 @@ describe('dialog', () => {
 
   test('a full-screen dialog is a plain dialog and keeps a close affordance', () => {
     const basic = createDialog({ title: 'Basic' });
-    expect(basic.element.querySelector('.mtrl-dialog-header-close')).toBeNull();
+    expect(basic.element.querySelector('.mtrl-dialog__header-close')).toBeNull();
 
     const full = createDialog({ title: 'New event', size: 'fullscreen' });
     expect(full.element.getAttribute('role')).toBe('dialog');
-    const close = full.element.querySelector('.mtrl-dialog-header-close');
+    const close = full.element.querySelector('.mtrl-dialog__header-close');
     expect(close).not.toBeNull();
     expect(close!.getAttribute('aria-label')).toBe('Close dialog');
     // and a basic dialog can still ask for one
-    expect(createDialog({ title: 'x', closeButton: true }).element.querySelector('.mtrl-dialog-header-close')).not.toBeNull();
+    expect(createDialog({ title: 'x', closeButton: true }).element.querySelector('.mtrl-dialog__header-close')).not.toBeNull();
   });
 
   test('opening moves focus to the first action and closing gives it back', async () => {
@@ -188,7 +188,7 @@ describe('dialog', () => {
 
   test('the actions are text buttons in the footer, confirmation last', async () => {
     const dialog = createDialog({ title: 'Delete file?', buttons });
-    const footer = dialog.element.querySelector('.mtrl-dialog-footer')!;
+    const footer = dialog.element.querySelector('.mtrl-dialog__footer')!;
     const rendered = Array.from(footer.querySelectorAll('button'));
     expect(rendered.length).toBe(2);
     expect(rendered[0]!.textContent).toContain('Cancel');

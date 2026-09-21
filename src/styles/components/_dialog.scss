@@ -9,7 +9,7 @@ $component: "#{base.$prefix}-dialog";
 
 // Dialog overlay (background scrim)
 // MD3 specifies 32% opacity for scrim
-.#{$component}-overlay {
+.#{$component}__overlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -72,9 +72,9 @@ $component: "#{base.$prefix}-dialog";
         opacity v.motion("duration-short1") linear v.motion("duration-short2");
 
     // Its contents fade with the surface, and lead it on the way out
-    .#{$component}-header,
-    .#{$component}-content,
-    .#{$component}-footer {
+    .#{$component}__header,
+    .#{$component}__content,
+    .#{$component}__footer {
         opacity: 0;
         transition: opacity v.motion("duration-short2") linear;
     }
@@ -89,13 +89,13 @@ $component: "#{base.$prefix}-dialog";
             opacity v.motion("duration-short1") linear;
 
         // The headline and content follow the surface, the actions last
-        .#{$component}-header,
-        .#{$component}-content {
+        .#{$component}__header,
+        .#{$component}__content {
             opacity: 1;
             transition: opacity v.motion("duration-medium1") linear v.motion("duration-short1");
         }
 
-        .#{$component}-footer {
+        .#{$component}__footer {
             opacity: 1;
             transition: opacity v.motion("duration-medium2") linear v.motion("duration-short3");
         }
@@ -179,7 +179,7 @@ $component: "#{base.$prefix}-dialog";
 
 // Dialog icon (optional, MD3 spec)
 // Centered above headline, 24dp, secondary color
-.#{$component}-icon {
+.#{$component}__icon {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -187,36 +187,36 @@ $component: "#{base.$prefix}-dialog";
     color: t.color("secondary");
 
     svg,
-    .#{$component}-icon-content {
+    .#{$component}__icon-content {
         width: 24px;
         height: 24px;
     }
 
     // When icon is present, header should be centered
-    & + .#{$component}-header {
-        .#{$component}-header-content {
+    & + .#{$component}__header {
+        .#{$component}__header-content {
             text-align: center;
         }
 
-        .#{$component}-header-title {
+        .#{$component}__header-title {
             text-align: center;
         }
 
-        .#{$component}-header-subtitle {
+        .#{$component}__header-subtitle {
             text-align: center;
         }
     }
 }
 
 // Dialog header
-.#{$component}-header {
+.#{$component}__header {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
     padding: 24px 24px 16px 24px;
 
     // When following an icon, reduce top padding
-    .#{$component}-icon + & {
+    .#{$component}__icon + & {
         padding-top: 16px;
     }
 
@@ -286,16 +286,16 @@ $component: "#{base.$prefix}-dialog";
 
 // Dialog content
 // MD3: Body medium typography, on-surface-variant for supporting text
-.#{$component}-header:empty {
+.#{$component}__header:empty {
     display: none;
 }
 
-.#{$component}-header:not(:has(*)) + .#{$component}-content,
-.#{$component} > .#{$component}-content:first-child {
+.#{$component}__header:not(:has(*)) + .#{$component}__content,
+.#{$component} > .#{$component}__content:first-child {
     padding-top: 24px;
 }
 
-.#{$component}-content {
+.#{$component}__content {
     // The gaps above and below belong to the header and the footer, so that
     // title to body is 16dp and body to actions is 24dp, counted once
     padding: 0 24px;
@@ -332,7 +332,7 @@ $component: "#{base.$prefix}-dialog";
 
 // Dialog footer
 // MD3: Actions right-aligned, 8dp gap, text buttons preferred
-.#{$component}-footer {
+.#{$component}__footer {
     display: flex;
     align-items: center;
     justify-content: flex-end;
@@ -367,7 +367,7 @@ $component: "#{base.$prefix}-dialog";
 // wider ones take a basic dialog.
 // -----------------------------------------------------------------------------
 .#{$component}--fullscreen {
-    .#{$component}-header {
+    .#{$component}__header {
         display: flex;
         align-items: center;
         min-height: 56px;
@@ -376,7 +376,7 @@ $component: "#{base.$prefix}-dialog";
     }
 
     // The close affordance leads, the headline follows it
-    .#{$component}-header-close {
+    .#{$component}__header-close {
         order: -1;
         margin: 0 0 0 -8px;
 
@@ -385,18 +385,18 @@ $component: "#{base.$prefix}-dialog";
         }
     }
 
-    .#{$component}-header-title {
+    .#{$component}__header-title {
         @include m.typography("title-large");
         text-align: start;
     }
 
-    .#{$component}-content {
+    .#{$component}__content {
         flex: 1;
         overflow-y: auto;
         padding: 24px;
     }
 
-    .#{$component}-footer {
+    .#{$component}__footer {
         min-height: 56px;
         padding: 0 24px;
         box-sizing: border-box;
@@ -406,8 +406,8 @@ $component: "#{base.$prefix}-dialog";
     flex-direction: column;
 }
 
-.#{$component}-header-divider,
-.#{$component}-footer-divider {
+.#{$component}__header-divider,
+.#{$component}__footer-divider {
     margin: 0;
     border: none;
     height: 1px;
@@ -418,8 +418,8 @@ $component: "#{base.$prefix}-dialog";
 @include m.reduced-motion {
     .#{$component},
     .#{$component}--visible,
-    .#{$component}-overlay,
-    .#{$component}-overlay--visible {
+    .#{$component}__overlay,
+    .#{$component}__overlay--visible {
         transition: opacity v.motion("duration-short2") linear;
     }
 
@@ -439,12 +439,12 @@ $component: "#{base.$prefix}-dialog";
         border: 2px solid CurrentColor;
     }
 
-    .#{$component}-header-divider,
-    .#{$component}-footer-divider {
+    .#{$component}__header-divider,
+    .#{$component}__footer-divider {
         background-color: CurrentColor;
     }
 
-    .#{$component}-header-close:focus-visible {
+    .#{$component}__header-close:focus-visible {
         outline: 2px solid CurrentColor;
     }
 }
@@ -469,7 +469,7 @@ $component: "#{base.$prefix}-dialog";
         }
     }
 
-    .#{$component}-overlay {
+    .#{$component}__overlay {
         padding: 16px;
         align-items: flex-end;
 
@@ -478,7 +478,7 @@ $component: "#{base.$prefix}-dialog";
         }
     }
 
-    .#{$component}-content--scrollable {
+    .#{$component}__content--scrollable {
         max-height: 50vh;
     }
 
@@ -492,7 +492,7 @@ $component: "#{base.$prefix}-dialog";
     }
 
     // Stacked footer buttons on mobile when needed
-    .#{$component}-footer--responsive {
+    .#{$component}__footer--responsive {
         flex-direction: column-reverse;
         align-items: stretch;
     }
@@ -500,7 +500,7 @@ $component: "#{base.$prefix}-dialog";
 
 // Print styles
 @media print {
-    .#{$component}-overlay {
+    .#{$component}__overlay {
         position: static;
         background: none;
         padding: 0;
