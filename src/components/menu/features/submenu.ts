@@ -1,7 +1,7 @@
 // src/components/menu/features/submenu.ts
 
 import { createMenuTasks } from "./tasks";
-import { MenuConfig, MenuItem, MenuFeatureHost } from "../types";
+import { MenuConfig, MenuContent, MenuItem, MenuFeatureHost } from "../types";
 
 /**
  * Adds submenu functionality to the menu component
@@ -182,8 +182,8 @@ const withSubmenu =
    * so `component.menu` is not there yet at that point; the configured items
    * are, and the live list is used once the controller has published it.
    */
-  const currentItems = (): unknown[] =>
-    ((component.menu?.getItems?.() as unknown[]) ?? config.items ?? []) as unknown[];
+  const currentItems = (): MenuContent[] =>
+    component.menu?.getItems?.() ?? config.items ?? [];
 
   const findItemById = (id: string): MenuItem | null => {
     const search = (list: unknown[]): MenuItem | null => {
@@ -379,10 +379,9 @@ const withSubmenu =
       // submenu reached for `findItemById` and found nothing.
       component.keyboard.setupKeyboardHandlers(
         submenuElement,
-        {
-          activeSubmenus: state.activeSubmenus,
-          items: currentItems(),
-        },
+        // keyboard.ts reads `items` only; activeSubmenus was passed and
+        // never looked at.
+        { items: currentItems() },
         {
           closeSubmenu,
           handleNestedSubmenuClick,
