@@ -1,6 +1,7 @@
 // src/components/extended-fab/types.ts
 import type { IconManager } from "../../core/compose/features/icon";
 import type { TextManager } from "../../core/compose/features/text";
+import type { ForwardedEventPayload } from "../../core/dom";
 
 /**
  * Extended FAB variants following Material Design 3 guidelines
@@ -417,6 +418,20 @@ export interface ExtendedFabConfig {
 }
 
 /**
+ * Native events forwarded through the Extended FAB's emitter.
+ * Collapse and expand are DOM-only events; listen on `element` for those.
+ * Lifecycle callbacks are registered through the lifecycle API.
+ */
+export interface ExtendedFabEvents {
+  /** Clicks are not forwarded while the button is disabled. */
+  click: (payload: ForwardedEventPayload<MouseEvent, HTMLButtonElement>) => void;
+  /** The button took focus. */
+  focus: (payload: ForwardedEventPayload<FocusEvent, HTMLButtonElement>) => void;
+  /** The button lost focus. */
+  blur: (payload: ForwardedEventPayload<FocusEvent, HTMLButtonElement>) => void;
+}
+
+/**
  * Extended FAB component interface
  *
  * Provides methods for interacting with and manipulating an Extended Floating Action Button.
@@ -724,8 +739,8 @@ export interface ExtendedFabComponent {
   /**
    * Adds an event listener to the Extended FAB
    *
-   * @param event - Event name ('click', 'focus', etc.)
-   * @param handler - Event handler function
+   * @param event - Forwarded event name: 'click', 'focus', or 'blur'
+   * @param handler - Receives the native event and the button root in a payload
    * @returns The Extended FAB component for chaining
    *
    * @example
@@ -735,13 +750,16 @@ export interface ExtendedFabComponent {
    *   console.log('Extended FAB clicked');
    * });
    *
-   * // Add custom event handler for collapse
-   * fab.on('collapse', () => {
+   * // Collapse is dispatched on the DOM element, not the component emitter
+   * fab.element.addEventListener('collapse', () => {
    *   console.log('Extended FAB collapsed');
    * });
    * ```
    */
-  on: (event: string, handler: Function) => ExtendedFabComponent;
+  on: <K extends keyof ExtendedFabEvents>(
+    event: K,
+    handler: ExtendedFabEvents[K],
+  ) => ExtendedFabComponent;
 
   /**
    * Removes an event listener from the Extended FAB
@@ -759,7 +777,10 @@ export interface ExtendedFabComponent {
    * fab.off('click', handler);
    * ```
    */
-  off: (event: string, handler: Function) => ExtendedFabComponent;
+  off: <K extends keyof ExtendedFabEvents>(
+    event: K,
+    handler: ExtendedFabEvents[K],
+  ) => ExtendedFabComponent;
 
   /**
    * Adds CSS classes to the Extended FAB element

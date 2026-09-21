@@ -224,6 +224,12 @@ test('extended FAB: text and collapse/expand update the real DOM and emit events
   expect(b.setText('Save')).toBe(b);
   expect(b.element.querySelector('.mtrl-extended-fab__text')?.textContent).toBe('Save');
   const events: string[] = [];
+  const emitterEvents: string[] = [];
+  // Intentionally bypass the public type to observe the underlying emitter.
+  // collapse/expand dispatch DOM events but are not configured for forwarding.
+  for (const name of ['collapse', 'expand']) {
+    Reflect.apply(Reflect.get(b, 'on'), b, [name, () => emitterEvents.push(name)]);
+  }
   b.element.addEventListener('collapse', () => events.push('collapse'));
   b.element.addEventListener('expand', () => events.push('expand'));
   expect(b.collapse()).toBe(b);
@@ -231,6 +237,7 @@ test('extended FAB: text and collapse/expand update the real DOM and emit events
   expect(b.expand()).toBe(b);
   expect(b.element.classList.contains('mtrl-extended-fab--collapsed')).toBe(false);
   expect(events).toEqual(['collapse', 'expand']);
+  expect(emitterEvents).toEqual([]);
 });
 for (const width of ['fixed','fluid'] as const) {
   test(`extended FAB: ${width} width class`, () => {
