@@ -1,7 +1,7 @@
 // src/components/tabs/features.ts
 import { createTab } from "./tab";
 import { TabConfig, TabComponent } from "./types";
-import { updateTabPanels } from "./utils";
+import { allocateTabsGroupId, updateTabPanels } from "./utils";
 import { createTabIndicator, TabIndicator } from "./indicator";
 
 // All component interfaces that are extended
@@ -35,6 +35,8 @@ const isCancelable = (event: Event | null): event is Event =>
 export interface TabsManagementConfig {
   /** Initial tabs to create */
   tabs?: TabConfig[];
+  /** Id for this tab group; allocated when omitted. FLO-229. */
+  groupId?: string;
   /** Tab variant */
   variant?: string;
   /** Component prefix */
@@ -69,6 +71,10 @@ export interface TabsManagementComponent {
 export const withTabsManagement =
   <T extends TabsManagementConfig & object>(config: T) =>
   <C extends ComponentBase>(component: C): C & TabsManagementComponent => {
+    // One id per tablist. A page may pin it with `groupId` so ids stay
+    // stable across renders; otherwise it is allocated. FLO-229.
+    const groupId = config.groupId ?? allocateTabsGroupId();
+
     const tabs: TabComponent[] = [];
 
     // Store the target container for tabs
@@ -82,6 +88,9 @@ export const withTabsManagement =
           ...tabConfig,
           prefix: config.prefix,
           variant: tabConfig.variant || config.variant,
+          // Every tab in this group carries the group's id, which is what
+          // makes its element id unique across tablists. FLO-229.
+          groupId,
         };
 
         // Create the tab

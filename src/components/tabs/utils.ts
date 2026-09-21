@@ -35,63 +35,108 @@ export function getActiveTab(component: TabsHost): TabComponent | null {
   return null;
 }
 
+/** Counter behind {@link allocateTabsGroupId}. */
+let nextTabsGroupId = 0;
+
+/**
+ * A fresh id for a tab group, so two tablists can share tab values.
+ *
+ * FLO-229. A tab's id was `tab-<value>`, which meant two groups on one page
+ * with a value in common produced duplicate ids -- and, because panels were
+ * resolved across the whole document, each group showed and hid the other's
+ * panels. The group id is what makes both unique.
+ */
+export function allocateTabsGroupId(): string {
+  return `tabs-${++nextTabsGroupId}`;
+}
+
+/** A tab's element id within its group. */
+export function tabIdFor(groupId: string, value: string): string {
+  return `tab-${groupId}-${value}`;
+}
+
+/** The panel id a group looks for when a page does not label its panels. */
+export function tabPanelIdFor(groupId: string, value: string): string {
+  return `tabpanel-${groupId}-${value}`;
+}
+
+/**
+ * The panel registered to a tab, or null.
+ *
+ * A page registers a panel either by labelling it with the tab's own id, or
+ * by giving it the conventional `tabpanel-<groupId>-<value>` id. Both are
+ * keyed on the tab's id, so a panel can only ever belong to one group.
+ */
+export function findRegisteredPanel(tab: HTMLElement): HTMLElement | null {
+  const tabId = tab.id;
+  if (!tabId || typeof document === "undefined") return null;
+
+  const labelled = document.querySelector<HTMLElement>(
+    `[role="tabpanel"][aria-labelledby="${tabId}"]`
+  );
+  if (labelled) return labelled;
+
+  // `tab-<groupId>-<value>` -> `tabpanel-<groupId>-<value>`
+  if (tabId.startsWith("tab-")) {
+    const byConvention = document.getElementById(`tabpanel-${tabId.slice(4)}`);
+    if (byConvention?.getAttribute("role") === "tabpanel") return byConvention;
+  }
+
+  return null;
+}
+
+/**
+ * Points a tab's `aria-controls` at its panel, and only at one that exists.
+ *
+ * A tab whose panel the page never supplied carries no `aria-controls` rather
+ * than a reference resolving to nothing. Panels added after the tabs are
+ * linked when this runs again, which is why it cannot be decided once at
+ * creation.
+ */
+export function syncTabControls(element: HTMLElement): void {
+  const panel = findRegisteredPanel(element);
+  if (panel?.id) {
+    element.setAttribute("aria-controls", panel.id);
+  } else {
+    element.removeAttribute("aria-controls");
+  }
+}
+
 /**
  * Updates tab panels based on active tab
  * @param component - Component with tabs
  */
 export function updateTabPanels(component: TabsHost): void {
-  // Get active tab using our helper function
+  // Only this group's tabs, and only the panels registered to them. This read
+  // every `[role="tabpanel"]` in the document and matched by stripping `tab-`
+  // off each panel's aria-labelledby, so two groups sharing a value showed and
+  // hid each other's panels -- a visible defect, not only an accessibility
+  // one. FLO-229.
+  //
+  // Callers pass either the component or a plain `{ tabs, getActiveTab }`
+  // literal -- features.ts does the latter -- so read the tabs from whichever
+  // shape arrived.
+  const tabs = (
+    typeof component.getTabs === "function"
+      ? component.getTabs()
+      : (component as { tabs?: unknown[] }).tabs ?? []
+  ) as Array<{ element?: HTMLElement }>;
+
   const activeTab = getActiveTab(component);
-  if (!activeTab) return;
 
-  // Make sure getValue exists
-  if (typeof activeTab.getValue !== "function") return;
+  for (const tab of tabs) {
+    if (!tab?.element) continue;
+    syncTabControls(tab.element);
 
-  const activeValue = activeTab.getValue();
+    const panel = findRegisteredPanel(tab.element);
+    if (!panel) continue;
 
-  // Find all tab panels in the document
-  const tabPanels = document.querySelectorAll(`[role="tabpanel"]`);
-
-  // Which values actually have a panel in the document right now. A page
-  // supplies the panels, so this is the only place that knows.
-  const linked = new Set<string>();
-
-  tabPanels.forEach((panel) => {
-    // Get the associated tab value
-    const forTab = panel.getAttribute("aria-labelledby")?.replace("tab-", "");
-    if (forTab) linked.add(forTab);
-
-    if (forTab === activeValue) {
+    if (tab === (activeTab as unknown)) {
       panel.removeAttribute("hidden");
       panel.setAttribute("tabindex", "0");
     } else {
       panel.setAttribute("hidden", "true");
       panel.setAttribute("tabindex", "-1");
-    }
-  });
-
-  // Point each tab at its panel, and only at a panel that exists. A tab whose
-  // panel the page never supplied carries no `aria-controls` rather than a
-  // reference that resolves to nothing. Panels added after the tabs are linked
-  // here, which is why this cannot be decided once at creation.
-  // Callers pass either the component or a plain `{ tabs, getActiveTab }`
-  // literal — `features.ts` does the latter — so read the tabs from whichever
-  // shape arrived rather than assuming the richer one.
-  const allTabs =
-    typeof component.getTabs === "function"
-      ? component.getTabs()
-      : (component as { tabs?: unknown[] }).tabs ?? [];
-
-  {
-    for (const tab of allTabs as Array<{ getValue?: () => string; element?: HTMLElement }>) {
-      if (typeof tab?.getValue !== "function" || !tab.element) continue;
-      const value = tab.getValue();
-      const panelId = `tabpanel-${value}`;
-      if (linked.has(value) && document.getElementById(panelId)) {
-        tab.element.setAttribute("aria-controls", panelId);
-      } else {
-        tab.element.removeAttribute("aria-controls");
-      }
     }
   }
 }

@@ -2,6 +2,7 @@
 // Class names are written out in full. The class helpers no longer add the
 // `mtrl-` prefix for you (FLO-117), so a modifier built here carries it.
 import { PREFIX } from "../../core/config";
+import type { EventCallback } from "../../core/state/emitter";
 import {
   createComponentConfig,
   createElementConfig,
@@ -132,8 +133,8 @@ interface SliderApiHost {
   getSize?: () => string;
   label?: { setText?: (text: string) => void; getText?: () => string };
   icon?: { setIcon?: (html: string) => void; getIcon?: () => string };
-  on?: (event: string, handler: Function) => unknown;
-  off?: (event: string, handler: Function) => unknown;
+  on?: (event: string, handler: EventCallback) => unknown;
+  off?: (event: string, handler: EventCallback) => unknown;
   lifecycle?: { destroy?: () => void };
 }
 
