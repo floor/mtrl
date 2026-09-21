@@ -49,7 +49,7 @@ export function createChipsSchema(
               label: {
                 options: {
                   tag: "label",
-                  className: getClass("chips-label"),
+                  className: getClass("chips__label"),
                   text: config.label,
                 },
               },
@@ -59,7 +59,7 @@ export function createChipsSchema(
         // Chips container where chip instances will be inserted
         chipContainer: {
           options: {
-            className: getClass("chips-container"),
+            className: getClass("chips__container"),
           },
         },
       },

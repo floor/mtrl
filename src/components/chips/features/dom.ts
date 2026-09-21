@@ -30,7 +30,7 @@ export const withDom =
     if (hasLabel) {
       label = createElement({
         tag: "label",
-        className: getClass("chips-label"),
+        className: getClass("chips__label"),
         text: config.label,
         container: component.element,
       });
@@ -39,7 +39,7 @@ export const withDom =
     // Create the chips container where individual chips will be added
     const chipContainer = createElement({
       tag: "div",
-      className: getClass("chips-container"),
+      className: getClass("chips__container"),
       container: component.element,
     });
 

@@ -190,7 +190,7 @@ describe('badge attachment', () => {
     const { parent, target } = mountTarget();
     const badge = createBadge({ label: 2, target });
     expect(badge.wrapper?.parentNode).toBe(parent);
-    expect(badge.wrapper?.classList.contains('mtrl-badge-wrapper')).toBe(true);
+    expect(badge.wrapper?.classList.contains('mtrl-badge__wrapper')).toBe(true);
     expect(Array.from(badge.wrapper!.children)).toEqual([target, badge.element]);
     expect(has(badge, 'positioned')).toBe(true);
   });

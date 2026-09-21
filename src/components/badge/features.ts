@@ -174,7 +174,7 @@ export const withAttachment = (config: BadgeConfig) => <C extends BadgeFeatureHo
   
   // Create wrapper to hold the target and badge
   const wrapper = document.createElement('div');
-  wrapper.classList.add(component.getClass('badge-wrapper'));
+  wrapper.classList.add(component.getClass('badge__wrapper'));
   
   // Make sure positioning context is correct
   wrapper.style.position = 'relative';

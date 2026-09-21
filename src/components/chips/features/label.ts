@@ -53,7 +53,7 @@ export const withChipsLabel =
         } else if (state.text && component.components && component.element) {
           // Create label if it doesn't exist but we need one
           const label = document.createElement('label');
-          label.className = component.getClass('chips-label');
+          label.className = component.getClass('chips__label');
           label.textContent = state.text;
           
           // Add to beginning if start, end if end

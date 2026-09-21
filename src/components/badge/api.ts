@@ -298,7 +298,7 @@ export const withAPI =
 
         // Create a new wrapper to hold the target and badge
         const wrapper = document.createElement("div");
-        wrapper.classList.add(component.getClass("badge-wrapper"));
+        wrapper.classList.add(component.getClass("badge__wrapper"));
         wrapper.style.position = "relative";
 
         // Replace the target with the wrapper

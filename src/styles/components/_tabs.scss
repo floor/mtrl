@@ -172,7 +172,7 @@ $container: "#{base.$prefix}-tabs";
     }
 
     // Tab Icon (3. Icon - optional)
-    // The icon element the button builds carries mtrl-icon + mtrl-button-icon; a
+    // The icon element the button builds carries mtrl-icon + mtrl-button__icon; a
     // nested &-icon would concatenate onto the compound root and match nothing.
     .#{base.$prefix}-button-icon {
         display: flex;
@@ -211,17 +211,17 @@ $container: "#{base.$prefix}-tabs";
 
     // Badge positioning (2. Badge - optional). The layout modifier is on the tab
     // itself, so these hang off &, not off a nested tab.
-    &--icon-only .#{base.$prefix}-badge-wrapper .#{base.$prefix}-badge--top-right {
+    &--icon-only .#{base.$prefix}-badge__wrapper .#{base.$prefix}-badge--top-right {
         top: 4px;
         right: 4px;
     }
 
-    &--text-only .#{base.$prefix}-badge-wrapper .#{base.$prefix}-badge--top-right {
+    &--text-only .#{base.$prefix}-badge__wrapper .#{base.$prefix}-badge--top-right {
         top: 8px;
         right: 8px;
     }
 
-    &--icon-and-text .#{base.$prefix}-badge-wrapper .#{base.$prefix}-badge--top-right {
+    &--icon-and-text .#{base.$prefix}-badge__wrapper .#{base.$prefix}-badge--top-right {
         top: 4px;
         right: calc(50% - 20px);
     }

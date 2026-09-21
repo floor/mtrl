@@ -117,7 +117,7 @@ describe('withChipsLabel', () => {
     const created = labelEl(first);
     expect(created).not.toBeNull();
     expect(created?.textContent).toBe('Filters');
-    expect(created?.className).toBe(first.getClass('chips-label'));
+    expect(created?.className).toBe(first.getClass('chips__label'));
     expect(first.element.firstChild).toBe(created);
     expect(first.element.classList.contains(`${first.getClass('chips')}--with-label`)).toBe(true);
 
