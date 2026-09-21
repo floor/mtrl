@@ -45,6 +45,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Component classes match the stylesheets
+        run: bun run classes:check
       - name: Packed imports and size budgets
         run: bun run size:check
       - name: Install Chromium
