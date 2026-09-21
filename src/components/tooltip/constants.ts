@@ -96,7 +96,7 @@ export const TOOLTIP_CLASSES = {
   /** Container for the tooltip content */
   CONTAINER: 'tooltip-container',
   /** Arrow element class */
-  ARROW: 'tooltip-arrow',
+  ARROW: 'tooltip__arrow',
   /** Content element class */
   CONTENT: 'tooltip-content',
   /** Visible state class */

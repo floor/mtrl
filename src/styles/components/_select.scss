@@ -212,7 +212,7 @@ $component: "#{base.$prefix}-select";
 }
 
 // Specific styles for the menu when used with select
-.#{base.$prefix}-select-menu {
+.#{base.$prefix}-select__menu {
     margin-top: 4px;
     max-height: 300px;
     overflow-y: auto;
@@ -281,10 +281,10 @@ $component: "#{base.$prefix}-select";
     }
 }
 
-.#{base.$prefix}-select-menu--visible {
+.#{base.$prefix}-select__menu--visible {
     animation: select-menu-fade-in 0.2s ease forwards;
 }
 
-.#{base.$prefix}-select-menu--hiding {
+.#{base.$prefix}-select__menu--hiding {
     animation: select-menu-fade-out 0.2s ease forwards;
 }

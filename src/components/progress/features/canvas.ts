@@ -112,7 +112,7 @@ export const withCanvas =
     const view = component.element.ownerDocument?.defaultView ?? null;
 
     const canvas = document.createElement("canvas");
-    canvas.className = `${component.getClass(PROGRESS_CLASSES.CONTAINER)}-canvas`;
+    canvas.className = `${component.getClass(PROGRESS_CLASSES.CONTAINER)}__canvas`;
     canvas.setAttribute("aria-hidden", "true");
     component.element.appendChild(canvas);
 

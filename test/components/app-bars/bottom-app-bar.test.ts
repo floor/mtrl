@@ -45,7 +45,7 @@ describe('bottom app bar', () => {
     const bar = createBottomAppBar({ hasFab: true });
     expect(bar.element.getAttribute('role')).toBe('toolbar');
     expect(bar.getActionsContainer()).toBeTruthy();
-    expect(bar.element.querySelector('.mtrl-bottom-app-bar-fab-container')).not.toBeNull();
+    expect(bar.element.querySelector('.mtrl-bottom-app-bar__fab-container')).not.toBeNull();
   });
 
   test('addAction and addFab place their elements, and a new FAB replaces the old one', () => {

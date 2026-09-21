@@ -23,7 +23,7 @@ $component: "#{base.$prefix}-progress";
     display: none;
   }
 
-  &-canvas {
+  &__canvas {
     display: block;
     max-width: 100%;
   }

@@ -99,7 +99,7 @@ $margin: 16px;
     padding-inline-end: 0;
   }
 
-  .#{$button}.#{$component}-action {
+  .#{$button}.#{$component}__action {
     flex: 0 0 auto;
     color: t.color('inverse-primary');
 
@@ -124,7 +124,7 @@ $margin: 16px;
   // ---------------------------------------------------------------------------
   // Close affordance: a standard icon button in inverse-on-surface
   // ---------------------------------------------------------------------------
-  .#{$icon-button}.#{$component}-close {
+  .#{$icon-button}.#{$component}__close {
     flex: 0 0 auto;
     color: t.color('inverse-on-surface');
 
@@ -150,7 +150,7 @@ $margin: 16px;
       padding-inline-end: 16px;
     }
 
-    .#{$component}-action {
+    .#{$component}__action {
       margin-inline-start: auto;
     }
   }

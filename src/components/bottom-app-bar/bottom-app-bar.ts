@@ -33,13 +33,13 @@ export const createBottomAppBar = (
   const actionsContainer = document.createElement("div");
   actionsContainer.className = `${component.getClass(
     "bottom-app-bar"
-  )}-actions`;
+  )}__actions`;
 
   // FAB container for proper positioning
   const fabContainer = document.createElement("div");
   fabContainer.className = `${component.getClass(
     "bottom-app-bar"
-  )}-fab-container`;
+  )}__fab-container`;
 
   // Apply Element enhancer
   const enhancedComponent = withElement({

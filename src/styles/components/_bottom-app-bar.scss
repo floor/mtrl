@@ -33,7 +33,7 @@ $component: '#{base.$prefix}-bottom-app-bar';
   transition: transform 0.3s ease-in-out;
   
   // Actions container on the left side
-  &-actions {
+  &__actions {
     display: flex;
     align-items: center;
     gap: 4px; // Small gap between action buttons
@@ -46,7 +46,7 @@ $component: '#{base.$prefix}-bottom-app-bar';
   }
   
   // FAB container on the right side
-  &-fab-container {
+  &__fab-container {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -60,7 +60,7 @@ $component: '#{base.$prefix}-bottom-app-bar';
   
   // Adjustment for when FAB is centered
   &--fab-center {
-    .#{$component}-fab-container {
+    .#{$component}__fab-container {
       position: absolute;
       left: 50%;
       transform: translateX(-50%);
@@ -76,11 +76,11 @@ $component: '#{base.$prefix}-bottom-app-bar';
   [dir="rtl"] & {
     padding: 12px 4px 12px 16px;
     
-    &-actions {
+    &__actions {
       flex-direction: row-reverse;
     }
     
-    &-fab-container {
+    &__fab-container {
       margin-right: auto;
       margin-left: initial;
     }

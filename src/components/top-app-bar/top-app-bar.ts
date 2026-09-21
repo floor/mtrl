@@ -97,11 +97,11 @@ export const createTopAppBar = (config: TopAppBarConfig = {}): TopAppBar => {
   const createContainers = () => {
     // Leading section container
     const leadingContainer = document.createElement("div");
-    leadingContainer.className = `${component.getClass("top-app-bar")}-leading`;
+    leadingContainer.className = `${component.getClass("top-app-bar")}__leading`;
 
     // Headline element
     const headlineElement = document.createElement("h1");
-    headlineElement.className = `${component.getClass("top-app-bar")}-headline`;
+    headlineElement.className = `${component.getClass("top-app-bar")}__headline`;
     if (componentConfig.title) {
       headlineElement.textContent = componentConfig.title;
     }
@@ -110,7 +110,7 @@ export const createTopAppBar = (config: TopAppBarConfig = {}): TopAppBar => {
     const trailingContainer = document.createElement("div");
     trailingContainer.className = `${component.getClass(
       "top-app-bar"
-    )}-trailing`;
+    )}__trailing`;
 
     return { leadingContainer, headlineElement, trailingContainer };
   };
@@ -164,12 +164,12 @@ export const createTopAppBar = (config: TopAppBarConfig = {}): TopAppBar => {
     if (componentConfig.type === "medium" || componentConfig.type === "large") {
       // For medium and large, create rows
       const topRow = document.createElement("div");
-      topRow.className = `${component.getClass("top-app-bar")}-row`;
+      topRow.className = `${component.getClass("top-app-bar")}__row`;
       topRow.appendChild(leadingContainer);
       topRow.appendChild(trailingContainer);
 
       const bottomRow = document.createElement("div");
-      bottomRow.className = `${component.getClass("top-app-bar")}-row`;
+      bottomRow.className = `${component.getClass("top-app-bar")}__row`;
       bottomRow.appendChild(headlineElement);
 
       withLifecycleComponent.element.appendChild(topRow);
@@ -259,12 +259,12 @@ export const createTopAppBar = (config: TopAppBarConfig = {}): TopAppBar => {
     if (type === "medium" || type === "large") {
       // For medium and large, create rows
       const topRow = document.createElement("div");
-      topRow.className = `${component.getClass("top-app-bar")}-row`;
+      topRow.className = `${component.getClass("top-app-bar")}__row`;
       topRow.appendChild(leadingContainer);
       topRow.appendChild(trailingContainer);
 
       const bottomRow = document.createElement("div");
-      bottomRow.className = `${component.getClass("top-app-bar")}-row`;
+      bottomRow.className = `${component.getClass("top-app-bar")}__row`;
       bottomRow.appendChild(headlineElement);
 
       withLifecycleComponent.element.appendChild(topRow);

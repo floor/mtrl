@@ -60,9 +60,9 @@ export const CHECKBOX_CLASSES = {
   /** The main checkbox container element */
   ROOT: 'checkbox',
   /** The actual input element (usually hidden) */
-  INPUT: 'checkbox-input',
+  INPUT: 'checkbox__input',
   /** The visual checkbox icon */
-  ICON: 'checkbox-icon',
+  ICON: 'checkbox__icon',
   /** The text label associated with the checkbox */
   LABEL: 'checkbox__label'
 } as const;

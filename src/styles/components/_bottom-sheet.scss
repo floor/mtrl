@@ -34,7 +34,7 @@ $component: "#{base.$prefix}-bottom-sheet";
     }
 
     // The scrim, on modal sheets only (ScrimTokens.ContainerOpacity)
-    &-scrim {
+    &__scrim {
         position: absolute;
         inset: 0;
         background-color: t.alpha("scrim", 0.32);
@@ -48,7 +48,7 @@ $component: "#{base.$prefix}-bottom-sheet";
     }
 
     // The sheet itself
-    &-container {
+    &__container {
         position: relative;
         width: 100%;
         max-width: 640px; // BottomSheetDefaults.SheetMaxWidth
@@ -87,7 +87,7 @@ $component: "#{base.$prefix}-bottom-sheet";
     }
 
     // The 32x4dp bar (DockedDragHandleWidth / DockedDragHandleHeight)
-    &-handle {
+    &__handle {
         flex: 0 0 auto;
         width: 32px;
         height: 4px;
@@ -102,18 +102,18 @@ $component: "#{base.$prefix}-bottom-sheet";
         }
     }
 
-    &-header {
+    &__header {
         flex: 0 0 auto;
         padding: 0 24px 16px;
     }
 
-    &-title {
+    &__title {
         margin: 0;
         color: t.color("on-surface");
         @include m.typography("headline-small");
     }
 
-    &-content {
+    &__content {
         flex: 1 1 auto;
         min-height: 0;
         overflow-y: auto;
@@ -126,7 +126,7 @@ $component: "#{base.$prefix}-bottom-sheet";
     // States
     // ---------------------------------------------------------------------
     &--partial {
-        .#{$component}-container {
+        .#{$component}__container {
             // the peek height, showing what the sheet holds without covering
             // the page (BottomSheetDefaults.SheetPeekHeight and its content)
             transform: translateY(0);
@@ -134,7 +134,7 @@ $component: "#{base.$prefix}-bottom-sheet";
             transition: m.spring(transform, default-spatial);
         }
 
-        .#{$component}-scrim {
+        .#{$component}__scrim {
             opacity: 1;
             visibility: visible;
             transition: m.spring(opacity, default-effects), visibility 0s;
@@ -142,7 +142,7 @@ $component: "#{base.$prefix}-bottom-sheet";
     }
 
     &--expanded {
-        .#{$component}-container {
+        .#{$component}__container {
             transform: translateY(0);
             max-height: 100%;
             transition: m.spring(transform, default-spatial);
@@ -154,7 +154,7 @@ $component: "#{base.$prefix}-bottom-sheet";
             }
         }
 
-        .#{$component}-scrim {
+        .#{$component}__scrim {
             opacity: 1;
             visibility: visible;
             transition: m.spring(opacity, default-effects), visibility 0s;
@@ -165,18 +165,18 @@ $component: "#{base.$prefix}-bottom-sheet";
     &--standard {
         pointer-events: none;
 
-        .#{$component}-container {
+        .#{$component}__container {
             pointer-events: auto;
         }
     }
 
     @include m.reduced-motion {
-        .#{$component}-container,
-        .#{$component}-scrim,
-        &--partial .#{$component}-container,
-        &--partial .#{$component}-scrim,
-        &--expanded .#{$component}-container,
-        &--expanded .#{$component}-scrim {
+        .#{$component}__container,
+        .#{$component}__scrim,
+        &--partial .#{$component}__container,
+        &--partial .#{$component}__scrim,
+        &--expanded .#{$component}__container,
+        &--expanded .#{$component}__scrim {
             transition: none;
         }
     }

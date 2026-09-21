@@ -46,8 +46,8 @@ describe('snackbar', () => {
     expect(el.classList.contains('mtrl-snackbar--center')).toBe(true);
     expect(el.getAttribute('role')).toBe('status');
     expect(el.querySelector('.mtrl-snackbar__text')!.textContent).toBe('Saved');
-    expect(el.querySelector('.mtrl-snackbar-action')).toBeNull();
-    expect(el.querySelector('.mtrl-snackbar-close')).toBeNull();
+    expect(el.querySelector('.mtrl-snackbar__action')).toBeNull();
+    expect(el.querySelector('.mtrl-snackbar__close')).toBeNull();
     expect(snackbar.getMessage()).toBe('Saved');
     expect(snackbar.state).toBe('hidden');
     expect(() => createSnackbar({ message: '' })).toThrow();
@@ -56,14 +56,14 @@ describe('snackbar', () => {
   test('the action is a text button; the close affordance a labelled icon button', () => {
     const snackbar = createSnackbar({ message: 'Deleted', action: 'Undo', dismissible: true });
     const el = snackbar.element;
-    const action = el.querySelector<HTMLButtonElement>('.mtrl-snackbar-action')!;
+    const action = el.querySelector<HTMLButtonElement>('.mtrl-snackbar__action')!;
     expect(action.tagName).toBe('BUTTON');
     expect(action.classList.contains('mtrl-button--text')).toBe(true);
     expect(action.textContent).toBe('Undo');
     expect(snackbar.getAction()).toBe('Undo');
     expect(el.classList.contains('mtrl-snackbar--with-action')).toBe(true);
 
-    const close = el.querySelector<HTMLButtonElement>('.mtrl-snackbar-close')!;
+    const close = el.querySelector<HTMLButtonElement>('.mtrl-snackbar__close')!;
     expect(close.classList.contains('mtrl-icon-button')).toBe(true);
     expect(close.getAttribute('aria-label')).toBe('Dismiss');
     expect(close.querySelector('svg')).not.toBeNull();
@@ -233,7 +233,7 @@ describe('snackbar', () => {
     snackbar.setAction('Redo');
     expect(snackbar.getMessage()).toBe('Two');
     expect(snackbar.getAction()).toBe('Redo');
-    expect(snackbar.element.querySelector('.mtrl-snackbar-action')!.textContent).toBe('Redo');
+    expect(snackbar.element.querySelector('.mtrl-snackbar__action')!.textContent).toBe('Redo');
   });
 
   test('destroy removes the element and stops the timer', async () => {

@@ -22,7 +22,7 @@ $component: '#{base.$prefix}-checkbox';
   user-select: none;
 
   // Input (visually hidden but accessible)
-  &-input {
+  &__input {
     position: absolute;
     opacity: 0;
     width: 100%;
@@ -36,14 +36,14 @@ $component: '#{base.$prefix}-checkbox';
     }
 
     // Focus indicator
-    &:focus-visible ~ .#{$component}-icon {
+    &:focus-visible ~ .#{$component}__icon {
       outline: 2px solid t.color('primary');
       outline-offset: 2px;
     }
   }
 
   // Checkbox visual element
-  &-icon {
+  &__icon {
     position: relative;
     width: 18px;
     height: 18px;
@@ -108,7 +108,7 @@ $component: '#{base.$prefix}-checkbox';
   }
 
   // Checked state
-  .#{$component}-input:checked ~ .#{$component}-icon {
+  .#{$component}__input:checked ~ .#{$component}__icon {
     background-color: t.color('primary');
     border-color: t.color('primary');
 
@@ -119,7 +119,7 @@ $component: '#{base.$prefix}-checkbox';
 
   // Indeterminate state
   &--indeterminate {
-    .#{$component}-icon {
+    .#{$component}__icon {
       background-color: t.color('primary');
       border-color: t.color('primary');
 
@@ -144,16 +144,16 @@ $component: '#{base.$prefix}-checkbox';
   // unselected outline and the selected container OnSurface at 0.38, and the selected
   // checkmark Surface at full opacity.
   &--disabled {
-    .#{$component}-input {
+    .#{$component}__input {
       cursor: not-allowed;
     }
 
-    .#{$component}-icon {
+    .#{$component}__icon {
       background-color: transparent;
       border-color: t.alpha('on-surface', 0.38);
     }
 
-    .#{$component}-input:checked ~ .#{$component}-icon {
+    .#{$component}__input:checked ~ .#{$component}__icon {
       background-color: t.alpha('on-surface', 0.38);
       border-color: t.alpha('on-surface', 0.38);
       color: t.color('surface');
@@ -166,11 +166,11 @@ $component: '#{base.$prefix}-checkbox';
 
   // Outlined variant
   &--outlined {
-    .#{$component}-icon {
+    .#{$component}__icon {
       background-color: transparent;
     }
 
-    .#{$component}-input:checked ~ .#{$component}-icon {
+    .#{$component}__input:checked ~ .#{$component}__icon {
       background-color: transparent;
       border-color: t.color('primary');
 
@@ -180,7 +180,7 @@ $component: '#{base.$prefix}-checkbox';
     }
 
     &.#{$component}--indeterminate {
-      .#{$component}-icon::after {
+      .#{$component}__icon::after {
         background-color: t.color('primary');
       }
     }
@@ -189,8 +189,8 @@ $component: '#{base.$prefix}-checkbox';
   // State layer effects
   &:not(&--disabled) {
     // Common state layer structure
-    .#{$component}-input:hover ~ .#{$component}-icon::before,
-    .#{$component}-input:active ~ .#{$component}-icon::before {
+    .#{$component}__input:hover ~ .#{$component}__icon::before,
+    .#{$component}__input:active ~ .#{$component}__icon::before {
       content: '';
       position: absolute;
       top: -12px;
@@ -202,18 +202,18 @@ $component: '#{base.$prefix}-checkbox';
     }
 
     // Hover state
-    .#{$component}-input:hover ~ .#{$component}-icon::before {
+    .#{$component}__input:hover ~ .#{$component}__icon::before {
       opacity: v.state('hover-state-layer-opacity');
 
     }
 
     // Hover checked state
-    .#{$component}-input:checked:hover ~ .#{$component}-icon::before {
+    .#{$component}__input:checked:hover ~ .#{$component}__icon::before {
       opacity: v.state('pressed-state-layer-opacity');
       background-color: t.color('primary');
     }
     // Active/pressed state
-    .#{$component}-input:active ~ .#{$component}-icon::before {
+    .#{$component}__input:active ~ .#{$component}__icon::before {
       opacity: v.state('pressed-state-layer-opacity');
       background-color: t.color('on-surface');
     }
@@ -221,14 +221,14 @@ $component: '#{base.$prefix}-checkbox';
 
   // Accessibility
   @include m.reduced-motion {
-    .#{$component}-icon,
-    .#{$component}-icon svg {
+    .#{$component}__icon,
+    .#{$component}__icon svg {
       transition: none;
     }
   }
 
   @include m.high-contrast {
-    .#{$component}-icon {
+    .#{$component}__icon {
       border-width: 2px;
     }
   }

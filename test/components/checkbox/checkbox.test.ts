@@ -52,7 +52,7 @@ describe('checkbox', () => {
     const checkbox = mount();
     expect(checkbox.element.classList.contains('mtrl-checkbox')).toBe(true);
     expect(checkbox.input.type).toBe('checkbox');
-    expect(checkbox.element.querySelector('.mtrl-checkbox-icon svg')).not.toBeNull();
+    expect(checkbox.element.querySelector('.mtrl-checkbox__icon svg')).not.toBeNull();
   });
 
   test('form attributes reach the input', () => {

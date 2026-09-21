@@ -51,7 +51,7 @@ describe('the checkbox meets the 48dp interactive size', () => {
   });
 
   test('the input still spans the root, so the hit area is the whole box', () => {
-    const input = rule(checkboxCss, '.mtrl-checkbox-input');
+    const input = rule(checkboxCss, '.mtrl-checkbox__input');
     expect(declaration(input, 'position')).toBe('absolute');
     expect(declaration(input, 'width')).toBe('100%');
     expect(declaration(input, 'height')).toBe('100%');
