@@ -8,6 +8,7 @@ import {
   DialogSize,
   DialogEventType,
 } from "./types";
+import type { EventCallback } from "../../core/state/emitter";
 import { removeClass } from "../../core/dom/classes";
 
 /**
@@ -51,8 +52,10 @@ export interface ApiOptions {
     hasDivider: () => boolean;
   };
   events: {
-    on: (event: string, handler: Function) => void;
-    off: (event: string, handler: Function) => void;
+    // `EventCallback`, not `Function`; see the note on
+    // DialogFeatureComponent in types.ts. FLO-114.
+    on: (event: string, handler: EventCallback) => void;
+    off: (event: string, handler: EventCallback) => void;
     trigger: (event: string, data: unknown) => void;
   };
   lifecycle: {

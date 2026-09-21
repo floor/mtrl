@@ -1,5 +1,6 @@
 // src/components/dialog/types.ts
 import type { ButtonComponent } from "../button/types";
+import type { EventCallback } from "../../core/state/emitter";
 import type { DividerComponent } from "../divider/types";
 
 /**
@@ -362,7 +363,13 @@ export interface DialogFeatureComponent {
   element: HTMLElement;
   config: DialogConfig & Record<string, unknown>;
   getClass: (name: string) => string;
-  on: (event: string, handler: Function) => unknown;
+  // `EventCallback`, not `Function`. This host is handed the component the
+  // pipe has built, whose `on` takes an EventCallback; `Function` is a
+  // supertype of it, so a host promising to call a handler with anything
+  // cannot accept one that takes a typed payload. That is what stopped the
+  // pipe at dialog.ts:111 resolving, and the four errors after it were that
+  // one failure cascading. FLO-114.
+  on: (event: string, handler: EventCallback) => unknown;
   emit: (event: string, data?: unknown) => unknown;
   _buttons?: DialogButtonRecord[];
 }

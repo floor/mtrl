@@ -3,6 +3,7 @@ import {
   createComponentConfig, 
   createElementConfig
 } from '../../core/config/component';
+import type { EventCallback } from "../../core/state/emitter";
 import { DialogConfig } from './types';
 import type { ApiOptions } from './api';
 
@@ -84,8 +85,10 @@ export const getOverlayConfig = () => {
  * returning the component still satisfies it.
  */
 type DialogFeatureHost = Omit<ApiOptions, "events"> & {
-  on: (event: string, handler: Function) => unknown;
-  off: (event: string, handler: Function) => unknown;
+  // `EventCallback`, not `Function`; see the note on DialogFeatureComponent
+  // in types.ts. FLO-114.
+  on: (event: string, handler: EventCallback) => unknown;
+  off: (event: string, handler: EventCallback) => unknown;
   emit: (event: string, data: unknown) => unknown;
 };
 
