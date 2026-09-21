@@ -1,6 +1,6 @@
 // src/components/search/features/input.ts
 
-import { SearchConfig, SearchStructure, SearchSuggestion } from "../types";
+import { SearchConfig, SearchStructure, SearchSuggestion, SearchViewMode } from "../types";
 import { SEARCH_CLASSES, SEARCH_EVENTS } from "../constants";
 
 /**
@@ -45,8 +45,15 @@ interface InputHost {
     collapse: () => void;
     getState: () => string;
     isExpanded: () => boolean;
-    setViewMode: (mode: string) => void;
-    getViewMode: () => string;
+    // `SearchViewMode`, not `string`. The producer in features/states.ts
+    // takes and returns the union, and a host declaring the wider `string`
+    // promises to call `setViewMode` with values -- any string -- that the
+    // producer does not accept. Under strictFunctionTypes that is the
+    // parameter position, so it is contravariant and unsound: it is what
+    // stopped the pipe at search.ts:54 resolving, and the two `unknown`
+    // errors after it were that one failure cascading. FLO-114.
+    setViewMode: (mode: SearchViewMode) => void;
+    getViewMode: () => SearchViewMode;
     updatePopulatedState: (hasValue: boolean) => void;
     updateFocusedState: (isFocused: boolean) => void;
   };

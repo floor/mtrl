@@ -8,6 +8,7 @@ import {
   SearchViewMode,
   SearchSuggestion,
 } from "./types";
+import type { EventCallback } from "../../core/state/emitter";
 
 /**
  * API options interface - structured by feature area
@@ -43,8 +44,12 @@ interface ApiOptions {
     render: () => void;
   };
   events: {
-    on: (event: string, handler: Function) => void;
-    off: (event: string, handler: Function) => void;
+    // `EventCallback`, not `Function`: getApiConfig in config.ts now supplies
+    // the narrowed forwarder, and a parameter declared `Function` cannot
+    // accept it. The whole chain -- InternalComponent, the forwarder it
+    // builds, and this -- is internal to the component. FLO-114.
+    on: (event: string, handler: EventCallback) => void;
+    off: (event: string, handler: EventCallback) => void;
   };
   lifecycle: {
     destroy: () => void;
