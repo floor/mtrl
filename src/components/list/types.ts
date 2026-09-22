@@ -55,8 +55,7 @@ export interface ListConfig<T = unknown> {
   animate?: boolean;
 
   /**
-   * Component prefix for CSS class names
-   * @default 'mtrl'
+   * @deprecated The prefix is fixed at build time (FLO-118); this option is ignored.
    */
   prefix?: string;
 
@@ -77,7 +76,27 @@ export interface ListConfig<T = unknown> {
  *
  * @category Components
  */
+/** Slot HTML uses the shared safe HTML sink; HTMLElement content is moved, not cloned.
+ * Use text for metadata and control/custom for independently interactive content.
+ */
+export interface ListSlot {
+  type: "icon" | "avatar" | "image" | "video" | "text" | "control" | "custom";
+  content: string | HTMLElement;
+}
+
 export interface ListItem {
+  /** Structural entries are rendered but never selectable. */
+  kind?: "item" | "divider" | "subheader";
+  /** Insets a divider to the text column (72px from the leading edge). */
+  inset?: boolean;
+  /** One headline line plus optional overline/supporting lines. Inferred when omitted. */
+  lines?: 1 | 2 | 3;
+  overline?: string;
+  supportingText?: string;
+  leading?: ListSlot;
+  trailing?: ListSlot;
+  /** Blocks user activation; programmatic selection is still allowed. */
+  disabled?: boolean;
   id?: string | number;
   text?: string;
   title?: string;
@@ -90,14 +109,16 @@ export interface ListItem {
 /**
  * What withRenderer installs at `component.list`.
  *
- * Most of it is the paging surface a virtual list would have; a rendered list
- * has every item in the DOM already, so those are the no-ops below rather than
- * an absence, and the shape stays the one mtrl-addons implements for real.
+ * This static list renders all entries. Legacy paging methods remain no-ops
+ * for compatibility; there is no virtual-list dependency.
  *
  * @category Components
  * @internal
  */
 export interface ListRenderer<T = ListItem> {
+  /** @internal Owned row references avoid selector interpolation and nested-list matches. */
+  getRows: () => ListRow<T>[];
+  onRender: (handler: () => void) => () => void;
   getItems: () => T[];
   getAllItems: () => T[];
   getVisibleItems: () => T[];
@@ -130,6 +151,15 @@ export interface ListRenderer<T = ListItem> {
   isApiMode: () => boolean;
   isLoading: () => boolean;
   hasNextPage: () => boolean;
+}
+
+/** @internal A rendered data row and its independent native primary action. */
+export interface ListRow<T = ListItem> {
+  item: T;
+  id: string;
+  index: number;
+  element: HTMLElement;
+  action?: HTMLButtonElement;
 }
 
 /** Where a scrolled-to item lands in the viewport */
@@ -165,6 +195,9 @@ export interface ListSelection<T = ListItem> {
  */
 export interface ListFeatureHost {
   element: HTMLElement;
+  getClass: (name: string) => string;
+  resources?: import("../../core/compose/cleanup").CleanupScope;
+  eventTarget?: { current: unknown };
   emit?: (event: string, data: unknown) => unknown;
   lifecycle?: { destroy: () => void };
   list?: ListRenderer;

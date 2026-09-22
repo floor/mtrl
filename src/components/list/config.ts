@@ -6,7 +6,6 @@ import {
   createComponentConfig,
   createElementConfig as coreCreateElementConfig,
 } from "../../core/config/component";
-import { LIST_CLASSES } from "./constants";
 import type {
   ListConfig,
   ListFeatureHost,
@@ -36,30 +35,8 @@ export const defaultConfig: Partial<ListConfig<ListItem>> = {
 export const createBaseConfig = (
   config: Partial<ListConfig<ListItem>> = {}
 ): ListConfig<ListItem> => {
-  // Validate required props
-  if (!Array.isArray(config.items) && !config.renderItem) {
-    throw new Error("List requires either items array or renderItem function");
-  }
-
-  // If items are provided but no renderItem, create a default renderer
-  if (
-    Array.isArray(config.items) &&
-    config.items.length > 0 &&
-    !config.renderItem
-  ) {
-    config.renderItem = (item: ListItem) => {
-      const element = document.createElement("div");
-      element.className = "mtrl-list-item";
-      element.textContent = String(
-        item.text ||
-          item.title ||
-          item.headline ||
-          item.name ||
-          item.id ||
-          String(item)
-      );
-      return element;
-    };
+  if (config.items !== undefined && !Array.isArray(config.items)) {
+    throw new TypeError("List items must be an array");
   }
 
   // `items` is optional on ListConfig and required by both features, and the
@@ -78,7 +55,6 @@ export const createBaseConfig = (
 export const getElementConfig = (config: ListConfig<ListItem>) => {
   const attributes: Record<string, string> = {
     role: "list",
-    tabindex: "0",
   };
 
   // Add ARIA attributes for accessibility
@@ -90,7 +66,6 @@ export const getElementConfig = (config: ListConfig<ListItem>) => {
   return coreCreateElementConfig(config, {
     tag: "div",
     attributes: attributes,
-    className: [LIST_CLASSES.CONTAINER, config.class],
     forwardEvents: {
       scroll: true,
       keydown: true,
