@@ -1,10 +1,16 @@
 // src/components/chips/index.ts
-export { default as createChip } from "./chip";
+export { createAssistChip, createFilterChip, createInputChip, createSuggestionChip } from "./factories";
 export { default as createChips } from "./chips";
 export type {
   ChipConfig,
   ChipComponent,
-  ChipVariant,
+  ChipType,
+  ChipEvents,
+  ChipChangePayload,
+  AssistChipConfig,
+  FilterChipConfig,
+  InputChipConfig,
+  SuggestionChipConfig,
   ChipsConfig,
   ChipsComponent,
   ChipsEvents,

@@ -32,7 +32,7 @@ import createButton from '../../../src/components/button';
 import createDialog from '../../../src/components/dialog';
 import createMenu from '../../../src/components/menu';
 import createDrawer from '../../../src/components/drawer';
-import createChip from '../../../src/components/chips/chip';
+import { createAssistChip } from '../../../src/components/chips';
 import { createCardContent } from '../../../src/components/card';
 
 const ICON = '<svg data-icon="x"></svg>';
@@ -115,7 +115,7 @@ describe('the policy reaches every component sink', () => {
 
   test('chip icons', () => {
     configureHTML({ sanitize: tag });
-    const chip = createChip({ text: 'A', leadingIcon: ICON });
+    const chip = createAssistChip({ label: 'A', leadingIcon: ICON });
     expect(chip.element.querySelector('svg')?.getAttribute('data-sanitized')).toBe('1');
   });
 

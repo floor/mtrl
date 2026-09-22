@@ -1,0 +1,7 @@
+// Compose Material 3 AssistChipTokens.kt (VERSION 7_0_1).
+@use "../base" as base;
+@use "../theme" as t;
+@mixin tokens {
+    --#{base.$prefix}-chip-label-color: #{t.color("on-surface")};
+    --#{base.$prefix}-chip-leading-color: #{t.color("primary")};
+}
