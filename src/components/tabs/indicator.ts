@@ -102,8 +102,7 @@ export const createTabIndicator = (config: TabIndicatorConfig = {}): TabIndicato
       }
       
       // For primary tabs (default), use text label width
-      const textElement = tab.element.querySelector(`.${prefix}-tab-text`) || 
-                        tab.element.querySelector(`.${prefix}-button__text`);
+      const textElement = tab.element.querySelector(`.${prefix}-button__text`);
       
       if (textElement) {
         // maxOf(contentWidth, 24.dp) — TabRow.kt:461
@@ -120,8 +119,7 @@ export const createTabIndicator = (config: TabIndicatorConfig = {}): TabIndicato
         return Math.max(tab.element.offsetWidth / 2, 30);
       case 'content':
         // Try to match content width
-        const text = tab.element.querySelector(`.${prefix}-button__text`) || 
-                   tab.element.querySelector(`.${prefix}-tab-text`);
+        const text = tab.element.querySelector(`.${prefix}-button__text`);
         if (text) {
           return Math.max(text.clientWidth, 30);
         }
@@ -168,8 +166,7 @@ export const createTabIndicator = (config: TabIndicatorConfig = {}): TabIndicato
     // For primary tabs with text label width, center under the text
     if (mergedConfig.variant !== 'secondary' && 
         (mergedConfig.widthStrategy === 'auto' || mergedConfig.widthStrategy === 'content')) {
-      const textElement = tab.element.querySelector(`.${prefix}-tab-text`) || 
-                        tab.element.querySelector(`.${prefix}-button__text`);
+      const textElement = tab.element.querySelector(`.${prefix}-button__text`);
       
       if (textElement) {
         // Get text element position relative to tab

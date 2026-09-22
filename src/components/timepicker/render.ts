@@ -31,20 +31,20 @@ export const renderTimePicker = (
   // Create title if provided
   if (config.title) {
     const title = document.createElement("div");
-    title.className = `${config.prefix}-time-picker-title`;
+    title.className = `${config.prefix}-time-picker__title`;
     title.textContent = config.title;
-    title.id = `${config.prefix}-time-picker-title`;
+    title.id = `${config.prefix}-time-picker__title`;
     container.appendChild(title);
   }
 
   // Create content container
   const content = document.createElement("div");
-  content.className = `${config.prefix}-time-picker-content`;
+  content.className = `${config.prefix}-time-picker__content`;
   container.appendChild(content);
 
   // Create time input container (same for both modes)
   const inputContainer = document.createElement("div");
-  inputContainer.className = `${config.prefix}-time-picker-input-container`;
+  inputContainer.className = `${config.prefix}-time-picker__input-container`;
   content.appendChild(inputContainer);
 
   // Determine display hours based on format
@@ -55,11 +55,11 @@ export const renderTimePicker = (
 
   // Create hours input field
   const hoursInputContainer = document.createElement("div");
-  hoursInputContainer.className = `${config.prefix}-time-picker-time-input-field`;
+  hoursInputContainer.className = `${config.prefix}-time-picker__time-input-field`;
 
   const hoursInput = document.createElement("input");
   hoursInput.type = "number";
-  hoursInput.className = `${config.prefix}-time-picker-hours`;
+  hoursInput.className = `${config.prefix}-time-picker__hours`;
   hoursInput.min = config.format === TIME_FORMAT.MILITARY ? "0" : "1";
   hoursInput.max = config.format === TIME_FORMAT.MILITARY ? "23" : "12";
   hoursInput.value = padZero(displayHours);
@@ -75,17 +75,17 @@ export const renderTimePicker = (
 
   // Create separator
   const separator = document.createElement("div");
-  separator.className = `${config.prefix}-time-picker-separator`;
+  separator.className = `${config.prefix}-time-picker__separator`;
   separator.textContent = ":";
   inputContainer.appendChild(separator);
 
   // Create minutes input field
   const minutesInputContainer = document.createElement("div");
-  minutesInputContainer.className = `${config.prefix}-time-picker-time-input-field`;
+  minutesInputContainer.className = `${config.prefix}-time-picker__time-input-field`;
 
   const minutesInput = document.createElement("input");
   minutesInput.type = "number";
-  minutesInput.className = `${config.prefix}-time-picker-minutes`;
+  minutesInput.className = `${config.prefix}-time-picker__minutes`;
   minutesInput.min = "0";
   minutesInput.max = "59";
   minutesInput.value = padZero(timeValue.minutes);
@@ -102,16 +102,16 @@ export const renderTimePicker = (
   let secondsInput: HTMLInputElement | undefined;
   if (config.showSeconds) {
     const secondsSeparator = document.createElement("div");
-    secondsSeparator.className = `${config.prefix}-time-picker-separator`;
+    secondsSeparator.className = `${config.prefix}-time-picker__separator`;
     secondsSeparator.textContent = ":";
     inputContainer.appendChild(secondsSeparator);
 
     const secondsInputContainer = document.createElement("div");
-    secondsInputContainer.className = `${config.prefix}-time-picker-time-input-field`;
+    secondsInputContainer.className = `${config.prefix}-time-picker__time-input-field`;
 
     secondsInput = document.createElement("input");
     secondsInput.type = "number";
-    secondsInput.className = `${config.prefix}-time-picker-seconds`;
+    secondsInput.className = `${config.prefix}-time-picker__seconds`;
     secondsInput.min = "0";
     secondsInput.max = "59";
     secondsInput.value = padZero(timeValue.seconds || 0);
@@ -121,7 +121,7 @@ export const renderTimePicker = (
     secondsInput.setAttribute("pattern", "[0-9]*");
 
     const secondsLabel = document.createElement("label");
-    secondsLabel.className = `${config.prefix}-time-picker-input-label`;
+    secondsLabel.className = `${config.prefix}-time-picker__input-label`;
     secondsLabel.textContent = "Second";
 
     secondsInputContainer.appendChild(secondsInput);
@@ -137,7 +137,7 @@ export const renderTimePicker = (
     // selected" rather than "AM, button, pressed", and one tab stop with
     // arrows rather than two tab stops.
     const periodContainer = document.createElement("div");
-    periodContainer.className = `${config.prefix}-time-picker-period`;
+    periodContainer.className = `${config.prefix}-time-picker__period`;
     periodContainer.setAttribute("role", "radiogroup");
     periodContainer.setAttribute("aria-label", "AM or PM");
 
@@ -145,8 +145,8 @@ export const renderTimePicker = (
     const createPeriodOption = (period: TIME_PERIOD): HTMLElement => {
       const selected = timeValue.period === period;
       const option = document.createElement("div");
-      option.className = `${config.prefix}-time-picker-period-${period.toLowerCase()} ${
-        selected ? `${config.prefix}-time-picker-period--selected` : ""
+      option.className = `${config.prefix}-time-picker__period-${period.toLowerCase()} ${
+        selected ? `${config.prefix}-time-picker__period--selected` : ""
       }`;
       option.textContent = period;
       option.setAttribute("role", "radio");
@@ -165,14 +165,14 @@ export const renderTimePicker = (
 
   // Create canvas-based dial container (shown/hidden based on mode)
   const dialContainer = document.createElement("div");
-  dialContainer.className = `${config.prefix}-time-picker-dial`;
+  dialContainer.className = `${config.prefix}-time-picker__dial`;
   dialContainer.style.display =
     config.type === TIME_PICKER_TYPE.DIAL ? "block" : "none";
   content.appendChild(dialContainer);
 
   // Create canvas element
   const canvas = document.createElement("canvas");
-  canvas.className = `${config.prefix}-time-picker-dial-canvas`;
+  canvas.className = `${config.prefix}-time-picker__dial-canvas`;
   canvas.width = TIMEPICKER_DIAL.DIAMETER;
   canvas.height = TIMEPICKER_DIAL.DIAMETER;
   canvas.style.width = `${TIMEPICKER_DIAL.DIAMETER}px`;
@@ -187,12 +187,12 @@ export const renderTimePicker = (
 
   // Create actions container
   const actions = document.createElement("div");
-  actions.className = `${config.prefix}-time-picker-actions`;
+  actions.className = `${config.prefix}-time-picker__actions`;
   container.appendChild(actions);
 
   // Create type toggle button
   const toggleTypeButton = document.createElement("button");
-  toggleTypeButton.className = `${config.prefix}-time-picker-toggle-type`;
+  toggleTypeButton.className = `${config.prefix}-time-picker__toggle-type`;
   // Without this a button defaults to type="submit", and this one sits inside
   // whatever form the picker was placed in. Cancel and confirm already set it.
   toggleTypeButton.setAttribute("type", "button");
@@ -210,19 +210,19 @@ export const renderTimePicker = (
 
   // Create action buttons container
   const actionButtons = document.createElement("div");
-  actionButtons.className = `${config.prefix}-time-picker-action-buttons`;
+  actionButtons.className = `${config.prefix}-time-picker__action-buttons`;
   actions.appendChild(actionButtons);
 
   // Create cancel button
   const cancelButton = document.createElement("button");
-  cancelButton.className = `${config.prefix}-time-picker-cancel`;
+  cancelButton.className = `${config.prefix}-time-picker__cancel`;
   cancelButton.textContent = config.cancelText || "Cancel";
   cancelButton.setAttribute("type", "button");
   actionButtons.appendChild(cancelButton);
 
   // Create confirm button
   const confirmButton = document.createElement("button");
-  confirmButton.className = `${config.prefix}-time-picker-confirm`;
+  confirmButton.className = `${config.prefix}-time-picker__confirm`;
   confirmButton.textContent = config.confirmText || "OK";
   confirmButton.setAttribute("type", "button");
   actionButtons.appendChild(confirmButton);
@@ -260,17 +260,17 @@ export const renderTimePicker = (
 
         // Apply active state to hour input by default
         const hourElements = container.querySelectorAll(
-          `.${config.prefix}-time-picker-hours`
+          `.${config.prefix}-time-picker__hours`
         );
         hourElements.forEach((el) => el.setAttribute("data-active", "true"));
 
         const minuteElements = container.querySelectorAll(
-          `.${config.prefix}-time-picker-minutes`
+          `.${config.prefix}-time-picker__minutes`
         );
         minuteElements.forEach((el) => el.setAttribute("data-active", "false"));
 
         const secondElements = container.querySelectorAll(
-          `.${config.prefix}-time-picker-seconds`
+          `.${config.prefix}-time-picker__seconds`
         );
         secondElements.forEach((el) => el.setAttribute("data-active", "false"));
 
@@ -478,10 +478,10 @@ export const renderTimePicker = (
       // Update period selectors
       container
         .querySelectorAll(
-          `.${config.prefix}-time-picker-period-am, .${config.prefix}-time-picker-period-pm`
+          `.${config.prefix}-time-picker__period-am, .${config.prefix}-time-picker__period-pm`
         )
         .forEach((el) => {
-          el.classList.remove(`${config.prefix}-time-picker-period--selected`);
+          el.classList.remove(`${config.prefix}-time-picker__period--selected`);
           el.setAttribute("aria-checked", "false");
           // Out of the tab order: a radiogroup is one stop, and the selected
           // option is the one Tab reaches.
@@ -489,11 +489,11 @@ export const renderTimePicker = (
         });
 
       const selectedPeriod = container.querySelector(
-        `.${config.prefix}-time-picker-period-${period.toLowerCase()}`
+        `.${config.prefix}-time-picker__period-${period.toLowerCase()}`
       );
       if (selectedPeriod) {
         selectedPeriod.classList.add(
-          `${config.prefix}-time-picker-period--selected`
+          `${config.prefix}-time-picker__period--selected`
         );
         selectedPeriod.setAttribute("aria-checked", "true");
         selectedPeriod.setAttribute("tabindex", "0");
@@ -519,10 +519,10 @@ export const renderTimePicker = (
   // Add event listeners for period selectors
   if (config.format === TIME_FORMAT.AMPM) {
     const amPeriodElement = container.querySelector(
-      `.${config.prefix}-time-picker-period-am`
+      `.${config.prefix}-time-picker__period-am`
     );
     const pmPeriodElement = container.querySelector(
-      `.${config.prefix}-time-picker-period-pm`
+      `.${config.prefix}-time-picker__period-pm`
     );
 
     /**
@@ -563,7 +563,7 @@ export const renderTimePicker = (
           // The selection carries focus with it, which is what makes the group
           // a single tab stop rather than a trap.
           const moved = container.querySelector(
-            `.${config.prefix}-time-picker-period-${other.toLowerCase()}`,
+            `.${config.prefix}-time-picker__period-${other.toLowerCase()}`,
           );
           if (moved instanceof HTMLElement) moved.focus();
         }

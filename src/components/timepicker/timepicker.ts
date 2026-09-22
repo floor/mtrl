@@ -1,6 +1,5 @@
 // src/components/timepicker/timePicker.ts
 
-import { PREFIX } from "../../core/config";
 import { pipe } from "../../core/compose";
 import { createBase, withElement } from "../../core/compose/component";
 import { withEvents, withLifecycle } from "../../core/compose/features";
@@ -38,7 +37,7 @@ const createTimePicker = (
 
     // Create modal element
     const modalElement = document.createElement("div");
-    modalElement.className = `${PREFIX}-time-picker-modal`;
+    modalElement.className = `${baseConfig.prefix}-time-picker__modal`;
     modalElement.style.display = "none";
     modalElement.style.position = "fixed";
     modalElement.style.top = "0";
@@ -52,10 +51,10 @@ const createTimePicker = (
     // Create dialog element
     const dialogElement = document.createElement("div");
     dialogElement.className = [
-      `${PREFIX}-time-picker-dialog`,
-      `${PREFIX}-time-picker-dialog--${baseConfig.type}`,
-      `${PREFIX}-time-picker-dialog--${baseConfig.orientation}`,
-      `${PREFIX}-time-picker-dialog--${baseConfig.format}`,
+      `${baseConfig.prefix}-time-picker__dialog`,
+      `${baseConfig.prefix}-time-picker__dialog--${baseConfig.type}`,
+      `${baseConfig.prefix}-time-picker__dialog--${baseConfig.orientation}`,
+      `${baseConfig.prefix}-time-picker__dialog--${baseConfig.format}`,
     ].join(" ");
     dialogElement.style.position = "absolute";
     dialogElement.style.top = "50%";

@@ -69,38 +69,6 @@ export const createTabsState = (options: TabsStateOptions): TabsStateManager => 
   }
   
   /**
-   * Handles ripple effect on tab activation
-   * @param tab - The tab to add ripple to 
-   */
-  const addRippleEffect = (tab: TabComponent): void => {
-    if (!tab.element) return;
-    
-    const ripple = tab.element.querySelector(`.${tab.getClass('tab')}-ripple`);
-    if (!ripple) return;
-    
-    // Create a new ripple element
-    const rippleElement = document.createElement('span');
-    rippleElement.className = 'ripple';
-    
-    // Position the ripple in the center
-    rippleElement.style.width = '100%';
-    rippleElement.style.height = '100%';
-    rippleElement.style.left = '0';
-    rippleElement.style.top = '0';
-    
-    // Add animation
-    rippleElement.style.animation = 'ripple-effect 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
-    
-    // Add to DOM
-    ripple.appendChild(rippleElement);
-    
-    // Remove after animation completes
-    setTimeout(() => {
-      rippleElement.remove();
-    }, 400);
-  };
-  
-  /**
    * Activates a tab with proper state transitions
    */
   const activateTab = (tab: TabComponent, immediate = false): void => {
@@ -121,11 +89,6 @@ export const createTabsState = (options: TabsStateOptions): TabsStateManager => 
       setTimeout(() => {
         indicator.moveToTab(tab, immediate);
       }, 10);
-    }
-    
-    // Add ripple effect unless immediate mode is on
-    if (!immediate) {
-      addRippleEffect(tab);
     }
     
     // Trigger change callback
@@ -157,30 +120,4 @@ export const createTabsState = (options: TabsStateOptions): TabsStateManager => 
     getActiveTab,
     destroy
   };
-};
-
-/**
- * Adds animation styles for ripple effects
- * This is separate from indicator animations
- */
-export const addTabStateStyles = (): void => {
-  // Only add once
-  if (document.getElementById('tab-state-styles')) return;
-  
-  const style = document.createElement('style');
-  style.id = 'tab-state-styles';
-  style.textContent = `
-    @keyframes ripple-effect {
-      0% {
-        transform: scale(0);
-        opacity: 0.2;
-      }
-      100% {
-        transform: scale(1);
-        opacity: 0;
-      }
-    }
-  `;
-  
-  document.head.appendChild(style);
 };

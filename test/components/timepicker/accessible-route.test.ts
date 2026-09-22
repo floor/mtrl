@@ -70,17 +70,17 @@ beforeEach(() => { document.body.innerHTML = ""; });
 describe("the time fields are named for assistive technology", () => {
   test("the hour field is labelled Hour", () => {
     const c = picker();
-    expect(q(c, `.${PREFIX}-time-picker-hours`).getAttribute("aria-label")).toBe("Hour");
+    expect(q(c, `.${PREFIX}-time-picker__hours`).getAttribute("aria-label")).toBe("Hour");
   });
 
   test("the minute field is labelled Minute", () => {
     const c = picker();
-    expect(q(c, `.${PREFIX}-time-picker-minutes`).getAttribute("aria-label")).toBe("Minute");
+    expect(q(c, `.${PREFIX}-time-picker__minutes`).getAttribute("aria-label")).toBe("Minute");
   });
 
   test("the second field is labelled Second when it is shown", () => {
     const c = picker({ showSeconds: true });
-    expect(q(c, `.${PREFIX}-time-picker-seconds`).getAttribute("aria-label")).toBe("Second");
+    expect(q(c, `.${PREFIX}-time-picker__seconds`).getAttribute("aria-label")).toBe("Second");
   });
 
   // The fields are the accessible route, so they have to be reachable in dial
@@ -88,14 +88,14 @@ describe("the time fields are named for assistive technology", () => {
   test("the fields exist in dial mode, not only in input mode", () => {
     const c = picker({ type: TIME_PICKER_TYPE.DIAL });
 
-    expect(q(c, `.${PREFIX}-time-picker-hours`)).not.toBeNull();
-    expect(q(c, `.${PREFIX}-time-picker-minutes`)).not.toBeNull();
+    expect(q(c, `.${PREFIX}-time-picker__hours`)).not.toBeNull();
+    expect(q(c, `.${PREFIX}-time-picker__minutes`)).not.toBeNull();
   });
 
   test("they are real text inputs, which is the role M3 asks for", () => {
     const c = picker();
     for (const cls of ["hours", "minutes"]) {
-      const field = q(c, `.${PREFIX}-time-picker-${cls}`) as HTMLInputElement;
+      const field = q(c, `.${PREFIX}-time-picker__${cls}`) as HTMLInputElement;
       expect(field.tagName).toBe("INPUT");
       expect(field.disabled).toBe(false);
     }
@@ -108,19 +108,19 @@ describe("the dial does not present itself as an accessible control", () => {
   // out of the accessibility tree rather than leave a nameless element in it.
   test("the canvas is hidden from assistive technology", () => {
     const c = picker();
-    expect(q(c, `.${PREFIX}-time-picker-dial-canvas`).getAttribute("aria-hidden")).toBe("true");
+    expect(q(c, `.${PREFIX}-time-picker__dial-canvas`).getAttribute("aria-hidden")).toBe("true");
   });
 
   test("and it is not focusable, so Tab never lands on it", () => {
     const c = picker();
-    const canvas = q(c, `.${PREFIX}-time-picker-dial-canvas`);
+    const canvas = q(c, `.${PREFIX}-time-picker__dial-canvas`);
     expect(canvas.getAttribute("tabindex")).toBeNull();
   });
 });
 
 describe("the route to the input mode is a safe, labelled button", () => {
   const toggle = (c: HTMLElement) =>
-    q(c, `.${PREFIX}-time-picker-toggle-type`) as HTMLButtonElement;
+    q(c, `.${PREFIX}-time-picker__toggle-type`) as HTMLButtonElement;
 
   // The defect: every other button in the dialog sets type="button", this one
   // did not. A button with no type is a submit button, and the picker can sit
@@ -147,7 +147,7 @@ describe("the route to the input mode is a safe, labelled button", () => {
 
   test("cancel and confirm are safe buttons too", () => {
     const c = picker();
-    expect(q(c, `.${PREFIX}-time-picker-cancel`).getAttribute("type")).toBe("button");
-    expect(q(c, `.${PREFIX}-time-picker-confirm`).getAttribute("type")).toBe("button");
+    expect(q(c, `.${PREFIX}-time-picker__cancel`).getAttribute("type")).toBe("button");
+    expect(q(c, `.${PREFIX}-time-picker__confirm`).getAttribute("type")).toBe("button");
   });
 });

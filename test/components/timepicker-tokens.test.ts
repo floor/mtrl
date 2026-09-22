@@ -58,12 +58,12 @@ const dial = readFileSync(join(root, "src/components/timepicker/clockdial.ts"), 
 
 describe("time picker headline", () => {
   test("HeadlineColor is OnSurfaceVariant", () => {
-    expect(ruleFor(".mtrl-time-picker-title")).toContain("on-surface-variant");
+    expect(ruleFor(".mtrl-time-picker__title")).toContain("on-surface-variant");
   });
 
   // The one the audit named: it was title-small.
   test("HeadlineFont is LabelMedium", () => {
-    const rule = ruleFor(".mtrl-time-picker-title");
+    const rule = ruleFor(".mtrl-time-picker__title");
     // label-medium compiles to 12px/16px, 0.5px tracking, weight 500.
     // title-small, which it was, is 14px/20px at 0.1px.
     expect(rule).toContain("font-size: 12px");
@@ -74,23 +74,23 @@ describe("time picker headline", () => {
 
 describe("period selector colour roles", () => {
   test("PeriodSelectorOutlineColor is Outline, not OutlineVariant", () => {
-    const rule = ruleFor(".mtrl-time-picker-period");
+    const rule = ruleFor(".mtrl-time-picker__period");
     expect(rule).toContain("color-outline)");
     expect(rule).not.toContain("outline-variant");
   });
 
   test("PeriodSelectorSelectedContainerColor is TertiaryContainer", () => {
-    expect(ruleFor(".mtrl-time-picker-period--selected")).toContain("tertiary-container");
+    expect(ruleFor(".mtrl-time-picker__period--selected")).toContain("tertiary-container");
   });
 
   test("PeriodSelectorSelectedLabelTextColor is OnTertiaryContainer", () => {
-    expect(ruleFor(".mtrl-time-picker-period--selected")).toContain("on-tertiary-container");
+    expect(ruleFor(".mtrl-time-picker__period--selected")).toContain("on-tertiary-container");
   });
 
   // Primary-container is the time selector's pair. Using it here is what made
   // AM/PM and the hour field look like the same control.
   test("the selected period does not borrow the time selector's colours", () => {
-    const rule = ruleFor(".mtrl-time-picker-period--selected");
+    const rule = ruleFor(".mtrl-time-picker__period--selected");
     expect(rule).not.toMatch(/on-primary-container|sys-color-primary-container/);
   });
 });

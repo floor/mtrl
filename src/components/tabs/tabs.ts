@@ -11,7 +11,6 @@ import {
 } from './features';
 import { createTabsConfig, getTabsElementConfig } from './config';
 import { TabsConfig, TabsComponent } from './types';
-import { addTabStateStyles } from './state';
 import { setupKeyboardNavigation, syncTabStops } from './utils';
 
 /**
@@ -41,9 +40,6 @@ import { setupKeyboardNavigation, syncTabStops } from './utils';
 const createTabs = (config: TabsConfig = {}): TabsComponent => {
   const baseConfig = createTabsConfig(config);
   
-  // Add ripple styles for state transitions
-  addTabStateStyles();
-
   try {
     // Build the tabs component with all features
     const component = pipe(

@@ -9,6 +9,7 @@ import { checkDatePicker } from "./check-datepicker-browser";
 import { checkList } from "./check-list-browser";
 import { checkChips } from "./check-chips-browser";
 import { checkCard } from "./check-card-browser";
+import { checkTimePicker } from "./check-timepicker-browser";
 import { checkInputBEM } from "./check-input-bem-browser";
 import { createPackageFixture } from "./package-fixture";
 
@@ -25,6 +26,7 @@ try {
   await writeFile(entry, `import { createButton, createAssistChip, createFilterChip, createInputChip, createSuggestionChip, createChips, createList, createDatePicker } from 'mtrl'; window.core = { createButton, createAssistChip, createFilterChip, createInputChip, createSuggestionChip, createChips, createList, createDatePicker };`);
   await writeFile(entry, `${await readFile(entry, "utf8")} import * as cardParts from 'mtrl/components/card'; window.cardParts = cardParts;`);
   await writeFile(entry, `${await readFile(entry, "utf8")} import { createCheckbox, createSwitch, createTextfield } from 'mtrl'; window.inputs = { createCheckbox, createSwitch, createTextfield };`);
+  await writeFile(entry, `${await readFile(entry, "utf8")} import { createTimePicker } from 'mtrl'; window.createTimePicker = createTimePicker;`);
   const bundle = await Bun.build({ entrypoints: [entry], target: "browser", format: "iife", minify: true });
   assert(bundle.success, String(bundle.logs));
   browser = await chromium.launch({ headless: true });
@@ -82,6 +84,7 @@ try {
   await checkChips(page, artifacts);
   await checkList(page, artifacts);
   await checkInputBEM(page);
+  await checkTimePicker(page, artifacts);
   await checkCard(page, artifacts);
   // Datepicker must also work with only base + its selective stylesheet.
   await page.locator("style").evaluateAll(elements => elements.forEach(element => element.remove()));
@@ -93,6 +96,11 @@ try {
   for (const name of ["base", "card"]) await page.addStyleTag({ content: await readFile(join(fixture.installed, `dist/styles/${name}.css`), "utf8") });
   await page.addStyleTag({ content: await readFile(join(fixture.installed, "dist/themes/material.css"), "utf8") });
   await checkCard(page, artifacts);
+  // The selective Time Picker stylesheet must style the same public markup.
+  await page.locator("style").evaluateAll(elements => elements.forEach(element => element.remove()));
+  for (const name of ["base", "timepicker"]) await page.addStyleTag({ content: await readFile(join(fixture.installed, `dist/styles/${name}.css`), "utf8") });
+  await page.addStyleTag({ content: await readFile(join(fixture.installed, "dist/themes/material.css"), "utf8") });
+  await checkTimePicker(page, artifacts);
   console.log("Passed packed ripple animation, reduced motion, no forced offsetHeight read, and 40 pressed teardown cycles.");
 } finally {
   await browser?.close();
