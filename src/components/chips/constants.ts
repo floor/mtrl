@@ -58,4 +58,4 @@ export const CHIPS_EVENTS = {
   
   /** Fired when a chip is removed from the container */
   REMOVE: 'remove'
-};
+} as const;

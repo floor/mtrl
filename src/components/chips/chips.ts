@@ -9,7 +9,7 @@ import {
   withDom,
 } from "./features";
 import { withAPI } from "./api";
-import { ChipsConfig, ChipsComponent } from "./types";
+import { ChipsConfig, ChipsComponent, ChipsEvents } from "./types";
 import { createBaseConfig, getElementConfig, getApiConfig } from "./config";
 
 /**
@@ -61,7 +61,8 @@ const createChips = (config: ChipsConfig = {}): ChipsComponent => {
     if (baseConfig.on && typeof chips.on === "function") {
       Object.entries(baseConfig.on).forEach(([event, handler]) => {
         if (typeof handler === "function") {
-          chips.on(event, handler);
+          // Object.entries widens the keys of the typed config map.
+          chips.on(event as keyof ChipsEvents, handler);
         }
       });
     }

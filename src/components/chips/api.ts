@@ -1,4 +1,5 @@
 // src/components/chips/api.ts
+import type { EventCallback } from "../../core/state/emitter";
 import { ChipsComponent, ChipComponent, ChipConfig } from "./types";
 
 /**
@@ -45,8 +46,8 @@ export interface ApiOptions {
     disableKeyboardNavigation: () => void;
   };
   events: {
-    on: (event: string, handler: Function) => void;
-    off: (event: string, handler: Function) => void;
+    on: (event: string, handler: EventCallback) => void;
+    off: (event: string, handler: EventCallback) => void;
   };
   lifecycle: {
     destroy: () => void;
