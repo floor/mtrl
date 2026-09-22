@@ -1,774 +1,98 @@
-// src/components/list/_list.scss
-@use "../../styles/abstract/base" as base;
-@use "../../styles/abstract/variables" as v;
-@use "../../styles/abstract/functions" as f;
-@use "../../styles/abstract/mixins" as m;
-@use "../../styles/abstract/theme" as t;
+// Standard Compose ListItem.kt: 56/72/88px rows, 16px horizontal spacing,
+// 8px vertical padding (12px for three-line rows). ListTokens.kt supplies roles/media.
+@use "../abstract/base" as base;
+@use "../abstract/mixins" as m;
+@use "../abstract/theme" as t;
+@use "../abstract/variables" as v;
 
-// Component variables
 $component: "#{base.$prefix}-list";
-$list-item-height: 48px !default;
-$list-item-dense-height: 40px !default;
-$list-padding: 8px !default;
-$list-item-padding: 16px !default;
-$list-section-padding: 16px !default;
-$list-container-min-height: 200px !default;
-
-// Transition variables
-$state-transition-duration: v.motion("duration-medium1") !default;
-$state-transition-easing: v.motion("easing-standard") !default;
-$quick-transition: v.motion("duration-short4")
-  v.motion("easing-standard-accelerate");
-
-// Reusable transitions
-$color-transition: color $state-transition-duration $state-transition-easing;
-$bg-transition: background-color $state-transition-duration
-  $state-transition-easing;
-$opacity-transition: opacity $state-transition-duration $state-transition-easing;
-
-// Placeholder styling variables
-$placeholder-opacity: 0.6 !default;
-$placeholder-opacity-skeleton: 0.8 !default;
-$placeholder-opacity-masked: 0.7 !default;
-$placeholder-opacity-subtle: 0.4 !default;
-$placeholder-background-alpha: 0.4 !default;
-$placeholder-shimmer-alpha: 0.2 !default;
-$placeholder-animation-speed: 1.5s !default;
-
-// Component-specific mixins
-@mixin list-item-state-layer($state: "hover", $color: "on-surface") {
-  &::before {
-    content: "";
+.#{$component} {
+  --#{base.$prefix}-list-item-offset: 0px;
+  position: relative;
+  overflow: auto;
+  background: t.color("surface");
+  color: t.color("on-surface");
+  padding-block: 8px;
+  &__content { display: flex; flex-direction: column; }
+  &__item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-sizing: border-box;
+    min-width: 0;
+    min-height: 56px;
+    padding: 8px 16px;
+    background: t.color("surface");
+    transform: translateY(var(--#{base.$prefix}-list-item-offset));
+    &--two-line { min-height: 72px; }
+    &--three-line { min-height: 88px; padding-block: 12px; align-items: flex-start; }
+  }
+  &__text { min-width: 0; flex: 1; }
+  &__headline { @include m.typography("body-large"); color: t.color("on-surface"); }
+  &__overline { @include m.typography("label-small"); color: t.color("on-surface-variant"); }
+  &__supporting { @include m.typography("body-medium"); color: t.color("on-surface-variant"); }
+  &__headline, &__overline { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  &__supporting {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+  }
+  &__item--three-line &__supporting { -webkit-line-clamp: 2; }
+  &__item--three-line:has(.#{$component}__overline) &__supporting { -webkit-line-clamp: 1; }
+  &__leading, &__trailing {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: t.color("on-surface-variant");
+    &--icon { width: 24px; height: 24px; }
+    &--icon svg { width: 100%; height: 100%; }
+    &--avatar {
+      width: 40px; height: 40px; overflow: hidden; border-radius: 50%;
+      background: t.color("primary-container"); color: t.color("on-primary-container");
+      @include m.typography("title-medium");
+    }
+    &--image { width: 56px; height: 56px; overflow: hidden; }
+    &--video { width: 100px; height: 56px; overflow: hidden; border-radius: 8px; }
+    &--avatar, &--image, &--video {
+      img, svg, video { width: 100%; height: 100%; object-fit: cover; }
+    }
+    &--text { @include m.typography("label-small"); white-space: nowrap; }
+  }
+  &__item--three-line &__leading--video { width: 114px; height: 64px; }
+  &__action {
+    appearance: none;
     position: absolute;
     inset: 0;
-    background-color: t.color($color);
-    opacity: f.get-state-opacity($state);
-    pointer-events: none;
-    border-radius: inherit;
-    transition: $opacity-transition;
-  }
-}
-
-@mixin list-section-title {
-  @include m.typography("label-large");
-  color: t.color("primary");
-  padding: $list-section-padding $list-item-padding 8px;
-}
-
-// LIST CONTAINER
-.#{$component}-container {
-  position: relative;
-  overflow-y: auto;
-  overflow-x: hidden;
-  height: 100%;
-  min-height: $list-container-min-height;
-  background-color: t.color("surface");
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: thin;
-  transition: $bg-transition;
-
-  // Performance optimizations
-  contain: layout style paint;
-  content-visibility: auto;
-  transform: translateZ(0);
-  backface-visibility: hidden;
-  will-change: scroll-position;
-
-  // Scrollbar styling
-  &::-webkit-scrollbar {
-    width: 8px;
-
-    &-track {
-      background: transparent;
-    }
-
-    &-thumb {
-      background-color: t.color("outline-variant");
-      border-radius: 4px;
-      transition: $bg-transition;
-
-      &:hover {
-        background-color: t.alpha("outline", 0.38);
-      }
-    }
-  }
-
-  // Loading state
-  &--loading::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(
-      to right,
-      transparent,
-      t.color("primary"),
-      transparent
-    );
-    animation: loading-shimmer 1.5s infinite v.motion("easing-standard");
-  }
-}
-
-// LIST COMPONENT
-.#{$component} {
-  display: flex;
-  flex-direction: column;
-  padding: $list-padding 0;
-  width: 100%;
-  position: relative;
-  transition: padding $state-transition-duration $state-transition-easing,
-    $opacity-transition;
-
-  // Inner containers
-  &-content {
-    position: relative;
-    width: 100%;
-  }
-
-  // Sections
-  &-section {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    transition: margin-bottom $state-transition-duration
-      $state-transition-easing;
-
-    &:not(:last-child) {
-      margin-bottom: $list-padding;
-    }
-  }
-
-  &-section-title {
-    @include list-section-title;
-    transition: $color-transition;
-  }
-
-  // Dividers
-  &-divider {
-    height: 1px;
-    margin: $list-padding 0;
-    background-color: t.color("outline-variant");
-    transition: $bg-transition;
-  }
-
-  // Virtual list helper elements
-  &-spacer {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 1px;
-    visibility: hidden;
-    pointer-events: none;
-
-    // Performance optimizations for spacer
-    contain: strict;
-    will-change: height;
-    transform: translateZ(0);
-    overflow: hidden;
-  }
-
-  // Sentinel elements for intersection observer
-  &-sentinel {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    opacity: 0;
-    pointer-events: none;
-    contain: layout;
-
-    &--top {
-      top: 0;
-    }
-
-    &--bottom {
-      bottom: 0;
-    }
-  }
-
-  // Empty state
-  &-empty {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 32px 16px;
-    text-align: center;
-    color: t.color("on-surface-variant");
-    transition: $color-transition, $opacity-transition;
-
-    &-icon {
-      font-size: 48px;
-      margin-bottom: 16px;
-      opacity: 0.6;
-      transition: $opacity-transition;
-    }
-
-    &-text {
-      @include m.typography("body-large");
-      transition: $color-transition;
-    }
-
-    &-action {
-      margin-top: 16px;
-      transition: $opacity-transition;
-    }
-  }
-
-  // Loading indicator
-  &-loading-indicator {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 48px;
-    width: 100%;
-    color: t.color("on-surface-variant");
-    transition: $color-transition;
-
-    &::after {
-      content: "";
-      width: 24px;
-      height: 24px;
-      border: 2px solid currentColor;
-      border-bottom-color: transparent;
-      border-radius: 50%;
-      animation: rotation 0.8s infinite linear;
-    }
-  }
-
-  // Dense variant
-  &--dense .#{$component}-item {
-    min-height: $list-item-dense-height;
-  }
-
-  // Disabled state
-  &--disabled {
-    pointer-events: none;
-    opacity: 0.38;
-    transition: $opacity-transition;
-  }
-
-  // High contrast mode
-  @include m.high-contrast {
-    border: 1px solid currentColor;
-
-    &-divider {
-      border-top: 1px solid currentColor;
-      background: none;
-    }
-  }
-
-  // LIST ITEMS
-  &-item {
-    display: flex;
-    align-items: center;
-    min-height: $list-item-height;
-    padding: $list-padding $list-item-padding;
-
-    // Performance-optimized positioning
-    left: 0;
-    right: 0;
-    width: 100%;
-
-    // APZ-friendly positioning using CSS custom properties
-    // This prevents Firefox scroll-linked effects warnings
-    --#{base.$prefix}-list-item-offset: 0px;
-    transform: translateY(var(--#{base.$prefix}-list-item-offset)) translateZ(0);
-    will-change: transform;
-    contain: layout style;
-
-    gap: 16px;
-    color: t.color("on-surface");
+    width: 100%; height: 100%; padding: 0; margin: 0;
+    border: 0; border-radius: inherit;
+    background: transparent;
     cursor: pointer;
-    box-sizing: border-box;
-    overflow: hidden;
-    transition: $bg-transition, $color-transition, opacity 0.2s ease-in-out;
-
-    // State layer base
-    &::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background-color: t.color("on-surface");
-      opacity: 0;
-      pointer-events: none;
-      border-radius: inherit;
-      transition: $opacity-transition;
-    }
-
-    // State interactions
-    &:hover::before {
-      opacity: f.get-state-opacity("hover");
-    }
-
-    &:focus-visible {
-      outline: none;
-
-      &::before {
-        opacity: f.get-state-opacity("focus");
-      }
-
-      &::after {
-        content: "";
-        position: absolute;
-        inset: 0;
-        border-radius: inherit;
-        box-shadow: inset 0 0 0 2px t.color("primary");
-        pointer-events: none;
-        transition: box-shadow $state-transition-duration
-          $state-transition-easing;
-      }
-    }
-
-    &:active::before {
-      opacity: f.get-state-opacity("pressed");
-      transition: opacity $quick-transition;
-    }
-
-    // Content elements
-    &-content {
-      flex: 1;
-      min-width: 0;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      transition: $opacity-transition;
-    }
-
-    &-text {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    // Text elements with shared properties
-    &-overline,
-    &-supporting,
-    &-meta {
-      color: t.color("on-surface-variant");
-      transition: $color-transition;
-    }
-
-    &-overline {
-      @include m.typography("label-small");
-    }
-
-    &-headline {
-      @include m.typography("body-large");
-      color: t.color("on-surface");
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      transition: $color-transition;
-    }
-
-    &-supporting {
-      @include m.typography("body-medium");
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    &-meta {
-      @include m.typography("label-small");
-      margin-top: 4px;
-    }
-
-    // Leading/trailing elements
-    &-leading,
-    &-trailing {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      color: t.color("on-surface-variant");
-      transition: $color-transition, $opacity-transition;
-    }
-
-    &-leading {
-      width: 24px;
-      height: 24px;
-
-      svg {
-        width: 100%;
-        height: 100%;
-        transition: fill $state-transition-duration $state-transition-easing,
-          stroke $state-transition-duration $state-transition-easing;
-      }
-    }
-
-    // Vertical layout variant
-    &.vertical {
-      min-height: 72px;
-      padding: 12px $list-item-padding;
-
-      .#{$component}-item {
-        &-content {
-          flex-direction: column;
-          gap: 4px;
-        }
-        &-meta {
-          margin-top: $list-padding;
-        }
-      }
-    }
-
-    // Selected state
-    &--selected {
-      background-color: t.color("secondary-container");
-      color: t.color("on-secondary-container");
-      transition: $bg-transition, $color-transition;
-
-      // Update state layer color for selected state
-      &::before {
-        background-color: t.color("on-secondary-container");
-      }
-
-      // Update text and icon colors for selected state
-      .#{$component}-item {
-        &-leading,
-        &-trailing,
-        &-supporting,
-        &-overline,
-        &-meta {
-          color: t.color("on-secondary-container");
-          transition: $color-transition;
-        }
-      }
-    }
-
-    // Disabled state
-    &--disabled {
-      opacity: 0.38;
-      pointer-events: none;
-      transition: $opacity-transition;
-    }
-
-    // Placeholder loading state
-    &.#{base.$prefix}-item-placeholder {
-      opacity: $placeholder-opacity;
-      pointer-events: none;
-      position: relative;
-      height: 84px;
-      transition: opacity 0.3s ease-in-out,
-        background-color $state-transition-duration $state-transition-easing;
-
-      // Performance optimizations for placeholders
-      contain: strict;
-      will-change: contents;
-
-      // Background tint for visibility
-      background-color: t.alpha(
-        "surface-variant",
-        $placeholder-background-alpha
-      );
-
-      // Enhanced shimmer effect for loading indication
-      // &::before {
-      //   content: "";
-      //   position: absolute;
-      //   top: 0;
-      //   left: -100%;
-      //   width: 100%;
-      //   height: 100%;
-      //   background: linear-gradient(
-      //     90deg,
-      //     transparent,
-      //     rgba(255, 255, 255, 0.1),
-      //     transparent
-      //   );
-      //   animation: shimmer 1.5s infinite;
-      //   will-change: transform;
-
-      //   @media (prefers-reduced-motion: reduce) {
-      //     animation: none;
-      //   }
-      // }
-
-      // Loading shimmer effect
-      // &::after {
-      //   content: "";
-      //   position: absolute;
-      //   top: 0;
-      //   left: 0;
-      //   right: 0;
-      //   height: 3px;
-      //   background: linear-gradient(
-      //     90deg,
-      //     transparent,
-      //     t.alpha("primary", $placeholder-shimmer-alpha),
-      //     transparent
-      //   );
-      //   animation: placeholder-shimmer $placeholder-animation-speed infinite
-      //     v.motion("easing-standard");
-      //   transform-origin: left center;
-      // }
-
-      // Accessibility indicator
-      &[aria-busy="true"] {
-        .#{$component}-item-content {
-          opacity: 0.9;
-          transition: opacity 0.3s ease-in-out;
-        }
-      }
-
-      // Text styling for placeholder visibility
-      .#{$component}-item-headline,
-      .#{$component}-item-supporting,
-      .#{$component}-item-meta {
-        transition: color 0.3s ease-in-out, opacity 0.3s ease-in-out;
-        opacity: 1;
-      }
-
-      // Placeholder mode variants
-      &--skeleton {
-        opacity: $placeholder-opacity-skeleton;
-
-        .#{$component}-item-headline,
-        .#{$component}-item-supporting {
-          background-color: t.color("surface-variant");
-          border-radius: 4px;
-          color: transparent;
-          animation: skeleton-pulse 1.5s infinite;
-        }
-      }
-
-      &--masked {
-        opacity: $placeholder-opacity-masked;
-      }
-
-      &--subtle {
-        opacity: $placeholder-opacity-subtle;
-
-        &::after {
-          display: none; // No shimmer for subtle mode
-        }
-      }
-
-      // // Reduce motion support
-      // @media (prefers-reduced-motion: reduce) {
-      //   &::after {
-      //     animation: none;
-      //     background: t.alpha("primary", calc($placeholder-shimmer-alpha / 2));
-      //   }
-
-      //   &--skeleton {
-      //     .#{$component}-item-headline,
-      //     .#{$component}-item-supporting {
-      //       animation: none;
-      //     }
-      //   }
-      // }
-
-      // High contrast mode
-      @include m.high-contrast {
-        outline: 2px dashed currentColor;
-        outline-offset: -2px;
-
-        &::after {
-          background: currentColor;
-          opacity: 0.5;
-        }
-      }
-    }
-
-    // Recycled element optimizations
-    &.#{base.$prefix}-item-recycled {
-      will-change: contents;
-    }
+    &::before { content: ""; position: absolute; inset: 0; pointer-events: none; border-radius: inherit; background: t.color("on-surface"); opacity: 0; }
+    &:hover:not(:disabled)::before { opacity: v.state("hover-state-layer-opacity"); }
+    &:active:not(:disabled)::before { opacity: v.state("pressed-state-layer-opacity"); }
+    &:focus-visible { outline: 2px solid t.color("secondary"); outline-offset: -2px; }
+    &:focus-visible::before { opacity: v.state("focus-state-layer-opacity"); }
+    &:disabled { cursor: default; }
   }
-}
-
-// Selection specific styling (single/multi/radio)
-.#{$component}[data-type="single"],
-.#{$component}[data-type="multi"],
-.#{$component}[data-type="radio"] {
-  .#{$component}-item {
-    cursor: pointer;
+  // Slotted controls are siblings of the row action and remain independently operable.
+  &__item :is(button, input, select, textarea, a, [contenteditable="true"], [data-list-control]):not(.#{$component}__action) { position: relative; z-index: 1; }
+  &__item--selected {
+    border-radius: 16px;
+    background: t.color("secondary-container");
+    .#{$component}__headline, .#{$component}__overline, .#{$component}__supporting, .#{$component}__leading, .#{$component}__trailing { color: t.color("on-secondary-container"); }
+    .#{$component}__action::before { background: t.color("on-secondary-container"); }
   }
-}
-
-@mixin rtl {
-  // Replace this problematic line:
-  // [dir='rtl'] & {
-  //   @content;
-  // }
-
-  // With this correct approach:
-  [dir="rtl"] {
-    @content;
+  &__item--disabled {
+    &.#{$component}__item--selected { background: t.alpha("on-surface", 0.38); }
+    .#{$component}__headline, .#{$component}__overline, .#{$component}__supporting, .#{$component}__leading, .#{$component}__trailing { color: t.color("on-surface"); }
+    .#{$component}__text, .#{$component}__leading, .#{$component}__trailing { opacity: 0.38; }
   }
-}
-
-// High contrast mode for selected items
-@include m.high-contrast {
-  .#{$component}-item--selected {
-    outline: 2px solid currentColor;
-    outline-offset: -2px;
-  }
-}
-
-// ANIMATIONS
-@keyframes loading-shimmer {
-  0% {
-    transform: translateX(-100%);
-  }
-  50% {
-    transform: translateX(100%);
-  }
-  100% {
-    transform: translateX(100%);
-  }
-}
-
-@keyframes rotation {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes placeholder-shimmer {
-  0% {
-    transform: translateX(-100%);
-    opacity: 0;
-  }
-  50% {
-    transform: translateX(0%);
-    opacity: 1;
-  }
-  100% {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-}
-
-@keyframes skeleton-pulse {
-  0% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.4;
-  }
-  100% {
-    opacity: 1;
-  }
-}
-
-@keyframes shimmer {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(200%);
-  }
-}
-
-// PERFORMANCE UTILITIES
-.#{$component}-container {
-  // Performance mode for slower devices
-  &--performance-mode {
-    .#{$component}-item {
-      will-change: auto;
-      transform: none;
-      contain: none; // Reduce containment on slower devices
-
-      &.#{base.$prefix}-item-placeholder::before {
-        animation: none;
-      }
-    }
-  }
-
-  // Debug mode for development
-  &--debug {
-    .#{$component}-item {
-      outline: 1px solid rgba(255, 0, 0, 0.3);
-
-      &.#{base.$prefix}-item-placeholder {
-        outline-color: rgba(0, 255, 0, 0.3);
-      }
-
-      &.#{base.$prefix}-item-recycled {
-        outline-color: rgba(0, 0, 255, 0.3);
-      }
-    }
-  }
-
-  // High-performance scroll optimization
-  &.#{$component}-performance-scroll {
-    scroll-behavior: auto;
-    will-change: scroll-position;
-
-    &::-webkit-scrollbar {
-      width: 8px;
-    }
-
-    &::-webkit-scrollbar-track {
-      background: transparent;
-    }
-
-    &::-webkit-scrollbar-thumb {
-      background-color: t.alpha("outline", 0.2);
-      border-radius: 4px;
-
-      &:hover {
-        background-color: t.alpha("outline", 0.3);
-      }
-    }
-  }
-}
-
-// Dark mode optimizations
-@media (prefers-color-scheme: dark) {
-  .#{$component}-item.#{base.$prefix}-item-placeholder::before {
-    background: linear-gradient(
-      90deg,
-      transparent,
-      rgba(255, 255, 255, 0.05),
-      transparent
-    );
-  }
-}
-
-// Responsive performance optimizations
-@media (max-width: 768px) {
-  .#{$component}-container {
-    .#{$component}-item {
-      // Optimize for touch on mobile
-      touch-action: pan-y;
-      will-change: transform;
-    }
-  }
-}
-
-@media (max-width: 480px) {
-  .#{$component}-container {
-    .#{$component}-item.#{base.$prefix}-item-placeholder::before {
-      animation-duration: 2s; // Slower animation on small screens
-    }
-  }
-}
-
-// High-density display optimizations
-@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
-  .#{$component}-item {
-    text-rendering: optimizeLegibility;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
-}
-
-// Print optimizations
-@media print {
-  .#{$component}-container {
-    .#{$component}-item {
-      will-change: auto !important;
-      transform: none !important;
-      animation: none !important;
-      transition: none !important;
-    }
-  }
+  &__divider { height: 1px; min-height: 1px; background: t.color("outline-variant"); margin-block: 0; }
+  &__divider--inset { margin-inline-start: 72px; margin-inline-end: 16px; }
+  &__subheader { @include m.typography("label-large"); color: t.color("on-surface-variant"); padding: 16px 16px 8px; }
+  &__empty { @include m.typography("body-medium"); color: t.color("on-surface-variant"); padding: 16px; }
 }

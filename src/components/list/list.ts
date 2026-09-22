@@ -12,8 +12,7 @@ import type { ListComponent, ListConfig, ListItem } from "./types";
  * Creates a new List component
  *
  * The List component provides a simple way to render static arrays of data
- * with built-in selection capabilities. For virtual scrolling and complex
- * data management, use the VirtualList component from mtrl-addons.
+ * with Material item anatomy and built-in selection capabilities.
  *
  * @param config - Configuration options for the list
  * @returns List component instance

@@ -1,181 +1,98 @@
-// src/components/list/features/renderer.ts
+import { LIST_EVENTS } from "../constants";
+import { getCleanup } from "../../../core/compose/cleanup";
+import { isDataItem, itemId, itemLabel, renderAnatomy } from "./anatomy";
+import type { ListConfig, ListFeatureHost, ListItem, ListRenderer, ListRow, ScrollPosition } from "../types";
 
-import { LIST_CLASSES, LIST_EVENTS } from '../constants';
-import type {
-  ListConfig,
-  ListFeatureHost,
-  ListItem,
-  ListRenderer,
-  ScrollPosition,
-} from '../types';
-
-import { setHTML } from "../../../core/dom/html";
-/**
- * Adds item rendering capabilities to a component
- * Renders static data directly without virtual scrolling or complex management
- * 
- * @param config - Configuration options
- * @returns Function that enhances a component with item rendering capabilities
- */
-export const withRenderer =
-  (config: ListConfig<ListItem>) =>
-  <C extends ListFeatureHost>(component: C): C & { list: ListRenderer } => {
-  // There used to be a `if (!component.element)` guard here that warned and
-  // returned the component untouched. withElement runs before this in the only
-  // pipe that calls it, so it could not fire -- and had it fired it would have
-  // handed back a component with no `list`, which withSelection and withAPI
-  // both read. The host type requires the element instead.
-  const items = config.items || [];
-  const userRenderItem = config.renderItem;
-  
-  // Create container for list items
-  const listContainer = document.createElement('div');
-  listContainer.className = 'mtrl-list-content';
-  listContainer.setAttribute('role', 'list');
-  
-  component.element.appendChild(listContainer);
-
-  /**
-   * Default item renderer when none is provided
-   */
-  function renderDefaultItem(item: ListItem): HTMLElement {
-    const element = document.createElement('div');
-    element.className = LIST_CLASSES.ITEM;
-    element.setAttribute('role', 'listitem');
-    
-    // Create content wrapper
-    const content = document.createElement('div');
-    content.className = 'mtrl-list-item-content';
-    
-    const text = document.createElement('div');
-    text.className = 'mtrl-list-item-text';
-    text.textContent = String(
-      item.text || item.title || item.headline || item.name || item.id || item
-    );
-    
-    content.appendChild(text);
-    element.appendChild(content);
-    
-    return element;
-  }
-
-  /**
-   * Renders all items directly
-   */
+export const withRenderer = (config: ListConfig<ListItem>) =>
+  <C extends ListFeatureHost>(component: C): C & { list: ListRenderer; eventTarget: { current: unknown } } => {
+  const items = config.items;
+  const resources = getCleanup(component);
+  const eventTarget: { current: unknown } = { current: component };
+  const getClass = component.getClass;
+  const container = document.createElement("div");
+  container.className = getClass("list__content");
+  container.setAttribute("role", "presentation");
+  component.element.append(container);
+  let rows: ListRow[] = [];
+  const listeners = new Set<() => void>();
   const renderAllItems = () => {
-    // Clear existing content
-    listContainer.replaceChildren();
-    
-    if (!items || items.length === 0) {
-      setHTML(listContainer, '<div class="mtrl-list-empty">No items</div>');
-      return;
+    if (resources.destroyed) return;
+    const ids = new Set<string>();
+    for (const [index, item] of items.entries()) {
+      if (!item || !isDataItem(item)) continue;
+      const id = itemId(item, index);
+      if (ids.has(id)) throw new Error(`Duplicate list item ID: ${id}`);
+      ids.add(id);
     }
-    
-    // Create document fragment for efficient DOM manipulation
+    const active = rows.find(row => row.action === document.activeElement)?.id;
+    rows = [];
     const fragment = document.createDocumentFragment();
-    
-    items.forEach((item: ListItem, index: number) => {
-      if (item == null) return;
-      
-      // Create the item element
-      const element = userRenderItem 
-        ? userRenderItem(item, index)
-        : renderDefaultItem(item);
-      
-      if (!element) return;
-      
-      // Ensure element has proper classes and attributes
-      if (!element.classList.contains(LIST_CLASSES.ITEM)) {
-        element.classList.add(LIST_CLASSES.ITEM);
+    items.forEach((item, index) => {
+      if (!item) return;
+      if (!isDataItem(item)) {
+        const element = document.createElement("div");
+        if (item.kind === "divider") {
+          element.className = getClass("list__divider"); element.setAttribute("role", "separator");
+          if (item.inset) element.classList.add(getClass("list__divider--inset"));
+        } else {
+          element.className = getClass("list__subheader"); element.setAttribute("role", "presentation");
+          element.textContent = itemLabel(item);
+        }
+        fragment.append(element); return;
       }
-      
-      if (!element.hasAttribute('role')) {
-        element.setAttribute('role', 'listitem');
+      let element: HTMLElement;
+      if (config.renderItem) {
+        const content = config.renderItem(item, index);
+        if (content.matches("button, input, select, textarea, a")) {
+          element = document.createElement("div"); element.append(content);
+        } else element = content;
+      } else element = renderAnatomy(item, getClass);
+      element.classList.add(getClass("list__item"));
+      element.setAttribute("role", "listitem");
+      const id = itemId(item, index); element.dataset.id = id;
+      if (item.disabled) { element.classList.add(getClass("list__item--disabled")); element.setAttribute("aria-disabled", "true"); }
+      let action: HTMLButtonElement | undefined;
+      if (config.trackSelection) {
+        action = document.createElement("button"); action.type = "button";
+        action.className = getClass("list__action"); action.disabled = !!item.disabled;
+        action.setAttribute("aria-pressed", "false");
+        const headline = element.querySelector<HTMLElement>(`.${getClass("list__headline")}`);
+        const supporting = element.querySelector<HTMLElement>(`.${getClass("list__supporting")}`);
+        if (headline?.id && headline.textContent) action.setAttribute("aria-labelledby", headline.id);
+        else action.setAttribute("aria-label", itemLabel(item) || element.textContent || "Select item");
+        if (supporting?.id) action.setAttribute("aria-describedby", supporting.id);
+        element.classList.add(getClass("list__item--interactive")); element.prepend(action);
       }
-      
-      // Add data-id for selection targeting (use index as fallback)
-      const itemId = String(item?.id || index);
-      if (!element.hasAttribute('data-id')) {
-        element.setAttribute('data-id', itemId);
-      }
-      
-      fragment.appendChild(element);
+      rows.push({ item, id, index, element, action }); fragment.append(element);
     });
-    
-    listContainer.appendChild(fragment);
-    
-    // Emit load event for consistency
-    component.emit?.(LIST_EVENTS.LOAD, {
-      items,
-      loading: false,
-      hasNext: false,
-      hasPrev: false,
-      component
-    });
-  };
-
-  /**
-   * Scroll to a specific item by ID
-   */
-  const scrollToItem = (
-    itemId: string | number,
-    position: ScrollPosition = 'start',
-    animate = false
-  ): void => {
-    const element = listContainer.querySelector(`[data-id="${itemId}"]`);
-    if (element) {
-      element.scrollIntoView({ 
-        behavior: animate ? 'smooth' : 'auto', 
-        block: position === 'center' ? 'center' : position === 'end' ? 'end' : 'start'
-      });
+    if (items.length === 0) {
+      const empty = document.createElement("div"); empty.className = getClass("list__empty");
+      empty.setAttribute("role", "presentation"); empty.textContent = "No items"; fragment.append(empty);
     }
+    container.replaceChildren(fragment);
+    listeners.forEach(listener => listener());
+    if (active !== undefined) rows.find(row => row.id === active)?.action?.focus();
+    component.emit?.(LIST_EVENTS.LOAD, { items, loading: false, hasNext: false, hasPrev: false, component: eventTarget.current });
   };
-
-  /**
-   * Scroll to a specific index
-   */
-  const scrollToIndex = (
-    index: number,
-    position: ScrollPosition = 'start',
-    animate = false
-  ): void => {
-    if (index < 0 || index >= items.length) return;
-    
-    const element = listContainer.children[index];
-    if (element) {
-      element.scrollIntoView({ 
-        behavior: animate ? 'smooth' : 'auto', 
-        block: position === 'center' ? 'center' : position === 'end' ? 'end' : 'start'
-      });
-    }
+  const scrollRow = (row: ListRow | undefined, position: ScrollPosition, animate: boolean) => {
+    row?.element.scrollIntoView({ behavior: animate ? "smooth" : "auto", block: position });
   };
-
-  // Initial render
+  const scrollToItem = (id: string | number, position: ScrollPosition = "start", animate = false) => scrollRow(rows.find(row => row.id === String(id)), position, animate);
+  const scrollToIndex = (index: number, position: ScrollPosition = "start", animate = false) => scrollRow(rows.find(row => row.index === index), position, animate);
   renderAllItems();
-
-  // Clean up on destruction
-  if (component.lifecycle?.destroy) {
-    const originalDestroy = component.lifecycle.destroy;
-    component.lifecycle.destroy = () => {
-      listContainer.replaceChildren();
-      originalDestroy();
-    };
-  }
-
-      // Return component with list renderer API
+  resources.add(() => { listeners.clear(); rows = []; container.replaceChildren(); });
   return {
     ...component,
+    eventTarget,
     list: {
-      // Core methods
+      getRows: () => rows,
+      onRender: handler => { listeners.add(handler); return () => { listeners.delete(handler); }; },
       getItems: () => items,
       getAllItems: () => items,
-      getVisibleItems: () => items, // All items are "visible" in rendered lists
+      getVisibleItems: () => items,
       refresh: renderAllItems,
-      
-      // Scrolling methods
       scrollToItem,
       scrollToIndex,
-      
       // Compatibility methods (no-ops for rendered lists)
       loadNext: () => Promise.resolve({ hasNext: false, items: [] }),
       loadPage: () => Promise.resolve({ hasNext: false, items: [] }),
@@ -197,9 +114,7 @@ export const withRenderer =
       getCollection: () => null,
       isApiMode: () => false,
       isLoading: () => false,
-      hasNextPage: () => false,
-    }
+      hasNextPage: () => false,    }
   };
 };
-
 export default withRenderer;

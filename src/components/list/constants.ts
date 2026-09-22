@@ -13,7 +13,7 @@ export const LIST_DEFAULTS = {
   /** Default number of extra items to render above/below viewport */
   RENDER_BUFFER_SIZE: 5,
   /** Default item height in pixels */
-  ITEM_HEIGHT: 48
+  ITEM_HEIGHT: 56
 } as const;
 
 /**
@@ -69,13 +69,13 @@ export const LIST_SCROLL_POSITIONS = {
  */
 export const LIST_CLASSES = {
   /** Container element */
-  CONTAINER: 'list-container',
+  CONTAINER: 'list',
   /** List element */
   LIST: 'list',
   /** List item */
-  ITEM: 'list-item',
+  ITEM: 'list__item',
   /** Selected list item */
-  SELECTED: 'list-item--selected',
+  SELECTED: 'list__item--selected',
   /** Loading indicator */
   LOADING: 'list--loading',
   /** Empty state */

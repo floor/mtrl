@@ -50,6 +50,7 @@ interface ApiOptions<T = unknown> {
  */
 export interface ComponentWithElements {
   element: HTMLElement;
+  eventTarget?: { current: unknown };
   on?: (event: string, handler: EventCallback) => unknown;
   off?: (event: string, handler: EventCallback) => unknown;
 }
@@ -61,7 +62,8 @@ export interface ComponentWithElements {
  */
 export const withAPI =
   <T = unknown>({ list, selection, events, lifecycle, config }: ApiOptions<T>) =>
-  (component: ComponentWithElements) => ({
+  (component: ComponentWithElements) => {
+  const api = {
     ...component,
     element: component.element,
 
@@ -218,6 +220,9 @@ export const withAPI =
     destroy: () => {
       lifecycle.destroy();
     },
-  });
+  };
+  if (component.eventTarget) component.eventTarget.current = api;
+  return api;
+};
 
 export default withAPI;

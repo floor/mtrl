@@ -79,7 +79,7 @@ const itemEl = (list: ListComponent<Person>, id: string): HTMLElement => {
   return el;
 };
 
-const selectedClass = 'mtrl-list-item--selected';
+const selectedClass = 'mtrl-list__item--selected';
 
 const wireScrollIntoView = (list: ListComponent<Person>): { last: { id: string; behavior: string; block: string } | null } => {
   const seen: { last: { id: string; behavior: string; block: string } | null } = { last: null };

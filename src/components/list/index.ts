@@ -1,14 +1,6 @@
 // src/components/list/index.js
 
-/**
- * List Component Module
- *
- * The List component provides high-performance rendering of large datasets
- * with built-in virtualization, pagination, and efficient DOM management.
- *
- * @module components/list
- * @category Components
- */
+/** Material list anatomy for static data. */
 
 // Export main component factory
 export { default } from "./list";
@@ -26,6 +18,8 @@ export {
 // Export types for TypeScript
 export type {
   ListConfig,
+  ListItem,
+  ListSlot,
   ListComponent,
   SelectEvent,
   LoadEvent,

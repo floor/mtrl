@@ -174,6 +174,8 @@ export type {
 // List
 export type {
   ListConfig,
+  ListItem,
+  ListSlot,
   ListComponent,
   SelectEvent as ListSelectEvent,
   LoadEvent,
