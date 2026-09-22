@@ -214,26 +214,17 @@ describe('what open, close and change hand a handler', () => {
     }
   });
 
-  // FLO-236, pinned rather than endorsed. `SelectEvent.select` is declared
-  // `SelectComponent`, and a consumer writing `event.select.getValue()` would
-  // reasonably expect that to work. What arrives is the component as the
-  // pipeline had it when the feature emitted, with none of the public API on
-  // it -- so the call is a TypeError. These assertions record today's
-  // behaviour so it cannot drift further unnoticed; when FLO-236 is settled
-  // they fail and should be updated to whatever is decided.
-  test('but .select is the pipeline component, not the select -- FLO-236', async () => {
+  test('.select is the finished public select -- FLO-236', async () => {
     const select = await mount();
-    let payload: any;
-    select.on('open', (event: any) => { payload = event; });
+    const seen: import('../../../src/components/select/types').SelectEvent[] = [];
+    select.on('open', event => { seen.push(event); });
 
     select.open();
     await wait(50);
 
-    expect(payload.select).not.toBe(select);
-    expect(payload.select.getValue).toBeUndefined();
-    expect(payload.select.open).toBeUndefined();
-    // It does carry the element, which is why the gap has gone unnoticed.
-    expect(payload.select.element).toBe(select.element);
+    expect(seen[0].select === select).toBe(true);
+    expect(seen[0].select.getValue()).toBe(select.getValue());
+    expect(seen[0].select.isOpen()).toBe(true);
   });
 });
 

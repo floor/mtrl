@@ -45,8 +45,9 @@ const createMenu = (config: MenuConfig): MenuComponent => {
     // Validate and create the base configuration
     const baseConfig = createBaseConfig(config);
 
+    // Features resolve callback targets after the public API is assembled.
     // Create the component through functional composition
-    const menu = pipe(
+    const menu: MenuComponent = pipe(
       createBase, // Base component
       withEvents(), // Event handling
       withElement(getElementConfig(baseConfig)), // DOM element
@@ -54,7 +55,7 @@ const createMenu = (config: MenuConfig): MenuComponent => {
       withPosition(baseConfig), // Position management
       withKeyboard(), // Keyboard navigation
       withSubmenu(baseConfig), // Submenu management
-      withController(baseConfig), // Menu controller
+      withController(baseConfig, (): MenuComponent => menu), // Menu controller
       withOpener(baseConfig), // Opener management
       (comp) => withAPI(getApiConfig(comp))(comp), // Public API
     )(baseConfig);

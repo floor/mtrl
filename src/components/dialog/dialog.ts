@@ -106,16 +106,15 @@ const createDialog = (config: DialogConfig = {}): DialogComponent => {
   const baseConfig = createBaseConfig(config);
 
   try {
-    // Create the dialog through functional composition
-    // Each function in the pipe adds specific features to the component
-    const dialog = pipe(
+    // Callbacks resolve the finished public dialog when invoked, after the pipe completes.
+    const dialog: DialogComponent = pipe(
       createBase,                                  // Base component
       withEvents(),                                // Event handling
       withElement(getElementConfig(baseConfig)),   // DOM element
-      withStructure(baseConfig),                   // Dialog structure (overlay, header, content, footer)
-      withVisibility(),                            // Open/close functionality
+      withStructure(baseConfig, (): DialogComponent => dialog),
+      withVisibility((): DialogComponent => dialog),
       withContent(),                               // Content management
-      withButtons(),                               // Footer buttons
+      withButtons((): DialogComponent => dialog),
       withSize(),                                  // Size variants
       withDivider(),                               // Header/content divider
       withConfirm(),                               // Confirmation dialog helpers

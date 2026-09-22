@@ -36,7 +36,7 @@ const DIALOG_EVENTS = {
 let dialogCount = 0;
 
 export const withStructure =
-  (config: DialogConfig) =>
+  (config: DialogConfig, getComponent: () => DialogComponent) =>
   <C extends DialogFeatureComponent>(
     component: C,
   ): C & { overlay: HTMLElement; structure: DialogStructure } => {
@@ -151,7 +151,7 @@ export const withStructure =
     // Add buttons if provided
     if (Array.isArray(config.buttons) && config.buttons.length > 0) {
       config.buttons.forEach((buttonConfig) =>
-        addButton(footer, buttonConfig, component),
+        addButton(footer, buttonConfig, component, getComponent),
       );
     }
 
@@ -357,11 +357,11 @@ const addButton = (
   // Not DialogComponent: this runs from withStructure, the first feature in
   // the pipe, so the dialog does not have its API yet. What it touches is emit
   // and _buttons, and saying so is what stops the next reader assuming the
-  // rest is there. (The `dialog` handed to a button's own onClick has the same
-  // problem and is a real defect -- FLO-236.)
+  // rest is there. The callback resolves the public dialog when clicked.
   component: DialogFeatureComponent & {
     _buttons?: DialogButtonRecord[];
   },
+  getComponent: () => DialogComponent,
 ) => {
   const {
     text,
@@ -388,13 +388,7 @@ const addButton = (
     // Call onClick handler if provided
     if (typeof onClick === "function") {
       try {
-        // The cast is a known lie, and it is here rather than hidden in the
-        // parameter type so that it is findable. DialogButton.onClick is
-        // documented as receiving the dialog; what it receives is the
-        // component as withStructure had it, with none of the public API on
-        // it -- no close(), no isOpen(). That is FLO-236, and fixing it is a
-        // decision about where the indirection lives, not a local change.
-        const result = onClick(event, component as unknown as DialogComponent);
+        const result = onClick(event, getComponent());
         if (result === false) {
           shouldClose = false;
         }
@@ -434,7 +428,7 @@ const addButton = (
  * @returns Component enhancer with visibility features
  */
 export const withVisibility =
-  () =>
+  (getComponent: () => DialogComponent) =>
   <C extends DialogStructured>(
     component: C,
   ): C & Pick<ApiOptions, "visibility" | "focus"> => {
@@ -622,7 +616,7 @@ export const withVisibility =
 
       // Trigger before open event
       const beforeOpenEvent = {
-        dialog: component,
+        dialog: getComponent(),
         defaultPrevented: false,
         preventDefault: () => {
           beforeOpenEvent.defaultPrevented = true;
@@ -658,10 +652,10 @@ export const withVisibility =
 
         // Trigger open event
         if (typeof component.emit === "function") {
-          component.emit(DIALOG_EVENTS.OPEN, { dialog: component });
+          component.emit(DIALOG_EVENTS.OPEN, { dialog: getComponent() });
 
           setTimeout(() => {
-            component.emit(DIALOG_EVENTS.AFTER_OPEN, { dialog: component });
+            component.emit(DIALOG_EVENTS.AFTER_OPEN, { dialog: getComponent() });
           }, openDuration);
         }
       }, 10);
@@ -672,7 +666,7 @@ export const withVisibility =
 
       // Trigger before close event
       const beforeCloseEvent = {
-        dialog: component,
+        dialog: getComponent(),
         defaultPrevented: false,
         preventDefault: () => {
           beforeCloseEvent.defaultPrevented = true;
@@ -706,7 +700,7 @@ export const withVisibility =
 
       // Trigger close events
       if (typeof component.emit === "function") {
-        component.emit(DIALOG_EVENTS.CLOSE, { dialog: component });
+        component.emit(DIALOG_EVENTS.CLOSE, { dialog: getComponent() });
       }
 
       // Remove from DOM after animation completes
@@ -716,7 +710,7 @@ export const withVisibility =
         }
 
         if (typeof component.emit === "function") {
-          component.emit(DIALOG_EVENTS.AFTER_CLOSE, { dialog: component });
+          component.emit(DIALOG_EVENTS.AFTER_CLOSE, { dialog: getComponent() });
         }
       }, closeDuration);
     },
@@ -890,7 +884,7 @@ export const withContent =
  * @returns Component enhancer with button features
  */
 export const withButtons =
-  () =>
+  (getComponent: () => DialogComponent) =>
   <C extends DialogStructured>(
     component: C,
   ): C & Pick<ApiOptions, "buttons"> & { _buttons: DialogButtonRecord[] } => {
@@ -932,7 +926,7 @@ export const withButtons =
         }
 
         // Add the button
-        addButton(footer, button, component);
+        addButton(footer, button, component, getComponent);
       },
 
       /**

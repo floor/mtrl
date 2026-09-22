@@ -1,5 +1,6 @@
 // src/components/search/features/input.ts
 
+import type { SearchComponent } from "../types";
 import { SearchConfig, SearchStructure, SearchSuggestion, SearchViewMode } from "../types";
 import { SEARCH_CLASSES, SEARCH_EVENTS } from "../constants";
 
@@ -66,7 +67,7 @@ interface InputHost {
 }
 
 export const withInput =
-  (config: SearchConfig) =>
+  (config: SearchConfig, getComponent: () => SearchComponent) =>
   // Generic, so the accumulated pipeline type survives to the features after
   // this one. A concrete parameter type would erase it — the defect fixed in
   // textfield's withDensity (#109).
@@ -90,7 +91,7 @@ export const withInput =
     extra: Record<string, unknown> = {}
   ) => {
     const eventData = {
-      component,
+      component: getComponent(),
       value: currentValue,
       originalEvent,
       preventDefault: () => {

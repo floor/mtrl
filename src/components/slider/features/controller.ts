@@ -1,4 +1,5 @@
 // src/components/slider/features/controller.ts
+import type { SliderComponent } from "../types";
 import { SLIDER_EVENTS } from "../types";
 import {
   SliderConfig,
@@ -21,7 +22,7 @@ import { setFormValue } from "../../../core/dom/form-value";
  * @returns Component enhancer with slider controller functionality
  */
 export const withController =
-  (config: SliderConfig) =>
+  (config: SliderConfig, getComponent: () => SliderComponent) =>
   // Generic, so the accumulated pipeline type survives to whatever follows.
   // There used to be a `if (!component.element)` guard here, warning and
   // returning the component untouched: withElement runs before this in the
@@ -59,7 +60,7 @@ export const withController =
   const eventHelpers: SliderEventHelpers = {
     triggerEvent(eventName: string, originalEvent: Event | null = null) {
       const eventData = {
-        slider: state.component,
+        slider: getComponent(),
         value: state.value,
         secondValue: state.secondValue,
         originalEvent,

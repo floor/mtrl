@@ -46,12 +46,13 @@ const createSelect = (config: SelectConfig): SelectComponent => {
     // Validate and create the base configuration
     const baseConfig = createBaseConfig(config);
     
+    // Features resolve callback targets after the public API is assembled.
     // Create the component through functional composition
-    const select = pipe(
+    const select: SelectComponent = pipe(
       createBase,
       withEvents(),
       withTextfield(baseConfig),
-      withMenu(baseConfig),
+      withMenu(baseConfig, (): SelectComponent => select),
       withLifecycle(),
       comp => withAPI(getApiConfig(comp))(comp)
     )(baseConfig);
