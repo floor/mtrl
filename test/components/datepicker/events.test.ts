@@ -25,8 +25,8 @@ const mount = (config: DatePickerConfig = {}) => {
   return picker;
 };
 const day = (picker: DatePickerComponent, date: Date) => {
-  const button = picker.element.querySelector<HTMLElement>(`[data-date="${date.toISOString()}"]`);
-  if (!button) throw new Error(`Missing calendar day ${date.toISOString()}`);
+  const button = picker.element.querySelector<HTMLElement>(`[data-date="${`${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`}"]`);
+  if (!button) throw new Error(`Missing calendar day ${`${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`}`);
   button.click();
 };
 const start = new Date(2026, 8, 10);
@@ -71,18 +71,18 @@ describe("datepicker event contract", () => {
     expect(events).toEqual([{ value: start, rangeEndDate: null, formattedValue: "09/10/2026" }]);
   });
 
-  test("API open/close carry complete ranges while input and outside clicks carry the start date", () => {
+  test("API and trigger visibility events carry committed complete ranges", () => {
     const picker = mount({ selectionMode: "range", value: [start, end] });
     const opened: Parameters<DatePickerEvents["open"]>[0][] = [];
     const closed: Parameters<DatePickerEvents["close"]>[0][] = [];
     picker.on("open", payload => opened.push(payload)).on("close", payload => closed.push(payload));
     expect(picker.open().close()).toBe(picker);
-    picker.input.click();
-    picker.input.click();
-    picker.input.click();
+    picker.element.querySelector<HTMLButtonElement>('[data-action="open"]')!.click();
+    picker.element.querySelector<HTMLButtonElement>('[data-action="open"]')!.click();
+    picker.element.querySelector<HTMLButtonElement>('[data-action="open"]')!.click();
     document.body.click();
-    expect(opened).toEqual([{ value: [start, end] }, { value: start }, { value: start }]);
-    expect(closed).toEqual([{ value: [start, end] }, { value: start }, { value: start }]);
+    expect(opened).toEqual([{ value: [start, end] }, { value: [start, end] }, { value: [start, end] }]);
+    expect(closed).toEqual([{ value: [start, end] }, { value: [start, end] }, { value: [start, end] }]);
     picker.clear().open().close();
     expect(opened.at(-1)).toEqual({ value: null });
     expect(closed.at(-1)).toEqual({ value: null });
@@ -100,6 +100,7 @@ describe("datepicker event contract", () => {
     expect(clicks).toEqual([{ event: click, originalEvent: click, element: picker.element }]);
     expect(keys).toEqual([{ event: key, originalEvent: key, element: picker.element }]);
     // Calendar clicks deliberately stop before reaching the root forwarder.
+    picker.open();
     picker.calendar.goToDate(start);
     day(picker, start);
     expect(clicks).toHaveLength(1);

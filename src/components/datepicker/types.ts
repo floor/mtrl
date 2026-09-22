@@ -1,5 +1,4 @@
 // src/components/datepicker/types.ts
-import type { EventCallback } from "../../core/state/emitter";
 import type { ForwardedEventPayload } from "../../core/dom";
 import type { NormalizedEvent } from "../../core/utils/mobile";
 
@@ -14,7 +13,7 @@ export type DatePickerChangePayload =
   | { value: Date; rangeEndDate: Date | null; formattedValue: string }
   | { value: DatePickerValue; rangeEndDate?: never; formattedValue: string };
 
-/** Input/outside clicks carry the start date; API open/close may carry a range. */
+/** Visibility events carry the committed value, including complete ranges. */
 export interface DatePickerVisibilityPayload {
   value: DatePickerValue;
 }
@@ -94,43 +93,45 @@ export const DEFAULT_DATE_FORMAT = 'MM/DD/YYYY';
  * CSS class name for today's date
  * @internal
  */
-export const TODAY_CLASS = 'today';
+export const TODAY_CLASS = 'datepicker__day--today';
 
 /**
  * CSS class name for selected date
  * @internal
  */
-export const SELECTED_CLASS = 'selected';
+export const SELECTED_CLASS = 'datepicker__day--selected';
 
 /**
  * CSS class name for dates outside the current month
  * @internal
  */
-export const OUTSIDE_MONTH_CLASS = 'outside-month';
+export const OUTSIDE_MONTH_CLASS = 'datepicker__day--outside';
 
 /**
  * CSS class for the first date in a range
  * @internal
  */
-export const RANGE_START_CLASS = 'range-start';
+export const RANGE_START_CLASS = 'datepicker__cell--range-start';
 
 /**
  * CSS class for the last date in a range
  * @internal
  */
-export const RANGE_END_CLASS = 'range-end';
+export const RANGE_END_CLASS = 'datepicker__cell--range-end';
 
 /**
  * CSS class for dates between start and end in a range
  * @internal
  */
-export const RANGE_MIDDLE_CLASS = 'range-middle';
+export const RANGE_MIDDLE_CLASS = 'datepicker__cell--range';
 
 /**
  * Configuration interface for the DatePicker component
  * @category Components
  */
 export interface DatePickerConfig {
+  /** Name of the committed form input. */
+  name?: string;
   /** 
    * DatePicker variant that determines display style
    * @default 'docked'
@@ -214,7 +215,7 @@ export interface DatePickerConfig {
 
   /**
    * Whether to close the picker when a date is selected
-   * @default true for modal variants, false for docked
+   * @default false (modal selections are drafts until OK; true commits on selection)
    */
   closeOnSelect?: boolean;
 
@@ -417,91 +418,23 @@ export interface DatePickerComponent {
   off: <K extends keyof DatePickerEvents>(event: K, handler: DatePickerEvents[K]) => DatePickerComponent;
 }
 
-/**
- * API options interface for withAPI function
- * @internal
- */
-export interface ApiOptions {
-  disabled: {
-    enable: () => void;
-    disable: () => void;
-  };
-  lifecycle: {
-    destroy: () => void;
-  };
-  events: {
-    on: (event: string, handler: EventCallback) => void;
-    off: (event: string, handler: EventCallback) => void;
-    emit: (event: string, data: unknown) => void;
-  };
-}
-
-/**
- * Internal state shared by the datepicker, its API and the calendar renderer
- * @internal
- */
+/** Internal calendar view model. Dates are local civil dates, without a time. */
 export interface DatePickerState {
-  isOpen: boolean;
   selectedDate: Date | null;
   rangeEndDate: Date | null;
-  currentView: DatePickerView | string;
+  currentView: DatePickerView;
   currentMonth: number;
   currentYear: number;
+  focusedDate: Date;
   minDate: Date | null;
   maxDate: Date | null;
   dateFormat: string;
-  variant: DatePickerVariant | string;
-  selectionMode: DatePickerSelectionMode | string;
-  closeOnSelect: boolean;
+  variant: DatePickerVariant;
+  selectionMode: DatePickerSelectionMode;
+  inputMode: boolean;
   prefix: string;
-  calendarElement: HTMLElement | null;
-  input: HTMLInputElement | null;
-  outsideClickHandler?: EventListener;
-  updateInputValue(): void;
-  updateCalendar(): void;
-  handleDateSelection(date: Date): void;
-  prevMonth(): void;
-  nextMonth(): void;
-  prevYear(): void;
-  nextYear(): void;
-  render(): void;
+  id: string;
+  label: string;
+  specialDates: NonNullable<DatePickerConfig["specialDates"]>;
+  isAllowed(date: Date): boolean;
 }
-
-/**
- * State as it reaches the API step.
- *
- * `DatePickerState` marks these loose because the state object is built before
- * the DOM is. By the time `withAPI` runs, the factory has created the input
- * (throwing if it is not one) and installed the outside-click handler, so both
- * are there — and the public `input` is declared non-optional.
- * @category Components
- * @internal
- */
-export type DatePickerApiState = DatePickerState & {
-  input: HTMLInputElement;
-  outsideClickHandler: EventListener;
-};
-
-/**
- * Events the calendar renderer emits, each with its payload
- * @internal
- */
-export type CalendarEventArgs =
-  | ["dateSelected", { date: Date }]
-  | ["monthSelected", { month: number }]
-  | ["yearSelected", { year: number }]
-  | ["viewChange", { view: DatePickerView }]
-  | ["prevMonth", undefined?]
-  | ["nextMonth", undefined?]
-  | ["prevYear", undefined?]
-  | ["nextYear", undefined?]
-  | ["prevYearRange", undefined?]
-  | ["nextYearRange", undefined?]
-  | ["cancel", undefined?]
-  | ["confirm", undefined?];
-
-/**
- * Emits a calendar event to the datepicker
- * @internal
- */
-export type CalendarEmit = (...args: CalendarEventArgs) => void;

@@ -20,7 +20,7 @@ export const tap: Equals<Parameters<DatePickerEvents["tap"]>[0], NormalizedEvent
 export const tapAlias: Equals<DatePickerTapPayload, NormalizedEvent> = true;
 export const swipe: Equals<Parameters<DatePickerEvents["swipe"]>[0], DatePickerSwipePayload> = true;
 export const swipeShape: Equals<DatePickerSwipePayload, { direction: "left" | "right"; deltaX: number; deltaY: number }> = true;
-const picker = createDatePicker();
+const picker = createDatePicker({ name: "departure" });
 export const inferred: Equals<Parameters<Parameters<typeof picker.on<"change">>[1]>, [DatePickerChangePayload]> = true;
 const handler: DatePickerEvents["change"] = payload => { payload.formattedValue.toUpperCase(); payload.rangeEndDate?.getTime(); };
 export const chained: DatePickerComponent = picker.on("change", handler).off("change", handler);
