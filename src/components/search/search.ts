@@ -49,6 +49,7 @@ const createSearch = (config: SearchConfig = {}): SearchComponent => {
   const baseConfig = createBaseConfig(config);
 
   try {
+    // Getters defer callback targets until the public API exists.
     // Build the component using functional composition
     // Order matters: structure -> states -> input -> suggestions
     const component = pipe(
@@ -56,8 +57,8 @@ const createSearch = (config: SearchConfig = {}): SearchComponent => {
       withEvents(),
       withElement(getElementConfig(baseConfig)),
       withStructure(baseConfig),
-      withStates(baseConfig),
-      withInput(baseConfig),
+      withStates(baseConfig, (): SearchComponent => search),
+      withInput(baseConfig, (): SearchComponent => search),
       withSuggestions(),
       withLifecycle(),
     )(baseConfig);
@@ -66,7 +67,7 @@ const createSearch = (config: SearchConfig = {}): SearchComponent => {
     const apiOptions = getApiConfig(component);
 
     // Apply the public API layer
-    const search = withAPI(apiOptions)(component);
+    const search: SearchComponent = withAPI(apiOptions)(component);
 
     // Register event handlers from config
     if (baseConfig.on && typeof search.on === "function") {

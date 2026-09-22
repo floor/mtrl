@@ -2,7 +2,7 @@
 import createTextfield from "../textfield";
 import createMenu from "../menu";
 import { MenuItem, MenuContent, MenuDivider, MenuPosition } from "../menu/types";
-import { SelectOption, SelectConfig, BaseComponent } from "./types";
+import { SelectOption, SelectConfig, SelectComponent, BaseComponent } from "./types";
 import { warnUnknownValue } from "../../core/utils/warn";
 
 /**
@@ -380,7 +380,7 @@ const setupCombobox = (
  * @returns Function that enhances a component with menu functionality
  */
 export const withMenu =
-  (config: SelectConfig) =>
+  (config: SelectConfig, getComponent: () => SelectComponent) =>
   // Without a textfield the component comes back without menu and select
   <C extends BaseComponent>(component: C): C & Pick<BaseComponent, "menu" | "select"> => {
     if (!component.textfield) {
@@ -440,7 +440,7 @@ export const withMenu =
       // Emit change event
       if (component.emit) {
         const changeEvent = {
-          select: component,
+          select: getComponent(),
           value: option.id,
           text: option.text,
           option,
@@ -504,7 +504,7 @@ export const withMenu =
       // beside close, so each opening is reported exactly once.
       if (component.emit) {
         component.emit("open", {
-          select: component,
+          select: getComponent(),
           originalEvent: null,
           preventDefault: () => {},
           defaultPrevented: false,
@@ -579,7 +579,7 @@ export const withMenu =
       // Emit close event
       if (component.emit) {
         component.emit("close", {
-          select: component,
+          select: getComponent(),
           originalEvent: event.originalEvent,
           preventDefault: () => {},
           defaultPrevented: false,
@@ -636,7 +636,7 @@ export const withMenu =
           warnUnknownValue("select", value);
           if (component.emit) {
             const changeEvent = {
-              select: component,
+              select: getComponent(),
               value: null,
               text: "",
               option: null,

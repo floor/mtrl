@@ -400,7 +400,7 @@ export const withSwipeable =
       if (config.onSwipeLeft) {
         component.element.style.transform = "translateX(-100%)";
         component.element.style.transition = "transform 0.3s ease";
-        config.onSwipeLeft(component as CardComponent);
+        config.onSwipeLeft(card as CardComponent);
       }
     });
 
@@ -408,7 +408,7 @@ export const withSwipeable =
       if (config.onSwipeRight) {
         component.element.style.transform = "translateX(100%)";
         component.element.style.transition = "transform 0.3s ease";
-        config.onSwipeRight(component as CardComponent);
+        config.onSwipeRight(card as CardComponent);
       }
     });
 
@@ -438,11 +438,11 @@ export const withSwipeable =
         if (diffX > 0 && config.onSwipeRight) {
           // Swipe right
           component.element.style.transform = "translateX(100%)";
-          config.onSwipeRight(component as CardComponent);
+          config.onSwipeRight(card as CardComponent);
         } else if (diffX < 0 && config.onSwipeLeft) {
           // Swipe left
           component.element.style.transform = "translateX(-100%)";
-          config.onSwipeLeft(component as CardComponent);
+          config.onSwipeLeft(card as CardComponent);
         } else {
           // Reset if no handler
           component.element.style.transform = "translateX(0)";
@@ -472,8 +472,8 @@ export const withSwipeable =
     // Add swipeable class
     component.element.classList.add(`${PREFIX}-card--swipeable`);
 
-    // Return enhanced component
-    return {
+    // Callbacks resolve this object after enhancement so reset() is available.
+    const card: BaseComponent & { swipeable: SwipeableFeature } = {
       ...component,
       swipeable: {
         reset: () => {
@@ -482,4 +482,5 @@ export const withSwipeable =
         },
       },
     };
+    return card;
   };

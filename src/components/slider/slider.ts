@@ -39,6 +39,7 @@ const createSlider = (config: SliderConfig = {}): SliderComponent => {
   const baseConfig = createBaseConfig(config);
 
   try {
+    // The controller resolves the public slider only when it emits a callback.
     // Create the component by composing features in a specific order
     const component = pipe(
       // Base component with event system
@@ -66,14 +67,14 @@ const createSlider = (config: SliderConfig = {}): SliderComponent => {
       withTracks(baseConfig),
 
       // Add state management and behavior
-      withController(baseConfig)
+      withController(baseConfig, (): SliderComponent => slider)
     )(baseConfig);
 
     // Generate the API configuration based on the enhanced component
     const apiOptions = getApiConfig(component);
 
     // Apply the public API layer
-    const slider = withAPI(apiOptions)(component);
+    const slider: SliderComponent = withAPI(apiOptions)(component);
 
     // Register event handlers from config for convenience
     if (baseConfig.on && typeof slider.on === "function") {

@@ -1,5 +1,6 @@
 // src/components/menu/features/controller.ts
 
+import type { MenuComponent } from "../types";
 import { createMenuTasks } from "./tasks";
 import {
   MenuConfig,
@@ -21,7 +22,7 @@ import { setHTML } from "../../../core/dom/html";
  * @returns Component enhancer with menu controller functionality
  */
 const withController =
-  (config: MenuConfig) =>
+  (config: MenuConfig, getComponent: () => MenuComponent) =>
   // Generic, so the accumulated pipeline type survives (see #109).
   <C extends MenuFeatureHost>(component: C): C & { menu: MenuControllerApi } => {
   // There used to be a `if (!component.element)` guard here, warning and
@@ -61,7 +62,7 @@ const withController =
       originalEvent?: Event,
     ) {
       const eventData = {
-        menu: state.component,
+        menu: getComponent(),
         ...data,
         originalEvent,
         preventDefault: () => {
@@ -352,10 +353,6 @@ const withController =
       },
       e,
     );
-    // No cast to MenuSelectEvent: that type declares `menu: MenuComponent`,
-    // and part-way through the pipe this component is not one yet. The cast
-    // was asserting past that. Only defaultPrevented is read here, and the
-    // inferred type has it.
 
     // Close menu if needed
     if (config.closeOnSelect && !selectEvent.defaultPrevented) {

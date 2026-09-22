@@ -1,5 +1,6 @@
 // src/components/search/features/states.ts
 
+import type { SearchComponent } from "../types";
 import {
   SearchConfig,
   SearchState,
@@ -30,7 +31,7 @@ interface StatesHost {
 }
 
 export const withStates =
-  (config: SearchConfig) =>
+  (config: SearchConfig, getComponent: () => SearchComponent) =>
   // Generic, so the accumulated pipeline type survives to the features after
   // this one. A concrete parameter type would erase it — the defect fixed in
   // textfield's withDensity (#109).
@@ -92,7 +93,7 @@ export const withStates =
     // Emit expand event
     if (component.emit) {
       component.emit("expand", {
-        component,
+        component: getComponent(),
         state: currentState,
         viewMode: currentViewMode,
       });
@@ -141,7 +142,7 @@ export const withStates =
     // Emit collapse event
     if (component.emit) {
       component.emit("collapse", {
-        component,
+        component: getComponent(),
         state: currentState,
         viewMode: currentViewMode,
       });
