@@ -317,7 +317,7 @@ export interface CardComponent extends BaseComponent {
    * @example
    * ```typescript
    * const content = document.createElement('div');
-   * content.className = 'mtrl-card-content';
+   * content.className = 'mtrl-card__content';
    * content.textContent = 'Card content goes here';
    * card.addContent(content);
    * ```
@@ -351,7 +351,7 @@ export interface CardComponent extends BaseComponent {
    * ```typescript
    * // Creating media element
    * const media = document.createElement('div');
-   * media.className = 'mtrl-card-media';
+   * media.className = 'mtrl-card__media';
    * 
    * // Adding at the top (default)
    * card.addMedia(media);
@@ -374,7 +374,7 @@ export interface CardComponent extends BaseComponent {
    * ```typescript
    * // Create actions container
    * const actions = document.createElement('div');
-   * actions.className = 'mtrl-card-actions';
+   * actions.className = 'mtrl-card__actions';
    * 
    * // Add buttons to actions
    * const button = document.createElement('button');

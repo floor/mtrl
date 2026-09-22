@@ -98,7 +98,7 @@ export const withLoading =
         // Create and add loading overlay
         loadingElement = createElement({
           tag: "div",
-          className: `${PREFIX}-card-loading-overlay`,
+          className: `${PREFIX}-card__loading-overlay`,
           container: component.element,
           attributes: {
             role: "progressbar",
@@ -110,7 +110,7 @@ export const withLoading =
         // Add spinner
         createElement({
           tag: "div",
-          className: `${PREFIX}-card-loading-spinner`,
+          className: `${PREFIX}-card__loading-spinner`,
           container: loadingElement,
         });
 
@@ -223,7 +223,7 @@ export const withExpandable =
     // Create expand/collapse button
     const expandButton = createElement({
       tag: "button",
-      className: `${PREFIX}-card-expand-button`,
+      className: `${PREFIX}-card__expand-button`,
       attributes: {
         "aria-expanded": isExpanded ? "true" : "false",
         "aria-label": isExpanded ? "Collapse content" : "Expand content",
@@ -235,7 +235,7 @@ export const withExpandable =
 
     // Add to card as action if not already present
     const actionsContainer = component.element.querySelector(
-      `.${PREFIX}-card-actions`,
+      `.${PREFIX}-card__actions`,
     );
     if (actionsContainer) {
       actionsContainer.appendChild(expandButton);
@@ -243,7 +243,7 @@ export const withExpandable =
       // Create actions container if not present
       const newActionsContainer = createElement({
         tag: "div",
-        className: `${PREFIX}-card-actions`,
+        className: `${PREFIX}-card__actions`,
         container: component.element,
         attributes: {
           role: "group",
@@ -254,7 +254,7 @@ export const withExpandable =
 
     // Set initial state
     if (expandableContent) {
-      expandableContent.classList.add(`${PREFIX}-card-expandable-content`);
+      expandableContent.classList.add(`${PREFIX}-card__expandable-content`);
 
       // Ensure the expandable content has an ID for ARIA controls
       if (!expandableContent.id) {
@@ -377,7 +377,7 @@ export const withSwipeable =
     // Create hidden buttons for keyboard accessibility
     const leftActionButton = createElement({
       tag: "button",
-      className: `${PREFIX}-card-swipe-left-action`,
+      className: `${PREFIX}-card__swipe-left-action`,
       text: "Swipe Left Action",
       container: component.element,
       attributes: { "aria-label": "Perform swipe left action" },
@@ -387,7 +387,7 @@ export const withSwipeable =
 
     const rightActionButton = createElement({
       tag: "button",
-      className: `${PREFIX}-card-swipe-right-action`,
+      className: `${PREFIX}-card__swipe-right-action`,
       text: "Swipe Right Action",
       container: component.element,
       attributes: { "aria-label": "Perform swipe right action" },

@@ -78,7 +78,7 @@ import { withElevation } from './features';
  * // Using API methods
  * const card = createCard();
  * const content = document.createElement('div');
- * content.className = 'mtrl-card-content';
+ * content.className = 'mtrl-card__content';
  * content.textContent = 'Added programmatically';
  * card.addContent(content);
  * card.makeDraggable();

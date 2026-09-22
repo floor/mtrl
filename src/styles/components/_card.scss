@@ -175,7 +175,7 @@ $component: '#{base.$prefix}-card';
   // === Sub-components ===
   
   // Card Header
-  &-header {
+  &__header {
     display: flex;
     align-items: center;
     padding: v.card('padding');
@@ -222,7 +222,7 @@ $component: '#{base.$prefix}-card';
   }
   
   // Card Media
-  &-media {
+  &__media {
     position: relative;
     overflow: hidden;
     border-radius: f.get-shape('medium');
@@ -265,7 +265,7 @@ $component: '#{base.$prefix}-card';
   }
   
   // Card Content
-  &-content {
+  &__content {
     padding: v.card('padding');
     flex: 1 1 auto;
     
@@ -278,7 +278,7 @@ $component: '#{base.$prefix}-card';
     }
     
     // When content follows media without padding
-    .#{$component}-media + &:not(.#{$component}-content--no-padding) {
+    .#{$component}__media + &:not(.#{$component}__content--no-padding) {
       padding-top: v.card('padding');
     }
     
@@ -289,7 +289,7 @@ $component: '#{base.$prefix}-card';
   }
   
   // Card Actions
-  &-actions {
+  &__actions {
     display: flex;
     flex-wrap: wrap;
     padding: 8px;
@@ -375,7 +375,7 @@ $component: '#{base.$prefix}-card';
   }
   
   // Loading overlay
-  &-loading-overlay {
+  &__loading-overlay {
     position: absolute;
     top: 0;
     left: 0;
@@ -388,7 +388,7 @@ $component: '#{base.$prefix}-card';
     z-index: f.get-z-index('default');
   }
   
-  &-loading-spinner {
+  &__loading-spinner {
     width: 40px;
     height: 40px;
     border-radius: 50%;
@@ -398,12 +398,12 @@ $component: '#{base.$prefix}-card';
   }
   
   // Expandable content
-  &-expandable-content {
+  &__expandable-content {
     overflow: hidden;
     transition: max-height f.get-motion-duration('medium1') f.get-motion-easing('standard');
   }
   
-  &-expand-button {
+  &__expand-button {
     background: none;
     border: none;
     padding: 8px;
@@ -436,8 +436,8 @@ $component: '#{base.$prefix}-card';
   }
   
   // Hidden buttons for accessibility
-  &-swipe-left-action,
-  &-swipe-right-action {
+  &__swipe-left-action,
+  &__swipe-right-action {
     @include m.visually-hidden; // Use visually-hidden mixin
   }
 }

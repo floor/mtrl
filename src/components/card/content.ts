@@ -33,7 +33,7 @@ let headerCount = 0;
 export const createCardContent = (config: CardContentConfig = {}): HTMLElement => {
   const baseConfig = {
     ...config,
-    componentName: 'card-content',
+    componentName: 'card__content',
     prefix: PREFIX
   };
 
@@ -44,10 +44,10 @@ export const createCardContent = (config: CardContentConfig = {}): HTMLElement =
       createBase,
       withElement({
         tag: 'div',
-        componentName: 'card-content',
+        componentName: 'card__content',
         className: [
           config.class,
-          config.padding === false ? `${PREFIX}-card-content--no-padding` : null
+          config.padding === false ? `${PREFIX}-card__content--no-padding` : null
         ].filter((name): name is string => Boolean(name)),
         attributes: {
           'role': 'region',
@@ -109,7 +109,7 @@ export const createCardContent = (config: CardContentConfig = {}): HTMLElement =
 export const createCardHeader = (config: CardHeaderConfig = {}): HTMLElement => {
   const baseConfig = {
     ...config,
-    componentName: 'card-header',
+    componentName: 'card__header',
     prefix: PREFIX
   };
 
@@ -118,7 +118,7 @@ export const createCardHeader = (config: CardHeaderConfig = {}): HTMLElement => 
       createBase,
       withElement({
         tag: 'div',
-        componentName: 'card-header',
+        componentName: 'card__header',
         className: config.class,
         attributes: {
           'role': 'heading',
@@ -130,7 +130,7 @@ export const createCardHeader = (config: CardHeaderConfig = {}): HTMLElement => 
     // Create text container for title and subtitle
     const textContainer = createElement({
       tag: 'div',
-      className: `${PREFIX}-card-header-text`,
+      className: `${PREFIX}-card__header-text`,
       container: header.element
     });
 
@@ -139,7 +139,7 @@ export const createCardHeader = (config: CardHeaderConfig = {}): HTMLElement => 
     if (config.title) {
       createElement({
         tag: 'h3',
-        className: `${PREFIX}-card-header-title`,
+        className: `${PREFIX}-card__header-title`,
         text: config.title,
         container: textContainer,
         attributes: {
@@ -152,7 +152,7 @@ export const createCardHeader = (config: CardHeaderConfig = {}): HTMLElement => 
     if (config.subtitle) {
       createElement({
         tag: 'h4',
-        className: `${PREFIX}-card-header-subtitle`,
+        className: `${PREFIX}-card__header-subtitle`,
         text: config.subtitle,
         container: textContainer
       });
@@ -163,7 +163,7 @@ export const createCardHeader = (config: CardHeaderConfig = {}): HTMLElement => 
       const avatarElement = typeof config.avatar === 'string'
         ? createElement({
           tag: 'div',
-          className: `${PREFIX}-card-header-avatar`,
+          className: `${PREFIX}-card__header-avatar`,
           html: config.avatar
         })
         : config.avatar;
@@ -183,7 +183,7 @@ export const createCardHeader = (config: CardHeaderConfig = {}): HTMLElement => 
       const actionElement = typeof config.action === 'string'
         ? createElement({
           tag: 'div',
-          className: `${PREFIX}-card-header-action`,
+          className: `${PREFIX}-card__header-action`,
           html: config.action
         })
         : config.action;
@@ -225,7 +225,7 @@ export const createCardHeader = (config: CardHeaderConfig = {}): HTMLElement => 
 export const createCardActions = (config: CardActionsConfig = {}): HTMLElement => {
   const baseConfig = {
     ...config,
-    componentName: 'card-actions',
+    componentName: 'card__actions',
     prefix: PREFIX
   };
 
@@ -234,12 +234,12 @@ export const createCardActions = (config: CardActionsConfig = {}): HTMLElement =
       createBase,
       withElement({
         tag: 'div',
-        componentName: 'card-actions',
+        componentName: 'card__actions',
         className: [
           config.class,
-          config.fullBleed ? `${PREFIX}-card-actions--full-bleed` : null,
-          config.vertical ? `${PREFIX}-card-actions--vertical` : null,
-          config.align ? `${PREFIX}-card-actions--${config.align}` : null
+          config.fullBleed ? `${PREFIX}-card__actions--full-bleed` : null,
+          config.vertical ? `${PREFIX}-card__actions--vertical` : null,
+          config.align ? `${PREFIX}-card__actions--${config.align}` : null
         ].filter((name): name is string => Boolean(name)),
         attributes: {
           'role': 'group' // Semantically group actions together
@@ -295,7 +295,7 @@ export const createCardActions = (config: CardActionsConfig = {}): HTMLElement =
 export const createCardMedia = (config: CardMediaConfig = {}): HTMLElement => {
   const baseConfig = {
     ...config,
-    componentName: 'card-media',
+    componentName: 'card__media',
     prefix: PREFIX
   };
 
@@ -304,11 +304,11 @@ export const createCardMedia = (config: CardMediaConfig = {}): HTMLElement => {
       createBase,
       withElement({
         tag: 'div',
-        componentName: 'card-media',
+        componentName: 'card__media',
         className: [
           config.class,
-          config.aspectRatio ? `${PREFIX}-card-media--${config.aspectRatio.replace(':', '-')}` : null,
-          config.contain ? `${PREFIX}-card-media--contain` : null
+          config.aspectRatio ? `${PREFIX}-card__media--${config.aspectRatio.replace(':', '-')}` : null,
+          config.contain ? `${PREFIX}-card__media--contain` : null
         ].filter((name): name is string => Boolean(name))
       })
     )(baseConfig);
@@ -321,7 +321,7 @@ export const createCardMedia = (config: CardMediaConfig = {}): HTMLElement => {
     else if (config.src) {
       const img = document.createElement('img');
       img.src = safeUrl(config.src);
-      img.className = `${PREFIX}-card-media-img`;
+      img.className = `${PREFIX}-card__media-img`;
       
       // Ensure alt text is always provided for accessibility
       img.alt = config.alt || '';

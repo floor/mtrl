@@ -33,13 +33,13 @@ export const withAPI = ({ lifecycle, config }: ApiOptions) => (component: Compon
    * @example
    * ```typescript
    * const content = document.createElement('div');
-   * content.className = 'mtrl-card-content';
+   * content.className = 'mtrl-card__content';
    * content.textContent = 'Card content goes here';
    * card.addContent(content);
    * ```
    */
   addContent(contentElement: HTMLElement): CardComponent {
-    if (contentElement && contentElement.classList.contains(`${component.getClass('card')}-content`)) {
+    if (contentElement && contentElement.classList.contains(`${component.getClass('card')}__content`)) {
       component.element.appendChild(contentElement);
     }
     return this;
@@ -62,12 +62,12 @@ export const withAPI = ({ lifecycle, config }: ApiOptions) => (component: Compon
    */
   setHeader(headerElement: HTMLElement): CardComponent {
     const card = component.getClass('card');
-    if (headerElement && headerElement.classList.contains(`${card}-header`)) {
+    if (headerElement && headerElement.classList.contains(`${card}__header`)) {
       const title = (header: Element | null) =>
-        header?.querySelector(`.${card}-header-title`)?.id || null;
+        header?.querySelector(`.${card}__header-title`)?.id || null;
 
       // Remove existing header if present, and the name it gave the card
-      const existingHeader = component.element.querySelector(`.${card}-header`);
+      const existingHeader = component.element.querySelector(`.${card}__header`);
       if (existingHeader) {
         const previous = title(existingHeader);
         if (previous && component.element.getAttribute('aria-labelledby') === previous) {
@@ -79,7 +79,7 @@ export const withAPI = ({ lifecycle, config }: ApiOptions) => (component: Compon
       // The header follows the media at the top of the card; media added at the
       // bottom stays below it.
       let before = component.element.firstElementChild;
-      while (before && before.classList.contains(`${card}-media`)) {
+      while (before && before.classList.contains(`${card}__media`)) {
         before = before.nextElementSibling;
       }
       component.element.insertBefore(headerElement, before);
@@ -108,7 +108,7 @@ export const withAPI = ({ lifecycle, config }: ApiOptions) => (component: Compon
    * ```typescript
    * // Creating media element
    * const media = document.createElement('div');
-   * media.className = 'mtrl-card-media';
+   * media.className = 'mtrl-card__media';
    * 
    * // Adding at the top (default)
    * card.addMedia(media);
@@ -118,7 +118,7 @@ export const withAPI = ({ lifecycle, config }: ApiOptions) => (component: Compon
    * ```
    */
   addMedia(mediaElement: HTMLElement, position: 'top' | 'bottom' = 'top'): CardComponent {
-    if (mediaElement && mediaElement.classList.contains(`${component.getClass('card')}-media`)) {
+    if (mediaElement && mediaElement.classList.contains(`${component.getClass('card')}__media`)) {
       if (position === 'top') {
         component.element.insertBefore(mediaElement, component.element.firstChild);
       } else {
@@ -140,7 +140,7 @@ export const withAPI = ({ lifecycle, config }: ApiOptions) => (component: Compon
    * ```typescript
    * // Create actions container
    * const actions = document.createElement('div');
-   * actions.className = 'mtrl-card-actions';
+   * actions.className = 'mtrl-card__actions';
    * 
    * // Add buttons to actions
    * const button = document.createElement('button');
@@ -152,9 +152,9 @@ export const withAPI = ({ lifecycle, config }: ApiOptions) => (component: Compon
    * ```
    */
   setActions(actionsElement: HTMLElement): CardComponent {
-    if (actionsElement && actionsElement.classList.contains(`${component.getClass('card')}-actions`)) {
+    if (actionsElement && actionsElement.classList.contains(`${component.getClass('card')}__actions`)) {
       // Remove existing actions if present
-      const existingActions = component.element.querySelector(`.${component.getClass('card')}-actions`);
+      const existingActions = component.element.querySelector(`.${component.getClass('card')}__actions`);
       if (existingActions) {
         existingActions.remove();
       }
