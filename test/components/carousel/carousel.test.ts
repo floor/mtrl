@@ -25,7 +25,7 @@ afterEach(() => {
   dom.window.close();
 });
 
-import { createCarousel } from '../../../src/components/carousel/carousel';
+import { createCarousel, type CarouselEvents, type CarouselChangePayload } from '../../../src/components/carousel';
 
 const slides = [
   { image: 'a.jpg', title: 'Alpha' },
@@ -157,5 +157,84 @@ describe('carousel', () => {
     document.body.appendChild(carousel.element);
     carousel.destroy();
     expect(document.body.children.length).toBe(0);
+  });
+});
+
+
+// FLO-114: the real emitter behind the public event map.
+describe('carousel event contract', () => {
+  test('navigation emits only index changes, clamps boundaries and supports off', () => {
+    const carousel = createCarousel({ slides });
+    const changed = mock((_payload: CarouselChangePayload) => {});
+    try {
+      expect(carousel.on('change', changed)).toBe(carousel);
+      carousel.goTo(0).next().goTo(1).goTo(99).next().prev().goTo(-5).prev();
+      expect(changed.mock.calls).toEqual([[{ index: 1 }], [{ index: 3 }], [{ index: 2 }], [{ index: 0 }]]);
+      expect(carousel.off('change', changed)).toBe(carousel);
+      carousel.next();
+      expect(changed).toHaveBeenCalledTimes(4);
+    } finally { carousel.destroy(); }
+  });
+
+  for (const variant of ['uncontained', 'full-screen'] as const) {
+    test(`${variant} native scrolling emits the same index payload`, () => {
+      const carousel = createCarousel({ slides, variant });
+      const changed = mock((_payload: CarouselChangePayload) => {});
+      try {
+        const scroller = sized(carousel, 600);
+        carousel.addSlide({ title: 'Last' });
+        carousel.on('change', changed);
+        // A wheel gesture clears the pending programmatic target set during layout.
+        scroller.dispatchEvent(new dom.window.Event('wheel'));
+        const snaps = carousel.element.querySelectorAll<HTMLElement>('.mtrl-carousel__snap');
+        const last = snaps[snaps.length - 1];
+        expect(snaps.length).toBe(5);
+        if (variant === 'full-screen') scroller.scrollTop = parseFloat(last.style.top);
+        else scroller.scrollLeft = parseFloat(last.style.left);
+        scroller.dispatchEvent(new dom.window.Event('scroll'));
+        scroller.dispatchEvent(new dom.window.Event('scroll'));
+        expect(changed.mock.calls).toEqual([[{ index: 4 }]]);
+        expect(carousel.getCurrentSlide()).toBe(4);
+      } finally { carousel.destroy(); }
+    });
+  }
+
+  test('focus and blur preserve root event identity; slide focus is not forwarded', () => {
+    const carousel = createCarousel({ slides });
+    const focused = mock((..._args: Parameters<CarouselEvents['focus']>) => {});
+    const blurred = mock((..._args: Parameters<CarouselEvents['blur']>) => {});
+    document.body.append(carousel.element);
+    try {
+      carousel.on('focus', focused).on('blur', blurred);
+      const focus = new dom.window.FocusEvent('focus');
+      const blur = new dom.window.FocusEvent('blur');
+      carousel.element.dispatchEvent(focus);
+      carousel.element.dispatchEvent(blur);
+      expect(focused.mock.calls).toEqual([[{ event: focus, originalEvent: focus, element: carousel.element }]]);
+      expect(blurred.mock.calls).toEqual([[{ event: blur, originalEvent: blur, element: carousel.element }]]);
+      expect(focused.mock.calls[0][0].event).toBe(focus);
+      expect(blurred.mock.calls[0][0].originalEvent).toBe(blur);
+      carousel.slides.getElements()[0].focus();
+      carousel.slides.getElements()[1].focus();
+      expect(focused).toHaveBeenCalledTimes(1);
+      expect(blurred).toHaveBeenCalledTimes(1);
+      carousel.off('focus', focused).off('blur', blurred);
+      carousel.element.dispatchEvent(focus);
+      carousel.element.dispatchEvent(blur);
+      expect(focused).toHaveBeenCalledTimes(1);
+      expect(blurred).toHaveBeenCalledTimes(1);
+    } finally { carousel.destroy(); }
+  });
+
+  test('destroy clears subscriptions on retained root and navigation methods', () => {
+    const carousel = createCarousel({ slides });
+    const notify = mock(() => {});
+    carousel.on('change', notify).on('focus', notify).on('blur', notify);
+    const root = carousel.element;
+    carousel.destroy();
+    root.dispatchEvent(new dom.window.FocusEvent('focus'));
+    root.dispatchEvent(new dom.window.FocusEvent('blur'));
+    carousel.next();
+    expect(notify).not.toHaveBeenCalled();
   });
 });

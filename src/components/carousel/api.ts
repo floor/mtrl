@@ -1,5 +1,7 @@
 // src/components/carousel/api.ts
-import { CarouselComponent, CarouselSlide, CarouselVariant, SlidesAPI } from "./types";
+import type { CarouselComponent, CarouselSlide, CarouselVariant, SlidesAPI, CarouselEvents } from "./types";
+
+import type { EventCallback } from "../../core/state/emitter";
 
 interface ApiComponent {
   element: HTMLElement;
@@ -11,8 +13,8 @@ interface ApiComponent {
   prev: () => void;
   goTo: (index: number) => void;
   lifecycle?: { destroy: () => void };
-  on?: (event: string, handler: Function) => unknown;
-  off?: (event: string, handler: Function) => unknown;
+  on?: (event: string, handler: EventCallback) => unknown;
+  off?: (event: string, handler: EventCallback) => unknown;
 }
 
 export const withAPI = () => (component: ApiComponent): CarouselComponent => {
@@ -49,11 +51,11 @@ export const withAPI = () => (component: ApiComponent): CarouselComponent => {
     destroy() {
       component.lifecycle?.destroy();
     },
-    on(event: string, handler: Function) {
+    on<K extends keyof CarouselEvents>(event: K, handler: CarouselEvents[K]) {
       component.on?.(event, handler);
       return api;
     },
-    off(event: string, handler: Function) {
+    off<K extends keyof CarouselEvents>(event: K, handler: CarouselEvents[K]) {
       component.off?.(event, handler);
       return api;
     },
