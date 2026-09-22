@@ -1,18 +1,8 @@
 #!/usr/bin/env bun
-// Type-checks src/ with strictNullChecks, against a list of files that do not
-// pass yet.
-//
-// tsconfig.json has `strict: false`, while the repository's own notes claimed
-// strict mode (F14). Turning strictNullChecks on reported 257 errors in 79
-// files; one narrowing in core/config/component.ts cleared 22 of the files,
-// and the 57 below hold the 225 that remain. Gating the whole tree would be
-// red on arrival and get switched off, so the gate covers everything else and
-// names these. Fixing a file is then a one-line deletion from the list, and
-// the list is the public record of how far strictNullChecks has to go;
-// noImplicitAny follows once it is empty.
-//
-// The exclusions shrink. They never grow: adding a file here means a file that
-// passed strictNullChecks no longer does, which is a regression, not a chore.
+// Retains the zero-exclusion strictNullChecks guard from FLO-114.
+// Strict mode is now enabled in tsconfig.json. This migration began with
+// 257 errors in 79 files; all pending files have since been cleared.
+// The list must stay empty: new errors fail instead of becoming exclusions.
 //
 //   bun run scripts/check-strict-null.ts
 import { execFileSync } from "node:child_process";

@@ -28,8 +28,6 @@ jobs:
         run: bun run ts:check
       - name: Strict null checks (ratchet)
         run: bun run strict:check
-      - name: Strict function types (ratchet)
-        run: bun run strictfn:check
       - name: No implicit any (ratchet)
         run: bun run implicit:check
       - name: Lint

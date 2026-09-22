@@ -1,7 +1,7 @@
 // FLO-114: dialog's internal event hosts must accept the callback type supplied
 // by withEvents. These assertions are compiled, not executed. The private
 // DialogFeatureHost is reached through getApiConfig's parameter rather than
-// exported for a test. strictfn:check also checks the real composition pipeline.
+// exported for a test. ts:check also checks the real composition pipeline.
 import type { DialogComponent, DialogEvent, DialogFeatureComponent } from "../../src/components/dialog/types";
 import type { ApiOptions } from "../../src/components/dialog/api";
 import { getApiConfig } from "../../src/components/dialog/config";

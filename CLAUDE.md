@@ -6,7 +6,7 @@ mtrl is a lightweight TypeScript component library implementing Material Design 
 
 **Key Details:**
 - License: MIT
-- Language: TypeScript (`strict` is off; `strictNullChecks` is enforced by a ratchet, `bun run strict:check`, over every file not on its pending list — see F14)
+- Language: TypeScript (`strict: true`; `bun run ts:check` checks all library source files)
 - Runtime: Bun (native TypeScript execution)
 - Dependencies: Zero - pure TypeScript/JavaScript
 - Framework: Agnostic - works with any JavaScript framework or vanilla JS
@@ -98,7 +98,7 @@ mtrl/
 ## Technology Stack
 
 ### Core
-- **Language**: TypeScript (`strict: false` today; `strictNullChecks` ratchets towards on, `noImplicitAny` after it)
+- **Language**: TypeScript (`strict: true`; all strict-family checks are enabled for library source)
 - **Runtime**: Bun (native TypeScript execution, built-in test runner)
 - **Build Tool**: Bun
 - **Test Framework**: Bun's built-in test runner
@@ -927,7 +927,7 @@ under `.agents/` and are not versioned; the manifest is.
 
 **✅ ALWAYS do these:**
 - Write tests before implementing features
-- Write code that passes `strictNullChecks`; do not add a file to the pending list in `scripts/check-strict-null.ts`
+- Write code that passes `bun run ts:check` in strict mode; do not add files to the completed ratchets’ pending lists
 - Follow BEM naming in SCSS
 - Implement complete MD3 specifications
 - Ensure accessibility compliance
