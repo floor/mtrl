@@ -1,4 +1,5 @@
 // src/components/chips/types.ts
+import type { EventCallback } from "../../core/state/emitter";
 
 /**
  * Chip variant types
@@ -224,9 +225,7 @@ export interface ChipsConfig {
   /**
    * Event handlers for component events
    */
-  on?: {
-    [key: string]: Function;
-  };
+  on?: Partial<ChipsEvents>;
 }
 
 /**
@@ -411,7 +410,17 @@ export interface ChipsFeatureComponent {
  * @category Components
  * @internal
  */
-export type ChipsEventListeners = Record<string, Array<(...args: unknown[]) => void>>;
+export type ChipsEventListeners = Record<string, EventCallback[]>;
+
+/** Events emitted by the chips container's controller. */
+export interface ChipsEvents {
+  /** Selection values and the changed chip value (null for programmatic changes). */
+  change: (selectedValues: (string | null)[], changedValue: string | null) => void;
+  /** The newly created chip, after it is inserted into the container. */
+  add: (chip: ChipComponent) => void;
+  /** The chip being removed, before it is destroyed. */
+  remove: (chip: ChipComponent) => void;
+}
 
 export interface ChipsComponent {
   /** The chips container's DOM element */
@@ -543,7 +552,7 @@ export interface ChipsComponent {
    * @param handler - Event handler function
    * @returns The chips instance for chaining
    */
-  on: (event: string, handler: Function) => ChipsComponent;
+  on: <K extends keyof ChipsEvents>(event: K, handler: ChipsEvents[K]) => ChipsComponent;
 
   /**
    * Removes an event listener from the chips container
@@ -551,7 +560,7 @@ export interface ChipsComponent {
    * @param handler - Event handler function
    * @returns The chips instance for chaining
    */
-  off: (event: string, handler: Function) => ChipsComponent;
+  off: <K extends keyof ChipsEvents>(event: K, handler: ChipsEvents[K]) => ChipsComponent;
 }
 
 

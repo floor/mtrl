@@ -1,4 +1,5 @@
 // src/components/chips/config.ts
+import type { EventCallback } from "../../core/state/emitter";
 // Class names are written out in full. The class helpers no longer add the
 // `mtrl-` prefix for you (FLO-117), so a modifier built here carries it.
 import { PREFIX } from "../../core/config";
@@ -102,8 +103,8 @@ interface ChipsApiHost {
   // enableKeyboardNavigation and disableKeyboardNavigation, and this function
   // is the bridge. Named from the producer.
   keyboard?: { enable?: () => void; disable?: () => void };
-  on?: (event: string, handler: Function) => unknown;
-  off?: (event: string, handler: Function) => unknown;
+  on?: (event: string, handler: EventCallback) => unknown;
+  off?: (event: string, handler: EventCallback) => unknown;
   lifecycle?: { destroy?: () => void };
 }
 

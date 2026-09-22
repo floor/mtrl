@@ -1,6 +1,8 @@
 // src/components/chips/features/controller.ts
+import type { EventCallback } from "../../../core/state/emitter";
 import {
   ChipsConfig,
+  ChipsEvents,
   ChipComponent,
   ChipConfig,
   ChipsEventListeners,
@@ -37,12 +39,16 @@ export const withController =
   /**
    * Dispatches custom events to registered handlers
    * @param {string} eventName - Name of the event to trigger
-   * @param {any[]} args - Arguments to pass to the handlers
+   * @param args - Arguments to pass to the handlers
    */
-  const dispatchEvent = (eventName: string, ...args: unknown[]) => {
+  const dispatchEvent = <K extends keyof ChipsEvents>(
+    eventName: K,
+    ...args: Parameters<ChipsEvents[K]>
+  ) => {
     if (eventListeners[eventName]) {
-      eventListeners[eventName].forEach((handler: (...a: unknown[]) => void) =>
-        handler(...args),
+      // Storage erases callback arguments; dispatch and the public API check them.
+      eventListeners[eventName].forEach((handler: EventCallback) =>
+        (handler as (...a: unknown[]) => void)(...args),
       );
     }
   };
@@ -511,7 +517,7 @@ export const withController =
       disable: disableKeyboardNavigation,
     },
     // Event management
-    on(event: string, handler: (...args: unknown[]) => void) {
+    on(event: string, handler: EventCallback) {
       if (!eventListeners[event]) {
         eventListeners[event] = [];
       }
@@ -519,7 +525,7 @@ export const withController =
       eventListeners[event].push(handler);
       return this;
     },
-    off(event: string, handler: (...args: unknown[]) => void) {
+    off(event: string, handler: EventCallback) {
       if (eventListeners[event]) {
         const index = eventListeners[event].indexOf(handler);
         if (index !== -1) {

@@ -7,6 +7,7 @@ export type {
   ChipVariant,
   ChipsConfig,
   ChipsComponent,
+  ChipsEvents,
 } from "./types";
 
 // NOTE: Constants are exported from './constants' directly
