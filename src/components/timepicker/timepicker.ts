@@ -12,7 +12,6 @@ import {
 import { createBaseConfig, getContainerConfig, getApiConfig } from "./config";
 import { TIMEPICKER_Z_INDEX as Z_INDEX } from "./constants";
 import { createTimePickerAPI } from "./api";
-import { renderTimePicker } from "./render";
 import { parseTime, formatFormValue } from "./utils";
 import { createFormValue } from "../../core/dom/form-value";
 
@@ -87,9 +86,6 @@ const createTimePicker = (
         period: now.getHours() >= 12 ? TIME_PERIOD.PM : TIME_PERIOD.AM,
       };
     }
-
-    // Render initial time picker content
-    renderTimePicker(dialogElement, timeValue, baseConfig);
 
     // A time picker renders no form control of its own, so without this it
     // submits nothing. It lives on the component's own element rather than in

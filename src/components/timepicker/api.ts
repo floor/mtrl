@@ -10,9 +10,9 @@ import {
   TIME_PERIOD
 } from './types';
 import { TIMEPICKER_EVENTS as EVENTS, TIMEPICKER_SELECTORS as SELECTORS } from './constants';
-import { formatTime, padZero, formatFormValue } from './utils';
+import { formatFormValue } from './utils';
 import { renderTimePicker } from './render';
-import { renderClockDial, getTimeValueFromClick } from './clockdial';
+import { renderClockDial } from './clockdial';
 import type { TimePickerEvents } from './types';
 import type { EventCallback } from '../../core/state/emitter';
 import type { ElementComponent } from '../../core/compose/component';
@@ -49,16 +49,18 @@ export const createTimePickerAPI = (
   options: ApiOptions,
   formValue: HTMLInputElement | null = null
 ): TimePickerComponent => {
-  /**
-   * Redraws the dialog and keeps the submitted value in step.
-   *
-   * Every path that changes the time redraws, so this is the one place the
-   * hidden input has to follow — rather than nine call sites that would
-   * drift apart.
-   */
+  const getValue = () => formatFormValue(timeValue, config.showSeconds === true);
+  // Renderer interactions update timeValue in place. Synchronize submission
+  // before notifying consumers, without replacing the focused input/radio.
+  const notifyChange = () => {
+    const value = getValue();
+    setFormValue(formValue, value);
+    options.events.emit(EVENTS.CHANGE, value);
+    config.onChange?.(value);
+  };
   const render = () => {
-    renderTimePicker(dialogElement, timeValue, config);
-    setFormValue(formValue, formatFormValue(timeValue, config.showSeconds === true));
+    renderTimePicker(dialogElement, timeValue, config, notifyChange);
+    setFormValue(formValue, getValue());
   };
   // Track open state
   let isOpen = !!config.isOpen;
@@ -113,12 +115,17 @@ export const createTimePickerAPI = (
       isOpen = true;
       baseComponent.element.classList.add(`${config.prefix}-time-picker--open`);
       
-      // Force re-render to ensure canvas is drawn after dialog is visible
-      // This ensures the canvas has proper dimensions for rendering
-      setTimeout(() => {
-        render();
-      }, 50);
-      
+      // Refresh the dial's theme after opening, keeping the live inputs and
+      // their focus/selection intact. A delayed full render lost quick edits.
+      const canvas = dialogElement.querySelector<HTMLCanvasElement>(SELECTORS.DIAL_CANVAS);
+      if (canvas && config.type === TIME_PICKER_TYPE.DIAL) {
+        const active = dialogElement.querySelector('[data-active="true"]')?.getAttribute('data-type');
+        renderClockDial(canvas, timeValue, {
+          ...config,
+          activeSelector: active === 'minute' || active === 'second' ? active : 'hour'
+        });
+      }
+
       // Emit open event
       options.events.emit(EVENTS.OPEN);
       
@@ -167,7 +174,7 @@ export const createTimePickerAPI = (
     },
     
     getValue() {
-      return formatTime(timeValue, config.format === TIME_FORMAT.MILITARY);
+      return getValue();
     },
     
     getTimeObject() {
@@ -373,285 +380,9 @@ export const createTimePickerAPI = (
       timePickerAPI.setType(newType);
     }
     
-    if (target.closest(SELECTORS.PERIOD_AM)) {
-      if (timeValue.period !== TIME_PERIOD.AM) {
-        timeValue.period = TIME_PERIOD.AM;
-        if (timeValue.hours >= 12) {
-          timeValue.hours -= 12;
-        }
-        render();
-        options.events.emit(EVENTS.CHANGE, timePickerAPI.getValue());
-        
-        // Call onChange callback if provided
-        if (config.onChange) {
-          config.onChange(timePickerAPI.getValue());
-        }
-      }
-    }
+  });
 
-    if (target.closest(SELECTORS.PERIOD_PM)) {
-      if (timeValue.period !== TIME_PERIOD.PM) {
-        timeValue.period = TIME_PERIOD.PM;
-        if (timeValue.hours < 12) {
-          timeValue.hours += 12;
-        }
-        render();
-        options.events.emit(EVENTS.CHANGE, timePickerAPI.getValue());
-        
-        // Call onChange callback if provided
-        if (config.onChange) {
-          config.onChange(timePickerAPI.getValue());
-        }
-      }
-    }
-    
-    // Handle canvas dial click
-    if (target.closest(SELECTORS.DIAL_CANVAS)) {
-      if (config.type === TIME_PICKER_TYPE.DIAL) {
-        const canvas = target as HTMLCanvasElement;
-        const rect = canvas.getBoundingClientRect();
-        const x = event.clientX - rect.left;
-        const y = event.clientY - rect.top;
-        
-        // Determine active selector
-        let activeSelector: 'hour' | 'minute' | 'second' = 'hour';
-        const hoursEl = dialogElement.querySelector(SELECTORS.HOURS_INPUT);
-        const minutesEl = dialogElement.querySelector(SELECTORS.MINUTES_INPUT);
-        const secondsEl = dialogElement.querySelector(SELECTORS.SECONDS_INPUT);
-        
-        if (hoursEl && hoursEl.getAttribute('data-active') === 'true') {
-          activeSelector = 'hour';
-        } else if (minutesEl && minutesEl.getAttribute('data-active') === 'true') {
-          activeSelector = 'minute';
-        } else if (config.showSeconds && secondsEl && secondsEl.getAttribute('data-active') === 'true') {
-          activeSelector = 'second';
-        }
-        
-        // Get the time value from the click position
-        const selectedValue = getTimeValueFromClick(canvas, x, y, {
-          type: config.type,
-          format: config.format,
-          showSeconds: config.showSeconds,
-          prefix: config.prefix,
-          activeSelector
-        });
-        
-        if (selectedValue !== null) {
-          if (activeSelector === 'hour') {
-            let newHours = selectedValue;
-            
-            // Adjust for 12-hour format if needed
-            if (config.format === TIME_FORMAT.AMPM) {
-              // Convert to 24-hour format internally
-              if (timeValue.period === TIME_PERIOD.PM && selectedValue !== 12) {
-                newHours += 12;
-              } else if (timeValue.period === TIME_PERIOD.AM && selectedValue === 12) {
-                newHours = 0;
-              }
-            }
-            
-            if (timeValue.hours !== newHours) {
-              timeValue.hours = newHours;
-              
-              // Update display time
-              const hoursDisplay = hoursEl as HTMLElement;
-              if (hoursDisplay) {
-                hoursDisplay.textContent = padZero(config.format === TIME_FORMAT.MILITARY 
-                  ? newHours 
-                  : (newHours % 12 || 12));
-              }
-              
-              // Directly update the canvas
-              const canvasElement = dialogElement.querySelector(SELECTORS.DIAL_CANVAS) as HTMLCanvasElement;
-              if (canvasElement) {
-                renderClockDial(canvasElement, timeValue, {
-                  type: config.type,
-                  format: config.format,
-                  showSeconds: config.showSeconds,
-                  prefix: config.prefix,
-                  activeSelector
-                });
-              }
-              
-              options.events.emit(EVENTS.CHANGE, timePickerAPI.getValue());
-              
-              // Call onChange callback if provided
-              if (config.onChange) {
-                config.onChange(timePickerAPI.getValue());
-              }
-            }
-          } else if (activeSelector === 'minute') {
-            if (timeValue.minutes !== selectedValue) {
-              timeValue.minutes = selectedValue;
-              
-              // Update display time
-              const minutesDisplay = minutesEl as HTMLElement;
-              if (minutesDisplay) {
-                minutesDisplay.textContent = padZero(selectedValue);
-              }
-              
-              // Directly update the canvas
-              const canvasElement = dialogElement.querySelector(SELECTORS.DIAL_CANVAS) as HTMLCanvasElement;
-              if (canvasElement) {
-                renderClockDial(canvasElement, timeValue, {
-                  type: config.type,
-                  format: config.format,
-                  showSeconds: config.showSeconds,
-                  prefix: config.prefix,
-                  activeSelector
-                });
-              }
-              
-              options.events.emit(EVENTS.CHANGE, timePickerAPI.getValue());
-              
-              // Call onChange callback if provided
-              if (config.onChange) {
-                config.onChange(timePickerAPI.getValue());
-              }
-            }
-          } else if (activeSelector === 'second' && config.showSeconds) {
-            if (timeValue.seconds !== selectedValue) {
-              timeValue.seconds = selectedValue;
-              
-              // Update display time
-              const secondsDisplay = secondsEl as HTMLElement;
-              if (secondsDisplay) {
-                secondsDisplay.textContent = padZero(selectedValue);
-              }
-              
-              // Directly update the canvas
-              const canvasElement = dialogElement.querySelector(SELECTORS.DIAL_CANVAS) as HTMLCanvasElement;
-              if (canvasElement) {
-                renderClockDial(canvasElement, timeValue, {
-                  type: config.type,
-                  format: config.format,
-                  showSeconds: config.showSeconds,
-                  prefix: config.prefix,
-                  activeSelector
-                });
-              }
-              
-              options.events.emit(EVENTS.CHANGE, timePickerAPI.getValue());
-              
-              // Call onChange callback if provided
-              if (config.onChange) {
-                config.onChange(timePickerAPI.getValue());
-              }
-            }
-          }
-        }
-      }
-    }
-  });
-  
-  // Set up input handling for input type time picker
-  const handleInputChange = (event: Event) => {
-    const target = event.target as HTMLInputElement;
-    const inputType = target.getAttribute('data-type');
-    const value = parseInt(target.value, 10);
-    
-    if (isNaN(value)) return;
-    
-    if (inputType === 'hour') {
-      let newHours = value;
-      
-      // Handle hour constraints
-      if (config.format === TIME_FORMAT.AMPM) {
-        if (value < 1) newHours = 12;
-        if (value > 12) newHours = 1;
-        
-        // Convert to 24h format internally
-        if (timeValue.period === TIME_PERIOD.PM && newHours !== 12) {
-          newHours += 12;
-        } else if (timeValue.period === TIME_PERIOD.AM && newHours === 12) {
-          newHours = 0;
-        }
-      } else {
-        if (value < 0) newHours = 0;
-        if (value > 23) newHours = 23;
-      }
-      
-      timeValue.hours = newHours;
-    } else if (inputType === 'minute') {
-      let newMinutes = value;
-      
-      // Handle minute constraints
-      if (newMinutes < 0) newMinutes = 0;
-      if (newMinutes > 59) newMinutes = 59;
-      
-      timeValue.minutes = newMinutes;
-    } else if (inputType === 'second') {
-      let newSeconds = value;
-      
-      // Handle second constraints
-      if (newSeconds < 0) newSeconds = 0;
-      if (newSeconds > 59) newSeconds = 59;
-      
-      timeValue.seconds = newSeconds;
-    }
-    
-    // Re-render time picker with updated values
-    render();
-    
-    // Emit change event
-    options.events.emit(EVENTS.CHANGE, timePickerAPI.getValue());
-    
-    // Call onChange callback if provided
-    if (config.onChange) {
-      config.onChange(timePickerAPI.getValue());
-    }
-  };
-  
-  // Add event delegation for input fields
-  dialogElement.addEventListener('change', (event) => {
-    const target = event.target as HTMLElement;
-    if (
-      target.matches(SELECTORS.HOURS_INPUT) ||
-      target.matches(SELECTORS.MINUTES_INPUT) ||
-      target.matches(SELECTORS.SECONDS_INPUT)
-    ) {
-      handleInputChange(event);
-    }
-  });
-  
-  // Add event delegation for input keyup
-  dialogElement.addEventListener('keyup', (event) => {
-    const target = event.target as HTMLElement;
-    if (
-      target.matches(SELECTORS.HOURS_INPUT) ||
-      target.matches(SELECTORS.MINUTES_INPUT) ||
-      target.matches(SELECTORS.SECONDS_INPUT)
-    ) {
-      if (event.key === 'Enter') {
-        handleInputChange(event);
-        
-        // Move focus to next input or confirm button
-        if (target.matches(SELECTORS.HOURS_INPUT)) {
-          const minutesInput = dialogElement.querySelector(SELECTORS.MINUTES_INPUT);
-          if (minutesInput) {
-            (minutesInput as HTMLElement).focus();
-          }
-        } else if (target.matches(SELECTORS.MINUTES_INPUT)) {
-          if (config.showSeconds) {
-            const secondsInput = dialogElement.querySelector(SELECTORS.SECONDS_INPUT);
-            if (secondsInput) {
-              (secondsInput as HTMLElement).focus();
-            }
-          } else {
-            const confirmButton = dialogElement.querySelector(SELECTORS.CONFIRM_BUTTON);
-            if (confirmButton) {
-              (confirmButton as HTMLElement).focus();
-            }
-          }
-        } else if (target.matches(SELECTORS.SECONDS_INPUT)) {
-          const confirmButton = dialogElement.querySelector(SELECTORS.CONFIRM_BUTTON);
-          if (confirmButton) {
-            (confirmButton as HTMLElement).focus();
-          }
-        }
-      }
-    }
-  });
-  
+  // The initial render uses the same synchronization path as later renders.
+  render();
   return timePickerAPI;
 };

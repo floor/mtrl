@@ -9,11 +9,6 @@
 // accessible input route, the AM/PM radiogroup and the M3 colour roles all
 // landed first, so these tests are not blessing behaviour known to diverge.
 //
-// One exception, and it is marked where it appears: getValue() disagrees with
-// the value the component submits and with its own documentation. That is
-// FLO-237. The assertions here pin what it does today so it cannot drift
-// further unnoticed; they record it, they do not endorse it.
-
 import { describe, test, expect, beforeEach, afterAll, mock } from "bun:test";
 import { JSDOM } from "jsdom";
 
@@ -105,22 +100,19 @@ describe("the time it starts with", () => {
     expect(time.seconds).toBe(45);
   });
 
-  // FLO-237: getValue() returns the *display* string, so it carries the period
-  // and always carries seconds, while the value this component submits is
-  // "14:30". Pinned, not endorsed — when FLO-237 is settled these three fail
-  // and should be updated to whatever is decided.
-  test("getValue returns the display string, which is FLO-237", () => {
-    expect(mount({ value: "14:30" }).getValue()).toBe("02:30:00 PM");
+  // FLO-237: machine values match the form regardless of display format.
+  test("getValue returns a 24-hour machine value", () => {
+    expect(mount({ value: "14:30" }).getValue()).toBe("14:30");
   });
 
-  test("including seconds even when showSeconds is off — also FLO-237", () => {
+  test("omitting seconds when showSeconds is off", () => {
     const picker = mount({ value: "14:30", showSeconds: false });
 
-    expect(picker.getValue()).toBe("02:30:00 PM");
+    expect(picker.getValue()).toBe("14:30");
   });
 
-  test("and in 24-hour form it is still seconds-padded — also FLO-237", () => {
-    expect(mount({ value: "14:30", format: TIME_FORMAT.MILITARY }).getValue()).toBe("14:30:00");
+  test("and the 24-hour display has the same value", () => {
+    expect(mount({ value: "14:30", format: TIME_FORMAT.MILITARY }).getValue()).toBe("14:30");
   });
 });
 
@@ -342,7 +334,7 @@ describe("destroy", () => {
 
 
 describe("typed event payloads (FLO-114)", () => {
-  test("setValue, format changes and input edits emit display strings", () => {
+  test("setValue, format changes and input edits emit machine values", () => {
     const picker = mount({ type: TIME_PICKER_TYPE.INPUT, value: "09:30" });
     const changed = mock((_value: string) => {});
     try {
@@ -352,15 +344,14 @@ describe("typed event payloads (FLO-114)", () => {
       const minutes = picker.dialogElement.querySelector<HTMLInputElement>(TIMEPICKER_SELECTORS.MINUTES_INPUT)!;
       minutes.value = "20";
       minutes.dispatchEvent(new dom.window.Event("change", { bubbles: true }));
-      // These record current display formatting; FLO-237 tracks the separate format decision.
-      expect(changed.mock.calls).toEqual([["02:45:00 PM"], ["14:45:00"], ["14:20:00"]]);
+      expect(changed.mock.calls).toEqual([["14:45"], ["14:45"], ["14:20"]]);
       expect(picker.off("change", changed)).toBe(picker);
       picker.setValue("16:00");
       expect(changed).toHaveBeenCalledTimes(3);
     } finally { picker.destroy(); }
   });
 
-  test("open and close notify only on transitions; confirm supplies the display string", () => {
+  test("open and close notify only on transitions; confirm supplies the machine value", () => {
     const picker = mount({ type: TIME_PICKER_TYPE.INPUT, value: "14:30" });
     const opened = mock((..._args: unknown[]) => {});
     const closed = mock((..._args: unknown[]) => {});
@@ -372,7 +363,7 @@ describe("typed event payloads (FLO-114)", () => {
       picker.close();
       expect(opened.mock.calls).toEqual([[undefined]]);
       expect(closed.mock.calls).toEqual([[undefined]]);
-      expect(confirmed.mock.calls).toEqual([["02:30:00 PM"]]);
+      expect(confirmed.mock.calls).toEqual([["14:30"]]);
       picker.off("open", opened).off("close", closed).off("confirm", confirmed);
       picker.open();
       picker.dialogElement.querySelector<HTMLButtonElement>(TIMEPICKER_SELECTORS.CONFIRM_BUTTON)!.click();

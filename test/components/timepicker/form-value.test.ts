@@ -67,7 +67,7 @@ describe("a named time picker takes part in a form", () => {
     const { picker, submitted } = inForm({ name: "start", value: "14:30", format: "ampm" });
 
     expect(submitted().get("start")).toBe("14:30");
-    expect(picker.getValue()).toContain("PM");
+    expect(picker.getValue()).toBe("14:30");
   });
 
   test("it submits seconds only when the picker shows them", () => {

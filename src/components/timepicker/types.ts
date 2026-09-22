@@ -14,9 +14,9 @@ export interface TimePickerSwipePayload {
 
 /** Events emitted by the picker API and its interactive root. */
 export interface TimePickerEvents {
-  /** The current display string returned by getValue(), not the submitted form value. */
+  /** The current 24-hour value (HH:MM, or HH:MM:SS with showSeconds), also submitted by the form. */
   change: (value: string) => void;
-  /** The confirmed display string returned by getValue(). */
+  /** The confirmed 24-hour value, matching getValue() and the submitted form value. */
   confirm: (value: string) => void;
   open: () => void;
   close: () => void;
@@ -203,7 +203,7 @@ export interface TimePickerConfig {
   keyboardIcon?: string;
 
   /**
-   * Callback when time is changed
+   * Callback when time is changed; receives HH:MM or HH:MM:SS in 24-hour format
    */
   onChange?: (time: string) => void;
 
@@ -218,7 +218,7 @@ export interface TimePickerConfig {
   onClose?: () => void;
 
   /**
-   * Callback when time is confirmed
+   * Callback when time is confirmed; receives the same 24-hour value as getValue()
    */
   onConfirm?: (time: string) => void;
 
@@ -310,7 +310,7 @@ export interface TimePickerComponent {
 
   /**
    * Gets the current time value
-   * @returns Current time string in 24-hour format (HH:MM or HH:MM:SS)
+   * @returns Current time string in 24-hour format (HH:MM, or HH:MM:SS when showSeconds is true)
    */
   getValue: () => string;
 
