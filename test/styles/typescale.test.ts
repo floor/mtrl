@@ -44,7 +44,7 @@ for (const [role, size, height, tracking, weight] of scale) {
 }
 
 for (const selector of [
-  'h4', '.mtrl-card-header-title', '.mtrl-dialog--fullscreen .mtrl-dialog__header-title',
+  'h4', '.mtrl-card__header-title', '.mtrl-dialog--fullscreen .mtrl-dialog__header-title',
   '.mtrl-extended-fab--medium .mtrl-extended-fab__text', '.mtrl-side-sheet__title',
   '.mtrl-top-app-bar__headline',
   '.mtrl-top-app-bar--scrolled.mtrl-top-app-bar--medium.mtrl-top-app-bar--compressible .mtrl-top-app-bar__headline',

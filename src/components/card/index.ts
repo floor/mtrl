@@ -46,7 +46,7 @@
  *
  * // Modify card programmatically using API methods
  * const image = document.createElement('div');
- * image.className = 'mtrl-card-media';
+ * image.className = 'mtrl-card__media';
  * image.style.backgroundImage = 'url(path/to/image.jpg)';
  *
  * card.addMedia(image, 'top')

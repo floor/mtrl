@@ -310,7 +310,7 @@ export const withInteractiveBehavior = <C extends ElementComponent & EventCompon
       if (e.dataTransfer) {
         // Set drag image and data
         const cardTitle =
-          comp.element.querySelector(`.${comp.getClass("card")}-header-title`)
+          comp.element.querySelector(`.${comp.getClass("card")}__header-title`)
             ?.textContent || "Card";
         e.dataTransfer.setData("text/plain", cardTitle);
       }

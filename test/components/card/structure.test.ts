@@ -45,6 +45,7 @@ import createCard, {
   withLoading,
   withSwipeable,
 } from '../../../src/components/card';
+import { CARD_CLASSES } from '../../../src/components/card/constants';
 
 const wait = (ms = 20) => new Promise((resolve) => setTimeout(resolve, ms));
 const parts = (card: { element: HTMLElement }) =>
@@ -76,10 +77,23 @@ describe('card role and ARIA', () => {
 });
 
 describe('card header', () => {
+  test('public part constants address the rendered header and content', () => {
+    const card = createCard({
+      header: { title: 'Trip', subtitle: 'Paris', avatar: '<span>A</span>', action: '<button>More</button>' },
+      content: { text: 'Body' },
+      media: { src: 'https://example.com/a.png' },
+      actions: { actions: [] },
+    });
+    for (const key of ['HEADER', 'TITLE', 'SUBTITLE', 'AVATAR', 'HEADER_ACTION', 'CONTENT', 'MEDIA', 'ACTIONS'] as const) {
+      expect(card.element.querySelector(`.mtrl-${CARD_CLASSES[key]}`)).not.toBeNull();
+    }
+    card.destroy();
+  });
+
   test('renders title and subtitle, and the title names the card', () => {
     const card = createCard({ header: { title: 'Trip', subtitle: 'Paris' } });
-    expect(card.element.querySelector('.mtrl-card-header-title')?.textContent).toBe('Trip');
-    expect(card.element.querySelector('.mtrl-card-header-subtitle')?.textContent).toBe('Paris');
+    expect(card.element.querySelector('.mtrl-card__header-title')?.textContent).toBe('Trip');
+    expect(card.element.querySelector('.mtrl-card__header-subtitle')?.textContent).toBe('Paris');
     const name = card.element.getAttribute('aria-labelledby');
     expect(byId(card, name)?.textContent).toBe('Trip');
   });
@@ -87,8 +101,8 @@ describe('card header', () => {
   test('titles of different cards carry different ids', () => {
     const first = createCard({ header: { title: 'One' } });
     const second = createCard({ header: { title: 'Two' } });
-    const a = first.element.querySelector('.mtrl-card-header-title')!.id;
-    const b = second.element.querySelector('.mtrl-card-header-title')!.id;
+    const a = first.element.querySelector('.mtrl-card__header-title')!.id;
+    const b = second.element.querySelector('.mtrl-card__header-title')!.id;
     expect(a).not.toBe('');
     expect(a).not.toBe(b);
   });
@@ -102,14 +116,14 @@ describe('card header', () => {
   test('replacing the header replaces the name it gave', () => {
     const card = createCard({ header: { title: 'Old' } });
     card.setHeader(createCardHeader({ title: 'New' }));
-    expect(card.element.querySelectorAll('.mtrl-card-header')).toHaveLength(1);
+    expect(card.element.querySelectorAll('.mtrl-card__header')).toHaveLength(1);
     expect(byId(card, card.element.getAttribute('aria-labelledby'))?.textContent).toBe('New');
   });
 
   test('avatar and action strings are rendered around the text', () => {
     const header = createCardHeader({ title: 'T', avatar: '<img src="a.png">', action: '<button>More</button>' });
     expect(Array.from(header.children).map((child) => child.classList[0])).toEqual([
-      'mtrl-card-header-avatar', 'mtrl-card-header-text', 'mtrl-card-header-action',
+      'mtrl-card__header-avatar', 'mtrl-card__header-text', 'mtrl-card__header-action',
     ]);
     const img = header.querySelector('img')!;
     expect(img.getAttribute('alt')).toBe('');
@@ -131,12 +145,12 @@ describe('card structure order', () => {
       content: { text: 'Body' },
       actions: { actions: [document.createElement('button')] },
     });
-    expect(parts(card)).toEqual(['mtrl-card-media', 'mtrl-card-header', 'mtrl-card-content', 'mtrl-card-actions']);
+    expect(parts(card)).toEqual(['mtrl-card__media', 'mtrl-card__header', 'mtrl-card__content', 'mtrl-card__actions']);
   });
 
   test('media at the bottom goes after content', () => {
     const card = createCard({ media: { src: 'https://example.com/a.png', position: 'bottom' }, header: { title: 'T' }, content: { text: 'Body' } });
-    expect(parts(card)).toEqual(['mtrl-card-header', 'mtrl-card-content', 'mtrl-card-media']);
+    expect(parts(card)).toEqual(['mtrl-card__header', 'mtrl-card__content', 'mtrl-card__media']);
   });
 
   test('setHeader stays above content when media sits at the bottom', () => {
@@ -145,14 +159,14 @@ describe('card structure order', () => {
     card.addContent(createCardContent({ text: 'Body' }));
     card.addMedia(createCardMedia({ src: 'https://example.com/bottom.png' }), 'bottom');
     card.setHeader(createCardHeader({ title: 'Heading' }));
-    expect(parts(card)).toEqual(['mtrl-card-media', 'mtrl-card-header', 'mtrl-card-content', 'mtrl-card-media']);
+    expect(parts(card)).toEqual(['mtrl-card__media', 'mtrl-card__header', 'mtrl-card__content', 'mtrl-card__media']);
   });
 
   test('setActions replaces earlier actions at the end', () => {
     const card = createCard({ content: { text: 'Body' } });
     card.setActions(createCardActions({ class: 'first' }));
     card.setActions(createCardActions({ class: 'second' }));
-    expect(card.element.querySelectorAll('.mtrl-card-actions')).toHaveLength(1);
+    expect(card.element.querySelectorAll('.mtrl-card__actions')).toHaveLength(1);
     expect(card.element.lastElementChild?.classList.contains('second')).toBe(true);
   });
 
@@ -172,15 +186,15 @@ describe('card parts', () => {
     expect(text.textContent).toBe('<b>bold</b>');
     expect(text.contains(child)).toBe(true);
     expect(createCardContent({ html: '<b>bold</b>' }).querySelector('b')).not.toBeNull();
-    expect(createCardContent({ padding: false }).classList.contains('mtrl-card-content--no-padding')).toBe(true);
+    expect(createCardContent({ padding: false }).classList.contains('mtrl-card__content--no-padding')).toBe(true);
   });
 
   test('media images carry alt text, or are hidden as decoration', () => {
     const described = createCardMedia({ src: 'https://example.com/a.png', alt: 'Tower', aspectRatio: '16:9', contain: true });
     expect(described.querySelector('img')?.alt).toBe('Tower');
     expect(described.querySelector('img')?.hasAttribute('aria-hidden')).toBe(false);
-    expect(described.classList.contains('mtrl-card-media--16-9')).toBe(true);
-    expect(described.classList.contains('mtrl-card-media--contain')).toBe(true);
+    expect(described.classList.contains('mtrl-card__media--16-9')).toBe(true);
+    expect(described.classList.contains('mtrl-card__media--contain')).toBe(true);
 
     const decorative = createCardMedia({ src: 'https://example.com/a.png' });
     expect(decorative.querySelector('img')?.getAttribute('aria-hidden')).toBe('true');
@@ -200,14 +214,14 @@ describe('card parts', () => {
     expect(icon.getAttribute('aria-label')).toBe('Action 1');
     expect(text.hasAttribute('aria-label')).toBe(false);
     for (const modifier of ['end', 'vertical', 'full-bleed']) {
-      expect(actions.classList.contains(`mtrl-card-actions--${modifier}`)).toBe(true);
+      expect(actions.classList.contains(`mtrl-card__actions--${modifier}`)).toBe(true);
     }
   });
 
   test('the buttons shorthand adds real buttons as actions', async () => {
     const card = createCard({ buttons: [{ text: 'Cancel' }, { text: 'Save' }] });
     await wait();
-    const buttons = card.element.querySelectorAll('.mtrl-card-actions .mtrl-button');
+    const buttons = card.element.querySelectorAll('.mtrl-card__actions .mtrl-button');
     expect(Array.from(buttons).map((button) => button.textContent?.trim())).toEqual(['Cancel', 'Save']);
   });
 });
@@ -251,6 +265,18 @@ describe('card behaviour', () => {
     expect(card.element.classList.contains('mtrl-card--dragging')).toBe(false);
   });
 
+  test('drag data uses the title selected through the migrated header class', () => {
+    const card = createCard({ draggable: true, header: { title: 'Trip' } });
+    const values = new Map<string, string>();
+    const event = new dom.window.Event('dragstart');
+    Object.defineProperty(event, 'dataTransfer', { value: {
+      setData: (type: string, value: string) => values.set(type, value),
+    } });
+    card.element.dispatchEvent(event);
+    expect(values.get('text/plain')).toBe('Trip');
+    card.destroy();
+  });
+
   test('destroy removes the card', () => {
     const card = createCard({ header: { title: 'T' } });
     document.body.appendChild(card.element);
@@ -260,23 +286,33 @@ describe('card behaviour', () => {
 });
 
 describe('card enhancers', () => {
+  test('expansion reuses the actions built by inline configuration', () => {
+    const action = document.createElement('button');
+    action.textContent = 'Share';
+    const base = createCard({ actions: { actions: [action] } });
+    const card = withExpandable({ expandableContent: document.createElement('div') })(base);
+    expect(card.element.querySelectorAll('.mtrl-card__actions')).toHaveLength(1);
+    expect(action.parentElement?.querySelector('.mtrl-card__expand-button')).not.toBeNull();
+    base.destroy();
+  });
+
   test('withLoading shows a busy overlay and removes it', () => {
     const card = withLoading({ initialState: true })(createCard());
     expect(card.loading.isLoading()).toBe(true);
     expect(card.element.getAttribute('aria-busy')).toBe('true');
     expect(card.element.classList.contains('mtrl-card--state-loading')).toBe(true);
-    expect(card.element.querySelector('.mtrl-card-loading-overlay')?.getAttribute('role')).toBe('progressbar');
+    expect(card.element.querySelector('.mtrl-card__loading-overlay')?.getAttribute('role')).toBe('progressbar');
 
     card.loading.setLoading(false);
     expect(card.loading.isLoading()).toBe(false);
     expect(card.element.getAttribute('aria-busy')).toBe('false');
-    expect(card.element.querySelector('.mtrl-card-loading-overlay')).toBeNull();
+    expect(card.element.querySelector('.mtrl-card__loading-overlay')).toBeNull();
   });
 
   test('withExpandable wires its button to the content it shows and hides', () => {
     const content = document.createElement('div');
     const card = withExpandable({ expandableContent: content })(createCard());
-    const button = card.element.querySelector<HTMLButtonElement>('.mtrl-card-expand-button')!;
+    const button = card.element.querySelector<HTMLButtonElement>('.mtrl-card__expand-button')!;
     expect(button.getAttribute('aria-controls')).toBe(content.id);
     expect(button.getAttribute('aria-expanded')).toBe('false');
     expect(content.getAttribute('aria-hidden')).toBe('true');
@@ -296,9 +332,9 @@ describe('card enhancers', () => {
     const seen: string[] = [];
     const card = withSwipeable({ onSwipeLeft: () => seen.push('left'), onSwipeRight: () => seen.push('right') })(createCard());
     expect(card.element.classList.contains('mtrl-card--swipeable')).toBe(true);
-    card.element.querySelector<HTMLButtonElement>('.mtrl-card-swipe-left-action')!.click();
+    card.element.querySelector<HTMLButtonElement>('.mtrl-card__swipe-left-action')!.click();
     expect(card.element.style.transform).toBe('translateX(-100%)');
-    card.element.querySelector<HTMLButtonElement>('.mtrl-card-swipe-right-action')!.click();
+    card.element.querySelector<HTMLButtonElement>('.mtrl-card__swipe-right-action')!.click();
     expect(seen).toEqual(['left', 'right']);
     card.swipeable.reset();
     expect(card.element.style.transform).toBe('translateX(0)');

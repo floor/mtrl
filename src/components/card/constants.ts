@@ -76,19 +76,22 @@ export const CARD_MEDIA_POSITION = {
  */
 export const CARD_CLASSES = {
   ROOT: 'card',
-  HEADER: 'card-header',
-  TITLE: 'card-title',
-  SUBTITLE: 'card-subtitle',
-  AVATAR: 'card-avatar',
-  HEADER_ACTION: 'card-header-action',
-  CONTENT: 'card-content',
-  MEDIA: 'card-media',
-  ACTIONS: 'card-actions',
-  DRAGGABLE: 'card-draggable',
-  INTERACTIVE: 'card-interactive',
-  FULL_WIDTH: 'card-full-width',
-  CLICKABLE: 'card-clickable',
-  LOADING: 'card-loading',
-  EXPANDED: 'card-expanded',
-  ELEVATION_PREFIX: 'card-elevation-'
+  HEADER: 'card__header',
+  TITLE: 'card__header-title',
+  SUBTITLE: 'card__header-subtitle',
+  AVATAR: 'card__header-avatar',
+  HEADER_ACTION: 'card__header-action',
+  CONTENT: 'card__content',
+  MEDIA: 'card__media',
+  ACTIONS: 'card__actions',
+  /** Reserved modifier; draggable currently uses the native attribute. */
+  DRAGGABLE: 'card--draggable',
+  INTERACTIVE: 'card--interactive',
+  FULL_WIDTH: 'card--full-width',
+  /** Reserved modifier; clickable currently uses INTERACTIVE. */
+  CLICKABLE: 'card--clickable',
+  LOADING: 'card--state-loading',
+  EXPANDED: 'card--expanded',
+  /** Reserved modifier prefix; elevation currently uses styles. */
+  ELEVATION_PREFIX: 'card--elevation-'
 } as const;
