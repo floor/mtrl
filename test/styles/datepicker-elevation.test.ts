@@ -26,11 +26,11 @@ beforeAll(() => {
 
 describe('datepicker stylesheet', () => {
   test('the calendar surface carries a shadow', () => {
-    expect(value('.mtrl-datepicker-calendar', 'box-shadow')).toBeDefined();
+    expect(value('.mtrl-datepicker__calendar', 'box-shadow')).toBeDefined();
   });
 
   test('that shadow is the level-3 elevation, not an arbitrary one', () => {
-    const shadow = value('.mtrl-datepicker-calendar', 'box-shadow');
+    const shadow = value('.mtrl-datepicker__calendar', 'box-shadow');
     // $elevation 'level-3' is the two-layer shadow below; a wrong key yields null and
     // Sass emits no declaration at all, which is exactly what this guards against.
     expect(shadow).toBe('0px 1px 3px rgba(0, 0, 0, 0.3), 0px 4px 8px 3px rgba(0, 0, 0, 0.15)');

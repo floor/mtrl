@@ -13,4 +13,4 @@ import { describe } from "bun:test";
  * They are still worth having. What they are not is a correctness test, and
  * `bun test` should only fail when something is wrong.
  */
-export const benchmark = process.env.MTRL_BENCH === "1" ? describe : describe.skip;
+export const benchmark: typeof describe.skip = process.env.MTRL_BENCH === "1" ? describe : describe.skip;

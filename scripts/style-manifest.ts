@@ -28,6 +28,7 @@ export const componentStyles: Record<string, { source: string; dependencies: str
   "loading-indicator": { source: "components/loading-indicator", dependencies: [] },
   "split-button": { source: "components/split-button", dependencies: ["menu", "button"] },
   radios: { source: "components/radios", dependencies: [] },
+  datepicker: { source: "components/datepicker", dependencies: [] },
   timepicker: { source: "components/timepicker", dependencies: [] },
   search: { source: "components/search", dependencies: [] },
   snackbar: { source: "components/snackbar", dependencies: ["button", "icon-button"] },
@@ -36,8 +37,8 @@ export const componentStyles: Record<string, { source: string; dependencies: str
   tooltip: { source: "components/tooltip", dependencies: [] },
 };
 
-// Full-bundle-only until the component is finished. Its files are not modified.
-export const fullOnlyStyles = ["components/datepicker"];
+// All shipped components have selective CSS entries.
+export const fullOnlyStyles: string[] = [];
 
 export const themeStyles = [
   "baseline", "ocean", "desert", "forest", "sunset", "spring", "summer",

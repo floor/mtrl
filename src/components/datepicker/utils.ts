@@ -8,20 +8,37 @@ import { CalendarDate, MONTH_NAMES, MONTH_NAMES_SHORT } from './types';
  */
 export const parseDate = (date: Date | string | null): Date | null => {
   if (!date) return null;
-  
-  // Already a Date object
-  if (date instanceof Date) {
-    return isNaN(date.getTime()) ? null : date;
-  }
-  
-  // String date
-  if (typeof date === 'string') {
-    // Try to parse the string
-    const parsedDate = new Date(date);
-    return isNaN(parsedDate.getTime()) ? null : parsedDate;
-  }
-  
-  return null;
+  if (typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date)) return parseInputDate(date, 'YYYY-MM-DD');
+  const result = new Date(date);
+  if (isNaN(result.getTime())) return null;
+  result.setHours(0, 0, 0, 0);
+  return result;
+};
+
+/** Strict inverse of formatDate: never let Date roll February 30 into March. */
+export const parseInputDate = (text: string, format: string): Date | null => {
+  const tokens: string[] = [];
+  const escape = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const pattern = format.split(/(YYYY|MMMM|MMM|YY|MM|DD|M|D)/).map(part => {
+    if (!/^(YYYY|MMMM|MMM|YY|MM|DD|M|D)$/.test(part)) return escape(part);
+    tokens.push(part);
+    if (part === 'MMMM') return '(' + MONTH_NAMES.join('|') + ')';
+    if (part === 'MMM') return '(' + MONTH_NAMES_SHORT.join('|') + ')';
+    return part === 'YYYY' ? '(\\d{4})' : part === 'YY' ? '(\\d{2})' : '(\\d{1,2})';
+  }).join('');
+  const match = new RegExp('^' + pattern + '$', 'i').exec(text.trim());
+  if (!match) return null;
+  let year = 0, month = 0, day = 0;
+  tokens.forEach((token, index) => {
+    const value = match[index + 1];
+    if (token === 'YYYY') year = Number(value);
+    else if (token === 'YY') year = 2000 + Number(value);
+    else if (token === 'MMMM' || token === 'MMM') month = (token === 'MMMM' ? MONTH_NAMES : MONTH_NAMES_SHORT).findIndex(name => name.toLowerCase() === value.toLowerCase()) + 1;
+    else if (token.startsWith('M')) month = Number(value);
+    else day = Number(value);
+  });
+  const result = new Date(0); result.setFullYear(year, month - 1, day); result.setHours(0, 0, 0, 0);
+  return year >= 1 && result.getFullYear() === year && result.getMonth() === month - 1 && result.getDate() === day ? result : null;
 };
 
 /**
@@ -272,7 +289,10 @@ export const addDays = (date: Date, days: number): Date => {
  */
 export const addMonths = (date: Date, months: number): Date => {
   const result = new Date(date);
+  const day = result.getDate();
+  result.setDate(1);
   result.setMonth(result.getMonth() + months);
+  result.setDate(Math.min(day, getDaysInMonth(result.getFullYear(), result.getMonth())));
   return result;
 };
 
@@ -283,7 +303,5 @@ export const addMonths = (date: Date, months: number): Date => {
  * @returns New date with years added
  */
 export const addYears = (date: Date, years: number): Date => {
-  const result = new Date(date);
-  result.setFullYear(result.getFullYear() + years);
-  return result;
+  return addMonths(date, years * 12);
 };

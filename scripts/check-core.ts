@@ -5,6 +5,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { chromium } from "playwright";
 import type createButton from "../src/components/button";
+import { checkDatePicker } from "./check-datepicker-browser";
 import { checkList } from "./check-list-browser";
 import { checkChips } from "./check-chips-browser";
 import { createPackageFixture } from "./package-fixture";
@@ -19,7 +20,7 @@ const fixture = await createPackageFixture();
 let browser: Awaited<ReturnType<typeof chromium.launch>> | undefined;
 try {
   const entry = join(fixture.directory, "core.ts");
-  await writeFile(entry, `import { createButton, createAssistChip, createFilterChip, createInputChip, createSuggestionChip, createChips, createList } from 'mtrl'; window.core = { createButton, createAssistChip, createFilterChip, createInputChip, createSuggestionChip, createChips, createList };`);
+  await writeFile(entry, `import { createButton, createAssistChip, createFilterChip, createInputChip, createSuggestionChip, createChips, createList, createDatePicker } from 'mtrl'; window.core = { createButton, createAssistChip, createFilterChip, createInputChip, createSuggestionChip, createChips, createList, createDatePicker };`);
   const bundle = await Bun.build({ entrypoints: [entry], target: "browser", format: "iife", minify: true });
   assert(bundle.success, String(bundle.logs));
   browser = await chromium.launch({ headless: true });
@@ -76,6 +77,11 @@ try {
   assert.equal(await page.locator(".mtrl-ripple-wave").count(), 0);
   await checkChips(page, artifacts);
   await checkList(page, artifacts);
+  // Datepicker must also work with only base + its selective stylesheet.
+  await page.locator("style").evaluateAll(elements => elements.forEach(element => element.remove()));
+  for (const name of ["base", "datepicker"]) await page.addStyleTag({ content: await readFile(join(fixture.installed, `dist/styles/${name}.css`), "utf8") });
+  await page.addStyleTag({ content: await readFile(join(fixture.installed, "dist/themes/material.css"), "utf8") });
+  await checkDatePicker(page, artifacts);
   console.log("Passed packed ripple animation, reduced motion, no forced offsetHeight read, and 40 pressed teardown cycles.");
 } finally {
   await browser?.close();

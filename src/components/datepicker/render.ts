@@ -1,478 +1,99 @@
-// src/components/datepicker/render.ts
-import {
-  MONTH_NAMES,
-  MONTH_NAMES_SHORT,
-  DAY_NAMES,
-  TODAY_CLASS,
-  SELECTED_CLASS,
-  OUTSIDE_MONTH_CLASS,
-  RANGE_START_CLASS,
-  RANGE_END_CLASS,
-  RANGE_MIDDLE_CLASS,
-} from "./types";
-import type { CalendarDate, CalendarEmit, DatePickerState } from "./types";
-import { generateCalendarDates, generateYearRange } from "./utils";
+import { DATEPICKER_ICONS } from "./constants";
+import { setHTML } from "../../core/dom/html";
 import { createElement } from "../../core/dom/create";
+import { MONTH_NAMES, MONTH_NAMES_SHORT, type DatePickerState } from "./types";
+import { formatDate, generateCalendarDates, generateYearRange, isSameDay, parseDate } from "./utils";
 
-/**
- * State fields and the event emitter the calendar renderers read
- */
-type RenderParams = Pick<
-  DatePickerState,
-  | "currentView"
-  | "currentMonth"
-  | "currentYear"
-  | "selectedDate"
-  | "rangeEndDate"
-  | "minDate"
-  | "maxDate"
-  | "prefix"
-> & { emit: CalendarEmit };
-
-/**
- * Renders the calendar header with navigation controls
- * @param {Object} params - Rendering parameters
- * @returns {HTMLElement} Calendar header element
- */
-export const renderHeader = ({
-  currentMonth,
-  currentYear,
-  currentView,
-  prefix,
-  emit,
-}: Pick<
-  RenderParams,
-  "currentMonth" | "currentYear" | "currentView" | "prefix" | "emit"
->): HTMLElement => {
-  const header = createElement({
-    tag: "div",
-    className: `${prefix}-datepicker-header`,
-  });
-
-  // Month selector
-  const monthButton = createElement({
-    tag: "button",
-    className: `${prefix}-datepicker-month-selector`,
-    text: MONTH_NAMES[currentMonth],
-    attributes: {
-      type: "button",
-      "aria-label": "Select month",
-    },
-  });
-
-  // Year selector
-  const yearButton = createElement({
-    tag: "button",
-    className: `${prefix}-datepicker-year-selector`,
-    text: currentYear.toString(),
-    attributes: {
-      type: "button",
-      "aria-label": "Select year",
-    },
-  });
-
-  // Navigation controls container
-  const navControls = createElement({
-    tag: "div",
-    className: `${prefix}-datepicker-nav-controls`,
-  });
-
-  // Previous button
-  const prevButton = createElement({
-    tag: "button",
-    className: `${prefix}-datepicker-prev-btn`,
-    html: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>',
-    attributes: {
-      type: "button",
-      "aria-label":
-        currentView === "day"
-          ? "Previous month"
-          : currentView === "month"
-          ? "Previous year"
-          : "Previous year range",
-    },
-  });
-
-  // Next button
-  const nextButton = createElement({
-    tag: "button",
-    className: `${prefix}-datepicker-next-btn`,
-    html: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>',
-    attributes: {
-      type: "button",
-      "aria-label":
-        currentView === "day"
-          ? "Next month"
-          : currentView === "month"
-          ? "Next year"
-          : "Next year range",
-    },
-  });
-
-  // Event listeners
-  monthButton.addEventListener("click", (event) => {
-    // Prevent event from bubbling up
-    event.stopPropagation();
-    emit("viewChange", { view: "month" });
-  });
-
-  yearButton.addEventListener("click", (event) => {
-    // Prevent event from bubbling up
-    event.stopPropagation();
-    emit("viewChange", { view: "year" });
-  });
-
-  prevButton.addEventListener("click", (event) => {
-    // Prevent event from bubbling up
-    event.stopPropagation();
-
-    if (currentView === "day") {
-      emit("prevMonth");
-    } else if (currentView === "month") {
-      emit("prevYear");
-    } else {
-      emit("prevYearRange");
+/** Rendering is passive: one delegated listener owns each picker, including rerenders. */
+export function renderCalendar(state: DatePickerState): HTMLElement {
+  const cls = (name: string) => `${state.prefix}-datepicker__${name}`;
+  const make = (tag: string, name: string, text?: string, attributes?: Record<string, string | boolean>) =>
+    createElement({ tag, className: cls(name), text, attributes });
+  const button = (name: string, text: string, action: string, label = text) => {
+    const element = make("button", name, text, { type: "button", "data-action": action, "aria-label": label });
+    const icon = action === "toggle-mode" ? (state.inputMode ? DATEPICKER_ICONS.calendar : DATEPICKER_ICONS.edit) : action === "prev" ? DATEPICKER_ICONS.previous : action === "next" ? DATEPICKER_ICONS.next : null;
+    if (icon) setHTML(element, icon);
+    return element;
+  };
+  const content = make("div", "content");
+  const modal = state.variant !== "docked";
+  if (modal) {
+    const header = make("div", "modal-header");
+    header.append(make("div", "title", state.label, { id: `${state.id}-title` }));
+    const headline = state.selectedDate ? formatDate(state.selectedDate, "MMM D, YYYY") : "Select date";
+    header.append(make("div", "headline", state.selectionMode === "range" && state.rangeEndDate ? `${headline} – ${formatDate(state.rangeEndDate, "MMM D, YYYY")}` : headline));
+    header.append(button("mode-toggle", state.inputMode ? "▦" : "✎", "toggle-mode", state.inputMode ? "Switch to calendar" : "Switch to date input"));
+    content.append(header);
+  }
+  if (state.inputMode) {
+    const fields = make("div", "fields");
+    for (const endpoint of state.selectionMode === "range" ? ["start", "end"] : ["start"]) {
+      const wrapper = make("div", "field");
+      const id = `${state.id}-${endpoint}`;
+      wrapper.append(make("label", "label", state.selectionMode === "range" ? (endpoint === "start" ? "Start date" : "End date") : "Date", { for: id }));
+      const input = make("input", "input", undefined, { id, type: "text", autocomplete: "off", placeholder: state.dateFormat, "data-entry": endpoint, "aria-describedby": `${id}-help ${id}-error` }) as HTMLInputElement;
+      input.value = formatDate(endpoint === "start" ? state.selectedDate : state.rangeEndDate, state.dateFormat);
+      wrapper.append(input, make("div", "help", state.dateFormat, { id: `${id}-help` }), make("div", "error", "", { id: `${id}-error`, "aria-live": "polite" }));
+      fields.append(wrapper);
     }
-  });
-
-  nextButton.addEventListener("click", (event) => {
-    // Prevent event from bubbling up
-    event.stopPropagation();
-
-    if (currentView === "day") {
-      emit("nextMonth");
-    } else if (currentView === "month") {
-      emit("nextYear");
-    } else {
-      emit("nextYearRange");
-    }
-  });
-
-  // Add buttons to container
-  header.appendChild(monthButton);
-  header.appendChild(yearButton);
-
-  navControls.appendChild(prevButton);
-  navControls.appendChild(nextButton);
-  header.appendChild(navControls);
-
-  return header;
-};
-
-/**
- * Renders the days of the week (S, M, T, etc.)
- * @param {string} prefix - CSS class prefix
- * @returns {HTMLElement} Weekdays element
- */
-export const renderWeekdays = (prefix: string): HTMLElement => {
-  const weekdaysRow = createElement({
-    tag: "div",
-    className: `${prefix}-datepicker-weekdays`,
-  });
-
-  DAY_NAMES.forEach((day) => {
-    const dayElement = createElement({
-      tag: "span",
-      className: `${prefix}-datepicker-weekday`,
-      text: day,
-    });
-    weekdaysRow.appendChild(dayElement);
-  });
-
-  return weekdaysRow;
-};
-
-/**
- * Renders the calendar days
- * @param {Object} params - Rendering parameters
- * @returns {HTMLElement} Calendar days element
- */
-export const renderDays = ({
-  currentYear,
-  currentMonth,
-  selectedDate,
-  rangeEndDate,
-  minDate,
-  maxDate,
-  prefix,
-  emit,
-}: Omit<RenderParams, "currentView">): HTMLElement => {
-  const daysGrid = createElement({
-    tag: "div",
-    className: `${prefix}-datepicker-days`,
-  });
-
-  const calendarDates = generateCalendarDates(
-    currentYear,
-    currentMonth,
-    selectedDate,
-    rangeEndDate,
-    minDate,
-    maxDate
-  );
-
-  calendarDates.forEach((calendarDate: CalendarDate) => {
-    const classNames = [
-      `${prefix}-datepicker-day`,
-      calendarDate.isCurrentMonth ? "" : OUTSIDE_MONTH_CLASS,
-      calendarDate.isToday ? TODAY_CLASS : "",
-      calendarDate.isSelected ? SELECTED_CLASS : "",
-      calendarDate.isDisabled ? "disabled" : "",
-      calendarDate.isRangeStart ? RANGE_START_CLASS : "",
-      calendarDate.isRangeEnd ? RANGE_END_CLASS : "",
-      calendarDate.isRangeMiddle ? RANGE_MIDDLE_CLASS : "",
-    ]
-      .filter(Boolean)
-      .join(" ");
-
-    const dayElement = createElement({
-      tag: "button",
-      className: classNames,
-      text: calendarDate.day.toString(),
-      attributes: {
-        type: "button",
-        "aria-label": calendarDate.date.toLocaleDateString(),
-        "aria-selected": calendarDate.isSelected ? "true" : "false",
-        "aria-disabled": calendarDate.isDisabled ? "true" : "false",
-        "data-date": calendarDate.date.toISOString(),
-        disabled: calendarDate.isDisabled,
-      },
-    });
-
-    // Event listener
-    dayElement.addEventListener("click", (event) => {
-      // Prevent event from bubbling up
-      event.stopPropagation();
-
-      if (!calendarDate.isDisabled) {
-        emit("dateSelected", { date: calendarDate.date });
+    content.append(fields);
+  } else {
+    const header = make("div", "header");
+    const nav = make("div", "navigation");
+    nav.append(button("month-selector", MONTH_NAMES[state.currentMonth], "month", "Select month"), button("year-selector", String(state.currentYear), "year", "Select year"));
+    const span = state.currentView === "day" ? "month" : state.currentView === "month" ? "year" : "year range";
+    header.append(nav, button("prev", "‹", "prev", `Previous ${span}`), button("next", "›", "next", `Next ${span}`));
+    content.append(header);
+    if (state.currentView === "day") {
+      const grid = make("div", "days", undefined, { role: "grid", "aria-label": `${MONTH_NAMES[state.currentMonth]} ${state.currentYear}`, "aria-describedby": `${state.id}-keyboard` });
+      const weekdays = make("div", "weekdays", undefined, { role: "row" });
+      for (const name of ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]) weekdays.append(make("span", "weekday", name[0], { role: "columnheader", "aria-label": name }));
+      grid.append(weekdays);
+      const dates = generateCalendarDates(state.currentYear, state.currentMonth, state.selectedDate, state.rangeEndDate, state.minDate, state.maxDate);
+      const focus = dates.find(item => isSameDay(item.date, state.focusedDate) && state.isAllowed(item.date)) ?? dates.find(item => item.isCurrentMonth && state.isAllowed(item.date));
+      for (let week = 0; week < 6; week++) {
+        const row = make("div", "week", undefined, { role: "row" });
+        for (const item of dates.slice(week * 7, week * 7 + 7)) {
+          const selected = !!state.selectedDate && (isSameDay(item.date, state.selectedDate) || !!state.rangeEndDate && isSameDay(item.date, state.rangeEndDate));
+          const inRange = !!state.selectedDate && !!state.rangeEndDate && item.date >= state.selectedDate && item.date <= state.rangeEndDate;
+          const cell = make("div", "cell", undefined, { role: "gridcell", "aria-selected": String(selected || inRange) });
+          if (inRange) cell.classList.add(cls("cell--range"));
+          if (state.selectedDate && isSameDay(item.date, state.selectedDate)) cell.classList.add(cls("cell--range-start"));
+          if (state.rangeEndDate && isSameDay(item.date, state.rangeEndDate)) cell.classList.add(cls("cell--range-end"));
+          const special = state.specialDates.find(special => { const date = parseDate(special.date); return date && isSameDay(date, item.date); });
+          const day = make("button", "day", String(item.day), {
+            type: "button", "data-date": formatDate(item.date, "YYYY-MM-DD"), "aria-label": item.date.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" }),
+            "aria-pressed": String(selected), disabled: !state.isAllowed(item.date), tabindex: item === focus ? "0" : "-1",
+          });
+          if (!state.isAllowed(item.date)) day.classList.add(cls("day--disabled"));
+          if (item.isToday) { day.classList.add(cls("day--today")); day.setAttribute("aria-current", "date"); }
+          if (!item.isCurrentMonth) day.classList.add(cls("day--outside"));
+          if (selected) day.classList.add(cls("day--selected"));
+          if (special?.highlight) day.classList.add(cls("day--highlight"));
+          if (special?.tooltip) day.title = special.tooltip;
+          cell.append(day); row.append(cell);
+        }
+        grid.append(row);
       }
-    });
-
-    daysGrid.appendChild(dayElement);
-  });
-
-  return daysGrid;
-};
-
-/**
- * Renders the month selection view
- * @param {Object} params - Rendering parameters
- * @returns {HTMLElement} Month selection element
- */
-export const renderMonthSelection = ({
-  currentMonth,
-  prefix,
-  emit,
-}: Pick<RenderParams, "currentMonth" | "prefix" | "emit">): HTMLElement => {
-  const monthsGrid = createElement({
-    tag: "div",
-    className: `${prefix}-datepicker-months`,
-  });
-
-  MONTH_NAMES_SHORT.forEach((month, index) => {
-    const isSelected = index === currentMonth;
-
-    const monthElement = createElement({
-      tag: "button",
-      className: `${prefix}-datepicker-month ${
-        isSelected ? SELECTED_CLASS : ""
-      }`,
-      text: month,
-      attributes: {
-        type: "button",
-        "aria-selected": isSelected ? "true" : "false",
-        "data-month": index.toString(),
-      },
-    });
-
-    monthElement.addEventListener("click", (event) => {
-      // Prevent event from bubbling up
-      event.stopPropagation();
-      emit("monthSelected", { month: index });
-    });
-
-    monthsGrid.appendChild(monthElement);
-  });
-
-  return monthsGrid;
-};
-
-/**
- * Renders the year selection view
- * @param {Object} params - Rendering parameters
- * @returns {HTMLElement} Year selection element
- */
-export const renderYearSelection = ({
-  currentYear,
-  prefix,
-  emit,
-}: Pick<RenderParams, "currentYear" | "prefix" | "emit">): HTMLElement => {
-  const yearsGrid = createElement({
-    tag: "div",
-    className: `${prefix}-datepicker-years`,
-  });
-
-  const yearRange = generateYearRange(currentYear, 10);
-
-  yearRange.forEach((year) => {
-    const isSelected = year === currentYear;
-
-    const yearElement = createElement({
-      tag: "button",
-      className: `${prefix}-datepicker-year ${
-        isSelected ? SELECTED_CLASS : ""
-      }`,
-      text: year.toString(),
-      attributes: {
-        type: "button",
-        "aria-selected": isSelected ? "true" : "false",
-        "data-year": year.toString(),
-      },
-    });
-
-    yearElement.addEventListener("click", (event) => {
-      // Prevent event from bubbling up
-      event.stopPropagation();
-      emit("yearSelected", { year });
-    });
-
-    yearsGrid.appendChild(yearElement);
-  });
-
-  return yearsGrid;
-};
-
-/**
- * Renders the footer with action buttons
- * @param {Object} params - Rendering parameters
- * @returns {HTMLElement} Footer element
- */
-export const renderFooter = ({
-  prefix,
-  emit,
-}: Pick<RenderParams, "prefix" | "emit">): HTMLElement => {
-  const footer = createElement({
-    tag: "div",
-    className: `${prefix}-datepicker-footer`,
-  });
-
-  // Cancel button
-  const cancelButton = createElement({
-    tag: "button",
-    className: `${prefix}-datepicker-cancel ${prefix}-button ${prefix}-button--text`,
-    text: "Cancel",
-    attributes: {
-      type: "button",
-    },
-  });
-
-  // OK button
-  const okButton = createElement({
-    tag: "button",
-    className: `${prefix}-datepicker-ok ${prefix}-button ${prefix}-button--text`,
-    text: "OK",
-    attributes: {
-      type: "button",
-    },
-  });
-
-  cancelButton.addEventListener("click", (event) => {
-    // Prevent event from bubbling up
-    event.stopPropagation();
-    emit("cancel");
-  });
-
-  okButton.addEventListener("click", (event) => {
-    // Prevent event from bubbling up
-    event.stopPropagation();
-    emit("confirm");
-  });
-
-  footer.appendChild(cancelButton);
-  footer.appendChild(okButton);
-
-  return footer;
-};
-
-/**
- * Renders a complete calendar view
- * @param {Object} state - Current datepicker state
- * @param {Function} emit - Event emission function
- * @returns {HTMLElement} Rendered calendar
- */
-export const renderCalendar = (
-  state: DatePickerState,
-  emit: CalendarEmit
-): HTMLElement => {
-  const {
-    prefix,
-    currentView,
-    currentMonth,
-    currentYear,
-    selectedDate,
-    rangeEndDate,
-    minDate,
-    maxDate,
-    variant,
-  } = state;
-
-  // Create calendar container
-  const calendar = createElement({
-    tag: "div",
-    className: `${prefix}-datepicker-calendar-content`,
-  });
-
-  // Render header
-  const header = renderHeader({
-    currentMonth,
-    currentYear,
-    currentView,
-    prefix,
-    emit,
-  });
-  calendar.appendChild(header);
-
-  // Render content based on current view
-  if (currentView === "day") {
-    const weekdays = renderWeekdays(prefix);
-    calendar.appendChild(weekdays);
-
-    const days = renderDays({
-      currentYear,
-      currentMonth,
-      selectedDate,
-      rangeEndDate,
-      minDate,
-      maxDate,
-      prefix,
-      emit,
-    });
-    calendar.appendChild(days);
-  } else if (currentView === "month") {
-    const months = renderMonthSelection({
-      currentMonth,
-      prefix,
-      emit,
-    });
-    calendar.appendChild(months);
-  } else if (currentView === "year") {
-    const years = renderYearSelection({
-      currentYear,
-      prefix,
-      emit,
-    });
-    calendar.appendChild(years);
+      content.append(grid);
+    } else {
+      const months = state.currentView === "month";
+      const grid = make("div", months ? "months" : "years", undefined, { role: "group", "aria-label": months ? "Choose month" : "Choose year" });
+      for (const value of months ? Array.from({ length: 12 }, (_, i) => i) : generateYearRange(state.currentYear)) {
+        const selected = value === (months ? state.currentMonth : state.currentYear);
+        grid.append(make("button", months ? "month" : "year", months ? MONTH_NAMES_SHORT[value] : String(value), {
+          type: "button", [months ? "data-month" : "data-year"]: String(value), "aria-pressed": String(selected), tabindex: selected ? "0" : "-1",
+        }));
+      }
+      content.append(grid);
+    }
+    content.append(make("div", "sr-only", "Use arrow keys for days, Home and End for the week, Page Up and Page Down for months, with Shift for years.", { id: `${state.id}-keyboard` }));
   }
-
-  // Only add footer for modal variants
-  if (variant !== "docked") {
-    const footer = renderFooter({
-      prefix,
-      emit,
-    });
-    calendar.appendChild(footer);
+  if (modal) {
+    const footer = make("div", "footer");
+    const confirm = button("confirm", "OK", "confirm") as HTMLButtonElement;
+    confirm.disabled = !state.selectedDate || !state.isAllowed(state.selectedDate) || state.selectionMode === "range" && (!state.rangeEndDate || !state.isAllowed(state.rangeEndDate));
+    footer.append(button("cancel", "Cancel", "cancel"), confirm); content.append(footer);
   }
-
-  return calendar;
-};
+  return content;
+}
