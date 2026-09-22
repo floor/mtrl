@@ -18,5 +18,12 @@ export {
 } from './constants';
 
 // Export types
-export type { TimePickerConfig, TimePickerComponent, TimeValue } from './types';
+export type {
+  TimePickerConfig,
+  TimePickerComponent,
+  TimeValue,
+  TimePickerEvents,
+  TimePickerTapPayload,
+  TimePickerSwipePayload,
+} from './types';
 export { TIME_PICKER_TYPE, TIME_PICKER_ORIENTATION, TIME_FORMAT, TIME_PERIOD } from './types';

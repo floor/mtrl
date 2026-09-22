@@ -42,7 +42,6 @@ const PENDING: string[] = [
   "src/components/chips/chips.ts",
   "src/components/datepicker/datepicker.ts",
   "src/components/drawer/drawer.ts",
-  "src/components/timepicker/timepicker.ts",
 ];
 
 const EXCLUDED = new Set(PENDING);

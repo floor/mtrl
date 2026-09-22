@@ -37,7 +37,7 @@ g.ResizeObserver = class { observe() {} disconnect() {} unobserve() {} };
 // for anything asserted here.
 (dom.window as any).HTMLCanvasElement.prototype.getContext = () => null;
 
-import createTimePicker from "../../../src/components/timepicker";
+import createTimePicker, { type TimePickerEvents, TIMEPICKER_SELECTORS } from "../../../src/components/timepicker";
 import {
   TIME_FORMAT,
   TIME_PERIOD,
@@ -337,5 +337,141 @@ describe("destroy", () => {
     picker.destroy();
 
     expect(changed).not.toHaveBeenCalled();
+  });
+});
+
+
+describe("typed event payloads (FLO-114)", () => {
+  test("setValue, format changes and input edits emit display strings", () => {
+    const picker = mount({ type: TIME_PICKER_TYPE.INPUT, value: "09:30" });
+    const changed = mock((_value: string) => {});
+    try {
+      expect(picker.on("change", changed)).toBe(picker);
+      picker.setValue("14:45");
+      picker.setFormat(TIME_FORMAT.MILITARY);
+      const minutes = picker.dialogElement.querySelector<HTMLInputElement>(TIMEPICKER_SELECTORS.MINUTES_INPUT)!;
+      minutes.value = "20";
+      minutes.dispatchEvent(new dom.window.Event("change", { bubbles: true }));
+      // These record current display formatting; FLO-237 tracks the separate format decision.
+      expect(changed.mock.calls).toEqual([["02:45:00 PM"], ["14:45:00"], ["14:20:00"]]);
+      expect(picker.off("change", changed)).toBe(picker);
+      picker.setValue("16:00");
+      expect(changed).toHaveBeenCalledTimes(3);
+    } finally { picker.destroy(); }
+  });
+
+  test("open and close notify only on transitions; confirm supplies the display string", () => {
+    const picker = mount({ type: TIME_PICKER_TYPE.INPUT, value: "14:30" });
+    const opened = mock((..._args: unknown[]) => {});
+    const closed = mock((..._args: unknown[]) => {});
+    const confirmed = mock((_value: string) => {});
+    try {
+      picker.on("open", opened).on("close", closed).on("confirm", confirmed);
+      picker.open().open();
+      picker.dialogElement.querySelector<HTMLButtonElement>(TIMEPICKER_SELECTORS.CONFIRM_BUTTON)!.click();
+      picker.close();
+      expect(opened.mock.calls).toEqual([[undefined]]);
+      expect(closed.mock.calls).toEqual([[undefined]]);
+      expect(confirmed.mock.calls).toEqual([["02:30:00 PM"]]);
+      picker.off("open", opened).off("close", closed).off("confirm", confirmed);
+      picker.open();
+      picker.dialogElement.querySelector<HTMLButtonElement>(TIMEPICKER_SELECTORS.CONFIRM_BUTTON)!.click();
+      expect(opened).toHaveBeenCalledTimes(1);
+      expect(closed).toHaveBeenCalledTimes(1);
+      expect(confirmed).toHaveBeenCalledTimes(1);
+    } finally { picker.destroy(); }
+  });
+
+  test("cancel button and Escape notify without payload; backdrop only closes", () => {
+    const picker = mount({ type: TIME_PICKER_TYPE.INPUT, value: "09:30" });
+    const canceled = mock((..._args: unknown[]) => {});
+    const closed = mock((..._args: unknown[]) => {});
+    try {
+      picker.on("cancel", canceled).on("close", closed).open();
+      picker.dialogElement.querySelector<HTMLButtonElement>(TIMEPICKER_SELECTORS.CANCEL_BUTTON)!.click();
+      picker.open();
+      document.dispatchEvent(new dom.window.KeyboardEvent("keydown", { key: "Escape" }));
+      picker.open();
+      picker.modalElement.click();
+      expect(canceled.mock.calls).toEqual([[undefined], [undefined]]);
+      expect(closed).toHaveBeenCalledTimes(3);
+      picker.off("cancel", canceled).open();
+      picker.dialogElement.querySelector<HTMLButtonElement>(TIMEPICKER_SELECTORS.CANCEL_BUTTON)!.click();
+      expect(canceled).toHaveBeenCalledTimes(2);
+    } finally { picker.destroy(); }
+  });
+
+  test("click and keydown forward root events, with native identity, but not dialog events", () => {
+    const picker = mount({ type: TIME_PICKER_TYPE.INPUT, value: "09:30" });
+    const clicks = mock((..._args: Parameters<TimePickerEvents["click"]>) => {});
+    const keys = mock((..._args: Parameters<TimePickerEvents["keydown"]>) => {});
+    const child = document.createElement("span");
+    picker.element.append(child);
+    try {
+      picker.on("click", clicks).on("keydown", keys);
+      const click = new dom.window.MouseEvent("click", { bubbles: true, clientX: 12 });
+      const key = new dom.window.KeyboardEvent("keydown", { bubbles: true, key: "ArrowDown" });
+      child.dispatchEvent(click);
+      child.dispatchEvent(key);
+      expect(clicks.mock.calls).toEqual([[{ event: click, originalEvent: click, element: picker.element }]]);
+      expect(keys.mock.calls).toEqual([[{ event: key, originalEvent: key, element: picker.element }]]);
+      expect(clicks.mock.calls[0][0].event).toBe(click);
+      expect(keys.mock.calls[0][0].event).toBe(key);
+      picker.dialogElement.dispatchEvent(new dom.window.MouseEvent("click", { bubbles: true }));
+      picker.dialogElement.dispatchEvent(new dom.window.KeyboardEvent("keydown", { bubbles: true, key: "ArrowDown" }));
+      expect(clicks).toHaveBeenCalledTimes(1);
+      expect(keys).toHaveBeenCalledTimes(1);
+      picker.off("click", clicks).off("keydown", keys);
+      child.dispatchEvent(click);
+      child.dispatchEvent(key);
+      expect(clicks).toHaveBeenCalledTimes(1);
+      expect(keys).toHaveBeenCalledTimes(1);
+    } finally { picker.destroy(); }
+  });
+
+  test("the interactive root emits normalized taps and horizontal swipe details", () => {
+    const picker = mount({ type: TIME_PICKER_TYPE.INPUT, value: "09:30" });
+    const taps = mock((..._args: Parameters<TimePickerEvents["tap"]>) => {});
+    const swipes = mock((..._args: Parameters<TimePickerEvents["swipe"]>) => {});
+    const touch = (name: string, x: number, y: number) => {
+      const event = new dom.window.Event(name, { bubbles: true, cancelable: true });
+      Object.defineProperty(event, "touches", { value: name === "touchend" ? [] : [{ clientX: x, clientY: y, pageX: x, pageY: y }] });
+      picker.element.dispatchEvent(event);
+      return event;
+    };
+    try {
+      // JSDOM exposes ontouchstart, enabling the real interactive-root touch handlers.
+      expect("ontouchstart" in window).toBe(true);
+      picker.on("tap", taps).on("swipe", swipes);
+      touch("touchstart", 10, 20);
+      touch("touchmove", 90, 30);
+      expect(swipes.mock.calls).toEqual([[{ direction: "right", deltaX: 80, deltaY: 10 }]]);
+      const end = touch("touchend", 90, 30);
+      expect(taps).toHaveBeenCalledTimes(1);
+      const payload = taps.mock.calls[0][0];
+      expect(Object.keys(payload).sort()).toEqual(["clientX", "clientY", "pageX", "pageY", "preventDefault", "stopPropagation", "target", "type"].sort());
+      expect([payload.type, payload.target, payload.clientX, payload.clientY]).toEqual(["touchend", picker.element, 0, 0]);
+      payload.preventDefault();
+      expect(end.defaultPrevented).toBe(true);
+      picker.off("tap", taps).off("swipe", swipes);
+      touch("touchstart", 10, 20);
+      touch("touchmove", -70, 20);
+      touch("touchend", -70, 20);
+      expect(taps).toHaveBeenCalledTimes(1);
+      expect(swipes).toHaveBeenCalledTimes(1);
+    } finally { picker.destroy(); }
+  });
+
+  test("destroy clears change and root event subscriptions", () => {
+    const picker = mount({ type: TIME_PICKER_TYPE.INPUT, value: "09:30" });
+    const changed = mock((_value: string) => {});
+    const clicked = mock(() => {});
+    picker.on("change", changed).on("click", clicked);
+    const root = picker.element;
+    picker.destroy();
+    picker.setValue("11:00");
+    root.dispatchEvent(new dom.window.MouseEvent("click"));
+    expect(changed).not.toHaveBeenCalled();
+    expect(clicked).not.toHaveBeenCalled();
   });
 });
