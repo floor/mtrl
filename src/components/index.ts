@@ -22,7 +22,7 @@ export { default as createButtonGroup } from "./button-group";
 export { default as createCard } from "./card";
 export { default as createCarousel } from "./carousel";
 export { default as createCheckbox } from "./checkbox";
-export { createChip, createChips } from "./chips";
+export { createAssistChip, createFilterChip, createInputChip, createSuggestionChip, createChips } from "./chips";
 export { default as createDatePicker } from "./datepicker";
 export { default as createDialog } from "./dialog";
 export { createDivider } from "./divider";
@@ -125,7 +125,13 @@ export type { CheckboxConfig, CheckboxComponent } from "./checkbox/types";
 export type {
   ChipConfig,
   ChipComponent,
-  ChipVariant,
+  ChipType,
+  ChipEvents,
+  ChipChangePayload,
+  AssistChipConfig,
+  FilterChipConfig,
+  InputChipConfig,
+  SuggestionChipConfig,
   ChipsConfig,
   ChipsComponent,
 } from "./chips/types";

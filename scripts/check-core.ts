@@ -5,6 +5,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { chromium } from "playwright";
 import type createButton from "../src/components/button";
+import { checkChips } from "./check-chips-browser";
 import { createPackageFixture } from "./package-fixture";
 
 type CoreWindow = Window & {
@@ -17,7 +18,7 @@ const fixture = await createPackageFixture();
 let browser: Awaited<ReturnType<typeof chromium.launch>> | undefined;
 try {
   const entry = join(fixture.directory, "core.ts");
-  await writeFile(entry, `import { createButton } from 'mtrl'; window.core = { createButton };`);
+  await writeFile(entry, `import { createButton, createAssistChip, createFilterChip, createInputChip, createSuggestionChip, createChips } from 'mtrl'; window.core = { createButton, createAssistChip, createFilterChip, createInputChip, createSuggestionChip, createChips };`);
   const bundle = await Bun.build({ entrypoints: [entry], target: "browser", format: "iife", minify: true });
   assert(bundle.success, String(bundle.logs));
   browser = await chromium.launch({ headless: true });
@@ -72,6 +73,7 @@ try {
   await page.waitForTimeout(500);
   assert.equal(await page.evaluate(() => [...(window as unknown as CoreWindow).documentListeners.values()].reduce((sum, set) => sum + set.size, 0)), 0);
   assert.equal(await page.locator(".mtrl-ripple-wave").count(), 0);
+  await checkChips(page, artifacts);
   console.log("Passed packed ripple animation, reduced motion, no forced offsetHeight read, and 40 pressed teardown cycles.");
 } finally {
   await browser?.close();

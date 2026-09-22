@@ -1,4 +1,5 @@
 // src/components/chips/features/controller.ts
+import { getCleanup } from "../../../core/compose/cleanup";
 import type { EventCallback } from "../../../core/state/emitter";
 import {
   ChipsConfig,
@@ -54,28 +55,11 @@ export const withController =
   };
 
   const handleSelection = (selectedChip: ChipComponent) => {
-    // Always ensure the chip's class is set correctly
-    if (selectedChip.isSelected()) {
-      selectedChip.element.classList.add(
-        `${component.getClass("chip")}--selected`,
-      );
-      selectedChip.element.setAttribute("aria-selected", "true");
-    } else {
-      selectedChip.element.classList.remove(
-        `${component.getClass("chip")}--selected`,
-      );
-      selectedChip.element.setAttribute("aria-selected", "false");
-    }
-
     if (!config.multiSelect) {
       // Single selection mode - deselect all other chips
       component.chipInstances.forEach((chip: ChipComponent) => {
         if (chip !== selectedChip && chip.isSelected()) {
           chip.setSelected(false);
-          chip.element.classList.remove(
-            `${component.getClass("chip")}--selected`,
-          );
-          chip.element.setAttribute("aria-selected", "false");
         }
       });
 
@@ -83,10 +67,6 @@ export const withController =
       // prevent deselection (keep it selected)
       if (!selectedChip.isSelected() && getSelectedChips().length === 0) {
         selectedChip.setSelected(true);
-        selectedChip.element.classList.add(
-          `${component.getClass("chip")}--selected`,
-        );
-        selectedChip.element.setAttribute("aria-selected", "true");
       }
     } else {
       // In multi-select mode, we allow deselection of all chips
@@ -130,6 +110,8 @@ export const withController =
       return;
     }
 
+    event.stopPropagation();
+
     // Handle enter and space for activation/selection
     if (event.key === "Enter" || event.key === " ") {
       if (
@@ -139,22 +121,7 @@ export const withController =
         event.preventDefault();
         const chip = component.chipInstances[focusedChipIndex];
         if (!chip.isDisabled()) {
-          chip.toggleSelected();
-
-          // Ensure selection state is reflected in the DOM
-          if (chip.isSelected()) {
-            chip.element.classList.add(
-              `${component.getClass("chip")}--selected`,
-            );
-            chip.element.setAttribute("aria-selected", "true");
-          } else {
-            chip.element.classList.remove(
-              `${component.getClass("chip")}--selected`,
-            );
-            chip.element.setAttribute("aria-selected", "false");
-          }
-
-          handleSelection(chip);
+          chip.action.click();
         }
         return;
       }
@@ -189,6 +156,13 @@ export const withController =
         }
       }
 
+      // Native disabled buttons cannot receive focus; continue to the next enabled chip.
+      const direction = newIndex < focusedChipIndex ? -1 : 1;
+      while (newIndex >= 0 && newIndex < component.chipInstances.length && component.chipInstances[newIndex].isDisabled()) {
+        newIndex += direction;
+      }
+      if (newIndex < 0 || newIndex >= component.chipInstances.length) return;
+
       // Update focus if changed
       if (newIndex !== focusedChipIndex) {
         // Remove focus from current chip
@@ -196,12 +170,12 @@ export const withController =
           focusedChipIndex >= 0 &&
           focusedChipIndex < component.chipInstances.length
         ) {
-          component.chipInstances[focusedChipIndex].element.blur();
+          component.chipInstances[focusedChipIndex].action.blur();
         }
 
         // Focus new chip
         focusedChipIndex = newIndex;
-        component.chipInstances[focusedChipIndex].element.focus();
+        component.chipInstances[focusedChipIndex].focus();
 
         // If scrollable, ensure the focused chip is visible
         if (component.layout && component.layout.isScrollable()) {
@@ -273,8 +247,10 @@ export const withController =
     const chipInstance = createChip({
       ...chipConfig,
       managedSelection: true,
-      // Only pass through the user's onSelect handler, don't create a path to handleSelection
-      onSelect: chipConfig.onSelect,
+      onRemove: chipConfig.type === "input" ? chip => {
+        chipConfig.onRemove?.(chip);
+        removeChip(chip);
+      } : undefined,
     });
 
     // Get the container element to append to
@@ -288,30 +264,22 @@ export const withController =
     component.chipInstances.push(chipInstance);
 
     // This click handler is the ONLY path to handleSelection
-    chipInstance.element.addEventListener("click", () => {
-      if (!chipInstance.isDisabled()) {
+    chipInstance.on("click", () => {
+      if (!chipInstance.isDisabled() && ["filter", "input"].includes(chipInstance.getType())) {
         chipInstance.toggleSelected();
 
-        // Explicitly ensure selected state reflects in the DOM
-        if (chipInstance.isSelected()) {
-          chipInstance.element.classList.add(
-            `${component.getClass("chip")}--selected`,
-          );
-          chipInstance.element.setAttribute("aria-selected", "true");
-        } else {
-          chipInstance.element.classList.remove(
-            `${component.getClass("chip")}--selected`,
-          );
-          chipInstance.element.setAttribute("aria-selected", "false");
-        }
-
         handleSelection(chipInstance);
+        chipConfig.onChange?.(chipInstance.isSelected(), chipInstance);
+        chipConfig.onSelect?.(chipInstance);
 
         // Update focus tracking
         focusedChipIndex = component.chipInstances.indexOf(chipInstance);
       }
     });
 
+    chipInstance.on("focus", () => {
+      focusedChipIndex = component.chipInstances.indexOf(chipInstance);
+    });
     chipInstance.element.addEventListener("keydown", handleKeyboardNavigation);
 
     // Dispatch add event
@@ -336,6 +304,7 @@ export const withController =
       // Dispatch remove event before actual removal
       dispatchEvent(CHIPS_EVENTS.REMOVE, chip);
 
+      chip.element.removeEventListener("keydown", handleKeyboardNavigation);
       chip.destroy();
       component.chipInstances.splice(index, 1);
 
@@ -398,10 +367,6 @@ export const withController =
           chipValue !== null && valueArray.includes(chipValue);
         if (!shouldSelect && chip.isSelected()) {
           chip.setSelected(false);
-          chip.element.classList.remove(
-            `${component.getClass("chip")}--selected`,
-          );
-          chip.element.setAttribute("aria-selected", "false");
           selectionChanged = true;
         }
       });
@@ -414,8 +379,6 @@ export const withController =
         chipValue !== null && valueArray.includes(chipValue);
       if (shouldSelect && !chip.isSelected()) {
         chip.setSelected(true);
-        chip.element.classList.add(`${component.getClass("chip")}--selected`);
-        chip.element.setAttribute("aria-selected", "true");
         selectionChanged = true;
       }
     });
@@ -437,8 +400,6 @@ export const withController =
 
     component.chipInstances.forEach((chip: ChipComponent) => {
       chip.setSelected(false);
-      chip.element.classList.remove(`${component.getClass("chip")}--selected`);
-      chip.element.setAttribute("aria-selected", "false");
     });
 
     // Only dispatch if there were actually chips deselected AND triggerEvent is true
@@ -474,29 +435,16 @@ export const withController =
     component.element.addEventListener("keydown", handleKeyboardNavigation);
   }
 
-  // Setup lifecycle cleanup
-  if (component.lifecycle) {
-    const originalDestroy = component.lifecycle.destroy || (() => {});
-
-    component.lifecycle.destroy = () => {
-      // Clean up event listeners
-      component.chipInstances.forEach((chip: ChipComponent) => {
-        chip.element.removeEventListener("keydown", handleKeyboardNavigation);
-      });
-
-      // Clean up all chip instances
-      component.chipInstances.forEach((chip: ChipComponent) => chip.destroy());
-      component.chipInstances.length = 0;
-
-      // Clear all event listeners
-      Object.keys(eventListeners).forEach((event) => {
-        eventListeners[event] = [];
-      });
-
-      // Call original destroy
-      originalDestroy();
-    };
-  }
+  // Share the base resource scope; withLifecycle is composed after this feature.
+  getCleanup(component).add(() => {
+    component.element.removeEventListener("keydown", handleKeyboardNavigation);
+    component.chipInstances.forEach(chip => {
+      chip.element.removeEventListener("keydown", handleKeyboardNavigation);
+      chip.destroy();
+    });
+    component.chipInstances.length = 0;
+    Object.keys(eventListeners).forEach(event => { eventListeners[event] = []; });
+  });
 
   return {
     ...component,
