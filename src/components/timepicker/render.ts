@@ -309,14 +309,16 @@ export const renderTimePicker = (
     const numValue = parseInt(value, 10);
     if (isNaN(numValue)) return;
 
+    const previousValue = { ...timeValue };
+
     if (type === "hour") {
       let newHours = numValue;
 
       // Handle hour constraints
       if (config.format === TIME_FORMAT.AMPM) {
         // Special handling for 12-hour format
-        if (numValue < 0) newHours = 1;
-        if (numValue > 12) newHours = 12;
+        if (numValue < 1) newHours = 12;
+        if (numValue > 12) newHours = 1;
 
         // Convert to 24h format internally
         if (timeValue.period === TIME_PERIOD.PM && newHours !== 12) {
@@ -331,6 +333,7 @@ export const renderTimePicker = (
       }
 
       timeValue.hours = newHours;
+      timeValue.period = newHours >= 12 ? TIME_PERIOD.PM : TIME_PERIOD.AM;
 
       // Set this field as active for the dial
       activeSelector = "hour";
@@ -349,7 +352,7 @@ export const renderTimePicker = (
         activeSelector,
       });
 
-      if (onTimeChange) {
+      if (timeValue.hours !== previousValue.hours && onTimeChange) {
         onTimeChange("hours", newHours);
       }
     } else if (type === "minute") {
@@ -378,7 +381,7 @@ export const renderTimePicker = (
         activeSelector,
       });
 
-      if (onTimeChange) {
+      if (timeValue.minutes !== previousValue.minutes && onTimeChange) {
         onTimeChange("minutes", newMinutes);
       }
     } else if (type === "second") {
@@ -407,17 +410,27 @@ export const renderTimePicker = (
         activeSelector,
       });
 
-      if (onTimeChange) {
+      if (timeValue.seconds !== previousValue.seconds && onTimeChange) {
         onTimeChange("seconds", newSeconds);
       }
     }
   };
 
-  // Event handlers for input fields
-  hoursInput.addEventListener("input", handleInputChange);
-  minutesInput.addEventListener("input", handleInputChange);
-  if (secondsInput) {
-    secondsInput.addEventListener("input", handleInputChange);
+  // Native input keeps the form current while typing. Also accept change
+  // for integrations that commit directly; unchanged values do not notify twice.
+  for (const input of [hoursInput, minutesInput, secondsInput]) {
+    if (!input) continue;
+    input.addEventListener("input", handleInputChange);
+    input.addEventListener("change", handleInputChange);
+    input.addEventListener("keyup", event => {
+      if (event.key === "Enter") handleInputChange(event);
+    });
+    input.addEventListener("change", () => {
+      const value = input === hoursInput
+        ? (config.format === TIME_FORMAT.MILITARY ? timeValue.hours : timeValue.hours % 12 || 12)
+        : input === minutesInput ? timeValue.minutes : timeValue.seconds || 0;
+      input.value = padZero(value);
+    });
   }
 
   // Set up keyboard navigation
@@ -594,6 +607,7 @@ export const renderTimePicker = (
       });
 
       if (selectedValue !== null) {
+        const previousValue = { ...timeValue };
         if (activeSelector === "hour") {
           let newHours = selectedValue;
 
@@ -610,6 +624,7 @@ export const renderTimePicker = (
           }
 
           timeValue.hours = newHours;
+          timeValue.period = newHours >= 12 ? TIME_PERIOD.PM : TIME_PERIOD.AM;
 
           // Update input display
           if (config.format === TIME_FORMAT.AMPM) {
@@ -620,21 +635,21 @@ export const renderTimePicker = (
             hoursInput.value = padZero(newHours);
           }
 
-          if (onTimeChange) {
+          if (timeValue.hours !== previousValue.hours && onTimeChange) {
             onTimeChange("hours", newHours);
           }
         } else if (activeSelector === "minute") {
           timeValue.minutes = selectedValue;
           minutesInput.value = padZero(selectedValue);
 
-          if (onTimeChange) {
+          if (timeValue.minutes !== previousValue.minutes && onTimeChange) {
             onTimeChange("minutes", selectedValue);
           }
         } else if (activeSelector === "second" && secondsInput) {
           timeValue.seconds = selectedValue;
           secondsInput.value = padZero(selectedValue);
 
-          if (onTimeChange) {
+          if (timeValue.seconds !== previousValue.seconds && onTimeChange) {
             onTimeChange("seconds", selectedValue);
           }
         }

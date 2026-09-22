@@ -9,7 +9,8 @@ type TimePickerWindow = Window & {
   createTimePicker: typeof createTimePicker;
   timePicker: ReturnType<typeof createTimePicker>;
   confirmedTime: string | undefined;
-  openingContent: Element;
+  openingInput: HTMLInputElement;
+  timeChanges: string[];
 };
 
 export async function checkTimePicker(page: Page, artifacts: string): Promise<void> {
@@ -22,14 +23,31 @@ export async function checkTimePicker(page: Page, artifacts: string): Promise<vo
     document.documentElement.setAttribute("data-theme-mode", "light");
     state.confirmedTime = undefined;
     state.timePicker = state.createTimePicker({ title: "Appointment", value: "09:30", name: "appointment" });
-    document.body.append(state.timePicker.element);
+    const form = document.createElement("form");
+    form.append(state.timePicker.element);
+    document.body.append(form);
+    state.timeChanges = [];
+    state.timePicker.on("change", value => { state.timeChanges.push(value); });
     state.timePicker.on("confirm", value => { state.confirmedTime = value; });
     state.timePicker.open();
-    state.openingContent = state.timePicker.dialogElement.firstElementChild!;
+    // Edit in the same task as open(), before the former 50ms redraw.
+    state.openingInput = state.timePicker.dialogElement.querySelector<HTMLInputElement>('[data-type="minute"]')!;
+    state.openingInput.focus();
+    state.openingInput.value = "35";
+    state.openingInput.dispatchEvent(new Event("input", { bubbles: true }));
   });
-  // open() redraws after 50ms. Wait for that render, otherwise a fast CI
-  // runner can fill an input just before it is replaced and lose the edit.
-  await page.waitForFunction(() => !(window as unknown as TimePickerWindow).openingContent.isConnected);
+  // Cross the old redraw deadline and verify the actual input survives.
+  await page.waitForTimeout(100);
+  assert.deepEqual(await page.evaluate(() => {
+    const state = window as unknown as TimePickerWindow;
+    return {
+      connected: state.openingInput.isConnected,
+      focused: document.activeElement === state.openingInput,
+      value: state.timePicker.getValue(),
+      submitted: new FormData(document.querySelector("form")!).get("appointment"),
+      changes: state.timeChanges,
+    };
+  }), { connected: true, focused: true, value: "09:35", submitted: "09:35", changes: ["09:35"] });
   const dialog = page.locator(".mtrl-time-picker__dialog");
   await dialog.waitFor();
   const styles = await dialog.evaluate(element => {
@@ -58,8 +76,15 @@ export async function checkTimePicker(page: Page, artifacts: string): Promise<vo
   assert.equal(await dialog.locator(".mtrl-time-picker__period--selected").textContent(), "PM");
   await page.screenshot({ path: join(artifacts, "timepicker-bem.png"), animations: "disabled" });
   await dialog.locator(".mtrl-time-picker__confirm").click();
-  assert.equal(await page.evaluate(() => (window as unknown as TimePickerWindow).confirmedTime), "09:45:00 PM");
-  // FLO-237 tracks the existing display/submission mismatch after AM/PM edits.
+  assert.equal(await page.evaluate(() => (window as unknown as TimePickerWindow).confirmedTime), "21:45");
+  assert.deepEqual(await page.evaluate(() => {
+    const state = window as unknown as TimePickerWindow;
+    return {
+      value: state.timePicker.getValue(),
+      submitted: new FormData(document.querySelector("form")!).get("appointment"),
+      changes: state.timeChanges,
+    };
+  }), { value: "21:45", submitted: "21:45", changes: ["09:35", "09:45", "21:45"] });
   await page.evaluate(({ format, orientation }) => {
     const picker = (window as unknown as TimePickerWindow).timePicker;
     picker.setFormat(format).setOrientation(orientation).setTitle("Updated").open();
