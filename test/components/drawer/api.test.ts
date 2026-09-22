@@ -10,7 +10,7 @@
 // This replaces test/components/drawer.test.ts, which asserted against a mock
 // defined in its own file. The mock had drifted from the component: it expected
 // tab and tablist roles the drawer replaced with navigation semantics.
-import { describe, test, expect, beforeEach, afterEach } from 'bun:test';
+import { describe, test, expect, beforeEach, afterEach, mock } from 'bun:test';
 import { JSDOM } from 'jsdom';
 
 const dom = new JSDOM('<!DOCTYPE html><html><body></body></html>', { url: 'http://localhost/', pretendToBeVisual: true });
@@ -32,7 +32,7 @@ g.requestAnimationFrame = (cb: FrameRequestCallback) => setTimeout(() => cb(Date
 g.cancelAnimationFrame = (id: number) => clearTimeout(id);
 
 import createDrawer from '../../../src/components/drawer';
-import type { DrawerConfig, DrawerItemConfig } from '../../../src/components/drawer';
+import type { DrawerConfig, DrawerItemConfig, DrawerEvents, DrawerSelectEvent } from '../../../src/components/drawer';
 
 const ITEMS = (): DrawerItemConfig[] => [
   { type: 'section', label: 'Mail' },
@@ -362,5 +362,79 @@ describe('drawer utilities and destroy', () => {
     drawer.open();
     expect(drawer.isOpen()).toBe(false);
     expect(seen).toEqual([]);
+  });
+});
+
+
+// FLO-114: exercise the payloads behind the public event map.
+describe('drawer event contract', () => {
+  for (const variant of ['standard', 'modal'] as const) {
+    test(`${variant} open/close notify only on transitions and support off`, () => {
+      const drawer = make({ variant });
+      const opened = mock((..._args: unknown[]) => {});
+      const closed = mock((..._args: unknown[]) => {});
+      expect(drawer.on('open', opened).on('close', closed)).toBe(drawer);
+      drawer.open().open().close().close();
+      expect(opened.mock.calls).toEqual([[undefined]]);
+      expect(closed.mock.calls).toEqual([[undefined]]);
+      expect(drawer.off('open', opened).off('close', closed)).toBe(drawer);
+      drawer.open().close();
+      expect(opened).toHaveBeenCalledTimes(1);
+      expect(closed).toHaveBeenCalledTimes(1);
+    });
+  }
+
+  test('select reports the navigation index and original event; setters are silent', () => {
+    const drawer = make({ open: true, ripple: false });
+    const selected = mock((_payload: DrawerSelectEvent) => {});
+    drawer.on('select', selected);
+    drawer.setActive('sent');
+    expect(selected).not.toHaveBeenCalled();
+    const click = new dom.window.MouseEvent('click', { bubbles: true });
+    item(drawer, 'trash').dispatchEvent(click);
+    expect(selected.mock.calls).toEqual([[{ id: 'trash', label: 'Trash', index: 3, originalEvent: click }]]);
+    expect(selected.mock.calls[0][0].originalEvent).toBe(click);
+    expect(drawer.getActive()).toBe('trash');
+    item(drawer, 'spam').dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true }));
+    expect(selected).toHaveBeenCalledTimes(1);
+    expect(drawer.off('select', selected)).toBe(drawer);
+    item(drawer, 'inbox').click();
+    expect(selected).toHaveBeenCalledTimes(1);
+  });
+
+  test('keyboard activation selects via a click and forwards the original keydown', () => {
+    const drawer = make({ open: true, ripple: false });
+    const selected = mock((_payload: DrawerSelectEvent) => {});
+    const clicks = mock((..._args: Parameters<DrawerEvents['click']>) => {});
+    const keys = mock((..._args: Parameters<DrawerEvents['keydown']>) => {});
+    drawer.on('select', selected).on('click', clicks).on('keydown', keys);
+    const target = item(drawer, 'sent');
+    target.focus();
+    const keydown = new dom.window.KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true });
+    target.dispatchEvent(keydown);
+    expect(selected).toHaveBeenCalledTimes(1);
+    expect(selected.mock.calls[0][0]).toEqual({ id: 'sent', label: 'Sent', index: 1, originalEvent: clicks.mock.calls[0][0].event });
+    expect(clicks.mock.calls[0][0].event.type).toBe('click');
+    expect(selected.mock.calls[0][0].originalEvent).toBe(clicks.mock.calls[0][0].originalEvent);
+    expect(clicks.mock.calls[0][0].element).toBe(drawer.element);
+    expect(keys.mock.calls).toEqual([[{ event: keydown, originalEvent: keydown, element: drawer.element }]]);
+    expect(keys.mock.calls[0][0].event).toBe(keydown);
+    drawer.off('click', clicks).off('keydown', keys);
+    target.click();
+    key(target, 'ArrowDown');
+    expect(clicks).toHaveBeenCalledTimes(1);
+    expect(keys).toHaveBeenCalledTimes(1);
+  });
+
+  test('destroy clears subscribers on retained DOM and state references', () => {
+    const drawer = make({ open: true, ripple: false });
+    const notify = mock(() => {});
+    drawer.on('select', notify).on('click', notify).on('keydown', notify).on('open', notify).on('close', notify);
+    const target = item(drawer, 'sent');
+    drawer.destroy();
+    target.click();
+    key(target, 'Enter');
+    drawer.open().close();
+    expect(notify).not.toHaveBeenCalled();
   });
 });

@@ -13,4 +13,5 @@ export type {
   DrawerPosition,
   DrawerItemConfig,
   DrawerSelectEvent,
+  DrawerEvents,
 } from './types';
