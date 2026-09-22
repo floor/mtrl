@@ -9,6 +9,7 @@ type TimePickerWindow = Window & {
   createTimePicker: typeof createTimePicker;
   timePicker: ReturnType<typeof createTimePicker>;
   confirmedTime: string | undefined;
+  openingContent: Element;
 };
 
 export async function checkTimePicker(page: Page, artifacts: string): Promise<void> {
@@ -24,7 +25,11 @@ export async function checkTimePicker(page: Page, artifacts: string): Promise<vo
     document.body.append(state.timePicker.element);
     state.timePicker.on("confirm", value => { state.confirmedTime = value; });
     state.timePicker.open();
+    state.openingContent = state.timePicker.dialogElement.firstElementChild!;
   });
+  // open() redraws after 50ms. Wait for that render, otherwise a fast CI
+  // runner can fill an input just before it is replaced and lose the edit.
+  await page.waitForFunction(() => !(window as unknown as TimePickerWindow).openingContent.isConnected);
   const dialog = page.locator(".mtrl-time-picker__dialog");
   await dialog.waitFor();
   const styles = await dialog.evaluate(element => {
