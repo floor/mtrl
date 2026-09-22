@@ -146,6 +146,19 @@ describe("Material date picker", () => {
     click(picker, '[data-action="next"]'); expect(query(picker, 'dialog').hasAttribute('open')).toBe(true);
     expect(picker.element.querySelector('[data-date="2024-03-29"]')).not.toBeNull();
   });
+  test("a focus destination inside the calendar cannot close it during a native focus transition", async () => {
+    const picker = mount(); picker.open();
+    // A native focusout can run before activeElement changes to relatedTarget.
+    // Model that interval with real elements; the destination is authoritative.
+    const from = day(picker, '2026-09-15'), to = day(picker, '2026-09-16');
+    from.blur();
+    from.dispatchEvent(new dom.window.FocusEvent('focusout', { bubbles: true, relatedTarget: to }));
+    await Promise.resolve();
+    expect(query(picker, 'dialog').hasAttribute('open')).toBe(true);
+    to.click(); expect(picker.getFormattedValue()).toBe('09/16/2026');
+    day(picker, '2026-09-16').dispatchEvent(new dom.window.FocusEvent('focusout', { bubbles: true, relatedTarget: document.getElementById('outside') }));
+    expect(query(picker, 'dialog').hasAttribute('open')).toBe(false);
+  });
   test("two modal instances preserve body scroll locking until the last closes", () => {
     document.body.style.overflow = 'scroll';
     const a = mount({ variant: 'modal' }), b = mount({ variant: 'modal-input' }); a.open(); b.open(); a.destroy();

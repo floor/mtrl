@@ -67,8 +67,10 @@ export async function checkDatePicker(page: Page, artifacts: string): Promise<vo
   await page.getByRole('textbox', { name: 'Select date', exact: true }).fill('09/25/2026'); await page.keyboard.press('Tab');
   assert.equal(await page.evaluate(() => (window as unknown as PickerWindow).picker.getFormattedValue()), '09/25/2026');
   await page.locator('[data-action="open"]').click(); assert.equal(await page.locator('dialog').evaluate(el => el.matches(':modal')), false);
-  await page.keyboard.press('ArrowRight'); await page.keyboard.press('Enter');
+  await page.locator('[data-date="2026-09-26"]').click();
   assert.equal(await page.evaluate(() => (window as unknown as PickerWindow).picker.getFormattedValue()), '09/26/2026');
+  await page.keyboard.press('ArrowRight'); await page.keyboard.press('Enter');
+  assert.equal(await page.evaluate(() => (window as unknown as PickerWindow).picker.getFormattedValue()), '09/27/2026');
   await page.evaluate(() => (window as unknown as PickerWindow).picker.destroy());
   assert.equal(await page.locator('.mtrl-datepicker').count(), 0);
   console.log('Passed packed date picker: selective CSS, token geometry, native modal/scrim, focus, keyboard, input validation, draft/commit/cancel, range, themes, mobile and cleanup.');

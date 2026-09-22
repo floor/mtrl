@@ -236,7 +236,11 @@ const createDatePicker = (config: DatePickerConfig = {}): DatePickerComponent =>
   };
   const onDialogClick = (event: MouseEvent) => { onClick(event); onOutside(event); event.stopPropagation(); };
   const onInputClick = () => { if (modal) open(); };
-  const onFocusOut = () => { queueMicrotask(() => { if (!destroyed && opened && !modal && !base.element.contains(doc.activeElement)) close(false); }); };
+  const onFocusOut = (event: FocusEvent) => {
+    // Native focus changes can run microtasks before activeElement has settled.
+    // Use the destination so moving between days cannot close the popup mid-click.
+    if (!destroyed && opened && !modal && event.relatedTarget instanceof Node && !base.element.contains(event.relatedTarget)) close(false);
+  };
   base.element.addEventListener("click", onClick); base.element.addEventListener("keydown", onKey);
   base.element.addEventListener("focusout", onFocusOut); dialog.addEventListener("focusin", onFocus);
   dialog.addEventListener("click", onDialogClick); dialog.addEventListener("input", onEntry); dialog.addEventListener("cancel", onCancel);
