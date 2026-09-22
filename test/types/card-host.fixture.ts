@@ -48,14 +48,10 @@ export const theNameIsNotOptional: Equals<
 // the host's. With the optional declaration it was not, and every stage after
 // the failing `pipe()` overload became `unknown`.
 //
-// Stated plainly: this line is documentation, not a detector. This file is
-// compiled by tsconfig.types.json, which inherits a base where
-// strictFunctionTypes is still off, so the assignment below type-checks
-// either way -- parameter bivariance is exactly what the flag turns off. It
-// records what the shape is for. The assertions that *fail* when the optional
-// form returns are the two above and the directive below, which are
-// structural and do not depend on the flag; and `strictfn:check`, which
-// compiles with the flag on, is what enforces the real property.
+// tsconfig.types.json now inherits strict mode, so this assignment also
+// checks the host's parameter variance. The structural assertions above and
+// below remain useful under tsconfig.test.json, which relaxes that flag.
+// `bun run ts:check` checks the real composition pipeline in strict mode.
 
 declare const built: ElementComponent;
 

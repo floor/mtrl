@@ -1,19 +1,8 @@
 #!/usr/bin/env bun
-// Type-checks src/ with noImplicitAny, against a list of files that do not
-// pass yet.
-//
-// The companion to check-strict-null.ts, and the second half of F14. That one
-// reached zero, which is what unblocked this: the plan was always
-// strictNullChecks first, then noImplicitAny, then `strict: true`.
-//
-// Turning noImplicitAny on reports 270 errors in the 40 files below, nearly
-// all TS7006 — a parameter with no type, most often `component`, `e` or
-// `event`. Those need real types rather than a bulk edit, so gating the whole
-// tree would be red on arrival and get switched off. The gate covers
-// everything else and names these.
-//
-// The exclusions shrink. They never grow: adding a file here means a file that
-// passed noImplicitAny no longer does, which is a regression, not a chore.
+// Retains the zero-exclusion noImplicitAny guard from FLO-114.
+// Strict mode is now enabled in tsconfig.json. All files from the original
+// noImplicitAny migration have been cleared from the pending list.
+// The list must stay empty: new errors fail instead of becoming exclusions.
 //
 //   bun run scripts/check-no-implicit-any.ts
 import { execFileSync } from "node:child_process";
@@ -78,6 +67,6 @@ console.log(`noImplicitAny: ${silenced.size} file(s) pending, everything else pa
 
 if (silenced.size === 0) {
   console.log(
-    "PENDING is empty. `strict: true` in tsconfig.json is the last step of F14.",
+    "PENDING is empty. Strict mode is enabled in tsconfig.json (FLO-114).",
   );
 }

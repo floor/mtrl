@@ -26,7 +26,7 @@
 // means a fixture cannot import them, and exporting them so a test could
 // would add public surface to prove a private point. So the assertions below
 // cover the one reachable seam, `getApiConfig`, and the other three are
-// enforced by `strictfn:check`, which compiles search.ts with
+// enforced by `ts:check`, which compiles search.ts with
 // strictFunctionTypes on and fails if any of them widens again. That check is
 // the detector; this file is the part of it that can be read.
 //
