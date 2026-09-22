@@ -38,7 +38,6 @@ import { execFileSync } from "node:child_process";
 
 /** Files with strictFunctionTypes errors left to fix (F14). */
 const PENDING: string[] = [
-  "src/components/datepicker/datepicker.ts",
 ];
 
 const EXCLUDED = new Set(PENDING);

@@ -1,4 +1,44 @@
 // src/components/datepicker/types.ts
+import type { EventCallback } from "../../core/state/emitter";
+import type { ForwardedEventPayload } from "../../core/dom";
+import type { NormalizedEvent } from "../../core/utils/mobile";
+
+/** Value returned by the API, including complete ranges and empty selections. */
+export type DatePickerValue = Date | [Date, Date] | null;
+
+/**
+ * Calendar selections supply a start date and separate range end. API changes
+ * supply getValue() (a tuple for a complete range), with no rangeEndDate field.
+ */
+export type DatePickerChangePayload =
+  | { value: Date; rangeEndDate: Date | null; formattedValue: string }
+  | { value: DatePickerValue; rangeEndDate?: never; formattedValue: string };
+
+/** Input/outside clicks carry the start date; API open/close may carry a range. */
+export interface DatePickerVisibilityPayload {
+  value: DatePickerValue;
+}
+
+/** Normalized touch-end event emitted by the interactive root. */
+export type DatePickerTapPayload = NormalizedEvent;
+
+/** Horizontal swipe emitted by the interactive root. */
+export interface DatePickerSwipePayload {
+  direction: "left" | "right";
+  deltaX: number;
+  deltaY: number;
+}
+
+/** Events emitted by the picker API, calendar selections and interactive root. */
+export interface DatePickerEvents {
+  change: (payload: DatePickerChangePayload) => void;
+  open: (payload: DatePickerVisibilityPayload) => void;
+  close: (payload: DatePickerVisibilityPayload) => void;
+  click: (payload: ForwardedEventPayload<MouseEvent, HTMLElement>) => void;
+  keydown: (payload: ForwardedEventPayload<KeyboardEvent, HTMLElement>) => void;
+  tap: (payload: DatePickerTapPayload) => void;
+  swipe: (payload: DatePickerSwipePayload) => void;
+}
 
 /**
  * DatePicker variant types
@@ -366,7 +406,7 @@ export interface DatePickerComponent {
    * @param handler - Event handler function
    * @returns The datepicker component for chaining
    */
-  on: (event: string, handler: Function) => DatePickerComponent;
+  on: <K extends keyof DatePickerEvents>(event: K, handler: DatePickerEvents[K]) => DatePickerComponent;
   
   /**
    * Removes an event listener from the datepicker
@@ -374,7 +414,7 @@ export interface DatePickerComponent {
    * @param handler - Event handler function
    * @returns The datepicker component for chaining
    */
-  off: (event: string, handler: Function) => DatePickerComponent;
+  off: <K extends keyof DatePickerEvents>(event: K, handler: DatePickerEvents[K]) => DatePickerComponent;
 }
 
 /**
@@ -390,8 +430,8 @@ export interface ApiOptions {
     destroy: () => void;
   };
   events: {
-    on: (event: string, handler: Function) => void;
-    off: (event: string, handler: Function) => void;
+    on: (event: string, handler: EventCallback) => void;
+    off: (event: string, handler: EventCallback) => void;
     emit: (event: string, data: unknown) => void;
   };
 }

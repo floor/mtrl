@@ -4,6 +4,7 @@ import type { DisabledComponent } from "../../core/compose/features/disabled";
 import type { LifecycleComponent } from "../../core/compose/features/lifecycle";
 import {
   DatePickerComponent,
+  DatePickerEvents,
   DatePickerState,
   DatePickerApiState,
   ApiOptions,
@@ -276,12 +277,12 @@ export const withAPI =
         lifecycle.destroy();
       },
 
-      on(event: string, handler: Function): DatePickerComponent {
+      on<K extends keyof DatePickerEvents>(event: K, handler: DatePickerEvents[K]): DatePickerComponent {
         events.on(event, handler);
         return this;
       },
 
-      off(event: string, handler: Function): DatePickerComponent {
+      off<K extends keyof DatePickerEvents>(event: K, handler: DatePickerEvents[K]): DatePickerComponent {
         events.off(event, handler);
         return this;
       },
