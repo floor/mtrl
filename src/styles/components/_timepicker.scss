@@ -13,7 +13,7 @@ $component: '#{base.$prefix}-time-picker';
   position: relative;
   display: inline-block;
   
-  &-modal {
+  &__modal {
     position: fixed;
     top: 0;
     left: 0;
@@ -32,7 +32,7 @@ $component: '#{base.$prefix}-time-picker';
     }
   }
   
-  &-dialog {
+  &__dialog {
     position: relative;
     display: flex;
     flex-direction: column;
@@ -70,11 +70,11 @@ $component: '#{base.$prefix}-time-picker';
     &--vertical {
       // min-height: 460px;
       
-      .#{$component}-input-container {
+      .#{$component}__input-container {
         flex-direction: row;
       }
       
-      .#{$component}-period {
+      .#{$component}__period {
         flex-direction: column;
         width: 52px;
         height: 80px;
@@ -86,30 +86,30 @@ $component: '#{base.$prefix}-time-picker';
       min-width: 520px;
       min-height: 360px;
       
-      .#{$component}-content {
+      .#{$component}__content {
         flex-direction: row;
         align-items: center;
       }
       
-      .#{$component}-input-container {
+      .#{$component}__input-container {
         flex-direction: row;
       }
       
-      .#{$component}-period {
+      .#{$component}__period {
         flex-direction: column;
         width: 52px;
         height: 80px;
         margin-left: 12px;
       }
       
-      .#{$component}-dial {
+      .#{$component}__dial {
         margin-left: 24px;
       }
     }
     
     // Time formats
     &--24h {
-      .#{$component}-period {
+      .#{$component}__period {
         display: none;
       }
     }
@@ -118,14 +118,14 @@ $component: '#{base.$prefix}-time-picker';
   // Title
   // M3 TimePickerTokens: HeadlineFont is LabelMedium, HeadlineColor is
   // OnSurfaceVariant. The colour already matched; the type scale did not.
-  &-title {
+  &__title {
     padding: 24px 24px 16px;
     @include m.typography('label-medium');
     color: t.color('on-surface-variant');
   }
   
   // Content container
-  &-content {
+  &__content {
     flex: 1;
     padding: 0 24px;
     overflow: hidden;
@@ -135,7 +135,7 @@ $component: '#{base.$prefix}-time-picker';
   }
   
   // Input container for both modes
-  &-input-container {
+  &__input-container {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -143,16 +143,16 @@ $component: '#{base.$prefix}-time-picker';
   }
   
   // Input field containers
-  &-time-input-field {
+  &__time-input-field {
     position: relative;
     display: flex;
     flex-direction: column;
   }
   
   // Time input styles - shared for both modes
-  &-hours,
-  &-minutes,
-  &-seconds {
+  &__hours,
+  &__minutes,
+  &__seconds {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -219,7 +219,7 @@ $component: '#{base.$prefix}-time-picker';
   }
   
   // Separator between hours, minutes, seconds
-  &-separator {
+  &__separator {
     font-size: 3.5rem;
     font-weight: 400;
     margin: 0 4px;
@@ -227,7 +227,7 @@ $component: '#{base.$prefix}-time-picker';
   }
   
   // Period selector (AM/PM)
-  &-period {
+  &__period {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -286,7 +286,7 @@ $component: '#{base.$prefix}-time-picker';
   }
   
   // Clock dial
-  &-dial {
+  &__dial {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -315,14 +315,14 @@ $component: '#{base.$prefix}-time-picker';
   }
   
   // Actions footer
-  &-actions {
+  &__actions {
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 16px 24px 24px;
   }
   
-  &-toggle-type {
+  &__toggle-type {
     background: transparent;
     border: none;
     padding: 8px;
@@ -357,13 +357,13 @@ $component: '#{base.$prefix}-time-picker';
     }
   }
   
-  &-action-buttons {
+  &__action-buttons {
     display: flex;
     gap: 8px;
   }
   
-  &-cancel,
-  &-confirm {
+  &__cancel,
+  &__confirm {
     padding: 10px 12px;
     border: none;
     background: transparent;
@@ -395,7 +395,7 @@ $component: '#{base.$prefix}-time-picker';
   
   // Responsive adjustments
   @media (max-width: 599px) {
-    &-dialog {
+    &__dialog {
       width: 100%;
       max-width: 100%;
       min-height: 460px;
@@ -405,24 +405,24 @@ $component: '#{base.$prefix}-time-picker';
       &--horizontal {
         flex-direction: column;
         
-        .#{$component}-content {
+        .#{$component}__content {
           flex-direction: column;
         }
         
-        .#{$component}-dial {
+        .#{$component}__dial {
           margin-left: 0;
         }
       }
     }
     
-    &-input-container {
+    &__input-container {
       margin: 16px 0;
     }
     
     // Smaller inputs on mobile
-    &-hours,
-    &-minutes,
-    &-seconds {
+    &__hours,
+    &__minutes,
+    &__seconds {
       width: 80px;
       height: 76px;
       font-size: 3rem;
@@ -437,15 +437,15 @@ $component: '#{base.$prefix}-time-picker';
   
   // Dark mode adjustments
   @media (prefers-color-scheme: dark) {
-    &-dialog {
+    &__dialog {
       &::before {
         opacity: 0.08;
       }
     }
     
-    &-hours,
-    &-minutes,
-    &-seconds {
+    &__hours,
+    &__minutes,
+    &__seconds {
       &[type="number"] {
         background-color: t.alpha('on-surface', 0.05);
       }
@@ -453,7 +453,7 @@ $component: '#{base.$prefix}-time-picker';
   }
   
   // Accessibility
-  &-sr-only {
+  &__sr-only {
     position: absolute;
     width: 1px;
     height: 1px;

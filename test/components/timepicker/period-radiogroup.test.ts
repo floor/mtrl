@@ -62,9 +62,9 @@ function picker(period: string = TIME_PERIOD.AM) {
   );
   return {
     container,
-    group: container.querySelector(`.${PREFIX}-time-picker-period`) as HTMLElement,
-    am: container.querySelector(`.${PREFIX}-time-picker-period-am`) as HTMLElement,
-    pm: container.querySelector(`.${PREFIX}-time-picker-period-pm`) as HTMLElement,
+    group: container.querySelector(`.${PREFIX}-time-picker__period`) as HTMLElement,
+    am: container.querySelector(`.${PREFIX}-time-picker__period-am`) as HTMLElement,
+    pm: container.querySelector(`.${PREFIX}-time-picker__period-pm`) as HTMLElement,
   };
 }
 

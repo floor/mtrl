@@ -56,8 +56,8 @@ function picker(hours = 10, minutes = 30, period: string = TIME_PERIOD.AM) {
   return {
     container,
     changes,
-    am: container.querySelector(`.${PREFIX}-time-picker-period-am`) as HTMLElement,
-    pm: container.querySelector(`.${PREFIX}-time-picker-period-pm`) as HTMLElement,
+    am: container.querySelector(`.${PREFIX}-time-picker__period-am`) as HTMLElement,
+    pm: container.querySelector(`.${PREFIX}-time-picker__period-pm`) as HTMLElement,
   };
 }
 

@@ -136,17 +136,17 @@ export const TAB_CLASSES = {
   /** Disabled state class */
   DISABLED: 'tab--disabled',
   /** Text content container */
-  TEXT: 'tab-text',
+  TEXT: 'button__text',
   /** Icon container */
-  ICON: 'tab-icon',
+  ICON: 'button__icon',
   /** Ripple effect container */
-  RIPPLE: 'tab-ripple',
+  RIPPLE: 'ripple',
   /** Root element with primary variant */
   PRIMARY: 'tab--primary',
   /** Root element with secondary variant */
   SECONDARY: 'tab--secondary',
   /** Container for text and icon */
-  CONTAINER: 'tab-container',
+  CONTAINER: 'tab__container',
   /** Badge container */
-  BADGE: 'tab-badge'
+  BADGE: 'badge'
 } as const;

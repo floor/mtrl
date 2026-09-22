@@ -54,7 +54,7 @@ const mount = (config: Record<string, unknown> = {}): TimePicker => {
 };
 
 const dialogClass = (picker: TimePicker, modifier: string) =>
-  picker.dialogElement.classList.contains(`mtrl-time-picker-dialog--${modifier}`);
+  picker.dialogElement.classList.contains(`mtrl-time-picker__dialog--${modifier}`);
 
 beforeEach(() => { document.body.innerHTML = ""; });
 afterAll(() => { dom.window.close(); });
@@ -259,7 +259,7 @@ describe("the title", () => {
 
     picker.setTitle("Select time");
 
-    const heading = picker.dialogElement.querySelector(".mtrl-time-picker-title");
+    const heading = picker.dialogElement.querySelector(".mtrl-time-picker__title");
     expect(heading?.textContent).toBe("Select time");
   });
 });
@@ -473,5 +473,43 @@ describe("typed event payloads (FLO-114)", () => {
     root.dispatchEvent(new dom.window.MouseEvent("click"));
     expect(changed).not.toHaveBeenCalled();
     expect(clicked).not.toHaveBeenCalled();
+  });
+});
+
+describe("BEM element names (FLO-120)", () => {
+  const prefix = "mtrl";
+  test("keeps BEM hooks through rerenders and delegated actions", () => {
+    const picker = mount({ title: "Appointment", value: "09:30:15", showSeconds: true });
+    const find = <T extends HTMLElement>(element: string): T => {
+      const result = picker.dialogElement.querySelector<T>(`.${prefix}-time-picker__${element}`);
+      expect(result).not.toBeNull();
+      return result!;
+    };
+    try {
+      expect(picker.modalElement.className).toBe(`${prefix}-time-picker__modal`);
+      expect(picker.dialogElement.classList.contains(`${prefix}-time-picker__dialog`)).toBe(true);
+      picker.open();
+      find<HTMLButtonElement>("toggle-type").click();
+      expect(picker.getType()).toBe(TIME_PICKER_TYPE.INPUT);
+      const minutes = find<HTMLInputElement>("minutes");
+      minutes.value = "45";
+      minutes.dispatchEvent(new dom.window.Event("change", { bubbles: true }));
+      expect(picker.getTimeObject().minutes).toBe(45);
+      find<HTMLButtonElement>("period-pm").click();
+      expect(picker.getTimeObject().period).toBe(TIME_PERIOD.PM);
+      expect(find("period-pm").classList.contains(`${prefix}-time-picker__period--selected`)).toBe(true);
+      picker.setTitle("Updated");
+      expect(find("title").textContent).toBe("Updated");
+      picker.setOrientation(TIME_PICKER_ORIENTATION.HORIZONTAL);
+      expect(picker.dialogElement.classList.contains(`${prefix}-time-picker__dialog--horizontal`)).toBe(true);
+      const names = [picker.modalElement, picker.dialogElement, ...picker.dialogElement.querySelectorAll("*")]
+        .flatMap(element => [...element.classList]);
+      expect(names.some(name => name.startsWith(`${prefix}-time-picker-`))).toBe(false);
+      const confirmed = mock((_value: string) => {});
+      picker.on("confirm", confirmed);
+      find<HTMLButtonElement>("confirm").click();
+      expect(confirmed).toHaveBeenCalledTimes(1);
+      expect(picker.isOpen).toBe(false);
+    } finally { picker.destroy(); }
   });
 });

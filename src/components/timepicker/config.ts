@@ -63,7 +63,7 @@ export const getContainerConfig = (config: ResolvedTimePickerConfig) => {
     attributes: {
       role: "dialog",
       "aria-modal": "true",
-      "aria-labelledby": `${config.prefix}-time-picker-title`,
+      "aria-labelledby": `${config.prefix}-time-picker__title`,
     },
     className: [
       config.class,
@@ -88,7 +88,7 @@ export const getModalConfig = (config: ResolvedTimePickerConfig) => {
     attributes: {
       role: "presentation",
     },
-    className: `${config.prefix}-time-picker-modal`,
+    className: `${config.prefix}-time-picker__modal`,
     forwardEvents: {
       click: (component, event) => {
         // Only close if clicking directly on the modal backdrop
@@ -111,10 +111,10 @@ export const getDialogConfig = (config: ResolvedTimePickerConfig) => {
   return createElementConfig(config, {
     tag: "div",
     className: [
-      `${config.prefix}-time-picker-dialog`,
-      `${config.prefix}-time-picker-dialog--${config.type}`,
-      `${config.prefix}-time-picker-dialog--${config.orientation}`,
-      `${config.prefix}-time-picker-dialog--${config.format}`,
+      `${config.prefix}-time-picker__dialog`,
+      `${config.prefix}-time-picker__dialog--${config.type}`,
+      `${config.prefix}-time-picker__dialog--${config.orientation}`,
+      `${config.prefix}-time-picker__dialog--${config.format}`,
     ],
     forwardEvents: {
       click: true,

@@ -116,51 +116,51 @@ export const TIMEPICKER_SELECTORS = {
   /** Main container selector */
   CONTAINER: '.mtrl-time-picker',
   /** Modal backdrop selector */
-  MODAL: '.mtrl-time-picker-modal',
+  MODAL: '.mtrl-time-picker__modal',
   /** Dialog container selector */
-  DIALOG: '.mtrl-time-picker-dialog',
+  DIALOG: '.mtrl-time-picker__dialog',
   /** Title element selector */
-  TITLE: '.mtrl-time-picker-title',
+  TITLE: '.mtrl-time-picker__title',
   /** Content container selector */
-  CONTENT: '.mtrl-time-picker-content',
+  CONTENT: '.mtrl-time-picker__content',
   /** Clock dial container selector */
-  DIAL: '.mtrl-time-picker-dial',
+  DIAL: '.mtrl-time-picker__dial',
   /** Clock dial canvas selector */
-  DIAL_CANVAS: '.mtrl-time-picker-dial-canvas',
+  DIAL_CANVAS: '.mtrl-time-picker__dial-canvas',
   /** Clock dial face selector */
-  DIAL_FACE: '.mtrl-time-picker-dial-face',
+  DIAL_FACE: '.mtrl-time-picker__dial-face',
   /** Clock hand selector */
-  DIAL_HAND: '.mtrl-time-picker-dial-hand',
+  DIAL_HAND: '.mtrl-time-picker__dial-hand',
   /** Clock center dot selector */
-  DIAL_CENTER: '.mtrl-time-picker-dial-center',
+  DIAL_CENTER: '.mtrl-time-picker__dial-center',
   /** Clock numbers container selector */
-  DIAL_NUMBERS: '.mtrl-time-picker-dial-numbers',
+  DIAL_NUMBERS: '.mtrl-time-picker__dial-numbers',
   /** Individual number element selector */
-  DIAL_NUMBER: '.mtrl-time-picker-dial-number',
+  DIAL_NUMBER: '.mtrl-time-picker__dial-number',
   /** Input container selector */
-  INPUT_CONTAINER: '.mtrl-time-picker-input-container',
+  INPUT_CONTAINER: '.mtrl-time-picker__input-container',
   /** Hours input selector */
-  HOURS_INPUT: '.mtrl-time-picker-hours',
+  HOURS_INPUT: '.mtrl-time-picker__hours',
   /** Minutes input selector */
-  MINUTES_INPUT: '.mtrl-time-picker-minutes',
+  MINUTES_INPUT: '.mtrl-time-picker__minutes',
   /** Seconds input selector */
-  SECONDS_INPUT: '.mtrl-time-picker-seconds',
+  SECONDS_INPUT: '.mtrl-time-picker__seconds',
   /** Time separator selector */
-  SEPARATOR: '.mtrl-time-picker-separator',
+  SEPARATOR: '.mtrl-time-picker__separator',
   /** AM/PM selector container */
-  PERIOD_CONTAINER: '.mtrl-time-picker-period',
+  PERIOD_CONTAINER: '.mtrl-time-picker__period',
   /** AM button selector */
-  PERIOD_AM: '.mtrl-time-picker-period-am',
+  PERIOD_AM: '.mtrl-time-picker__period-am',
   /** PM button selector */
-  PERIOD_PM: '.mtrl-time-picker-period-pm',
+  PERIOD_PM: '.mtrl-time-picker__period-pm',
   /** Actions container selector */
-  ACTIONS: '.mtrl-time-picker-actions',
+  ACTIONS: '.mtrl-time-picker__actions',
   /** Toggle type button selector */
-  TOGGLE_TYPE_BUTTON: '.mtrl-time-picker-toggle-type',
+  TOGGLE_TYPE_BUTTON: '.mtrl-time-picker__toggle-type',
   /** Cancel button selector */
-  CANCEL_BUTTON: '.mtrl-time-picker-cancel',
+  CANCEL_BUTTON: '.mtrl-time-picker__cancel',
   /** Confirm button selector */
-  CONFIRM_BUTTON: '.mtrl-time-picker-confirm'
+  CONFIRM_BUTTON: '.mtrl-time-picker__confirm'
 } as const;
 
 /**
@@ -230,65 +230,65 @@ export const TIMEPICKER_CLASSES = {
   /** Open state class */
   OPEN: 'time-picker--open',
   /** Modal backdrop class */
-  MODAL: 'time-picker-modal',
+  MODAL: 'time-picker__modal',
   /** Dialog container class */
-  DIALOG: 'time-picker-dialog',
+  DIALOG: 'time-picker__dialog',
   /** Dialog with dial type class */
-  DIALOG_DIAL: 'time-picker-dialog--dial',
+  DIALOG_DIAL: 'time-picker__dialog--dial',
   /** Dialog with input type class */
-  DIALOG_INPUT: 'time-picker-dialog--input',
+  DIALOG_INPUT: 'time-picker__dialog--input',
   /** Dialog with vertical orientation class */
-  DIALOG_VERTICAL: 'time-picker-dialog--vertical',
+  DIALOG_VERTICAL: 'time-picker__dialog--vertical',
   /** Dialog with horizontal orientation class */
-  DIALOG_HORIZONTAL: 'time-picker-dialog--horizontal',
+  DIALOG_HORIZONTAL: 'time-picker__dialog--horizontal',
   /** Dialog with 12-hour format class */
-  DIALOG_12H: 'time-picker-dialog--12h',
+  DIALOG_12H: 'time-picker__dialog--12h',
   /** Dialog with 24-hour format class */
-  DIALOG_24H: 'time-picker-dialog--24h',
+  DIALOG_24H: 'time-picker__dialog--24h',
   /** Title element class */
-  TITLE: 'time-picker-title',
+  TITLE: 'time-picker__title',
   /** Content container class */
-  CONTENT: 'time-picker-content',
+  CONTENT: 'time-picker__content',
   /** Dial container class */
-  DIAL: 'time-picker-dial',
+  DIAL: 'time-picker__dial',
   /** Dial canvas class */
-  DIAL_CANVAS: 'time-picker-dial-canvas',
+  DIAL_CANVAS: 'time-picker__dial-canvas',
   /** Dial face class */
-  DIAL_FACE: 'time-picker-dial-face',
+  DIAL_FACE: 'time-picker__dial-face',
   /** Dial hand class */
-  DIAL_HAND: 'time-picker-dial-hand',
+  DIAL_HAND: 'time-picker__dial-hand',
   /** Dial center dot class */
-  DIAL_CENTER: 'time-picker-dial-center',
+  DIAL_CENTER: 'time-picker__dial-center',
   /** Dial numbers container class */
-  DIAL_NUMBERS: 'time-picker-dial-numbers',
+  DIAL_NUMBERS: 'time-picker__dial-numbers',
   /** Individual dial number class */
-  DIAL_NUMBER: 'time-picker-dial-number',
+  DIAL_NUMBER: 'time-picker__dial-number',
   /** Active dial number class */
-  DIAL_NUMBER_ACTIVE: 'time-picker-dial-number--active',
+  DIAL_NUMBER_ACTIVE: 'time-picker__dial-number--active',
   /** Input container class */
-  INPUT_CONTAINER: 'time-picker-input-container',
+  INPUT_CONTAINER: 'time-picker__input-container',
   /** Hours input class */
-  HOURS_INPUT: 'time-picker-hours',
+  HOURS_INPUT: 'time-picker__hours',
   /** Minutes input class */
-  MINUTES_INPUT: 'time-picker-minutes',
+  MINUTES_INPUT: 'time-picker__minutes',
   /** Seconds input class */
-  SECONDS_INPUT: 'time-picker-seconds',
+  SECONDS_INPUT: 'time-picker__seconds',
   /** Time separator class */
-  SEPARATOR: 'time-picker-separator',
+  SEPARATOR: 'time-picker__separator',
   /** Period container class */
-  PERIOD_CONTAINER: 'time-picker-period',
+  PERIOD_CONTAINER: 'time-picker__period',
   /** AM button class */
-  PERIOD_AM: 'time-picker-period-am',
+  PERIOD_AM: 'time-picker__period-am',
   /** PM button class */
-  PERIOD_PM: 'time-picker-period-pm',
+  PERIOD_PM: 'time-picker__period-pm',
   /** Active period button class */
-  PERIOD_ACTIVE: 'time-picker-period--active',
+  PERIOD_ACTIVE: 'time-picker__period--active',
   /** Actions container class */
-  ACTIONS: 'time-picker-actions',
+  ACTIONS: 'time-picker__actions',
   /** Toggle type button class */
-  TOGGLE_TYPE: 'time-picker-toggle-type',
+  TOGGLE_TYPE: 'time-picker__toggle-type',
   /** Cancel button class */
-  CANCEL: 'time-picker-cancel',
+  CANCEL: 'time-picker__cancel',
   /** Confirm button class */
-  CONFIRM: 'time-picker-confirm'
+  CONFIRM: 'time-picker__confirm'
 } as const;

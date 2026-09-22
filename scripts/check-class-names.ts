@@ -69,12 +69,11 @@ const defined = new Set(Array.from(css.matchAll(/\.(mtrl-[a-z0-9_-]+)/g), (m) =>
 // component as if it were an element, which is the mistake this ordering and
 // the `isComponentClass` test below exist to prevent.
 // CSS block aliases that differ from their component directory name.
-// Time Picker is the remaining component migration in FLO-120.
-const DEFERRED_BLOCKS = ["time-picker"];
 const COMPONENTS = [...readdirSync("src/components")
   .filter((entry) => statSync(join("src/components", entry)).isDirectory()),
-  // A group of checkboxes is an independent block, not a checkbox element.
-  "checkbox-group", ...DEFERRED_BLOCKS]
+  // Checkbox groups and tab panels are independent blocks. A single tab
+  // belongs to tabs/, and Time Picker spells its block with a hyphen.
+  "checkbox-group", "time-picker", "tab", "tab-panel"]
   .sort((a, b) => b.length - a.length);
 
 const sources = [...walk("src/components", ".ts"), ...walk("src/core", ".ts")];
@@ -124,6 +123,7 @@ const resolve = (token: string): string | null => {
 /** Every class name the source asks for, with the file that asks for it. */
 const asked = new Map<string, string[]>();
 const ask = (name: string, file: string) => {
+  name = name.replace(/^\.?mtrl-/, "");
   if (!name || !isComponentClass(name)) return;
   const full = `mtrl-${name}`;
   asked.set(full, [...(asked.get(full) ?? []), file]);
@@ -146,8 +146,8 @@ for (const file of sources) {
     if (block !== null) ask(block + match[2], file);
   }
 
-  // `${PREFIX}-card-actions`, including `${prefix}-${SNACKBAR_CLASSES.ACTION}`.
-  for (const match of source.matchAll(/`\$\{[A-Za-z_.$]*(?:[Pp]refix|PREFIX)\}-([^`]*)`/g)) {
+  // `${PREFIX}-card-actions` and `.${prefix}-tab-text` queries, including `${prefix}-${SNACKBAR_CLASSES.ACTION}`.
+  for (const match of source.matchAll(/`\.?\$\{[A-Za-z_.$]*(?:[Pp]refix|PREFIX)\}-([^`]*)`/g)) {
     const rest = match[1].replace(
       /\$\{\s*([A-Z][A-Za-z_0-9]*\.[A-Z][A-Z_0-9]*)\s*\}/g,
       (_, ref) => constants.get(ref) ?? "\0"
@@ -172,11 +172,7 @@ for (const file of sources) {
 // even when a hook has no CSS rule. Shared ripple is an independent core block.
 const dashedElements = [...new Set([...defined, ...asked.keys()])]
   .filter(name => migratedTwin(name) !== name).sort();
-const deferred = dashedElements.filter(name => DEFERRED_BLOCKS.some(block => name.startsWith(`mtrl-${block}-`)));
-if (deferred.length) {
-  console.log(`FLO-120 pending: ${deferred.length} dashed Time Picker names (${deferred.filter(name => defined.has(name)).length} in compiled CSS).`);
-}
-const regressions = dashedElements.filter(name => !deferred.includes(name));
+const regressions = dashedElements;
 if (regressions.length) {
   console.error(`Remaining dashed component elements: ${regressions.join(", ")}`);
   process.exit(1);

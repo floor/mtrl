@@ -68,7 +68,7 @@ function picker(showSeconds: boolean, seconds = 45) {
     // picker already is.
     dial: () =>
       container.querySelector(
-        `.${PREFIX}-time-picker-dial`,
+        `.${PREFIX}-time-picker__dial`,
       ) as HTMLElement | null,
   };
 }
@@ -87,7 +87,7 @@ describe("with showSeconds off, which is the default", () => {
   test("and no separator for one either", () => {
     const p = picker(false);
 
-    const separators = p.container.querySelectorAll(`.${PREFIX}-time-picker-separator`);
+    const separators = p.container.querySelectorAll(`.${PREFIX}-time-picker__separator`);
     expect(separators).toHaveLength(1);
   });
 });
@@ -121,7 +121,7 @@ describe("with showSeconds on", () => {
   test("a second separator sits before it", () => {
     const p = picker(true);
 
-    const separators = p.container.querySelectorAll(`.${PREFIX}-time-picker-separator`);
+    const separators = p.container.querySelectorAll(`.${PREFIX}-time-picker__separator`);
     expect(separators).toHaveLength(2);
   });
 });

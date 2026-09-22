@@ -19,6 +19,7 @@ g.KeyboardEvent = dom.window.KeyboardEvent;
 g.CustomEvent = dom.window.CustomEvent;
 g.getComputedStyle = dom.window.getComputedStyle.bind(dom.window);
 
+import { TAB_CLASSES } from '../../../src/components/tabs/constants';
 import { createTab } from '../../../src/components/tabs/tab';
 
 beforeEach(() => {
@@ -47,4 +48,14 @@ describe('tab', () => {
     expect(clicks).toBe(1);
     tab.destroy();
   });
+});
+
+test('exported tab hooks address the composed button and its shared ripple', () => {
+  const tab = createTab({ text: 'Inbox', icon: '<svg></svg>', badge: '3', value: 'inbox' });
+  try {
+    for (const key of ['TEXT', 'ICON', 'RIPPLE'] as const) {
+      expect(tab.element.querySelector(`.${tab.getClass(TAB_CLASSES[key])}`)).not.toBeNull();
+    }
+    expect(tab.badge?.element.classList.contains(tab.getClass(TAB_CLASSES.BADGE))).toBe(true);
+  } finally { tab.destroy(); }
 });

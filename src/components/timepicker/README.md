@@ -216,7 +216,7 @@ You can customize the appearance of the TimePicker by overriding the CSS variabl
 
 ```css
 /* Custom time picker styling */
-.mtrl-time-picker-dialog {
+.mtrl-time-picker__dialog {
   --mtrl-primary: #6200ee;
   --mtrl-on-primary: #ffffff;
   --mtrl-surface-container-high: #f5f5f5;
@@ -227,12 +227,12 @@ You can customize the appearance of the TimePicker by overriding the CSS variabl
 }
 
 /* Custom dial styling */
-.mtrl-time-picker-dial-face {
+.mtrl-time-picker__dial-face {
   background-color: rgba(98, 0, 238, 0.05);
 }
 
 /* Custom buttons */
-.mtrl-time-picker-confirm {
+.mtrl-time-picker__confirm {
   font-weight: bold;
 }
 ```

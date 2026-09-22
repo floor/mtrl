@@ -221,10 +221,10 @@ export const createTimePickerAPI = (
       
       // Update class
       dialogElement.classList.remove(
-        `${config.prefix}-time-picker-dialog--${TIME_PICKER_TYPE.DIAL}`,
-        `${config.prefix}-time-picker-dialog--${TIME_PICKER_TYPE.INPUT}`
+        `${config.prefix}-time-picker__dialog--${TIME_PICKER_TYPE.DIAL}`,
+        `${config.prefix}-time-picker__dialog--${TIME_PICKER_TYPE.INPUT}`
       );
-      dialogElement.classList.add(`${config.prefix}-time-picker-dialog--${type}`);
+      dialogElement.classList.add(`${config.prefix}-time-picker__dialog--${type}`);
       
       // Re-render time picker
       render();
@@ -244,10 +244,10 @@ export const createTimePickerAPI = (
       
       // Update class
       dialogElement.classList.remove(
-        `${config.prefix}-time-picker-dialog--${TIME_FORMAT.AMPM}`,
-        `${config.prefix}-time-picker-dialog--${TIME_FORMAT.MILITARY}`
+        `${config.prefix}-time-picker__dialog--${TIME_FORMAT.AMPM}`,
+        `${config.prefix}-time-picker__dialog--${TIME_FORMAT.MILITARY}`
       );
-      dialogElement.classList.add(`${config.prefix}-time-picker-dialog--${format}`);
+      dialogElement.classList.add(`${config.prefix}-time-picker__dialog--${format}`);
       
       // Adjust time value if needed
       if (format === TIME_FORMAT.MILITARY) {
@@ -279,10 +279,10 @@ export const createTimePickerAPI = (
       
       // Update class
       dialogElement.classList.remove(
-        `${config.prefix}-time-picker-dialog--${TIME_PICKER_ORIENTATION.VERTICAL}`,
-        `${config.prefix}-time-picker-dialog--${TIME_PICKER_ORIENTATION.HORIZONTAL}`
+        `${config.prefix}-time-picker__dialog--${TIME_PICKER_ORIENTATION.VERTICAL}`,
+        `${config.prefix}-time-picker__dialog--${TIME_PICKER_ORIENTATION.HORIZONTAL}`
       );
-      dialogElement.classList.add(`${config.prefix}-time-picker-dialog--${orientation}`);
+      dialogElement.classList.add(`${config.prefix}-time-picker__dialog--${orientation}`);
       
       // Re-render time picker
       render();
