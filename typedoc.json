@@ -6,7 +6,7 @@
   "exclude": ["**/node_modules/**", "**/*.test.ts", "**/*.spec.ts"],
   "excludePrivate": false,
   "excludeExternals": true,
-  "excludeInternal": false,
+  "excludeInternal": true,
   "includeVersion": true,
   "hideGenerator": true,
   "searchInComments": true,

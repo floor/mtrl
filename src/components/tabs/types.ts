@@ -484,12 +484,15 @@ export interface TabsComponent {
   destroy: () => void;
   
   /**
-   * Tab click event handler
+   * Activation handler shared by the component's click and keyboard paths.
+   * Use setActiveTab() to select a tab from application code.
+   * @internal
    */
   handleTabClick: (event: Event | null, tab: TabComponent) => void;
   
   /**
-   * Scroll container for scrollable tabs
+   * Scroll container owned by the scrollable feature.
+   * @internal
    */
   scrollContainer?: HTMLElement;
 }
