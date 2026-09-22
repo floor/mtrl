@@ -9,6 +9,7 @@ import { checkDatePicker } from "./check-datepicker-browser";
 import { checkList } from "./check-list-browser";
 import { checkChips } from "./check-chips-browser";
 import { checkCard } from "./check-card-browser";
+import { checkInputBEM } from "./check-input-bem-browser";
 import { createPackageFixture } from "./package-fixture";
 
 type CoreWindow = Window & {
@@ -23,6 +24,7 @@ try {
   const entry = join(fixture.directory, "core.ts");
   await writeFile(entry, `import { createButton, createAssistChip, createFilterChip, createInputChip, createSuggestionChip, createChips, createList, createDatePicker } from 'mtrl'; window.core = { createButton, createAssistChip, createFilterChip, createInputChip, createSuggestionChip, createChips, createList, createDatePicker };`);
   await writeFile(entry, `${await readFile(entry, "utf8")} import * as cardParts from 'mtrl/components/card'; window.cardParts = cardParts;`);
+  await writeFile(entry, `${await readFile(entry, "utf8")} import { createCheckbox, createSwitch, createTextfield } from 'mtrl'; window.inputs = { createCheckbox, createSwitch, createTextfield };`);
   const bundle = await Bun.build({ entrypoints: [entry], target: "browser", format: "iife", minify: true });
   assert(bundle.success, String(bundle.logs));
   browser = await chromium.launch({ headless: true });
@@ -79,6 +81,7 @@ try {
   assert.equal(await page.locator(".mtrl-ripple-wave").count(), 0);
   await checkChips(page, artifacts);
   await checkList(page, artifacts);
+  await checkInputBEM(page);
   await checkCard(page, artifacts);
   // Datepicker must also work with only base + its selective stylesheet.
   await page.locator("style").evaluateAll(elements => elements.forEach(element => element.remove()));

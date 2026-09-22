@@ -68,13 +68,16 @@ const defined = new Set(Array.from(css.matchAll(/\.(mtrl-[a-z0-9_-]+)/g), (m) =>
 // this migration split `button-group` into `button` + `-group` and renamed a
 // component as if it were an element, which is the mistake this ordering and
 // the `isComponentClass` test below exist to prevent.
+// CSS block aliases that differ from their component directory name.
+// Time Picker is the remaining component migration in FLO-120.
+const DEFERRED_BLOCKS = ["time-picker"];
 const COMPONENTS = [...readdirSync("src/components")
   .filter((entry) => statSync(join("src/components", entry)).isDirectory()),
   // A group of checkboxes is an independent block, not a checkbox element.
-  "checkbox-group"]
+  "checkbox-group", ...DEFERRED_BLOCKS]
   .sort((a, b) => b.length - a.length);
 
-const sources = walk("src/components", ".ts");
+const sources = [...walk("src/components", ".ts"), ...walk("src/core", ".ts")];
 
 /** `SNACKBAR_CLASSES.ACTION` -> `snackbar-action`, for every constants map. */
 const constants = new Map<string, string>();
@@ -165,14 +168,17 @@ for (const file of sources) {
   }
 }
 
-// With Card migrated, compiled CSS has no dashed component elements left.
-// Reject regressions even when both source and CSS move back together. Source
-// names that were never styled remain reported below. Shared ripple is not a
-// component block.
-const dashedElements = [...defined]
+// Reject dashed names in both compiled CSS and resolvable source spellings,
+// even when a hook has no CSS rule. Shared ripple is an independent core block.
+const dashedElements = [...new Set([...defined, ...asked.keys()])]
   .filter(name => migratedTwin(name) !== name).sort();
-if (dashedElements.length) {
-  console.error(`Remaining dashed component elements: ${dashedElements.join(", ")}`);
+const deferred = dashedElements.filter(name => DEFERRED_BLOCKS.some(block => name.startsWith(`mtrl-${block}-`)));
+if (deferred.length) {
+  console.log(`FLO-120 pending: ${deferred.length} dashed Time Picker names (${deferred.filter(name => defined.has(name)).length} in compiled CSS).`);
+}
+const regressions = dashedElements.filter(name => !deferred.includes(name));
+if (regressions.length) {
+  console.error(`Remaining dashed component elements: ${regressions.join(", ")}`);
   process.exit(1);
 }
 

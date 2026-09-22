@@ -278,6 +278,14 @@ describe('slider appearance', () => {
 });
 
 describe('slider label and icon', () => {
+  test('an icon added later follows the existing BEM label', async () => {
+    const slider = await mount({ label: 'Volume' });
+    slider.setIcon('<svg></svg>');
+    const label = slider.element.querySelector('.mtrl-slider__label');
+    expect(label?.nextElementSibling?.classList.contains('mtrl-slider__icon')).toBe(true);
+    slider.destroy();
+  });
+
   test('setLabel replaces the label text', async () => {
     const slider = await mount({ label: 'Volume' });
     expect(slider.getLabel()).toBe('Volume');

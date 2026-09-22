@@ -93,12 +93,12 @@ export const TOOLTIP_DEFAULTS = {
 export const TOOLTIP_CLASSES = {
   /** Root element class */
   ROOT: 'tooltip',
-  /** Container for the tooltip content */
-  CONTAINER: 'tooltip-container',
+  /** Reserved slot; the current tooltip renders content directly in its root. */
+  CONTAINER: 'tooltip__container',
   /** Arrow element class */
   ARROW: 'tooltip__arrow',
-  /** Content element class */
-  CONTENT: 'tooltip-content',
+  /** Reserved slot; the current tooltip renders content directly in its root. */
+  CONTENT: 'tooltip__content',
   /** Visible state class */
   VISIBLE: 'tooltip--visible',
   /** Hidden state class */

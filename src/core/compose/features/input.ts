@@ -117,7 +117,7 @@ export const withInput =
     const input = document.createElement("input");
     const name = component.componentName || "component";
     input.type = "checkbox";
-    input.className = `${component.getClass(name)}-input`;
+    input.className = `${component.getClass(name)}__input`;
 
     // Ensure input can receive focus
     input.style.position = "absolute";

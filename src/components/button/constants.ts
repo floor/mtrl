@@ -72,8 +72,8 @@ export const BUTTON_CLASSES = {
   ROOT: "button",
   ICON: "button__icon",
   TEXT: "button__text",
-  ACTIVE: "button-active",
-  DISABLED: "button-disabled",
+  ACTIVE: "button--active",
+  DISABLED: "button--disabled",
 } as const;
 
 /**

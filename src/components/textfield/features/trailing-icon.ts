@@ -98,7 +98,7 @@ export const withTrailingIcon = <T extends TrailingIconConfig & object>(config: 
       component.element.appendChild(element);
       component.element.classList.add(`${PREFIX}-${NAME}--with-trailing-icon`);
       if (component.input) {
-        component.input.classList.add(`${PREFIX}-${NAME}-input--with-trailing-icon`);
+        component.input.classList.add(`${PREFIX}-${NAME}__input--with-trailing-icon`);
       }
       slot = element;
       return element;
@@ -112,7 +112,7 @@ export const withTrailingIcon = <T extends TrailingIconConfig & object>(config: 
       slot = null;
       component.element.classList.remove(`${PREFIX}-${NAME}--with-trailing-icon`);
       if (component.input) {
-        component.input.classList.remove(`${PREFIX}-${NAME}-input--with-trailing-icon`);
+        component.input.classList.remove(`${PREFIX}-${NAME}__input--with-trailing-icon`);
       }
     };
 
