@@ -1,4 +1,17 @@
 // src/components/carousel/types.ts
+import type { ForwardedEventPayload } from "../../core/dom";
+
+/** Current item reported by programmatic navigation or native scrolling. */
+export interface CarouselChangePayload {
+  index: number;
+}
+
+/** Events emitted by the scroll feature and forwarded from the root. */
+export interface CarouselEvents {
+  change: (payload: CarouselChangePayload) => void;
+  focus: (payload: ForwardedEventPayload<FocusEvent, HTMLElement>) => void;
+  blur: (payload: ForwardedEventPayload<FocusEvent, HTMLElement>) => void;
+}
 
 export type CarouselVariant =
   | "multi-browse"
@@ -67,8 +80,8 @@ export interface CarouselComponent {
   removeSlide: (index: number) => CarouselComponent;
 
   destroy: () => void;
-  on: (event: string, handler: Function) => CarouselComponent;
-  off: (event: string, handler: Function) => CarouselComponent;
+  on: <K extends keyof CarouselEvents>(event: K, handler: CarouselEvents[K]) => CarouselComponent;
+  off: <K extends keyof CarouselEvents>(event: K, handler: CarouselEvents[K]) => CarouselComponent;
   addClass: (...classes: string[]) => CarouselComponent;
 }
 

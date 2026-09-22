@@ -10,6 +10,8 @@ export {
 export type {
   CarouselConfig,
   CarouselComponent,
+  CarouselEvents,
+  CarouselChangePayload,
   CarouselSlide,
   CarouselVariant,
   SlidesAPI,
