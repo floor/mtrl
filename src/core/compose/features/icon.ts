@@ -134,7 +134,7 @@ const createIcon = (
         } else {
           // For 'start' position, insert after any existing label
           const labelElement = element.querySelector(
-            `[class*="${PREFIX}-${config.componentName || "component"}-label"]`,
+            `[class*="${PREFIX}-${config.componentName || "component"}__label"]`,
           );
           if (labelElement) {
             // Insert after the label

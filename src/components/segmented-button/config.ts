@@ -81,7 +81,7 @@ export const getSegmentConfig = (
     },
     className: [
       `${prefix}-button`, // Base button class
-      `${prefix}-segmented-button-segment`, // Specific segment class
+      `${prefix}-segmented-button__segment`, // Specific segment class
       segment.selected ? `${prefix}-segment--selected` : null, // Selected state
       isDisabled ? `${prefix}-segment--disabled` : null, // Disabled state
       segment.class, // Custom class if provided

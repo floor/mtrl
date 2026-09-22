@@ -113,8 +113,8 @@ export const TEXTFIELD_CLASSES = {
   INPUT: "textfield__input",
   /** Label element class */
   LABEL: "textfield__label",
-  /** Container element class */
-  CONTAINER: "textfield-container",
+  /** Reserved slot; the current component has no separate container element. */
+  CONTAINER: "textfield__container",
   /** Filled variant class */
   FILLED: "textfield--filled",
   /** Outlined variant class */
@@ -130,19 +130,19 @@ export const TEXTFIELD_CLASSES = {
   /** Floating label class */
   LABEL_FLOATING: "textfield__label--floating",
   /** Supporting text class */
-  SUPPORTING_TEXT: "textfield-supporting-text",
+  SUPPORTING_TEXT: "textfield__helper",
   /** Supporting text error class */
-  SUPPORTING_TEXT_ERROR: "textfield-supporting-text--error",
+  SUPPORTING_TEXT_ERROR: "textfield__helper--error",
   /** Leading icon class */
   LEADING_ICON: "textfield__leading-icon",
   /** Trailing icon class */
   TRAILING_ICON: "textfield__trailing-icon",
   /** Prefix text class */
-  PREFIX_TEXT: "textfield-prefix-text",
+  PREFIX_TEXT: "textfield__prefix",
   /** Suffix text class */
-  SUFFIX_TEXT: "textfield-suffix-text",
-  /** Outline element class (for outlined variant) */
-  OUTLINE: "textfield-outline",
+  SUFFIX_TEXT: "textfield__suffix",
+  /** Reserved slot; the current outline is drawn on the root element. */
+  OUTLINE: "textfield__outline",
   /** Multiline class */
   MULTILINE: "textfield--multiline",
 } as const;

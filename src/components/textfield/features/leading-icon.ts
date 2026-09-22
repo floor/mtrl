@@ -98,7 +98,7 @@ export const withLeadingIcon = <T extends LeadingIconConfig & object>(config: T)
       component.element.appendChild(element);
       component.element.classList.add(`${PREFIX}-${NAME}--with-leading-icon`);
       if (component.input) {
-        component.input.classList.add(`${PREFIX}-${NAME}-input--with-leading-icon`);
+        component.input.classList.add(`${PREFIX}-${NAME}__input--with-leading-icon`);
       }
       iconElement = element;
       return element;
@@ -112,7 +112,7 @@ export const withLeadingIcon = <T extends LeadingIconConfig & object>(config: T)
       iconElement = null;
       component.element.classList.remove(`${PREFIX}-${NAME}--with-leading-icon`);
       if (component.input) {
-        component.input.classList.remove(`${PREFIX}-${NAME}-input--with-leading-icon`);
+        component.input.classList.remove(`${PREFIX}-${NAME}__input--with-leading-icon`);
       }
     };
 

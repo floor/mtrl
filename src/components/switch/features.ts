@@ -85,10 +85,10 @@ const ensureSwitchStructure = (
 
     // Find input and track to move them to container
     const input = component.element.querySelector(
-      `.${PREFIX}-${COMPONENT}-input`
+      `.${PREFIX}-${COMPONENT}__input`
     );
     const track = component.element.querySelector(
-      `.${PREFIX}-${COMPONENT}-track`
+      `.${PREFIX}-${COMPONENT}__track`
     );
 
     // Gather all elements except container
@@ -98,7 +98,7 @@ const ensureSwitchStructure = (
 
     // Create content wrapper
     const contentWrapper = document.createElement("div");
-    contentWrapper.className = `${PREFIX}-${COMPONENT}-content`;
+    contentWrapper.className = `${PREFIX}-${COMPONENT}__content`;
 
     // Find label and move to content
     const label = component.element.querySelector(
@@ -122,11 +122,11 @@ const ensureSwitchStructure = (
 
   // Container exists, find or create content wrapper
   let contentWrapper = component.element.querySelector<HTMLElement>(
-    `.${PREFIX}-${COMPONENT}-content`
+    `.${PREFIX}-${COMPONENT}__content`
   );
   if (!contentWrapper) {
     contentWrapper = document.createElement("div");
-    contentWrapper.className = `${PREFIX}-${COMPONENT}-content`;
+    contentWrapper.className = `${PREFIX}-${COMPONENT}__content`;
 
     // Find label to move to content
     const label = component.element.querySelector(

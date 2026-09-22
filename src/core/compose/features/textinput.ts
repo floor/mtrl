@@ -142,7 +142,7 @@ export const withTextInput =
       | HTMLInputElement
       | HTMLTextAreaElement;
 
-    input.className = `${component.getClass("textfield")}-input`;
+    input.className = `${component.getClass("textfield")}__input`;
 
     // Set input attributes
     const attributes: Record<string, string | number | boolean | undefined> = {

@@ -127,7 +127,7 @@ const withOpener =
       return `${classPrefix}-textfield--focused`;
     } else {
       // Default active class for other elements
-      return `${classPrefix}-menu-opener--active`;
+      return `${classPrefix}-menu__opener--active`;
     }
   };
 

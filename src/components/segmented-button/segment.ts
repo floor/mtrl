@@ -78,7 +78,7 @@ export const createSegment = (
   });
 
   // Add segment-specific classes
-  button.element.classList.add(`${prefix}-segmented-button-segment`);
+  button.element.classList.add(`${prefix}-segmented-button__segment`);
 
   // Create checkmark element for text-only segments
   // This will be inserted before the text and shown/hidden based on selection
