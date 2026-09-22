@@ -1,5 +1,6 @@
 // src/components/drawer/api.ts
-import { DrawerComponent, DrawerItemConfig } from './types';
+import type { DrawerComponent, DrawerItemConfig, DrawerEvents } from './types';
+import type { EventCallback } from '../../core/state/emitter';
 import { addClass } from '../../core';
 
 /**
@@ -38,8 +39,8 @@ interface ApiOptions {
 interface ComponentWithElements {
   element: HTMLElement;
   getClass: (name: string) => string;
-  on?: (event: string, handler: Function) => unknown;
-  off?: (event: string, handler: Function) => unknown;
+  on?: (event: string, handler: EventCallback) => unknown;
+  off?: (event: string, handler: EventCallback) => unknown;
   addClass?: (...classes: string[]) => unknown;
 }
 
@@ -68,14 +69,14 @@ export const withAPI =
       // Event methods
       // ----------------------------------------------------------------
 
-      on(event: string, handler: Function) {
+      on<K extends keyof DrawerEvents>(event: K, handler: DrawerEvents[K]) {
         if (component.on) {
           component.on(event, handler);
         }
         return drawerComponent;
       },
 
-      off(event: string, handler: Function) {
+      off<K extends keyof DrawerEvents>(event: K, handler: DrawerEvents[K]) {
         if (component.off) {
           component.off(event, handler);
         }

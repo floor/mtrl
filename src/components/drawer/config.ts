@@ -95,7 +95,8 @@ export const getApiConfig = (comp: {
   drawerItems: {
     setActive: (id: string) => void;
     getActive: () => string | null;
-    setItems: (items: DrawerConfig["items"]) => void;
+    // The adapter below normalizes undefined before calling the item feature.
+    setItems: (items: NonNullable<DrawerConfig["items"]>) => void;
     getItems: () => DrawerConfig["items"];
     setBadge: (id: string, badge: string) => void;
     destroy: () => void;

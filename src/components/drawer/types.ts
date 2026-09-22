@@ -1,5 +1,6 @@
 // src/components/drawer/types.ts
 
+import type { ForwardedEventPayload } from "../../core/dom";
 import { BaseComponentConfig } from "../../core/config/component";
 
 /**
@@ -60,6 +61,16 @@ export interface DrawerSelectEvent {
   index: number;
   /** The underlying DOM event */
   originalEvent: Event;
+}
+
+/** Events emitted by drawer state, navigation items and root DOM forwarding. */
+export interface DrawerEvents {
+  open: () => void;
+  close: () => void;
+  /** User activation only; setActive() is silent. */
+  select: (payload: DrawerSelectEvent) => void;
+  click: (payload: ForwardedEventPayload<MouseEvent, HTMLElement>) => void;
+  keydown: (payload: ForwardedEventPayload<KeyboardEvent, HTMLElement>) => void;
 }
 
 /**
@@ -255,7 +266,7 @@ export interface DrawerComponent {
    * @param handler - Event handler function
    * @returns The drawer component for chaining
    */
-  on: (event: string, handler: Function) => DrawerComponent;
+  on: <K extends keyof DrawerEvents>(event: K, handler: DrawerEvents[K]) => DrawerComponent;
 
   /**
    * Removes an event listener
@@ -263,7 +274,7 @@ export interface DrawerComponent {
    * @param handler - Event handler function
    * @returns The drawer component for chaining
    */
-  off: (event: string, handler: Function) => DrawerComponent;
+  off: <K extends keyof DrawerEvents>(event: K, handler: DrawerEvents[K]) => DrawerComponent;
 
   /**
    * Adds CSS classes to the drawer element
