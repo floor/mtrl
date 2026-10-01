@@ -280,6 +280,9 @@ Earlier versions are in the [git history](https://github.com/floor/mtrl/commits/
 
 ### Fixed
 
+- CI's `static` job prints the output of a failing check again. Under the job's shell a failing
+  check ended before its status was recorded, and the step stopped with "exit code 1" and nothing
+  else, so the failure could not be read from CI.
 - The search check in `core:check` no longer times out when a frame arrives late (FLO-420). It
   pressed the scrim before the view's opening had put focus back on the input, and that focus
   re-opened the view. The check now waits for the opening's frame, and reads the scrim press at
