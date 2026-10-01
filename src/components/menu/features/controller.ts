@@ -15,6 +15,7 @@ import { menuOpened, menuClosed } from "./registry";
 import { eventWithin } from "./layer";
 import { createSubmenuLoader, hasNestedItems, MenuSubmenuApi } from "./loader";
 import { onTopLayerClose, showInTopLayer } from "../../../core/dom/layer";
+import { getCleanup } from "../../../core/compose/cleanup";
 
 import { setHTML } from "../../../core/dom/html";
 
@@ -40,6 +41,26 @@ const withController =
   // type a union of enhanced and not, which collapsed to C and erased this
   // feature from the pipeline type. The host type requires the element.
   const tasks = createMenuTasks();
+  const resources = getCleanup(component);
+  // Listeners on the items the last render created. setItems replaces the
+  // elements and used to leave the previous ones registered (FLO-408): click,
+  // keydown and focus on every enabled item, and hover where a submenu opens
+  // on hover. Removed with the component, and again before the next render.
+  const itemListeners: Array<() => void> = [];
+  const listen = <T extends Event>(
+    element: HTMLElement,
+    type: string,
+    handler: (event: T) => void,
+  ): void => {
+    const listener = handler as EventListener;
+    element.addEventListener(type, listener);
+    itemListeners.push(() => element.removeEventListener(type, listener));
+  };
+  const releaseItemListeners = (): void => {
+    const remove = itemListeners.splice(0);
+    for (const release of remove) release();
+  };
+  resources.add(releaseItemListeners);
 
   // Nested menus are a lazy chunk (FLO-310): a menu without nested items never
   // loads it, and one with them starts the load now, so it is normally there
@@ -214,15 +235,14 @@ const withController =
 
     itemElement.appendChild(contentContainer);
 
-    // Add event listeners
+    // Kept so the next render can remove them. The elements are replaced.
     if (!item.disabled) {
-      // Mouse events
-      itemElement.addEventListener("click", (e) =>
+      listen(itemElement, "click", (e: MouseEvent) =>
         handleItemClick(e, item, index),
       );
 
       // Additional keyboard event handler for accessibility
-      itemElement.addEventListener("keydown", (e) => {
+      listen(itemElement, "keydown", (e: KeyboardEvent) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
           handleItemClick(e, item, index);
@@ -230,19 +250,19 @@ const withController =
       });
 
       // Focus handling
-      itemElement.addEventListener("focus", () => {
+      listen(itemElement, "focus", () => {
         state.activeItemIndex = index;
       });
 
       if (item.hasSubmenu && config.openSubmenuOnHover) {
         // Use submenu feature for hover handling
-        itemElement.addEventListener("mouseenter", () => {
+        listen(itemElement, "mouseenter", () => {
           submenu.handleSubmenuHover(item, index, itemElement);
         });
 
         // handleSubmenuLeave takes no parameters -- the event was being
         // passed and silently discarded.
-        itemElement.addEventListener("mouseleave", () => {
+        listen(itemElement, "mouseleave", () => {
           submenu.handleSubmenuLeave();
         });
       }
@@ -271,6 +291,8 @@ const withController =
    * Renders the menu items
    */
   const renderMenuItems = (): void => {
+    // The previous items' listeners, before their elements are dropped.
+    releaseItemListeners();
     const menuList = document.createElement("ul");
     menuList.className = `${component.getClass("menu__list")}`;
     menuList.setAttribute("role", listbox ? "listbox" : "menu");
@@ -873,6 +895,8 @@ const withController =
       isOpen: () => state.visible,
 
       setItems: (items: MenuContent[]) => {
+        // An open submenu still shows the items being replaced.
+        submenu.closeAllSubmenus();
         state.items = items;
         if (hasNestedItems(items)) loader.load();
         renderMenuItems();

@@ -149,7 +149,7 @@ export const BUDGET_BYTES: Record<ScenarioName, number> = {
   "split-button": kb(17.9), // the menu's top layer: 17,644 to 18,122; the menu's positionTarget (FLO-300): 18,228
   radios: kb(5.1),
   search: kb(10.3), // the open view in the top layer (FLO-285): 9,759; combobox, contained and divided (FLO-286, FLO-287): 10,114; minWidth and maxWidth (FLO-290): 10,161; trailing items, avatar, supporting text, reopening (FLO-291): 10,477
-  select: kb(20.3), // the menu's top layer: 19,600 to 20,115; the field, the supporting text row and the counter (FLO-300): 20,608
+  select: kb(20.4), // the menu's top layer: 19,600 to 20,115; the field, the supporting text row and the counter (FLO-300): 20,608; item listeners removed on setOptions (FLO-408): 20,810
   "segmented-button": kb(9.3),
   slider: kb(12.7), // FLO-249..255 slider conformance; FLO-331 the track corner token (12,918 measured)
   // layer: "top", the core/dom top-layer helper and the modal-dialog placement, which

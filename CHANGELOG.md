@@ -82,6 +82,11 @@ Earlier versions are in the [git history](https://github.com/floor/mtrl/commits/
 
 ### Fixed
 
+- **Select: `setOptions` no longer leaks the previous options' listeners (FLO-408).**
+  Each enabled menu item kept its `click`, `keydown` and `focus` listeners when the
+  list was replaced, and a submenu item kept its hover listeners too. They are removed
+  before the new items are drawn. The selected value, and whether the menu is open,
+  are unchanged.
 - **Progress and loading indicators draw the theme of the section they're in, not only the
   page's (FLO-389).** The progress canvas read its colours from `<body>` and `:root`, so in a
   themed section, a card or a dark panel it drew the page's colours: light ones in a dark section.
