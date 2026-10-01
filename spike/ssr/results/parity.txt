@@ -1,0 +1,36 @@
+button             sync: attr-order settled: attr-order
+switch             sync: ids        settled: ids       
+tabs               sync: style      settled: differs     2 lines differ
+progress           sync: differs    settled: differs     2 lines differ
+loading-indicator  sync: differs    settled: differs     2 lines differ
+badge              sync: attr-order settled: attr-order
+divider            sync: style      settled: style     
+icon-button        sync: attr-order settled: attr-order
+fab                sync: attr-order settled: attr-order
+extended-fab       sync: attr-order settled: attr-order
+checkbox           sync: ids        settled: ids       
+slider             sync: style      settled: differs     6 lines differ
+textfield          sync: ids        settled: ids       
+radios             sync: state      settled: state     
+navigation-rail    sync: style      settled: style     
+drawer             sync: style      settled: style     
+top-app-bar        sync: attr-order settled: attr-order
+bottom-app-bar     sync: attr-order settled: attr-order
+button-group       sync: style      settled: style     
+chips              sync: attr-order settled: attr-order
+list               sync: attr-order settled: attr-order
+card               sync: attr-order settled: attr-order
+carousel           sync: attr-order settled: differs     13 lines differ
+menu               sync: ids        settled: differs     9 lines differ
+fab-menu           sync: differs    settled: differs     4 lines differ
+select             sync: ids        settled: ids       
+split-button       sync: ids        settled: ids       
+tooltip            sync: ids        settled: ids       
+toolbar            sync: attr-order settled: attr-order
+snackbar           sync: attr-order settled: attr-order
+dialog             sync: style      settled: style     
+bottom-sheet       sync: ids        settled: ids       
+side-sheet         sync: ids        settled: ids       
+datepicker         sync: state      settled: state     
+timepicker         sync: whitespace settled: whitespace
+search             sync: style      settled: differs     7 lines differ

@@ -1,0 +1,267 @@
+{
+  "chromium": {
+    "reference": "upgraded, settled",
+    "noJs": {
+      "changedPctVsReference": 0,
+      "requests": {
+        "/css/host-button.css": 1,
+        "/css/ripple.css": 1,
+        "/css/progress.css": 1,
+        "/css/button.css": 1,
+        "/css/host-switch.css": 1,
+        "/css/switch.css": 1
+      }
+    },
+    "delay1500-none": {
+      "earlyScreenshotDoneMs": 325,
+      "earlyChangedPctVsReference": 12.232,
+      "afterLoadChangedPctVsReference": 0,
+      "paints": [
+        {
+          "name": "first-paint",
+          "t": 16
+        },
+        {
+          "name": "first-contentful-paint",
+          "t": 16
+        }
+      ],
+      "requests": {
+        "/css/host-button.css": 1,
+        "/css/ripple.css": 1,
+        "/css/progress.css": 1,
+        "/css/button.css": 1,
+        "/css/host-switch.css": 1,
+        "/css/switch.css": 1
+      }
+    },
+    "delay1500-preload": {
+      "earlyScreenshotDoneMs": 325,
+      "earlyChangedPctVsReference": 12.232,
+      "afterLoadChangedPctVsReference": 0,
+      "paints": [
+        {
+          "name": "first-paint",
+          "t": 16
+        },
+        {
+          "name": "first-contentful-paint",
+          "t": 16
+        }
+      ],
+      "requests": {
+        "/css/host-button.css": 1,
+        "/css/ripple.css": 1,
+        "/css/progress.css": 1,
+        "/css/button.css": 1,
+        "/css/host-switch.css": 1,
+        "/css/switch.css": 1
+      }
+    },
+    "delay1500-stylesheet": {
+      "earlyScreenshotDoneMs": 1525,
+      "earlyChangedPctVsReference": 0,
+      "afterLoadChangedPctVsReference": 0,
+      "paints": [
+        {
+          "name": "first-paint",
+          "t": 1516
+        },
+        {
+          "name": "first-contentful-paint",
+          "t": 1516
+        }
+      ],
+      "requests": {
+        "/css/host-button.css": 1,
+        "/css/ripple.css": 1,
+        "/css/progress.css": 1,
+        "/css/button.css": 1,
+        "/css/host-switch.css": 1,
+        "/css/switch.css": 1
+      }
+    },
+    "delay1500-inline": {
+      "earlyScreenshotDoneMs": 342,
+      "earlyChangedPctVsReference": 0,
+      "afterLoadChangedPctVsReference": 0,
+      "paints": [
+        {
+          "name": "first-paint",
+          "t": 20
+        },
+        {
+          "name": "first-contentful-paint",
+          "t": 20
+        }
+      ],
+      "requests": {}
+    }
+  },
+  "firefox": {
+    "reference": "upgraded, settled",
+    "noJs": {
+      "changedPctVsReference": 0,
+      "requests": {
+        "/css/host-button.css": 1,
+        "/css/ripple.css": 1,
+        "/css/progress.css": 1,
+        "/css/button.css": 1,
+        "/css/host-switch.css": 1,
+        "/css/switch.css": 1
+      }
+    },
+    "delay1500-none": {
+      "earlyScreenshotDoneMs": 1565,
+      "earlyChangedPctVsReference": 0,
+      "afterLoadChangedPctVsReference": 0,
+      "paints": [
+        {
+          "name": "first-contentful-paint",
+          "t": 1544
+        }
+      ],
+      "requests": {
+        "/css/host-button.css": 1,
+        "/css/ripple.css": 1,
+        "/css/host-switch.css": 1,
+        "/css/button.css": 1,
+        "/css/progress.css": 1,
+        "/css/switch.css": 1
+      }
+    },
+    "delay1500-preload": {
+      "earlyScreenshotDoneMs": 1566,
+      "earlyChangedPctVsReference": 0,
+      "afterLoadChangedPctVsReference": 0,
+      "paints": [
+        {
+          "name": "first-contentful-paint",
+          "t": 1546
+        }
+      ],
+      "requests": {
+        "/css/host-button.css": 1,
+        "/css/ripple.css": 1,
+        "/css/button.css": 1,
+        "/css/progress.css": 1,
+        "/css/host-switch.css": 1,
+        "/css/switch.css": 1
+      }
+    },
+    "delay1500-stylesheet": {
+      "earlyScreenshotDoneMs": 1542,
+      "earlyChangedPctVsReference": 0,
+      "afterLoadChangedPctVsReference": 0,
+      "paints": [
+        {
+          "name": "first-contentful-paint",
+          "t": 1524
+        }
+      ],
+      "requests": {
+        "/css/button.css": 1,
+        "/css/progress.css": 1,
+        "/css/ripple.css": 1,
+        "/css/host-button.css": 1,
+        "/css/host-switch.css": 1,
+        "/css/switch.css": 1
+      }
+    },
+    "delay1500-inline": {
+      "earlyScreenshotDoneMs": 342,
+      "earlyChangedPctVsReference": 0,
+      "afterLoadChangedPctVsReference": 0,
+      "paints": [
+        {
+          "name": "first-contentful-paint",
+          "t": 51
+        }
+      ],
+      "requests": {}
+    }
+  },
+  "webkit": {
+    "reference": "upgraded, settled",
+    "noJs": {
+      "changedPctVsReference": 0,
+      "requests": {
+        "/css/host-button.css": 1,
+        "/css/switch.css": 1,
+        "/css/ripple.css": 1,
+        "/css/progress.css": 1,
+        "/css/button.css": 1,
+        "/css/host-switch.css": 1
+      }
+    },
+    "delay1500-none": {
+      "earlyScreenshotDoneMs": 1533,
+      "earlyChangedPctVsReference": 12.631,
+      "afterLoadChangedPctVsReference": 0,
+      "paints": [
+        {
+          "name": "first-contentful-paint",
+          "t": 1520
+        }
+      ],
+      "requests": {
+        "/css/host-button.css": 1,
+        "/css/switch.css": 1,
+        "/css/ripple.css": 1,
+        "/css/progress.css": 1,
+        "/css/button.css": 1,
+        "/css/host-switch.css": 1
+      }
+    },
+    "delay1500-preload": {
+      "earlyScreenshotDoneMs": 1543,
+      "earlyChangedPctVsReference": 12.631,
+      "afterLoadChangedPctVsReference": 0,
+      "paints": [
+        {
+          "name": "first-contentful-paint",
+          "t": 1530
+        }
+      ],
+      "requests": {
+        "/css/host-button.css": 1,
+        "/css/switch.css": 1,
+        "/css/ripple.css": 1,
+        "/css/progress.css": 1,
+        "/css/button.css": 1,
+        "/css/host-switch.css": 1
+      }
+    },
+    "delay1500-stylesheet": {
+      "earlyScreenshotDoneMs": 1534,
+      "earlyChangedPctVsReference": 12.648,
+      "afterLoadChangedPctVsReference": 0,
+      "paints": [
+        {
+          "name": "first-contentful-paint",
+          "t": 1521
+        }
+      ],
+      "requests": {
+        "/css/host-button.css": 1,
+        "/css/switch.css": 1,
+        "/css/ripple.css": 1,
+        "/css/progress.css": 1,
+        "/css/button.css": 1,
+        "/css/host-switch.css": 1
+      }
+    },
+    "delay1500-inline": {
+      "earlyScreenshotDoneMs": 316,
+      "earlyChangedPctVsReference": 0,
+      "afterLoadChangedPctVsReference": 0,
+      "paints": [
+        {
+          "name": "first-contentful-paint",
+          "t": 44
+        }
+      ],
+      "requests": {}
+    }
+  }
+}

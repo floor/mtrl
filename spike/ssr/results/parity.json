@@ -1,0 +1,659 @@
+{
+  "errors": [],
+  "results": [
+    {
+      "element": "button",
+      "sync": "attr-order",
+      "settled": "attr-order",
+      "syncNeeds": [
+        "raw"
+      ],
+      "settledNeeds": [
+        "raw"
+      ],
+      "diff": [],
+      "syncDiff": []
+    },
+    {
+      "element": "switch",
+      "sync": "ids",
+      "settled": "ids",
+      "syncNeeds": [
+        "raw",
+        "attr-order",
+        "style"
+      ],
+      "settledNeeds": [
+        "raw",
+        "attr-order",
+        "style"
+      ],
+      "diff": [],
+      "syncDiff": []
+    },
+    {
+      "element": "tabs",
+      "sync": "style",
+      "settled": "differs",
+      "syncNeeds": [
+        "raw",
+        "attr-order"
+      ],
+      "settledNeeds": [
+        "raw",
+        "attr-order",
+        "style",
+        "ids",
+        "whitespace",
+        "state"
+      ],
+      "diff": [
+        "+ browser: <div class=\"mtrl-tabs__indicator\" part=\"indicator\" style=\"width: 39.1406px; height: 3px; transform: translateX(77.4219px);\">",
+        "- server:  <div class=\"mtrl-tabs__indicator\" part=\"indicator\" style=\"width: 40px; height: 3px;\">"
+      ],
+      "syncDiff": []
+    },
+    {
+      "element": "progress",
+      "sync": "differs",
+      "settled": "differs",
+      "syncNeeds": [
+        "raw",
+        "attr-order",
+        "style",
+        "ids",
+        "whitespace",
+        "state"
+      ],
+      "settledNeeds": [
+        "raw",
+        "attr-order",
+        "style",
+        "ids",
+        "whitespace",
+        "state"
+      ],
+      "diff": [
+        "+ browser: <canvas aria-hidden=\"true\" class=\"mtrl-progress__canvas\" height=\"4\" part=\"canvas\" style=\"width: 360px; height: 4px;\" width=\"360\">",
+        "- server:  <canvas aria-hidden=\"true\" class=\"mtrl-progress__canvas\" part=\"canvas\">"
+      ],
+      "syncDiff": [
+        "+ browser: <canvas aria-hidden=\"true\" class=\"mtrl-progress__canvas\" height=\"4\" part=\"canvas\" style=\"width: 0px; height: 4px;\" width=\"0\">",
+        "- server:  <canvas aria-hidden=\"true\" class=\"mtrl-progress__canvas\" part=\"canvas\">"
+      ]
+    },
+    {
+      "element": "loading-indicator",
+      "sync": "differs",
+      "settled": "differs",
+      "syncNeeds": [
+        "raw",
+        "attr-order",
+        "style",
+        "ids",
+        "whitespace",
+        "state"
+      ],
+      "settledNeeds": [
+        "raw",
+        "attr-order",
+        "style",
+        "ids",
+        "whitespace",
+        "state"
+      ],
+      "diff": [
+        "+ browser: <canvas aria-hidden=\"true\" class=\"mtrl-loading-indicator__canvas\" height=\"48\" part=\"canvas\" style=\"width: 48px; height: 48px;\" width=\"48\">",
+        "- server:  <canvas aria-hidden=\"true\" class=\"mtrl-loading-indicator__canvas\" part=\"canvas\">"
+      ],
+      "syncDiff": [
+        "+ browser: <canvas aria-hidden=\"true\" class=\"mtrl-loading-indicator__canvas\" height=\"48\" part=\"canvas\" style=\"width: 48px; height: 48px;\" width=\"48\">",
+        "- server:  <canvas aria-hidden=\"true\" class=\"mtrl-loading-indicator__canvas\" part=\"canvas\">"
+      ]
+    },
+    {
+      "element": "badge",
+      "sync": "attr-order",
+      "settled": "attr-order",
+      "syncNeeds": [
+        "raw"
+      ],
+      "settledNeeds": [
+        "raw"
+      ],
+      "diff": [],
+      "syncDiff": []
+    },
+    {
+      "element": "divider",
+      "sync": "style",
+      "settled": "style",
+      "syncNeeds": [
+        "raw",
+        "attr-order"
+      ],
+      "settledNeeds": [
+        "raw",
+        "attr-order"
+      ],
+      "diff": [],
+      "syncDiff": []
+    },
+    {
+      "element": "icon-button",
+      "sync": "attr-order",
+      "settled": "attr-order",
+      "syncNeeds": [
+        "raw"
+      ],
+      "settledNeeds": [
+        "raw"
+      ],
+      "diff": [],
+      "syncDiff": []
+    },
+    {
+      "element": "fab",
+      "sync": "attr-order",
+      "settled": "attr-order",
+      "syncNeeds": [
+        "raw"
+      ],
+      "settledNeeds": [
+        "raw"
+      ],
+      "diff": [],
+      "syncDiff": []
+    },
+    {
+      "element": "extended-fab",
+      "sync": "attr-order",
+      "settled": "attr-order",
+      "syncNeeds": [
+        "raw"
+      ],
+      "settledNeeds": [
+        "raw"
+      ],
+      "diff": [],
+      "syncDiff": []
+    },
+    {
+      "element": "checkbox",
+      "sync": "ids",
+      "settled": "ids",
+      "syncNeeds": [
+        "raw",
+        "attr-order",
+        "style"
+      ],
+      "settledNeeds": [
+        "raw",
+        "attr-order",
+        "style"
+      ],
+      "diff": [],
+      "syncDiff": []
+    },
+    {
+      "element": "slider",
+      "sync": "style",
+      "settled": "differs",
+      "syncNeeds": [
+        "raw",
+        "attr-order"
+      ],
+      "settledNeeds": [
+        "raw",
+        "attr-order",
+        "style",
+        "ids",
+        "whitespace",
+        "state"
+      ],
+      "diff": [
+        "+ browser: <div class=\"mtrl-slider__segment mtrl-slider__segment--active\" part=\"segment\" style=\"left: 0px; width: 136px;\">",
+        "+ browser: <div class=\"mtrl-slider__segment\" part=\"segment\" style=\"left: 152px; width: 208px;\">",
+        "- server:  <div class=\"mtrl-slider__segment mtrl-slider__segment--active\" part=\"segment\" style=\"left: 0px; width: 72px;\">",
+        "- server:  <div class=\"mtrl-slider__segment\" part=\"segment\" style=\"left: 88px; width: 112px;\">",
+        "+ browser: <div class=\"mtrl-slider__dot\" part=\"dot\" style=\"left: 350px;\">",
+        "- server:  <div class=\"mtrl-slider__dot\" part=\"dot\" style=\"left: 190px;\">"
+      ],
+      "syncDiff": []
+    },
+    {
+      "element": "textfield",
+      "sync": "ids",
+      "settled": "ids",
+      "syncNeeds": [
+        "raw",
+        "attr-order",
+        "style"
+      ],
+      "settledNeeds": [
+        "raw",
+        "attr-order",
+        "style"
+      ],
+      "diff": [],
+      "syncDiff": []
+    },
+    {
+      "element": "radios",
+      "sync": "state",
+      "settled": "state",
+      "syncNeeds": [
+        "raw",
+        "attr-order",
+        "style",
+        "ids",
+        "whitespace"
+      ],
+      "settledNeeds": [
+        "raw",
+        "attr-order",
+        "style",
+        "ids",
+        "whitespace"
+      ],
+      "diff": [],
+      "syncDiff": []
+    },
+    {
+      "element": "navigation-rail",
+      "sync": "style",
+      "settled": "style",
+      "syncNeeds": [
+        "raw",
+        "attr-order"
+      ],
+      "settledNeeds": [
+        "raw",
+        "attr-order"
+      ],
+      "diff": [],
+      "syncDiff": []
+    },
+    {
+      "element": "drawer",
+      "sync": "style",
+      "settled": "style",
+      "syncNeeds": [
+        "raw",
+        "attr-order"
+      ],
+      "settledNeeds": [
+        "raw",
+        "attr-order"
+      ],
+      "diff": [],
+      "syncDiff": []
+    },
+    {
+      "element": "top-app-bar",
+      "sync": "attr-order",
+      "settled": "attr-order",
+      "syncNeeds": [
+        "raw"
+      ],
+      "settledNeeds": [
+        "raw"
+      ],
+      "diff": [],
+      "syncDiff": []
+    },
+    {
+      "element": "bottom-app-bar",
+      "sync": "attr-order",
+      "settled": "attr-order",
+      "syncNeeds": [
+        "raw"
+      ],
+      "settledNeeds": [
+        "raw"
+      ],
+      "diff": [],
+      "syncDiff": []
+    },
+    {
+      "element": "button-group",
+      "sync": "style",
+      "settled": "style",
+      "syncNeeds": [
+        "raw",
+        "attr-order"
+      ],
+      "settledNeeds": [
+        "raw",
+        "attr-order"
+      ],
+      "diff": [],
+      "syncDiff": []
+    },
+    {
+      "element": "chips",
+      "sync": "attr-order",
+      "settled": "attr-order",
+      "syncNeeds": [
+        "raw"
+      ],
+      "settledNeeds": [
+        "raw"
+      ],
+      "diff": [],
+      "syncDiff": []
+    },
+    {
+      "element": "list",
+      "sync": "attr-order",
+      "settled": "attr-order",
+      "syncNeeds": [
+        "raw"
+      ],
+      "settledNeeds": [
+        "raw"
+      ],
+      "diff": [],
+      "syncDiff": []
+    },
+    {
+      "element": "card",
+      "sync": "attr-order",
+      "settled": "attr-order",
+      "syncNeeds": [
+        "raw"
+      ],
+      "settledNeeds": [
+        "raw"
+      ],
+      "diff": [],
+      "syncDiff": []
+    },
+    {
+      "element": "carousel",
+      "sync": "attr-order",
+      "settled": "differs",
+      "syncNeeds": [
+        "raw"
+      ],
+      "settledNeeds": [
+        "raw",
+        "attr-order",
+        "style",
+        "ids",
+        "whitespace",
+        "state"
+      ],
+      "diff": [
+        "+ browser: <div aria-label=\"Photos\" aria-roledescription=\"carousel\" class=\"mtrl-carousel mtrl-carousel--multi-browse mtrl-carousel--snap\" part=\"carousel\" role=\"region\" style=\"--mtrl-carousel-corner: var(--mtrl-sys-shape-corner-extra-large, 28px);\">",
+        "- server:  <div aria-label=\"Photos\" aria-roledescription=\"carousel\" class=\"mtrl-carousel mtrl-carousel--multi-browse mtrl-carousel--snap\" part=\"carousel\" role=\"region\">",
+        "+ browser: <div class=\"mtrl-carousel__track\" part=\"track\" style=\"width: 904px;\">",
+        "+ browser: <div aria-label=\"1 of 3\" aria-roledescription=\"slide\" class=\"mtrl-carousel__item\" data-index=\"0\" part=\"item\" role=\"group\" style=\"width: 296px; transform: translate3d(12px, 0px, 0px); clip-path: inset(0 4px round var(--mtrl-sys-shape-corner-extra-large, 28px)); --mtrl-carousel-fade: 0.973;\" tabindex=\"0\">",
+        "- server:  <div class=\"mtrl-carousel__track\" part=\"track\">",
+        "- server:  <div aria-label=\"1 of 3\" aria-roledescription=\"slide\" class=\"mtrl-carousel__item\" data-index=\"0\" part=\"item\" role=\"group\" tabindex=\"0\">",
+        "+ browser: <div aria-label=\"2 of 3\" aria-roledescription=\"slide\" class=\"mtrl-carousel__item\" data-index=\"1\" part=\"item\" role=\"group\" style=\"width: 296px; transform: translate3d(188px, 0px, 0px); clip-path: inset(0 124px round var(--mtrl-sys-shape-corner-extra-large, 28px)); --mtrl-carousel-fade: 0.156;\" tabindex=\"0\">",
+        "- server:  <div aria-label=\"2 of 3\" aria-roledescription=\"slide\" class=\"mtrl-carousel__item\" data-index=\"1\" part=\"item\" role=\"group\" tabindex=\"0\">",
+        "+ browser: <div aria-label=\"3 of 3\" aria-roledescription=\"slide\" class=\"mtrl-carousel__item\" data-index=\"2\" part=\"item\" role=\"group\" style=\"width: 296px; transform: translate3d(221px, 0px, 0px); clip-path: inset(0 147px round var(--mtrl-sys-shape-corner-extra-large, 28px)); --mtrl-carousel-fade: 0.000;\" tabindex=\"0\">",
+        "- server:  <div aria-label=\"3 of 3\" aria-roledescription=\"slide\" class=\"mtrl-carousel__item\" data-index=\"2\" part=\"item\" role=\"group\" tabindex=\"0\">",
+        "+ browser: <div class=\"mtrl-carousel__snap\" part=\"snap\" style=\"left: 0px;\">",
+        "+ browser: <div class=\"mtrl-carousel__snap\" part=\"snap\" style=\"left: 304px;\">",
+        "+ browser: <div class=\"mtrl-carousel__snap\" part=\"snap\" style=\"left: 544px;\">"
+      ],
+      "syncDiff": []
+    },
+    {
+      "element": "menu",
+      "sync": "ids",
+      "settled": "differs",
+      "syncNeeds": [
+        "raw",
+        "attr-order",
+        "style"
+      ],
+      "settledNeeds": [
+        "raw",
+        "attr-order",
+        "style",
+        "ids",
+        "whitespace",
+        "state"
+      ],
+      "diff": [
+        "+ browser: <ul class=\"mtrl-menu__list\" part=\"list\" role=\"menu\">",
+        "+ browser: <li aria-disabled=\"false\" aria-selected=\"false\" class=\"mtrl-menu__item\" data-id=\"a\" data-index=\"0\" part=\"item\" role=\"menuitem\" tabindex=\"0\">",
+        "+ browser: <span class=\"mtrl-menu__item-content\" part=\"item-content\">",
+        "+ browser: <span class=\"mtrl-menu__item-text\" part=\"item-text\">",
+        "+ browser: #text \"Copy\"",
+        "+ browser: <li aria-disabled=\"false\" aria-selected=\"false\" class=\"mtrl-menu__item\" data-id=\"b\" data-index=\"1\" part=\"item\" role=\"menuitem\" tabindex=\"-1\">",
+        "+ browser: <span class=\"mtrl-menu__item-content\" part=\"item-content\">",
+        "+ browser: <span class=\"mtrl-menu__item-text\" part=\"item-text\">",
+        "+ browser: #text \"Paste\""
+      ],
+      "syncDiff": []
+    },
+    {
+      "element": "fab-menu",
+      "sync": "differs",
+      "settled": "differs",
+      "syncNeeds": [
+        "raw",
+        "attr-order",
+        "style",
+        "ids",
+        "whitespace",
+        "state"
+      ],
+      "settledNeeds": [
+        "raw",
+        "attr-order",
+        "style",
+        "ids",
+        "whitespace",
+        "state"
+      ],
+      "diff": [
+        "+ browser: <div class=\"mtrl-fab-menu mtrl-fab-menu--primary mtrl-fab-menu--default mtrl-fab-menu--menu\" part=\"fab-menu\">",
+        "+ browser: <button aria-controls=\"ID1\" aria-expanded=\"false\" aria-haspopup=\"true\" aria-label=\"Compose\" class=\"mtrl-fab mtrl-fab-menu__fab mtrl-fab--default mtrl-fab--primary-container\" id=\"mtrl-fab-menu-1-fab\" part=\"fab\" type=\"button\">",
+        "- server:  <div class=\"mtrl-fab-menu mtrl-fab-menu--primary mtrl-fab-menu--default mtrl-fab-menu--list\" part=\"fab-menu\">",
+        "- server:  <button aria-controls=\"mtrl-fab-menu-1-list\" aria-expanded=\"false\" aria-haspopup=\"menu\" aria-label=\"Compose\" class=\"mtrl-fab mtrl-fab-menu__fab mtrl-fab--default mtrl-fab--primary-container\" id=\"mtrl-fab-menu-1-fab\" part=\"fab\" type=\"button\">"
+      ],
+      "syncDiff": [
+        "+ browser: <div class=\"mtrl-fab-menu mtrl-fab-menu--primary mtrl-fab-menu--default mtrl-fab-menu--menu\" part=\"fab-menu\">",
+        "- server:  <div class=\"mtrl-fab-menu mtrl-fab-menu--primary mtrl-fab-menu--default mtrl-fab-menu--list\" part=\"fab-menu\">"
+      ]
+    },
+    {
+      "element": "select",
+      "sync": "ids",
+      "settled": "ids",
+      "syncNeeds": [
+        "raw",
+        "attr-order",
+        "style"
+      ],
+      "settledNeeds": [
+        "raw",
+        "attr-order",
+        "style"
+      ],
+      "diff": [],
+      "syncDiff": []
+    },
+    {
+      "element": "split-button",
+      "sync": "ids",
+      "settled": "ids",
+      "syncNeeds": [
+        "raw",
+        "attr-order",
+        "style"
+      ],
+      "settledNeeds": [
+        "raw",
+        "attr-order",
+        "style"
+      ],
+      "diff": [],
+      "syncDiff": []
+    },
+    {
+      "element": "tooltip",
+      "sync": "ids",
+      "settled": "ids",
+      "syncNeeds": [
+        "raw",
+        "attr-order",
+        "style"
+      ],
+      "settledNeeds": [
+        "raw",
+        "attr-order",
+        "style"
+      ],
+      "diff": [],
+      "syncDiff": []
+    },
+    {
+      "element": "toolbar",
+      "sync": "attr-order",
+      "settled": "attr-order",
+      "syncNeeds": [
+        "raw"
+      ],
+      "settledNeeds": [
+        "raw"
+      ],
+      "diff": [],
+      "syncDiff": []
+    },
+    {
+      "element": "snackbar",
+      "sync": "attr-order",
+      "settled": "attr-order",
+      "syncNeeds": [
+        "raw"
+      ],
+      "settledNeeds": [
+        "raw"
+      ],
+      "diff": [],
+      "syncDiff": []
+    },
+    {
+      "element": "dialog",
+      "sync": "style",
+      "settled": "style",
+      "syncNeeds": [
+        "raw",
+        "attr-order"
+      ],
+      "settledNeeds": [
+        "raw",
+        "attr-order"
+      ],
+      "diff": [],
+      "syncDiff": []
+    },
+    {
+      "element": "bottom-sheet",
+      "sync": "ids",
+      "settled": "ids",
+      "syncNeeds": [
+        "raw",
+        "attr-order",
+        "style"
+      ],
+      "settledNeeds": [
+        "raw",
+        "attr-order",
+        "style"
+      ],
+      "diff": [],
+      "syncDiff": []
+    },
+    {
+      "element": "side-sheet",
+      "sync": "ids",
+      "settled": "ids",
+      "syncNeeds": [
+        "raw",
+        "attr-order",
+        "style"
+      ],
+      "settledNeeds": [
+        "raw",
+        "attr-order",
+        "style"
+      ],
+      "diff": [],
+      "syncDiff": []
+    },
+    {
+      "element": "datepicker",
+      "sync": "state",
+      "settled": "state",
+      "syncNeeds": [
+        "raw",
+        "attr-order",
+        "style",
+        "ids",
+        "whitespace"
+      ],
+      "settledNeeds": [
+        "raw",
+        "attr-order",
+        "style",
+        "ids",
+        "whitespace"
+      ],
+      "diff": [],
+      "syncDiff": []
+    },
+    {
+      "element": "timepicker",
+      "sync": "whitespace",
+      "settled": "whitespace",
+      "syncNeeds": [
+        "raw",
+        "attr-order",
+        "style",
+        "ids"
+      ],
+      "settledNeeds": [
+        "raw",
+        "attr-order",
+        "style",
+        "ids"
+      ],
+      "diff": [],
+      "syncDiff": []
+    },
+    {
+      "element": "search",
+      "sync": "style",
+      "settled": "differs",
+      "syncNeeds": [
+        "raw",
+        "attr-order"
+      ],
+      "settledNeeds": [
+        "raw",
+        "attr-order",
+        "style",
+        "ids",
+        "whitespace",
+        "state"
+      ],
+      "diff": [
+        "+ browser: <li aria-selected=\"false\" class=\"mtrl-search__suggestion-item\" data-index=\"0\" data-value=\"apple\" id=\"mtrl-search-1-listbox-0\" part=\"suggestion-item\" role=\"option\" tabindex=\"-1\">",
+        "+ browser: <span class=\"mtrl-search__suggestion-icon\" part=\"suggestion-icon\">",
+        "+ browser: <svg height=\"24\" viewBox=\"0 0 24 24\" width=\"24\" xmlns=\"http://www.w3.org/2000/svg\">",
+        "+ browser: <path d=\"M0 0h24v24H0z\" fill=\"none\">",
+        "+ browser: <path d=\"M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z\">",
+        "+ browser: <span class=\"mtrl-search__suggestion-text\" part=\"suggestion-text\">",
+        "+ browser: #text \"Apple\""
+      ],
+      "syncDiff": []
+    }
+  ]
+}

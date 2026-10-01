@@ -1,0 +1,6 @@
+node_modules/
+out/css/
+out/shots/
+.server-*.js
+.size-*.ts
+results/run-all.log

@@ -1,0 +1,19 @@
+{
+  "timers": 7,
+  "late": [
+    "document is not defined @ /src/components/slider/features/handlers.ts:581 < /src/components/slider/features/controller.ts:407 < /src/components/slider/api.ts:222",
+    "window is not defined @ /src/components/textfield/features/placement.ts:239 < /src/components/textfield/api.ts:333 < /src/elements/define.ts:600",
+    "window is not defined @ /src/components/top-app-bar/top-app-bar.ts:225 < /src/components/top-app-bar/top-app-bar.ts:297 < /src/elements/define.ts:600",
+    "document is not defined @ /src/components/button-group/button-group.ts:175 < /src/components/button-group/button-group.ts:516 < /src/elements/define.ts:600",
+    "window is not defined @ /src/components/carousel/features/scroll.ts:305 < /src/components/carousel/features/scroll.ts:400 < /src/components/carousel/api.ts:52",
+    "document is not defined @ /src/components/menu/features/opener.ts:444 < /src/components/menu/api.ts:241 < /src/elements/define.ts:600",
+    "document is not defined @ /src/components/fab-menu/fab-menu.ts:278 < /src/core/compose/cleanup.ts:25 < /src/core/compose/features/lifecycle.ts:176",
+    "window is not defined @ /src/components/textfield/features/placement.ts:239 < /src/components/textfield/api.ts:333 < /src/components/select/config.ts:65",
+    "document is not defined @ /src/components/menu/features/opener.ts:444 < /src/components/menu/api.ts:241 < /src/components/split-button/api.ts:121",
+    "window is not defined @ /src/components/tooltip/api.ts:521 < /src/elements/define.ts:600 < /src/elements/define.ts:345",
+    "document is not defined @ /src/components/bottom-sheet/features/state.ts:184 < /src/components/bottom-sheet/api.ts:86 < /src/elements/define.ts:600",
+    "document is not defined @ /src/components/side-sheet/features/state.ts:155 < /src/components/side-sheet/api.ts:72 < /src/elements/define.ts:600",
+    "document is not defined @ /src/components/menu/features/controller.ts:274 < /src/components/menu/features/controller.ts:751 < /src/components/menu/features/tasks.ts:23",
+    "document is not defined @ /src/core/dom/create.ts:322 < /src/components/search/features/suggestions.ts:101 < /src/components/search/features/suggestions.ts:201"
+  ]
+}

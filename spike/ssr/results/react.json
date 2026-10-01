@@ -1,0 +1,96 @@
+{
+  "react19": {
+    "templates": 3,
+    "escaped": false,
+    "serverErrors": [],
+    "beforeScript": [
+      {
+        "tag": "m-button",
+        "shadow": true,
+        "templateLeft": false,
+        "firstChild": "mtrl-button mtrl-button--filled mtrl-button--s mtrl-button--round"
+      },
+      {
+        "tag": "m-switch",
+        "shadow": true,
+        "templateLeft": false,
+        "firstChild": "mtrl-switch mtrl-switch--label-start mtrl-switch--checked"
+      },
+      {
+        "tag": "m-tabs",
+        "shadow": true,
+        "templateLeft": false,
+        "firstChild": "mtrl-tabs mtrl-tabs--primary mtrl-tabs--scrollable"
+      }
+    ],
+    "problems": [],
+    "recoverable": [],
+    "count": "1",
+    "hosts": [
+      {
+        "tag": "m-button",
+        "upgraded": true,
+        "links": 0
+      },
+      {
+        "tag": "m-switch",
+        "upgraded": true,
+        "links": 0,
+        "checked": true
+      },
+      {
+        "tag": "m-tabs",
+        "upgraded": true,
+        "links": 0,
+        "value": "a"
+      }
+    ]
+  },
+  "react18": {
+    "templates": 3,
+    "escaped": false,
+    "serverErrors": [],
+    "beforeScript": [
+      {
+        "tag": "m-button",
+        "shadow": true,
+        "templateLeft": false,
+        "firstChild": "mtrl-button mtrl-button--filled mtrl-button--s mtrl-button--round"
+      },
+      {
+        "tag": "m-switch",
+        "shadow": true,
+        "templateLeft": false,
+        "firstChild": "mtrl-switch mtrl-switch--label-start mtrl-switch--checked"
+      },
+      {
+        "tag": "m-tabs",
+        "shadow": true,
+        "templateLeft": false,
+        "firstChild": "mtrl-tabs mtrl-tabs--primary mtrl-tabs--scrollable"
+      }
+    ],
+    "problems": [],
+    "recoverable": [],
+    "count": "1",
+    "hosts": [
+      {
+        "tag": "m-button",
+        "upgraded": true,
+        "links": 0
+      },
+      {
+        "tag": "m-switch",
+        "upgraded": true,
+        "links": 0,
+        "checked": true
+      },
+      {
+        "tag": "m-tabs",
+        "upgraded": true,
+        "links": 0,
+        "value": "a"
+      }
+    ]
+  }
+}

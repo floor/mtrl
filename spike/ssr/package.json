@@ -1,0 +1,12 @@
+{
+  "name": "mtrl-ssr-spike",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "linkedom": "0.18.13"
+  },
+  "devDependencies": {
+    "@types/pngjs": "^6.0.5",
+    "pngjs": "7"
+  }
+}

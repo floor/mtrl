@@ -1,0 +1,6 @@
+{
+  "timers": 7,
+  "late": [
+    "document is not defined @ /src/core/dom/create.ts:322 < /src/components/search/features/suggestions.ts:101 < /src/components/search/features/suggestions.ts:201"
+  ]
+}

@@ -1,0 +1,6 @@
+chromium [{"tag":"x-a","before":"<p>server</p>","same":true,"clearedTo":"","delegatesFocus":true},{"tag":"x-b","before":"<p>server</p>","same":true,"clearedTo":"","delegatesFocus":false}]
+firefox [{"tag":"x-a","before":"<p>server</p>","same":true,"clearedTo":"","delegatesFocus":true},{"tag":"x-b","before":"<p>server</p>","same":true,"clearedTo":"","delegatesFocus":false}]
+webkit [{"tag":"x-a","before":"<p>server</p>","same":true,"clearedTo":"","delegatesFocus":true},{"tag":"x-b","before":"<p>server</p>","same":true,"clearedTo":"","delegatesFocus":false}]
+chromium defined-before-parse {"shadow":"","light":"<template shadowrootmode=\"open\" shadowrootdelegatesfocus=\"\"><p>server</p></template>light","log":[{"phase":"connected","shadow":""}]}
+firefox defined-before-parse {"shadow":"","light":"<template shadowrootmode=\"open\" shadowrootdelegatesfocus=\"\"><p>server</p></template>light","log":[{"phase":"connected","shadow":""}]}
+webkit defined-before-parse {"shadow":"","light":"<template shadowrootmode=\"open\" shadowrootdelegatesfocus=\"\"><p>server</p></template>light","log":[{"phase":"connected","shadow":""}]}

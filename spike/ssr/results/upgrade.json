@@ -1,0 +1,1190 @@
+[
+  {
+    "element": "button",
+    "dst": {
+      "declarativeBefore": {
+        "shadow": true,
+        "links": 4
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 0,
+      "errors": []
+    },
+    "phaseA": {
+      "declarativeBefore": {
+        "shadow": false,
+        "links": 0
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 0,
+      "errors": []
+    }
+  },
+  {
+    "element": "switch",
+    "dst": {
+      "declarativeBefore": {
+        "shadow": true,
+        "links": 3
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 0,
+      "errors": []
+    },
+    "phaseA": {
+      "declarativeBefore": {
+        "shadow": false,
+        "links": 0
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 0.027,
+      "errors": []
+    }
+  },
+  {
+    "element": "tabs",
+    "dst": {
+      "declarativeBefore": {
+        "shadow": true,
+        "links": 6
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 0.158,
+      "errors": []
+    },
+    "phaseA": {
+      "declarativeBefore": {
+        "shadow": false,
+        "links": 0
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 0.585,
+      "errors": []
+    }
+  },
+  {
+    "element": "progress",
+    "dst": {
+      "declarativeBefore": {
+        "shadow": true,
+        "links": 3
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0.0038333333333333336
+      },
+      "changedPct": 1.501,
+      "errors": []
+    },
+    "phaseA": {
+      "declarativeBefore": {
+        "shadow": false,
+        "links": 0
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 0.384,
+      "errors": []
+    }
+  },
+  {
+    "element": "loading-indicator",
+    "dst": {
+      "declarativeBefore": {
+        "shadow": true,
+        "links": 3
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 0.523,
+      "errors": []
+    },
+    "phaseA": {
+      "declarativeBefore": {
+        "shadow": false,
+        "links": 0
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 0.524,
+      "errors": []
+    }
+  },
+  {
+    "element": "badge",
+    "dst": {
+      "declarativeBefore": {
+        "shadow": true,
+        "links": 3
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 0,
+      "errors": []
+    },
+    "phaseA": {
+      "declarativeBefore": {
+        "shadow": false,
+        "links": 0
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 0.141,
+      "errors": []
+    }
+  },
+  {
+    "element": "divider",
+    "dst": {
+      "declarativeBefore": {
+        "shadow": true,
+        "links": 3
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 0,
+      "errors": []
+    },
+    "phaseA": {
+      "declarativeBefore": {
+        "shadow": false,
+        "links": 0
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 0,
+      "errors": []
+    }
+  },
+  {
+    "element": "icon-button",
+    "dst": {
+      "declarativeBefore": {
+        "shadow": true,
+        "links": 3
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 0,
+      "errors": []
+    },
+    "phaseA": {
+      "declarativeBefore": {
+        "shadow": false,
+        "links": 0
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 0.17,
+      "errors": []
+    }
+  },
+  {
+    "element": "fab",
+    "dst": {
+      "declarativeBefore": {
+        "shadow": true,
+        "links": 3
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 0,
+      "errors": []
+    },
+    "phaseA": {
+      "declarativeBefore": {
+        "shadow": false,
+        "links": 0
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 1.029,
+      "errors": []
+    }
+  },
+  {
+    "element": "extended-fab",
+    "dst": {
+      "declarativeBefore": {
+        "shadow": true,
+        "links": 3
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 0,
+      "errors": []
+    },
+    "phaseA": {
+      "declarativeBefore": {
+        "shadow": false,
+        "links": 0
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 1.644,
+      "errors": []
+    }
+  },
+  {
+    "element": "checkbox",
+    "dst": {
+      "declarativeBefore": {
+        "shadow": true,
+        "links": 3
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 0,
+      "errors": []
+    },
+    "phaseA": {
+      "declarativeBefore": {
+        "shadow": false,
+        "links": 0
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 0,
+      "errors": []
+    }
+  },
+  {
+    "element": "slider",
+    "dst": {
+      "declarativeBefore": {
+        "shadow": true,
+        "links": 3
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0.001536
+      },
+      "changedPct": 2.278,
+      "errors": []
+    },
+    "phaseA": {
+      "declarativeBefore": {
+        "shadow": false,
+        "links": 0
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0.001536
+      },
+      "changedPct": 3.576,
+      "errors": []
+    }
+  },
+  {
+    "element": "textfield",
+    "dst": {
+      "declarativeBefore": {
+        "shadow": true,
+        "links": 3
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 0,
+      "errors": []
+    },
+    "phaseA": {
+      "declarativeBefore": {
+        "shadow": false,
+        "links": 0
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 0,
+      "errors": []
+    }
+  },
+  {
+    "element": "radios",
+    "dst": {
+      "declarativeBefore": {
+        "shadow": true,
+        "links": 3
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 0,
+      "errors": []
+    },
+    "phaseA": {
+      "declarativeBefore": {
+        "shadow": false,
+        "links": 0
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 0.924,
+      "errors": []
+    }
+  },
+  {
+    "element": "navigation-rail",
+    "dst": {
+      "declarativeBefore": {
+        "shadow": true,
+        "links": 3
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 0,
+      "errors": []
+    },
+    "phaseA": {
+      "declarativeBefore": {
+        "shadow": false,
+        "links": 0
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 1.805,
+      "errors": []
+    }
+  },
+  {
+    "element": "drawer",
+    "dst": {
+      "declarativeBefore": {
+        "shadow": true,
+        "links": 3
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 0,
+      "errors": []
+    },
+    "phaseA": {
+      "declarativeBefore": {
+        "shadow": false,
+        "links": 0
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 0,
+      "errors": []
+    }
+  },
+  {
+    "element": "top-app-bar",
+    "dst": {
+      "declarativeBefore": {
+        "shadow": true,
+        "links": 3
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 0,
+      "errors": []
+    },
+    "phaseA": {
+      "declarativeBefore": {
+        "shadow": false,
+        "links": 0
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 0.325,
+      "errors": []
+    }
+  },
+  {
+    "element": "bottom-app-bar",
+    "dst": {
+      "declarativeBefore": {
+        "shadow": true,
+        "links": 3
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 0,
+      "errors": []
+    },
+    "phaseA": {
+      "declarativeBefore": {
+        "shadow": false,
+        "links": 0
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 0,
+      "errors": []
+    }
+  },
+  {
+    "element": "button-group",
+    "dst": {
+      "declarativeBefore": {
+        "shadow": true,
+        "links": 6
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 0,
+      "errors": []
+    },
+    "phaseA": {
+      "declarativeBefore": {
+        "shadow": false,
+        "links": 0
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 0.787,
+      "errors": []
+    }
+  },
+  {
+    "element": "chips",
+    "dst": {
+      "declarativeBefore": {
+        "shadow": true,
+        "links": 3
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 0,
+      "errors": []
+    },
+    "phaseA": {
+      "declarativeBefore": {
+        "shadow": false,
+        "links": 0
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 0.924,
+      "errors": []
+    }
+  },
+  {
+    "element": "list",
+    "dst": {
+      "declarativeBefore": {
+        "shadow": true,
+        "links": 3
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 0,
+      "errors": []
+    },
+    "phaseA": {
+      "declarativeBefore": {
+        "shadow": false,
+        "links": 0
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 13.013,
+      "errors": []
+    }
+  },
+  {
+    "element": "card",
+    "dst": {
+      "declarativeBefore": {
+        "shadow": true,
+        "links": 3
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 0,
+      "errors": []
+    },
+    "phaseA": {
+      "declarativeBefore": {
+        "shadow": false,
+        "links": 0
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 1.223,
+      "errors": []
+    }
+  },
+  {
+    "element": "carousel",
+    "dst": {
+      "declarativeBefore": {
+        "shadow": true,
+        "links": 3
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 39.868,
+      "errors": []
+    },
+    "phaseA": {
+      "declarativeBefore": {
+        "shadow": false,
+        "links": 0
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 41.717,
+      "errors": []
+    }
+  },
+  {
+    "element": "menu",
+    "dst": {
+      "declarativeBefore": {
+        "shadow": true,
+        "links": 3
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 0,
+      "errors": []
+    },
+    "phaseA": {
+      "declarativeBefore": {
+        "shadow": false,
+        "links": 0
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 0,
+      "errors": []
+    }
+  },
+  {
+    "element": "fab-menu",
+    "dst": {
+      "declarativeBefore": {
+        "shadow": true,
+        "links": 5
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 0,
+      "errors": []
+    },
+    "phaseA": {
+      "declarativeBefore": {
+        "shadow": false,
+        "links": 0
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 1.029,
+      "errors": []
+    }
+  },
+  {
+    "element": "select",
+    "dst": {
+      "declarativeBefore": {
+        "shadow": true,
+        "links": 5
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 0,
+      "errors": []
+    },
+    "phaseA": {
+      "declarativeBefore": {
+        "shadow": false,
+        "links": 0
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 0.203,
+      "errors": []
+    }
+  },
+  {
+    "element": "split-button",
+    "dst": {
+      "declarativeBefore": {
+        "shadow": true,
+        "links": 6
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 0,
+      "errors": []
+    },
+    "phaseA": {
+      "declarativeBefore": {
+        "shadow": false,
+        "links": 0
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 0.027,
+      "errors": []
+    }
+  },
+  {
+    "element": "tooltip",
+    "dst": {
+      "declarativeBefore": {
+        "shadow": true,
+        "links": 3
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 0,
+      "errors": []
+    },
+    "phaseA": {
+      "declarativeBefore": {
+        "shadow": false,
+        "links": 0
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 0,
+      "errors": []
+    }
+  },
+  {
+    "element": "toolbar",
+    "dst": {
+      "declarativeBefore": {
+        "shadow": true,
+        "links": 4
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 0,
+      "errors": []
+    },
+    "phaseA": {
+      "declarativeBefore": {
+        "shadow": false,
+        "links": 0
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 0.511,
+      "errors": []
+    }
+  },
+  {
+    "element": "snackbar",
+    "dst": {
+      "declarativeBefore": {
+        "shadow": true,
+        "links": 6
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 0,
+      "errors": []
+    },
+    "phaseA": {
+      "declarativeBefore": {
+        "shadow": false,
+        "links": 0
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 0,
+      "errors": []
+    }
+  },
+  {
+    "element": "dialog",
+    "dst": {
+      "declarativeBefore": {
+        "shadow": true,
+        "links": 3
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 0,
+      "errors": []
+    },
+    "phaseA": {
+      "declarativeBefore": {
+        "shadow": false,
+        "links": 0
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 0,
+      "errors": []
+    }
+  },
+  {
+    "element": "bottom-sheet",
+    "dst": {
+      "declarativeBefore": {
+        "shadow": true,
+        "links": 3
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 0,
+      "errors": []
+    },
+    "phaseA": {
+      "declarativeBefore": {
+        "shadow": false,
+        "links": 0
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 0,
+      "errors": []
+    }
+  },
+  {
+    "element": "side-sheet",
+    "dst": {
+      "declarativeBefore": {
+        "shadow": true,
+        "links": 3
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 0,
+      "errors": []
+    },
+    "phaseA": {
+      "declarativeBefore": {
+        "shadow": false,
+        "links": 0
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 0,
+      "errors": []
+    }
+  },
+  {
+    "element": "datepicker",
+    "dst": {
+      "declarativeBefore": {
+        "shadow": true,
+        "links": 3
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 0,
+      "errors": []
+    },
+    "phaseA": {
+      "declarativeBefore": {
+        "shadow": false,
+        "links": 0
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 1.152,
+      "errors": []
+    }
+  },
+  {
+    "element": "timepicker",
+    "dst": {
+      "declarativeBefore": {
+        "shadow": true,
+        "links": 3
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 0,
+      "errors": []
+    },
+    "phaseA": {
+      "declarativeBefore": {
+        "shadow": false,
+        "links": 0
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 0,
+      "errors": []
+    }
+  },
+  {
+    "element": "search",
+    "dst": {
+      "declarativeBefore": {
+        "shadow": true,
+        "links": 3
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 0,
+      "errors": []
+    },
+    "phaseA": {
+      "declarativeBefore": {
+        "shadow": false,
+        "links": 0
+      },
+      "after": {
+        "defined": true,
+        "upgraded": true,
+        "links": 0,
+        "children": 1,
+        "cls": 0
+      },
+      "changedPct": 0.983,
+      "errors": []
+    }
+  }
+]

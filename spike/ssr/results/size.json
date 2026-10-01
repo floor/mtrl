@@ -1,0 +1,41 @@
+{
+  "disk": {
+    "total": 3710818,
+    "packages": {
+      "linkedom": 909684,
+      "css-select": 213494,
+      "cssom": 52065,
+      "html-escaper": 15567,
+      "htmlparser2": 989505,
+      "uhyphen": 4155,
+      "boolbase": 2781,
+      "css-what": 540735,
+      "dom-serializer": 376102,
+      "domelementtype": 11359,
+      "domhandler": 44892,
+      "domutils": 126712,
+      "entities": 392254,
+      "nth-check": 31513
+    }
+  },
+  "linkedomBundled": {
+    "min": 195232,
+    "gzip": 69019
+  },
+  "ssrReactBundled": {
+    "min": 926508,
+    "gzip": 287794,
+    "markers": [
+      "parseHTML",
+      "mtrl.ssr\")]="
+    ]
+  },
+  "clientBundle": {
+    "min": 341994,
+    "leaks": []
+  },
+  "elementsBundle": {
+    "min": 500378,
+    "leaks": []
+  }
+}

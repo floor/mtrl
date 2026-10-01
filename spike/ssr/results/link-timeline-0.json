@@ -1,0 +1,183 @@
+{
+  "chromium/none": {
+    "runs": [
+      {
+        "from": 9,
+        "to": 9,
+        "bg": "rgb(103, 80, 164)",
+        "w": 63,
+        "h": 40,
+        "afterY": null
+      },
+      {
+        "from": 15,
+        "to": 1215,
+        "bg": "rgb(103, 80, 164)",
+        "w": 63,
+        "h": 40,
+        "afterY": 166
+      }
+    ],
+    "shifts": []
+  },
+  "chromium/stylesheet": {
+    "runs": [
+      {
+        "from": 10,
+        "to": 1213,
+        "bg": "rgb(103, 80, 164)",
+        "w": 63,
+        "h": 40,
+        "afterY": 166
+      }
+    ],
+    "shifts": []
+  },
+  "chromium/inline": {
+    "runs": [
+      {
+        "from": 10,
+        "to": 1198,
+        "bg": "rgb(103, 80, 164)",
+        "w": 63,
+        "h": 40,
+        "afterY": 166
+      }
+    ],
+    "shifts": []
+  },
+  "firefox/none": {
+    "runs": [
+      {
+        "from": 24,
+        "to": 24,
+        "bg": "rgb(233, 233, 237)",
+        "w": 42,
+        "h": 22,
+        "afterY": 134
+      },
+      {
+        "from": 39,
+        "to": 39,
+        "bg": "rgb(233, 233, 237)",
+        "w": 63,
+        "h": 40,
+        "afterY": 166
+      },
+      {
+        "from": 73,
+        "to": 73,
+        "bg": "rgb(183, 174, 209)",
+        "w": 63,
+        "h": 40,
+        "afterY": 166
+      },
+      {
+        "from": 107,
+        "to": 107,
+        "bg": "rgb(136, 118, 182)",
+        "w": 63,
+        "h": 40,
+        "afterY": 166
+      },
+      {
+        "from": 140,
+        "to": 140,
+        "bg": "rgb(115, 94, 171)",
+        "w": 63,
+        "h": 40,
+        "afterY": 166
+      },
+      {
+        "from": 173,
+        "to": 173,
+        "bg": "rgb(107, 85, 166)",
+        "w": 63,
+        "h": 40,
+        "afterY": 166
+      },
+      {
+        "from": 207,
+        "to": 207,
+        "bg": "rgb(104, 81, 165)",
+        "w": 63,
+        "h": 40,
+        "afterY": 166
+      },
+      {
+        "from": 240,
+        "to": 1239,
+        "bg": "rgb(103, 80, 164)",
+        "w": 63,
+        "h": 40,
+        "afterY": 166
+      }
+    ],
+    "shifts": []
+  },
+  "firefox/stylesheet": {
+    "runs": [
+      {
+        "from": 22,
+        "to": 1188,
+        "bg": "rgb(103, 80, 164)",
+        "w": 63,
+        "h": 40,
+        "afterY": 166
+      }
+    ],
+    "shifts": []
+  },
+  "firefox/inline": {
+    "runs": [
+      {
+        "from": 7,
+        "to": 1212,
+        "bg": "rgb(103, 80, 164)",
+        "w": 63,
+        "h": 40,
+        "afterY": 166
+      }
+    ],
+    "shifts": []
+  },
+  "webkit/none": {
+    "runs": [
+      {
+        "from": 144,
+        "to": 1209,
+        "bg": "rgb(103, 80, 164)",
+        "w": 63,
+        "h": 40,
+        "afterY": 166
+      }
+    ],
+    "shifts": []
+  },
+  "webkit/stylesheet": {
+    "runs": [
+      {
+        "from": 15,
+        "to": 1191,
+        "bg": "rgb(103, 80, 164)",
+        "w": 63,
+        "h": 40,
+        "afterY": 166
+      }
+    ],
+    "shifts": []
+  },
+  "webkit/inline": {
+    "runs": [
+      {
+        "from": 11,
+        "to": 1205,
+        "bg": "rgb(103, 80, 164)",
+        "w": 63,
+        "h": 40,
+        "afterY": 166
+      }
+    ],
+    "shifts": []
+  }
+}
