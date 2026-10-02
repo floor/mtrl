@@ -91,6 +91,9 @@ after 0.10.6.
     `setGlobalDefaults({ textfield })` take `'text-field'`;
   - the constants' values (`TEXT_FIELD_CLASSES.*`), and `SELECT_CLASSES.TEXTFIELD`'s class,
     `select__text-field`. This corrects 0.10.5's note, which said that class stays;
+  - the registry key: `elements.textfield` (`mtrl/elements`) is `elements.textField`;
+  - generated ids: an input given no `id` gets one starting `mtrl-text-field-`, not
+    `mtrl-textfield-`;
   - the import paths, which already resolve under the new names on 0.10.7 (see Added).
 
   Only the paths can be written the new way before the move.
