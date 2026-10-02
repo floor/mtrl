@@ -143,6 +143,12 @@ export interface DialogConfig {
   
   /** 
    * Whether to close when Escape key is pressed
+   * A limit on 0.10.x, fixed in `material` 3.0.0: a `layer: "top"` dialog that refuses
+   * Escape (this option `false`, or a `beforeclose` listener that prevents it)
+   * is still closed by the third press.
+   * In `material` 3.0.0 Escape is handled as a key press in both layers: only the topmost
+   * open modal answers, after what is open inside it (a menu, a select) has
+   * used the key, and never for the key press that opened it.
    * @default true
    */
   closeOnEscape?: boolean;
@@ -248,7 +254,7 @@ export interface DialogButton {
   /** 
    * Has no effect: the button has no colour option, and M3's dialog actions
    * are text buttons in the dialog's own colours.
-   * @deprecated Since 0.10 (FLO-324); removed in 1.0.
+   * @deprecated Since 0.10 (FLO-324); removed in `material` 3.0.0.
    */
   color?: string;
   
@@ -412,6 +418,10 @@ export interface DialogComponent {
   /**
    * Opens the dialog
    * Displays the dialog with animation
+   * In `material` 3.0.0 `open` is emitted inside `open()`, and `isOpen()` is true when it
+   * returns (without `layer: "top"` both come about 10 ms later today). A
+   * listener added after calling `open()` then no longer hears `open`: add it
+   * before the call, or listen to `afteropen`. A second `open()` emits nothing.
    * @returns Dialog component for method chaining
    */
   open: () => DialogComponent;
@@ -419,6 +429,9 @@ export interface DialogComponent {
   /**
    * Closes the dialog
    * Hides the dialog with animation
+   * In `material` 3.0.0 `close()` on a closed dialog does nothing and emits nothing (today
+   * it emits `beforeclose`, `close` and `afterclose` again), and `close()` then
+   * `open()` at once ends open.
    * @returns Dialog component for method chaining
    */
   close: () => DialogComponent;

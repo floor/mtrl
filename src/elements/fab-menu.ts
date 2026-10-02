@@ -65,6 +65,10 @@ const fabMenuSpec = {
   // The menu presentation's menu renders in this shadow root, next to the FAB
   styles: ["fab", "menu", "fab-menu"],
   attributes: {
+    // In `material` 3.0.0 `open` set or removed by script is applied inside the attribute
+    // callback and dispatches no `open` and no `close`, as on <m-dialog>
+    // (today a microtask later, dispatching both); show() and hide() still
+    // dispatch.
     open: {
       type: "boolean",
       update: (c, v) => queueMicrotask(() => (v ? c.show() : c.hide())),

@@ -2,7 +2,7 @@
 //
 // FLO-383: Sass spells the text field in two words too. 0.10.5 has both
 // names: `$text-field` / `text-field()` and the deprecated `$textfield` /
-// `textfield()`, one map, so a theme may configure either. 1.0 keeps only the
+// `textfield()`, one map, so a theme may configure either. `material` 3.0.0 keeps only the
 // new ones.
 import { describe, expect, test } from "bun:test";
 import { compileString } from "sass";

@@ -92,7 +92,7 @@ const readVar = (name: string, element?: Element | null): string => {
  * @deprecated for `-rgb` names only: the themes no longer declare the
  * `--<prefix>-sys-color-*-rgb` twins (FLO-311). `getThemeColor('sys-color-X-rgb')`
  * still returns the `'r, g, b'` triplet, derived from `sys-color-X`, and will be
- * removed in the next major. Read `sys-color-X` (with `alpha` for rgba) instead.
+ * removed in `material` 3.0.0. Read `sys-color-X` (with `alpha` for rgba) instead.
  *
  * @example
  * // Basic usage

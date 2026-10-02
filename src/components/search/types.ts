@@ -164,22 +164,22 @@ export interface SearchConfig {
 
   // === Event Handlers ===
 
-  /** Called when search is submitted. In 1.0 it receives the `SearchEvent` a `submit` listener receives: read `event.value`. */
+  /** Called when search is submitted. In `material` 3.0.0 it receives the `SearchEvent` a `submit` listener receives: read `event.value`. */
   onSubmit?: (value: string) => void;
 
-  /** Called when input value changes. In 1.0 it receives the `SearchEvent` an `input` listener receives: read `event.value`. */
+  /** Called when input value changes. In `material` 3.0.0 it receives the `SearchEvent` an `input` listener receives: read `event.value`. */
   onInput?: (value: string) => void;
 
-  /** Called when search is cleared. In 1.0 it receives the `SearchEvent` a `clear` listener receives. */
+  /** Called when search is cleared. In `material` 3.0.0 it receives the `SearchEvent` a `clear` listener receives. */
   onClear?: () => void;
 
-  /** Called when view expands. In 1.0 it receives the object an `expand` listener receives. */
+  /** Called when view expands. In `material` 3.0.0 it receives the object an `expand` listener receives. */
   onExpand?: () => void;
 
-  /** Called when view collapses. In 1.0 it receives the object a `collapse` listener receives. */
+  /** Called when view collapses. In `material` 3.0.0 it receives the object a `collapse` listener receives. */
   onCollapse?: () => void;
 
-  /** Called when a suggestion is selected. In 1.0 it receives the `SearchEvent`: the suggestion is `event.suggestion`. */
+  /** Called when a suggestion is selected. In `material` 3.0.0 it receives the `SearchEvent`: the suggestion is `event.suggestion`. */
   onSuggestionSelect?: (suggestion: SearchSuggestion) => void;
 
   /** Event handlers map */
@@ -288,7 +288,13 @@ export interface SearchComponent {
 
   // === Events ===
 
-  /** Adds an event listener */
+  /**
+   * Adds an event listener
+   * In `material` 3.0.0 an `expand` or `collapse` listener is typed with what those events
+   * carry, `{ component, state, viewMode }` (`SearchStateEvent`): `event.value`
+   * and `event.preventDefault()` there become type errors (they are
+   * `undefined` and not a function at run time today).
+   */
   on: (
     event: SearchEventType,
     handler: (event: SearchEvent) => void,

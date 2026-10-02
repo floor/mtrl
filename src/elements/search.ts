@@ -49,7 +49,10 @@ type Handler = (event: SearchEvent) => void;
 
 /** The search, with the element's events, methods and input. */
 export interface SearchElementComponent extends Omit<SearchComponent, "on" | "off"> {
-  /** Subscribes by the element's event names (`open`, `select`…) as well as the factory's. */
+  /**
+   * Subscribes by the element's event names (`open`, `select`…) as well as the factory's.
+   * In `material` 3.0.0 `on` and `off` take a closed map of those names: any other name is a type error.
+   */
   on: (event: string, handler: Handler) => SearchElementComponent;
   off: (event: string, handler: Handler) => SearchElementComponent;
   /** Opens the view. */

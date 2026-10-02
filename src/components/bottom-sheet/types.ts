@@ -88,6 +88,8 @@ export interface BottomSheetConfig {
 
   /**
    * Whether Escape closes a modal sheet.
+   * A limit on 0.10.x, fixed in `material` 3.0.0: with `layer: "top"` and this option
+   * `false`, the third Escape still closes it.
    * @default true
    */
   closeOnEscape?: boolean;

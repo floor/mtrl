@@ -100,6 +100,8 @@ export interface DrawerConfig extends BaseComponentConfig {
 
   /**
    * Whether the modal drawer can be dismissed by clicking the scrim
+   * A limit on 0.10.x, fixed in `material` 3.0.0: with `layer: "top"` and this option
+   * `false`, the third Escape still closes the drawer.
    * @default true
    */
   dismissible?: boolean;

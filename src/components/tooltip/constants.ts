@@ -84,7 +84,7 @@ export const TOOLTIP_DEFAULTS = {
   SHOW_ON_HOVER: true,
   /**
    * Whether to allow rich HTML content by default
-   * @deprecated The `rich` option has no effect and is removed in 1.0, and this default with it.
+   * @deprecated The `rich` option has no effect and is removed in `material` 3.0.0, and this default with it.
    */
   RICH: false
 } as const;

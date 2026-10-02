@@ -211,6 +211,8 @@ export interface TimePickerConfig {
 
   /**
    * Whether the time picker is initially visible (for inline mode)
+   * In `material` 3.0.0 this option is named `open`, and the picker is open when its
+   * factory returns (today it opens on a 0 ms timer).
    * @default false
    */
   isOpen?: boolean;
@@ -261,7 +263,7 @@ export interface TimePickerConfig {
 
   /**
    * Callback when time is confirmed; receives the same 24-hour value as getValue().
-   * In 1.0 it receives `{ value }`, the object a `confirm` listener receives.
+   * In `material` 3.0.0 it receives `{ value }`, the object a `confirm` listener receives.
    */
   onConfirm?: (time: string) => void;
 
@@ -333,7 +335,7 @@ export interface TimePickerComponent {
   /** Dialog container element */
   dialogElement: HTMLElement;
 
-  /** Whether the time picker is currently open */
+  /** Whether the time picker is currently open. In `material` 3.0.0 it is a method: `isOpen()`. */
   isOpen: boolean;
 
   /**

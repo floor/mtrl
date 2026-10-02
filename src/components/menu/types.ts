@@ -355,10 +355,15 @@ export interface MenuEvent {
   /** Original DOM event if available */
   originalEvent?: Event;
 
-  /** Function to prevent default behavior */
+  /**
+   * Function to prevent default behavior
+   * In `material` 3.0.0 the `open` and `close` payloads have no `preventDefault` and no
+   * `defaultPrevented`: these two events cannot be cancelled. The `select`
+   * payload keeps both.
+   */
   preventDefault: () => void;
 
-  /** Whether default behavior was prevented */
+  /** Whether default behavior was prevented. In `material` 3.0.0 on the `select` payload only. */
   defaultPrevented: boolean;
 }
 
@@ -403,6 +408,10 @@ export interface MenuComponent {
 
   /**
    * Closes the menu
+   * In `material` 3.0.0 `close` is emitted inside `close()` and `isOpen()` is false when it
+   * returns (both come about 50 ms later today), while the menu is still in
+   * the document; and `close()` then `open()` at once reopens it (today the
+   * `open()` is ignored).
    * @param event - Optional event that triggered the close
    * @param restoreFocus - Whether focus returns to the opener (default true)
    * @param skipAnimation - Whether to close without the exit animation

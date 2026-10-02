@@ -44,7 +44,7 @@ export const fullOnlyStyles: string[] = [];
 
 // Themes in the full stylesheet, each also shipped as `mtrl/themes/<name>`.
 // material, winter, browngreen and legacy are deprecated (FLO-308) and stay
-// here until 1.0.
+// here until `material` 3.0.0.
 export const themeStyles = [
   "baseline", "ocean", "desert", "forest", "sunset", "spring", "summer",
   "autumn", "winter", "brownbeige", "browngreen", "sageivory", "tealcaramel",

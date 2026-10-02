@@ -16,7 +16,7 @@ import { CANONICAL, declarationModules, elementModules, kebab } from "./element-
 
 const pascal = (name: string): string =>
   name.replace(/(^|-)([a-z])/g, (_, __: string, c: string) => c.toUpperCase());
-const DEPRECATED_NOTE = (to: string) => `Use ${to}: M3 writes "text field" as two words. Removed in 1.0 (FLO-383).`;
+const DEPRECATED_NOTE = (to: string) => `Use ${to}: M3 writes "text field" as two words. Removed in \`material\` 3.0.0 (FLO-383).`;
 
 interface Framework {
   dir: string;

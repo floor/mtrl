@@ -245,7 +245,7 @@ export interface BaseComponent {
   getElementClass: (base: string, element: string) => string;
   /** Add CSS class(es) */
   addClass: (...classes: string[]) => BaseComponent;
-  /** Emit an event. In 1.0, `emit` accepts only the card's own events ({@link CardEvents}). */
+  /** Emit an event. In `material` 3.0.0, `emit` accepts only the card's own events ({@link CardEvents}). */
   emit?: (event: string, data?: unknown) => void;
   /** Component configuration */
   config: CardComponentConfig;
@@ -472,19 +472,19 @@ export interface CardComponent extends BaseComponent {
   /**
    * Optional loading feature
    * @deprecated Never set by `createCard`: only the deprecated `withLoading` feature adds it.
-   * Removed in 1.0 with that feature (FLO-381).
+   * Removed in `material` 3.0.0 with that feature (FLO-381).
    */
   loading?: LoadingFeature;
   /**
    * Optional expandable feature
    * @deprecated Never set by `createCard`: only the deprecated `withExpandable` feature adds it.
-   * Removed in 1.0 with that feature (FLO-381).
+   * Removed in `material` 3.0.0 with that feature (FLO-381).
    */
   expandable?: ExpandableFeature;
   /**
    * Optional swipeable feature
    * @deprecated Never set by `createCard`: only the deprecated `withSwipeable` feature adds it.
-   * Removed in 1.0 with that feature (FLO-381).
+   * Removed in `material` 3.0.0 with that feature (FLO-381).
    */
   swipeable?: SwipeableFeature;
 }
