@@ -167,6 +167,7 @@ export const elements = {
   extendedFab: extendedFabElement,
   checkbox: checkboxElement,
   slider: sliderElement,
+  /** In `material` 3.0.0 this key is `textField`. */
   textfield: textfieldElement,
   radios: radiosElement,
   navigationRail: navigationRailElement,
