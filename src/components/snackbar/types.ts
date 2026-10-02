@@ -158,7 +158,12 @@ export interface SnackbarComponent {
   /** The root element of the snackbar */
   element: HTMLElement;
 
-  /** Current state of the snackbar */
+  /**
+   * Current state of the snackbar
+   * In 1.0 a snackbar shown behind another is `"queued"` until its turn, then
+   * `"visible"` with `open` (today it says `"visible"` while it waits). 1.0
+   * adds `isOpen()`, true only while it is on screen.
+   */
   state: SnackbarState;
 
   /** The action button element (if present) */
@@ -173,7 +178,11 @@ export interface SnackbarComponent {
   /** Displays the snackbar */
   show: () => SnackbarComponent;
 
-  /** Hides the snackbar */
+  /**
+   * Hides the snackbar
+   * In 1.0 `hide()` on a snackbar still waiting behind another takes it out of
+   * the queue and emits nothing (today it emits `close` and `dismiss`).
+   */
   hide: () => SnackbarComponent;
 
   /** Sets the message text */

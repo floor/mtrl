@@ -55,6 +55,7 @@ export interface TimepickerElementComponent {
   close: () => void;
   isOpen: () => boolean;
   required: boolean;
+  /** In 1.0 `on` and `off` take the time picker's event map: any other name is a type error, and each handler's argument is typed. */
   on: (event: string, handler: EventCallback) => void;
   off: (event: string, handler: EventCallback) => void;
   destroy: () => void;

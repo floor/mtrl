@@ -219,7 +219,7 @@ export const TIMEPICKER_DEFAULTS = {
   CANCEL_TEXT: 'Cancel',
   /** Default confirm button text */
   CONFIRM_TEXT: 'OK',
-  /** Whether picker is initially open */
+  /** Whether picker is initially open. In 1.0 this key is `OPEN`, with the option renamed `open`. */
   IS_OPEN: false,
   /** Default clock icon */
   CLOCK_ICON: TIMEPICKER_ICONS.CLOCK,

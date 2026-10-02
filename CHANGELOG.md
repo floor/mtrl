@@ -10,6 +10,45 @@ Earlier versions are in the [git history](https://github.com/floor/mtrl/commits/
 
 ## [Unreleased]
 
+### Deprecated
+
+Comments only: nothing changes at run time. Each is changed in 1.0.0, decided after 0.10.6.
+
+- **Told in the TSDoc, for 1.0, the overlays' open and close:** when `open()` or `close()`
+  returns, the state has changed and the event has been emitted.
+  - **Dialog:** `open` is emitted inside `open()` (without `layer: "top"` it comes about 10 ms
+    later today), so a listener added after calling `open()` no longer hears it: add it
+    before the call, or listen to `afteropen`. `close()` on a closed dialog emits nothing.
+  - **Menu, and the select and split button that hold one:** `close` is emitted inside
+    `close()` (about 50 ms later today), while the menu is still in the document, and
+    `close()` then `open()` at once reopens it. The `open` and `close` payloads of the menu
+    and the select, and the select's `change` payload, lose `preventDefault` and
+    `defaultPrevented`, which did nothing there.
+  - **Snackbar:** `state` is `"queued"`, not `"visible"`, while a snackbar waits behind
+    another, and `hide()` on a queued one emits nothing. 1.0 adds `isOpen()`.
+  - **Time picker:** `isOpen` is a method, `isOpen()`, not a property; the config option
+    `isOpen` is named `open`, and `TIMEPICKER_DEFAULTS.IS_OPEN` is `OPEN`.
+- **Told in the TSDoc, for 1.0, chips:** a chip's `onClick` runs before the chip toggles, so
+  `isSelected()` inside it is the state before the click (read the new one in `onChange`); a
+  refused deselect in a `selectionRequired` set emits no `change` and calls no `onChange` or
+  `onSelect`.
+- **Told in the TSDoc, for 1.0, types:** the search's `expand` and `collapse` listeners are
+  typed with what they carry, `{ component, state, viewMode }`; the `<m-search>` and
+  `<m-timepicker>` components' `on` and `off` take a closed map of event names.
+- **`splitButton.menu`:** its note now names what 1.0 gives in its place for the items,
+  `setItems()` and `getItems()`.
+- **Typography leaves `mtrl/styles/base` in 1.0.** The type classes (`.mtrl-display-large` …
+  `.mtrl-label-small`), the text utilities, mtrl's styles for `h1`–`h6` and `p`, and the
+  `--mtrl-sys-typescale-*` properties other than body-medium's then need
+  `import 'mtrl/styles/typography'`. The full stylesheet, `mtrl/styles`, is unchanged. There
+  is nothing to change on 0.10.x: the new entry does not exist here.
+
+### Changed
+
+- **Documented, a limit of 0.10.x:** a `layer: "top"` dialog that refuses Escape
+  (`closeOnEscape: false`, or a `beforeclose` listener that prevents it) is still closed by the
+  third press. To be fixed in 1.0; the sentence is on `closeOnEscape`.
+
 ## [0.10.6] - 2026-10-02
 
 The release that announces 1.0.0. Everything decided for 1.0.0 as of this release that 0.10.x

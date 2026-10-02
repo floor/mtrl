@@ -143,6 +143,9 @@ export interface DialogConfig {
   
   /** 
    * Whether to close when Escape key is pressed
+   * A limit on 0.10.x: a `layer: "top"` dialog that refuses Escape (this option
+   * `false`, or a `beforeclose` listener that prevents it) is still closed by
+   * the third press. To be fixed in 1.0.
    * @default true
    */
   closeOnEscape?: boolean;
@@ -412,6 +415,10 @@ export interface DialogComponent {
   /**
    * Opens the dialog
    * Displays the dialog with animation
+   * In 1.0 `open` is emitted inside `open()`, and `isOpen()` is true when it
+   * returns (without `layer: "top"` both come about 10 ms later today). A
+   * listener added after calling `open()` then no longer hears `open`: add it
+   * before the call, or listen to `afteropen`. A second `open()` emits nothing.
    * @returns Dialog component for method chaining
    */
   open: () => DialogComponent;
@@ -419,6 +426,9 @@ export interface DialogComponent {
   /**
    * Closes the dialog
    * Hides the dialog with animation
+   * In 1.0 `close()` on a closed dialog does nothing and emits nothing (today
+   * it emits `beforeclose`, `close` and `afterclose` again), and `close()` then
+   * `open()` at once ends open.
    * @returns Dialog component for method chaining
    */
   close: () => DialogComponent;

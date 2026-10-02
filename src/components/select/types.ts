@@ -347,6 +347,8 @@ export interface SelectEvent {
 
   /**
    * Function to prevent default behavior
+   * In 1.0 the select's `open`, `close` and `change` payloads have no
+   * `preventDefault` and no `defaultPrevented`: these events cannot be cancelled.
    */
   preventDefault: () => void;
 
