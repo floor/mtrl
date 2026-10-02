@@ -10,6 +10,16 @@ Earlier versions are in the [git history](https://github.com/floor/mtrl/commits/
 
 ## [Unreleased]
 
+## [0.10.7] - 2026-10-03
+
+The last notices before 1.0.0. What 1.0.0 decided after 0.10.6 is told in the code, as an
+"In 1.0 …" note in the TSDoc: the overlays' open and close, the chips' click order, the text
+field's two-word tag and classes, and the stylesheets that become imports of their own
+(typography, contrast). None of those notes changes anything at run time. One thing can move
+early: the text field's import paths resolve under their 1.0 names from this release. Three
+limits of 0.10.x that 1.0 fixes are documented, and one accessibility fix is ported:
+scrolling from script honours reduced motion. Upgrade to this release before 1.0.0.
+
 ### Added
 
 - **The text field's two-word import paths, ahead of 1.0 (FLO-560).** 1.0 spells the text
@@ -37,6 +47,7 @@ Earlier versions are in the [git history](https://github.com/floor/mtrl/commits/
 ### Deprecated
 
 Comments only: nothing changes at run time. Each is changed in 1.0.0, decided after 0.10.6.
+"Today" in a note means 0.10.x.
 
 - **Told in the TSDoc, for 1.0, the overlays' open and close:** when `open()` or `close()`
   returns, the state has changed and the event has been emitted.
@@ -83,7 +94,7 @@ Comments only: nothing changes at run time. Each is changed in 1.0.0, decided af
     `setGlobalDefaults({ textfield })` take `'text-field'`;
   - the constants' values (`TEXT_FIELD_CLASSES.*`), and `SELECT_CLASSES.TEXTFIELD`'s class,
     `select__text-field`. This corrects 0.10.5's note, which said that class stays;
-  - the import paths, which already resolve under the new names on 0.10.7 (see Added).
+  - the import paths, which resolve under the new names from this release (see Added).
 
   Only the paths can move before the upgrade.
 - **Typography leaves `mtrl/styles/base` in 1.0.** The type classes (`.mtrl-display-large` …
@@ -2099,7 +2110,8 @@ Changed and fixed, by component
   push and pull request; releases publish to npm with trusted publishing
   from a version tag.
 
-[Unreleased]: https://github.com/floor/mtrl/compare/v0.10.6...HEAD
+[Unreleased]: https://github.com/floor/mtrl/compare/v0.10.7...HEAD
+[0.10.7]: https://github.com/floor/mtrl/compare/v0.10.6...v0.10.7
 [0.10.6]: https://github.com/floor/mtrl/compare/v0.10.5...v0.10.6
 [0.10.5]: https://github.com/floor/mtrl/compare/v0.10.4...v0.10.5
 [0.10.4]: https://github.com/floor/mtrl/compare/v0.10.3...v0.10.4

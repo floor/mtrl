@@ -115,7 +115,7 @@ Or import the base once, followed by the components you use:
 ```typescript
 import 'mtrl/styles/base';
 import 'mtrl/styles/button';
-import 'mtrl/styles/textfield';
+import 'mtrl/styles/text-field';
 
 // Optional: an alternate theme and the utility classes
 import 'mtrl/themes/ocean';
