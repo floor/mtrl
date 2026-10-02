@@ -18,8 +18,11 @@ say `material` 3.0.0, they mean the next version of this code. To move, stay on 
 and follow its migration guide.
 
 What `material` 3.0.0 decided after 0.10.6 is told in the code, as an "In `material` 3.0.0 …"
-note in the TSDoc: the overlays' open and close, the chips' click order, and the text
-field's two-word tag and classes. None of those notes changes anything at run time. One
+note in the TSDoc: the overlays' open and close, the chips' click order, the text
+field's two-word tag and classes, and what `material` 3.0.0 takes out of its contract:
+the progress component's five drawing members (marked deprecated), the slider's
+`components`, the import path `mtrl/core/compose/features`, and `tab.badge` before its
+badge is shown. None of those notes changes anything at run time. One
 thing can be written the new way early: the text field's import paths resolve under their
 two-word names from this release. Three limits of 0.10.x that `material` 3.0.0 fixes are
 documented, and one accessibility fix is ported: scrolling from script honours reduced

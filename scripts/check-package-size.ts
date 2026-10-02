@@ -53,7 +53,7 @@ try {
   // 5,716,236 -> 6,571,092 unpacked bytes under the same Node 22 / npm 10 packer.
   // FLO-406 addenda: 6,571,092 -> 6,430,336 -> 6,272,030 unpacked bytes.
   // 0.10.7: the TSDoc notices that say what `material` 3.0.0 changes (comments in the type
-  // declarations; nothing at run time) take the package from 6,294,585 to 6,304,002, measured
+  // declarations; nothing at run time) take the package from 6,294,585 to 6,306,126, measured
   // on the release commit. Raised from 6,300,000 by the rule for explicit ceilings (measured
   // plus 1%, up to the next 1,000), Node 22.23.3 / npm 10.9.9.
   assert(pack.unpackedSize < 6_368_000, "Unpacked package exceeds 6,368,000 bytes");
