@@ -1,5 +1,4 @@
 // src/core/compose/features/index.ts
-
 /**
  * The composition features, at the import path `mtrl/core/compose/features`.
  *
