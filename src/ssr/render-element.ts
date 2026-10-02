@@ -193,8 +193,8 @@ function render(tag: string, attributes: RenderAttributes, children: string, opt
         if (!entry) return undefined;
         audit(element, depth);
         const authored = Array.from(element.attributes, a => [a.name, a.value] as const);
-        const light = Array.from(element.childNodes, node => node.cloneNode(true));
         const ssr = !asyncDefaults && (typeof entry.ssr === "function" ? entry.ssr(element) : entry.ssr !== false);
+        const light = Array.from(element.childNodes, node => node.cloneNode(true));
         if (!ssr) {
           const content = light.map(node => serializeNode(node, expand, depth + 1)).join("");
           return `<${element.localName}${attributesText(authored)}>${content}</${element.localName}>`;

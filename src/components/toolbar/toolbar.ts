@@ -218,6 +218,10 @@ const createToolbar = (config: ToolbarConfig = {}): ToolbarComponent => {
       return this;
     },
 
+    sync() {
+      roving.sync();
+    },
+
     add,
 
     remove(item: ToolbarElementItem) {

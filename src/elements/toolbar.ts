@@ -112,7 +112,19 @@ const toolbarSpec = {
     const onOverflow = (): void => anchorMenus(component);
     overflow?.addEventListener("slotchange", onOverflow);
     anchorMenus(component);
+    component.sync();
     return () => overflow?.removeEventListener("slotchange", onOverflow);
+  },
+  ssr: (host) => {
+    let first = true;
+    for (const child of Array.from(host.children)) {
+      if (child.getAttribute("slot") === "fab") continue;
+      if (child.hasAttribute("disabled") && child.getAttribute("disabled") !== "false") continue;
+      if (child.localName === "slot") continue;
+      child.setAttribute("tabindex", first ? "0" : "-1");
+      first = false;
+    }
+    return true;
   },
 } satisfies ElementSpec<ToolbarComponent>;
 

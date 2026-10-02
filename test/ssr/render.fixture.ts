@@ -10,7 +10,7 @@ import { configureHTML } from "../../src/core/dom/html";
 const { renderElement } = await import("../../src/ssr");
 
 const containerSpec = cardElement.spec as ElementSpec<ElementComponent>;
-const optedOut = new Set(["carousel", "fab-menu", "toolbar"]);
+const optedOut = new Set(["carousel", "fab-menu"]);
 const parsed = (html: string) => parseHTML(`<html><body>${html}</body></html>`).document.body.firstElementChild!;
 test("all 36 default fixtures render repeatedly, without late work", async () => {
   const errors: unknown[] = [];

@@ -156,6 +156,9 @@ export interface ToolbarComponent extends ElementComponent {
   /** The overflow button, when `overflow` is set */
   overflowButton: HTMLElement | null;
 
+  /** Synchronises the roving tabindex after items change */
+  sync(): void;
+
   /**
    * Adds an item at the end, before the overflow button
    * @returns The item's element
