@@ -1,16 +1,5 @@
 // src/components/checkbox/constants.ts
 
-/**
- * @deprecated M3 has one checkbox style, and the `variant` option has no
- * effect (FLO-94, FLO-265).
- * @category Components
- */
-export const CHECKBOX_VARIANTS = {
-  /** Checkbox with filled background when checked */
-  FILLED: 'filled',
-  /** Checkbox with outlined style (less prominent) */
-  OUTLINED: 'outlined'
-} as const;
 
 /**
  * Label position options for the checkbox

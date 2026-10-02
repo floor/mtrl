@@ -59,8 +59,9 @@ export interface MenuItem<TData = unknown> {
   text: string;
 
   /**
-   * Optional icon to display before the text
-   * Accepts HTML string (typically SVG)
+   * Optional icon to display before the text.
+   * Markup (HTML). Not sanitized by default: see Markup and sanitizing.
+   * Accepts an HTML string (typically SVG).
    */
   icon?: string;
 
@@ -344,7 +345,8 @@ export interface MenuConfig {
 }
 
 /**
- * Menu event interface
+ * What `open` and `close` carry. Neither can be cancelled: the menu is
+ * already open, or closed, when its listener runs.
  *
  * @category Components
  */
@@ -354,12 +356,6 @@ export interface MenuEvent {
 
   /** Original DOM event if available */
   originalEvent?: Event;
-
-  /** Function to prevent default behavior */
-  preventDefault: () => void;
-
-  /** Whether default behavior was prevented */
-  defaultPrevented: boolean;
 }
 
 /**
@@ -379,6 +375,12 @@ export interface MenuSelectEvent<TData = unknown> extends MenuEvent {
 
   /** Data associated with the menu item (if any) */
   itemData?: TData;
+
+  /** Keeps the menu open: a `closeOnSelect` menu does not close for this selection */
+  preventDefault: () => void;
+
+  /** Whether a listener has called `preventDefault()` */
+  defaultPrevented: boolean;
 }
 
 /**
@@ -391,7 +393,16 @@ export interface MenuComponent {
   element: HTMLElement;
 
   /**
-   * Opens the menu
+   * Opens the menu.
+   *
+   * When it returns, `isOpen()` is true and `open` has been emitted. The
+   * surface is placed and shown, and focus moves in, after that. On an open
+   * menu it does nothing and emits nothing.
+   *
+   * From then on a click outside and Escape close it (`closeOnClickOutside`,
+   * `closeOnEscape`). The event that opened it never does: the click or the
+   * key press still on its way up the document is ignored, unless it was made
+   * after `open()` ran.
    * @param event - Optional event that triggered the open
    * @param interactionType - The type of interaction that triggered the open ('mouse' or 'keyboard')
    * @returns The menu component for chaining
@@ -402,7 +413,15 @@ export interface MenuComponent {
   ) => MenuComponent;
 
   /**
-   * Closes the menu
+   * Closes the menu.
+   *
+   * When it returns, `isOpen()` is false and `close` has been emitted. The
+   * surface fades after that and then leaves the document. On a closed menu
+   * it does nothing and emits nothing.
+   *
+   * `close()` then `open()` at once ends open, and `open()` then `close()`
+   * ends closed: the later call wins, and what the earlier one still had to
+   * do (showing the surface, or removing it) is dropped.
    * @param event - Optional event that triggered the close
    * @param restoreFocus - Whether focus returns to the opener (default true)
    * @param skipAnimation - Whether to close without the exit animation
@@ -418,7 +437,8 @@ export interface MenuComponent {
   toggle: (event?: Event) => MenuComponent;
 
   /**
-   * Checks if the menu is currently open
+   * Checks if the menu is currently open. It changes inside `open()` and
+   * `close()`, before their events, and does not wait for the animation.
    * @returns True if the menu is open
    */
   isOpen: () => boolean;

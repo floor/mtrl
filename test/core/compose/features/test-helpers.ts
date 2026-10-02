@@ -79,8 +79,13 @@ export function createTestInputComponent(): InputComponent {
     },
     componentName: 'test-component',
     config: {},
-    getValue: () => input.value,
-    setValue: (value: string) => {
+    getValue: () => input.checked,
+    setValue: (value: boolean) => {
+      input.checked = value;
+      return component;
+    },
+    getValueAttribute: () => input.value,
+    setValueAttribute: (value: string) => {
       input.value = value;
       return component;
     }

@@ -63,7 +63,7 @@ test('a click selects once and emits select with value; setActive is silent; a d
     const bar = make({ onSelect: event => seen.push(['option', event.value, event.index]) });
     bar.on('select', event => seen.push(['event', event.value, event.id]));
     item(bar, 'search').click();
-    expect(seen).toEqual([['event', 'search', 'search'], ['option', 'search', 1]]);
+    expect(seen).toEqual([['option', 'search', 1], ['event', 'search', 'search']]);
     expect([bar.getActive(), bar.getValue()]).toEqual(['search', 'search']);
     expect(item(bar, 'search').getAttribute('aria-current')).toBe('page');
     bar.setActive('home');

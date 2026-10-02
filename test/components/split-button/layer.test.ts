@@ -10,6 +10,7 @@ import { describe, test, expect, beforeAll, afterAll, beforeEach, afterEach } fr
 import { JSDOM } from "jsdom";
 import createSplitButton from "../../../src/components/split-button";
 import { currentlyOpenMenu, menuClosed } from "../../../src/components/menu/features/registry";
+import { innerMenu } from "../../../src/components/menu/inner";
 
 const dom = new JSDOM("<!DOCTYPE html><html><body></body></html>", {
   url: "http://localhost/",
@@ -103,7 +104,7 @@ const mount = (config: Record<string, unknown> = {}, root: ParentNode = document
   const outside = document.createElement("button");
   root.append(split.element, outside);
   const closes: unknown[] = [];
-  split.menu?.on("close", (event) => closes.push(event));
+  innerMenu(split)?.on("close", (event) => closes.push(event));
   return { split, outside, closes };
 };
 
@@ -117,15 +118,15 @@ describe("split button layer: top", () => {
   test("without a layer the menu is appended to the body, with no popover", async () => {
     const { split } = mount();
     await opened(split);
-    expect(split.menu?.element.parentNode).toBe(document.body);
-    expect(split.menu?.element.hasAttribute("popover")).toBe(false);
+    expect(innerMenu(split)?.element.parentNode).toBe(document.body);
+    expect(innerMenu(split)?.element.hasAttribute("popover")).toBe(false);
     expect(popoverCalls).toEqual([]);
   });
 
   test("the menu opens beside the trailing button as a manual popover, fixed to the viewport", async () => {
     const { split } = mount({ layer: "top" });
     await opened(split);
-    const menu = split.menu?.element as HTMLElement;
+    const menu = innerMenu(split)?.element as HTMLElement;
     expect(split.trailingElement.nextElementSibling).toBe(menu);
     expect(menu.getAttribute("popover")).toBe("manual");
     expect(menu.matches(":popover-open")).toBe(true);
@@ -139,14 +140,14 @@ describe("split button layer: top", () => {
     const root = host.attachShadow({ mode: "open" });
     const { split, outside, closes } = mount({ layer: "top" }, root);
     await opened(split);
-    expect(split.menu?.element.getRootNode()).toBe(root);
+    expect(innerMenu(split)?.element.getRootNode()).toBe(root);
     // The list's padding, not an item: the document sees the host
-    split.menu?.element.querySelector("ul")?.dispatchEvent(new dom.window.MouseEvent("click", { bubbles: true, composed: true }));
+    innerMenu(split)?.element.querySelector("ul")?.dispatchEvent(new dom.window.MouseEvent("click", { bubbles: true, composed: true }));
     await after(100);
-    expect(split.menu?.isOpen()).toBe(true);
+    expect(innerMenu(split)?.isOpen()).toBe(true);
     outside.click();
     await after(400);
-    expect({ closes: closes.length, open: split.menu?.isOpen(), expanded: split.isExpanded() }).toEqual({
+    expect({ closes: closes.length, open: innerMenu(split)?.isOpen(), expanded: split.isExpanded() }).toEqual({
       closes: 1,
       open: false,
       expanded: false,
@@ -161,7 +162,7 @@ describe("split button layer: top", () => {
     // The element's field, FLO-320
     split.on("select", (event) => values.push(event.value));
     await opened(split);
-    (split.menu?.element.querySelector('[data-id="pdf"]') as HTMLElement).click();
+    (innerMenu(split)?.element.querySelector('[data-id="pdf"]') as HTMLElement).click();
     await after(400);
     expect({ selected, values, closes: closes.length }).toEqual({ selected: ["pdf"], values: ["pdf"], closes: 1 });
   });

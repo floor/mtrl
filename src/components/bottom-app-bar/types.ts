@@ -53,7 +53,8 @@ export interface BottomAppBarConfig {
   transitionDuration?: number;
 
   /**
-   * Optional callback when scrolling shows/hides the bar
+   * Called with the new visibility when it changes. There is no matching
+   * event, so this stays a callback rather than a listener.
    */
   onVisibilityChange?: (visible: boolean) => void;
 

@@ -7,7 +7,7 @@ let dom: JSDOM;
 let buttons: Array<ReturnType<typeof createFab> | ReturnType<typeof createExtendedFab>>;
 const icon = '<svg data-icon="add" viewBox="0 0 24 24"><path d="M11 4h2v7h7v2h-7v7h-2v-7H4v-2h7z"/></svg>';
 const nextIcon = '<svg data-icon="edit" viewBox="0 0 24 24"><path d="M4 4h16v16H4z"></path></svg>';
-const variants = ['primary-container', 'secondary-container', 'tertiary-container', 'primary', 'secondary', 'tertiary', 'surface'] as const;
+const variants = ['primary-container', 'secondary-container', 'tertiary-container', 'primary', 'secondary', 'tertiary'] as const;
 beforeEach(() => {
   dom = new JSDOM('<!doctype html><body></body>', { pretendToBeVisual: true });
   for (const name of ['window', 'document', 'HTMLElement', 'HTMLButtonElement', 'Element', 'Node', 'Event', 'CustomEvent', 'MouseEvent', 'KeyboardEvent']) {
@@ -62,7 +62,7 @@ for (const component of ['fab', 'extended-fab'] as const) {
       expect(b.element.classList.contains(`${root}--${variant}`)).toBe(true);
     });
   }
-  for (const size of component === 'fab' ? ['small', 'default', 'medium', 'large'] : ['small', 'medium', 'large']) {
+  for (const size of component === 'fab' ? ['default', 'medium', 'large'] : ['small', 'medium', 'large']) {
     test(`${component}: ${size} size class`, () => {
       const b = make({ size });
       expect(b.element.classList.contains(`${root}--${size}`)).toBe(true);

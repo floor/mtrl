@@ -23,7 +23,7 @@ test("initial suggestions render synchronously with groups, supporting text and 
 
 test("synchronous suggestions can be selected immediately through the public callback", () => {
   const selected: string[] = [];
-  const search = mount(createSearch({ suggestions: ["Apple"], onSuggestionSelect: item => selected.push(item.text) }));
+  const search = mount(createSearch({ suggestions: ["Apple"], onSuggestionSelect: (event) => selected.push(event.suggestion!.text) }));
   const option = search.element.querySelector<HTMLElement>('[role="option"]');
   expect(option).not.toBeNull();
   option!.click();

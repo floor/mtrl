@@ -1,5 +1,6 @@
 // src/components/select/api.ts
 import { SelectComponent, ApiOptions, SelectOption, BaseComponent } from "./types";
+import { MENU } from "../menu/inner";
 
 /**
  * Enhances a select component with API methods
@@ -13,9 +14,9 @@ export const withAPI =
     ...component,
     element: component.element,
     // withMenu warns and returns early without a textfield, so a select that
-    // reaches the API has both
+    // reaches the API has it. The menu stays under its symbol, which the
+    // spread above carries: it is not a member (FLO-543).
     textField: component.textField!,
-    menu: component.menu!,
 
     getValue: options.select.getValue,
 
@@ -44,8 +45,9 @@ export const withAPI =
       // A disabled select does not open. The click and keyboard paths already
       // checked this; open() did not, so code could open a disabled select.
       if (component.textField?.input?.disabled) return this;
-      if (component.menu && typeof component.menu.open === "function") {
-        component.menu.open(undefined, interactionType);
+      const menu = component[MENU];
+      if (menu && typeof menu.open === "function") {
+        menu.open(undefined, interactionType);
       } else {
         options.select.open();
       }

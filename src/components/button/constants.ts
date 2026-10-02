@@ -82,6 +82,4 @@ export const BUTTON_CLASSES = {
  */
 export const DEFAULT_RIPPLE_CONFIG = {
   DURATION: 450, // Duration in ms (slightly increased)
-  TIMING: "cubic-bezier(0.4, 0.0, 0.2, 1)", // Material Design timing function
-  OPACITY: ["0.7", "0"], // Increased initial opacity for better visibility
 } as const;

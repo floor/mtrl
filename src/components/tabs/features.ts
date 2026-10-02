@@ -24,8 +24,9 @@ interface ComponentBase {
  * purpose -- it routes an arrow key through the same path as a click, and
  * there is no event to cancel. That null is what this guard is for, so the
  * signature says so rather than taking `unknown`. The `preventDefault` check
- * stays because the payload arrives through the emitter, which is not yet
- * typed per event (FLO-114).
+ * stays because a tab's `click` listener is handed the button's wrapped
+ * payload, which has no `preventDefault`. The DOM fallback passes a real
+ * event, and keyboard activation passes null (FLO-114, FLO-523).
  */
 const isCancelable = (event: Event | null): event is Event =>
   !!event && typeof event.preventDefault === "function";
@@ -168,7 +169,9 @@ export const withTabsManagement =
       // selection emitted change twice. The DOM listener is only for tabs
       // without on().
       if (tab.on && typeof tab.on === "function") {
-        tab.on("click", (event: Event) => handleTabClick(event, tab));
+        // Same value the tab emitted: the button's wrapped click, not a DOM
+        // event. The guard below no-ops when preventDefault is absent.
+        tab.on("click", (event) => handleTabClick(event as unknown as Event, tab));
       } else {
         tab.element.addEventListener("click", (event) =>
           handleTabClick(event, tab)
@@ -290,10 +293,6 @@ export interface IndicatorFeatureConfig {
   animationTiming?: string;
   /** Custom color for the indicator */
   color?: string;
-  /** Legacy height property */
-  indicatorHeight?: number;
-  /** Legacy width strategy property */
-  indicatorWidthStrategy?: "fixed" | "dynamic" | "content" | "auto";
   /** Indicator configuration object */
   indicator?: {
     widthStrategy?: "fixed" | "dynamic" | "content" | "auto";
@@ -338,14 +337,10 @@ export const withIndicator =
     const indicatorConfig = config.indicator || {};
     const indicator: TabIndicator = createTabIndicator({
       prefix: config.prefix,
-      // Support both new and legacy config
-      widthStrategy:
-        indicatorConfig.widthStrategy ||
-        config.indicatorWidthStrategy ||
-        TABS_DEFAULTS.INDICATOR_WIDTH_STRATEGY,
+      widthStrategy: indicatorConfig.widthStrategy || TABS_DEFAULTS.INDICATOR_WIDTH_STRATEGY,
       // Left undefined, the indicator takes its variant's height and the stylesheet's
       // spring (FLO-262); given, they override them.
-      height: indicatorConfig.height || config.indicatorHeight,
+      height: indicatorConfig.height,
       fixedWidth: indicatorConfig.fixedWidth || TABS_DEFAULTS.INDICATOR_FIXED_WIDTH,
       animationDuration: indicatorConfig.animationDuration,
       animationTiming: indicatorConfig.animationTiming,

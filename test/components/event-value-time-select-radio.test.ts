@@ -4,6 +4,7 @@ import createTimePicker from "../../src/components/timepicker";
 import createSelect from "../../src/components/select";
 import createRadios from "../../src/components/radios";
 import { callbacksFixture, wait } from "./callbacks.fixture";
+import { innerMenu } from "../../src/components/menu/inner";
 
 const mount = callbacksFixture();
 
@@ -40,7 +41,7 @@ test("select empty option id reports the null getter while keeping option metada
     seen.push(event.value);
   });
   await wait();
-  select.menu.element.querySelector<HTMLElement>('[data-id=""]')!.click();
+  innerMenu(select)!.element.querySelector<HTMLElement>('[data-id=""]')!.click();
   expect(seen).toEqual([null]);
 });
 

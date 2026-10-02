@@ -99,8 +99,9 @@ export interface SliderConfig extends BaseComponentConfig {
   labelPosition?: "start" | "end";
 
   /**
-   * An icon inside the track, drawn as SVG markup (M3 Expressive "inset icon"). It
-   * illustrates what the slider controls. Shown on a standard slider -- not range,
+   * An icon inside the track, drawn as SVG markup (M3 Expressive "inset icon").
+   * Markup (HTML). Not sanitized by default: see Markup and sanitizing.
+   * It illustrates what the slider controls. Shown on a standard slider -- not range,
    * not centred -- at size M, L or XL (24, 24 and 32px); XS and S are too thin for it.
    * It sits at the start of the active track and moves to the inactive track when
    * the active one is too short to hold it (m3.material.io slider guidelines).
@@ -108,8 +109,9 @@ export interface SliderConfig extends BaseComponentConfig {
   insetIcon?: string;
 
   /**
-   * The inset icon while the value is at the minimum, in place of `insetIcon`: a
-   * volume slider swaps to a mute icon at zero, as the guidelines suggest.
+   * The inset icon while the value is at the minimum, in place of `insetIcon`.
+   * Markup (HTML). Not sanitized by default: see Markup and sanitizing.
+   * A volume slider swaps to a mute icon at zero, as the guidelines suggest.
    */
   insetIconAtMin?: string;
 
@@ -123,7 +125,7 @@ export interface SliderConfig extends BaseComponentConfig {
   /** A vertical slider's minimum at the top instead of the bottom (Compose VerticalSlider) */
   topToBottom?: boolean;
 
-  /** Icon to display with the slider */
+  /** Icon to display with the slider. Markup (HTML). Not sanitized by default: see Markup and sanitizing. */
   icon?: string;
 
   /** Position of the icon (start or end) */

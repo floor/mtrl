@@ -37,9 +37,9 @@ const mount = (config: Record<string, unknown>) => {
 };
 
 const THREE = [
-  { text: "Red", value: "red" },
-  { text: "Green", value: "green" },
-  { text: "Blue", value: "blue" },
+  { label: "Red", value: "red" },
+  { label: "Green", value: "green" },
+  { label: "Blue", value: "blue" },
 ];
 
 beforeEach(() => { document.body.innerHTML = ""; });
@@ -104,9 +104,9 @@ describe("selectByValue", () => {
 // matched by an empty request.
 describe("a chip with no value of its own", () => {
   const WITH_A_BLANK = [
-    { text: "Red", value: "red" },
+    { label: "Red", value: "red" },
     {},
-    { text: "Blue", value: "blue" },
+    { label: "Blue", value: "blue" },
   ];
 
   test("is never selected by a value another chip carries", () => {

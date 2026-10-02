@@ -14,18 +14,6 @@ export interface RippleConfig {
    * How long, in milliseconds, a released wave lingers before it is removed
    */
   duration?: number;
-
-  /**
-   * @deprecated Not applied: the ripple's motion comes from the stylesheet
-   * (FLO-268).
-   */
-  timing?: string;
-
-  /**
-   * @deprecated Not applied: since FLO-260 the wave is the 0.10 pressed state
-   * layer, drawn by the stylesheet (FLO-268).
-   */
-  opacity?: [string, string];
 }
 
 /**
@@ -68,7 +56,7 @@ export interface RippleComponent extends BaseComponent {
 const RELEASE = ["pointerup", "pointercancel", "mouseleave"] as const;
 
 export const createRipple = (config: RippleConfig = {}): RippleController => {
-  // Only duration is read; timing and opacity are deprecated (FLO-268).
+  // The wave's motion and opacity come from the stylesheet (FLO-268).
   const options = { duration: config.duration ?? RIPPLE_CONFIG.duration };
 
   const mounts = new WeakMap<HTMLElement, () => void>();

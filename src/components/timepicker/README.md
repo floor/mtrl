@@ -21,10 +21,10 @@ import { createTimePicker } from 'mtrl';
 const timePicker = createTimePicker({
   title: 'Select time',
   value: '14:30', // Initial time (2:30 PM)
-  onConfirm: (time) => {
-    console.log('Selected time:', time);
+  onConfirm: ({ value }) => {
+    console.log('Selected time:', value);
     // Update UI with selected time
-    document.getElementById('time-input').value = time;
+    document.getElementById('time-input').value = value;
   }
 });
 
@@ -55,21 +55,20 @@ The `createTimePicker` function accepts a configuration object with the followin
 | `title` | `string` | `undefined` | Title text for the time picker |
 | `showSeconds` | `boolean` | `false` | Whether to show seconds selector |
 | `class` | `string` | `undefined` | Additional CSS classes to add to the time picker |
-| `closeOnSelect` | `boolean` | `true` | Deprecated, no effect: the picker is confirmed with OK |
 | `minTime` | `string` | `undefined` | Earliest selectable time, 24-hour (HH:MM or HH:MM:SS). Dial numbers and AM/PM that cannot reach it are disabled; a picked or typed time before it moves up to it |
 | `maxTime` | `string` | `undefined` | Latest selectable time, as `minTime` at the other end |
 | `minuteStep` | `number` | `1` | Minutes off the step are disabled on the dial; a pointer picks the nearest step, and a typed minute rounds to it when committed |
 | `secondStep` | `number` | `1` | As `minuteStep`, for seconds |
 | `cancelText` | `string` | `'Cancel'` | Custom text for cancel button |
 | `confirmText` | `string` | `'OK'` | Custom text for confirm button |
-| `isOpen` | `boolean` | `false` | Whether the time picker is initially visible |
+| `open` | `boolean` | `false` | Whether the time picker opens once it is created |
 | `container` | `string \| HTMLElement` | `document.body` | CSS selector or element to append the time picker to |
 | `clockIcon` | `string` | Default SVG | Custom icon for the clock button |
 | `keyboardIcon` | `string` | Default SVG | Custom icon for the keyboard button |
 | `onChange` | `({ value }) => void` | `undefined` | Callback when the committed time changes |
 | `onOpen` | `function` | `undefined` | Callback when time picker is opened |
 | `onClose` | `function` | `undefined` | Callback when time picker is closed |
-| `onConfirm` | `function` | `undefined` | Callback when time is confirmed |
+| `onConfirm` | `({ value }) => void` | `undefined` | `confirm` listener; `value` is the 24-hour string |
 | `onCancel` | `function` | `undefined` | Callback when time picker is canceled |
 
 ## API Methods
@@ -88,6 +87,9 @@ timePicker.close();
 // Toggle the time picker open/closed state
 timePicker.toggle();
 ```
+
+When `open()` returns, `isOpen()` is true and `open` has been emitted; the surface may be painted
+after `open()` returns.
 
 ### Get and Set Value
 
@@ -155,8 +157,8 @@ const timePicker = createTimePicker({
   value: '18:30:45',
   format: TIME_FORMAT.MILITARY,
   showSeconds: true,
-  onConfirm: (time) => {
-    console.log('Selected time with seconds:', time);
+  onConfirm: ({ value }) => {
+    console.log('Selected time with seconds:', value);
   }
 });
 ```
@@ -174,8 +176,8 @@ const meetingPicker = createTimePicker({
   minTime: '09:00',
   maxTime: '17:30',
   minuteStep: 15,
-  onConfirm: (time) => {
-    meetingInput.value = time;
+  onConfirm: ({ value }) => {
+    meetingInput.value = value;
   }
 });
 ```

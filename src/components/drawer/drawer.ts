@@ -126,6 +126,12 @@ const createDrawer = (config: DrawerConfig = {}): DrawerComponent => {
       (comp) => withAPI(getApiConfig(comp))(comp),
     )(baseConfig);
 
+    // A config option is the listener registered at creation, ahead of any
+    // listener the caller adds afterwards.
+    if (baseConfig.onSelect) drawer.on("select", baseConfig.onSelect);
+    if (baseConfig.onOpen) drawer.on("open", baseConfig.onOpen);
+    if (baseConfig.onClose) drawer.on("close", baseConfig.onClose);
+
     return drawer;
   } catch (error) {
     console.error("Drawer creation error:", error);

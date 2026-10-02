@@ -37,7 +37,7 @@ const within = async <T>(work: Promise<T>, name: string): Promise<T> => {
   } finally { clearTimeout(timer); }
 };
 
-const OPT_OUT = new Set(["carousel", "fab-menu", "toolbar"]);
+const OPT_OUT = new Set(["carousel", "fab-menu"]);
 // Component names as the adapters export them: textfield is TextField (FLO-383)
 const camel = (name: string): string => name.replace(/-([a-z])/g, (_, c: string) => c.toUpperCase());
 
@@ -151,6 +151,39 @@ for (const id of ids) {
 }
 state.ready = true;
 `);
+await Bun.write(join(dir, "Context.tsx"), `import { createContext, useContext } from "solid-js";
+import { Tab, Tabs } from "mtrl/solid";
+const DefaultContext = createContext("DEFAULT");
+const RequiredContext = createContext<string | undefined>(undefined);
+const ReadDefault = () => <span id="context-label">{useContext(DefaultContext)}</span>;
+const ReadRequired = () => {
+  const value = useContext(RequiredContext);
+  if (value === undefined) throw new Error("Required context is missing");
+  return <span id="context-label">{value}</span>;
+};
+export const DefaultContextApp = () =>
+  <DefaultContext.Provider value="from provider">
+    <Tabs id="context-tabs" value="a"><Tab value="a"><ReadDefault /></Tab></Tabs>
+  </DefaultContext.Provider>;
+export const RequiredContextApp = () =>
+  <RequiredContext.Provider value="required provider">
+    <Tabs id="context-tabs" value="a"><Tab value="a"><ReadRequired /></Tab></Tabs>
+  </RequiredContext.Provider>;
+`);
+await Bun.write(join(dir, "context-server.tsx"), `import "mtrl/ssr/solid";
+import { renderToString } from "solid-js/web";
+import { DefaultContextApp, RequiredContextApp } from "./Context";
+export const renderContext = (required: boolean): string =>
+  renderToString(() => required ? <RequiredContextApp /> : <DefaultContextApp />);
+`);
+await Bun.write(join(dir, "context-client.tsx"), `import { hydrate } from "solid-js/web";
+import { DefaultContextApp, RequiredContextApp } from "./Context";
+const required = new URLSearchParams(location.search).get("required") === "true";
+const host = document.getElementById("context-tabs");
+const before = host?.shadowRoot ?? null;
+hydrate(() => required ? <RequiredContextApp /> : <DefaultContextApp />, document.getElementById("root") as HTMLElement);
+Object.assign(window, { solidContextSSR: { ready: true, sameRoot: before === document.getElementById("context-tabs")?.shadowRoot } });
+`);
 
 await Bun.write(join(dir, "async-client.tsx"), `import { hydrate } from "solid-js/web";
 import { AsyncApp, type Shape } from "../../scripts/fixtures/solid-ssr-async";
@@ -164,6 +197,12 @@ state.same = !!before && document.getElementById("async-host")?.shadowRoot === b
 state.ready = true;
 `);
 
+// The fixtures compile with the lockfile's babel-preset-solid (1.9.15 when written),
+// also under `solid-ssr:floor`, which lowers solid-js alone to the peer floor (1.8.0).
+// So a fixture must not use a construct the preset compiles to an import the floor
+// runtime lacks: a conditional `value` on a context provider compiles to `memo` from
+// solid-js/web, which 1.8.0's server build does not export (#431, f9524000); use
+// literal values.
 const solid = (generate: "dom" | "ssr"): BunPlugin => ({
   name: "solid",
   setup(build) {
@@ -373,3 +412,62 @@ for (const report of summary) {
   console.log(`${report.element}: template=${report.template ? "yes" : "no"} shadow=${report.shadowBeforeScript ? "yes" : "no"} sameRoot=${root} warnings=${report.warnings} errors=${report.errors}`);
 }
 console.log(`solid-ssr: ${summary.length} elements, ${summary.filter((report) => report.warnings === 0 && report.errors === 0).length} with 0 warnings and 0 errors; click and checked state passed; client bundle has no mtrl/ssr or linkedom`);
+
+// Keep the bundle distinct from context-server.tsx so Bun imports the compiled module.
+const contextPath = join(dir, "context-server.bundle.js");
+await Bun.write(contextPath, await bundle(join(dir, "context-server.tsx"), "bun"));
+const { renderContext } = await import(contextPath) as { renderContext: (required: boolean) => string };
+const contextClient = await bundle(join(dir, "context-client.tsx"), "browser");
+const contextHTML = { default: renderContext(false), required: renderContext(true) };
+for (const [name, markup] of Object.entries(contextHTML)) {
+  const returned = typeof markup === "string" ? markup.slice(0, 700) : String(markup);
+  assert.ok(typeof markup === "string" && /id="context-tabs"/.test(markup),
+    `Solid ${name} context: server render has no host; returned: ${returned}`);
+}
+const contextServer = Bun.serve({ hostname: "127.0.0.1", port: 0, fetch(request) {
+  if (new URL(request.url).pathname === "/client.js") return new Response(contextClient, { headers: { "Content-Type": "text/javascript" } });
+  const required = new URL(request.url).searchParams.get("required") === "true";
+  return new Response(`<!doctype html><html><head>${head}</head><body><div id="root">${required ? contextHTML.required : contextHTML.default}</div><script type="module" src="/client.js"></script></body></html>`, { headers: { "Content-Type": "text/html" } });
+} });
+const contextBrowser = await chromium.launch();
+try {
+  for (const required of [false, true]) {
+    const label = required ? "required" : "default-valued";
+    const expected = required ? "required provider" : "from provider";
+    const url = `${contextServer.url.href}?required=${required}`;
+    const inert = await contextBrowser.newPage({ javaScriptEnabled: false });
+    try {
+      const response = await inert.goto(url);
+      try {
+        await inert.waitForFunction(() => !!document.getElementById("context-tabs")?.shadowRoot, undefined, { timeout: 5000, polling: 50 });
+      } catch (cause) {
+        throw new Error(`Solid ${label} context: host and declarative root did not appear within 5 seconds; response=${response?.status()} url=${inert.url()} body=${(await inert.locator("body").innerHTML()).slice(0, 700)} serverHTML=${contextHTML[required ? "required" : "default"].slice(0, 700)}`, { cause });
+      }
+      const state = await inert.evaluate(() => {
+        const host = document.getElementById("context-tabs");
+        return { host: !!host, template: !!host?.querySelector("template[shadowrootmode]"), root: !!host?.shadowRoot,
+          shadow: host?.shadowRoot?.textContent ?? null, light: host?.querySelector("#context-label")?.textContent ?? null };
+      });
+      assert.equal(state.root, true, `Solid ${label} context: declarative shadow ${JSON.stringify(state)}`);
+      assert.equal(state.light, expected, `Solid ${label} context: light DOM`);
+      assert.equal(state.shadow?.includes(expected), true, `Solid ${label} context: shadow text`);
+      assert.equal(state.shadow?.includes("DEFAULT"), false, `Solid ${label} context: no default in shadow`);
+      console.log(`Solid ${label} context: shadow=${expected}, light=${state.light}, throw=no`);
+    } finally { await inert.close(); }
+    const page = await contextBrowser.newPage();
+    try {
+      const warnings: string[] = [], errors: string[] = [];
+      page.on("console", (message) => { if (["warning", "error"].includes(message.type())) warnings.push(message.text()); });
+      page.on("pageerror", (error) => errors.push(error.message));
+      const failure = new Promise<never>((_, reject) => page.once("pageerror", reject));
+      await page.goto(url);
+      await Promise.race([
+        page.waitForFunction(() => (window as unknown as { solidContextSSR?: { ready: boolean } }).solidContextSSR?.ready),
+        failure,
+      ]);
+      assert.deepEqual({ warnings, errors }, { warnings: [], errors: [] }, `Solid ${label} context hydration`);
+      assert.equal(await page.evaluate(() => (window as unknown as { solidContextSSR: { sameRoot: boolean } }).solidContextSSR.sameRoot), true,
+        `Solid ${label} context: hydration kept root`);
+    } finally { await page.close(); }
+  }
+} finally { contextServer.stop(true); await contextBrowser.close(); }

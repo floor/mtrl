@@ -12,7 +12,11 @@
 @use 'sass:map';
 @use '../abstract/base' as base;
 @use '../abstract/variables' as v;
-@use '../abstract/functions' as f;
+@use 'typescale-tokens' as scale;
+
+// `all` keeps every role here, which is what the full stylesheet emits.
+// The base entry configures `body`: only the three tokens its body rule reads.
+$typescale-tokens: 'all' !default;
 
 :root {
   // the two faces; the baseline dresses both in the typescale's own family
@@ -24,12 +28,6 @@
     --#{base.$prefix}-sys-shape-corner-#{$step}: #{$radius};
   }
 
-  // the typescale, every role
-  @each $role, $spec in v.$typescale {
-    --#{base.$prefix}-sys-typescale-#{$role}-font: var(--#{base.$prefix}-ref-typeface-#{f.typeface($role)});
-    --#{base.$prefix}-sys-typescale-#{$role}-font-size: #{map.get($spec, 'font-size')};
-    --#{base.$prefix}-sys-typescale-#{$role}-line-height: #{map.get($spec, 'line-height')};
-    --#{base.$prefix}-sys-typescale-#{$role}-letter-spacing: #{map.get($spec, 'letter-spacing')};
-    --#{base.$prefix}-sys-typescale-#{$role}-font-weight: #{map.get($spec, 'font-weight')};
-  }
+  // the typescale, every role (or the body subset, when the base configures it)
+  @include scale.tokens($typescale-tokens);
 }

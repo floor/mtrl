@@ -160,7 +160,7 @@ jobs:
             checks: elements:check shadow-styles:check
           - group: adapters
             browsers: chromium
-            checks: react:check react-ssr:check vue:check svelte:check svelte-ssr:check vue-ssr:check solid-ssr:check solid:check solid-ssr:floor vue-ssr:floor
+            checks: react:check react-ssr:check vue:check svelte:check svelte-ssr:check vue-ssr:check solid-ssr:check solid:check solid-ssr:floor vue-ssr:floor react-types:check vue-types:check solid-types:check svelte-types:check react-types:floor vue-types:floor solid-types:floor svelte-types:floor
           - group: components
             browsers: chromium
             checks: consumer:check tabs:check slider:check drawer:check navigation-bar:check navigation-rail:check core:check

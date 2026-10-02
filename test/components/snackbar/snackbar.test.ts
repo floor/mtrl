@@ -281,11 +281,27 @@ describe('snackbar', () => {
   });
 
   test('destroy removes the element and stops the timer', async () => {
-    const snackbar = createSnackbar({ message: 'gone', duration: 30 });
+    const events: string[] = [];
+    const snackbar = createSnackbar({ message: 'gone', duration: 30, onClose: () => events.push('close') });
     snackbar.show();
     snackbar.destroy();
     expect(document.body.contains(snackbar.element)).toBe(false);
+    // Destroyed, it is not open; the timer would have emitted close
+    expect([snackbar.state, snackbar.isOpen()]).toEqual(['hidden', false]);
     await after(60);
-    expect(snackbar.state).toBe('visible');
+    expect(events).toEqual([]);
+  });
+
+  test('a queued snackbar that is destroyed is not shown at its turn', async () => {
+    const first = createSnackbar({ message: 'first', duration: 0 });
+    const second = createSnackbar({ message: 'second', duration: 0 });
+    const third = createSnackbar({ message: 'third', duration: 0 });
+    first.show();
+    second.show();
+    third.show();
+    second.destroy();
+    first.hide();
+    await after(400);
+    expect([onPage('second'), onPage('third'), third.state]).toEqual([false, true, 'visible']);
   });
 });

@@ -68,7 +68,7 @@ describe("what a time picker is made of", () => {
     const picker = mount({ title: "Alarm" });
     const other = mount({ title: "Alarm" });
 
-    expect(picker.isOpen).toBe(false);
+    expect(picker.isOpen()).toBe(false);
     expect(picker.modalElement).toBe(picker.dialogElement);
     expect(picker.dialogElement.tagName).toBe("DIALOG");
     expect(document.body.contains(picker.dialogElement)).toBe(true);
@@ -127,12 +127,12 @@ describe("opening and closing", () => {
     const picker = mount();
 
     picker.open();
-    expect(picker.isOpen).toBe(true);
+    expect(picker.isOpen()).toBe(true);
     expect(picker.dialogElement.hasAttribute("open")).toBe(true);
     expect(picker.dialogElement.classList.contains("active")).toBe(true);
 
     picker.close();
-    expect(picker.isOpen).toBe(false);
+    expect(picker.isOpen()).toBe(false);
     expect(picker.dialogElement.hasAttribute("open")).toBe(false);
     expect(picker.dialogElement.classList.contains("active")).toBe(false);
   });
@@ -141,10 +141,10 @@ describe("opening and closing", () => {
     const picker = mount();
 
     picker.toggle();
-    expect(picker.isOpen).toBe(true);
+    expect(picker.isOpen()).toBe(true);
 
     picker.toggle();
-    expect(picker.isOpen).toBe(false);
+    expect(picker.isOpen()).toBe(false);
   });
 
   test("opening an already open picker leaves it open", () => {
@@ -153,7 +153,7 @@ describe("opening and closing", () => {
     picker.open();
     picker.open();
 
-    expect(picker.isOpen).toBe(true);
+    expect(picker.isOpen()).toBe(true);
   });
 });
 
@@ -522,7 +522,7 @@ describe("BEM element names (FLO-120)", () => {
       picker.on("confirm", confirmed);
       find<HTMLButtonElement>("confirm").click();
       expect(confirmed).toHaveBeenCalledTimes(1);
-      expect(picker.isOpen).toBe(false);
+      expect(picker.isOpen()).toBe(false);
       expect([picker.getTimeObject().minutes, picker.getTimeObject().period]).toEqual([45, TIME_PERIOD.PM]);
     } finally { picker.destroy(); }
   });
@@ -535,7 +535,7 @@ describe("a native modal dialog", () => {
     try {
       first.open(); second.open();
       second.dialogElement.dispatchEvent(new dom.window.Event("cancel", { cancelable: true }));
-      expect([first.isOpen, second.isOpen]).toEqual([true, false]);
+      expect([first.isOpen(), second.isOpen()]).toEqual([true, false]);
     } finally { first.destroy(); second.destroy(); }
   });
 

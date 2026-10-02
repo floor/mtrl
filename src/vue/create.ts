@@ -35,6 +35,7 @@ import {
   type FunctionalComponent,
   type Slots,
   type SlotsType,
+  type HTMLAttributes,
   type VNode,
   type VNodeChild,
 } from "vue";
@@ -53,6 +54,7 @@ import {
   type DefaultProps,
   type FormProps,
   type ModelOf,
+  type RetiredEvents,
 } from "../elements/adapter";
 import { shadow } from "./shadow";
 
@@ -63,8 +65,51 @@ export type ModelProps<S> = [ModelOf<S>] extends [never]
   ? Record<never, never>
   : { modelValue?: ElementProperties<S>[ModelOf<S>] };
 
-/** Props of a generated component. */
-export type VueProps<S> = ElementProps<S> & DefaultProps<S> & FormProps<S> & ModelProps<S>;
+type OwnProps<S> = ElementProps<S> & DefaultProps<S> & FormProps<S> & ModelProps<S>;
+
+type EnterKeyHint = "enter" | "done" | "go" | "next" | "previous" | "search" | "send";
+
+/**
+ * Globals Vue's `HTMLAttributes` omits. `popover` is absent through 3.5.
+ * `enterkeyhint` and `enterKeyHint` arrive on that interface in 3.5 (3.4 types
+ * the camelCase name on input only). `nonce` is typed on script, style and link.
+ * `inputmode` and `itemprop` are the Vue names (`inputMode` and `itemProp` are not).
+ * A release that already declares a key keeps its own type.
+ */
+type VueHostGaps = {
+  popover?: "" | "auto" | "manual" | "hint";
+  enterkeyhint?: EnterKeyHint;
+  enterKeyHint?: EnterKeyHint;
+  nonce?: string;
+};
+
+type Missing<Base, Extra> = {
+  [K in Exclude<keyof Extra, keyof Base>]?: K extends keyof Extra ? Extra[K] : never;
+};
+
+/** `HTMLAttributes` for the host, plus globals a supported Vue release omits. */
+type VueHostAttributes = HTMLAttributes & Missing<HTMLAttributes, VueHostGaps>;
+
+/**
+ * `on…` names Vue builds from this component's emits (`change` → `onChange`).
+ * Vue intersects those with the declared props, so a host handler of the same
+ * name would meet the component's and the parameter would become
+ * `Event | CustomEvent`. Dropping them leaves the emit's handler.
+ * `onUpdate:*` is the `v-model` family. Vue's attributes do not declare it;
+ * omitting it keeps a later collision from intersecting the binding callback.
+ */
+type EventKeys<S> =
+  | `on${Capitalize<keyof ElementEvents<S> & string>}`
+  | `onUpdate:${keyof ElementProperties<S> & string}`
+  | ([ModelOf<S>] extends [never] ? never : "onUpdate:modelValue");
+
+/** Props of a generated component: the element's own, plus any HTML attribute for the host. */
+export type VueProps<S> = OwnProps<S> &
+  Omit<VueHostAttributes, keyof OwnProps<S> | EventKeys<S> | RetiredProps<S>> &
+  { [K in RetiredProps<S>]?: `${K} was removed in 1.0: use onChange` };
+
+/** The handler props of events 1.0 removed (`onToggle` on the icon button): refused, see `RetiredEvents`. */
+type RetiredProps<S> = `on${Capitalize<RetiredEvents<S>>}`;
 
 /** Its events: the element's, and `update:*` for two-way binding. */
 export type VueEmits<S> = {
@@ -108,8 +153,8 @@ const slotted = (slots: Slots): VNode[] => [
     name === "default" || name.startsWith("_") || typeof render !== "function" ? [] : tag(render(), name)),
 ];
 
-/** A generated declaration component. */
-export type MDeclaration<A> = FunctionalComponent<A>;
+/** A generated declaration component: its attributes, plus any HTML attribute for the host. */
+export type MDeclaration<A> = FunctionalComponent<A & Omit<VueHostAttributes, keyof A>>;
 
 const accept = (): true => true;
 
@@ -244,5 +289,7 @@ export const createDeclaration = <A>(spec: DeclarationSpec, name: string): MDecl
   };
   component.displayName = name;
   component.props = [...attributes.keys()] as unknown as FunctionalComponent<A>["props"];
-  return component;
+  // Declared props stay the element's attributes. Everything else, including
+  // a host HTML attribute, arrives in `attrs` and is copied onto the element.
+  return component as unknown as MDeclaration<A>;
 };

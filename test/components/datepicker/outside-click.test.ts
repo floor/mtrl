@@ -52,13 +52,17 @@ beforeEach(() => {
 });
 
 describe('datepicker outside click', () => {
-  test('a click outside closes the open picker', () => {
+  test('a click outside closes the open picker', async () => {
     const picker = createDatePicker();
     document.body.appendChild(picker.element);
     let closes = 0;
     picker.on('close', () => closes++);
 
     picker.open();
+    // In the task that called open() a click is the one that opened it (FLO-548)
+    clickOutside();
+    expect(closes).toBe(0);
+    await new Promise((resolve) => setTimeout(resolve, 0));
     clickOutside();
     expect(closes).toBe(1);
 

@@ -82,4 +82,25 @@ describe("pre-upgrade styles", () => {
       window.close();
     }
   });
+
+  test("pre-upgrade rules are installed in each document", () => {
+    const global = globalThis as { document?: Document };
+    const previous = global.document;
+    const first = new JSDOM("<!doctype html><html><head></head><body></body></html>");
+    const second = new JSDOM("<!doctype html><html><head></head><body></body></html>");
+    try {
+      global.document = first.window.document;
+      registerPreupgrade({ switch: rules.get("switch") as string });
+      expect(first.window.document.head.querySelector("style")?.textContent).toContain("m-switch:not(:defined)");
+
+      global.document = second.window.document;
+      registerPreupgrade({ switch: rules.get("switch") as string });
+      expect(second.window.document.head.querySelector("style")?.textContent).toContain("m-switch:not(:defined)");
+    } finally {
+      if (previous) global.document = previous;
+      else delete global.document;
+      first.window.close();
+      second.window.close();
+    }
+  });
 });

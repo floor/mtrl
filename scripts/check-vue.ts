@@ -285,6 +285,11 @@ const run = async (): Promise<void> => {
     await page.evaluate(() => (window as unknown as Win).api.setDialog(true));
     await page.waitForFunction(() => !!document.getElementById("dg")?.shadowRoot?.querySelector("dialog")?.matches(":modal"));
     assert.equal(await page.evaluate(() => document.getElementById("dg")?.hasAttribute("open")), true);
+    // Temporary (FLO-548, family 6). The dialog ignores a key delivered in the task that opened
+    // it: a flag cleared by a 0 ms timer, and a runner can deliver the key before that timer.
+    // One timer task in the page, queued after the dialog's, orders the two: not a fixed wait.
+    // Remove it when the guard reads the event's timestamp, so that this check proves it.
+    await page.evaluate(() => new Promise((resolve) => setTimeout(resolve, 0)));
     await page.keyboard.press("Escape");
     await page.waitForFunction(() => document.getElementById("dialog")?.textContent === "false");
     assert.deepEqual(

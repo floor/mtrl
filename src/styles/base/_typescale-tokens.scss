@@ -1,0 +1,24 @@
+// The typescale custom properties, one mixin so the full stylesheet, the base
+// and mtrl/styles/typography emit the same declarations.
+// `all` is every role. `body` is the three body-medium tokens the base body
+// rule reads; the other 72 leave the base (FLO-539).
+
+@use 'sass:map';
+@use '../abstract/base' as base;
+@use '../abstract/variables' as v;
+@use '../abstract/functions' as f;
+
+@mixin tokens($which) {
+  @each $role, $spec in v.$typescale {
+    $all: $which == 'all';
+    @if $all or $role == 'body-medium' {
+      --#{base.$prefix}-sys-typescale-#{$role}-font: var(--#{base.$prefix}-ref-typeface-#{f.typeface($role)});
+      --#{base.$prefix}-sys-typescale-#{$role}-font-size: #{map.get($spec, 'font-size')};
+      --#{base.$prefix}-sys-typescale-#{$role}-line-height: #{map.get($spec, 'line-height')};
+    }
+    @if $all {
+      --#{base.$prefix}-sys-typescale-#{$role}-letter-spacing: #{map.get($spec, 'letter-spacing')};
+      --#{base.$prefix}-sys-typescale-#{$role}-font-weight: #{map.get($spec, 'font-weight')};
+    }
+  }
+}

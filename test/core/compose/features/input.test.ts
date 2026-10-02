@@ -73,7 +73,9 @@ describe('withInput', () => {
     expect(emitCalls.length).toBe(1);
     expect(emitCalls[0][0]).toBe('change');
     expect(emitCalls[0][1].checked).toBe(true);
-    expect(emitCalls[0][1].value).toBe('on');
+    // 1.0: value is the checked boolean; the input's string is valueAttribute
+    expect(emitCalls[0][1].value).toBe(true);
+    expect(emitCalls[0][1].valueAttribute).toBe('on');
     expect(emitCalls[0][1].nativeEvent).toBeDefined();
   });
   
@@ -91,22 +93,37 @@ describe('withInput', () => {
     expect(enhanced.input.checked).toBe(true);
   });
   
-  test('getValue should return input value', () => {
-    const config = { value: 'custom-value' };
-    const enhanced = withInput(config)(component);
-    
-    expect(enhanced.getValue()).toBe('custom-value');
+  // 1.0: getValue and setValue work on the checked boolean, what change.value
+  // carries; the input's string is getValueAttribute and setValueAttribute, the
+  // names the checkbox and the switch use.
+  test('getValue returns the checked state, getValueAttribute the input value', () => {
+    const enhanced = withInput({ value: 'custom-value', checked: true })(component);
+
+    expect(enhanced.getValue()).toBe(true);
+    expect(enhanced.getValueAttribute()).toBe('custom-value');
+    expect(withInput({ value: 'custom-value' })(component).getValue()).toBe(false);
   });
-  
-  test('setValue should update input value and emit event', () => {
+
+  test('setValue checks and unchecks the input, silently', () => {
     const enhanced = withInput({})(component);
-    
-    enhanced.setValue('new-value');
-    
+
+    expect(enhanced.setValue(true)).toBe(enhanced);
+    expect(enhanced.input.checked).toBe(true);
+    expect(enhanced.getValue()).toBe(true);
+    enhanced.setValue(false);
+    expect(enhanced.input.checked).toBe(false);
+    expect(enhanced.input.value).toBe('on');
+    expect(emitCalls).toEqual([]);
+  });
+
+  test('setValueAttribute sets the input value, silently', () => {
+    const enhanced = withInput({})(component);
+
+    expect(enhanced.setValueAttribute('new-value')).toBe(enhanced);
     expect(enhanced.input.value).toBe('new-value');
-    expect(emitCalls.length).toBe(1);
-    expect(emitCalls[0][0]).toBe('value');
-    expect(emitCalls[0][1]).toEqual({ value: 'new-value' });
+    expect(enhanced.getValueAttribute()).toBe('new-value');
+    expect(enhanced.getValue()).toBe(false);
+    expect(emitCalls).toEqual([]);
   });
   
   test('should use default value if not provided', () => {

@@ -17,12 +17,6 @@ export interface BaseComponentConfig {
   // FLO-118. It reopens at 3.0.0 with the `mtrl` to `material` rename.
   class?: string | string[]; // Support both string and array
   className?: string | string[]; // Alternative to class
-  /**
-   * @deprecated Since FLO-117 `class` and `className` are not prefixed either,
-   * so this option does the same thing as those. It is kept for the release
-   * that changes the behaviour and will be removed in 1.0.0.
-   */
-  rawClass?: string | string[];
   parent?: HTMLElement | string | null; // Parent element to append to (element or selector)
   // Common HTML attributes
   id?: string; // Element ID
@@ -175,7 +169,6 @@ export const createElementConfig = (
     componentName: config.componentName,
     attributes: elementAttributes,
     className: combinedClassNames.length > 0 ? combinedClassNames : undefined,
-    rawClass: config.rawClass,
     // Common HTML attributes
     id: config.id,
     name: config.name,

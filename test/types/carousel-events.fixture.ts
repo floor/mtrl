@@ -12,14 +12,16 @@ type Equals<A, B> =
 const carousel = createCarousel();
 export const names: Equals<keyof CarouselEvents, "change" | "focus" | "blur"> = true;
 export const change: Equals<Parameters<CarouselEvents["change"]>[0], CarouselChangePayload> = true;
-export const changeShape: Equals<CarouselChangePayload, { value: number; index: number }> = true;
+export const changeShape: Equals<CarouselChangePayload, { value: number }> = true;
 // FLO-380: the change's value is the model, as getValue() returns it.
 export const changeValue: Equals<CarouselChangePayload["value"], ReturnType<typeof carousel.getValue>> = true;
 export const focus: Equals<Parameters<CarouselEvents["focus"]>[0], ForwardedEventPayload<FocusEvent, HTMLElement>> = true;
 export const blur: Equals<Parameters<CarouselEvents["blur"]>[0], ForwardedEventPayload<FocusEvent, HTMLElement>> = true;
 export const inferredChange: Equals<Parameters<Parameters<typeof carousel.on<"change">>[1]>[0], CarouselChangePayload> = true;
 
-const onChange: CarouselEvents["change"] = ({ index }) => { const current: number = index; void current; };
+const onChange: CarouselEvents["change"] = ({ value }) => { const current: number = value; void current; };
+// @ts-expect-error 1.0 dropped index, which always equalled value
+export const oldIndex: CarouselEvents["change"] = ({ index }) => void index;
 export const chained: CarouselComponent = carousel.on(CAROUSEL_EVENTS.CHANGE, onChange).off("change", onChange);
 carousel.on("change", () => {});
 carousel.on("focus", payload => { payload.event.relatedTarget; payload.element.style; });

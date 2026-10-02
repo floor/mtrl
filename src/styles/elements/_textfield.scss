@@ -3,7 +3,47 @@
 // the value on the input's line.
 @use 'config' as c;
 @use 'field';
+@use '../abstract/variables' as v;
 
 @include c.host('textfield') {
   @include field.field;
+
+  // Multiline is the textarea's box, not the single-line 56px one (FLO-425).
+  // Height and padding-top are the component's (&--multiline). The padding-top
+  // is the first line's baseline: the inline sibling on this line aligns to
+  // it, so the single-line padding leaves that sibling low until upgrade
+  // (filled 22px vs 12px is the measured 10px; outlined 15.5px plus the 1px
+  // border vs 12px plus the border is the measured 3.5px).
+  &[type='multiline'] {
+    height: v.text-field('height-multiline');
+    padding-top: v.text-field('padding-top-multiline');
+
+    // Compact multiline stays the compact field (40px) and pads the textarea
+    // by padding-top-multiline-compact. The single-line 13.5px is 5.5px lower.
+    &[density='compact'] {
+      height: 40px;
+      padding-top: v.text-field('padding-top-multiline-compact');
+    }
+
+    // The supporting row is the single-line field's. Outlined drops its top
+    // border for an inset ring and adds that border back into the padding, so
+    // the text stays where the textarea's border plus padding-top puts it.
+    &[supporting-text]:not([supporting-text='']),
+    &[maxlength] {
+      height: calc(#{v.text-field('height-multiline')} + #{field.$supporting-row});
+
+      &[variant='outlined'] {
+        padding-top: calc(#{v.text-field('padding-top-multiline')} + #{v.text-field('border-width')});
+      }
+
+      &[density='compact'] {
+        height: calc(40px + #{field.$supporting-row});
+        padding-top: v.text-field('padding-top-multiline-compact');
+
+        &[variant='outlined'] {
+          padding-top: calc(#{v.text-field('padding-top-multiline-compact')} + #{v.text-field('border-width')});
+        }
+      }
+    }
+  }
 }

@@ -37,7 +37,7 @@ $component: "#{base.$prefix}-textfield";
     // differently per platform for the same font: 167px on macOS, 220px on
     // Linux (FLO-293). A width from the page still applies.
     contain: inline-size;
-    contain-intrinsic-inline-size: v.textfield('width');
+    contain-intrinsic-inline-size: v.text-field('width');
     // align-self: flex-start; // Prevents growing to fill the container's height
     flex: 0 0 auto; // Don't grow or shrink; keep natural size
     // The container: the label, input, outline, icons and affixes are placed
@@ -941,10 +941,10 @@ $component: "#{base.$prefix}-textfield";
     // Multiline styles
     &--multiline {
         .#{$component}__input {
-            min-height: 100px;
+            min-height: v.text-field('height-multiline');
             height: auto;
             resize: vertical;
-            padding-top: 12px;
+            padding-top: v.text-field('padding-top-multiline');
         }
 
         .#{$component}__prefix,
@@ -959,7 +959,7 @@ $component: "#{base.$prefix}-textfield";
 
     // Support for multiline inputs
     &__input[type="multiline"] {
-        min-height: 100px;
+        min-height: v.text-field('height-multiline');
         height: auto; // Allow height to adjust based on content
         max-height: none; // Remove max-height constraint from regular inputs
         flex-shrink: 1; // Allow some shrinking for multiline
@@ -1053,7 +1053,7 @@ $component: "#{base.$prefix}-textfield";
         &.#{$component}--multiline {
             .#{$component}__input {
                 min-height: 40px;
-                padding: 8px 16px;
+                padding: v.text-field('padding-top-multiline-compact') v.text-field('padding-horizontal');
             }
         }
 

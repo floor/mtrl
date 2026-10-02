@@ -36,7 +36,7 @@
         "react": ">=18",
         "solid-js": ">=1.8",
         "svelte": ">=5",
-        "vue": ">=3.3",
+        "vue": ">=3.4.20",
       },
       "optionalPeers": [
         "react",

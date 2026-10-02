@@ -253,9 +253,12 @@ export const listItemDeclaration = {
     headline: { type: "string" },
     overline: { type: "string" },
     "supporting-text": { type: "string" },
+    /** Markup (HTML). Not sanitized by default: see Markup and sanitizing. */
     "leading-icon": { type: "string" },
+    /** Markup (HTML), not a person's name or an image URL. Not sanitized by default: see Markup and sanitizing. */
     "leading-avatar": { type: "string" },
     "leading-image": { type: "string" },
+    /** Markup (HTML). Not sanitized by default: see Markup and sanitizing. */
     "trailing-icon": { type: "string" },
     "trailing-text": { type: "string" },
     kind: { type: "string" },

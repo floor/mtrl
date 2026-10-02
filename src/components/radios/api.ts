@@ -15,8 +15,8 @@ interface ApiOptions {
 interface ComponentWithRadio {
   element: HTMLElement;
   radios: RadioItem[];
-  getValue: () => string;
-  setValue: (value: string) => void;
+  getValue: () => string | null;
+  setValue: (value: string | null) => void;
   getSelected: () => RadioOptionConfig | null;
   addOption: (option: RadioOptionConfig) => void;
   removeOption: (value: string) => void;
@@ -50,7 +50,7 @@ export const withAPI =
       getClass: component.getClass,
       getValue: () => component.getValue(),
 
-      setValue(value: string) {
+      setValue(value: string | null) {
         component.setValue(value);
         return this;
       },

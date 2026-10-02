@@ -15,17 +15,13 @@ export const FAB_VARIANTS = {
   /** Secondary tone colour */
   SECONDARY: 'secondary',
   /** Tertiary tone colour */
-  TERTIARY: 'tertiary',
-  /** @deprecated Use a container or tone style instead. */
-  SURFACE: 'surface'
+  TERTIARY: 'tertiary'
 } as const;
 
 /**
  * FAB size variants
  */
 export const FAB_SIZES = {
-  /** @deprecated Small FABs are no longer recommended in M3 Expressive. */
-  SMALL: 'small',
   /** 56px diameter, for standard primary actions (default) */
   DEFAULT: 'default',
   /** 80px diameter with a 28px icon */
@@ -58,8 +54,6 @@ export const FAB_CLASSES = {
   ICON: 'fab__icon',
   /** Applied when FAB is lowered (pressed state) */
   LOWERED: 'fab--lowered',
-  /** Applied to small FABs */
-  SMALL: 'fab--small',
   /** Applied to medium FABs */
   MEDIUM: 'fab--medium',
   /** Applied to large FABs */
@@ -79,7 +73,6 @@ export const FAB_TYPES = {
  * Default icon sizes based on FAB size
  */
 export const FAB_ICON_SIZES = {
-  SMALL: '24px',
   DEFAULT: '24px',
   MEDIUM: '28px',
   LARGE: '32px'

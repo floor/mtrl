@@ -29,6 +29,7 @@ const buttonSpec = {
     size: { type: "string", config: "size", update: (c, v) => void c.setSize(String(v ?? "s")) },
     shape: { type: "string", config: "shape", update: (c, v) => void c.setShape(String(v ?? "round")) },
     disabled: { type: "boolean", config: "disabled", update: (c, v) => void (v ? c.disable() : c.enable()) },
+    /** Markup (HTML). Not sanitized by default: see Markup and sanitizing. */
     icon: { type: "string", config: "icon" },
     value: { type: "string", config: "value", update: (c, v) => void c.setValue(String(v ?? "")) },
     type: typeAttribute,

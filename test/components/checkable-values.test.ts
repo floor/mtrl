@@ -27,7 +27,7 @@ for (const [name, create] of [["checkbox", createCheckbox], ["switch", createSwi
     expect(c.getValueAttribute()).toBe("no");
   });
 }
-test("standalone withInput keeps string change and value notifications even with a checkable component name", () => {
+test("standalone withInput is symmetric: change.value and getValue() are the checked boolean, the string is valueAttribute and getValueAttribute()", () => {
   const base = withEvents()(withElement({ tag: "div" })(createBase({ componentName: "checkbox" })));
   const c = withInput({ value: "token" })(base);
   document.body.append(c.element);
@@ -37,11 +37,16 @@ test("standalone withInput keeps string change and value notifications even with
   const native: Event[] = [];
   c.input.addEventListener("change", event => native.push(event));
   c.input.click();
-  expect(c.getValue()).toBe("token");
-  expect(seen).toEqual([{ checked: true, value: "token", nativeEvent: native[0] }]);
-  c.setValue("next");
-  expect(c.getValue()).toBe("next");
-  expect(seen[1]).toEqual({ value: "next" });
+  expect(c.getValue()).toBe(true);
+  expect(c.getValueAttribute()).toBe("token");
+  expect(seen).toEqual([{ checked: true, value: true, valueAttribute: "token", nativeEvent: native[0] }]);
+  // The setters are silent, as every setter is in 1.0: no change, and no value event
+  c.setValueAttribute("next");
+  expect(c.getValueAttribute()).toBe("next");
+  c.setValue(false);
+  expect(c.getValue()).toBe(false);
+  expect(c.input.checked).toBe(false);
+  expect(seen.length).toBe(1);
   c.element.remove();
 });
 

@@ -96,8 +96,13 @@ export function createInputComponent(): InputComponent {
       return this;
     },
     input,
-    getValue: () => input.value,
-    setValue(value: string) {
+    getValue: () => input.checked,
+    setValue(value: boolean) {
+      input.checked = value;
+      return this;
+    },
+    getValueAttribute: () => input.value,
+    setValueAttribute(value: string) {
       input.value = value;
       return this;
     }

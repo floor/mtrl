@@ -16,7 +16,7 @@ import { assertGlobalHost, GLOBAL_HOST_DOM, readGlobalHost } from "./fixtures/ss
 
 // CI runs this twice, on the installed Vue and on the peer floor: the log says which.
 const version = (await Bun.file("node_modules/vue/package.json").json() as { version: string }).version;
-const OPT_OUT = new Set(["carousel", "fab-menu", "toolbar"]);
+const OPT_OUT = new Set(["carousel", "fab-menu"]);
 const pascal = (name: string): string => name.replace(/(^|-)([a-z])/g, (_, __, c: string) => c.toUpperCase());
 const camel = (name: string): string => name.replace(/-([a-z])/g, (_, c: string) => c.toUpperCase());
 

@@ -98,7 +98,8 @@ interface ButtonGroupItemBase extends Omit<ButtonConfig, "variant"> {
   text?: string;
 
   /**
-   * Button icon HTML content
+   * Button icon HTML content.
+   * Markup (HTML). Not sanitized by default: see Markup and sanitizing.
    * @example '<svg>...</svg>'
    */
   icon?: string;
@@ -121,7 +122,7 @@ interface ButtonGroupItemBase extends Omit<ButtonConfig, "variant"> {
    * Value associated with this button
    */
   value?: string;
-  /** Icon shown while selected (toggle buttons) */
+  /** Icon shown while selected (toggle buttons). Markup (HTML). Not sanitized by default: see Markup and sanitizing. */
   selectedIcon?: string;
   /** Initially selected (selection groups only) */
   selected?: boolean;
@@ -239,10 +240,6 @@ export interface ButtonGroupConfig {
   rippleConfig?: {
     /** How long, in milliseconds, a released wave lingers before it is removed */
     duration?: number;
-    /** @deprecated Not applied: the ripple's motion comes from the stylesheet (FLO-268). */
-    timing?: string;
-    /** @deprecated Not applied: the wave is the 0.10 pressed state layer, drawn by the stylesheet (FLO-268). */
-    opacity?: [string, string];
   };
 
   /**
@@ -252,7 +249,7 @@ export interface ButtonGroupConfig {
   ariaLabel?: string;
 
   /**
-   * Event handlers for button group events
+   * Listeners registered at creation, ahead of any listener added afterwards.
    */
   on?: {
     click?: (event: ButtonGroupEvent) => void;

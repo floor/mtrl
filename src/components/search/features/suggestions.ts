@@ -271,11 +271,10 @@ export const withSuggestions =
         );
         newItem.setAttribute("aria-selected", "true");
 
-        // Scroll into view if needed
-        (newItem as HTMLElement).scrollIntoView({
-          block: "nearest",
-          behavior: "smooth",
-        });
+        // Scroll into view if needed. No `behavior`: the list's stylesheet
+        // scrolls it smoothly, and the reduced-motion reset turns that off
+        // (FLO-553).
+        (newItem as HTMLElement).scrollIntoView({ block: "nearest" });
       }
     }
   };

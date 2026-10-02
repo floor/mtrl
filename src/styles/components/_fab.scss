@@ -65,21 +65,6 @@ $component: '#{base.$prefix}-fab';
   }
   
   // Size variants
-  &--small {
-    width: 40px;
-    height: 40px;
-    border-radius: f.get-shape('medium');
-    
-    .#{$component}__icon {
-      width: 24px;
-      height: 24px;
-      
-      svg {
-        width: 24px;
-        height: 24px;
-      }
-    }
-  }
   
   &--default {
     // Default is already defined in base styles
@@ -124,12 +109,6 @@ $component: '#{base.$prefix}-fab';
       background-color: t.color('#{$role}');
       color: t.color('on-#{$role}');
     }
-  }
-
-  // Deprecated surface style retained for existing callers.
-  &--surface {
-    background-color: t.color('surface');
-    color: t.color('primary');
   }
 
   &:hover {

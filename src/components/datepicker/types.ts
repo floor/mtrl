@@ -354,16 +354,23 @@ export interface DatePickerComponent<V = DatePickerValue> {
   getClass: (name: string) => string;
   
   /**
-   * Opens the datepicker dropdown/modal
+   * Opens the datepicker dropdown/modal. When it returns, `isOpen()` is true
+   * and `open` has been emitted; the surface may be painted after `open()`
+   * returns. On an open, disabled or read-only picker it does nothing. The
+   * click that called it does not count as a click outside.
    * @returns The datepicker component for chaining
    */
   open: () => DatePickerComponent<V>;
   
   /**
-   * Closes the datepicker dropdown/modal
+   * Closes the datepicker dropdown/modal. When it returns, `isOpen()` is false
+   * and `close` has been emitted. On a closed picker it does nothing.
    * @returns The datepicker component for chaining
    */
   close: () => DatePickerComponent<V>;
+
+  /** Whether the dropdown or modal is open */
+  isOpen: () => boolean;
   
   /**
    * Gets the selected date(s)

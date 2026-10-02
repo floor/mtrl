@@ -1,7 +1,15 @@
 // src/ssr/vue.ts
-/** Enable declarative shadow DOM for mtrl/vue in this server process. @module ssr/vue */
+/**
+ * Enable declarative shadow DOM for mtrl/vue in this server process.
+ * The identity HTML policy is not a sanitizer; configure a synchronous sanitizer for untrusted markup.
+ * @module ssr/vue
+ */
 import { getCurrentInstance, h, type ComponentInternalInstance, type VNode } from "vue";
 import { ssrRenderVNode } from "vue/server-renderer";
+/**
+ * The identity HTML policy is not a sanitizer; configure a synchronous sanitizer for untrusted markup.
+ * @module ssr/vue
+ */
 import "./index";
 
 const bridge = (globalThis as unknown as Record<symbol, {

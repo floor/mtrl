@@ -175,7 +175,7 @@ const createCheckbox = (config: CheckboxConfig = {}): CheckboxComponent => {
       createBase,                                            // Base component
       withEvents(),                                          // Event handling
       withElement(getElementConfig(baseConfig)),             // DOM element
-      withInput({ ...baseConfig, checkedValue: true }),                                 // Input element
+      withInput(baseConfig),                                 // Input element
       withCheckIcon(baseConfig),                             // Checkbox icon
       withTextLabel(baseConfig as TextLabelConfig),          // Text label
       withLabelPosition(baseConfig),                         // Label positioning

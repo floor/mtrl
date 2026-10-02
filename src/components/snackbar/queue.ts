@@ -64,6 +64,15 @@ export const createSnackbarQueue = (
     }
   };
 
+  /**
+   * Empties the waiting list and tells each snackbar in it, so that it knows
+   * it is no longer queued and can be shown again.
+   */
+  const dropPending = (): void => {
+    // A waiting snackbar is not on a page: telling it touches no DOM
+    for (const snackbar of pending.splice(0)) snackbar._hide?.();
+  };
+
   const showNext = (): void => {
     clearAdvanceTimer();
     if (current || pending.length === 0) return;
@@ -111,7 +120,7 @@ export const createSnackbarQueue = (
       if (behavior === SNACKBAR_QUEUE_BEHAVIORS.REPLACE) {
         // Drop everything still waiting and evict whatever is on screen, then
         // show this one immediately (no inter-snackbar gap).
-        pending.length = 0;
+        dropPending();
         clearAdvanceTimer();
         evictCurrent();
         pending.push(snackbar);
@@ -129,9 +138,24 @@ export const createSnackbarQueue = (
      * Clears all pending snackbars and dismisses the active one
      */
     clear(): void {
-      pending.length = 0;
+      dropPending();
       clearAdvanceTimer();
       evictCurrent();
+    },
+
+    /**
+     * Takes a snackbar out of the queue. A waiting one gave up its turn; the
+     * one on screen was destroyed, which emits no dismiss, so the queue moves
+     * on to the next as it does after one.
+     * @param {QueuedSnackbar} snackbar - The entry passed to add
+     */
+    remove(snackbar: QueuedSnackbar): void {
+      if (snackbar === current) {
+        currentDismiss?.();
+        return;
+      }
+      const index = pending.indexOf(snackbar);
+      if (index >= 0) pending.splice(index, 1);
     },
 
     /**

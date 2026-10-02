@@ -6,11 +6,11 @@
  *
  * @module solid/jsx
  */
-import type { JSX } from "solid-js";
 import type { ElementEvents, ElementMarkup, ElementProperties } from "../elements";
+import type { SolidHostAttributes } from "./create";
 
 /** A tag's props: its attributes as markup writes them, and any HTML attribute. */
-type Tag<S, E extends HTMLElement> = Omit<JSX.HTMLAttributes<E>, keyof ElementMarkup<S>> & ElementMarkup<S>;
+type Tag<S, E extends HTMLElement> = Omit<SolidHostAttributes<E>, keyof ElementMarkup<S>> & ElementMarkup<S>;
 
 declare module "solid-js" {
   // eslint-disable-next-line @typescript-eslint/no-namespace -- JSX is a namespace; this merges into it
@@ -84,7 +84,6 @@ declare module "solid-js" {
     /** `on:change` and the other element events. */
     interface CustomEvents {
       "change": ElementEvents<import("../elements/button").ButtonSpec>["change"] | ElementEvents<import("../elements/switch").SwitchSpec>["change"] | ElementEvents<import("../elements/tabs").TabsSpec>["change"] | ElementEvents<import("../elements/icon-button").IconButtonSpec>["change"] | ElementEvents<import("../elements/checkbox").CheckboxSpec>["change"] | ElementEvents<import("../elements/slider").SliderSpec>["change"] | ElementEvents<import("../elements/textfield").TextFieldSpec>["change"] | ElementEvents<import("../elements/radios").RadiosSpec>["change"] | ElementEvents<import("../elements/navigation-bar").NavigationBarSpec>["change"] | ElementEvents<import("../elements/navigation-rail").NavigationRailSpec>["change"] | ElementEvents<import("../elements/drawer").DrawerSpec>["change"] | ElementEvents<import("../elements/button-group").ButtonGroupSpec>["change"] | ElementEvents<import("../elements/chips").ChipsSpec>["change"] | ElementEvents<import("../elements/list").ListSpec>["change"] | ElementEvents<import("../elements/carousel").CarouselSpec>["change"] | ElementEvents<import("../elements/select").SelectSpec>["change"] | ElementEvents<import("../elements/datepicker").DatepickerSpec>["change"] | ElementEvents<import("../elements/timepicker").TimepickerSpec>["change"] | ElementEvents<import("../elements/search").SearchSpec>["change"];
-      "toggle": ElementEvents<import("../elements/icon-button").IconButtonSpec>["toggle"];
       "collapse": ElementEvents<import("../elements/extended-fab").ExtendedFabSpec>["collapse"] | ElementEvents<import("../elements/navigation-rail").NavigationRailSpec>["collapse"] | ElementEvents<import("../elements/bottom-sheet").BottomSheetSpec>["collapse"];
       "expand": ElementEvents<import("../elements/extended-fab").ExtendedFabSpec>["expand"] | ElementEvents<import("../elements/navigation-rail").NavigationRailSpec>["expand"] | ElementEvents<import("../elements/bottom-sheet").BottomSheetSpec>["expand"];
       "input": ElementEvents<import("../elements/slider").SliderSpec>["input"] | ElementEvents<import("../elements/textfield").TextFieldSpec>["input"] | ElementEvents<import("../elements/timepicker").TimepickerSpec>["input"] | ElementEvents<import("../elements/search").SearchSpec>["input"];

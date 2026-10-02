@@ -2,6 +2,7 @@ import { expect, test } from "bun:test";
 import createSelect from "../../../src/components/select";
 import type { SelectEvent, SelectChangeEvent } from "../../../src/components/select/types";
 import { callbacksFixture, wait } from "../callbacks.fixture";
+import { innerMenu } from "../../../src/components/menu/inner";
 
 const mount = callbacksFixture();
 
@@ -17,7 +18,7 @@ test("select open, change and close expose the select, not its nested menu", asy
   await wait();
   select.open();
   await wait();
-  const option = select.menu.element.querySelector<HTMLElement>('[data-id="b"]')!;
+  const option = innerMenu(select)!.element.querySelector<HTMLElement>('[data-id="b"]')!;
   const click = new MouseEvent("click", { bubbles: true });
   option.dispatchEvent(click);
   await wait(250);

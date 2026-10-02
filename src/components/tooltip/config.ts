@@ -19,7 +19,6 @@ export const defaultConfig: TooltipConfig = {
   hideDelay: TOOLTIP_DEFAULTS.HIDE_DELAY,
   showOnFocus: TOOLTIP_DEFAULTS.SHOW_ON_FOCUS,
   showOnHover: TOOLTIP_DEFAULTS.SHOW_ON_HOVER,
-  rich: TOOLTIP_DEFAULTS.RICH,
 };
 
 /**

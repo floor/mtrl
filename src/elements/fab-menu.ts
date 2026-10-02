@@ -10,8 +10,10 @@
  *
  * `open` is state, as on `<m-menu>`: the attribute reflects whether the menu
  * is open, and setting or removing it opens or closes it. `show()`, `hide()`
- * and `toggle()` do the same. `open` and `close` are dispatched for every
- * opening and closing, and `select` with the item's value when one is chosen.
+ * and `toggle()` do the same. `open` and `close` are dispatched as it opens
+ * and closes, by those methods or the user (not when the attribute or the
+ * property is what changed: that is applied at once, and quietly), and
+ * `select` with the item's value when one is chosen.
  *
  * Parts: `fab-menu`, `fab`, `list`, `item`.
  *
@@ -67,10 +69,15 @@ const fabMenuSpec = {
   // The menu presentation's menu renders in this shadow root, next to the FAB
   styles: ["fab", "menu", "fab-menu"],
   attributes: {
+    // Applied in the attribute callback, where the events it causes are not
+    // dispatched. The menu reflecting its own state changes nothing.
     open: {
       type: "boolean",
-      update: (c, v) => queueMicrotask(() => (v ? c.show() : c.hide())),
+      update: (c, v) => {
+        if (!!v !== c.isOpen()) (v ? c.show : c.hide)();
+      },
     },
+    /** Markup (HTML). Not sanitized by default: see Markup and sanitizing. The menu opts out of server rendering, so the server leaves this escaped until the component upgrades. */
     icon: { type: "string", config: "icon" },
     "aria-label": {
       type: "string",
@@ -109,6 +116,7 @@ export const fabMenuItemDeclaration = {
   attributes: {
     value: { type: "string" },
     label: { type: "string" },
+    /** Markup (HTML). Not sanitized by default: see Markup and sanitizing. The menu opts out of server rendering, so the server leaves this escaped until the component upgrades. */
     icon: { type: "string" },
   },
 } as const;

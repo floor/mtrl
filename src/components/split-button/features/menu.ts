@@ -7,6 +7,7 @@
 
 import createMenu from "../../menu";
 import type { MenuComponent, MenuContent } from "../../menu/types";
+import { MENU } from "../../menu/inner";
 import type { ElementComponent } from "../../../core/compose/component";
 import { ButtonsFeature, MenuFeature, SplitButtonConfig } from "../types";
 import { SPLIT_BUTTON_DEFAULTS } from "../constants";
@@ -16,28 +17,26 @@ import { SPLIT_BUTTON_DEFAULTS } from "../constants";
  * @param {SplitButtonConfig} config - Component configuration
  * @returns {Function} Higher-order function that adds the menu
  */
+export const makeMenu = (config: SplitButtonConfig, trailing: HTMLElement, items: MenuContent[]): MenuComponent =>
+  // Aligned to the trailing button and 4dp from it, as the guidelines ask.
+  // The component opens and closes it, so the menu does not listen to the
+  // opener itself.
+  createMenu({
+    opener: trailing,
+    items,
+    position: "bottom-end",
+    offset: SPLIT_BUTTON_DEFAULTS.MENU_OFFSET,
+    manualOpen: true,
+    ...(config.layer ? { layer: config.layer } : {}),
+    prefix: config.prefix,
+  } as never);
+
 export const withMenu =
   (config: SplitButtonConfig) =>
   <C extends ElementComponent & ButtonsFeature>(component: C): C & MenuFeature => {
     if (!config.items || config.items.length === 0) return component;
-
-    const trailing = component.trailingElement;
-
-    // Aligned to the trailing button and 4dp from it, as the guidelines ask.
-    // The component opens and closes it, so the menu does not listen to the
-    // opener itself.
-    const menu: MenuComponent = createMenu({
-      opener: trailing,
-      items: config.items as MenuContent[],
-      position: "bottom-end",
-      offset: SPLIT_BUTTON_DEFAULTS.MENU_OFFSET,
-      manualOpen: true,
-      ...(config.layer ? { layer: config.layer } : {}),
-      prefix: config.prefix,
-    } as never);
-
     return {
       ...component,
-      menu,
+      [MENU]: makeMenu(config, component.trailingElement, config.items as MenuContent[]),
     };
   };

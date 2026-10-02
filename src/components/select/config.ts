@@ -3,6 +3,7 @@
 import { createComponentConfig } from "../../core/config/component";
 import { SelectConfig, BaseComponent, ApiOptions } from "./types";
 import { SELECT_DEFAULTS } from "./constants";
+import { MENU } from "../menu/inner";
 
 /**
  * Default configuration for the Select component
@@ -64,8 +65,8 @@ export const getApiConfig = (comp: BaseComponent): ApiOptions => ({
       if (comp.textField?.destroy) {
         comp.textField.destroy();
       }
-      if (comp.menu?.destroy) {
-        comp.menu.destroy();
+      if (comp[MENU]?.destroy) {
+        comp[MENU].destroy();
       }
       if (comp.lifecycle?.destroy) {
         comp.lifecycle.destroy();

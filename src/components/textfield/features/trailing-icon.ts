@@ -41,7 +41,7 @@ export interface TrailingIconConfig {
    */
   trailingIconLabel?: string;
 
-  /** Called when the trailing icon button is activated, after `trailing` is emitted */
+  /** `trailing` listener. Registered on the text field at creation, not called from here. */
   onTrailingClick?: (event: TextFieldTrailingPayload) => void;
 
   /** Whether the field starts disabled; the trailing button is disabled with it */
@@ -124,7 +124,6 @@ export const withTrailingIcon = <T extends TrailingIconConfig & object>(config: 
       if (component.input?.disabled) return;
       const detail: TextFieldTrailingPayload = { value: component.input?.value ?? '', event };
       component.emit?.('trailing', detail);
-      config.onTrailingClick?.(detail);
     };
 
     const create = (): HTMLElement => {

@@ -26,7 +26,7 @@ export type SnackbarQueueBehavior = 'queue' | 'replace';
 /**
  * Snackbar visibility states
  */
-export type SnackbarState = 'visible' | 'hidden';
+export type SnackbarState = 'visible' | 'queued' | 'hidden';
 
 /**
  * Why a snackbar closed
@@ -158,7 +158,10 @@ export interface SnackbarComponent {
   /** The root element of the snackbar */
   element: HTMLElement;
 
-  /** Current state of the snackbar */
+  /**
+   * Current state of the snackbar: `queued` between `show()` and its turn on
+   * screen, behind another snackbar; `visible` while it is shown.
+   */
   state: SnackbarState;
 
   /** The action button element (if present) */
@@ -170,11 +173,24 @@ export interface SnackbarComponent {
   /** Timer for auto-dismissal */
   timer?: SnackbarTimer;
 
-  /** Displays the snackbar */
+  /**
+   * Displays the snackbar, through the queue. With nothing on screen, when it
+   * returns the state is `visible` and `open` has been emitted; behind another
+   * snackbar the state is `queued`, and `visible` and `open` come together at
+   * its turn. On a visible or queued snackbar it does nothing.
+   */
   show: () => SnackbarComponent;
 
-  /** Hides the snackbar */
+  /**
+   * Hides the snackbar. When it returns the state is `hidden` and `close` has
+   * been emitted; the element leaves the page after its transition. A queued
+   * snackbar gives up its turn and emits nothing, as it was never open. On a
+   * hidden snackbar it does nothing.
+   */
   hide: () => SnackbarComponent;
+
+  /** Whether the snackbar is on screen: true only while `state` is `visible` */
+  isOpen: () => boolean;
 
   /** Sets the message text */
   setMessage: (message: string) => SnackbarComponent;
@@ -289,6 +305,8 @@ export interface SnackbarQueueAddOptions {
 export interface SnackbarQueue {
   add: (snackbar: QueuedSnackbar, options?: SnackbarQueueAddOptions) => void;
   clear: () => void;
+  /** Takes a snackbar out of the queue: a waiting one, or the one on screen when it is destroyed */
+  remove: (snackbar: QueuedSnackbar) => void;
   getLength: () => number;
 }
 

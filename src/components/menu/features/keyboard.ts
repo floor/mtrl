@@ -132,10 +132,16 @@ export const createKeyboardNavigation = (component: MenuFeatureHost) => {
 
     const items = menuItems(menuElement);
 
-    // The first item is the way into the menu for the Tab order, whichever
-    // way the menu was opened
+    // ArrowUp on the opener sets the last item to 0, so clear first.
     items.forEach((item) => item.setAttribute("tabindex", "-1"));
-    if (items.length > 0) items[0].setAttribute("tabindex", "0");
+    items[0]?.setAttribute("tabindex", "0");
+
+    // An arrow may have moved focus before the opening timer ran. The menu
+    // contains itself, so the root is not an item. Submenus live beside the
+    // root menu, and focus in a shadow root must be read there.
+    const focused = activeElementOf(menuElement);
+    if (focused !== menuElement && menuElement.contains(focused) ||
+      focused?.closest(`.${component.getClass("menu--submenu")}`)?.getAttribute("data-owner") === menuElement.id) return;
 
     // Opened with a key: focus the first item, which is what the spec asks
     // for and what a person navigating by key expects to see marked

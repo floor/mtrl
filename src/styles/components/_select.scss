@@ -158,11 +158,11 @@ $component: "#{base.$prefix}-select";
     // Size variants
     &--small {
         .#{base.$prefix}-textfield {
-            height: v.textfield("height-small");
+            height: v.text-field("height-small");
         }
 
         .#{base.$prefix}-textfield__input {
-            height: v.textfield("height-small");
+            height: v.text-field("height-small");
             padding-top: 8px;
             padding-bottom: 8px;
         }
@@ -170,11 +170,11 @@ $component: "#{base.$prefix}-select";
 
     &--large {
         .#{base.$prefix}-textfield {
-            height: v.textfield("height-large");
+            height: v.text-field("height-large");
         }
 
         .#{base.$prefix}-textfield__input {
-            height: v.textfield("height-large");
+            height: v.text-field("height-large");
             padding-top: 16px;
             padding-bottom: 16px;
         }

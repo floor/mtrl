@@ -26,6 +26,7 @@ const fabSpec = {
     variant: { type: "string", config: "variant" },
     size: { type: "string", config: "size" },
     disabled: { type: "boolean", config: "disabled", update: (c, v) => void (v ? c.disable() : c.enable()) },
+    /** Markup (HTML). Not sanitized by default: see Markup and sanitizing. */
     icon: { type: "string", config: "icon", update: (c, v) => void c.setIcon(String(v ?? "")) },
     position: { type: "string", config: "position" },
     value: { type: "string", config: "value", update: (c, v) => void c.setValue(String(v ?? "")) },

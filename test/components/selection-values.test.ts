@@ -163,7 +163,7 @@ describe("a value no option carries clears the selection", () => {
 
     radios.setValue("nope");
 
-    expect(radios.getValue()).toBe("");
+    expect(radios.getValue()).toBeNull();
     expect([...radios.element.querySelectorAll<HTMLInputElement>("input")].some((i) => i.checked)).toBe(false);
     expect(mtrlWarnings()).toEqual(['[mtrl] radios: no option with value "nope"']);
     expect(events).toEqual([]);

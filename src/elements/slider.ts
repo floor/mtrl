@@ -103,14 +103,17 @@ const sliderSpec = {
     "top-to-bottom": { type: "boolean", config: "topToBottom" },
     label: { type: "string", config: "label" },
     "label-position": { type: "string", config: "labelPosition" },
+    /** Markup (HTML). Not sanitized by default: see Markup and sanitizing. */
     icon: { type: "string", config: "icon" },
     "icon-position": { type: "string", config: "iconPosition" },
+    /** Markup (HTML). Not sanitized by default: see Markup and sanitizing. Shown at size M, L or XL. */
     "inset-icon": {
       type: "string",
       config: "insetIcon",
       update: (c, _v, host) =>
         void c.setInsetIcon(host.getAttribute("inset-icon") ?? "", host.getAttribute("inset-icon-at-min") ?? ""),
     },
+    /** Markup (HTML). Not sanitized by default: see Markup and sanitizing. Replaces `inset-icon` while the value is at the minimum. */
     "inset-icon-at-min": {
       type: "string",
       config: "insetIconAtMin",

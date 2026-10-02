@@ -16,7 +16,9 @@ export const callbackPayload: Equals<
   Parameters<Parameters<typeof radios.on<"change">>[1]>[0],
   RadiosChangePayload
 > = true;
-export const valueIsString: Equals<RadiosChangePayload["value"], string> = true;
+// 1.0: null, not "", when nothing is selected, as the select and <m-radios> report it
+export const valueIsStringOrNull: Equals<RadiosChangePayload["value"], string | null> = true;
+export const getterIsStringOrNull: Equals<ReturnType<RadiosComponent["getValue"]>, string | null> = true;
 export const optionCanBeCleared: Equals<RadiosChangePayload["option"], RadioOptionConfig | null> = true;
 export const originalEventCanBeAbsent: Equals<RadiosChangePayload["originalEvent"], Event | undefined> = true;
 export const originalEventKeyIsRequired: {} extends Pick<RadiosChangePayload, "originalEvent"> ? true : false = false;
@@ -24,10 +26,10 @@ export const originalEventKeyIsRequired: {} extends Pick<RadiosChangePayload, "o
 export const nativePayload: RadiosChangePayload = {
   value: "s", option: { value: "s", label: "Small" }, originalEvent: new Event("change"),
 };
-export const clearedPayload: RadiosChangePayload = { value: "", option: null, originalEvent: undefined };
+export const clearedPayload: RadiosChangePayload = { value: null, option: null, originalEvent: undefined };
 
 const onChange: RadiosEvents["change"] = payload => {
-  payload.value.toUpperCase();
+  payload.value?.toUpperCase();
   payload.option?.label.toUpperCase();
   payload.originalEvent?.preventDefault();
 };
@@ -50,7 +52,12 @@ radios.on(RADIO_EVENTS.BLUR, () => {});
 radios.on("click", () => {});
 // @ts-expect-error lifecycle events use a separate emitter
 radios.on("mount", () => {});
-// @ts-expect-error value remains a string
+// @ts-expect-error value is a string or null
 export const invalidValue: RadiosChangePayload = { value: 1, option: null, originalEvent: undefined };
 // @ts-expect-error the originalEvent property is always present, even when undefined
-export const missingOriginalEvent: RadiosChangePayload = { value: "", option: null };
+export const missingOriginalEvent: RadiosChangePayload = { value: null, option: null };
+
+// 1.0: the setter takes what the getter returns (string | null), so they round-trip
+export const setterTakesNull: Equals<Parameters<RadiosComponent["setValue"]>[0], string | null> = true;
+radios.setValue(null);
+radios.setValue(radios.getValue());

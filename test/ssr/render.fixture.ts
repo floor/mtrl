@@ -10,7 +10,7 @@ import { configureHTML } from "../../src/core/dom/html";
 const { renderElement } = await import("../../src/ssr");
 
 const containerSpec = cardElement.spec as ElementSpec<ElementComponent>;
-const optedOut = new Set(["carousel", "fab-menu", "toolbar"]);
+const optedOut = new Set(["carousel", "fab-menu"]);
 const parsed = (html: string) => parseHTML(`<html><body>${html}</body></html>`).document.body.firstElementChild!;
 test("all 36 default fixtures render repeatedly, without late work", async () => {
   const errors: unknown[] = [];
@@ -182,4 +182,28 @@ test("menu items and search suggestions are included in the synchronous server t
   const searchTree = search.querySelector("template")!.content;
   expect(Array.from(searchTree.querySelectorAll('[role="option"]'), item => item.textContent)).toEqual(["Apple", "Banana"]);
   expect(searchTree.querySelector("strong")?.textContent).toBe("App");
+});
+
+test("a toolbar renders its shadow root and writes no roving tabindex", () => {
+  const icon = "<svg viewBox='0 0 24 24'><path d='M4 4h16v16H4z'/></svg>";
+  const html = renderElement(
+    "m-toolbar",
+    { "aria-label": "Roving" },
+    `<m-menu slot="overflow"><m-menu-item value="a">Align</m-menu-item></m-menu>` +
+      `<m-icon-button disabled aria-label="First" icon="${icon}"></m-icon-button>` +
+      `<div id="wrap"><button type="button" id="inner">Inner</button></div>` +
+      `<span id="plain">Note</span>`,
+  );
+  const host = parsed(html);
+  expect(Array.from(host.children).some((child) => child.localName === "template" && child.hasAttribute("shadowrootmode"))).toBe(true);
+  const menu = host.querySelector("m-menu");
+  const disabled = host.querySelector("m-icon-button");
+  const wrap = host.querySelector("div");
+  const inner = host.querySelector("button");
+  const plain = host.querySelector("span");
+  expect(menu?.getAttribute("slot")).toBe("overflow");
+  for (const node of [menu, disabled, wrap, inner, plain]) {
+    expect(node, "row present").not.toBeNull();
+    expect(node!.hasAttribute("tabindex"), node!.localName).toBe(false);
+  }
 });

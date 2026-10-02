@@ -64,27 +64,31 @@ export const withController =
     return config.multiSelect ? selected : (selected[0] ?? null);
   };
 
-  /** The `change` payload stays an array with named fields and a second positional argument. */
+  /** Build the chips set's change payload. */
   const changeEvent = (values: (string | null)[], changed: string | null): ChipsChangeEvent => {
-    return Object.assign([...values], { value: selectionValue(values), selected: values, changed });
+    return { value: selectionValue(values), selected: values, changed };
   };
 
   const currentValue = (): string | string[] | null => selectionValue(getSelectedValues());
 
-  const handleSelection = (selectedChip: ChipComponent) => {
-    if (!config.multiSelect) {
-      // Single selection mode - deselect all other chips
-      component.chipInstances.forEach((chip: ChipComponent) => {
-        if (chip !== selectedChip && chip.isSelected()) {
-          chip.setSelected(false);
-        }
-      });
-    }
+  const selectSingle = (selectedChip: ChipComponent) => {
+    if (config.multiSelect) return;
+    component.chipInstances.forEach((chip) => {
+      if (chip !== selectedChip && chip.isSelected()) chip.setSelected(false);
+    });
+  };
+
+  /** Applies a click's toggle to the set. True when the set refused it. */
+  const handleSelection = (selectedChip: ChipComponent): boolean | void => {
+    if (selectedChip.isSelected()) selectSingle(selectedChip);
 
     // With selectionRequired, deselecting the last selected chip is refused, in either
     // mode. It used to be forced on every single-select set. FLO-257.
+    // Nothing changed, so nothing is emitted, here or on the chip, and no
+    // onSelect is called. FLO-550.
     if (config.selectionRequired && !selectedChip.isSelected() && getSelectedChips().length === 0) {
       selectedChip.setSelected(true);
+      return true;
     }
 
     // Get all currently selected chips and their values
@@ -94,14 +98,9 @@ export const withController =
     const selectedValues = selectedChips.map((chip) => chip.getValue());
     const changedValue = selectedChip ? selectedChip.getValue() : null;
 
-    // Call onChange callback if provided
-    const event = changeEvent(selectedValues, changedValue);
-    if (typeof config.onChange === "function") {
-      config.onChange(event, changedValue);
-    }
-
-    // Dispatch change event to all registered handlers
-    dispatchEvent(CHIPS_EVENTS.CHANGE, event, changedValue);
+    // onChange is registered with on("change") in chips.ts, so dispatch is the
+    // only call. It hears selectByValue(values, true) the same way.
+    dispatchEvent(CHIPS_EVENTS.CHANGE, changeEvent(selectedValues, changedValue));
   };
 
   // The set is an ARIA grid with one Tab stop (the m3.material.io chips' web roles,
@@ -179,7 +178,9 @@ export const withController =
       const chipElement = component.chipInstances[index].element;
       const container = component.chipContainer || component.element;
 
-      // Calculate scroll position to center the chip
+      // Calculate scroll position to center the chip. No `behavior`: the
+      // stylesheet scrolls a scrollable set smoothly, and the reduced-motion
+      // reset turns that off; an explicit "smooth" would override it (FLO-553).
       const containerRect = container.getBoundingClientRect();
       const chipRect = chipElement.getBoundingClientRect();
 
@@ -195,7 +196,6 @@ export const withController =
 
         container.scrollTo({
           top: Math.max(0, scrollTop),
-          behavior: "smooth",
         });
       } else {
         // For horizontal scroll
@@ -207,10 +207,32 @@ export const withController =
 
         container.scrollTo({
           left: Math.max(0, scrollLeft),
-          behavior: "smooth",
         });
       }
     }
+  };
+
+  // chip.destroy() outside removeChip used to leave the chip in this list, so
+  // the set still counted it and the arrows stopped on it (FLO-533). Drop it
+  // the way removeChip unwires a chip, without remove or change. removeChip
+  // and the set's own teardown destroy the chip themselves and must not take
+  // this path as well.
+  let managedDestroy = false;
+  const dropDestroyedChip = (chip: ChipComponent) => {
+    const index = component.chipInstances.indexOf(chip);
+    if (index < 0) return;
+    chip.element.removeEventListener("keydown", handleKeyboardNavigation);
+    component.chipInstances.splice(index, 1);
+    if (index === focusedChipIndex) focusedChipIndex = -1;
+    else if (index < focusedChipIndex) focusedChipIndex--;
+    syncTabStop();
+  };
+  const watchChipDestroy = (chip: ChipComponent) => {
+    const destroy = chip.destroy.bind(chip);
+    chip.destroy = () => {
+      if (!managedDestroy) dropDestroyedChip(chip);
+      destroy();
+    };
   };
 
   /**
@@ -224,11 +246,9 @@ export const withController =
     const chipInstance = createChip({
       ...chipConfig,
       managedSelection: true,
+      onSelected: selectSingle,
       cell: true,
-      onRemove: chipConfig.type === "input" ? chip => {
-        chipConfig.onRemove?.(chip);
-        removeChip(chip);
-      } : undefined,
+      onRemoved: removeChip,
     });
 
     // Get the container element to append to
@@ -241,14 +261,16 @@ export const withController =
 
     component.chipInstances.push(chipInstance);
 
+    // A selected programmatic addition moves a single selection just as a
+    // click does. Finish the model update before the `add` handler reads it.
+    if (chipInstance.isSelected()) selectSingle(chipInstance);
+
     // This click handler is the ONLY path to handleSelection
     chipInstance.on("click", () => {
       if (!chipInstance.isDisabled() && ["filter", "input"].includes(chipInstance.getType())) {
         chipInstance.toggleSelected();
 
-        handleSelection(chipInstance);
-        chipConfig.onChange?.(chipInstance.isSelected(), chipInstance);
-        chipConfig.onSelect?.(chipInstance);
+        if (!handleSelection(chipInstance)) chipConfig.onSelect?.(chipInstance);
 
         // Update focus tracking
         focusedChipIndex = component.chipInstances.indexOf(chipInstance);
@@ -260,6 +282,7 @@ export const withController =
     });
     chipInstance.element.addEventListener("keydown", handleKeyboardNavigation);
     syncTabStop();
+    watchChipDestroy(chipInstance);
 
     // Dispatch add event
     dispatchEvent(CHIPS_EVENTS.ADD, { value: currentValue(), chip: chipInstance });
@@ -283,7 +306,8 @@ export const withController =
       const hadFocus = chip.element.contains(activeElementOf(chip.element));
 
       chip.element.removeEventListener("keydown", handleKeyboardNavigation);
-      chip.destroy();
+      managedDestroy = true;
+      try { chip.destroy(); } finally { managedDestroy = false; }
       component.chipInstances.splice(index, 1);
 
       // Update focused index if needed
@@ -379,7 +403,7 @@ export const withController =
     // Dispatch change event if any chip selection has changed AND if triggerEvent is true
     if (selectionChanged && triggerEvent) {
       const selectedValues = getSelectedValues();
-      dispatchEvent(CHIPS_EVENTS.CHANGE, changeEvent(selectedValues, null), null);
+      dispatchEvent(CHIPS_EVENTS.CHANGE, changeEvent(selectedValues, null));
     }
   };
 
@@ -397,7 +421,7 @@ export const withController =
 
     // Only dispatch if there were actually chips deselected AND triggerEvent is true
     if (hadSelectedChips && triggerEvent) {
-      dispatchEvent(CHIPS_EVENTS.CHANGE, changeEvent([], null), null);
+      dispatchEvent(CHIPS_EVENTS.CHANGE, changeEvent([], null));
     }
   };
 
@@ -439,6 +463,7 @@ export const withController =
 
   // Share the base resource scope; withLifecycle is composed after this feature.
   getCleanup(component).add(() => {
+    managedDestroy = true;
     component.element.removeEventListener("keydown", handleKeyboardNavigation);
     component.element.removeEventListener("focusin", trackFocus);
     component.chipInstances.forEach(chip => {
@@ -446,7 +471,9 @@ export const withController =
       chip.destroy();
     });
     component.chipInstances.length = 0;
-    Object.keys(eventListeners).forEach(event => { eventListeners[event] = []; });
+    // Empty the arrays in place. Replacing them would leave a dispatch that is
+    // already walking the old array free to call listeners after destroy.
+    Object.keys(eventListeners).forEach(event => { eventListeners[event].length = 0; });
   });
 
   return {

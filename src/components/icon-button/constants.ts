@@ -126,9 +126,7 @@ export const ICON_BUTTON_CLASSES = {
  * Default ripple effect configuration for IconButton
  */
 export const DEFAULT_RIPPLE_CONFIG = {
-  DURATION: 450,
-  TIMING: 'cubic-bezier(0.4, 0.0, 0.2, 1)',
-  OPACITY: ['0.7', '0'] as [string, string]
+  DURATION: 450
 } as const;
 
 /**

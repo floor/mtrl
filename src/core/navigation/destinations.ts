@@ -15,7 +15,9 @@ import { activeElementOf } from "../dom/focus";
 export interface DestinationConfig {
   id: string;
   label: string;
+  /** Markup (HTML). Not sanitized by default: see Markup and sanitizing. */
   icon: string;
+  /** Markup (HTML). Not sanitized by default: see Markup and sanitizing. Shown while this destination is active. */
   activeIcon?: string;
   href?: string;
   /** A count, a short text, or `true` for the dot */

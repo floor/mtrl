@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { JSDOM } from "jsdom";
-import { createChips, type ChipsConfig, type ChipsComponent, type ChipsEvents, type ChipComponent } from "../../../src/components/chips";
+import { createChips, type ChipsConfig, type ChipsComponent, type ChipsEvents, type ChipsChangeEvent, type ChipComponent } from "../../../src/components/chips";
 
 let dom: JSDOM;
 let instances: ChipsComponent[];
@@ -30,6 +30,36 @@ const mount = (config: ChipsConfig = {}) => {
 };
 
 describe("chips container events", () => {
+  test("single and multi change listeners receive one plain object for user and method changes", () => {
+    for (const multiSelect of [false, true]) {
+      const callbacks: { event: ChipsChangeEvent; count: number }[] = [];
+      const listeners: { event: ChipsChangeEvent; count: number }[] = [];
+      const chips = mount({ multiSelect, chips: [
+        { value: "a", ripple: false }, { value: "b", ripple: false },
+      ], onChange: function (event) { callbacks.push({ event, count: arguments.length }); } });
+      chips.on("change", function (event) { listeners.push({ event, count: arguments.length }); });
+
+      chips.getChips()[0].element.click();
+      chips.selectByValue("b", true);
+
+      expect(listeners).toHaveLength(2);
+      expect(callbacks).toHaveLength(2);
+      for (const { event, count } of [...listeners, ...callbacks]) {
+        expect(count).toBe(1);
+        expect(Array.isArray(event)).toBe(false);
+        expect(Object.getPrototypeOf(event)).toBe(Object.prototype);
+        expect(Object.keys(event).sort()).toEqual(["changed", "selected", "value"]);
+      }
+      expect(listeners.map(({ event }) => ({ ...event }))).toEqual([
+        { value: multiSelect ? ["a"] : "a", selected: ["a"], changed: "a" },
+        { value: multiSelect ? ["a", "b"] : "b", selected: multiSelect ? ["a", "b"] : ["b"], changed: null },
+      ]);
+      expect(callbacks.map(({ event }) => ({ ...event }))).toEqual(listeners.map(({ event }) => ({ ...event })));
+      expect(callbacks[0]!.event).toBe(listeners[0]!.event);
+      expect(callbacks[1]!.event).toBe(listeners[1]!.event);
+    }
+  });
+
   test("config add handlers receive each initial chip and later additions after insertion", () => {
     const added: { chip: ChipComponent; value: string | string[] | null }[] = [];
     const parents: (HTMLElement | null)[] = [];
@@ -55,35 +85,124 @@ describe("chips container events", () => {
       });
       chips.addChip({ value: "a", selected: true, ripple: false });
       chips.addChip({ value: "b", selected: true, ripple: false });
-      expect(values).toEqual(multiSelect ? [["a"], ["a", "b"]] : ["a", "a"]);
+      expect(values).toEqual(multiSelect ? [["a"], ["a", "b"]] : ["a", "b"]);
     }
   });
 
-  test("click change passes both arguments, including valueless chips, and calls onChange", () => {
-    const events: [(string | null)[], string | null][] = [];
-    const callbacks: [(string | null)[], string | null][] = [];
+  test("adding a selected chip moves a single selection before add is dispatched", () => {
+    const chips = mount({ multiSelect: false });
+    const events: unknown[] = [];
+    chips.on("add", event => {
+      expect(event.value).toBe(chips.getValue());
+      events.push({ type: "add", value: event.value, chip: event.chip.getValue(), selected: chips.getSelectedValues() });
+    });
+    chips.on("change", event => events.push({ type: "change", value: event.value }));
+
+    chips.addChip({ value: "a", selected: true, ripple: false });
+    chips.addChip({ value: "b", selected: true, ripple: false });
+
+    expect(chips.getChips().map(chip => chip.isSelected())).toEqual([false, true]);
+    expect(chips.getValue()).toBe("b");
+    expect(events).toEqual([
+      { type: "add", value: "a", chip: "a", selected: ["a"] },
+      { type: "add", value: "b", chip: "b", selected: ["b"] },
+    ]);
+  });
+
+  test("initial selected chips in a single-select set leave the last declared selected", () => {
+    const events: unknown[] = [];
+    const chips = mount({ multiSelect: false, chips: [
+      { value: "a", selected: true, ripple: false },
+      { value: "b", selected: true, ripple: false },
+    ], on: {
+      add: event => events.push({ type: "add", value: event.value, selected: event.chip.isSelected() }),
+      change: event => events.push({ type: "change", value: event.value }),
+    } });
+    expect(chips.getChips().map(chip => chip.isSelected())).toEqual([false, true]);
+    expect(chips.getValue()).toBe("b");
+    expect(events).toEqual([
+      { type: "add", value: "a", selected: true },
+      { type: "add", value: "b", selected: true },
+    ]);
+  });
+
+  test("a chip's setter replaces the single selection silently", () => {
+    const events: string[] = [];
+    const chips = mount({ multiSelect: false, chips: [
+      { value: "a", selected: true, ripple: false },
+      { value: "b", ripple: false, onChange: () => events.push("chip change") },
+    ], onChange: () => events.push("set change") });
+    chips.on("change", () => events.push("change"));
+    const [a, b] = chips.getChips();
+
+    expect(b.setSelected(true)).toBe(b);
+    expect([a.isSelected(), b.isSelected()]).toEqual([false, true]);
+    expect(chips.getSelectedValues()).toEqual(["b"]);
+    expect(chips.getValue()).toBe("b");
+    expect(events).toEqual([]);
+
+    b.setSelected(false);
+    expect(chips.getSelectedValues()).toEqual([]);
+    expect(chips.getValue()).toBeNull();
+    expect(events).toEqual([]);
+  });
+
+  test("other programmatic selection paths keep the single-set invariant", () => {
+    const chips = mount({ multiSelect: false, chips: [
+      { value: "a", ripple: false }, { value: "b", ripple: false }, { value: "c", ripple: false },
+    ] });
+    const [a, b] = chips.getChips();
+    const changes: unknown[] = [];
+    chips.on("change", event => changes.push(event.value));
+
+    a.toggleSelected();
+    b.toggleSelected();
+    expect(chips.getSelectedValues()).toEqual(["b"]);
+    chips.selectByValue(["a", "c"]);
+    expect(chips.getSelectedValues()).toEqual(["c"]);
+    chips.setValue(["a", "b"]);
+    expect(chips.getSelectedValues()).toEqual(["b"]);
+    chips.clearSelection();
+    expect(chips.getSelectedValues()).toEqual([]);
+    expect(changes).toEqual([]);
+
+    const multi = mount({ multiSelect: true, chips: [
+      { value: "a", ripple: false }, { value: "b", ripple: false },
+    ] });
+    multi.getChips()[0].setSelected(true);
+    multi.getChips()[1].setSelected(true);
+    expect(multi.getSelectedValues()).toEqual(["a", "b"]);
+  });
+
+  test("click change reports the selected and changed values, including valueless chips, to both listeners", () => {
+    const events: Parameters<ChipsEvents["change"]>[] = [];
+    const callbacks: Parameters<ChipsEvents["change"]>[] = [];
     const chips = mount({ multiSelect: true, chips: [{ value: "a", ripple: false }, { ripple: false }],
       on: { change: (...args) => events.push(args) }, onChange: (...args) => callbacks.push(args) });
     const [a, blank] = chips.getChips();
     a.element.click();
     blank.element.click();
     a.element.click();
-    expect(events).toEqual([[["a"], "a"], [["a", null], null], [[null], "a"]]);
+    expect(events).toEqual([
+      [{ value: ["a"], selected: ["a"], changed: "a" }],
+      [{ value: ["a"], selected: ["a", null], changed: null }],
+      [{ value: [], selected: [null], changed: "a" }],
+    ]);
     expect(callbacks).toEqual(events);
   });
 
-  test("keyboard selection emits the same positional change contract", () => {
-    const events: [(string | null)[], string | null][] = [];
+  test("keyboard selection emits the same change object", () => {
+    const events: Parameters<ChipsEvents["change"]>[] = [];
     const chips = mount({ multiSelect: true, chips: [{ value: "a", ripple: false }] });
     chips.on("change", (...args) => events.push(args));
     chips.element.dispatchEvent(new dom.window.KeyboardEvent("keydown", { key: "ArrowRight" }));
     // Enter goes to the focused chip cell (FLO-261: the set is a grid of cells).
     document.activeElement!.dispatchEvent(new dom.window.KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true }));
-    expect(events).toEqual([[["a"], "a"]]);
+    expect(events).toEqual([[{ value: ["a"], selected: ["a"], changed: "a" }]]);
   });
 
   test("programmatic selection and clearing are silent; selectByValue(values, true) opts in with null as the changed value", () => {
-    const events: [(string | null)[], string | null][] = [];
+    const events: Parameters<ChipsEvents["change"]>[] = [];
     const chips = mount({ multiSelect: false, chips: [{ value: "a", ripple: false }, { value: "b", ripple: false }] });
     chips.on("change", (...args) => events.push(args));
     // A programmatic change emits no change, as on a native control (FLO-328).
@@ -91,17 +210,15 @@ describe("chips container events", () => {
     expect(chips.getSelectedValues()).toEqual([]);
     expect(events).toEqual([]);
     chips.selectByValue("a", true).selectByValue("a", true);
-    expect(events).toEqual([[["a"], null]]);
+    expect(events).toEqual([[{ value: "a", selected: ["a"], changed: null }]]);
   });
 
-  test("change is one object with the element's value, and the positional call still works (FLO-320)", () => {
+  test("change is one object with the element's value (FLO-320)", () => {
     const read: unknown[] = [];
-    const positional: unknown[] = [];
     const single = mount({ multiSelect: false, chips: [{ value: "a", ripple: false }, { value: "b", ripple: false }] });
     const multi = mount({ multiSelect: true, chips: [{ value: "a", ripple: false }, { ripple: false }] });
     for (const chips of [single, multi]) {
       chips.on("change", event => read.push({ value: event.value, selected: event.selected, changed: event.changed }));
-      chips.on("change", (selectedValues, changedValue) => positional.push([[...selectedValues], changedValue]));
     }
     single.getChips()[1].element.click();
     single.clearSelection();
@@ -115,7 +232,6 @@ describe("chips container events", () => {
       // A chip without a value is in `selected` as null, and not in `value`
       { value: ["a"], selected: ["a", null], changed: null },
     ]);
-    expect(positional).toEqual([[["b"], "b"], [["a"], "a"], [["a", null], null]]);
   });
 
   test("remove reports post-removal selection and the removed chip's value, by instance or index", () => {
@@ -135,6 +251,51 @@ describe("chips container events", () => {
     expect(removed).toEqual(original);
     expect(chips.getChips()).toEqual([]);
     for (const chip of removed) expect(chip.element.isConnected).toBe(false);
+  });
+
+  test("setSelected on a chip removed from a single-select set leaves the set alone", () => {
+    const chips = mount({ multiSelect: false, chips: [
+      { value: "a", selected: true, ripple: false },
+      { value: "b", ripple: false },
+      { value: "c", ripple: false },
+    ] });
+    const [a, b] = chips.getChips();
+    const events: unknown[] = [];
+    chips.on("change", event => events.push(event));
+    chips.removeChip(b);
+    b.setSelected(true);
+    expect(a.isSelected()).toBe(true);
+    expect(chips.getValue()).toBe("a");
+    expect(events).toEqual([]);
+  });
+
+  test("setSelected on a chip destroyed while it is still in the set leaves the selection", () => {
+    const chips = mount({ multiSelect: false, chips: [
+      { value: "a", selected: true, ripple: false },
+      { value: "b", ripple: false },
+    ] });
+    const [a, b] = chips.getChips();
+    const events: unknown[] = [];
+    chips.on("change", event => events.push(event));
+    b.destroy();
+    b.setSelected(true);
+    expect(a.isSelected()).toBe(true);
+    expect(chips.getValue()).toBe("a");
+    expect(events).toEqual([]);
+  });
+
+  test("setSelected after the set is destroyed does not fire and leaves the last selection", () => {
+    const chips = mount({ multiSelect: false, chips: [
+      { value: "a", selected: true, ripple: false },
+      { value: "b", ripple: false },
+    ] });
+    const [a, b] = chips.getChips();
+    const events: unknown[] = [];
+    chips.on("change", event => events.push(event));
+    chips.destroy();
+    b.setSelected(true);
+    expect(a.isSelected()).toBe(true);
+    expect(events).toEqual([]);
   });
 
   test("remove preserves null chipValue and the single-select value shape", () => {

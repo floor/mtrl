@@ -3,7 +3,7 @@
 import { expect, test } from "bun:test";
 import { createComponent as createSolid, type ComponentProps } from "solid-js";
 import { renderToString } from "solid-js/web";
-import { buttonElement, cardElement, carouselElement, tabsElement } from "../../src/elements";
+import { buttonElement, cardElement, carouselElement, tabsElement, type ButtonElement, type ButtonSpec, type CardElement, type CardSpec } from "../../src/elements";
 import { createComponent } from "../../src/solid/create";
 import { assertGlobalHost, GLOBAL_ATTRS_WITH_IS } from "../../scripts/fixtures/ssr-global-host";
 
@@ -51,14 +51,13 @@ test("an unregistered server returns no template; registration renders one and o
   expect(shadow).not.toContain("onclick");
   expect(shadow).not.toContain("__xss");
 
-  const Card = createComponent(cardElement.spec, () => "m-card");
-  const Inner = createComponent(buttonElement.spec, () => "m-button");
-  // The adapters' prop types don't yet accept arbitrary HTML attributes; the test still passes them so the bridge forwards them onto the host.
-  const nestedHostProps = {
+  const Card = createComponent<CardSpec, CardElement>(cardElement.spec, () => "m-card");
+  const Inner = createComponent<ButtonSpec, ButtonElement>(buttonElement.spec, () => "m-button");
+  const nestedHostProps: ComponentProps<typeof Inner> = {
     id: "inner",
     popover: "auto",
     label: "Nested",
-  } as ComponentProps<typeof Inner>;
+  };
   const nested = renderToString(() => createSolid(Card, {
     id: "card",
     children: createSolid(Inner, nestedHostProps),

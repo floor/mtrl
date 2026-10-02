@@ -10,6 +10,7 @@ import { describe, test, expect, beforeAll, afterAll, beforeEach, afterEach } fr
 import { JSDOM } from "jsdom";
 import createSelect from "../../../src/components/select";
 import { currentlyOpenMenu, menuClosed } from "../../../src/components/menu/features/registry";
+import { innerMenu } from "../../../src/components/menu/inner";
 
 const dom = new JSDOM("<!DOCTYPE html><html><body></body></html>", {
   url: "http://localhost/",
@@ -119,18 +120,18 @@ describe("select layer: top", () => {
   test("without a layer the menu opens inside the field, with no popover", async () => {
     const { select } = mount();
     await opened(select);
-    expect(select.menu.element.parentNode).toBe(select.element);
-    expect(select.menu.element.hasAttribute("popover")).toBe(false);
+    expect(innerMenu(select)!.element.parentNode).toBe(select.element);
+    expect(innerMenu(select)!.element.hasAttribute("popover")).toBe(false);
     expect(popoverCalls).toEqual([]);
   });
 
   test("the menu opens beside the field as a manual popover, fixed to the viewport", async () => {
     const { select } = mount({ layer: "top" });
     await opened(select);
-    expect(select.element.nextElementSibling).toBe(select.menu.element);
-    expect(select.menu.element.getAttribute("popover")).toBe("manual");
-    expect(select.menu.element.matches(":popover-open")).toBe(true);
-    expect(select.menu.element.style.position).toBe("fixed");
+    expect(select.element.nextElementSibling).toBe(innerMenu(select)!.element);
+    expect(innerMenu(select)!.element.getAttribute("popover")).toBe("manual");
+    expect(innerMenu(select)!.element.matches(":popover-open")).toBe(true);
+    expect(innerMenu(select)!.element.style.position).toBe("fixed");
   });
 
   test("the menu stays in the field's shadow root", async () => {
@@ -139,8 +140,8 @@ describe("select layer: top", () => {
     const root = host.attachShadow({ mode: "open" });
     const { select } = mount({ layer: "top" }, root);
     await opened(select);
-    expect(select.menu.element.getRootNode()).toBe(root);
-    expect(select.menu.element.matches(":popover-open")).toBe(true);
+    expect(innerMenu(select)!.element.getRootNode()).toBe(root);
+    expect(innerMenu(select)!.element.matches(":popover-open")).toBe(true);
   });
 
   test("in a shadow root, a click in the listbox off an option keeps it open; a click outside closes it once", async () => {
@@ -150,7 +151,7 @@ describe("select layer: top", () => {
     const { select, outside, closes } = mount({ layer: "top" }, root);
     await opened(select);
     // A disabled option has no handler of its own: the document sees the host
-    (select.menu.element.querySelector('[data-id="b"]') as HTMLElement).dispatchEvent(
+    (innerMenu(select)!.element.querySelector('[data-id="b"]') as HTMLElement).dispatchEvent(
       new dom.window.MouseEvent("click", { bubbles: true, composed: true }),
     );
     await after(100);
@@ -164,7 +165,7 @@ describe("select layer: top", () => {
   test("an option chosen changes the value and closes it once", async () => {
     const { select, closes } = mount({ layer: "top" });
     await opened(select);
-    (select.menu.element.querySelector('[data-id="c"]') as HTMLElement).click();
+    (innerMenu(select)!.element.querySelector('[data-id="c"]') as HTMLElement).click();
     await after(400);
     expect({ value: select.getValue(), closes: closes.length, open: select.isOpen() }).toEqual({
       value: "c",
@@ -176,7 +177,7 @@ describe("select layer: top", () => {
   test("focus moving into the menu beside the field does not close it", async () => {
     const { select } = mount({ layer: "top" });
     await opened(select);
-    const option = select.menu.element.querySelector('[data-id="a"]') as HTMLElement;
+    const option = innerMenu(select)!.element.querySelector('[data-id="a"]') as HTMLElement;
     select.textField.input.dispatchEvent(new dom.window.FocusEvent("blur", { relatedTarget: option }));
     await after(100);
     expect(select.isOpen()).toBe(true);

@@ -25,12 +25,11 @@ const PROMISED = [
   "format",
   "orientation",
   "showSeconds",
-  "closeOnSelect",
   "minuteStep",
   "secondStep",
   "cancelText",
   "confirmText",
-  "isOpen",
+  "open",
   "clockIcon",
   "keyboardIcon",
   "prefix",
@@ -81,12 +80,12 @@ describe("createBaseConfig keeps the promise its type makes", () => {
   });
 
   // `false` and `0` are the values a careless merge drops. Both are legitimate
-  // here: showSeconds and isOpen default to false, and a caller may pass them.
+  // here: showSeconds and open default to false, and a caller may pass them.
   test("a falsy value the caller passes is kept, not replaced by the default", () => {
-    const config = createBaseConfig({ showSeconds: false, isOpen: false });
+    const config = createBaseConfig({ showSeconds: false, open: false });
 
     expect(config.showSeconds).toBe(false);
-    expect(config.isOpen).toBe(false);
+    expect(config.open).toBe(false);
   });
 
   test("no promised field is the string 'undefined', which is what a lost default looks like downstream", () => {

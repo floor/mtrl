@@ -72,24 +72,10 @@ export const TABS_DEFAULTS = {
   SCROLLABLE: true,
   /** Whether to show a divider below the tabs */
   SHOW_DIVIDER: true,
-  /**
-   * @deprecated The height follows the variant: 3dp primary, 2dp secondary
-   * (FLO-262). Pass `indicator.height` to override it. Nothing reads this.
-   */
-  INDICATOR_HEIGHT: 3,
   /** Default indicator width strategy */
   INDICATOR_WIDTH_STRATEGY: TAB_INDICATOR_WIDTH_STRATEGIES.AUTO,
   /** Default fixed width for fixed indicator in pixels */
   INDICATOR_FIXED_WIDTH: 40,
-  /**
-   * @deprecated The indicator moves on the default spatial spring (FLO-262);
-   * `indicator.animationDuration` overrides it. Nothing reads this.
-   */
-  INDICATOR_ANIMATION_DURATION: 250,
-  /** @deprecated See INDICATOR_ANIMATION_DURATION. */
-  INDICATOR_ANIMATION_TIMING: 'cubic-bezier(0.4, 0, 0.2, 1)',
-  /** @deprecated The stylesheet sets the 24dp icon. Nothing reads this. */
-  ICON_SIZE: '24px',
   /** Whether to enable ripple effect on tabs */
   RIPPLE: true
 } as const;

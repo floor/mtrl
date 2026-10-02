@@ -551,6 +551,13 @@ const createButtonGroup = (config: ButtonGroupConfig = {}): ButtonGroupComponent
       }
     };
 
+    // The on map is the listeners registered at creation, ahead of any
+    // listener the caller adds afterwards.
+    if (baseConfig.on?.click) buttonGroup.on("click", baseConfig.on.click);
+    if (baseConfig.on?.focus) buttonGroup.on("focus", baseConfig.on.focus);
+    if (baseConfig.on?.blur) buttonGroup.on("blur", baseConfig.on.blur);
+    if (baseConfig.on?.change) buttonGroup.on("change", baseConfig.on.change);
+
     return buttonGroup;
   } catch (error) {
     console.error('Button Group creation error:', error);

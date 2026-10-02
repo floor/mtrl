@@ -1,7 +1,15 @@
 // src/ssr/solid.ts
-/** Enable declarative shadow DOM for mtrl/solid in this server process. @module ssr/solid */
+/**
+ * Enable declarative shadow DOM for mtrl/solid in this server process.
+ * The identity HTML policy is not a sanitizer; configure a synchronous sanitizer for untrusted markup.
+ * @module ssr/solid
+ */
 import type { JSX } from "solid-js";
 import { ssr, ssrElement } from "solid-js/web";
+/**
+ * The identity HTML policy is not a sanitizer; configure a synchronous sanitizer for untrusted markup.
+ * @module ssr/solid
+ */
 import "./index";
 
 const bridge = (globalThis as unknown as Record<symbol, {

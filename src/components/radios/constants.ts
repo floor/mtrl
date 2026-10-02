@@ -24,42 +24,8 @@ export const RADIO_DIRECTIONS = {
   HORIZONTAL: 'horizontal'
 } as const;
 
-/**
- * @deprecated Read by nothing: the component builds its class names itself
- * and has one size and variant (FLO-266).
- */
-export const RADIO_VARIANTS = {
-  /** Standard radio button */
-  STANDARD: 'standard',
-  /** Filled radio button */
-  FILLED: 'filled',
-  /** Outlined radio button */
-  OUTLINED: 'outlined'
-} as const;
 
-/**
- * @deprecated Read by nothing: the component builds its class names itself
- * and has one size and variant (FLO-266).
- */
-export const RADIO_LABEL_POSITIONS = {
-  /** Label to the right of the radio (default) */
-  RIGHT: 'right',
-  /** Label to the left of the radio */
-  LEFT: 'left'
-} as const;
 
-/**
- * @deprecated Read by nothing: the component builds its class names itself
- * and has one size and variant (FLO-266).
- */
-export const RADIO_SIZES = {
-  /** Small radio button */
-  SMALL: 'small',
-  /** Standard radio button */
-  MEDIUM: 'medium',
-  /** Large radio button */
-  LARGE: 'large'
-} as const;
 
 /**
  * Radio events
@@ -77,51 +43,7 @@ export const RADIO_EVENTS = {
  * Default configuration values
  */
 export const RADIO_DEFAULTS = {
-  /** Default radio variant */
-  VARIANT: RADIO_VARIANTS.STANDARD,
   /** Default radio direction */
-  DIRECTION: RADIO_DIRECTIONS.VERTICAL,
-  /** Default label position */
-  LABEL_POSITION: RADIO_LABEL_POSITIONS.RIGHT,
-  /** Default radio size */
-  SIZE: RADIO_SIZES.MEDIUM
+  DIRECTION: RADIO_DIRECTIONS.VERTICAL
 } as const;
 
-/**
- * @deprecated Read by nothing: the component builds its class names itself
- * and has one size and variant (FLO-266).
- */
-export const RADIO_CLASSES = {
-  /** Container for radio group */
-  GROUP: 'radio-group',
-  /** Individual radio button */
-  RADIO: 'radio',
-  /** Radio input element */
-  INPUT: 'radio__input',
-  /** Radio label */
-  LABEL: 'radio__label',
-  /** Radio control (the circular part) */
-  CONTROL: 'radio__control',
-  /** The inner dot of the radio */
-  DOT: 'radio__dot',
-  /** Radio focus ring */
-  FOCUS_RING: 'radio__focus-ring',
-  /** Radio ripple effect */
-  RIPPLE: 'radio__ripple',
-  /** Checked state */
-  CHECKED: 'radio--checked',
-  /** Disabled state */
-  DISABLED: 'radio--disabled',
-  /** Focus state */
-  FOCUSED: 'radio--focused',
-  /** Label right position */
-  LABEL_RIGHT: 'radio--label-right',
-  /** Label left position */
-  LABEL_LEFT: 'radio--label-left',
-  /** Small size */
-  SMALL: 'radio--small',
-  /** Medium size */
-  MEDIUM: 'radio--medium',
-  /** Large size */
-  LARGE: 'radio--large'
-} as const;

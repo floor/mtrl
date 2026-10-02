@@ -18,7 +18,7 @@ const setup = (config: TimePickerConfig = {}) => {
     value: "09:30", name: "appointment", type: TIME_PICKER_TYPE.INPUT, ...config,
     onChange: ({ value }) => callbacks.push(value),
     onInput: ({ draftValue }) => inputCallbacks.push(draftValue),
-    onConfirm: value => confirmCallbacks.push(value),
+    onConfirm: ({ value }) => confirmCallbacks.push(value),
   }));
   const form = document.createElement("form");
   document.body.append(form);

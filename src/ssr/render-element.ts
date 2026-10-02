@@ -11,7 +11,23 @@ import { renderStyles } from "./styles";
 
 /** true emits an empty attribute; false, null and undefined omit it. Numbers must be finite. */
 export type RenderAttributes = Readonly<Record<string, string | number | boolean | null | undefined>>;
-/** Tag prefix defaults to "m". Link styles may flash while their CSS loads. */
+/**
+ * Tag prefix defaults to "m".
+ *
+ * `styles: "inline"` (the default) writes each root's whole CSS as a `<style>`:
+ * styled at first paint in every engine, at two costs. gzip cannot see a
+ * repeat further back than its 32 KB window: a select's root is about 44 KB
+ * (30 selects measured 141.0 KB gzip against 5.0 KB brotli), and large roots
+ * of different types in turn push each other out of it (30 measured 83.9 KB
+ * against 8.1 KB). So serve brotli, or use link mode for pages with many
+ * selects, or that mix large roots (text fields, dialogs) in turn. And the
+ * HTML is 0.5 to 0.9 MB uncompressed for 30 to 44 roots.
+ *
+ * `styles: "link"` writes `<link>` tags to the stylesheets under `cssBase`
+ * (`dist/elements/css`). WebKit paints the roots unstyled until they arrive
+ * (about 470 ms with each sheet 300 ms away; a preload does not help);
+ * Chromium and Firefox wait for them. Measured on Playwright's engines.
+ */
 export type RenderOptions = { prefix?: string } & (
   | { styles?: "inline" }
   | { styles: "link"; cssBase: string }
@@ -79,7 +95,8 @@ const validateOptions = (options: RenderOptions): string => {
  * Render a registered tag to declarative shadow DOM, synchronously and detached.
  * Children are HTML processed by setHTML/configureHTML. The default policy is
  * identity: this function is NOT a sanitizer. Configure a synchronous sanitizer
- * for untrusted children or HTML-valued attributes such as icons.
+ * for untrusted children or HTML-valued attributes. Which attributes take markup
+ * is listed in the README under Markup and sanitizing.
  *
  * Each call owns a temporary DOM realm (zero layout, 1024×768 viewport).
  * The published mtrl/ssr entry registers element CSS automatically.
@@ -91,7 +108,7 @@ const validateOptions = (options: RenderOptions): string => {
  * render their own roots. Load mtrl/elements/preupgrade.css in the page to
  * preserve the host's box until normal browser upgrade.
  *
- * Carousel, FAB menu and toolbar opt out; menu and split-button opt out when
+ * Carousel and FAB menu opt out; menu and split-button opt out when
  * they declare nested submenus. Async button `showProgress` or card `buttons`
  * global defaults conservatively opt out every element in the call, since
  * those factories can also be created inside other components.

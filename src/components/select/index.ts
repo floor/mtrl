@@ -18,6 +18,7 @@ export type { SelectEvents } from './types';
 // Export types and interfaces
 export type { 
   SelectConfig, 
+  SelectVariant,
   SelectComponent,
   SelectOption,
   SelectEvent,

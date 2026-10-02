@@ -246,8 +246,11 @@ export interface BaseComponent {
   getElementClass: (base: string, element: string) => string;
   /** Add CSS class(es) */
   addClass: (...classes: string[]) => BaseComponent;
-  /** Emit an event */
-  emit?: (event: string, data?: unknown) => void;
+  /**
+   * Emit one of the card's own events ({@link CardEvents}), with its payload:
+   * the names and payloads `on` and `off` accept.
+   */
+  emit?: <K extends keyof CardEvents>(event: K, payload: Parameters<CardEvents[K]>[0]) => void;
   /** Component configuration */
   config: CardComponentConfig;
   /** Touch state for touch interactions */

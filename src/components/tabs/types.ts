@@ -1,6 +1,7 @@
 // src/components/tabs/types.ts
 import type { BadgeComponent } from '../badge';
 import type { ButtonComponent } from '../button/types';
+import type { ForwardedEventPayload } from '../../core/dom';
 
 /**
  * Button methods the tab delegates to; each one is checked before use
@@ -61,9 +62,32 @@ export interface TabChangeEventData {
   tab: TabComponent;
   
   /**
-   * The value of the activated tab
+   * The value of the activated tab, as `TabComponent.getValue()` returns it.
+   * A group emits `change` only when a tab is selected, so this is a string
+   * even though `TabsComponent.getValue()` is `string | null` when none is.
    */
   value: string;
+}
+
+/**
+ * Events a single tab emits, and what each hands its handler.
+ *
+ * `click` is not the DOM click. The tab re-emits the payload its button
+ * already forwarded (`{ event, element, originalEvent }`). `focus` and `blur`
+ * are the native events from the button element. FLO-523.
+ */
+export interface TabEvents {
+  click: (payload: ForwardedEventPayload<MouseEvent, HTMLElement>) => void;
+  focus: (event: FocusEvent) => void;
+  blur: (event: FocusEvent) => void;
+}
+
+/**
+ * Events a tabs group emits. A click or a key selects a tab and emits
+ * `change`; selecting from code does not. FLO-523.
+ */
+export interface TabsEvents {
+  change: (event: TabChangeEventData) => void;
 }
 
 /**
@@ -103,8 +127,9 @@ export interface TabConfig {
    */
   text?: string;
   
-  /** 
-   * Initial tab icon HTML content
+  /**
+   * Initial tab icon HTML content.
+   * Markup (HTML). Not sanitized by default: see Markup and sanitizing.
    * @example '<svg>...</svg>'
    */
   icon?: string;
@@ -167,10 +192,6 @@ export interface TabConfig {
   rippleConfig?: {
     /** How long, in milliseconds, a released wave lingers before it is removed */
     duration?: number;
-    /** @deprecated Not applied: the ripple's motion comes from the stylesheet (FLO-268). */
-    timing?: string;
-    /** @deprecated Not applied: the wave is the 0.10 pressed state layer, drawn by the stylesheet (FLO-268). */
-    opacity?: [string, string];
   };
   
   /**
@@ -241,36 +262,15 @@ export interface TabsConfig {
   prefix?: string;
   
   /**
-   * Event handlers configuration
+   * Event handlers registered when the tabs are created. A group emits
+   * `change` only.
    */
-  on?: {
-    /**
-     * Tab change event handler
-     */
-    change?: (event: TabChangeEventData) => void;
-    
-    /**
-     * Event handlers for other events
-     */
-    [key: string]: Function | undefined;
-  };
+  on?: Partial<TabsEvents>;
   
   /**
    * Tab indicator configuration
    */
   indicator?: IndicatorConfig;
-  
-  /**
-   * Tab indicator height in pixels
-   * @deprecated Use indicator.height instead
-   */
-  indicatorHeight?: number;
-  
-  /**
-   * Tab indicator width strategy
-   * @deprecated Use indicator.widthStrategy instead
-   */
-  indicatorWidthStrategy?: 'fixed' | 'dynamic' | 'content' | 'auto';
 }
 
 /**
@@ -394,11 +394,23 @@ export interface TabComponent {
   /** Updates the tab's layout style based on content */
   updateLayoutStyle: () => void;
   
-  /** Adds an event listener to the tab */
-  on(event: string, handler: Function): this;
-  
-  /** Removes an event listener from the tab */
-  off(event: string, handler: Function): this;
+  /**
+   * Adds an event listener to the tab.
+   * Declared on the component, not picked off the events feature: `Pick`
+   * rebinds a polymorphic `this`.
+   * @param event - One of the events in {@link TabEvents}
+   * @param handler - Receives the payload declared for that event
+   * @returns The tab for chaining
+   */
+  on: <K extends keyof TabEvents>(event: K, handler: TabEvents[K]) => TabComponent;
+
+  /**
+   * Removes an event listener from the tab
+   * @param event - One of the events in {@link TabEvents}
+   * @param handler - The same handler that was passed to `on`
+   * @returns The tab for chaining
+   */
+  off: <K extends keyof TabEvents>(event: K, handler: TabEvents[K]) => TabComponent;
   
   /** Destroys the tab component and cleans up resources */
   destroy: () => void;
@@ -482,28 +494,31 @@ export interface TabsComponent {
   removeTab: (tabOrValue: TabComponent | string) => TabsComponent;
   
   /**
-   * Adds an event listener
-   * @param event - Event name
-   * @param handler - Event handler
+   * Adds an event listener.
+   * Declared on the component, not picked off the events feature: `Pick`
+   * rebinds a polymorphic `this`.
+   * @param event - One of the events in {@link TabsEvents}
+   * @param handler - Receives the payload declared for that event
    * @returns Tabs component for chaining
    */
-  on(event: string, handler: Function): this;
-  
+  on: <K extends keyof TabsEvents>(event: K, handler: TabsEvents[K]) => TabsComponent;
+
   /**
    * Removes an event listener
-   * @param event - Event name
-   * @param handler - Event handler
+   * @param event - One of the events in {@link TabsEvents}
+   * @param handler - The same handler that was passed to `on`
    * @returns Tabs component for chaining
    */
-  off(event: string, handler: Function): this;
+  off: <K extends keyof TabsEvents>(event: K, handler: TabsEvents[K]) => TabsComponent;
   
   /**
-   * Emit an event
-   * @param event - Event name
-   * @param data - Event data
+   * Emit one of the group's own events ({@link TabsEvents}), with its payload:
+   * the names and payloads `on` and `off` accept.
+   * @param event - One of the events in {@link TabsEvents}
+   * @param data - The payload declared for that event
    * @returns Tabs component for chaining
    */
-  emit?(event: string, data: unknown): this;
+  emit?<K extends keyof TabsEvents>(event: K, data: Parameters<TabsEvents[K]>[0]): this;
   
   /**
    * Destroys the tabs component and all tabs

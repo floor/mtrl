@@ -109,7 +109,8 @@ export const getApiConfig = (comp: DialogFeatureHost): ApiOptions => ({
     open: () => comp.visibility.open(),
     close: () => comp.visibility.close(),
     toggle: (visible?: boolean) => comp.visibility.toggle(visible),
-    isOpen: () => comp.visibility.isOpen()
+    isOpen: () => comp.visibility.isOpen(),
+    cancel: () => comp.visibility.cancel()
   },
   content: {
     setTitle: (title: string) => comp.content.setTitle(title),

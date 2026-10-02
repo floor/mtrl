@@ -98,7 +98,6 @@ const DOMCreateModule = {
       data = {},
       class: classOption,
       className,
-      rawClass,
       attributes = {},
       forwardEvents = {},
       onCreate,
@@ -119,14 +118,6 @@ const DOMCreateModule = {
       mockAddClass(element, prefixedClassSource);
     }
     
-    // 2. Handle raw classes (no prefix)
-    if (rawClass) {
-      const rawClasses = mockNormalizeClasses(rawClass);
-      if (rawClasses.length) {
-        element.classList.add(...rawClasses);
-      }
-    }
-
     // Handle data attributes directly
     for (const key in data) {
       element.dataset[key] = data[key];
@@ -288,18 +279,6 @@ describe('DOM Create Utilities', () => {
       // Verify classes were added to the element
       expect(element.className).toContain('mtrl-button');
       expect(element.className).toContain('mtrl-primary');
-    });
-
-    test('should add raw classes without prefix', () => {
-      const element = createElement({ rawClass: 'custom-class another-class' });
-      
-      // Verify mockNormalizeClasses was called
-      expect(mockNormalizeClasses).toHaveBeenCalled();
-      
-      // Verify classes were added to the element
-      expect(element.className).toContain('custom-class');
-      expect(element.className).toContain('another-class');
-      expect(element.className).not.toContain('mtrl-custom-class');
     });
 
     test('should set data attributes', () => {

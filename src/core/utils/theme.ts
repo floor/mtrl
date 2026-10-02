@@ -89,10 +89,8 @@ const readVar = (name: string, element?: Element | null): string => {
  * @param {ThemeChangeCallback} [options.onThemeChange] - Optional callback for theme changes
  * @returns {string} The color value (hex, rgb, or rgba)
  *
- * @deprecated for `-rgb` names only: the themes no longer declare the
- * `--<prefix>-sys-color-*-rgb` twins (FLO-311). `getThemeColor('sys-color-X-rgb')`
- * still returns the `'r, g, b'` triplet, derived from `sys-color-X`, and will be
- * removed in the next major. Read `sys-color-X` (with `alpha` for rgba) instead.
+ * The themes declare no `--<prefix>-sys-color-*-rgb` twins (FLO-311), and 1.0
+ * no longer derives them: read `sys-color-X`, with `alpha` for rgba().
  *
  * @example
  * // Basic usage
@@ -120,13 +118,7 @@ export function getThemeColor(
     onThemeChange(options.onThemeChange);
   }
 
-  let value = readVar(varName, options?.element);
-
-  // Deprecated: a '-rgb' twin that the theme no longer declares is derived
-  // from its colour role, so existing callers keep their 'r, g, b' triplet.
-  if (!value && varName.endsWith('-rgb')) {
-    value = hexToTriplet(readVar(varName.slice(0, -4), options?.element)) ?? '';
-  }
+  const value = readVar(varName, options?.element);
 
   // If still not found, use fallback or return empty
   if (!value && options?.fallback) return options.fallback;

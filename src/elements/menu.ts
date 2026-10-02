@@ -19,8 +19,10 @@
  * `open` is state, not a value, as on `<details>`: the attribute reflects
  * whether the menu is open, setting or removing it opens or closes it, and
  * the user closing the menu removes it. `show()`, `hide()` and `toggle()` do
- * the same. `open` and `close` are dispatched for every opening and closing,
- * whatever caused it, and `select` with the item's value when one is chosen.
+ * the same. `open` and `close` are dispatched as it opens and closes, by
+ * those methods, the anchor or the user (not when the attribute or the
+ * property is what changed: that is applied at once, and quietly, as on the
+ * other elements), and `select` with the item's value when one is chosen.
  * There is no two-way binding: an app that keeps `open` in its state follows
  * the `close` event. `no-close-on-select` keeps the menu open when an item is
  * chosen, and `color="vibrant"` is the vertical menu's vibrant colours.
@@ -180,11 +182,13 @@ const menuSpec = {
   hostStyles: ":host{display:contents}",
   attributes: {
     // State, reflected: see the module. Set or removed by script, the change
-    // is applied after the attribute callback, so `open` is dispatched as for
-    // any other opening.
+    // is applied in the attribute callback, where the events it causes are
+    // not dispatched. The menu reflecting its own state changes nothing.
     open: {
       type: "boolean",
-      update: (c, v) => queueMicrotask(() => (v ? c.show() : c.hide())),
+      update: (c, v) => {
+        if (!!v !== c.isOpen()) (v ? c.show : c.hide)();
+      },
     },
     anchor: { type: "string", config: "anchor", update: (c, v) => setAnchor(c, v === null ? null : String(v)) },
     position: {
@@ -256,6 +260,7 @@ export const menuItemDeclaration = {
   attributes: {
     value: { type: "string" },
     label: { type: "string" },
+    /** Markup (HTML). Not sanitized by default: see Markup and sanitizing. */
     icon: { type: "string" },
     shortcut: { type: "string" },
     "supporting-text": { type: "string" },

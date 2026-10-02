@@ -19,6 +19,7 @@ import { setHTML } from "../../../core/dom/html";
 import { PREFIX } from "../../../core/config";
 import { hideFromTopLayer, showInTopLayer } from "../../../core/dom/layer";
 import { activeElementOf } from "../../../core/dom/focus";
+import { getCleanup, type CleanupScope } from "../../../core/compose/cleanup";
 /**
  * Adds state management features to the search component
  * Handles bar ↔ view transitions per MD3 specifications
@@ -30,6 +31,7 @@ import { activeElementOf } from "../../../core/dom/focus";
 interface StatesHost {
   element: HTMLElement;
   getClass: (name: string) => string;
+  resources?: CleanupScope;
   structure?: SearchStructure;
   emit?: (event: string, data: unknown) => unknown;
 }
@@ -46,6 +48,13 @@ export const withStates =
     config.viewMode || SEARCH_VIEW_MODES.DOCKED;
   let currentVariant: SearchVariant = config.variant === "divided" ? "divided" : "contained";
   let isDisabled = config.disabled === true;
+  const resources = getCleanup(component);
+  let focusFrame: number | null = null;
+  const cancelPendingFocus = (): void => {
+    if (focusFrame !== null) cancelAnimationFrame(focusFrame);
+    focusFrame = null;
+  };
+  resources.add(cancelPendingFocus);
 
   // Helper to get prefixed class names
   const getClass = (className: string): string => {
@@ -161,7 +170,8 @@ export const withStates =
 
     // Focus input after transition
     if (structure?.input) {
-      requestAnimationFrame(() => {
+      focusFrame = requestAnimationFrame(() => {
+        focusFrame = null;
         structure.input.focus();
       });
     }
@@ -174,9 +184,6 @@ export const withStates =
         viewMode: currentViewMode,
       });
     }
-    // The other config callbacks are called beside their events by the input
-    // feature; expand and collapse were emitted here and their callbacks never.
-    config.onExpand?.();
   };
 
   /**
@@ -192,6 +199,7 @@ export const withStates =
 
     // Update state
     currentState = SEARCH_STATES.BAR;
+    cancelPendingFocus();
 
     // Update classes
     element.classList.remove(getClass(SEARCH_CLASSES.STATE_VIEW));
@@ -216,7 +224,6 @@ export const withStates =
         viewMode: currentViewMode,
       });
     }
-    config.onCollapse?.();
   };
 
   /**

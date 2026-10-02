@@ -93,7 +93,7 @@ describe('rounded polygons', () => {
 });
 
 describe('material shapes', () => {
-  const names: MaterialShapeName[] = ['softBurst', 'cookie9', 'pentagon', 'pill', 'sunny', 'cookie4', 'oval', 'circle'];
+  const names: MaterialShapeName[] = ['softBurst', 'cookie9Sided', 'pentagon', 'pill', 'sunny', 'cookie4Sided', 'oval', 'circle'];
 
   test('every shape is contiguous and normalised into the unit square', () => {
     for (const name of names) {
@@ -108,9 +108,9 @@ describe('material shapes', () => {
 
   test('the stars have the right number of points', () => {
     expect(peaks(radialProfile(materialShape('softBurst')).radii)).toBe(10);
-    expect(peaks(radialProfile(materialShape('cookie9')).radii)).toBe(9);
+    expect(peaks(radialProfile(materialShape('cookie9Sided')).radii)).toBe(9);
     expect(peaks(radialProfile(materialShape('sunny')).radii)).toBe(8);
-    expect(peaks(radialProfile(materialShape('cookie4')).radii)).toBe(4);
+    expect(peaks(radialProfile(materialShape('cookie4Sided')).radii)).toBe(4);
     expect(peaks(radialProfile(materialShape('pentagon')).radii)).toBe(5);
   });
 
@@ -122,7 +122,7 @@ describe('material shapes', () => {
     const oval = radialProfile(materialShape('oval'));
     expect(oval.maxRadius / Math.min(...oval.radii)).toBeCloseTo(1 / 0.64, 1);
     expect(longest(oval.radii)).toBeCloseTo(135, -1);
-    expect(polygonMaxRadius(materialShape('cookie9'))).toBeLessThanOrEqual(0.5 + 1e-3);
+    expect(polygonMaxRadius(materialShape('cookie9Sided'))).toBeLessThanOrEqual(0.5 + 1e-3);
     // normalised on the control-point hull, as Compose does, so a hair under 0.5
     expect(radialProfile(materialShape('circle')).maxRadius).toBeCloseTo(0.5, 1);
   });
@@ -152,7 +152,7 @@ describe('material shapes', () => {
       }
       return [cx / (3 * area), cy / (3 * area)];
     };
-    for (const name of ['pentagon', 'cookie9', 'softBurst'] as const) {
+    for (const name of ['pentagon', 'cookie9Sided', 'softBurst'] as const) {
       const p = radialProfile(materialShape(name));
       const [cx, cy] = centroid(p);
       expect(cx).toBeCloseTo(p.centerX, 3);

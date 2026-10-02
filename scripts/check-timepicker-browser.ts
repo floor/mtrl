@@ -187,7 +187,7 @@ export async function checkTimePicker(page: Page, artifacts: string): Promise<vo
   });
   assert.deepEqual(modal, { open: 2, modal: true, backdrop: true, focusInside: true, named: "Updated" }, "a native modal over a 0.32 scrim, focused, named by its title");
   await page.keyboard.press("Escape");
-  assert.deepEqual(await page.evaluate(() => [(window as unknown as TimePickerWindow).timePicker.isOpen, (window as unknown as { otherPicker: { isOpen: boolean } }).otherPicker.isOpen]), [false, true], "Escape closes the top picker only");
+  assert.deepEqual(await page.evaluate(() => [(window as unknown as TimePickerWindow).timePicker.isOpen(), (window as unknown as { otherPicker: { isOpen: () => boolean } }).otherPicker.isOpen()]), [false, true], "Escape closes the top picker only");
   await page.keyboard.press("Escape");
   assert.equal(await page.evaluate(() => document.activeElement?.id), "time-trigger", "focus returns to the trigger");
   await page.evaluate(() => { (window as unknown as { otherPicker: { destroy(): void } }).otherPicker.destroy(); document.getElementById("time-trigger")?.remove(); });

@@ -39,8 +39,6 @@ export const defaultConfig: Partial<IconButtonConfig> = {
   tooltip: true,
   rippleConfig: {
     duration: DEFAULT_RIPPLE_CONFIG.DURATION,
-    timing: DEFAULT_RIPPLE_CONFIG.TIMING,
-    opacity: DEFAULT_RIPPLE_CONFIG.OPACITY,
   },
 };
 

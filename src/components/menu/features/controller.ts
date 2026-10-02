@@ -54,9 +54,20 @@ const withController =
   // submenu before the menu, one menu open at a time -- and a submenu, a
   // popover beside its parent rather than inside it, cannot light-dismiss it.
   const topLayer = config.layer === "top";
-  // Set from the first close call until the menu is closed. Outside a top
-  // layer a second call in that window is let through, as it always was.
-  let closing = false;
+  // What an open() or a close() still has to do. The later call cancels the
+  // earlier one's: a menu closed before it was shown never is, and one opened
+  // again while it fades stays in the document.
+  type Timer = ReturnType<typeof tasks.setTimeout>;
+  let showTimer: Timer = null;
+  let focusTimer: Timer = null;
+  let hideTimer: Timer = null;
+  let removeTimer: Timer = null;
+  // True for the rest of the task open() ran in. The click or the key press
+  // that opened the menu is still on its way up to the document in that task,
+  // when the dismiss listeners are added: it is not a request to dismiss the
+  // menu, nor a key for it to handle. An event made after open() is a later
+  // task.
+  let opening = false;
 
   // As the listbox of a combobox, options need ids the combobox can point at
   // with aria-activedescendant, and nothing inside may take focus from it
@@ -451,11 +462,23 @@ const withController =
     // was opened by pointer, by key or by code.
     menuOpened(registryEntry, event);
 
-    // Update state
+    // Open from here on. A close still on its way out is abandoned.
     state.visible = true;
+    tasks.clearTimeout(hideTimer);
+    tasks.clearTimeout(removeTimer);
 
-    // First, remove any existing document click listener
-    document.removeEventListener("click", handleDocumentClick);
+    // An open menu can be dismissed: a click outside and Escape, from now. A
+    // listbox's combobox handles every key, Escape included.
+    opening = true;
+    tasks.setTimeout(() => {
+      opening = false;
+    }, 0);
+    if (config.closeOnClickOutside) {
+      document.addEventListener("click", handleDocumentClick);
+    }
+    if (config.closeOnEscape && !listbox) {
+      document.addEventListener("keydown", handleDocumentKeydown);
+    }
 
     // Step 1: Add the menu to the DOM if it's not already there with initial hidden state
     if (!component.element.parentNode) {
@@ -476,7 +499,7 @@ const withController =
     if (topLayer) showInTopLayer(component.element, { kind: "popover-manual" });
 
     // Step 2: Use a small delay to ensure DOM operations are complete
-    tasks.setTimeout(() => {
+    showTimer = tasks.setTimeout(() => {
       // Position the menu now that it's in the DOM
       const openerElement = getOpenerElement();
       if (openerElement && component.position) {
@@ -498,7 +521,7 @@ const withController =
 
       // Step 4: Set up initial focus based on interaction type. A listbox
       // leaves focus on its combobox.
-      if (!listbox) tasks.setTimeout(() => {
+      if (!listbox) focusTimer = tasks.setTimeout(() => {
         if (component.keyboard && component.keyboard.handleInitialFocus) {
           component.keyboard.handleInitialFocus(
             component.element,
@@ -529,27 +552,15 @@ const withController =
         }
       }, 100);
 
-      // Add the document click handler on the next event loop
-      // after the current click is fully processed
-      tasks.setTimeout(() => {
-        if (config.closeOnClickOutside && state.visible) {
-          document.addEventListener("click", handleDocumentClick);
-        }
-
-        // Add other document events normally. A listbox's combobox handles
-        // every key, Escape included.
-        if (config.closeOnEscape && !listbox) {
-          document.addEventListener("keydown", handleDocumentKeydown);
-        }
-        window.addEventListener("resize", handleWindowResize, {
-          passive: true,
-        });
-        window.addEventListener("scroll", handleWindowScroll, SCROLL_LISTENER);
-      }, 0);
+      // The menu follows its opener from the moment it is placed
+      window.addEventListener("resize", handleWindowResize, {
+        passive: true,
+      });
+      window.addEventListener("scroll", handleWindowScroll, SCROLL_LISTENER);
     }, 20); // Short delay for browser to process
 
-    // Trigger event
-    eventHelpers.triggerEvent("open", {}, event);
+    // Trigger event. It cannot be cancelled: the menu is open.
+    component.emit("open", { menu: getComponent(), originalEvent: event });
   };
 
   /**
@@ -558,10 +569,16 @@ const withController =
    * @param {boolean} [restoreFocus=true] - Whether to restore focus to the opener element
    */
   const closeMenu = (event?: Event, restoreFocus: boolean = true): void => {
-    // A top-layer menu closes once, whichever of its dismissals comes first:
-    // an outside click also blurs the opener, and each used to close it
-    if (!state.visible || (topLayer && closing)) return;
-    closing = true;
+    // A closed menu stays as it is, and emits nothing. It closes once,
+    // whichever of its dismissals comes first: an outside click also blurs
+    // the opener, and each used to close it
+    if (!state.visible) return;
+
+    // Closed from here on. An open that had not shown the surface yet never
+    // does.
+    state.visible = false;
+    tasks.clearTimeout(showTimer);
+    tasks.clearTimeout(focusTimer);
 
     menuClosed(registryEntry);
 
@@ -571,35 +588,32 @@ const withController =
     // Close any open submenu first using the submenu feature
     submenu.closeAllSubmenus();
 
-    tasks.setTimeout(() => {
-      // Update state
-      state.visible = false;
-      closing = false;
+    // Remove document events
+    document.removeEventListener("click", handleDocumentClick);
+    document.removeEventListener("keydown", handleDocumentKeydown);
+    window.removeEventListener("resize", handleWindowResize);
+    window.removeEventListener("scroll", handleWindowScroll, SCROLL_LISTENER);
 
+    // The menu is closed: say so before returning. The class and the removal
+    // follow.
+    component.emit("close", {
+      menu: getComponent(),
+      restoreFocus,
+      originalEvent: event,
+    });
+    // A `close` listener may have opened it again
+    if (state.visible) return;
+
+    hideTimer = tasks.setTimeout(() => {
       // Set attributes
       component.element.setAttribute("aria-hidden", "true");
       component.element.classList.remove(
         `${component.getClass("menu--visible")}`,
       );
 
-      // Remove document events
-      document.removeEventListener("click", handleDocumentClick);
-      document.removeEventListener("keydown", handleDocumentKeydown);
-      window.removeEventListener("resize", handleWindowResize);
-      window.removeEventListener("scroll", handleWindowScroll, SCROLL_LISTENER);
-
-      // Trigger event
-      eventHelpers.triggerEvent(
-        "close",
-        {
-          restoreFocus: restoreFocus,
-        },
-        event,
-      );
-
       // Remove from DOM after animation completes. Removing a popover takes it
       // out of the top layer, with no toggle event.
-      tasks.setTimeout(() => {
+      removeTimer = tasks.setTimeout(() => {
         if (component.element.parentNode && !state.visible) {
           component.element.parentNode.removeChild(component.element);
         }
@@ -633,6 +647,9 @@ const withController =
    * Handles document click
    */
   const handleDocumentClick = (e: MouseEvent): void => {
+    // The click that opened the menu
+    if (opening) return;
+
     // Don't close if clicked inside menu
     if (eventWithin(config, component.element, e)) {
       return;
@@ -661,6 +678,9 @@ const withController =
    * Handles document keydown
    */
   const handleDocumentKeydown = (e: KeyboardEvent): void => {
+    // The key press that opened the menu
+    if (opening) return;
+
     // Check if the event target is already inside the menu or submenu
     const isTargetInsideMenu = eventWithin(config, component.element, e);
     const isTargetInsideSubmenu =

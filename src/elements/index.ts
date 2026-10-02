@@ -139,7 +139,7 @@ export type { DatepickerSpec, DatepickerElement, DatepickerElementComponent } fr
 export { timepickerElement, defineTimepicker } from "./timepicker";
 export type { TimepickerSpec, TimepickerElement, TimepickerElementComponent } from "./timepicker";
 export { searchElement, searchSuggestionDeclaration, defineSearch } from "./search";
-export type { SearchSpec, SearchElement, SearchSuggestionAttributes, SearchElementComponent } from "./search";
+export type { SearchSpec, SearchElement, SearchSuggestionAttributes, SearchElementComponent, SearchElementEvents } from "./search";
 
 /**
  * Every element, by name. Framework adapters are generated from this list and

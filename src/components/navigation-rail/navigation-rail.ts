@@ -124,12 +124,6 @@ export default function createNavigationRail(config: NavigationRailConfig = {}):
         startSwitch();
         synchronize();
         emitter.emit(value ? 'expand' : 'collapse', { expanded: value });
-        if (!destroyed) {
-            if (value)
-                options.onExpand?.();
-            else
-                options.onCollapse?.();
-        }
         return api;
     };
     const handleClick = (event: MouseEvent): void => {
@@ -160,8 +154,6 @@ export default function createNavigationRail(config: NavigationRailConfig = {}):
         // `value`: the id, as the <m-navigation-rail> element's `change` carries it. FLO-320.
         const detail = { id: item.id, value: item.id, index, originalEvent: event };
         emitter.emit('select', detail);
-        if (!destroyed)
-            options.onSelect?.(detail);
     };
     const handleKeydown = (event: KeyboardEvent): void => {
         moveDestinationFocus(event, nodes, destinations, { next: 'ArrowDown', previous: 'ArrowUp' });
@@ -249,5 +241,11 @@ export default function createNavigationRail(config: NavigationRailConfig = {}):
     };
     render();
     synchronize();
+    // A config option is the listener registered at creation, ahead of any
+    // listener the caller adds afterwards. A listener that destroys the rail
+    // during emit no longer skips it: it has already run.
+    if (options.onSelect) api.on('select', options.onSelect);
+    if (options.onExpand) api.on('expand', options.onExpand);
+    if (options.onCollapse) api.on('collapse', options.onCollapse);
     return api;
 }

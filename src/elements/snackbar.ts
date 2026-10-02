@@ -66,7 +66,7 @@ const snackbarSpec = {
     "queue-behavior": { type: "string", config: "queueBehavior" },
   },
   properties: {
-    open: { get: (c) => c.state === "visible", set: (c, v) => void (v ? c.show() : c.hide()) },
+    open: { get: (c) => c.isOpen(), set: (c, v) => void (v ? c.show() : c.hide()) },
   },
   methods: ["show", "hide"] as const,
   events: {

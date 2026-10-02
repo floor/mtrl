@@ -32,7 +32,7 @@ export interface DrawerItemConfig {
   /** Destination label text */
   label?: string;
 
-  /** Icon HTML content (placed before label) */
+  /** Icon HTML content (placed before label). Markup (HTML). Not sanitized by default: see Markup and sanitizing. */
   icon?: string;
 
   /** Badge text (e.g. unread count) */
@@ -178,20 +178,14 @@ export interface DrawerConfig extends BaseComponentConfig {
    */
   componentName?: string;
 
-  /**
-   * Callback when a navigation item is selected
-   */
-  onSelect?: (event: DrawerSelectEvent) => void;
+  /** `select` listener registered at creation. */
+  onSelect?: DrawerEvents["select"];
 
-  /**
-   * Callback when the drawer opens
-   */
-  onOpen?: () => void;
+  /** `open` listener registered at creation. */
+  onOpen?: DrawerEvents["open"];
 
-  /**
-   * Callback when the drawer closes
-   */
-  onClose?: () => void;
+  /** `close` listener registered at creation. */
+  onClose?: DrawerEvents["close"];
 }
 
 /**

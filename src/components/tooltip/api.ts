@@ -86,7 +86,15 @@ export const withAPI =
     } => {
       if (!target) return { top: 0, left: 0 };
 
-      const tooltipRect = component.element.getBoundingClientRect();
+      // A fixed-width auto-sized surface can shrink against the viewport when
+      // its previous left position is near the right edge. Measure it at the
+      // viewport origin before placing it again. This happens in one task, so
+      // there is no visible intermediate position.
+      component.element.style.left = "0px";
+      // offsetWidth/offsetHeight are layout dimensions: the entrance scale
+      // changes the visual rect but must not change placement or clamping.
+      const tooltipWidth = component.element.offsetWidth;
+      const tooltipHeight = component.element.offsetHeight;
       const targetRect = target.getBoundingClientRect();
       const scrollY = topLayer ? 0 : window.scrollY || window.pageYOffset;
       const scrollX = topLayer ? 0 : window.scrollX || window.pageXOffset;
@@ -101,25 +109,25 @@ export const withAPI =
       // Calculate position based on position value
       switch (position) {
         case TOOLTIP_POSITIONS.TOP:
-          top = targetRect.top + scrollY - tooltipRect.height - offset;
+          top = targetRect.top + scrollY - tooltipHeight - offset;
           left =
             targetRect.left +
             scrollX +
             targetRect.width / 2 -
-            tooltipRect.width / 2;
+            tooltipWidth / 2;
           arrowPosition = "bottom";
           break;
 
         case TOOLTIP_POSITIONS.TOP_START:
-          top = targetRect.top + scrollY - tooltipRect.height - offset;
+          top = targetRect.top + scrollY - tooltipHeight - offset;
           left = targetRect.left + scrollX;
           arrowPosition = "bottom-start";
           break;
 
         case TOOLTIP_POSITIONS.TOP_END:
-          top = targetRect.top + scrollY - tooltipRect.height - offset;
+          top = targetRect.top + scrollY - tooltipHeight - offset;
           left =
-            targetRect.left + scrollX + targetRect.width - tooltipRect.width;
+            targetRect.left + scrollX + targetRect.width - tooltipWidth;
           arrowPosition = "bottom-end";
           break;
 
@@ -128,7 +136,7 @@ export const withAPI =
             targetRect.top +
             scrollY +
             targetRect.height / 2 -
-            tooltipRect.height / 2;
+            tooltipHeight / 2;
           left = targetRect.left + scrollX + targetRect.width + offset;
           arrowPosition = "left";
           break;
@@ -141,7 +149,7 @@ export const withAPI =
 
         case TOOLTIP_POSITIONS.RIGHT_END:
           top =
-            targetRect.top + scrollY + targetRect.height - tooltipRect.height;
+            targetRect.top + scrollY + targetRect.height - tooltipHeight;
           left = targetRect.left + scrollX + targetRect.width + offset;
           arrowPosition = "left-end";
           break;
@@ -152,7 +160,7 @@ export const withAPI =
             targetRect.left +
             scrollX +
             targetRect.width / 2 -
-            tooltipRect.width / 2;
+            tooltipWidth / 2;
           arrowPosition = "top";
           break;
 
@@ -165,7 +173,7 @@ export const withAPI =
         case TOOLTIP_POSITIONS.BOTTOM_END:
           top = targetRect.top + scrollY + targetRect.height + offset;
           left =
-            targetRect.left + scrollX + targetRect.width - tooltipRect.width;
+            targetRect.left + scrollX + targetRect.width - tooltipWidth;
           arrowPosition = "top-end";
           break;
 
@@ -174,21 +182,21 @@ export const withAPI =
             targetRect.top +
             scrollY +
             targetRect.height / 2 -
-            tooltipRect.height / 2;
-          left = targetRect.left + scrollX - tooltipRect.width - offset;
+            tooltipHeight / 2;
+          left = targetRect.left + scrollX - tooltipWidth - offset;
           arrowPosition = "right";
           break;
 
         case TOOLTIP_POSITIONS.LEFT_START:
           top = targetRect.top + scrollY;
-          left = targetRect.left + scrollX - tooltipRect.width - offset;
+          left = targetRect.left + scrollX - tooltipWidth - offset;
           arrowPosition = "right-start";
           break;
 
         case TOOLTIP_POSITIONS.LEFT_END:
           top =
-            targetRect.top + scrollY + targetRect.height - tooltipRect.height;
-          left = targetRect.left + scrollX - tooltipRect.width - offset;
+            targetRect.top + scrollY + targetRect.height - tooltipHeight;
+          left = targetRect.left + scrollX - tooltipWidth - offset;
           arrowPosition = "right-end";
           break;
 
@@ -198,7 +206,7 @@ export const withAPI =
             targetRect.left +
             scrollX +
             targetRect.width / 2 -
-            tooltipRect.width / 2;
+            tooltipWidth / 2;
           arrowPosition = "top";
       }
 
@@ -208,8 +216,8 @@ export const withAPI =
       // Adjust horizontal position
       if (left < 0) {
         left = 0;
-      } else if (left + tooltipRect.width > windowWidth) {
-        left = windowWidth - tooltipRect.width;
+      } else if (left + tooltipWidth > windowWidth) {
+        left = windowWidth - tooltipWidth;
       }
 
       return { top, left, arrowPosition };

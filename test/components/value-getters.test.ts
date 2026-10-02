@@ -58,5 +58,5 @@ test("carousel getValue aliases the current index without emitting", () => {
   expect(c.getValue()).toBe(c.getCurrentSlide());
   expect(c.getValue()).toBe(1);
   // The payload's value is the getter's, read inside the handler (FLO-380).
-  expect(seen).toEqual([[{ value: 1, index: 1 }, 1]]);
+  expect(seen).toEqual([[{ value: 1 }, 1]]);
 });

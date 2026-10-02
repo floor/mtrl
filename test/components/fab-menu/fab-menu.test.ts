@@ -390,11 +390,131 @@ describe("fab menu presentation", () => {
     const m = make({ presentation: "menu" });
     m.open(new dom.window.MouseEvent("click", { detail: 1 }));
     // The chunk's first import can take a while in a busy run: wait up to 2s
-    for (let i = 0; i < 200 && !m.isOpen(); i++) await new Promise((r) => setTimeout(r, 10));
+    // for its surface. The state is there at once (FLO-548).
+    expect(m.isOpen()).toBe(true);
+    for (let i = 0; i < 200 && !document.querySelector(".mtrl-menu"); i++) await new Promise((r) => setTimeout(r, 10));
     expect(m.isOpen()).toBe(true);
     const surface = document.querySelector(".mtrl-menu") as HTMLElement;
     expect(surface).not.toBeNull();
     expect(surface.querySelectorAll(".mtrl-menu__item")).toHaveLength(3);
+  });
+
+  // FLO-548: when open() returns, isOpen() is true and `open` has been emitted,
+  // in the menu presentation as in the list. The menu is a lazy module, so its
+  // surface may be painted after open() returns. A close() before it arrives
+  // means nothing is painted.
+  const recorded = (m: FabMenuComponent): string[] => {
+    const seen: string[] = [];
+    m.on("open", () => seen.push("open"));
+    m.on("close", () => seen.push("close"));
+    return seen;
+  };
+
+  test("menu presentation: isOpen(), aria-expanded and the open event are there when open() returns; the surface follows", async () => {
+    const app = fakeMenu();
+    const m = make({ presentation: "menu", menu: () => app });
+    const seen = recorded(m);
+    expect(m.open()).toBe(m);
+    expect(m.isOpen()).toBe(true);
+    expect(m.fab.getAttribute("aria-expanded")).toBe("true");
+    expect(seen).toEqual(["open"]);
+    await Promise.resolve();
+    expect(app.calls).toEqual(["open:keyboard"]);
+    expect(seen).toEqual(["open"]);
+  });
+
+  test("menu presentation: repeat calls do nothing and emit nothing", async () => {
+    const app = fakeMenu();
+    const m = make({ presentation: "menu", menu: () => app });
+    const seen = recorded(m);
+    m.close();
+    m.open();
+    m.open();
+    await Promise.resolve();
+    m.open();
+    expect(seen).toEqual(["open"]);
+    expect(app.calls).toEqual(["open:keyboard"]);
+    m.close();
+    m.close();
+    expect(seen).toEqual(["open", "close"]);
+  });
+
+  test("menu presentation: close() before the surface arrives ends closed, and nothing is shown", async () => {
+    const app = fakeMenu();
+    const m = make({ presentation: "menu", menu: () => app });
+    const seen = recorded(m);
+    m.open();
+    m.close();
+    expect(m.isOpen()).toBe(false);
+    expect(m.fab.getAttribute("aria-expanded")).toBe("false");
+    expect(seen).toEqual(["open", "close"]);
+    await Promise.resolve();
+    await new Promise((r) => setTimeout(r, 20));
+    expect(app.calls).toEqual([]);
+    expect(m.isOpen()).toBe(false);
+    expect(seen).toEqual(["open", "close"]);
+  });
+
+  test("menu presentation: open(), close(), open() before the surface arrives ends open, shown once", async () => {
+    const app = fakeMenu();
+    const m = make({ presentation: "menu", menu: () => app });
+    const seen = recorded(m);
+    m.open();
+    m.close();
+    m.open();
+    expect(m.isOpen()).toBe(true);
+    expect(seen).toEqual(["open", "close", "open"]);
+    await new Promise((r) => setTimeout(r, 20));
+    expect(app.calls).toEqual(["open:keyboard"]);
+    expect(m.isOpen()).toBe(true);
+  });
+
+  test("menu presentation: opened again before the surface arrives, it opens as the last call asked", async () => {
+    const app = fakeMenu();
+    const m = make({ presentation: "menu", menu: () => app });
+    // A key's click, then a close, then a pointer's click
+    m.open(new dom.window.MouseEvent("click", { detail: 0 }));
+    m.close();
+    m.open(new dom.window.MouseEvent("click", { detail: 1 }));
+    await new Promise((r) => setTimeout(r, 20));
+    expect(app.calls).toEqual(["open:mouse"]);
+  });
+
+  test("menu presentation: a second click on the FAB before the surface arrives closes it", async () => {
+    const app = fakeMenu();
+    const m = make({ presentation: "menu", menu: () => app });
+    const seen = recorded(m);
+    m.fab.click();
+    m.fab.click();
+    expect(m.isOpen()).toBe(false);
+    await new Promise((r) => setTimeout(r, 20));
+    expect(app.calls).toEqual([]);
+    expect(seen).toEqual(["open", "close"]);
+  });
+
+  test("menu presentation: destroy() before the surface arrives shows nothing", async () => {
+    const app = fakeMenu();
+    const m = make({ presentation: "menu", menu: () => app });
+    m.open();
+    m.destroy();
+    menu = null;
+    await new Promise((r) => setTimeout(r, 20));
+    expect(app.calls.filter((call) => call.startsWith("open"))).toEqual([]);
+  });
+
+  test("the baseline menu, loaded on demand: open at once, the surface when the module has arrived, close() in the call", async () => {
+    const m = make({ presentation: "menu" });
+    const seen = recorded(m);
+    m.open(new dom.window.MouseEvent("click", { detail: 1 }));
+    expect(m.isOpen()).toBe(true);
+    expect(seen).toEqual(["open"]);
+    for (let i = 0; i < 200 && !document.querySelector(".mtrl-menu"); i++) await new Promise((r) => setTimeout(r, 10));
+    expect(document.querySelector(".mtrl-menu")).not.toBeNull();
+    expect(m.isOpen()).toBe(true);
+    expect(seen).toEqual(["open"]);
+    m.close();
+    expect(m.isOpen()).toBe(false);
+    expect(seen).toEqual(["open", "close"]);
   });
 });
 

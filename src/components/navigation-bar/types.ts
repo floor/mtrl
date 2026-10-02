@@ -44,7 +44,8 @@ export interface NavigationBarConfig {
     /** The landmark's name; default "Primary navigation" */
     ariaLabel?: string;
     ripple?: boolean;
-    onSelect?: (event: NavigationBarSelectEvent) => void;
+    /** `select` listener registered at creation. */
+    onSelect?: (event: NavigationBarEvents["select"]) => void;
     class?: string;
     prefix?: string;
     componentName?: string;

@@ -8,6 +8,8 @@ export type {
   SearchConfig,
   SearchComponent,
   SearchEvent,
+  SearchEvents,
+  SearchStateEvent,
   SearchState,
   SearchViewMode,
   SearchVariant,

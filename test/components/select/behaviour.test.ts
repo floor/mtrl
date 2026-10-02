@@ -209,8 +209,8 @@ describe('what open, close and change hand a handler', () => {
     await wait(300);
 
     for (const key of ['open', 'close']) {
-      expect(Object.keys(seen[key]).sort())
-        .toEqual(['defaultPrevented', 'originalEvent', 'preventDefault', 'select']);
+      // No preventDefault / defaultPrevented since FLO-548: neither event can be cancelled
+      expect(Object.keys(seen[key]).sort()).toEqual(['originalEvent', 'select']);
     }
   });
 

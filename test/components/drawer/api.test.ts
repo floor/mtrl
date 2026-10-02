@@ -131,7 +131,7 @@ describe('drawer open and close', () => {
     drawer.on('close', () => seen.push('close'));
     drawer.open().open();
     drawer.close().close();
-    expect(seen).toEqual(['open', 'onOpen', 'close', 'onClose']);
+    expect(seen).toEqual(['onOpen', 'open', 'onClose', 'close']);
   });
 
   test('off removes a listener', () => {
@@ -275,7 +275,7 @@ describe('drawer selection', () => {
     drawer.on('select', ({ id }: { id: string }) => seen.push({ id, label: 'event', index: -1 }));
     item(drawer, 'trash').click();
     expect(drawer.getActive()).toBe('trash');
-    expect(seen).toEqual([{ id: 'trash', label: 'event', index: -1 }, { id: 'trash', label: 'Trash', index: 3 }]);
+    expect(seen).toEqual([{ id: 'trash', label: 'Trash', index: 3 }, { id: 'trash', label: 'event', index: -1 }]);
   });
 
   test('a disabled destination cannot be selected', () => {

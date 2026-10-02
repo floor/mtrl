@@ -49,7 +49,7 @@ export interface SwitchConfig {
   /** Component name */
   componentName?: string;
 
-  /** Icon HTML in the selected handle; 'none' for no icon */
+  /** Icon HTML in the selected handle; 'none' for no icon. Markup (HTML). Not sanitized by default: see Markup and sanitizing. */
   icon?: string;
 
   /**
@@ -187,8 +187,8 @@ export interface ApiOptions {
 export interface BaseComponent {
   element: HTMLElement;
   input?: HTMLInputElement;
-  getValue?: () => string;
-  setValue?: (value: string) => void;
+  getValue?: () => boolean;
+  setValue?: (value: boolean) => void;
   label?: {
     setText: (content: string) => void;
     getText: () => string;

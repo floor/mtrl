@@ -13,7 +13,6 @@ const HIDDEN_ACTION_STYLE = {
   visibility: "hidden",
 } as const;
 import { createElement } from "../../core/dom/create";
-import type { ElementComponent } from "../../core/compose/component";
 import {
   BaseComponent,
   CardComponent,
@@ -139,17 +138,6 @@ export const withLoading =
       },
     };
   };
-
-/**
- * Did nothing visible: it wrote a `--{prefix}-card-elevation` custom property
- * that no stylesheet reads. A card's elevation comes from its variant and
- * state classes in the stylesheet.
- *
- * @deprecated Since 0.10 (FLO-323): a no-op, removed in 1.0. Drop it from
- * the composition.
- * @category Components
- */
-export const withElevation = <C extends ElementComponent>(component: C): C => component;
 
 /**
  * Higher-order function to add expandable behavior to a card.

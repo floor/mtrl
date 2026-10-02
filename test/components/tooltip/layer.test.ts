@@ -96,6 +96,31 @@ const make = (config: Record<string, unknown>): TooltipComponent => {
 };
 
 describe("tooltip layer: top", () => {
+  test("places every direction and alignment from layout size during a scale transition", () => {
+    const { target } = setup();
+    target.getBoundingClientRect = () =>
+      ({ top: 100, bottom: 140, left: 400, right: 500, width: 100, height: 40 }) as DOMRect;
+    const tooltip = make({ target });
+    Object.defineProperties(tooltip.element, {
+      offsetWidth: { configurable: true, value: 200 },
+      offsetHeight: { configurable: true, value: 40 },
+    });
+    tooltip.element.getBoundingClientRect = () =>
+      ({ width: 180, height: 36 }) as DOMRect;
+    tooltip.show(true);
+    const placements = [
+      ["top", 552, 350], ["top-start", 552, 400], ["top-end", 552, 300],
+      ["right", 600, 508], ["right-start", 600, 508], ["right-end", 600, 508],
+      ["bottom", 648, 350], ["bottom-start", 648, 400], ["bottom-end", 648, 300],
+      ["left", 600, 192], ["left-start", 600, 192], ["left-end", 600, 192],
+    ] as const;
+    for (const [position, top, left] of placements) {
+      tooltip.setPosition(position);
+      expect(tooltip.element.style.top).toBe(`${top}px`);
+      expect(tooltip.element.style.left).toBe(`${left}px`);
+    }
+  });
+
   test("without a layer the tooltip is on the body, with no popover, at document coordinates", () => {
     const { target } = setup();
     const tooltip = make({ target });

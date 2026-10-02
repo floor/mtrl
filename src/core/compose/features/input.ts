@@ -52,11 +52,6 @@ export interface InputConfig {
    * @default true
    */
   enterToggles?: boolean;
-
-  /** Use checked state for change.value, retaining the HTML token as valueAttribute.
-   * @internal Checkbox and switch opt in; standalone inputs keep string values.
-   */
-  checkedValue?: boolean;
 }
 
 /**
@@ -91,17 +86,30 @@ export interface InputFeature {
   input: HTMLInputElement;
 
   /**
-   * Gets the current input value
-   * @returns Current value
+   * Gets the checked state: the `value` a `change` carries
+   * @returns Whether the input is checked
    */
-  getValue: () => string;
+  getValue: () => boolean;
 
   /**
-   * Sets the input value and emits a value event
-   * @param value - New value to set
+   * Checks or unchecks the input. Silent: only the user's change emits `change`
+   * @param value - Whether the input is checked
    * @returns Component instance for chaining
    */
-  setValue(value: string): this;
+  setValue(value: boolean): this;
+
+  /**
+   * Gets the input's `value` attribute: the string a form submits while checked
+   * @returns The input's string value
+   */
+  getValueAttribute: () => string;
+
+  /**
+   * Sets the input's `value` attribute. Silent
+   * @param value - The string a form submits while checked
+   * @returns Component instance for chaining
+   */
+  setValueAttribute(value: string): this;
 
   /**
    * Event emission method if available
@@ -117,6 +125,12 @@ export interface InputComponent extends ElementComponent, InputFeature {}
 /**
  * Creates an input element and adds it to a component
  * Handles both input creation and event emission for state changes
+ *
+ * `change` carries `{ checked, value, valueAttribute, nativeEvent }`: `value` is
+ * the checked boolean, as the checkbox and the switch report it, and
+ * `valueAttribute` the input's string value. The methods match: `getValue()`
+ * and `setValue()` work on the checked boolean, `getValueAttribute()` and
+ * `setValueAttribute()` on the string. Both setters are silent.
  *
  * @param config - Input configuration
  * @returns Function that enhances a component with input functionality
@@ -172,9 +186,9 @@ export const withInput =
       if (hasEmit(component)) {
         component.emit("change", {
           checked: input.checked,
-          ...(config.checkedValue
-            ? { value: input.checked, valueAttribute: input.value }
-            : { value: input.value }),
+          // The checked state, as every model event's value; the HTML token is valueAttribute
+          value: input.checked,
+          valueAttribute: input.value,
           nativeEvent: event,
         });
       }
@@ -198,22 +212,19 @@ export const withInput =
       ...component,
       input,
 
-      /**
-       * Gets the current input value
-       * @returns Current value
-       */
-      getValue: () => input.value,
+      // The checked boolean, as change.value; the string pair is the attribute's,
+      // under the names the checkbox and the switch use. Setters are silent.
+      getValue: () => input.checked,
 
-      /**
-       * Sets the input value and emits a value event
-       * @param value - New value to set
-       * @returns Component instance for chaining
-       */
-      setValue(value: string) {
+      setValue(value: boolean) {
+        input.checked = value;
+        return this;
+      },
+
+      getValueAttribute: () => input.value,
+
+      setValueAttribute(value: string) {
         input.value = value;
-        if (hasEmit(component)) {
-          component.emit("value", { value });
-        }
         return this;
       },
     };

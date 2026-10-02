@@ -98,7 +98,7 @@ const createTimePicker = (
     );
 
     // Open time picker if initially open
-    if (baseConfig.isOpen) {
+    if (baseConfig.open) {
       setTimeout(() => timePicker.open(), 0);
     }
 

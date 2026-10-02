@@ -16,7 +16,7 @@ const value = (selector: string, property: string) =>
     .map(([, , result]) => result.trim()).pop();
 const colour = (role: string) => `var(--mtrl-sys-color-${role})`;
 const alpha = (opacity: number) => `color-mix(in srgb, ${colour('on-surface')} ${opacity}%, transparent)`;
-const variants = ['primary-container', 'secondary-container', 'tertiary-container', 'primary', 'secondary', 'tertiary', 'surface'];
+const variants = ['primary-container', 'secondary-container', 'tertiary-container', 'primary', 'secondary', 'tertiary'];
 
 beforeAll(() => {
   css = compileString(`
@@ -42,7 +42,7 @@ for (const component of ['fab', 'extended-fab']) {
     for (const variant of variants) {
       test(`${variant} palette`, () => {
         expect(value(`${root}--${variant}`, 'background-color')).toBe(colour(variant));
-        expect(value(`${root}--${variant}`, 'color')).toBe(colour(variant === 'surface' ? 'primary' : `on-${variant}`));
+        expect(value(`${root}--${variant}`, 'color')).toBe(colour(`on-${variant}`));
       });
     }
     for (const [state, level, opacity] of [['hover', 4, '0.08'], ['focus-visible', 3, '0.1'], ['active', 3, '0.1']] as const) {
@@ -80,4 +80,9 @@ test('no fabricated dark roles, duplicate disabled scheme, or important override
   expect(css).not.toContain('on-surface-dim');
   expect(css).not.toContain('data-theme-mode');
   expect(css).not.toContain('!important');
+});
+
+// 1.0 removed the surface style, deprecated since 0.8 (use a container or tone style)
+test("no FAB or extended FAB surface style is left in the stylesheet", () => {
+  expect(css).not.toMatch(/fab--surface/);
 });

@@ -79,12 +79,4 @@ export const getInheritedBackground = (element: HTMLElement, maxDepth = 17): Bac
   return { color: 'rgb(255, 255, 255)', element: null };
 };
 
-/**
- * For backwards compatibility
- * @deprecated Use getInheritedBackground instead
- */
-export const getInheritedBG = (element: HTMLElement, maxDepth = 17): string => {
-  return getInheritedBackground(element, maxDepth).color;
-};
-
 export default getInheritedBackground;

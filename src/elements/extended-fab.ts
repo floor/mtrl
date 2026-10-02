@@ -31,6 +31,7 @@ const extendedFabSpec = {
     size: { type: "string", config: "size" },
     width: { type: "string", config: "width" },
     disabled: { type: "boolean", config: "disabled", update: (c, v) => void (v ? c.disable() : c.enable()) },
+    /** Markup (HTML). Not sanitized by default: see Markup and sanitizing. */
     icon: { type: "string", config: "icon", update: (c, v) => void c.setIcon(String(v ?? "")) },
     "icon-position": { type: "string", config: "iconPosition" },
     position: { type: "string", config: "position" },

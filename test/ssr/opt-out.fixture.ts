@@ -10,8 +10,8 @@ import { renderElement } from "../../src/ssr";
 const parsed = (html: string) => parseHTML(`<html><body>${html}</body></html>`).document.body.firstElementChild!;
 const root = (html: string) => Array.from(parsed(html).children).find(child => child.localName === "template" && child.hasAttribute("shadowrootmode"));
 
-test("carousel, FAB menu and toolbar emit only the authored host and light DOM", () => {
-  for (const name of ["carousel", "fab-menu", "toolbar"]) {
+test("carousel and FAB menu emit only the authored host and light DOM", () => {
+  for (const name of ["carousel", "fab-menu"]) {
     const children = '<span title="A &amp; B">Light</span><template><m-button>Inert</m-button></template>';
     const html = renderElement(`m-${name}`, { id: "kept", "data-note": '"<&' }, children);
     expect(root(html), name).toBeUndefined();
@@ -25,7 +25,7 @@ test("carousel, FAB menu and toolbar emit only the authored host and light DOM",
 });
 
 test("opted-out factories never run; eligible light descendants still render", () => {
-  for (const { spec } of Object.values(elements).filter(({ spec }) => ["carousel", "fab-menu", "toolbar"].includes(spec.name))) {
+  for (const { spec } of Object.values(elements).filter(({ spec }) => ["carousel", "fab-menu"].includes(spec.name))) {
     const original = spec.create;
     spec.create = () => { throw new Error("opted-out factory ran"); };
     try {

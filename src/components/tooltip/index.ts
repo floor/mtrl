@@ -13,5 +13,6 @@ export {
 // Export types
 export type { 
   TooltipConfig, 
+  TooltipVariant,
   TooltipComponent
 } from './types';

@@ -62,15 +62,14 @@ button.off("click", (event: MouseEvent) => event.preventDefault());
 // @ts-expect-error focus does not forward a keyboard event
 button.on("focus", (_payload: ForwardedEventPayload<KeyboardEvent, HTMLButtonElement>) => {});
 
-// Toggle is a DOM event, not a forwarded emitter event.
-// @ts-expect-error listen through element.addEventListener instead
+// 1.0 has no toggle event: the emitter never had one, and the DOM one is gone.
+// @ts-expect-error listen to change
 button.on("toggle", () => {});
 // @ts-expect-error off has the same event boundary
 button.off("toggle", () => {});
 // @ts-expect-error lifecycle events belong to the lifecycle API
 button.on("mount", () => {});
 
-button.element.addEventListener("toggle", () => {});
 
 // FLO-380: gestures are not model notifications and retain normalized metadata.
 import type { NormalizedEvent, SwipePayload } from "../../src/core/utils/mobile";

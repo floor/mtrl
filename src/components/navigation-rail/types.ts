@@ -1,9 +1,11 @@
 import type { BaseComponentConfig } from '../../core/config/component';
-/** A primary destination. Icons are trusted SVG/HTML supplied by the application. */
+/** A primary destination. Icons are markup supplied by the application. */
 export interface NavigationRailItemConfig {
     id: string;
     label: string;
+    /** Markup (HTML). Not sanitized by default: see Markup and sanitizing. */
     icon: string;
+    /** Markup (HTML). Not sanitized by default: see Markup and sanitizing. Shown while this destination is active. */
     activeIcon?: string;
     href?: string;
     badge?: string | number | boolean;
@@ -42,16 +44,19 @@ export interface NavigationRailConfig extends BaseComponentConfig {
     showToggle?: boolean;
     expandLabel?: string;
     collapseLabel?: string;
-    /** Menu button icon while collapsed. Default: Material Symbols `menu`. */
+    /** Menu button icon while collapsed. Default: Material Symbols `menu`. Markup (HTML). Not sanitized by default: see Markup and sanitizing. */
     expandIcon?: string;
-    /** Menu button icon while expanded. Default: Material Symbols `menu_open`. */
+    /** Menu button icon while expanded. Default: Material Symbols `menu_open`. Markup (HTML). Not sanitized by default: see Markup and sanitizing. */
     collapseIcon?: string;
     /** Optional application-owned header, such as a FAB. Its lifecycle stays with its owner. */
     header?: HTMLElement;
     ripple?: boolean;
-    onSelect?: (event: NavigationRailSelectEvent) => void;
-    onExpand?: () => void;
-    onCollapse?: () => void;
+    /** `select` listener registered at creation. */
+    onSelect?: (event: NavigationRailEvents["select"]) => void;
+    /** `expand` listener registered at creation. The argument is `{ expanded: true }`. */
+    onExpand?: (event: NavigationRailEvents["expand"]) => void;
+    /** `collapse` listener registered at creation. The argument is `{ expanded: false }`. */
+    onCollapse?: (event: NavigationRailEvents["collapse"]) => void;
 }
 export interface NavigationRailComponent {
     element: HTMLElement;

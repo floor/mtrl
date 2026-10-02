@@ -131,12 +131,6 @@ $sizes: (
     }
   }
 
-  // Deprecated surface style retained for existing callers.
-  &--surface {
-    background-color: t.color('surface');
-    color: t.color('primary');
-  }
-
   &:hover {
     @include m.state-layer(currentColor, 'hover');
     @include m.elevation(4);

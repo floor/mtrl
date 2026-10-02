@@ -11,6 +11,7 @@ type Case = {
   factoryEvent?: string;
   factoryPath?: "picker";
   action?: string;
+  changesTo?: string | number;
 };
 
 const icon = '<svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/></svg>';
@@ -26,7 +27,7 @@ const cases: Record<string, Case> = {
   iconButton: { markup: `<m-icon-button toggle value="favorite" aria-label="Favorite" icon='${icon}'></m-icon-button>`, event: "change", getter: "component", factoryEvent: "change", action: click("button") },
   fab: {}, extendedFab: {},
   checkbox: { event: "change", getter: "checked", factoryEvent: "change", action: click("input") },
-  slider: { markup: '<m-slider value="40" aria-label="Level"></m-slider>', event: "change", getter: "value", factoryEvent: "change", action: `const slider = host.shadowRoot.querySelector('[role="slider"]'); slider.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }))` },
+  slider: { markup: '<m-slider value="40" aria-label="Level"></m-slider>', event: "change", getter: "value", factoryEvent: "change", changesTo: 41, action: `const slider = host.shadowRoot.querySelector('[role="slider"]'); slider.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }))` },
   textfield: { event: "input", getter: "value", factoryEvent: "input", action: `const input = host.shadowRoot.querySelector("input"); input.value = "Ada"; input.dispatchEvent(new Event("input", { bubbles: true }))` },
   radios: { markup: choices("radios", "radio"), event: "change", getter: "value", factoryEvent: "change", action: `host.component.radios[1].input.click()` },
   navigationBar: { markup: `<m-navigation-bar><m-navigation-bar-item value="a" icon='${icon}'>Alpha</m-navigation-bar-item><m-navigation-bar-item value="b" icon='${icon}'>Beta</m-navigation-bar-item></m-navigation-bar>`, event: "change", getter: "value", factoryEvent: "select", action: click('[data-id="b"]') },
@@ -39,10 +40,10 @@ const cases: Record<string, Case> = {
   card: {},
   carousel: { markup: choices("carousel", "carousel-item"), event: "change", getter: "index", factoryEvent: "change", action: `host.next()` },
   menu: {}, fabMenu: {},
-  select: { markup: choices("select", "select-option"), event: "change", getter: "value", factoryEvent: "change", action: `host.component.menu.element.querySelector('[data-id="b"]').click()` },
+  select: { markup: choices("select", "select-option"), event: "change", getter: "value", factoryEvent: "change", action: `host.component[Object.getOwnPropertySymbols(host.component).find(key => key.description === "mtrl.menu")].element.querySelector('[data-id="b"]').click()` },
   splitButton: {}, tooltip: {}, toolbar: {}, snackbar: {}, dialog: {}, bottomSheet: {}, sideSheet: {},
   datepicker: { markup: '<m-datepicker label="Date" value="2026-09-10"></m-datepicker>', event: "change", getter: "value", factoryEvent: "change", action: `const input = host.shadowRoot.querySelector("input"); input.value = "09/12/2026"; input.dispatchEvent(new Event("change", { bubbles: true }))` },
-  timepicker: { markup: '<m-timepicker value="09:30"></m-timepicker>', event: "confirm", getter: "value", factoryEvent: "confirm", factoryPath: "picker", action: `const picker = host.component.picker; picker.open(); picker.dialogElement.querySelector('[class$="time-picker__confirm"]').click()` },
+  timepicker: { markup: '<m-timepicker value="09:30"></m-timepicker>', event: "confirm", getter: "value", factoryEvent: "confirm", factoryPath: "picker", changesTo: "10:30", action: `const picker = host.component.picker; picker.setType("input"); picker.open(); const hour = picker.dialogElement.querySelector('[data-type="hour"]'); hour.value = "10"; hour.dispatchEvent(new Event("change", { bubbles: true })); picker.dialogElement.querySelector('[class$="time-picker__confirm"]').click()` },
   search: { event: "input", getter: "value", factoryEvent: "input", action: `const input = host.shadowRoot.querySelector("input"); input.value = "Ada"; input.dispatchEvent(new Event("input", { bubbles: true }))` },
 };
 
@@ -74,7 +75,7 @@ export const checkRegistryEvents = async (
     });
     await fresh(page, item.markup ?? `<m-${tag}></m-${tag}>`);
     const result = await page.evaluate(async ({ name, tag, item }) => {
-      type Component = { on?: (event: string, listener: (payload: { value: unknown }) => void) => void; getValue?: () => unknown; picker?: Component };
+      type Component = { on?: (event: string, listener: (payload: { value: unknown }) => void) => void; getValue?: () => unknown; setType?: (type: string) => void; picker?: Component };
       const host = document.querySelector(`m-${tag}`) as HTMLElement & { component?: Component; value?: unknown; checked?: boolean; index?: number };
       const spec = (window as unknown as { mtrl: { elements: Record<string, { spec: { model?: string } }> } }).mtrl.elements[name].spec;
       const mounted = !!host && !!customElements.get(`m-${tag}`) && !!host.shadowRoot && !!host.component;
@@ -85,22 +86,23 @@ export const checkRegistryEvents = async (
         }
         (host.shadowRoot?.querySelector("button,input") as HTMLElement | null)?.click();
         await new Promise(resolve => setTimeout(resolve, 30));
-        return { mounted, model: spec.model ?? null, element: [] as boolean[], factory: [] as boolean[], modelEvents };
+        return { mounted, model: spec.model ?? null, element: [] as boolean[], factory: [] as boolean[], modelEvents, before: null as unknown, after: null as unknown };
       }
       const element: boolean[] = [];
       const factory: boolean[] = [];
       const target = item.factoryPath === "picker" ? host.component?.picker : host.component;
       const getter = (): unknown => item.getter === "component" ? host.component?.getValue?.() : host[item.getter as "value" | "checked" | "index"];
+      const before = item.changesTo === undefined ? null : getter();
       host.addEventListener(item.event, event => {
         if (!(event instanceof CustomEvent)) return;
         element.push("value" in Object(event.detail) && JSON.stringify(event.detail.value) === JSON.stringify(getter()));
       });
       if (item.factoryEvent && target?.on && target.getValue) {
-        target.on(item.factoryEvent, payload => factory.push(JSON.stringify(payload.value) === JSON.stringify(target.getValue?.())));
+        target.on(item.factoryEvent, payload => factory.push("value" in Object(payload) && JSON.stringify(payload.value) === JSON.stringify(target.getValue?.())));
       }
       await (new Function("host", `return (async () => { ${item.action} })()`)(host) as Promise<void>);
       await new Promise(resolve => setTimeout(resolve, 70));
-      return { mounted, model: spec.model ?? null, element, factory, modelEvents: [] as string[] };
+      return { mounted, model: spec.model ?? null, element, factory, modelEvents: [] as string[], before, after: item.changesTo === undefined ? null : getter() };
     }, { name, tag, item });
     assert.equal(result.mounted, true, `${name}: mounted as an upgraded custom element`);
     if (item.event) {
@@ -110,11 +112,15 @@ export const checkRegistryEvents = async (
         assert.ok(result.factory.length, `${name}: factory ${item.factoryEvent} dispatched`);
         assert.ok(result.factory.every(Boolean), `${name}: factory value equals getValue during dispatch`);
       }
+      if (item.changesTo !== undefined) {
+        assert.notDeepEqual(result.after, result.before, `${name}: action changes the model`);
+        assert.deepEqual(result.after, item.changesTo, `${name}: action reaches the expected value`);
+      }
     } else {
       assert.equal(result.model, null, `${name}: no element model notification`);
       assert.deepEqual(result.modelEvents, [], `${name}: a default click emits no model notification`);
     }
-    check(`registry: ${name} ${item.event ? "model event" : "non-model mount"}`);
+    check(`registry: ${name} ${item.event ? "model event" : "non-model mount"}${item.changesTo === undefined ? "" : ` ${JSON.stringify(result.before)} → ${JSON.stringify(result.after)}`}`);
     if (name === "button") await page.evaluate(() => {
       const mtrl = (window as unknown as { mtrl: { setComponentDefaults: (name: string, defaults: object) => void } }).mtrl;
       mtrl.setComponentDefaults("button", {});

@@ -7,7 +7,7 @@
 @use 'config' as c;
 
 // As the sizes in components/_fab.scss: container and shape.
-$sizes: ('small': (40px, 'medium'), 'default': (56px, 'large'), 'medium': (80px, 'large-increased'), 'large': (96px, 'extra-large'));
+$sizes: ('default': (56px, 'large'), 'medium': (80px, 'large-increased'), 'large': (96px, 'extra-large'));
 
 @mixin size($size) {
   $values: map.get($sizes, $size);

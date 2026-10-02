@@ -18,10 +18,13 @@ export {
 export type {
   // Types
   TabsConfig,
+  TabsVariant,
   TabsComponent,
   TabComponent,
   TabConfig,
   TabChangeEventData,
+  TabEvents,
+  TabsEvents,
   // Public: TabsConfig.indicator takes it (FLO-381 keeps it)
   IndicatorConfig,
 } from "./types";

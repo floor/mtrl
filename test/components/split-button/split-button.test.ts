@@ -22,6 +22,7 @@ g.requestAnimationFrame = (cb: FrameRequestCallback) => setTimeout(() => cb(Date
 g.ResizeObserver = class { observe() {} disconnect() {} };
 
 import createSplitButton from '../../../src/components/split-button';
+import { innerMenu } from '../../../src/components/menu/inner';
 
 const items = [
   { id: 'queue', text: 'Add to queue' },
@@ -142,16 +143,16 @@ describe('split button', () => {
   test('with items it owns a menu anchored to the trailing button', async () => {
     const chosen: string[] = [];
     const split = createSplitButton({ text: 'Watch later', items, onSelect: (e) => chosen.push(String(e.item?.id ?? '')) });
-    expect(split.menu).toBeDefined();
+    expect(innerMenu(split)).toBeDefined();
     split.expand();
-    expect(split.menu!.isOpen()).toBe(true);
+    expect(innerMenu(split)!.isOpen()).toBe(true);
     split.collapse();
     // the menu takes its closing animation to go
     await new Promise((resolve) => setTimeout(resolve, 300));
-    expect(split.menu!.isOpen()).toBe(false);
+    expect(innerMenu(split)!.isOpen()).toBe(false);
     // a menu closed from the outside brings the button's state back with it
     split.expand();
-    split.menu!.close();
+    innerMenu(split)!.close();
     await new Promise((resolve) => setTimeout(resolve, 300));
     expect(split.isExpanded()).toBe(false);
     expect(split.trailingElement.getAttribute('aria-expanded')).toBe('false');

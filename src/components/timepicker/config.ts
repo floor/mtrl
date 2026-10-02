@@ -23,12 +23,11 @@ export const defaultConfig: TimePickerConfig = {
   format: TIME_FORMAT.AMPM,
   orientation: TIME_PICKER_ORIENTATION.VERTICAL,
   showSeconds: TIMEPICKER_DEFAULTS.SHOW_SECONDS,
-  closeOnSelect: TIMEPICKER_DEFAULTS.CLOSE_ON_SELECT,
   minuteStep: TIMEPICKER_DEFAULTS.MINUTE_STEP,
   secondStep: TIMEPICKER_DEFAULTS.SECOND_STEP,
   cancelText: TIMEPICKER_DEFAULTS.CANCEL_TEXT,
   confirmText: TIMEPICKER_DEFAULTS.CONFIRM_TEXT,
-  isOpen: TIMEPICKER_DEFAULTS.IS_OPEN,
+  open: TIMEPICKER_DEFAULTS.OPEN,
   clockIcon: TIMEPICKER_ICONS.CLOCK,
   keyboardIcon: TIMEPICKER_ICONS.KEYBOARD,
 };
@@ -69,7 +68,7 @@ export const getContainerConfig = (config: ResolvedTimePickerConfig) => {
     // The dialog semantics are the native <dialog>'s, not this host's. FLO-278.
     className: [
       config.class,
-      config.isOpen ? `${config.prefix}-time-picker--open` : "",
+      config.open ? `${config.prefix}-time-picker--open` : "",
     ],
     // The root's own events, not the dialog's, which now sits inside the root
     // (FLO-288) and has its own actions.

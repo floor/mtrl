@@ -9,6 +9,7 @@
  */
 import type * as React from "react";
 import type { ElementEvents, ElementMarkup } from "../elements";
+import type { ReactHostAttributes } from "./create";
 
 /**
  * The element's events as React 19 listens to them on a custom element: an
@@ -22,7 +23,7 @@ type Events<S> = {
 
 /** A tag's props: its attributes as markup writes them, its events, and any HTML attribute. */
 type Tag<S, E extends HTMLElement> = Omit<
-  React.DetailedHTMLProps<React.HTMLAttributes<E>, E>,
+  React.DetailedHTMLProps<ReactHostAttributes<E>, E>,
   keyof ElementMarkup<S> | keyof Events<S>
 > &
   ElementMarkup<S> &

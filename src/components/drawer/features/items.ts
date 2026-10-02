@@ -197,10 +197,6 @@ export const withItems =
             };
 
             component.emit(DRAWER_EVENTS.SELECT, selectEvent);
-
-            if (config.onSelect) {
-              config.onSelect(selectEvent);
-            }
           }
         });
 

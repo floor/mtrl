@@ -23,6 +23,7 @@ export interface ApiOptions {
     close: () => void;
     toggle: (open?: boolean) => void;
     isOpen: () => boolean;
+    cancel: () => void;
   };
   content: {
     setTitle: (title: string) => void;
@@ -303,8 +304,12 @@ export const withAPI =
      * Destroys the dialog and removes it from DOM
      */
     destroy() {
-      // Close the dialog first if it's open
-      if (this.isOpen()) {
+      // Close the dialog first if it's open. Nothing an open() or a close()
+      // left pending runs afterwards: a surface shown after destroy() would
+      // lock the page's scroll for good.
+      const wasOpen = this.isOpen();
+      options.visibility.cancel();
+      if (wasOpen) {
         // We'll handle removal directly rather than calling this.close()
         // to avoid animation delay in critical cleanup
         const dialogVisibleClass = `${component.getClass("dialog")}--visible`;

@@ -19,7 +19,7 @@ const fixtures = cases.filter(c => c.variant === "default").map(fixture => {
   return {
     name: fixture.element,
     html: renderElement(`m-${fixture.element}`, Object.fromEntries(Array.from(source.attributes, a => [a.name, a.value])), source.innerHTML),
-    fallback: ["carousel", "fab-menu", "toolbar"].includes(fixture.element),
+    fallback: ["carousel", "fab-menu"].includes(fixture.element),
   };
 });
 for (const attributes of [{ open: true }, { presentation: "menu" }]) fixtures.push({
@@ -59,7 +59,8 @@ try {
         await page.waitForFunction(() => !!(document.body.firstElementChild as HTMLElement & { component?: unknown }).component);
         await page.evaluate(async () => { for (let frame = 0; frame < 3; frame++) await new Promise(requestAnimationFrame); });
         assert.equal(await page.evaluate(() => document.body.firstElementChild!.querySelectorAll(":scope > template[shadowrootmode]").length), 0, `${name}/${fixture.name}: leftover template`);
-        // Toolbar intentionally assigns tab stops to its light children after upgrade.
+        // The upgrade sets the roving tabindex on the toolbar's default-slot
+        // targets (FLO-387). The server wrote none, so that light DOM changes.
         if (fixture.name !== "toolbar") assert.equal(await page.evaluate(() => document.body.firstElementChild!.innerHTML), before, `${name}/${fixture.name}: light DOM preserved`);
         assert.deepEqual(errors, [], `${name}/${fixture.name}: browser errors`);
       }

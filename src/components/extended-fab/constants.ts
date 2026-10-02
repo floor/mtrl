@@ -15,9 +15,7 @@ export const EXTENDED_FAB_VARIANTS = {
   /** Secondary tone colour */
   SECONDARY: 'secondary',
   /** Tertiary tone colour */
-  TERTIARY: 'tertiary',
-  /** @deprecated Use a container or tone style instead. */
-  SURFACE: 'surface'
+  TERTIARY: 'tertiary'
 } as const;
 
 /** Expressive extended FAB sizes. */

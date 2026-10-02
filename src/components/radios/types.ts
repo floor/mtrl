@@ -84,19 +84,6 @@ export interface RadiosConfig {
    * Component name used in class generation
    */
   componentName?: string;
-  
-  /**
-   * @deprecated Never applied (FLO-266). The state layer is drawn by the
-   * stylesheet.
-   */
-  rippleConfig?: {
-    /** How long, in milliseconds, a released wave lingers before it is removed */
-    duration?: number;
-    /** @deprecated Not applied: the ripple's motion comes from the stylesheet (FLO-268). */
-    timing?: string;
-    /** @deprecated Not applied: the wave is the 0.10 pressed state layer, drawn by the stylesheet (FLO-268). */
-    opacity?: [string, string];
-  };
 }
 
 /**
@@ -122,8 +109,8 @@ export interface RadioItem {
 
 /** Selection or unknown-value clearing reported by the radio group. */
 export interface RadiosChangePayload {
-  /** Selected value, or an empty string when an unknown value clears selection. */
-  value: string;
+  /** Selected value, or null when nothing is selected: the value `getValue()` reads. */
+  value: string | null;
   /** Native input change event; undefined for programmatic clearing. */
   originalEvent: Event | undefined;
   /** Selected option, or null when an unknown value clears selection. */
@@ -160,17 +147,19 @@ export interface RadiosComponent {
   getClass: (name: string) => string;
   
   /**
-   * Gets the radios component name
-   * @returns Selected radio value or empty string if none selected
+   * Gets the selected value
+   * @returns Selected radio value, or null if none is selected
    */
-  getValue: () => string;
+  getValue: () => string | null;
   
   /**
-   * Sets the radios component value (selects a radio)
-   * @param value - Value to select
+   * Sets the radios component value (selects a radio). `null`, what
+   * `getValue()` returns when nothing is selected, clears the selection.
+   * Silent either way: a programmatic change emits no `change`.
+   * @param value - Value to select, or null to clear
    * @returns The radios component for chaining
    */
-  setValue: (value: string) => RadiosComponent;
+  setValue: (value: string | null) => RadiosComponent;
   
   /**
    * Gets the selected radio option's configuration

@@ -112,10 +112,14 @@ describe("dialog, layer: top", () => {
 
   test("open() shows it with showModal() at once, and close() closes it once and keeps it in place", async () => {
     const { dialog, closes } = make();
+    const opened: string[] = [];
+    dialog.on("open", () => { opened.push("open"); });
     dialog.open();
     expect(calls).toEqual(["showModal"]);
     expect(dialog.element.hasAttribute("open")).toBe(true);
+    // Synchronous in the top layer: state and event are there on return (FLO-543)
     expect(dialog.isOpen()).toBe(true);
+    expect(opened).toEqual(["open"]);
     dialog.close();
     expect(calls).toEqual(["showModal", "close"]);
     await after(400);
@@ -127,6 +131,10 @@ describe("dialog, layer: top", () => {
   test("Escape reaches it as cancel: it closes once, the browser's own close is refused", async () => {
     const { dialog, closes } = make();
     dialog.open();
+    // A later key press. A cancel in the task open() ran in is the one the
+    // browser sends for the key that opened the dialog, which never closes it
+    // (FLO-548, dialog/open-contract.test.ts).
+    await after(0);
     const event = escape(dialog.element);
     expect(event.defaultPrevented).toBe(true);
     expect(dialog.isOpen()).toBe(false);

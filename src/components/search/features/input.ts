@@ -104,9 +104,7 @@ export const withInput =
     return eventData;
   };
 
-  /**
-   * Emits an event and calls the corresponding config handler
-   */
+  /** Emits an event. Config on* options are listeners registered at creation. */
   const emitEvent = (
     eventType: string,
     originalEvent: Event | null = null,
@@ -114,22 +112,8 @@ export const withInput =
   ) => {
     const eventData = createEventData(eventType, originalEvent, extra);
 
-    // Emit via component's event system
     if (component.emit) {
       component.emit(eventType, eventData);
-    }
-
-    // Call config handler if provided
-    const handlerName = `on${eventType.charAt(0).toUpperCase()}${eventType.slice(1)}`;
-    const handler = config[handlerName as keyof SearchConfig];
-    if (typeof handler === "function") {
-      if (eventType === "suggestionSelect" && extra.suggestion) {
-        (handler as (suggestion: SearchSuggestion) => void)(
-          extra.suggestion as SearchSuggestion
-        );
-      } else {
-        (handler as (value: string) => void)(currentValue);
-      }
     }
 
     return eventData;

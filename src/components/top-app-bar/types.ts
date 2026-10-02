@@ -58,7 +58,8 @@ export interface TopAppBarConfig {
   class?: string;
 
   /**
-   * Optional callback when scrolling changes the bar appearance
+   * Called with the new scrolled state when scrolling changes the bar.
+   * There is no matching event, so this stays a callback rather than a listener.
    */
   onScroll?: (scrolled: boolean) => void;
 

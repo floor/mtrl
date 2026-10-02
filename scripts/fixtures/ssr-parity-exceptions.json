@@ -1,1 +1,50 @@
-[]
+[
+  {
+    "element": "toolbar",
+    "phase": "immediate",
+    "property": "host/0/@tabindex",
+    "server": null,
+    "browser": "0",
+    "issue": "FLO-387: the server writes no tabindex on the toolbar's default-slot roving targets. At connect the first enabled one, the first item, is the tab stop."
+  },
+  {
+    "element": "toolbar",
+    "phase": "immediate",
+    "property": "host/1/@tabindex",
+    "server": null,
+    "browser": "-1",
+    "issue": "FLO-387: the server writes no tabindex on the toolbar's default-slot roving targets. At connect the other targets are -1."
+  },
+  {
+    "element": "toolbar",
+    "phase": "immediate",
+    "property": "host/2/@tabindex",
+    "server": null,
+    "browser": "-1",
+    "issue": "FLO-387: the server writes no tabindex on the toolbar's default-slot roving targets. At connect the other targets are -1."
+  },
+  {
+    "element": "toolbar",
+    "phase": "settled",
+    "property": "host/0/@tabindex",
+    "server": null,
+    "browser": "0",
+    "issue": "FLO-387: the server writes no tabindex on the toolbar's default-slot roving targets. At connect the first enabled one, the first item, is the tab stop."
+  },
+  {
+    "element": "toolbar",
+    "phase": "settled",
+    "property": "host/1/@tabindex",
+    "server": null,
+    "browser": "-1",
+    "issue": "FLO-387: the server writes no tabindex on the toolbar's default-slot roving targets. At connect the other targets are -1."
+  },
+  {
+    "element": "toolbar",
+    "phase": "settled",
+    "property": "host/2/@tabindex",
+    "server": null,
+    "browser": "-1",
+    "issue": "FLO-387: the server writes no tabindex on the toolbar's default-slot roving targets. At connect the other targets are -1."
+  }
+]

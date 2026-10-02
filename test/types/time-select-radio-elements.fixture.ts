@@ -29,3 +29,15 @@ export const reactRadios: Equals<ReactProps<typeof ReactRadios>["onChange"], ((e
 export const solidRadios: Equals<SolidProps<typeof SolidRadios>["onChange"], ((event: Nullable) => void) | undefined> = true;
 export const svelteSelect: Equals<SvelteProps<SelectSpec>["onchange"], ((event: Nullable) => void) | undefined> = true;
 export const vueRadios: Equals<Parameters<VueEmits<RadiosSpec>["change"]>[0], Nullable> = true;
+
+// A null value clears the radios: on the element, and in every adapter's value prop
+// (Vue's v-model and Svelte's bind:value drive the same property).
+import type { RadiosElement } from "../../src/elements";
+import type { VueProps } from "../../src/vue";
+export const elementValue: Equals<RadiosElement["value"], string | null | undefined> = true;
+export const reactRadiosNull: ReactProps<typeof ReactRadios> = { value: null };
+export const solidRadiosNull: SolidProps<typeof SolidRadios> = { value: null };
+export const svelteRadiosNull: SvelteProps<RadiosSpec> = { value: null };
+export const vueRadiosNull: VueProps<RadiosSpec> = { value: null, modelValue: null };
+// @ts-expect-error a number is not a radio value
+export const reactRadiosNumber: ReactProps<typeof ReactRadios> = { value: 3 };

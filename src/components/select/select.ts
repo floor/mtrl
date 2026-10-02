@@ -3,7 +3,7 @@
 import { pipe } from '../../core/compose';
 import { createBase } from '../../core/compose/component';
 import { withEvents, withLifecycle } from '../../core/compose/features';
-import { withTextfield, withMenu } from './features';
+import { withTextField, withMenu } from './features';
 import { withAPI } from './api';
 import { SelectConfig, SelectComponent } from './types';
 import { createBaseConfig, getApiConfig } from './config';
@@ -51,7 +51,7 @@ const createSelect = (config: SelectConfig): SelectComponent => {
     const select: SelectComponent = pipe(
       createBase,
       withEvents(),
-      withTextfield(baseConfig),
+      withTextField(baseConfig),
       withMenu(baseConfig, (): SelectComponent => select),
       withLifecycle(),
       comp => withAPI(getApiConfig(comp))(comp)

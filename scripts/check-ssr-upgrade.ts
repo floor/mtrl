@@ -15,12 +15,10 @@ const engine = process.argv.find(arg => arg.startsWith("--engine="))?.split("=")
 assert(engine === "chromium" || engine === "firefox" || engine === "webkit");
 const fixtures = cases.filter(c => c.variant === "default");
 // Hosts that opt out of SSR: the server emits the authored host and light DOM.
-const FALLBACK = ["carousel", "fab-menu", "toolbar"];
-// An opted-out host's light children still get their own declarative roots (the
-// toolbar's icon buttons). Those are on screen before the upgrade, so they are
-// measured across it like any other server-rendered element (FLO-412), with
-// mtrl/elements/preupgrade.css loaded, as the renderer's contract asks for an
-// opted-out host.
+const FALLBACK = ["carousel", "fab-menu"];
+// Light children that have their own declarative roots and are measured across
+// the upgrade (FLO-412). The toolbar renders its own root (FLO-387); its icon
+// buttons still do, and each must upgrade in place.
 const RENDERED_CHILDREN: Record<string, string> = { toolbar: "m-icon-button" };
 assert.deepEqual(fixtures.map(c => c.element).sort(), Object.values(elements).map(e => e.spec.name).sort());
 const bundle = await Bun.build({ entrypoints: ["scripts/fixtures/ssr-upgrade.ts"], target: "browser" });
@@ -159,7 +157,16 @@ try {
       preupgrade = true;
       inert = await browser.newPage({ ...options, javaScriptEnabled: false });
       await inert.goto(server.url.href);
-    } else assert(firstPaint.root && firstPaint.rules > 0 && firstPaint.styled, `${engine}/${fixture.element}: unstyled no-JS root ${JSON.stringify(firstPaint)}`);
+    } else {
+      assert(firstPaint.root && firstPaint.rules > 0 && firstPaint.styled, `${engine}/${fixture.element}: unstyled no-JS root ${JSON.stringify(firstPaint)}`);
+      // Child roots used to be recorded only for an opted-out host. The toolbar
+      // has its own root now, and its icon buttons are still measured (FLO-412).
+      if (children) {
+        roots = await inert.evaluate(selector => Array.from(document.querySelectorAll(`#stage > :first-child ${selector}`),
+          child => (child.shadowRoot?.querySelector("style")?.sheet?.cssRules.length ?? 0) > 0), children);
+        assert(roots.length > 0 && roots.every(Boolean), `${engine}/${fixture.element}: every ${children} must have a styled declarative root without JavaScript`);
+      }
+    }
     const anchors = await inert.evaluate(() => CSS.supports("anchor-name", "none"));
     const allowance = allowed.find(e => e.element === fixture.element && e.engines.includes(engine) && (!e.withoutAnchors || !anchors));
     const beforeRegions = allowance ? await regions(inert, allowance.selector) : [];

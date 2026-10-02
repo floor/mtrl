@@ -2,7 +2,8 @@
 import { processClassNames, type BaseComponentConfig } from "../../core/config/component";
 import createTextField from "../textfield";
 import createMenu from "../menu";
-import { MenuItem, MenuContent, MenuDivider, MenuPosition } from "../menu/types";
+import { MenuComponent, MenuItem, MenuContent, MenuDivider, MenuPosition } from "../menu/types";
+import { MENU } from "../menu/inner";
 import { SelectOption, SelectConfig, SelectComponent, BaseComponent } from "./types";
 import { warnUnknownValue } from "../../core/utils/warn";
 import { activeElementOf } from "../../core/dom/focus";
@@ -12,7 +13,7 @@ import { activeElementOf } from "../../core/dom/focus";
  * @param config - Select configuration
  * @returns Function that enhances a component with textfield functionality
  */
-export const withTextfield =
+export const withTextField =
   (config: SelectConfig) =>
   <C extends object>(
     component: C,
@@ -159,7 +160,7 @@ const processMenuItems = (
 const setupCombobox = (
   component: BaseComponent,
   textField: NonNullable<BaseComponent["textField"]>,
-  menu: NonNullable<BaseComponent["menu"]>,
+  menu: MenuComponent,
   state: { options: SelectOption[]; selectedOption: SelectOption | null },
   choose: (option: SelectOption, originalEvent?: Event) => void,
   prefix: string,
@@ -387,7 +388,7 @@ const setupCombobox = (
 export const withMenu =
   (config: SelectConfig, getComponent: () => SelectComponent) =>
   // Without a textfield the component comes back without menu and select
-  <C extends BaseComponent>(component: C): C & Pick<BaseComponent, "menu" | "select"> => {
+  <C extends BaseComponent>(component: C): C & Pick<BaseComponent, typeof MENU | "select"> => {
     if (!component.textField) {
       console.warn("Cannot add menu: text field not found");
       return component;
@@ -450,18 +451,13 @@ export const withMenu =
 
       // Emit change event
       if (component.emit) {
-        const changeEvent = {
+        component.emit("change", {
           select: getComponent(),
           value: state.selectedOption?.id || null,
           text: option.text,
           option,
           originalEvent,
-          preventDefault: () => {
-            changeEvent.defaultPrevented = true;
-          },
-          defaultPrevented: false,
-        };
-        component.emit("change", changeEvent);
+        });
       }
     };
 
@@ -517,8 +513,6 @@ export const withMenu =
         component.emit("open", {
           select: getComponent(),
           originalEvent: null,
-          preventDefault: () => {},
-          defaultPrevented: false,
         });
       }
 
@@ -592,8 +586,6 @@ export const withMenu =
         component.emit("close", {
           select: getComponent(),
           originalEvent: event.originalEvent,
-          preventDefault: () => {},
-          defaultPrevented: false,
         });
       }
     });
@@ -612,7 +604,7 @@ export const withMenu =
     // Expose select API
     return {
       ...component,
-      menu,
+      [MENU]: menu,
 
       // Select controller
       select: {

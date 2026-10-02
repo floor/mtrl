@@ -25,6 +25,7 @@
 import createSplitButton from "../components/split-button";
 import type { SplitButtonComponent, SplitButtonConfig, SplitButtonEvent } from "../components/split-button/types";
 import type { MenuContent } from "../components/menu/types";
+import { innerMenu } from "../components/menu/inner";
 import { defineElement, type Config, type DefineOptions, type ElementInstance, type ElementSpec } from "./define";
 import { declaredMenuItems, defineMenuItem } from "./menu";
 
@@ -59,13 +60,14 @@ const readSplitButton = (host: HTMLElement): Config => {
  */
 const updateSplitButton = (host: HTMLElement, c: SplitButtonComponent): boolean => {
   const items: MenuContent[] = declaredMenuItems(host, itemTag(host));
-  if (!items.length !== !c.menu) return false;
+  const menu = innerMenu(c);
+  if (!items.length !== !menu) return false;
   const label = labelOf(host);
   if (c.getText() !== label) c.setText(label);
   const key = JSON.stringify(items);
-  if (c.menu && applied.get(c) !== key) {
+  if (menu && applied.get(c) !== key) {
     applied.set(c, key);
-    c.menu.setItems(items);
+    c.setItems(items);
   }
   return true;
 };
@@ -83,6 +85,7 @@ const splitButtonSpec = {
   attributes: {
     // Read with the text by `config`: the attribute wins over the text.
     label: { type: "string", update: (c, _v, host) => void c.setText(labelOf(host)) },
+    /** Markup (HTML). Not sanitized by default: see Markup and sanitizing. */
     icon: { type: "string", config: "icon", update: (c, v) => void c.setIcon(v === null ? "" : String(v)) },
     variant: { type: "string", config: "variant" },
     size: { type: "string", config: "size" },

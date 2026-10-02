@@ -62,8 +62,8 @@ const sheetFor = (name: string, text: string): CSSStyleSheet => {
 const PREUPGRADE_LAYER = "mtrl.preupgrade";
 const preupgrade = new Map<string, string>();
 const preupgradePrefixes = new Set<string>();
-/** Where the rules go: an adopted sheet, or a `<style>` where sheets cannot be adopted. */
-let preupgradeTarget: { sheet: CSSStyleSheet } | { style: HTMLStyleElement } | null = null;
+/** Where each document's rules go: an adopted sheet, or a `<style>` where sheets cannot be adopted. */
+const preupgradeTargets = new WeakMap<Document, { sheet: CSSStyleSheet } | { style: HTMLStyleElement }>();
 
 /**
  * Pre-upgrade CSS, built for the default prefix, for another one: every tag
@@ -79,20 +79,23 @@ export const preupgradeSheet = (css: string, prefixes: Iterable<string> = [DEFAU
 
 const applyPreupgrade = (): void => {
   if (typeof document === "undefined" || !preupgradePrefixes.size) return;
+  const doc = document;
   const text = preupgradeSheet(Array.from(preupgrade.values()).join(""), preupgradePrefixes);
-  if (!preupgradeTarget) {
-    if (typeof CSSStyleSheet === "function" && "replaceSync" in CSSStyleSheet.prototype && "adoptedStyleSheets" in document) {
+  let target = preupgradeTargets.get(doc);
+  if (!target) {
+    if (typeof CSSStyleSheet === "function" && "replaceSync" in CSSStyleSheet.prototype && "adoptedStyleSheets" in doc) {
       const sheet = new CSSStyleSheet();
-      document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
-      preupgradeTarget = { sheet };
+      doc.adoptedStyleSheets = [...doc.adoptedStyleSheets, sheet];
+      target = { sheet };
     } else {
-      const style = document.createElement("style");
-      document.head.append(style);
-      preupgradeTarget = { style };
+      const style = doc.createElement("style");
+      doc.head.append(style);
+      target = { style };
     }
+    preupgradeTargets.set(doc, target);
   }
-  if ("sheet" in preupgradeTarget) preupgradeTarget.sheet.replaceSync(text);
-  else preupgradeTarget.style.textContent = text;
+  if ("sheet" in target) target.sheet.replaceSync(text);
+  else target.style.textContent = text;
 };
 
 /**

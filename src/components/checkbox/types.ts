@@ -3,16 +3,6 @@ import type { TouchEvents } from "../../core/utils/mobile";
 import type { EventCallback } from "../../core/state/emitter";
 
 /**
- * Checkbox variant types - controls the visual style of the checkbox
- *
- * @category Components
- * @remarks
- * - filled: Checkbox with filled background when checked (default)
- * - outlined: Checkbox with outline only, for less visual emphasis
- */
-export type CheckboxVariant = "filled" | "outlined";
-
-/**
  * Checkbox label position types - controls where the label appears
  *
  * @category Components
@@ -80,11 +70,6 @@ export interface CheckboxConfig {
    * @default "end"
    */
   labelPosition?: CheckboxLabelPosition | string;
-
-  /**
-   * @deprecated Has no effect (FLO-94): M3 has one checkbox style. FLO-265.
-   */
-  variant?: CheckboxVariant | string;
 
   /**
    * Error state: the outline, the selected container and the state layers
@@ -313,8 +298,8 @@ export interface ApiOptions {
 export interface BaseComponent {
   element: HTMLElement;
   input?: HTMLInputElement;
-  getValue?: () => string;
-  setValue?: (value: string) => void;
+  getValue?: () => boolean;
+  setValue?: (value: boolean) => void;
   setIndeterminate?: (state: boolean) => void;
   setError?: (error: boolean) => void;
   label?: {

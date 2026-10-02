@@ -33,7 +33,8 @@ export const withAPI =
     const prefix = config.prefix || 'mtrl';
     const cls = (name: string): string => `${prefix}-${name}`;
 
-    let isVisible = false;
+    // What the queue holds while this snackbar waits or shows
+    let entry: QueuedSnackbar | null = null;
     let previouslyFocused: Element | null = null;
     let removal: ReturnType<typeof setTimeout> | null = null;
     let onTransitionEnd: ((event: TransitionEvent) => void) | null = null;
@@ -103,8 +104,14 @@ export const withAPI =
     };
 
     const close = (reason: SnackbarCloseReason, originalEvent: Event | null = null): void => {
-      if (!isVisible) return;
-      isVisible = false;
+      // Queued, it was never open: it gives up its turn, and there is nothing
+      // to close (FLO-548).
+      if (api.state === 'queued') {
+        api.state = 'hidden';
+        if (entry) queue.remove(entry);
+        return;
+      }
+      if (api.state !== 'visible') return;
       api.state = 'hidden';
       component.timer?.stop();
 
@@ -123,6 +130,8 @@ export const withAPI =
     };
 
     const open = (): void => {
+      // Its turn: the state and the event together (FLO-548)
+      api.state = 'visible';
       cancelRemoval();
       previouslyFocused = deepActiveElement();
       if (topLayer) {
@@ -152,24 +161,23 @@ export const withAPI =
        * @returns {SnackbarComponent} Component instance for chaining
        */
       show(): SnackbarComponent {
-        if (isVisible) return this;
-        isVisible = true;
-        this.state = 'visible';
-
-        queue.add(
-          {
-            element,
-            on: (event: string, handler: () => void) => component.on?.(event, handler),
-            off: (event: string, handler: () => void) => component.off?.(event, handler),
-            _show: open,
-            // Lets the queue evict this snackbar (replace, clear)
-            _hide: (): void => close('queue'),
-          } as QueuedSnackbar,
-          { behavior: config.queueBehavior }
-        );
+        if (api.state !== 'hidden') return this;
+        // Queued until the queue shows it, which is now when nothing is on screen
+        api.state = 'queued';
+        entry = {
+          element,
+          on: (event: string, handler: () => void) => component.on?.(event, handler),
+          off: (event: string, handler: () => void) => component.off?.(event, handler),
+          _show: open,
+          // Lets the queue evict this snackbar (replace, clear)
+          _hide: (): void => close('queue'),
+        } as QueuedSnackbar;
+        queue.add(entry, { behavior: config.queueBehavior });
 
         return this;
       },
+
+      isOpen: (): boolean => api.state === 'visible',
 
       /**
        * Hides the snackbar
@@ -205,7 +213,7 @@ export const withAPI =
        */
       setAction(text: string): SnackbarComponent {
         component.action?.setText(text);
-        if (isVisible) layout();
+        if (api.isOpen()) layout();
         return this;
       },
 
@@ -224,7 +232,7 @@ export const withAPI =
        */
       setDuration(duration: SnackbarDuration): SnackbarComponent {
         component.timer?.setDuration(durationToMs(duration, Boolean(component.action)));
-        if (isVisible) component.timer?.start();
+        if (api.isOpen()) component.timer?.start();
         return this;
       },
 
@@ -280,7 +288,9 @@ export const withAPI =
        * Destroys the snackbar component and cleans up resources
        */
       destroy(): void {
-        isVisible = false;
+        // Without events; a queued one must not be shown after this
+        if (entry) queue.remove(entry);
+        api.state = 'hidden';
         cancelRemoval();
         takeOff();
         element.remove();
@@ -307,7 +317,7 @@ export const withAPI =
 
     // Escape dismisses the snackbar when focus is inside it
     element.addEventListener('keydown', (event: KeyboardEvent) => {
-      if (event.key !== 'Escape' || !isVisible) return;
+      if (event.key !== 'Escape' || !api.isOpen()) return;
       event.stopPropagation();
       close('escape', event);
     });

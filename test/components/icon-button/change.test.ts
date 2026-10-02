@@ -20,12 +20,15 @@ test("a click emits change with { selected, value }, each way; value is getValue
   expect(seen).toEqual([[{ selected: true, value: "fav" }, "fav"], [{ selected: false, value: "fav" }, "fav"]]);
 });
 
-test("the deprecated DOM toggle is still dispatched, once per click", () => {
+test("1.0 dispatches no DOM toggle: a click emits change, and a leftover toggle listener never fires", () => {
   const button = mount(createIconButton({ toggle: true, icon: "<svg></svg>", ariaLabel: "Favorite" }));
-  const details: unknown[] = [];
-  button.element.addEventListener("toggle", event => details.push((event as CustomEvent).detail));
+  const toggles: unknown[] = [];
+  const changes: unknown[] = [];
+  button.element.addEventListener("toggle", event => toggles.push((event as CustomEvent).detail));
+  button.on("change", payload => changes.push(payload));
   button.element.click();
-  expect(details).toEqual([{ selected: true, value: "" }]);
+  expect(toggles).toEqual([]);
+  expect(changes).toEqual([{ selected: true, value: "" }]);
 });
 
 test("off() stops change; a plain icon button emits none", () => {

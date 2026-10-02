@@ -140,7 +140,9 @@ const navigationRailSpec = {
     "no-ripple": { type: "boolean" },
     "expand-label": { type: "string", config: "expandLabel" },
     "collapse-label": { type: "string", config: "collapseLabel" },
+    /** Markup (HTML). Not sanitized by default: see Markup and sanitizing. Shown while the rail is collapsed. */
     "expand-icon": { type: "string", config: "expandIcon" },
+    /** Markup (HTML). Not sanitized by default: see Markup and sanitizing. Shown while the rail is expanded. */
     "collapse-icon": { type: "string", config: "collapseIcon" },
     "aria-label": { type: "string", config: "ariaLabel", update: (c, v) => setAriaLabel(c, v) },
   },
@@ -188,7 +190,9 @@ export const navigationRailItemDeclaration = {
   attributes: {
     value: { type: "string" },
     label: { type: "string" },
+    /** Markup (HTML). Not sanitized by default: see Markup and sanitizing. */
     icon: { type: "string" },
+    /** Markup (HTML). Not sanitized by default: see Markup and sanitizing. Shown while this destination is active. */
     "selected-icon": { type: "string" },
     href: { type: "string" },
     badge: { type: "string" },

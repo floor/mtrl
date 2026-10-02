@@ -13,8 +13,8 @@
 // cleared the property and the class stayed.
 //
 // Deliberately not asserted, because each is open and a test would bless it:
-// the `variant` option, which changes nothing although CHECKBOX_VARIANTS is
-// exported (M3 defines no checkbox variants); and a custom class gaining the
+// the `variant` option, which changes nothing (M3 defines no checkbox variants;
+// 1.0 removed CHECKBOX_VARIANTS); and a custom class gaining the
 // library prefix (F11).
 import { describe, test, expect, beforeEach, mock } from 'bun:test';
 import { JSDOM } from 'jsdom';

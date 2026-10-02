@@ -8,3 +8,4 @@ export const declaration = <m-tabs value="t1"><m-tab value="t1">One</m-tab></m-t
 export const wrong = <m-switch checked="yes" />;
 // The slot attribute is markup too (FLO-334)
 export const label = <m-button label="Save" />;
+export const host = <m-button popover="auto" inputMode="numeric" enterkeyhint="send" itemProp="name" nonce="abc" />;

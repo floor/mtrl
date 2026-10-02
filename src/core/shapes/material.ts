@@ -256,15 +256,11 @@ const byName = {
   pixelTriangle: shapePixelTriangle,
   bun: shapeBun,
   heart: shapeHeart,
-  /** @deprecated Use 'cookie4Sided' */
-  cookie4: shapeCookie4Sided,
-  /** @deprecated Use 'cookie9Sided' */
-  cookie9: shapeCookie9Sided,
 };
 
 /**
- * Names of the Material shapes: Compose's, camelCased. 'cookie4' and
- * 'cookie9' are deprecated aliases of 'cookie4Sided' and 'cookie9Sided'.
+ * Names of the Material shapes: Compose's, camelCased. 1.0 removed 0.10's
+ * 'cookie4' and 'cookie9' aliases: use 'cookie4Sided' and 'cookie9Sided'.
  */
 export type MaterialShapeName = keyof typeof byName;
 

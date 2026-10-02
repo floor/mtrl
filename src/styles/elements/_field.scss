@@ -6,6 +6,10 @@
 @use '../abstract/mixins' as m;
 @use '../abstract/theme' as t;
 
+// 4dp under the field plus one body-small line (16dp). The multiline field
+// adds the same row (elements/_textfield.scss).
+$supporting-row: 20px;
+
 /**
  * The field: a text field, or a select (`$trailing`: the space its trailing
  * icon takes beside the text).
@@ -15,12 +19,12 @@
   position: relative;
   box-sizing: border-box;
   // The unsized field's width, as components/_textfield.scss sets it.
-  width: v.textfield('width');
-  height: v.textfield('height');
+  width: v.text-field('width');
+  height: v.text-field('height');
   // The input's line: its text is centred in the space its padding leaves.
-  padding: 22px (v.textfield('padding-horizontal') + $trailing) 0 v.textfield('padding-horizontal');
-  border-radius: v.textfield('border-radius') v.textfield('border-radius') 0 0;
-  border-bottom: v.textfield('border-width') solid t.color('on-surface-variant');
+  padding: 22px (v.text-field('padding-horizontal') + $trailing) 0 v.text-field('padding-horizontal');
+  border-radius: v.text-field('border-radius') v.text-field('border-radius') 0 0;
+  border-bottom: v.text-field('border-width') solid t.color('on-surface-variant');
   background-color: t.color('surface-container-highest');
   color: t.color('on-surface');
   white-space: nowrap;
@@ -37,8 +41,8 @@
   &[label]::after {
     content: attr(label);
     position: absolute;
-    top: v.textfield('padding-vertical');
-    left: v.textfield('padding-horizontal');
+    top: v.text-field('padding-vertical');
+    left: v.text-field('padding-horizontal');
     color: t.color('on-surface-variant');
   }
 
@@ -49,8 +53,8 @@
 
   &[variant='outlined'] {
     padding-top: 15.5px;
-    border: v.textfield('border-width') solid t.color('outline');
-    border-radius: v.textfield('border-radius');
+    border: v.text-field('border-width') solid t.color('outline');
+    border-radius: v.text-field('border-radius');
     background: none;
 
     &[label][value]:not([value=''])::after {
@@ -82,21 +86,21 @@
   // and the indicator is drawn as the padding box's last pixel line.
   &[supporting-text]:not([supporting-text='']),
   &[maxlength] {
-    $row: 20px;
-    height: calc(#{v.textfield('height')} + #{$row});
+    $row: $supporting-row;
+    height: calc(#{v.text-field('height')} + #{$row});
     border-bottom: $row solid transparent;
     background-clip: padding-box;
-    background-image: linear-gradient(to top, #{t.color('on-surface-variant')} v.textfield('border-width'), transparent v.textfield('border-width'));
+    background-image: linear-gradient(to top, #{t.color('on-surface-variant')} v.text-field('border-width'), transparent v.text-field('border-width'));
 
     // Outlined: the outline as an inset ring round the padding box, whose
     // bottom corners keep their radius inside the reserved border
     &[variant='outlined'] {
-      padding-top: calc(15.5px + #{v.textfield('border-width')});
-      padding-left: calc(#{v.textfield('padding-horizontal')} + #{v.textfield('border-width')});
+      padding-top: calc(15.5px + #{v.text-field('border-width')});
+      padding-left: calc(#{v.text-field('padding-horizontal')} + #{v.text-field('border-width')});
       border-width: 0 0 $row;
-      border-radius: v.textfield('border-radius') / v.textfield('border-radius') v.textfield('border-radius') calc(#{v.textfield('border-radius')} + #{$row}) calc(#{v.textfield('border-radius')} + #{$row});
+      border-radius: v.text-field('border-radius') / v.text-field('border-radius') v.text-field('border-radius') calc(#{v.text-field('border-radius')} + #{$row}) calc(#{v.text-field('border-radius')} + #{$row});
       background-image: none;
-      box-shadow: inset 0 0 0 v.textfield('border-width') t.color('outline');
+      box-shadow: inset 0 0 0 v.text-field('border-width') t.color('outline');
     }
 
     &[density='compact'] {

@@ -1,0 +1,5 @@
+{
+  "extends": "./base.json",
+  "compilerOptions": { "jsx": "preserve", "jsxImportSource": "solid-js" },
+  "files": ["solid.tsx"]
+}

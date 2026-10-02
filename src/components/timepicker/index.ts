@@ -8,13 +8,10 @@ export {
   TIMEPICKER_FORMATS,
   TIMEPICKER_PERIODS,
   TIMEPICKER_EVENTS,
-  TIMEPICKER_DIAL,
   TIMEPICKER_VALUES,
-  TIMEPICKER_Z_INDEX,
   TIMEPICKER_SELECTORS,
   TIMEPICKER_ICONS,
-  TIMEPICKER_DEFAULTS,
-  TIMEPICKER_CLASSES
+  TIMEPICKER_DEFAULTS
 } from './constants';
 
 // Export types
@@ -26,7 +23,7 @@ export type {
   TimePickerValueEvent,
   TimePickerInputEvent,
   TimePickerTapPayload,
-  TimePickerSwipePayload,
+  TimePickerSwipePayload
 } from './types';
 export { TIME_PICKER_TYPE, TIME_PICKER_ORIENTATION, TIME_FORMAT, TIME_PERIOD } from './types';
 export type { TimeFormat, TimePickerType, TimePickerOrientation } from './types';

@@ -30,7 +30,8 @@ const size = { raw: Buffer.byteLength(js), gzip: gzipSync(js, { level: 9 }).leng
 // Range limits, keys and RTL (FLO-251) took it to 12,604; both copies move to 12,900.
 // Track, stops and the inset icon as a percentage of the value (FLO-369) took it
 // to 13,151. The ceiling keeps about 150 bytes of room.
-assert(size.gzip < 13300, `Slider JS exceeds 13,300 gzip bytes: ${size.gzip}`);
+// 13,040 tightened before 1.0 against 3d942098, Node 22.23.3 / npm 10.9.9.
+assert(size.gzip < 13200, `Slider JS exceeds 13,200 gzip bytes: ${size.gzip}`);
 const server = Bun.serve({ hostname: "127.0.0.1", port: 0, async fetch(request) {
   const url = new URL(request.url);
   if (url.pathname === "/slider.js") return new Response(js, { headers: { "Content-Type": "text/javascript" } });

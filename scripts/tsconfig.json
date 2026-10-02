@@ -17,6 +17,7 @@
     "../test/browser/fixture.ts"
   ],
   "exclude": [
-    "../node_modules"
+    "../node_modules",
+    "fixtures/peer-types"
   ]
 }

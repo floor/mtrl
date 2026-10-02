@@ -182,7 +182,7 @@ describe("an interactive trailing icon is a button (FLO-301)", () => {
     expect(button.innerHTML).toContain("<svg");
   });
 
-  test("activating it emits trailing once, with the value and the click, then calls onTrailingClick", () => {
+  test("activating it emits trailing once, with the value and the click; onTrailingClick is that listener", () => {
     const calls: string[] = [];
     const field = mount({
       trailingIcon: ICON, trailingIconLabel: "Clear", value: "abc",
@@ -190,7 +190,7 @@ describe("an interactive trailing icon is a button (FLO-301)", () => {
     });
     field.on("trailing", ({ value, event }) => calls.push(`event:${value}:${event.type}`));
     (field.trailingIcon as HTMLButtonElement).click();
-    expect(calls).toEqual(["event:abc:click", "option:abc"]);
+    expect(calls).toEqual(["option:abc", "event:abc:click"]);
   });
 
   test("it is disabled with the field, and a disabled field emits nothing", () => {

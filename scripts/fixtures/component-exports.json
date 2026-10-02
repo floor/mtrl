@@ -649,11 +649,6 @@
       "status": "public"
     },
     {
-      "name": "CHECKBOX_VARIANTS",
-      "kind": "value",
-      "status": "public"
-    },
-    {
       "name": "CheckboxChangePayload",
       "kind": "type",
       "status": "public"
@@ -679,11 +674,6 @@
       "status": "public"
     },
     {
-      "name": "CheckboxVariant",
-      "kind": "type",
-      "status": "public"
-    },
-    {
       "name": "default",
       "kind": "value",
       "status": "public"
@@ -704,12 +694,6 @@
       "name": "CHECKBOX_STATES",
       "kind": "value",
       "status": "public"
-    },
-    {
-      "name": "CHECKBOX_VARIANTS",
-      "kind": "value",
-      "status": "deprecated",
-      "note": "M3 has one checkbox style, and the `variant` option has no\neffect (FLO-94, FLO-265)."
     }
   ],
   "chips": [
@@ -1931,6 +1915,11 @@
       "name": "MenuSelectEvent",
       "kind": "type",
       "status": "public"
+    },
+    {
+      "name": "MenuVariant",
+      "kind": "type",
+      "status": "public"
     }
   ],
   "menu/constants": [
@@ -2096,6 +2085,11 @@
       "name": "ProgressShape",
       "kind": "type",
       "status": "public"
+    },
+    {
+      "name": "ProgressVariant",
+      "kind": "type",
+      "status": "public"
     }
   ],
   "progress/constants": [
@@ -2162,11 +2156,6 @@
       "status": "public"
     },
     {
-      "name": "RADIO_CLASSES",
-      "kind": "value",
-      "status": "public"
-    },
-    {
       "name": "RADIO_DEFAULTS",
       "kind": "value",
       "status": "public"
@@ -2182,22 +2171,7 @@
       "status": "public"
     },
     {
-      "name": "RADIO_LABEL_POSITIONS",
-      "kind": "value",
-      "status": "public"
-    },
-    {
-      "name": "RADIO_SIZES",
-      "kind": "value",
-      "status": "public"
-    },
-    {
       "name": "RADIO_STATES",
-      "kind": "value",
-      "status": "public"
-    },
-    {
-      "name": "RADIO_VARIANTS",
       "kind": "value",
       "status": "public"
     },
@@ -2229,12 +2203,6 @@
   ],
   "radios/constants": [
     {
-      "name": "RADIO_CLASSES",
-      "kind": "value",
-      "status": "deprecated",
-      "note": "Read by nothing: the component builds its class names itself\nand has one size and variant (FLO-266)."
-    },
-    {
       "name": "RADIO_DEFAULTS",
       "kind": "value",
       "status": "public"
@@ -2250,27 +2218,9 @@
       "status": "public"
     },
     {
-      "name": "RADIO_LABEL_POSITIONS",
-      "kind": "value",
-      "status": "deprecated",
-      "note": "Read by nothing: the component builds its class names itself\nand has one size and variant (FLO-266)."
-    },
-    {
-      "name": "RADIO_SIZES",
-      "kind": "value",
-      "status": "deprecated",
-      "note": "Read by nothing: the component builds its class names itself\nand has one size and variant (FLO-266)."
-    },
-    {
       "name": "RADIO_STATES",
       "kind": "value",
       "status": "public"
-    },
-    {
-      "name": "RADIO_VARIANTS",
-      "kind": "value",
-      "status": "deprecated",
-      "note": "Read by nothing: the component builds its class names itself\nand has one size and variant (FLO-266)."
     }
   ],
   "search": [
@@ -2295,12 +2245,22 @@
       "status": "public"
     },
     {
+      "name": "SearchEvents",
+      "kind": "type",
+      "status": "public"
+    },
+    {
       "name": "SearchEventType",
       "kind": "type",
       "status": "public"
     },
     {
       "name": "SearchState",
+      "kind": "type",
+      "status": "public"
+    },
+    {
+      "name": "SearchStateEvent",
       "kind": "type",
       "status": "public"
     },
@@ -2440,6 +2400,11 @@
     },
     {
       "name": "SelectOption",
+      "kind": "type",
+      "status": "public"
+    },
+    {
+      "name": "SelectVariant",
       "kind": "type",
       "status": "public"
     }
@@ -2963,6 +2928,11 @@
       "status": "public"
     },
     {
+      "name": "TabEvents",
+      "kind": "type",
+      "status": "public"
+    },
+    {
       "name": "tabIdFor",
       "kind": "value",
       "status": "public"
@@ -2999,6 +2969,16 @@
     },
     {
       "name": "TabsConfig",
+      "kind": "type",
+      "status": "public"
+    },
+    {
+      "name": "TabsEvents",
+      "kind": "type",
+      "status": "public"
+    },
+    {
+      "name": "TabsVariant",
       "kind": "type",
       "status": "public"
     }
@@ -3095,6 +3075,11 @@
       "name": "TextFieldValuePayload",
       "kind": "type",
       "status": "public"
+    },
+    {
+      "name": "TextFieldVariant",
+      "kind": "type",
+      "status": "public"
     }
   ],
   "textfield/constants": [
@@ -3166,17 +3151,7 @@
       "status": "public"
     },
     {
-      "name": "TIMEPICKER_CLASSES",
-      "kind": "value",
-      "status": "public"
-    },
-    {
       "name": "TIMEPICKER_DEFAULTS",
-      "kind": "value",
-      "status": "public"
-    },
-    {
-      "name": "TIMEPICKER_DIAL",
       "kind": "value",
       "status": "public"
     },
@@ -3217,11 +3192,6 @@
     },
     {
       "name": "TIMEPICKER_VALUES",
-      "kind": "value",
-      "status": "public"
-    },
-    {
-      "name": "TIMEPICKER_Z_INDEX",
       "kind": "value",
       "status": "public"
     },
@@ -3278,21 +3248,9 @@
   ],
   "timepicker/constants": [
     {
-      "name": "TIMEPICKER_CLASSES",
-      "kind": "value",
-      "status": "deprecated",
-      "note": "Unused by the picker, and without the prefix: use\n`TIMEPICKER_SELECTORS`. Two values that named nothing now match the DOM\n(`DIAL_CENTER`, `PERIOD_ACTIVE`). Kept for compatibility (FLO-281)."
-    },
-    {
       "name": "TIMEPICKER_DEFAULTS",
       "kind": "value",
       "status": "public"
-    },
-    {
-      "name": "TIMEPICKER_DIAL",
-      "kind": "value",
-      "status": "deprecated",
-      "note": "Unused, and not the dial's geometry: the DOM dial (FLO-279) is\nsized in CSS, a 256dp face with numbers on 101dp and 69dp rings and a 48dp\nhandle. Kept for compatibility (FLO-281)."
     },
     {
       "name": "TIMEPICKER_EVENTS",
@@ -3333,12 +3291,6 @@
       "name": "TIMEPICKER_VALUES",
       "kind": "value",
       "status": "public"
-    },
-    {
-      "name": "TIMEPICKER_Z_INDEX",
-      "kind": "value",
-      "status": "deprecated",
-      "note": "Unused: the picker is a native modal `<dialog>` in the top layer\n(FLO-278), which needs no z-index. Kept for compatibility (FLO-281)."
     }
   ],
   "toolbar": [
@@ -3568,6 +3520,11 @@
     },
     {
       "name": "TooltipConfig",
+      "kind": "type",
+      "status": "public"
+    },
+    {
+      "name": "TooltipVariant",
       "kind": "type",
       "status": "public"
     }

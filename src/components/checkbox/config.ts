@@ -36,28 +36,30 @@ export const getElementConfig = (config: CheckboxConfig) =>
   });
 
 const SVG = "http://www.w3.org/2000/svg";
-let checkIcon: DocumentFragment | null = null;
+const checkIcons = new WeakMap<Document, DocumentFragment>();
 
 /**
- * The check icon's nodes, built once with DOM APIs and cloned for each
+ * The check icon's nodes, built once per document with DOM APIs and cloned for each
  * checkbox: parsing the same markup through the HTML sink for every
  * instance was measurable, and a cached string would skip a Trusted Types
  * policy, where DOM APIs involve none (FLO-336). The nodes are those the
  * markup parsed to, its whitespace included.
  */
-const createCheckIcon = (): DocumentFragment => {
+const createCheckIcon = (doc: Document): DocumentFragment => {
+  let checkIcon = checkIcons.get(doc);
   if (!checkIcon) {
-    checkIcon = document.createDocumentFragment();
-    const svg = document.createElementNS(SVG, "svg");
+    checkIcon = doc.createDocumentFragment();
+    const svg = doc.createElementNS(SVG, "svg");
     // As the HTML parser sets it: in the XMLNS namespace
     svg.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns", SVG);
     for (const [name, value] of [["viewBox", "0 0 24 24"], ["width", "20"], ["height", "20"], ["fill", "currentColor"]]) {
       svg.setAttribute(name, value);
     }
-    const path = document.createElementNS(SVG, "path");
+    const path = doc.createElementNS(SVG, "path");
     path.setAttribute("d", "M9.55 14.6L6.35 11.4l-1.9 1.9L9.55 18.4l10.9-10.9-1.9-1.9z");
     svg.append("\n      ", path, "\n    ");
     checkIcon.append("\n    ", svg, "\n  ");
+    checkIcons.set(doc, checkIcon);
   }
   return checkIcon.cloneNode(true) as DocumentFragment;
 };
@@ -69,9 +71,10 @@ const createCheckIcon = (): DocumentFragment => {
 export const withCheckIcon =
   (config: CheckboxConfig) =>
   <C extends BaseComponent>(component: C): C => {
-    const icon = document.createElement("span");
+    const doc = document;
+    const icon = doc.createElement("span");
     icon.className = `${config.prefix}-checkbox__icon`;
-    icon.appendChild(createCheckIcon());
+    icon.appendChild(createCheckIcon(doc));
 
     component.element.appendChild(icon);
     return component;

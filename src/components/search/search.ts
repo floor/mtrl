@@ -10,7 +10,7 @@ import {
   withSuggestions,
 } from "./features";
 import { withAPI } from "./api";
-import { SearchConfig, SearchComponent } from "./types";
+import { SearchConfig, SearchComponent, SearchEvents } from "./types";
 import { createBaseConfig, getElementConfig, getApiConfig } from "./config";
 
 /**
@@ -25,14 +25,14 @@ import { createBaseConfig, getElementConfig, getApiConfig } from "./config";
  * // Basic search bar
  * const search = createSearch({
  *   placeholder: 'Search products...',
- *   onSubmit: (value) => console.log('Search:', value)
+ *   onSubmit: (event) => console.log('Search:', event.value)
  * });
  *
  * // Search with suggestions
  * const search = createSearch({
  *   placeholder: 'Search...',
  *   suggestions: ['Apple', 'Banana', 'Cherry'],
- *   onSuggestionSelect: (suggestion) => console.log('Selected:', suggestion)
+ *   onSuggestionSelect: (event) => console.log('Selected:', event.suggestion)
  * });
  *
  * // Fullscreen search view (mobile)
@@ -69,11 +69,20 @@ const createSearch = (config: SearchConfig = {}): SearchComponent => {
     // Apply the public API layer
     const search: SearchComponent = withAPI(apiOptions)(component);
 
+    // A config on* option is the listener registered at creation, ahead of
+    // the on map and of any listener the caller adds afterwards.
+    if (baseConfig.onInput) search.on("input", baseConfig.onInput);
+    if (baseConfig.onSubmit) search.on("submit", baseConfig.onSubmit);
+    if (baseConfig.onClear) search.on("clear", baseConfig.onClear);
+    if (baseConfig.onSuggestionSelect) search.on("suggestionSelect", baseConfig.onSuggestionSelect);
+    if (baseConfig.onExpand) search.on("expand", baseConfig.onExpand);
+    if (baseConfig.onCollapse) search.on("collapse", baseConfig.onCollapse);
+
     // Register event handlers from config
     if (baseConfig.on && typeof search.on === "function") {
       Object.entries(baseConfig.on).forEach(([event, handler]) => {
         if (typeof handler === "function") {
-          search.on(event as Parameters<typeof search.on>[0], handler);
+          search.on(event as keyof SearchEvents, handler);
         }
       });
     }

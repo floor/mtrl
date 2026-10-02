@@ -84,7 +84,6 @@ export default function createNavigationBar(config: NavigationBarConfig = {}): N
         api.setActive(item.id);
         const detail = { id: item.id, value: item.id, index, originalEvent: event };
         emitter.emit('select', detail);
-        if (!destroyed) options.onSelect?.(detail);
     };
 
     // Left and right along the bar, mirrored under RTL; direction read when the key is pressed
@@ -171,5 +170,9 @@ export default function createNavigationBar(config: NavigationBarConfig = {}): N
         off(event, handler) { emitter.off(event, handler as never); return api; },
     };
     render();
+    // A config option is the listener registered at creation, ahead of any
+    // listener the caller adds afterwards. A listener that destroys the bar
+    // during emit no longer skips it: it has already run.
+    if (options.onSelect) api.on('select', options.onSelect);
     return api;
 }

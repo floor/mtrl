@@ -1,7 +1,7 @@
 import { beforeAll, expect, test } from 'bun:test';
 import { compileString } from 'sass';
 import { corner } from '../utils/corner';
-import { FAB_SIZES, FAB_ICON_SIZES } from '../../src/components/fab/constants';
+import { FAB_SIZES, FAB_ICON_SIZES, FAB_CLASSES } from '../../src/components/fab/constants';
 import { createBaseConfig, getElementConfig } from '../../src/components/fab/config';
 
 // FabSmallTokens.kt, FabBaselineTokens.kt, FabMediumTokens.kt, FabLargeTokens.kt.
@@ -13,7 +13,7 @@ const value = (selector: string, property: string) =>
     .filter(([, name]) => name === property).map(([, , result]) => result.trim()).pop();
 beforeAll(() => { css = compileString("@use 'components/fab';", { loadPaths: ['src/styles'] }).css.replace(/\/\*[\s\S]*?\*\//g, ''); });
 for (const [size, container, icon, radius] of [
-  ['small', 40, 24, 12], ['default', 56, 24, 16], ['medium', 80, 28, 20], ['large', 96, 32, 28],
+  ['default', 56, 24, 16], ['medium', 80, 28, 20], ['large', 96, 32, 28],
 ] as const) {
   test(`${size} FAB dimensions, icon, corner and constants`, () => {
     const root = size === 'default' ? '.mtrl-fab' : `.mtrl-fab--${size}`;
@@ -32,3 +32,11 @@ for (const [size, container, icon, radius] of [
     expect(JSON.stringify(getElementConfig(config))).toContain(`fab--${size}`);
   });
 }
+
+// 1.0 removed the small FAB, deprecated since 0.8 (M3 Expressive)
+test("no small FAB is left in the stylesheet or the sizes", () => {
+  expect(css).not.toMatch(/\.mtrl-fab--small\b/);
+  expect(Object.keys(FAB_SIZES)).not.toContain('SMALL');
+  expect(Object.keys(FAB_ICON_SIZES)).not.toContain('SMALL');
+  expect(Object.keys(FAB_CLASSES)).not.toContain('SMALL');
+});

@@ -19,8 +19,8 @@
 //   went on reporting it.
 //
 // Deliberately not asserted: the variant and size options, which change
-// nothing although RADIO_VARIANTS and RADIO_SIZES are exported and M3 defines
-// neither; and that setValue() can select an option disabled on its own.
+// nothing (M3 defines neither; 1.0 removed RADIO_VARIANTS and RADIO_SIZES);
+// and that setValue() can select an option disabled on its own.
 import { describe, test, expect, beforeEach, mock } from 'bun:test';
 import { JSDOM } from 'jsdom';
 const dom = new JSDOM('<!DOCTYPE html><html><body></body></html>', { url: 'http://localhost/', pretendToBeVisual: true });
@@ -37,6 +37,7 @@ g.CustomEvent = dom.window.CustomEvent;
 g.MutationObserver = dom.window.MutationObserver;
 
 import createRadios from '../../../src/components/radios';
+import { radiosElement } from '../../../src/elements/radios';
 
 beforeEach(() => { document.body.innerHTML = ''; });
 
@@ -131,7 +132,7 @@ describe('radios', () => {
     radios.setValue('s');
     expect(payloads).toEqual([]);
     radios.setValue('missing');
-    expect(radios.getValue()).toBe('');
+    expect(radios.getValue()).toBeNull();
     expect(payloads).toEqual([]);
     radios.destroy();
   });
@@ -164,7 +165,7 @@ describe('radios', () => {
     const radios = mount({ value: 's' });
     radios.setValue('xl');
     expect(inputs(radios).every((i) => !i.checked)).toBe(true);
-    expect(radios.getValue()).toBe('');
+    expect(radios.getValue()).toBeNull();
     expect(radios.getSelected()).toBeNull();
   });
 
@@ -199,7 +200,7 @@ describe('radios', () => {
     radios.setValue('xl');
     radios.removeOption('xl');
     expect(radios.element.querySelector('input[value="xl"]')).toBeNull();
-    expect(radios.getValue()).toBe('');
+    expect(radios.getValue()).toBeNull();
   });
 
   test('a group created without a name still shares one generated name', () => {
@@ -212,6 +213,52 @@ describe('radios', () => {
   test('direction is reflected in the root class', () => {
     expect(mount().element.classList.contains('mtrl-radios--vertical')).toBe(true);
     expect(mount({ direction: 'horizontal' }).element.classList.contains('mtrl-radios--horizontal')).toBe(true);
+  });
+
+  // 1.0: an empty selection is null, as the select and <m-radios> report it
+  test('nothing selected reads null, from the getter and in the change payload', () => {
+    const radios = mount({ value: undefined });
+    expect(radios.getValue()).toBeNull();
+    radios.setValue('s');
+    radios.removeOption('s');
+    expect(radios.getValue()).toBeNull();
+    radios.destroy();
+
+    const blank = createRadios({ name: 'blank', options: [{ value: '', label: 'None' }, { value: 'a', label: 'A' }], value: 'a' });
+    document.body.appendChild(blank.element);
+    const payloads: Array<{ value: unknown }> = [];
+    blank.on('change', payload => payloads.push(payload));
+    blank.element.querySelectorAll('input')[0]!.click();
+    expect(payloads.map(payload => payload.value)).toEqual([null]);
+    expect(blank.getValue()).toBeNull();
+    blank.destroy();
+  });
+
+  // 1.0: the setter takes what the getter returns, so the two round-trip
+  test('setValue(null) clears the selection, silently: no change and no warning', () => {
+    const radios = mount({ value: 's' });
+    const payloads: unknown[] = [];
+    const warnings: string[] = [];
+    const warn = console.warn;
+    console.warn = (...args: unknown[]) => { warnings.push(args.join(' ')); };
+    try {
+      radios.on('change', payload => payloads.push(payload));
+      expect(radios.setValue(null)).toBe(radios);
+      expect(radios.getValue()).toBeNull();
+      expect(inputs(radios).some(input => input.checked)).toBe(false);
+      expect(radios.getSelected()).toBeNull();
+      // With nothing selected, setting what the getter returns changes nothing
+      radios.setValue(radios.getValue());
+      expect(radios.getValue()).toBeNull();
+      // The element clears through the same call
+      radiosElement.spec.properties.value.set(radios, null);
+      expect(radios.getValue()).toBeNull();
+      radios.setValue('m');
+      radiosElement.spec.properties.value.set(radios, null);
+      expect(radios.getValue()).toBeNull();
+      expect(payloads).toEqual([]);
+      expect(warnings).toEqual([]);
+    } finally { console.warn = warn; radios.destroy(); }
   });
 
   test('destroy removes the element', () => {

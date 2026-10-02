@@ -38,7 +38,7 @@
 import createTimePicker from "../components/timepicker";
 import {
   TIME_FORMAT, TIME_PICKER_ORIENTATION, TIME_PICKER_TYPE,
-  type TimePickerComponent, type TimePickerConfig, type TimePickerInputEvent, type TimePickerValueEvent,
+  type TimePickerComponent, type TimePickerConfig, type TimePickerEvents, type TimePickerInputEvent, type TimePickerValueEvent,
 } from "../components/timepicker/types";
 import { createEmitter, type EventCallback } from "../core/state/emitter";
 import { defineElement, type DefineOptions, type ElementHost, type ElementInstance, type ElementSpec } from "./define";
@@ -56,8 +56,9 @@ export interface TimepickerElementComponent {
   close: () => void;
   isOpen: () => boolean;
   required: boolean;
-  on: (event: string, handler: EventCallback) => void;
-  off: (event: string, handler: EventCallback) => void;
+  /** Subscribes to the time picker's events; `change` and `input` carry the element's possibly empty value. */
+  on: <K extends keyof TimePickerEvents>(event: K, handler: TimePickerEvents[K]) => void;
+  off: <K extends keyof TimePickerEvents>(event: K, handler: TimePickerEvents[K]) => void;
   destroy: () => void;
 }
 
@@ -115,11 +116,11 @@ const create = (config: TimepickerElementConfig): TimepickerElementComponent => 
     },
     show: () => void picker.open(),
     close: () => void picker.close(),
-    isOpen: () => picker.isOpen,
+    isOpen: picker.isOpen,
     required: !!required,
     // `change` and `input` use the element's possibly empty committed value.
-    on: (event, handler) => void (event === "change" || event === "input" ? changes.on(event, handler) : picker.on(event as "confirm", handler as (e: TimePickerValueEvent) => void)),
-    off: (event, handler) => void (event === "change" || event === "input" ? changes.off(event, handler) : picker.off(event as "confirm", handler as (e: TimePickerValueEvent) => void)),
+    on: (event, handler) => void (event === "change" || event === "input" ? changes.on(event, handler as EventCallback) : picker.on(event, handler)),
+    off: (event, handler) => void (event === "change" || event === "input" ? changes.off(event, handler as EventCallback) : picker.off(event, handler)),
     destroy: () => {
       picker.off("change", onChange);
       picker.off("input", onInput);

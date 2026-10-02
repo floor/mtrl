@@ -18,7 +18,7 @@ const setup = (config: TimePickerConfig = {}) => {
     // Input keeps the draft separate from the committed value.
     picker.on(name, (payload?: { value: string; draftValue?: string }) => {
       const value = name === "input" ? payload?.draftValue : payload?.value;
-      log.push(`${name}${value ? `:${value}` : ""}${name === "confirm" || name === "cancel" ? `@${picker.isOpen ? "open" : "closed"}` : ""}`);
+      log.push(`${name}${value ? `:${value}` : ""}${name === "confirm" || name === "cancel" ? `@${picker.isOpen() ? "open" : "closed"}` : ""}`);
     });
   }
   const dialog = picker.dialogElement;
@@ -91,7 +91,7 @@ describe("disabled", () => {
   test("a disabled picker does not open", () => {
     const p = setup({ disabled: true });
     p.picker.open();
-    expect(p.picker.isOpen).toBe(false);
+    expect(p.picker.isOpen()).toBe(false);
     expect(p.picker.isDisabled()).toBe(true);
     expect(p.picker.element.getAttribute("aria-disabled")).toBe("true");
     expect(p.picker.element.classList.contains("mtrl-time-picker--disabled")).toBe(true);
@@ -102,9 +102,9 @@ describe("disabled", () => {
     p.picker.open();
     p.pickThree();
     expect(p.picker.disable()).toBe(p.picker);
-    expect([p.picker.isOpen, p.picker.getValue()]).toEqual([false, "09:30"]);
+    expect([p.picker.isOpen(), p.picker.getValue()]).toEqual([false, "09:30"]);
     p.picker.enable().open();
-    expect(p.picker.isOpen).toBe(true);
+    expect(p.picker.isOpen()).toBe(true);
     expect(p.picker.element.hasAttribute("aria-disabled")).toBe(false);
   });
 });

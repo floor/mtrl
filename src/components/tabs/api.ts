@@ -1,5 +1,5 @@
 // src/components/tabs/api.ts
-import { TabsComponent, TabComponent, TabConfig } from './types';
+import { TabsComponent, TabComponent, TabConfig, TabsEvents } from './types';
 import { warnUnknownValue } from '../../core/utils/warn';
 import type { EventCallback } from "../../core/state/emitter";
 import { createTab } from './tab';
@@ -87,7 +87,10 @@ export const withAPI = ({ lifecycle }: ApiOptions) =>
       // One listener: on() when the tab has it, the DOM otherwise. Both at once
       // ran handleTabClick twice per click.
       if (tab.on && typeof tab.on === 'function') {
-        tab.on('click', (event: Event) => component.handleTabClick(event, tab));
+        // The tab re-emits its button's wrapped click, not the DOM event.
+        // Pass that same value on: handleTabClick's guard ignores a payload
+        // with no preventDefault, which is what this path has always done.
+        tab.on('click', (event) => component.handleTabClick(event as unknown as Event, tab));
       } else {
         tab.element.addEventListener('click', (event) => {
           component.handleTabClick(event, tab);
@@ -109,7 +112,7 @@ export const withAPI = ({ lifecycle }: ApiOptions) =>
       
       // One listener: on() when the tab has it, the DOM otherwise.
       if (tab.on && typeof tab.on === 'function') {
-        tab.on('click', (event: Event) => component.handleTabClick(event, tab));
+        tab.on('click', (event) => component.handleTabClick(event as unknown as Event, tab));
       } else {
         tab.element.addEventListener('click', (event) => {
           component.handleTabClick(event, tab);
@@ -201,9 +204,9 @@ export const withAPI = ({ lifecycle }: ApiOptions) =>
     /**
      * Adds an event listener
      */
-    on(event: string, handler: EventCallback) {
+    on<K extends keyof TabsEvents>(event: K, handler: TabsEvents[K]) {
       if (component.on) {
-        component.on(event, handler);
+        component.on(event, handler as EventCallback);
       }
       return this;
     },
@@ -211,9 +214,9 @@ export const withAPI = ({ lifecycle }: ApiOptions) =>
     /**
      * Removes an event listener
      */
-    off(event: string, handler: EventCallback) {
+    off<K extends keyof TabsEvents>(event: K, handler: TabsEvents[K]) {
       if (component.off) {
-        component.off(event, handler);
+        component.off(event, handler as EventCallback);
       }
       return this;
     },

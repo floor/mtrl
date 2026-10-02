@@ -40,13 +40,12 @@ const declaredRadios = (host: HTMLElement): RadioOptionConfig[] => {
 const readRadios = (host: HTMLElement): Config => ({ options: declaredRadios(host) }) satisfies Partial<RadiosConfig>;
 
 /**
- * Selects a value; null clears the selection. The factory has no clear: an
- * unknown value clears, with a development warning, so clearing goes through
- * `setValue("")` only when something is selected.
+ * Selects a value; null, undefined or an empty string clears the selection,
+ * through the factory's `setValue(null)`.
  */
 const select = (component: RadiosComponent, value: unknown): void => {
   if (value === null || value === undefined || value === "") {
-    if (component.getValue() !== "") component.setValue("");
+    component.setValue(null);
   } else {
     component.setValue(String(value));
   }
@@ -127,20 +126,20 @@ const radiosSpec = {
     },
   },
   properties: {
-    value: { get: (c) => c.getValue() || null, set: (c, v) => select(c, v), config: "value" },
+    value: { get: (c) => c.getValue(), set: (c, v) => select(c, v), config: "value" },
   },
   model: "value" as const,
   events: {
     change: {
-      detail: (payload) => ({ value: (payload as { value: string }).value || null }),
+      detail: (payload) => ({ value: (payload as { value: string | null }).value }),
     },
   },
   form: {
-    value: (c) => c.getValue() || null,
+    value: (c) => c.getValue(),
     control: validityControl,
     events: ["change"],
     activate: (c) => validityControl(c)?.focus(),
-    state: (c) => c.getValue(),
+    state: (c) => c.getValue() ?? "",
     restore: (c, state) => select(c, state),
     disable: (c, disabled) => void (disabled ? c.disable() : c.enable()),
   },

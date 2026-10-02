@@ -40,6 +40,7 @@ import {
   type DeclarationSpec,
   type DefaultProps,
   type FormProps,
+  type RetiredEvents,
 } from "../elements/adapter";
 
 export { configure } from "../elements/adapter";
@@ -61,14 +62,37 @@ type SnippetProps<S, P> = {
 
 type OwnProps<S> = Omit<BaseProps<S>, ElementSlotProp<S>> & SnippetProps<S, BaseProps<S>>;
 
-/** Props of a generated component: the element's own, plus any HTML attribute for the host. */
+/**
+ * `nonce` is global; Svelte types it on script and style only. `popover`,
+ * `inputmode`, `enterkeyhint` and `itemprop` are already on `HTMLAttributes`
+ * (`inputMode`, `enterKeyHint` and `itemProp` are not Svelte prop names).
+ * A release that already declares a key keeps its own type.
+ */
+type SvelteHostGaps = {
+  nonce?: string;
+};
+
+type Missing<Base, Extra> = {
+  [K in Exclude<keyof Extra, keyof Base>]?: K extends keyof Extra ? Extra[K] : never;
+};
+
+type SvelteHostAttributes = HTMLAttributes<HTMLElement> & Missing<HTMLAttributes<HTMLElement>, SvelteHostGaps>;
+
+/**
+ * Props of a generated component: the element's own, plus any HTML attribute for the host.
+ * `OwnProps` includes the element's `on<event>` handlers (`onchange`), so those names keep the component's event.
+ */
 export type SvelteProps<S> = OwnProps<S> &
-  Omit<HTMLAttributes<HTMLElement>, keyof OwnProps<S> | "children"> & { children?: Snippet };
+  Omit<SvelteHostAttributes, keyof OwnProps<S> | "children" | RetiredProps<S>> &
+  { [K in RetiredProps<S>]?: `${K} was removed in 1.0: use onchange` } & { children?: Snippet };
+
+/** The handler props of events 1.0 removed (`ontoggle` on the icon button): refused, see `RetiredEvents`. */
+type RetiredProps<S> = `on${RetiredEvents<S>}`;
 
 /** The live properties a generated component binds (`bind:checked`). */
 export type Bindable<S> = keyof ElementProperties<S> & string;
 
-export type DeclarationProps<A> = A & Omit<HTMLAttributes<HTMLElement>, keyof A | "children"> & { children?: Snippet };
+export type DeclarationProps<A> = A & Omit<SvelteHostAttributes, keyof A | "children"> & { children?: Snippet };
 
 /** What a generated component passes its action on every update. */
 export interface Binding {

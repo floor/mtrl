@@ -1,0 +1,9 @@
+// Every typescale token, so mtrl/styles/typography restores the scale on its
+// own. body-medium's font, size and line-height are also on the base, which
+// the body rule reads; the values match. Not imported by the full stylesheet:
+// base/tokens already emits every role there, once.
+@use "typescale-tokens" as scale;
+
+:root {
+  @include scale.tokens("all");
+}

@@ -83,13 +83,14 @@ test('a plain button has no pressed state and clicking does not select it', () =
   expect(button.element.hasAttribute('aria-pressed')).toBe(false);
 });
 
-test('toggle clicks flip aria-pressed, the selected class and DOM toggle events', () => {
+test('toggle clicks flip aria-pressed and the selected class, and emit change', () => {
   const button = make({ toggle: true });
   const states: boolean[] = [];
   let emitterToggles = 0;
-  // Observe the emitter through the untyped runtime boundary: toggle is DOM-only.
+  // 1.0 has no toggle event, on the emitter or on the element: change reports the state.
   Reflect.apply(Reflect.get(button, 'on'), button, ['toggle', () => emitterToggles++]);
-  button.element.addEventListener('toggle', event => states.push((event as CustomEvent).detail.selected));
+  button.element.addEventListener('toggle', () => emitterToggles++);
+  button.on('change', payload => states.push(payload.selected));
   expect(button.isToggle()).toBe(true);
   expect(button.element.classList.contains(`${root}--toggle`)).toBe(true);
   assertSelected(button, false);
@@ -185,7 +186,7 @@ for (const selected of [false, true]) {
   test(`disabled native clicks preserve selected=${selected}; enabling restores clicks`, () => {
     const button = make({ toggle: true, disabled: true, selected });
     let events = 0;
-    button.element.addEventListener('toggle', () => events++);
+    button.on('change', () => events++);
     expect(button.element.disabled).toBe(true);
     button.element.click();
     assertSelected(button, selected);
@@ -207,7 +208,7 @@ test('destroy removes the toggle click listener from a retained element', () => 
   let clicks = 0;
   let toggles = 0;
   button.on('click', () => clicks++);
-  element.addEventListener('toggle', () => toggles++);
+  button.on('change', () => toggles++);
   element.click();
   assertSelected(button, true);
   expect(clicks).toBe(1);

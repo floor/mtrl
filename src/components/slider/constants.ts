@@ -51,24 +51,12 @@ export const SLIDER_MEASUREMENTS = {
   HANDLE_HEIGHT_OFFSET: 12,
   /** Minimum container height in pixels (M3 minimum touch target) */
   MIN_HEIGHT: 48,
-  /** @deprecated Not read since FLO-250: the segments' inside corner is 2dp in the stylesheet. */
-  TRACK_RADIUS: 3,
-  /** @deprecated Not read since FLO-250: getExternalTrackRadius gives 8 / 8 / 12 / 16 / 28 per size. */
-  SMALL_TRACK_EXTERNAL_RADIUS: 10,
-  /** @deprecated Not read since FLO-250: getExternalTrackRadius gives 8 / 8 / 12 / 16 / 28 per size. */
-  LARGE_TRACK_RADIUS_RATIO: 0.35,
   /** Tick size in pixels */
   TICK_SIZE: 4,
   /** Dot size in pixels */
   DOT_SIZE: 4,
   /** Handle gap pixels */
   HANDLE_GAP: 6, // M3: 6dp between the handle's edge and the track
-  /** @deprecated Not read since FLO-250: the gap is measured from the handle's edge and does not shrink. */
-  HANDLE_GAP_PRESSED_REDUCTION: 2,
-  /** @deprecated Not read since FLO-250: a centred slider's gap is the handle gap. */
-  CENTER_GAP: 4,
-  /** @deprecated Not read since FLO-250: values span the track, or a corner-radius inset when discrete. */
-  EDGE_PADDING: 7
 } as const;
 
 /**

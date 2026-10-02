@@ -57,18 +57,16 @@ export const createTimePickerAPI = (
   let committed: TimeValue = { ...timeValue };
   const format = (time: TimeValue) => formatFormValue(time, config.showSeconds === true);
   const getValue = () => format(committed);
-  // The committed value changed: the form, then `change` and onChange.
+  // The committed value changed: the form, then `change`.
   const notifyChange = () => {
     const value = getValue();
     setFormValue(formValue, value);
     options.events.emit(EVENTS.CHANGE, { value });
-    config.onChange?.({ value });
   };
-  // The draft changed: `input` and onInput, as a native input's.
+  // The draft changed: `input`, as a native input's.
   const notifyInput = () => {
     const event = { value: getValue(), draftValue: format(timeValue) };
     options.events.emit(EVENTS.INPUT, event);
-    config.onInput?.(event);
   };
   const render = () => {
     renderTimePicker(dialogElement, timeValue, config, notifyInput);
@@ -104,7 +102,6 @@ export const createTimePickerAPI = (
   const cancel = () => {
     restoreDraft();
     options.events.emit(EVENTS.CANCEL);
-    config.onCancel?.();
     timePickerAPI.close();
   };
   // OK commits the draft: one `change` if it differs, then `confirm`, both
@@ -112,7 +109,6 @@ export const createTimePickerAPI = (
   const confirm = () => {
     commit();
     options.events.emit(EVENTS.CONFIRM, { value: getValue() });
-    config.onConfirm?.(getValue());
     timePickerAPI.close();
   };
   // Escape reaches this picker only, through its dialog's cancel event; it was a
@@ -138,14 +134,8 @@ export const createTimePickerAPI = (
     modalElement,
     dialogElement,
 
-    // A getter, not a copy. `isOpen` was read off the closure once, at the
-    // moment this object was built, so the property never moved off its
-    // initial value however many times the picker was opened -- while the
-    // closure the methods read stayed correct, which is why open, close and
-    // toggle all behaved and only the reported state was wrong.
-    get isOpen() {
-      return isOpen;
-    },
+    // A method, as on every overlay (FLO-548); it was a getter property.
+    isOpen: () => isOpen,
 
     
     open() {
@@ -170,13 +160,7 @@ export const createTimePickerAPI = (
       isOpen = true;
       baseComponent.element.classList.add(`${config.prefix}-time-picker--open`);
       
-      // Emit open event
       options.events.emit(EVENTS.OPEN);
-      
-      // Call onOpen callback if provided
-      if (config.onOpen) {
-        config.onOpen();
-      }
       
       return this;
     },
@@ -194,13 +178,7 @@ export const createTimePickerAPI = (
       isOpen = false;
       baseComponent.element.classList.remove(`${config.prefix}-time-picker--open`);
       
-      // Emit close event
       options.events.emit(EVENTS.CLOSE);
-      
-      // Call onClose callback if provided
-      if (config.onClose) {
-        config.onClose();
-      }
       
       return this;
     },
@@ -431,5 +409,13 @@ export const createTimePickerAPI = (
 
   // The initial render uses the same synchronization path as later renders.
   render();
+  // A config option is the listener registered at creation, ahead of any
+  // listener the caller adds afterwards.
+  if (config.onChange) timePickerAPI.on(EVENTS.CHANGE, config.onChange);
+  if (config.onInput) timePickerAPI.on(EVENTS.INPUT, config.onInput);
+  if (config.onOpen) timePickerAPI.on(EVENTS.OPEN, config.onOpen);
+  if (config.onClose) timePickerAPI.on(EVENTS.CLOSE, config.onClose);
+  if (config.onCancel) timePickerAPI.on(EVENTS.CANCEL, config.onCancel);
+  if (config.onConfirm) timePickerAPI.on(EVENTS.CONFIRM, config.onConfirm);
   return timePickerAPI;
 };

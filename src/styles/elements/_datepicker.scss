@@ -11,7 +11,7 @@
 @include c.host('datepicker') {
   display: inline-block;
   box-sizing: border-box;
-  width: v.textfield('width');
+  width: v.text-field('width');
   vertical-align: baseline;
   white-space: nowrap;
 
@@ -20,7 +20,7 @@
     white-space: pre;
     display: inline-block;
     width: 100%;
-    padding-bottom: 4px + v.textfield('height') + 4px + 16px;
+    padding-bottom: 4px + v.text-field('height') + 4px + 16px;
     color: t.color('on-surface');
     @include m.typography('body-small');
   }

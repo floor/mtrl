@@ -1,6 +1,6 @@
-// test/components/event-value-remaining.test.ts
-// FLO-380: snapshot the factory getter in each handler, before another handler
-// or a later activation can change the model.
+// test/components/event-value-getters.test.ts
+// FLO-380: factory model events report the live getter during dispatch.
+// Snapshot in each handler before another activation changes the model.
 import { expect, test } from "bun:test";
 import createTextField from "../../src/components/textfield";
 import createSlider from "../../src/components/slider";
@@ -34,8 +34,7 @@ test("slider input and change carry the live first endpoint", () => {
   slider.element.querySelector<HTMLElement>('[role="slider"]')!.dispatchEvent(
     new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }),
   );
-  expect(seen).toHaveLength(2);
-  expect(seen.every(([value, getter, second]) => value === getter && second === 80)).toBe(true);
+  expect(seen).toEqual([[21, 21, 80], [21, 21, 80]]);
 });
 
 test("search input, submit, suggestion selection and clear snapshot their live string", async () => {
@@ -52,9 +51,13 @@ test("search input, submit, suggestion selection and clear snapshot their live s
   search.expand();
   search.element.querySelector<HTMLElement>('[role="option"]')!.click();
   search.element.querySelector<HTMLElement>(".mtrl-search__clear-button")!.click();
-  expect(seen.some(([name]) => name === "suggestionSelect")).toBe(true);
-  expect(seen.some(([name]) => name === "clear")).toBe(true);
-  expect(seen.every(([, value, getter]) => value === getter)).toBe(true);
+  expect(seen).toEqual([
+    ["input", "Ap", "Ap"],
+    ["submit", "Ap", "Ap"],
+    ["suggestionSelect", "Apple", "Apple"],
+    ["input", "", ""],
+    ["clear", "", ""],
+  ]);
 });
 
 test("single and multi button groups emit the shape returned by getValue", () => {
@@ -74,7 +77,7 @@ test("single and multi button groups emit the shape returned by getValue", () =>
 test("tab selection reports the active getter value", () => {
   const tabs = mount(createTabs({ tabs: [{ text: "Alpha", value: "a" }, { text: "Beta", value: "b" }] }));
   const seen: Array<[string, string | null]> = [];
-  tabs.on("change", (event: { value: string }) => seen.push([event.value, tabs.getValue()]));
+  tabs.on("change", event => seen.push([event.value, tabs.getValue()]));
   tabs.getTabs()[1].element.click();
   expect(seen).toEqual([["b", "b"]]);
 });

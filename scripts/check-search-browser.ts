@@ -2,7 +2,6 @@
 import assert from "node:assert/strict";
 import type { Page } from "playwright";
 import type createSearch from "../src/components/search";
-import { expectedFailure } from "./expected-failure";
 
 type SearchWindow = Window & { searchEvents: string[]; createSearch: typeof createSearch; search: ReturnType<typeof createSearch> };
 
@@ -160,7 +159,7 @@ export async function checkSearch(page: Page): Promise<void> {
   const dismissed = await layout(page);
   assert.deepEqual([dismissed.popover, dismissed.after], [false, closed.after], "the scrim closes it, back in the page");
 
-  await expectedFailure("FLO-514", "a search view dismissed before its opening frame opens again", () => dismissedBeforeItsOpeningFrame(page));
+  await dismissedBeforeItsOpeningFrame(page);
 
   // In a parent that clips, the results still show: the top layer escapes it.
   await mount(page, { suggestions: ["Apple", "Banana"] }, true);

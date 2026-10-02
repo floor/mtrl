@@ -51,7 +51,7 @@ const inputAttribute =
     else c.setAttribute(name, v === true ? "" : String(v));
   };
 
-const textfieldSpec = {
+const textFieldSpec = {
   name: "textfield",
   create: (config) => create(config as TextFieldConfig),
   styles: ["textfield"],
@@ -95,11 +95,13 @@ const textfieldSpec = {
       config: "suffixText",
       update: (c, v) => void (v ? c.setSuffixText(String(v)) : c.removeSuffixText()),
     },
+    /** Markup (HTML). Not sanitized by default: see Markup and sanitizing. */
     "leading-icon": {
       type: "string",
       config: "leadingIcon",
       update: (c, v) => void (v ? c.setLeadingIcon(String(v)) : c.removeLeadingIcon()),
     },
+    /** Markup (HTML). Not sanitized by default: see Markup and sanitizing. */
     "trailing-icon": {
       type: "string",
       config: "trailingIcon",
@@ -142,8 +144,8 @@ const textfieldSpec = {
   },
 } satisfies ElementSpec<TextFieldElementComponent>;
 
-export const textFieldElement = defineElement<TextFieldElementComponent>(textfieldSpec);
-export type TextFieldSpec = typeof textfieldSpec;
+export const textFieldElement = defineElement<TextFieldElementComponent>(textFieldSpec);
+export type TextFieldSpec = typeof textFieldSpec;
 /** `<m-textfield>` as a ref or a query returns it. */
 export type TextFieldElement = ElementInstance<TextFieldSpec, TextFieldElementComponent>;
 

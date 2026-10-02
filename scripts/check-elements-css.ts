@@ -7,7 +7,7 @@ import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { elements } from "../src/elements";
 import { hostStyleText } from "../src/elements/define";
-import { resolveStyleDependencies } from "./style-manifest";
+import { componentStyles, resolveStyleDependencies, typographyDependencies } from "./style-manifest";
 
 const dir = "dist/elements/css";
 const names = ["ripple", ...resolveStyleDependencies(Object.values(elements).flatMap(element => [...element.spec.styles]))];
@@ -52,4 +52,20 @@ for (const { spec } of Object.values(elements)) {
   );
 }
 
-console.log(`elements-css:check: ${names.length} CSS modules and ${Object.keys(elements).length} host files match their registered strings; CSS and JS exports resolve`);
+// The selective style modules import their dependencies before their own CSS.
+// For typography it is the fix itself: its sheet shares the mtrl.base layer
+// with the reset, at the same specificity, so the base has to load first
+// (test/styles/typography-order.test.ts measures both orders).
+const styleModules: Array<[string, string[]]> = [
+  ["typography", typographyDependencies],
+  ...Object.entries(componentStyles).map(([name, entry]): [string, string[]] => [name, entry.dependencies]),
+];
+for (const [name, dependencies] of styleModules) {
+  assert.equal(
+    await readFile(`dist/styles/${name}.js`, "utf8"),
+    dependencies.map(dependency => `import "./${dependency}.js";`).join("\n") + `\nimport "./${name}.css";\n`,
+    `dist/styles/${name}.js must import its dependencies, then its own CSS`,
+  );
+}
+
+console.log(`elements-css:check: ${names.length} CSS modules and ${Object.keys(elements).length} host files match their registered strings; CSS and JS exports resolve; ${styleModules.length} style modules import their dependencies first`);

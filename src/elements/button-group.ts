@@ -220,7 +220,9 @@ export const buttonGroupItemDeclaration = {
   attributes: {
     value: { type: "string" },
     label: { type: "string" },
+    /** Markup (HTML). Not sanitized by default: see Markup and sanitizing. */
     icon: { type: "string" },
+    /** Markup (HTML). Not sanitized by default: see Markup and sanitizing. Shown on an icon-only item while it is selected. */
     "selected-icon": { type: "string" },
     "aria-label": { type: "string" },
     disabled: { type: "boolean" },

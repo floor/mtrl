@@ -90,13 +90,6 @@ export interface CreateElementOptions {
   class?: string | string[];
   /** CSS classes (will be automatically prefixed with 'mtrl-') - alias for class */
   className?: string | string[];
-  /** CSS classes that will NOT be prefixed - added as-is to the element */
-  /**
-   * @deprecated Since FLO-117 `class` and `className` are not prefixed either,
-   * so this option does the same thing as those. It is kept for the release
-   * that changes the behaviour and will be removed in 1.0.0.
-   */
-  rawClass?: string | string[];
   /** HTML attributes */
   attributes?: object;
   /** Events to forward when component has emit method */
@@ -159,7 +152,6 @@ const RESERVED_OPTIONS: Record<string, unknown> = {
   data: true,
   class: true,
   className: true,
-  rawClass: true,
   attributes: true,
   forwardEvents: true,
   onCreate: true,
@@ -353,15 +345,9 @@ export const createElement = (
   if (options.ariaHidden !== undefined)
     element.setAttribute("aria-hidden", String(options.ariaHidden));
 
-  // Apply classes with automatic prefixing and raw classes
+  // Apply classes (FLO-117: as given, not prefixed)
   const classSource = options.className || options.class;
   if (classSource) addClass(element, classSource);
-  if (options.rawClass) {
-    const classes = Array.isArray(options.rawClass)
-      ? options.rawClass
-      : options.rawClass.split(" ");
-    element.classList.add(...classes.filter(Boolean));
-  }
 
   // Apply data attributes efficiently using Object.assign
   if (options.data) {

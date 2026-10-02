@@ -15,6 +15,11 @@
     "status": "public"
   },
   {
+    "name": "BadgeVariant",
+    "kind": "type",
+    "status": "public"
+  },
+  {
     "name": "BottomAppBarComponent",
     "kind": "type",
     "status": "public"
@@ -115,12 +120,22 @@
     "status": "public"
   },
   {
+    "name": "CardVariant",
+    "kind": "type",
+    "status": "public"
+  },
+  {
     "name": "CarouselComponent",
     "kind": "type",
     "status": "public"
   },
   {
     "name": "CarouselConfig",
+    "kind": "type",
+    "status": "public"
+  },
+  {
+    "name": "CarouselVariant",
     "kind": "type",
     "status": "public"
   },
@@ -430,6 +445,11 @@
     "status": "public"
   },
   {
+    "name": "DatePickerVariant",
+    "kind": "type",
+    "status": "public"
+  },
+  {
     "name": "DialogComponent",
     "kind": "type",
     "status": "public"
@@ -490,6 +510,11 @@
     "status": "public"
   },
   {
+    "name": "ExtendedFabVariant",
+    "kind": "type",
+    "status": "public"
+  },
+  {
     "name": "FabComponent",
     "kind": "type",
     "status": "public"
@@ -520,6 +545,11 @@
     "status": "public"
   },
   {
+    "name": "FabVariant",
+    "kind": "type",
+    "status": "public"
+  },
+  {
     "name": "FilterChipConfig",
     "kind": "type",
     "status": "public"
@@ -546,6 +576,11 @@
   },
   {
     "name": "IconButtonConfig",
+    "kind": "type",
+    "status": "public"
+  },
+  {
+    "name": "IconButtonVariant",
     "kind": "type",
     "status": "public"
   },
@@ -606,6 +641,11 @@
   },
   {
     "name": "MenuItem",
+    "kind": "type",
+    "status": "public"
+  },
+  {
+    "name": "MenuVariant",
     "kind": "type",
     "status": "public"
   },
@@ -680,6 +720,11 @@
     "status": "public"
   },
   {
+    "name": "ProgressVariant",
+    "kind": "type",
+    "status": "public"
+  },
+  {
     "name": "RadioOptionConfig",
     "kind": "type",
     "status": "public"
@@ -720,6 +765,11 @@
     "status": "public"
   },
   {
+    "name": "SearchVariant",
+    "kind": "type",
+    "status": "public"
+  },
+  {
     "name": "SelectChangeEvent",
     "kind": "type",
     "status": "public"
@@ -741,6 +791,11 @@
   },
   {
     "name": "SelectOption",
+    "kind": "type",
+    "status": "public"
+  },
+  {
+    "name": "SelectVariant",
     "kind": "type",
     "status": "public"
   },
@@ -815,6 +870,11 @@
     "status": "public"
   },
   {
+    "name": "SplitButtonVariant",
+    "kind": "type",
+    "status": "public"
+  },
+  {
     "name": "SuggestionChipConfig",
     "kind": "type",
     "status": "public"
@@ -850,12 +910,22 @@
     "status": "public"
   },
   {
+    "name": "TabsVariant",
+    "kind": "type",
+    "status": "public"
+  },
+  {
     "name": "TextFieldComponent",
     "kind": "type",
     "status": "public"
   },
   {
     "name": "TextFieldConfig",
+    "kind": "type",
+    "status": "public"
+  },
+  {
+    "name": "TextFieldVariant",
     "kind": "type",
     "status": "public"
   },
@@ -905,12 +975,22 @@
     "status": "public"
   },
   {
+    "name": "ToolbarVariant",
+    "kind": "type",
+    "status": "public"
+  },
+  {
     "name": "TooltipComponent",
     "kind": "type",
     "status": "public"
   },
   {
     "name": "TooltipConfig",
+    "kind": "type",
+    "status": "public"
+  },
+  {
+    "name": "TooltipVariant",
     "kind": "type",
     "status": "public"
   },

@@ -6,9 +6,8 @@ import { createBase } from "../../core/compose/component";
 import type { BaseComponent, ElementComponent } from "../../core/compose/component";
 import { withEvents, withLifecycle } from "../../core/compose/features";
 import type { EventComponent, LifecycleComponent } from "../../core/compose/features";
-import type { EventCallback } from "../../core/state/emitter";
 import type { BadgeComponent } from "../badge";
-import { TabConfig, TabComponent } from "./types";
+import { TabConfig, TabComponent, TabEvents } from "./types";
 import { TAB_LAYOUT } from "./constants";
 import { createTabConfig } from "./config";
 import createButton from "../button";
@@ -116,12 +115,12 @@ export const createTab = (config: TabConfig = {}): TabComponent => {
       element: button.element,
 
       // Event methods: `this` is the tab the method is called on
-      on(event: string, handler: EventCallback) {
+      on<K extends keyof TabEvents>(event: K, handler: TabEvents[K]) {
         baseComponent.on(event, handler);
         return this;
       },
 
-      off(event: string, handler: EventCallback) {
+      off<K extends keyof TabEvents>(event: K, handler: TabEvents[K]) {
         baseComponent.off(event, handler);
         return this;
       },

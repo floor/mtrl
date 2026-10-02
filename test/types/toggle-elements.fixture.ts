@@ -15,12 +15,13 @@ import type { VueEmits } from "../../src/vue";
 
 type Equals<A, B> = (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2 ? true : false;
 type Toggle = CustomEvent<{ selected: boolean; value: string }>;
-type Slide = CustomEvent<{ value: number; index: number }>;
+type Slide = CustomEvent<{ value: number }>;
 
 // The elements' details
 export const button: Equals<ElementEvents<ButtonSpec>["change"], Toggle> = true;
 export const iconButton: Equals<ElementEvents<IconButtonSpec>["change"], Toggle> = true;
-export const iconButtonToggle: Equals<ElementEvents<IconButtonSpec>["toggle"], Toggle> = true;
+// 1.0 removed the icon button's DOM toggle: change is its only model event
+export const iconButtonEvents: Equals<keyof ElementEvents<IconButtonSpec>, "change"> = true;
 export const carousel: Equals<ElementEvents<CarouselSpec>["change"], Slide> = true;
 
 // React and Solid: onChange

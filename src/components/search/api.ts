@@ -2,8 +2,7 @@
 
 import {
   SearchComponent,
-  SearchEvent,
-  SearchEventType,
+  SearchEvents,
   SearchState,
   SearchViewMode,
   SearchVariant,
@@ -220,13 +219,13 @@ export const withAPI =
 
       // === Events ===
 
-      on(event: SearchEventType, handler: (event: SearchEvent) => void) {
-        options.events.on(event, handler);
+      on<K extends keyof SearchEvents>(event: K, handler: SearchEvents[K]) {
+        options.events.on(event, handler as EventCallback);
         return this;
       },
 
-      off(event: SearchEventType, handler: (event: SearchEvent) => void) {
-        options.events.off(event, handler);
+      off<K extends keyof SearchEvents>(event: K, handler: SearchEvents[K]) {
+        options.events.off(event, handler as EventCallback);
         return this;
       },
 

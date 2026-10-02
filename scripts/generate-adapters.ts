@@ -129,6 +129,7 @@ ${framework.directive ? `${framework.directive}\n` : ""}/**
   if (react) {
     return `${header}import type * as React from "react";
 import type { ElementEvents, ElementMarkup } from "../elements";
+import type { ReactHostAttributes } from "./create";
 
 /**
  * The element's events as React 19 listens to them on a custom element: an
@@ -142,7 +143,7 @@ type Events<S> = {
 
 /** A tag's props: its attributes as markup writes them, its events, and any HTML attribute. */
 type Tag<S, E extends HTMLElement> = Omit<
-  React.DetailedHTMLProps<React.HTMLAttributes<E>, E>,
+  React.DetailedHTMLProps<ReactHostAttributes<E>, E>,
   keyof ElementMarkup<S> | keyof Events<S>
 > &
   ElementMarkup<S> &
@@ -160,11 +161,11 @@ ${entries}
   }
   const union = (names: Map<string, string[]>, type: (spec: string, name: string) => string): string =>
     [...names].map(([name, specs]) => `      "${name}": ${specs.map((spec) => type(spec, name)).join(" | ")};`).join("\n");
-  return `${header}import type { JSX } from "solid-js";
-import type { ElementEvents, ElementMarkup, ElementProperties } from "../elements";
+  return `${header}import type { ElementEvents, ElementMarkup, ElementProperties } from "../elements";
+import type { SolidHostAttributes } from "./create";
 
 /** A tag's props: its attributes as markup writes them, and any HTML attribute. */
-type Tag<S, E extends HTMLElement> = Omit<JSX.HTMLAttributes<E>, keyof ElementMarkup<S>> & ElementMarkup<S>;
+type Tag<S, E extends HTMLElement> = Omit<SolidHostAttributes<E>, keyof ElementMarkup<S>> & ElementMarkup<S>;
 
 declare module "solid-js" {
   // eslint-disable-next-line @typescript-eslint/no-namespace -- JSX is a namespace; this merges into it

@@ -167,14 +167,6 @@ export interface TimePickerConfig {
   componentName?: string;
 
   /**
-   * Whether to close the picker when time is selected
-   * @default true
-   * @deprecated Never applied, and has no effect: the time picker is confirmed
-   * with OK, as M3 specifies (FLO-281).
-   */
-  closeOnSelect?: boolean;
-
-  /**
    * Earliest selectable time, 24-hour `HH:MM` or `HH:MM:SS`. Dial numbers and
    * AM/PM that cannot reach it are disabled, and a picked or typed time before
    * it moves up to it. `setValue` is not held to it.
@@ -215,10 +207,11 @@ export interface TimePickerConfig {
   confirmText?: string;
 
   /**
-   * Whether the time picker is initially visible (for inline mode)
+   * Whether the time picker opens once it is created. It was `isOpen`, the
+   * name of the method that reads the state (FLO-548).
    * @default false
    */
-  isOpen?: boolean;
+  open?: boolean;
 
   /**
    * Whether the picker is disabled: it does not open (FLO-288)
@@ -244,35 +237,37 @@ export interface TimePickerConfig {
   keyboardIcon?: string;
 
   /**
-   * Callback when the user commits a new time (on OK; setValue is silent); receives
-   * HH:MM or HH:MM:SS in 24-hour format
+   * `change` listener registered at creation. The user commits a new time on
+   * OK; setValue is silent. The argument is `{ value }` (HH:MM, or HH:MM:SS).
    */
-  onChange?: (event: TimePickerValueEvent) => void;
+  onChange?: TimePickerEvents["change"];
 
   /**
-   * Callback as the draft changes while the picker is open (FLO-288)
+   * `input` listener registered at creation, as the draft changes while the
+   * picker is open (FLO-288).
    */
-  onInput?: (event: TimePickerInputEvent) => void;
+  onInput?: TimePickerEvents["input"];
 
   /**
-   * Callback when time picker is opened
+   * `open` listener registered at creation.
    */
-  onOpen?: () => void;
+  onOpen?: TimePickerEvents["open"];
 
   /**
-   * Callback when time picker is closed
+   * `close` listener registered at creation.
    */
-  onClose?: () => void;
+  onClose?: TimePickerEvents["close"];
 
   /**
-   * Callback when time is confirmed; receives the same 24-hour value as getValue()
+   * `confirm` listener registered at creation. The argument is `{ value }`,
+   * the same 24-hour string `getValue()` returns.
    */
-  onConfirm?: (time: string) => void;
+  onConfirm?: TimePickerEvents["confirm"];
 
   /**
-   * Callback when time picker is canceled
+   * `cancel` listener registered at creation.
    */
-  onCancel?: () => void;
+  onCancel?: TimePickerEvents["cancel"];
 }
 
 /**
@@ -293,12 +288,11 @@ export type ResolvedTimePickerConfig = TimePickerConfig &
       | "format"
       | "orientation"
       | "showSeconds"
-      | "closeOnSelect"
       | "minuteStep"
       | "secondStep"
       | "cancelText"
       | "confirmText"
-      | "isOpen"
+      | "open"
       | "clockIcon"
       | "keyboardIcon"
       | "prefix"
@@ -338,10 +332,12 @@ export interface TimePickerComponent {
   dialogElement: HTMLElement;
 
   /** Whether the time picker is currently open */
-  isOpen: boolean;
+  isOpen: () => boolean;
 
   /**
-   * Opens the time picker
+   * Opens the time picker. When it returns, `isOpen()` is true and `open` has
+   * been emitted; the surface may be painted after `open()` returns. On an
+   * open or disabled picker it does nothing.
    * @returns The time picker component for chaining
    */
   open: () => TimePickerComponent;

@@ -50,7 +50,7 @@ const createDatePicker = <M extends string = "single">(
     isAllowed: date => (!state.minDate || date >= state.minDate) && (!state.maxDate || date <= state.maxDate) && !state.specialDates.some(item => { const special = parseDate(item.date); return item.disabled && special && isSameDay(date, special); }),
   };
   const modal = state.variant !== "docked";
-  let opened = false, destroyed = false, navigationRequested = false, readOnly = false;
+  let opened = false, opening = false, destroyed = false, navigationRequested = false, readOnly = false;
   let committed: Date | null = null, committedEnd: Date | null = null;
   let returnFocus: HTMLElement | null = null;
   let unlock: (() => void) | undefined;
@@ -176,7 +176,7 @@ const createDatePicker = <M extends string = "single">(
   };
   const open = () => {
     if (destroyed || opened || base.disabled.isDisabled() || readOnly) return;
-    opened = true; resetDraft(); state.inputMode = state.variant === "modal-input"; state.listStart = undefined;
+    opened = true; opening = true; setTimeout(() => { opening = false; }, 0); resetDraft(); state.inputMode = state.variant === "modal-input"; state.listStart = undefined;
     let initial = committed ?? today;
     if (state.minDate && initial < state.minDate) initial = state.minDate;
     if (state.maxDate && initial > state.maxDate) initial = state.maxDate;
@@ -357,7 +357,10 @@ const createDatePicker = <M extends string = "single">(
   };
   const onCancel = (event: Event) => { event.preventDefault(); close(); };
   const onOutside = (event: MouseEvent) => {
-    if (!opened) return;
+    // The click that called open() reaches the document after it, in the same
+    // task: the event that opened the picker never dismisses it (FLO-548).
+    // `opening` is true for the rest of that task, as the dialog's is.
+    if (!opened || opening) return;
     if (!modal && event.target instanceof Node && !event.composedPath().includes(base.element)) close(false);
     if (modal && event.target === dialog) { const bounds = dialog.getBoundingClientRect(); if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) close(); }
   };
@@ -410,7 +413,7 @@ const createDatePicker = <M extends string = "single">(
   const api = withAPI({
     element: base.element, input, getClass: base.getClass,
     disabled: { enable: () => setDisabled(false), disable: () => setDisabled(true), isDisabled: () => base.disabled.isDisabled() }, lifecycle: { destroy }, destroy,
-    open() { open(); return api; }, close() { close(); return api; }, getValue,
+    open() { open(); return api; }, close() { close(); return api; }, isOpen: () => opened, getValue,
     getFormattedValue: () => formatted(committed, committedEnd),
     setValue(value) { assignValue(value, false); return api; },
     setReadOnly(value) { setReadOnly(value); return api; }, isReadOnly: () => readOnly,

@@ -18,6 +18,7 @@ export type { MenuEvents } from './types';
 // Export types and interfaces
 export type { 
   MenuConfig, 
+  MenuVariant,
   MenuComponent, 
   MenuItem, 
   MenuDivider,

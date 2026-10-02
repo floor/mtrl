@@ -81,9 +81,7 @@ export const TOOLTIP_DEFAULTS = {
   /** Whether to show tooltip on focus by default */
   SHOW_ON_FOCUS: true,
   /** Whether to show tooltip on hover by default */
-  SHOW_ON_HOVER: true,
-  /** Whether to allow rich HTML content by default */
-  RICH: false
+  SHOW_ON_HOVER: true
 } as const;
 
 /**

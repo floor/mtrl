@@ -25,8 +25,9 @@
 
 import createSelect from "../components/select";
 import type { MenuPosition } from "../components/menu/types";
+import { innerMenu } from "../components/menu/inner";
 import type { SelectComponent, SelectConfig, SelectOption } from "../components/select/types";
-import type { TextfieldVariant } from "../components/textfield/types";
+import type { TextFieldVariant } from "../components/textfield/types";
 import {
   createDeclarationClass, defineElement, DEFAULT_PREFIX, type AttributeValue, type Config, type DefineOptions,
   type ElementAttributes, type ElementHost, type ElementInstance, type ElementSpec,
@@ -119,7 +120,7 @@ const selectSpec = {
     variant: {
       type: "string",
       config: "variant",
-      update: (c, v) => void c.textField.setVariant((v === "outlined" ? "outlined" : "filled") as TextfieldVariant),
+      update: (c, v) => void c.textField.setVariant((v === "outlined" ? "outlined" : "filled") as TextFieldVariant),
     },
     density: { type: "string", config: "density", update: (c, v) => void c.setDensity(String(v ?? "default")) },
     label: { type: "string", config: "label" },
@@ -128,7 +129,7 @@ const selectSpec = {
     placement: {
       type: "string",
       config: "placement",
-      update: (c, v) => void c.menu.setPosition((v ?? "bottom-start") as MenuPosition),
+      update: (c, v) => void innerMenu(c)?.setPosition((v ?? "bottom-start") as MenuPosition),
     },
     "supporting-text": {
       type: "string",
@@ -192,6 +193,7 @@ export const selectOptionDeclaration = {
   attributes: {
     value: { type: "string" },
     label: { type: "string" },
+    /** Markup (HTML). Not sanitized by default: see Markup and sanitizing. */
     icon: { type: "string" },
     disabled: { type: "boolean" },
   },

@@ -194,16 +194,41 @@ try {
     Object.assign(window.bar.element.style, { position: "fixed", bottom: "0", left: "0", width: "400px" });
   });
   const state = () => page.evaluate(() => ({ hidden: window.bar.isHidden(), transform: getComputedStyle(window.bar.element).transform, transition: getComputedStyle(window.bar.element).transitionDuration }));
-  await page.evaluate(() => window.scrollTo(0, 50));
-  await page.waitForTimeout(50);
-  await page.evaluate(() => window.scrollTo(0, 400));
-  await page.waitForTimeout(500);
+  // The bar follows `scroll` events, which the browser sends in its next rendering
+  // step, not at the call, and it slides for 450ms. The fixed waits here (50, 500 and
+  // 100ms) were only long enough for that: 500ms for an event and a 450ms slide leaves
+  // little, and a late frame has the transform read mid-slide.
+  // The page scrolls smoothly (`html { scroll-behavior: smooth }`), so one scrollTo is a
+  // stream of scroll events over about 400ms, and the bar answers each of them: a
+  // step taken before the last one is undone by the next. `scrolled` returns when the
+  // scroll has arrived where it was sent (its listener is added after the bar's, so
+  // the bar has seen that last event), 5s at most, with the position it reached.
+  // `until` then waits, 5s at most, for the state asserted right after, and says at
+  // which step it gave up and what it found.
+  const scrolled = (y: number): Promise<{ arrived: boolean; y: number }> => page.evaluate(y => new Promise<{ arrived: boolean; y: number }>(resolve => {
+    const done = (arrived: boolean): void => { window.removeEventListener("scroll", onScroll); clearTimeout(timer); resolve({ arrived, y: Math.round(window.scrollY) }); };
+    const onScroll = (): void => { if (Math.round(window.scrollY) === y) done(true); };
+    const timer = setTimeout(() => done(false), 5000);
+    window.addEventListener("scroll", onScroll);
+    window.scrollTo(0, y);
+  }), y);
+  const until = async (step: string, what: string, ready: (now: Awaited<ReturnType<typeof state>>) => boolean): Promise<void> => {
+    for (const end = Date.now() + 5000; ;) {
+      const now = await state();
+      if (ready(now)) return;
+      if (Date.now() > end) throw new Error(`${step}: still waiting after 5s for ${what}; found ${JSON.stringify(now)}`);
+      await page.waitForTimeout(20);
+    }
+  };
+  assert.deepEqual(await scrolled(50), { arrived: true, y: 50 }, "the first scroll arrived");
+  assert.deepEqual(await scrolled(400), { arrived: true, y: 400 }, "and the second");
+  await until("scrolling down", "the bar hidden and slid down its height", now => now.hidden && now.transform.endsWith(", 64)"));
   const down = await state();
   assert.equal(down.hidden, true, "hidden scrolling down");
   assert.ok(down.transform.endsWith(", 64)"), `slid down its height: ${down.transform}`);
   assert.notEqual(down.transition, "0s", "it slides");
-  await page.evaluate(() => window.scrollTo(0, 100));
-  await page.waitForTimeout(100);
+  assert.deepEqual(await scrolled(100), { arrived: true, y: 100 }, "the scroll up arrived");
+  await until("scrolling up", "the bar shown again", now => !now.hidden);
   assert.equal((await state()).hidden, false, "shown scrolling up");
   await page.evaluate(() => window.bar.hide());
   await page.focus(".mtrl-navigation-bar__item[data-id='home']");

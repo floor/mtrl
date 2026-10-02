@@ -147,11 +147,7 @@ export const BUTTON_GROUP_DEFAULTS = {
   /** Whether buttons have equal width by default */
   EQUAL_WIDTH: false,
   /** Default ripple animation duration in milliseconds */
-  RIPPLE_DURATION: 300,
-  /** Default ripple animation timing function */
-  RIPPLE_TIMING: 'cubic-bezier(0.4, 0, 0.2, 1)',
-  /** Default ripple opacity values [start, end] */
-  RIPPLE_OPACITY: ['0.2', '0'] as [string, string]
+  RIPPLE_DURATION: 300
 } as const;
 
 /**

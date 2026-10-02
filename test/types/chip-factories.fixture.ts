@@ -1,7 +1,12 @@
-import { createAssistChip, createFilterChip, createInputChip, createSuggestionChip, type ChipType, type ChipEvents } from "../../src";
+import { createAssistChip, createFilterChip, createInputChip, createSuggestionChip, type ChipType, type ChipEvents, type ChipComponent } from "../../src";
 import { CHIP_TYPES } from "../../src/components/chips/constants";
 const assist = createAssistChip({ label: "Assist", elevated: true });
-const filter = createFilterChip({ label: "Filter", selected: true, onChange: (selected, chip) => { const value: boolean = selected; chip.setSelected(value); } });
+const filter = createFilterChip({ label: "Filter", selected: true, onChange: (payload) => { const value: boolean = payload.selected; payload.chip.setSelected(value); } });
+filter.on("click", ({ element }) => { element.hidden = false; });
+// @ts-expect-error onChange receives the change payload, not (selected, chip)
+createFilterChip({ label: "Filter", onChange: (selected: boolean, chip: ChipComponent) => { const value: boolean = selected; chip.setSelected(value); } });
+// @ts-expect-error onClick receives the click payload, not the chip
+createFilterChip({ label: "Filter", onClick: (chip: ChipComponent) => chip.focus() });
 createInputChip({ label: "Ada", avatar: "<img>", onRemove: chip => chip.destroy() });
 createSuggestionChip({ label: "Suggested", leadingIcon: "<svg>" });
 export const type: ChipType = assist.getType();

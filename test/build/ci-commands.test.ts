@@ -18,6 +18,8 @@ const COMMANDS = [
   "react:check", "react-ssr:check", "vue:check", "svelte:check", "svelte-ssr:check", "vue-ssr:check", "solid-ssr:check", "solid:check",
   // the same SSR checks on the lowest peer version package.json allows
   "solid-ssr:floor", "vue-ssr:floor",
+  "react-types:check", "vue-types:check", "solid-types:check", "svelte-types:check",
+  "react-types:floor", "vue-types:floor", "solid-types:floor", "svelte-types:floor",
   "consumer:check", "tabs:check", "slider:check", "drawer:check", "navigation-bar:check", "navigation-rail:check",
   "core:check", "preupgrade:check", "tokens:check", "ssr:check",
 ];

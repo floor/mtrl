@@ -85,3 +85,14 @@ test("hovering a suggestion does not highlight it for the keyboard", async () =>
   search.element.querySelector('[role="option"]')!.dispatchEvent(new MouseEvent("mouseenter"));
   expect(active()).toBeNull();
 });
+
+// FLO-553: an explicit behavior overrides the stylesheet, and with it the
+// reduced-motion reset. The suggestion list's own scroll-behavior decides.
+test("the arrows scroll the highlighted suggestion into view and name no behaviour", async () => {
+  const { search, press } = await setup();
+  search.expand();
+  const calls: unknown[] = [];
+  window.HTMLElement.prototype.scrollIntoView = function (options?: boolean | ScrollIntoViewOptions) { calls.push(options); };
+  press("ArrowDown");
+  expect(calls).toEqual([{ block: "nearest" }]);
+});

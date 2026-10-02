@@ -69,7 +69,8 @@ export interface IconButtonConfig extends BaseComponentConfig {
   disabled?: boolean;
 
   /**
-   * Icon HTML content (required for icon buttons)
+   * Icon HTML content (required for icon buttons).
+   * Markup (HTML). Not sanitized by default: see Markup and sanitizing.
    * Can be SVG, icon font ligature, or any valid HTML
    *
    * @example '<svg viewBox="0 0 24 24">...</svg>'
@@ -78,7 +79,8 @@ export interface IconButtonConfig extends BaseComponentConfig {
   icon?: string;
 
   /**
-   * Selected state icon HTML content (for toggle buttons)
+   * Selected state icon HTML content (for toggle buttons).
+   * Markup (HTML). Not sanitized by default: see Markup and sanitizing.
    * When provided, enables toggle mode
    * Use filled icon style for selected state
    *
@@ -147,10 +149,6 @@ export interface IconButtonConfig extends BaseComponentConfig {
   rippleConfig?: {
     /** How long, in milliseconds, a released wave lingers before it is removed */
     duration?: number;
-    /** @deprecated Not applied: the ripple's motion comes from the stylesheet (FLO-268). */
-    timing?: string;
-    /** @deprecated Not applied: the wave is the 0.10 pressed state layer, drawn by the stylesheet (FLO-268). */
-    opacity?: [string, string];
   };
 
   /**

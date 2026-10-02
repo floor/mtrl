@@ -4,7 +4,7 @@ import { relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import * as sass from "sass";
 import {
-  componentStyles, fullOnlyStyles, themeStyles, standaloneThemes, baseStyles, utilityStyles,
+  componentStyles, fullOnlyStyles, themeStyles, standaloneThemes, baseStyles, typographyStyles, typographyDependencies, utilityStyles,
   resolveStyleDependencies,
 } from "./style-manifest";
 
@@ -61,7 +61,10 @@ export async function buildStyles(outdir: string, banner: string) {
       // it, even when the base asset is loaded later. App CSS stays unlayered.
       const layers = ["base", "utilities", ...resolveStyleDependencies(Object.keys(componentStyles))];
       const order = `@layer ${layers.map(layer => `mtrl.${layer}`).join(",")};`;
-      await writeFile(`${outdir}/${path}.css`, `${banner}\n${order}@layer mtrl.${name}{${css}}\n`);
+      // Typography used to be part of the base file, so its rules stay in
+      // mtrl.base. A new layer would change the order every sheet declares.
+      const layer = name === "typography" ? "base" : name;
+      await writeFile(`${outdir}/${path}.css`, `${banner}\n${order}@layer mtrl.${layer}{${css}}\n`);
       // JS module edges are deduplicated across entries. Nested CSS @imports
       // can be independently inlined by Vite and duplicate shared styles.
       await writeFile(`${outdir}/${path}.js`, dependencies.map(dependency => `import "./${dependency}.js";`).join("\n") +
@@ -78,6 +81,7 @@ export async function buildStyles(outdir: string, banner: string) {
   // as the per-component entries do
   await writeFile(`${outdir}/styles.d.ts`, "export {};\n");
   await emit("styles/base", baseStyles);
+  await emit("styles/typography", typographyStyles, typographyDependencies);
   await emit("styles/utilities", utilityStyles);
   for (const [name, entry] of Object.entries(componentStyles)) {
     await emit(`styles/${name}`, [entry.source], entry.dependencies);

@@ -27,8 +27,6 @@ export const defaultConfig: ButtonConfig = {
   ripple: true, // Explicitly enable ripple effects by default
   rippleConfig: {
     duration: DEFAULT_RIPPLE_CONFIG.DURATION,
-    timing: DEFAULT_RIPPLE_CONFIG.TIMING,
-    opacity: DEFAULT_RIPPLE_CONFIG.OPACITY as [string, string],
   },
 };
 

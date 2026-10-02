@@ -28,11 +28,6 @@ export interface ResponsiveConfig {
      * @default 'icon-only'
      */
     layout?: 'icon-only' | 'text-only' | 'icon-and-text';
-    /**
-     * @deprecated Never had an effect (FLO-232). M3 advises no more than four
-     * tabs; for more, use a scrollable row.
-     */
-    maxVisibleTabs?: number;
   };
   /**
    * Breakpoints. Only `small` switches the layout; `medium` and `large` are

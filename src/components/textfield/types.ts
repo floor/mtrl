@@ -7,7 +7,7 @@ export type { TextFieldTrailingPayload };
 /**
  * Available TextField variants
  */
-export type TextfieldVariant = "filled" | "outlined";
+export type TextFieldVariant = "filled" | "outlined";
 
 /**
  * TextField variant constants
@@ -20,7 +20,7 @@ export const TEXT_FIELD_VARIANTS = {
 /**
  * Available TextField states
  */
-export type TextfieldStates = "active" | "inactive" | "disabled";
+export type TextFieldStates = "active" | "inactive" | "disabled";
 
 /**
  * Available TextField density levels
@@ -38,7 +38,7 @@ export const TEXT_FIELD_DENSITY = {
 /**
  * Available TextField types
  */
-export type TextfieldTypes =
+export type TextFieldTypes =
   | "text"
   | "password"
   | "email"
@@ -67,10 +67,10 @@ export const TEXT_FIELD_TYPES = {
  */
 export interface TextFieldConfig {
   /** Input type (text, password, email, etc.) */
-  type?: TextfieldTypes | string;
+  type?: TextFieldTypes | string;
 
   /** Visual variant (filled, outlined) */
-  variant?: TextfieldVariant | string;
+  variant?: TextFieldVariant | string;
 
   /** Density level (default, compact) */
   density?: TextFieldDensity | string;
@@ -111,10 +111,10 @@ export interface TextFieldConfig {
   /** Autocomplete attribute */
   autocomplete?: string;
 
-  /** Leading icon HTML content */
+  /** Leading icon HTML content. Markup (HTML). Not sanitized by default: see Markup and sanitizing. */
   leadingIcon?: string;
 
-  /** Trailing icon HTML content */
+  /** Trailing icon HTML content. Markup (HTML). Not sanitized by default: see Markup and sanitizing. */
   trailingIcon?: string;
 
   /**
@@ -125,8 +125,8 @@ export interface TextFieldConfig {
    */
   trailingIconLabel?: string;
 
-  /** Called when the trailing icon button is activated, after `trailing` is emitted */
-  onTrailingClick?: (event: TextFieldTrailingPayload) => void;
+  /** `trailing` listener registered at creation. */
+  onTrailingClick?: TextFieldEvents["trailing"];
 
   /** Supporting text content */
   supportingText?: string;
@@ -204,10 +204,10 @@ export interface TextFieldComponent {
   removeAttribute: (name: string) => TextFieldComponent;
 
   /** Sets the textfield's variant (filled or outlined) */
-  setVariant: (variant: TextfieldVariant) => TextFieldComponent;
+  setVariant: (variant: TextFieldVariant) => TextFieldComponent;
 
   /** Gets the textfield's current variant */
-  getVariant: () => TextfieldVariant;
+  getVariant: () => TextFieldVariant;
 
   /** Sets the textfield's label text */
   setLabel: (text: string) => TextFieldComponent;

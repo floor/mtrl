@@ -3,7 +3,7 @@ import type {
   BaseComponent,
   TextFieldComponent,
   ApiOptions,
-  TextfieldVariant,
+  TextFieldVariant,
   TextFieldEvents,
 } from "./types";
 
@@ -71,7 +71,7 @@ export const withAPI =
       },
 
       // Variant management
-      setVariant(variant: TextfieldVariant): TextFieldComponent {
+      setVariant(variant: TextFieldVariant): TextFieldComponent {
         const PREFIX = component.config?.prefix || "mtrl";
         const COMPONENT = component.config?.componentName || "textfield";
 
@@ -92,7 +92,7 @@ export const withAPI =
         return this;
       },
 
-      getVariant(): TextfieldVariant {
+      getVariant(): TextFieldVariant {
         const PREFIX = component.config?.prefix || "mtrl";
         const COMPONENT = component.config?.componentName || "textfield";
 

@@ -82,6 +82,8 @@ $container: "#{base.$prefix}-tabs";
             // tabs inside the row.
             padding-inline: 52px;
             overflow-x: auto;
+            // The scroll buttons name no behaviour, so that reduced motion can stop it (FLO-553)
+            scroll-behavior: smooth;
             scrollbar-width: none; // Firefox
             -ms-overflow-style: none; // IE and Edge
 

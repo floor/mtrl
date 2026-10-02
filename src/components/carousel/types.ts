@@ -3,10 +3,8 @@ import type { ForwardedEventPayload } from "../../core/dom";
 
 /** Current item reported by programmatic navigation or native scrolling. */
 export interface CarouselChangePayload {
-  /** The current item, as `getValue()` returns it; every model event carries it (FLO-380) */
+  /** The current item's index, as `getValue()` returns it; every model event carries it (FLO-380) */
   value: number;
-  /** The same index; kept beside `value` */
-  index: number;
 }
 
 /** Events emitted by the scroll feature and forwarded from the root. */

@@ -29,7 +29,7 @@ import { createBaseConfig, getElementConfig, getApiConfig } from "./config";
 /**
  * Creates a new TextField component
  *
- * Textfields allow users to enter text into a UI. They typically appear in forms and dialogs.
+ * Text fields allow users to enter text into a UI. They typically appear in forms and dialogs.
  * This implementation follows Material Design 3 guidelines for accessible, customizable textfields.
  *
  * @param {TextFieldConfig} config - TextField configuration options
@@ -88,9 +88,13 @@ const createTextField = (config: TextFieldConfig = {}): TextFieldComponent => {
       withDisabled(baseConfig), // Add disabled state management
       withPlacement(), // Add dynamic positioning for elements
       (comp) => withAPI(getApiConfig(comp))(comp) // Add public API
-    )(baseConfig);
+    )(baseConfig) as TextFieldComponent;
 
-    return textfield as TextFieldComponent;
+    // A config option is the listener registered at creation, ahead of any
+    // listener the caller adds afterwards.
+    if (baseConfig.onTrailingClick) textfield.on("trailing", baseConfig.onTrailingClick);
+
+    return textfield;
   } catch (error) {
     console.error(
       "TextField creation error:",

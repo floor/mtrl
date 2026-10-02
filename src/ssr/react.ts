@@ -1,5 +1,13 @@
 // src/ssr/react.ts
-/** Enable declarative shadow DOM for mtrl/react in this server process. @module ssr/react */
+/**
+ * Enable declarative shadow DOM for mtrl/react in this server process.
+ * The identity HTML policy is not a sanitizer; configure a synchronous sanitizer for untrusted markup.
+ * The server-rendered shadow root is built in a separate render, without the context of providers above the component.
+ * The page's own render (the light DOM) sees the provided value. Until upgrade, a child reading context with a default shows that default in the painted shadow root; a child requiring its context leaves this component without a declarative shadow root while the page still renders. In development, a warning names the element.
+ * The Vue and Solid bridges see the provided value in both the shadow root and light DOM. Svelte has this same context limit and logs a development-only warning naming the element when required context leaves it without a shadow root.
+ * Pass the resolved string as a prop or attribute, or accept client-rendered text until the upgrade. A fix is planned for 1.1 (FLO-517).
+ * @module ssr/react
+ */
 import * as React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import "./index";
@@ -38,6 +46,9 @@ const attempts = new WeakMap<object, Attempt>();
  * not the signal: the header is skipped and the first call frame is compared
  * with a frame sampled from this process's own React. A child's error is
  * thrown from the child, including one whose text copies React's message.
+ * A frame is a V8 line starting with `at `, or a JavaScriptCore or SpiderMonkey
+ * `name@file:line:col` line. Anything else is not a frame, so the error is not
+ * a suspension.
  */
 const firstFrame = (error: unknown): string | undefined => {
   if (!(error instanceof Error) || typeof error.stack !== "string") return undefined;
@@ -65,6 +76,10 @@ const suspendFrame = (): string | undefined => {
   } finally {
     console.error = errorLog;
     console.warn = warnLog;
+  }
+  // Once per process: the sample is cached, and a second host does not sample again.
+  if (sampledFrame === undefined && isDevelopment()) {
+    console.warn("[mtrl] Suspending children of mtrl components will render without a server shadow root because no stack frame is available. Error.stackTraceLimit is 0, or Error.prepareStackTrace is custom.");
   }
   return sampledFrame;
 };
@@ -182,7 +197,12 @@ bridge.react = (tag, props, children, prefix) => {
   } catch (error) {
     if (!isSynchronousSuspend(error)) {
       // Returning lets the host finish. The page then renders this child and
-      // reports its error, as it does without the bridge.
+      // reports its error, as it does without the bridge. Development names the
+      // host and the error; nothing is remembered past this call.
+      if (isDevelopment()) {
+        const message = error instanceof Error ? error.message : String(error);
+        console.warn(`[mtrl] ${elementLabel(tag, props)} child snapshot failed, often because it needs ancestor context; this response has no shadow root for it: ${message}`);
+      }
       clearAttempt(children);
       return undefined;
     }

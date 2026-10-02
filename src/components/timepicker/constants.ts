@@ -63,29 +63,6 @@ export const TIMEPICKER_EVENTS = {
   CANCEL: 'cancel'
 } as const;
 
-/**
- * Visual constants for the clock dial
- * @category Components
- * @deprecated Unused, and not the dial's geometry: the DOM dial (FLO-279) is
- * sized in CSS, a 256dp face with numbers on 101dp and 69dp rings and a 48dp
- * handle. Kept for compatibility (FLO-281).
- */
-export const TIMEPICKER_DIAL = {
-  /** Diameter of the clock dial in pixels */
-  DIAMETER: 256,
-  /** Inner radius for hour numbers (for 24h format) */
-  INNER_RADIUS: 65,
-  /** Outer radius for hour/minute numbers */
-  OUTER_RADIUS: 110,
-  /** Size of the number elements */
-  NUMBER_SIZE: 40,
-  /** Size of the center dot */
-  CENTER_SIZE: 8,
-  /** Size of the clock hand */
-  HAND_SIZE: 36,
-  /** Width of the track elements */
-  TRACK_WIDTH: 2
-} as const;
 
 /**
  * Time constants used for generating clock numbers and validation
@@ -102,18 +79,6 @@ export const TIMEPICKER_VALUES = {
   SECONDS: Array.from({ length: 60 }, (_, i) => i)
 } as const;
 
-/**
- * Z-index values for different parts of the time picker
- * @category Components
- * @deprecated Unused: the picker is a native modal `<dialog>` in the top layer
- * (FLO-278), which needs no z-index. Kept for compatibility (FLO-281).
- */
-export const TIMEPICKER_Z_INDEX = {
-  /** Z-index for the modal backdrop */
-  MODAL: 1050,
-  /** Z-index for the dialog element */
-  DIALOG: 1051
-} as const;
 
 /**
  * Element class selectors for time picker components
@@ -122,8 +87,6 @@ export const TIMEPICKER_Z_INDEX = {
 export const TIMEPICKER_SELECTORS = {
   /** Main container selector */
   CONTAINER: '.mtrl-time-picker',
-  /** @deprecated Matches nothing: the backdrop is the dialog's `::backdrop` (FLO-278). */
-  MODAL: '.mtrl-time-picker__modal',
   /** Dialog container selector */
   DIALOG: '.mtrl-time-picker__dialog',
   /** Title element selector */
@@ -132,12 +95,8 @@ export const TIMEPICKER_SELECTORS = {
   CONTENT: '.mtrl-time-picker__content',
   /** Clock dial container selector */
   DIAL: '.mtrl-time-picker__dial',
-  /** @deprecated Matches nothing: the dial is DOM, not a canvas (FLO-279). */
-  DIAL_CANVAS: '.mtrl-time-picker__dial-canvas',
   /** Clock dial face selector */
   DIAL_FACE: '.mtrl-time-picker__dial-face',
-  /** @deprecated Matches nothing: the hand is `__dial-track` and `__dial-handle` (FLO-279). */
-  DIAL_HAND: '.mtrl-time-picker__dial-hand',
   /** Clock centre dot selector */
   DIAL_CENTER: '.mtrl-time-picker__dial-centre',
   /** Clock numbers container selector */
@@ -209,8 +168,6 @@ export const TIMEPICKER_DEFAULTS = {
   ORIENTATION: TIMEPICKER_ORIENTATIONS.VERTICAL,
   /** Whether to show seconds selector */
   SHOW_SECONDS: false,
-  /** @deprecated `closeOnSelect` has no effect (FLO-281). */
-  CLOSE_ON_SELECT: true,
   /** Step interval for minute selection */
   MINUTE_STEP: 1,
   /** Step interval for second selection */
@@ -219,86 +176,10 @@ export const TIMEPICKER_DEFAULTS = {
   CANCEL_TEXT: 'Cancel',
   /** Default confirm button text */
   CONFIRM_TEXT: 'OK',
-  /** Whether picker is initially open */
-  IS_OPEN: false,
+  /** Whether picker is initially open: the default of the `open` option */
+  OPEN: false,
   /** Default clock icon */
   CLOCK_ICON: TIMEPICKER_ICONS.CLOCK,
   /** Default keyboard icon */
   KEYBOARD_ICON: TIMEPICKER_ICONS.KEYBOARD
-} as const;
-
-/**
- * CSS class names used by the time picker component
- * @category Components
- * @deprecated Unused by the picker, and without the prefix: use
- * `TIMEPICKER_SELECTORS`. Two values that named nothing now match the DOM
- * (`DIAL_CENTER`, `PERIOD_ACTIVE`). Kept for compatibility (FLO-281).
- */
-export const TIMEPICKER_CLASSES = {
-  /** Root element class */
-  ROOT: 'time-picker',
-  /** Open state class */
-  OPEN: 'time-picker--open',
-  /** Modal backdrop class */
-  MODAL: 'time-picker__modal',
-  /** Dialog container class */
-  DIALOG: 'time-picker__dialog',
-  /** Dialog with dial type class */
-  DIALOG_DIAL: 'time-picker__dialog--dial',
-  /** Dialog with input type class */
-  DIALOG_INPUT: 'time-picker__dialog--input',
-  /** Dialog with vertical orientation class */
-  DIALOG_VERTICAL: 'time-picker__dialog--vertical',
-  /** Dialog with horizontal orientation class */
-  DIALOG_HORIZONTAL: 'time-picker__dialog--horizontal',
-  /** Dialog with 12-hour format class */
-  DIALOG_12H: 'time-picker__dialog--12h',
-  /** Dialog with 24-hour format class */
-  DIALOG_24H: 'time-picker__dialog--24h',
-  /** Title element class */
-  TITLE: 'time-picker__title',
-  /** Content container class */
-  CONTENT: 'time-picker__content',
-  /** Dial container class */
-  DIAL: 'time-picker__dial',
-  /** Dial canvas class */
-  DIAL_CANVAS: 'time-picker__dial-canvas',
-  /** Dial face class */
-  DIAL_FACE: 'time-picker__dial-face',
-  /** Dial hand class */
-  DIAL_HAND: 'time-picker__dial-hand',
-  /** Dial centre dot class */
-  DIAL_CENTER: 'time-picker__dial-centre',
-  /** Dial numbers container class */
-  DIAL_NUMBERS: 'time-picker__dial-numbers',
-  /** Individual dial number class */
-  DIAL_NUMBER: 'time-picker__dial-number',
-  /** Active dial number class */
-  DIAL_NUMBER_ACTIVE: 'time-picker__dial-number--active',
-  /** Input container class */
-  INPUT_CONTAINER: 'time-picker__input-container',
-  /** Hours input class */
-  HOURS_INPUT: 'time-picker__hours',
-  /** Minutes input class */
-  MINUTES_INPUT: 'time-picker__minutes',
-  /** Seconds input class */
-  SECONDS_INPUT: 'time-picker__seconds',
-  /** Time separator class */
-  SEPARATOR: 'time-picker__separator',
-  /** Period container class */
-  PERIOD_CONTAINER: 'time-picker__period',
-  /** AM button class */
-  PERIOD_AM: 'time-picker__period-am',
-  /** PM button class */
-  PERIOD_PM: 'time-picker__period-pm',
-  /** Selected period button class */
-  PERIOD_ACTIVE: 'time-picker__period--selected',
-  /** Actions container class */
-  ACTIONS: 'time-picker__actions',
-  /** Toggle type button class */
-  TOGGLE_TYPE: 'time-picker__toggle-type',
-  /** Cancel button class */
-  CANCEL: 'time-picker__cancel',
-  /** Confirm button class */
-  CONFIRM: 'time-picker__confirm'
 } as const;

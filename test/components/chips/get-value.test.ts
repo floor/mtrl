@@ -43,9 +43,9 @@ describe("chips getValue is a value a form could submit", () => {
     const chips = mount({
       multiSelect: true,
       chips: [
-        { text: "A", value: "a", selected: true },
-        { text: "B", value: "b" },
-        { text: "C", value: "c", selected: true },
+        { label: "A", value: "a", selected: true },
+        { label: "B", value: "b" },
+        { label: "C", value: "c", selected: true },
       ],
     });
 
@@ -56,8 +56,8 @@ describe("chips getValue is a value a form could submit", () => {
     const chips = mount({
       multiSelect: false,
       chips: [
-        { text: "A", value: "a" },
-        { text: "B", value: "b", selected: true },
+        { label: "A", value: "a" },
+        { label: "B", value: "b", selected: true },
       ],
     });
 
@@ -65,12 +65,12 @@ describe("chips getValue is a value a form could submit", () => {
   });
 
   test("nothing selected gives null in single-select and [] in multi", () => {
-    const single = mount({ multiSelect: false, chips: [{ text: "A", value: "a" }] });
+    const single = mount({ multiSelect: false, chips: [{ label: "A", value: "a" }] });
     expect(single.getValue()).toBeNull();
 
     document.body.innerHTML = "";
 
-    const multi = mount({ multiSelect: true, chips: [{ text: "A", value: "a" }] });
+    const multi = mount({ multiSelect: true, chips: [{ label: "A", value: "a" }] });
     expect(multi.getValue()).toEqual([]);
   });
 
@@ -80,8 +80,8 @@ describe("chips getValue is a value a form could submit", () => {
     const chips = mount({
       multiSelect: true,
       chips: [
-        { text: "A", value: "a", selected: true },
-        { text: "No value", selected: true },
+        { label: "A", value: "a", selected: true },
+        { label: "No value", selected: true },
       ],
     });
 
@@ -93,7 +93,7 @@ describe("chips getValue is a value a form could submit", () => {
   test("a chip with neither value nor text contributes nothing", () => {
     const chips = mount({
       multiSelect: true,
-      chips: [{ text: "A", value: "a", selected: true }, { selected: true }],
+      chips: [{ label: "A", value: "a", selected: true }, { selected: true }],
     });
 
     const value = chips.getValue();
@@ -106,9 +106,9 @@ describe("chips getValue is a value a form could submit", () => {
     const chips = mount({
       multiSelect: true,
       chips: [
-        { text: "A", value: "a", selected: true },
+        { label: "A", value: "a", selected: true },
         { selected: true },
-        { text: "C", value: "c", selected: true },
+        { label: "C", value: "c", selected: true },
       ],
     });
 
@@ -120,7 +120,7 @@ describe("chips getValue is a value a form could submit", () => {
   test("and in single-select a valueless first chip does not become null", () => {
     const chips = mount({
       multiSelect: false,
-      chips: [{ selected: true }, { text: "B", value: "b", selected: true }],
+      chips: [{ selected: true }, { label: "B", value: "b", selected: true }],
     });
 
     // Single-select keeps one chip selected, so whatever survives must be a

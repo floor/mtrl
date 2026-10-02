@@ -26,7 +26,6 @@ benchmark("createElement Optimization Benchmarks", () => {
       data = {},
       class: classOption,
       className,
-      rawClass,
       attributes = {},
       forwardEvents = {},
       onCreate,
@@ -49,14 +48,6 @@ benchmark("createElement Optimization Benchmarks", () => {
         element.classList.add(`mtrl-${cls}`);
       } else if (Array.isArray(cls)) {
         cls.forEach((c) => element.classList.add(`mtrl-${c}`));
-      }
-    }
-
-    if (rawClass) {
-      if (typeof rawClass === "string") {
-        element.classList.add(rawClass);
-      } else if (Array.isArray(rawClass)) {
-        rawClass.forEach((c) => element.classList.add(c));
       }
     }
 
@@ -202,7 +193,6 @@ benchmark("createElement Optimization Benchmarks", () => {
         text: "Click Me",
         id: "test-button",
         class: ["button", "primary"],
-        rawClass: "custom-style",
         data: { action: "submit", value: "123" },
         attributes: {
           type: "button",

@@ -48,11 +48,15 @@ const tabs = () =>
     ],
   });
 
+// 1.0 types emit with the group's event map, so change takes its whole payload
+const change = (component: ReturnType<typeof tabs>, value: string) =>
+  ({ tab: component.getTabs().find((tab) => tab.getValue() === value)!, value });
+
 describe("what the chaining methods hand back", () => {
   test("emit returns the tabs component itself", () => {
     const component = tabs();
 
-    expect(component.emit!("change", { value: "one" })).toBe(component);
+    expect(component.emit!("change", change(component, "one"))).toBe(component);
   });
 
   test("on and off do too", () => {
@@ -70,7 +74,7 @@ describe("what the chaining methods hand back", () => {
   test("the tabs API is still there after a chain", () => {
     const component = tabs();
 
-    const chained = component.emit!("change", { value: "two" });
+    const chained = component.emit!("change", change(component, "two"));
 
     expect(typeof chained.addTab).toBe("function");
     expect(typeof chained.getTabs).toBe("function");
@@ -82,9 +86,10 @@ describe("what the chaining methods hand back", () => {
     const seen: unknown[] = [];
     component.on("change", (data: unknown) => seen.push(data));
 
-    component.emit!("change", { value: "two" });
+    const payload = change(component, "two");
+    component.emit!("change", payload);
 
-    expect(seen).toEqual([{ value: "two" }]);
+    expect(seen).toEqual([payload]);
   });
 
   test("and a handler removed with off stops hearing it", () => {
@@ -93,7 +98,7 @@ describe("what the chaining methods hand back", () => {
     const handler = (data: unknown) => seen.push(data);
 
     component.on("change", handler).off("change", handler);
-    component.emit!("change", { value: "two" });
+    component.emit!("change", change(component, "two"));
 
     expect(seen).toEqual([]);
   });

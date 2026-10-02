@@ -77,7 +77,7 @@ describe("datepicker event contract", () => {
     expect(events).toEqual([{ value: start, rangeEndDate: null, formattedValue: "09/10/2026", iso: "2026-09-10" }]);
   });
 
-  test("API and trigger visibility events carry committed complete ranges", () => {
+  test("API and trigger visibility events carry committed complete ranges", async () => {
     const picker = mount({ selectionMode: "range", value: [start, end] });
     const opened: Parameters<DatePickerEvents["open"]>[0][] = [];
     const closed: Parameters<DatePickerEvents["close"]>[0][] = [];
@@ -86,6 +86,8 @@ describe("datepicker event contract", () => {
     picker.element.querySelector<HTMLButtonElement>('[data-action="open"]')!.click();
     picker.element.querySelector<HTMLButtonElement>('[data-action="open"]')!.click();
     picker.element.querySelector<HTMLButtonElement>('[data-action="open"]')!.click();
+    // A later task: in the one that opened it, a click outside is the opening click (FLO-548)
+    await new Promise((resolve) => setTimeout(resolve, 0));
     document.body.click();
     expect(opened).toEqual([{ value: [start, end] }, { value: [start, end] }, { value: [start, end] }]);
     expect(closed).toEqual([{ value: [start, end] }, { value: [start, end] }, { value: [start, end] }]);

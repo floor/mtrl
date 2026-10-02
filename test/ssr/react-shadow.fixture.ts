@@ -3,15 +3,14 @@
 import { expect, test } from "bun:test";
 import * as React from "react";
 import { renderToString } from "react-dom/server";
-import { buttonElement, cardElement } from "../../src/elements";
+import { buttonElement, cardElement, type ButtonElement, type ButtonSpec, type CardElement, type CardSpec } from "../../src/elements";
 import { createComponent } from "../../src/react/create";
 import { assertGlobalHost, GLOBAL_ATTRS_WITH_IS } from "../../scripts/fixtures/ssr-global-host";
 
-const Button = createComponent(buttonElement.spec, () => "m-button", "MButton");
-const Card = createComponent(cardElement.spec, () => "m-card", "MCard");
+const Button = createComponent<ButtonSpec, ButtonElement>(buttonElement.spec, () => "m-button", "MButton");
+const Card = createComponent<CardSpec, CardElement>(cardElement.spec, () => "m-card", "MCard");
 
-// The adapters' prop types don't yet accept arbitrary HTML attributes; the test still passes them so the bridge forwards them onto the host.
-const hostProps = {
+const hostProps: React.ComponentProps<typeof Button> = {
   id: "globals",
   label: "Save",
   disabled: true,
@@ -21,13 +20,13 @@ const hostProps = {
   itemProp: "name",
   nonce: "abc",
   is: "x-y",
-} as React.ComponentProps<typeof Button>;
+};
 
-const nestedHostProps = {
+const nestedHostProps: React.ComponentProps<typeof Button> = {
   id: "inner",
   popover: "auto",
   label: "Nested",
-} as React.ComponentProps<typeof Button>;
+};
 
 test("ordinary host attributes render through the React bridge and stay out of the shadow markup", async () => {
   const plain = renderToString(React.createElement(Button, hostProps));

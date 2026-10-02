@@ -179,12 +179,12 @@ export const withState = (config: DrawerConfig) => <C extends StateBaseComponent
     // Shown closed first, so the sheet slides and the backdrop fades in
     if (top) { showTop(); void root.offsetWidth; }
     synchronize(); activate();
-    component.emit(DRAWER_EVENTS.OPEN); config.onOpen?.();
+    component.emit(DRAWER_EVENTS.OPEN);
   }
   function close(): void {
     if (destroyed || !isOpen) return;
     isOpen = false; deactivate(); synchronize();
-    component.emit(DRAWER_EVENTS.CLOSE); config.onClose?.();
+    component.emit(DRAWER_EVENTS.CLOSE);
   }
   let stopCloses: (() => void) | null = null;
   if (top) {

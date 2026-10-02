@@ -28,5 +28,18 @@ export type Gone = [typeof createTextfield, TextfieldConfig, CardSchema, TopAppB
 // The select's text field is a property a user reads (FLO-383): textField only
 const select = createSelect({ label: "Size", options: [] });
 export const selectField: TextFieldComponent = select.textField;
-// @ts-expect-error select.textfield is select.textField in 1.0
+// @ts-expect-error select.textfield is select.textField in 1.0, with no alias
 export const oldSelectField = select.textfield;
+
+// Every public variant option's type is exported (FLO-383 follow-up)
+import type { TextFieldVariant, SelectVariant, TextFieldConfig as FieldConfig, SelectConfig } from "../../src";
+export const fieldVariant: TextFieldVariant = "outlined";
+export const selectVariant: SelectVariant = "filled";
+export const fieldWithVariant: FieldConfig = { variant: fieldVariant };
+export const selectWithVariant: SelectConfig = { variant: selectVariant, options: [] };
+
+// Constant keys are identifiers too: two words; the class value is unchanged
+import { SELECT_CLASSES } from "../../src/components/select/constants";
+export const selectFieldClass: "select__textfield" = SELECT_CLASSES.TEXT_FIELD;
+// @ts-expect-error SELECT_CLASSES.TEXTFIELD is TEXT_FIELD in 1.0
+export const oldSelectFieldKey = SELECT_CLASSES.TEXTFIELD;

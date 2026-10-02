@@ -1,5 +1,6 @@
 // src/components/split-button/types.ts
-import type { MenuContent, MenuComponent } from "../menu/types";
+import type { MenuContent } from "../menu/types";
+import type { MenuOwner } from "../menu/inner";
 import type { ButtonComponent } from "../button/types";
 
 /** Visual style, the same set the button offers */
@@ -40,7 +41,7 @@ export interface SplitButtonConfig {
    */
   layer?: "top";
 
-  /** Icon of the leading button, as an HTML string */
+  /** Icon of the leading button. Markup (HTML). Not sanitized by default: see Markup and sanitizing. */
   icon?: string;
 
   /** Visual style, shared by both buttons */
@@ -109,9 +110,6 @@ export interface SplitButtonComponent {
   /** The trailing button's element */
   trailingElement: HTMLButtonElement;
 
-  /** The menu, when the component was given items */
-  menu?: MenuComponent;
-
   /** Sets the leading button's label */
   setText: (text: string) => SplitButtonComponent;
 
@@ -121,10 +119,30 @@ export interface SplitButtonComponent {
   /** Sets the leading button's icon */
   setIcon: (icon: string) => SplitButtonComponent;
 
-  /** Opens whatever the trailing button opens */
+  /**
+   * Replaces the menu's items. A split button created without `items` has no
+   * menu: the first non-empty list creates it, and opens it if the split
+   * button is expanded. An empty list empties the menu and keeps it.
+   */
+  setItems: (items: MenuContent[]) => SplitButtonComponent;
+
+  /** The menu's items; empty while the split button has no menu */
+  getItems: () => MenuContent[];
+
+  /**
+   * Opens whatever the trailing button opens. When it returns, `isExpanded()`
+   * is true and `expand` and `change` have been emitted; the surface may be
+   * painted after `expand()` returns.
+   */
   expand: () => SplitButtonComponent;
 
-  /** Closes it */
+  /**
+   * Closes it. When it returns, `isExpanded()` is false and `collapse` and
+   * `change` have been emitted. The same holds when the user dismisses the
+   * menu (Escape, a click outside, an item chosen): both are emitted in that
+   * event, with the menu's `close`. `collapse()` then `expand()` at once
+   * ends expanded.
+   */
   collapse: () => SplitButtonComponent;
 
   /** Whether it is open */
@@ -158,9 +176,7 @@ export interface ButtonsFeature {
 }
 
 /** What withMenu adds: the menu, when the component was given items */
-export interface MenuFeature {
-  menu?: MenuComponent;
-}
+export type MenuFeature = MenuOwner;
 
 /** The component as it passes through the enhancers */
 export interface BaseComponent extends ButtonsFeature, MenuFeature {

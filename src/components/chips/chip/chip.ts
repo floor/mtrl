@@ -19,6 +19,10 @@ const createChip = (config: ChipOptions = {}): ChipComponent => {
   const base = pipe(createBase, withEvents(), withElement(createElementConfig(options, { tag: "div" })), withLifecycle())(options);
   const root = base.element;
   const resources = getCleanup(base);
+  // The set's selection hook. removeChip and the set's teardown both destroy
+  // the chip, which is what drops the hook: a later setSelected cannot reach
+  // a set that no longer has this chip. FLO-518.
+  resources.add(() => { options.onSelected = undefined; });
   root.classList.add(base.getClass(`chip--${type}`));
   if (options.elevated && type !== "input") root.classList.add(base.getClass("chip--elevated"));
   const action = document.createElement("button");
@@ -171,7 +175,13 @@ const createChip = (config: ChipOptions = {}): ChipComponent => {
       return api;
     },
     isSelected: () => selected,
-    setSelected(next) { animateChanges(); selected = selectable && next; render(); return api; },
+    setSelected(next) {
+      animateChanges();
+      selected = selectable && next;
+      render();
+      if (selected) options.onSelected?.(api);
+      return api;
+    },
     toggleSelected() { return api.setSelected(!selected); },
     focus() { (oneActionCell ? root : action).focus(); return api; },
     destroy: () => base.lifecycle.destroy(),
@@ -179,6 +189,10 @@ const createChip = (config: ChipOptions = {}): ChipComponent => {
     off<K extends keyof ChipEvents>(event: K, handler: ChipEvents[K]) { base.off(event, handler); return api; },
     addClass(...classes) { root.classList.add(...classes); return api; },
   };
+  if (options.onChange) api.on("change", options.onChange);
+  if (options.onClick) api.on("click", options.onClick);
+  if (options.onRemove) api.on("remove", options.onRemove);
+  if (options.onTrailingClick) api.on("trailing", options.onTrailingClick);
 
   const listen = <K extends keyof HTMLElementEventMap>(element: HTMLElement, name: K, handler: (event: HTMLElementEventMap[K]) => void) => {
     element.addEventListener(name, handler);
@@ -186,14 +200,17 @@ const createChip = (config: ChipOptions = {}): ChipComponent => {
   };
   listen(root, "click", event => {
     if (disabled || resources.destroyed) return;
-    if (selectable && !options.managedSelection) {
-      api.toggleSelected();
-      base.emit("change", { selected, chip: api, value: api.getValue() });
-      options.onChange?.(selected, api);
-      options.onSelect?.(api);
-    }
+    // One order, alone or in a set: click reports the press, with the state
+    // as it was; change follows, only if the selection changed. A set toggles
+    // the chip from its own click listener, and may refuse (FLO-550).
+    // setSelected itself stays silent, so a chip replaced by a single-select
+    // click does not emit change.
+    const was = selected;
     base.emit("click", { event, originalEvent: event, element: root });
-    options.onClick?.(api);
+    if (!selectable || resources.destroyed) return;
+    if (!options.managedSelection) api.toggleSelected();
+    if (selected !== was) base.emit("change", { selected, chip: api, value: api.getValue() });
+    if (!options.managedSelection) options.onSelect?.(api);
   });
   // Backspace and Delete remove a focused removable chip (m3.material.io chips
   // accessibility, keyboard table). FLO-256.
@@ -215,10 +232,11 @@ const createChip = (config: ChipOptions = {}): ChipComponent => {
       event.stopPropagation();
       if (disabled) return;
       base.emit("remove", api);
-      options.onRemove?.(api);
-      // On its own the chip leaves the page; in a set, the set's onRemove has
-      // already destroyed it. FLO-257.
-      if (!resources.destroyed) root.remove();
+      // After the listeners, which read a chip that is still there: in a set
+      // the set removes it, on its own the chip leaves the page. FLO-257.
+      if (resources.destroyed) return;
+      if (options.onRemoved) options.onRemoved(api);
+      else root.remove();
     });
     // Enter and Space activate this button, so the set must not also select the chip
     // for them; the arrows go on to the set's navigation, which they did not.
@@ -232,7 +250,6 @@ const createChip = (config: ChipOptions = {}): ChipComponent => {
       event.stopPropagation();
       if (disabled) return;
       base.emit("trailing", api);
-      options.onTrailingClick?.(api);
     });
     // As for the remove button: Enter and Space stay here, the arrows go on to the set.
     listen(trailingAction, "keydown", event => {
@@ -267,7 +284,7 @@ const createChip = (config: ChipOptions = {}): ChipComponent => {
   // a chip the app makes draggable; mtrl does no dragging itself. FLO-259.
   listen(root, "dragstart", () => root.classList.add(base.getClass("chip--dragged")));
   listen(root, "dragend", () => root.classList.remove(base.getClass("chip--dragged")));
-  label.textContent = options.label ?? options.text ?? "";
+  label.textContent = options.label ?? "";
   setHTML(leading, avatar || leadingIcon);
   setHTML(trailing, trailingIcon);
   render();

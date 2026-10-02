@@ -10,7 +10,7 @@ import {
   withIndicator
 } from './features';
 import { createTabsConfig, getTabsElementConfig } from './config';
-import { TabsConfig, TabsComponent } from './types';
+import { TabsConfig, TabsComponent, TabsEvents } from './types';
 import { setupKeyboardNavigation, syncTabStops, updateTabPanels } from './utils';
 
 /**
@@ -57,7 +57,7 @@ const createTabs = (config: TabsConfig = {}): TabsComponent => {
     // Handlers passed as config.on were documented and never registered.
     if (config.on) {
       Object.entries(config.on).forEach(([event, handler]) => {
-        if (typeof handler === 'function') component.on(event, handler);
+        if (typeof handler === 'function') component.on(event as keyof TabsEvents, handler as TabsEvents[keyof TabsEvents]);
       });
     }
     

@@ -36,9 +36,9 @@ import { createBaseConfig, getElementConfig, getApiConfig } from './config';
  *   ariaLabel: 'Add new item'
  * });
  * 
- * // Create a small FAB with a custom position
- * const smallFab = createFab({
- *   size: 'small',
+ * // Create a medium FAB with a custom position
+ * const mediumFab = createFab({
+ *   size: 'medium',
  *   icon: '<svg>...</svg>',
  *   variant: 'secondary',
  *   position: 'bottom-right'

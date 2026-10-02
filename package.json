@@ -1,6 +1,6 @@
 {
   "name": "mtrl",
-  "version": "0.10.4",
+  "version": "0.10.5",
   "description": "Material Design 3 components for the web: plain JavaScript, web components, and React, Vue, Svelte and Solid components. TypeScript, zero dependencies.",
   "author": "floor",
   "license": "MIT",
@@ -480,7 +480,15 @@
     "vue-ssr:check": "bun run scripts/generate-adapters.ts --check && bun run scripts/check-vue-ssr.ts",
     "solid-ssr:check": "bun run scripts/generate-adapters.ts --check && bun run scripts/check-solid-ssr.ts",
     "solid-ssr:floor": "bun run scripts/check-at-peer-floor.ts solid-js -- solid-ssr:check",
-    "vue-ssr:floor": "bun run scripts/check-at-peer-floor.ts vue @vue/server-renderer -- vue-ssr:check"
+    "vue-ssr:floor": "bun run scripts/check-at-peer-floor.ts vue @vue/server-renderer -- vue-ssr:check",
+    "react-types:check": "bun run scripts/check-adapter-types.ts react",
+    "vue-types:check": "bun run scripts/check-adapter-types.ts vue",
+    "solid-types:check": "bun run scripts/check-adapter-types.ts solid",
+    "svelte-types:check": "bun run scripts/check-adapter-types.ts svelte",
+    "react-types:floor": "bun run scripts/check-at-peer-floor.ts react @types/react@override -- react-types:check",
+    "vue-types:floor": "bun run scripts/check-at-peer-floor.ts vue @vue/server-renderer -- vue-types:check",
+    "solid-types:floor": "bun run scripts/check-at-peer-floor.ts solid-js -- solid-types:check",
+    "svelte-types:floor": "bun run scripts/check-at-peer-floor.ts svelte -- svelte-types:check"
   },
   "repository": {
     "type": "git",
@@ -494,7 +502,7 @@
     "react": ">=18",
     "solid-js": ">=1.8",
     "svelte": ">=5",
-    "vue": ">=3.3"
+    "vue": ">=3.4.20"
   },
   "peerDependenciesMeta": {
     "react": {
