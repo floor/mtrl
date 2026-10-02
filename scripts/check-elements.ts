@@ -2366,6 +2366,84 @@ try {
     check("button group: a change handler reading value reads the same on the factory and the element (FLO-320)");
   }
 
+  // ---------------------------------------------------------------- button group press, the neighbour's label (FLO-552)
+  // A held end button widens by 15% of its width and asks its only neighbour
+  // for up to the 24px compression limit. The neighbour's facing content
+  // padding is 12px at xs and 16px at s (src/styles/abstract/_variables.scss,
+  // padding-xs and padding-s), so a pressed button wide enough to reach the
+  // limit takes more than the padding can give and the rest comes off the
+  // neighbour's label box: the label is narrower than its text for as long as
+  // the pointer is held. Sample every frame of a real hold, then check the
+  // neighbour's label on each one.
+  {
+    type HeldFrame = { width: number; padding: number; scroll: number; client: number };
+    type Hold = { rest: HeldFrame; frames: HeldFrame[]; done: boolean };
+    const first = "Bookmark everything on this page";
+    const failures: string[] = [];
+    for (const size of ["xs", "s"] as const) {
+      await fresh(
+        page,
+        `<m-button-group id="hold" variant="outlined" size="${size}" aria-label="Actions">
+           <m-button-group-item value="a">${first}</m-button-group-item>
+           <m-button-group-item value="b">Add to favourites</m-button-group-item>
+           <m-button-group-item value="c">Share</m-button-group-item>
+         </m-button-group>`
+      );
+      await page.evaluate(() => {
+        const host = document.getElementById("hold") as HTMLElement;
+        const buttons = [...(host.shadowRoot?.querySelectorAll("button") ?? [])] as HTMLButtonElement[];
+        // The second button is the pressed button's only neighbour.
+        const labelOf = (button: HTMLButtonElement): HTMLElement =>
+          (button.querySelector('[class*="__text"]') as HTMLElement | null) ?? button;
+        const sample = (): HeldFrame => {
+          const box = buttons[1].getBoundingClientRect();
+          const style = getComputedStyle(buttons[1]);
+          return {
+            width: box.width,
+            padding: parseFloat(style.paddingLeft),
+            scroll: labelOf(buttons[1]).scrollWidth,
+            client: labelOf(buttons[1]).clientWidth,
+          };
+        };
+        const state: Hold = { rest: sample(), frames: [], done: false };
+        (window as unknown as Win).__flo552 = state;
+        buttons[0].addEventListener("pointerdown", () => {
+          const start = performance.now();
+          const loop = (): void => {
+            state.frames.push(sample());
+            if (performance.now() - start < 320) requestAnimationFrame(loop);
+            else state.done = true;
+          };
+          requestAnimationFrame(loop);
+        }, { once: true });
+      });
+      const target = page.locator("#hold").getByRole("button", { name: first, exact: true });
+      const box = await target.boundingBox();
+      assert.ok(box, `no box for the ${size} group's first button`);
+      await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+      await page.mouse.down();
+      await page.waitForFunction(() => ((window as unknown as Win).__flo552 as Hold | undefined)?.done === true);
+      await page.mouse.up();
+      const held = await page.evaluate(() => (window as unknown as Win).__flo552 as Hold);
+      const short = held.frames.filter((frame) => frame.scroll > frame.client);
+      const worst = held.frames.reduce((max, frame) => Math.max(max, frame.scroll - frame.client), 0);
+      const last = held.frames[held.frames.length - 1];
+      console.log(
+        `  flo552 ${size}: neighbour ${held.rest.width.toFixed(1)}px (padding ${held.rest.padding}px) -> ${last.width.toFixed(1)}px (padding ${last.padding}px); ` +
+        `label ${held.rest.scroll}px in ${held.rest.client}px at rest, ${last.scroll}px in ${last.client}px while held; ` +
+        `short by ${worst}px in ${short.length} of ${held.frames.length} held frames`
+      );
+      if (short.length > 0) {
+        failures.push(
+          `${size}: the neighbour's label is short by ${worst}px in ${short.length} of ${held.frames.length} held frames ` +
+          `(neighbour ${last.width.toFixed(1)}px, padding-left ${last.padding}px, label ${last.scroll}px in ${last.client}px)`
+        );
+      }
+    }
+    assert.equal(failures.length, 0, `button group press (FLO-552):\n${failures.join("\n")}`);
+    check("button group: a held end button never makes its neighbour's label narrower than its text, at xs and s (FLO-552)");
+  }
+
   // ---------------------------------------------------------------- chips
   await fresh(
     page,
