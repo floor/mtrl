@@ -16,6 +16,21 @@ Earlier versions are in the [git history](https://github.com/floor/mtrl/commits/
 
 ### Deprecated
 
+Comments only: nothing changes at run time. Each is removed or changed in 1.0.0.
+
+- **`select.textfield`: 1.0 renames it `textField` and keeps no alias.** This corrects 0.10.5's
+  note, which said `textfield` "remains as an alias through 1.x": in 1.0 `select.textfield` is
+  `undefined`. 0.10.x has no `textField`, so rename it when you upgrade, as with
+  `SELECT_CLASSES.TEXTFIELD` (FLO-383).
+- **The icon button's DOM `toggle` event** is removed in 1.0: listen to `change`, which the
+  factory's button and `<m-icon-button>` have emitted since 0.10.0 (FLO-295). The deprecation,
+  until now only in 0.10.0's notes, is on the `toggle` option and on the element's event.
+- **`RADIO_DEFAULTS.VARIANT`, `.LABEL_POSITION` and `.SIZE`** (`mtrl/components/radios/constants`):
+  the radios have no such options, and nothing reads the keys. `DIRECTION` stays.
+- **Told in the TSDoc, for 1.0:** `emit` on the card and the tabs accepts only the component's
+  own events; the radio factory's `change` reports `null`, not `""`, when nothing is selected;
+  `withInput`'s `change` reports the checked boolean as `value`, with the input's string value
+  as `valueAttribute`.
 - The `mtrl/components/<name>/constants` subpaths: import the constants from `mtrl/components/<name>` instead. The subpaths are removed in 1.0.0.
   ```typescript
   // Before

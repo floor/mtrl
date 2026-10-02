@@ -113,6 +113,9 @@ export interface InputComponent extends ElementComponent, InputFeature {}
  * Creates an input element and adds it to a component
  * Handles both input creation and event emission for state changes
  *
+ * In 1.0 the `change` payload's `value` is the checked boolean, as the checkbox
+ * and the switch report it, and the input's string value is `valueAttribute`.
+ *
  * @param config - Input configuration
  * @returns Function that enhances a component with input functionality
  */

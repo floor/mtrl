@@ -89,6 +89,9 @@ export interface IconButtonConfig extends BaseComponentConfig {
    * Whether the IconButton supports toggle (selection) behavior
    * When true, the button can be selected/unselected
    *
+   * A click emits `change`. The DOM `toggle` event the button also dispatches
+   * is deprecated and removed in 1.0: listen to `change`.
+   *
    * @default false
    */
   toggle?: boolean;

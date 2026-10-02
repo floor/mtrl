@@ -7,8 +7,8 @@
  * `selected` property the live one: the attribute moves the state until the
  * user or script changes it. A click dispatches `change` with `{ selected }`
  * from the host, as `<m-switch>` and `<m-checkbox>` do; `toggle`, which
- * clashed with the native ToggleEvent, is dispatched as well for one release
- * (deprecated, FLO-295).
+ * clashed with the native ToggleEvent, is dispatched as well until 1.0
+ * removes it (deprecated, FLO-295): listen to `change`.
  * `type="submit"` and `type="reset"` act on the host's form.
  *
  * Parts: `icon-button`, `icon`, `ripple`.
@@ -59,7 +59,7 @@ const iconButtonSpec = {
     change: {
       detail: (payload) => ({ selected: (payload as { selected: boolean }).selected }),
     },
-    // Deprecated: dispatched by `setup` beside `change`, for one release.
+    /** @deprecated Dispatched beside `change`; removed in 1.0. Listen to `change` (FLO-295). */
     toggle: {
       detail: (payload) => ({ selected: (payload as { selected: boolean }).selected }),
     },

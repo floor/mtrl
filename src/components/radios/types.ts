@@ -122,7 +122,10 @@ export interface RadioItem {
 
 /** Selection or unknown-value clearing reported by the radio group. */
 export interface RadiosChangePayload {
-  /** Selected value, or an empty string when an unknown value clears selection. */
+  /**
+   * Selected value, or an empty string when an unknown value clears selection.
+   * In 1.0 that is `null`, as the select and `<m-radios>` report it.
+   */
   value: string;
   /** Native input change event; undefined for programmatic clearing. */
   originalEvent: Event | undefined;

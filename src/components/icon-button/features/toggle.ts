@@ -288,7 +288,7 @@ export const withToggle =
       // state (FLO-295): the DOM `toggle` this dispatched shares its name with
       // the native ToggleEvent, so TypeScript typed its listeners wrongly.
       component.emit?.("change", { selected: isSelected });
-      // Deprecated: the DOM `toggle`, kept for one release.
+      // Deprecated: the DOM `toggle`, removed in 1.0. Listen to `change`.
       const event = new CustomEvent("toggle", {
         bubbles: true,
         detail: { selected: isSelected },

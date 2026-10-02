@@ -491,7 +491,7 @@ export interface TabsComponent {
   off(event: string, handler: Function): this;
   
   /**
-   * Emit an event
+   * Emit an event. In 1.0, `emit` accepts only the tabs' own events.
    * @param event - Event name
    * @param data - Event data
    * @returns Tabs component for chaining

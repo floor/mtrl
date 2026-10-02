@@ -245,7 +245,7 @@ export interface BaseComponent {
   getElementClass: (base: string, element: string) => string;
   /** Add CSS class(es) */
   addClass: (...classes: string[]) => BaseComponent;
-  /** Emit an event */
+  /** Emit an event. In 1.0, `emit` accepts only the card's own events ({@link CardEvents}). */
   emit?: (event: string, data?: unknown) => void;
   /** Component configuration */
   config: CardComponentConfig;

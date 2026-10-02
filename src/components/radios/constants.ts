@@ -77,13 +77,13 @@ export const RADIO_EVENTS = {
  * Default configuration values
  */
 export const RADIO_DEFAULTS = {
-  /** Default radio variant */
+  /** @deprecated The radios have no variant option; nothing reads this. Removed in 1.0. */
   VARIANT: RADIO_VARIANTS.STANDARD,
   /** Default radio direction */
   DIRECTION: RADIO_DIRECTIONS.VERTICAL,
-  /** Default label position */
+  /** @deprecated The radios have no label position option; nothing reads this. Removed in 1.0. */
   LABEL_POSITION: RADIO_LABEL_POSITIONS.RIGHT,
-  /** Default radio size */
+  /** @deprecated The radios have no size option; nothing reads this. Removed in 1.0. */
   SIZE: RADIO_SIZES.MEDIUM
 } as const;
 
