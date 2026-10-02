@@ -48,6 +48,12 @@ Comments only: nothing changes at run time. Each is changed in 1.0.0, decided af
   `--mtrl-sys-typescale-*` properties other than body-medium's then need
   `import 'mtrl/styles/typography'`. The full stylesheet, `mtrl/styles`, is unchanged. There
   is nothing to change on 0.10.x: the new entry does not exist here.
+- **Explicit contrast levels leave `mtrl/styles/base` and the themes in 1.0.**
+  `data-theme-contrast="medium"` and `"high"` then need `import 'mtrl/styles/contrast'`
+  (and `mtrl/themes/<name>-contrast` for a theme imported on its own); without it the
+  attribute changes no colour and nothing warns. Standard contrast and `prefers-contrast: more`
+  stay in the base, and the full stylesheet, `mtrl/styles`, still includes the levels. There
+  is nothing to change on 0.10.x: the new entries do not exist here.
 
 ### Changed
 
