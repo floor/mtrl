@@ -63,6 +63,14 @@ try {
     import { addClass as directAddClass } from 'mtrl/core/dom';
     import { JSDOM } from ${JSON.stringify(pathToFileURL(resolve("node_modules/jsdom/lib/api.js")).href)};
     assert.equal(button, createButton);
+    // FLO-560: the text field's two-word paths resolve to the modules the old ones do.
+    for (const [alias, old] of [
+      ['mtrl/components/text-field', 'mtrl/components/textfield'],
+      ['mtrl/components/text-field/constants', 'mtrl/components/textfield/constants'],
+      ['mtrl/styles/text-field', 'mtrl/styles/textfield'],
+      ['mtrl/elements/css/text-field', 'mtrl/elements/css/textfield'],
+    ]) assert.equal(import.meta.resolve(alias), import.meta.resolve(old), alias);
+    assert.equal((await import('mtrl/components/text-field')).default, createTextfield);
     assert.equal(rail, esm.createNavigationRail);
     assert.equal(directAddClass, addClass);
     const cjs = createRequire(import.meta.url)('mtrl');
