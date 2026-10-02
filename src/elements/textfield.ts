@@ -147,7 +147,11 @@ export type TextfieldSpec = typeof textfieldSpec;
 /** `<m-textfield>` as a ref or a query returns it. */
 export type TextfieldElement = ElementInstance<TextfieldSpec, TextfieldElementComponent>;
 
-/** Registers `<m-textfield>` (or `<prefix-textfield>`). */
+/**
+ * Registers `<m-textfield>` (or `<prefix-textfield>`).
+ * In 1.0 the tag is `<m-text-field>`, and the part `textfield` is `text-field`
+ * (`::part(text-field)`, on the select too).
+ */
 export const defineTextfield = (options?: DefineOptions): string => textfieldElement.define(options);
 
 declare global {

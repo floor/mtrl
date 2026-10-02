@@ -49,6 +49,19 @@ Comments only: nothing changes at run time. Each is changed in 1.0.0, decided af
   `<m-timepicker>` components' `on` and `off` take a closed map of event names.
 - **`splitButton.menu`:** its note now names what 1.0 gives in its place for the items,
   `setItems()` and `getItems()`.
+- **The text field is written in two words everywhere in 1.0, its strings included
+  (FLO-560).** After the identifiers (0.10.5), 1.0 renames:
+  - the tag: `<m-textfield>` is `<m-text-field>`;
+  - the classes: `mtrl-textfield…` is `mtrl-text-field…`. Page CSS and `classList` calls that
+    keep the old name match nothing, and nothing warns;
+  - the part: `::part(textfield)` is `::part(text-field)`, on the text field and on the select;
+  - the defaults key: `setComponentDefaults('textfield', …)` and
+    `setGlobalDefaults({ textfield })` take `'text-field'`;
+  - the constants' values (`TEXT_FIELD_CLASSES.*`), and `SELECT_CLASSES.TEXTFIELD`'s class,
+    `select__text-field`. This corrects 0.10.5's note, which said that class stays;
+  - the import paths, which already resolve under the new names on 0.10.7 (see Added).
+
+  Only the paths can move before the upgrade.
 - **Typography leaves `mtrl/styles/base` in 1.0.** The type classes (`.mtrl-display-large` …
   `.mtrl-label-small`), the text utilities, mtrl's styles for `h1`–`h6` and `p`, and the
   `--mtrl-sys-typescale-*` properties other than body-medium's then need
