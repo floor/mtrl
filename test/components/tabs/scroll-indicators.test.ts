@@ -303,4 +303,20 @@ describe('addScrollIndicators', () => {
     expect(indicators(second)).toHaveLength(2);
     expect(button(second, 'right').parentNode).toBe(second.element);
   });
+
+  // FLO-553: an explicit behavior overrides the stylesheet, and with it the
+  // reduced-motion reset. The scroller's own scroll-behavior decides.
+  test('the scroll buttons scroll by 100px and name no behaviour', () => {
+    const tabs = mount();
+    const scroller = scrollerOf(tabs);
+    wireScroller(scroller, { scrollWidth: 400, clientWidth: 200, scrollLeft: 100 });
+    const calls: ScrollToOptions[] = [];
+    scroller.scrollBy = ((options?: ScrollToOptions | number) => {
+      if (typeof options === 'object') calls.push(options);
+    }) as HTMLElement['scrollBy'];
+    enhance(tabs, { showButtons: true });
+    button(tabs, 'left').click();
+    button(tabs, 'right').click();
+    expect(calls).toEqual([{ left: -100 }, { left: 100 }]);
+  });
 });

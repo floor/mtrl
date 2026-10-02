@@ -74,6 +74,17 @@ Comments only: nothing changes at run time. Each is changed in 1.0.0, decided af
     new one;
   - a docked date picker opened with `open()` from a click outside it is closed by that same
     click: call `open()` once the click has finished.
+### Fixed
+
+- **Accessibility: scrolling from script honours reduced motion in the chips, the tabs and the
+  search (FLO-553).** The chip set's `scrollToChip`, the tabs' scroll buttons and the search's
+  arrow keys through the suggestions each asked for a smooth scroll explicitly, which overrides
+  the stylesheet, so they glided with the reduced-motion preference on. They now name no
+  behaviour: each scroller scrolls smoothly from its stylesheet (`scroll-behavior: smooth`,
+  new on the tabs' scroller and the suggestion list), and jumps at once under reduced motion,
+  in the factories and inside `<m-chips>`, `<m-tabs>` and `<m-search>` (their shadow roots
+  carry the reduced-motion rule since 0.10.6). A script of yours that scrolls the tabs'
+  scroller or the suggestion list now scrolls it smoothly too.
 
 ## [0.10.6] - 2026-10-02
 

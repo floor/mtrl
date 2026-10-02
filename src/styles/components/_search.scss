@@ -442,6 +442,8 @@ $transition-easing: cubic-bezier(0.2, 0, 0, 1);
     flex: 1;
     overflow-y: auto;
     overflow-x: hidden;
+    // The arrows name no behaviour, so that reduced motion can stop it (FLO-553)
+    scroll-behavior: smooth;
 }
 
 .#{$component}__suggestion-list {

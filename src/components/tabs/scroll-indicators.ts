@@ -62,19 +62,15 @@ export const addScrollIndicators = (
     tabs.element.appendChild(leftButton);
     tabs.element.appendChild(rightButton);
     
-    // Add button click handlers
+    // Add button click handlers. No `behavior`: the scroller's stylesheet
+    // scrolls it smoothly, and the reduced-motion reset turns that off; an
+    // explicit "smooth" would override it (FLO-553).
     leftButton.addEventListener('click', () => {
-      scrollContainer.scrollBy({
-        left: -100,
-        behavior: 'smooth'
-      });
+      scrollContainer.scrollBy({ left: -100 });
     });
     
     rightButton.addEventListener('click', () => {
-      scrollContainer.scrollBy({
-        left: 100,
-        behavior: 'smooth'
-      });
+      scrollContainer.scrollBy({ left: 100 });
     });
   }
   

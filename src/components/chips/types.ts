@@ -384,7 +384,8 @@ export interface ChipsComponent {
   getLabelPosition: () => string;
 
   /**
-   * Scrolls to a specific chip
+   * Scrolls to a specific chip. A scrollable set scrolls smoothly, from its
+   * stylesheet, and at once under reduced motion.
    * @param chipOrIndex - Chip instance or index to scroll to
    * @returns The chips instance for chaining
    */
