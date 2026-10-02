@@ -24,6 +24,12 @@ Comments only: nothing changes at run time. Each is changed in 1.0.0, decided af
     `close()` then `open()` at once reopens it. The `open` and `close` payloads of the menu
     and the select, and the select's `change` payload, lose `preventDefault` and
     `defaultPrevented`, which did nothing there.
+  - **FAB menu, `menu` presentation:** `open()` sets `isOpen()` and emits `open` in the call
+    (after the menu's module has loaded today), and `close` is emitted inside `close()`.
+  - **`<m-menu>` and `<m-fab-menu>`:** the `open` attribute or property set by script is
+    applied at once and dispatches no `open` and no `close`, as on `<m-dialog>` (a microtask
+    later today, dispatching both). Code that sets it and waits for the event must read the
+    state on the next line, or call `show()` / `hide()`, which still dispatch.
   - **Snackbar:** `state` is `"queued"`, not `"visible"`, while a snackbar waits behind
     another, and `hide()` on a queued one emits nothing. 1.0 adds `isOpen()`.
   - **Time picker:** `isOpen` is a method, `isOpen()`, not a property; the config option
@@ -45,9 +51,15 @@ Comments only: nothing changes at run time. Each is changed in 1.0.0, decided af
 
 ### Changed
 
-- **Documented, a limit of 0.10.x:** a `layer: "top"` dialog that refuses Escape
-  (`closeOnEscape: false`, or a `beforeclose` listener that prevents it) is still closed by the
-  third press. To be fixed in 1.0; the sentence is on `closeOnEscape`.
+- **Documented, three limits of 0.10.x that 1.0 fixes and 0.10.x does not** (each is a
+  sentence in the TSDoc):
+  - a `layer: "top"` dialog that refuses Escape (`closeOnEscape: false`, or a `beforeclose`
+    listener that prevents it) is still closed by the third press (to be fixed in 1.0);
+  - a snackbar waiting behind another, then dropped by a `queueBehavior: 'replace'` snackbar
+    or by `clearSnackbars()`, keeps `state` `"visible"` and cannot be shown again: create a
+    new one;
+  - a docked date picker opened with `open()` from a click outside it is closed by that same
+    click: call `open()` once the click has finished.
 
 ## [0.10.6] - 2026-10-02
 

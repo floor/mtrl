@@ -177,6 +177,9 @@ const menuSpec = {
     // State, reflected: see the module. Set or removed by script, the change
     // is applied after the attribute callback, so `open` is dispatched as for
     // any other opening.
+    // In 1.0 it is applied inside the attribute callback and dispatches no
+    // `open` and no `close`, as on <m-dialog>: read the state on the next
+    // line, or call show() / hide(), which still dispatch.
     open: {
       type: "boolean",
       update: (c, v) => queueMicrotask(() => (v ? c.show() : c.hide())),

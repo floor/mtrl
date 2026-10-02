@@ -175,7 +175,13 @@ export interface SnackbarComponent {
   /** Timer for auto-dismissal */
   timer?: SnackbarTimer;
 
-  /** Displays the snackbar */
+  /**
+   * Displays the snackbar
+   * A limit on 0.10.x, fixed in 1.0: a snackbar still waiting behind another
+   * when a `queueBehavior: 'replace'` snackbar or `clearSnackbars()` drops it
+   * keeps `state` `"visible"`, and `show()` on it does nothing from then on.
+   * Create a new snackbar instead of showing that one again.
+   */
   show: () => SnackbarComponent;
 
   /**

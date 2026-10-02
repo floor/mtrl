@@ -115,10 +115,20 @@ export interface FabMenuComponent extends ElementComponent {
   /** The list of the list presentation: `role="menu"` */
   list: HTMLElement;
 
-  /** Opens the menu */
+  /**
+   * Opens the menu
+   * In 1.0, in the `menu` presentation, `isOpen()` is true and `open` has been
+   * emitted when `open()` returns (today both wait for the menu's module to
+   * load); the surface is shown when the module has arrived.
+   */
   open(event?: Event): this;
 
-  /** Closes the menu */
+  /**
+   * Closes the menu
+   * In 1.0, in the `menu` presentation, `close` is emitted inside `close()`
+   * (about 50 ms later today), and a `close()` before the surface has arrived
+   * ends closed (today it is ignored, and the menu then opens).
+   */
   close(): this;
 
   /** Opens or closes the menu */
