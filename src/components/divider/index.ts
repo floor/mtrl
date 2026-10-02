@@ -37,3 +37,4 @@ export { createDivider };
 // Export types
 export type { DividerConfig } from './config';
 export type { DividerComponent } from './types';
+export * from './constants';

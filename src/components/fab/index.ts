@@ -43,3 +43,4 @@ export type {
   FabSize,
   FabPosition,
 } from "./types";
+export * from "./constants";

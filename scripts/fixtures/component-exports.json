@@ -1,6 +1,26 @@
 {
   "badge": [
     {
+      "name": "BADGE_COLORS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "BADGE_MAX_CHARACTERS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "BADGE_POSITIONS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "BADGE_VARIANTS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
       "name": "BadgeColor",
       "kind": "type",
       "status": "public"
@@ -55,6 +75,11 @@
   ],
   "bottom-app-bar": [
     {
+      "name": "BOTTOM_APP_BAR_CLASSES",
+      "kind": "value",
+      "status": "public"
+    },
+    {
       "name": "BottomAppBar",
       "kind": "type",
       "status": "deprecated",
@@ -79,6 +104,16 @@
       "name": "default",
       "kind": "value",
       "status": "public"
+    },
+    {
+      "name": "DEFAULT_TRANSITION_DURATION",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "FAB_POSITIONS",
+      "kind": "value",
+      "status": "public"
     }
   ],
   "bottom-app-bar/constants": [
@@ -99,6 +134,31 @@
     }
   ],
   "bottom-sheet": [
+    {
+      "name": "BOTTOM_SHEET_CLASSES",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "BOTTOM_SHEET_DEFAULTS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "BOTTOM_SHEET_EVENTS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "BOTTOM_SHEET_STATES",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "BOTTOM_SHEET_VARIANTS",
+      "kind": "value",
+      "status": "public"
+    },
     {
       "name": "BottomSheetComponent",
       "kind": "type",
@@ -169,6 +229,31 @@
   ],
   "button": [
     {
+      "name": "BUTTON_CLASSES",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "BUTTON_SHAPES",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "BUTTON_SIZES",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "BUTTON_TYPES",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "BUTTON_VARIANTS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
       "name": "ButtonComponent",
       "kind": "type",
       "status": "public"
@@ -202,11 +287,36 @@
       "name": "default",
       "kind": "value",
       "status": "public"
+    },
+    {
+      "name": "DEFAULT_RIPPLE_CONFIG",
+      "kind": "value",
+      "status": "public"
     }
   ],
   "button-group": [
     {
       "name": "BUTTON_GROUP_CLASSES",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "BUTTON_GROUP_COMPRESSION_LIMIT",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "BUTTON_GROUP_CONNECTED_GAP",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "BUTTON_GROUP_CONNECTED_MIN_WIDTH",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "BUTTON_GROUP_CONNECTED_PRESSED_CORNER",
       "kind": "value",
       "status": "public"
     },
@@ -221,12 +331,52 @@
       "status": "public"
     },
     {
+      "name": "BUTTON_GROUP_DENSITY_STEP",
+      "kind": "value",
+      "status": "public"
+    },
+    {
       "name": "BUTTON_GROUP_EVENTS",
       "kind": "value",
       "status": "public"
     },
     {
+      "name": "BUTTON_GROUP_EXPANDED_RATIO",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "BUTTON_GROUP_KINDS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "BUTTON_GROUP_LABELS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
       "name": "BUTTON_GROUP_ORIENTATIONS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "BUTTON_GROUP_SELECTION",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "BUTTON_GROUP_SHAPES",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "BUTTON_GROUP_SIZE_TOKENS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "BUTTON_GROUP_SIZES",
       "kind": "value",
       "status": "public"
     },
@@ -436,6 +586,46 @@
     }
   ],
   "card": [
+    {
+      "name": "CARD_ACTION_ALIGNMENT",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "CARD_ASPECT_RATIOS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "CARD_CLASSES",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "CARD_CORNER_RADIUS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "CARD_ELEVATIONS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "CARD_MEDIA_POSITION",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "CARD_VARIANTS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "CARD_WIDTHS",
+      "kind": "value",
+      "status": "public"
+    },
     {
       "name": "CardActionsConfig",
       "kind": "type",
@@ -774,6 +964,16 @@
       "status": "public"
     },
     {
+      "name": "CHIP_EVENTS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "CHIP_TYPES",
+      "kind": "value",
+      "status": "public"
+    },
+    {
       "name": "ChipChangePayload",
       "kind": "type",
       "status": "public"
@@ -791,6 +991,11 @@
     {
       "name": "ChipEvents",
       "kind": "type",
+      "status": "public"
+    },
+    {
+      "name": "CHIPS_EVENTS",
+      "kind": "value",
       "status": "public"
     },
     {
@@ -878,6 +1083,36 @@
   ],
   "datepicker": [
     {
+      "name": "DATEPICKER_CLASSES",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "DATEPICKER_EVENTS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "DATEPICKER_ICONS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "DATEPICKER_SELECTION_MODES",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "DATEPICKER_VARIANTS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "DATEPICKER_VIEWS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
       "name": "DatePickerChangePayload",
       "kind": "type",
       "status": "public"
@@ -943,6 +1178,11 @@
       "status": "public"
     },
     {
+      "name": "DAY_NAMES",
+      "kind": "value",
+      "status": "public"
+    },
+    {
       "name": "default",
       "kind": "value",
       "status": "public"
@@ -952,6 +1192,16 @@
       "kind": "value",
       "status": "deprecated",
       "note": "Internal, no replacement: removed from mtrl/components/datepicker in 1.0.0 (FLO-381)."
+    },
+    {
+      "name": "MONTH_NAMES",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "MONTH_NAMES_SHORT",
+      "kind": "value",
+      "status": "public"
     }
   ],
   "datepicker/constants": [
@@ -1009,6 +1259,56 @@
   "dialog": [
     {
       "name": "default",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "DEFAULT_ANIMATION_DURATION",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "DEFAULT_CANCEL_BUTTON_TEXT",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "DEFAULT_CONFIRM_BUTTON_TEXT",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "DEFAULT_Z_INDEX",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "DIALOG_ANIMATIONS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "DIALOG_BUTTON_VARIANTS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "DIALOG_CLASSES",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "DIALOG_EVENTS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "DIALOG_FOOTER_ALIGNMENTS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "DIALOG_SIZES",
       "kind": "value",
       "status": "public"
     },
@@ -1117,6 +1417,31 @@
       "status": "public"
     },
     {
+      "name": "DEFAULT_DIVIDER_THICKNESS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "DEFAULT_INSET_VALUE",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "DIVIDER_CLASSES",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "DIVIDER_ORIENTATIONS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "DIVIDER_VARIANTS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
       "name": "DividerComponent",
       "kind": "type",
       "status": "public"
@@ -1157,6 +1482,41 @@
   "drawer": [
     {
       "name": "default",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "DRAWER_ANIMATION",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "DRAWER_CLASSES",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "DRAWER_DEFAULTS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "DRAWER_EVENTS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "DRAWER_ITEM_TYPES",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "DRAWER_POSITIONS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "DRAWER_VARIANTS",
       "kind": "value",
       "status": "public"
     },
@@ -1241,6 +1601,46 @@
     },
     {
       "name": "default",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "EXTENDED_FAB_ANIMATIONS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "EXTENDED_FAB_CLASSES",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "EXTENDED_FAB_ICON_POSITIONS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "EXTENDED_FAB_POSITIONS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "EXTENDED_FAB_SIZES",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "EXTENDED_FAB_TYPES",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "EXTENDED_FAB_VARIANTS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "EXTENDED_FAB_WIDTH",
       "kind": "value",
       "status": "public"
     },
@@ -1334,6 +1734,41 @@
       "status": "public"
     },
     {
+      "name": "FAB_ANIMATIONS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "FAB_CLASSES",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "FAB_ICON_SIZES",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "FAB_POSITIONS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "FAB_SIZES",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "FAB_TYPES",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "FAB_VARIANTS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
       "name": "FabComponent",
       "kind": "type",
       "status": "public"
@@ -1382,6 +1817,31 @@
     },
     {
       "name": "FAB_MENU_EVENTS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "FAB_MENU_ITEM_EXIT",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "FAB_MENU_ITEMS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "FAB_MENU_LIST_GAP",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "FAB_MENU_MENU_FROM",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "FAB_MENU_MENU_GAP",
       "kind": "value",
       "status": "public"
     },
@@ -1567,6 +2027,11 @@
       "status": "public"
     },
     {
+      "name": "DEFAULT_RIPPLE_CONFIG",
+      "kind": "value",
+      "status": "public"
+    },
+    {
       "name": "ICON_BUTTON_CLASSES",
       "kind": "value",
       "status": "public"
@@ -1593,6 +2058,11 @@
     },
     {
       "name": "ICON_BUTTON_SIZES",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "ICON_BUTTON_TYPES",
       "kind": "value",
       "status": "public"
     },
@@ -1840,12 +2310,27 @@
       "status": "public"
     },
     {
+      "name": "LOADING_INDICATOR_CLASSES",
+      "kind": "value",
+      "status": "public"
+    },
+    {
       "name": "LOADING_INDICATOR_DEFAULTS",
       "kind": "value",
       "status": "public"
     },
     {
+      "name": "LOADING_INDICATOR_DETERMINATE_SHAPES",
+      "kind": "value",
+      "status": "public"
+    },
+    {
       "name": "LOADING_INDICATOR_SHAPES",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "LOADING_INDICATOR_SPRING",
       "kind": "value",
       "status": "public"
     },
@@ -1899,6 +2384,11 @@
       "status": "public"
     },
     {
+      "name": "MENU_COLORS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
       "name": "MENU_DEFAULTS",
       "kind": "value",
       "status": "public"
@@ -1920,6 +2410,11 @@
     },
     {
       "name": "MENU_POSITION",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "MENU_VARIANTS",
       "kind": "value",
       "status": "public"
     },
@@ -2028,6 +2523,16 @@
       "status": "public"
     },
     {
+      "name": "NAVIGATION_RAIL_DEFAULTS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "NAVIGATION_RAIL_ICONS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
       "name": "NavigationRailComponent",
       "kind": "type",
       "status": "public"
@@ -2068,6 +2573,61 @@
   "progress": [
     {
       "name": "default",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "PROGRESS_CLASSES",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "PROGRESS_COLORS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "PROGRESS_DEFAULTS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "PROGRESS_EASING",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "PROGRESS_EVENTS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "PROGRESS_MEASUREMENTS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "PROGRESS_MOTION",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "PROGRESS_SHAPES",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "PROGRESS_THICKNESS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "PROGRESS_VARIANTS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "PROGRESS_WAVE",
       "kind": "value",
       "status": "public"
     },
@@ -2279,6 +2839,51 @@
       "status": "public"
     },
     {
+      "name": "SEARCH_CLASSES",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "SEARCH_DEFAULTS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "SEARCH_EVENTS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "SEARCH_ICONS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "SEARCH_KEYS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "SEARCH_MEASUREMENTS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "SEARCH_STATES",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "SEARCH_VARIANTS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "SEARCH_VIEW_MODES",
+      "kind": "value",
+      "status": "public"
+    },
+    {
       "name": "SearchComponent",
       "kind": "type",
       "status": "public"
@@ -2383,6 +2988,11 @@
       "status": "public"
     },
     {
+      "name": "DEFAULT_CHECKMARK_ICON",
+      "kind": "value",
+      "status": "public"
+    },
+    {
       "name": "Density",
       "kind": "value",
       "status": "public"
@@ -2395,6 +3005,36 @@
     {
       "name": "SegmentConfig",
       "kind": "type",
+      "status": "public"
+    },
+    {
+      "name": "SEGMENTED_BUTTON_CLASSES",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "SEGMENTED_BUTTON_DEFAULTS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "SEGMENTED_BUTTON_DENSITY",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "SEGMENTED_BUTTON_EVENTS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "SEGMENTED_BUTTON_ICONS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "SEGMENTED_BUTTON_MODES",
+      "kind": "value",
       "status": "public"
     },
     {
@@ -2571,6 +3211,31 @@
       "status": "public"
     },
     {
+      "name": "SIDE_SHEET_CLASSES",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "SIDE_SHEET_DEFAULTS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "SIDE_SHEET_EVENTS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "SIDE_SHEET_POSITIONS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "SIDE_SHEET_VARIANTS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
       "name": "SideSheetComponent",
       "kind": "type",
       "status": "public"
@@ -2630,6 +3295,41 @@
       "status": "public"
     },
     {
+      "name": "SLIDER_CLASSES",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "SLIDER_COLORS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "SLIDER_DEFAULTS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "SLIDER_EVENTS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "SLIDER_MEASUREMENTS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "SLIDER_POSITIONS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "SLIDER_SIZES",
+      "kind": "value",
+      "status": "public"
+    },
+    {
       "name": "SliderComponent",
       "kind": "type",
       "status": "public"
@@ -2641,6 +3341,11 @@
     },
     {
       "name": "SliderEvent",
+      "kind": "type",
+      "status": "public"
+    },
+    {
+      "name": "SliderSize",
       "kind": "type",
       "status": "public"
     }
@@ -2699,12 +3404,37 @@
       "status": "public"
     },
     {
+      "name": "SNACKBAR_CLASSES",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "SNACKBAR_CLOSE_ICON",
+      "kind": "value",
+      "status": "public"
+    },
+    {
       "name": "SNACKBAR_CLOSE_REASONS",
       "kind": "value",
       "status": "public"
     },
     {
+      "name": "SNACKBAR_DEFAULTS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "SNACKBAR_DURATION_MS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
       "name": "SNACKBAR_DURATIONS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "SNACKBAR_EVENTS",
       "kind": "value",
       "status": "public"
     },
@@ -2715,6 +3445,11 @@
     },
     {
       "name": "SNACKBAR_QUEUE_BEHAVIORS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "SNACKBAR_STATES",
       "kind": "value",
       "status": "public"
     },
@@ -2814,6 +3549,21 @@
   "split-button": [
     {
       "name": "default",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "SPLIT_BUTTON_CHEVRON",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "SPLIT_BUTTON_CLASSES",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "SPLIT_BUTTON_DEFAULTS",
       "kind": "value",
       "status": "public"
     },
@@ -3072,6 +3822,11 @@
       "status": "public"
     },
     {
+      "name": "TAB_LAYOUT",
+      "kind": "value",
+      "status": "public"
+    },
+    {
       "name": "TAB_STATES",
       "kind": "value",
       "status": "public"
@@ -3221,6 +3976,83 @@
       "name": "default",
       "kind": "value",
       "status": "public"
+    },
+    {
+      "name": "TEXT_FIELD_CLASSES",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "TEXT_FIELD_DEFAULTS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "TEXT_FIELD_DENSITY",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "TEXT_FIELD_EVENTS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "TEXT_FIELD_STATES",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "TEXT_FIELD_TYPES",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "TEXT_FIELD_VARIANTS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "TEXTFIELD_CLASSES",
+      "kind": "value",
+      "status": "deprecated",
+      "note": "Use TEXT_FIELD_CLASSES: M3 writes \"text field\" as two words. Removed in 1.0 (FLO-383)."
+    },
+    {
+      "name": "TEXTFIELD_DEFAULTS",
+      "kind": "value",
+      "status": "deprecated",
+      "note": "Use TEXT_FIELD_DEFAULTS: M3 writes \"text field\" as two words. Removed in 1.0 (FLO-383)."
+    },
+    {
+      "name": "TEXTFIELD_DENSITY",
+      "kind": "value",
+      "status": "deprecated",
+      "note": "Use TEXT_FIELD_DENSITY: M3 writes \"text field\" as two words. Removed in 1.0 (FLO-383)."
+    },
+    {
+      "name": "TEXTFIELD_EVENTS",
+      "kind": "value",
+      "status": "deprecated",
+      "note": "Use TEXT_FIELD_EVENTS: M3 writes \"text field\" as two words. Removed in 1.0 (FLO-383)."
+    },
+    {
+      "name": "TEXTFIELD_STATES",
+      "kind": "value",
+      "status": "deprecated",
+      "note": "Use TEXT_FIELD_STATES: M3 writes \"text field\" as two words. Removed in 1.0 (FLO-383)."
+    },
+    {
+      "name": "TEXTFIELD_TYPES",
+      "kind": "value",
+      "status": "deprecated",
+      "note": "Use TEXT_FIELD_TYPES: M3 writes \"text field\" as two words. Removed in 1.0 (FLO-383)."
+    },
+    {
+      "name": "TEXTFIELD_VARIANTS",
+      "kind": "value",
+      "status": "deprecated",
+      "note": "Use TEXT_FIELD_VARIANTS: M3 writes \"text field\" as two words. Removed in 1.0 (FLO-383)."
     },
     {
       "name": "TextfieldComponent",
@@ -3619,6 +4451,11 @@
     },
     {
       "name": "TOOLBAR_SCROLL_BEHAVIORS",
+      "kind": "value",
+      "status": "public"
+    },
+    {
+      "name": "TOOLBAR_SCROLL_THRESHOLD",
       "kind": "value",
       "status": "public"
     },

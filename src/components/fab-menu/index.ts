@@ -13,3 +13,4 @@ export {
 } from "./constants";
 export type { FabMenuColor, FabMenuSize, FabMenuPresentation, FabMenuPlacement } from "./constants";
 export type { FabMenuConfig, FabMenuComponent, FabMenuEvents, FabMenuItem, FabMenuMenu } from "./types";
+export * from "./constants";

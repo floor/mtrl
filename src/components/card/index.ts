@@ -115,6 +115,6 @@ export {
   /** @deprecated Internal, no replacement: removed from mtrl/components/card in 1.0.0 (FLO-381). */
   withElevation,
 } from "./features";
+export * from "./constants";
 
-// NOTE: Constants are exported from './constants' directly
-// Import constants from 'mtrl/components/card/constants' for tree-shaking
+// NOTE: Both work in 0.10.x and the subpath is removed in 1.0.

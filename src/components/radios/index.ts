@@ -11,3 +11,4 @@ export {
   RADIO_DEFAULTS,
   RADIO_CLASSES
 } from './constants';
+export * from './constants';

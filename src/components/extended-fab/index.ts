@@ -45,3 +45,4 @@ export type {
   ExtendedFabWidth,
   ExtendedFabPosition
 } from './types';
+export * from './constants';

@@ -15,3 +15,4 @@ export type {
   SearchSuggestion,
   SearchTrailingItem,
 } from "./types";
+export * from "./constants";

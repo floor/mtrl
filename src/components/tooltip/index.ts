@@ -15,3 +15,4 @@ export type {
   TooltipConfig, 
   TooltipComponent
 } from './types';
+export * from './constants';

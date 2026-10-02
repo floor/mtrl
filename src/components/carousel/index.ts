@@ -17,3 +17,4 @@ export type {
   // Public: CarouselComponent.slides is typed with it (FLO-381 keeps it)
   SlidesAPI,
 } from "./types";
+export * from "./constants";

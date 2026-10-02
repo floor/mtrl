@@ -9,3 +9,4 @@ export type {
   SliderComponent,
   SliderEvent,
 } from "./types";
+export * from "./constants";

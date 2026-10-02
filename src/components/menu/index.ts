@@ -52,3 +52,4 @@ export {
   MENU_EVENTS,
   MENU_CLASSES
 } from './constants';
+export * from './constants';

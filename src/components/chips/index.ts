@@ -16,6 +16,6 @@ export type {
   ChipsEvents,
   ChipsChangeEvent,
 } from "./types";
+export * from "./constants";
 
-// NOTE: Constants are exported from './constants' directly
-// Import constants from 'mtrl/components/chips/constants' for tree-shaking
+// NOTE: Both work in 0.10.x and the subpath is removed in 1.0.

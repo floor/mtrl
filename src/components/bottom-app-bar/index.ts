@@ -14,3 +14,4 @@ export type {
   /** @deprecated Use BottomAppBarComponent, the name every component type has. Removed in 1.0 (FLO-383). */
   BottomAppBar,
 } from './types';
+export * from "./constants";

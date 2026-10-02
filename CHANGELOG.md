@@ -10,6 +10,21 @@ Earlier versions are in the [git history](https://github.com/floor/mtrl/commits/
 
 ## [Unreleased]
 
+### Added
+
+- Every component entry (`mtrl/components/<name>`) now exports its constants too.
+
+### Deprecated
+
+- The `mtrl/components/<name>/constants` subpaths: import the constants from `mtrl/components/<name>` instead. The subpaths are removed in 1.0.0.
+  ```typescript
+  // Before
+  import { BUTTON_VARIANTS } from "mtrl/components/button/constants";
+
+  // After
+  import { BUTTON_VARIANTS } from "mtrl/components/button";
+  ```
+
 ### Fixed
 
 - **Tooltip placement (FLO-535):** With motion enabled, a tooltip could settle 5% of its width off

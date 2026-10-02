@@ -46,3 +46,4 @@ export {
   SELECT_DEFAULTS,
   SELECT_CLASSES
 } from './constants';
+export * from './constants';

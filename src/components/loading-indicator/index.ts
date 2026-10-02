@@ -6,3 +6,4 @@ export type { LoadingIndicatorConfig, LoadingIndicatorComponent } from './types'
 
 // Export constants
 export { LOADING_INDICATOR_SHAPES, LOADING_INDICATOR_DEFAULTS } from './constants';
+export * from './constants';
