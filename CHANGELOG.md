@@ -109,6 +109,28 @@ after 0.10.6.
   attribute changes no colour and nothing warns. Standard contrast and `prefers-contrast: more`
   stay in the base, and the full stylesheet, `material/styles`, still includes the levels. There
   is nothing to change on 0.10.x: the new entries do not exist here.
+- **The progress component's `canvas`, `resize`, `track`, `indicator` and `buffer` leave
+  the public type in `material` 3.0.0.** They named how the indicator is drawn (one
+  canvas; `track`, `indicator` and `buffer` were that same canvas under the names of an
+  older SVG), which tied the public type to one way of drawing it. The objects stay on
+  the component at run time; the type no longer promises them. For the canvas, read
+  `progress.element.querySelector('canvas')`; `setBuffer()` and `getBuffer()`, the
+  buffer's value, are unchanged; nothing replaces `resize()`, which the component does
+  itself on a size change.
+- **The slider's `components` bag is internal in `material` 3.0.0.** The public
+  `SliderComponent` never had it, nothing in the library fills it, and it may go in any
+  release. Use the slider's own API (`setValue()`, `getValue()` and the rest of
+  `SliderComponent`) and `slider.element`.
+- **`mtrl/core/compose/features` leaves the public contract in `material` 3.0.0
+  (FLO-414).** The path does not resolve there: import its names from
+  `material/core/compose`, which exports them (`withLifecycle` among them; on 0.10.x
+  every name except `withBadge`, `LabelManager` and the badge feature's `BadgeComponent`
+  and `BadgeConfig`, so all the others can be written the new way now). The README
+  teaches the new path.
+- **`tab.badge` may be `undefined` in `material` 3.0.0 until the badge is shown.** The
+  type always allowed it; it is now the documented contract, so a later release can
+  create the badge only when it is shown. Read it with a guard, or use `setBadge()`,
+  `getBadge()`, `showBadge()` and `hideBadge()`, which work whether it exists yet or not.
 
 ### Fixed
 

@@ -267,7 +267,7 @@ note.setText('Saved');
 document.body.append(note.element);
 ```
 
-The element gets the `mtrl-note` class, `withEvents` adds `on`, `off` and `emit`, and `destroy()` removes the element. Add `withLifecycle()` from `mtrl/core/compose/features` when features need to register cleanup.
+The element gets the `mtrl-note` class, `withEvents` adds `on`, `off` and `emit`, and `destroy()` removes the element. Add `withLifecycle()` from `mtrl/core/compose` when features need to register cleanup.
 
 ## Markup and sanitizing
 
