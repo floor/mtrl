@@ -211,6 +211,8 @@ export interface TimePickerConfig {
 
   /**
    * Whether the time picker is initially visible (for inline mode)
+   * In 1.0 this option is named `open`, and the picker is open when its
+   * factory returns (today it opens on a 0 ms timer).
    * @default false
    */
   isOpen?: boolean;
@@ -333,7 +335,7 @@ export interface TimePickerComponent {
   /** Dialog container element */
   dialogElement: HTMLElement;
 
-  /** Whether the time picker is currently open */
+  /** Whether the time picker is currently open. In 1.0 it is a method: `isOpen()`. */
   isOpen: boolean;
 
   /**

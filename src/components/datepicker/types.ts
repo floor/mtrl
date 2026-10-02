@@ -361,6 +361,9 @@ export interface DatePickerComponent<V = DatePickerValue> {
   
   /**
    * Opens the datepicker dropdown/modal
+   * A limit on 0.10.x, fixed in 1.0: a docked picker opened with `open()` from
+   * a click outside it is closed again by that same click. Call `open()` once
+   * the click has finished (for example from a `setTimeout`).
    * @returns The datepicker component for chaining
    */
   open: () => DatePickerComponent<V>;

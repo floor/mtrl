@@ -21,6 +21,83 @@ Earlier versions are in the [git history](https://github.com/floor/mtrl/commits/
   early: the `<m-textfield>` tag, the `mtrl-textfield` classes and `::part(textfield)` keep
   their names on 0.10.x.
 
+### Changed
+
+- **Documented, three limits of 0.10.x that 1.0 fixes and 0.10.x does not** (each is a
+  sentence in the TSDoc):
+  - a `layer: "top"` dialog that refuses Escape (`closeOnEscape: false`, or a `beforeclose`
+    listener that prevents it) is still closed by the third press: the browser lets a page
+    refuse twice in a row and forces the third. The same for a `layer: "top"` modal sheet
+    with `closeOnEscape: false` and a modal drawer with `dismissible: false`;
+  - a snackbar waiting behind another, then dropped by a `queueBehavior: 'replace'` snackbar
+    or by `clearSnackbars()`, keeps `state` `"visible"` and cannot be shown again: create a
+    new one;
+  - a docked date picker opened with `open()` from a click outside it is closed by that same
+    click: call `open()` once the click has finished.
+### Deprecated
+
+Comments only: nothing changes at run time. Each is changed in 1.0.0, decided after 0.10.6.
+
+- **Told in the TSDoc, for 1.0, the overlays' open and close:** when `open()` or `close()`
+  returns, the state has changed and the event has been emitted.
+  - **Dialog:** `open` is emitted inside `open()` (without `layer: "top"` it comes about 10 ms
+    later today), so a listener added after calling `open()` no longer hears it: add it
+    before the call, or listen to `afteropen`. `close()` on a closed dialog emits nothing.
+  - **Menu, and the select and split button that hold one:** `close` is emitted inside
+    `close()` (about 50 ms later today), while the menu is still in the document, and
+    `close()` then `open()` at once reopens it. The `open` and `close` payloads of the menu
+    and the select, and the select's `change` payload, lose `preventDefault` and
+    `defaultPrevented`, which did nothing there.
+  - **FAB menu, `menu` presentation:** `open()` sets `isOpen()` and emits `open` in the call
+    (after the menu's module has loaded today), and `close` is emitted inside `close()`.
+  - **`<m-menu>` and `<m-fab-menu>`:** the `open` attribute or property set by script is
+    applied at once and dispatches no `open` and no `close`, as on `<m-dialog>` (a microtask
+    later today, dispatching both). Code that sets it and waits for the event must read the
+    state on the next line, or call `show()` / `hide()`, which still dispatch.
+  - **Escape, on every modal** (the dialog, the modal sheets and drawer, the time picker, the
+    modal date picker, the full-screen search): handled as a key press in both layers. Only
+    the topmost open modal answers, after what is open inside it (a menu, a select) has used
+    the key, and never for the key press that opened it. Escape with a menu open inside a
+    dialog closes the menu only; without `layer: "top"` it closes the dialog as well today.
+  - **Snackbar:** `state` is `"queued"`, not `"visible"`, while a snackbar waits behind
+    another, and `hide()` on a queued one emits nothing. 1.0 adds `isOpen()`.
+  - **Time picker:** `isOpen` is a method, `isOpen()`, not a property; the config option
+    `isOpen` is named `open`, and `TIMEPICKER_DEFAULTS.IS_OPEN` is `OPEN`. Created with it,
+    the picker is open when its factory returns (on a 0 ms timer today).
+- **Told in the TSDoc, for 1.0, chips:** a chip's `onClick` runs before the chip toggles, so
+  `isSelected()` inside it is the state before the click (read the new one in `onChange`); a
+  refused deselect in a `selectionRequired` set emits no `change` and calls no `onChange` or
+  `onSelect`.
+- **Told in the TSDoc, for 1.0, types:** the search's `expand` and `collapse` listeners are
+  typed with what they carry, `{ component, state, viewMode }`; the `<m-search>` and
+  `<m-timepicker>` components' `on` and `off` take a closed map of event names.
+- **`splitButton.menu`:** its note now names what 1.0 gives in its place for the items,
+  `setItems()` and `getItems()`.
+- **The text field is written in two words everywhere in 1.0, its strings included
+  (FLO-560).** After the identifiers (0.10.5), 1.0 renames:
+  - the tag: `<m-textfield>` is `<m-text-field>`;
+  - the classes: `mtrl-textfield…` is `mtrl-text-field…`. Page CSS and `classList` calls that
+    keep the old name match nothing, and nothing warns;
+  - the part: `::part(textfield)` is `::part(text-field)`, on the text field and on the select;
+  - the defaults key: `setComponentDefaults('textfield', …)` and
+    `setGlobalDefaults({ textfield })` take `'text-field'`;
+  - the constants' values (`TEXT_FIELD_CLASSES.*`), and `SELECT_CLASSES.TEXTFIELD`'s class,
+    `select__text-field`. This corrects 0.10.5's note, which said that class stays;
+  - the import paths, which already resolve under the new names on 0.10.7 (see Added).
+
+  Only the paths can move before the upgrade.
+- **Typography leaves `mtrl/styles/base` in 1.0.** The type classes (`.mtrl-display-large` …
+  `.mtrl-label-small`), the text utilities, mtrl's styles for `h1`–`h6` and `p`, and the
+  `--mtrl-sys-typescale-*` properties other than body-medium's then need
+  `import 'mtrl/styles/typography'`. The full stylesheet, `mtrl/styles`, is unchanged. There
+  is nothing to change on 0.10.x: the new entry does not exist here.
+- **Explicit contrast levels leave `mtrl/styles/base` and the themes in 1.0.**
+  `data-theme-contrast="medium"` and `"high"` then need `import 'mtrl/styles/contrast'`
+  (and `mtrl/themes/<name>-contrast` for a theme imported on its own); without it the
+  attribute changes no colour and nothing warns. Standard contrast and `prefers-contrast: more`
+  stay in the base, and the full stylesheet, `mtrl/styles`, still includes the levels. There
+  is nothing to change on 0.10.x: the new entries do not exist here.
+
 ### Fixed
 
 - **Accessibility: scrolling from script honours reduced motion in the chips, the tabs and the

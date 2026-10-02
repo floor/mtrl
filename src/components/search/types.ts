@@ -288,7 +288,13 @@ export interface SearchComponent {
 
   // === Events ===
 
-  /** Adds an event listener */
+  /**
+   * Adds an event listener
+   * In 1.0 an `expand` or `collapse` listener is typed with what those events
+   * carry, `{ component, state, viewMode }` (`SearchStateEvent`): `event.value`
+   * and `event.preventDefault()` there become type errors (they are
+   * `undefined` and not a function at run time today).
+   */
   on: (
     event: SearchEventType,
     handler: (event: SearchEvent) => void,

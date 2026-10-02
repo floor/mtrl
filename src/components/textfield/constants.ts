@@ -106,6 +106,9 @@ const TEXTFIELD_DEFAULTS = {
 
 /**
  * CSS class names used by the textfield component
+ * In 1.0 the classes are written `text-field` (`mtrl-text-field`,
+ * `mtrl-text-field__input`, …): page CSS and `classList` calls that keep
+ * `mtrl-textfield` then match nothing, and nothing warns.
  * @category Components
  */
 const TEXTFIELD_CLASSES = {
