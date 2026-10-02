@@ -10,6 +10,17 @@ Earlier versions are in the [git history](https://github.com/floor/mtrl/commits/
 
 ## [Unreleased]
 
+### Added
+
+- **The text field's two-word import paths, ahead of 1.0 (FLO-560).** 1.0 spells the text
+  field in two words in its paths too. These resolve from 0.10.7, to the same modules as the
+  one-word paths, so every import can move before the upgrade:
+  `mtrl/components/text-field`, `mtrl/components/text-field/constants`,
+  `mtrl/styles/text-field` and `mtrl/elements/css/text-field`; and, for a stylesheet that
+  `@use`s mtrl's Sass sources, `components/text-field`. Nothing else of the rename can move
+  early: the `<m-textfield>` tag, the `mtrl-textfield` classes and `::part(textfield)` keep
+  their names on 0.10.x.
+
 ### Fixed
 
 - **Accessibility: scrolling from script honours reduced motion in the chips, the tabs and the

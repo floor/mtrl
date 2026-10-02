@@ -42,6 +42,14 @@
       "types": "./dist/styles.d.ts",
       "default": "./dist/styles.css"
     },
+    "./components/text-field/constants": {
+      "types": "./dist/components/textfield/constants.d.ts",
+      "import": "./dist/components/textfield/constants.js"
+    },
+    "./components/text-field": {
+      "types": "./dist/components/textfield/index.d.ts",
+      "import": "./dist/components/textfield/index.js"
+    },
     "./components/*/constants": {
       "types": "./dist/components/*/constants.d.ts",
       "import": "./dist/components/*/constants.js"
@@ -57,6 +65,10 @@
     "./elements/css": {
       "types": "./dist/elements/css/index.d.ts",
       "import": "./dist/elements/css/index.js"
+    },
+    "./elements/css/text-field": {
+      "types": "./dist/elements/css/textfield.d.ts",
+      "import": "./dist/elements/css/textfield.js"
     },
     "./elements/css/*": {
       "types": "./dist/elements/css/*.d.ts",
@@ -100,6 +112,10 @@
     "./core/*": {
       "types": "./dist/core/*/index.d.ts",
       "import": "./dist/core/*/index.js"
+    },
+    "./styles/text-field": {
+      "types": "./dist/styles/textfield.d.ts",
+      "import": "./dist/styles/textfield.js"
     },
     "./styles/*": {
       "types": "./dist/styles/*.d.ts",
