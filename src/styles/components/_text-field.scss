@@ -1,0 +1,6 @@
+// src/styles/components/_text-field.scss
+//
+// 1.0 spells the text field in two words in its paths (FLO-560). This forwards
+// the partial under the name it has there, so a stylesheet that `@use`s mtrl's
+// sources can move its path before the upgrade. It adds no CSS of its own.
+@forward 'textfield';

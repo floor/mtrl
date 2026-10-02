@@ -10,6 +10,30 @@ Earlier versions are in the [git history](https://github.com/floor/mtrl/commits/
 
 ## [Unreleased]
 
+### Added
+
+- **The text field's two-word import paths, ahead of 1.0 (FLO-560).** 1.0 spells the text
+  field in two words in its paths too. These resolve from 0.10.7, to the same modules as the
+  one-word paths, so every import can move before the upgrade:
+  `mtrl/components/text-field`, `mtrl/components/text-field/constants`,
+  `mtrl/styles/text-field` and `mtrl/elements/css/text-field`; and, for a stylesheet that
+  `@use`s mtrl's Sass sources, `components/text-field`. Nothing else of the rename can move
+  early: the `<m-textfield>` tag, the `mtrl-textfield` classes and `::part(textfield)` keep
+  their names on 0.10.x.
+
+### Changed
+
+- **Documented, three limits of 0.10.x that 1.0 fixes and 0.10.x does not** (each is a
+  sentence in the TSDoc):
+  - a `layer: "top"` dialog that refuses Escape (`closeOnEscape: false`, or a `beforeclose`
+    listener that prevents it) is still closed by the third press: the browser lets a page
+    refuse twice in a row and forces the third. The same for a `layer: "top"` modal sheet
+    with `closeOnEscape: false` and a modal drawer with `dismissible: false`;
+  - a snackbar waiting behind another, then dropped by a `queueBehavior: 'replace'` snackbar
+    or by `clearSnackbars()`, keeps `state` `"visible"` and cannot be shown again: create a
+    new one;
+  - a docked date picker opened with `open()` from a click outside it is closed by that same
+    click: call `open()` once the click has finished.
 ### Deprecated
 
 Comments only: nothing changes at run time. Each is changed in 1.0.0, decided after 0.10.6.
@@ -74,19 +98,6 @@ Comments only: nothing changes at run time. Each is changed in 1.0.0, decided af
   stay in the base, and the full stylesheet, `mtrl/styles`, still includes the levels. There
   is nothing to change on 0.10.x: the new entries do not exist here.
 
-### Changed
-
-- **Documented, three limits of 0.10.x that 1.0 fixes and 0.10.x does not** (each is a
-  sentence in the TSDoc):
-  - a `layer: "top"` dialog that refuses Escape (`closeOnEscape: false`, or a `beforeclose`
-    listener that prevents it) is still closed by the third press: the browser lets a page
-    refuse twice in a row and forces the third. The same for a `layer: "top"` modal sheet
-    with `closeOnEscape: false` and a modal drawer with `dismissible: false`;
-  - a snackbar waiting behind another, then dropped by a `queueBehavior: 'replace'` snackbar
-    or by `clearSnackbars()`, keeps `state` `"visible"` and cannot be shown again: create a
-    new one;
-  - a docked date picker opened with `open()` from a click outside it is closed by that same
-    click: call `open()` once the click has finished.
 ### Fixed
 
 - **Accessibility: scrolling from script honours reduced motion in the chips, the tabs and the

@@ -40,7 +40,11 @@ try {
   // FLO-406 addenda: sparse roles and a shared high palette: 1,076,871 bytes.
   // Direct high values in explicit and system rules: 1,063,670 bytes, measured
   // with Node 22.23.3 / npm 10.9.9. Repeated values compress better than references.
-  assert(pack.size < 1_070_000, "npm tarball exceeds 1,070,000 bytes");
+  // 0.10.7 announces 1.0's changes: the text field's two-word import paths (four export-map
+  // keys and a Sass forward, FLO-560): 1,069,964 to 1,070,230; then the TSDoc notices, which
+  // change nothing at run time. Raised by the rule for explicit ceilings (measured plus 1%,
+  // up to the next 1,000), Node 22.23.3 / npm 10.9.9.
+  assert(pack.size < 1_081_000, "npm tarball exceeds 1,081,000 bytes");
   // Raised from 4,500,000 on 2026-09-28 and from 5,000,000 on 2026-09-29 (Dr Jones) for
   // the elements and framework adapters, whose shadow-root CSS repeats the
   // per-component CSS; 4,936,491 measured after wave 1. Of the rest: types 35%,
@@ -63,6 +67,14 @@ try {
     import { addClass as directAddClass } from 'mtrl/core/dom';
     import { JSDOM } from ${JSON.stringify(pathToFileURL(resolve("node_modules/jsdom/lib/api.js")).href)};
     assert.equal(button, createButton);
+    // FLO-560: the text field's two-word paths resolve to the modules the old ones do.
+    for (const [alias, old] of [
+      ['mtrl/components/text-field', 'mtrl/components/textfield'],
+      ['mtrl/components/text-field/constants', 'mtrl/components/textfield/constants'],
+      ['mtrl/styles/text-field', 'mtrl/styles/textfield'],
+      ['mtrl/elements/css/text-field', 'mtrl/elements/css/textfield'],
+    ]) assert.equal(import.meta.resolve(alias), import.meta.resolve(old), alias);
+    assert.equal((await import('mtrl/components/text-field')).default, createTextfield);
     assert.equal(rail, esm.createNavigationRail);
     assert.equal(directAddClass, addClass);
     const cjs = createRequire(import.meta.url)('mtrl');
