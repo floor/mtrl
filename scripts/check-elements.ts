@@ -6208,9 +6208,31 @@ try {
       }, id);
 
     // Hover shows it after the delay
+    // A tooltip shows 300ms after hover or focus and takes 150ms to scale in; it hides
+    // 100ms after leave or blur and leaves the top layer 150ms later. Each fixed wait
+    // below was those two added up, with nothing to spare. They stay, and `tipIs` then
+    // waits, 5s at most, for the state read next; the assertions report what it was.
+    const tipIs = async (wanted: { open: boolean; visible: boolean }): Promise<void> => {
+      for (const end = Date.now() + 5000; Date.now() < end;) {
+        const now = await tipState();
+        if (now.open === wanted.open && now.visible === wanted.visible) return;
+        await wait(20);
+      }
+    };
     const save = await centerOf("pt-save");
     await page.mouse.move(save.x, save.y);
     await wait(450);
+    await tipIs({ open: true, visible: true });
+    // Both tooltips are measured, so both must have finished scaling in.
+    for (const end = Date.now() + 5000; Date.now() < end;) {
+      const scaled = await page.evaluate(() => {
+        const element = (window as unknown as PopWin).__pop.root.getElementById("pt-tip") as Host;
+        const surfaces = [element.component?.element as HTMLElement, (window as unknown as { __unlayered: Tip }).__unlayered.element];
+        return surfaces.every(surface => ["none", "matrix(1, 0, 0, 1, 0, 0)"].includes(getComputedStyle(surface).transform));
+      });
+      if (scaled) break;
+      await wait(20);
+    }
     const expected = await unlayered();
     const shown = await page.evaluate(() => {
       const { root } = (window as unknown as PopWin).__pop;
@@ -6246,19 +6268,25 @@ try {
     const outside = await centerOf("pt-outside");
     await page.mouse.move(outside.x, outside.y);
     await wait(400);
+    await tipIs({ open: false, visible: false });
     const left = await tipState();
     // Focus shows it, blur hides it
     await page.evaluate(() => ((window as unknown as PopWin).__pop.root.getElementById("pt-save") as HTMLElement).focus());
     await wait(450);
+    await tipIs({ open: true, visible: true });
     const focused = await tipState();
     await page.evaluate(() => ((window as unknown as PopWin).__pop.root.getElementById("pt-outside") as HTMLElement).focus());
     await wait(400);
+    await tipIs({ open: false, visible: false });
     const blurred = await tipState();
     // Escape hides it at once, focus staying on the target
     await page.evaluate(() => ((window as unknown as PopWin).__pop.root.getElementById("pt-save") as HTMLElement).focus());
     await wait(450);
+    // Escape is handled by a listener the tooltip adds when it shows.
+    await tipIs({ open: true, visible: true });
     await page.keyboard.press("Escape");
     await wait(250);
+    await tipIs({ open: false, visible: false });
     const escaped = await tipState();
     const stayed = await page.evaluate(() => (window as unknown as PopWin).__pop.root.activeElement?.id);
     const off = { open: false, visible: false };
@@ -6424,6 +6452,13 @@ try {
     await wait(400);
     const during = (await snackState()).open;
     await wait(800);
+    // The bar closes on its own timer and goes home when its transition ends (or
+    // 425ms later): 5s at most for both, then the state is asserted.
+    for (const end = Date.now() + 5000; Date.now() < end;) {
+      const now = await snackState();
+      if (!now.open && now.home && now.events.includes("close:timeout")) break;
+      await wait(20);
+    }
     assert.deepEqual({ during, after: await snackState() }, { during: true, after: { open: false, home: true, events: ["open", "close:timeout"] } });
     check("snackbar: it hides after its duration, closing once");
 
@@ -6517,12 +6552,24 @@ try {
     });
     await wait(400);
     const inModal = await where();
+    // A modal closing sends the bar to where it belongs next when the dialog's
+    // `close` event arrives, a task after close(): `placed` waits, 5s at most, for it
+    // to be there; the assertions report where it was.
+    const placed = async (place: string, open = true): Promise<void> => {
+      for (const end = Date.now() + 5000; Date.now() < end;) {
+        const now = await where();
+        if (now.place === place && now.open === open) return;
+        await wait(20);
+      }
+    };
     await modals("closeOuter");
     await wait(200);
+    await placed("home");
     const backHome = await where();
     await wait(600);
     const stillOpen = (await where()).open;
     await wait(800);
+    await placed("home", false);
     assert.deepEqual(
       { inModal, backHome, stillOpen, after: await where() },
       {
@@ -6572,9 +6619,11 @@ try {
     const top = await where();
     await modals("closeInner");
     await wait(100);
+    await placed("outer");
     const below = await where();
     await modals("closeOuter");
     await wait(100);
+    await placed("home");
     const out = await where();
     await page.evaluate(() => void ((window as unknown as PopWin).__pop.root.getElementById("ps-bar") as Host & { hide: () => unknown }).hide());
     await wait(600);
@@ -7437,13 +7486,22 @@ try {
       await fresh(page, `<button id="gtb" type="button">Save</button><m-tooltip id="gt" for="gtb" ${attribute} show-delay="0">Save it</m-tooltip>`);
       const visible = (): Promise<boolean> =>
         page.evaluate(() => (((document.getElementById("gt") as GapHost).component?.element as HTMLElement).className.includes("tooltip--visible")));
+      // show-delay="0" is still a timer, and a hide takes 100ms: after each fixed
+      // wait, 5s at most for the state this iteration expects. Where it expects
+      // "not shown", the fixed wait alone is the assertion.
+      const visibleIs = async (wanted: boolean): Promise<void> => {
+        for (const end = Date.now() + 5000; Date.now() < end && (await visible()) !== wanted;) await wait(20);
+      };
       await page.hover("#gtb");
       await wait(300);
+      if (hover) await visibleIs(true);
       const hovered = await visible();
       await page.mouse.move(600, 600);
       await wait(400);
+      await visibleIs(false);
       await page.focus("#gtb");
       await wait(300);
+      if (focus) await visibleIs(true);
       const focused = await visible();
       await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
       assert.deepEqual({ hovered, focused }, { hovered: hover, focused: focus }, `tooltip ${attribute}`);
