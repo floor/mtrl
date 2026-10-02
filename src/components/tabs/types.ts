@@ -329,7 +329,11 @@ export interface TabComponent {
   /** The button the tab is built on */
   button?: TabButton;
   
-  /** The tab's badge component (if any) */
+  /**
+   * The tab's badge component (if any). In `material` 3.0.0 it may be `undefined` until
+   * the badge is shown: read it with a guard, or use `setBadge()`, `getBadge()`,
+   * `showBadge()` and `hideBadge()`, which work whether it exists yet or not.
+   */
   badge?: BadgeComponent;
   
   /** Gets a class name with the component's prefix */
