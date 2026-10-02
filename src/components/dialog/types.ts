@@ -143,9 +143,12 @@ export interface DialogConfig {
   
   /** 
    * Whether to close when Escape key is pressed
-   * A limit on 0.10.x: a `layer: "top"` dialog that refuses Escape (this option
-   * `false`, or a `beforeclose` listener that prevents it) is still closed by
-   * the third press. To be fixed in 1.0.
+   * A limit on 0.10.x, fixed in 1.0: a `layer: "top"` dialog that refuses
+   * Escape (this option `false`, or a `beforeclose` listener that prevents it)
+   * is still closed by the third press.
+   * In 1.0 Escape is handled as a key press in both layers: only the topmost
+   * open modal answers, after what is open inside it (a menu, a select) has
+   * used the key, and never for the key press that opened it.
    * @default true
    */
   closeOnEscape?: boolean;

@@ -30,10 +30,16 @@ Comments only: nothing changes at run time. Each is changed in 1.0.0, decided af
     applied at once and dispatches no `open` and no `close`, as on `<m-dialog>` (a microtask
     later today, dispatching both). Code that sets it and waits for the event must read the
     state on the next line, or call `show()` / `hide()`, which still dispatch.
+  - **Escape, on every modal** (the dialog, the modal sheets and drawer, the time picker, the
+    modal date picker, the full-screen search): handled as a key press in both layers. Only
+    the topmost open modal answers, after what is open inside it (a menu, a select) has used
+    the key, and never for the key press that opened it. Escape with a menu open inside a
+    dialog closes the menu only; without `layer: "top"` it closes the dialog as well today.
   - **Snackbar:** `state` is `"queued"`, not `"visible"`, while a snackbar waits behind
     another, and `hide()` on a queued one emits nothing. 1.0 adds `isOpen()`.
   - **Time picker:** `isOpen` is a method, `isOpen()`, not a property; the config option
-    `isOpen` is named `open`, and `TIMEPICKER_DEFAULTS.IS_OPEN` is `OPEN`.
+    `isOpen` is named `open`, and `TIMEPICKER_DEFAULTS.IS_OPEN` is `OPEN`. Created with it,
+    the picker is open when its factory returns (on a 0 ms timer today).
 - **Told in the TSDoc, for 1.0, chips:** a chip's `onClick` runs before the chip toggles, so
   `isSelected()` inside it is the state before the click (read the new one in `onChange`); a
   refused deselect in a `selectionRequired` set emits no `change` and calls no `onChange` or
@@ -60,7 +66,9 @@ Comments only: nothing changes at run time. Each is changed in 1.0.0, decided af
 - **Documented, three limits of 0.10.x that 1.0 fixes and 0.10.x does not** (each is a
   sentence in the TSDoc):
   - a `layer: "top"` dialog that refuses Escape (`closeOnEscape: false`, or a `beforeclose`
-    listener that prevents it) is still closed by the third press (to be fixed in 1.0);
+    listener that prevents it) is still closed by the third press: the browser lets a page
+    refuse twice in a row and forces the third. The same for a `layer: "top"` modal sheet
+    with `closeOnEscape: false` and a modal drawer with `dismissible: false`;
   - a snackbar waiting behind another, then dropped by a `queueBehavior: 'replace'` snackbar
     or by `clearSnackbars()`, keeps `state` `"visible"` and cannot be shown again: create a
     new one;
