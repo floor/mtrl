@@ -58,7 +58,7 @@ export { default as createTabs } from "./tabs";
 export { createTab } from "./tabs/tab";
 export { default as createTextField } from "./textfield";
 export {
-  /** @deprecated Use createTextField: M3 writes "text field" as two words. Removed in 1.0 (FLO-383). */
+  /** @deprecated Use createTextField: M3 writes "text field" as two words. Removed in `material` 3.0.0 (FLO-383). */
   default as createTextfield,
 } from "./textfield";
 export { default as createTimePicker } from "./timepicker";
@@ -85,7 +85,7 @@ export type { BadgeConfig, BadgeComponent } from "./badge/types";
 export type {
   BottomAppBarConfig,
   BottomAppBar as BottomAppBarComponent,
-  /** @deprecated Use BottomAppBarComponent, the name every component type has. Removed in 1.0 (FLO-383). */
+  /** @deprecated Use BottomAppBarComponent, the name every component type has. Removed in `material` 3.0.0 (FLO-383). */
   BottomAppBar,
 } from "./bottom-app-bar/types";
 export type {
@@ -126,7 +126,7 @@ export type {
 // Card
 export type {
   CardSchema as CardConfig,
-  /** @deprecated Use CardConfig. Removed in 1.0 (FLO-383). */
+  /** @deprecated Use CardConfig. Removed in `material` 3.0.0 (FLO-383). */
   CardSchema,
 } from "./card/types";
 
@@ -269,9 +269,9 @@ export type {
 export type {
   TextfieldConfig as TextFieldConfig,
   TextfieldComponent as TextFieldComponent,
-  /** @deprecated Use TextFieldConfig: M3 writes "text field" as two words. Removed in 1.0 (FLO-383). */
+  /** @deprecated Use TextFieldConfig: M3 writes "text field" as two words. Removed in `material` 3.0.0 (FLO-383). */
   TextfieldConfig,
-  /** @deprecated Use TextFieldComponent: M3 writes "text field" as two words. Removed in 1.0 (FLO-383). */
+  /** @deprecated Use TextFieldComponent: M3 writes "text field" as two words. Removed in `material` 3.0.0 (FLO-383). */
   TextfieldComponent,
 } from "./textfield/types";
 
@@ -293,7 +293,7 @@ export type {
 export type {
   TopAppBarConfig,
   TopAppBar as TopAppBarComponent,
-  /** @deprecated Use TopAppBarComponent, the name every component type has. Removed in 1.0 (FLO-383). */
+  /** @deprecated Use TopAppBarComponent, the name every component type has. Removed in `material` 3.0.0 (FLO-383). */
   TopAppBar,
 } from "./top-app-bar/types";
 

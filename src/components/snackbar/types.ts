@@ -160,8 +160,8 @@ export interface SnackbarComponent {
 
   /**
    * Current state of the snackbar
-   * In 1.0 a snackbar shown behind another is `"queued"` until its turn, then
-   * `"visible"` with `open` (today it says `"visible"` while it waits). 1.0
+   * In `material` 3.0.0 a snackbar shown behind another is `"queued"` until its turn, then
+   * `"visible"` with `open` (today it says `"visible"` while it waits). `material` 3.0.0
    * adds `isOpen()`, true only while it is on screen.
    */
   state: SnackbarState;
@@ -177,7 +177,7 @@ export interface SnackbarComponent {
 
   /**
    * Displays the snackbar
-   * A limit on 0.10.x, fixed in 1.0: a snackbar still waiting behind another
+   * A limit on 0.10.x, fixed in `material` 3.0.0: a snackbar still waiting behind another
    * when a `queueBehavior: 'replace'` snackbar or `clearSnackbars()` drops it
    * keeps `state` `"visible"`, and `show()` on it does nothing from then on.
    * Create a new snackbar instead of showing that one again.
@@ -186,7 +186,7 @@ export interface SnackbarComponent {
 
   /**
    * Hides the snackbar
-   * In 1.0 `hide()` on a snackbar still waiting behind another takes it out of
+   * In `material` 3.0.0 `hide()` on a snackbar still waiting behind another takes it out of
    * the queue and emits nothing (today it emits `close` and `dismiss`).
    */
   hide: () => SnackbarComponent;

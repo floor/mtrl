@@ -1,7 +1,7 @@
 // test/types/canonical-names.fixture.ts
 //
 // FLO-383: the canonical names are the same types and the same factory as the
-// old ones, which stay (deprecated) until 1.0. The TopAppBar the factory
+// old ones, which stay (deprecated) until `material` 3.0.0. The TopAppBar the factory
 // returned was a second declaration in top-app-bar.ts; it now returns the public
 // one, and assignability is unchanged both ways. Compiled under both
 // strictNullChecks gates (tooling:check and test:types).

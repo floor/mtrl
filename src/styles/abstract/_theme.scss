@@ -28,7 +28,7 @@ $mtrl-sys-motion: (
   'easing-emphasized-decelerate': v.$motion('easing-emphasized-decelerate')
 );
 
-// Deprecated: nothing reads this map; it is removed in 1.0.0. Use v.shape()
+// Deprecated: nothing reads this map; it is removed in `material` 3.0.0. Use v.shape()
 // (FLO-345).
 $mtrl-sys-shape: (
   'none': v.$shape('none'),

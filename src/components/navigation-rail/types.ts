@@ -50,9 +50,9 @@ export interface NavigationRailConfig extends BaseComponentConfig {
     header?: HTMLElement;
     ripple?: boolean;
     onSelect?: (event: NavigationRailSelectEvent) => void;
-    /** In 1.0 it receives `{ expanded: true }`, the object an `expand` listener receives. */
+    /** In `material` 3.0.0 it receives `{ expanded: true }`, the object an `expand` listener receives. */
     onExpand?: () => void;
-    /** In 1.0 it receives `{ expanded: false }`, the object a `collapse` listener receives. */
+    /** In `material` 3.0.0 it receives `{ expanded: false }`, the object a `collapse` listener receives. */
     onCollapse?: () => void;
 }
 export interface NavigationRailComponent {

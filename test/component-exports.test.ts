@@ -3,7 +3,7 @@
 // FLO-381: `mtrl/components/<name>` is public API like the root. Each index's
 // export list is pinned, so a name joining or leaving a component subpath fails
 // here until the fixture is regenerated (`bun run component-exports:update`)
-// and the diff reviewed. The internals leaving in 1.0.0 carry @deprecated on
+// and the diff reviewed. The internals leaving in `material` 3.0.0 carry @deprecated on
 // their re-export: an editor flags them imported from the component's subpath.
 import { describe, expect, test } from "bun:test";
 import ts from "typescript";
@@ -23,7 +23,7 @@ describe("the component subpaths' exports (FLO-381)", () => {
     expect(changes, `Run \`bun run component-exports:update\` if intended:\n${changes.join("\n")}`).toEqual([]);
   });
 
-  test("the internals leaving in 1.0.0 are deprecated, and say so", () => {
+  test("the internals leaving in `material` 3.0.0 are deprecated, and say so", () => {
     expect(deprecated.map((e) => `${e.component}:${e.name}`).sort()).toEqual([
       "card:ExpandableFeature", "card:LoadingFeature", "card:SwipeableFeature", "card:withAPI", "card:withElevation",
       "card:withExpandable", "card:withLoading", "card:withSwipeable",
@@ -34,7 +34,7 @@ describe("the component subpaths' exports (FLO-381)", () => {
       "tabs:createTabIndicator", "tabs:createTabsState", "tabs:setupKeyboardNavigation", "tabs:updateTabPanels",
       "tabs:withDivider", "tabs:withIndicator", "tabs:withScrollable", "tabs:withTabsManagement",
     ].sort());
-    for (const e of deprecated) expect(e.note).toContain(`removed from mtrl/components/${e.component} in 1.0.0`);
+    for (const e of deprecated) expect(e.note).toContain(`removed from mtrl/components/${e.component} in \`material\` 3.0.0`);
   });
 
   test("the old names are deprecated toward the canonical ones, which are public (FLO-383)", () => {

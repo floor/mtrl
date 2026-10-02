@@ -153,7 +153,7 @@ The default baseline also supports this setting without `data-theme`. On that un
 
 M3's scheme variants, generated from the baseline seed, ship as their own entries only (not in the full stylesheet): `neutral`, `vibrant`, `expressive`, `fidelity`, `content`, `monochrome`, `rainbow` and `fruit-salad`, for example `mtrl/themes/vibrant`. `schemeToTokens` (`mtrl/core/theme`) turns any M3 scheme's role colours into these tokens.
 
-Deprecated, removed in 1.0: `material` (use `baseline`), `winter` (use `ocean`), `browngreen` (use `brownbeige`) and `legacy`.
+Deprecated themes, removed in the package `material` 3.0.0: the theme `material` (use `baseline`), `winter` (use `ocean`), `browngreen` (use `brownbeige`) and `legacy`.
 
 ### Custom properties
 
@@ -288,6 +288,10 @@ configureHTML({ sanitize: (html) => policy.createHTML(html) });
 ```
 
 The policy sees every string, the library's own icons included; a `TrustedHTML` value passed as an icon or content skips it. With no policy set, markup is written as it is. Text options (`text`, a card's `text`) never go through `innerHTML`.
+
+## Moving to `material`
+
+This library continues as the npm package `material`, from version 3.0.0. Stay on the latest `mtrl` 0.10.x until you are ready; then change the package name to `material` (version 3) and follow its migration guide. The `@deprecated` notes and the [changelog](CHANGELOG.md) say what `material` 3.0.0 changes.
 
 ## Upgrading from 0.9
 

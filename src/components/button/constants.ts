@@ -82,8 +82,8 @@ export const BUTTON_CLASSES = {
  */
 export const DEFAULT_RIPPLE_CONFIG = {
   DURATION: 450, // Duration in ms (slightly increased)
-  /** @deprecated Has no effect: the option it is the default of is never applied (FLO-268). Removed in 1.0. */
+  /** @deprecated Has no effect: the option it is the default of is never applied (FLO-268). Removed in `material` 3.0.0. */
   TIMING: "cubic-bezier(0.4, 0.0, 0.2, 1)", // Material Design timing function
-  /** @deprecated Has no effect: the option it is the default of is never applied (FLO-268). Removed in 1.0. */
+  /** @deprecated Has no effect: the option it is the default of is never applied (FLO-268). Removed in `material` 3.0.0. */
   OPACITY: ["0.7", "0"], // Increased initial opacity for better visibility
 } as const;

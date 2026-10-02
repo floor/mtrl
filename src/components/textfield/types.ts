@@ -378,7 +378,7 @@ export interface BaseComponent {
  */
 declare module "../../core/config/global" {
   interface ComponentConfigMap {
-    /** In 1.0 this defaults key is `'text-field'`: `setComponentDefaults('text-field', …)`. */
+    /** In `material` 3.0.0 this defaults key is `'text-field'`: `setComponentDefaults('text-field', …)`. */
     textfield?: Partial<TextfieldConfig>;
   }
 }

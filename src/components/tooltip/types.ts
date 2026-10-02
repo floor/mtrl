@@ -141,7 +141,7 @@ export interface TooltipConfig {
   /**
    * Never read, so it has no effect: a rich tooltip is `variant: 'rich'`, and
    * the content is always text.
-   * @deprecated Since 0.10 (FLO-324); removed in 1.0.
+   * @deprecated Since 0.10 (FLO-324); removed in `material` 3.0.0.
    */
   rich?: boolean;
 }

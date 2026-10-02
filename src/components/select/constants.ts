@@ -88,7 +88,7 @@ export const SELECT_DEFAULTS = {
 export const SELECT_CLASSES = {
   /** Container element */
   CONTAINER: 'select',
-  /** @deprecated Renamed `TEXT_FIELD` in 1.0 (FLO-383), and its class becomes `select__text-field`. */
+  /** @deprecated Renamed `TEXT_FIELD` in `material` 3.0.0 (FLO-383), and its class becomes `select__text-field`. */
   TEXTFIELD: 'select__textfield',
   /** Dropdown icon */
   DROPDOWN_ICON: 'select__dropdown-icon',

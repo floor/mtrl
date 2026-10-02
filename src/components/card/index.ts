@@ -73,7 +73,7 @@ export type {
   CardVariant,
   CardElevationLevel,
   CardSchema as CardConfig,
-  /** @deprecated Use CardConfig. Removed in 1.0 (FLO-383). */
+  /** @deprecated Use CardConfig. Removed in `material` 3.0.0 (FLO-383). */
   CardSchema,
   CardHeaderConfig,
   CardContentConfig,
@@ -82,11 +82,11 @@ export type {
   CardAriaAttributes,
   CardComponent,
   CardEvents,
-  /** @deprecated Internal, no replacement: removed from mtrl/components/card in 1.0.0 (FLO-381). */
+  /** @deprecated Internal, no replacement: removed from mtrl/components/card in `material` 3.0.0 (FLO-381). */
   LoadingFeature,
-  /** @deprecated Internal, no replacement: removed from mtrl/components/card in 1.0.0 (FLO-381). */
+  /** @deprecated Internal, no replacement: removed from mtrl/components/card in `material` 3.0.0 (FLO-381). */
   ExpandableFeature,
-  /** @deprecated Internal, no replacement: removed from mtrl/components/card in 1.0.0 (FLO-381). */
+  /** @deprecated Internal, no replacement: removed from mtrl/components/card in `material` 3.0.0 (FLO-381). */
   SwipeableFeature,
 } from "./types";
 
@@ -100,19 +100,19 @@ export {
 
 // Export API methods
 export {
-  /** @deprecated Internal, no replacement: removed from mtrl/components/card in 1.0.0 (FLO-381). */
+  /** @deprecated Internal, no replacement: removed from mtrl/components/card in `material` 3.0.0 (FLO-381). */
   withAPI,
 } from "./api";
 
 // Export feature enhancers
 export {
-  /** @deprecated Internal, no replacement: removed from mtrl/components/card in 1.0.0 (FLO-381). */
+  /** @deprecated Internal, no replacement: removed from mtrl/components/card in `material` 3.0.0 (FLO-381). */
   withLoading,
-  /** @deprecated Internal, no replacement: removed from mtrl/components/card in 1.0.0 (FLO-381). */
+  /** @deprecated Internal, no replacement: removed from mtrl/components/card in `material` 3.0.0 (FLO-381). */
   withExpandable,
-  /** @deprecated Internal, no replacement: removed from mtrl/components/card in 1.0.0 (FLO-381). */
+  /** @deprecated Internal, no replacement: removed from mtrl/components/card in `material` 3.0.0 (FLO-381). */
   withSwipeable,
-  /** @deprecated Internal, no replacement: removed from mtrl/components/card in 1.0.0 (FLO-381). */
+  /** @deprecated Internal, no replacement: removed from mtrl/components/card in `material` 3.0.0 (FLO-381). */
   withElevation,
 } from "./features";
 

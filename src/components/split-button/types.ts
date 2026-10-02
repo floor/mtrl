@@ -111,8 +111,8 @@ export interface SplitButtonComponent {
 
   /**
    * The menu, when the component was given items
-   * @deprecated Removed in 1.0. Use the split button's own methods and events: `expand()`,
-   * `collapse()`, `isExpanded()`, and `expand`, `collapse` and `select`. 1.0 adds
+   * @deprecated Removed in `material` 3.0.0. Use the split button's own methods and events: `expand()`,
+   * `collapse()`, `isExpanded()`, and `expand`, `collapse` and `select`. `material` 3.0.0 adds
    * `setItems()` and `getItems()` for what `menu.setItems()` does today.
    */
   menu?: MenuComponent;

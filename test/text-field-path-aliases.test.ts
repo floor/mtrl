@@ -1,6 +1,6 @@
 // test/text-field-path-aliases.test.ts
 //
-// FLO-560: 1.0 spells the text field in two words in its paths as well
+// FLO-560: `material` 3.0.0 spells the text field in two words in its paths as well
 // (`mtrl/components/text-field`, `mtrl/styles/text-field`, …). 0.10.7 offers
 // the new paths beside the old ones, so every import can move before the
 // upgrade: four exact keys in the export map, pointing at the files the old

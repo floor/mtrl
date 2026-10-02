@@ -435,7 +435,7 @@ export interface ListEvents<T = unknown> {
   select: (event: SelectEvent<T>) => void;
   load: (event: LoadEvent<T>) => void;
   scroll: (event: ForwardedEventPayload<Event, HTMLElement> & {
-    /** @deprecated Never sent: the root's scroll is forwarded without it. Removed in 1.0 (FLO-380, FLO-384). */
+    /** @deprecated Never sent: the root's scroll is forwarded without it. Removed in `material` 3.0.0 (FLO-380, FLO-384). */
     component?: ListComponent<T>;
   }) => void;
   keydown: (event: ForwardedEventPayload<KeyboardEvent, HTMLElement>) => void;

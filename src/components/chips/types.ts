@@ -40,12 +40,12 @@ export interface ChipConfig {
   /** The trailing button opens a menu: aria-haspopup="menu", and a drop-down arrow unless trailingIcon is set. */
   trailingMenu?: boolean;
   /**
-   * In 1.0 a chip's `onClick` receives the `click` payload, `{ event, originalEvent, element }`, not the chip.
+   * In `material` 3.0.0 a chip's `onClick` receives the `click` payload, `{ event, originalEvent, element }`, not the chip.
    * It then runs before the chip toggles, alone or in a set: `isSelected()` inside it is
    * the state before the click (today it runs after the toggle). Read the new state in `onChange`.
    */
   onClick?: (chip: ChipComponent) => void;
-  /** In 1.0 a chip's `onChange` receives one object, `{ selected, chip, value }`, the `change` payload. */
+  /** In `material` 3.0.0 a chip's `onChange` receives one object, `{ selected, chip, value }`, the `change` payload. */
   onChange?: (selected: boolean, chip: ChipComponent) => void;
   onSelect?: (chip: ChipComponent) => void;
   class?: string;
@@ -54,13 +54,13 @@ export interface ChipConfig {
   ripple?: boolean;
   /**
    * @internal Selection belongs to the chips container.
-   * @deprecated Not for apps: moves out of ChipConfig in 1.0.0 (FLO-381).
+   * @deprecated Not for apps: moves out of ChipConfig in `material` 3.0.0 (FLO-381).
    */
   managedSelection?: boolean;
   /**
    * @internal The chip is a cell of a chip set's grid (FLO-261): the root is a
    * `gridcell`, and a one-action chip's cell is its focus target.
-   * @deprecated Not for apps: moves out of ChipConfig in 1.0.0 (FLO-381).
+   * @deprecated Not for apps: moves out of ChipConfig in `material` 3.0.0 (FLO-381).
    */
   cell?: boolean;
 }
@@ -163,7 +163,7 @@ export interface ChipsConfig {
    * Whether the set keeps at least one chip selected: deselecting the last selected
    * chip is refused. Off by default, as in Material; single-select sets used to
    * enforce it without a way to opt out. FLO-257.
-   * In 1.0 a refused click emits no `change` and calls no `onChange` and no
+   * In `material` 3.0.0 a refused click emits no `change` and calls no `onChange` and no
    * `onSelect` (today the set emits `change` and both callbacks run, with the
    * chip still selected).
    * @default false
@@ -172,7 +172,7 @@ export interface ChipsConfig {
 
   /**
    * Callback function when chip selection changes.
-   * In 1.0 it receives one object, `{ value, selected, changed }` (no array, no
+   * In `material` 3.0.0 it receives one object, `{ value, selected, changed }` (no array, no
    * second argument), and also hears `selectByValue(values, true)`.
    */
   onChange?: (event: ChipsChangeEvent, changedValue: string | null) => void;

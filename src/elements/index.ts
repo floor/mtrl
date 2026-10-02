@@ -87,20 +87,20 @@ export { sliderElement, defineSlider } from "./slider";
 export type { SliderSpec, SliderElement } from "./slider";
 export { textfieldElement as textFieldElement, defineTextfield as defineTextField } from "./textfield";
 export {
-  /** @deprecated Use textFieldElement: M3 writes "text field" as two words. Removed in 1.0 (FLO-383). */
+  /** @deprecated Use textFieldElement: M3 writes "text field" as two words. Removed in `material` 3.0.0 (FLO-383). */
   textfieldElement,
-  /** @deprecated Use defineTextField: M3 writes "text field" as two words. Removed in 1.0 (FLO-383). */
+  /** @deprecated Use defineTextField: M3 writes "text field" as two words. Removed in `material` 3.0.0 (FLO-383). */
   defineTextfield,
 } from "./textfield";
 export type {
   TextfieldSpec as TextFieldSpec,
   TextfieldElement as TextFieldElement,
   TextfieldElementComponent as TextFieldElementComponent,
-  /** @deprecated Use TextFieldSpec: M3 writes "text field" as two words. Removed in 1.0 (FLO-383). */
+  /** @deprecated Use TextFieldSpec: M3 writes "text field" as two words. Removed in `material` 3.0.0 (FLO-383). */
   TextfieldSpec,
-  /** @deprecated Use TextFieldElement: M3 writes "text field" as two words. Removed in 1.0 (FLO-383). */
+  /** @deprecated Use TextFieldElement: M3 writes "text field" as two words. Removed in `material` 3.0.0 (FLO-383). */
   TextfieldElement,
-  /** @deprecated Use TextFieldElementComponent: M3 writes "text field" as two words. Removed in 1.0 (FLO-383). */
+  /** @deprecated Use TextFieldElementComponent: M3 writes "text field" as two words. Removed in `material` 3.0.0 (FLO-383). */
   TextfieldElementComponent,
 } from "./textfield";
 export { radiosElement, radioDeclaration, defineRadios } from "./radios";
