@@ -18,13 +18,12 @@ say `material` 3.0.0, they mean the next version of this code. To move, stay on 
 and follow its migration guide.
 
 What `material` 3.0.0 decided after 0.10.6 is told in the code, as an "In `material` 3.0.0 …"
-note in the TSDoc: the overlays' open and close, the chips' click order, the text field's
-two-word tag and classes, and the stylesheets that become imports of their own (typography,
-contrast). None of those notes changes anything at run time. One thing can be written the
-new way early: the text field's import paths resolve under their two-word names from this
-release. Three limits of 0.10.x that `material` 3.0.0 fixes are documented, and one
-accessibility fix is ported: scrolling from script honours reduced motion. Upgrade to this
-release before the move.
+note in the TSDoc: the overlays' open and close, the chips' click order, and the text
+field's two-word tag and classes. None of those notes changes anything at run time. One
+thing can be written the new way early: the text field's import paths resolve under their
+two-word names from this release. Three limits of 0.10.x that `material` 3.0.0 fixes are
+documented, and one accessibility fix is ported: scrolling from script honours reduced
+motion. Upgrade to this release before the move.
 
 ### Added
 
