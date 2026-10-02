@@ -161,19 +161,41 @@ export interface ProgressComponent {
   /** The component's root DOM element */
   element: HTMLElement;
 
-  /** The track element (unfilled part) - always an SVG element */
+  /**
+   * The track element (unfilled part) - always an SVG element
+   * @deprecated Internal in `material` 3.0.0 and off the public type; no replacement: it
+   * was never meant to be driven from outside. It named a part of the SVG the canvas
+   * replaced.
+   */
   track: SVGElement;
 
-  /** The indicator element (filled part) - always an SVG element */
+  /**
+   * The indicator element (filled part) - always an SVG element
+   * @deprecated Internal in `material` 3.0.0 and off the public type; no replacement: it
+   * was never meant to be driven from outside. It named a part of the SVG the canvas
+   * replaced.
+   */
   indicator: SVGElement;
 
-  /** The canvas the indicator is drawn on */
+  /**
+   * The canvas the indicator is drawn on
+   * @deprecated Internal in `material` 3.0.0 and off the public type; the canvas is the
+   * element's own: `progress.element.querySelector('canvas')`.
+   */
   canvas?: HTMLCanvasElement;
 
-  /** Re-measures the canvas and redraws; the component does this on resize */
+  /**
+   * Re-measures the canvas and redraws; the component does this on resize
+   * @deprecated Internal in `material` 3.0.0 and off the public type; no replacement: the
+   * component observes its own size and redraws itself.
+   */
   resize?: () => void;
 
-  /** The buffer element for linear variant (pre-loaded state) - always an SVG element */
+  /**
+   * The buffer element for linear variant (pre-loaded state) - always an SVG element
+   * @deprecated Internal in `material` 3.0.0 and off the public type; the buffer's value
+   * is set with `setBuffer()` and read with `getBuffer()`.
+   */
   buffer?: SVGElement;
 
   /**

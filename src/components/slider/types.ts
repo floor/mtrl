@@ -225,6 +225,13 @@ export interface SliderStateComponent {
   valueBubble?: HTMLElement | null;
   secondHandle?: HTMLElement | null;
   secondValueBubble?: HTMLElement | null;
+  /**
+   * The older bag the same elements were kept in
+   * @deprecated Internal in `material` 3.0.0 and outside the public contract: nothing in
+   * the library fills it, it may go in any release, and `SliderComponent` has no
+   * `components`. Use the slider's own API (`setValue()`, `getValue()` and the rest of
+   * `SliderComponent`) and `slider.element`.
+   */
   components?: Record<string, HTMLElement | null | undefined>;
   getClass: (name: string) => string;
   emit: (event: string, data: unknown) => unknown;

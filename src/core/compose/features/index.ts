@@ -1,4 +1,15 @@
 // src/core/compose/features/index.ts
+/**
+ * The composition features, at the import path `mtrl/core/compose/features`.
+ *
+ * @deprecated `material` 3.0.0, where this library continues, does not resolve this
+ * path (FLO-414): import these names from `material/core/compose`, which exports them,
+ * the README's `withLifecycle` among them. `mtrl/core/compose` exports them too, except
+ * `withBadge`, `LabelManager` and the badge feature's `BadgeComponent` and
+ * `BadgeConfig`; of those four, `material` 3.0.0 keeps `withBadge` and the two badge
+ * types internal (for a badge, use `createBadge`) and exports `LabelManager`.
+ * @packageDocumentation
+ */
 
 // Core features
 export { withEvents } from './events';
