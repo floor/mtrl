@@ -90,7 +90,7 @@ export interface IconButtonConfig extends BaseComponentConfig {
    * When true, the button can be selected/unselected
    *
    * A click emits `change`. The DOM `toggle` event the button also dispatches
-   * is deprecated and removed in 1.0: listen to `change`.
+   * is deprecated and removed in `material` 3.0.0: listen to `change`.
    *
    * @default false
    */

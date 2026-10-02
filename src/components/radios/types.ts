@@ -124,7 +124,7 @@ export interface RadioItem {
 export interface RadiosChangePayload {
   /**
    * Selected value, or an empty string when an unknown value clears selection.
-   * In 1.0 that is `null`, as the select and `<m-radios>` report it.
+   * In `material` 3.0.0 that is `null`, as the select and `<m-radios>` report it.
    */
   value: string;
   /** Native input change event; undefined for programmatic clearing. */
@@ -164,14 +164,14 @@ export interface RadiosComponent {
   
   /**
    * Gets the radios component name.
-   * In 1.0 it returns `null`, not an empty string, when nothing is selected.
+   * In `material` 3.0.0 it returns `null`, not an empty string, when nothing is selected.
    * @returns Selected radio value or empty string if none selected
    */
   getValue: () => string;
   
   /**
    * Sets the radios component value (selects a radio).
-   * In 1.0 it also accepts `null`, which clears the selection.
+   * In `material` 3.0.0 it also accepts `null`, which clears the selection.
    * @param value - Value to select
    * @returns The radios component for chaining
    */

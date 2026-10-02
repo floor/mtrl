@@ -2,7 +2,7 @@
 //
 // FLO-383 A2: "two words everywhere in the API". Each entry exports the text
 // field under its canonical name, the same binding as the old spelling, and the
-// old spelling is flagged where it is imported (deprecated until 1.0). Tags,
+// old spelling is flagged where it is imported (deprecated until `material` 3.0.0). Tags,
 // element names, CSS classes, folders and event strings keep "textfield".
 // Svelte's index is written by the build; svelte:check covers it. Nothing here
 // imports the adapters at run time: they load mtrl/elements/css/* through the

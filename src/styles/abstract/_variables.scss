@@ -217,7 +217,7 @@ $typescale: (
 $shape: (
   'none': 0,
   // Deprecated: extra-tiny, tiny and pill are not on M3's scale and are
-  // removed in 1.0.0. Use a literal radius for extra-tiny and tiny; for pill,
+  // removed in `material` 3.0.0. Use a literal radius for extra-tiny and tiny; for pill,
   // use full or half the component's height (FLO-345).
   'extra-tiny': 1px,
   'tiny': 2px,
@@ -439,7 +439,7 @@ $button-shape-tokens: (
 }
 
 // Text field configuration. `$textfield` is the 0.10 name, deprecated for
-// `$text-field` (FLO-383) and removed in 1.0; it keeps working until then.
+// `$text-field` (FLO-383) and removed in `material` 3.0.0; it keeps working on 0.10.x.
 $textfield: (
   // The width of a field the page does not size (TextFieldDefaults.MinWidth)
   'width': 280px,
@@ -454,7 +454,7 @@ $textfield: (
   'icon-size': 24px
 ) !default;
 
-// The text field's map, under the name 1.0 keeps (FLO-383): the same map as
+// The text field's map, under the name `material` 3.0.0 keeps (FLO-383): the same map as
 // `$textfield` unless a theme configures this one.
 $text-field: $textfield !default;
 
@@ -464,7 +464,7 @@ $text-field: $textfield !default;
   @return map.get($text-field, $key);
 }
 
-/// Deprecated: use `text-field()`. Removed in 1.0 (FLO-383).
+/// Deprecated: use `text-field()`. Removed in `material` 3.0.0 (FLO-383).
 @function textfield($key) {
   @return text-field($key);
 }

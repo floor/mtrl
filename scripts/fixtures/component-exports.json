@@ -58,7 +58,7 @@
       "name": "BottomAppBar",
       "kind": "type",
       "status": "deprecated",
-      "note": "Use BottomAppBarComponent, the name every component type has. Removed in 1.0 (FLO-383)."
+      "note": "Use BottomAppBarComponent, the name every component type has. Removed in `material` 3.0.0 (FLO-383)."
     },
     {
       "name": "BottomAppBarComponent",
@@ -485,7 +485,7 @@
       "name": "CardSchema",
       "kind": "type",
       "status": "deprecated",
-      "note": "Use CardConfig. Removed in 1.0 (FLO-383)."
+      "note": "Use CardConfig. Removed in `material` 3.0.0 (FLO-383)."
     },
     {
       "name": "CardVariant",
@@ -521,49 +521,49 @@
       "name": "ExpandableFeature",
       "kind": "type",
       "status": "deprecated",
-      "note": "Internal, no replacement: removed from mtrl/components/card in 1.0.0 (FLO-381)."
+      "note": "Internal, no replacement: removed from mtrl/components/card in `material` 3.0.0 (FLO-381)."
     },
     {
       "name": "LoadingFeature",
       "kind": "type",
       "status": "deprecated",
-      "note": "Internal, no replacement: removed from mtrl/components/card in 1.0.0 (FLO-381)."
+      "note": "Internal, no replacement: removed from mtrl/components/card in `material` 3.0.0 (FLO-381)."
     },
     {
       "name": "SwipeableFeature",
       "kind": "type",
       "status": "deprecated",
-      "note": "Internal, no replacement: removed from mtrl/components/card in 1.0.0 (FLO-381)."
+      "note": "Internal, no replacement: removed from mtrl/components/card in `material` 3.0.0 (FLO-381)."
     },
     {
       "name": "withAPI",
       "kind": "value",
       "status": "deprecated",
-      "note": "Internal, no replacement: removed from mtrl/components/card in 1.0.0 (FLO-381)."
+      "note": "Internal, no replacement: removed from mtrl/components/card in `material` 3.0.0 (FLO-381)."
     },
     {
       "name": "withElevation",
       "kind": "value",
       "status": "deprecated",
-      "note": "Internal, no replacement: removed from mtrl/components/card in 1.0.0 (FLO-381)."
+      "note": "Internal, no replacement: removed from mtrl/components/card in `material` 3.0.0 (FLO-381)."
     },
     {
       "name": "withExpandable",
       "kind": "value",
       "status": "deprecated",
-      "note": "Internal, no replacement: removed from mtrl/components/card in 1.0.0 (FLO-381)."
+      "note": "Internal, no replacement: removed from mtrl/components/card in `material` 3.0.0 (FLO-381)."
     },
     {
       "name": "withLoading",
       "kind": "value",
       "status": "deprecated",
-      "note": "Internal, no replacement: removed from mtrl/components/card in 1.0.0 (FLO-381)."
+      "note": "Internal, no replacement: removed from mtrl/components/card in `material` 3.0.0 (FLO-381)."
     },
     {
       "name": "withSwipeable",
       "kind": "value",
       "status": "deprecated",
-      "note": "Internal, no replacement: removed from mtrl/components/card in 1.0.0 (FLO-381)."
+      "note": "Internal, no replacement: removed from mtrl/components/card in `material` 3.0.0 (FLO-381)."
     }
   ],
   "card/constants": [
@@ -951,7 +951,7 @@
       "name": "DEFAULT_DATE_FORMAT",
       "kind": "value",
       "status": "deprecated",
-      "note": "Internal, no replacement: removed from mtrl/components/datepicker in 1.0.0 (FLO-381)."
+      "note": "Internal, no replacement: removed from mtrl/components/datepicker in `material` 3.0.0 (FLO-381)."
     }
   ],
   "datepicker/constants": [
@@ -2900,7 +2900,7 @@
       "name": "SupportingTextComponent",
       "kind": "type",
       "status": "deprecated",
-      "note": "Internal, no replacement: removed from mtrl/components/switch in 1.0.0 (FLO-381)."
+      "note": "Internal, no replacement: removed from mtrl/components/switch in `material` 3.0.0 (FLO-381)."
     },
     {
       "name": "SWITCH_CLASSES",
@@ -2951,7 +2951,7 @@
       "name": "withSupportingText",
       "kind": "value",
       "status": "deprecated",
-      "note": "Internal, no replacement: removed from mtrl/components/switch in 1.0.0 (FLO-381)."
+      "note": "Internal, no replacement: removed from mtrl/components/switch in `material` 3.0.0 (FLO-381)."
     }
   ],
   "switch/constants": [
@@ -2986,7 +2986,7 @@
       "name": "addScrollIndicators",
       "kind": "value",
       "status": "deprecated",
-      "note": "Internal, no replacement: removed from mtrl/components/tabs in 1.0.0 (FLO-381)."
+      "note": "Internal, no replacement: removed from mtrl/components/tabs in `material` 3.0.0 (FLO-381)."
     },
     {
       "name": "createTab",
@@ -2997,13 +2997,13 @@
       "name": "createTabIndicator",
       "kind": "value",
       "status": "deprecated",
-      "note": "Internal, no replacement: removed from mtrl/components/tabs in 1.0.0 (FLO-381)."
+      "note": "Internal, no replacement: removed from mtrl/components/tabs in `material` 3.0.0 (FLO-381)."
     },
     {
       "name": "createTabsState",
       "kind": "value",
       "status": "deprecated",
-      "note": "Internal, no replacement: removed from mtrl/components/tabs in 1.0.0 (FLO-381)."
+      "note": "Internal, no replacement: removed from mtrl/components/tabs in `material` 3.0.0 (FLO-381)."
     },
     {
       "name": "default",
@@ -3014,13 +3014,13 @@
       "name": "DividerConfig",
       "kind": "type",
       "status": "deprecated",
-      "note": "Internal, no replacement: removed from mtrl/components/tabs in 1.0.0 (FLO-381)."
+      "note": "Internal, no replacement: removed from mtrl/components/tabs in `material` 3.0.0 (FLO-381)."
     },
     {
       "name": "IndicatorComponent",
       "kind": "type",
       "status": "deprecated",
-      "note": "Internal, no replacement: removed from mtrl/components/tabs in 1.0.0 (FLO-381)."
+      "note": "Internal, no replacement: removed from mtrl/components/tabs in `material` 3.0.0 (FLO-381)."
     },
     {
       "name": "IndicatorConfig",
@@ -3031,25 +3031,25 @@
       "name": "IndicatorFeatureConfig",
       "kind": "type",
       "status": "deprecated",
-      "note": "Internal, no replacement: removed from mtrl/components/tabs in 1.0.0 (FLO-381)."
+      "note": "Internal, no replacement: removed from mtrl/components/tabs in `material` 3.0.0 (FLO-381)."
     },
     {
       "name": "ScrollableComponent",
       "kind": "type",
       "status": "deprecated",
-      "note": "Internal, no replacement: removed from mtrl/components/tabs in 1.0.0 (FLO-381)."
+      "note": "Internal, no replacement: removed from mtrl/components/tabs in `material` 3.0.0 (FLO-381)."
     },
     {
       "name": "ScrollableConfig",
       "kind": "type",
       "status": "deprecated",
-      "note": "Internal, no replacement: removed from mtrl/components/tabs in 1.0.0 (FLO-381)."
+      "note": "Internal, no replacement: removed from mtrl/components/tabs in `material` 3.0.0 (FLO-381)."
     },
     {
       "name": "setupKeyboardNavigation",
       "kind": "value",
       "status": "deprecated",
-      "note": "Internal, no replacement: removed from mtrl/components/tabs in 1.0.0 (FLO-381)."
+      "note": "Internal, no replacement: removed from mtrl/components/tabs in `material` 3.0.0 (FLO-381)."
     },
     {
       "name": "setupResponsiveBehavior",
@@ -3125,43 +3125,43 @@
       "name": "TabsManagementComponent",
       "kind": "type",
       "status": "deprecated",
-      "note": "Internal, no replacement: removed from mtrl/components/tabs in 1.0.0 (FLO-381)."
+      "note": "Internal, no replacement: removed from mtrl/components/tabs in `material` 3.0.0 (FLO-381)."
     },
     {
       "name": "TabsManagementConfig",
       "kind": "type",
       "status": "deprecated",
-      "note": "Internal, no replacement: removed from mtrl/components/tabs in 1.0.0 (FLO-381)."
+      "note": "Internal, no replacement: removed from mtrl/components/tabs in `material` 3.0.0 (FLO-381)."
     },
     {
       "name": "updateTabPanels",
       "kind": "value",
       "status": "deprecated",
-      "note": "Internal, no replacement: removed from mtrl/components/tabs in 1.0.0 (FLO-381)."
+      "note": "Internal, no replacement: removed from mtrl/components/tabs in `material` 3.0.0 (FLO-381)."
     },
     {
       "name": "withDivider",
       "kind": "value",
       "status": "deprecated",
-      "note": "Internal, no replacement: removed from mtrl/components/tabs in 1.0.0 (FLO-381)."
+      "note": "Internal, no replacement: removed from mtrl/components/tabs in `material` 3.0.0 (FLO-381)."
     },
     {
       "name": "withIndicator",
       "kind": "value",
       "status": "deprecated",
-      "note": "Internal, no replacement: removed from mtrl/components/tabs in 1.0.0 (FLO-381)."
+      "note": "Internal, no replacement: removed from mtrl/components/tabs in `material` 3.0.0 (FLO-381)."
     },
     {
       "name": "withScrollable",
       "kind": "value",
       "status": "deprecated",
-      "note": "Internal, no replacement: removed from mtrl/components/tabs in 1.0.0 (FLO-381)."
+      "note": "Internal, no replacement: removed from mtrl/components/tabs in `material` 3.0.0 (FLO-381)."
     },
     {
       "name": "withTabsManagement",
       "kind": "value",
       "status": "deprecated",
-      "note": "Internal, no replacement: removed from mtrl/components/tabs in 1.0.0 (FLO-381)."
+      "note": "Internal, no replacement: removed from mtrl/components/tabs in `material` 3.0.0 (FLO-381)."
     }
   ],
   "tabs/constants": [
@@ -3226,7 +3226,7 @@
       "name": "TextfieldComponent",
       "kind": "type",
       "status": "deprecated",
-      "note": "Use TextFieldComponent: M3 writes \"text field\" as two words. Removed in 1.0 (FLO-383)."
+      "note": "Use TextFieldComponent: M3 writes \"text field\" as two words. Removed in `material` 3.0.0 (FLO-383)."
     },
     {
       "name": "TextFieldComponent",
@@ -3237,7 +3237,7 @@
       "name": "TextfieldConfig",
       "kind": "type",
       "status": "deprecated",
-      "note": "Use TextFieldConfig: M3 writes \"text field\" as two words. Removed in 1.0 (FLO-383)."
+      "note": "Use TextFieldConfig: M3 writes \"text field\" as two words. Removed in `material` 3.0.0 (FLO-383)."
     },
     {
       "name": "TextFieldConfig",
@@ -3248,7 +3248,7 @@
       "name": "TextfieldDensity",
       "kind": "type",
       "status": "deprecated",
-      "note": "Use TextFieldDensity: M3 writes \"text field\" as two words. Removed in 1.0 (FLO-383)."
+      "note": "Use TextFieldDensity: M3 writes \"text field\" as two words. Removed in `material` 3.0.0 (FLO-383)."
     },
     {
       "name": "TextFieldDensity",
@@ -3259,7 +3259,7 @@
       "name": "TextfieldEvents",
       "kind": "type",
       "status": "deprecated",
-      "note": "Use TextFieldEvents: M3 writes \"text field\" as two words. Removed in 1.0 (FLO-383)."
+      "note": "Use TextFieldEvents: M3 writes \"text field\" as two words. Removed in `material` 3.0.0 (FLO-383)."
     },
     {
       "name": "TextFieldEvents",
@@ -3270,7 +3270,7 @@
       "name": "TextfieldFocusPayload",
       "kind": "type",
       "status": "deprecated",
-      "note": "Use TextFieldFocusPayload: M3 writes \"text field\" as two words. Removed in 1.0 (FLO-383)."
+      "note": "Use TextFieldFocusPayload: M3 writes \"text field\" as two words. Removed in `material` 3.0.0 (FLO-383)."
     },
     {
       "name": "TextFieldFocusPayload",
@@ -3281,7 +3281,7 @@
       "name": "TextfieldTrailingPayload",
       "kind": "type",
       "status": "deprecated",
-      "note": "Use TextFieldTrailingPayload: M3 writes \"text field\" as two words. Removed in 1.0 (FLO-383)."
+      "note": "Use TextFieldTrailingPayload: M3 writes \"text field\" as two words. Removed in `material` 3.0.0 (FLO-383)."
     },
     {
       "name": "TextFieldTrailingPayload",
@@ -3292,7 +3292,7 @@
       "name": "TextfieldValuePayload",
       "kind": "type",
       "status": "deprecated",
-      "note": "Use TextFieldValuePayload: M3 writes \"text field\" as two words. Removed in 1.0 (FLO-383)."
+      "note": "Use TextFieldValuePayload: M3 writes \"text field\" as two words. Removed in `material` 3.0.0 (FLO-383)."
     },
     {
       "name": "TextFieldValuePayload",
@@ -3340,43 +3340,43 @@
       "name": "TEXTFIELD_CLASSES",
       "kind": "value",
       "status": "deprecated",
-      "note": "Use TEXT_FIELD_CLASSES: M3 writes \"text field\" as two words. Removed in 1.0 (FLO-383)."
+      "note": "Use TEXT_FIELD_CLASSES: M3 writes \"text field\" as two words. Removed in `material` 3.0.0 (FLO-383)."
     },
     {
       "name": "TEXTFIELD_DEFAULTS",
       "kind": "value",
       "status": "deprecated",
-      "note": "Use TEXT_FIELD_DEFAULTS: M3 writes \"text field\" as two words. Removed in 1.0 (FLO-383)."
+      "note": "Use TEXT_FIELD_DEFAULTS: M3 writes \"text field\" as two words. Removed in `material` 3.0.0 (FLO-383)."
     },
     {
       "name": "TEXTFIELD_DENSITY",
       "kind": "value",
       "status": "deprecated",
-      "note": "Use TEXT_FIELD_DENSITY: M3 writes \"text field\" as two words. Removed in 1.0 (FLO-383)."
+      "note": "Use TEXT_FIELD_DENSITY: M3 writes \"text field\" as two words. Removed in `material` 3.0.0 (FLO-383)."
     },
     {
       "name": "TEXTFIELD_EVENTS",
       "kind": "value",
       "status": "deprecated",
-      "note": "Use TEXT_FIELD_EVENTS: M3 writes \"text field\" as two words. Removed in 1.0 (FLO-383)."
+      "note": "Use TEXT_FIELD_EVENTS: M3 writes \"text field\" as two words. Removed in `material` 3.0.0 (FLO-383)."
     },
     {
       "name": "TEXTFIELD_STATES",
       "kind": "value",
       "status": "deprecated",
-      "note": "Use TEXT_FIELD_STATES: M3 writes \"text field\" as two words. Removed in 1.0 (FLO-383)."
+      "note": "Use TEXT_FIELD_STATES: M3 writes \"text field\" as two words. Removed in `material` 3.0.0 (FLO-383)."
     },
     {
       "name": "TEXTFIELD_TYPES",
       "kind": "value",
       "status": "deprecated",
-      "note": "Use TEXT_FIELD_TYPES: M3 writes \"text field\" as two words. Removed in 1.0 (FLO-383)."
+      "note": "Use TEXT_FIELD_TYPES: M3 writes \"text field\" as two words. Removed in `material` 3.0.0 (FLO-383)."
     },
     {
       "name": "TEXTFIELD_VARIANTS",
       "kind": "value",
       "status": "deprecated",
-      "note": "Use TEXT_FIELD_VARIANTS: M3 writes \"text field\" as two words. Removed in 1.0 (FLO-383)."
+      "note": "Use TEXT_FIELD_VARIANTS: M3 writes \"text field\" as two words. Removed in `material` 3.0.0 (FLO-383)."
     }
   ],
   "timepicker": [
@@ -3874,7 +3874,7 @@
       "name": "TopAppBar",
       "kind": "type",
       "status": "deprecated",
-      "note": "Use TopAppBarComponent, the name every component type has. Removed in 1.0 (FLO-383)."
+      "note": "Use TopAppBarComponent, the name every component type has. Removed in `material` 3.0.0 (FLO-383)."
     },
     {
       "name": "TopAppBarComponent",

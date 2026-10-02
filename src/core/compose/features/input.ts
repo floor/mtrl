@@ -87,7 +87,7 @@ export interface InputFeature {
 
   /**
    * Gets the current input value.
-   * In 1.0 `getValue()` returns the checked boolean, and the input's string
+   * In `material` 3.0.0 `getValue()` returns the checked boolean, and the input's string
    * value is `getValueAttribute()`.
    * @returns Current value
    */
@@ -95,7 +95,7 @@ export interface InputFeature {
 
   /**
    * Sets the input value and emits a value event.
-   * In 1.0 `setValue()` takes the checked boolean and is silent (no `value`
+   * In `material` 3.0.0 `setValue()` takes the checked boolean and is silent (no `value`
    * event); the input's string value is set with `setValueAttribute()`.
    * @param value - New value to set
    * @returns Component instance for chaining
@@ -117,7 +117,7 @@ export interface InputComponent extends ElementComponent, InputFeature {}
  * Creates an input element and adds it to a component
  * Handles both input creation and event emission for state changes
  *
- * In 1.0 the `change` payload's `value` is the checked boolean, as the checkbox
+ * In `material` 3.0.0 the `change` payload's `value` is the checked boolean, as the checkbox
  * and the switch report it, and the input's string value is `valueAttribute`.
  *
  * @param config - Input configuration

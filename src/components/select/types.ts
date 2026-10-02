@@ -191,14 +191,14 @@ export interface SelectComponent {
 
   /**
    * The textfield component
-   * @deprecated Renamed `textField` in 1.0 (FLO-383), where `select.textfield` is `undefined`.
+   * @deprecated Renamed `textField` in `material` 3.0.0 (FLO-383), where `select.textfield` is `undefined`.
    * 0.10.x has no `textField`, so rename it when you upgrade.
    */
   textfield: TextfieldComponent;
 
   /**
    * The menu component
-   * @deprecated Removed in 1.0. Use the select's own methods and events: `open()`,
+   * @deprecated Removed in `material` 3.0.0. Use the select's own methods and events: `open()`,
    * `close()`, `isOpen()`, `getOptions()`, `setOptions()`, and `open`, `close` and `change`.
    */
   menu: MenuComponent;
@@ -347,7 +347,7 @@ export interface SelectEvent {
 
   /**
    * Function to prevent default behavior
-   * In 1.0 the select's `open`, `close` and `change` payloads have no
+   * In `material` 3.0.0 the select's `open`, `close` and `change` payloads have no
    * `preventDefault` and no `defaultPrevented`: these events cannot be cancelled.
    */
   preventDefault: () => void;

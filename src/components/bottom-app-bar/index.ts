@@ -11,6 +11,6 @@ export { createBottomAppBar };
 export type {
   BottomAppBarConfig,
   BottomAppBar as BottomAppBarComponent,
-  /** @deprecated Use BottomAppBarComponent, the name every component type has. Removed in 1.0 (FLO-383). */
+  /** @deprecated Use BottomAppBarComponent, the name every component type has. Removed in `material` 3.0.0 (FLO-383). */
   BottomAppBar,
 } from './types';

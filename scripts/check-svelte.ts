@@ -70,7 +70,7 @@ const run = async (): Promise<void> => {
   assert.equal(tsc.exitCode, 0, tsc.stdout.toString() + tsc.stderr.toString());
   check("the generated declarations compile");
 
-  // FLO-383: TextField is the canonical name; Textfield stays, deprecated, until 1.0
+  // FLO-383: TextField is the canonical name; Textfield stays, deprecated, until `material` 3.0.0
   for (const file of ["dist/svelte/index.js", "dist/svelte/index.d.ts"]) {
     const index = await Bun.file(file).text();
     assert.match(index, /export \{ default as TextField \} from "\.\/Textfield\.svelte";/, file);

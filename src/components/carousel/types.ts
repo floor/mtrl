@@ -3,7 +3,7 @@ import type { ForwardedEventPayload } from "../../core/dom";
 
 /** Current item reported by programmatic navigation or native scrolling. */
 export interface CarouselChangePayload {
-  /** The current item's index. In 1.0 the payload carries it as `value`, and `index` is gone. */
+  /** The current item's index. In `material` 3.0.0 the payload carries it as `value`, and `index` is gone. */
   index: number;
 }
 

@@ -117,7 +117,7 @@ export interface FabMenuComponent extends ElementComponent {
 
   /**
    * Opens the menu
-   * In 1.0, in the `menu` presentation, `isOpen()` is true and `open` has been
+   * In `material` 3.0.0, in the `menu` presentation, `isOpen()` is true and `open` has been
    * emitted when `open()` returns (today both wait for the menu's module to
    * load); the surface is shown when the module has arrived.
    */
@@ -125,7 +125,7 @@ export interface FabMenuComponent extends ElementComponent {
 
   /**
    * Closes the menu
-   * In 1.0, in the `menu` presentation, `close` is emitted inside `close()`
+   * In `material` 3.0.0, in the `menu` presentation, `close` is emitted inside `close()`
    * (about 50 ms later today), and a `close()` before the surface has arrived
    * ends closed (today it is ignored, and the menu then opens).
    */

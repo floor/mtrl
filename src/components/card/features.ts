@@ -142,7 +142,7 @@ export const withLoading =
  * that no stylesheet reads. A card's elevation comes from its variant and
  * state classes in the stylesheet.
  *
- * @deprecated Since 0.10 (FLO-323): a no-op, removed in 1.0. Drop it from
+ * @deprecated Since 0.10 (FLO-323): a no-op, removed in `material` 3.0.0. Drop it from
  * the composition.
  * @category Components
  */

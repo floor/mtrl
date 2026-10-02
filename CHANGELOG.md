@@ -12,19 +12,26 @@ Earlier versions are in the [git history](https://github.com/floor/mtrl/commits/
 
 ## [0.10.7] - 2026-10-03
 
-The last notices before 1.0.0. What 1.0.0 decided after 0.10.6 is told in the code, as an
-"In 1.0 …" note in the TSDoc: the overlays' open and close, the chips' click order, the text
-field's two-word tag and classes, and the stylesheets that become imports of their own
-(typography, contrast). None of those notes changes anything at run time. One thing can move
-early: the text field's import paths resolve under their 1.0 names from this release. Three
-limits of 0.10.x that 1.0 fixes are documented, and one accessibility fix is ported:
-scrolling from script honours reduced motion. Upgrade to this release before 1.0.0.
+This library continues as the npm package `material`, from version 3.0.0: where these notes
+say `material` 3.0.0, they mean the next version of this code. To move, stay on the latest
+`mtrl` 0.10.x until you are ready; then change the package name to `material` (version 3)
+and follow its migration guide.
+
+What `material` 3.0.0 decided after 0.10.6 is told in the code, as an "In `material` 3.0.0 …"
+note in the TSDoc: the overlays' open and close, the chips' click order, the text field's
+two-word tag and classes, and the stylesheets that become imports of their own (typography,
+contrast). None of those notes changes anything at run time. One thing can be written the
+new way early: the text field's import paths resolve under their two-word names from this
+release. Three limits of 0.10.x that `material` 3.0.0 fixes are documented, and one
+accessibility fix is ported: scrolling from script honours reduced motion. Upgrade to this
+release before the move.
 
 ### Added
 
-- **The text field's two-word import paths, ahead of 1.0 (FLO-560).** 1.0 spells the text
-  field in two words in its paths too. These resolve from 0.10.7, to the same modules as the
-  one-word paths, so every import can move before the upgrade:
+- **The text field's two-word import paths, ahead of `material` 3.0.0 (FLO-560).**
+  `material` 3.0.0 spells the text field in two words in its paths too. These resolve from
+  0.10.7, to the same modules as the one-word paths, so every path can be written the new
+  way before the move:
   `mtrl/components/text-field`, `mtrl/components/text-field/constants`,
   `mtrl/styles/text-field` and `mtrl/elements/css/text-field`; and, for a stylesheet that
   `@use`s mtrl's Sass sources, `components/text-field`. Nothing else of the rename can move
@@ -33,8 +40,8 @@ scrolling from script honours reduced motion. Upgrade to this release before 1.0
 
 ### Changed
 
-- **Documented, three limits of 0.10.x that 1.0 fixes and 0.10.x does not** (each is a
-  sentence in the TSDoc):
+- **Documented, three limits of 0.10.x that `material` 3.0.0 fixes and 0.10.x does not**
+  (each is a sentence in the TSDoc):
   - a `layer: "top"` dialog that refuses Escape (`closeOnEscape: false`, or a `beforeclose`
     listener that prevents it) is still closed by the third press: the browser lets a page
     refuse twice in a row and forces the third. The same for a `layer: "top"` modal sheet
@@ -44,13 +51,14 @@ scrolling from script honours reduced motion. Upgrade to this release before 1.0
     new one;
   - a docked date picker opened with `open()` from a click outside it is closed by that same
     click: call `open()` once the click has finished.
+
 ### Deprecated
 
-Comments only: nothing changes at run time. Each is changed in 1.0.0, decided after 0.10.6.
-"Today" in a note means 0.10.x.
+Comments only: nothing changes at run time. Each is changed in `material` 3.0.0, decided
+after 0.10.6. "Today" in a note means 0.10.x.
 
-- **Told in the TSDoc, for 1.0, the overlays' open and close:** when `open()` or `close()`
-  returns, the state has changed and the event has been emitted.
+- **Told in the TSDoc, for `material` 3.0.0, the overlays' open and close:** when `open()`
+  or `close()` returns, the state has changed and the event has been emitted.
   - **Dialog:** `open` is emitted inside `open()` (without `layer: "top"` it comes about 10 ms
     later today), so a listener added after calling `open()` no longer hears it: add it
     before the call, or listen to `afteropen`. `close()` on a closed dialog emits nothing.
@@ -71,21 +79,21 @@ Comments only: nothing changes at run time. Each is changed in 1.0.0, decided af
     the key, and never for the key press that opened it. Escape with a menu open inside a
     dialog closes the menu only; without `layer: "top"` it closes the dialog as well today.
   - **Snackbar:** `state` is `"queued"`, not `"visible"`, while a snackbar waits behind
-    another, and `hide()` on a queued one emits nothing. 1.0 adds `isOpen()`.
+    another, and `hide()` on a queued one emits nothing. `material` 3.0.0 adds `isOpen()`.
   - **Time picker:** `isOpen` is a method, `isOpen()`, not a property; the config option
     `isOpen` is named `open`, and `TIMEPICKER_DEFAULTS.IS_OPEN` is `OPEN`. Created with it,
     the picker is open when its factory returns (on a 0 ms timer today).
-- **Told in the TSDoc, for 1.0, chips:** a chip's `onClick` runs before the chip toggles, so
-  `isSelected()` inside it is the state before the click (read the new one in `onChange`); a
+- **Told in the TSDoc, for `material` 3.0.0, chips:** a chip's `onClick` runs before the chip
+  toggles, so `isSelected()` inside it is the state before the click (read the new one in `onChange`); a
   refused deselect in a `selectionRequired` set emits no `change` and calls no `onChange` or
   `onSelect`.
-- **Told in the TSDoc, for 1.0, types:** the search's `expand` and `collapse` listeners are
-  typed with what they carry, `{ component, state, viewMode }`; the `<m-search>` and
+- **Told in the TSDoc, for `material` 3.0.0, types:** the search's `expand` and `collapse`
+  listeners are typed with what they carry, `{ component, state, viewMode }`; the `<m-search>` and
   `<m-timepicker>` components' `on` and `off` take a closed map of event names.
-- **`splitButton.menu`:** its note now names what 1.0 gives in its place for the items,
-  `setItems()` and `getItems()`.
-- **The text field is written in two words everywhere in 1.0, its strings included
-  (FLO-560).** After the identifiers (0.10.5), 1.0 renames:
+- **`splitButton.menu`:** its note now names what `material` 3.0.0 gives in its place for
+  the items, `setItems()` and `getItems()`.
+- **The text field is written in two words everywhere in `material` 3.0.0, its strings
+  included (FLO-560).** After the identifiers (0.10.5), `material` 3.0.0 renames:
   - the tag: `<m-textfield>` is `<m-text-field>`;
   - the classes: `mtrl-textfield…` is `mtrl-text-field…`. Page CSS and `classList` calls that
     keep the old name match nothing, and nothing warns;
@@ -96,17 +104,18 @@ Comments only: nothing changes at run time. Each is changed in 1.0.0, decided af
     `select__text-field`. This corrects 0.10.5's note, which said that class stays;
   - the import paths, which resolve under the new names from this release (see Added).
 
-  Only the paths can move before the upgrade.
-- **Typography leaves `mtrl/styles/base` in 1.0.** The type classes (`.mtrl-display-large` …
+  Only the paths can be written the new way before the move.
+- **Typography leaves the base stylesheet in `material` 3.0.0.** The type classes (`.mtrl-display-large` …
   `.mtrl-label-small`), the text utilities, mtrl's styles for `h1`–`h6` and `p`, and the
   `--mtrl-sys-typescale-*` properties other than body-medium's then need
-  `import 'mtrl/styles/typography'`. The full stylesheet, `mtrl/styles`, is unchanged. There
+  `import 'material/styles/typography'` beside `material/styles/base`. The full stylesheet,
+  `material/styles`, still includes them. There
   is nothing to change on 0.10.x: the new entry does not exist here.
-- **Explicit contrast levels leave `mtrl/styles/base` and the themes in 1.0.**
-  `data-theme-contrast="medium"` and `"high"` then need `import 'mtrl/styles/contrast'`
-  (and `mtrl/themes/<name>-contrast` for a theme imported on its own); without it the
+- **Explicit contrast levels leave the base stylesheet and the themes in `material` 3.0.0.**
+  `data-theme-contrast="medium"` and `"high"` then need `import 'material/styles/contrast'`
+  (and `material/themes/<name>-contrast` for a theme imported on its own); without it the
   attribute changes no colour and nothing warns. Standard contrast and `prefers-contrast: more`
-  stay in the base, and the full stylesheet, `mtrl/styles`, still includes the levels. There
+  stay in the base, and the full stylesheet, `material/styles`, still includes the levels. There
   is nothing to change on 0.10.x: the new entries do not exist here.
 
 ### Fixed

@@ -20,7 +20,7 @@ export interface BaseComponentConfig {
   /**
    * @deprecated Since FLO-117 `class` and `className` are not prefixed either,
    * so this option does the same thing as those. It is kept for the release
-   * that changes the behaviour and will be removed in 1.0.0.
+   * that changes the behaviour and will be removed in `material` 3.0.0.
    */
   rawClass?: string | string[];
   parent?: HTMLElement | string | null; // Parent element to append to (element or selector)

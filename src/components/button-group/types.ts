@@ -253,7 +253,7 @@ export interface ButtonGroupConfig {
 
   /**
    * Event handlers for button group events. On 0.10.x this map is accepted
-   * and never called: subscribe with `on(event, handler)` on the group. In 1.0
+   * and never called: subscribe with `on(event, handler)` on the group. In `material` 3.0.0
    * the handlers run, with the listener's argument.
    */
   on?: {

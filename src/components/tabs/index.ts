@@ -31,45 +31,45 @@ export type {
 
 // Export enhancers and utilities
 export {
-  /** @deprecated Internal, no replacement: removed from mtrl/components/tabs in 1.0.0 (FLO-381). */
+  /** @deprecated Internal, no replacement: removed from mtrl/components/tabs in `material` 3.0.0 (FLO-381). */
   addScrollIndicators,
   // Public and documented (md3.io tabs); a responsive option on createTabs replaces it in 1.1 (FLO-381)
   setupResponsiveBehavior,
-  /** @deprecated Internal, no replacement: removed from mtrl/components/tabs in 1.0.0 (FLO-381). */
+  /** @deprecated Internal, no replacement: removed from mtrl/components/tabs in `material` 3.0.0 (FLO-381). */
   createTabsState,
-  /** @deprecated Internal, no replacement: removed from mtrl/components/tabs in 1.0.0 (FLO-381). */
+  /** @deprecated Internal, no replacement: removed from mtrl/components/tabs in `material` 3.0.0 (FLO-381). */
   createTabIndicator,
-  /** @deprecated Internal, no replacement: removed from mtrl/components/tabs in 1.0.0 (FLO-381). */
+  /** @deprecated Internal, no replacement: removed from mtrl/components/tabs in `material` 3.0.0 (FLO-381). */
   updateTabPanels,
-  /** @deprecated Internal, no replacement: removed from mtrl/components/tabs in 1.0.0 (FLO-381). */
+  /** @deprecated Internal, no replacement: removed from mtrl/components/tabs in `material` 3.0.0 (FLO-381). */
   setupKeyboardNavigation,
 };
 
 // Export features
 export {
-  /** @deprecated Internal, no replacement: removed from mtrl/components/tabs in 1.0.0 (FLO-381). */
+  /** @deprecated Internal, no replacement: removed from mtrl/components/tabs in `material` 3.0.0 (FLO-381). */
   withTabsManagement,
-  /** @deprecated Internal, no replacement: removed from mtrl/components/tabs in 1.0.0 (FLO-381). */
+  /** @deprecated Internal, no replacement: removed from mtrl/components/tabs in `material` 3.0.0 (FLO-381). */
   withScrollable,
-  /** @deprecated Internal, no replacement: removed from mtrl/components/tabs in 1.0.0 (FLO-381). */
+  /** @deprecated Internal, no replacement: removed from mtrl/components/tabs in `material` 3.0.0 (FLO-381). */
   withDivider,
-  /** @deprecated Internal, no replacement: removed from mtrl/components/tabs in 1.0.0 (FLO-381). */
+  /** @deprecated Internal, no replacement: removed from mtrl/components/tabs in `material` 3.0.0 (FLO-381). */
   withIndicator,
 } from "./features";
 export type {
-  /** @deprecated Internal, no replacement: removed from mtrl/components/tabs in 1.0.0 (FLO-381). */
+  /** @deprecated Internal, no replacement: removed from mtrl/components/tabs in `material` 3.0.0 (FLO-381). */
   TabsManagementConfig,
-  /** @deprecated Internal, no replacement: removed from mtrl/components/tabs in 1.0.0 (FLO-381). */
+  /** @deprecated Internal, no replacement: removed from mtrl/components/tabs in `material` 3.0.0 (FLO-381). */
   TabsManagementComponent,
-  /** @deprecated Internal, no replacement: removed from mtrl/components/tabs in 1.0.0 (FLO-381). */
+  /** @deprecated Internal, no replacement: removed from mtrl/components/tabs in `material` 3.0.0 (FLO-381). */
   ScrollableConfig,
-  /** @deprecated Internal, no replacement: removed from mtrl/components/tabs in 1.0.0 (FLO-381). */
+  /** @deprecated Internal, no replacement: removed from mtrl/components/tabs in `material` 3.0.0 (FLO-381). */
   ScrollableComponent,
-  /** @deprecated Internal, no replacement: removed from mtrl/components/tabs in 1.0.0 (FLO-381). */
+  /** @deprecated Internal, no replacement: removed from mtrl/components/tabs in `material` 3.0.0 (FLO-381). */
   DividerConfig,
-  /** @deprecated Internal, no replacement: removed from mtrl/components/tabs in 1.0.0 (FLO-381). */
+  /** @deprecated Internal, no replacement: removed from mtrl/components/tabs in `material` 3.0.0 (FLO-381). */
   IndicatorFeatureConfig,
-  /** @deprecated Internal, no replacement: removed from mtrl/components/tabs in 1.0.0 (FLO-381). */
+  /** @deprecated Internal, no replacement: removed from mtrl/components/tabs in `material` 3.0.0 (FLO-381). */
   IndicatorComponent,
 } from "./features";
 

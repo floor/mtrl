@@ -3,7 +3,7 @@
 // FLO-351: every root export is public API. The list is pinned, so a name added
 // to or dropped from `mtrl` fails here until the fixture is regenerated
 // (`bun run root-exports:update`) and the diff reviewed. The names leaving the
-// root in 1.0.0 carry @deprecated on their root re-export only: an editor flags
+// root in `material` 3.0.0 carry @deprecated on their root re-export only: an editor flags
 // them imported from `mtrl`, never from the subpath they move to.
 import { describe, expect, test } from "bun:test";
 import ts from "typescript";

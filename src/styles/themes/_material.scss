@@ -1,6 +1,6 @@
 // src/styles/themes/_material.scss
 // Medium/high contrast: Tonal Spot from seed #6750a4, secondary from #5d5d74, tertiary from #7d5260.
-// Deprecated in 0.10, removed in 1.0 (FLO-308): use `baseline`, M3's own baseline (this one doesn't match it).
+// Deprecated in 0.10, removed in the package `material` 3.0.0 (FLO-308): use `baseline`, M3's own baseline (this one doesn't match it).
 @use "../abstract/base" as *;
 @use "base-theme" as *;
 

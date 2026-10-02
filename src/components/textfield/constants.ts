@@ -106,7 +106,7 @@ const TEXTFIELD_DEFAULTS = {
 
 /**
  * CSS class names used by the textfield component
- * In 1.0 the classes are written `text-field` (`mtrl-text-field`,
+ * In `material` 3.0.0 the classes are written `text-field` (`mtrl-text-field`,
  * `mtrl-text-field__input`, …): page CSS and `classList` calls that keep
  * `mtrl-textfield` then match nothing, and nothing warns.
  * @category Components
@@ -176,18 +176,18 @@ export {
   TEXTFIELD_DENSITY as TEXT_FIELD_DENSITY,
   TEXTFIELD_DEFAULTS as TEXT_FIELD_DEFAULTS,
   TEXTFIELD_CLASSES as TEXT_FIELD_CLASSES,
-  /** @deprecated Use TEXT_FIELD_VARIANTS: M3 writes "text field" as two words. Removed in 1.0 (FLO-383). */
+  /** @deprecated Use TEXT_FIELD_VARIANTS: M3 writes "text field" as two words. Removed in `material` 3.0.0 (FLO-383). */
   TEXTFIELD_VARIANTS,
-  /** @deprecated Use TEXT_FIELD_STATES: M3 writes "text field" as two words. Removed in 1.0 (FLO-383). */
+  /** @deprecated Use TEXT_FIELD_STATES: M3 writes "text field" as two words. Removed in `material` 3.0.0 (FLO-383). */
   TEXTFIELD_STATES,
-  /** @deprecated Use TEXT_FIELD_TYPES: M3 writes "text field" as two words. Removed in 1.0 (FLO-383). */
+  /** @deprecated Use TEXT_FIELD_TYPES: M3 writes "text field" as two words. Removed in `material` 3.0.0 (FLO-383). */
   TEXTFIELD_TYPES,
-  /** @deprecated Use TEXT_FIELD_EVENTS: M3 writes "text field" as two words. Removed in 1.0 (FLO-383). */
+  /** @deprecated Use TEXT_FIELD_EVENTS: M3 writes "text field" as two words. Removed in `material` 3.0.0 (FLO-383). */
   TEXTFIELD_EVENTS,
-  /** @deprecated Use TEXT_FIELD_DENSITY: M3 writes "text field" as two words. Removed in 1.0 (FLO-383). */
+  /** @deprecated Use TEXT_FIELD_DENSITY: M3 writes "text field" as two words. Removed in `material` 3.0.0 (FLO-383). */
   TEXTFIELD_DENSITY,
-  /** @deprecated Use TEXT_FIELD_DEFAULTS: M3 writes "text field" as two words. Removed in 1.0 (FLO-383). */
+  /** @deprecated Use TEXT_FIELD_DEFAULTS: M3 writes "text field" as two words. Removed in `material` 3.0.0 (FLO-383). */
   TEXTFIELD_DEFAULTS,
-  /** @deprecated Use TEXT_FIELD_CLASSES: M3 writes "text field" as two words. Removed in 1.0 (FLO-383). */
+  /** @deprecated Use TEXT_FIELD_CLASSES: M3 writes "text field" as two words. Removed in `material` 3.0.0 (FLO-383). */
   TEXTFIELD_CLASSES,
 };

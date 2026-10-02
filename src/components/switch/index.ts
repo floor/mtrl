@@ -20,10 +20,10 @@ export type {
 
 // Export features
 export {
-  /** @deprecated Internal, no replacement: removed from mtrl/components/switch in 1.0.0 (FLO-381). */
+  /** @deprecated Internal, no replacement: removed from mtrl/components/switch in `material` 3.0.0 (FLO-381). */
   withSupportingText,
 } from './features';
 export type {
-  /** @deprecated Internal, no replacement: removed from mtrl/components/switch in 1.0.0 (FLO-381). */
+  /** @deprecated Internal, no replacement: removed from mtrl/components/switch in `material` 3.0.0 (FLO-381). */
   SupportingTextComponent,
 } from './features';

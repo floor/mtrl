@@ -1,6 +1,6 @@
 // src/styles/themes/_winter.scss
 // Medium/high contrast: Tonal Spot from seed #546E7A, secondary from #4a626e, tertiary from #5d5b7d.
-// Deprecated in 0.10, removed in 1.0 (FLO-308): use `ocean`, its near-duplicate.
+// Deprecated in 0.10, removed in the package `material` 3.0.0 (FLO-308): use `ocean`, its near-duplicate.
 @use "../abstract/base" as *;
 @use "base-theme" as *;
 
