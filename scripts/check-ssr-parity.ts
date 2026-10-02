@@ -39,7 +39,7 @@ const server = Bun.serve({ hostname: "127.0.0.1", port: 0, fetch(request) {
 const browser = await chromium.launch();
 const report: Array<{ element: string; equal: number; exceptions: number; failures: Array<Difference & { phase: string }> }> = [];
 const observed = new Set<number>();
-const optedOut = new Set(["carousel", "fab-menu", "toolbar"]);
+const optedOut = new Set(["carousel", "fab-menu"]);
 const compare = (a: Snapshot, b: Snapshot): Difference[] => [...new Set([...Object.keys(a), ...Object.keys(b)])]
   .filter(key => a[key] !== b[key]).map(property => ({ property, server: a[property] ?? null, browser: b[property] ?? null }));
 try {

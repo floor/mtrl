@@ -66,8 +66,6 @@ const anchorMenus = (component: ToolbarComponent): void => {
 
 const toolbarSpec = {
   name: "toolbar",
-  // Roving tab stops depend on browser slot assignment.
-  ssr: false,
   slots: ["fab", "overflow"] as const,
   create: (config) => create(config as ToolbarConfig),
   // The overflow button is an icon button in the toolbar's own shadow root.
