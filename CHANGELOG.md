@@ -10,6 +10,13 @@ Earlier versions are in the [git history](https://github.com/floor/mtrl/commits/
 
 ## [Unreleased]
 
+## [0.10.8] - YYYY-MM-DD
+
+### Security
+
+- In `mtrl` 0.10.0–0.10.7, a password field's value can be shown before the element
+  upgrades. Upgrade to 0.10.8 to fix this.
+
 ## [0.10.7] - 2026-10-03
 
 This library continues as the npm package `material`, from version 3.0.0: where these notes
@@ -2146,7 +2153,8 @@ Changed and fixed, by component
   push and pull request; releases publish to npm with trusted publishing
   from a version tag.
 
-[Unreleased]: https://github.com/floor/mtrl/compare/v0.10.7...HEAD
+[Unreleased]: https://github.com/floor/mtrl/compare/v0.10.8...HEAD
+[0.10.8]: https://github.com/floor/mtrl/compare/v0.10.7...v0.10.8
 [0.10.7]: https://github.com/floor/mtrl/compare/v0.10.6...v0.10.7
 [0.10.6]: https://github.com/floor/mtrl/compare/v0.10.5...v0.10.6
 [0.10.5]: https://github.com/floor/mtrl/compare/v0.10.4...v0.10.5
