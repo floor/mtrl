@@ -10,7 +10,7 @@ Earlier versions are in the [git history](https://github.com/floor/mtrl/commits/
 
 ## [Unreleased]
 
-## [0.10.8] - YYYY-MM-DD
+## [0.10.8] - 2026-10-03
 
 ### Security
 
