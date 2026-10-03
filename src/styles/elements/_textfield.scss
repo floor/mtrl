@@ -8,7 +8,12 @@
   @include field.field;
 
   // Preserve the empty line without exposing a password or its length.
-  &[type='password' i]::before {
+  &[type='password' i]::before,
+  &[type='hidden' i]::before {
     content: ' ';
+  }
+
+  &[type='hidden' i] {
+    display: none;
   }
 }

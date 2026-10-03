@@ -64,6 +64,7 @@ export const cases: PreupgradeCase[] = [
   c("textfield", "value", `<m-textfield label="Name" value="Ada"></m-textfield>`),
   c("textfield", "empty password", `<m-textfield type="password"></m-textfield>`),
   c("textfield", "password value", `<m-textfield type="password" value="secret"></m-textfield>`),
+  c("textfield", "hidden value", `<m-textfield type="hidden" value="synthetic-token"></m-textfield>`),
   c("textfield", "density=compact", `<m-textfield density="compact" label="Name"></m-textfield>`),
   c("textfield", "outlined compact value", `<m-textfield variant="outlined" density="compact" label="Name" value="Ada"></m-textfield>`),
   c("textfield", "width set by the page", `<m-textfield label="Name" style="width:300px"></m-textfield>`),

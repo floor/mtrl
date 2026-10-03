@@ -80,6 +80,8 @@ const server = Bun.serve({
         return js(elementsJs);
       case "/react.js":
         return js(reactClientJs);
+      case "/textfield-module":
+        return html('<!doctype html><html><head></head><body><div id="stage"></div></body></html>');
       case "/modules":
         return html(page(stage(`<x-button>Save</x-button>`), false));
       case "/react":
@@ -259,50 +261,97 @@ try {
   if (!only.length || only.includes("textfield")) {
     const p = await browser.newPage();
     try {
+      // Hidden fields must conceal their value and reserve no space, before or after upgrade.
       await p.goto(`http://127.0.0.1:${server.port}/0?pre=1`);
-      const rows = await p.evaluate(() => {
+      await p.evaluate(() => {
         const stage = document.getElementById("stage")!;
         stage.replaceChildren();
-        const result: { type: string; value: string; variant: string; compact: boolean;
-          defined: boolean; content: string; width: number; height: number; baseline: number }[] = [];
-        for (const variant of ["filled", "outlined"]) {
-          for (const compact of [false, true]) {
-            for (const type of ["password", "PASSWORD", "PaSsWoRd", "", "text", "email", "number", "tel", "url", "search", "multiline"]) {
-              for (const value of ["", "secret", "a-much-longer-password-value"]) {
-                const row = document.createElement("div");
-                const field = document.createElement("m-textfield");
-                if (type) field.setAttribute("type", type);
-                field.setAttribute("value", value);
-                field.setAttribute("variant", variant);
-                if (compact) field.setAttribute("density", "compact");
-                const marker = document.createElement("span");
-                marker.style.cssText = "display:inline-block;width:0;height:0;vertical-align:baseline";
-                row.append(field, marker);
-                stage.append(row);
-                const box = field.getBoundingClientRect();
-                result.push({ type, value, variant, compact, defined: field.matches(":defined"),
-                  content: getComputedStyle(field, "::before").content, width: box.width, height: box.height,
-                  baseline: marker.getBoundingClientRect().top - box.top });
+        for (const type of ["hidden", "HIDDEN", "Hidden"]) {
+          const field = document.createElement("m-textfield");
+          field.setAttribute("type", type);
+          field.setAttribute("value", "synthetic-token");
+          field.setAttribute("data-hidden-case", "");
+          stage.append(field);
+        }
+      });
+      const hiddenSnapshot = () => p.evaluate(() => [...document.querySelectorAll("[data-hidden-case]")].map(field => {
+        const box = field.getBoundingClientRect();
+        const input = field.shadowRoot?.querySelector("input");
+        return { type: field.getAttribute("type"), defined: field.matches(":defined"),
+          content: getComputedStyle(field, "::before").content, display: getComputedStyle(field).display,
+          width: box.width, height: box.height, inputType: input?.type, inputValue: input?.value };
+      }));
+      const hiddenBefore = await hiddenSnapshot();
+      await p.addScriptTag({ url: "/elements.js", type: "module" });
+      await p.waitForFunction(() => [...document.querySelectorAll("[data-hidden-case]")].every(field => field.matches(":defined")));
+      await settle(p);
+      const hiddenAfter = await hiddenSnapshot();
+      console.log("Hidden field geometry:", JSON.stringify({ before: hiddenBefore, after: hiddenAfter }));
+      for (const [index, before] of hiddenBefore.entries()) {
+        const after = hiddenAfter[index];
+        assert.equal(before.defined, false, `${before.type}: must start undefined`);
+        assert.equal(before.content.includes("synthetic-token"), false, `${before.type}: pre-upgrade value must not be painted`);
+        assert.deepEqual([before.width, before.height], [0, 0], `${before.type}: pre-upgrade host takes no space`);
+        assert.deepEqual([after.width, after.height], [0, 0], `${before.type}: upgraded host takes no space`);
+        assert.equal(after.inputType, "hidden", `${before.type}: native input stays hidden`);
+        assert.equal(after.inputValue, "synthetic-token", `${before.type}: native value is preserved`);
+      }
+
+      // Exercise the sheet and the standalone CSS module on separate, undefined pages.
+      for (const mode of ["stylesheet", "module"]) {
+        const path = mode === "module" ? "/textfield-module" : "/0?pre=1";
+        await p.goto(`http://127.0.0.1:${server.port}${path}`);
+        if (mode === "module") {
+          assert.equal(await p.locator('link[rel="stylesheet"]').count(), 0, "The module fixture must have no stylesheet links");
+          await p.addScriptTag({ type: "module", content: `await import("/dist/elements/css/textfield.js"); window.fieldCSSReady = true;` });
+          await p.waitForFunction(() => (window as unknown as { fieldCSSReady?: boolean }).fieldCSSReady === true);
+        }
+        const rows = await p.evaluate(() => {
+          const stage = document.getElementById("stage")!;
+          stage.replaceChildren();
+          const result: { type: string; value: string; variant: string; compact: boolean;
+            defined: boolean; content: string; width: number; height: number; baseline: number }[] = [];
+          for (const variant of ["filled", "outlined"]) {
+            for (const compact of [false, true]) {
+              for (const type of ["password", "PASSWORD", "PaSsWoRd", "hidden", "HIDDEN", "Hidden", "", "text", "email", "number", "tel", "url", "search", "multiline"]) {
+                for (const value of ["", "secret", "a-much-longer-password-value"]) {
+                  const row = document.createElement("div");
+                  const field = document.createElement("m-textfield");
+                  if (type) field.setAttribute("type", type);
+                  field.setAttribute("value", value);
+                  field.setAttribute("variant", variant);
+                  if (compact) field.setAttribute("density", "compact");
+                  const marker = document.createElement("span");
+                  marker.style.cssText = "display:inline-block;width:0;height:0;vertical-align:baseline";
+                  row.append(field, marker);
+                  stage.append(row);
+                  const box = field.getBoundingClientRect();
+                  result.push({ type, value, variant, compact, defined: field.matches(":defined"),
+                    content: getComputedStyle(field, "::before").content, width: box.width, height: box.height,
+                    baseline: marker.getBoundingClientRect().top - box.top });
+                }
               }
             }
           }
+          return result;
+        });
+        for (const row of rows) {
+          const label = `${row.type || "default"}/${row.variant}/${row.compact ? "compact" : "default"}/${row.value.length}`;
+          assert.equal(row.defined, false, label);
+          const password = row.type.toLowerCase() === "password";
+          const hidden = row.type.toLowerCase() === "hidden";
+          assert.equal(row.content, JSON.stringify(password || hidden ? " " : row.value + " "),
+            `${label}: pre-upgrade content must conceal password/hidden values and preserve other values`);
+          if (hidden) assert.deepEqual([row.width, row.height], [0, 0], `${mode}/${label}: hidden host takes no space`);
+          if (password) {
+            const empty = rows.find(other => other.type === row.type && other.variant === row.variant &&
+              other.compact === row.compact && other.value === "")!;
+            assert.deepEqual([row.width, row.height, row.baseline], [empty.width, empty.height, empty.baseline],
+              `${label}: the empty password's box and baseline must be preserved`);
+          }
         }
-        return result;
-      });
-      for (const row of rows) {
-        const label = `${row.type || "default"}/${row.variant}/${row.compact ? "compact" : "default"}/${row.value.length}`;
-        assert.equal(row.defined, false, label);
-        const password = row.type.toLowerCase() === "password";
-        assert.equal(row.content, JSON.stringify(password ? " " : row.value + " "),
-          `${label}: pre-upgrade content must conceal passwords and preserve other values`);
-        if (password) {
-          const empty = rows.find(other => other.type === row.type && other.variant === row.variant &&
-            other.compact === row.compact && other.value === "")!;
-          assert.deepEqual([row.width, row.height, row.baseline], [empty.width, empty.height, empty.baseline],
-            `${label}: the empty password's box and baseline must be preserved`);
-        }
+        console.log(`Pre-upgrade privacy (${mode}): ${rows.length} type/value/layout cases passed`);
       }
-      console.log(`Password pre-upgrade privacy: ${rows.length} type/value/layout cases passed`);
     } finally {
       await p.close();
     }

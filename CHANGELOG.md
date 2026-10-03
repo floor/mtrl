@@ -14,7 +14,7 @@ Earlier versions are in the [git history](https://github.com/floor/mtrl/commits/
 
 ### Security
 
-- In `mtrl` 0.10.0–0.10.7, a password field's value can be shown before the element
+- In `mtrl` 0.10.0–0.10.7, a password or hidden field's value can be shown before the element
   upgrades. Upgrade to 0.10.8 to fix this.
 
 ## [0.10.7] - 2026-10-03
