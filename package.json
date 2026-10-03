@@ -1,6 +1,6 @@
 {
   "name": "mtrl",
-  "version": "0.10.6",
+  "version": "0.10.7",
   "description": "Material Design 3 components for the web: plain JavaScript, web components, and React, Vue, Svelte and Solid components. TypeScript, zero dependencies.",
   "author": "floor",
   "license": "MIT",

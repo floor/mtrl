@@ -10,10 +10,23 @@ Earlier versions are in the [git history](https://github.com/floor/mtrl/commits/
 
 ## [Unreleased]
 
+## [0.10.7] - 2026-10-03
+
 This library continues as the npm package `material`, from version 3.0.0: where these notes
 say `material` 3.0.0, they mean the next version of this code. To move, stay on the latest
 `mtrl` 0.10.x until you are ready; then change the package name to `material` (version 3)
 and follow its migration guide.
+
+What `material` 3.0.0 decided after 0.10.6 is told in the code, as an "In `material` 3.0.0 …"
+note in the TSDoc: the overlays' open and close, the chips' click order, the text
+field's two-word tag and classes, and what `material` 3.0.0 takes out of its contract:
+the progress component's five drawing members (marked deprecated), the slider's
+`components`, the import path `mtrl/core/compose/features`, and `tab.badge` before its
+badge is shown. None of those notes changes anything at run time. One
+thing can be written the new way early: the text field's import paths resolve under their
+two-word names from this release. Three limits of 0.10.x that `material` 3.0.0 fixes are
+documented, and one accessibility fix is ported: scrolling from script honours reduced
+motion. Upgrade to this release before the move.
 
 ### Added
 
@@ -44,7 +57,7 @@ and follow its migration guide.
 ### Deprecated
 
 Comments only: nothing changes at run time. Each is changed in `material` 3.0.0, decided
-after 0.10.6.
+after 0.10.6. "Today" in a note means 0.10.x.
 
 - **Told in the TSDoc, for `material` 3.0.0, the overlays' open and close:** when `open()`
   or `close()` returns, the state has changed and the event has been emitted.
@@ -94,7 +107,7 @@ after 0.10.6.
   - the registry key: `elements.textfield` (`mtrl/elements`) is `elements.textField`;
   - generated ids: an input given no `id` gets one starting `mtrl-text-field-`, not
     `mtrl-textfield-`;
-  - the import paths, which already resolve under the new names on 0.10.7 (see Added).
+  - the import paths, which resolve under the new names from this release (see Added).
 
   Only the paths can be written the new way before the move.
 - **Typography leaves the base stylesheet in `material` 3.0.0.** The type classes (`.mtrl-display-large` …
@@ -2133,7 +2146,8 @@ Changed and fixed, by component
   push and pull request; releases publish to npm with trusted publishing
   from a version tag.
 
-[Unreleased]: https://github.com/floor/mtrl/compare/v0.10.6...HEAD
+[Unreleased]: https://github.com/floor/mtrl/compare/v0.10.7...HEAD
+[0.10.7]: https://github.com/floor/mtrl/compare/v0.10.6...v0.10.7
 [0.10.6]: https://github.com/floor/mtrl/compare/v0.10.5...v0.10.6
 [0.10.5]: https://github.com/floor/mtrl/compare/v0.10.4...v0.10.5
 [0.10.4]: https://github.com/floor/mtrl/compare/v0.10.3...v0.10.4
