@@ -254,6 +254,60 @@ const report = (results: Result[]): void => {
 
 const browser = await chromium.launch({ headless: true });
 try {
+  // Password values, including their length, must never be painted before definition.
+  // Compare the empty field's line box and baseline, and keep every other type's value.
+  if (!only.length || only.includes("textfield")) {
+    const p = await browser.newPage();
+    try {
+      await p.goto(`http://127.0.0.1:${server.port}/0?pre=1`);
+      const rows = await p.evaluate(() => {
+        const stage = document.getElementById("stage")!;
+        stage.replaceChildren();
+        const result: { type: string; value: string; variant: string; compact: boolean;
+          defined: boolean; content: string; width: number; height: number; baseline: number }[] = [];
+        for (const variant of ["filled", "outlined"]) {
+          for (const compact of [false, true]) {
+            for (const type of ["password", "PASSWORD", "PaSsWoRd", "", "text", "email", "number", "tel", "url", "search", "multiline"]) {
+              for (const value of ["", "secret", "a-much-longer-password-value"]) {
+                const row = document.createElement("div");
+                const field = document.createElement("m-textfield");
+                if (type) field.setAttribute("type", type);
+                field.setAttribute("value", value);
+                field.setAttribute("variant", variant);
+                if (compact) field.setAttribute("density", "compact");
+                const marker = document.createElement("span");
+                marker.style.cssText = "display:inline-block;width:0;height:0;vertical-align:baseline";
+                row.append(field, marker);
+                stage.append(row);
+                const box = field.getBoundingClientRect();
+                result.push({ type, value, variant, compact, defined: field.matches(":defined"),
+                  content: getComputedStyle(field, "::before").content, width: box.width, height: box.height,
+                  baseline: marker.getBoundingClientRect().top - box.top });
+              }
+            }
+          }
+        }
+        return result;
+      });
+      for (const row of rows) {
+        const label = `${row.type || "default"}/${row.variant}/${row.compact ? "compact" : "default"}/${row.value.length}`;
+        assert.equal(row.defined, false, label);
+        const password = row.type.toLowerCase() === "password";
+        assert.equal(row.content, JSON.stringify(password ? " " : row.value + " "),
+          `${label}: pre-upgrade content must conceal passwords and preserve other values`);
+        if (password) {
+          const empty = rows.find(other => other.type === row.type && other.variant === row.variant &&
+            other.compact === row.compact && other.value === "")!;
+          assert.deepEqual([row.width, row.height, row.baseline], [empty.width, empty.height, empty.baseline],
+            `${label}: the empty password's box and baseline must be preserved`);
+        }
+      }
+      console.log(`Password pre-upgrade privacy: ${rows.length} type/value/layout cases passed`);
+    } finally {
+      await p.close();
+    }
+  }
+
   // Every element has a default case.
   const kebab = (name: string): string => name.replace(/[A-Z]/g, (ch) => `-${ch.toLowerCase()}`);
   const covered = new Set(cases.filter((item) => item.variant === "default").map((item) => item.element));
