@@ -56,7 +56,7 @@ const textfieldSpec = {
   create: (config) => create(config as TextfieldConfig),
   styles: ["textfield"],
   // The field fills a host given a width, as a native input does.
-  hostStyles: ":host>*{width:100%}:host([type=hidden i]){display:none}",
+  hostStyles: ":host>*{width:100%}",
   attributes: {
     variant: {
       type: "string",

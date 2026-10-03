@@ -261,39 +261,42 @@ try {
   if (!only.length || only.includes("textfield")) {
     const p = await browser.newPage();
     try {
-      // Hidden fields must conceal their value and reserve no space, before or after upgrade.
+      // Hidden fields must conceal their value without changing the upgraded layout.
       await p.goto(`http://127.0.0.1:${server.port}/0?pre=1`);
       await p.evaluate(() => {
         const stage = document.getElementById("stage")!;
         stage.replaceChildren();
-        for (const type of ["hidden", "HIDDEN", "Hidden"]) {
+        for (const type of ["password", "PASSWORD", "PaSsWoRd", "hidden", "HIDDEN", "Hidden"]) {
           const field = document.createElement("m-textfield");
           field.setAttribute("type", type);
           field.setAttribute("value", "synthetic-token");
-          field.setAttribute("data-hidden-case", "");
+          field.setAttribute("data-private-case", "");
           stage.append(field);
         }
       });
-      const hiddenSnapshot = () => p.evaluate(() => [...document.querySelectorAll("[data-hidden-case]")].map(field => {
+      const privateSnapshot = () => p.evaluate(() => [...document.querySelectorAll("[data-private-case]")].map(field => {
         const box = field.getBoundingClientRect();
         const input = field.shadowRoot?.querySelector("input");
         return { type: field.getAttribute("type"), defined: field.matches(":defined"),
           content: getComputedStyle(field, "::before").content, display: getComputedStyle(field).display,
           width: box.width, height: box.height, inputType: input?.type, inputValue: input?.value };
       }));
-      const hiddenBefore = await hiddenSnapshot();
+      const privateBefore = await privateSnapshot();
       await p.addScriptTag({ url: "/elements.js", type: "module" });
-      await p.waitForFunction(() => [...document.querySelectorAll("[data-hidden-case]")].every(field => field.matches(":defined")));
+      await p.waitForFunction(() => [...document.querySelectorAll("[data-private-case]")].every(field => field.matches(":defined")));
       await settle(p);
-      const hiddenAfter = await hiddenSnapshot();
-      console.log("Hidden field geometry:", JSON.stringify({ before: hiddenBefore, after: hiddenAfter }));
-      for (const [index, before] of hiddenBefore.entries()) {
-        const after = hiddenAfter[index];
+      const privateAfter = await privateSnapshot();
+      console.log("Private field geometry:", JSON.stringify({ before: privateBefore, after: privateAfter }));
+      for (const [index, before] of privateBefore.entries()) {
+        const after = privateAfter[index];
         assert.equal(before.defined, false, `${before.type}: must start undefined`);
-        assert.equal(before.content.includes("synthetic-token"), false, `${before.type}: pre-upgrade value must not be painted`);
-        assert.deepEqual([before.width, before.height], [0, 0], `${before.type}: pre-upgrade host takes no space`);
-        assert.deepEqual([after.width, after.height], [0, 0], `${before.type}: upgraded host takes no space`);
-        assert.equal(after.inputType, "hidden", `${before.type}: native input stays hidden`);
+        assert.equal(before.content, JSON.stringify(" "), `${before.type}: pre-upgrade value must not be painted`);
+        assert.deepEqual([before.width, before.height], [after.width, after.height],
+          `${before.type}: upgrade must preserve the reserved box`);
+
+        assert.deepEqual([after.width, after.height], [280, before.type?.toLowerCase() === "hidden" ? 20 : 56],
+          `${before.type}: upgraded box stays as measured in 0.10.7`);
+        assert.equal(after.inputType, before.type?.toLowerCase(), `${before.type}: native input type is preserved`);
         assert.equal(after.inputValue, "synthetic-token", `${before.type}: native value is preserved`);
       }
 
@@ -342,12 +345,12 @@ try {
           const hidden = row.type.toLowerCase() === "hidden";
           assert.equal(row.content, JSON.stringify(password || hidden ? " " : row.value + " "),
             `${label}: pre-upgrade content must conceal password/hidden values and preserve other values`);
-          if (hidden) assert.deepEqual([row.width, row.height], [0, 0], `${mode}/${label}: hidden host takes no space`);
-          if (password) {
+          if (password || hidden) {
+            assert.ok(row.width > 0 && row.height > 0, `${mode}/${label}: the existing host box is preserved`);
             const empty = rows.find(other => other.type === row.type && other.variant === row.variant &&
               other.compact === row.compact && other.value === "")!;
             assert.deepEqual([row.width, row.height, row.baseline], [empty.width, empty.height, empty.baseline],
-              `${label}: the empty password's box and baseline must be preserved`);
+              `${label}: the empty field's box and baseline must be preserved`);
           }
         }
         console.log(`Pre-upgrade privacy (${mode}): ${rows.length} type/value/layout cases passed`);

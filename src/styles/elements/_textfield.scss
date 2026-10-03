@@ -13,7 +13,11 @@
     content: ' ';
   }
 
+  // The hidden native input leaves only the host's inherited line box.
   &[type='hidden' i] {
-    display: none;
+    font: inherit;
+    height: 1lh;
+    padding: 0;
+    border: 0;
   }
 }
