@@ -6,4 +6,18 @@
 
 @include c.host('textfield') {
   @include field.field;
+
+  // Preserve the empty line without exposing a password or its length.
+  &[type='password' i]::before,
+  &[type='hidden' i]::before {
+    content: ' ';
+  }
+
+  // The hidden native input leaves only the host's inherited line box.
+  &[type='hidden' i] {
+    font: inherit;
+    height: 1lh;
+    padding: 0;
+    border: 0;
+  }
 }
