@@ -57,7 +57,10 @@ describe('menu stylesheet', () => {
     expect(value('.mtrl-menu__item--selected', 'color')).toBe('var(--mtrl-sys-color-on-secondary-container)');
     // the check is the second cue the accessibility guidance asks for
     expect(rules('.mtrl-menu__item--selected::after').length).toBeGreaterThan(0);
-    expect(value('.mtrl-menu__item--selected:hover::before', 'background-color')).toBe('var(--mtrl-sys-color-on-secondary-container)');
+    // one layer, coloured by the label (currentColor), so a selected item
+    // paints on-secondary-container without a second ::before
+    expect(value('.mtrl-menu__item::before', 'background-color')).toBe('currentColor');
+    expect(value('.mtrl-menu__item--selected:hover::before', 'background-color')).toBeUndefined();
   });
 
   test('the focus layer is for keyboard navigation only', () => {
