@@ -125,9 +125,25 @@ $component: "#{$prefix}-menu";
         width: 100%;
         box-sizing: border-box;
 
-        // State layer effects
-        &:hover {
-            @include m.state-layer(t.color("on-surface"), "hover");
+        // One state layer. Its colour is currentColor, which is the label
+        // colour (and the selected label colour), so a selected item does not
+        // need a second layer. Only the opacity changes per state.
+        &::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background-color: currentColor;
+            opacity: 0;
+            pointer-events: none;
+            border-radius: inherit;
+        }
+
+        &:hover::before {
+            opacity: v.state("hover-state-layer-opacity");
+        }
+
+        &--submenu[aria-expanded="true"]::before {
+            opacity: v.state("hover-state-layer-opacity");
         }
 
         // The focus layer is for a person navigating by key. Focus moves into
@@ -138,13 +154,12 @@ $component: "#{$prefix}-menu";
             outline: none;
         }
 
-        &:focus-visible,
-            &--active {
-            @include m.state-layer(t.color("on-surface"), "focus");
+        &:focus-visible::before, &--active::before {
+            opacity: v.state("focus-state-layer-opacity");
         }
 
-        &:active {
-            @include m.state-layer(t.color("on-surface"), "pressed");
+        &:active:not(:has(> .#{base.$prefix}-ripple))::before {
+            opacity: v.state("pressed-state-layer-opacity");
         }
 
         // Submenu indicator
@@ -167,12 +182,8 @@ $component: "#{$prefix}-menu";
                 opacity: 0.87;
             }
 
-            &[aria-expanded="true"] {
-                @include m.state-layer(t.color("on-surface"), "hover");
-
-                &::after {
-                    opacity: 1;
-                }
+            &[aria-expanded="true"]::after {
+                opacity: 1;
             }
         }
 
@@ -198,19 +209,6 @@ $component: "#{$prefix}-menu";
         &--selected {
             background-color: t.color("secondary-container");
             color: t.color("on-secondary-container");
-
-            &:hover {
-                @include m.state-layer(t.color("on-secondary-container"), "hover");
-            }
-
-            &:focus-visible,
-            &.#{$component}__item--active {
-                @include m.state-layer(t.color("on-secondary-container"), "focus");
-            }
-
-            &:active {
-                @include m.state-layer(t.color("on-secondary-container"), "pressed");
-            }
 
             .#{$component}__item-icon,
             .#{$component}__item-shortcut {
@@ -428,19 +426,6 @@ $component: "#{$prefix}-menu";
                 background-color: var(--#{$prefix}-menu-selected-container);
                 color: var(--#{$prefix}-menu-selected-label);
                 border-radius: v.shape("medium"); // ItemSelectedShape
-
-                &:hover {
-                    @include m.state-layer(var(--#{$prefix}-menu-selected-label), "hover");
-                }
-
-                &:focus-visible,
-            &.#{$component}__item--active {
-                    @include m.state-layer(var(--#{$prefix}-menu-selected-label), "focus");
-                }
-
-                &:active {
-                    @include m.state-layer(var(--#{$prefix}-menu-selected-label), "pressed");
-                }
             }
 
             &--disabled {
